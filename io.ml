@@ -45,7 +45,7 @@ let append_string_to_file s ap=
   let new_content=(read_whole_file ap)^s in
   overwrite_with ap new_content;; 
 
-     
+let gmx = 7;;     
    
    
   
