@@ -10,6 +10,4 @@ type t= {
    prefix_shortenings : (string*string) list;
    infix_shortenings : (string*string) list;
    suffix_shortenings : (string*string) list;
-
-
 };;

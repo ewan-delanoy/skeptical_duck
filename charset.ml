@@ -15,6 +15,9 @@ let uppercase_letters=
     'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
     'U';'V';'W';'X';'Y';'Z'];;
     
+let anycase_letters=
+    lowercase_letters@uppercase_letters;;
+
 let lowercase_identifier_elements=    
     ['a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
      'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
