@@ -39,9 +39,9 @@ let generalize_for_one l=l@(Option.filter_and_unpack optional_for_one l);;
 let generalize_for_two l=l@(Option.filter_and_unpack optional_for_two l);;
 let generalize_for_false_three l=
    Image.image(
-      fun (x,(y,li))->
+      fun (x,y,li)->
          let new_li=li@(Option.filter_and_unpack optional_for_false_three li) in 
-         (x,(y,new_li))
+         (x,y,new_li)
    ) l;; 
   
 
