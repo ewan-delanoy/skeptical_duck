@@ -6,14 +6,12 @@
 
 module Private=struct
 
-let for_adjustments=
-   let t = Total_ordering.lex_for_strings in
-   Total_ordering.triple_product t t t;;
+let s = Total_ordering.lex_for_strings;;
 
+let for_adjustments=Total_ordering.triple_product s s s;;
 let for_expansions=Total_ordering.lex_for_string_lists;;
-let for_inert_words=Total_ordering.lex_for_strings;;
-let for_left_core_abbreviations=Total_ordering.product Total_ordering.lex_for_strings Total_ordering.lex_for_strings;;
-let for_prefix_abbreviations=Total_ordering.product Total_ordering.lex_for_strings Total_ordering.lex_for_strings;;
+let for_inert_words=s;;
+let for_abbreviations=Total_ordering.product s s;;
 
 end;;
 (*
@@ -27,5 +25,4 @@ let order_prefix_abbreviations = Ordered.diforchan_plaen Private.for_left_core_a
 let insert_adjustment = Ordered.insert_plaen Private.for_adjustments;;
 let insert_expansion = Ordered.insert_plaen Private.for_expansions;;
 let insert_inert_word = Ordered.insert_plaen Private.for_inert_words;;
-let insert_left_core_abbreviation = Ordered.insert_plaen Private.for_left_core_abbreviations;;
-let insert_prefix_abbreviation = Ordered.insert_plaen Private.for_left_core_abbreviations;;
+let insert_abbreviation = Ordered.insert_plaen Private.for_abbreviations;;
