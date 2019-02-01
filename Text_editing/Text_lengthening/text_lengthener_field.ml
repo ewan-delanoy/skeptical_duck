@@ -2,6 +2,8 @@
 
 #use "Text_editing/Text_lengthening/text_lengthener_field.ml";;
 
+The arguments for setters are assumed to be already in order. 
+
 *)
 
 let set_decompressions x v=
@@ -36,4 +38,24 @@ let set_prefix_abbreviations x v=
     Text_lengthener_t.case_insensitive_prefix_abbreviations = 
        French_capitalization.generalize_for_two v ;
   };;
+
+(* Usual getters *)
+
+let decompressions x=x.Text_lengthener_t.case_insensitive_decompressions;;
+let expansions x=x.Text_lengthener_t.expansions;;
+let inert_words x=x.Text_lengthener_t.case_insensitive_inert_words;;
+let left_core_abbreviations x=x.Text_lengthener_t.case_insensitive_left_core_abbreviations;;
+let prefix_abbreviations x=x.Text_lengthener_t.case_insensitive_prefix_abbreviations;;
+
+(* Getters for a more internal use *)
+
+let uncapitalized_decompressions x=x.Text_lengthener_t.decompressions;;
+let uncapitalized_inert_words x=x.Text_lengthener_t.inert_words;;
+let uncapitalized_left_core_abbreviations x=x.Text_lengthener_t.left_core_abbreviations;;
+let uncapitalized_prefix_abbreviations x=x.Text_lengthener_t.prefix_abbreviations;;
+
+
+
+
+
 
