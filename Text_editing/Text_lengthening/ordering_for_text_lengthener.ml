@@ -6,7 +6,7 @@
 
 module Private=struct
 
-let s = Total_ordering.lex_for_strings;;
+let s = French_order.cmp;;
 
 let for_adjustments=Total_ordering.triple_product s s s;;
 let for_expansions=Total_ordering.lex_for_string_lists;;
