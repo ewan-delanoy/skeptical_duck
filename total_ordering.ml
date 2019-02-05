@@ -57,6 +57,16 @@ let leq (computer:'a t) x y=
   ) in
   (answer: 'a t);;
  
+let combine=((fun ~tried_first ~tried_second->
+  (fun x y->
+   let first_trial = tried_first x y in 
+   if first_trial <> Equal 
+   then first_trial
+   else tried_second x y
+  ) ): 
+    tried_first:('a t) -> tried_second:('a t) -> ('a t)
+  );;
+
  let product (f:'a t) (g:'b t)=
   ((fun (x1,y1) (x2,y2)->
      let t=f(x1)(x2) in

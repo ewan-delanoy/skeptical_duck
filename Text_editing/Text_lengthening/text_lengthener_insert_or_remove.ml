@@ -17,7 +17,7 @@ let rec recursive_helper_for_i_adjustable_decompression
   |head::other_ones->
      let (u1,v1,adjustments)=head in 
      (
-      match Total_ordering.lex_for_strings u1 u with 
+      match French_order.cmp u1 u with 
        Total_ordering.Lower -> 
          recursive_helper_for_i_adjustable_decompression(u,v,head::treated,untreated)
        |Total_ordering.Equal ->

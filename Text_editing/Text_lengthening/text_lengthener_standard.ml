@@ -4,6 +4,9 @@
 
 *)
 
+(* Description of standard text lengthener starts here *)
+
+
 let one = 
 {
  Text_lengthener_t.adjustable_decompressions=
@@ -1036,6 +1039,6 @@ case_insensitive_prefix_abbreviations=
     ("Jsq","Jusqu'");
 ];
 }
-
-
 ;;
+
+(* Description of standard text lengthener ends here *)

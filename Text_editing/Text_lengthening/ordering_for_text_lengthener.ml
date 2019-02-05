@@ -16,7 +16,9 @@ let for_decompressions l=
    Ordered.diforchan_plaen t temp1;;
 
 
-let for_expansions=Total_ordering.lex_for_string_lists;;
+let for_expansions=
+  (* let tt=Total_ordering.standard_completion in *)
+  Total_ordering.lex_for_string_lists;;
 let for_inert_words=s;;
 let for_abbreviations=Total_ordering.product s s;;
 
