@@ -31,7 +31,7 @@ let paired_data =
  let single_data = ["#";"@";"[";"]"];;
 
  let chars_in_order=
-   (Image.image fst data)@(Image.image snd data)@single_data;;  
+   (Image.image fst paired_data)@(Image.image snd paired_data)@single_data;;  
 
 
 
