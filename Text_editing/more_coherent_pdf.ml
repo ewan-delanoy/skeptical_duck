@@ -69,6 +69,21 @@ let chunk ~rootdir ~pdfname ~interval ~chunksize=
   let cmds=Chunking.list_of_commands worker in
   Explicit.image Unix_command.uc cmds;;
 
+let ref_for_usual_printable_dir = ref("/Users/ewandelanoy/Teuliou/html_files/PDF_files/Printable");;
+
+let usual_chunk ~pdfname i j=
+    let printable_dir=(!ref_for_usual_printable_dir) in 
+    let cpdf_dir=printable_dir^"/Coherent_PDF/" in 
+    let _=Unix_command.uc ("mkdir -p "^cpdf_dir) in 
+    let _=Unix_command.uc ("rm -rf "^cpdf_dir^"*") in 
+     chunk
+     "/Users/ewandelanoy/Teuliou/html_files/PDF_files/Printable"
+     (pdfname^".pdf")
+     (i,j)
+     None
+   ;;   
+
+
 let merge ~rootdir ~pdfname ~interval=
    let (i,j)=interval in
    let temp1=Ennig.doyle (fun k->
