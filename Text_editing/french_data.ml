@@ -6,7 +6,7 @@
 
 
 
-let data =
+let paired_data =
   [("a", "A"); ("à", "À"); ("á", "Á"); ("â", "Â"); ("ä", "Ä");
 
    ("b", "B"); ("c", "C"); ("d", "D"); 
@@ -28,8 +28,10 @@ let data =
    ("v", "V"); ("w", "W"); ("x", "X");("y", "Y"); ("z", "Z");
    ];;
 
+ let single_data = ["#";"@";"[";"]"];;
+
  let chars_in_order=
-   (Image.image fst data)@(Image.image snd data);;  
+   (Image.image fst data)@(Image.image snd data)@single_data;;  
 
 
 
