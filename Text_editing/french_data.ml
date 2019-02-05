@@ -28,7 +28,7 @@ let paired_data =
    ("v", "V"); ("w", "W"); ("x", "X");("y", "Y"); ("z", "Z");
    ];;
 
- let single_data = [" ";"'";"[";"]";"#";"@"];;
+ let single_data = [" ";"-";'";"[";"]";"#";"@"];;
 
  let chars_in_order=
    (Image.image fst paired_data)@(Image.image snd paired_data)@single_data;;  
