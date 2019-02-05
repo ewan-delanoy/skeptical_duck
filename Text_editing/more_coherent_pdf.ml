@@ -71,7 +71,7 @@ let chunk ~rootdir ~pdfname ~interval ~chunksize=
 
 let ref_for_usual_printable_dir = ref("/Users/ewandelanoy/Teuliou/html_files/PDF_files/Printable");;
 
-let usual_chunk ~pdfname i j=
+let usual_chunk ~pdfname i=
     let printable_dir=(!ref_for_usual_printable_dir) in 
     let cpdf_dir=printable_dir^"/Coherent_PDF/" in 
     let _=Unix_command.uc ("mkdir -p "^cpdf_dir) in 
@@ -79,7 +79,7 @@ let usual_chunk ~pdfname i j=
      chunk
      "/Users/ewandelanoy/Teuliou/html_files/PDF_files/Printable"
      (pdfname^".pdf")
-     (i,j)
+     (i,i+19)
      None
    ;;   
 
