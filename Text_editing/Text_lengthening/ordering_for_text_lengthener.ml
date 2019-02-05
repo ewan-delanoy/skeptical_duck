@@ -17,8 +17,10 @@ let for_decompressions l=
 
 
 let for_expansions=
-  (* let tt=Total_ordering.standard_completion in *)
-  Total_ordering.lex_for_string_lists;;
+   let flatten=String.concat "" in 
+   let pre1 = (fun x y ->Total_ordering.standard (String.length y) (String.length x)) in 
+   let pre2 = Total_ordering.combine ~tried_first:pre1 ~tried_second:s in 
+   (fun x y ->pre2 (flatten x) (flatten y));;
 let for_inert_words=s;;
 let for_abbreviations=Total_ordering.product s s;;
 
