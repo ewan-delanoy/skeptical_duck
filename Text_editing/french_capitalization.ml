@@ -4,20 +4,10 @@
 
 *)
 
-module Private = struct
 
-let data =
-  [("a", "A"); ("b", "B"); ("c", "C"); ("d", "D"); ("e", "E"); ("f", "F");
-   ("g", "G"); ("h", "H"); ("i", "I"); ("j", "J"); ("k", "K"); ("l", "L");
-   ("m", "M"); ("n", "N"); ("o", "O"); ("p", "P"); ("q", "Q"); ("r", "R");
-   ("s", "S"); ("t", "T"); ("u", "U"); ("v", "V"); ("w", "W"); ("x", "X");
-   ("y", "Y"); ("z", "Z");
-   ("é", "É");];;
-
-end;;
 
 let optional_for_one s=
-  match Option.seek (fun (a,_)->Substring.begins_with s a) Private.data with 
+  match Option.seek (fun (a,_)->Substring.begins_with s a) French_data.data with 
   None->None
   |Some(a0,b0)->Some(b0^(Cull_string.cobeginning (String.length a0) s));;
 
