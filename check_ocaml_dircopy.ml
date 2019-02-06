@@ -37,7 +37,7 @@ let is_admissible s=
   
 let name_of_clone_directory="/Users/ewandelanoy/Downloads/Clone";;  
 let github_clone_command=
-"git clone https://github.com/ewan-delanoy/Beluga_Whale "^
+"git clone https://github.com/ewan-delanoy/skeptical_duck "^
 name_of_clone_directory;;  
 
 exception Failure_in_clone_directory_creation;;
