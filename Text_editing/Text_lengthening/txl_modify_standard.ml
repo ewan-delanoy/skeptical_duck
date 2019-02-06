@@ -36,56 +36,56 @@ end;;
 
 let order_fix = 
     Private.add_persistence_to_method 
-    (fun x ()->Text_lengthener_insert_or_remove.order_fix x) ;;
+    (fun x ()->Txl_modify.order_fix x) ;;
 
 (* Insert *)
 
 let i_decompression=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_decompression ;;
+    Txl_modify.i_decompression ;;
 
 let i_adjustment=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_adjustment ;;
+    Txl_modify.i_adjustment ;;
 
 let i_expansion=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_expansion ;;
+    Txl_modify.i_expansion ;;
 
 let i_inert_word=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_inert_word ;;    
+    Txl_modify.i_inert_word ;;    
 
 let i_left_core_abbreviation=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_left_core_abbreviation ;;
+    Txl_modify.i_left_core_abbreviation ;;
 
 let i_prefix_abbreviation=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.i_prefix_abbreviation ;;
+    Txl_modify.i_prefix_abbreviation ;;
 
 (* Remove *)
 
 let r_decompression=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_decompression ;;
+    Txl_modify.r_decompression ;;
 
 let r_adjustment=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_adjustment ;;
+    Txl_modify.r_adjustment ;;
 
 let r_expansion=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_expansion ;;
+    Txl_modify.r_expansion ;;
 
 let r_inert_word=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_inert_word ;;    
+    Txl_modify.r_inert_word ;;    
 
 let r_left_core_abbreviation=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_left_core_abbreviation ;;
+    Txl_modify.r_left_core_abbreviation ;;
 
 let r_prefix_abbreviation=
     Private.add_persistence_to_method 
-    Text_lengthener_insert_or_remove.r_prefix_abbreviation ;;
+    Txl_modify.r_prefix_abbreviation ;;
