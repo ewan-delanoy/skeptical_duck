@@ -12,7 +12,7 @@ let location_for_printing =
   "Text_editing/Text_lengthening/text_lengthener_standard.ml";;
 
 let persist_to_file ()=
-   let description = Text_lengthener_print.print  (!(Text_lengthener_standard.one)) in 
+   let description = Txl_print.print  (!(Text_lengthener_standard.one)) in 
    let text = "\n\n\nlet one = ref(\n "^description^"\n );;\n\n\n" in 
    let ap=Absolute_path.of_string location_for_printing in   
    Replace_inside.overwrite_between_markers_inside_file
