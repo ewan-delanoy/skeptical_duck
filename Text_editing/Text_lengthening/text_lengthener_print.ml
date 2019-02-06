@@ -51,15 +51,15 @@ let abbreviation horizontal_offset_length (a,b)=
 let abbreviations = display_list abbreviation;; 
 
 let t x=
-  let s_decomps=decompressions 2 (Text_lengthener_field.uncapitalized_adjustable_decompressions x) 
-  and s_expansions=expansions 2 (Text_lengthener_field.expansions x)
-  and s_iwords=inert_words  2 (Text_lengthener_field.uncapitalized_inert_words x)
-  and s_lc_abbreviations=abbreviations 2 (Text_lengthener_field.uncapitalized_left_core_abbreviations x)
-  and s_px_abbreviations=abbreviations 2(Text_lengthener_field.uncapitalized_prefix_abbreviations x)
-  and s_ci_decomps=decompressions 2 (Text_lengthener_field.adjustable_decompressions x) 
-  and s_ci_iwords=inert_words  2 (Text_lengthener_field.inert_words x)
-  and s_ci_lc_abbreviations=abbreviations 2 (Text_lengthener_field.left_core_abbreviations x)
-  and s_ci_px_abbreviations=abbreviations 2 (Text_lengthener_field.prefix_abbreviations x)
+  let s_decomps=decompressions 2 (Txl_field.uncapitalized_adjustable_decompressions x) 
+  and s_expansions=expansions 2 (Txl_field.expansions x)
+  and s_iwords=inert_words  2 (Txl_field.uncapitalized_inert_words x)
+  and s_lc_abbreviations=abbreviations 2 (Txl_field.uncapitalized_left_core_abbreviations x)
+  and s_px_abbreviations=abbreviations 2(Txl_field.uncapitalized_prefix_abbreviations x)
+  and s_ci_decomps=decompressions 2 (Txl_field.adjustable_decompressions x) 
+  and s_ci_iwords=inert_words  2 (Txl_field.inert_words x)
+  and s_ci_lc_abbreviations=abbreviations 2 (Txl_field.left_core_abbreviations x)
+  and s_ci_px_abbreviations=abbreviations 2 (Txl_field.prefix_abbreviations x)
   in 
   "{\n"^
   " Text_length"^"ener_t.adjustable_decompressions=\n"^s_decomps^";\n"^

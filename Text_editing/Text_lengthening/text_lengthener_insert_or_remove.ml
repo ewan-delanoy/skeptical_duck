@@ -34,15 +34,15 @@ end;;
 (* Reorder everything from scratch ; should be rarely needed *)
 
 let order_fix x=
-  let old_adecs=Text_lengthener_field.uncapitalized_adjustable_decompressions x 
-  and old_expios=Text_lengthener_field.expansions x 
-  and old_iwords=Text_lengthener_field.uncapitalized_inert_words  x 
-  and old_lc_abbs=Text_lengthener_field.uncapitalized_left_core_abbreviations  x 
-  and old_px_abbs=Text_lengthener_field.uncapitalized_prefix_abbreviations  x 
-  and old_ic_adecs=Text_lengthener_field.adjustable_decompressions x 
-  and old_ic_iwords=Text_lengthener_field.inert_words  x 
-  and old_ic_lc_abbs=Text_lengthener_field.left_core_abbreviations  x 
-  and old_ic_px_abbs=Text_lengthener_field.prefix_abbreviations  x in
+  let old_adecs=Txl_field.uncapitalized_adjustable_decompressions x 
+  and old_expios=Txl_field.expansions x 
+  and old_iwords=Txl_field.uncapitalized_inert_words  x 
+  and old_lc_abbs=Txl_field.uncapitalized_left_core_abbreviations  x 
+  and old_px_abbs=Txl_field.uncapitalized_prefix_abbreviations  x 
+  and old_ic_adecs=Txl_field.adjustable_decompressions x 
+  and old_ic_iwords=Txl_field.inert_words  x 
+  and old_ic_lc_abbs=Txl_field.left_core_abbreviations  x 
+  and old_ic_px_abbs=Txl_field.prefix_abbreviations  x in
   let adecs=Ordering_for_text_lengthener.order_decompressions old_adecs 
   and expios=Ordering_for_text_lengthener.order_expansions old_expios 
   and iwords=Ordering_for_text_lengthener.order_inert_words old_iwords 
@@ -68,12 +68,12 @@ let order_fix x=
 (* Insert *)
 
 let i_decompression x (u,v)=
-    let decs = Text_lengthener_field.adjustable_decompressions x in 
+    let decs = Txl_field.adjustable_decompressions x in 
     let (before_point,point,after_point) = 
       Private.helper_for_i_adjustable_decompression (u,v) decs in 
     match point with
     None -> let new_decs = before_point @ ((u,v,[]):: after_point) in 
-            Text_lengthener_field.set_decompressions x new_decs
+            Txl_field.set_decompressions x new_decs
     | Some(_,v1,_) ->
            if v1=v 
            then x 
@@ -82,7 +82,7 @@ let i_decompression x (u,v)=
 
 
 let i_adjustment x (u,v,(ad1,ad2,ad3))=
-  let decs = Text_lengthener_field.adjustable_decompressions x in 
+  let decs = Txl_field.adjustable_decompressions x in 
     let (before_point,point,after_point) = 
       Private.helper_for_i_adjustable_decompression (u,v) decs in 
     match point with
@@ -93,32 +93,32 @@ let i_adjustment x (u,v,(ad1,ad2,ad3))=
            else let new_adjustments=
               Ordering_for_text_lengthener.insert_adjustment (ad1,ad2,ad3) adjustments in 
               let new_decs = before_point @ ((u,v,new_adjustments):: after_point) in 
-              Text_lengthener_field.set_decompressions x new_decs;;  
+              Txl_field.set_decompressions x new_decs;;  
 
 let i_expansion x expansion =
-   let exps = Text_lengthener_field.expansions x in
+   let exps = Txl_field.expansions x in
    let new_exps =  Ordering_for_text_lengthener.insert_expansion expansion exps in 
-   Text_lengthener_field.set_expansions x new_exps;;
+   Txl_field.set_expansions x new_exps;;
 
 let i_inert_word x word =
-   let iwds = Text_lengthener_field.inert_words x in
+   let iwds = Txl_field.inert_words x in
    let new_iwds =  Ordering_for_text_lengthener.insert_inert_word word iwds in 
-   Text_lengthener_field.set_inert_words x new_iwds;;
+   Txl_field.set_inert_words x new_iwds;;
 
 let i_left_core_abbreviation x abbrv =
-   let abbrvs = Text_lengthener_field.left_core_abbreviations x in
+   let abbrvs = Txl_field.left_core_abbreviations x in
    let new_abbrvs =  Ordering_for_text_lengthener.insert_abbreviation abbrv abbrvs in 
-   Text_lengthener_field.set_left_core_abbreviations x new_abbrvs;;
+   Txl_field.set_left_core_abbreviations x new_abbrvs;;
 
 let i_prefix_abbreviation x abbrv =
-   let abbrvs = Text_lengthener_field.prefix_abbreviations x in
+   let abbrvs = Txl_field.prefix_abbreviations x in
    let new_abbrvs =  Ordering_for_text_lengthener.insert_abbreviation abbrv abbrvs in 
-   Text_lengthener_field.set_prefix_abbreviations x new_abbrvs;;   
+   Txl_field.set_prefix_abbreviations x new_abbrvs;;   
 
 (* Remove *)
 
 let r_decompression x (u,v)=
-    let decs = Text_lengthener_field.adjustable_decompressions x in 
+    let decs = Txl_field.adjustable_decompressions x in 
     let (before_point,point,after_point) = 
       Private.helper_for_i_adjustable_decompression (u,v) decs in 
     match point with
@@ -127,11 +127,11 @@ let r_decompression x (u,v)=
            if v1<>v 
            then x 
            else let new_decs = before_point @ after_point in 
-                Text_lengthener_field.set_decompressions x new_decs;;
+                Txl_field.set_decompressions x new_decs;;
 
 
 let r_adjustment x (u,v,(ad1,ad2,ad3))=
-  let decs = Text_lengthener_field.adjustable_decompressions x in 
+  let decs = Txl_field.adjustable_decompressions x in 
     let (before_point,point,after_point) = 
       Private.helper_for_i_adjustable_decompression (u,v) decs in 
     match point with
@@ -143,27 +143,27 @@ let r_adjustment x (u,v,(ad1,ad2,ad3))=
               let ad0=(ad1,ad2,ad3) in 
               let new_adjustments=List.filter (fun ad->ad<>ad0) adjustments in 
               let new_decs = before_point @ ((u,v,new_adjustments):: after_point) in 
-              Text_lengthener_field.set_decompressions x new_decs;;  
+              Txl_field.set_decompressions x new_decs;;  
 
 let r_expansion x expansion =
-   let exps = Text_lengthener_field.expansions x in
+   let exps = Txl_field.expansions x in
    let new_exps =  List.filter(fun expansion2-> expansion2 <> expansion ) exps in 
-   Text_lengthener_field.set_expansions x new_exps;;
+   Txl_field.set_expansions x new_exps;;
 
 let r_inert_word x word =
-   let iwds = Text_lengthener_field.inert_words x in
+   let iwds = Txl_field.inert_words x in
    let new_iwds = List.filter(fun word2-> word2 <> word ) iwds in 
-   Text_lengthener_field.set_inert_words x new_iwds;;
+   Txl_field.set_inert_words x new_iwds;;
 
 let r_left_core_abbreviation x abbrv =
-   let abbrvs = Text_lengthener_field.left_core_abbreviations x in
+   let abbrvs = Txl_field.left_core_abbreviations x in
    let new_abbrvs =  List.filter(fun abbrv2-> abbrv2 <> abbrv ) abbrvs in 
-   Text_lengthener_field.set_left_core_abbreviations x new_abbrvs;;
+   Txl_field.set_left_core_abbreviations x new_abbrvs;;
 
 let r_prefix_abbreviation x abbrv =
-   let abbrvs = Text_lengthener_field.prefix_abbreviations x in
+   let abbrvs = Txl_field.prefix_abbreviations x in
    let new_abbrvs =  List.filter(fun abbrv2-> abbrv2 <> abbrv ) abbrvs in 
-   Text_lengthener_field.set_prefix_abbreviations x new_abbrvs;;   
+   Txl_field.set_prefix_abbreviations x new_abbrvs;;   
 
 
 
