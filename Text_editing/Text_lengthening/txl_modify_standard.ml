@@ -36,7 +36,7 @@ end;;
 
 let order_fix = 
     Private.add_persistence_to_method 
-    (fun x ()->Txl_modify.order_fix x) ;;
+    (fun txl ()->Txl_modify.order_fix txl) ;;
 
 (* Insert *)
 
