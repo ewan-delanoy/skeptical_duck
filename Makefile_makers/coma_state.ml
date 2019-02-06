@@ -2224,7 +2224,7 @@ let rename_module_on_targets root_dir cs old_name new_name=
   let sibling_indices=List.filter(
         fun jdx->
          List.mem old_nm (ancestors_at_idx cs jdx)
-    )(Ennig.ennig idx (n+1)) in 
+    )(Ennig.ennig idx n) in 
   let (new_cs,(old_files,new_files))=
      rename_module_on_monitored_modules root_dir cs old_name new_name in
   let _=Ocaml_target_making.feydeau cs (idx::sibling_indices) in 
