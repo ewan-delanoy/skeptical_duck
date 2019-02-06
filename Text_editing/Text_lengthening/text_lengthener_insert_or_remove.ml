@@ -31,6 +31,40 @@ let  helper_for_i_adjustable_decompression (u,v) l=
 
 end;;
 
+(* Reorder everything from scratch ; should be rarely needed *)
+
+let order_fix x=
+  let old_adecs=Text_lengthener_field.uncapitalized_adjustable_decompressions x 
+  and old_expios=Text_lengthener_field.expansions x 
+  and old_iwords=Text_lengthener_field.uncapitalized_inert_words  x 
+  and old_lc_abbs=Text_lengthener_field.uncapitalized_left_core_abbreviations  x 
+  and old_px_abbs=Text_lengthener_field.uncapitalized_prefix_abbreviations  x 
+  and old_ic_adecs=Text_lengthener_field.adjustable_decompressions x 
+  and old_ic_iwords=Text_lengthener_field.inert_words  x 
+  and old_ic_lc_abbs=Text_lengthener_field.left_core_abbreviations  x 
+  and old_ic_px_abbs=Text_lengthener_field.prefix_abbreviations  x in
+  let adecs=Ordering_for_text_lengthener.order_decompressions old_adecs 
+  and expios=Ordering_for_text_lengthener.order_expansions old_expios 
+  and iwords=Ordering_for_text_lengthener.order_inert_words old_iwords 
+  and lc_abbs=Ordering_for_text_lengthener.order_abbreviations old_lc_abbs 
+  and px_abbs=Ordering_for_text_lengthener.order_abbreviations old_px_abbs 
+  and ic_adecs=Ordering_for_text_lengthener.order_decompressions old_ic_adecs 
+  and ic_iwords=Ordering_for_text_lengthener.order_inert_words  old_ic_iwords 
+  and ic_lc_abbs=Ordering_for_text_lengthener.order_abbreviations  old_ic_lc_abbs 
+  and ic_px_abbs=Ordering_for_text_lengthener.order_abbreviations  old_ic_px_abbs in 
+  {
+    Text_lengthener_t.adjustable_decompressions = adecs;
+    expansions = expios;
+    inert_words = iwords;
+    left_core_abbreviations = lc_abbs;
+    prefix_abbreviations = px_abbs ;
+    case_insensitive_adjustable_decompressions = ic_adecs ;
+    case_insensitive_left_core_abbreviations = ic_lc_abbs ;
+    case_insensitive_inert_words = ic_iwords ;
+    case_insensitive_prefix_abbreviations = ic_px_abbs ;
+  }   ;;
+
+
 (* Insert *)
 
 let i_decompression x (u,v)=
