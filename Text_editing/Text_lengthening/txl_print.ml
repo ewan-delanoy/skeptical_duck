@@ -1,6 +1,6 @@
 (*
 
-#use "Text_editing/Text_lengthening/text_lengthener_print.ml";;
+#use "Text_editing/Text_lengthening/txl_print.ml";;
 
 *)
 
@@ -13,11 +13,18 @@ let display_list display_elt horizontal_offset_length l=
    let temp2=("[")::temp1@["]"] in                            
    String.concat "\n" temp2;;
 
+let display_pushed_list display_elt horizontal_offset_length l=  
+   let horizontal_offset=String.make horizontal_offset_length ' ' in 
+   if l=[] then horizontal_offset^"[]" else 
+   let temp1=Image.image (fun t->(display_elt (horizontal_offset_length+2) t)^";") l in 
+   let temp2=(horizontal_offset^"[")::temp1@[horizontal_offset^"]"] in                            
+   String.concat "\n" temp2;;
+
 let adjustment horizontal_offset_length (a,b,c)=
    let horizontal_offset=String.make horizontal_offset_length ' ' in 
    horizontal_offset^"(\""^a^"\",\""^b^"\",\""^c^"\")";;
 
-let adjustments =  display_list adjustment ;;
+let adjustments =  display_pushed_list adjustment ;;
 
 let decompression horizontal_offset_length (short_form,long_form,l_adjs)=
    let horizontal_offset=String.make horizontal_offset_length ' ' in 
