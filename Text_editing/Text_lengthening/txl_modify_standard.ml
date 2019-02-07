@@ -9,7 +9,7 @@
 module Private = struct
 
 let location_for_printing =
-  "Text_editing/Text_lengthening/text_lengthener_standard.ml";;
+  "Text_editing/Text_lengthening/txl_standard.ml";;
 
 let persist_to_file ()=
    let description = Txl_print.print  (!(Txl_standard.one)) in 
