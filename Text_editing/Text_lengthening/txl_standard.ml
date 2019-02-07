@@ -15,67 +15,67 @@ let one = ref(
                   []
     );
     ("ait","ait",
-[
+                  [
                     ("expliqu","","expliquer");
-]
+                  ]
     );
     ("ax","eaux",
                   []
     );
     ("b","able",
-[
+                 [
                    ("considér","","consid");
                    ("imposs","ible","impss");
                    ("indéstruct","ible","indéstruct");
                    ("sens","ible","sens");
-]
+                 ]
     );
     ("blt","bilité",
-[
+                      [
                         ("impecca","","ipcc");
                         ("infailli","","ifll");
                         ("possi","","poss");
-]
+                      ]
     );
     ("e","e",
-[
+              [
                 ("ancienn","","ancien");
                 ("chrétienn","","chrétien");
                 ("publiqu","","public");
                 ("surnaturell","","surnaturel");
-]
+              ]
     );
     ("ent","ent",
-[
+                  [
                     ("attaqu","","attaque");
                     ("exist","","existe");
                     ("invoqu","","invoque");
-]
+                  ]
     );
     ("eur","eur",
                   []
     );
     ("é","é",
-[
+                [
                   ("attaqu","","attaque");
                   ("authenticit","","auth");
                   ("invoqu","","invoque");
                   ("passionn","","passion");
-]
+                ]
     );
     ("f","f",
-[
+              [
                 ("autre","fois","autre");
                 ("par","fois","par");
-]
+              ]
     );
     ("id","itude",
-[
+                   [
                      ("","idée","");
-]
+                   ]
     );
     ("io","tion",
-[
+                  [
                     ("accusa","","accus");
                     ("appari","","appar");
                     ("aspira","","aspir");
@@ -87,12 +87,12 @@ let one = ref(
                     ("imagina","","imagine");
                     ("propaga","","propag");
                     ("tradi","","trad");
-]
+                  ]
     );
     ("ix","ieux",
-[
+                  [
                     ("sér","","sr");
-]
+                  ]
     );
     ("í","ité",
                   []
@@ -101,15 +101,15 @@ let one = ref(
                    []
     );
     ("ll","elle",
-[
+                  [
                     ("ai","lleurs","ai");
                     ("bat","aille","bat");
                     ("natur","","nature");
                     ("personn","","personne");
-]
+                  ]
     );
     ("m","ment",
-[
+                 [
                    ("directe","","direct");
                    ("égale","","égal");
                    ("habile","","habil");
@@ -118,13 +118,13 @@ let one = ref(
                    ("rapproche","","rapproch");
                    ("seule","","seul");
                    ("simple","","simpl");
-]
+                 ]
     );
     ("mtt","mettre",
                      []
     );
     ("nc","nce",
-[
+                 [
                    ("différe","","différ");
                    ("éloque","","éloq");
                    ("importa","","import");
@@ -133,13 +133,13 @@ let one = ref(
                    ("obéissa","","obéiss");
                    ("préfére","","préfér");
                    ("provide","","provid");
-]
+                 ]
     );
     ("nw","ctuel",
                    []
     );
     ("q","que",
-[
+                [
                   ("","question","");
                   ("atta","","at");
                   ("caractéristi","","caractère");
@@ -167,7 +167,7 @@ let one = ref(
                   ("stratégi","","stratég");
                   ("théologi","","théol");
                   ("tragi","","trag");
-]
+                ]
     );
     ("s","s",
               []
@@ -176,11 +176,11 @@ let one = ref(
                   []
     );
     ("zn","isme",
-[
+                  [
                     ("catholic","","catholique");
                     ("christian","","chrétien");
                     ("sceptic","","scep");
-]
+                  ]
     );
     ("-m^","-même",
                      []
@@ -428,16 +428,16 @@ case_insensitive_adjustable_decompressions=
                   []
     );
     ("ait","ait",
-[
+                  [
                     ("expliqu","","expliquer");
                     ("Expliqu","","Expliquer");
-]
+                  ]
     );
     ("ax","eaux",
                   []
     );
     ("b","able",
-[
+                 [
                    ("considér","","consid");
                    ("imposs","ible","impss");
                    ("indéstruct","ible","indéstruct");
@@ -446,20 +446,20 @@ case_insensitive_adjustable_decompressions=
                    ("Imposs","ible","Impss");
                    ("Indéstruct","ible","Indéstruct");
                    ("Sens","ible","Sens");
-]
+                 ]
     );
     ("blt","bilité",
-[
+                      [
                         ("impecca","","ipcc");
                         ("infailli","","ifll");
                         ("possi","","poss");
                         ("Impecca","","Ipcc");
                         ("Infailli","","Ifll");
                         ("Possi","","Poss");
-]
+                      ]
     );
     ("e","e",
-[
+              [
                 ("ancienn","","ancien");
                 ("chrétienn","","chrétien");
                 ("publiqu","","public");
@@ -468,23 +468,23 @@ case_insensitive_adjustable_decompressions=
                 ("Chrétienn","","Chrétien");
                 ("Publiqu","","Public");
                 ("Surnaturell","","Surnaturel");
-]
+              ]
     );
     ("ent","ent",
-[
+                  [
                     ("attaqu","","attaque");
                     ("exist","","existe");
                     ("invoqu","","invoque");
                     ("Attaqu","","Attaque");
                     ("Exist","","Existe");
                     ("Invoqu","","Invoque");
-]
+                  ]
     );
     ("eur","eur",
                   []
     );
     ("é","é",
-[
+                [
                   ("attaqu","","attaque");
                   ("authenticit","","auth");
                   ("invoqu","","invoque");
@@ -493,23 +493,23 @@ case_insensitive_adjustable_decompressions=
                   ("Authenticit","","Auth");
                   ("Invoqu","","Invoque");
                   ("Passionn","","Passion");
-]
+                ]
     );
     ("f","f",
-[
+              [
                 ("autre","fois","autre");
                 ("par","fois","par");
                 ("Autre","fois","Autre");
                 ("Par","fois","Par");
-]
+              ]
     );
     ("id","itude",
-[
+                   [
                      ("","idée","");
-]
+                   ]
     );
     ("io","tion",
-[
+                  [
                     ("accusa","","accus");
                     ("appari","","appar");
                     ("aspira","","aspir");
@@ -532,13 +532,13 @@ case_insensitive_adjustable_decompressions=
                     ("Imagina","","Imagine");
                     ("Propaga","","Propag");
                     ("Tradi","","Trad");
-]
+                  ]
     );
     ("ix","ieux",
-[
+                  [
                     ("sér","","sr");
                     ("Sér","","Sr");
-]
+                  ]
     );
     ("í","ité",
                   []
@@ -547,7 +547,7 @@ case_insensitive_adjustable_decompressions=
                    []
     );
     ("ll","elle",
-[
+                  [
                     ("ai","lleurs","ai");
                     ("bat","aille","bat");
                     ("natur","","nature");
@@ -556,10 +556,10 @@ case_insensitive_adjustable_decompressions=
                     ("Bat","aille","Bat");
                     ("Natur","","Nature");
                     ("Personn","","Personne");
-]
+                  ]
     );
     ("m","ment",
-[
+                 [
                    ("directe","","direct");
                    ("égale","","égal");
                    ("habile","","habil");
@@ -576,13 +576,13 @@ case_insensitive_adjustable_decompressions=
                    ("Rapproche","","Rapproch");
                    ("Seule","","Seul");
                    ("Simple","","Simpl");
-]
+                 ]
     );
     ("mtt","mettre",
                      []
     );
     ("nc","nce",
-[
+                 [
                    ("différe","","différ");
                    ("éloque","","éloq");
                    ("importa","","import");
@@ -599,13 +599,13 @@ case_insensitive_adjustable_decompressions=
                    ("Obéissa","","Obéiss");
                    ("Préfére","","Préfér");
                    ("Provide","","Provid");
-]
+                 ]
     );
     ("nw","ctuel",
                    []
     );
     ("q","que",
-[
+                [
                   ("","question","");
                   ("atta","","at");
                   ("caractéristi","","caractère");
@@ -659,7 +659,7 @@ case_insensitive_adjustable_decompressions=
                   ("Stratégi","","Stratég");
                   ("Théologi","","Théol");
                   ("Tragi","","Trag");
-]
+                ]
     );
     ("s","s",
               []
@@ -668,14 +668,14 @@ case_insensitive_adjustable_decompressions=
                   []
     );
     ("zn","isme",
-[
+                  [
                     ("catholic","","catholique");
                     ("christian","","chrétien");
                     ("sceptic","","scep");
                     ("Catholic","","Catholique");
                     ("Christian","","Chrétien");
                     ("Sceptic","","Scep");
-]
+                  ]
     );
     ("-m^","-même",
                      []
