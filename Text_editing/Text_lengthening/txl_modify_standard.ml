@@ -1,6 +1,6 @@
 (*
 
-#use "Text_editing/Text_lengthening/text_lengthener_modify_standard.ml";;
+#use "Text_editing/Text_lengthening/txl_modify_standard.ml";;
 
 *)
 
@@ -27,7 +27,7 @@ let add_persistence_to_method f x=
    let new_standard = f (!(Txl_standard.one)) x in 
     (
         Txl_standard.one:=new_standard ;
-        persist_to_file 
+        persist_to_file ()
     ) ;;  
   
 
