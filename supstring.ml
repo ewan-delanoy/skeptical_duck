@@ -19,4 +19,7 @@ let begins_with x y=
       else (String.sub x ((String.length x)-ly) ly)=y;;  
    
  
-              
+let is_a_substring_of y x=
+      let lx=String.length(x) in
+      let tester=(function j->(String.sub y j lx)=x) in
+      Ennig.exists tester 0 (String.length(y)-lx);;               

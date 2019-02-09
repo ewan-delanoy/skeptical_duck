@@ -1,9 +1,6 @@
 (*
 
-Operation on substring finding, with indexes starting from 1.
-
-#use"find_substring.ml";;
-
+#use"substring.ml";;
 
 *)
 
@@ -15,7 +12,7 @@ let begins_with x y=
       then false
       else (String.sub x 0 ly)=y;;
       
- let is_the_beginning_of y x=begins_with x y;;     
+ let is_the_beginning_of y x=Supstring.begins_with x y;;     
    
  let ends_with x y=
       let ly=String.length(y) in
@@ -23,7 +20,7 @@ let begins_with x y=
       then false
       else (String.sub x ((String.length x)-ly) ly)=y;;  
    
- let is_the_ending_of y x=ends_with x y;;  
+ let is_the_ending_of y x=Supstring.ends_with x y;;  
 
  let is_a_substring_located_at y x old_j =
     let j=old_j-1 in
