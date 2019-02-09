@@ -5,7 +5,7 @@
 *)
 
 let insert_end_padding text=
-    if Substring.ends_with text "\n\n"
+    if Supstring.ends_with text "\n\n"
     then text
     else text^"\n\n";;
 

@@ -125,7 +125,7 @@ let all_files_with_endings dir l_endings=
    fun ap->
      let s_ap=Absolute_path.to_string ap in
      List.exists( fun ending->
-       Substring.ends_with s_ap ending)
+       Supstring.ends_with s_ap ending)
      l_endings  
    ) temp1 in
    temp2;;  

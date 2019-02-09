@@ -126,7 +126,7 @@ let try_remove_left_encloser s (le:left_encloser)=
     else None;; 
 
 let try_remove_right_encloser s (re:right_encloser)=
-    if Substring.ends_with s re 
+    if Supstring.ends_with s re 
     then Some(coending (String.length re) s)
     else None;;    
    

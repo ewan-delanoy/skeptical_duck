@@ -17,8 +17,8 @@ type source={
 };;
 
 let initialize ~rootdir ~pdfname ~interval ~chunksize={
-   root_directory =(if Substring.ends_with rootdir "/" then rootdir else rootdir^"/");
-   pdffile_name   =(if Substring.ends_with pdfname ".pdf" then pdfname else pdfname^".pdf");
+   root_directory =(if Supstring.ends_with rootdir "/" then rootdir else rootdir^"/");
+   pdffile_name   =(if Supstring.ends_with pdfname ".pdf" then pdfname else pdfname^".pdf");
    page_interval  =interval;
    chunk_size    =(match chunksize with None->20 |Some(l)->l);
 };;    

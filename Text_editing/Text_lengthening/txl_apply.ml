@@ -48,7 +48,7 @@ let apply_decrompressions txl left_part l=
 
 let apply_decompressions_if_allowed txl word l=
    let whole_suffix=String.concat "" l in 
-   if Substring.ends_with word whole_suffix
+   if Supstring.ends_with word whole_suffix
    then let left_part=Cull_string.coending (String.length whole_suffix) word in 
         Some(apply_decrompressions txl left_part l)
    else None;;

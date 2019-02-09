@@ -80,7 +80,7 @@ let regi_without_backup x=
 
 
 let ureg_without_backup x=
-  if List.exists (fun edg->Substring.ends_with x edg) [".ml";".mli";".mll";".mly"] 
+  if List.exists (fun edg->Supstring.ends_with x edg) [".ml";".mli";".mll";".mly"] 
   then let path=Absolute_path.of_string(Root_directory.join cdir x) in
        let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
        German_wrapper.unregister_mlx_file mlx 

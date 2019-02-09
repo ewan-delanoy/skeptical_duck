@@ -6,7 +6,7 @@
 
 let core old_s=
    let left_offset=(if Supstring.begins_with old_s "\n" then "\n" else "")
-   and right_offset=(if Substring.ends_with old_s "\n" then "\n" else "") in
+   and right_offset=(if Supstring.ends_with old_s "\n" then "\n" else "") in
    let s=left_offset^old_s^right_offset in
    let temp1=Str.split (Str.regexp_string "\n") s in
    Ennig.index_everything temp1;;

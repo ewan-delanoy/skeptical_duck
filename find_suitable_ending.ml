@@ -17,7 +17,7 @@ let find_file_location dir l_subdir old_x=
   let s_dir=Root_directory.connectable_to_subpath(dir) in
   let original_endings=Ocaml_ending.all_string_endings in
   let endings=(
-     if List.exists (fun edg->Substring.ends_with x edg) original_endings
+     if List.exists (fun edg->Supstring.ends_with x edg) original_endings
      then [""]
      else original_endings
   ) in

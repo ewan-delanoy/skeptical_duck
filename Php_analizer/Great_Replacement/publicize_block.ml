@@ -12,7 +12,7 @@ exception Bad_end_for_block_beginning of string;;
 let rememberer=ref"";;
 
 let in_string beginning_of_block s=
-    if not(Substring.ends_with beginning_of_block "{")
+    if not(Supstring.ends_with beginning_of_block "{")
     then raise(Bad_end_for_block_beginning(beginning_of_block))
     else
     let temp1=Substring.occurrences_of_in beginning_of_block s in

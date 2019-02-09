@@ -662,7 +662,7 @@ let all_polished_short_paths cs outside_dir=
    ) in 
    let temp5=List.filter testf temp1 in 
    List.filter (
-     fun x->not(Substring.ends_with x 
+     fun x->not(Supstring.ends_with x 
       Coma_constant.name_for_parametersfile)
    ) temp5;;
 
@@ -2005,7 +2005,7 @@ let select_good_files s_main_dir=
        fun ap->
          let s=Absolute_path.to_string ap in
          let t=Cull_string.cobeginning n1 s in
-         (List.exists (fun edg->Substring.ends_with s edg) [".ml";".mli";".mll";".mly"])
+         (List.exists (fun edg->Supstring.ends_with s edg) [".ml";".mli";".mll";".mly"])
          &&
          (List.for_all (fun beg->not(Supstring.begins_with t beg)) 
          (Image.image Subdirectory.connectable_to_subpath 
@@ -2023,12 +2023,12 @@ let select_good_files s_main_dir=
          &&
          (* When a mll or mly is present, do not register the ml *)
          (not(
-               (Substring.ends_with s ".ml")
+               (Supstring.ends_with s ".ml")
                &&
                (List.exists (fun edg->Sys.file_exists(s_ap1^s^edg)) ["l";"y"])
          ))
          &&
-         (List.for_all (fun edg->not(Substring.ends_with s edg) ) 
+         (List.for_all (fun edg->not(Supstring.ends_with s edg) ) 
          [".ocamlinit";"executable.ml"]
          )
          &&
@@ -2089,7 +2089,7 @@ let select_good_files s_main_dir=
         List.flatten  ttemp3
       )  in
       let tempg=(fun x-> let (_,(_,s))=x in
-         if Substring.ends_with s ".mli"
+         if Supstring.ends_with s ".mli"
          then let t=Cull_string.coending 1 s in
               match Option.seek (fun (_,(_,s1))->s1=t) temp1 with
                None->tempf x

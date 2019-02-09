@@ -7,7 +7,7 @@
 let namespacable_part 
  (nspc_line,nspc_content,nspc_offset,after_nspc)=
 let fixed_content=(
-      if Substring.ends_with nspc_content "\n\n\n"
+      if Supstring.ends_with nspc_content "\n\n\n"
       then nspc_content
       else nspc_content^"\n\n\n"
 ) in
