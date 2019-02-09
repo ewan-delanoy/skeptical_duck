@@ -6,19 +6,9 @@
 
 
 
-let begins_with x y=
-      let ly=String.length(y) in
-      if String.length(x)<ly
-      then false
-      else (String.sub x 0 ly)=y;;
       
  let is_the_beginning_of y x=Supstring.begins_with x y;;     
-   
- let ends_with x y=
-      let ly=String.length(y) in
-      if String.length(x)<ly
-      then false
-      else (String.sub x ((String.length x)-ly) ly)=y;;  
+
    
  let is_the_ending_of y x=Supstring.ends_with x y;;  
 
@@ -29,10 +19,7 @@ let begins_with x y=
       then false
       else (String.sub x j ly)=y;;
  
-  let is_a_substring_of x y=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      Ennig.exists tester 0 (String.length(y)-lx);; 
+  let is_a_substring_of x y=Supstring.contains y x;; 
       
   let leftmost_index_of_in x y=
       let lx=String.length(x) in
