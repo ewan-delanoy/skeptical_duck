@@ -6,17 +6,17 @@
 
 
 
-let begins_with x y=
-      let ly=String.length(y) in
-      if String.length(x)<ly
+let begins_with y x=
+      let lx=String.length(x) in
+      if String.length(y)<lx
       then false
-      else (String.sub x 0 ly)=y;;  
+      else (String.sub y 0 lx)=x;;  
    
- let ends_with x y=
-      let ly=String.length(y) in
-      if String.length(x)<ly
+ let ends_with y x=
+      let lx=String.length(x) in
+      if String.length(y)<lx
       then false
-      else (String.sub x ((String.length x)-ly) ly)=y;;  
+      else (String.sub y ((String.length y)-lx) lx)=x;;  
    
  
 let contains y x=
