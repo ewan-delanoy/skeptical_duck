@@ -7,7 +7,7 @@
 
 
 let optional_for_one s=
-  match Option.seek (fun (a,_)->Substring.begins_with s a) French_data.paired_data with 
+  match Option.seek (fun (a,_)->Supstring.begins_with s a) French_data.paired_data with 
   None->None
   |Some(a0,b0)->Some(b0^(Cull_string.cobeginning (String.length a0) s));;
 

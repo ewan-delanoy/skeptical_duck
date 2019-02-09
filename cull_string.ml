@@ -121,7 +121,7 @@ type left_encloser=string;;
 type right_encloser=string;;
 
 let try_remove_left_encloser s (le:left_encloser)=
-    if Substring.begins_with s le 
+    if Supstring.begins_with s le 
     then Some(cobeginning (String.length le) s)
     else None;; 
 

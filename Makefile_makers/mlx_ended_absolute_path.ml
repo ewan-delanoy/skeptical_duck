@@ -42,7 +42,7 @@ exception FileOutsideDirectory of Absolute_path.t*Root_directory_t.t;;
 
 
 let of_path_and_root ap dir=
-   if (not(Substring.begins_with (Absolute_path.to_string ap)
+   if (not(Supstring.begins_with (Absolute_path.to_string ap)
          (Root_directory.connectable_to_subpath dir)))
     then raise(FileOutsideDirectory(ap,dir))
     else 

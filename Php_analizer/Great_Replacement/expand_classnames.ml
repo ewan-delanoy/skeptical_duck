@@ -48,7 +48,7 @@ let in_string cm stringified_helpers text=
     else
     let changes_to_be_made=Image.image (fun (cname,nspc,i)->
       let naive_nspc=List.hd nspc in
-      let corrected_nspc=(if Substring.begins_with naive_nspc "\\" 
+      let corrected_nspc=(if Supstring.begins_with naive_nspc "\\" 
                           then naive_nspc^"\\"
                           else "\\"^naive_nspc^"\\" ) in
       (corrected_nspc,i) ) good_ones in

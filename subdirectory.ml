@@ -23,7 +23,7 @@ let connectable_to_subpath (Subdirectory_t.SD s)=
 
 let rename_endsubdirectory (Subdirectory_t.SD(old_subdir),new_esdname) 
    (Subdirectory_t.SD s)=
-   if Substring.begins_with s old_subdir
+   if Supstring.begins_with s old_subdir
    then let sub_s=Cull_string.cobeginning (String.length old_subdir) s in
         let t=Father_and_son.father old_subdir '/' in
         let new_t=(if t="" then "" else t^"/") in

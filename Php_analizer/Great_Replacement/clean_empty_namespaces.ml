@@ -5,7 +5,7 @@
 *)
 
 let test_for_line s=
-    (Substring.begins_with s "//")
+    (Supstring.begins_with s "//")
     ||
     (Clean_duplicate_uses.extract_used_item s)<>None
     ||

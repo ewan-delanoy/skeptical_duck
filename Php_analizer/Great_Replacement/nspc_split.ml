@@ -11,7 +11,7 @@ exception Missing_php_open_tag;;
 let treat_non_namespaced_case whole_text lines=
     match Option.seek (fun (j,line)->
       Nspc_detect.test_for_declaration_line line) lines   with
-     None->if(not(Substring.begins_with whole_text "<?php"))
+     None->if(not(Supstring.begins_with whole_text "<?php"))
           then raise(Missing_php_open_tag)
           else 
           let opened_text=Cull_string.cobeginning 5 whole_text in

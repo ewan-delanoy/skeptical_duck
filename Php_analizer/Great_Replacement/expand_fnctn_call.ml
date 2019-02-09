@@ -63,7 +63,7 @@ let parse_fnctn s idx=
     let (s1,s2)=Father_and_son.father_and_son second_content '\n' in
     let (final_content,returned_content)=(
          if s1="" then (s2,"") else
-         if Substring.begins_with s2 "return"
+         if Supstring.begins_with s2 "return"
          then (s1,Cull_string.trim_spaces (Cull_string.cobeginning 6 s2) )
          else (first_content,"")
     ) in
@@ -219,7 +219,7 @@ let reexpand_from_predecomposed_data
   let temp5=Str.split (Str.regexp_string "\n") new_text in
   let temp6=Image.image Cull_string.trim_spaces temp5 in    
   let temp7=List.filter (
-    fun line->not(Substring.begins_with line "global ")
+    fun line->not(Supstring.begins_with line "global ")
   )   temp6 in
   let receiver=dec_call.receiver in
   let temp8=(

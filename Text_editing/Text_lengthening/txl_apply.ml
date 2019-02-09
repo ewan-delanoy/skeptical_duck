@@ -10,7 +10,7 @@ exception Nonregistered_short_form of string;;
 module Private = struct
 
 let expand_prefix txl word=
-   let opt = Option.seek(fun (x,y)->Substring.begins_with word x)
+   let opt = Option.seek(fun (x,y)->Supstring.begins_with word x)
    (Txl_field.prefix_abbreviations txl) in 
    match opt with 
    None->(opt,word)
@@ -65,7 +65,7 @@ let expand_all txl word =
    if List.mem word (Txl_field.inert_words txl) 
    then Txl_result_t.Builtin_inert(word) 
    else 
-   if Substring.begins_with word "\\"
+   if Supstring.begins_with word "\\"
    then Txl_result_t.Declared_inert(Cull_string.cobeginning 1 word)
    else 
    let (opt1,res1)=expand_prefix txl word in 

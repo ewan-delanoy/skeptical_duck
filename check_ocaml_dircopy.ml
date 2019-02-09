@@ -14,7 +14,7 @@ let is_admissible s=
      "ocaml_made";"ocaml_debuggable"])
   &&
    (List.for_all (
-     fun beg->not(Substring.begins_with s beg)
+     fun beg->not(Supstring.begins_with s beg)
   ) (
     (Image.image Subdirectory.connectable_to_subpath
      [

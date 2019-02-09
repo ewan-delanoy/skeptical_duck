@@ -7,7 +7,7 @@
 
 let extract_namespace_name old_s=
     let s=Cull_string.trim_spaces old_s in
-    if not(Substring.begins_with s "namespace")
+    if not(Supstring.begins_with s "namespace")
     then None
     else 
     let n=String.length s in
@@ -45,7 +45,7 @@ let test_for_namespace_line s=(extract_namespace_name(s)<>None);;
 
 let test_for_declaration_line old_s=
   let s=Cull_string.trim_spaces old_s in
-  if not(Substring.begins_with s "declare")
+  if not(Supstring.begins_with s "declare")
   then false
   else 
   let n=String.length s in

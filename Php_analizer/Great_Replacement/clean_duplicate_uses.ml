@@ -6,7 +6,7 @@
 
 let extract_used_item old_s=
   let s=Cull_string.trim_spaces old_s in
-  if not(Substring.begins_with s "use")
+  if not(Supstring.begins_with s "use")
   then None
   else 
   let n=String.length s in

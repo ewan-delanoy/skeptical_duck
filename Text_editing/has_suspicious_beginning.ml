@@ -7,7 +7,7 @@
 let hsb paragraph=
       let temp=Cull_string.trim_spaces_on_the_left paragraph in
       if List.exists(
-        fun beg->Substring.begins_with temp beg
+        fun beg->Supstring.begins_with temp beg
       ) ["\195\168";"\195\169"]
       then true
       else 

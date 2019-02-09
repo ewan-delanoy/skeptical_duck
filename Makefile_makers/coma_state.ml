@@ -2007,7 +2007,7 @@ let select_good_files s_main_dir=
          let t=Cull_string.cobeginning n1 s in
          (List.exists (fun edg->Substring.ends_with s edg) [".ml";".mli";".mll";".mly"])
          &&
-         (List.for_all (fun beg->not(Substring.begins_with t beg)) 
+         (List.for_all (fun beg->not(Supstring.begins_with t beg)) 
          (Image.image Subdirectory.connectable_to_subpath 
           [
             Coma_constant.automatically_generated_subdir;
@@ -2055,7 +2055,7 @@ let select_good_files s_main_dir=
       *)
       let s_dir=Root_directory.connectable_to_subpath main_dir in
       let temp1=List.filter (fun ap->
-        Substring.begins_with (Absolute_path.to_string ap) s_dir
+        Supstring.begins_with (Absolute_path.to_string ap) s_dir
       ) l in
       let temp2=Image.image (fun ap->
         let s=Absolute_path.to_string ap in

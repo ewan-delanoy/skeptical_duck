@@ -11,7 +11,7 @@ let compute_deleted_in_diff sourcedir destdir=
    let temp1=More_unix.quick_beheaded_complete_ls s_destdir in
    List.filter(
        fun s->(s<>"README")
-              &&(not(Substring.begins_with s ".git/")) 
+              &&(not(Supstring.begins_with s ".git/")) 
               &&(not(Sys.file_exists(s_sourcedir^s)))
    ) temp1;;
    

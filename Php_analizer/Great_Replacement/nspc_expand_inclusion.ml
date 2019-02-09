@@ -7,7 +7,7 @@
 let cull_php_enclosers old_s=
   let s=Cull_string.trim_spaces old_s in
   let n=String.length s in
-  let i1=(if Substring.begins_with s "<?php" then 6 else 1)
+  let i1=(if Supstring.begins_with s "<?php" then 6 else 1)
   and j1=(if Substring.ends_with s "?>" then (n-2) else n) in
   Cull_string.interval s i1 j1;;
 

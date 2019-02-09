@@ -32,7 +32,7 @@ let put_blind_marker_at_line k text=
 let rec helper_for_adjusted_marker (mark_count,graet,da_ober)=match da_ober with
    []->List.rev graet
    |(j,s)::peurrest->
-       if Substring.begins_with s "marker_here("
+       if Supstring.begins_with s "marker_here("
        then let corrected_line=from_numbers (mark_count+1) j in
             helper_for_adjusted_marker (mark_count+1,corrected_line::graet,peurrest)
        else helper_for_adjusted_marker (mark_count  ,s::graet,peurrest);;
@@ -49,7 +49,7 @@ let put_marker_at_line k text=
 let remove_all_markers text=
    let temp1=Str.split (Str.regexp_string "\n") text in
    let temp2=List.filter (fun s->
-    not(Substring.begins_with s "marker_here") ) temp1  in
+    not(Supstring.begins_with s "marker_here") ) temp1  in
    String.concat "\n" temp2;; 
 
 let put_marker_at_line_in_file k filename=
