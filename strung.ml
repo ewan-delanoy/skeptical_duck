@@ -11,7 +11,18 @@ let set s i c=Bytes.set s (i-1) c;;
 
 let enclose s=
   let encloser="\"" in
-  encloser^s^encloser;;
+  let n=String.length s in 
+  let accu=ref[] in
+  let _=(for k=n downto 1 do
+     let c=String.get s (k-1) in 
+     let element=(
+        if c='"'
+        then "\\\""
+        else String.make 1 c
+     ) in 
+     accu:=element::(!accu)
+  done) in 
+  encloser^(String.concat "" (!accu))^encloser;;
 
 
 let implode l=
