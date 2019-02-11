@@ -5,8 +5,6 @@
 *)
 
 type t={
-   mutable engine : Text_lengthener_t.t ;
-   mutable cursor : int;
-   incoming : (string option) array;
-   outcoming : (string option) array; 
+   mutable worker : Text_lengthener_t.t ;
+      prooduction : Double_tunnel_t.t 
 };;
