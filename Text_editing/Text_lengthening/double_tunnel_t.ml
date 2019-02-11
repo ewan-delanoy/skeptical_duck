@@ -5,7 +5,7 @@
 *)
 
 type t={
-   size : int ; (* redundant but convenient *)
+   mutable size : int ; (* redundant but convenient *)
    incoming : (string option) array;
    outcoming : (string option) array; 
 };;
