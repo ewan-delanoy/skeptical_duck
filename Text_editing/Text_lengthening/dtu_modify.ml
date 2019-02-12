@@ -41,6 +41,7 @@ let recompute dtu txl =
                (x,new_y)
     ) in
     let new_pairs = Image.image tempf pairs in 
-    (Dtu_construct.construct new_pairs,List.rev(!accu));;
+    (Dtu_construct.construct new_pairs,
+      Unexpected_change_after_update_t.Ucau(List.rev(!accu)));;
 
 
