@@ -9,7 +9,7 @@ let add_pair dtu (word1,word2)=
    (
       Array.set dtu.incoming c (Some word1);
       Array.set dtu.outcoming c (Some(word2));
-      dtu.Double_tunnel_t.size <- (c+1);
+      dtu.Double_tunnel_t.size <- c;
    );;
  
 let remove_last dtu =
