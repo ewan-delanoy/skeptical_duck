@@ -4,6 +4,16 @@
 
 *)
 
+module Private = struct
+
+let recompute_at_index dtu txl k=
+      Array.set dtu.Double_tunnel_t.outcoming k
+      (Some(Txl_apply.apply txl 
+            (Option.unpack(Array.get dtu.Double_tunnel_t.incoming k)) ))
+    ;;
+
+end;;
+
 let add_pair dtu (word1,word2)=
    let c=(dtu.Double_tunnel_t.size)+1 in
    (
@@ -20,3 +30,9 @@ let remove_last dtu =
       dtu.Double_tunnel_t.size <- (c-1);
    );;
   
+
+let recompute dtu txl =
+    let c=dtu.Double_tunnel_t.size in
+    for k=1 to c do 
+        Private.recompute_at_index dtu txl k
+    done;;
