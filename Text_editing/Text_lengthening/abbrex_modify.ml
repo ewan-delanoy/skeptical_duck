@@ -7,26 +7,37 @@
   module Private=struct
 
   let propagate_txl_method abbrex f arg_for_f=
-    let old_txl=abbrex.Abbreviation_expander_t.worker in 
+    let old_txl=abbrex.Abbreviation_expander_t.worker 
+    and old_dtu=abbrex.Abbreviation_expander_t.production in 
     let new_txl=f old_txl arg_for_f in 
-    let _=(abbrex.Abbreviation_expander_t.worker <- new_txl) in 
-    Dtu_modify.recompute abbrex.Abbreviation_expander_t.production new_txl;;
+    let (new_dtu,offshoots)=Dtu_modify.recompute old_dtu new_txl in 
+    let new_abbrex = {
+       Abbreviation_expander_t.worker = new_txl;
+       production = new_dtu;
+    } in 
+    (new_abbrex,offshoots);;
  end;;
 
   let add_word abbrex word=
     let txl=abbrex.Abbreviation_expander_t.worker 
     and dtu=abbrex.Abbreviation_expander_t.production in
-    let lengthened_word=Txl_apply.apply txl word in
-    (
-       Dtu_modify.add_pair dtu (word,lengthened_word);
-    );;
+    let lengthened_word=Txl_apply.apply txl word
+    and old_dtu=abbrex.Abbreviation_expander_t.production in 
+    let new_dtu=Dtu_modify.add_pair old_dtu (word,lengthened_word) in 
+    {
+       abbrex with 
+       Abbreviation_expander_t.production = new_dtu
+    };;
 
-  let add_words abbrex words = List.iter (add_word abbrex) words;;
+  let add_words abbrex words = List.fold_left add_word abbrex words;;
 
   let fix_order abbrex =
     let old_txl=abbrex.Abbreviation_expander_t.worker in 
     let new_txl=Txl_modify.order_fix  old_txl in 
-    (abbrex.Abbreviation_expander_t.worker <- new_txl);;
+    {
+       abbrex with 
+       Abbreviation_expander_t.worker = new_txl
+    };;
 
   let i_adjustment abbrex=
     Private.propagate_txl_method abbrex Txl_modify.i_adjustment;;

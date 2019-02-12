@@ -5,10 +5,10 @@
 (* Description of standard double tunnel starts here *)
 
 
-let one = Dtu_construct.construct
+let one = ref(Dtu_construct.construct
 [
 
-];;
+]);;
 
 
 (* Description of standard double tunnel ends here *)
