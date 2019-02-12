@@ -99,7 +99,7 @@ let usual_chunk ~pdfname i=
 let merge ~rootdir ~pdfname ~interval=
    let (i,j)=interval in
    let temp1=Ennig.doyle (fun k->
-      pdfname^"_"^(string_of_int k)^".pdf" ) i j in
+      pdfname^(string_of_int k)^".pdf" ) i j in
    let temp2=String.concat " " temp1 in   
    let cmd="/Applications/cpdf "^temp2^" -o "^pdfname^".pdf" in
    let old_dir=Sys.getcwd() in
@@ -128,7 +128,7 @@ let res1=chunk example;;
 
 let example=merge 
  ~rootdir:"/Users/ewandelanoy/Documents/Firpo"
- ~pdfname:"charinq"
+ ~pdfname:"charinq_"
  ~interval:(1,315);;
 
 
