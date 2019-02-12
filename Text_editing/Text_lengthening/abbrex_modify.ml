@@ -20,9 +20,8 @@
 
   let add_word abbrex word=
     let txl=abbrex.Abbreviation_expander_t.worker 
-    and dtu=abbrex.Abbreviation_expander_t.production in
-    let lengthened_word=Txl_apply.apply txl word
-    and old_dtu=abbrex.Abbreviation_expander_t.production in 
+    and old_dtu=abbrex.Abbreviation_expander_t.production in
+    let lengthened_word=Txl_apply.apply txl word in 
     let new_dtu=Dtu_modify.add_pair old_dtu (word,lengthened_word) in 
     {
        abbrex with 
