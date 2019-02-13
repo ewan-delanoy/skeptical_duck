@@ -63,6 +63,9 @@ let apply_disjunction_of_expansions txl word=
 
 
 let expand_all txl word =
+   if word = special_string_encoding_newline
+   then Txl_result_t.Newline
+   else  
    if List.mem word (Txl_field.inert_words txl) 
    then Txl_result_t.Builtin_inert(word) 
    else 
@@ -82,6 +85,7 @@ let apply_slowly = Private.expand_all;;
 let apply txl word=match apply_slowly txl word with 
  (Txl_result_t.Builtin_inert answer)->answer
  |(Txl_result_t.Declared_inert answer)->answer
+ | Txl_result_t.Newline -> "\n"
  |(Txl_result_t.Usual(_,_,_,_,answer))->answer;;
 
 
