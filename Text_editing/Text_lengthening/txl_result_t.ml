@@ -6,8 +6,9 @@
 
 
 type  t=
-   Builtin_inert of string
+    Builtin_inert of string
    |Declared_inert of string
+   |Newline 
    |Usual of ((string * string) option * (string * string) option *
       (string list * string) option * string list * string);;
 

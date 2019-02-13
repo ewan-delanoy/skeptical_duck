@@ -6,6 +6,7 @@
 
 
 exception Nonregistered_short_form of string;;
+let special_string_encoding_newline = "zzzzz"^"newline"^"zzzzz";;
 
 module Private = struct
 
@@ -82,5 +83,5 @@ let apply txl word=match apply_slowly txl word with
  (Txl_result_t.Builtin_inert answer)->answer
  |(Txl_result_t.Declared_inert answer)->answer
  |(Txl_result_t.Usual(_,_,_,_,answer))->answer;;
- 
-   
+
+
