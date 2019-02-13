@@ -5,6 +5,6 @@
 *)
 
 type t={
-   mutable worker : Text_lengthener_t.t ;
+      worker : Text_lengthener_t.t ;
       production : Double_tunnel_t.t 
 };;
