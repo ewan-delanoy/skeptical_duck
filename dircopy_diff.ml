@@ -49,10 +49,11 @@ let explain x=
      else Some(msg^" "^(String.concat "," l)^".")
    ) in
    let temp1=Option.filter_and_unpack tempf
+   (* we use infinitives for github format *)
    [
-     "Deleted",Private.summarize_short_path_list(x.recently_deleted);
-     "Created",Private.summarize_short_path_list(x.recently_created);
-     "Modified",Private.summarize_short_path_list(x.recently_changed);
+     "Delete",Private.summarize_short_path_list(x.recently_deleted);
+     "Create",Private.summarize_short_path_list(x.recently_created);
+     "Modify",Private.summarize_short_path_list(x.recently_changed);
    ] in
    if temp1=[] then "" else
    let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
