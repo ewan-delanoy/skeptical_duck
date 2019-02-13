@@ -43,9 +43,14 @@
      then treated2
      else helper(treated2,treated_size2,"",0,to_be_treated2);;  
 
+     let on_list l=String.concat "\n" (helper([],0,"",0,l));;
+
  end;;
 
-let excerpt_from_end l=String.concat "\n" (Private.helper([],0,"",0,l));;
+let excerpt_from_end dtu=
+   Private.on_list dtu.Double_tunnel_t.outcoming;;
+
+
 
  
 (*
