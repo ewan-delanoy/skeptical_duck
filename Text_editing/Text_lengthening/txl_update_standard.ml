@@ -9,7 +9,7 @@ let location_for_persisting =
 
 let persist_to_file ()=
    let description = Txl_print.print  (!(Txl_standard.one)) in 
-   let text = "\n\n\nlet one = ref(\n "^description^"\n );;\n\n\n" in 
+   let text = "\n\n\nlet state_container = ref(\n "^description^"\n );;\n\n\n" in 
    let ap=Absolute_path.of_string location_for_persisting in   
    Replace_inside.overwrite_between_markers_inside_file
      (Overwriter.of_string text)

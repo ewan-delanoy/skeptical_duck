@@ -4,10 +4,11 @@
 
 *)
 
+module Private = struct
 (* Description of standard text lengthener starts here *)
 
 
-let one = ref(
+let state_container = ref(
  {
  Text_lengthener_t.adjustable_decompressions=
 [
@@ -1039,3 +1040,14 @@ case_insensitive_prefix_abbreviations=
 
 
 (* Description of standard text lengthener ends here *)
+
+end ;; 
+
+
+module Friend = struct
+
+let set_state txl=(Private.state_container:= txl);;
+
+end ;;
+
+let current_state ()=(!(Private.state_container));;
