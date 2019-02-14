@@ -15,8 +15,8 @@ module Private=struct
    let current_state ()=
       let current_abbrex = 
       {
-         Abbreviation_expander_t.worker = (!(Txl_standard.one));
-         production = (!(Dtu_standard.one));
+         Abbreviation_expander_t.worker = (Txl_standard.current_state());
+         production = (Dtu_standard.current_state());
       } in 
       {
          Screened_abbreviation_expander_t.engine = current_abbrex;
@@ -25,9 +25,9 @@ module Private=struct
 
    let set_state sabbrex =
       let abbrex = sabbrex.Screened_abbreviation_expander_t.engine in 
-      Txl_standard.one := abbrex.Abbreviation_expander_t.worker ;
+      Txl_standard.Friend.set_state( abbrex.Abbreviation_expander_t.worker );
       Txl_update_standard.persist_to_file();
-      Dtu_standard.one := abbrex.Abbreviation_expander_t.production;
+      Dtu_standard.Friend.set_state( abbrex.Abbreviation_expander_t.production );
       Dtu_update_standard.persist_to_file();
       ;;  
 
@@ -42,7 +42,7 @@ let add_word word =
    let old_sabbrex=Private.current_state()  in 
    let new_sabbrex=Sabbrex_modify.add_word  old_sabbrex word in 
    let new_abbrex = new_sabbrex.Screened_abbreviation_expander_t.engine in
-   Dtu_standard.one := new_abbrex.Abbreviation_expander_t.production;
+   Dtu_standard.Friend.set_state (new_abbrex.Abbreviation_expander_t.production);
    Dtu_update_standard.persist_to_file();;
 
 let add_words words = List.iter add_word words;;
@@ -51,7 +51,7 @@ let fix_order ()=
    let old_sabbrex=Private.current_state()  in 
    let new_sabbrex=Sabbrex_modify.fix_order old_sabbrex in 
    let new_abbrex = new_sabbrex.Screened_abbreviation_expander_t.engine in
-   Txl_standard.one := new_abbrex.Abbreviation_expander_t.worker;
+   Txl_standard.Friend.set_state ( new_abbrex.Abbreviation_expander_t.worker );
    Txl_update_standard.persist_to_file();;
 
 
