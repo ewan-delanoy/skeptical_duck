@@ -6,25 +6,25 @@
 
   module Private=struct
 
-  let standard ()=
+  let current_state ()=
      {
-      Abbreviation_expander_t.worker = (!(Txl_standard.one));
-      production = (!(Dtu_standard.one));
+      Abbreviation_expander_t.worker = (Txl_standard.current_state());
+      production = (Dtu_standard.current_state());
      };;
   
   let persist abbrex=
-        Txl_standard.one := abbrex.Abbreviation_expander_t.worker;
+        Txl_standard.Friend.set_state(abbrex.Abbreviation_expander_t.worker);
         Txl_update_standard.persist_to_file();
-        Dtu_standard.one := abbrex.Abbreviation_expander_t.production;
+        Dtu_standard.Friend.set_state(abbrex.Abbreviation_expander_t.production);
         Dtu_update_standard.persist_to_file();;
   
   let standardize_with_no_offshoot f arg=
-     let old_abbrex=standard () in 
+     let old_abbrex=current_state () in 
      let new_abbrex = f old_abbrex arg in  
      persist new_abbrex;;
 
   let standardize f arg=
-     let old_abbrex=standard () in 
+     let old_abbrex=current_state () in 
      let (new_abbrex,result) = f old_abbrex arg in  
      let _=persist new_abbrex in 
      result;;
