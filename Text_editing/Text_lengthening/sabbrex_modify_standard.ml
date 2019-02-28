@@ -55,41 +55,41 @@ let fix_order ()=
    Txl_standard.persist_to_file();;
 
 
-  let i_adjustment sabbrex=
+  let i_adjustment =
     Private.particularize_sabbrex_method Sabbrex_modify.i_adjustment;;
 
-  let i_decompression sabbrex=
+  let i_decompression =
     Private.particularize_sabbrex_method Sabbrex_modify.i_decompression;;
 
-  let i_expansion sabbrex=
+  let i_expansion =
     Private.particularize_sabbrex_method Sabbrex_modify.i_expansion;;
 
-  let i_inert_word sabbrex=
+  let i_inert_word =
     Private.particularize_sabbrex_method Sabbrex_modify.i_inert_word;;
 
-  let i_left_core_abbreviation sabbrex=
+  let i_left_core_abbreviation =
     Private.particularize_sabbrex_method Sabbrex_modify.i_left_core_abbreviation;;
 
-  let i_prefix_abbreviation sabbrex=
+  let i_prefix_abbreviation =
     Private.particularize_sabbrex_method Sabbrex_modify.i_prefix_abbreviation;;
 
  
-  let r_adjustment sabbrex=
+  let r_adjustment =
     Private.particularize_sabbrex_method Sabbrex_modify.r_adjustment;;
 
-  let r_decompression sabbrex=
+  let r_decompression =
     Private.particularize_sabbrex_method Sabbrex_modify.r_decompression;;
 
-  let r_expansion sabbrex=
+  let r_expansion =
     Private.particularize_sabbrex_method Sabbrex_modify.r_expansion;;
 
-  let r_inert_word sabbrex=
+  let r_inert_word =
     Private.particularize_sabbrex_method Sabbrex_modify.r_inert_word;;
 
-  let r_left_core_abbreviation sabbrex=
+  let r_left_core_abbreviation =
     Private.particularize_sabbrex_method Sabbrex_modify.r_left_core_abbreviation;;
 
-  let r_prefix_abbreviation sabbrex=
+  let r_prefix_abbreviation =
     Private.particularize_sabbrex_method Sabbrex_modify.r_prefix_abbreviation;;
 
  
