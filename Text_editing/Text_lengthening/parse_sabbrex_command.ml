@@ -41,10 +41,6 @@ let find_removal_command c main_cmd params=
 
 
 let find_command main_cmd params=
-  let nth=(fun k->
-    if (k<1)||(k>(List.length params)) 
-    then raise(Nth_exn(params,k))
-    else List.nth params (k-1) ) in 
   if String.length(main_cmd)<3
   then Command_on_abbreviation_expander_t.Add_words(main_cmd::params)
   else 
