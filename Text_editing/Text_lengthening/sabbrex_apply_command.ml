@@ -10,7 +10,7 @@ let no_unexpected_change = Unexpected_change_after_update_t.Ucau [];;
 
 let apply cmd sabbrex = match cmd with 
     Command_on_abbreviation_expander_t.Add_newline(nbr_of_newlines) ->
-       let newlines = String.make nbr_of_newlines "\n" in 
+       let newlines = String.make nbr_of_newlines '\n' in 
        (Md.add_word sabbrex newlines,no_unexpected_change)
    |Add_words(words)->(Md.add_words sabbrex words,no_unexpected_change)
    |Do_nothing -> (sabbrex,no_unexpected_change) 

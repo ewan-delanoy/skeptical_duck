@@ -9,7 +9,7 @@ module Md = Sabbrex_modify_standard;;
 
 let apply cmd= match cmd with 
    Add_newline(nbr_of_newlines)->
-     let newlines = String.make nbr_of_newlines "\n" in 
+     let newlines = String.make nbr_of_newlines '\n' in 
        (Md.add_word newlines
    |Command_on_abbreviation_expander_t.Add_words (words)->
       let _=Md.add_words words 
