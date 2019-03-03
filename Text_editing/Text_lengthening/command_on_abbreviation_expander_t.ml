@@ -6,6 +6,7 @@
 
 type t=
     Add_words of string list
+   |Do_nothing 
    |Insert_adjustment of string * string * (string * string * string)
    |Insert_decompression of string * string
    |Insert_expansion of string list
