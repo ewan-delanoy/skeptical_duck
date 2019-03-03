@@ -6,32 +6,58 @@
 
 exception Nth_exn of (string list)*int;;
 
+
 module Private  = struct
+
+let checked_nth params k=
+    if (k<1)||(k>(List.length params)) 
+    then raise(Nth_exn(params,k))
+    else List.nth params (k-1) ;;
 
 let insert = "zi";;
 let remove = "zr";;
 
+let find_insertion_command c main_cmd params=
+  let nth=checked_nth params in  
+  match c with  
+   'a'->Command_on_abbreviation_expander_t.Insert_adjustment(nth 1,nth 2,(nth 3,nth 4,nth 5))
+  |'d'->Command_on_abbreviation_expander_t.Insert_decompression(nth 1,nth 2)
+  |'e'->Command_on_abbreviation_expander_t.Insert_expansion(params)
+  |'w'->Command_on_abbreviation_expander_t.Insert_inert_word(nth 1)
+  |'c'->Command_on_abbreviation_expander_t.Insert_left_core_abbreviation(nth 1,nth 2)
+  |'p'->Command_on_abbreviation_expander_t.Insert_prefix_abbreviation(nth 1,nth 2)
+  |_->Command_on_abbreviation_expander_t.Add_words(main_cmd::params);;
 
-let dictionary params=
+let find_removal_command c main_cmd params=
+  let nth=checked_nth params in  
+  match c with  
+   'a'->Command_on_abbreviation_expander_t.Insert_adjustment(nth 1,nth 2,(nth 3,nth 4,nth 5))
+  |'d'->Command_on_abbreviation_expander_t.Insert_decompression(nth 1,nth 2)
+  |'e'->Command_on_abbreviation_expander_t.Insert_expansion(params)
+  |'w'->Command_on_abbreviation_expander_t.Insert_inert_word(nth 1)
+  |'c'->Command_on_abbreviation_expander_t.Insert_left_core_abbreviation(nth 1,nth 2)
+  |'p'->Command_on_abbreviation_expander_t.Insert_prefix_abbreviation(nth 1,nth 2)
+  |_->Command_on_abbreviation_expander_t.Add_words(main_cmd::params);;
+
+
+let find_command main_cmd params=
   let nth=(fun k->
     if (k<1)||(k>(List.length params)) 
     then raise(Nth_exn(params,k))
     else List.nth params (k-1) ) in 
-[
-    insert^"a",Command_on_abbreviation_expander_t.Insert_adjustment(nth 1,nth 2,(nth 3,nth 4,nth 5));
-    insert^"d",Command_on_abbreviation_expander_t.Insert_decompression(nth 1,nth 2);
-    insert^"e",Command_on_abbreviation_expander_t.Insert_expansion(params);
-    insert^"w",Command_on_abbreviation_expander_t.Insert_inert_word(nth 1);
-    insert^"c",Command_on_abbreviation_expander_t.Insert_left_core_abbreviation(nth 1,nth 2);
-    insert^"p",Command_on_abbreviation_expander_t.Insert_prefix_abbreviation(nth 1,nth 2);
-
-    remove^"a",Command_on_abbreviation_expander_t.Remove_adjustment(nth 1,nth 2,(nth 3,nth 4,nth 5));
-    remove^"d",Command_on_abbreviation_expander_t.Remove_decompression(nth 1,nth 2);
-    remove^"e",Command_on_abbreviation_expander_t.Remove_expansion(params);
-    remove^"w",Command_on_abbreviation_expander_t.Remove_inert_word(nth 1);
-    remove^"c",Command_on_abbreviation_expander_t.Remove_left_core_abbreviation(nth 1,nth 2);
-    remove^"p",Command_on_abbreviation_expander_t.Remove_prefix_abbreviation(nth 1,nth 2);
-];;
+  if String.length(main_cmd)<3
+  then Command_on_abbreviation_expander_t.Add_words(main_cmd::params)
+  else 
+  let cth=(fun j->String.get main_cmd (j-1)) in
+  let c2=cth 2 in 
+  if ((cth 1)<>'z')||(not(List.mem c2 ['i';'r'] ))
+  then Command_on_abbreviation_expander_t.Add_words(main_cmd::params)
+  else 
+  match cth 2 with
+   'i'->find_insertion_command (cth 3) main_cmd params 
+  |'r'->find_removal_command (cth 3) main_cmd params
+  |_->Command_on_abbreviation_expander_t.Add_words(main_cmd::params);;
+  
 
 end ;; 
 
@@ -39,9 +65,7 @@ let parse s=
    let temp1=Str.split (Str.regexp "[ \t\n\r]+") s in 
    if temp1=[] then Command_on_abbreviation_expander_t.Do_nothing else 
    let (main_cmd,params)=Listennou.ht temp1 in 
-   match Option.seek (fun (cmd_name,_)->cmd_name=main_cmd) (Private.dictionary params) with 
-   None->Command_on_abbreviation_expander_t.Add_words(temp1)
-   |Some(_,full_cmd)->full_cmd;;
+   Private.find_command main_cmd params;;
 
 
 
