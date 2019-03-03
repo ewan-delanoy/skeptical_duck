@@ -8,11 +8,11 @@
 module Md = Sabbrex_modify_standard;;
 
 let apply cmd= match cmd with 
-   Add_newline(nbr_of_newlines)->
+   Command_on_abbreviation_expander_t.Add_newline(nbr_of_newlines)->
      let newlines = String.make nbr_of_newlines '\n' in 
      let _=Md.add_word newlines in 
      Unexpected_change_after_update_t.Ucau []
-   |Command_on_abbreviation_expander_t.Add_words (words)->
+   |Add_words (words)->
       let _=Md.add_words words  in 
       Unexpected_change_after_update_t.Ucau []
    |Do_nothing -> Unexpected_change_after_update_t.Ucau []   
