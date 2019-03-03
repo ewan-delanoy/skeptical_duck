@@ -5,7 +5,7 @@
 *)
 
 type t=
-    Add_newline
+    Add_newline of int
    |Add_words of string list
    |Do_nothing 
    |Insert_adjustment of string * string * (string * string * string)
