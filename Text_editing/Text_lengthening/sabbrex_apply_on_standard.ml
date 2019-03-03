@@ -12,6 +12,7 @@ let apply cmd= match cmd with
       let _=Md.add_words words 
       in 
       Unexpected_change_after_update_t.Ucau []
+   |Do_nothing -> Unexpected_change_after_update_t.Ucau []   
    |Insert_adjustment(u,v,(ad1,ad2,ad3))->Md.i_adjustment(u,v,(ad1,ad2,ad3))
    |Insert_decompression(u,v)->Md.i_decompression(u,v)
    |Insert_expansion(expansion)->Md.i_expansion expansion

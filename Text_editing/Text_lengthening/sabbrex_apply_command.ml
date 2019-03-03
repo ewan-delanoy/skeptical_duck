@@ -5,9 +5,12 @@
 *)
 
 module Md = Sabbrex_modify ;;
+let no_unexpected_change = Unexpected_change_after_update_t.Ucau [];;
+
 
 let apply cmd sabbrex = match cmd with 
-    Command_on_abbreviation_expander_t.Add_words (words)->(Md.add_words sabbrex words,Unexpected_change_after_update_t.Ucau [])
+    Command_on_abbreviation_expander_t.Add_words (words)->(Md.add_words sabbrex words,no_unexpected_change)
+   |Do_nothing -> (sabbrex,no_unexpected_change) 
    |Insert_adjustment(u,v,(ad1,ad2,ad3))->Md.i_adjustment sabbrex (u,v,(ad1,ad2,ad3))
    |Insert_decompression(u,v)->Md.i_decompression sabbrex (u,v)
    |Insert_expansion(expansion)->Md.i_expansion sabbrex expansion
