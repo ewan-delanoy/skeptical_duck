@@ -10,12 +10,12 @@ module Private = struct
 (* Description of standard double tunnel starts here *)
 
 
-let state_container = 
+let state_container = ref(
  Dtu_construct.construct( [
     ("Conférences","Conférences");
     ("de","de");
 ])
- ;;
+ );;
 
 
 (* Description of standard double tunnel ends here *)
