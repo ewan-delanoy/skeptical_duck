@@ -917,7 +917,7 @@ let quick_update cs idx=
   in
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
-  if old_values=new_values
+  if (old_values=new_values)&&(product_up_to_date_at_idx cs idx)
   then None
   else
   let mlx=Mlx_ended_absolute_path.join hm pr_ending in
@@ -948,7 +948,8 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     declare_changed(idx);
     set_principal_mt_at_idx cs idx pr_modif_time;
     set_mli_mt_at_idx cs idx mli_modif_time;
-    set_direct_fathers_at_idx cs idx direct_fathers
+    set_direct_fathers_at_idx cs idx direct_fathers;
+    set_product_up_to_date_at_idx cs idx false;
     )
 )(Ennig.ennig 1 n) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
