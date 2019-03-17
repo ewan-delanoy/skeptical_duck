@@ -45,7 +45,7 @@ let polished_short_paths ()=
   Coma_state.all_polished_short_paths   
       main_ref Coma_big_constant.next_world;;
 
-let recompile comment_text=
+let recompile opt=
   let (bowl,short_paths)=Coma_state.recompile main_ref  in
    (if bowl 
    then 
@@ -56,9 +56,17 @@ let recompile comment_text=
     (Recently_changed.of_string_list ordered_paths)
     (Recently_created.of_string_list []) in
    (
-      backup diff (Some comment_text);
+      backup diff opt;
       Private.save_all() 
    ));;
+
+let register_mlx_file mlx=
+    let _=recompile None in 
+    (
+     Coma_state.register_mlx_file Private.main_ref mlx;
+     Private.save_all();
+    );;  
+ 
 
 let save_all =Private.save_all;;
 
