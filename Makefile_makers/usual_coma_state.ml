@@ -9,6 +9,7 @@ let main_ref=Coma_state_field.empty_one
                 Coma_big_constant.this_world
                 Coma_big_constant.backup_dir_for_this_world;;
 
+let backup diff opt=Coma_state.backup main_ref diff opt;;
 
 let from_outside ()= Coma_state.from_outside  main_ref Coma_big_constant.next_world;; 
 
