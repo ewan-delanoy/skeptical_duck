@@ -15,18 +15,6 @@ module Private=struct
 
 let main_ref=Usual_coma_state.main_ref;;
 
-let save_all ()=Coma_state.Save_all.write_all 
-  (usual_root, 
-    Coma_constant.name_for_makefile,
-    Coma_constant.name_for_targetfile,
-    Coma_constant.name_for_loadingsfile,
-    Coma_constant.name_for_printersfile
-  )
-  (
-	  Usual_coma_state.whole()
-  );;
-
-
   
 
 let recompile ()=Coma_state.recompile main_ref;;   
@@ -36,7 +24,7 @@ let recompile_softly ()= let _=recompile() in ();;
 end;;
 
 
-(* let backup diff opt=Coma_state.backup (Private.main_ref) diff opt;; *)
+
 let data ()= (Private.main_ref);;
 let directories ()=Coma_state.directories (Private.main_ref);;
 
@@ -137,11 +125,7 @@ let start_debugging ()=
    let _=Private.recompile_softly() in 
    let _=Coma_state.start_debugging Private.main_ref in 
     Usual_coma_state.save_all();
- ;;   
-    
-
-    
-let save_all=Usual_coma_state.save_all;;   
+ ;;    
     
     
 let undeclare_printer_equipped_type hm=
