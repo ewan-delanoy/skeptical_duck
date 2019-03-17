@@ -67,6 +67,26 @@ let register_mlx_file mlx=
      Private.save_all();
     );;  
  
+let register_short_path_without_backup x= 
+  let path=Absolute_path.of_string(Root_directory.join Coma_big_constant.this_world x) in
+  let mlx=Mlx_ended_absolute_path.of_path_and_root path Coma_big_constant.this_world in
+  register_mlx_file mlx;;
+
+let register_short_path x=
+  let path=Absolute_path.of_string(Root_directory.join Coma_big_constant.this_world x) in
+  let mlx=Mlx_ended_absolute_path.of_path_and_root path Coma_big_constant.this_world in
+  let short_path=Mlx_ended_absolute_path.short_path mlx in
+  let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list [short_path]) in
+  (
+    register_mlx_file mlx;
+    backup diff None;
+    Private.save_all() 
+   );;
+
 
 let save_all =Private.save_all;;
 
