@@ -11,7 +11,7 @@ let usual_dir_for_backup=Coma_big_constant.backup_dir_for_this_world;;
 
 
 let data ()= (Usual_coma_state.main_ref);;
-let directories ()=Coma_state.directories (Usual_coma_state.main_ref);;
+let directories ()=Coma_state.directories(Usual_coma_state.main_ref);;
 
 let declare_printer_equipped_type hm=
   (

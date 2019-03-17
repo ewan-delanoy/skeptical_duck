@@ -137,7 +137,7 @@ let vd=German_wrapper.view_definition;;
 let fvd a=Find_value_descendants.fvd 
   (Compute_all_ocaml_items.caoi(Usual_coma_state.main_ref)) a ;;
 
-let rsh_without_backup ()=let _=German_wrapper.refresh() in ();;
+let rsh_without_backup ()=let _=Usual_coma_state.refresh() in ();;
 
 
 let am ()=Coma_state.all_naked_modules (Usual_coma_state.main_ref);;
