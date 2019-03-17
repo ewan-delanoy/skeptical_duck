@@ -75,7 +75,7 @@ let fg_without_backup x=
 let regi_without_backup x= 
   let path=Absolute_path.of_string(Root_directory.join cdir x) in
   let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
-  German_wrapper.register_mlx_file mlx;;
+  Usual_coma_state.register_mlx_file mlx;;
 
 
 
@@ -225,7 +225,7 @@ let regi x=
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list [short_path]) in
   (
-    German_wrapper.register_mlx_file mlx;
+    Usual_coma_state.register_mlx_file mlx;
     Usual_coma_state.backup diff None;
     Usual_coma_state.save_all() 
    );;

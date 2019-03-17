@@ -14,6 +14,8 @@ let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
 
 let ofo=Ordered.forget_order;;
 
+let reco msg=Usual_coma_state.recompile (Some msg);; 
+
 let ucc=Usual_coma_state.ucc;;   
 
 let ucs=Usual_coma_state.main_ref;;   
