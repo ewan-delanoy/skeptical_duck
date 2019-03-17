@@ -25,6 +25,9 @@ let polished_short_paths ()=
 
 let to_outside ()= Coma_state.to_outside  main_ref Coma_big_constant.next_world;;  
 
+let whole ()=Coma_state.uple_form main_ref;;
+  
+
 let ucc ()=
 Coma_state.Create_or_update_copied_compiler.ucc
   main_ref 
