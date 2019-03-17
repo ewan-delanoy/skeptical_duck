@@ -60,6 +60,11 @@ let recompile opt=
       Private.save_all() 
    ));;
 
+let refresh ()=
+   let new_diff=Coma_state.refresh main_ref in
+   let _=Private.save_all() in
+   new_diff;;
+
 let register_mlx_file mlx=
     let _=recompile None in 
     (
