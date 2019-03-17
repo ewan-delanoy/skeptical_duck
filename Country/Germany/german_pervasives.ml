@@ -171,7 +171,7 @@ let reco_with_optional_comment opt=
     (Recently_created.of_string_list []) in
    (
       Usual_coma_state.backup diff opt;
-    German_wrapper.save_all() 
+    Usual_coma_state.save_all() 
    ));;
 
 
@@ -193,7 +193,7 @@ let forget_file_with_backup x=
    (
     German_wrapper.forget_file ap;
     Usual_coma_state.backup diff None;
-    German_wrapper.save_all() 
+    Usual_coma_state.save_all() 
    ) ;; 
 
 let forget_module_with_backup x=
@@ -206,7 +206,7 @@ let forget_module_with_backup x=
       (Recently_created.of_string_list []) in
      (
       Usual_coma_state.backup diff None; 
-      German_wrapper.save_all() 
+      Usual_coma_state.save_all() 
      );; 
  
 let fg x=
@@ -227,7 +227,7 @@ let regi x=
   (
     German_wrapper.register_mlx_file mlx;
     Usual_coma_state.backup diff None;
-    German_wrapper.save_all() 
+    Usual_coma_state.save_all() 
    );;
 
 let rndir p=(German_wrapper.rename_directory p;reco());;
@@ -238,7 +238,7 @@ let rsh ()=
   let diff=German_wrapper.refresh () in
   (
     Usual_coma_state.backup diff None;
-    German_wrapper.save_all() 
+    Usual_coma_state.save_all() 
    );;
 
 
