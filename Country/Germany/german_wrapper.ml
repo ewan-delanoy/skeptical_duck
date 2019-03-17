@@ -15,7 +15,7 @@ module Private=struct
 
 let main_ref=Usual_coma_state.main_ref;;
 
-let whole ()=Coma_state.uple_form main_ref;;
+(* let whole ()=Coma_state.uple_form main_ref;; *)
 
 let save_all ()=Coma_state.Save_all.write_all 
   (usual_root, 
@@ -25,7 +25,7 @@ let save_all ()=Coma_state.Save_all.write_all
     Coma_constant.name_for_printersfile
   )
   (
-	  whole()
+	  Usual_coma_state.whole()
   );;
 
 
@@ -178,6 +178,6 @@ let view_definition s=
   (print_string text;flush stdout);;   
 
    
-let whole=Private.whole;;
+let whole=Usual_coma_state.whole;;
  
             
