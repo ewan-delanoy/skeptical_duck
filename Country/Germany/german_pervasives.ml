@@ -72,12 +72,6 @@ let fg_without_backup x=
    then German_wrapper.forget_file (fl x)
    else let _=German_wrapper.forget_module (hmx x) in ();;
 
-let regi_without_backup x= 
-  let path=Absolute_path.of_string(Root_directory.join cdir x) in
-  let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
-  Usual_coma_state.register_mlx_file mlx;;
-
-
 
 let ureg_without_backup x=
   if List.exists (fun edg->Supstring.ends_with x edg) [".ml";".mli";".mll";".mly"] 
@@ -137,8 +131,6 @@ let vd=German_wrapper.view_definition;;
 let fvd a=Find_value_descendants.fvd 
   (Compute_all_ocaml_items.caoi(Usual_coma_state.main_ref)) a ;;
 
-let rsh_without_backup ()=let _=Usual_coma_state.refresh() in ();;
-
 
 let am ()=Coma_state.all_naked_modules (Usual_coma_state.main_ref);;
   
@@ -148,14 +140,6 @@ let tw x=
   let s_hm=Half_dressed_module.uprooted_version hm in
   let fn=(Root_directory.connectable_to_subpath(cdir))^s_hm in    
   Sys.command ("open -a /Applications/TextWrangler.app "^fn^".ml");;
-
-
-
-let ucc ()=Coma_state.Create_or_update_copied_compiler.ucc 
-  Usual_coma_state.main_ref
- (Coma_big_constant.next_world,
-  Coma_big_constant.dummy_backup_dir);;
-
 
 
 let forget_file_with_backup x=
@@ -195,15 +179,7 @@ let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);
 
 let relo x y=(relo_without_backup x y;Usual_coma_state.recompile None);;
 let ren  x y=(ren_without_backup  x y;Usual_coma_state.recompile None);;
-let rsh ()=
-  let diff=Usual_coma_state.refresh () in
-  (
-    Usual_coma_state.backup diff None;
-    Usual_coma_state.save_all() 
-   );;
 
-
-let  cod ()=Check_ocaml_dircopy.check cdir;;
 
 
 let rv x y=(rv_without_backup x y;Usual_coma_state.recompile None);;
