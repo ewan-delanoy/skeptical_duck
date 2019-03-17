@@ -114,9 +114,6 @@ let syz()=Coma_state.system_size (German_wrapper.data());;
 
 let init=German_wrapper.initialize;;
 
-let reco_without_backup ()=
-  fst(German_wrapper.recompile());;
-
 
 let rd ()=Alaskan_remove_debuggables.rd cdir (German_wrapper.data());;
 let sd=German_wrapper.start_debugging;;
@@ -137,8 +134,8 @@ let ed =German_wrapper.end_debugging;;
 
 
 let vd=German_wrapper.view_definition;;
-let fvd=Find_value_descendants.fvd 
-  (Compute_all_ocaml_items.caoi(German_wrapper.data())) ;;
+let fvd a=Find_value_descendants.fvd 
+  (Compute_all_ocaml_items.caoi(German_wrapper.data())) a ;;
 
 let rsh_without_backup ()=let _=German_wrapper.refresh() in ();;
 
@@ -158,26 +155,6 @@ let ucc ()=Coma_state.Create_or_update_copied_compiler.ucc
   Usual_coma_state.main_ref
  (Coma_big_constant.next_world,
   Coma_big_constant.dummy_backup_dir);;
-
-let reco_with_optional_comment opt=
-  let (bowl,short_paths)=German_wrapper.recompile () in
-   (if bowl 
-   then 
-   let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
-   let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list ordered_paths)
-    (Recently_created.of_string_list []) in
-   (
-      Usual_coma_state.backup diff opt;
-    Usual_coma_state.save_all() 
-   ));;
-
-
-
-let reco ()=reco_with_optional_comment None;;
-let reco_with_comment s=reco_with_optional_comment (Some s);;  
 
 
 
@@ -214,26 +191,10 @@ let fg x=
       then forget_file_with_backup x
       else forget_module_with_backup x;;
 
+let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);;
 
-let regi x=
-  let path=Absolute_path.of_string(Root_directory.join cdir x) in
-  let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
-  let short_path=Mlx_ended_absolute_path.short_path mlx in
-  let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list [short_path]) in
-  (
-    Usual_coma_state.register_mlx_file mlx;
-    Usual_coma_state.backup diff None;
-    Usual_coma_state.save_all() 
-   );;
-
-let rndir p=(German_wrapper.rename_directory p;reco());;
-
-let relo x y=(relo_without_backup x y;reco());;
-let ren  x y=(ren_without_backup  x y;reco());;
+let relo x y=(relo_without_backup x y;Usual_coma_state.recompile None);;
+let ren  x y=(ren_without_backup  x y;Usual_coma_state.recompile None);;
 let rsh ()=
   let diff=German_wrapper.refresh () in
   (
@@ -244,10 +205,10 @@ let rsh ()=
 
 let  cod ()=Check_ocaml_dircopy.check cdir;;
 
-let rwc =reco_with_comment;;
-let rv x y=(rv_without_backup x y;reco());;
-let srv x y=(srv_without_backup x y;reco());;
-let ureg x=(ureg_without_backup x;reco());;
+
+let rv x y=(rv_without_backup x y;Usual_coma_state.recompile None);;
+let srv x y=(srv_without_backup x y;Usual_coma_state.recompile None);;
+let ureg x=(ureg_without_backup x;Usual_coma_state.recompile None);;
 
 
 
