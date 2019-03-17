@@ -112,7 +112,7 @@ let vo s=
 
 let syz()=Coma_state.system_size (Usual_coma_state.main_ref);;
 
-let init=German_wrapper.initialize;;
+let init ()=Coma_state.initialize Usual_coma_state.main_ref;;
 
 
 let rd ()=Alaskan_remove_debuggables.rd cdir (Usual_coma_state.main_ref);;
