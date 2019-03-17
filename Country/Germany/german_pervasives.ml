@@ -196,7 +196,7 @@ let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);
 let relo x y=(relo_without_backup x y;Usual_coma_state.recompile None);;
 let ren  x y=(ren_without_backup  x y;Usual_coma_state.recompile None);;
 let rsh ()=
-  let diff=German_wrapper.refresh () in
+  let diff=Usual_coma_state.refresh () in
   (
     Usual_coma_state.backup diff None;
     Usual_coma_state.save_all() 
