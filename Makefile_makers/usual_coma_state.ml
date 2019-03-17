@@ -65,6 +65,13 @@ let refresh ()=
    let _=Private.save_all() in
    new_diff;;
 
+let refresh_with_backup ()=
+  let diff=refresh () in
+  (
+    backup diff None;
+    Private.save_all() 
+   );;
+
 let register_mlx_file mlx=
     let _=recompile None in 
     (
