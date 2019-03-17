@@ -36,8 +36,7 @@ let recompile_softly ()= let _=recompile() in ();;
 end;;
 
 
-let backup diff opt=
-     Coma_state.backup (Private.main_ref) diff opt;;
+(* let backup diff opt=Coma_state.backup (Private.main_ref) diff opt;; *)
 let data ()= (Private.main_ref);;
 let directories ()=Coma_state.directories (Private.main_ref);;
 
