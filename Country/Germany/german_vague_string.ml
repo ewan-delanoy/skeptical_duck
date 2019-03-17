@@ -6,7 +6,7 @@
 
 
 let to_path root_dir x=Find_suitable_ending.find_file_location 
-   root_dir (German_wrapper.directories()) x;;
+   root_dir (Coma_state.directories(Usual_coma_state.main_ref)) x;;
 
 exception Absent_module of string;;
 

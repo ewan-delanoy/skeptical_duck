@@ -8,7 +8,7 @@
 let cdir=Coma_big_constant.this_world;;
 
 let s_cdir=Root_directory.connectable_to_subpath cdir;;
-let current_registered_directories ()=German_wrapper.directories();;
+let current_registered_directories ()=Coma_state.directories(Usual_coma_state.main_ref);;
 
 let current_directories()=
   let temp1=List.filter (
