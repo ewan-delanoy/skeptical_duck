@@ -20,7 +20,7 @@ let unsharped_content hm=
     else naive_content;;
 
 let self_contained_module_copy prefix hm=
-   let wmdata=German_wrapper.data() in 
+   let wmdata=Usual_coma_state.main_ref() in 
    let nm=Half_dressed_module.naked_module hm in
    let those_above=(Coma_state.above wmdata hm)@[nm] in
    let temp1=Image.image (

@@ -27,20 +27,20 @@ let fmr x=
   let uncapitalized_x=
     Naked_module.of_string(String.uncapitalize_ascii x) in
   Coma_state.seek_module_index
-  (German_wrapper.data()) uncapitalized_x;;
+  (Usual_coma_state.main_ref()) uncapitalized_x;;
 
 exception No_module_with_name of string;;
 
 let hmx x=
    match fmr x
    with 
-   Some(idx)->Coma_state.hm_at_idx (German_wrapper.data()) idx
+   Some(idx)->Coma_state.hm_at_idx (Usual_coma_state.main_ref()) idx
    |None->raise(No_module_with_name(x));;  
 
 let nmx x=Half_dressed_module.naked_module (hmx x);;
 
 let abo x=
-  let wmdata=German_wrapper.data() in
+  let wmdata=Usual_coma_state.main_ref() in
   Image.image (fun nm->
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
@@ -48,7 +48,7 @@ let abo x=
   (Coma_state.above wmdata (hmx x));;
 
 let bel x=
-  let wmdata=German_wrapper.data() in
+  let wmdata=Usual_coma_state.main_ref() in
   Image.image (fun nm->
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
@@ -56,7 +56,7 @@ let bel x=
   (Coma_state.below wmdata (hmx x));;
   
 let dbel x=
-  let wmdata=German_wrapper.data() in
+  let wmdata=Usual_coma_state.main_ref() in
   Image.image (fun nm->
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
@@ -110,37 +110,37 @@ let vo s=
   Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s1);;
 
 
-let syz()=Coma_state.system_size (German_wrapper.data());;
+let syz()=Coma_state.system_size (Usual_coma_state.main_ref());;
 
 let init=German_wrapper.initialize;;
 
 
-let rd ()=Alaskan_remove_debuggables.rd cdir (German_wrapper.data());;
+let rd ()=Alaskan_remove_debuggables.rd cdir (Usual_coma_state.main_ref());;
 let sd=German_wrapper.start_debugging;;
 
 
 
-let rv_without_backup x y=German_values_in_modules.rename_string_or_value cdir (German_wrapper.data()) x y;;
-let srv_without_backup x y=German_values_in_modules.replace_string cdir (German_wrapper.data()) x y;;
+let rv_without_backup x y=German_values_in_modules.rename_string_or_value cdir (Usual_coma_state.main_ref()) x y;;
+let srv_without_backup x y=German_values_in_modules.replace_string cdir (Usual_coma_state.main_ref()) x y;;
 
 
 let sv wal=German_values_in_modules.show_value_occurrences_in_modulesystem 
-  cdir wal (German_wrapper.data()) ;;
+  cdir wal (Usual_coma_state.main_ref()) ;;
 let vfm modname =German_values_in_modules.list_values_from_module_in_modulesystem 
-    modname (German_wrapper.data()) ;;
-let muv x=Coma_state.modules_using_value (German_wrapper.data()) x;;
+    modname (Usual_coma_state.main_ref()) ;;
+let muv x=Coma_state.modules_using_value (Usual_coma_state.main_ref()) x;;
 
 let ed =German_wrapper.end_debugging;;
 
 
 let vd=German_wrapper.view_definition;;
 let fvd a=Find_value_descendants.fvd 
-  (Compute_all_ocaml_items.caoi(German_wrapper.data())) a ;;
+  (Compute_all_ocaml_items.caoi(Usual_coma_state.main_ref())) a ;;
 
 let rsh_without_backup ()=let _=German_wrapper.refresh() in ();;
 
 
-let am ()=Coma_state.all_naked_modules (German_wrapper.data());;
+let am ()=Coma_state.all_naked_modules (Usual_coma_state.main_ref());;
   
     
 let tw x=

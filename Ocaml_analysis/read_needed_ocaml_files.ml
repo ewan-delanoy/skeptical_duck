@@ -9,7 +9,7 @@ finally the module itself.
 *)
 
 let read_needed_ocaml_files hm=
-  let wmdata=German_wrapper.data() in
+  let wmdata=Usual_coma_state.main_ref() in
   let nm=Half_dressed_module.naked_module hm in
   let idx1=Coma_state.find_module_index wmdata nm in
   let pre_temp2=(Coma_state.ancestors_at_idx wmdata idx1)@[nm] in
