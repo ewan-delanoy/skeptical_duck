@@ -5,11 +5,19 @@
 
 *)
 
+exception No_module_with_name of string;;
+
 module Private = struct 
 
 let main_ref=Coma_state_field.empty_one
                 Coma_big_constant.this_world
                 Coma_big_constant.backup_dir_for_this_world;;
+
+let find_module_index x=
+  let uncapitalized_x=
+    Naked_module.of_string(String.uncapitalize_ascii x) in
+  Coma_state.seek_module_index main_ref uncapitalized_x;;
+
 
 let whole ()=Coma_state.uple_form main_ref;;  
 
@@ -24,11 +32,20 @@ let save_all ()=Coma_state.Save_all.write_all
 	whole()
   );;
 
+
+
 end;;
 
 
 
 let backup diff opt=Coma_state.backup Private.main_ref diff opt;;
+
+
+let find_half_dressed_module x=
+   match Private.find_module_index x
+   with 
+   Some(idx)->Coma_state.hm_at_idx Private.main_ref idx
+   |None->raise(No_module_with_name(x));;  
 
 let from_outside ()= Coma_state.from_outside  Private.main_ref Coma_big_constant.next_world;; 
 
