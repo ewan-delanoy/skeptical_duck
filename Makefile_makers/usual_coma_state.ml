@@ -59,7 +59,8 @@ let recompile_without_githubbing opt=
 
 let recompile opt=
    let diff=recompile_without_githubbing opt in 
-    backup diff opt;;
+   if not(Dircopy_diff.is_empty diff)
+   then backup diff opt;;
 
 let refresh ()=
    let new_diff=Coma_state.refresh main_ref in
