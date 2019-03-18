@@ -4,7 +4,13 @@
 
 *)
 
+let abo = Usual_coma_state.above;;
+
+let bel = Usual_coma_state.below;;
+
 let cod ()=Check_ocaml_dircopy.check Coma_big_constant.this_world;;
+
+let dbel = Usual_coma_state.directly_below;;
 
 let hi = List.length ;; 
 

@@ -26,29 +26,7 @@ let fl=German_vague_string.to_path cdir;;
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
-let abo x=
-  let wmdata=Usual_coma_state.main_ref in
-  Image.image (fun nm->
-   Half_dressed_module.uprooted_version(
-    Coma_state.hm_from_nm wmdata nm
-   )) 
-  (Coma_state.above wmdata (Usual_coma_state.find_half_dressed_module x));;
 
-let bel x=
-  let wmdata=Usual_coma_state.main_ref in
-  Image.image (fun nm->
-   Half_dressed_module.uprooted_version(
-    Coma_state.hm_from_nm wmdata nm
-   )) 
-  (Coma_state.below wmdata (Usual_coma_state.find_half_dressed_module x));;
-  
-let dbel x=
-  let wmdata=Usual_coma_state.main_ref in
-  Image.image (fun nm->
-   Half_dressed_module.uprooted_version(
-    Coma_state.hm_from_nm wmdata nm
-   )) 
-  (Coma_state.directly_below wmdata (Usual_coma_state.find_half_dressed_module x));;
 
 
 let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
