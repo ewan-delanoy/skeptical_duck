@@ -18,12 +18,14 @@ let is_admissible s=
   ) (
     (Image.image Subdirectory.connectable_to_subpath
      [
+       Coma_constant.automatically_generated_subdir;
+       Coma_constant.githubbed_archive;
        Coma_constant.left_out_of_updating;
        Coma_constant.old_and_hardly_reusable;
        Coma_constant.temporary_subdir;
      ])
     @
-    ["_build/";".vscode/"]
+    ["_build/";".vscode/";".merlin"]
     )
    )  
   &&
