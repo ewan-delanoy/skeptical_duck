@@ -6,13 +6,15 @@
 
 module Md = Sabbrex_modify_standard;;
 
+
+
 let apply cmd= match cmd with 
    Command_on_abbreviation_expander_t.Add_newline(nbr_of_newlines)->
      let newlines = String.make nbr_of_newlines '\n' in 
      let _=Md.add_word newlines in 
      Unexpected_change_after_update_t.Ucau []
    |Add_words (words)->
-      let _=Md.add_words words  in 
+      let _=Sabbrex_modify_standard.add_words words  in 
       Unexpected_change_after_update_t.Ucau []
    |Do_nothing -> Unexpected_change_after_update_t.Ucau []   
    |Insert_adjustment(u,v,(ad1,ad2,ad3))->Md.i_adjustment(u,v,(ad1,ad2,ad3))

@@ -1057,13 +1057,6 @@ end ;;
 let current_state ()=(!(Private.state_container));;
 
 let persist_to_file ()=
-   let description = Txl_print.print  (!(Private.state_container)) in 
-   let text = "\n\n\nlet state_container = ref(\n "^description^"\n );;\n\n\n" in 
+   let description = Txl_field.archive  (!(Private.state_container)) in 
    let ap=Absolute_path.of_string location_for_persisting in   
-   Replace_inside.overwrite_between_markers_inside_file
-     (Overwriter.of_string text)
-     (
-       "(* Description of standard text lengthener starts here *)",
-       "(* Description of standard text lengthener ends here *)"
-     ) 
-     ap;;
+   Io.overwrite_with ap description;;
