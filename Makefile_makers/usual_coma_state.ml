@@ -18,6 +18,11 @@ let find_module_index x=
     Naked_module.of_string(String.uncapitalize_ascii x) in
   Coma_state.seek_module_index main_ref uncapitalized_x;;
 
+let find_half_dressed_module x=
+   match find_module_index x
+   with 
+   Some(idx)->Coma_state.hm_at_idx main_ref idx
+   |None->raise(No_module_with_name(x));;  
 
 let whole ()=Coma_state.uple_form main_ref;;  
 
@@ -36,16 +41,33 @@ let save_all ()=Coma_state.Save_all.write_all
 
 end;;
 
+let above x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    Coma_state.hm_from_nm Private.main_ref nm
+   )) 
+  (Coma_state.above Private.main_ref (Private.find_half_dressed_module x));;
 
 
 let backup diff opt=Coma_state.backup Private.main_ref diff opt;;
 
+let below x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    Coma_state.hm_from_nm Private.main_ref nm
+   )) 
+  (Coma_state.below Private.main_ref (Private.find_half_dressed_module x));;
 
-let find_half_dressed_module x=
-   match Private.find_module_index x
-   with 
-   Some(idx)->Coma_state.hm_at_idx Private.main_ref idx
-   |None->raise(No_module_with_name(x));;  
+let directly_below x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    Coma_state.hm_from_nm Private.main_ref nm
+   )) 
+  (Coma_state.directly_below Private.main_ref (Private.find_half_dressed_module x));;
+
+
+
+let find_half_dressed_module = Private.find_half_dressed_module;;
 
 let from_outside ()= Coma_state.from_outside  Private.main_ref Coma_big_constant.next_world;; 
 

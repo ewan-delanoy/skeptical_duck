@@ -23,12 +23,6 @@ let current_directories()=
 
 let fl=German_vague_string.to_path cdir;; 
 
-let fmr x=
-  let uncapitalized_x=
-    Naked_module.of_string(String.uncapitalize_ascii x) in
-  Coma_state.seek_module_index
-  (Usual_coma_state.main_ref) uncapitalized_x;;
-
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
