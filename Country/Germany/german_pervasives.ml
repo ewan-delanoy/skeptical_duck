@@ -29,15 +29,8 @@ let fmr x=
   Coma_state.seek_module_index
   (Usual_coma_state.main_ref) uncapitalized_x;;
 
-exception No_module_with_name of string;;
 
-let hmx x=
-   match fmr x
-   with 
-   Some(idx)->Coma_state.hm_at_idx (Usual_coma_state.main_ref) idx
-   |None->raise(No_module_with_name(x));;  
-
-let nmx x=Half_dressed_module.naked_module (hmx x);;
+let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
 let abo x=
   let wmdata=Usual_coma_state.main_ref in
@@ -45,7 +38,7 @@ let abo x=
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
    )) 
-  (Coma_state.above wmdata (hmx x));;
+  (Coma_state.above wmdata (Usual_coma_state.find_half_dressed_module x));;
 
 let bel x=
   let wmdata=Usual_coma_state.main_ref in
@@ -53,7 +46,7 @@ let bel x=
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
    )) 
-  (Coma_state.below wmdata (hmx x));;
+  (Coma_state.below wmdata (Usual_coma_state.find_half_dressed_module x));;
   
 let dbel x=
   let wmdata=Usual_coma_state.main_ref in
@@ -61,16 +54,16 @@ let dbel x=
    Half_dressed_module.uprooted_version(
     Coma_state.hm_from_nm wmdata nm
    )) 
-  (Coma_state.directly_below wmdata (hmx x));;
+  (Coma_state.directly_below wmdata (Usual_coma_state.find_half_dressed_module x));;
 
 
-let ren_without_backup x y=German_wrapper.rename_module (hmx x) (No_slashes.of_string y);;
-let relo_without_backup x y=German_wrapper.relocate_module (hmx x) y;;
+let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
+let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.find_half_dressed_module x) y;;
 
 let fg_without_backup x=
    if String.contains x '.'
    then German_wrapper.forget_file (fl x)
-   else let _=German_wrapper.forget_module (hmx x) in ();;
+   else let _=German_wrapper.forget_module (Usual_coma_state.find_half_dressed_module x) in ();;
 
 
 let ureg_without_backup x=
@@ -78,7 +71,7 @@ let ureg_without_backup x=
   then let path=Absolute_path.of_string(Root_directory.join cdir x) in
        let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
        German_wrapper.unregister_mlx_file mlx 
-  else German_wrapper.unregister_module (hmx x);;
+  else German_wrapper.unregister_module (Usual_coma_state.find_half_dressed_module x);;
 
 let double_semicolon=";"^";";;
 
@@ -136,7 +129,7 @@ let am ()=Coma_state.all_naked_modules (Usual_coma_state.main_ref);;
   
     
 let tw x=
-  let hm=hmx x in
+  let hm=Usual_coma_state.find_half_dressed_module x in
   let s_hm=Half_dressed_module.uprooted_version hm in
   let fn=(Root_directory.connectable_to_subpath(cdir))^s_hm in    
   Sys.command ("open -a /Applications/TextWrangler.app "^fn^".ml");;
@@ -158,7 +151,7 @@ let forget_file_with_backup x=
    ) ;; 
 
 let forget_module_with_backup x=
-    let short_paths=German_wrapper.forget_module (hmx x) in
+    let short_paths=German_wrapper.forget_module (Usual_coma_state.find_half_dressed_module x) in
     let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
     let diff=
       Dircopy_diff.veil
