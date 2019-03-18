@@ -45,20 +45,21 @@ let polished_short_paths ()=
   Coma_state.all_polished_short_paths   
       main_ref Coma_big_constant.next_world;;
 
-let recompile opt=
-  let (bowl,short_paths)=Coma_state.recompile main_ref  in
-   (if bowl 
-   then 
-   let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
-   let diff=
+let recompile_without_githubbing opt=
+  let (change_exists,short_paths)=Coma_state.recompile main_ref  in
+  let changed_paths=
+   (if not change_exists
+   then []
+   else let _=Private.save_all () in  
+       Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
     Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list ordered_paths)
-    (Recently_created.of_string_list []) in
-   (
-      backup diff opt;
-      Private.save_all() 
-   ));;
+    (Recently_changed.of_string_list changed_paths)
+    (Recently_created.of_string_list []) ;;
+
+let recompile opt=
+   let diff=recompile_without_githubbing opt in 
+    backup diff opt;;
 
 let refresh ()=
    let new_diff=Coma_state.refresh main_ref in
