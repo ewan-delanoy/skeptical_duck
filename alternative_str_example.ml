@@ -2,7 +2,7 @@
 
 Concrete values of type My_str.regexp.
 
-#use"my_str_example.ml";;
+#use"alternative_str_example.ml";;
 
 *)
 
@@ -58,10 +58,15 @@ let index_for_pointed_case=4;;
 
 
 (*
-My_str.centered_regexp_match include_case " include Peggy;; " 1;;
-My_str.centered_regexp_match include_case " include_once;; " 1;;
-My_str.centered_regexp_match moodle_case " module Amy=Lawson " 1;;
-My_str.centered_regexp_match pointed_case " 57+Everybody.talking-78 " 4;;
+
+let f case s=let (i,j)=Option.unpack(Alternative_str.centered_regexp_match case s 1) in 
+(i,j,Cull_string.interval s i j);;
+
+f include_case " include Peggy;; ";;
+f include_case " include_once;; ";;
+f moodle_case " module Amy=Lawson ";;
+f pointed_case " 57+Everybody.talking-78 ";;
+
 *)
 
  let capital_letter=Alternative_str.veil "[A-Z]";;
