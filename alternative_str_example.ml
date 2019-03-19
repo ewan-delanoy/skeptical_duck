@@ -39,7 +39,7 @@ let open_case=
 let moodle_case=
   let left_part=Alternative_str.big_concat 
   [white;Alternative_str.veil"module";some_whites;
-   bare_module_name;Alternative_str.veil"=";maybe_whites]
+   bare_module_name;maybe_whites;Alternative_str.veil"=";maybe_whites]
   and center_part=bare_module_name 
   and right_part=nonletter in
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
