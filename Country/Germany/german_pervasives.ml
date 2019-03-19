@@ -24,22 +24,6 @@ let current_directories()=
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
-let fg_without_backup x=
-   if String.contains x '.'
-   then let ap=Usual_coma_state.decipher_path x in 
-        let _=Coma_state.recompile Usual_coma_state.main_ref in 
-        (
-          Coma_state.forget_file Usual_coma_state.main_ref ap;
-          Usual_coma_state.save_all();
-        )
-   else let hm = Usual_coma_state.find_half_dressed_module x in 
-        let _=Coma_state.recompile Usual_coma_state.main_ref in
-        let _=
-          Coma_state.forget_module Usual_coma_state.main_ref hm in    
-        Usual_coma_state.save_all();;
-
-
-
 let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
 let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.find_half_dressed_module x) y;;
 
@@ -114,44 +98,6 @@ let tw x=
   let fn=(Root_directory.connectable_to_subpath(cdir))^s_hm in    
   Sys.command ("open -a /Applications/TextWrangler.app "^fn^".ml");;
 
-
-let forget_file_with_backup x=
-   let ap=Usual_coma_state.decipher_path x in
-   let s_ap=Absolute_path.to_string ap in  
-   let cut_ap=Root_directory.cut_beginning cdir s_ap in
-   let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [cut_ap])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list []) in
-   let _=Coma_state.recompile Usual_coma_state.main_ref in 
-   (
-    Coma_state.forget_file Usual_coma_state.main_ref ap;
-    Usual_coma_state.save_all();
-    Usual_coma_state.backup diff None
-   ) ;; 
-
-let forget_module_with_backup x=
-    let hm = Usual_coma_state.find_half_dressed_module x in 
-    let _=Coma_state.recompile Usual_coma_state.main_ref in
-    let short_paths=
-          Coma_state.forget_module Usual_coma_state.main_ref hm in    
-    let _=Usual_coma_state.save_all() in 
-    let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
-    let diff=
-      Dircopy_diff.veil
-      (Recently_deleted.of_string_list ordered_paths)
-      (Recently_changed.of_string_list [])
-      (Recently_created.of_string_list []) in
-     (
-      Usual_coma_state.backup diff None; 
-      Usual_coma_state.save_all() 
-     );; 
- 
-let fg x=
-      if String.contains x '.'
-      then forget_file_with_backup x
-      else forget_module_with_backup x;;
 
 let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);;
 

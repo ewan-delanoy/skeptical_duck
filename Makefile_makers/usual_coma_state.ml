@@ -73,6 +73,43 @@ let directly_below x=
 let find_half_dressed_module = Private.find_half_dressed_module;;
 
 
+let forget_file_with_backup x=
+   let ap=decipher_path x in
+   let s_ap=Absolute_path.to_string ap in  
+   let cut_ap=Root_directory.cut_beginning Coma_big_constant.this_world s_ap in
+   let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [cut_ap])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list []) in
+   let _=Coma_state.recompile Private.main_ref in 
+   (
+    Coma_state.forget_file Private.main_ref ap;
+    Private.save_all();
+    backup diff None
+   ) ;; 
+
+let forget_module_with_backup x=
+    let hm = find_half_dressed_module x in 
+    let _=Coma_state.recompile Private.main_ref in
+    let short_paths=
+          Coma_state.forget_module Private.main_ref hm in    
+    let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
+    let diff=
+      Dircopy_diff.veil
+      (Recently_deleted.of_string_list ordered_paths)
+      (Recently_changed.of_string_list [])
+      (Recently_created.of_string_list []) in
+     (
+      backup diff None; 
+      Private.save_all() 
+     );; 
+ 
+let forget_with_backup x=
+      if String.contains x '.'
+      then forget_file_with_backup x
+      else forget_module_with_backup x;;
+
 let forget_without_backup x=
    if String.contains x '.'
    then let ap=decipher_path x in 
@@ -86,6 +123,9 @@ let forget_without_backup x=
         let _=
           Coma_state.forget_module Private.main_ref hm in    
         Private.save_all();;  
+
+
+
 
 
 let from_outside ()= Coma_state.from_outside  Private.main_ref Coma_big_constant.next_world;; 
