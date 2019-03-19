@@ -12,6 +12,10 @@ let cod ()=Check_ocaml_dircopy.check Coma_big_constant.this_world;;
 
 let dbel = Usual_coma_state.directly_below;;
 
+let fg = Usual_coma_state.forget_with_backup;;
+
+let fg_without_backup =  Usual_coma_state.forget_with_backup;;
+
 let hi = List.length ;; 
 
 let hmx = Usual_coma_state.find_half_dressed_module;;
