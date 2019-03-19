@@ -38,7 +38,7 @@ let open_case=
 
 let moodle_case=
   let left_part=Alternative_str.big_concat 
-  [some_whites;Alternative_str.veil"module";some_whites;
+  [white;Alternative_str.veil"module";some_whites;
    bare_module_name;Alternative_str.veil"=";maybe_whites]
   and center_part=bare_module_name 
   and right_part=nonletter in

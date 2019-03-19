@@ -5,7 +5,7 @@ An adptation of OCaml's Str module :
 String indices are now from 1 to n instead of 0 to (n-1).
 Operations on regexps are encoded as functions in the module.
 
-#use"my_str.ml";;
+#use"alternative_str.ml";;
 
 *)
 
