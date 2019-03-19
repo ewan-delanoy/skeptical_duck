@@ -21,14 +21,12 @@ let current_directories()=
     Coma_constant.old_and_hardly_reusable
   ]);;
 
-let fl=German_vague_string.to_path Coma_big_constant.this_world;; 
-
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
 let fg_without_backup x=
    if String.contains x '.'
-   then let ap=fl x in 
+   then let ap=Usual_coma_state.decipher_path x in 
         let _=Coma_state.recompile Usual_coma_state.main_ref in 
         (
           Coma_state.forget_file Usual_coma_state.main_ref ap;
@@ -60,7 +58,7 @@ let double_semicolon=";"^";";;
 let cf old_t1 old_t2=
    let t1=String.uncapitalize_ascii old_t1
    and t2=String.uncapitalize_ascii old_t2 in 
-   let ap1=fl t1 in
+   let ap1=Usual_coma_state.decipher_path t1 in
    let s_ap1=Absolute_path.to_string ap1 in
    let s_ap2=(Father_and_son.invasive_father s_ap1 '/')^"/"^t2^".ml" in
    let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
@@ -118,7 +116,7 @@ let tw x=
 
 
 let forget_file_with_backup x=
-   let ap=fl x in
+   let ap=Usual_coma_state.decipher_path x in
    let s_ap=Absolute_path.to_string ap in  
    let cut_ap=Root_directory.cut_beginning cdir s_ap in
    let diff=

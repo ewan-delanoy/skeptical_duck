@@ -72,10 +72,10 @@ let directly_below x=
 
 let find_half_dressed_module = Private.find_half_dressed_module;;
 
-(*
+
 let forget_without_backup x=
    if String.contains x '.'
-   then let ap=fl x in 
+   then let ap=decipher_path x in 
         let _=Coma_state.recompile Private.main_ref in 
         (
           Coma_state.forget_file Private.main_ref ap;
@@ -86,7 +86,7 @@ let forget_without_backup x=
         let _=
           Coma_state.forget_module Private.main_ref hm in    
         Private.save_all();;  
-*)
+
 
 let from_outside ()= Coma_state.from_outside  Private.main_ref Coma_big_constant.next_world;; 
 
