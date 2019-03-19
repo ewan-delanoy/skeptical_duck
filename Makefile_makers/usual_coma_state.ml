@@ -58,9 +58,8 @@ let below x=
    )) 
   (Coma_state.below Private.main_ref (Private.find_half_dressed_module x));;
 
-(*
-let decipher_path=German_vague_string.to_path Coma_big_constant.this_world;; 
-*)
+let decipher_path = Coma_state.decipher_path Private.main_ref;;
+let decipher_module = Coma_state.decipher_module Private.main_ref;;
 
 let directly_below x=
   Image.image (fun nm->
