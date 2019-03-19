@@ -34,8 +34,17 @@ let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.fin
 
 let fg_without_backup x=
    if String.contains x '.'
-   then German_wrapper.forget_file (fl x)
-   else let _=German_wrapper.forget_module (Usual_coma_state.find_half_dressed_module x) in ();;
+   then let ap=fl x in 
+        let _=Coma_state.recompile Usual_coma_state.main_ref in 
+        (
+          Coma_state.forget_file Usual_coma_state.main_ref ap;
+          Usual_coma_state.save_all();
+        )
+   else let hm = Usual_coma_state.find_half_dressed_module x in 
+        let _=Coma_state.recompile Usual_coma_state.main_ref in
+        let _=
+          Coma_state.forget_module Usual_coma_state.main_ref hm in    
+        Usual_coma_state.save_all();;
 
 
 let ureg_without_backup x=
@@ -116,14 +125,19 @@ let forget_file_with_backup x=
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in
+   let _=Coma_state.recompile Usual_coma_state.main_ref in 
    (
-    German_wrapper.forget_file ap;
-    Usual_coma_state.backup diff None;
-    Usual_coma_state.save_all() 
+    Coma_state.forget_file Usual_coma_state.main_ref ap;
+    Usual_coma_state.save_all();
+    Usual_coma_state.backup diff None
    ) ;; 
 
 let forget_module_with_backup x=
-    let short_paths=German_wrapper.forget_module (Usual_coma_state.find_half_dressed_module x) in
+    let hm = Usual_coma_state.find_half_dressed_module x in 
+    let _=Coma_state.recompile Usual_coma_state.main_ref in
+    let short_paths=
+          Coma_state.forget_module Usual_coma_state.main_ref hm in    
+    let _=Usual_coma_state.save_all() in 
     let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
     let diff=
       Dircopy_diff.veil
