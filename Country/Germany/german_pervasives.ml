@@ -71,14 +71,12 @@ let sd=German_wrapper.start_debugging;;
 
 
 
-let rv_without_backup x y=German_values_in_modules.rename_string_or_value cdir (Usual_coma_state.main_ref) x y;;
-let srv_without_backup x y=German_values_in_modules.replace_string cdir (Usual_coma_state.main_ref) x y;;
+let rv_without_backup x y=Usual_coma_state.rename_string_or_value  x y;;
+let srv_without_backup x y=Usual_coma_state.replace_string x y;;
 
 
-let sv wal=German_values_in_modules.show_value_occurrences_in_modulesystem 
-  cdir wal (Usual_coma_state.main_ref) ;;
-let vfm modname =German_values_in_modules.list_values_from_module_in_modulesystem 
-    modname (Usual_coma_state.main_ref) ;;
+let sv wal=Usual_coma_state.show_value_occurrences_in_modulesystem wal ;;
+let vfm modname =Usual_coma_state.list_values_from_module_in_modulesystem modname ;;
 let muv x=Coma_state.modules_using_value (Usual_coma_state.main_ref) x;;
 
 let ed =German_wrapper.end_debugging;;
