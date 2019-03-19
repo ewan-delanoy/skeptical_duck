@@ -137,6 +137,11 @@ let initialize_if_empty ()=
       if (Coma_state.size Private.main_ref=0) 
       then initialize();;                           
 
+let list_values_from_module_in_modulesystem module_name=
+   Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
+   Private.main_ref module_name;;
+
+
 let main_ref=Private.main_ref;;
 
 let polished_short_paths ()=
@@ -199,8 +204,22 @@ let register_short_path x=
     Private.save_all() 
    );;
 
+let rename_string_or_value old_name new_name=
+   Coma_state.Values_in_modules.rename_string_or_value
+   Private.main_ref old_name new_name;;
+
+
+let replace_string old_string new_string=
+   Coma_state.Values_in_modules.replace_string 
+   Private.main_ref old_string new_string ;;
+
+
 
 let save_all =Private.save_all;;
+
+let show_value_occurrences_in_modulesystem module_name=
+   Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
+   Private.main_ref module_name;;
 
 
 let to_outside ()= Coma_state.to_outside  main_ref Coma_big_constant.next_world;;  
