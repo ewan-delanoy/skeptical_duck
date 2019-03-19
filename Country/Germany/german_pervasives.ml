@@ -21,16 +21,10 @@ let current_directories()=
     Coma_constant.old_and_hardly_reusable
   ]);;
 
-let fl=German_vague_string.to_path cdir;; 
+let fl=German_vague_string.to_path Coma_big_constant.this_world;; 
 
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
-
-
-
-
-let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
-let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.find_half_dressed_module x) y;;
 
 let fg_without_backup x=
    if String.contains x '.'
@@ -45,6 +39,13 @@ let fg_without_backup x=
         let _=
           Coma_state.forget_module Usual_coma_state.main_ref hm in    
         Usual_coma_state.save_all();;
+
+
+
+let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
+let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.find_half_dressed_module x) y;;
+
+
 
 
 let ureg_without_backup x=

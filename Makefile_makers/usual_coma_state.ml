@@ -58,6 +58,10 @@ let below x=
    )) 
   (Coma_state.below Private.main_ref (Private.find_half_dressed_module x));;
 
+(*
+let decipher_path=German_vague_string.to_path Coma_big_constant.this_world;; 
+*)
+
 let directly_below x=
   Image.image (fun nm->
    Half_dressed_module.uprooted_version(
@@ -69,8 +73,21 @@ let directly_below x=
 
 let find_half_dressed_module = Private.find_half_dressed_module;;
 
-  
-
+(*
+let forget_without_backup x=
+   if String.contains x '.'
+   then let ap=fl x in 
+        let _=Coma_state.recompile Private.main_ref in 
+        (
+          Coma_state.forget_file Private.main_ref ap;
+          Private.save_all();
+        )
+   else let hm = find_half_dressed_module x in 
+        let _=Coma_state.recompile Private.main_ref in
+        let _=
+          Coma_state.forget_module Private.main_ref hm in    
+        Private.save_all();;  
+*)
 
 let from_outside ()= Coma_state.from_outside  Private.main_ref Coma_big_constant.next_world;; 
 
