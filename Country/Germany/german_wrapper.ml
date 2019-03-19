@@ -11,23 +11,7 @@ let end_debugging ()=
      ^"_build/" in
   let _=Unix_command.uc("rm -f "^sbuild^"*.d.cm*"^" "^
      sbuild^"*.ocaml_debuggable")  in
-  ();;   
-        
-       
-let forget_file ap=
-  let _=Coma_state.recompile Usual_coma_state.main_ref in 
-  (
-    Coma_state.forget_file Usual_coma_state.main_ref ap;
-    Usual_coma_state.save_all();
-  );;   
-
-       
-let forget_module hm=
-        let _=Coma_state.recompile Usual_coma_state.main_ref in
-        let short_paths=
-          Coma_state.forget_module Usual_coma_state.main_ref hm in    
-        let _=Usual_coma_state.save_all() in
-        short_paths;;     
+  ();;     
 
  
 let relocate_module old_name new_subdir=
