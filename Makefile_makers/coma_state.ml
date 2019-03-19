@@ -2520,4 +2520,168 @@ let decipher_module cs x=
   None->raise(Absent_module(x))
   |Some(ap)->Half_dressed_module.of_path_and_root ap (root cs);;
    
+module Local_rename_value_inside_module = struct
 
+exception No_module_given of string;;
+
+exception No_value_with_name of string;;
+
+let get_module_inside_name s=
+   let f=Father_and_son.father s '/' in
+   if f=""
+   then raise(No_module_given(s))
+   else f;;
+   
+let rename_value_inside_module cs s new_name=
+   let j=Substring.leftmost_index_of_in "." s in
+   if j<0 
+   then raise(No_module_given(s))
+   else 
+   let module_name=Cull_string.beginning (j-1) s in
+   let hm=decipher_module cs  module_name 
+   and path=decipher_path cs  module_name in 
+   let nm=Half_dressed_module.naked_module hm in
+   let idx1=find_module_index cs nm in
+   let pre_temp2=(ancestors_at_idx cs idx1)@[nm] in
+   let temp2=Image.image (hm_from_nm cs) pre_temp2 in
+   let all_files=Image.image  (fun hm2->
+   	 Mlx_ended_absolute_path.to_path(Mlx_ended_absolute_path.join hm2 Ocaml_ending.Ml)
+   ) temp2 in
+   let temp3=Read_ocaml_files.read_ocaml_files all_files in
+   let opt_temp4=Option.seek (fun itm->
+     (itm.Ocaml_gsyntax_item.name)=s
+   ) temp3 in
+   if opt_temp4=None
+   then raise(No_value_with_name(s))
+   else
+   let temp4=Option.unpack(opt_temp4) in
+   let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
+   let _=Overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
+   let temp3_again=Read_ocaml_files.read_ocaml_files all_files in
+   let beheaded_name=Cull_string.cobeginning j s in
+   let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
+   (Father_and_son.father beheaded_name '.',Overwriter.to_string new_name) in
+   let new_beheaded_name=Overwriter.of_string s_new_beheaded_name in
+   let s_new_full_name=module_name^"."^s_new_beheaded_name in
+   let temp4_again=Option.find (fun itm->
+     (itm.Ocaml_gsyntax_item.name)=s_new_full_name
+   ) temp3_again in
+   let k1=Listennou.find_index temp4_again temp3_again in
+   let temp5=Listennou.big_tail k1 temp3_again in
+   
+   let temp6=Option.filter_and_unpack(
+      fun itm->
+        let txt=itm.Ocaml_gsyntax_item.content in
+        let ttemp7=Isolated_occurrences.of_in 
+           beheaded_name txt in
+        if ttemp7<>[]
+        then  let isoc=Isolated_occurrences.of_in beheaded_name txt in
+              let replacings=Image.image (fun p->(p,new_beheaded_name)) isoc in
+              let new_txt=Overwrite_at_intervals.inside_string
+                   replacings txt in
+             Some(itm.Ocaml_gsyntax_item.interval_for_content,
+                  Overwriter.of_string new_txt)
+        else None   
+   ) temp5 in
+   Overwrite_at_intervals.inside_file temp6 path;;
+   
+   
+   
+   
+   
+   
+   
+   
+   
+
+end;;
+
+
+module Values_in_modules = struct
+
+let replace_string cs old_string new_string=
+  let temp1=files_containing_string cs old_string in
+  let m=String.length(Root_directory.connectable_to_subpath (root cs)) in
+  let temp2=Image.image (fun ap->
+    Cull_string.cobeginning m (Absolute_path.to_string ap)) temp1 in
+  let message="\n\n The following files will be rewritten : \n\n"^
+  (String.concat "\n" temp2) in
+  let _=(print_string message;flush stdout) in
+  List.iter (Replace_inside.replace_inside_file (old_string,new_string)) temp1;;
+
+(*
+
+if the string argument has a dot inside it, we interpret it
+as a value inside a module.
+Otherwise we interpret it as a mere string.
+
+*)
+
+
+let rename_string_or_value cs old_name new_name=
+  if not(String.contains old_name '.')
+  then replace_string cs old_name new_name
+  else 
+    let new_full_name=(Father_and_son.father old_name '.')^"."^new_name in
+    (Local_rename_value_inside_module.rename_value_inside_module 
+            cs old_name (Overwriter.of_string new_name); 
+     replace_string cs old_name new_full_name
+    );;
+
+
+let list_values_from_module_in_file module_name file=
+   let s=Io.read_whole_file file in
+   let temp1=Look_for_module_names.indices_in_file file in
+   let temp2=List.filter (fun (t,(i,j))->
+     (t=Alternative_str_example.index_for_pointed_case)&&
+     (Cull_string.interval s i j=(String.capitalize_ascii module_name))
+   ) temp1 in
+   let temp3=Image.image(fun (t,(i,j))->
+    let opt=After.after_star 
+     Charset.ocaml_modulename_nonfirst_letters
+     s (j+2) in
+    let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
+     Cull_string.interval s (j+2) end_idx
+   ) temp2 in
+   Ordered_string.diforchan temp3;;
+
+let list_values_from_module_in_modulesystem cs module_name=
+   let temp1=all_mlx_paths cs in
+   let temp2=Image.image (fun ap->
+    let ttemp1=list_values_from_module_in_file module_name ap in
+    Ordered_string.image (fun x->(x,ap) ) ttemp1
+    ) temp1 in
+   let temp3=List.flatten temp2 in
+   let temp4=Image.image fst temp3 in 
+   let temp5=Ordered_string.diforchan temp4 in
+   let temp6=Ordered.forget_order temp5 in
+   let temp7=Image.image (
+      fun x->(x,Option.filter_and_unpack(
+        fun (y,ap)->if y=x then Some(ap) else None
+      ) temp3)
+   ) temp6 in
+   temp7;;
+ 
+let list_value_occurrences_in_file t file=
+   let s=Io.read_whole_file file in
+   let temp1=Substring.occurrences_of_in t s in
+   Image.image (fun j->Cull_string.closeup_around_index 
+      s j
+   ) temp1;; 
+ 
+
+let show_value_occurrences_in_modulesystem cs t=
+   let m=String.length(Root_directory.connectable_to_subpath (root cs)) in
+   let temp1=all_mlx_paths cs in
+   let temp2=Image.image (fun ap->
+    let ttemp1=list_value_occurrences_in_file t ap in
+    let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
+    Image.image (fun x->mname^":\n"^x ) ttemp1
+    ) temp1 in
+   let temp3=List.flatten temp2 in
+   let temp4=String.concat "\n\n\n" (""::temp3@[""]) in 
+   print_string temp4;;
+
+end;;
+
+           
