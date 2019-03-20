@@ -148,7 +148,7 @@ let polished_short_paths ()=
   Coma_state.all_polished_short_paths   
       main_ref Coma_big_constant.next_world;;
 
-let recompile_without_githubbing opt=
+let recompile_without_githubbing ()=
   let (change_exists,short_paths)=Coma_state.recompile main_ref  in
   let changed_paths=
    (if not change_exists
