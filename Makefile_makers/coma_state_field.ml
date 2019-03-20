@@ -247,9 +247,9 @@ let archive wrapped_cs=
         and t14=cs.Coma_state_t.directories 
         and t15=cs.Coma_state_t.printer_equipped_types in
         let list_arch=(fun old_arch a_list->
-        Nonblank.make(String.concat inner_separator 
+        String.concat inner_separator 
            (Image.image old_arch a_list)
-        )) in 
+        ) in 
         let arrlist_arch=(fun old_arch->
         Small_array.archive (list_arch old_arch)
         ) 
@@ -269,7 +269,7 @@ let archive wrapped_cs=
          arrlist_arch (fun (Naked_module_t.N s)->s) t11;
          arrlist_arch (fun (Subdirectory_t.SD s)->s) t12;
          Small_array.archive string_of_bool t13;
-         list_arch (fun w->Nonblank.make(Subdirectory.without_trailing_slash w)) t14;
+         list_arch (fun w->Subdirectory.without_trailing_slash w) t14;
          list_arch Half_dressed_module.archive_pair t15;
         ];;
       
@@ -278,10 +278,10 @@ let archive wrapped_cs=
       
            
 let unarchive s=
-          let temp1=Str.split (Str.regexp_string outer_separator) s in
+          let temp1=Str.split_delim (Str.regexp_string outer_separator) s in
           let  list_unarch=(fun old_unarch s->
-            let ttemp2=Str.split
-            (Str.regexp_string inner_separator) (Nonblank.decode s) in
+            let ttemp2=Str.split_delim
+            (Str.regexp_string inner_separator) (s) in
             Image.image old_unarch ttemp2)
           and part=(fun j->List.nth temp1 (j-1)) in
           let arrlist_unarch=(fun old_unarch->
@@ -302,7 +302,7 @@ let unarchive s=
           ancestors_for_module = arrlist_unarch (fun s->Naked_module_t.N s) (part 11) ; 
           needed_dirs_for_module = arrlist_unarch (fun s->Subdirectory_t.SD s) (part 12);
           product_up_to_date_for_module = Small_array.unarchive bool_of_string (part 13) ;
-          directories = list_unarch (fun v->Subdirectory.of_string(Nonblank.decode v)) (part 14);
+          directories = list_unarch (fun v->Subdirectory.of_string(v)) (part 14);
           printer_equipped_types = list_unarch Half_dressed_module.unarchive_pair (part 15);
        });; 
       
