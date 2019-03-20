@@ -75,8 +75,7 @@ let rv_without_backup x y=Usual_coma_state.rename_string_or_value  x y;;
 let srv_without_backup x y=Usual_coma_state.replace_string x y;;
 
 
-let sv wal=Usual_coma_state.show_value_occurrences_in_modulesystem wal ;;
-let vfm modname =Usual_coma_state.list_values_from_module_in_modulesystem modname ;;
+
 let muv x=Coma_state.modules_using_value (Usual_coma_state.main_ref) x;;
 
 let ed =German_wrapper.end_debugging;;

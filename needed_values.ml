@@ -32,6 +32,10 @@ let regi short_path=Usual_coma_state.register_short_path short_path;;
 
 let rsh = Usual_coma_state.refresh_with_backup;;
 
+let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;
+
 let ucc=Usual_coma_state.ucc;;   
 
 let ucs=Usual_coma_state.main_ref;;   
+
+let vfm modname =Usual_coma_state.list_values_from_module_in_modulesystem modname ;;
