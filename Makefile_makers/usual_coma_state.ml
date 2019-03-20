@@ -161,7 +161,7 @@ let recompile_without_githubbing ()=
     (Recently_created.of_string_list []) ;;
 
 let recompile opt=
-   let diff=recompile_without_githubbing opt in 
+   let diff=recompile_without_githubbing ()) in 
    if not(Dircopy_diff.is_empty diff)
    then backup diff opt;;
 
