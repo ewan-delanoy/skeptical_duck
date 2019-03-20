@@ -207,13 +207,13 @@ Do not use those archiving functions on nested small arrays !
 
 let archive old_archiver x=
    let temp1=Ennig.doyle (
-       fun k->Nonblank.make(old_archiver(get x k))
+       fun k->old_archiver(get x k)
    ) 1 x.current_size in
    String.concat industrial_separator temp1;;
    
 let unarchive old_unarchiver s=
-    let temp1=Str.split (Str.regexp_string industrial_separator) s in
-    let temp2=Image.image (fun x->old_unarchiver (Nonblank.decode x)) temp1 in 
+    let temp1=Str.split_delim (Str.regexp_string industrial_separator) s in
+    let temp2=Image.image old_unarchiver temp1 in 
     of_list temp2;;   
    
 
