@@ -66,40 +66,40 @@ module Private = struct
 
 let archive_triple (s1,s2,s3)=s1^times^s2^times^s3;;
 let unarchive_triple s=
-   let temp1=Str.split (Str.regexp_string times)  s in 
+   let temp1=Str.split_delim (Str.regexp_string times)  s in 
    let tempf=(fun k->List.nth temp1 (k-1)) in 
    (tempf 1,tempf 2,tempf 3);;
 
 let archive_adjustments l=
    String.concat level_one_list (Image.image archive_triple l);;
 let unarchive_adjustments s=
-  let  temp1=Str.split (Str.regexp_string level_one_list)  s in 
+  let  temp1=Str.split_delim (Str.regexp_string level_one_list)  s in 
   Image.image unarchive_triple temp1;;
 
 let archive_decompression (u,v,adjustments)=
    u^decompression^v^decompression^(archive_adjustments adjustments);;
 let unarchive_decompression s=
-   let temp1=Str.split (Str.regexp_string decompression)  s in 
+   let temp1=Str.split_delim (Str.regexp_string decompression)  s in 
    let tempf=(fun k->List.nth temp1 (k-1)) in 
    (tempf 1,tempf 2,unarchive_adjustments (tempf 3));;
 
 let archive_decompressions l=
   String.concat level_two_list (Image.image archive_decompression l);;
 let unarchive_decompressions s=
-  let  temp1=Str.split (Str.regexp_string level_two_list)  s in 
+  let  temp1=Str.split_delim (Str.regexp_string level_two_list)  s in 
   Image.image unarchive_decompression temp1;;
 
 
 
 let archive_expansion l=String.concat level_one_list l;;
-let unarchive_expansion s= Str.split (Str.regexp_string level_one_list) s;;
+let unarchive_expansion s= Str.split_delim (Str.regexp_string level_one_list) s;;
 
 
 
 let archive_expansions l=
   String.concat level_two_list (Image.image archive_expansion l);;
 let unarchive_expansions s=
-  let  temp1=Str.split (Str.regexp_string level_two_list)  s in 
+  let  temp1=Str.split_delim (Str.regexp_string level_two_list)  s in 
   Image.image unarchive_expansion temp1;;
 
 
@@ -108,14 +108,14 @@ let unarchive_inert_words=unarchive_expansion;;
 
 let archive_cumulable_suffix (s1,s2)=s1^times^s2;;
 let unarchive_cumulable_suffix s=
-   let temp1=Str.split (Str.regexp_string times)  s in 
+   let temp1=Str.split_delim (Str.regexp_string times)  s in 
    let tempf=(fun k->List.nth temp1 (k-1)) in 
    (tempf 1,tempf 2);;
 
 let archive_cumulable_suffixes l=
   String.concat level_one_list (Image.image archive_cumulable_suffix l);;
 let unarchive_cumulable_suffixes s=
-  let  temp1=Str.split (Str.regexp_string level_one_list)  s in 
+  let  temp1=Str.split_delim (Str.regexp_string level_one_list)  s in 
   Image.image unarchive_cumulable_suffix temp1;;
 
 let archive_prefix_abbreviations =  archive_cumulable_suffixes;;
@@ -153,7 +153,7 @@ let archive txl=
       
            
 let unarchive s=
-          let temp1=Str.split (Str.regexp_string field) s in
+          let temp1=Str.split_delim (Str.regexp_string field) s in
           let tempf=(fun k->List.nth temp1 (k-1)) in 
           let decs = Private.unarchive_decompressions (tempf 1) 
           and exps = Private.unarchive_expansions (tempf 2) 

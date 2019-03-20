@@ -61,7 +61,6 @@ let vo s=
   Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s1);;
 
 
-let syz()=Coma_state.system_size (Usual_coma_state.main_ref);;
 
 let init ()=Coma_state.initialize Usual_coma_state.main_ref;;
 
