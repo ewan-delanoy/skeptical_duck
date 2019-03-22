@@ -86,57 +86,24 @@ let trim_spaces_on_the_right s=
    let k1=Option.find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
+
+exception Two_sided_cutting_exn of int*int*int;;
+
+let two_sided_cutting (left_part,right_part) s=
+   let n=String.length s 
+   and l=String.length left_part 
+   and r=String.length right_part in 
+   let d=n-(l+r) in 
+   if n<l+r
+   then raise(Two_sided_cutting_exn(n,l,r)) 
+   else String.sub s l d;;
+
 (*
 
- let left_core x y=
-    if (x="")||(y="") then ("",x,y) else
-    let hx=String.length(x) and hy=String.length(y) in
-    let rec tempf=(fun j->
-     if (j>=hx)||(j>=hy)
-     then (beginning j y,cobeginning j x,cobeginning j y)
-     else if String.get(x)(j)=String.get(y)(j)
-          then tempf(j+1)
-          else (beginning j y,cobeginning j x,cobeginning j y)
-    )  in
-    tempf 0;;  
-   
- let right_core x y=
-     if (x="")||(y="") then (x,y,"") else
-    let hx=String.length(x) and hy=String.length(y) in
-    let rec tempf=(fun j->
-     if (j>=hx)||(j>=hy)
-     then (coending j x,coending j y,ending j y)
-     else if String.get(x)(hx-j)=String.get(y)(hy-j)
-          then tempf(j+1)
-          else (coending j x,coending j y,ending j y)
-    )  in
-    tempf 0;;
-   
- let two_sided_core x y= 
-    let (x1,y1,rc)=right_core x y in
-    let (lc,x2,y2)=left_core x1 y1 in
-    (lc,x2,y2,rc);;    
+two_sided_cutting ("ab","efg") "abcdefg";;
 
-*)   
-    
-type left_encloser=string;;
-type right_encloser=string;;
+*)      
 
-let try_remove_left_encloser s (le:left_encloser)=
-    if Supstring.begins_with s le 
-    then Some(cobeginning (String.length le) s)
-    else None;; 
-
-let try_remove_right_encloser s (re:right_encloser)=
-    if Supstring.ends_with s re 
-    then Some(coending (String.length re) s)
-    else None;;    
-   
-let try_remove_both_enclosers s (le,re)=
-    match try_remove_left_encloser s le with
-     None->None
-    |Some(t)->try_remove_right_encloser t re;;
-      
  let closeup_around_index s j=
    let n=String.length s in
    let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Ennig.ennig 1 n) in
