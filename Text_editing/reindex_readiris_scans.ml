@@ -84,7 +84,6 @@ let  put_index_on_raw_file (i,j)=
   "mv "^(!main_dir_path)^prefix_for_readiris_scan^si^suffix_for_readiris_scan^" "^
         (!main_dir_path)^prefix_for_renamed_scan^sj^suffix_for_renamed_scan;;
 
-
 let from_list=Image.image put_index_on_raw_file ;;
 
 let append_pages_at_the_end ()= from_list (IndexPairList.append_pages_at_the_end());;
