@@ -30,6 +30,8 @@ let reco msg=Usual_coma_state.recompile (Some msg);;
 
 let regi short_path=Usual_coma_state.register_short_path short_path;;
 
+let rf x=Io.read_whole_file (Absolute_path.of_string x);;
+
 let rsh = Usual_coma_state.refresh_with_backup;;
 
 let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;
