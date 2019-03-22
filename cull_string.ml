@@ -86,6 +86,7 @@ let trim_spaces_on_the_right s=
    let k1=Option.find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
+(*
 
  let left_core x y=
     if (x="")||(y="") then ("",x,y) else
@@ -115,7 +116,8 @@ let trim_spaces_on_the_right s=
     let (x1,y1,rc)=right_core x y in
     let (lc,x2,y2)=left_core x1 y1 in
     (lc,x2,y2,rc);;    
-   
+
+*)   
     
 type left_encloser=string;;
 type right_encloser=string;;
