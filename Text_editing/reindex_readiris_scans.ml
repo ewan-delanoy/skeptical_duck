@@ -81,7 +81,7 @@ module Command=struct
 let  put_index_on_raw_file (i,j)=
   let si=Strung.left_completed_string_of_int 4 i
   and sj=string_of_int j in
-  "mv "^(!main_dir_path)^prefix_for_readiris_scan^si^suffix_for_readiris_scan^
+  "mv "^(!main_dir_path)^prefix_for_readiris_scan^si^suffix_for_readiris_scan^" "^
         (!main_dir_path)^prefix_for_renamed_scan^sj^suffix_for_renamed_scan;;
 
 
