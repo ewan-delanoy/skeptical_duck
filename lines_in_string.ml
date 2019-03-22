@@ -26,9 +26,6 @@ let interval s i j=
     let temp3=Image.image snd temp2 in
     String.concat "\n" temp3;; 
 
-(*
-let line_at_index s i=List.assoc i (core s);;
-*)
 
 exception Lines_in_char_range_exn of int*int;;
 

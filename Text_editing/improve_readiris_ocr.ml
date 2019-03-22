@@ -77,49 +77,24 @@ let naive_paren_decomposer (left_paren,right_paren) s=
    ) in 
    tempf([],1);;
 
-let compress_italics_in_string s=
-  let temp1=naive_paren_decomposer ("[i]","[/i]") s in 
+let change_paren_denotation_in_string 
+  old_parens (new_lparen,new_rparen) s=
+  let temp1=naive_paren_decomposer old_parens s in 
   let temp2=Image.image(
-    fun (_,content,is_italicized)->
-      if is_italicized 
-      then "[i]"^(Cull_string.trim_spaces content)^"[/i]"
+    fun (_,content,is_parenthesized)->
+      if is_parenthesized 
+      then new_lparen^(Cull_string.trim_spaces content)^new_rparen
       else content
   ) temp1 in 
   String.concat "" temp2;;
 
-let  compress_italics_in_file argument_file=
+let  change_paren_denotation_in_file 
+    old_parens new_parens argument_file=
     let old_text=Io.read_whole_file argument_file in 
-    let new_text=compress_italics_in_string old_text in 
+    let new_text=change_paren_denotation_in_string old_parens new_parens old_text in 
     Io.overwrite_with argument_file new_text;; 
 
 
-let change_italics_denotation_in_string s=
-   let temp1=decompose_into_words s in 
-   let temp2=Ennig.index_everything temp1 in 
-   let temp3=Option.filter_and_unpack (
-     fun (i,elt)->match elt with 
-     Str.Delim _->None
-     |Str.Text(txt)->if txt="ii" then Some(i) else None
-   ) temp2 in 
-   let temp4=Ennig.index_everything  temp3 in 
-   let rewrite=(
-      fun (i,elt)->match elt with 
-     Str.Delim(delim)->delim
-     |Str.Text(txt)->(
-                       if txt<>"ii" then txt else 
-                       let (idx_of_idx,_)=Option.find(fun (_,y)->y=i) temp4 in 
-                       if idx_of_idx mod 2 =0
-                       then "[/i]"
-                       else "[i]"
-                     ) 
-   ) in 
-   let temp5=Image.image rewrite temp2 in 
-   String.concat "" temp5;;
-   
-let  change_italics_denotation_in_file argument_file=
-    let old_text=Io.read_whole_file argument_file in 
-    let new_text=change_italics_denotation_in_string old_text in 
-    Io.overwrite_with argument_file new_text;; 
 
 (*
 
@@ -151,9 +126,6 @@ modify_words_in_string make_legal "aBc\t\nDe\n\t\tFGh klmp";;
   
 naive_paren_decomposer ("[i]","[/i]") "123[i]45[/i]67[i]8[/i][i]9[/i]01234[i]56[/i]7";;
 
- compress_italics_in_string "123[i]  45\n\r\t[/i]67[i]8[/i][i]9\n[/i]01234[i]\t\t56[/i]7";;
-
-change_italics_denotation_in_string "123 ii 45 ii 67 ii 89 ii 01234";;
 
 *)
       
