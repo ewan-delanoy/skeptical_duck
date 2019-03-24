@@ -102,8 +102,8 @@ let extract_even_pages pdfname=
 
     let append_on_the_right file1 file2 =
       [
-          cpdf^file1^" "^file2^" -o wghartnjklmiopfwhhokuuu.pdf";
-          "mv wghartnjklmiopfwhhokuuu.pdf "^file1 
+          cpdf^file1^".pdf "^file2^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
+          "mv wghartnjklmiopfwhhokuuu.pdf "^file1^".pdf" 
         ];;
 
      let cut_in_two ~pdfname ~first_half_length ~total_length =
