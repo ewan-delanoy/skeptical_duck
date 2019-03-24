@@ -13,13 +13,14 @@ let workspace_directory=ref("");;
 
 module Command = struct 
   
+let cpdf = "/Applications/cpdf ";;
 
 let internal_extract_page_range pdfname (i,j) output_name=
   let si=string_of_int i and sj=string_of_int j in
   let old_dir=Sys.getcwd() in 
   [
      Unix_command.cd (!workspace_directory);
-     "/Application/cpdf "^pdfname^".pdf "^si^"-"^sj^" -o "^output_name;
+     cpdf^pdfname^".pdf "^si^"-"^sj^" -o "^output_name;
      Unix_command.cd old_dir;
   ];;
 
@@ -32,7 +33,7 @@ let extract_even_pages pdfname=
   let old_dir=Sys.getcwd() in 
   [
      Unix_command.cd (!workspace_directory);
-     "/Application/cpdf "^pdfname^".pdf even "^pdfname^"_even.pdf";
+     cpdf^pdfname^".pdf even "^pdfname^"_even.pdf";
      Unix_command.cd old_dir;
   ];;
 
@@ -40,7 +41,7 @@ let extract_even_pages pdfname=
    let old_dir=Sys.getcwd() in 
   [
      Unix_command.cd (!workspace_directory);
-     "/Application/cpdf "^pdfname^".pdf odd "^pdfname^"_odd.pdf";
+     cpdf^pdfname^".pdf odd "^pdfname^"_odd.pdf";
      Unix_command.cd old_dir;
   ];;
 
@@ -49,7 +50,7 @@ let extract_even_pages pdfname=
     let temp1=Ennig.doyle(
        fun i->
        let si=string_of_int i in 
-       "/Application/cpdf "^pdfname^".pdf "^si^"-"^si^" "^pdfname^si^".pdf";
+       cpdf^pdfname^".pdf "^si^"-"^si^" "^pdfname^si^".pdf";
     ) 1 num_of_pages in 
    [
       Unix_command.cd (!workspace_directory)
@@ -75,7 +76,7 @@ let extract_even_pages pdfname=
       ) temp2 in 
       let temp4=Ordered.forget_order (Tidel2.diforchan temp3) in 
       let all_pages=String.concat " " (Image.image snd temp4) in 
-      let main="/Application/cpdf "^all_pages^" -o "^pdfname^".pdf" in 
+      let main=cpdf^all_pages^" -o "^pdfname^".pdf" in 
       [
          Unix_command.cd (!workspace_directory);
          main; 
@@ -101,7 +102,7 @@ let extract_even_pages pdfname=
 
     let append_on_the_right file1 file2 =
       [
-          "/Applications/cpdf "^file1^" "^file2^" -o wghartnjklmiopfwhhokuuu.pdf";
+          cpdf^file1^" "^file2^" -o wghartnjklmiopfwhhokuuu.pdf";
           "mv wghartnjklmiopfwhhokuuu.pdf "^file1 
         ];;
 
