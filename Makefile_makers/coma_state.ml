@@ -2684,4 +2684,26 @@ let show_value_occurrences_in_modulesystem cs t=
 
 end;;
 
-           
+exception Module_already_exists of string;;
+
+let duplicate_module cs old_t1 old_t2=
+   let t1=String.uncapitalize_ascii old_t1
+   and t2=String.uncapitalize_ascii old_t2 in 
+   let ap1=decipher_path cs t1 in
+   let s_ap1=Absolute_path.to_string ap1 in
+   let s_ap2=(Father_and_son.invasive_father s_ap1 '/')^"/"^t2^".ml" in
+   if Sys.file_exists s_ap2
+   then raise(Module_already_exists(t2))
+   else 
+   let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
+   let ap2=Absolute_path.of_string s_ap2 in
+   let s_cdir=Root_directory.connectable_to_subpath (root cs) in 
+   let s1=Cull_string.cobeginning (String.length s_cdir) s_ap1
+   and s2=Cull_string.cobeginning (String.length s_cdir) s_ap2 in
+   let txt1="\""^s1^"\";"^";"
+   and txt2="\""^s2^"\";"^";" in
+   let _=Replace_inside.replace_inside_file 
+    (txt1,txt2) ap2  in 
+   Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
+
+
