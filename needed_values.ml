@@ -12,6 +12,8 @@ let cod ()=Check_ocaml_dircopy.check Coma_big_constant.this_world;;
 
 let dbel = Usual_coma_state.directly_below;;
 
+let dm = Usual_coma_state.duplicate_module;;
+
 let fg = Usual_coma_state.forget_with_backup;;
 
 let fg_without_backup =  Usual_coma_state.forget_with_backup;;
