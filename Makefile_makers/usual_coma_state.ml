@@ -68,7 +68,8 @@ let directly_below x=
    )) 
   (Coma_state.directly_below Private.main_ref (Private.find_half_dressed_module x));;
 
-
+let duplicate_module old_t1 old_t2=
+  Coma_state.duplicate_module Private.main_ref old_t1 old_t2;;
 
 let find_half_dressed_module = Private.find_half_dressed_module;;
 
