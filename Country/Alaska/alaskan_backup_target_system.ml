@@ -19,8 +19,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
      then let dn=Father_and_son.father fn '/' in
           Some("mkdir -p "^s_destination^dn)
      else None 
-    )
-   created_ones in
+    ) created_ones in
    let temp3=Ordered.forget_order(Ordered_string.diforchan temp2) in
    let s_source=Root_directory.connectable_to_subpath source_dir in
    let temp4=Image.image(
@@ -49,15 +48,17 @@ let backup_with_message (source_dir,destination_dir) diff msg=
   let _=(
   if (!github_after_backup)
   then let cwd=Sys.getcwd() in
-       let _=Sys.chdir s_destination in
-       let _=Image.image Unix_command.uc git_cmds in
-       let _=Image.image Unix_command.uc
+       Image.image Unix_command.uc
+       (
+       [Unix_command.cd s_destination]@   
+       git_cmds@   
        [
          "git commit -m \""^msg^"\"";
          "git push"
-       ] in
-       Sys.chdir cwd
-  else ()
+       ]@
+       [Unix_command.cd cwd]
+       ) 
+  else []
   ) in
   ();;
 
