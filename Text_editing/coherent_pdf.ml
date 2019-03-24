@@ -113,7 +113,16 @@ let extract_even_pages pdfname=
         @
         (internal_extract_page_range pdfname (first_half_length+1,total_length) half2);;
 
-
+     let merge parts whole=
+       let old_dir=Sys.getcwd() in 
+      let parts=Image.image (fun name->name^".pdf") parts in 
+      let joined_parts=String.concat " " parts in 
+      let main=cpdf^joined_parts^" -o "^whole^".pdf" in 
+      [
+         Unix_command.cd (!workspace_directory);
+         main; 
+         Unix_command.cd old_dir;
+      ];;
 
 end;;
 
@@ -140,6 +149,10 @@ let explode pdfname num_of_pages=
 let implode pdfname=
    Image.image Unix_command.uc 
   (Command.implode  pdfname);; 
+
+let merge parts whole=
+  Image.image Unix_command.uc 
+  (Command.merge parts whole);; 
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
