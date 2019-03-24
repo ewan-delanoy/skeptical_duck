@@ -1,6 +1,6 @@
 (*
 
-#use "coherent_pdf.ml";;
+#use "Text_editing/coherent_pdf.ml";;
 
 Utility to cut a large PDF into easily printable chunks.
 Each chunk is at most 20 pages long, and separated into
@@ -136,9 +136,9 @@ let explode pdfname num_of_pages=
    Image.image Unix_command.uc 
   (Command.explode  pdfname num_of_pages);; 
 
-let implode pdfname num_of_pages=
+let implode pdfname=
    Image.image Unix_command.uc 
-  (Command.explode  pdfname num_of_pages);; 
+  (Command.implode  pdfname);; 
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
