@@ -2737,6 +2737,150 @@ let save_all cs=Save_all.write_all
 	uple_form cs
   );;
 
+let local_above cs x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    hm_from_nm cs nm
+   )) 
+  (above cs (find_half_dressed_module cs x));;
+
+
+let local_below cs x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    hm_from_nm cs nm
+   )) 
+  (below cs (find_half_dressed_module cs x));;
+
+let local_directly_below cs x=
+  Image.image (fun nm->
+   Half_dressed_module.uprooted_version(
+    hm_from_nm cs nm
+   )) 
+  (directly_below cs (find_half_dressed_module cs x));;
+
+let forget_file_with_backup cs x=
+   let ap=decipher_path cs x in
+   let s_ap=Absolute_path.to_string ap in  
+   let cut_ap=Root_directory.cut_beginning Coma_big_constant.this_world s_ap in
+   let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [cut_ap])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list []) in
+   let _=recompile cs in 
+   (
+    forget_file cs ap;
+    save_all cs;
+    backup cs diff None
+   ) ;; 
+
+let forget_module_with_backup cs x=
+    let hm = find_half_dressed_module cs x in 
+    let _=recompile cs in
+    let short_paths=forget_module cs hm in    
+    let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
+    let diff=
+      Dircopy_diff.veil
+      (Recently_deleted.of_string_list ordered_paths)
+      (Recently_changed.of_string_list [])
+      (Recently_created.of_string_list []) in
+     (
+      backup cs diff None; 
+      save_all cs 
+     );; 
+ 
+let forget_with_backup cs x=
+      if String.contains x '.'
+      then forget_file_with_backup cs x
+      else forget_module_with_backup cs x;;
+
+let forget_without_backup cs x=
+   if String.contains x '.'
+   then let ap=decipher_path cs x in 
+        let _=recompile cs in 
+        (
+          forget_file cs ap;
+          save_all cs;
+        )
+   else let hm = find_half_dressed_module cs x in 
+        let _=recompile cs in
+        let _=forget_module cs hm in    
+        save_all cs;;  
+
+
+
+
+
+let local_from_outside cs= from_outside  cs Coma_big_constant.next_world;; 
+
+let initialize_if_empty cs=
+      if (size cs=0) 
+      then initialize cs;;                           
+
+
+let polished_short_paths cs=all_polished_short_paths  cs Coma_big_constant.next_world;;
+
+let recompile_without_githubbing cs=
+  let (change_exists,short_paths)=recompile cs  in
+  let changed_paths=
+   (if not change_exists
+   then []
+   else let _=save_all cs in  
+       Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list changed_paths)
+    (Recently_created.of_string_list []) ;;
+
+let recompile cs opt=
+   let diff=recompile_without_githubbing cs in 
+   if not(Dircopy_diff.is_empty diff)
+   then backup cs diff opt;;
+
+let local_refresh cs=
+   let new_diff=refresh main_ref in
+   let _=save_all cs in
+   new_diff;;
+
+let refresh_with_backup cs=
+  let diff=refresh cs in
+  (
+    backup cs diff None;
+    save_all cs 
+   );;
+
+let local_register_mlx_file cs mlx=
+    let _=recompile cs None in 
+    (
+     register_mlx_file cs mlx;
+     save_all cs;
+    );;  
+ 
+let register_short_path_without_backup cs x= 
+  let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
+  let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
+  register_mlx_file cs mlx;;
+
+let register_short_path cs x=
+  let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
+  let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
+  let short_path=Mlx_ended_absolute_path.short_path mlx in
+  let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list [short_path]) in
+  (
+    register_mlx_file cs mlx;
+    backup cs diff None;
+    save_all cs 
+   );;
+
+
+
+let local_to_outside cs= to_outside  cs Coma_big_constant.next_world;;  
+
 
 
 end;; 
