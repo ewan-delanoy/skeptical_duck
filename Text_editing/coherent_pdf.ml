@@ -86,7 +86,6 @@ let extract_even_pages pdfname=
     let prepare_recto_verso pdfname (i,j)=
         let si=string_of_int i and sj=string_of_int j in
         let excerpt_name = pdfname^"_from_"^si^"_to_"^sj  in 
-        let excerpt = excerpt_name^".pdf" in 
         let even_pages = excerpt_name^"_even.pdf"  
         and odd_pages = excerpt_name^"_odd.pdf" in 
         (extract_page_range pdfname (i,j))
