@@ -36,9 +36,7 @@ let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
 let rsh = Usual_coma_state.refresh_with_backup;;
 
-let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;
-
-let ucc=Usual_coma_state.ucc;;   
+let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;  
 
 let ucs=Usual_coma_state.main_ref;;   
 
