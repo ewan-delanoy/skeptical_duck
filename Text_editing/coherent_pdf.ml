@@ -91,9 +91,9 @@ let extract_even_pages pdfname=
         and odd_pages = excerpt_name^"_odd.pdf" in 
         (extract_page_range pdfname (i,j))
         @
-        (extract_even_pages excerpt)
+        (extract_even_pages excerpt_name)
         @
-        (extract_odd_pages excerpt)
+        (extract_odd_pages excerpt_name)
         @
         [
           "open -a /Applications/Preview.app "^odd_pages;
