@@ -2707,3 +2707,38 @@ let duplicate_module cs old_t1 old_t2=
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 
+
+module Almost_concrete = struct 
+exception No_module_with_name of string;;
+
+let main_ref=Coma_state_field.empty_one
+                Coma_big_constant.this_world
+                Coma_big_constant.backup_dir_for_this_world;;
+
+let find_module_index cs x=
+  let uncapitalized_x=
+    Naked_module.of_string(String.uncapitalize_ascii x) in
+  seek_module_index cs  uncapitalized_x;;
+
+let find_half_dressed_module cs x=
+   match find_module_index cs x
+   with 
+   Some(idx)->hm_at_idx cs idx
+   |None->raise(No_module_with_name(x));;  
+
+let save_all cs=Save_all.write_all 
+  (Coma_big_constant.this_world, 
+    Coma_constant.name_for_makefile,
+    Coma_constant.name_for_targetfile,
+    Coma_constant.name_for_loadingsfile,
+    Coma_constant.name_for_printersfile
+  )
+  (
+	uple_form cs
+  );;
+
+
+
+end;; 
+
+

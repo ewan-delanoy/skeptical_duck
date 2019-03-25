@@ -14,13 +14,7 @@ let end_debugging ()=
   ();;     
 
  
-let relocate_module old_name new_subdir=
-       let _=Coma_state.recompile Usual_coma_state.main_ref in 
-      (
-       Coma_state.relocate_module Usual_coma_state.main_ref old_name new_subdir;
-       Usual_coma_state.save_all();
-      );;          
-    
+
 
 
 let rename_directory (old_subdir,new_subdirname)=
@@ -30,14 +24,7 @@ let rename_directory (old_subdir,new_subdirname)=
           Usual_coma_state.save_all();
   );;   
         
-
-let rename_module old_name new_name=
-    let _=Coma_state.recompile Usual_coma_state.main_ref in 
-    (
-            let _=Coma_state.rename_module Usual_coma_state.main_ref old_name new_name in 
-            Usual_coma_state.save_all();
-    );;   
-                   
+            
   
 let start_debugging ()=
    let _=Coma_state.recompile Usual_coma_state.main_ref in 
