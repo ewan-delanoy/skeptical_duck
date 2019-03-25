@@ -24,10 +24,22 @@ let current_directories()=
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
-let ren_without_backup x y=German_wrapper.rename_module (Usual_coma_state.find_half_dressed_module x) (No_slashes.of_string y);;
-let relo_without_backup x y=German_wrapper.relocate_module (Usual_coma_state.find_half_dressed_module x) y;;
+let ren_without_backup old_name new_name=
+   let old_hm = Usual_coma_state.find_half_dressed_module old_name 
+   and unslashed_new_name = No_slashes.of_string new_name in 
+   let _=Coma_state.recompile Usual_coma_state.main_ref in 
+    (
+        let _=Coma_state.rename_module Usual_coma_state.main_ref old_hm unslashed_new_name in 
+        Usual_coma_state.save_all();
+    );;   
 
-
+let relo_without_backup old_hm_name new_subdir=
+  let old_hm = Usual_coma_state.find_half_dressed_module old_hm_name in 
+  let _=Coma_state.recompile Usual_coma_state.main_ref in 
+      (
+       Coma_state.relocate_module Usual_coma_state.main_ref old_hm new_subdir;
+       Usual_coma_state.save_all();
+      );;     
 
 
 let ureg_without_backup x=
