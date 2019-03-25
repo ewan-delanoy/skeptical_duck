@@ -95,9 +95,17 @@ let extract_even_pages pdfname=
         (extract_odd_pages excerpt_name)
         @
         [
-          "open -a /Applications/Preview.app "^odd_pages;
-          "open -a /Applications/Preview.app "^even_pages;
+          "open -a /Applications/Preview.app "^(!workspace_directory)^"/"^odd_pages;
+          "open -a /Applications/Preview.app "^(!workspace_directory)^"/"^even_pages;
         ];;
+
+     let finish_recto_verso pdfname =
+      let old_dir=Sys.getcwd() in 
+      [
+         Unix_command.cd (!workspace_directory);  
+         "rm "^pdfname^"_from_*.pdf";
+         Unix_command.cd old_dir;
+      ];;
 
     let append_on_the_right file1 file2 =
       [
@@ -156,5 +164,6 @@ let merge parts whole=
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
 
-
+let finish_recto_verso pdfname =Image.image Unix_command.uc 
+  (Command.finish_recto_verso pdfname );;
 
