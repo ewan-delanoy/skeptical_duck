@@ -33,7 +33,7 @@ let extract_even_pages pdfname=
   let old_dir=Sys.getcwd() in 
   [
      Unix_command.cd (!workspace_directory);
-     cpdf^pdfname^".pdf even "^pdfname^"_even.pdf";
+     cpdf^pdfname^".pdf even -o "^pdfname^"_even.pdf";
      Unix_command.cd old_dir;
   ];;
 
@@ -41,7 +41,7 @@ let extract_even_pages pdfname=
    let old_dir=Sys.getcwd() in 
   [
      Unix_command.cd (!workspace_directory);
-     cpdf^pdfname^".pdf odd "^pdfname^"_odd.pdf";
+     cpdf^pdfname^".pdf odd -o "^pdfname^"_odd.pdf";
      Unix_command.cd old_dir;
   ];;
 
