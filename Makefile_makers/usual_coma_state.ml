@@ -57,7 +57,7 @@ let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module Private.main_ref old_t1 old_t2;;
 
 let find_half_dressed_module = 
-  Coma_state.Almost_concrete.find_half_dressed_module Private.main_ref;;find_half_dressed_module Private.main_ref;;
+  Coma_state.Almost_concrete.find_half_dressed_module Private.main_ref;;
 
 
 
