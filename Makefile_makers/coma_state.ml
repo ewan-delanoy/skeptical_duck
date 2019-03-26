@@ -2414,13 +2414,13 @@ module Save_all=struct
       location_for_printersfile
       )
       uple= 
-      let (mdata,directories,printer_equipped_types)=uple in
-      let hms=up_to_date_hms mdata in 
+      let (cs,directories,printer_equipped_types)=uple in
+      let hms=up_to_date_hms cs in 
        (
-        Private.save_makefile (root,location_for_makefile) mdata;
+        Private.save_makefile (root,location_for_makefile) cs;
         Private.save_merlinfile (root,Coma_constant.name_for_merlinfile) directories;
         Private.save_loadingsfile (root,location_for_loadingsfile) (directories,hms);
-        Private.save_targetfile (root,location_for_targetfile) mdata;
+        Private.save_targetfile (root,location_for_targetfile) cs;
         Private.save_printersfile (root,location_for_printersfile) printer_equipped_types;
        );;
     
