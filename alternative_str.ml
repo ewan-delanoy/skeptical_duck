@@ -95,9 +95,9 @@ let centered_regexp_match ((a,b,c):centered_regexp) s i0=
  
 let centered_regexp_list_match l s i0=
   let temp1=index_everything l in
-  find_and_stop(fun (i,rgxp)->
+  find_and_stop(fun (pattern_idx,rgxp)->
     match centered_regexp_match rgxp s i0 with
-     Some(j,k)->Some(i,(j,k))
+     Some(i_start,i_end)->Some(pattern_idx,(i_start,i_end))
     |None->None
   ) temp1;;   
    
@@ -107,8 +107,8 @@ let centered_regexp_list_match l s i0=
     if j>n then List.rev(graet) else
     let opt=centered_regexp_list_match l s j in
     if opt=None then tempf(graet,j+1) else
-    let (k,(l,m))=unpack(opt) in
-    tempf((k,(l,m))::graet,m+2)
+    let (pattern_idx,(i_start,i_end))=unpack(opt) in
+    tempf((pattern_idx,(i_start,i_end))::graet,i_end+1)
   ) in
   tempf([],i0);;
 
