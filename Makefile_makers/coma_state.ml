@@ -2149,16 +2149,16 @@ let delchacre_from_scratch (source_dir,dir_for_backup) mdata=
 
 
 let refresh cs=
-      let (new_mdata,new_tgts,new_ptypes)=
+      let (new_cs,new_tgts,new_ptypes)=
         Target_system_creation.from_main_directory 
              (root cs)
              (backup_dir cs)
          in 
-        let new_dirs=compute_subdirectories_list new_mdata in
-        let new_diff=delchacre_from_scratch (root cs,backup_dir cs) new_mdata in
+        let new_dirs=compute_subdirectories_list new_cs in
+        let new_diff=delchacre_from_scratch (root cs,backup_dir cs) new_cs in
         let _=
         (
-          Coma_state_field.copy_mutables_from cs new_mdata;
+          Coma_state_field.copy_mutables_from cs new_cs;
           set_directories cs new_dirs;
           set_preq_types cs new_ptypes;
          ) in

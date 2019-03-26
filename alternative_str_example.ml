@@ -12,7 +12,7 @@ let nonletter=Alternative_str.veil "[^A-Za-z1-9_']";;
 let white=Alternative_str.veil "[ \n\r\t]";;
 let maybe_whites=Alternative_str.star white;;
 let some_whites=Alternative_str.plus white;;
- 
+let backtracking_nonletter=Alternative_str.set_backtrack 1 nonletter;;  
 
 let delimited_module_name=Alternative_str.big_concat
   [
@@ -27,13 +27,13 @@ let bare_module_name=Alternative_str.big_concat
 let include_case=
   let left_part=Alternative_str.veil "[ \n\r\t]+include[ \n\r\t(]+"
   and center_part=bare_module_name 
-  and right_part=nonletter in
+  and right_part=backtracking_nonletter in
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
 
 let open_case=
   let left_part=Alternative_str.veil "[ \n\r\t]+open[ \n\r\t(]+"
   and center_part=bare_module_name 
-  and right_part=nonletter in
+  and right_part=backtracking_nonletter in
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
 
 let moodle_case=
@@ -41,7 +41,7 @@ let moodle_case=
   [white;Alternative_str.veil"module";some_whites;
    bare_module_name;maybe_whites;Alternative_str.veil"=";maybe_whites]
   and center_part=bare_module_name 
-  and right_part=nonletter in
+  and right_part=backtracking_nonletter in
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
 
 let pointed_case=
@@ -64,7 +64,7 @@ let f case s=let (i,j)=Option.unpack(Alternative_str.centered_regexp_match case 
 
 f include_case " include Peggy;; ";;
 f include_case " include_once;; ";;
-f moodle_case " module Amy=Lawson ";;
+f moodle_case " module Amy = Lawson ";;
 f pointed_case " 57+Everybody.talking-78 ";;
 
 *)
