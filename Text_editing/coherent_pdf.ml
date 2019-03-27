@@ -68,23 +68,24 @@ let extract_even_pages pdfname=
      Unix_command.cd old_dir;
    ];;
 
-   let implode pdfname=
+   let implode (pdf_name_start,pdf_name_end)=
       let old_dir=Sys.getcwd() in 
-      let temp1=More_unix.quick_beheaded_complete_ls (!workspace_directory) in 
+      let temp1=More_unix.quick_beheaded_complete_ls (!workspace_directory) 
+      and ending=pdf_name_end^".pdf" in 
       let temp2=List.filter(
           fun fn->
-            (Supstring.begins_with fn pdfname)&&
-            (Supstring.ends_with fn ".pdf")
+            (Supstring.begins_with fn pdf_name_start)&&
+            (Supstring.ends_with fn ending)
       ) temp1 in 
       let temp3=Option.filter_and_unpack (
          fun fn->
-           let temp3=Cull_string.two_sided_cutting (pdfname,".pdf") fn in 
+           let temp3=Cull_string.two_sided_cutting (pdf_name_start,ending) fn in 
            try (fun i->Some(i,fn))(int_of_string temp3) with 
            _->None
       ) temp2 in 
       let temp4=Ordered.forget_order (Tidel2.diforchan temp3) in 
       let all_pages=String.concat " " (Image.image snd temp4) in 
-      let main=cpdf^all_pages^" -o "^pdfname^".pdf" in 
+      let main=cpdf^all_pages^" -o "^pdf_name_start^ending in 
       [
          Unix_command.cd (!workspace_directory);
          main; 
@@ -230,9 +231,9 @@ let explode pdfname num_of_pages=
 let finish_recto_verso pdfname =Image.image Unix_command.uc 
   (Command.finish_recto_verso pdfname );;
 
-let implode pdfname=
+let implode (pdf_name_start,pdf_name_end)=
    Image.image Unix_command.uc 
-  (Command.implode  pdfname);; 
+  (Command.implode  (pdf_name_start,pdf_name_end));; 
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
