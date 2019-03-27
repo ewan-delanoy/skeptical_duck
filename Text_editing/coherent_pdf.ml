@@ -91,35 +91,7 @@ let extract_even_pages pdfname=
          Unix_command.cd old_dir;
       ];;
 
-   let implode_and_rename pdfname renamer=
-      let old_dir=Sys.getcwd() in 
-      let temp1=More_unix.quick_beheaded_complete_ls (!workspace_directory) in 
-      let temp2=List.filter(
-          fun fn->
-            (Supstring.begins_with fn pdfname)&&
-            (Supstring.ends_with fn ".pdf")
-      ) temp1 in 
-      let temp3=Option.filter_and_unpack (
-         fun fn->
-           let temp3=Cull_string.two_sided_cutting (pdfname,".pdf") fn in 
-           try (fun i->Some(i,fn))(int_of_string temp3) with 
-           _->None
-      ) temp2 in 
-      let temp4=Ordered.forget_order (Tidel2.diforchan temp3) in 
-      let all_pages=String.concat " " (Image.image snd temp4) in 
-      let implosion_part=cpdf^all_pages^" -o "^pdfname^".pdf" 
-      and renaming_part=Image.image (
-         fun (i,fn)->"mv "^fn^" "^(renamer i)^".pdf"  
-      ) temp4 in 
-      [
-         Unix_command.cd (!workspace_directory);
-         implosion_part; 
-      ]@
-         renaming_part  
-      @[   
-         Unix_command.cd old_dir;
-      ];; 
-
+   
     let prepare_recto_verso pdfname (i,j)=
         let si=string_of_int i and sj=string_of_int j in
         let excerpt_name = pdfname^"_from_"^si^"_to_"^sj  in 
@@ -145,9 +117,12 @@ let extract_even_pages pdfname=
       ];;
 
     let append_on_the_right file1 file2 =
+       let old_dir=Sys.getcwd() in 
       [
+          Unix_command.cd (!workspace_directory);
           cpdf^file1^".pdf "^file2^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
-          "mv wghartnjklmiopfwhhokuuu.pdf "^file1^".pdf" 
+          "mv wghartnjklmiopfwhhokuuu.pdf "^file1^".pdf" ;
+          Unix_command.cd old_dir;
         ];;
 
      let cut_in_two ~pdfname ~first_half_length ~total_length =
@@ -197,13 +172,44 @@ let extract_even_pages pdfname=
            part1@part2 
          @[
           Unix_command.cd old_dir;
-         ];;;;
+         ];;
+
+       let rename old_pdfname new_pdfname=
+         let old_dir=Sys.getcwd() in 
+       [
+         Unix_command.cd (!workspace_directory);
+         "mv "^old_pdfname^".pdf "^new_pdfname^".pdf";
+         Unix_command.cd old_dir;
+       ];;
+      
+       let upside_down pdfname =  
+          let old_dir=Sys.getcwd() in 
+       [
+          Unix_command.cd (!workspace_directory);
+          cpdf^" -rotate-contents 180 "^pdfname^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
+          "mv wghartnjklmiopfwhhokuuu.pdf "^pdfname^".pdf" ;
+          Unix_command.cd old_dir;
+        ];;
+
+      let lay_down pdfname =  
+          let old_dir=Sys.getcwd() in 
+       [
+          Unix_command.cd (!workspace_directory);
+          cpdf^" -rotate-contents 90 "^pdfname^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
+          "mv wghartnjklmiopfwhhokuuu.pdf "^pdfname^".pdf" ;
+          Unix_command.cd old_dir;
+        ];;
+  
 
 end;;
 
 let append_on_the_right file1 file2 = Image.image Unix_command.uc 
   (Command.append_on_the_right file1 file2);;
  
+let cut_into_small_pieces pdfname (i,j) max_piece_size=
+  Image.image Unix_command.uc 
+  (Command.cut_into_small_pieces pdfname (i,j) max_piece_size);; 
+
 let cut_in_two ~pdfname ~first_half_length ~total_length =
   Image.image Unix_command.uc 
   (Command.cut_in_two pdfname first_half_length total_length);;
@@ -221,13 +227,15 @@ let explode pdfname num_of_pages=
    Image.image Unix_command.uc 
   (Command.explode  pdfname num_of_pages);; 
 
+let finish_recto_verso pdfname =Image.image Unix_command.uc 
+  (Command.finish_recto_verso pdfname );;
+
 let implode pdfname=
    Image.image Unix_command.uc 
   (Command.implode  pdfname);; 
 
-let implode_and_rename pdfname renamer=
-   Image.image Unix_command.uc 
-  (Command.implode_and_rename  pdfname renamer);; 
+let lay_down  pdfname=Image.image Unix_command.uc 
+  (Command.lay_down  pdfname);;
 
 let merge parts whole=
   Image.image Unix_command.uc 
@@ -236,9 +244,9 @@ let merge parts whole=
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
 
-let finish_recto_verso pdfname =Image.image Unix_command.uc 
-  (Command.finish_recto_verso pdfname );;
+let rename  old_pdfname new_pdfname=
+   Image.image Unix_command.uc 
+  (Command.rename  old_pdfname new_pdfname);; 
 
-let cut_into_small_pieces pdfname (i,j) max_piece_size=
-  Image.image Unix_command.uc 
-  (Command.cut_into_small_pieces pdfname (i,j) max_piece_size);; 
+let upside_down  pdfname=Image.image Unix_command.uc 
+  (Command.upside_down  pdfname);;
