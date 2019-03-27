@@ -91,6 +91,35 @@ let extract_even_pages pdfname=
          Unix_command.cd old_dir;
       ];;
 
+   let implode_and_rename pdfname renamer=
+      let old_dir=Sys.getcwd() in 
+      let temp1=More_unix.quick_beheaded_complete_ls (!workspace_directory) in 
+      let temp2=List.filter(
+          fun fn->
+            (Supstring.begins_with fn pdfname)&&
+            (Supstring.ends_with fn ".pdf")
+      ) temp1 in 
+      let temp3=Option.filter_and_unpack (
+         fun fn->
+           let temp3=Cull_string.two_sided_cutting (pdfname,".pdf") fn in 
+           try (fun i->Some(i,fn))(int_of_string temp3) with 
+           _->None
+      ) temp2 in 
+      let temp4=Ordered.forget_order (Tidel2.diforchan temp3) in 
+      let all_pages=String.concat " " (Image.image snd temp4) in 
+      let implosion_part=cpdf^all_pages^" -o "^pdfname^".pdf" 
+      and renaming_part=Image.image (
+         fun (i,fn)->"mv "^fn^" "^(renamer i)^".pdf"  
+      ) temp4 in 
+      [
+         Unix_command.cd (!workspace_directory);
+         implosion_part; 
+      ]@
+         renaming_part  
+      @[   
+         Unix_command.cd old_dir;
+      ];; 
+
     let prepare_recto_verso pdfname (i,j)=
         let si=string_of_int i and sj=string_of_int j in
         let excerpt_name = pdfname^"_from_"^si^"_to_"^sj  in 
@@ -195,6 +224,10 @@ let explode pdfname num_of_pages=
 let implode pdfname=
    Image.image Unix_command.uc 
   (Command.implode  pdfname);; 
+
+let implode_and_rename pdfname renamer=
+   Image.image Unix_command.uc 
+  (Command.implode_and_rename  pdfname renamer);; 
 
 let merge parts whole=
   Image.image Unix_command.uc 
