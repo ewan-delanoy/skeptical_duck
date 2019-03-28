@@ -53,12 +53,14 @@ let extract_even_pages pdfname=
      Unix_command.cd old_dir;
   ];;
 
-   let explode pdfname num_of_pages=
+   let explode (pdf_name_start,pdf_name_end) num_of_pages=
     let old_dir=Sys.getcwd() in 
+    let full_name=pdf_name_start^pdf_name_end 
+    and ending=pdf_name_end^".pdf" in 
     let temp1=Ennig.doyle(
        fun i->
        let si=string_of_int i in 
-       cpdf^pdfname^".pdf "^si^"-"^si^" "^pdfname^si^".pdf";
+       cpdf^full_name^".pdf "^si^"-"^si^" "^pdf_name_start^si^ending;
     ) 1 num_of_pages in 
    [
       Unix_command.cd (!workspace_directory)
@@ -224,9 +226,9 @@ let extract_even_pages  pdfname=Image.image Unix_command.uc
 let extract_odd_pages  pdfname=Image.image Unix_command.uc 
   (Command.extract_odd_pages  pdfname);;
 
-let explode pdfname num_of_pages=
+let explode (pdf_name_start,pdf_name_end) num_of_pages=
    Image.image Unix_command.uc 
-  (Command.explode  pdfname num_of_pages);; 
+  (Command.explode  (pdf_name_start,pdf_name_end) num_of_pages);; 
 
 let finish_recto_verso pdfname =Image.image Unix_command.uc 
   (Command.finish_recto_verso pdfname );;
