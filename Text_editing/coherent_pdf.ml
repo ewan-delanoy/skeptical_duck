@@ -227,7 +227,7 @@ let extract_odd_pages  pdfname=Image.image Unix_command.uc
   (Command.extract_odd_pages  pdfname);;
 
 let explode (pdf_name_start,pdf_name_end) num_of_pages=
-   Image.image Unix_command.uc 
+   Explicit.image Unix_command.uc 
   (Command.explode  (pdf_name_start,pdf_name_end) num_of_pages);; 
 
 let finish_recto_verso pdfname =Image.image Unix_command.uc 
