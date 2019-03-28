@@ -162,7 +162,7 @@ let extract_even_pages pdfname=
             fun (k,pair)->(k,pair,name_in_extract_page_range pdfname pair)
          )(Ennig.index_everything ranges) in  
          let part1=Image.image (fun (idx,pair,name)->
-            bare_extract_page_range pdfname (i,j) name
+            bare_extract_page_range pdfname pair name
          ) base
          and part2=Image.image(
             fun (idx,pair,name)->
