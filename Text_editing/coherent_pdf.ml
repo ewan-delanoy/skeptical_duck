@@ -60,7 +60,7 @@ let extract_even_pages pdfname=
     let temp1=Ennig.doyle(
        fun i->
        let si=string_of_int i in 
-       cpdf^full_name^".pdf "^si^"-"^si^" "^pdf_name_start^si^ending;
+       cpdf^full_name^".pdf "^si^"-"^si^" -o "^pdf_name_start^si^ending;
     ) 1 num_of_pages in 
    [
       Unix_command.cd (!workspace_directory)
