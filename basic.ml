@@ -8,20 +8,6 @@ match l with
 []->[]
 |u::v->sub_f([],u,v);;
 
-exception Big_cut_exn of int*int;;
-
-let big_cut r l=let rec tempf=
-(function (j,kleiz,dehou)->
-if j=0 then (List.rev(kleiz),dehou) else 
-match dehou with
-[]->raise(Big_cut_exn(r,List.length l))
-|a::peurrest->tempf(j-1,a::kleiz,peurrest)
-) in
-tempf(r,[],l);;
-
-let big_head r l=if (r>(List.length l)) then l else fst(big_cut(r)(l));;
-
-let big_tail r l=if (r>(List.length l)) then [] else snd(big_cut(r)(l));;
 
 let big_sum=function
 []->0

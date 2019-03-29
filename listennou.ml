@@ -62,6 +62,20 @@ in sub_f(x,f(x));;
 let rec morzhol_bihan f k x=
 if k=0 then x else morzhol_bihan f (k-1) (f(x));;
 
+exception Big_rht_exn of int*int;;
+
+let big_rht r l=let rec tempf=
+(function (j,kleiz,dehou)->
+if j=0 then (kleiz,dehou) else 
+match dehou with
+[]->raise(Big_rht_exn(r,List.length l))
+|a::peurrest->tempf(j-1,a::kleiz,peurrest)
+) in
+tempf(r,[],l);;
+
+let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)));;
+
+let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
 
 
 let power_set l=
