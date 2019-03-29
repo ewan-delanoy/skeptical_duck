@@ -77,6 +77,14 @@ let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)))
 
 let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
 
+let decompose_wrt_two_indices l i j=
+   let (r_part1,temp1)=big_rht (i-1) l in 
+   let (ei,temp2)=ht temp1 in 
+   let (r_part2,temp3)=big_rht (j-i-1) temp2 in 
+   let (ej,part3)=ht temp3 in 
+   (List.rev r_part1,ei,List.rev r_part2,ej,part3);;
+
+(* decompose_wrt_two_indices [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
 
 let power_set l=
 let rec tempf=
@@ -85,10 +93,6 @@ let rec tempf=
 |a::peurrest->tempf(peurrest,graet@(Image.image(function y->a::y)(graet)))
 ) in
 tempf(List.rev(l),[[]]);;
-
-let big_head=Basic.big_head;; 
-
-let big_tail=Basic.big_tail;;
 
 
 let fold_right f x0 l=List.fold_left(function x->(function a->f a x)) x0 l;;
