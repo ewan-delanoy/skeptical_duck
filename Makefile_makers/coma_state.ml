@@ -2450,7 +2450,6 @@ module Create_or_update_copied_compiler=struct
           Root_directory.without_trailing_slash Coma_big_constant.dummy_backup_dir)
        ]  ;;
 
-
   let prepare_special_file (sourcedir,destdir) (filename,reps)=
     let the_file=Absolute_path.create_file(Root_directory.join destdir filename) in
     Replace_inside.replace_several_inside_file reps the_file;;
@@ -2711,9 +2710,6 @@ let duplicate_module cs old_t1 old_t2=
 module Almost_concrete = struct 
 exception No_module_with_name of string;;
 
-let main_ref=Coma_state_field.empty_one
-                Coma_big_constant.this_world
-                Coma_big_constant.backup_dir_for_this_world;;
 
 let find_module_index cs x=
   let uncapitalized_x=
@@ -2839,7 +2835,7 @@ let recompile cs opt=
    then backup cs diff opt;;
 
 let local_refresh cs=
-   let new_diff=refresh main_ref in
+   let new_diff=refresh cs in
    let _=save_all cs in
    new_diff;;
 
