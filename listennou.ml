@@ -86,6 +86,14 @@ let decompose_wrt_two_indices l i j=
 
 (* decompose_wrt_two_indices [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
 
+let extract_interval l i j=
+  let (r_part1,temp1)=big_rht (i-1) l in 
+  let (r_part2,part3)=big_rht (j-i+1) temp1 in 
+  (List.rev r_part1,List.rev r_part2,part3);;
+
+(* extract_interval [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
+
+
 let power_set l=
 let rec tempf=
 (function (da_ober,graet)->match da_ober with
