@@ -107,7 +107,7 @@ let replace_string old_string new_string=
    Private.main_ref old_string new_string ;;
 
 let repopulate ()=
-  let_=Coma_state.Create_or_update_copied_compiler.ucc
+  let _=Coma_state.Create_or_update_copied_compiler.ucc
   Usual_coma_state.main_ref 
  (Coma_big_constant.next_world,
   Coma_big_constant.dummy_backup_dir) in 
