@@ -108,7 +108,7 @@ let replace_string old_string new_string=
 
 let repopulate ()=
 Coma_state.Create_or_update_copied_compiler.ucc
-  main_ref 
+  Usual_coma_state.main_ref 
  (Coma_big_constant.next_world,
   Coma_big_constant.dummy_backup_dir);; 
 
