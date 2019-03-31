@@ -84,11 +84,9 @@ let main_ref=Private.main_ref;;
 let polished_short_paths ()=
   Coma_state.Almost_concrete.polished_short_paths   main_ref ;;
 
-let recompile_without_githubbing ()=
+let recompile ()=
    Coma_state.Almost_concrete.recompile_without_githubbing main_ref;;
 
-let recompile opt=Coma_state.Almost_concrete.recompile main_ref opt;;
-   
 
 let refresh ()=Coma_state.Almost_concrete.local_refresh main_ref;;
 
