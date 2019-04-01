@@ -35,10 +35,12 @@ exception Too_much_double_points;;
  let iterated_string_father j0 s=try iterated_string_father0 j0 s with
    forzh_petra->raise(Too_much_double_points);;
 
+exception Blank_filename;;
+
 let delete_left_blanks s=
   let n=String.length(s) in
   let rec tempf=(fun j->
-    if j>=n then failwith("You have named no file") else
+    if j>=n then raise(Blank_filename) else
     if String.get(s)(j)=' '
     then tempf(j+1)
     else j
