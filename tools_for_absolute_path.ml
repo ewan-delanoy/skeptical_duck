@@ -22,6 +22,7 @@ let number_of_double_points s=
   ) in
   tempf(0);;
   
+  
 let iterated_string_father0 j0 s=
    let rec tempf=(fun (j,k)->
      if j<1 then (String.sub s 0 k) else
