@@ -94,7 +94,40 @@ let  change_paren_denotation_in_file
     let new_text=change_paren_denotation_in_string old_parens new_parens old_text in 
     Io.overwrite_with argument_file new_text;; 
 
+let force_left_spacing_in_string_for_character s c=
+  replace_fixed_length_pattern_with_constant_in_string
+   (fun s k->
+       if k<2 then false else
+       (Strung.get s k=c)&&
+       (List.mem (Strung.get s (k-1)) Charset.alphanumeric_characters)
+   )
+     1 (" "^(String.make 1 c)) s;;
 
+let force_right_spacing_in_string_for_character s c=
+   let n=(String.length s) in
+  replace_fixed_length_pattern_with_constant_in_string
+   (fun s k->
+       if k>=n then false else
+       (Strung.get s k=c)&&
+       (List.mem (Strung.get s (k+1)) Charset.alphanumeric_characters)
+   )
+     1 ((String.make 1 c)^" ") s;;
+
+let force_two_sided_spacing_in_string_for_character s c=
+   let temp1=force_left_spacing_in_string_for_character s c in 
+   force_right_spacing_in_string_for_character temp1 c;;
+
+let force_french_spacing_in_string s=
+   let temp1=force_two_sided_spacing_in_string_for_character s ';' in
+   let temp2=force_two_sided_spacing_in_string_for_character temp1 ':' in 
+   let temp3=force_right_spacing_in_string_for_character temp2 '.' in 
+   let temp4=force_right_spacing_in_string_for_character temp3 ',' in 
+   temp4;;
+       
+let  force_french_spacing_in_string argument_file=
+    let old_text=Io.read_whole_file argument_file in 
+    let new_text=force_french_spacing_in_string old_text in 
+    Io.overwrite_with argument_file new_text;; 
 
 (*
 
