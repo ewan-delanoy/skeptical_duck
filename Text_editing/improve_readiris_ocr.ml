@@ -120,8 +120,10 @@ let force_two_sided_spacing_in_string_for_character s c=
 let force_french_spacing_in_string s=
    let temp1=force_two_sided_spacing_in_string_for_character s ';' in
    let temp2=force_two_sided_spacing_in_string_for_character temp1 ':' in 
-   let temp3=force_right_spacing_in_string_for_character temp2 '.' in 
-   let temp4=force_right_spacing_in_string_for_character temp3 ',' in 
+   let temp3=force_two_sided_spacing_in_string_for_character temp2 '?' in 
+   let temp4=force_two_sided_spacing_in_string_for_character temp3 '!' in 
+   let temp5=force_right_spacing_in_string_for_character temp4 '.' in 
+   let temp6=force_right_spacing_in_string_for_character temp5 ',' in 
    temp4;;
        
 let  force_french_spacing_in_file argument_file=
