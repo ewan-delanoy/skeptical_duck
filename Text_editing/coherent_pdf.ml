@@ -17,7 +17,7 @@ let cpdf = "/Applications/cpdf ";;
 
 let bare_extract_page_range pdfname (i,j) output_name=
   let si=string_of_int i and sj=string_of_int j in
-   cpdf^pdfname^".pdf "^si^"-"^sj^" -o "^output_name;
+   cpdf^pdfname^".pdf "^si^"-"^sj^" -o "^output_name
   ;;
 
 let internal_extract_page_range pdfname (i,j) output_name=
@@ -146,6 +146,20 @@ let extract_even_pages pdfname=
          Unix_command.cd old_dir;
       ];;
 
+      let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=
+        let old_dir=Sys.getcwd() in 
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:page_number ~total_length:initial_total_length)
+        @
+        (merge [receiving_one^"_half1.pdf";inserted_one;receiving_one^"_half1.pdf"] receiving_one )
+        @
+        [
+           Unix_command.cd (!workspace_directory);
+           "rm "^receiving_one^"_half1.pdf";
+           "rm "^receiving_one^"_half2.pdf"; 
+           Unix_command.cd old_dir;
+        ];;
+         
+
       let small_pieces (i,j) max_piece_size=
          let num_of_pieces = Basic.frac_ceiling (j-i+1) max_piece_size in 
          Ennig.doyle (
@@ -236,6 +250,9 @@ let finish_recto_verso pdfname =Image.image Unix_command.uc
 let implode (pdf_name_start,pdf_name_end)=
    Image.image Unix_command.uc 
   (Command.implode  (pdf_name_start,pdf_name_end));; 
+
+let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.image Unix_command.uc 
+ (Command.insert_in_just_after inserted_one receiving_one page_number initial_total_length);;
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
