@@ -158,7 +158,44 @@ let extract_even_pages pdfname=
            "rm "^receiving_one^"_half2.pdf"; 
            Unix_command.cd old_dir;
         ];;
-         
+
+      let replace_first_page_number_in_by  ~receiving_one ~inserted_one  ~total_length=
+        let old_dir=Sys.getcwd() 
+        and temp=receiving_one^"_half2" in 
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:1 ~total_length:total_length)
+        @
+        (merge [inserted_one;temp^"_half2"] receiving_one )
+        @
+        [
+           Unix_command.cd (!workspace_directory);
+           "rm "^receiving_one^"_half1.pdf";
+           "rm "^receiving_one^"_half2.pdf"; 
+           Unix_command.cd old_dir;
+        ];;
+
+      let replace_nonfirst_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
+        let old_dir=Sys.getcwd() 
+        and temp=receiving_one^"_half2" in 
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:(page_number-1) ~total_length:total_length)
+        @
+        (cut_in_two ~pdfname:temp ~first_half_length:1 ~total_length:(total_length-page_number+1))
+        @
+        (merge [receiving_one^"_half1";inserted_one;temp^"_half2"] receiving_one )
+        @
+        [
+           Unix_command.cd (!workspace_directory);
+           "rm "^receiving_one^"_half1.pdf";
+           "rm "^receiving_one^"_half2.pdf"; 
+           "rm "^receiving_one^"_half2_half1.pdf"; 
+           "rm "^receiving_one^"_half2_half2.pdf"; 
+           Unix_command.cd old_dir;
+        ];;
+            
+      let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
+        if page_number=1
+        then replace_first_page_number_in_by  receiving_one inserted_one  total_length
+        else replace_nonfirst_page_number_in_by page_number receiving_one inserted_one  total_length;;
+
 
       let small_pieces (i,j) max_piece_size=
          let num_of_pieces = Basic.frac_ceiling (j-i+1) max_piece_size in 
@@ -263,6 +300,9 @@ let merge parts whole=
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
+
+let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
+   (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
 
 let rename  old_pdfname new_pdfname=
    Image.image Unix_command.uc 
