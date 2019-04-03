@@ -124,7 +124,7 @@ let force_french_spacing_in_string s=
    let temp4=force_right_spacing_in_string_for_character temp3 ',' in 
    temp4;;
        
-let  force_french_spacing_in_string argument_file=
+let  force_french_spacing_in_file argument_file=
     let old_text=Io.read_whole_file argument_file in 
     let new_text=force_french_spacing_in_string old_text in 
     Io.overwrite_with argument_file new_text;; 
