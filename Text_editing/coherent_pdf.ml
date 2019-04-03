@@ -150,7 +150,7 @@ let extract_even_pages pdfname=
         let old_dir=Sys.getcwd() in 
         (cut_in_two ~pdfname:receiving_one ~first_half_length:page_number ~total_length:initial_total_length)
         @
-        (merge [receiving_one^"_half1.pdf";inserted_one;receiving_one^"_half1.pdf"] receiving_one )
+        (merge [receiving_one^"_half1";inserted_one;receiving_one^"_half2"] receiving_one )
         @
         [
            Unix_command.cd (!workspace_directory);
