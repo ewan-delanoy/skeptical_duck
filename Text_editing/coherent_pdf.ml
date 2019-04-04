@@ -32,6 +32,18 @@ module Helper = struct
             (start,ending)
       ) 1 num_of_pieces;;  
 
+  let intertwining_decomposition num_odd num_even =
+    let min_num=min num_odd num_even 
+    and max_num=max num_odd num_even in 
+    let common_part=List.flatten(Ennig.doyle (
+       fun k->[(true,k);(false,k)]
+    ) 1 min_num) 
+    and comparison=num_odd>num_even in 
+    let last_part=Ennig.doyle (
+        fun k->(comparison,k)
+    ) (min_num+1) max_num in 
+    common_part@last_part;;
+
   let wrap_list_inside_workspace  l=
     let old_dir=Sys.getcwd() in 
     [Unix_command.cd (!workspace_directory)]@l@[Unix_command.cd old_dir];;
