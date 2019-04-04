@@ -2,20 +2,19 @@
 
 #use "Text_editing/coherent_pdf.ml";;
 
-Utility to cut a large PDF into easily printable chunks.
-Each chunk is at most 20 pages long, and separated into
-odd/even parts to allow for recto-verso printing. 
-
 *)
 
 
 let workspace_directory=ref("");;
+exception Incorrect_page_range of string*int*int;;
+
 
 module Helper = struct
 
   let cpdf = "/Applications/cpdf ";;
 
   let generic_extract_page_range pdfname (i,j) output_name=
+    if i>j then raise(Incorrect_page_range(pdfname,i,j)) else 
     let si=string_of_int i and sj=string_of_int j in
     cpdf^pdfname^".pdf "^si^"-"^sj^" -o "^output_name
   ;;
@@ -294,7 +293,6 @@ let implode (pdf_name_start,pdf_name_end)=
 let import pdfname=Image.image Unix_command.uc 
   (Command.import  pdfname);;
 
-  
 
 let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.image Unix_command.uc 
  (Command.insert_in_just_after inserted_one receiving_one page_number initial_total_length);;
