@@ -259,6 +259,8 @@ module Bare = struct
           ~num_odd:num_odd 
            ~num_even:num_even 
              ~final_name:final_name;;
+
+  let remove pdfname=["rm "^pdfname^".pdf"];;           
 end;;
 
 
@@ -286,6 +288,7 @@ module Command = struct
   let lay_down =uni Bare.lay_down;; 
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
+  let remove =uni Bare.remove;;
   let rename =bi Bare.rename;;
   let replace_page_number_in_by=qdi Bare.unlabeled_replace_page_number_in_by;;
   let upside_down =uni Bare.upside_down;; 
@@ -347,6 +350,9 @@ let merge parts whole=
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
+
+let remove  pdfname=Image.image Unix_command.uc 
+  (Command.remove  pdfname);;
 
 let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
    (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
