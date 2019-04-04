@@ -52,6 +52,7 @@ module Helper = struct
   let wrap_bivar_inside_workspace f x1 x2=wrap_list_inside_workspace(f x1 x2);;
   let wrap_trivar_inside_workspace f x1 x2 x3=wrap_list_inside_workspace(f x1 x2 x3);;
   let wrap_quadrivar_inside_workspace f x1 x2 x3 x4=wrap_list_inside_workspace(f x1 x2 x3 x4);;
+  let wrap_quintivar_inside_workspace f x1 x2 x3 x4 x5=wrap_list_inside_workspace(f x1 x2 x3 x4 x5);;
 
 end;;
 
@@ -236,6 +237,28 @@ module Bare = struct
   let unlabeled_export  pdfname new_location=
      export ~pdfname:pdfname ~new_location:new_location;;   
 
+  let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=
+    let temp1=Helper.intertwining_decomposition num_odd num_even in 
+    let pages=Image.image (
+      fun (is_odd,idx)->
+        let s_idx=string_of_int idx in 
+        if is_odd 
+        then odd_pages^s_idx
+        else even_pages^s_idx
+    ) temp1 in 
+    let removals=Image.image (fun page->"rm "^page^".pdf") pages in  
+    (explode (odd_pages,"") num_odd)@
+    (explode (even_pages,"") num_even)@
+    (merge pages final_name)@
+    removals;;
+
+  let unlabeled_intertwine odd_pages even_pages num_odd num_even final_name=
+    intertwine 
+      ~odd_pages:odd_pages 
+        ~even_pages:even_pages 
+          ~num_odd:num_odd 
+           ~num_even:num_even 
+             ~final_name:final_name;;
 end;;
 
 
@@ -245,6 +268,7 @@ module Command = struct
   let bi=Helper.wrap_bivar_inside_workspace;;
   let tri=Helper.wrap_trivar_inside_workspace;;
   let qdi=Helper.wrap_quadrivar_inside_workspace;;
+  let qti=Helper.wrap_quintivar_inside_workspace;;
 
   let append_on_the_right =bi Bare.append_on_the_right;;
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
@@ -258,6 +282,7 @@ module Command = struct
   let implode =uni Bare.implode;;
   let import =uni Bare.import;;
   let insert_in_just_after =qdi Bare.unlabeled_insert_in_just_after;;
+  let intertwine =qti Bare.unlabeled_intertwine;;
   let lay_down =uni Bare.lay_down;; 
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
@@ -308,6 +333,10 @@ let import pdfname=Image.image Unix_command.uc
 
 let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.image Unix_command.uc 
  (Command.insert_in_just_after inserted_one receiving_one page_number initial_total_length);;
+
+let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.image Unix_command.uc 
+ (Command.intertwine odd_pages even_pages num_odd num_even final_name);;
+  
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
