@@ -216,6 +216,14 @@ module Bare = struct
           "mv wghartnjklmiopfwhhokuuu.pdf "^pdfname^".pdf" ;
         ];;
   
+  let import pdfname=
+     ["cp "^pdfname^".pdf ."];;
+
+  let export ~pdfname ~new_location=
+     ["mv "^pdfname^".pdf "^new_location];;  
+
+  let unlabeled_export  pdfname new_location=
+     export ~pdfname:pdfname ~new_location:new_location;;   
 
 end;;
 
@@ -231,11 +239,13 @@ module Command = struct
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
   let cut_into_small_pieces =tri Bare.cut_into_small_pieces;;
   let explode =bi Bare.explode;;
+  let export =bi Bare.unlabeled_export;;
   let extract_page_range =bi Bare.extract_page_range;;
   let extract_even_pages =uni Bare.extract_even_pages;;
   let extract_odd_pages =uni Bare.extract_even_pages;;
   let finish_recto_verso =uni Bare.finish_recto_verso;;
   let implode =uni Bare.implode;;
+  let import =uni Bare.import;;
   let insert_in_just_after =qdi Bare.unlabeled_insert_in_just_after;;
   let lay_down =uni Bare.lay_down;; 
   let merge =bi Bare.merge;;
@@ -271,12 +281,20 @@ let explode (pdf_name_start,pdf_name_end) num_of_pages=
    Explicit.image Unix_command.uc 
   (Command.explode  (pdf_name_start,pdf_name_end) num_of_pages);; 
 
+let export ~pdfname ~new_location=Image.image Unix_command.uc 
+  (Command.export pdfname new_location);; 
+
 let finish_recto_verso pdfname =Image.image Unix_command.uc 
   (Command.finish_recto_verso pdfname );;
 
 let implode (pdf_name_start,pdf_name_end)=
    Image.image Unix_command.uc 
   (Command.implode  (pdf_name_start,pdf_name_end));; 
+
+let import pdfname=Image.image Unix_command.uc 
+  (Command.import  pdfname);;
+
+  
 
 let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.image Unix_command.uc 
  (Command.insert_in_just_after inserted_one receiving_one page_number initial_total_length);;
