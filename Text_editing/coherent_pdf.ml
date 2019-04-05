@@ -172,7 +172,17 @@ module Bare = struct
            "rm "^receiving_one^"_half2.pdf"; 
         ];;
 
-  let replace_nonfirst_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
+  let replace_last_page_number_in_by  ~receiving_one ~inserted_one  ~total_length=
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:(total_length-1) ~total_length:total_length)
+        @
+        (merge [receiving_one^"_half1";inserted_one] receiving_one )
+        @
+        [
+           "rm "^receiving_one^"_half1.pdf";
+           "rm "^receiving_one^"_half2.pdf"; 
+        ];; 
+
+  let replace_usual_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
         let temp=receiving_one^"_half2" in 
         (cut_in_two ~pdfname:receiving_one ~first_half_length:(page_number-1) ~total_length:total_length)
         @
@@ -190,7 +200,11 @@ module Bare = struct
   let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
     if page_number=1
     then replace_first_page_number_in_by  receiving_one inserted_one  total_length
-    else replace_nonfirst_page_number_in_by page_number receiving_one inserted_one  total_length;;
+    else 
+    if page_number=total_length
+    then replace_last_page_number_in_by  receiving_one inserted_one  total_length
+    else 
+    replace_usual_page_number_in_by page_number receiving_one inserted_one  total_length;;
 
   let unlabeled_replace_page_number_in_by page_number receiving_one inserted_one  total_length=
      replace_page_number_in_by
