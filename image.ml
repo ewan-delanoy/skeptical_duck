@@ -13,4 +13,3 @@ let image f l=
   ) in
   tempf([],l);;
 
-             

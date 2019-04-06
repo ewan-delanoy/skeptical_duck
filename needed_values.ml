@@ -4,11 +4,11 @@
 
 *)
 
-let abo = Usual_coma_state.above;;
+ let abo = Usual_coma_state.above;; 
 
 let bel = Usual_coma_state.below;;
 
-let cod ()=Check_ocaml_dircopy.check Coma_big_constant.this_world;;
+let cod ()=Check_ocaml_dircopy.check Coma_big_constant.This_World.root;;
 
 let dbel = Usual_coma_state.directly_below;;
 
@@ -36,7 +36,7 @@ let regi short_path=Usual_coma_state.register_short_path short_path;;
 
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
-let rsh = Usual_coma_state.refresh_with_backup;;
+let rsh = Usual_coma_state.refresh;;
 
 let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;  
 

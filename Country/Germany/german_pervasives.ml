@@ -5,10 +5,10 @@
 *)
 
 
-let cdir=Coma_big_constant.this_world;;
+let cdir=Coma_big_constant.This_World.root;;
 
 let s_cdir=Root_directory.connectable_to_subpath cdir;;
-let current_registered_directories ()=Coma_state.directories(Usual_coma_state.main_ref);;
+let current_registered_directories ()=Coma_state.directories(!Usual_coma_state.main_ref);;
 
 let current_directories()=
   let temp1=List.filter (
@@ -27,19 +27,17 @@ let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_m
 let ren_without_backup old_name new_name=
    let old_hm = Usual_coma_state.find_half_dressed_module old_name 
    and unslashed_new_name = No_slashes.of_string new_name in 
-   let _=Coma_state.recompile Usual_coma_state.main_ref in 
+   let _=Coma_state.recompile (!Usual_coma_state.main_ref) in 
     (
-        let _=Coma_state.rename_module Usual_coma_state.main_ref old_hm unslashed_new_name in 
+        let _=Coma_state.rename_module (!Usual_coma_state.main_ref) old_hm unslashed_new_name in 
         Usual_coma_state.save_all();
     );;   
 
 let relo_without_backup old_hm_name new_subdir=
   let old_hm = Usual_coma_state.find_half_dressed_module old_hm_name in 
-  let _=Coma_state.recompile Usual_coma_state.main_ref in 
-      (
-       Coma_state.relocate_module Usual_coma_state.main_ref old_hm new_subdir;
-       Usual_coma_state.save_all();
-      );;     
+  let _=Coma_state.recompile (!Usual_coma_state.main_ref) in 
+  let _=Coma_state.relocate_module (!Usual_coma_state.main_ref) old_hm new_subdir in 
+       Usual_coma_state.save_all();;     
 
 
 let ureg_without_backup x=
@@ -74,7 +72,7 @@ let vo s=
 
 
 
-let init ()=Coma_state.initialize Usual_coma_state.main_ref;;
+let init ()=Usual_coma_state.initialize ();;
 
 
 let rd ()=Alaskan_remove_debuggables.rd cdir (Usual_coma_state.main_ref);;
@@ -87,17 +85,17 @@ let srv_without_backup x y=Usual_coma_state.replace_string x y;;
 
 
 
-let muv x=Coma_state.modules_using_value (Usual_coma_state.main_ref) x;;
+let muv x=Coma_state.modules_using_value (!Usual_coma_state.main_ref) x;;
 
 let ed =German_wrapper.end_debugging;;
 
 
 let vd=German_wrapper.view_definition;;
 let fvd a=Find_value_descendants.fvd 
-  (Compute_all_ocaml_items.caoi(Usual_coma_state.main_ref)) a ;;
+  (Compute_all_ocaml_items.caoi(!Usual_coma_state.main_ref)) a ;;
 
 
-let am ()=Coma_state.all_naked_modules (Usual_coma_state.main_ref);;
+let am ()=Coma_state.all_naked_modules (!Usual_coma_state.main_ref);;
   
     
 let tw x=

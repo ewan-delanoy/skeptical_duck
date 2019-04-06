@@ -4,197 +4,108 @@
 
 *)
 
-type 'a t={
-   mutable current_size : int;
-   container : ('a option) array;
-};;
-
-
-
-let max_size=2000;;
+type 'a t=SA of int*('a list);;
 
 exception Index_out_of_bounds of int*int;;
 
-let size x=x.current_size;;
+let size (SA(n,x))=n;;
 
-let get x k=
-    if (k<1)||(k>x.current_size)
-    then raise(Index_out_of_bounds(k,x.current_size))
-    else Option.unpack(Array.get x.container (k-1));;
+let get (SA(n,x)) k=
+    if (k<1)||(k>n)
+    then raise(Index_out_of_bounds(k,n))
+    else List.nth x (k-1);;
 
-let set x k y=
-      if (k<1)||(k>x.current_size)
-      then raise(Index_out_of_bounds(k,x.current_size))
-      else Array.set x.container (k-1) (Some y);;
+let set (SA(n,x)) k y=
+      if (k<1)||(k>n)
+      then raise(Index_out_of_bounds(k,n))
+      else let (rleft,right)=Listennou.big_rht (k-1) x in 
+           let new_right=y::(List.tl right) in 
+           SA(n,List.rev_append rleft new_right);;
       
-let of_array arr=
-  let n=Array.length arr in
-  {
-     current_size = n;
-     container = Array.init max_size(
-       fun k->
-         if k<n
-         then Some(Array.get arr k)
-         else None
-     )
-  };;
+(* set (SA(5,["i";"j";"k";"l";"m"])) 3 "b";;  *)
 
-let to_array x=
-    Array.init x.current_size (fun k->
-      Option.unpack(Array.get x.container k)
-    );;
 
-let of_list l=of_array(Array.of_list l);;
-let to_list x=Array.to_list (to_array x);;
+let of_list l=SA(List.length l,l);;
+let to_list (SA(n,x))=x;;
 
 
 
 exception Bad_indices_in_reposition of int*int*int;;
 
 let reposition_by_putting_snd_immediately_after_fst
-  x i j=
-    let c=x.current_size in
-    if (i>=j)||(i<1)||(i>c)||(j<1)||(j>c)
-    then raise(Bad_indices_in_reposition(i,j,c)) 
-    else
-    let temp_copy=Array.copy x.container in
-    for k=i+1 to j
-    do
-      let new_k=Ennig.reposition_by_putting_snd_immediately_after_fst i j k in
-      if new_k<>k
-      then Array.set x.container (k-1) (Array.get temp_copy (new_k-1))
-    done;;
+  (SA(n,x)) i j=
+    let (left,ei,middle,ej,right)=
+      Listennou.decompose_wrt_two_indices x i j in 
+      SA(n,left@(ei::ej::(middle@right)));;
    
 exception Overflow;;
 
-let push_right x u=
-  let c=x.current_size in
-      if c>=max_size
-      then raise(Overflow)
-      else
-      (
-        x.current_size<-(c+1); 
-        Array.set x.container c (Some u)
-      );;
+let push_right (SA(n,x)) u=(SA(n+1,x@[u]))
     
-let push_immediately_after_idx x u i=
-  let c=x.current_size in 
-  (
-    push_right x u;
-    reposition_by_putting_snd_immediately_after_fst x i (c+1)  
-  );;
-
-let copy x=of_array(to_array x);;
-
-let copy_from x y=
-  (
-    x.current_size <- y.current_size;
-    for j=0 to (max_size-1) 
-    do
-      Array.set x.container j (Array.get y.container j)
-    done  
-  );;
-
-
-exception Element_not_found;;
- 
-let leftmost_index_of_in y x=
-    let c=x.current_size in
-    let rec tempf=(
-      fun k->if k>c then raise(Element_not_found) else
-             if Array.get x.container (k-1)=Some(y)
-             then k
-             else tempf(k+1)
-    ) in
-    tempf 1;;
-
-let indices_of_property_of_in f x=
-    let c=x.current_size in
-    let accu=ref[] in 
-    for k=1 to c 
-    do
-    let item =  Option.unpack (Array.get x.container (k-1)) in
-       if f item
-       then accu:=k::(!accu)
-    done;
-    List.rev(!accu);;
-
+let push_immediately_after_idx sa u i=
+  let interm_sa=push_right sa u in  
+  reposition_by_putting_snd_immediately_after_fst interm_sa i (size(sa)+1)  
+  ;;
 
 exception Property_not_found;;
 
-let leftmost_index_of_property_in f x=
-    let c=x.current_size in
-    let rec tempf=(
-      fun k->if k>c then raise(Property_not_found) else
-             if f(Option.unpack(Array.get x.container (k-1)))
-             then k
-             else tempf(k+1)
+let leftmost_index_of_property_in f (SA(_,x))=
+    let rec tempf=(fun 
+      (nbr_of_items_seen,to_be_treated)->
+       match to_be_treated with 
+       []->raise(Property_not_found)
+       |elt::other_ones->
+          let m = nbr_of_items_seen +1 in 
+          if f(elt)
+          then m
+          else tempf(m,other_ones)
     ) in
-    tempf 1;;
+    tempf (0,x);;
 
-let seek f x=
-  let c=x.current_size in
-  let rec tempf=(
-    fun k->if k>c then None else
-          let item =  
-            Option.unpack (Array.get 
-             x.container (k-1)) in
-          if f item
-           then Some(item)
-           else tempf(k+1)
-  ) in
-  tempf 1;;
+ 
+let leftmost_index_of_in y sa=
+    leftmost_index_of_property_in (fun elt->elt=y) sa;;
 
-let filter_and_unpack f x=
-    let c=x.current_size in
-    let accu=ref[] in 
-    for k=1 to c do
-    let item =  Option.unpack (Array.get x.container (k-1)) in
-      (match f item with
-      Some(result)->accu:=result::(!accu);
-      |None->()
-    ) 
-    done;
-    List.rev(!accu);;
+let indices_of_property_in f (SA(_,x))=
+    let rec tempf=(fun 
+      (indices_found,count,to_be_treated)->
+       match to_be_treated with 
+       []->List.rev indices_found
+       |elt::other_ones->
+          let m=count+1 in 
+          if f(elt)
+          then tempf(m::indices_found,m,other_ones)
+          else tempf(indices_found,m,other_ones)
+    ) in
+    tempf ([],0,x);;
 
-let image f x=
-      let c=x.current_size in
-      let accu=ref[] in 
-      for k=1 to c do
-      let item =  Option.unpack (Array.get x.container (k-1)) in
-      accu:=(f item)::(!accu);
-      done;
-      List.rev(!accu);;
+
+
+let filter_and_unpack f (SA(_,x))=
+    Option.filter_and_unpack f x;;
+
+let image f (SA(_,x))=
+    Image.image f  x;;
   
 
 
 exception Remove_item_exn of int*int;;
 
-let remove_item_at_index x k=
-  let c=x.current_size in
-  if (k<1)||(k>c) then raise(Remove_item_exn(k,c)) else
-  (
-    x.current_size<-(c-1); 
-    for j=k to c 
-    do
-      Array.set x.container (j-1) (Array.get x.container j)
-    done  
-  );;
+let remove_item_at_index (SA(n,x)) k=
+  if (k<1)||(k>n) then raise(Remove_item_exn(k,n)) else
+  let (rleft,right)=Listennou.big_rht (k-1) x in 
+  SA(n,List.rev_append rleft (List.tl right));;
 
-let apply_transformation_on_interval x f i j=
-    (
-      for k=(i-1) to (j-1) do
-        let old_val=Option.unpack(Array.get x.container k) in
-        let new_val=f(old_val) in
-        Array.set x.container k (Some new_val)
-      done  
-    );;
+let apply_transformation_on_interval (SA(n,x)) f i j=
+   let (left,middle,right)=Listennou.extract_interval x i j in 
+   let new_middle = Image.image f middle in 
+   SA(n,left @ new_middle @ right);;
 
-let apply_transformation_on_all x f=
-  apply_transformation_on_interval x f 1 (x.current_size);;
+let apply_transformation_on_all (SA(n,x)) f=
+  SA(n,Image.image f x);;
 
-let apply_transformation_on_rightmost_interval x f i=
-  apply_transformation_on_interval x f i (x.current_size);;
+let apply_transformation_on_rightmost_interval (SA(n,x)) f i=
+  apply_transformation_on_interval (SA(n,x)) f i n;;
 
  
 let industrial_separator=Industrial_separator.small_array;;
@@ -205,11 +116,8 @@ Do not use those archiving functions on nested small arrays !
 
 *)
 
-let archive old_archiver x=
-   let temp1=Ennig.doyle (
-       fun k->old_archiver(get x k)
-   ) 1 x.current_size in
-   String.concat industrial_separator temp1;;
+let archive old_archiver (SA(_,x))=
+   String.concat industrial_separator (Image.image old_archiver x);;
    
 let unarchive old_unarchiver s=
     let temp1=Str.split_delim (Str.regexp_string industrial_separator) s in

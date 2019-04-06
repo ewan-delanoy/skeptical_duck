@@ -5,23 +5,32 @@
 
 *)
 
-let this_world=
-                Root_directory.of_string 
-                "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;
 
-let next_world=
-                Root_directory.of_string 
-                "/Users/ewandelanoy/Teuliou/OCaml/Idaho";;
+module This_World=struct
 
-let backup_dir_for_this_world=
-                Root_directory.of_string 
-                "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_ocaml";;                
+let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;
+let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_archive";; 
+let githubbing=false;;     
+let triple = (root,backup_dir,githubbing);;           
 
-let dummy_backup_dir=
-                Root_directory.of_string 
-                "/Users/ewandelanoy/Teuliou/OCaml/Dummy_directory";;  
+end;;
 
-let dummy_world=
-                Root_directory.of_string 
-                "/Users/ewandelanoy/Teuliou/OCaml/Cherokee";;
+module Next_World=struct
+
+let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho";;
+let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho_backup";;
+let githubbing=false;;                
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+
+module Third_World=struct
+
+let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee";;
+let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee_backup";; 
+let githubbing=false;;                
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+
                            

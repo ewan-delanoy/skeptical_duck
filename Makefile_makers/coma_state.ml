@@ -10,6 +10,7 @@
 
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
+let github_after_backup =Coma_state_field.github_after_backup;;
 let module_at_idx = Coma_state_field.module_at_idx ;;
 let subdir_at_idx = Coma_state_field.subdir_at_idx ;;
 let principal_ending_at_idx = Coma_state_field.principal_ending_at_idx ;;
@@ -38,16 +39,13 @@ let set_product_up_to_date_at_idx = Coma_state_field.set_product_up_to_date_at_i
 let set_directories = Coma_state_field.set_directories;;
 let set_preq_types = Coma_state_field.set_preq_types;;
 
-(*
-let targets = Coma_state_field.targets;;
-let set_targets = Coma_state_field.set_targets;;
-*)
-
-
 let modules = Coma_state_field.modules;;
 let subdirs = Coma_state_field.subdirs;;
 let needed_dirs = Coma_state_field.needed_dirs;;
 
+
+let set_subdirs = Coma_state_field.set_subdirs;;
+let set_needed_dirs = Coma_state_field.set_needed_dirs;;
 
 (* End of inherited values *)
 
@@ -150,7 +148,7 @@ let debuggable_targets_from_ancestors cs ancestors=
 
 let find_needed_data_for_file cs fn=
       let temp1=Look_for_module_names.names_in_file fn in
-      Small_array.indices_of_property_of_in 
+      Small_array.indices_of_property_in 
       (fun nm->List.mem nm temp1)
       (modules cs);; 
 
@@ -185,6 +183,9 @@ let needed_dirs_and_libs_for_several is_optimized cs l_idx=
     pre_libs2) in
     String.concat " " ["";dirs;libs;""];;
 
+
+
+
 let ingredients_for_debuggable cs hm=
       let mlfile=Mlx_ended_absolute_path.join hm Ocaml_ending.Ml in
       let genealogy=find_needed_data cs mlfile in
@@ -195,12 +196,13 @@ let ingredients_for_debuggable cs hm=
              ) 
              genealogy in
        let temp2=Tidel.big_teuzin ((Tidel.diforchan(dirfath) )::temp1) in
-       let temp3=Small_array.indices_of_property_of_in (
+       let temp3=Small_array.indices_of_property_in (
             fun nm->Tidel.elfenn nm temp2
        ) (modules cs) in
        let allanc=Image.image (module_at_idx cs) temp3 in
       (debuggable_targets_from_ancestors cs allanc)
       @(Private.immediate_ingredients_for_debuggable hm);; 
+
 
 let all_modules cs=
   let n=Small_array.size((modules cs)) in
@@ -252,15 +254,17 @@ let force_modification_time root_dir cs mlx=
       let file=(Root_directory.connectable_to_subpath root_dir)^
                (Mlx_ended_absolute_path.to_string mlx) in
       let new_val=string_of_float((Unix.stat file).Unix.st_mtime)  in
-      let _=(
+      let cs2=(
         if edg=principal_ending_at_idx cs idx 
         then set_principal_mt_at_idx cs idx new_val
+        else cs
       ) in
-      let _=(
+      let cs3=(
         if edg=Ocaml_ending.mli 
-        then set_mli_mt_at_idx cs idx new_val
+        then set_mli_mt_at_idx cs2 idx new_val
+        else cs2
       ) in     
-      cs;;
+      cs3;;
 
 let everyone_except_the_debugger cs=
    (* used to be a more complicated function, when the debug module
@@ -290,9 +294,9 @@ let unregister_module_on_monitored_modules cs hm=
       nm (modules cs) with 
     _->raise(Non_registered_module(hm)) ) in
     let acolytes=acolytes_at_idx cs idx  in
-   let _=Coma_state_field.remove_in_each_at_index cs idx in
+   let cs2=Coma_state_field.remove_in_each_at_index cs idx in
    let short_paths=Image.image Mlx_ended_absolute_path.short_path acolytes in
-   (cs,short_paths);;     
+   (cs2,short_paths);;     
                     
 
 exception Non_registered_file of Mlx_ended_absolute_path.t;;  
@@ -317,23 +321,21 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
     let edg=Mlx_ended_absolute_path.ending mlxfile in
     if (not(check_ending_in_at_idx edg cs idx))
     then raise(Non_registered_file(mlxfile))
-    else let _=(if check_for_single_ending_at_idx cs idx
-                then Coma_state_field.remove_in_each_at_index cs idx
-                else (* if we get here, there are two registered endings, one of which
-                       is the mli *) 
-                     if edg=Ocaml_ending.mli
-                     then (
-                       set_mli_presence_at_idx cs idx false;
-                       set_mli_mt_at_idx cs idx "0.";
-                     )
-                     else 
+    else if check_for_single_ending_at_idx cs idx
+         then Coma_state_field.remove_in_each_at_index cs idx
+         else (* if we get here, there are two registered endings, one of which
+              is the mli *) 
+              if edg=Ocaml_ending.mli
+              then (
+                       let cs3=set_mli_presence_at_idx cs idx false in 
+                       set_mli_mt_at_idx cs3 idx "0."
+                   )
+               else 
                      let old_mt=principal_mt_at_idx cs idx in
                      (
-                      set_principal_ending_at_idx cs idx Ocaml_ending.mli;
-                      set_principal_mt_at_idx cs idx old_mt;
-                    )
-                ) in
-                cs;;
+                      let cs4=set_principal_ending_at_idx cs idx Ocaml_ending.mli in 
+                      set_principal_mt_at_idx cs4 idx old_mt
+                    );;
             
 
 
@@ -529,22 +531,21 @@ let rename_module_on_monitored_modules root_dir cs old_name new_name=
       ".cm* ") in
   let principal_mt=md_compute_modification_time new_hm (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_hm Ocaml_ending.mli in
-  let _=(
-    Small_array.set (modules cs) idx new_mname;
-    set_principal_mt_at_idx cs idx principal_mt;
-    set_mli_mt_at_idx cs idx mli_mt; 
-    set_product_up_to_date_at_idx cs idx false; 
-  ) in
+  let cs2=set_module_at_idx cs idx new_mname in 
+  let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
+  let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
+  let cs5=set_product_up_to_date_at_idx cs4 idx false in 
   let replacer=Image.image(function x->if x=old_mname then new_mname else x) in
+  let cs_walker=ref(cs5) in 
   let _=(
      for k=idx+1 to n do
-      let old_dirfath=direct_fathers_at_idx cs k
-      and old_ancestors=ancestors_at_idx cs k in
-     set_direct_fathers_at_idx cs k (replacer old_dirfath) ;
-     set_ancestors_at_idx cs k (replacer old_ancestors); 
+      let old_dirfath=direct_fathers_at_idx (!cs_walker) k
+      and old_ancestors=ancestors_at_idx (!cs_walker) k in
+      cs_walker:=(set_direct_fathers_at_idx (!cs_walker) k (replacer old_dirfath)) ;
+      cs_walker:=(set_ancestors_at_idx (!cs_walker) k (replacer old_ancestors)); 
      done;
   ) in
-  (cs,(old_files,new_files));;
+  (!cs_walker,(old_files,new_files));;
 
 
 let recompute_complete_card_at_idx cs hm=
@@ -558,8 +559,7 @@ let recompute_module_info cs hm=
   let nm=Half_dressed_module.naked_module hm in
   let idx=find_module_index cs nm in
   let new_dt=recompute_complete_card_at_idx cs hm in 
-  let _=Coma_state_field.set_in_each cs idx new_dt in
-  cs;;  
+  Coma_state_field.set_in_each cs idx new_dt;;  
 
 exception Nonregistered_module_during_relocation of Half_dressed_module.t;;  
           
@@ -583,14 +583,11 @@ let relocate_module_on_monitored_modules root_dir cs old_name new_subdir=
      ("rm -f "^s_root^"_build/"^(Half_dressed_module.uprooted_version old_name)^".cm* ") in
   let principal_mt=md_compute_modification_time new_name (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_name Ocaml_ending.mli in
-  let _=(
-       set_subdir_at_idx cs idx new_subdir;
-       set_principal_mt_at_idx cs idx principal_mt;
-       set_mli_mt_at_idx cs idx mli_mt; 
-       set_product_up_to_date_at_idx cs idx false; 
-       
-  ) in   
-  (cs,(old_files,new_files));;
+  let cs2=set_subdir_at_idx cs idx new_subdir in 
+  let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
+  let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
+  let cs5=set_product_up_to_date_at_idx cs4 idx false in 
+  (cs5,(old_files,new_files));;
 
 
 
@@ -644,50 +641,6 @@ let line_inside = "let github_after_backup=ref(true)"^Double_semicolon.ds;;
 let line_outside = "let github_after_backup=ref(false)"^Double_semicolon.ds;;
 
 
-let all_polished_short_paths cs outside_dir=
-   let inside_dir=root cs in 
-   let temp1=all_short_paths cs in 
-   let testf=(fun x->
-      let ttemp2=Io.read_whole_file(Absolute_path.of_string
-      (Root_directory.join inside_dir x)) 
-      and ttemp3=Io.read_whole_file(Absolute_path.of_string
-      (Root_directory.join outside_dir x)) in 
-      let ttemp4=(
-         if x=Coma_constant.path_for_backerfile 
-         then Replace_inside.replace_inside_string
-                (line_inside,line_outside) ttemp2
-         else ttemp2       
-      ) in 
-      ttemp3<>ttemp4
-   ) in 
-   let temp5=List.filter testf temp1 in 
-   List.filter (
-     fun x->not(Supstring.ends_with x 
-      Coma_constant.name_for_parametersfile)
-   ) temp5;;
-
-let to_outside cs outside_dir=
-   let inside_dir=root cs in 
-   let temp1 = all_polished_short_paths cs outside_dir in 
-   let outside_backer=
-     Absolute_path.of_string(
-        Root_directory.join outside_dir Coma_constant.path_for_backerfile) in 
-   let pre_act = Root_directory.mass_copy inside_dir outside_dir temp1 in 
-   let _=Replace_inside.replace_inside_file
-       (line_inside,line_outside) outside_backer in 
-   pre_act;;    
-
-let from_outside cs outside_dir=
-   let inside_dir=root cs in 
-   let temp1 = all_polished_short_paths cs outside_dir in 
-   let inside_backer=
-     Absolute_path.of_string(
-        Root_directory.join inside_dir Coma_constant.path_for_backerfile) in 
-   let pre_act = Root_directory.mass_copy outside_dir inside_dir temp1 in 
-   let _=Replace_inside.replace_inside_file
-       (line_outside,line_inside) inside_backer in 
-   pre_act;;    
-
 
 
 let files_containing_string cs some_string=
@@ -723,17 +676,15 @@ let reposition_module cs hm (l_before,l_after)=
     then let hm_before=Small_array.get (modules cs) max_before in
          raise(Bad_upper_constraint(hm_before))
     else 
-    let _=Coma_state_field.reposition_in_each cs max_before main_idx in 
-    cs;;  
+    Coma_state_field.reposition_in_each cs max_before main_idx;;  
 
 let rename_directory_on_data (old_subdir,new_subdirname) cs= 
   let ren_sub=Subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) in 
   let toa=Small_array.apply_transformation_on_all in
-  let _=(
-   toa (subdirs cs) ren_sub;
-   toa (needed_dirs cs) (Image.image ren_sub);
-  ) in
-  cs;;
+  let new_subdirs = toa (subdirs cs) ren_sub
+  and new_needed_dirs = toa (needed_dirs cs) (Image.image ren_sub) in 
+  let cs2=set_subdirs cs new_subdirs in 
+  set_needed_dirs cs2 new_needed_dirs;;
 
 
 
@@ -807,23 +758,17 @@ let update_ancs_libs_and_dirs_at_idx cs idx=
   and ordered_ancestors=Image.image (
     Small_array.get (modules cs)
   ) genealogy in
-  (
-    set_ancestors_at_idx cs idx ordered_ancestors;
-    set_needed_libs_at_idx cs idx new_libs;
-    set_needed_dirs_at_idx cs idx new_dirs;
-  );;
+  let cs2=set_ancestors_at_idx cs idx ordered_ancestors in 
+  let cs3=set_needed_libs_at_idx cs2 idx new_libs in
+  set_needed_dirs_at_idx cs3 idx new_dirs;;
 
 let update_ancs_libs_and_dirs cs=
   let n=Small_array.size (modules cs) in
-  for idx=1 to n do
-    update_ancs_libs_and_dirs_at_idx cs idx
-  done;;  
-  
-  
-
-
-    
-
+  let cs_walker=ref(cs) in 
+  let _=(for idx=1 to n do
+    cs_walker:=update_ancs_libs_and_dirs_at_idx (!cs_walker) idx
+  done) in
+  (!cs_walker);;  
 
 
 module PrivateThree=struct
@@ -877,9 +822,9 @@ module PrivateThree=struct
            let idx=Small_array.leftmost_index_of_in nm (modules cs) in 
            Half_dressed_module.uprooted_version( hm_at_idx cs idx) )
            cycles in     
-      let _=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
-      let _=update_ancs_libs_and_dirs cs in 
-      let n=Small_array.size (modules cs) in
+      let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
+      let cs3=update_ancs_libs_and_dirs cs2 in 
+      let n=Small_array.size (modules cs3) in
       let active_descendants=Option.filter_and_unpack (
           fun idx->
             let nm=Small_array.get (modules cs) idx in
@@ -891,7 +836,7 @@ module PrivateThree=struct
             then Some(nm)
             else None
       ) (Ennig.ennig 1 n) in  
-      (cs,active_descendants);;
+      (cs3,active_descendants);;
      
 end;; 
      
@@ -940,23 +885,24 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
                         (short_paths_at_idx cs idx))
     ) in
+  let cs_walker=ref(cs) in   
   let _=List.iter (fun idx->
     match quick_update cs idx with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
     declare_changed(idx);
-    set_principal_mt_at_idx cs idx pr_modif_time;
-    set_mli_mt_at_idx cs idx mli_modif_time;
-    set_direct_fathers_at_idx cs idx direct_fathers;
-    set_product_up_to_date_at_idx cs idx false;
+    cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
+    cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
+    cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
+    cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx false;
     )
 )(Ennig.ennig 1 n) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
 if changed_modules=[] then ((cs,[]),[]) else
 let _=PrivateThree.announce_changed_modules changed_modules in
 (PrivateThree.put_md_list_back_in_order tolerate_cycles 
-  cs changed_modules,
+  (!cs_walker) changed_modules,
 (!ref_for_changed_shortpaths));;  
 
 let printer_equipped_types_from_data cs=
@@ -989,8 +935,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           let opt_idx=seek_module_index cs nm in
           if opt_idx=None
           then  let info=complete_id_during_new_module_registration cs mlx_file in
-                let _=Coma_state_field.push_right_in_each cs info in         
-                cs
+                Coma_state_field.push_right_in_each cs info 
           else
           let idx=Option.unpack(opt_idx) in
           let edgs=registered_endings_at_idx cs idx in
@@ -1011,24 +956,23 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                  complete_info cs old_mlx_file in
                let new_mlimt = md_compute_modification_time hm ending in
                let new_dt=(hm,old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
-               let _=Coma_state_field.set_in_each cs idx new_dt in         
-               cs
+               Coma_state_field.set_in_each cs idx new_dt
           else
           let new_dt=complete_id_during_new_module_registration cs mlx_file in 
           let (_,_,_,_,_,libned,dirfath,allanc,dirned,_)=new_dt in
           let temp3=List.rev(dirfath) in
           if temp3=[]
-          then let _=Coma_state_field.set_in_each cs idx new_dt in         
-               cs
+          then Coma_state_field.set_in_each cs idx new_dt 
           else  
           let last_father=List.hd(temp3) in
           let last_father_idx=Small_array.leftmost_index_of_in last_father (modules cs) in
           let nm=Half_dressed_module.naked_module hm in 
+          let cs_walker=ref(cs) in 
           let _=
             (
               for k=last_father_idx+1 to n 
               do
-              let current_anc= ancestors_at_idx cs k in  
+              let current_anc= ancestors_at_idx (!cs_walker) k in  
               if not(List.mem nm current_anc)
               then ()
               else  
@@ -1038,22 +982,22 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                       if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
                       then Some(nm2)
                       else None
-                    ) (modules cs) 
+                    ) (modules (!cs_walker)) 
                     and new_libs=List.filter (
                       fun lib->(List.mem lib libned)||(List.mem lib current_libs)
                     ) Ocaml_library.all_libraries in  
                     let ordered_dirs=Tidel.teuzin
-                       (Tidel.safe_set(needed_dirs_at_idx cs k))
+                       (Tidel.safe_set(needed_dirs_at_idx (!cs_walker) k))
                        (Tidel.safe_set (dirned)) in
                     let new_dirs=Ordered.forget_order(ordered_dirs) in
-                    set_ancestors_at_idx cs k new_ancestors;
-                    set_needed_libs_at_idx cs k new_libs;
-                    set_needed_dirs_at_idx cs k new_dirs;
+                    cs_walker:=set_ancestors_at_idx (!cs_walker) k new_ancestors;
+                    cs_walker:=set_needed_libs_at_idx (!cs_walker) k new_libs;
+                    cs_walker:=set_needed_dirs_at_idx (!cs_walker) k new_dirs;
               done;
-              Coma_state_field.push_after_in_each cs last_father_idx new_dt;  
+              cs_walker:=Coma_state_field.push_after_in_each (!cs_walker) last_father_idx new_dt;  
             )
           in
-          cs;;
+          (!cs_walker);;
 
 module Ingredients_for_ocaml_target=struct
 
@@ -1615,14 +1559,14 @@ module Ocaml_target_making=struct
     then List.mem tgt tgts
     else false;;
 
-  let unit_make is_an_ending_or_not dir (bowl,(mdata,tgts,rejected_ones)) tgt=
+  let unit_make is_an_ending_or_not dir (bowl,(cs,tgts,rejected_ones)) tgt=
     if (not bowl)
-    then (bowl,(mdata,tgts,rejected_ones))
+    then (bowl,(cs,tgts,rejected_ones))
     else
     if is_up_to_date dir tgts tgt
-    then (true,(mdata,tgts,rejected_ones))
+    then (true,(cs,tgts,rejected_ones))
     else 
-    let temp1=Image.image Unix_command.uc (cmd_for_tgt dir mdata tgt) in 
+    let temp1=Image.image Unix_command.uc (cmd_for_tgt dir cs tgt) in 
     if List.for_all (fun i->i=0) temp1
     then let tgts2=(
           if Ocaml_target.is_a_debuggable tgt 
@@ -1630,20 +1574,20 @@ module Ocaml_target_making=struct
           else tgt::tgts
          )  in
           match Ocaml_target.ml_from_lex_or_yacc_data tgt with
-         None->(true,(mdata,tgts2,rejected_ones))
+         None->(true,(cs,tgts2,rejected_ones))
          |Some(mlx)->
-                     let mdata2=force_modification_time dir mdata mlx in
-                     (true,(mdata2,tgts2,rejected_ones))        
+                     let cs2=force_modification_time dir cs mlx in
+                     (true,(cs2,tgts2,rejected_ones))        
     else let rejected_ones2=(
           match Ocaml_target.main_module tgt with
           None->rejected_ones
           |Some(hm)->hm::rejected_ones
           )  in
-         (false,(mdata,tgts,rejected_ones2));;
+         (false,(cs,tgts,rejected_ones2));;
  
-  let castle dir (mdata,tgts,rejected_ones) tgt=
-    let l=ingr_for_tgt mdata tgt in
-    List.fold_left (unit_make Is_an_ending_or_not.No dir)  (true,(mdata,tgts,rejected_ones)) l;;
+  let castle dir (cs,tgts,rejected_ones) tgt=
+    let l=ingr_for_tgt cs tgt in
+    List.fold_left (unit_make Is_an_ending_or_not.No dir)  (true,(cs,tgts,rejected_ones)) l;;
 
 
   exception Ending_for_full_compilation_pusher;;  
@@ -1671,12 +1615,12 @@ module Ocaml_target_making=struct
     else let hm=Option.unpack(Ocaml_target.main_module tgt) in
          let root=Half_dressed_module.bundle_main_dir hm in
          let s_root=Root_directory.connectable_to_subpath root in
-         let (mdata,_,_)=ts 
-         and (mdata2,tgts2,rejected_ones2)=ts2 in
+         let (cs,_,_)=ts 
+         and (cs2,tgts2,rejected_ones2)=ts2 in
          let (rejects,remains)=List.partition
          (fun (tgtt,_)->
            Ingredients_for_ocaml_target.module_dependency_for_ocaml_target 
-           mdata [hm] tgtt
+           cs [hm] tgtt
          ) others in
          let _=Image.image (
            fun (tgtt,_)->
@@ -1691,7 +1635,7 @@ module Ocaml_target_making=struct
          let rejected_ones2=Listennou.nonredundant_version(
            List.rev_append newly_rejected_ones rejected_ones2
          ) in
-         (successful_ones,remains,(mdata2,tgts2,rejected_ones2));; 
+         (successful_ones,remains,(cs2,tgts2,rejected_ones2));; 
 
 let bad_pusher_argument=
   ref None;;
@@ -1707,24 +1651,16 @@ let pusher_for_full_compilation dir (successful_ones,to_be_treated,ts)=
     |_->iterator_for_full_compilation dir 
      (pusher_for_full_compilation dir (successful_ones,to_be_treated,ts));;
   
-let ref_for_faurisson_set_product_up_to_date_at_idx = ref[];;
-
-let faurisson_set_product_up_to_date_at_idx cs idx vwl=
-  (
-     set_product_up_to_date_at_idx cs idx vwl;
-     ref_for_faurisson_set_product_up_to_date_at_idx:=
-     (idx,vwl)::(!ref_for_faurisson_set_product_up_to_date_at_idx);
-  );;
 
 let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
      match to_be_treated with 
-     []->(rejected,List.rev treated)
+     []->(cs,rejected,List.rev treated)
      |pair::other_pairs->
        let (idx,hm)=pair in
        let cmds = Command_for_ocaml_target.command_for_module_separate_compilation cs hm in 
        if Unix_command.conditional_multiple_uc cmds 
-       then let _=faurisson_set_product_up_to_date_at_idx cs idx true in 
-            helper_for_feydeau cs (rejected,pair::treated,other_pairs)
+       then let cs2=set_product_up_to_date_at_idx cs idx true in 
+            helper_for_feydeau cs2 (rejected,pair::treated,other_pairs)
        else let nm=Half_dressed_module.naked_module hm in 
             let (rejected_siblings,survivors)=List.partition
            (
@@ -1732,11 +1668,12 @@ let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
                 List.mem nm (ancestors_at_idx cs idx2)
            ) other_pairs in 
            let newly_rejected = pair::rejected_siblings in 
+           let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (idx3,hm3)->
-                faurisson_set_product_up_to_date_at_idx cs idx3 false
+                cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx3 false
            ) newly_rejected in 
-           helper_for_feydeau cs (rejected@newly_rejected,treated,survivors) ;;
+           helper_for_feydeau (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
   
 let ref_for_feydeau = ref [];;
 
@@ -1750,26 +1687,24 @@ end;;
 
 
 let recompile cs=
-     let ((_,nms_to_be_updated),short_paths)=
+     let ((cs2,nms_to_be_updated),short_paths)=
         recompile_on_monitored_modules false cs in
-     if nms_to_be_updated=[] then (false,[]) else
-     let new_dirs=compute_subdirectories_list cs  in
+     if nms_to_be_updated=[] then (cs2,false,[]) else
+     let new_dirs=compute_subdirectories_list cs2  in
      let indexed_nms=Image.image(
        fun nm->
-       let idx=find_module_index cs nm in 
-       (idx,hm_at_idx cs idx)
+       let idx=find_module_index cs2 nm in 
+       (idx,hm_at_idx cs2 idx)
      ) nms_to_be_updated in 
-     let (rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.helper_for_feydeau cs ([],[],indexed_nms) in 
+     let (cs3,rejected_pairs,accepted_pairs)=
+       Ocaml_target_making.helper_for_feydeau cs2 ([],[],indexed_nms) in 
      let rejected_hms=Image.image snd rejected_pairs in  
       let new_preqt=Image.image(
         fun (hm,_)->(hm,not(List.mem hm rejected_hms))
-      )  (preq_types cs) in   
-     let _=(
-        set_directories cs new_dirs;
-        set_preq_types cs new_preqt;
-     )  in
-    (true,short_paths);;       
+      )  (preq_types cs3) in   
+     let cs4=set_directories cs3 new_dirs in 
+     let cs5=set_preq_types cs4 new_preqt in 
+    (cs5,true,short_paths);;       
 
 let add_printer_equipped_type cs hm=
   set_preq_types cs ((preq_types cs)@[hm]);;
@@ -1783,9 +1718,9 @@ let uple_form cs=
    preq_types cs
    );;
     
-let backup x diff opt=
+let backup cs diff opt=
   Alaskan_backup_target_system.backup 
-  (root x,backup_dir x) diff opt;;
+  (root cs,backup_dir cs,github_after_backup cs) diff opt;;
 
   let unregister_mlx_file_on_targets root_dir cs mlx=
     let hm=Mlx_ended_absolute_path.half_dressed_core mlx in 
@@ -1799,13 +1734,12 @@ let backup x diff opt=
     let was_lonely=
       (List.length(registered_endings_at_idx cs idx)=1) in 
     let _=set_product_up_to_date_at_idx cs idx false in 
-    let new_cs=unregister_mlx_file_on_monitored_modules cs mlx in
-    let new_dirs=compute_subdirectories_list new_cs in
-    
-    let _=(if was_lonely 
-           then ([],[]) 
-           else Ocaml_target_making.feydeau cs (idx::sibling_indices) ) in 
-    (cs,new_dirs);;   
+    let cs2=unregister_mlx_file_on_monitored_modules cs mlx in
+    let new_dirs=compute_subdirectories_list cs2 in
+    let cs3=(if was_lonely 
+           then cs2
+           else ( fun (cs4,_,_)->cs4)(Ocaml_target_making.feydeau cs2 (idx::sibling_indices)) ) in 
+    (cs3,new_dirs);;   
 
 exception FileWithDependencies of 
 Mlx_ended_absolute_path.t*(Naked_module_t.t list);;
@@ -1831,12 +1765,10 @@ let forget_file_on_targets root_dir pair ap=
 
 
 
-let forget_file x ap=
-    let (_,new_dirs)= 
-     forget_file_on_targets (root x) (x,directories x) ap in  
-        (
-          set_directories x new_dirs;
-        );;         
+let forget_file cs ap=
+    let (cs2,new_dirs)= 
+     forget_file_on_targets (root cs) (cs,directories cs) ap in  
+     set_directories cs2 new_dirs;;
 
 module Unregister_module=struct
 
@@ -1851,9 +1783,9 @@ let test_for_non_obsolescence (hm,short_paths) tgt=
 
 
 let on_targets root_dir cs hm=
-    let (new_cs,short_paths)=unregister_module_on_monitored_modules  cs hm in
-    let new_dirs=compute_subdirectories_list new_cs  in
-     ((cs,new_dirs),short_paths);;   
+    let (cs2,short_paths)=unregister_module_on_monitored_modules  cs hm in
+    let new_dirs=compute_subdirectories_list cs2  in
+     ((cs2,new_dirs),short_paths);;   
      
    
 
@@ -1887,55 +1819,51 @@ let forget_module_on_targets root_dir (cs,dirs) hm=
           else raise(ModuleWithDependenciesDuringForgetting(hm,bel));;
       
 
-let forget_module x hm=
-    let ((_,new_dirs),short_paths)= 
-      forget_module_on_targets (root x) (x,directories x) hm in
+let forget_module cs hm=
+    let ((cs2,new_dirs),short_paths)= 
+      forget_module_on_targets (root cs) (cs,directories cs) hm in
       let _=(
-          set_directories x new_dirs;
+          set_directories cs new_dirs;
       ) in
-      short_paths;;          
+      (cs2,short_paths);;          
 
-let initialize x=
+let read_persistent_version x=
         let s_ap=Root_directory.join (root x)  Coma_constant.name_for_targetfile in
         let ap=Absolute_path.of_string s_ap in
         let the_archive=Io.read_whole_file ap in
-        let the_bulky_one=Coma_state_field.unarchive the_archive in
-        Coma_state_field.copy_mutables_from x the_bulky_one;;      
+        Coma_state_field.unarchive the_archive;;      
 
 module Try_to_register=struct
 
-  let mlx_file mdata mlx_file=
+  let mlx_file cs mlx_file=
     try(Some(register_mlx_file_on_monitored_modules 
-        mdata mlx_file)) with _->None;;  
+        cs mlx_file)) with _->None;;  
 
 module Private=struct
 
 exception Pusher_exn;;
 
-let pusher  (vdata,failures,yet_untreated)=
+let pusher  (cs,failures,yet_untreated)=
      match yet_untreated with
       []->raise(Pusher_exn)
       |mlx::others->
       (
-        match mlx_file vdata mlx with
-        None->(vdata,mlx::failures,others)
+        match mlx_file cs mlx with
+        None->(cs,mlx::failures,others)
         |Some(nfs)->(nfs,failures,others)
       );; 
 
 let rec iterator x=
-   let (vdata,failures,yet_untreated)=x in
+   let (cs,failures,yet_untreated)=x in
    match yet_untreated with
-      []->(failures,vdata)
+      []->(failures,cs)
       |mlx::others->iterator(pusher x);;   
 
 end;;
 
-let mlx_files mdata mlx_files=
-   Private.iterator(mdata,[],mlx_files);;
+let mlx_files cs mlx_files=
+   Private.iterator(cs,[],mlx_files);;
  
-  
-   
-
 
 end;;  
 
@@ -2106,15 +2034,15 @@ let select_good_files s_main_dir=
       (fun (j1,(ap1,s1))->s1) temp1 cycles in
       Image.image (fun (j,_)->snd(List.nth temp1 (j-1)) ) good_list;;
       
-    let from_prepared_list dir backup_dir l=
+    let from_prepared_list dir backup_dir g_after_b l=
        let temp1=Option.filter_and_unpack (fun (ap,s)->
           Mlx_ended_absolute_path.try_from_path_and_root ap dir
        ) l in
-       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir) temp1;;
+       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b) temp1;;
     
     end;;   
     
-let from_main_directory dir backup_dir =
+let from_main_directory dir backup_dir g_after_b=
       let old_s=Root_directory.connectable_to_subpath(dir) in
       let s_main_dir=Cull_string.coending 1 old_s in (* mind the trailing slash *)
       let _=
@@ -2124,101 +2052,82 @@ let from_main_directory dir backup_dir =
       let temp1=Private.select_good_files s_main_dir in
         let temp2=Private.clean_list_of_files dir temp1 in
         let temp3=Private.compute_dependencies temp2 in
-        let (failures,mdata1)=Private.from_prepared_list dir backup_dir temp3 in
-        let pre_preqt=printer_equipped_types_from_data mdata1 in
-        let n=size mdata1 in 
-        let (rejected_pairs,_)=Ocaml_target_making.feydeau mdata1 (Ennig.ennig 1 n) in
+        let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in
+        let pre_preqt=printer_equipped_types_from_data cs1 in
+        let n=size cs1 in 
+        let (cs2,rejected_pairs,_)=Ocaml_target_making.feydeau cs1 (Ennig.ennig 1 n) in
         let rejected_hms=Image.image snd rejected_pairs in 
        let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_hms))) pre_preqt in 
-       (mdata1,[],preqt);;
+       (cs2,[],preqt);;
     
     
 
 end;;  
 
-let delchacre_from_scratch (source_dir,dir_for_backup) mdata=
-  let temp1=all_mlx_paths mdata in
+let delchacre_from_scratch (source_dir,dir_for_backup) cs=
+  let temp1=all_mlx_paths cs in
   let temp3=temp1 in
   let temp4=Image.image (fun ap->Root_directory.cut_beginning 
    source_dir (Absolute_path.to_string ap)) temp3 in
  Prepare_dircopy_update.compute_diff
     (source_dir,temp4) dir_for_backup;;
 
-
-
-
-
 let refresh cs=
-      let (new_cs,new_tgts,new_ptypes)=
+      let (cs2,new_tgts,new_ptypes)=
         Target_system_creation.from_main_directory 
              (root cs)
              (backup_dir cs)
+             (github_after_backup cs)
          in 
-        let new_dirs=compute_subdirectories_list new_cs in
-        let new_diff=delchacre_from_scratch (root cs,backup_dir cs) new_cs in
-        let _=
-        (
-          Coma_state_field.copy_mutables_from cs new_cs;
-          set_directories cs new_dirs;
-          set_preq_types cs new_ptypes;
-         ) in
-         new_diff;; 
+        let new_dirs=compute_subdirectories_list cs2 in
+        let new_diff=delchacre_from_scratch (root cs2,backup_dir cs2) cs2 in
+        let cs3=set_directories cs2 new_dirs in 
+        let cs4=set_preq_types cs3 new_ptypes in
+        (cs4,new_diff);; 
 
 module Register_mlx_file=struct
 
 let on_targets (cs,old_dirs) mlx=
     let hm=Mlx_ended_absolute_path.half_dressed_core mlx in
     let new_dir=Half_dressed_module.subdirectory hm in
-   let _=register_mlx_file_on_monitored_modules cs mlx in
+   let cs2=register_mlx_file_on_monitored_modules cs mlx in
    let new_dirs=
    (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
     in
     let nm=Half_dressed_module.naked_module hm in 
-    let idx=find_module_index cs nm in 
-    let _=Ocaml_target_making.feydeau cs [idx] in 
-    (cs,new_dirs);; 
+    let idx=find_module_index cs2 nm in 
+    let (cs3,_,_)=Ocaml_target_making.feydeau cs2 [idx] in 
+    (cs3,new_dirs);; 
   
 
 end;;  
 
 
 let register_mlx_file cs mlx=
-          let (_,new_dirs)= 
+          let (cs2,new_dirs)= 
           Register_mlx_file.on_targets (cs,directories cs) mlx in   
-            (
-              set_directories cs new_dirs;
-            ) ;;             
-
-let relocate_module_on_targets root_dir cs old_name new_subdir= 
-  let (new_cs,(old_files,new_files))=
-    relocate_module_on_monitored_modules root_dir cs old_name new_subdir in   
-  (cs,(old_files,new_files));;   
- 
+           set_directories cs2 new_dirs;;         
 
 
-let relocate_module x old_name new_subdir=
-  let _=
-    relocate_module_on_targets (root x) x old_name new_subdir in
-     ();;    
+let relocate_module cs old_name new_subdir=
+    relocate_module_on_monitored_modules (root cs) cs old_name new_subdir;;    
 
-let rename_directory x (old_subdir,new_subdirname)=
+let rename_directory cs (old_subdir,new_subdirname)=
       let _=Rename_endsubdirectory.in_unix_world 
-       (root x) (old_subdir,new_subdirname) in
+       (root cs) (old_subdir,new_subdirname) in
       let pair=(old_subdir,new_subdirname) in
-      let _=rename_directory_on_data pair x
-         
-      and new_dirs=German_rename_directory.on_subdirectories pair 
-        (directories x)
+      let cs2=rename_directory_on_data pair cs in
+      let new_dirs=German_rename_directory.on_subdirectories pair 
+        (directories cs2)
       and new_peqt=German_rename_directory.on_printer_equipped_types pair 
-        (preq_types x)
+        (preq_types cs2)
       in
-         (
-          
-          set_directories x new_dirs;
-          set_preq_types x new_peqt;  
-         );;   
+      let cs3=set_directories cs2 new_dirs in 
+      set_preq_types cs3 new_peqt;;
+         
       
-let rename_module_on_targets root_dir cs old_name new_name= 
+let rename_module cs old_name new_name= 
+  let root_dir=root cs in 
   let old_nm=Half_dressed_module.naked_module old_name in 
   let idx=find_module_index cs old_nm in 
   let n=size cs in 
@@ -2226,14 +2135,12 @@ let rename_module_on_targets root_dir cs old_name new_name=
         fun jdx->
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
-  let (new_cs,(old_files,new_files))=
+  let (cs2,(old_files,new_files))=
      rename_module_on_monitored_modules root_dir cs old_name new_name in
-  let _=Ocaml_target_making.feydeau cs (idx::sibling_indices) in 
-  (cs,(old_files,new_files));;   
+  let (cs3,_,_)=Ocaml_target_making.feydeau cs2 (idx::sibling_indices) in 
+  (cs3,(old_files,new_files));;   
 
-let rename_module x old_name new_name=
-        rename_module_on_targets (root x) x old_name new_name ;;    
-
+ 
 let pre_start_debugging cs=
   let root_dir=root cs in
   let _=Alaskan_remove_debuggables.rd root_dir cs in
@@ -2266,22 +2173,15 @@ let start_debugging cs= pre_start_debugging cs;;
           
 
 
-let unregister_mlx_file x mlx=
-        let (_,new_dirs)= 
-          unregister_mlx_file_on_targets (root x) x  mlx in
-          (
-              set_directories x new_dirs;
-          ) ;;  
+let unregister_mlx_file cs mlx=
+    let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
+    set_directories cs2 new_dirs;;
+          
 
-
-
-
-let unregister_module x hm=
-        let ((_,new_dirs),short_paths)= 
-         Unregister_module.on_targets (root x) x  hm in
-            (
-              set_directories x new_dirs;
-            );;        
+let unregister_module cs hm=
+        let ((cs2,new_dirs),short_paths)= 
+         Unregister_module.on_targets (root cs) cs  hm in 
+          set_directories cs2 new_dirs;;        
 
 
 module Write_makefile=struct
@@ -2359,10 +2259,10 @@ module Save_all=struct
 
   module Private=struct
 
-    let save_makefile (root,location_for_makefile) mdata=
+    let save_makefile (root,location_for_makefile) cs=
       let s1="# This makefile was automatocally written by\n"^
       "# the write_makefile function in the ml_manager module. \n\n"^
-      (Write_makefile.write_makefile mdata) in
+      (Write_makefile.write_makefile cs) in
       let lm=Root_directory.force_join root location_for_makefile in
       Io.overwrite_with (Absolute_path.of_string lm) s1;;
     
@@ -2396,9 +2296,10 @@ module Save_all=struct
     
     
   
-    let save_targetfile (root,location_for_targetfile) mdata=
-      let s1=Coma_state_field.archive mdata in
-      let lt=Root_directory.force_join root location_for_targetfile in
+    let save_targetfile location_for_targetfile cs=
+      let root_dir = root cs in 
+      let s1=Coma_state_field.archive cs in
+      let lt=Root_directory.force_join root_dir location_for_targetfile in
       Io.overwrite_with (Absolute_path.of_string lt) s1;;
     
     end;;
@@ -2407,7 +2308,7 @@ module Save_all=struct
     
     
     let write_all 
-    (root,
+    (
       location_for_makefile,
       location_for_targetfile,
       location_for_loadingsfile,
@@ -2415,13 +2316,14 @@ module Save_all=struct
       )
       uple= 
       let (cs,directories,printer_equipped_types)=uple in
+      let root_dir = root cs in  
       let hms=up_to_date_hms cs in 
        (
-        Private.save_makefile (root,location_for_makefile) cs;
-        Private.save_merlinfile (root,Coma_constant.name_for_merlinfile) directories;
-        Private.save_loadingsfile (root,location_for_loadingsfile) (directories,hms);
-        Private.save_targetfile (root,location_for_targetfile) cs;
-        Private.save_printersfile (root,location_for_printersfile) printer_equipped_types;
+        Private.save_makefile (root_dir,location_for_makefile) cs;
+        Private.save_merlinfile (root_dir,Coma_constant.name_for_merlinfile) directories;
+        Private.save_loadingsfile (root_dir,location_for_loadingsfile) (directories,hms);
+        Private.save_targetfile location_for_targetfile cs;
+        Private.save_printersfile (root_dir,location_for_printersfile) printer_equipped_types;
        );;
     
     
@@ -2432,42 +2334,45 @@ end;;
 
 module Create_or_update_copied_compiler=struct
 
-  let prepare cs destdir=
+let text_for_big_constants_file_in_next_world =
+  String.concat "\n" [
+    "\n(* "; 
+    "#use\"Makefile_makers/coma_big_constant.ml\";;";
+   "*)\n"; 
+   "module This_World=struct\n";
+   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
+   "let backup_dir=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
+   "let githubbing="^(string_of_bool Coma_big_constant.Next_World.githubbing)^";;";
+   "let triple = (root,backup_dir,githubbing);;\n"; 
+   "end;;";
+   "module Next_World=struct\n";
+   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Root_directory_t.R \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
+   "let triple = (root,backup_dir,githubbing);;\n"; 
+   "end;;";
+   "module Third_World=struct\n";
+   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
+   "let triple = (root,backup_dir,githubbing);;\n"; 
+   "end;;";
+   "\n\n\n"
+   ];;
+
+  let commands_for_copying cs =
     let sourcedir=root cs in 
     let l1=all_short_paths cs in
     let main_diff=Prepare_dircopy_update.compute_diff 
-          (sourcedir,l1) destdir in
-    Prepare_dircopy_update.commands_for_update (sourcedir,destdir) main_diff;;
+          (sourcedir,l1) Coma_big_constant.Next_World.root in
+    Prepare_dircopy_update.commands_for_update (sourcedir,Coma_big_constant.Next_World.root) main_diff;;
   
-  let default_reps (sourcedir,destdir)=
-       (* The order of the replacements is important here *)
-       [
-         (Root_directory.without_trailing_slash Coma_big_constant.next_world,
-          Root_directory.without_trailing_slash Coma_big_constant.dummy_world);
-         (Root_directory.without_trailing_slash sourcedir,
-          Root_directory.without_trailing_slash destdir);
-         (Root_directory.without_trailing_slash Coma_big_constant.backup_dir_for_this_world,
-          Root_directory.without_trailing_slash Coma_big_constant.dummy_backup_dir)
-       ]  ;;
-
-  let prepare_special_file (sourcedir,destdir) (filename,reps)=
-    let the_file=Absolute_path.create_file(Root_directory.join destdir filename) in
-    Replace_inside.replace_several_inside_file reps the_file;;
-  
-  let list_of_special_files (sourcedir,destdir)=
-     [
-       Coma_constant.path_for_backerfile,[
-                                           (line_inside,
-                                           line_outside)
-                                         ];
-       Coma_constant.path_for_loadingsfile,default_reps (sourcedir,destdir);
-       Coma_constant.path_for_printersfile,default_reps (sourcedir,destdir); 
-       Coma_constant.path_for_parametersfile,default_reps (sourcedir,destdir);                
-     ];;
+  let path_for_big_constants_in_next_world ()=
+    Root_directory.join Coma_big_constant.Next_World.root Coma_constant.path_for_parametersfile;;
   
   
-  let ucc cs (destdir,backup_dir)=
-    let sourcedir=root cs in 
+  let ucc cs =
+    let destdir=Coma_big_constant.Next_World.root in 
     let s_dir=Root_directory.connectable_to_subpath destdir in 
     let _=Image.image (
        fun subdir ->
@@ -2477,30 +2382,27 @@ module Create_or_update_copied_compiler=struct
         Coma_constant.exec_build_subdir;
         Coma_constant.debug_build_subdir;
         Coma_constant.automatically_generated_subdir;
-        Coma_constant.backer_subdir;
         Coma_constant.parameters_subdir;
       ] in
-    let special_files=list_of_special_files (sourcedir,destdir) in  
     (* remember to modify the special files AFTER copying every file ! *)
-    let _=Image.image Unix_command.uc (prepare cs destdir) in 
-    let _=Image.image (
-        fun (filepath,reps)->
-          let _=Unix_command.uc("touch "^s_dir^filepath) in 
-          prepare_special_file (sourcedir,destdir) (filepath,reps)
-    ) special_files in  
-    let (new_mdata2,new_tgts2,preqt)=Target_system_creation.from_main_directory destdir backup_dir in 
-    let _=(
-        set_preq_types new_mdata2 preqt
-    ) in
-    let uple=uple_form new_mdata2 in 
+    let _=Image.image Unix_command.uc (commands_for_copying cs) in 
+    (* the mass copying just done includes the big constants file *)
+    let bc_path=Absolute_path.of_string(path_for_big_constants_in_next_world()) in
+    let _=Io.overwrite_with bc_path text_for_big_constants_file_in_next_world in
+    let (other_cs,new_tgts2,preqt)=Target_system_creation.from_main_directory 
+      Coma_big_constant.Next_World.root 
+        Coma_big_constant.Next_World.backup_dir 
+          Coma_big_constant.Next_World.githubbing in 
+    let other_cs2=set_preq_types other_cs preqt in
+    let uple=uple_form other_cs2 in 
     let _=Save_all.write_all 
-    (destdir, 
+    (
       Coma_constant.name_for_makefile,
       Coma_constant.name_for_targetfile,
       Coma_constant.name_for_loadingsfile,
       Coma_constant.name_for_printersfile
     ) uple in
-    (new_mdata2,new_tgts2,preqt);;
+    (other_cs2,new_tgts2,preqt);;
 
 
          
@@ -2723,7 +2625,7 @@ let find_half_dressed_module cs x=
    |None->raise(No_module_with_name(x));;  
 
 let save_all cs=Save_all.write_all 
-  (Coma_big_constant.this_world, 
+  (
     Coma_constant.name_for_makefile,
     Coma_constant.name_for_targetfile,
     Coma_constant.name_for_loadingsfile,
@@ -2758,33 +2660,35 @@ let local_directly_below cs x=
 let forget_file_with_backup cs x=
    let ap=decipher_path cs x in
    let s_ap=Absolute_path.to_string ap in  
-   let cut_ap=Root_directory.cut_beginning Coma_big_constant.this_world s_ap in
+   let cut_ap=Root_directory.cut_beginning (root cs) s_ap in
    let diff=
     Dircopy_diff.veil
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in
-   let _=recompile cs in 
-   (
-    forget_file cs ap;
-    save_all cs;
-    backup cs diff None
-   ) ;; 
+   let (cs2,_,_)=recompile cs in 
+   let cs3=forget_file cs2 ap in 
+   let _=(
+    save_all cs3;
+    backup cs3 diff None
+   ) in 
+   cs3;; 
 
 let forget_module_with_backup cs x=
     let hm = find_half_dressed_module cs x in 
-    let _=recompile cs in
-    let short_paths=forget_module cs hm in    
+    let (cs2,_,_)=recompile cs in
+    let (cs3,short_paths)=forget_module cs2 hm in    
     let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
     let diff=
       Dircopy_diff.veil
       (Recently_deleted.of_string_list ordered_paths)
       (Recently_changed.of_string_list [])
       (Recently_created.of_string_list []) in
-     (
-      backup cs diff None; 
-      save_all cs 
-     );; 
+    let _=(
+      save_all cs3;
+      backup cs3 diff None;  
+     ) in 
+     cs3;; 
  
 let forget_with_backup cs x=
       if String.contains x '.'
@@ -2794,64 +2698,61 @@ let forget_with_backup cs x=
 let forget_without_backup cs x=
    if String.contains x '.'
    then let ap=decipher_path cs x in 
-        let _=recompile cs in 
-        (
-          forget_file cs ap;
-          save_all cs;
-        )
+        let (cs2,_,_)=recompile cs in 
+        let cs3=forget_file cs2 ap in 
+        let _=(save_all cs3) in 
+        cs3
    else let hm = find_half_dressed_module cs x in 
-        let _=recompile cs in
-        let _=forget_module cs hm in    
-        save_all cs;;  
+        let (cs2,_,_)=recompile cs in
+        let (cs3,_)=forget_module cs2 hm in    
+        let _=(save_all cs3) in 
+        cs3;;  
 
 
 
 
-
-let local_from_outside cs= from_outside  cs Coma_big_constant.next_world;; 
-
-let initialize_if_empty cs=
-      if (size cs=0) 
-      then initialize cs;;                           
+(* let local_from_outside cs= from_outside  cs Coma_big_constant.next_world;; *)
+                     
 
 
-let polished_short_paths cs=all_polished_short_paths  cs Coma_big_constant.next_world;;
+(* let polished_short_paths cs=all_polished_short_paths  cs Coma_big_constant.next_world;; *)
 
 let recompile_without_githubbing cs=
-  let (change_exists,short_paths)=recompile cs  in
+  let (cs2,change_exists,short_paths)=recompile cs  in
   let changed_paths=
    (if not change_exists
    then []
    else let _=save_all cs in  
        Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
-    Dircopy_diff.veil
+    (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list changed_paths)
-    (Recently_created.of_string_list []) ;;
+    (Recently_created.of_string_list [])) ;;
 
 let recompile cs opt=
-   let diff=recompile_without_githubbing cs in 
-   if not(Dircopy_diff.is_empty diff)
-   then backup cs diff opt;;
+   let (cs2,diff)=recompile_without_githubbing cs in 
+   let _=(if not(Dircopy_diff.is_empty diff)
+   then backup cs diff opt) in 
+   cs2;;
 
 let local_refresh cs=
-   let new_diff=refresh cs in
-   let _=save_all cs in
-   new_diff;;
+   let (cs2,new_diff)=refresh cs in
+   let _=save_all cs2 in
+   (cs2,new_diff);;
 
 let refresh_with_backup cs=
-  let diff=refresh cs in
-  (
-    backup cs diff None;
-    save_all cs 
-   );;
+  let (cs2,diff)=refresh cs in
+  let _=(
+    save_all cs2;
+    backup cs2 diff None;
+   ) in 
+  cs2;;
 
 let local_register_mlx_file cs mlx=
-    let _=recompile cs None in 
-    (
-     register_mlx_file cs mlx;
-     save_all cs;
-    );;  
+    let cs2=recompile cs None in 
+    let cs3=register_mlx_file cs2 mlx in 
+    let _=save_all cs3 in 
+    cs3;;  
  
 let register_short_path_without_backup cs x= 
   let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
@@ -2867,15 +2768,16 @@ let register_short_path cs x=
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list [short_path]) in
-  (
-    register_mlx_file cs mlx;
-    backup cs diff None;
-    save_all cs 
-   );;
+  let cs2=register_mlx_file cs mlx in 
+  let _=(
+    save_all cs2;
+    backup cs2 diff None;
+   ) in 
+  cs2;;
 
 
 
-let local_to_outside cs= to_outside  cs Coma_big_constant.next_world;;  
+(* let local_to_outside cs= to_outside  cs Coma_big_constant.next_world;;  *)
 
 
 

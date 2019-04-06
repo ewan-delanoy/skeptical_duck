@@ -20,13 +20,13 @@ let unsharped_content hm=
     else naive_content;;
 
 let self_contained_module_copy prefix hm=
-   let wmdata=Usual_coma_state.main_ref in 
+   let cs=(!(Usual_coma_state.main_ref)) in 
    let nm=Half_dressed_module.naked_module hm in
-   let those_above=(Coma_state.above wmdata hm)@[nm] in
+   let those_above=(Coma_state.above cs  hm)@[nm] in
    let temp1=Image.image (
        fun nm2->
-         let idx2=Coma_state.find_module_index wmdata nm2 in
-         let hm2=Coma_state.hm_at_idx wmdata idx2 in
+         let idx2=Coma_state.find_module_index cs nm2 in
+         let hm2=Coma_state.hm_at_idx cs idx2 in
          let mlx=Mlx_ended_absolute_path.join hm2 Ocaml_ending.ml in
          let ap=Mlx_ended_absolute_path.to_absolute_path mlx in
          let naked_name=Modularize.module_name_from_path ap in
@@ -52,7 +52,5 @@ let self_contained_module_copy prefix hm=
    String.concat "\n\n\n" temp3;;
 
 
-(*
 
-*)
 
