@@ -118,8 +118,8 @@ let colorize_footnotes_in_string s=
    let (prologue,pages)=Decompose_into_pages.dip s in 
    let colorized_prologue=colorize_footnotes_in_page prologue in 
    let colorized_pages = Image.image (
-     fun (pg_nbr,pg_content)->
-       "\np"^(string_of_int pg_nbr)^" \n\n"^
+     fun (pg_nbr,pg_line,pg_content)->
+       "\np"^pg_line^"\n"^
        (colorize_footnotes_in_page pg_content)
    ) pages in 
    String.concat "\n" (colorized_prologue::colorized_pages);;
