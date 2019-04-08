@@ -41,7 +41,7 @@ let dip s =
   let (first_one,usual_ones)=Three_parts.decompose_according_to_beginning_markers
     (fun (line,opt_page)->opt_page<>None) temp2 in 
   let tempf1=(fun l->String.concat "\n" (Image.image fst l)) in   
-  (tempf1 first_one, Image.image (fun ((_,opt),l)->(Option.unpack(opt),tempf1 l)) usual_ones);;  
+  (tempf1 first_one, Image.image (fun ((line,opt),l)->(Option.unpack(opt),line,tempf1 l)) usual_ones);;  
 
 (*
 
