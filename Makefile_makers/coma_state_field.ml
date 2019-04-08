@@ -278,7 +278,7 @@ to_t({ cs with
 
 
 let reorder wrapped_cs reordered_list_of_modules =
-     let  cs=of_t wrapped_cs in
+     let cs=of_t wrapped_cs in
      let old_modules=Small_array.to_list (cs.Coma_state_t.modules) in 
      let indices = Image.image (
         fun elt-> Listennou.find_index elt old_modules
@@ -315,6 +315,55 @@ to_t({ cs with
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;  
+
+(* For debugging purposes *)
+
+let sizes wrapped_cs =
+    let cs=of_t wrapped_cs in
+    [ 
+      ["modules",Small_array.size(cs.Coma_state_t.modules)];
+      ["subdirs",Small_array.size(cs.Coma_state_t.subdir_for_module)];
+      ["pr_endings",Small_array.size(cs.Coma_state_t.principal_ending_for_module)];
+      ["mlis",Small_array.size(cs.Coma_state_t.mli_presence_for_module)];
+      ["mod_times",Small_array.size(cs.Coma_state_t.principal_mt_for_module)];
+      ["mli_mod_times",Small_array.size(cs.Coma_state_t.mli_mt_for_module)];
+      ["needed_libs",Small_array.size(cs.Coma_state_t.needed_libs_for_module)];
+      ["fathers",Small_array.size(cs.Coma_state_t.direct_fathers_for_module)];
+      ["ancestors",Small_array.size(cs.Coma_state_t.ancestors_for_module)];
+      ["needed_dirs",Small_array.size(cs.Coma_state_t.needed_dirs_for_module)];
+      ["datechecks",Small_array.size(cs.Coma_state_t.product_up_to_date_for_module)];
+  ];;
+
+
+let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
+    let nm=Half_dressed_module.naked_module hm
+    and subdir=Half_dressed_module.subdirectory hm 
+    and  cs=of_t wrapped_cs in
+    let new_modules = Small_array.push_immediately_after_idx cs.Coma_state_t.modules nm idx  
+    and new_subdirs = Small_array.push_immediately_after_idx cs.Coma_state_t.subdir_for_module subdir idx 
+    and new_principal_endings = Small_array.push_immediately_after_idx cs.Coma_state_t.principal_ending_for_module pr_end idx 
+    and new_mli_presences = Small_array.push_immediately_after_idx cs.Coma_state_t.mli_presence_for_module mlip idx
+    and new_principal_mts = Small_array.push_immediately_after_idx cs.Coma_state_t.principal_mt_for_module prmt idx
+    and new_mli_mts = Small_array.push_immediately_after_idx cs.Coma_state_t.mli_mt_for_module mlimt idx
+    and new_needed_libs = Small_array.push_immediately_after_idx cs.Coma_state_t.needed_libs_for_module libned idx
+    and new_direct_fathers = Small_array.push_immediately_after_idx cs.Coma_state_t.direct_fathers_for_module dirfath idx
+    and new_ancestors = Small_array.push_immediately_after_idx cs.Coma_state_t.ancestors_for_module allanc idx
+    and new_needed_dirs = Small_array.push_immediately_after_idx cs.Coma_state_t.needed_dirs_for_module dirned idx
+    and new_products_up_to_date = Small_array.push_immediately_after_idx cs.Coma_state_t.product_up_to_date_for_module upy idx  in 
+to_t({ cs with 
+      Coma_state_t.modules = new_modules;
+      Coma_state_t.subdir_for_module = new_subdirs;
+      Coma_state_t.principal_ending_for_module = new_principal_endings;
+      Coma_state_t.mli_presence_for_module = new_mli_presences;
+      Coma_state_t.principal_mt_for_module = new_principal_mts;
+      Coma_state_t.mli_mt_for_module = new_mli_mts;
+      Coma_state_t.needed_libs_for_module = new_needed_libs;
+      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
+      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
+      Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+});;
+
 
 let outer_separator=Industrial_separator.modulesystem_data1;; 
 let inner_separator=Industrial_separator.modulesystem_data2;; 
