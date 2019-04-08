@@ -18,6 +18,7 @@ let seek_page_number_description_in_line s start_idx =
      fun k->let c=Strung.get s k in 
      not(List.mem c ['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'])
   ) (Ennig.ennig (idx1+1) n) in 
+  if opt2=Some(idx1+1) then None else 
   let end_idx=(match opt2 with 
      None->n
      |Some(idx2)->idx2-1
