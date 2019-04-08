@@ -119,7 +119,7 @@ let colorize_footnotes_in_string s=
    let colorized_prologue=colorize_footnotes_in_page prologue in 
    let colorized_pages = Image.image (
      fun (pg_nbr,pg_line,pg_content)->
-       "\np"^pg_line^"\n"^
+       "\n"^pg_line^"\n"^
        (colorize_footnotes_in_page pg_content)
    ) pages in 
    String.concat "\n" (colorized_prologue::colorized_pages);;
