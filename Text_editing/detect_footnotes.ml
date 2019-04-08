@@ -5,6 +5,8 @@
 
 *)
 
+exception Ios_exn of int*int*string;;
+
 let check_for_footnote_at_idx s start_idx =
   let n=String.length s in 
   if (Strung.get s start_idx)<>'(' then None else 
@@ -16,7 +18,8 @@ let check_for_footnote_at_idx s start_idx =
   let idx1=Option.unpack opt1 in 
   if (Strung.get s idx1)<>')' then None else   
   let pagenumber_description=Cull_string.interval s (start_idx+1) (idx1-1) in 
-  let pagenumber=int_of_string pagenumber_description in 
+  let pagenumber=(try int_of_string pagenumber_description with 
+  _->raise(Ios_exn(start_idx+1,idx1-1,pagenumber_description))) in 
   Some(pagenumber,(start_idx,idx1));;
 
 (*
