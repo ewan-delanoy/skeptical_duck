@@ -153,18 +153,6 @@ let nonredundant_version l=
   ) in
   tempf([],l);;
 
-
-let connected_components_in_intlist l=
-  if l=[] then [] else
-  let rec tempf=(fun
-  (graet,i,j,da_ober)->
-     match da_ober with
-      []->List.rev((i,j)::graet)
-     |a::peurrest->if a=(j+1)
-                   then tempf(graet,i,j+1,peurrest)
-                   else tempf((i,j)::graet,a,a,peurrest)) in
-   tempf([],List.hd l,List.hd l,List.tl l);;
-
 let rev_map f l=
    let rec tempf=(
      fun (graet,da_ober)->match da_ober with
@@ -173,100 +161,8 @@ let rev_map f l=
    ) in
    tempf([],l);;
    
-let constant_slices f l=
-  if l=[] then [] else
-  let (a0,l0)=(List.hd l,List.tl l) in
-  let rec tempf=(fun 
-    (graet,current_val,slice,da_ober)->
-    match da_ober with
-    []->List.rev((List.rev slice)::graet)
-    |a::peurrest->
-        let va=f(a) in
-        if va=current_val
-        then tempf(graet,current_val,a::slice,peurrest)
-        else tempf((List.rev slice)::graet,va,[a],peurrest) 
-  ) in   
-  tempf ([],f a0,[a0],l0);;
-   
-
-let glued_slices c l=
-  if l=[] then [] else
-  let rec tempf=(fun 
-    (graet,pure_glue,slice,slice_element,da_ober)->
-    match da_ober with
-    []->( 
-          if pure_glue=[]
-          then (
-                 if slice=[]
-                 then List.rev graet
-                 else List.rev((List.rev slice)::graet)
-               )  
-          else List.rev([pure_glue]::graet)
-        )  
-    |a::peurrest->
-        if a=c
-        then (
-              if pure_glue=[]
-              then (
-                    if slice_element<>[]
-                    then tempf(graet,[c],(List.rev slice_element)::slice,[],peurrest)
-                    else tempf(graet,[c],slice,slice_element,peurrest)
-                   )
-              else if pure_glue=[c]
-                   then (
-                          if slice=[]
-                          then tempf(graet,[c;c],[],[],peurrest)
-                          else tempf((List.rev slice)::graet,[c;c],[],[],peurrest)
-                        )  
-                   else tempf(graet,c::pure_glue,[],[],peurrest)
-             )
-        else ( 
-               if pure_glue=[]
-               then tempf(graet,[],slice,a::slice_element,peurrest)
-               else (
-                     if pure_glue=[c]
-                     then (
-                           if graet=[]
-                           then tempf([[[c]]],[],[],[a],peurrest)
-                           else tempf(graet,[],slice,[a],peurrest)
-                           )
-                     else tempf([pure_glue]::graet,[],[],[a],peurrest)
-                    )
-             ) 
-  ) in   
-  tempf ([],[],[],[],l);;
-
-exception Not_encountered;;
-
-let rec seek_and_remember f (graet,da_ober)=
-   match da_ober with
-   []->raise(Not_encountered)
-   |a::peurrest->if f a 
-                 then (graet,da_ober)
-                 else seek_and_remember f (a::graet,peurrest);;
-
-let rec nice_cut small_one large_one=
-    match small_one with
-     []->Some(large_one)
-    |a1::peurrest1->
-      (
-         match large_one with
-         []->None
-         |a2::peurrest2->
-             if a2=a1
-             then nice_cut peurrest1 peurrest2
-             else None
-      );;
-
-
 let hi=List.length;;
 let rev=List.rev;;
 
-(*
-glued_slices 0 [1;2;3;0;4;5;0;6;7;8;0;0;0;9;10;0;11;0;12;13;0;0];;
-glued_slices 0 [0;1;2;3;0;4;5;0;6;7;8;0;0;0;9;10;0;11;0;12;13;0;0];;
-glued_slices 0 [0;0;1;2;3;0;4;5;0;6;7;8;0;0;0;9;10;0;11;0;12;13;0;0];;
 
 
-
-*)           

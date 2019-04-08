@@ -94,7 +94,7 @@ exception Remove_item_exn of int*int;;
 let remove_item_at_index (SA(n,x)) k=
   if (k<1)||(k>n) then raise(Remove_item_exn(k,n)) else
   let (rleft,right)=Listennou.big_rht (k-1) x in 
-  SA(n,List.rev_append rleft (List.tl right));;
+  SA(n-1,List.rev_append rleft (List.tl right));;
 
 let apply_transformation_on_interval (SA(n,x)) f i j=
    let (left,middle,right)=Listennou.extract_interval x i j in 
@@ -106,7 +106,6 @@ let apply_transformation_on_all (SA(n,x)) f=
 
 let apply_transformation_on_rightmost_interval (SA(n,x)) f i=
   apply_transformation_on_interval (SA(n,x)) f i n;;
-
  
 let industrial_separator=Industrial_separator.small_array;;
 
@@ -124,9 +123,6 @@ let unarchive old_unarchiver s=
     let temp2=Image.image old_unarchiver temp1 in 
     of_list temp2;;   
    
-
-
-
 
 
                     

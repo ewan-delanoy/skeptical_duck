@@ -887,7 +887,7 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun idx->
-    match quick_update cs idx with
+    match quick_update (!cs_walker) idx with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
@@ -899,7 +899,7 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     )
 )(Ennig.ennig 1 n) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
-if changed_modules=[] then ((cs,[]),[]) else
+if changed_modules=[] then ((!cs_walker,[]),[]) else
 let _=PrivateThree.announce_changed_modules changed_modules in
 (PrivateThree.put_md_list_back_in_order tolerate_cycles 
   (!cs_walker) changed_modules,
@@ -1717,6 +1717,7 @@ let uple_form cs=
    directories cs,
    preq_types cs
    );;
+
     
 let backup cs diff opt=
   Alaskan_backup_target_system.backup 

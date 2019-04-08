@@ -9,8 +9,8 @@
 module This_World=struct
 
 let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;
-let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_archive";; 
-let githubbing=false;;     
+let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_ocaml";; 
+let githubbing=true;;     
 let triple = (root,backup_dir,githubbing);;           
 
 end;;
@@ -33,4 +33,4 @@ let triple = (root,backup_dir,githubbing);;
 
 end;;
 
-                           
+                 
