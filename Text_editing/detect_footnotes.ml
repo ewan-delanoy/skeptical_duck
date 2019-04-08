@@ -99,9 +99,9 @@ let colorize_footnotes_in_page page =
   let (main_text,footnote_zone)=extract_footnote_zone_from_page page in 
   let decomposed_main_text = extract_footnotes_from_main_text main_text in
   let colorized_zone = String.concat "\n" (Image.image (
-     fun footnote->"[color=green]"^footnote^"[/color]"
+     fun footnote->"[color=green]"^(Cull_string.trim_spaces_on_the_right footnote)^"[/color]"
   ) footnote_zone) in 
-  let colorized_main_text = String.concat "\n" (Image.image (
+  let colorized_main_text = String.concat "" (Image.image (
    fun (is_a_reference,part)->
      if is_a_reference then "[color=green]"^part^"[/color]" else part 
   ) decomposed_main_text) in 
