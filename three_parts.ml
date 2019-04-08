@@ -39,8 +39,25 @@ let select_center_element f l=
   let (temp1,opt,after)=select_center_element_and_reverse_left f l in 
   (List.rev temp1,opt,after);;
 
+let decompose_according_to_markers f l =
+  let rec tempf=(
+     fun (treated,to_be_treated)->
+       let (before,opt,after)=select_center_element f to_be_treated in 
+       if opt=None then (List.rev treated,before) else 
+       tempf((before,Option.unpack opt)::treated,after)
+  ) in 
+  tempf([],l);;
+
+
+(*
+
+decompose_according_to_markers (fun x->List.mem x [3;7;11]) 
+[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20];;
+
+*)  
+
 let select_left_interval f l=
-  (* note that the "interval" is returned is reverse form *)
+  (* note that the "interval" is returned in reverse form *)
   let rec tempf=(fun (graet,da_ober)->match da_ober with
   []->(graet,[])
   |x::peurrest->if f x 
