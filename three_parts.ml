@@ -39,7 +39,7 @@ let select_center_element f l=
   let (temp1,opt,after)=select_center_element_and_reverse_left f l in 
   (List.rev temp1,opt,after);;
 
-let decompose_according_to_markers f l =
+let decompose_according_to_end_markers f l =
   let rec tempf=(
      fun (treated,to_be_treated)->
        let (before,opt,after)=select_center_element f to_be_treated in 
@@ -49,9 +49,21 @@ let decompose_according_to_markers f l =
   tempf([],l);;
 
 
+let decompose_according_to_beginning_markers f l=
+  let (nonlast_ones,last_one)=decompose_according_to_end_markers f (List.rev l) in
+  (List.rev last_one,
+    List.rev_map (fun (x,marker)->
+      (marker,List.rev x)
+    ) nonlast_ones
+  );; 
+  
+
 (*
 
-decompose_according_to_markers (fun x->List.mem x [3;7;11]) 
+decompose_according_to_beginning_markers (fun x->List.mem x [3;7;11]) 
+[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20];;
+
+decompose_according_to_end_markers (fun x->List.mem x [3;7;11]) 
 [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20];;
 
 *)  
