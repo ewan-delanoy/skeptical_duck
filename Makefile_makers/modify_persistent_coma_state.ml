@@ -37,7 +37,13 @@ let register_short_path pcs x=
   let new_cs = Coma_state.Almost_concrete.register_short_path (!pcs) x in 
   pcs:=new_cs;;
 
+let relocate pcs =
+   let new_cs = Coma_state.Almost_concrete.relocate (!pcs) in 
+  pcs:=new_cs;;
 
+let rename pcs =
+   let new_cs = Coma_state.Almost_concrete.rename (!pcs) in 
+  pcs:=new_cs;;  
 
 
 
