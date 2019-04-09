@@ -994,6 +994,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     cs_walker:=set_needed_libs_at_idx (!cs_walker) k new_libs;
                     cs_walker:=set_needed_dirs_at_idx (!cs_walker) k new_dirs;
               done;
+              cs_walker:=Coma_state_field.remove_in_each_at_index (!cs_walker) idx;
               cs_walker:=Coma_state_field.push_after_in_each (!cs_walker) last_father_idx new_dt;  
             )
           in
