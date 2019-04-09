@@ -10,6 +10,8 @@ let bel = Usual_coma_state.below;;
 
 let cod ()=Check_ocaml_dircopy.check Coma_big_constant.This_World.root;;
 
+let cr ()=Small_array.redundant_indices (Coma_state.modules (!(Usual_coma_state.main_ref)));;
+
 let dbel = Usual_coma_state.directly_below;;
 
 let dm = Usual_coma_state.duplicate_module;;

@@ -112,8 +112,6 @@ let redundant_indices (SA(_,x))=Listennou.redundant_indices x;;
 
 let industrial_separator=Industrial_separator.small_array;;
 
-
-
 (*
 
 Do not use those archiving functions on nested small arrays !

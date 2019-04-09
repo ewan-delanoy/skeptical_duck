@@ -2778,8 +2778,27 @@ let register_short_path cs x=
 
 
 
-(* let local_to_outside cs= to_outside  cs Coma_big_constant.next_world;;  *)
+let rename_without_backup cs old_name new_name=
+   let old_hm = find_half_dressed_module cs old_name 
+   and unslashed_new_name = No_slashes.of_string new_name in 
+   let cs2=recompile cs None  in 
+   let (cs3,_)=rename_module cs2 old_hm unslashed_new_name in 
+   let _=(save_all cs3) in 
+   cs3;;   
 
+let relocate_without_backup cs old_hm_name new_subdir=
+  let old_hm = find_half_dressed_module cs old_hm_name in 
+  let cs2=recompile cs None  in
+  let (cs3,_)=relocate_module cs2 old_hm new_subdir in 
+  let _=(save_all cs3) in 
+  cs3;;  
+
+let relocate cs x y=
+   let cs4=relocate_without_backup cs x y in 
+   recompile cs4 None;;
+let rename cs x y=
+   let cs4=rename_without_backup cs x y in 
+   recompile cs4 None;;
 
 
 end;; 
