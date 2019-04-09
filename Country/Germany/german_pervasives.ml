@@ -24,20 +24,6 @@ let current_directories()=
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
-let ren_without_backup old_name new_name=
-   let old_hm = Usual_coma_state.find_half_dressed_module old_name 
-   and unslashed_new_name = No_slashes.of_string new_name in 
-   let _=Coma_state.recompile (!Usual_coma_state.main_ref) in 
-    (
-        let _=Coma_state.rename_module (!Usual_coma_state.main_ref) old_hm unslashed_new_name in 
-        Usual_coma_state.save_all();
-    );;   
-
-let relo_without_backup old_hm_name new_subdir=
-  let old_hm = Usual_coma_state.find_half_dressed_module old_hm_name in 
-  let _=Coma_state.recompile (!Usual_coma_state.main_ref) in 
-  let _=Coma_state.relocate_module (!Usual_coma_state.main_ref) old_hm new_subdir in 
-       Usual_coma_state.save_all();;     
 
 
 let ureg_without_backup x=
@@ -48,11 +34,6 @@ let ureg_without_backup x=
   else German_wrapper.unregister_module (Usual_coma_state.find_half_dressed_module x);;
 
 let double_semicolon=";"^";";;
-
-let vo s=
-  let temp1=Find_suitable_ending.find_file_location cdir (current_directories()) s in
-  let s1=Absolute_path.to_string temp1 in
-  Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s1);;
 
 
 
@@ -90,10 +71,6 @@ let tw x=
 
 
 let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);;
-
-let relo x y=(relo_without_backup x y;Usual_coma_state.recompile None);;
-let ren  x y=(ren_without_backup  x y;Usual_coma_state.recompile None);;
-
 
 
 let rv x y=(rv_without_backup x y;Usual_coma_state.recompile None);;

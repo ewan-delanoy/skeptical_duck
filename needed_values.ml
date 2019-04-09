@@ -36,6 +36,10 @@ let reco msg=Usual_coma_state.recompile (Some msg);;
 
 let regi short_path=Usual_coma_state.register_short_path short_path;;
 
+let relo = Usual_coma_state.relocate_module;;
+
+let ren = Usual_coma_state.rename_module;;
+
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
 let rsh = Usual_coma_state.refresh;;
