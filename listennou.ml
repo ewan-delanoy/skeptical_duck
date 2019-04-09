@@ -161,6 +161,24 @@ let rev_map f l=
    ) in
    tempf([],l);;
    
+let redundant_indices l=
+  let rec tempf=(
+    fun (counter,already_known,bad_indices,to_be_treated)->
+      match to_be_treated with
+      []->List.rev bad_indices
+      |a::others->
+        let idx=counter+1 in  
+        if List.mem a already_known
+        then tempf(idx,already_known,idx::bad_indices,others)
+        else tempf(idx,a::already_known,bad_indices,others)
+  ) in
+  tempf(0,[],[],l);;
+
+(*
+redundant_indices [1; 2; 1; 4; 5; 6; 3; 8; 9; 10; 11; 12; 13; 6; 15];;
+*)
+
+
 let hi=List.length;;
 let rev=List.rev;;
 
