@@ -143,3 +143,4 @@ let colorize_footnotes_in_file fn=
    let old_text=Io.read_whole_file fn in
    let new_text=colorize_footnotes_in_string old_text in
    Io.overwrite_with fn new_text;;
+  
