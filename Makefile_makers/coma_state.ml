@@ -2724,7 +2724,7 @@ let recompile_without_githubbing cs=
   let changed_paths=
    (if not change_exists
    then []
-   else let _=save_all cs in  
+   else let _=save_all cs2 in  
        Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
     (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
@@ -2734,7 +2734,7 @@ let recompile_without_githubbing cs=
 let recompile cs opt=
    let (cs2,diff)=recompile_without_githubbing cs in 
    let _=(if not(Dircopy_diff.is_empty diff)
-   then backup cs diff opt) in 
+   then backup cs2 diff opt) in 
    cs2;;
 
 let local_refresh cs=
