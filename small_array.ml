@@ -106,8 +106,13 @@ let apply_transformation_on_all (SA(n,x)) f=
 
 let apply_transformation_on_rightmost_interval (SA(n,x)) f i=
   apply_transformation_on_interval (SA(n,x)) f i n;;
- 
+
+
+let redundant_indices (SA(_,x))=Listennou.redundant_indices x;;
+
 let industrial_separator=Industrial_separator.small_array;;
+
+
 
 (*
 
