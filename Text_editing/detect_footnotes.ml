@@ -107,6 +107,7 @@ let colorize_footnotes_in_page page =
   ) decomposed_main_text) in 
   colorized_main_text^"\n"^colorized_zone;;
 
+
 (*
 
 colorize_footnotes_in_page
