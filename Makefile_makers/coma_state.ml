@@ -2065,7 +2065,7 @@ let remove_debuggables cs=
    
    
 
-let pre_start_debugging cs=
+let pre_sturt_debugging cs=
   let  _=remove_debuggables cs in
   let dbg=Coma_constant.name_for_debugged_module in
   (*
@@ -2089,7 +2089,7 @@ let pre_start_debugging cs=
 	answer;;   
    
 
-let start_debugging cs= pre_start_debugging cs;;
+let start_debugging cs= pre_sturt_debugging cs;;
           
 
           
