@@ -2065,7 +2065,7 @@ let remove_debuggables cs=
    
    
 
-let pre_sturt_debugging cs=
+let start_debugging cs=
   let  _=remove_debuggables cs in
   let dbg=Coma_constant.name_for_debugged_module in
   (*
@@ -2088,14 +2088,6 @@ let pre_sturt_debugging cs=
 	) in
 	answer;;   
    
-
-let start_debugging cs= pre_sturt_debugging cs;;
-          
-
-          
-          
-
-
 let unregister_mlx_file cs mlx=
     let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
     set_directories cs2 new_dirs;;
