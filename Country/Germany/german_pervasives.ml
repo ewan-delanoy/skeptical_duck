@@ -29,7 +29,7 @@ let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_m
 let init ()=Usual_coma_state.initialize ();;
 
 
-let rd ()=Alaskan_remove_debuggables.rd cdir (Usual_coma_state.main_ref);;
+let rd ()=Coma_state.remove_debuggables (!(Usual_coma_state.main_ref));;
 let sd=German_wrapper.start_debugging;;
 
 

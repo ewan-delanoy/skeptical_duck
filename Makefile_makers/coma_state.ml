@@ -2142,10 +2142,14 @@ let rename_module cs old_name new_name=
   let (cs3,_,_)=Ocaml_target_making.feydeau cs2 (idx::sibling_indices) in 
   (cs3,(old_files,new_files));;   
 
- 
+let remove_debuggables cs=
+   let sbuild=(Root_directory.connectable_to_subpath (root cs))^"_debug_build/" in
+   Unix_command.uc("rm -f "^sbuild^"*.d.cm*"^" "^sbuild^"*.ocaml_debuggable");;
+   
+   
+
 let pre_start_debugging cs=
-  let root_dir=root cs in
-  let _=Alaskan_remove_debuggables.rd root_dir cs in
+  let  _=remove_debuggables cs in
   let dbg=Coma_constant.name_for_debugged_module in
   (*
 	let rdir=compute_subdirectories_list cs in
