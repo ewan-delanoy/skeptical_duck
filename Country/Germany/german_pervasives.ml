@@ -25,14 +25,14 @@ let current_directories()=
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
 
-
-let init ()=Usual_coma_state.initialize ();;
-
-
 let rd ()=Coma_state.remove_debuggables (!(Usual_coma_state.main_ref));;
-let sd=German_wrapper.start_debugging;;
 
-
+  
+  
+let sd ()=
+  let _=Coma_state.recompile (!(Usual_coma_state.main_ref)) in 
+  let _=Coma_state.start_debugging (!(Usual_coma_state.main_ref)) in 
+    Usual_coma_state.save_all();;
 
 let rv_without_backup x y=Usual_coma_state.rename_string_or_value  x y;;
 let srv_without_backup x y=Usual_coma_state.replace_string x y;;
@@ -41,7 +41,13 @@ let srv_without_backup x y=Usual_coma_state.replace_string x y;;
 
 let muv x=Coma_state.modules_using_value (!Usual_coma_state.main_ref) x;;
 
-let ed =German_wrapper.end_debugging;;
+let ed ()=
+  let sbuild=(Root_directory.connectable_to_subpath Coma_big_constant.This_World.root)
+     ^"_debug_build/" in
+  let _=Unix_command.uc("rm -f "^sbuild^"*.d.cm*"^" "^
+     sbuild^"*.ocaml_debuggable")  in
+  ();;     
+
 
 let fvd a=Find_value_descendants.fvd 
   (Compute_all_ocaml_items.caoi(!Usual_coma_state.main_ref)) a ;;
