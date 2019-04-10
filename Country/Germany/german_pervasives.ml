@@ -63,7 +63,11 @@ let tw x=
   Sys.command ("open -a /Applications/TextWrangler.app "^fn^".ml");;
 
 
-let rndir p=(German_wrapper.rename_directory p;Usual_coma_state.recompile None);;
+let rndir (old_subdir,new_subdirname)=
+   let _=Usual_coma_state.recompile_without_githubbing() in 
+   let _=Coma_state.rename_directory (!(Usual_coma_state.main_ref)) (old_subdir,new_subdirname) in 
+   let _= Usual_coma_state.save_all() in
+   Usual_coma_state.recompile None;;
 
 
 let rv x y=(rv_without_backup x y;Usual_coma_state.recompile None);;
