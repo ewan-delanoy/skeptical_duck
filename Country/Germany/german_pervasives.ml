@@ -26,17 +26,6 @@ let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_m
 
 
 
-let ureg_without_backup x=
-  if List.exists (fun edg->Supstring.ends_with x edg) [".ml";".mli";".mll";".mly"] 
-  then let path=Absolute_path.of_string(Root_directory.join cdir x) in
-       let mlx=Mlx_ended_absolute_path.of_path_and_root path cdir in
-       German_wrapper.unregister_mlx_file mlx 
-  else German_wrapper.unregister_module (Usual_coma_state.find_half_dressed_module x);;
-
-let double_semicolon=";"^";";;
-
-
-
 let init ()=Usual_coma_state.initialize ();;
 
 
