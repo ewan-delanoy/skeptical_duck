@@ -43,8 +43,6 @@ let muv x=Coma_state.modules_using_value (!Usual_coma_state.main_ref) x;;
 
 let ed =German_wrapper.end_debugging;;
 
-
-let vd=German_wrapper.view_definition;;
 let fvd a=Find_value_descendants.fvd 
   (Compute_all_ocaml_items.caoi(!Usual_coma_state.main_ref)) a ;;
 

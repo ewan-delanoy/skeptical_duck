@@ -30,33 +30,6 @@ let start_debugging ()=
     Usual_coma_state.save_all();
  ;;    
   
-  
-let unregister_module hm=
-     let _=Coma_state.recompile (!(Usual_coma_state.main_ref)) in 
-     let _=Coma_state.unregister_module (!(Usual_coma_state.main_ref)) hm in 
-    (
-     Usual_coma_state.save_all();
-    );;    
-
-
-let unregister_mlx_file mlx=
-   let _=Coma_state.recompile (!(Usual_coma_state.main_ref)) in 
-   let _=Coma_state.unregister_mlx_file (!(Usual_coma_state.main_ref)) mlx in 
-   
-    Usual_coma_state.save_all();
-   ;;        
-   
-  
-   
-
-let view_definition s=
-  let opt=Coma_state.find_value_definition (!(Usual_coma_state.main_ref)) s in
-  if opt=None then () else
-  let itm=Option.unpack opt in
-  let text="\n\n"^(Ocaml_gsyntax_item.whole itm)^"\n\n" in
-  (print_string text;flush stdout);;   
-
-   
 
  
             
