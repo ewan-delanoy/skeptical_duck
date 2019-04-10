@@ -38,11 +38,11 @@ let register_short_path pcs x=
   pcs:=new_cs;;
 
 let relocate_module pcs old_name new_name=
-   let new_cs = Coma_state.Almost_concrete.relocate (!pcs) old_name new_name in 
+   let new_cs = Coma_state.Almost_concrete.relocate_module (!pcs) old_name new_name in 
   pcs:=new_cs;;
 
 let rename_module pcs old_hm_name new_subdir=
-   let new_cs = Coma_state.Almost_concrete.rename (!pcs) old_hm_name new_subdir in 
+   let new_cs = Coma_state.Almost_concrete.rename_module (!pcs) old_hm_name new_subdir in 
   pcs:=new_cs;;  
 
 

@@ -2701,10 +2701,10 @@ let relocate_without_backup cs old_hm_name new_subdir=
   let _=(save_all cs3) in 
   cs3;;  
 
-let relocate cs x y=
+let relocate_module cs x y=
    let cs4=relocate_without_backup cs x y in 
    recompile cs4 None;;
-let rename cs x y=
+let rename_module cs x y=
    let cs4=rename_without_backup cs x y in 
    recompile cs4 None;;
 
