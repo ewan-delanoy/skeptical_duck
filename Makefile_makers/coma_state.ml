@@ -1537,9 +1537,7 @@ let command_for_module_separate_compilation cs hm=
     let temp2=Image.image (command_for_ocaml_target dir cs) temp1 in 
     List.flatten temp2;;
       
-   
   
-
 end;;
 
 module Ocaml_target_making=struct
@@ -1675,11 +1673,8 @@ let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
                 cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx3 false
            ) newly_rejected in 
            helper_for_feydeau (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
-  
-let ref_for_feydeau = ref [];;
 
 let feydeau cs l=
-  let _=(ref_for_feydeau:=l::(!ref_for_feydeau)) in 
   let temp1=Image.image (fun idx->(idx,hm_at_idx cs idx)) l in 
   helper_for_feydeau cs ([],[],temp1);; 
 
