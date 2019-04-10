@@ -61,11 +61,11 @@ let refresh ()=Modify_persistent_coma_state.refresh Private.main_ref;;
 let register_short_path x=Modify_persistent_coma_state.register_short_path Private.main_ref x;;
   
 let relocate_module old_name new_name=
-   Modify_persistent_coma_state.relocate Private.main_ref old_name new_name;;
+   Modify_persistent_coma_state.relocate_module Private.main_ref old_name new_name;;
    
 
 let rename_module old_hm_name new_subdir=
-   Modify_persistent_coma_state.rename Private.main_ref old_hm_name new_subdir;;
+   Modify_persistent_coma_state.rename_module Private.main_ref old_hm_name new_subdir;;
 
 
 let rename_string_or_value old_name new_name=
