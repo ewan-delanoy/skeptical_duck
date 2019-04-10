@@ -1304,12 +1304,6 @@ let ingredients_for_usual_element cs hm=
     else preliminaries@[Ocaml_target.cmo hm];;
 
 
-
-let marked_ingredients_for_full_compilation cs name l=
-    let temp1=Image.image (ingredients_for_usual_element cs) l in
-    Preserve_initial_ordering.and_mark_endings temp1;;
-
-
 end;;
 
 module Command_for_ocaml_target=struct
@@ -1442,7 +1436,8 @@ module Command_for_ocaml_target=struct
     let dirs_and_libs=needed_dirs_and_libs_in_command false cs idx in
     [ 
       "ocamlc -g "^dirs_and_libs^" -o "^s_fhm^".d.cmo -c "^s_fhm^".ml";
-      "mv "^s_fhm^".d.cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)
+      "mv "^s_fhm^".d.cm* "^s_root^
+       (Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)
     ];;
   
   let command_for_cma dir cs hm=
