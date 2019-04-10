@@ -1542,7 +1542,7 @@ end;;
 
 module Ocaml_target_making=struct
 
-let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
+let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_be_treated)=
      match to_be_treated with 
      []->(cs,rejected,List.rev treated)
      |pair::other_pairs->
@@ -1550,7 +1550,7 @@ let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
        let cmds = Command_for_ocaml_target.command_for_module_separate_compilation cs hm in 
        if Unix_command.conditional_multiple_uc cmds 
        then let cs2=set_product_up_to_date_at_idx cs idx true in 
-            helper_for_feydeau cs2 (rejected,pair::treated,other_pairs)
+            helper_for_feydeau cmod cs2 (rejected,pair::treated,other_pairs)
        else let nm=Half_dressed_module.naked_module hm in 
             let (rejected_siblings,survivors)=List.partition
            (
@@ -1563,11 +1563,11 @@ let rec helper_for_feydeau  cs (rejected,treated,to_be_treated)=
               fun (idx3,hm3)->
                 cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx3 false
            ) newly_rejected in 
-           helper_for_feydeau (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
+           helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
-let feydeau cs l=
+let feydeau cmod cs l=
   let temp1=Image.image (fun idx->(idx,hm_at_idx cs idx)) l in 
-  helper_for_feydeau cs ([],[],temp1);; 
+  helper_for_feydeau cmod cs ([],[],temp1);; 
 
 
 end;;  
@@ -1584,7 +1584,8 @@ let recompile cs=
        (idx,hm_at_idx cs2 idx)
      ) nms_to_be_updated in 
      let (cs3,rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.helper_for_feydeau cs2 ([],[],indexed_nms) in 
+       Ocaml_target_making.helper_for_feydeau 
+         Compilation_mode_t.Usual cs2 ([],[],indexed_nms) in 
      let rejected_hms=Image.image snd rejected_pairs in  
       let new_preqt=Image.image(
         fun (hm,_)->(hm,not(List.mem hm rejected_hms))
@@ -1626,7 +1627,10 @@ let backup cs diff opt=
     let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
            then cs2
-           else ( fun (cs4,_,_)->cs4)(Ocaml_target_making.feydeau cs2 (idx::sibling_indices)) ) in 
+           else ( fun (cs4,_,_)->cs4)
+           (Ocaml_target_making.feydeau 
+             Compilation_mode_t.Usual
+             cs2 (idx::sibling_indices)) ) in 
     (cs3,new_dirs);;   
 
 exception FileWithDependencies of 
@@ -1960,7 +1964,10 @@ let from_main_directory dir backup_dir g_after_b=
         let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in
         let pre_preqt=printer_equipped_types_from_data cs1 in
         let n=size cs1 in 
-        let (cs2,rejected_pairs,_)=Ocaml_target_making.feydeau cs1 (Ennig.ennig 1 n) in
+        let (cs2,rejected_pairs,_)=
+          Ocaml_target_making.feydeau 
+          Compilation_mode_t.Usual
+          cs1 (Ennig.ennig 1 n) in
         let rejected_hms=Image.image snd rejected_pairs in 
        let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_hms))) pre_preqt in 
        (cs2,[],preqt);;
@@ -2001,7 +2008,7 @@ let on_targets (cs,old_dirs) mlx=
     in
     let nm=Half_dressed_module.naked_module hm in 
     let idx=find_module_index cs2 nm in 
-    let (cs3,_,_)=Ocaml_target_making.feydeau cs2 [idx] in 
+    let (cs3,_,_)=Ocaml_target_making.feydeau Compilation_mode_t.Usual cs2 [idx] in 
     (cs3,new_dirs);; 
   
 
@@ -2042,7 +2049,7 @@ let rename_module cs old_name new_name=
     )(Ennig.ennig idx n) in 
   let (cs2,(old_files,new_files))=
      rename_module_on_monitored_modules root_dir cs old_name new_name in
-  let (cs3,_,_)=Ocaml_target_making.feydeau cs2 (idx::sibling_indices) in 
+  let (cs3,_,_)=Ocaml_target_making.feydeau Compilation_mode_t.Usual cs2 (idx::sibling_indices) in 
   (cs3,(old_files,new_files));;   
 
 let remove_debuggables cs=
