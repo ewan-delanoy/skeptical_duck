@@ -40,6 +40,8 @@ let relo = Usual_coma_state.relocate_module;;
 
 let ren = Usual_coma_state.rename_module;;
 
+let rendir = Usual_coma_state.rename_directory;;
+
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
 let rsh = Usual_coma_state.refresh;;
