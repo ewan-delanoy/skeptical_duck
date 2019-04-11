@@ -45,8 +45,7 @@ let list_values_from_module_in_modulesystem module_name=
 
 let main_ref=Private.main_ref;;
 
-(* let polished_short_paths ()=
-  Coma_state.Almost_concrete.polished_short_paths  (!(Private.main_ref));; *)
+let modules_using_value x=Coma_state.modules_using_value (!(Private.main_ref)) x;;
 
 let recompile_without_githubbing ()=
    Modify_persistent_coma_state.recompile_without_githubbing Private.main_ref;;

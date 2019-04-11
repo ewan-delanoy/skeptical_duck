@@ -50,19 +50,6 @@ let fvd a=Find_value_descendants.fvd
 
 let am ()=Coma_state.all_naked_modules (!Usual_coma_state.main_ref);;
   
-    
-let tw x=
-  let hm=Usual_coma_state.find_half_dressed_module x in
-  let s_hm=Half_dressed_module.uprooted_version hm in
-  let fn=(Root_directory.connectable_to_subpath(cdir))^s_hm in    
-  Sys.command ("open -a /Applications/TextWrangler.app "^fn^".ml");;
-
-
-let rndir (old_subdir,new_subdirname)=
-   let _=Usual_coma_state.recompile_without_githubbing() in 
-   let _=Coma_state.rename_directory (!(Usual_coma_state.main_ref)) (old_subdir,new_subdirname) in 
-   let _= Usual_coma_state.save_all() in
-   Usual_coma_state.recompile None;;
 
 
 

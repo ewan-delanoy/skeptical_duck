@@ -28,6 +28,8 @@ let image = Image.image ;;
 
 let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
 
+let muv=Usual_coma_state.modules_using_value;;
+
 let ocs=Unusual_coma_state.main_ref;;
 
 let ofo=Ordered.forget_order;;
