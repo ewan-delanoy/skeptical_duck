@@ -2050,9 +2050,9 @@ let rename_directory cs (old_subdir,new_subdirname)=
        (root cs) (old_subdir,new_subdirname) in
       let pair=(old_subdir,new_subdirname) in
       let cs2=rename_directory_on_data pair cs in
-      let new_dirs=German_rename_directory.on_subdirectories pair 
+      let new_dirs=Raneme_directory.on_subdirectories pair 
         (directories cs2)
-      and new_peqt=German_rename_directory.on_printer_equipped_types pair 
+      and new_peqt=Raneme_directory.on_printer_equipped_types pair 
         (preq_types cs2)
       in
       let cs3=set_directories cs2 new_dirs in 
