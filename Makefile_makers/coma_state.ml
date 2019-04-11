@@ -2709,6 +2709,13 @@ let rename_module cs x y=
    let cs4=rename_without_backup cs x y in 
    recompile cs4 None;;
 
+let rename_directory cs (old_subdir,new_subdirname)=
+   let _=recompile_without_githubbing cs in 
+   let cs2=rename_directory cs (old_subdir,new_subdirname) in 
+   let cs3=recompile cs2 None in 
+   let _= save_all cs3 in
+   cs3;;
+
 
 let rename_string_or_value cs old_name new_name=
   let _=Values_in_modules.rename_string_or_value cs old_name new_name in 

@@ -34,11 +34,6 @@ let sd ()=
   let _=Coma_state.start_debugging (!(Usual_coma_state.main_ref)) in 
     Usual_coma_state.save_all();;
 
-let rv_without_backup x y=Usual_coma_state.rename_string_or_value  x y;;
-let srv_without_backup x y=Usual_coma_state.replace_string x y;;
-
-
-
 let muv x=Coma_state.modules_using_value (!Usual_coma_state.main_ref) x;;
 
 let ed ()=
@@ -68,11 +63,6 @@ let rndir (old_subdir,new_subdirname)=
    let _=Coma_state.rename_directory (!(Usual_coma_state.main_ref)) (old_subdir,new_subdirname) in 
    let _= Usual_coma_state.save_all() in
    Usual_coma_state.recompile None;;
-
-
-let rv x y=(rv_without_backup x y;Usual_coma_state.recompile None);;
-let srv x y=(srv_without_backup x y;Usual_coma_state.recompile None);;
-
 
 
 
