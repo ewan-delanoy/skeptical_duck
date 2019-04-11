@@ -2026,6 +2026,25 @@ let register_mlx_file cs mlx=
 let relocate_module cs old_name new_subdir=
     relocate_module_on_monitored_modules (root cs) cs old_name new_subdir;;    
 
+module Raneme_directory = struct 
+
+let on_subdirectory=Subdirectory.rename_endsubdirectory;;
+
+let on_printer_equipped_type pair (hm,is_compiled_correctly)=
+    (Half_dressed_module.rename_endsubdirectory pair hm,is_compiled_correctly);;
+
+
+let on_printer_equipped_types (old_subdir,new_subdirname) l=
+        Image.image (on_printer_equipped_type (old_subdir,new_subdirname)) l ;; 
+
+ 
+let on_subdirectories (old_subdir,new_subdirname) l_subdir=
+   Image.image (on_subdirectory (old_subdir,new_subdirname)) l_subdir;; 
+
+end;;
+
+
+
 let rename_directory cs (old_subdir,new_subdirname)=
       let _=Rename_endsubdirectory.in_unix_world 
        (root cs) (old_subdir,new_subdirname) in
