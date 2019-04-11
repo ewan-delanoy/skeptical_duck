@@ -72,13 +72,6 @@ let rename_string_or_value old_name new_name=
    Coma_state.Values_in_modules.rename_string_or_value
    (!(Private.main_ref)) old_name new_name;;
 
-
-let replace_string old_string new_string=
-   Coma_state.Values_in_modules.replace_string 
-   (!(Private.main_ref)) old_string new_string ;;
-
-
-
 let save_all ()=Coma_state.Almost_concrete.save_all (!(Private.main_ref));;
 
 let show_value_occurrences_in_modulesystem module_name=

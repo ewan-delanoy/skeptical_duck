@@ -2710,6 +2710,12 @@ let rename_module cs x y=
    recompile cs4 None;;
 
 
+let rename_string_or_value cs old_name new_name=
+  let _=Values_in_modules.rename_string_or_value cs old_name new_name in 
+  let cs2=recompile cs None in 
+  let _=save_all cs2 in 
+  cs2;;
+
 end;; 
 
 
