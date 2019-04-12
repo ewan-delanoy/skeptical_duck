@@ -5,7 +5,7 @@
 
 *)
 
-let dots=["-";"\226\128\147"];;
+let dots=["-";"\226\128\147";"\226\128\148"];;
 
 
 let check_for_dotted_pagenumber_at_index s start_idx =
