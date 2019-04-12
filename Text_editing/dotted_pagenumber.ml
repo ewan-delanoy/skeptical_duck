@@ -5,41 +5,49 @@
 
 *)
 
+let dots=["-";"\226\128\147"];;
+
 
 let check_for_dotted_pagenumber_at_index s start_idx =
   let n=String.length s in 
-  if (Strung.get s start_idx)<>'-'
-  then None
-  else 
   let opt1=Option.seek (
-     fun k->let c=Strung.get s k in 
-     not(List.mem c [' ';'\n';'\t';'r'])
-  ) (Ennig.ennig (start_idx+1) n) in 
+     fun dot->Substring.is_a_substring_located_at dot s start_idx 
+  ) dots in 
   if opt1=None then None else 
-  let idx1=Option.unpack opt1 in
+  let idx1=start_idx+(String.length(Option.unpack opt1)) in 
   let opt2=Option.seek (
      fun k->let c=Strung.get s k in 
-     not(List.mem c ['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'])
-  ) (Ennig.ennig (idx1) n) in 
-  if (opt2=None)||(opt2=Some(idx1)) then None else
-  let idx2=Option.unpack opt2 in 
+     not(List.mem c [' ';'\n';'\t';'r'])
+  ) (Ennig.ennig idx1 n) in 
+  if opt2=None then None else 
+  let idx2=Option.unpack opt2 in
   let opt3=Option.seek (
      fun k->let c=Strung.get s k in 
+     not(List.mem c ['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'])
+  ) (Ennig.ennig idx2 n) in 
+  if (opt3=None)||(opt3=Some(idx2)) then None else
+  let idx3=Option.unpack opt3 in 
+  let opt4=Option.seek (
+     fun k->let c=Strung.get s k in 
      not(List.mem c [' ';'\n';'\t';'r'])
-  ) (Ennig.ennig (idx2) n) in
-  if (opt3=None) then None else
-  let idx3=Option.unpack opt3 in
-  if (Strung.get s idx3)<>'-'
-  then None
-  else   
-  let pagenumber_description=Cull_string.interval s idx1 (idx2-1) in 
+  ) (Ennig.ennig (idx3) n) in
+  if (opt4=None) then None else
+  let idx4=Option.unpack opt4 in
+  let opt5=Option.seek (
+     fun dot->Substring.is_a_substring_located_at dot s idx4 
+  ) dots in 
+  if opt5=None then None else 
+  let end_idx=idx4+(String.length(Option.unpack opt5))-1 in  
+  let pagenumber_description=Cull_string.interval s idx2 (idx3-1) in 
   let pagenumber=int_of_string pagenumber_description in 
-  Some(pagenumber,(start_idx,idx3));;
+  Some(pagenumber,(start_idx,end_idx));;
 
 (*
 
 check_for_dotted_pagenumber_at_index "123- 67 -012" 4;;
 check_for_dotted_pagenumber_at_index "123-    -012" 4;;
+check_for_dotted_pagenumber_at_index "-12--34-\226\128\147567-" 1;;
+
 
 *)
 
@@ -72,6 +80,7 @@ let extract_dotted_pagenumbers main_text =
 (*
 
 extract_dotted_pagenumbers "abc- 37 -de\n-38-fgh-\t93-ij\n";;
+extract_dotted_pagenumbers "-12--34-\226\128\147567-";;
 
 *)
 
