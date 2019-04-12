@@ -83,7 +83,7 @@ let standardize_dotted_pagenumbers_in_string main_text =
    ) temp1 in 
    String.concat "" temp2;;
 
-let standardize_dotted_pagenumbers_in_in_file fn=
+let standardize_dotted_pagenumbers_in_file fn=
    let old_text=Io.read_whole_file fn in
    let new_text=standardize_dotted_pagenumbers_in_string old_text in
    Io.overwrite_with fn new_text;;

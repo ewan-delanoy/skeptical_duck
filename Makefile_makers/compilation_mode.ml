@@ -16,7 +16,6 @@ let ocamlc_option = function
                      |Debug->" -g "
                      |Executable->"";;
 
-
 let ending_for_element_module = function 
    Compilation_mode_t.Usual->"cmo"
                      |Debug->"cmo"
