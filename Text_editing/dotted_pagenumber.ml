@@ -63,6 +63,8 @@ let extract_dotted_pagenumbers main_text =
          then  treated
          else  (None,Cull_string.interval main_text idx_to_be_treated (i_start-1))::treated
        )  in 
+       let msg = "Reached "^(string_of_int(i_end))^" of "^(string_of_int(n))^"...\n" in 
+       let _=(print_string(msg);flush stdout) in 
        tempf((opt1,Cull_string.interval main_text i_start i_end)::temp1,i_end+1)
    ) in 
    tempf([],1);;
