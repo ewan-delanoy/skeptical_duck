@@ -18,6 +18,9 @@ let backup diff opt=Coma_state.backup (!(Private.main_ref)) diff opt;;
 
 let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
 
+let clean_debug_dir ()=Coma_state.clean_debug_dir (!(Private.main_ref));;
+let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
+
 let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
 let decipher_module modname= Coma_state.decipher_module (!(Private.main_ref)) modname;;
 
@@ -80,4 +83,5 @@ let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
    (!(Private.main_ref)) module_name;;
 
-
+let start_debugging ()=Coma_state.start_debugging (!(Private.main_ref));;
+let start_executing short_path= Coma_state.start_executing (!(Private.main_ref)) short_path;;

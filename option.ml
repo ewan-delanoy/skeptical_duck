@@ -61,9 +61,9 @@ let rec filter_and_develop f l=
  ) in
  filter_and_develop0([],l);;
  
- let add_element x l=match x with
+ let add_element_on_the_right l x=match x with
   None->l
-  |Some(a)->a::l;;
+  |Some(a)->l@[a];;
  
  let add_if_nonempty x y=if x=[] then y else x::y;;
  

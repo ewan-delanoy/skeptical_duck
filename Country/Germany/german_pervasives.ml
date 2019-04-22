@@ -24,10 +24,7 @@ let current_directories()=
 
 let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_module x);;
 
-
-let rd ()=Coma_state.remove_debuggables (!(Usual_coma_state.main_ref));;
-
-  
+ 
   
 let sd ()=
   let _=Coma_state.recompile (!(Usual_coma_state.main_ref)) in 

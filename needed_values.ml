@@ -8,6 +8,10 @@
 
 let bel = Usual_coma_state.below;;
 
+let cdd ()=Usual_coma_state.clean_debug_dir ();;
+
+let ced ()=Usual_coma_state.clean_exec_dir ();;
+
 let cod ()=Check_ocaml_dircopy.check Coma_big_constant.This_World.root;;
 
 let cr ()=Small_array.redundant_indices (Coma_state.modules (!(Usual_coma_state.main_ref)));;
@@ -49,6 +53,9 @@ let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 let rsh = Usual_coma_state.refresh;;
 
 let rv=Usual_coma_state.rename_string_or_value;;
+
+let sd ()=Usual_coma_state.start_debugging ();;
+let se =Usual_coma_state.start_executing;;
 
 let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;  
 

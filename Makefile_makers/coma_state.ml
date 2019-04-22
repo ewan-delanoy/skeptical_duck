@@ -115,6 +115,22 @@ let up_to_date_hms cs =
        else None
    )(Ennig.ennig 1 n);;
 
+let modules_with_their_ancestors cs l=
+   let unordered_temp1=Option.filter_and_unpack (
+     fun nm->
+       match seek_module_index cs nm with 
+       None->None
+       |Some(idx)->Some(idx,nm)
+   ) l in 
+   let temp1=Ordered.forget_order(Tidel2.diforchan unordered_temp1) in 
+   let temp2=Image.image (
+     fun (idx,nm)->
+       (ancestors_at_idx cs idx)@[nm] 
+   ) temp1 in 
+   let temp3=List.flatten temp2 in 
+   Listennou.nonredundant_version temp3;;
+
+
 module Private=struct
 
 let debuggable_targets_from_ancestor_data pr_end hm=
@@ -156,18 +172,20 @@ let find_needed_data cs mlx=
       let fn=Mlx_ended_absolute_path.to_path mlx in
       find_needed_data_for_file cs fn;;         
 
-let needed_dirs_and_libs_in_command is_optimized cs idx=
-   let extension=(if is_optimized then ".cmxa" else ".cma") in
+let needed_dirs_and_libs_in_command cmod cs idx=
+   let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
    let s_root=Root_directory.connectable_to_subpath(root cs) in
    let dirs=
-   "-I "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir)
+   "-I "^s_root^(Subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
   and libs=String.concat(" ")
     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
     (needed_libs_at_idx cs idx)) in
     String.concat " " ["";dirs;libs;""];;
 
-let needed_dirs_and_libs_for_several is_optimized cs l_idx=
-   let extension=(if is_optimized then ".cmxa" else ".cma") in
+
+
+let needed_dirs_and_libs_for_several cmod cs l_idx=
+   let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
    let pre_dirs1=Image.image 
      (fun idx->Tidel.diforchan(needed_dirs_at_idx cs idx)) l_idx in
    let pre_dirs2=Ordered.forget_order (Tidel.big_teuzin pre_dirs1) in
@@ -182,9 +200,6 @@ let needed_dirs_and_libs_for_several is_optimized cs l_idx=
     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
     pre_libs2) in
     String.concat " " ["";dirs;libs;""];;
-
-
-
 
 let ingredients_for_debuggable cs hm=
       let mlfile=Mlx_ended_absolute_path.join hm Ocaml_ending.Ml in
@@ -1306,6 +1321,203 @@ let ingredients_for_usual_element cs hm=
 
 end;;
 
+module Modern = struct 
+
+exception Unregistered_cmi of Half_dressed_module.t;;
+exception Unregistered_cmo of Half_dressed_module.t;;
+
+let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
+    let nm=Half_dressed_module.naked_module hm in
+    let opt_idx=seek_module_index cs nm in
+    if opt_idx=None then raise(Unregistered_cmi(hm)) else 
+    let idx=Option.unpack opt_idx in
+    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_fhm=s_root^s_hm in
+    let mli_reg=check_ending_in_at_idx Ocaml_ending.mli cs idx in
+    let ending=(if mli_reg then ".mli" else ".ml") in
+    let workdir = Subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
+    let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
+                       then Some("mv "^s_fhm^".o "^s_root^workdir) 
+                       else None) in 
+    let central_cmd=
+        (Compilation_mode.executioner cmod)^
+        (needed_dirs_and_libs_in_command cmod cs idx)^
+            " -c "^s_fhm^ending in
+            let full_mli=s_root^s_hm^".mli" in
+            let almost_full_answer=(
+            if (not mli_reg)
+               &&(Sys.file_exists(full_mli))
+            then (* 
+                   in this situation the mli file exists but is not registered.
+                   So the compilation manager must treat it as though it didn't
+                   exist. We temporarily rename it so that ocamlc will ignore it.
+                  *)
+                  let dummy_mli=s_root^"uvueaoqhkt" in
+                  [
+                   "mv "^full_mli^" "^dummy_mli;
+                   central_cmd;
+                   "mv "^s_fhm^".cm* "^s_root^workdir;
+                   "mv "^dummy_mli^" "^full_mli
+                  ] 
+            else  [
+                     central_cmd;
+                     "mv "^s_fhm^".cm* "^s_root^workdir
+                   ]
+            ) in 
+            Option.add_element_on_the_right almost_full_answer opt_exec_move;;
+   
+  let command_for_cmo (cmod:Compilation_mode_t.t) dir cs hm=
+    let nm=Half_dressed_module.naked_module hm in
+    let opt_idx=seek_module_index cs nm in
+    if opt_idx=None then raise(Unregistered_cmo(hm)) else 
+    let idx=Option.unpack opt_idx in
+    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_fhm=s_root^s_hm in
+    let dir_and_libs=needed_dirs_and_libs_in_command cmod cs idx in
+    let mli_reg=check_ending_in_at_idx Ocaml_ending.mli cs idx in 
+    let full_mli=s_fhm^".mli" in
+    let workdir = Subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
+    let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
+                       then Some("mv "^s_fhm^".o "^s_root^workdir) 
+                       else None) in 
+    let central_cmds=
+    [ 
+      (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_fhm^".ml";
+      "mv "^s_fhm^".cm* "^s_root^workdir
+    ] in 
+    let almost_full_answer= 
+    (if (not mli_reg) &&(Sys.file_exists(full_mli))
+    then 
+          (* 
+                   in this situation the mli file exists but is not registered.
+                   So the compilation manager must treat it as though it didn't
+                   exist. We temporarily rename it so that ocamlc will ignore it.
+          *)
+                  let dummy_mli=s_root^"uvueaoqhkt" in
+                  [
+                   "mv "^full_mli^" "^dummy_mli
+                  ]
+                  @ 
+                   central_cmds
+                  @ 
+                  [ 
+                   "mv "^dummy_mli^" "^full_mli
+                  ] 
+    else central_cmds)
+    in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+exception  Unregistered_element of Half_dressed_module.t;;   
+
+let command_for_module_separate_compilation cmod cs hm=
+    let dir = root cs in 
+    let nm=Half_dressed_module.naked_module hm in
+    let opt_idx=seek_module_index cs nm in
+    if opt_idx=None then raise(Unregistered_element(hm)) else 
+    let idx=Option.unpack opt_idx in
+    let mli_reg=check_ending_in_at_idx Ocaml_ending.mli cs idx
+    and ml_reg=check_ending_in_at_idx Ocaml_ending.ml cs idx in
+    let temp2=(
+    let co=command_for_cmo cmod dir cs hm in 
+    if mli_reg
+    then let ci=command_for_cmi cmod dir cs hm in 
+         if ml_reg
+         then [ci;co]
+         else [ci]
+    else [co]) in 
+    List.flatten temp2;;
+
+exception  Command_for_predebuggable_or_preexecutable_exn;;
+
+let command_for_predebuggable_or_preexecutable cmod cs short_path=
+    if cmod=Compilation_mode_t.Usual then raise(Command_for_predebuggable_or_preexecutable_exn) else 
+    let full_path=Absolute_path.of_string(
+        Root_directory.join (root cs) short_path) in 
+    let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+    let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
+    let nm_deps_with_indices = Image.image (
+       fun nm->let idx=find_module_index cs nm in 
+               let subdir=subdir_at_idx cs idx in 
+        (idx,subdir,nm)
+    ) nm_deps in 
+    let s_root=Root_directory.connectable_to_subpath(root cs) in
+    let workdir=
+      (Subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) in
+    let unpointed_short_path = Father_and_son.father short_path '.' in 
+    let libs_for_prow = 
+      Tidel.diforchan(
+      Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
+        (Image.image Naked_module.to_string nm_direct_deps)) in 
+    let pre_libs1=Image.image 
+     (fun (idx,_,_) -> Tidel.diforchan(needed_libs_at_idx cs idx)) nm_deps_with_indices in
+    let pre_libs2=Ordered.forget_order (Tidel.big_teuzin (libs_for_prow::pre_libs1)) in 
+    let libs=String.concat(" ")
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
+    Option.add_element_on_the_right   
+    [ 
+      (Compilation_mode.executioner cmod)^
+      " -I "^s_root^workdir^
+      libs^" -c "^s_root^unpointed_short_path^".ml";
+    ] 
+    (Unix_command.mv (s_root^unpointed_short_path^".cm*") (s_root^workdir) )
+    ;;          
+
+
+
+
+exception  Command_for_debuggable_or_executable_exn;;
+
+let command_for_debuggable_or_executable cmod cs short_path=
+    if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
+    let full_path=Absolute_path.of_string(
+        Root_directory.join (root cs) short_path) in 
+    let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+    let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
+    let nm_deps_with_indices = Image.image (
+       fun nm->let idx=find_module_index cs nm in 
+               let subdir=subdir_at_idx cs idx in 
+        (idx,subdir,nm)
+    ) nm_deps in 
+    let s_root=Root_directory.connectable_to_subpath(root cs) in
+    let workdir=
+      (Subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) 
+    and ending=Compilation_mode.ending_for_element_module cmod 
+    and product_ending=Compilation_mode.ending_for_final_product cmod  in
+    let cm_elements_but_the_last = Image.image (
+      fun (idx,subdir,nm)->
+         (* s_root^workdir ^ *) (Naked_module.to_string nm)^ending
+    ) nm_deps_with_indices in 
+    let unpointed_short_path = Father_and_son.father short_path '.' in 
+    let nm_name = (Father_and_son.son unpointed_short_path '/') in 
+    let last_cm_element=nm_name^ending in 
+    let all_cm_elements= (cm_elements_but_the_last) @ [last_cm_element] in 
+    let libs_for_prow = 
+      Tidel.diforchan(
+      Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
+        (Image.image Naked_module.to_string nm_direct_deps)) in 
+    let pre_libs1=Image.image 
+     (fun (idx,_,_) -> Tidel.diforchan(needed_libs_at_idx cs idx)) nm_deps_with_indices in
+    let pre_libs2=Ordered.forget_order (Tidel.big_teuzin (libs_for_prow::pre_libs1)) in 
+    let libs=String.concat(" ")
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
+    Option.add_element_on_the_right  
+    [ 
+      ((Compilation_mode.executioner cmod)^
+       " -I "^s_root^workdir^
+       libs^" -o "^nm_name^product_ending^
+        (String.concat " " all_cm_elements));
+    ]
+    (
+      Unix_command.mv ((Sys.getcwd())^"/"^nm_name^product_ending) (s_root^workdir)
+    )
+    ;;          
+
+
+
+
+end;;
+
 module Command_for_ocaml_target=struct
 
   let ocamlc="ocamlc  -bin-annot ";;
@@ -1356,7 +1568,7 @@ module Command_for_ocaml_target=struct
               "ocamlyacc "^s_fhm^".mly"
             ];;  
 
-  let command_for_cmi dir cs hm=
+let command_for_cmi dir cs hm=
     let nm=Half_dressed_module.naked_module hm in
     let opt_idx=seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmi(hm)) else 
@@ -1368,7 +1580,7 @@ module Command_for_ocaml_target=struct
     let ending=(if mli_reg then ".mli" else ".ml") in
     let central_cmd=
         "ocamlc  -bin-annot "^
-        (needed_dirs_and_libs_in_command false cs idx)^
+        (needed_dirs_and_libs_in_command Compilation_mode_t.Usual cs idx)^
             " -c "^s_fhm^ending in
             let full_mli=s_root^s_hm^".mli" in
             if (not mli_reg)
@@ -1398,7 +1610,7 @@ module Command_for_ocaml_target=struct
     let s_hm=Half_dressed_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
-    let dirs_and_libs=needed_dirs_and_libs_in_command false cs idx in
+    let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Usual cs idx in
     let mli_reg=check_ending_in_at_idx Ocaml_ending.mli cs idx in 
     let full_mli=s_fhm^".mli" in
     let central_cmds=
@@ -1425,6 +1637,7 @@ module Command_for_ocaml_target=struct
                   ] 
     else central_cmds;; 
  
+ 
   let command_for_dcmo dir cs hm=
     let nm=Half_dressed_module.naked_module hm in
     let opt_idx=seek_module_index cs nm in
@@ -1433,7 +1646,7 @@ module Command_for_ocaml_target=struct
     let s_hm=Half_dressed_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
-    let dirs_and_libs=needed_dirs_and_libs_in_command false cs idx in
+    let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Debug cs idx in
     [ 
       "ocamlc -g "^dirs_and_libs^" -o "^s_fhm^".d.cmo -c "^s_fhm^".ml";
       "mv "^s_fhm^".d.cm* "^s_root^
@@ -1448,7 +1661,7 @@ module Command_for_ocaml_target=struct
       let s_hm=Half_dressed_module.uprooted_version hm in
       let s_root=Root_directory.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
-      let dirs_and_libs=needed_dirs_and_libs_in_command true cs idx in
+      let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
       [ 
         "ocamlopt -bin-annot -a "^dirs_and_libs^" -o "^s_fhm^".cma -c "^s_fhm^".ml";
         "mv "^s_fhm^".cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir)
@@ -1462,7 +1675,7 @@ module Command_for_ocaml_target=struct
       let s_hm=Half_dressed_module.uprooted_version hm in
       let s_root=Root_directory.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
-      let dirs_and_libs=needed_dirs_and_libs_in_command true cs idx in
+      let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
       let dir_for_building=
         (Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
       [ 
@@ -1482,7 +1695,7 @@ module Command_for_ocaml_target=struct
     let temp1=ingr cs (Ocaml_target.EXECUTABLE(hm)) in
     let temp2=Option.filter_and_unpack cmx_manager temp1 in
     let long_temp2=Image.image (fun t->s_root^t) temp2 in
-    let dirs_and_libs=needed_dirs_and_libs_in_command true cs idx  in
+    let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Executable  cs idx  in
     let dir_for_building=
         (Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
     [ 
@@ -1502,7 +1715,7 @@ module Command_for_ocaml_target=struct
     let temp1=ingr cs (Ocaml_target.DEBUGGABLE(hm)) in
     let temp2=Option.filter_and_unpack dcmo_manager temp1 in
     let long_temp2=Image.image (fun t->s_root^t) temp2 in
-    let dirs_and_libs=needed_dirs_and_libs_in_command false cs idx in
+    let dirs_and_libs=needed_dirs_and_libs_in_command Compilation_mode_t.Debug  cs idx in
     let dir_for_building=
       (Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir) in
     [ 
@@ -1511,13 +1724,14 @@ module Command_for_ocaml_target=struct
       "mv "^s_fhm^".ocaml_debuggable "^s_root^dir_for_building
     ];;          
     
-   
+  
+
   let command_for_ocaml_target dir cs tgt=
      match tgt with
     Ocaml_target.NO_DEPENDENCIES(mlx)->command_for_nodep mlx 
    |Ocaml_target.ML_FROM_MLL(hm)->command_for_ml_from_mll dir hm
    |Ocaml_target.ML_FROM_MLY(hm)->command_for_ml_from_mly dir hm
-   |Ocaml_target.CMI(hm)->command_for_cmi dir cs hm
+   |Ocaml_target.CMI(hm)->command_for_cmi  dir cs hm
    |Ocaml_target.CMO(hm)->command_for_cmo dir cs hm
    |Ocaml_target.DCMO(hm)->command_for_dcmo dir cs hm
    |Ocaml_target.CMA(hm)->command_for_cma dir cs hm
@@ -1525,41 +1739,41 @@ module Command_for_ocaml_target=struct
    |Ocaml_target.EXECUTABLE(hm)->command_for_executable dir cs hm
    |Ocaml_target.DEBUGGABLE(hm)->command_for_debuggable dir cs hm;;
 
-let command_for_module_separate_compilation_in_usual_mode cs hm=
-    let dir = root cs in 
-    let temp1=Shortened_ingredients_for_ocaml_target.ingredients_for_usual_element 
-        cs hm in 
-    let temp2=Image.image (command_for_ocaml_target dir cs) temp1 in 
-    List.flatten temp2;;
 
-exception Not_implemented_yet;;
+exception Unregistered_element  of Half_dressed_module.t;;
 
-let command_for_module_separate_compilation cmod cs hm=
-  match cmod with 
-  Compilation_mode_t.Usual->command_for_module_separate_compilation_in_usual_mode cs hm
-  |_->raise(Not_implemented_yet);;
-      
+
+
   
 end;;
 
 module Ocaml_target_making=struct
 
+
+exception Failed_during_compilation of (int*Half_dressed_module.t*string);;
+
 let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_be_treated)=
      match to_be_treated with 
      []->(cs,rejected,List.rev treated)
-     |pair::other_pairs->
-       let (idx,hm)=pair in
-       let cmds = Command_for_ocaml_target.command_for_module_separate_compilation cmod cs hm in 
-       if Unix_command.conditional_multiple_uc cmds 
+     |triple::other_triples->
+       let (idx,hm,cmd)=triple in
+       if (Unix_command.uc cmd)=0
        then let cs2=set_product_up_to_date_at_idx cs idx true in 
-            helper_for_feydeau cmod cs2 (rejected,pair::treated,other_pairs)
-       else let nm=Half_dressed_module.naked_module hm in 
-            let (rejected_siblings,survivors)=List.partition
+            helper_for_feydeau cmod cs2 (rejected,(idx,hm)::treated,other_triples)
+       else if (cmod<>Compilation_mode_t.Usual)
+            then raise(Failed_during_compilation(triple))
+            else 
+            let nm=Half_dressed_module.naked_module hm in 
+            let triples_after=snd(Prepared.partition_in_two_parts (fun (idx2,_,_)->idx2<>idx) other_triples) in 
+            let (rejected_siblings_as_triples,survivors)=List.partition
            (
-              fun (idx2,hm2)->
+              fun (idx2,hm2,_)->
                 List.mem nm (ancestors_at_idx cs idx2)
-           ) other_pairs in 
-           let newly_rejected = pair::rejected_siblings in 
+           ) triples_after in 
+           let rejected_siblings_with_redundancies =  
+              Image.image (fun (idx2,hm2,_)->(idx2,hm2) ) rejected_siblings_as_triples in 
+           let rejected_siblings = Listennou.nonredundant_version rejected_siblings_with_redundancies in    
+           let newly_rejected = (idx,hm)::rejected_siblings in 
            let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (idx3,hm3)->
@@ -1567,9 +1781,74 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            ) newly_rejected in 
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
-let feydeau cmod cs l=
-  let temp1=Image.image (fun idx->(idx,hm_at_idx cs idx)) l in 
-  helper_for_feydeau cmod cs ([],[],temp1);; 
+let dependencies_inside_shaft cmod cs (opt_indices,opt_short_path)=
+   match cmod with 
+   Compilation_mode_t.Usual->Option.unpack opt_indices
+   |_->let short_path=Option.unpack opt_short_path in 
+       let full_path=Absolute_path.of_string(
+        Root_directory.join (root cs) short_path) in 
+       let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+       let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
+       Option.filter_and_unpack (seek_module_index cs) nm_deps;;
+
+
+let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
+   let l=dependencies_inside_shaft cmod cs (opt_indices,opt_short_path) in 
+   let temp1=Image.image (fun idx->
+     let hm=hm_at_idx cs idx in 
+     let cmds=Modern.command_for_module_separate_compilation cmod cs hm in 
+    Image.image (fun cmd->(idx,hm_at_idx cs idx,cmd) ) cmds ) l in 
+    List.flatten temp1;;
+
+let list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
+   let cmds=(
+   match cmod with 
+   Compilation_mode_t.Usual->[] 
+   |_->
+      let short_path=Option.unpack opt_short_path in 
+      Modern.command_for_predebuggable_or_preexecutable cmod cs short_path) in 
+   cmds;;
+
+
+let list_of_commands_for_end_part_of_feydeau cmod cs (opt_indices,opt_short_path)= 
+   let cmds=(
+   match cmod with 
+   Compilation_mode_t.Usual->[] 
+   |_->
+      let short_path=Option.unpack opt_short_path in 
+      Modern.command_for_debuggable_or_executable cmod cs short_path) in 
+   cmds;;
+
+let list_of_commands_for_ternary_feydeau cmod cs short_path=
+   let pre_cmds1=list_of_commands_for_shaft_part_of_feydeau cmod cs (None,Some(short_path)) in 
+   let cmds1=Image.image (fun (_,_,cmd)->cmd) pre_cmds1
+   and cmds2=list_of_commands_for_connecting_part_of_feydeau cmod cs (None,Some(short_path))
+   and cmds3=list_of_commands_for_end_part_of_feydeau cmod cs (None,Some(short_path)) in 
+   cmds1@cmds2@cmds3;;
+
+
+let shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
+  let cmds=list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path) in  
+  helper_for_feydeau cmod cs ([],[],cmds);; 
+
+let end_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
+  match cmod with 
+   Compilation_mode_t.Usual->()
+   |_->
+     let all_cmds=
+       (list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_indices,opt_short_path))@
+       (list_of_commands_for_end_part_of_feydeau cmod cs (opt_indices,opt_short_path)) in 
+     let _=Image.image  Unix_command.hardcore_uc all_cmds in 
+     ()
+  
+let feydeau cmod cs (opt_indices,opt_short_path)=
+  let answer=shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path) in 
+  let _=end_part_of_feydeau cmod cs (opt_indices,opt_short_path) in 
+  answer;; 
+
+
+
+let usual_feydeau cs indices = feydeau Compilation_mode_t.Usual cs (Some(indices),None);;
 
 
 end;;  
@@ -1585,9 +1864,9 @@ let recompile cs=
        let idx=find_module_index cs2 nm in 
        (idx,hm_at_idx cs2 idx)
      ) nms_to_be_updated in 
+     let indices = Image.image fst indexed_nms in 
      let (cs3,rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.helper_for_feydeau 
-         Compilation_mode_t.Usual cs2 ([],[],indexed_nms) in 
+       Ocaml_target_making.usual_feydeau cs2 indices in 
      let rejected_hms=Image.image snd rejected_pairs in  
       let new_preqt=Image.image(
         fun (hm,_)->(hm,not(List.mem hm rejected_hms))
@@ -1630,8 +1909,7 @@ let backup cs diff opt=
     let cs3=(if was_lonely 
            then cs2
            else ( fun (cs4,_,_)->cs4)
-           (Ocaml_target_making.feydeau 
-             Compilation_mode_t.Usual
+           (Ocaml_target_making.usual_feydeau 
              cs2 (idx::sibling_indices)) ) in 
     (cs3,new_dirs);;   
 
@@ -1967,8 +2245,7 @@ let from_main_directory dir backup_dir g_after_b=
         let pre_preqt=printer_equipped_types_from_data cs1 in
         let n=size cs1 in 
         let (cs2,rejected_pairs,_)=
-          Ocaml_target_making.feydeau 
-          Compilation_mode_t.Usual
+          Ocaml_target_making.usual_feydeau 
           cs1 (Ennig.ennig 1 n) in
         let rejected_hms=Image.image snd rejected_pairs in 
        let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_hms))) pre_preqt in 
@@ -2010,7 +2287,7 @@ let on_targets (cs,old_dirs) mlx=
     in
     let nm=Half_dressed_module.naked_module hm in 
     let idx=find_module_index cs2 nm in 
-    let (cs3,_,_)=Ocaml_target_making.feydeau Compilation_mode_t.Usual cs2 [idx] in 
+    let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [idx] in 
     (cs3,new_dirs);; 
   
 
@@ -2070,30 +2347,23 @@ let rename_module cs old_name new_name=
     )(Ennig.ennig idx n) in 
   let (cs2,(old_files,new_files))=
      rename_module_on_monitored_modules root_dir cs old_name new_name in
-  let (cs3,_,_)=Ocaml_target_making.feydeau Compilation_mode_t.Usual cs2 (idx::sibling_indices) in 
+  let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in 
   (cs3,(old_files,new_files));;   
 
-let remove_debuggables cs=
-   let sbuild=(Root_directory.connectable_to_subpath (root cs))^"_debug_build/" in
-   Unix_command.uc("rm -f "^sbuild^"*.d.cm*"^" "^sbuild^"*.ocaml_debuggable");;
-   
+let clean_debug_dir cs=
+  let s_root=Root_directory.connectable_to_subpath(root cs) in
+  let s_debug_dir=s_root^(Subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir)) in 
+  Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
    
 
 let start_debugging cs=
-  let  _=remove_debuggables cs in
-  let dbg=Coma_constant.name_for_debugged_module in
-  (*
-	let rdir=compute_subdirectories_list cs in
-	let ap=Find_suitable_ending.find_file_location root_dir rdir 
-	     (dbg^".ml") in     
-	let hm=Half_dressed_module.of_path_and_root ap root_dir in
-  let answer=Ocaml_target_making.make_final_target
-     Compilation_mode_t.Debug (Some hm) cs in
-  *) 
-  let answer=(false,(cs,[],[])) in 
+  let  _=clean_debug_dir cs in
+  let dbg_path=Coma_constant.path_for_debugged_file in
+  let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs dbg_path in 
+  let answer=Unix_command.conditional_multiple_uc cmds in 
 	let msg=(
-	  if (fst answer)
-	  then "\n\n Now, start \n\nocamldebug _build/"^dbg^".ocaml_debuggable\n\nin another terminal\n\n"
+	  if answer
+	  then "\n\n Now, start \n\nocamldebug _debug_build/"^(Coma_constant.name_for_debugged_module)^".ocaml_debuggable\n\nin another terminal\n\n"
 	  else "\n\n Something went wrong, see above. \n\n"
 	) in
 	let _=(
@@ -2102,6 +2372,19 @@ let start_debugging cs=
 	) in
 	answer;;   
    
+let clean_exec_dir cs=
+  let s_root=Root_directory.connectable_to_subpath(root cs) in
+  let s_exec_dir=s_root^(Subdirectory.connectable_to_subpath(Coma_constant.exec_build_subdir)) in 
+  Unix_command.uc("rm -f "^s_exec_dir^"*.cm*"^" "^s_exec_dir^"*.ocaml_executable"^" "^s_exec_dir^"*.o");;
+   
+
+let start_executing cs short_path=
+  let  _=clean_exec_dir cs in
+  let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau 
+    Compilation_mode_t.Executable cs short_path in 
+  Unix_command.conditional_multiple_uc cmds;;   
+
+
 let unregister_mlx_file cs mlx=
     let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
     set_directories cs2 new_dirs;;
@@ -2160,7 +2443,7 @@ module Write_makefile=struct
                else " "
     ) l_idx in   
     let long_s_lhm=String.concat " " long_temp4 in
-    let dirs_and_libs=needed_dirs_and_libs_for_several false cs l_idx in
+    let dirs_and_libs=needed_dirs_and_libs_for_several Compilation_mode_t.Usual cs l_idx in
     let cmds=[ "ocamlmktop "^dirs_and_libs^" -o "^s_root^"ecaml "^long_s_lhm^" ";
             "mv "^s_root^"ecaml "^s_root^"_build/"] in
     let s1="ecaml : " 

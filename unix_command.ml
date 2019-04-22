@@ -21,6 +21,16 @@ let command cmd=
 
 let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
 
+let mv full_path new_location =
+   let destination_equals_source=(
+     if not(Supstring.begins_with full_path new_location) then false else 
+     let naked_name=Cull_string.two_sided_cutting (new_location,"") full_path in 
+     not(String.contains naked_name '/') 
+   ) in 
+   if destination_equals_source 
+   then None 
+   else Some("mv "^full_path^" "^new_location);;
+
 exception Command_failed of string;;
 
 let accu=ref([]:string list);;
