@@ -71,9 +71,14 @@ module Private=struct
    let temp7="clean :\n\trm -r -f "^temp6^"\n\n" in
    String.concat "\n\n" (temp3@[temp7]);;
   
-     
+let save_makefile (root,location_for_makefile) cs=
+      let s1="# This makefile was automatocally written by\n"^
+      "# the write_makefile function in the ml_manager module. \n\n"^
+      (write_makefile cs) in
+      let lm=Root_directory.force_join root location_for_makefile in
+      Io.overwrite_with (Absolute_path.of_string lm) s1;;     
 
 end;;
 
 
-let write_makefile=Private.write_makefile;;
+let save_makefile=Private.save_makefile;;
