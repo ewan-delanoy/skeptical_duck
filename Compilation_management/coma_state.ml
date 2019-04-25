@@ -2202,7 +2202,7 @@ let local_directly_below cs x=
    )) 
   (directly_below cs (find_half_dressed_module cs x));;
 
-let forget_file_with_backup cs x=
+let forget_file_with_backup_before_saving cs x=
    let ap=decipher_path cs x in
    let s_ap=Absolute_path.to_string ap in  
    let cut_ap=Root_directory.cut_beginning (root cs) s_ap in
@@ -2214,12 +2214,11 @@ let forget_file_with_backup cs x=
    let (cs2,_,_)=recompile cs in 
    let cs3=forget_file cs2 ap in 
    let _=(
-    save_all cs3;
     backup cs3 diff None
    ) in 
    cs3;; 
 
-let forget_module_with_backup cs x=
+let forget_module_with_backup_before_saving cs x=
     let hm = find_half_dressed_module cs x in 
     let (cs2,_,_)=recompile cs in
     let (cs3,short_paths)=forget_module cs2 hm in    
@@ -2230,15 +2229,14 @@ let forget_module_with_backup cs x=
       (Recently_changed.of_string_list [])
       (Recently_created.of_string_list []) in
     let _=(
-      save_all cs3;
       backup cs3 diff None;  
      ) in 
      cs3;; 
  
-let forget_with_backup cs x=
+let forget_with_backup_before_saving cs x=
       if String.contains x '.'
-      then forget_file_with_backup cs x
-      else forget_module_with_backup cs x;;
+      then forget_file_with_backup_before_saving cs x
+      else forget_module_with_backup_before_saving cs x;;
 
 let forget_without_backup cs x=
    if String.contains x '.'
