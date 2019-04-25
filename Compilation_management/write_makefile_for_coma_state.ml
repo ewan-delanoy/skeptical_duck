@@ -7,10 +7,54 @@
 
 module Private=struct
   
+  module Mlx_path=struct 
+
+   type t=MLX of Ocaml_ending.t*string*Root_directory_t.t;;
+
+   let short_path (MLX(edg,s,_))=match edg with
+     Ocaml_ending.Ml->  s^".ml"
+    |Ocaml_ending.Mli-> s^".mli"
+    |Ocaml_ending.Mll-> s^".mll"
+    |Ocaml_ending.Mly-> s^".mly";;
+
+   let to_string=short_path;; 
+
+   let join hs ending=
+    let (s,dir)=Half_dressed_module.unveil hs in
+    MLX(ending,s,dir);;
+
+  let decompose (MLX(edg,s,dir))=
+  (Half_dressed_module.of_string_and_root s dir,edg);;
+
+  let root (MLX(_,_,dir))=dir;;
+
+  let to_path mlx=
+      let (hm,edg)=decompose mlx in
+      let dir=root mlx in
+      let s_hm=Half_dressed_module.uprooted_version hm 
+      and s_dir=Root_directory.connectable_to_subpath dir in
+      Absolute_path.of_string( s_dir^s_hm^(Ocaml_ending.to_string edg) );; 
+
+  let half_dressed_core mlx=fst(decompose mlx);;
+  let ending mlx=snd(decompose mlx);;
+
+  end;;
+
+
+  let find_needed_data_for_file cs fn=
+      let temp1=Look_for_module_names.names_in_file fn in
+      Small_array.indices_of_property_in 
+      (fun nm->List.mem nm temp1)
+      (Coma_state.modules cs);; 
+
+  let find_needed_data cs mlx=
+      let fn=Mlx_path.to_path mlx in
+      find_needed_data_for_file cs fn;;      
+
    module Thorgal = struct
    
    type t=
-     NO_DEPENDENCIES of Mlx_ended_absolute_path.t
+     NO_DEPENDENCIES of Mlx_path.t
     |ML_FROM_MLL of Half_dressed_module.t
     |ML_FROM_MLY of Half_dressed_module.t 
     |CMI of Half_dressed_module.t
@@ -23,7 +67,7 @@ module Private=struct
 
 
   let to_string =function
-     NO_DEPENDENCIES(mlx)->Mlx_ended_absolute_path.to_string mlx
+     NO_DEPENDENCIES(mlx)->Mlx_path.to_string mlx
     |ML_FROM_MLL(hm)->(Half_dressed_module.uprooted_version hm)^".ml"
     |ML_FROM_MLY(hm)->(Half_dressed_module.uprooted_version hm)^".ml" 
     |CMI(hm)->(Half_dressed_module.uprooted_version hm)^".cmi"
@@ -42,7 +86,7 @@ module Private=struct
      their precise location in order to know if they are
      up-to-date or not.
    *)
-    Mlx_ended_absolute_path.to_string mlx
+    Mlx_path.to_string mlx
    |ML_FROM_MLL(hm)->(Half_dressed_module.to_shortened_string hm)^".ml"
    |ML_FROM_MLY(hm)->(Half_dressed_module.to_shortened_string hm)^".ml" 
    |CMI(hm)->(Half_dressed_module.to_shortened_string hm)^".cmi"
@@ -73,16 +117,16 @@ module Private=struct
   let debuggable_targets_from_ancestor_data pr_end hm=
     match pr_end with
      Ocaml_ending.Mll-> 
-        let mll_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+        let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
              [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm;Thorgal.dcmo hm]
     |Ocaml_ending.Mly-> 
-        let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+        let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
         [mly_target;Thorgal.ml_from_mly hm;Thorgal.cmi hm;Thorgal.dcmo hm]
     |Ocaml_ending.Ml-> 
-             let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+             let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
              [ml_target;Thorgal.cmi hm;Thorgal.dcmo hm]
     |Ocaml_ending.Mli-> 
-             let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+             let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
              [mli_target;Thorgal.cmi hm];;    
     
     let immediate_ingredients_for_debuggable hm=
@@ -100,8 +144,8 @@ module Private=struct
     Preserve_initial_ordering.preserve_initial_ordering temp1;;
 
     let ingredients_for_debuggable cs hm=
-      let mlfile=Mlx_ended_absolute_path.join hm Ocaml_ending.Ml in
-      let genealogy=Coma_state.find_needed_data cs mlfile in
+      let mlfile=Mlx_path.join hm Ocaml_ending.Ml in
+      let genealogy=find_needed_data cs mlfile in
       let dirfath=Image.image (Coma_state.module_at_idx cs) genealogy in
       let temp1=Image.image 
              (fun idx->
@@ -136,18 +180,18 @@ module Private=struct
   let targets_from_ancestor_data cs idx=
     let hm=Coma_state.hm_at_idx cs idx in
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-    then let mll_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+    then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
          [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm;Thorgal.cmo hm]
     else 
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-    then let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+    then let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
          [mly_target;Thorgal.ml_from_mly hm;Thorgal.cmi hm;Thorgal.cmo hm]
     else
     if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
     then 
-         let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+         let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
          [ml_target;Thorgal.cmi hm;Thorgal.cmo hm]
-    else let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
          [mli_target;Thorgal.cmi hm];;  
   
   let targets_from_ancestors cs idx=
@@ -161,18 +205,18 @@ module Private=struct
   let optimized_targets_from_ancestor_data cs idx=
     let hm=Coma_state.hm_at_idx cs idx in
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-    then let mll_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+    then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
          [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm;Thorgal.cmx hm]
     else 
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-    then let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+    then let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
          [mly_target;Thorgal.ml_from_mly hm;Thorgal.cmi hm;Thorgal.cmx hm]
     else
     if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
     then 
-         let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+         let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
          [ml_target;Thorgal.cmi hm;Thorgal.cmx hm]
-    else let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
          [mli_target;Thorgal.cmi hm];;  
   
   let optimized_targets_from_ancestors cs idx=
@@ -185,43 +229,43 @@ module Private=struct
   
   let immediate_ingredients_for_ml_from_mll hm=
     let mll_target=Thorgal.no_dependencies
-       (Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+       (Mlx_path.join hm Ocaml_ending.mll) in
     [mll_target];;
   
   let immediate_ingredients_for_ml_from_mly hm=
     let mly_target=Thorgal.no_dependencies
-      (Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+      (Mlx_path.join hm Ocaml_ending.mly) in
     [mly_target];;
   
   let immediate_ingredients_for_cmi cs idx hm=
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
       then let mll_target=Thorgal.no_dependencies
-             (Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+             (Mlx_path.join hm Ocaml_ending.mll) in
            [mll_target;Thorgal.ml_from_mll hm]
       else 
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+      then let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
            [mly_target;Thorgal.ml_from_mly hm]
       else
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx
-    then let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+    then let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
          [mli_target]
-    else let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+    else let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
          [ml_target];; 
   
   let immediate_ingredients_for_cmo cs idx hm=
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-      then let mll_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+      then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
            [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm]
       else 
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+      then let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
            [mly_target;Thorgal.ml_from_mly hm;Thorgal.cmi hm]
       else
     if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
-    then let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+    then let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
          [ml_target;Thorgal.cmi hm]
-    else let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
          [mli_target;Thorgal.cmi hm];;  
   
   
@@ -231,17 +275,17 @@ module Private=struct
   
   let immediate_ingredients_for_cmx cs idx hm=
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-      then let mll_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
+      then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
            [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm]
       else 
       if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
+      then let mly_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
            [mly_target;Thorgal.ml_from_mly hm;Thorgal.cmi hm]
       else
     if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
-    then let ml_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
+    then let ml_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
          [ml_target;Thorgal.cmi hm]
-    else let mli_target=Thorgal.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
          [mli_target;Thorgal.cmi hm];;  
   
   
@@ -385,7 +429,7 @@ module Private=struct
   
   
   let mlx_dependency_for_ocaml_target cs mlx tgt=
-    let hm=Mlx_ended_absolute_path.half_dressed_core mlx in
+    let hm=Mlx_path.half_dressed_core mlx in
     module_dependency_for_ocaml_target cs [hm] tgt;;
   
   let mlx_list_dependency_for_ocaml_target cs l_mlx tgt=
@@ -401,7 +445,7 @@ module Command_for_ocaml_target=struct
   let ocamlopt="ocamlopt  -bin-annot ";;
   let cee=" -c ";;
   
-  exception Command_called_on_nodep of Mlx_ended_absolute_path.t;;
+  exception Command_called_on_nodep of Mlx_path.t;;
   exception Unregistered_cmo  of Half_dressed_module.t;;
   exception Unregistered_dcmo of Half_dressed_module.t;;
   exception Unregistered_cmi  of Half_dressed_module.t;;
