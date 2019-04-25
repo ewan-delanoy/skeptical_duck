@@ -2738,11 +2738,8 @@ let duplicate_module cs old_t1 old_t2=
     (txt1,txt2) ap2  in 
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
-
-
 module Almost_concrete = struct 
 exception No_module_with_name of string;;
-
 
 let find_module_index cs x=
   let uncapitalized_x=
