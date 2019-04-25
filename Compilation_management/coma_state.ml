@@ -2277,11 +2277,6 @@ let recompile cs opt=
    then backup cs2 diff opt) in 
    cs2;;
 
-let local_refresh cs=
-   let (cs2,new_diff)=refresh cs in
-   let _=save_all cs2 in
-   (cs2,new_diff);;
-
 let refresh_with_backup cs=
   let (cs2,diff)=refresh cs in
   let _=(

@@ -22,9 +22,6 @@ let recompile pcs opt_comment=
   let new_cs = Modify_coma_state_and_save.recompile (!pcs) opt_comment in 
   pcs:=new_cs;;
 
-let recompile_without_githubbing pcs =
-  let (new_cs,_) = Coma_state.Almost_concrete.recompile_without_githubbing (!pcs) in 
-  pcs:=new_cs;;
 
 let refresh pcs =
   let (new_cs,_) = Coma_state.Almost_concrete.local_refresh (!pcs)  in 

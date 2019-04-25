@@ -42,10 +42,6 @@ let list_values_from_module_in_modulesystem module_name=
 
 let main_ref=Private.main_ref;;
 
-(* let polished_short_paths ()=Coma_state.Almost_concrete.polished_short_paths  (!(Private.main_ref));; *)
-
-let recompile_without_githubbing ()=
-   Modify_coma_state_reference.recompile_without_githubbing Private.main_ref;;
 
 let recompile opt=Modify_coma_state_reference.recompile Private.main_ref opt;;
    
