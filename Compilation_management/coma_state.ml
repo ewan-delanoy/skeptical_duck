@@ -175,37 +175,6 @@ let all_modules cs=
   let n=Small_array.size((modules cs)) in
   Ennig.doyle (hm_at_idx cs) 1 n;; 
 
-let target_at_idx cs idx=
-    let hm=hm_at_idx cs idx 
-    and mlp=check_ending_in_at_idx Ocaml_ending.ml cs idx
-    and mlip=check_ending_in_at_idx Ocaml_ending.mli cs idx
-    and mllp=check_ending_in_at_idx Ocaml_ending.mll cs idx
-    and mlyp=check_ending_in_at_idx Ocaml_ending.mly cs idx in
-    let temp1=[
-                mllp,Ocaml_target.ml_from_mll hm;
-                mlyp,Ocaml_target.ml_from_mly hm;
-           mlp||mlip,Ocaml_target.cmi hm;
-           mlp||mlip,Ocaml_target.cmo hm;
-           mlp||mlip,Ocaml_target.cma hm;
-           mlp||mlip,Ocaml_target.cmx hm;
-                 mlp,Ocaml_target.executable hm;
-    ] in
-    Option.filter_and_unpack 
-      (fun x->if fst x 
-              then Some(snd x) 
-              else None) temp1;;  
-
-
-let usual_targets cs=
-  let n=Small_array.size((modules cs)) in
-  let temp1=Option.filter_and_unpack 
-   (fun idx->
-      if product_up_to_date_at_idx cs idx 
-      then Some(target_at_idx cs idx)
-      else None) (Ennig.ennig 1 n) in
-  List.flatten temp1;;
-
-
 
 
 exception Non_existent_mtime of Mlx_ended_absolute_path.t;;
@@ -966,37 +935,6 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
             )
           in
           (!cs_walker);;
-
-
-
-module Shortened_ingredients_for_ocaml_target=struct
-
-exception Unregistered_cmio  of Half_dressed_module.t;;
-exception Unregistered_element  of Half_dressed_module.t;;
-  
-let ingredients_for_usual_element cs hm=
-    let nm=Half_dressed_module.naked_module hm in
-    let opt_idx=seek_module_index cs nm in
-    if opt_idx=None then raise(Unregistered_element(hm)) else 
-    let idx=Option.unpack opt_idx in
-    let mli_reg=check_ending_in_at_idx Ocaml_ending.mli cs idx
-    and ml_reg=check_ending_in_at_idx Ocaml_ending.ml cs idx in
-    let preliminaries = (
-      if check_ending_in_at_idx Ocaml_ending.mll cs idx
-      then [Ocaml_target.ml_from_mll hm]
-      else 
-      if check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then [Ocaml_target.ml_from_mly hm]
-      else []
-    ) in 
-    if mli_reg
-    then if ml_reg
-         then preliminaries@[Ocaml_target.cmi hm;Ocaml_target.cmo hm]
-         else preliminaries@[Ocaml_target.cmi hm]
-    else preliminaries@[Ocaml_target.cmo hm];;
-
-
-end;;
 
 module Modern = struct 
 
