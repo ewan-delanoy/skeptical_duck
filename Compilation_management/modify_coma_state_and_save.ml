@@ -142,9 +142,10 @@ let rename_directory cs old_subdir new_subdirname=
    let _=Private.save_all cs2 in 
    cs2;;  
 
-let relocate_module pcs old_hm_name new_subdir=
-   let new_cs = Coma_state.Almost_concrete.local_relocate_module (!pcs) old_hm_name new_subdir in 
-  pcs:=new_cs;;  
+let relocate_module cs old_hm_name new_subdir=
+  let cs2 = Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir in 
+  let _=Private.save_all cs2 in 
+  cs2;;   
 
 
 
