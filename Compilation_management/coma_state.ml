@@ -2233,7 +2233,7 @@ let forget_module_with_backup_before_saving cs x=
      ) in 
      cs3;; 
  
-let forget_with_backup_before_saving cs x=
+let forget cs x=
       if String.contains x '.'
       then forget_file_with_backup_before_saving cs x
       else forget_module_with_backup_before_saving cs x;;
@@ -2265,8 +2265,7 @@ let recompile_without_githubbing cs=
   let changed_paths=
    (if not change_exists
    then []
-   else let _=save_all cs2 in  
-       Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
+   else Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
     (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list changed_paths)

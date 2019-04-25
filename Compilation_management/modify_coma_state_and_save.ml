@@ -113,25 +113,20 @@ module Private=struct
 end;;  
 
 let forget cs x=
-   let cs2=Coma_state.Almost_concrete.forget_with_backup_before_saving cs x in 
+   let cs2=Coma_state.Almost_concrete.forget cs x in 
+   let _=Private.save_all cs2 in 
+   cs2;;
+  
+let recompile cs opt_comment=
+   let cs2=Coma_state.Almost_concrete.recompile cs opt_comment in 
    let _=Private.save_all cs2 in 
    cs2;;
   
 
+
 (*
 
 
-let forget_without_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
-  pcs:=new_cs;;
-
-let initialize pcs =
-  let new_cs = Coma_state.read_persistent_version (!pcs) in 
-  pcs:=new_cs;;
-
-let initialize_if_empty pcs =
-   if Coma_state.system_size (!pcs)  = 0 
-   then initialize pcs;;
 
 let recompile pcs opt_comment=
   let new_cs = Coma_state.Almost_concrete.recompile (!pcs) opt_comment in 

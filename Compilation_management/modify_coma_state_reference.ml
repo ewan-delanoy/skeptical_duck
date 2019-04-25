@@ -19,7 +19,7 @@ let initialize_if_empty pcs =
    then initialize pcs;;
 
 let recompile pcs opt_comment=
-  let new_cs = Coma_state.Almost_concrete.recompile (!pcs) opt_comment in 
+  let new_cs = Modify_coma_state_and_save.recompile (!pcs) opt_comment in 
   pcs:=new_cs;;
 
 let recompile_without_githubbing pcs =
