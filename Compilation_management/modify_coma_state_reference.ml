@@ -24,7 +24,7 @@ let recompile pcs opt_comment=
 
 
 let refresh pcs =
-  let (new_cs,_) = Modify_coma_state_and_save.refresh (!pcs)  in 
+  let new_cs = Modify_coma_state_and_save.refresh (!pcs)  in 
   pcs:=new_cs;;
 
 let register_short_path pcs x=

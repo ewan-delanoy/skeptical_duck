@@ -127,14 +127,13 @@ let refresh cs =
    let _=Private.save_all cs2 in 
    cs2;;  
 
+let register_short_path cs short_path=
+   let cs2=Coma_state.Almost_concrete.register_short_path cs short_path in 
+   let _=Private.save_all cs2 in 
+   cs2;;  
 
 (*
 
-
-
-let refresh pcs =
-  let (new_cs,_) = Coma_state.Almost_concrete.local_refresh (!pcs)  in 
-  pcs:=new_cs;;
 
 let register_short_path pcs x=
   let new_cs = Coma_state.Almost_concrete.register_short_path (!pcs) x in 

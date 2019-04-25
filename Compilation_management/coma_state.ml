@@ -2306,7 +2306,6 @@ let register_short_path cs x=
     (Recently_created.of_string_list [short_path]) in
   let cs2=register_mlx_file cs mlx in 
   let _=(
-    save_all cs2;
     backup cs2 diff None;
    ) in 
   cs2;;
