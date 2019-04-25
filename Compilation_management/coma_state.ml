@@ -576,7 +576,7 @@ let all_short_paths cs=
 let short_paths_inside_subdirectory cs subdir =
    let n=Small_array.size (modules cs) in 
    let indices=List.filter (
-     fun idx->idx=idx
+     fun idx->(subdir_at_idx cs idx)=subdir
    ) (Ennig.ennig 1 n) in 
    List.flatten(Image.image(short_paths_at_idx cs) indices);;     
 
@@ -2160,13 +2160,13 @@ let duplicate_module cs old_t1 old_t2=
 module Almost_concrete = struct 
 exception No_module_with_name of string;;
 
-let find_module_index cs x=
+let local_seek_module_index cs x=
   let uncapitalized_x=
     Naked_module.of_string(String.uncapitalize_ascii x) in
   seek_module_index cs  uncapitalized_x;;
 
 let find_half_dressed_module cs x=
-   match find_module_index cs x
+   match local_seek_module_index cs x
    with 
    Some(idx)->hm_at_idx cs idx
    |None->raise(No_module_with_name(x));;  
@@ -2253,14 +2253,6 @@ let forget_without_backup cs x=
         cs3;;  
 
 
-
-
-(* let local_from_outside cs= from_outside  cs Coma_big_constant.next_world;; *)
-                     
-
-
-(* let polished_short_paths cs=all_polished_short_paths  cs Coma_big_constant.next_world;; *)
-
 let recompile_without_githubbing cs=
   let (cs2,change_exists,short_paths)=recompile cs  in
   let changed_paths=
@@ -2311,34 +2303,45 @@ let register_short_path cs x=
    ) in 
   cs2;;
 
-let rename_without_backup cs old_name new_name=
+let local_rename_module cs old_name new_name=
+   let idx = Option.unpack(local_seek_module_index cs old_name) in 
    let old_hm = find_half_dressed_module cs old_name 
+   and old_short_paths = short_paths_at_idx cs idx 
    and unslashed_new_name = No_slashes.of_string new_name in 
-   let cs2=recompile cs None  in 
-   let (cs3,_)=rename_module cs2 old_hm unslashed_new_name in 
-   let _=(save_all cs3) in 
-   cs3;;   
+   let (cs2,_)=rename_module cs old_hm unslashed_new_name in 
+   let new_short_paths = short_paths_at_idx cs2 idx in 
+   let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_short_paths)
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list new_short_paths) in
+   let _=(backup cs2 diff None) in  
+   cs2;;   
 
-let relocate_without_backup cs old_hm_name new_subdir=
-  let old_hm = find_half_dressed_module cs old_hm_name in 
-  let cs2=recompile cs None  in
-  let (cs3,_)=relocate_module cs2 old_hm new_subdir in 
-  cs3;;  
+let local_relocate_module cs old_hm_name new_subdir=
+  let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
+  let old_hm = find_half_dressed_module cs old_hm_name 
+  and old_short_paths = short_paths_at_idx cs idx  in 
+  let (cs2,_)=relocate_module cs old_hm new_subdir in
+  let  new_short_paths = short_paths_at_idx cs2 idx  in 
+  let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_short_paths)
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list new_short_paths) in
+   let _=(backup cs2 diff None) in  
+   cs2;;   
 
-let relocate_module cs x y=
-   let cs4=relocate_without_backup cs x y in 
-   recompile cs4 None;;
-
-let rename_module cs x y=
-   let cs4=rename_without_backup cs x y in 
-   recompile cs4 None;;
-
-let rename_directory cs (old_subdir,new_subdirname)=
-   let _=recompile_without_githubbing cs in 
+let local_rename_directory cs old_subdir new_subdirname=
+   let old_short_paths=short_paths_inside_subdirectory cs old_subdir in
    let cs2=rename_directory cs (old_subdir,new_subdirname) in 
-   let cs3=recompile cs2 None in 
-   let _= save_all cs3 in
-   cs3;;
+   let s_old_subdir=Subdirectory.without_trailing_slash old_subdir in
+   let new_subdir=(Cull_string.before_rightmost s_old_subdir '/')^"/"^new_subdirname in
+   let new_short_paths=short_paths_inside_subdirectory cs2 (Subdirectory.of_string new_subdir) in
+   let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_short_paths)
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list new_short_paths) in
+   let _=(backup cs2 diff None) in  
+   cs2;;   
 
 
 let rename_string_or_value cs old_name new_name=
