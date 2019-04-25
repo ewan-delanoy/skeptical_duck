@@ -7,8 +7,8 @@
 
 let module_name_from_path ap=
       let s_ap=Absolute_path.to_string ap in
-      let pointed_name=Cull_string.son s_ap '/' in
-      let name=Cull_string.invasive_father pointed_name '.' in
+      let pointed_name=Cull_string.after_rightmost s_ap '/' in
+      let name=Cull_string.before_rightmost_possibly_all pointed_name '.' in
       Naked_module.of_string name;;
 
 

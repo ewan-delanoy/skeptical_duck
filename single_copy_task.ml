@@ -27,7 +27,7 @@ let execute x=
   let cmd1=(
    if not(String.contains x.filename '/')
    then ""
-   else let base=Cull_string.father x.filename '/' in
+   else let base=Cull_string.before_rightmost x.filename '/' in
         "ssh -p "^(string_of_int x.port)^" "^(x.webhost)^
         " \"mkdir -p "^(Unix_compliant.make_unix_compliant((x.remote_root)^base))^"\""
   ) in

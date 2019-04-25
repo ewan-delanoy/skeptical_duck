@@ -69,7 +69,7 @@ let commands_for_update (source_dir,destination_dir) diff=
    let temp2=Option.filter_and_unpack
    (fun fn->
      if String.contains fn '/'
-     then let dn=Cull_string.father fn '/' in
+     then let dn=Cull_string.before_rightmost fn '/' in
           Some("mkdir -p "^s_destination^dn)
      else None 
     )
@@ -78,7 +78,7 @@ let commands_for_update (source_dir,destination_dir) diff=
    let s_source=Root_directory.connectable_to_subpath source_dir in
    let temp4=Image.image(
       fun fn->
-      "cp "^s_source^fn^" "^s_destination^(Cull_string.father fn '/')
+      "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
    ) created_ones in
    let changed_ones=Dircopy_diff.recently_changed diff in
    let temp5=Image.image(

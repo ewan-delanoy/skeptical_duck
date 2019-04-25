@@ -133,16 +133,16 @@ between_markers ("aaa","bb") "123aaa45bb678";;
 
 *)     
    
-let father_and_son s c=
+let split_wrt_rightmost s c=
    let i=(try String.rindex(s)(c) with _->(-1)) in
    if i<0
    then ("",s)
    else (String.sub s 0 i,String.sub s (i+1) ((String.length s)-i-1) );;
 
-let father s c=fst(father_and_son s c);;
-let son s c=snd(father_and_son s c);;
+let before_rightmost s c=fst(split_wrt_rightmost s c);;
+let after_rightmost s c=snd(split_wrt_rightmost s c);;
 
-let invasive_father s c=
+let before_rightmost_possibly_all s c=
    let i=(try String.rindex(s)(c) with _->(-1)) in
    if i<0
    then s

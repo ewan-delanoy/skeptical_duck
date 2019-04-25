@@ -21,7 +21,7 @@ let to_string=short_path;;
 
 let of_string_and_root s dir= 
   if not(String.contains s '.') then raise(Unpointed_filename(s)) else
-  let (core,ending)=Cull_string.father_and_son s '.' in
+  let (core,ending)=Cull_string.split_wrt_rightmost s '.' in
   let s_dir=Root_directory.connectable_to_subpath dir in
   if (not(Sys.file_exists(s_dir^s)))
   then raise(Inexistent_filename(s_dir^s))
@@ -83,7 +83,7 @@ unwittingly puts a wrong ending, this will have no effect.
 *)  
   
 let do_file_renaming mlx new_name=
-  let core=Cull_string.invasive_father (No_slashes.to_string new_name) '.' in
+  let core=Cull_string.before_rightmost_possibly_all (No_slashes.to_string new_name) '.' in
   let checked_name=No_slashes.of_string(core^(Ocaml_ending.to_string(ending mlx))) in
   let ap=to_path mlx in
   let new_ap=Rename_file.rename ap checked_name in

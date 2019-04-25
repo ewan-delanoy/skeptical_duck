@@ -43,7 +43,7 @@ let prepend_prefix prefix x=
 let include_in_new_scope new_scope x=
     {
   		category =x.category;
-        name =new_scope^(Cull_string.invasive_father x.name '.');
+        name =new_scope^(Cull_string.before_rightmost_possibly_all x.name '.');
         interval_for_name =x.interval_for_name;
         whole =x.whole;
         content =x.content;
