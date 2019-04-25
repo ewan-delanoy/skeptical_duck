@@ -26,10 +26,7 @@ let nmx x=Half_dressed_module.naked_module (Usual_coma_state.find_half_dressed_m
 
  
   
-let sd ()=
-  let _=Coma_state.recompile (!(Usual_coma_state.main_ref)) in 
-  let _=Coma_state.start_debugging (!(Usual_coma_state.main_ref)) in 
-    Usual_coma_state.save_all();;
+
 
 let muv x=Coma_state.modules_using_value (!Usual_coma_state.main_ref) x;;
 
