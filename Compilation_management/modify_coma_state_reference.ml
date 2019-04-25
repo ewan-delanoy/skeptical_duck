@@ -1,17 +1,14 @@
 
 (* 
 
-#use"Makefile_makers/modify_persistent_coma_state.ml";;
+#use"Compilation_management/modify_coma_state_reference.ml";;
 
 *)
 
-let forget_with_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
+let forget pcs x=
+  let new_cs = Modify_coma_state_and_save.forget (!pcs) x in 
   pcs:=new_cs;;
 
-let forget_without_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
-  pcs:=new_cs;;
 
 let initialize pcs =
   let new_cs = Coma_state.read_persistent_version (!pcs) in 

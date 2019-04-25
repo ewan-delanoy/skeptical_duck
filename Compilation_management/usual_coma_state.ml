@@ -32,11 +32,7 @@ let duplicate_module old_t1 old_t2=
 let find_half_dressed_module modname= 
   Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref)) modname;;
 
-let forget_with_backup modname=Modify_coma_state_reference.forget_with_backup Private.main_ref modname;;
-
-let forget_without_backup modname=Modify_coma_state_reference.forget_without_backup Private.main_ref modname;;      
-
-
+let forget modname=Modify_coma_state_reference.forget Private.main_ref modname;;
 
 let initialize ()=Modify_coma_state_reference.initialize Private.main_ref ;; 
 

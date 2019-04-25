@@ -112,7 +112,7 @@ module Private=struct
 
 end;;  
 
-let forget_with_backup cs x=
+let forget cs x=
    let cs2=Coma_state.Almost_concrete.forget_with_backup_before_saving cs x in 
    let _=Private.save_all cs2 in 
    cs2;;
@@ -120,9 +120,6 @@ let forget_with_backup cs x=
 
 (*
 
-let forget_with_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_with_backup (!pcs) x in 
-  pcs:=new_cs;;
 
 let forget_without_backup pcs x=
   let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
