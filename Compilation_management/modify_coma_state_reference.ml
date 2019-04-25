@@ -6,11 +6,11 @@
 *)
 
 let forget_with_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_with_backup (!pcs) x in 
+  let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
   pcs:=new_cs;;
 
 let forget_without_backup pcs x=
-  let new_cs = Coma_state.Almost_concrete.forget_with_backup (!pcs) x in 
+  let new_cs = Coma_state.Almost_concrete.forget_without_backup (!pcs) x in 
   pcs:=new_cs;;
 
 let initialize pcs =
