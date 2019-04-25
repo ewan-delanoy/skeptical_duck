@@ -131,36 +131,6 @@ let modules_with_their_ancestors cs l=
    Listennou.nonredundant_version temp3;;
 
 
-module Private=struct
-
-let debuggable_targets_from_ancestor_data pr_end hm=
-    match pr_end with
-     Ocaml_ending.Mll-> 
-        let mll_target=Ocaml_target.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mll) in
-             [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Mly-> 
-        let mly_target=Ocaml_target.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mly) in
-        [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Ml-> 
-             let ml_target=Ocaml_target.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.ml) in
-             [ml_target;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Mli-> 
-             let mli_target=Ocaml_target.no_dependencies(Mlx_ended_absolute_path.join hm Ocaml_ending.mli) in
-             [mli_target;Ocaml_target.cmi hm];;    
-    
-let immediate_ingredients_for_debuggable hm=
-        [Ocaml_target.dcmo hm;Ocaml_target.debuggable hm];;  
-    
-end;;  
-
-let debuggable_targets_from_ancestors cs ancestors=
-    let temp1=Image.image (fun hm2->
-           let idx2=find_module_index cs hm2 in
-           let pr_end2=principal_ending_at_idx cs idx2 
-           and hm2=hm_at_idx cs idx2 in
-           Private.debuggable_targets_from_ancestor_data pr_end2 hm2
-         ) ancestors in
-    Preserve_initial_ordering.preserve_initial_ordering temp1;;
 
 let find_needed_data_for_file cs fn=
       let temp1=Look_for_module_names.names_in_file fn in
@@ -200,24 +170,6 @@ let needed_dirs_and_libs_for_several cmod cs l_idx=
     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
     pre_libs2) in
     String.concat " " ["";dirs;libs;""];;
-
-let ingredients_for_debuggable cs hm=
-      let mlfile=Mlx_ended_absolute_path.join hm Ocaml_ending.Ml in
-      let genealogy=find_needed_data cs mlfile in
-      let dirfath=Image.image (module_at_idx cs) genealogy in
-      let temp1=Image.image 
-             (fun idx->
-             Tidel.diforchan(ancestors_at_idx cs idx) 
-             ) 
-             genealogy in
-       let temp2=Tidel.big_teuzin ((Tidel.diforchan(dirfath) )::temp1) in
-       let temp3=Small_array.indices_of_property_in (
-            fun nm->Tidel.elfenn nm temp2
-       ) (modules cs) in
-       let allanc=Image.image (module_at_idx cs) temp3 in
-      (debuggable_targets_from_ancestors cs allanc)
-      @(Private.immediate_ingredients_for_debuggable hm);; 
-
 
 let all_modules cs=
   let n=Small_array.size((modules cs)) in
