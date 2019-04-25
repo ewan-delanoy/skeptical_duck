@@ -55,15 +55,15 @@ let refresh ()=Modify_coma_state_reference.refresh Private.main_ref;;
 
 let register_short_path x=Modify_coma_state_reference.register_short_path Private.main_ref x;;
   
-let relocate_module old_name new_name=
-   Modify_coma_state_reference.relocate_module Private.main_ref old_name new_name;;
-   
+let relocate_module old_hm_name new_subdir=
+   Modify_coma_state_reference.relocate_module Private.main_ref old_hm_name new_subdir;;
+
 let rename_directory (old_subdir,new_subdirname)=
     Modify_coma_state_reference.rename_directory Private.main_ref (old_subdir,new_subdirname);;
 
 
-let rename_module old_hm_name new_subdir=
-   Modify_coma_state_reference.rename_module Private.main_ref old_hm_name new_subdir;;
+let rename_module old_name new_name=
+   Modify_coma_state_reference.rename_module Private.main_ref old_name new_name;;
 
 
 let rename_string_or_value old_name new_name=
