@@ -58,8 +58,8 @@ let register_short_path x=Modify_coma_state_reference.register_short_path Privat
 let relocate_module old_hm_name new_subdir=
    Modify_coma_state_reference.relocate_module Private.main_ref old_hm_name new_subdir;;
 
-let rename_directory (old_subdir,new_subdirname)=
-    Modify_coma_state_reference.rename_directory Private.main_ref (old_subdir,new_subdirname);;
+let rename_directory old_subdir new_subdirname=
+    Modify_coma_state_reference.rename_directory Private.main_ref old_subdir new_subdirname;;
 
 
 let rename_module old_name new_name=
