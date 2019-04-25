@@ -2443,7 +2443,6 @@ module Save_all=struct
     
     let write_all 
     (
-      location_for_makefile,
       location_for_targetfile,
       location_for_loadingsfile,
       location_for_printersfile
@@ -2530,7 +2529,6 @@ let text_for_big_constants_file_in_next_world =
     let uple=uple_form other_cs2 in 
     let _=Save_all.write_all 
     (
-      Coma_constant.name_for_makefile,
       Coma_constant.name_for_targetfile,
       Coma_constant.name_for_loadingsfile,
       Coma_constant.name_for_printersfile
@@ -2759,7 +2757,6 @@ let find_half_dressed_module cs x=
 
 let save_all cs=Save_all.write_all 
   (
-    Coma_constant.name_for_makefile,
     Coma_constant.name_for_targetfile,
     Coma_constant.name_for_loadingsfile,
     Coma_constant.name_for_printersfile
