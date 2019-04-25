@@ -32,15 +32,15 @@ let duplicate_module old_t1 old_t2=
 let find_half_dressed_module modname= 
   Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref)) modname;;
 
-let forget_with_backup modname=Modify_persistent_coma_state.forget_with_backup Private.main_ref modname;;
+let forget_with_backup modname=Modify_coma_state_reference.forget_with_backup Private.main_ref modname;;
 
-let forget_without_backup modname=Modify_persistent_coma_state.forget_without_backup Private.main_ref modname;;      
+let forget_without_backup modname=Modify_coma_state_reference.forget_without_backup Private.main_ref modname;;      
 
 
 
-let initialize ()=Modify_persistent_coma_state.initialize Private.main_ref ;; 
+let initialize ()=Modify_coma_state_reference.initialize Private.main_ref ;; 
 
-let initialize_if_empty ()=Modify_persistent_coma_state.initialize_if_empty Private.main_ref ;;                       
+let initialize_if_empty ()=Modify_coma_state_reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
    Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
@@ -51,26 +51,26 @@ let main_ref=Private.main_ref;;
 let modules_using_value x=Coma_state.modules_using_value (!(Private.main_ref)) x;;
 
 let recompile_without_githubbing ()=
-   Modify_persistent_coma_state.recompile_without_githubbing Private.main_ref;;
+   Modify_coma_state_reference.recompile_without_githubbing Private.main_ref;;
 
-let recompile opt=Modify_persistent_coma_state.recompile Private.main_ref opt;;
+let recompile opt=Modify_coma_state_reference.recompile Private.main_ref opt;;
    
 
-let refresh ()=Modify_persistent_coma_state.refresh Private.main_ref;;
+let refresh ()=Modify_coma_state_reference.refresh Private.main_ref;;
 
 
 
-let register_short_path x=Modify_persistent_coma_state.register_short_path Private.main_ref x;;
+let register_short_path x=Modify_coma_state_reference.register_short_path Private.main_ref x;;
   
 let relocate_module old_name new_name=
-   Modify_persistent_coma_state.relocate_module Private.main_ref old_name new_name;;
+   Modify_coma_state_reference.relocate_module Private.main_ref old_name new_name;;
    
 let rename_directory (old_subdir,new_subdirname)=
-    Modify_persistent_coma_state.rename_directory Private.main_ref (old_subdir,new_subdirname);;
+    Modify_coma_state_reference.rename_directory Private.main_ref (old_subdir,new_subdirname);;
 
 
 let rename_module old_hm_name new_subdir=
-   Modify_persistent_coma_state.rename_module Private.main_ref old_hm_name new_subdir;;
+   Modify_coma_state_reference.rename_module Private.main_ref old_hm_name new_subdir;;
 
 
 let rename_string_or_value old_name new_name=

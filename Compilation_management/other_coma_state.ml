@@ -30,13 +30,13 @@ let duplicate_module old_t1 old_t2=
 let find_half_dressed_module = 
   Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref));;
 
-let forget_with_backup x=Modify_persistent_coma_state.forget_with_backup Private.main_ref;;
+let forget_with_backup x=Modify_coma_state_reference.forget_with_backup Private.main_ref;;
 
-let forget_without_backup x=Modify_persistent_coma_state.forget_without_backup Private.main_ref;;      
+let forget_without_backup x=Modify_coma_state_reference.forget_without_backup Private.main_ref;;      
 
-let initialize ()=Modify_persistent_coma_state.initialize Private.main_ref ;; 
+let initialize ()=Modify_coma_state_reference.initialize Private.main_ref ;; 
 
-let initialize_if_empty ()=Modify_persistent_coma_state.initialize_if_empty Private.main_ref ;;                       
+let initialize_if_empty ()=Modify_coma_state_reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
    Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
@@ -47,16 +47,16 @@ let main_ref=Private.main_ref;;
 (* let polished_short_paths ()=Coma_state.Almost_concrete.polished_short_paths  (!(Private.main_ref));; *)
 
 let recompile_without_githubbing ()=
-   Modify_persistent_coma_state.recompile_without_githubbing Private.main_ref;;
+   Modify_coma_state_reference.recompile_without_githubbing Private.main_ref;;
 
-let recompile opt=Modify_persistent_coma_state.recompile Private.main_ref opt;;
+let recompile opt=Modify_coma_state_reference.recompile Private.main_ref opt;;
    
 
-let refresh ()=Modify_persistent_coma_state.refresh Private.main_ref;;
+let refresh ()=Modify_coma_state_reference.refresh Private.main_ref;;
 
 
 
-let register_short_path x=Modify_persistent_coma_state.register_short_path Private.main_ref x;;
+let register_short_path x=Modify_coma_state_reference.register_short_path Private.main_ref x;;
   
 let rename_string_or_value old_name new_name=
    Coma_state.Values_in_modules.rename_string_or_value
