@@ -134,10 +134,11 @@ let register_short_path cs short_path=
 
 (*
 
+let relocate_module cs old_name new_name=
+   let cs2=Coma_state.Almost_concrete.relocate_module cs old_name new_name in 
+   let _=Private.save_all cs2 in 
+   cs2;;  
 
-let register_short_path pcs x=
-  let new_cs = Coma_state.Almost_concrete.register_short_path (!pcs) x in 
-  pcs:=new_cs;;
 
 let relocate_module pcs old_name new_name=
    let new_cs = Coma_state.Almost_concrete.relocate_module (!pcs) old_name new_name in 

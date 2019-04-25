@@ -27,8 +27,8 @@ let refresh pcs =
   let new_cs = Modify_coma_state_and_save.refresh (!pcs)  in 
   pcs:=new_cs;;
 
-let register_short_path pcs x=
-  let new_cs = Coma_state.Almost_concrete.register_short_path (!pcs) x in 
+let register_short_path pcs short_path=
+  let new_cs = Modify_coma_state_and_save.register_short_path (!pcs) short_path in 
   pcs:=new_cs;;
 
 let relocate_module pcs old_name new_name=

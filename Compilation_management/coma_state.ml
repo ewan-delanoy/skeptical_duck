@@ -573,11 +573,12 @@ let all_short_paths cs=
     let n=Small_array.size (modules cs) in
     List.flatten(Ennig.doyle(short_paths_at_idx cs) 1 n);;  
 
-let line_inside = "let github_after_backup=ref(true)"^Double_semicolon.ds;;
-let line_outside = "let github_after_backup=ref(false)"^Double_semicolon.ds;;
-
-
-
+let short_paths_inside_subdirectory cs subdir =
+   let n=Small_array.size (modules cs) in 
+   let indices=List.filter (
+     fun idx->idx=idx
+   ) (Ennig.ennig 1 n) in 
+   List.flatten(Image.image(short_paths_at_idx cs) indices);;     
 
 let files_containing_string cs some_string=
 let temp1=all_mlx_paths cs in
@@ -2310,8 +2311,6 @@ let register_short_path cs x=
    ) in 
   cs2;;
 
-
-
 let rename_without_backup cs old_name new_name=
    let old_hm = find_half_dressed_module cs old_name 
    and unslashed_new_name = No_slashes.of_string new_name in 
@@ -2324,12 +2323,12 @@ let relocate_without_backup cs old_hm_name new_subdir=
   let old_hm = find_half_dressed_module cs old_hm_name in 
   let cs2=recompile cs None  in
   let (cs3,_)=relocate_module cs2 old_hm new_subdir in 
-  let _=(save_all cs3) in 
   cs3;;  
 
 let relocate_module cs x y=
    let cs4=relocate_without_backup cs x y in 
    recompile cs4 None;;
+
 let rename_module cs x y=
    let cs4=rename_without_backup cs x y in 
    recompile cs4 None;;
