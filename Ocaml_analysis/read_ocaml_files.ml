@@ -83,8 +83,8 @@ module Private=struct
      let temp1=Image.image( fun ap->
      let s_ap=Absolute_path.to_string ap
      and text=Io.read_whole_file ap in
-     let unpointed=Father_and_son.father s_ap '.' in
-     let module_name=String.capitalize_ascii (Father_and_son.son unpointed '/') in
+     let unpointed=Cull_string.father s_ap '.' in
+     let module_name=String.capitalize_ascii (Cull_string.son unpointed '/') in
      try (module_name,Pre_read_ocaml_files.pre_read text)  with
      Pre_read_ocaml_files.Pre_read_exn(t)->raise(Reading_error(ap,t)) 
      ) l_ap in 

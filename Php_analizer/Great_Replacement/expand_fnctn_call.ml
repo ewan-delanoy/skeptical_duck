@@ -60,7 +60,7 @@ let parse_fnctn s idx=
     let lines2=Image.image Cull_string.trim_spaces lines in
     let lines3=List.filter (fun line->line<>"") lines2 in
     let second_content=String.concat "\n" lines3 in
-    let (s1,s2)=Father_and_son.father_and_son second_content '\n' in
+    let (s1,s2)=Cull_string.father_and_son second_content '\n' in
     let (final_content,returned_content)=(
          if s1="" then (s2,"") else
          if Supstring.begins_with s2 "return"

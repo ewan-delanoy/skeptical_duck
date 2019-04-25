@@ -25,7 +25,7 @@ let naked_module  x=Naked_module.of_string(x.naked_module);;
 exception Inexistent_module of string;;
  
 let of_string_and_root old_s dir=
-        let s=Father_and_son.invasive_father old_s '.' in
+        let s=Cull_string.invasive_father old_s '.' in
         let s_dir=Root_directory.without_trailing_slash dir in
       if List.for_all (fun edg->not(Sys.file_exists(s_dir^"/"^s^edg)) ) 
            Ocaml_ending.all_string_endings
@@ -33,8 +33,8 @@ let of_string_and_root old_s dir=
 	    else
 	    {
 	      bundle_main_dir = s_dir;
-   		  subdirectory    =Father_and_son.father s '/';
-          naked_module     =Father_and_son.son s '/';
+   		  subdirectory    =Cull_string.father s '/';
+          naked_module     =Cull_string.son s '/';
 	    };;  
    
 let uprooted_version x=
@@ -60,11 +60,11 @@ let of_path_and_root ap dir=
     let s_dir=Root_directory.without_trailing_slash dir in
     let n_dir=(String.length s_dir)+1 in
     let subpath=Cull_string.cobeginning n_dir (Absolute_path.to_string ap) in
-    let s=Father_and_son.invasive_father subpath '.' in
+    let s=Cull_string.invasive_father subpath '.' in
     {
 	      bundle_main_dir = s_dir;
-   		  subdirectory    =Father_and_son.father s '/';
-          naked_module     =Father_and_son.son s '/';
+   		  subdirectory    =Cull_string.father s '/';
+          naked_module     =Cull_string.son s '/';
     }  ;;    
 
 

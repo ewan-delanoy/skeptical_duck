@@ -52,7 +52,7 @@ let extension x=try (naive_extension x) with
  
  let test_for_cleaniness=function ap->
   let s=Absolute_path.to_string ap in
-  Father_and_son.son(s)('/')<>".DS_Store";;
+  Cull_string.son(s)('/')<>".DS_Store";;
  
  let cleaned_ls x=
    List.filter test_for_cleaniness (ls x);;

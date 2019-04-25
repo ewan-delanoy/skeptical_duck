@@ -34,7 +34,7 @@ let display x=
 module Private=struct
 
 let summarize_short_path s=
-   String.capitalize_ascii(Father_and_son.son (Father_and_son.invasive_father s '.') '/');;
+   String.capitalize_ascii(Cull_string.son (Cull_string.invasive_father s '.') '/');;
  
 let summarize_short_path_list l=
     let temp1=Image.image summarize_short_path l in

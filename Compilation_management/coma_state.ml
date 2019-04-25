@@ -398,7 +398,7 @@ let find_needed_directories cs mlx genealogy=
   let s_mlx=Mlx_ended_absolute_path.to_string mlx in
   let temp2=(fun bowl->
       if bowl 
-      then let new_subdir=Subdirectory.of_string(Father_and_son.father s_mlx '/') in
+      then let new_subdir=Subdirectory.of_string(Cull_string.father s_mlx '/') in
            Tidel.singleton(new_subdir)::temp1
       else temp1
   )(String.contains s_mlx '/') in    
@@ -1169,7 +1169,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
     let s_root=Root_directory.connectable_to_subpath(root cs) in
     let workdir=
       (Subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) in
-    let unpointed_short_path = Father_and_son.father short_path '.' in 
+    let unpointed_short_path = Cull_string.father short_path '.' in 
     let libs_for_prow = 
       Tidel.diforchan(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
@@ -1213,8 +1213,8 @@ let command_for_debuggable_or_executable cmod cs short_path=
       fun (idx,subdir,nm)->
          (* s_root^workdir ^ *) (Naked_module.to_string nm)^ending
     ) nm_deps_with_indices in 
-    let unpointed_short_path = Father_and_son.father short_path '.' in 
-    let nm_name = (Father_and_son.son unpointed_short_path '/') in 
+    let unpointed_short_path = Cull_string.father short_path '.' in 
+    let nm_name = (Cull_string.son unpointed_short_path '/') in 
     let last_cm_element=nm_name^ending in 
     let all_cm_elements= (cm_elements_but_the_last) @ [last_cm_element] in 
     let libs_for_prow = 
@@ -1675,7 +1675,7 @@ let select_good_files s_main_dir=
       ) l in
       let temp2=Image.image (fun ap->
         let s=Absolute_path.to_string ap in
-        (ap,Father_and_son.son s '/')
+        (ap,Cull_string.son s '/')
       ) temp1 in
       let temp3=detect_identical_names ([],temp2) in
       if temp3<>[]
@@ -1697,7 +1697,7 @@ let select_good_files s_main_dir=
         let ttempf=(fun s_nm->
           Option.filter_and_unpack (fun 
           (k,(_,s))->
-          if (Father_and_son.father s '.')=s_nm
+          if (Cull_string.father s '.')=s_nm
           then Some(k)
           else None ) temp1
         ) in
@@ -1910,7 +1910,7 @@ module Save_all=struct
       and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
       let temp2=Image.image (
         function hm->
-          let s=Father_and_son.son (Half_dressed_module.uprooted_version hm) '/' in
+          let s=Cull_string.son (Half_dressed_module.uprooted_version hm) '/' in
           "#load\""^s^".cmo\";"^";"
       ) hms in
       let temp3="\n\n\n"::temp2 in
@@ -2082,7 +2082,7 @@ let decipher_path cs x=Find_suitable_ending.find_file_location
 exception Absent_module of string;;
 
 let decipher_module cs x=
-  let s=Father_and_son.invasive_father x '.' in
+  let s=Cull_string.invasive_father x '.' in
   match (Option.find_and_stop(
       fun edg->try(Some(decipher_path cs (s^edg))) with _->None
   ) Ocaml_ending.all_string_endings) with
@@ -2096,7 +2096,7 @@ exception No_module_given of string;;
 exception No_value_with_name of string;;
 
 let get_module_inside_name s=
-   let f=Father_and_son.father s '/' in
+   let f=Cull_string.father s '/' in
    if f=""
    then raise(No_module_given(s))
    else f;;
@@ -2129,7 +2129,7 @@ let rename_value_inside_module cs s new_name=
    let temp3_again=Read_ocaml_files.read_ocaml_files all_files in
    let beheaded_name=Cull_string.cobeginning j s in
    let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
-   (Father_and_son.father beheaded_name '.',Overwriter.to_string new_name) in
+   (Cull_string.father beheaded_name '.',Overwriter.to_string new_name) in
    let new_beheaded_name=Overwriter.of_string s_new_beheaded_name in
    let s_new_full_name=module_name^"."^s_new_beheaded_name in
    let temp4_again=Option.find (fun itm->
@@ -2191,7 +2191,7 @@ let rename_string_or_value cs old_name new_name=
   if not(String.contains old_name '.')
   then replace_string cs old_name new_name
   else 
-    let new_full_name=(Father_and_son.father old_name '.')^"."^new_name in
+    let new_full_name=(Cull_string.father old_name '.')^"."^new_name in
     (Local_rename_value_inside_module.rename_value_inside_module 
             cs old_name (Overwriter.of_string new_name); 
      replace_string cs old_name new_full_name
@@ -2260,7 +2260,7 @@ let duplicate_module cs old_t1 old_t2=
    and t2=String.uncapitalize_ascii old_t2 in 
    let ap1=decipher_path cs t1 in
    let s_ap1=Absolute_path.to_string ap1 in
-   let s_ap2=(Father_and_son.invasive_father s_ap1 '/')^"/"^t2^".ml" in
+   let s_ap2=(Cull_string.invasive_father s_ap1 '/')^"/"^t2^".ml" in
    if Sys.file_exists s_ap2
    then raise(Module_already_exists(t2))
    else 

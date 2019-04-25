@@ -28,7 +28,7 @@ module Private=struct
   exception Inexistent_module of string;;
  
   let of_string_and_root old_s dir=
-        let s=Father_and_son.invasive_father old_s '.' in
+        let s=Cull_string.invasive_father old_s '.' in
         let s_dir=Root_directory.without_trailing_slash dir in
       if List.for_all (fun edg->not(Sys.file_exists(s_dir^"/"^s^edg)) ) 
            Ocaml_ending.all_string_endings
@@ -36,8 +36,8 @@ module Private=struct
 	    else
 	    {
 	      bundle_main_dir = s_dir;
-   		  subdirectory    =Father_and_son.father s '/';
-        naked_module     =Father_and_son.son s '/';
+   		  subdirectory    =Cull_string.father s '/';
+        naked_module     =Cull_string.son s '/';
 	    };;   
 
   let to_shortened_string x=x.naked_module;;   
@@ -784,7 +784,7 @@ let usual_targets cs=
     let long_temp4=Image.image (fun idx->
                let hm=lm_at_idx cs idx in
                let s_hm=(Located_module.uprooted_version hm) in
-               let short_s_hm=Father_and_son.son s_hm '/' in
+               let short_s_hm=Cull_string.son s_hm '/' in
                let ml_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx in
                if ml_reg
                then s_root^"_build/"^short_s_hm^".cmo"

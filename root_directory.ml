@@ -45,7 +45,7 @@ exception Failed_relocation of Absolute_path.t*Root_directory_t.t;;
 
 let relocate ap new_dir=
     let old_path=Absolute_path.to_string ap in
-    let fn=Father_and_son.son old_path '/' in 
+    let fn=Cull_string.son old_path '/' in 
     let new_path=(connectable_to_subpath new_dir)^fn in
     let i=Unix_command.uc("mv "^old_path^" "^new_path) in
     if i<>0
