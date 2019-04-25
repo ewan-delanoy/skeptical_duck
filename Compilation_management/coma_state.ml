@@ -1332,15 +1332,6 @@ let forget_file cs ap=
 
 module Unregister_module=struct
 
-let test_for_non_obsolescence (hm,short_paths) tgt=
-  match tgt with
-  Ocaml_target.NO_DEPENDENCIES(mlx)->
-      not(List.mem (Mlx_ended_absolute_path.short_path mlx) short_paths)
-  |_->(
-    match Ocaml_target.main_module tgt with
-    None->false |Some(hm2)->hm2<>hm
-      );;    
-
 
 let on_targets root_dir cs hm=
     let (cs2,short_paths)=unregister_module_on_monitored_modules  cs hm in
