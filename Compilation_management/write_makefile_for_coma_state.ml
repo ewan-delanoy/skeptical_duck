@@ -6,7 +6,56 @@
 *)
 
 module Private=struct
+
+  module Located_module = struct 
   
+  type t={
+   bundle_main_dir : string;
+   subdirectory    : string;
+   naked_module     : string;
+  };;  
+
+  let naked_module  x=Naked_module.of_string(x.naked_module);;
+
+  let uprooted_version x=
+   let sub=x.subdirectory in
+   if sub=""
+   then x.naked_module
+   else sub^"/"^(x.naked_module);;
+
+  let unveil x=(uprooted_version x,Root_directory.of_string(x.bundle_main_dir));;
+
+  exception Inexistent_module of string;;
+ 
+  let of_string_and_root old_s dir=
+        let s=Father_and_son.invasive_father old_s '.' in
+        let s_dir=Root_directory.without_trailing_slash dir in
+      if List.for_all (fun edg->not(Sys.file_exists(s_dir^"/"^s^edg)) ) 
+           Ocaml_ending.all_string_endings
+	    then raise(Inexistent_module(s_dir^s))
+	    else
+	    {
+	      bundle_main_dir = s_dir;
+   		  subdirectory    =Father_and_son.father s '/';
+        naked_module     =Father_and_son.son s '/';
+	    };;   
+
+  let to_shortened_string x=x.naked_module;;   
+
+  end;;
+
+  let lm_at_idx cs k=
+    let (Root_directory_t.R r)= Coma_state.root cs in
+    {
+      Located_module.bundle_main_dir = r;
+      subdirectory = (Subdirectory.without_trailing_slash(Coma_state.subdir_at_idx cs k));
+      naked_module = (Naked_module.to_string(Coma_state.module_at_idx cs k));
+    } ;;
+
+  let all_located_modules cs=
+    let n=Small_array.size((Coma_state.modules cs)) in
+    Ennig.doyle (lm_at_idx cs) 1 n;; 
+
   module Mlx_path=struct 
 
    type t=MLX of Ocaml_ending.t*string*Root_directory_t.t;;
@@ -20,18 +69,18 @@ module Private=struct
    let to_string=short_path;; 
 
    let join hs ending=
-    let (s,dir)=Half_dressed_module.unveil hs in
+    let (s,dir)=Located_module.unveil hs in
     MLX(ending,s,dir);;
 
   let decompose (MLX(edg,s,dir))=
-  (Half_dressed_module.of_string_and_root s dir,edg);;
+  (Located_module.of_string_and_root s dir,edg);;
 
   let root (MLX(_,_,dir))=dir;;
 
   let to_path mlx=
       let (hm,edg)=decompose mlx in
       let dir=root mlx in
-      let s_hm=Half_dressed_module.uprooted_version hm 
+      let s_hm=Located_module.uprooted_version hm 
       and s_dir=Root_directory.connectable_to_subpath dir in
       Absolute_path.of_string( s_dir^s_hm^(Ocaml_ending.to_string edg) );; 
 
@@ -55,28 +104,28 @@ module Private=struct
    
    type t=
      NO_DEPENDENCIES of Mlx_path.t
-    |ML_FROM_MLL of Half_dressed_module.t
-    |ML_FROM_MLY of Half_dressed_module.t 
-    |CMI of Half_dressed_module.t
-    |CMO of Half_dressed_module.t
-    |DCMO of Half_dressed_module.t
-    |CMA of Half_dressed_module.t
-    |CMX of Half_dressed_module.t
-    |EXECUTABLE of Half_dressed_module.t
-    |DEBUGGABLE of Half_dressed_module.t;;
+    |ML_FROM_MLL of Located_module.t
+    |ML_FROM_MLY of Located_module.t 
+    |CMI of Located_module.t
+    |CMO of Located_module.t
+    |DCMO of Located_module.t
+    |CMA of Located_module.t
+    |CMX of Located_module.t
+    |EXECUTABLE of Located_module.t
+    |DEBUGGABLE of Located_module.t;;
 
 
   let to_string =function
      NO_DEPENDENCIES(mlx)->Mlx_path.to_string mlx
-    |ML_FROM_MLL(hm)->(Half_dressed_module.uprooted_version hm)^".ml"
-    |ML_FROM_MLY(hm)->(Half_dressed_module.uprooted_version hm)^".ml" 
-    |CMI(hm)->(Half_dressed_module.uprooted_version hm)^".cmi"
-    |CMO(hm)->(Half_dressed_module.uprooted_version hm)^".cmo"
-    |DCMO(hm)->(Half_dressed_module.uprooted_version hm)^".d.cmo"
-    |CMA(hm)->(Half_dressed_module.uprooted_version hm)^".cma"
-    |CMX(hm)->(Half_dressed_module.uprooted_version hm)^".cmx"
-    |EXECUTABLE(hm)->(Half_dressed_module.uprooted_version hm)^".caml_executable"
-    |DEBUGGABLE(hm)->(Half_dressed_module.uprooted_version hm)^".caml_debuggable";;
+    |ML_FROM_MLL(hm)->(Located_module.uprooted_version hm)^".ml"
+    |ML_FROM_MLY(hm)->(Located_module.uprooted_version hm)^".ml" 
+    |CMI(hm)->(Located_module.uprooted_version hm)^".cmi"
+    |CMO(hm)->(Located_module.uprooted_version hm)^".cmo"
+    |DCMO(hm)->(Located_module.uprooted_version hm)^".d.cmo"
+    |CMA(hm)->(Located_module.uprooted_version hm)^".cma"
+    |CMX(hm)->(Located_module.uprooted_version hm)^".cmx"
+    |EXECUTABLE(hm)->(Located_module.uprooted_version hm)^".caml_executable"
+    |DEBUGGABLE(hm)->(Located_module.uprooted_version hm)^".caml_debuggable";;
 
   let to_shortened_string =function
     NO_DEPENDENCIES(mlx)->
@@ -87,15 +136,15 @@ module Private=struct
      up-to-date or not.
    *)
     Mlx_path.to_string mlx
-   |ML_FROM_MLL(hm)->(Half_dressed_module.to_shortened_string hm)^".ml"
-   |ML_FROM_MLY(hm)->(Half_dressed_module.to_shortened_string hm)^".ml" 
-   |CMI(hm)->(Half_dressed_module.to_shortened_string hm)^".cmi"
-   |CMO(hm)->(Half_dressed_module.to_shortened_string hm)^".cmo"
-   |DCMO(hm)->(Half_dressed_module.to_shortened_string hm)^".d.cmo"
-   |CMA(hm)->(Half_dressed_module.to_shortened_string hm)^".cma"
-   |CMX(hm)->(Half_dressed_module.to_shortened_string hm)^".cmx"
-   |EXECUTABLE(hm)->(Half_dressed_module.to_shortened_string hm)^".caml_executable"
-   |DEBUGGABLE(hm)->(Half_dressed_module.to_shortened_string hm)^".caml_debuggable";;
+   |ML_FROM_MLL(hm)->(Located_module.to_shortened_string hm)^".ml"
+   |ML_FROM_MLY(hm)->(Located_module.to_shortened_string hm)^".ml" 
+   |CMI(hm)->(Located_module.to_shortened_string hm)^".cmi"
+   |CMO(hm)->(Located_module.to_shortened_string hm)^".cmo"
+   |DCMO(hm)->(Located_module.to_shortened_string hm)^".d.cmo"
+   |CMA(hm)->(Located_module.to_shortened_string hm)^".cma"
+   |CMX(hm)->(Located_module.to_shortened_string hm)^".cmx"
+   |EXECUTABLE(hm)->(Located_module.to_shortened_string hm)^".caml_executable"
+   |DEBUGGABLE(hm)->(Located_module.to_shortened_string hm)^".caml_debuggable";;
 
     let no_dependencies mlx=NO_DEPENDENCIES(mlx);;
     let ml_from_mll hm=ML_FROM_MLL(hm);; 
@@ -138,7 +187,7 @@ module Private=struct
     let temp1=Image.image (fun hm2->
            let idx2=Coma_state.find_module_index cs hm2 in
            let pr_end2=Coma_state.principal_ending_at_idx cs idx2 
-           and hm2=Coma_state.hm_at_idx cs idx2 in
+           and hm2=lm_at_idx cs idx2 in
            debuggable_targets_from_ancestor_data pr_end2 hm2
          ) ancestors in
     Preserve_initial_ordering.preserve_initial_ordering temp1;;
@@ -164,21 +213,21 @@ module Private=struct
 
   module Ingredients_for_ocaml_target=struct
 
-  exception Unregistered_cmo  of Half_dressed_module.t;;
-  exception Unregistered_dcmo of Half_dressed_module.t;;
-  exception Unregistered_cmi  of Half_dressed_module.t;;
-  exception Unregistered_cma  of Half_dressed_module.t;;
-  exception Unregistered_cmx  of Half_dressed_module.t;;
-  exception Unregistered_ml_from_mll of Half_dressed_module.t;;
-  exception Unregistered_ml_from_mly of Half_dressed_module.t;;
-  exception Unregistered_executable of Half_dressed_module.t;;
-  exception Unregistered_debuggable of Half_dressed_module.t;;
-  exception Unregistered_module of (Half_dressed_module.t);;
+  exception Unregistered_cmo  of Located_module.t;;
+  exception Unregistered_dcmo of Located_module.t;;
+  exception Unregistered_cmi  of Located_module.t;;
+  exception Unregistered_cma  of Located_module.t;;
+  exception Unregistered_cmx  of Located_module.t;;
+  exception Unregistered_ml_from_mll of Located_module.t;;
+  exception Unregistered_ml_from_mly of Located_module.t;;
+  exception Unregistered_executable of Located_module.t;;
+  exception Unregistered_debuggable of Located_module.t;;
+  exception Unregistered_module of (Located_module.t);;
   exception NonMarkedIngredientsForToplevel of string;;
   
   
   let targets_from_ancestor_data cs idx=
-    let hm=Coma_state.hm_at_idx cs idx in
+    let hm=lm_at_idx cs idx in
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
     then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
          [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm;Thorgal.cmo hm]
@@ -203,7 +252,7 @@ module Private=struct
        Preserve_initial_ordering.preserve_initial_ordering temp1;;
   
   let optimized_targets_from_ancestor_data cs idx=
-    let hm=Coma_state.hm_at_idx cs idx in
+    let hm=lm_at_idx cs idx in
     if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
     then let mll_target=Thorgal.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
          [mll_target;Thorgal.ml_from_mll hm;Thorgal.cmi hm;Thorgal.cmx hm]
@@ -296,14 +345,14 @@ module Private=struct
   let ingredients_for_nodep mlx=[];;
   
   let ingredients_for_ml_from_mll cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_ml_from_mll(hm)) else 
     let idx=Option.unpack opt_idx in
     (targets_from_ancestors cs idx)@(immediate_ingredients_for_ml_from_mll hm);;
   
   let ingredients_for_ml_from_mly cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_ml_from_mly(hm)) else 
       let idx=Option.unpack opt_idx in
@@ -311,14 +360,14 @@ module Private=struct
   
   
   let ingredients_for_cmi cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmi(hm)) else 
     let idx=Option.unpack opt_idx in
     (targets_from_ancestors cs idx)@(immediate_ingredients_for_cmi cs idx hm);;
   
   let ingredients_for_cmo cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_cmo(hm)) else 
       let idx=Option.unpack opt_idx in
@@ -326,7 +375,7 @@ module Private=struct
       (immediate_ingredients_for_cmo cs idx hm);;
   
   let ingredients_for_dcmo cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_dcmo(hm)) else 
     let idx=Option.unpack opt_idx in
@@ -335,7 +384,7 @@ module Private=struct
     (immediate_ingredients_for_dcmo cs idx hm);;
   
   let ingredients_for_cma cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_cma(hm)) else 
       let idx=Option.unpack opt_idx in
@@ -343,7 +392,7 @@ module Private=struct
       (immediate_ingredients_for_cma cs idx hm);;
   
   let ingredients_for_cmx cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_cma(hm)) else 
       let idx=Option.unpack opt_idx in
@@ -351,7 +400,7 @@ module Private=struct
       (immediate_ingredients_for_cmx cs idx hm);;    
   
   let ingredients_for_executable cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_executable(hm)) else 
       let idx=Option.unpack opt_idx in
@@ -360,7 +409,7 @@ module Private=struct
   
   
   let ingredients_for_usual_element cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_executable(hm)) else 
     let idx=Option.unpack opt_idx in
@@ -390,11 +439,11 @@ module Private=struct
          if List.mem hm1 l_hm
          then true
          else  
-         let nm1=Half_dressed_module.naked_module hm1 in
+         let nm1=Located_module.naked_module hm1 in
          let idx1=Coma_state.find_module_index cs nm1 in
          let anc1=Coma_state.ancestors_at_idx cs idx1 in
          List.exists 
-          (fun z->List.mem (Half_dressed_module.naked_module z) anc1 ) 
+          (fun z->List.mem (Located_module.naked_module z) anc1 ) 
           l_hm;;
   
   
@@ -446,35 +495,35 @@ module Command_for_ocaml_target=struct
   let cee=" -c ";;
   
   exception Command_called_on_nodep of Mlx_path.t;;
-  exception Unregistered_cmo  of Half_dressed_module.t;;
-  exception Unregistered_dcmo of Half_dressed_module.t;;
-  exception Unregistered_cmi  of Half_dressed_module.t;;
-  exception Unregistered_cma  of Half_dressed_module.t;;
-  exception Unregistered_cmx  of Half_dressed_module.t;;
-  exception Unregistered_ml_from_mll of Half_dressed_module.t;;
-  exception Unregistered_ml_from_mly of Half_dressed_module.t;;
-  exception Unregistered_executable of Half_dressed_module.t;;
-  exception Unregistered_debuggable of Half_dressed_module.t;;
-  exception Unregistered_modules_in_toplevel of string*(Half_dressed_module.t list);;  
+  exception Unregistered_cmo  of Located_module.t;;
+  exception Unregistered_dcmo of Located_module.t;;
+  exception Unregistered_cmi  of Located_module.t;;
+  exception Unregistered_cma  of Located_module.t;;
+  exception Unregistered_cmx  of Located_module.t;;
+  exception Unregistered_ml_from_mll of Located_module.t;;
+  exception Unregistered_ml_from_mly of Located_module.t;;
+  exception Unregistered_executable of Located_module.t;;
+  exception Unregistered_debuggable of Located_module.t;;
+  exception Unregistered_modules_in_toplevel of string*(Located_module.t list);;  
   
   let ingr=Ingredients_for_ocaml_target.ingredients_for_ocaml_target;;
   
   let cmx_manager=function
    Thorgal.CMX(hm2)->
-      let s_hm2=Half_dressed_module.to_shortened_string hm2 in
+      let s_hm2=Located_module.to_shortened_string hm2 in
       Some((Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir)^s_hm2^".cmx")
    |_->None;;
   
   let dcmo_manager=function
    Thorgal.DCMO(hm2)->
-      let s_hm2=Half_dressed_module.to_shortened_string hm2 in
+      let s_hm2=Located_module.to_shortened_string hm2 in
       Some((Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)^s_hm2^".d.cmo")
    |_->None;;
   
   let command_for_nodep mlx=[];;
   
   let command_for_ml_from_mll dir hm=
-            let s_hm=Half_dressed_module.uprooted_version hm in
+            let s_hm=Located_module.uprooted_version hm in
             let s_root=Root_directory.connectable_to_subpath dir in
             let s_fhm=s_root^s_hm in
             [
@@ -482,7 +531,7 @@ module Command_for_ocaml_target=struct
             ];;
    
   let command_for_ml_from_mly dir hm=
-            let s_hm=Half_dressed_module.uprooted_version hm in
+            let s_hm=Located_module.uprooted_version hm in
             let s_root=Root_directory.connectable_to_subpath dir in
             let s_fhm=s_root^s_hm in
             [
@@ -490,12 +539,12 @@ module Command_for_ocaml_target=struct
             ];;  
 
 let command_for_cmi dir cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmi(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_root=Root_directory.connectable_to_subpath(dir) in
-    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_hm=Located_module.uprooted_version hm in
     let s_fhm=s_root^s_hm in
     let mli_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx in
     let ending=(if mli_reg then ".mli" else ".ml") in
@@ -524,11 +573,11 @@ let command_for_cmi dir cs hm=
                    ];;
   
   let command_for_cmo dir cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmo(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_hm=Located_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Usual cs idx in
@@ -560,11 +609,11 @@ let command_for_cmi dir cs hm=
  
  
   let command_for_dcmo dir cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmo(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_hm=Located_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Debug cs idx in
@@ -575,11 +624,11 @@ let command_for_cmi dir cs hm=
     ];;
   
   let command_for_cma dir cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_cma(hm)) else 
       let idx=Option.unpack opt_idx in
-      let s_hm=Half_dressed_module.uprooted_version hm in
+      let s_hm=Located_module.uprooted_version hm in
       let s_root=Root_directory.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
       let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
@@ -589,11 +638,11 @@ let command_for_cmi dir cs hm=
       ];;  
   
   let command_for_cmx dir cs hm=
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       let opt_idx=Coma_state.seek_module_index cs nm in
       if opt_idx=None then raise(Unregistered_cmx(hm)) else 
       let idx=Option.unpack opt_idx in
-      let s_hm=Half_dressed_module.uprooted_version hm in
+      let s_hm=Located_module.uprooted_version hm in
       let s_root=Root_directory.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
       let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
@@ -606,11 +655,11 @@ let command_for_cmi dir cs hm=
       ];;      
             
   let command_for_executable dir cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_executable(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_hm=Located_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let temp1=ingr cs (Thorgal.EXECUTABLE(hm)) in
@@ -626,11 +675,11 @@ let command_for_cmi dir cs hm=
     ];;
             
   let command_for_debuggable dir cs hm=
-    let nm=Half_dressed_module.naked_module hm in
+    let nm=Located_module.naked_module hm in
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_debuggable(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_hm=Half_dressed_module.uprooted_version hm in
+    let s_hm=Located_module.uprooted_version hm in
     let s_root=Root_directory.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let temp1=ingr cs (Thorgal.DEBUGGABLE(hm)) in
@@ -664,7 +713,7 @@ let command_for_cmi dir cs hm=
 end;;
 
    let target_at_idx cs idx=
-    let hm=Coma_state.hm_at_idx cs idx 
+    let hm=lm_at_idx cs idx 
     and mlp =Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
     and mlip=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx
     and mllp=Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
@@ -718,21 +767,23 @@ let usual_targets cs=
    and s3="\n\t"
    and s4=String.concat "\n\t" cmds in
    String.concat "" [s1;s2;s3;s4];;
+
+   
    
   let write_full_compilation_makefile_element  cs=
     let main_root=Coma_state.root cs in
-    let l=Coma_state.all_modules cs in
+    let l=all_located_modules cs in
     let temp1=Image.image 
     (Ingredients_for_ocaml_target.ingredients_for_usual_element cs) l in
     let ingrs=Preserve_initial_ordering.preserve_initial_ordering temp1 in
     let sliced_ingrs=slice_shortened_targets ingrs in
     let l_idx=Image.image (fun hm->
-      let nm=Half_dressed_module.naked_module hm in
+      let nm=Located_module.naked_module hm in
       Coma_state.find_module_index cs nm) l  in
     let s_root=Root_directory.connectable_to_subpath(main_root) in
     let long_temp4=Image.image (fun idx->
-               let hm=Coma_state.hm_at_idx cs idx in
-               let s_hm=(Half_dressed_module.uprooted_version hm) in
+               let hm=lm_at_idx cs idx in
+               let s_hm=(Located_module.uprooted_version hm) in
                let short_s_hm=Father_and_son.son s_hm '/' in
                let ml_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx in
                if ml_reg
