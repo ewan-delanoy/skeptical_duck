@@ -46,9 +46,6 @@ let main_ref=Private.main_ref;;
 
 let modules_using_value x=Coma_state.modules_using_value (!(Private.main_ref)) x;;
 
-let recompile_without_githubbing ()=
-   Modify_coma_state_reference.recompile_without_githubbing Private.main_ref;;
-
 let recompile opt=Modify_coma_state_reference.recompile Private.main_ref opt;;
    
 

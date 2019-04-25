@@ -2280,7 +2280,6 @@ let recompile cs opt=
 let refresh_with_backup cs=
   let (cs2,diff)=refresh cs in
   let _=(
-    save_all cs2;
     backup cs2 diff None;
    ) in 
   cs2;;
