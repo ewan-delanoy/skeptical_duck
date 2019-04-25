@@ -19,12 +19,13 @@ module Private=struct
                      (Image.image Ocaml_target.to_shortened_string tgts) in
     Sliced_string.to_string_list temp1;;
   
-  let write_usual_makefile_element main_root mdata tgt=
+  let write_usual_makefile_element cs tgt=
+   let main_root = Coma_state.root cs in 
    let ingrs=Coma_state.Ingredients_for_ocaml_target.ingredients_for_ocaml_target 
-      mdata tgt in
+      cs tgt in
    let sliced_ingrs=slice_shortened_targets ingrs in
    let cmds=Coma_state.Command_for_ocaml_target.command_for_ocaml_target 
-                         main_root mdata tgt in
+                         main_root cs tgt in
    let s1=(Ocaml_target.to_shortened_string tgt)^" : " 
    and s2=String.concat " \\\n" sliced_ingrs
    and s3="\n\t"
@@ -62,9 +63,8 @@ module Private=struct
     String.concat "" [s1;s2;s3;s4];; 
    
   let write_makefile cs=
-   let main_root=Coma_state.root cs in 
    let temp1=Coma_state.usual_targets cs in
-   let temp2=Image.image (write_usual_makefile_element main_root cs) temp1 in
+   let temp2=Image.image (write_usual_makefile_element cs) temp1 in
    let temp3=temp2@[write_full_compilation_makefile_element cs] in
    let temp5=slice_targets  temp1 in
    let temp6=String.concat " \\\n" temp5 in
