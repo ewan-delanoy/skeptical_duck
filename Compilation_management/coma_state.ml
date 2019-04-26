@@ -2345,9 +2345,32 @@ let local_rename_directory cs old_subdir new_subdirname=
 
 
 let rename_string_or_value cs old_name new_name=
+  (*
+  let dependent_full_paths=files_containing_string cs old_name in
+  let modified_full_paths=(  
+  let j=Substring.leftmost_index_of_in "." old_name in
+   if j<0 
+   then dependent_full_paths
+   else 
+   let module_name=Cull_string.beginning (j-1) old_name in
+   let full_path=decipher_path cs  module_name in
+   full_path::dependent_full_paths
+  ) in   
+  let modified_short_paths=Image.image (
+     fun ap->
+       let s_ap=Absolute_path.to_string ap 
+       and s_root=Root_directory.connectable_to_subpath (root cs) in 
+       Cull_string.two_sided_cutting (s_root,"") s_ap
+  ) modified_full_paths in 
+  let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list modified_short_paths)
+    (Recently_created.of_string_list []) in
+  *)  
   let _=Values_in_modules.rename_string_or_value cs old_name new_name in 
-  let cs2=recompile cs None in 
-  let _=save_all cs2 in 
+  let (cs2,diff)=recompile_without_githubbing cs in 
+  
+   let _=(backup cs2 diff None) in  
   cs2;;
 
 end;; 
