@@ -62,7 +62,7 @@ let replace_string old_string new_string=
    (!(Private.main_ref)) old_string new_string ;;
 
 let repopulate ()=
-  let _=Coma_state.Create_or_update_copied_compiler.ucc
+  let _=Update_compiler_copy.ucc
   (!Usual_coma_state.main_ref)  in 
   initialize();; 
 
