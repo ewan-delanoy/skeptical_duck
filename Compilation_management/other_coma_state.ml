@@ -66,8 +66,6 @@ let repopulate ()=
   (!Usual_coma_state.main_ref)  in 
   initialize();; 
 
-let save_all ()=Coma_state.Almost_concrete.save_all (!(Private.main_ref));;
-
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
    (!(Private.main_ref)) module_name;;
