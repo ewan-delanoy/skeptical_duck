@@ -48,6 +48,6 @@ let rename_module pcs old_name new_name=
 
 
 let rename_string_or_value pcs old_name new_name=
-   let new_cs = Coma_state.Almost_concrete.rename_string_or_value (!pcs) old_name new_name in 
+   let new_cs = Modify_coma_state_and_save.rename_string_or_value (!pcs) old_name new_name in 
   pcs:=new_cs;;
 
