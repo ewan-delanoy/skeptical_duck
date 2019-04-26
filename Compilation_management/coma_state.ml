@@ -2026,10 +2026,7 @@ let forget_file_with_backup_before_saving cs x=
     (Recently_created.of_string_list []) in
    let (cs2,_,_)=recompile cs in 
    let cs3=forget_file cs2 ap in 
-   let _=(
-    backup cs3 diff None
-   ) in 
-   cs3;; 
+   (cs3,diff);; 
 
 let forget_module_with_backup_before_saving cs x=
     let hm = find_half_dressed_module cs x in 
@@ -2041,10 +2038,7 @@ let forget_module_with_backup_before_saving cs x=
       (Recently_deleted.of_string_list ordered_paths)
       (Recently_changed.of_string_list [])
       (Recently_created.of_string_list []) in
-    let _=(
-      backup cs3 diff None;  
-     ) in 
-     cs3;; 
+    (cs3,diff);; 
  
 let forget cs x=
       if String.contains x '.'
