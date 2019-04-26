@@ -7,7 +7,7 @@
 
 
 let forget cs x=
-   let cs2=Coma_state.Almost_concrete.forget cs x in 
+   let (cs2,_)=Coma_state.Almost_concrete.forget cs x in 
    let _=Save_coma_state.save cs2 in 
    cs2;;
   
