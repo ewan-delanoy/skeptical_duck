@@ -6,6 +6,8 @@
 *)
 
 
+module Private = struct
+
 let text_for_big_constants_file_in_next_world =
   String.concat "\n" [
     "\n(* "; 
@@ -43,8 +45,9 @@ let text_for_big_constants_file_in_next_world =
   let path_for_big_constants_in_next_world ()=
     Root_directory.join Coma_big_constant.Next_World.root Coma_constant.path_for_parametersfile;;
   
+end ;;   
   
-  let ucc cs =
+let ucc cs =
     let destdir=Coma_big_constant.Next_World.root in 
     let s_dir=Root_directory.connectable_to_subpath destdir in 
     let _=Image.image (
@@ -58,10 +61,10 @@ let text_for_big_constants_file_in_next_world =
         Coma_constant.parameters_subdir;
       ] in
     (* remember to modify the special files AFTER copying every file ! *)
-    let _=Image.image Unix_command.uc (commands_for_copying cs) in 
+    let _=Image.image Unix_command.uc (Private.commands_for_copying cs) in 
     (* the mass copying just done includes the big constants file *)
-    let bc_path=Absolute_path.of_string(path_for_big_constants_in_next_world()) in
-    let _=Io.overwrite_with bc_path text_for_big_constants_file_in_next_world in
+    let bc_path=Absolute_path.of_string(Private.path_for_big_constants_in_next_world()) in
+    let _=Io.overwrite_with bc_path Private.text_for_big_constants_file_in_next_world in
     let (other_cs,new_tgts2,preqt)=Coma_state.Target_system_creation.from_main_directory 
       Coma_big_constant.Next_World.root 
         Coma_big_constant.Next_World.backup_dir 
