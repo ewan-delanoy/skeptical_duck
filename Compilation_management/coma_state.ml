@@ -2171,15 +2171,7 @@ let find_half_dressed_module cs x=
    Some(idx)->hm_at_idx cs idx
    |None->raise(No_module_with_name(x));;  
 
-let save_all cs=Save_all.write_all 
-  (
-    Coma_constant.name_for_targetfile,
-    Coma_constant.name_for_loadingsfile,
-    Coma_constant.name_for_printersfile
-  )
-  (
-	uple_form cs
-  );;
+
 
 let local_above cs x=
   Image.image (fun nm->
@@ -2239,20 +2231,6 @@ let forget cs x=
       then forget_file_with_backup_before_saving cs x
       else forget_module_with_backup_before_saving cs x;;
 
-(*
-let forget_without_backup cs x=
-   if String.contains x '.'
-   then let ap=decipher_path cs x in 
-        let (cs2,_,_)=recompile cs in 
-        let cs3=forget_file cs2 ap in 
-        let _=(save_all cs3) in 
-        cs3
-   else let hm = find_half_dressed_module cs x in 
-        let (cs2,_,_)=recompile cs in
-        let (cs3,_)=forget_module cs2 hm in    
-        let _=(save_all cs3) in 
-        cs3;;  
-*)
 
 let recompile_without_githubbing cs=
   let (cs2,change_exists,short_paths)=recompile cs  in
