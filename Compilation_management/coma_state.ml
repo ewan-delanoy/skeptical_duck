@@ -2239,6 +2239,7 @@ let forget cs x=
       then forget_file_with_backup_before_saving cs x
       else forget_module_with_backup_before_saving cs x;;
 
+(*
 let forget_without_backup cs x=
    if String.contains x '.'
    then let ap=decipher_path cs x in 
@@ -2251,7 +2252,7 @@ let forget_without_backup cs x=
         let (cs3,_)=forget_module cs2 hm in    
         let _=(save_all cs3) in 
         cs3;;  
-
+*)
 
 let recompile_without_githubbing cs=
   let (cs2,change_exists,short_paths)=recompile cs  in
@@ -2277,10 +2278,10 @@ let refresh_with_backup cs=
    ) in 
   cs2;;
 
+
 let local_register_mlx_file cs mlx=
     let cs2=recompile cs None in 
     let cs3=register_mlx_file cs2 mlx in 
-    let _=save_all cs3 in 
     cs3;;  
  
 let register_short_path_without_backup cs x= 
