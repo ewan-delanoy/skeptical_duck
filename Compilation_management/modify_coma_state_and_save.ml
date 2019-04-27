@@ -17,7 +17,7 @@ let recompile cs opt_comment=
    cs2;;
   
 let refresh cs =
-   let cs2=Coma_state.Almost_concrete.refresh_with_backup cs  in 
+   let (cs2,_)=Coma_state.refresh cs  in 
    let _=Save_coma_state.save cs2 in 
    cs2;;  
 

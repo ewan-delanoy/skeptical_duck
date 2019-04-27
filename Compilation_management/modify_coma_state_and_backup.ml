@@ -26,6 +26,8 @@ let recompile cs opt_comment=
    let _=Private.backup cs2 diff opt_comment in 
    cs2;; 
 
+(* No backup during refresh *)
+
 (*
 
   
