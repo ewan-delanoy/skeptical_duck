@@ -22,7 +22,7 @@ let refresh cs =
    cs2;;  
 
 let register_short_path cs short_path=
-   let cs2=Coma_state.Almost_concrete.register_short_path cs short_path in 
+   let cs2=Modify_coma_state_and_backup.register_short_path cs short_path in 
    let _=Save_coma_state.save cs2 in 
    cs2;;  
 
