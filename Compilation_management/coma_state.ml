@@ -2068,12 +2068,6 @@ let local_register_mlx_file cs mlx=
     let cs3=register_mlx_file cs2 mlx in 
     cs3;;  
  
-(* 
-let register_short_path_without_backup cs x= 
-  let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
-  let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
-  register_mlx_file cs mlx;;
-*)
 
 let register_short_path cs x=
   let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
@@ -2089,6 +2083,19 @@ let register_short_path cs x=
     backup cs2 diff None;
    ) in 
   cs2;;
+
+let register_short_path_feel_fine cs x=
+  let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
+  let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
+  let short_path=Mlx_ended_absolute_path.short_path mlx in
+  let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list [short_path]) in
+  let cs2=register_mlx_file cs mlx in 
+  (cs2,diff);;
+
 
 let local_rename_module cs old_name new_name=
    let idx = Option.unpack(local_seek_module_index cs old_name) in 
