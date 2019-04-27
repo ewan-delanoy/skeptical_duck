@@ -33,31 +33,24 @@ let register_short_path cs x=
    let _=Private.backup cs2 diff None in 
    cs2;; 
 
-
-
-(*
-
-
 let relocate_module cs old_hm_name new_subdir=
-  let cs2 = Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir in 
-  let _=Save_coma_state.save cs2 in 
-  cs2;;   
+   let (cs2,diff)=Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir  in 
+   let _=Private.backup cs2 diff None in 
+   cs2;; 
+
+let rename_directory  cs old_subdir new_subdirname=
+   let (cs2,diff)=Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname  in 
+   let _=Private.backup cs2 diff None in 
+   cs2;; 
 
 
-let rename_module cs old_name new_name=
-   let cs2=Coma_state.Almost_concrete.local_rename_module cs old_name new_name in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;  
+let rename_module cs old_hm_name new_subdir=
+   let (cs2,diff)=Coma_state.Almost_concrete.local_rename_module cs old_hm_name new_subdir  in 
+   let _=Private.backup cs2 diff None in 
+   cs2;; 
 
-let rename_directory cs old_subdir new_subdirname=
-   let cs2=Coma_state.Almost_concrete.local_rename_directory cs old_subdir new_subdirname in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;  
+let rename_string_or_value cs old_hm_name new_subdir=
+   let (cs2,diff)=Coma_state.Almost_concrete.rename_string_or_value cs old_hm_name new_subdir  in 
+   let _=Private.backup cs2 diff None in 
+   cs2;; 
 
-
-
-let rename_string_or_value cs old_name new_name=
-   let cs2=Coma_state.Almost_concrete.rename_string_or_value cs old_name new_name in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;  
-*)

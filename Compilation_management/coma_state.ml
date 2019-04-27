@@ -2093,8 +2093,7 @@ let local_rename_module cs old_name new_name=
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_short_paths) in
-   let _=(backup cs2 diff None) in  
-   cs2;;   
+   (cs2,diff);;   
 
 let local_relocate_module cs old_hm_name new_subdir=
   let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
@@ -2106,8 +2105,7 @@ let local_relocate_module cs old_hm_name new_subdir=
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_short_paths) in
-   let _=(backup cs2 diff None) in  
-   cs2;;   
+   (cs2,diff);;   
 
 let local_rename_directory cs old_subdir new_subdirname=
    let old_short_paths=short_paths_inside_subdirectory cs old_subdir in
@@ -2119,8 +2117,7 @@ let local_rename_directory cs old_subdir new_subdirname=
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_short_paths) in
-   let _=(backup cs2 diff None) in  
-   cs2;;   
+   (cs2,diff);;   
 
 
 let rename_string_or_value cs old_name new_name=
@@ -2148,9 +2145,7 @@ let rename_string_or_value cs old_name new_name=
   *)  
   let _=Values_in_modules.rename_string_or_value cs old_name new_name in 
   let (cs2,diff)=recompile_without_githubbing cs in 
-  
-   let _=(backup cs2 diff None) in  
-  cs2;;
+  (cs2,diff);;
 
 end;; 
 
