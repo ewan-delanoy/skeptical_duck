@@ -21,18 +21,13 @@ let forget cs x=
    let _=Private.backup cs2 diff None in 
    cs2;; 
 
-let recompile cs =
+let recompile cs opt_comment=
    let (cs2,diff)=Coma_state.Almost_concrete.recompile_without_githubbing cs  in 
-   let _=Private.backup cs2 diff None in 
+   let _=Private.backup cs2 diff opt_comment in 
    cs2;; 
 
 (*
 
-  
-let recompile cs opt_comment=
-   let cs2=Coma_state.Almost_concrete.recompile cs opt_comment in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;
   
 let refresh cs =
    let cs2=Coma_state.Almost_concrete.refresh_with_backup cs  in 
