@@ -2063,24 +2063,17 @@ let recompile cs opt=
    then backup cs2 diff opt) in 
    cs2;;
 
-(*
-let refresh_with_backup cs=
-  let (cs2,diff)=refresh cs in
-  let _=(
-    backup cs2 diff None;
-   ) in 
-  cs2;;
-*)
-
 let local_register_mlx_file cs mlx=
     let cs2=recompile cs None in 
     let cs3=register_mlx_file cs2 mlx in 
     cs3;;  
  
+(* 
 let register_short_path_without_backup cs x= 
   let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
   let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
   register_mlx_file cs mlx;;
+*)
 
 let register_short_path cs x=
   let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
