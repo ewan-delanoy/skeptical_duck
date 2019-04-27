@@ -2067,24 +2067,9 @@ let local_register_mlx_file cs mlx=
     let cs2=recompile cs None in 
     let cs3=register_mlx_file cs2 mlx in 
     cs3;;  
- 
+
 
 let register_short_path cs x=
-  let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
-  let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
-  let short_path=Mlx_ended_absolute_path.short_path mlx in
-  let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list [short_path]) in
-  let cs2=register_mlx_file cs mlx in 
-  let _=(
-    backup cs2 diff None;
-   ) in 
-  cs2;;
-
-let register_short_path_feel_fine cs x=
   let path=Absolute_path.of_string(Root_directory.join (root cs) x) in
   let mlx=Mlx_ended_absolute_path.of_path_and_root path (root cs) in
   let short_path=Mlx_ended_absolute_path.short_path mlx in

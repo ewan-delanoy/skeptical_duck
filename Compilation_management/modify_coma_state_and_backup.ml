@@ -29,7 +29,7 @@ let recompile cs opt_comment=
 (* No backup during refresh *)   
 
 let register_short_path cs x=
-   let (cs2,diff)=Coma_state.Almost_concrete.register_short_path_feel_fine cs x  in 
+   let (cs2,diff)=Coma_state.Almost_concrete.register_short_path cs x  in 
    let _=Private.backup cs2 diff None in 
    cs2;; 
 
