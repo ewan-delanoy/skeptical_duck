@@ -1277,11 +1277,12 @@ let uple_form cs=
    );;
 
     
-
+(*
 
 let backup cs diff opt= Backup_coma_state.backup
   (root cs,backup_dir cs,github_after_backup cs) 
     diff opt;;
+*)
 
 
   let unregister_mlx_file_on_targets root_dir cs mlx=
@@ -2059,8 +2060,6 @@ let recompile_without_githubbing cs=
 
 let recompile cs opt=
    let (cs2,diff)=recompile_without_githubbing cs in 
-   let _=(if not(Dircopy_diff.is_empty diff)
-   then backup cs2 diff opt) in 
    cs2;;
 
 let local_register_mlx_file cs mlx=
