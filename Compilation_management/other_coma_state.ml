@@ -15,8 +15,6 @@ end;;
 let above =Coma_state.Almost_concrete.local_above (!(Private.main_ref));;
 
 
-let backup diff opt=Coma_state.backup (!(Private.main_ref)) diff opt;;
-
 let below =Coma_state.Almost_concrete.local_below (!(Private.main_ref));;
 
 let decipher_path = Coma_state.decipher_path (!(Private.main_ref));;
