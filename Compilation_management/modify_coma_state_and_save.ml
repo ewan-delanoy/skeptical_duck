@@ -12,7 +12,7 @@ let forget cs x=
    cs2;;
   
 let recompile cs opt_comment=
-   let cs2=Coma_state.Almost_concrete.recompile cs opt_comment in 
+   let cs2=Modify_coma_state_and_backup.recompile cs opt_comment in 
    let _=Save_coma_state.save cs2 in 
    cs2;;
   
