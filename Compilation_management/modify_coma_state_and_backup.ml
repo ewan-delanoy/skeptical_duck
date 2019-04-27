@@ -26,20 +26,17 @@ let recompile cs opt_comment=
    let _=Private.backup cs2 diff opt_comment in 
    cs2;; 
 
-(* No backup during refresh *)
+(* No backup during refresh *)   
+
+let register_short_path cs x=
+   let (cs2,diff)=Coma_state.Almost_concrete.register_short_path_feel_fine cs x  in 
+   let _=Private.backup cs2 diff None in 
+   cs2;; 
+
+
 
 (*
 
-  
-let refresh cs =
-   let cs2=Coma_state.Almost_concrete.refresh_with_backup cs  in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;  
-
-let register_short_path cs short_path=
-   let cs2=Coma_state.Almost_concrete.register_short_path cs short_path in 
-   let _=Save_coma_state.save cs2 in 
-   cs2;;  
 
 let relocate_module cs old_hm_name new_subdir=
   let cs2 = Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir in 
