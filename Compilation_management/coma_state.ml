@@ -175,7 +175,10 @@ let all_modules cs=
   let n=Small_array.size((modules cs)) in
   Ennig.doyle (hm_at_idx cs) 1 n;; 
 
-
+let get_modification_time cs idx edg=
+  if edg=principal_ending_at_idx then principal_mt_at_idx cs idx else 
+  if edg=Ocaml_ending.Mli then mli_mt_at_idx cs idx else 
+  "0.";;
 
 exception Non_existent_mtime of Mlx_ended_absolute_path.t;;
 
