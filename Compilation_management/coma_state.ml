@@ -2058,12 +2058,14 @@ let recompile_without_githubbing cs=
     (Recently_changed.of_string_list changed_paths)
     (Recently_created.of_string_list [])) ;;
 
+(*
 let recompile cs opt=
    let (cs2,diff)=recompile_without_githubbing cs in 
    cs2;;
+*)
 
 let local_register_mlx_file cs mlx=
-    let cs2=recompile cs None in 
+    let (cs2,_)=recompile_without_githubbing cs  in 
     let cs3=register_mlx_file cs2 mlx in 
     cs3;;  
 
