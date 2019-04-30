@@ -39,44 +39,33 @@ let check_for_changes cs =
 
 end;;    
 
-
-(*
 let forget cs x=
-   let (cs2,diff)=Coma_state.Almost_concrete.forget cs x in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.forget cs x;; 
 
-let recompile cs opt_comment=
-   let (cs2,diff)=Coma_state.Almost_concrete.recompile_without_githubbing cs  in 
-   let _=Private.backup cs2 diff opt_comment in 
-   cs2;; 
+(* No check needed before recompiling *)
 
-(* No backup during refresh *)   
+(* No check needed before refreshing *)
 
 let register_short_path cs x=
-   let (cs2,diff)=Coma_state.Almost_concrete.register_short_path cs x  in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.register_short_path cs x;; 
 
 let relocate_module cs old_hm_name new_subdir=
-   let (cs2,diff)=Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir  in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir;; 
 
 let rename_directory  cs old_subdir new_subdirname=
-   let (cs2,diff)=Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname  in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname;; 
+
+let rename_module cs old_hm_name new_name=
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.local_rename_module cs old_hm_name new_name;; 
+
+let rename_string_or_value cs old_hm_name new_name=
+   let _=Private.check_for_changes cs in 
+   Coma_state.Almost_concrete.rename_string_or_value cs old_hm_name new_name;; 
 
 
-let rename_module cs old_hm_name new_subdir=
-   let (cs2,diff)=Coma_state.Almost_concrete.local_rename_module cs old_hm_name new_subdir  in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
 
-let rename_string_or_value cs old_hm_name new_subdir=
-   let (cs2,diff)=Coma_state.Almost_concrete.rename_string_or_value cs old_hm_name new_subdir  in 
-   let _=Private.backup cs2 diff None in 
-   cs2;; 
-
-*)
