@@ -5,7 +5,7 @@
 
 *)
 
-let zorglub x y=
+let f x y=
   let c=5+6 in
   let d=Tested_module_two.f 7 8 in
   c+d;;
