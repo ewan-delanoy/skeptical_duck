@@ -29,11 +29,11 @@ let duplicate_module old_t1 old_t2=
 let find_half_dressed_module modname= 
   Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref)) modname;;
 
-let forget modname=Modify_coma_state_reference.forget Private.main_ref modname;;
+let forget modname=Modify_coma_state.Reference.forget Private.main_ref modname;;
 
-let initialize ()=Modify_coma_state_reference.initialize Private.main_ref ;; 
+let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let initialize_if_empty ()=Modify_coma_state_reference.initialize_if_empty Private.main_ref ;;                       
+let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
    Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
@@ -43,24 +43,24 @@ let main_ref=Private.main_ref;;
 
 let modules_using_value x=Coma_state.modules_using_value (!(Private.main_ref)) x;;
 
-let recompile opt=Modify_coma_state_reference.recompile Private.main_ref opt;;
+let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
 
-let refresh ()=Modify_coma_state_reference.refresh Private.main_ref;;
+let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
 
 
 
-let register_short_path x=Modify_coma_state_reference.register_short_path Private.main_ref x;;
+let register_short_path x=Modify_coma_state.Reference.register_short_path Private.main_ref x;;
   
 let relocate_module old_hm_name new_subdir=
-   Modify_coma_state_reference.relocate_module Private.main_ref old_hm_name new_subdir;;
+   Modify_coma_state.Reference.relocate_module Private.main_ref old_hm_name new_subdir;;
 
 let rename_directory old_subdir new_subdirname=
-    Modify_coma_state_reference.rename_directory Private.main_ref old_subdir new_subdirname;;
+    Modify_coma_state.Reference.rename_directory Private.main_ref old_subdir new_subdirname;;
 
 
 let rename_module old_name new_name=
-   Modify_coma_state_reference.rename_module Private.main_ref old_name new_name;;
+   Modify_coma_state.Reference.rename_module Private.main_ref old_name new_name;;
 
 
 let rename_string_or_value old_name new_name=
