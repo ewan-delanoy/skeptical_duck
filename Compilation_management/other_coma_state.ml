@@ -51,8 +51,8 @@ let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
 let register_short_path x=Modify_coma_state.Reference.register_short_path Private.main_ref x;;
   
 let rename_string_or_value old_name new_name=
-   Coma_state.Values_in_modules.rename_string_or_value
-   (!(Private.main_ref)) old_name new_name;;
+   Modify_coma_state.Reference.rename_string_or_value
+   (Private.main_ref) old_name new_name;;
 
 
 let replace_string old_string new_string=

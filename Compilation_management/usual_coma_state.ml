@@ -64,8 +64,8 @@ let rename_module old_name new_name=
 
 
 let rename_string_or_value old_name new_name=
-   Coma_state.Values_in_modules.rename_string_or_value
-   (!(Private.main_ref)) old_name new_name;;
+   Modify_coma_state.Reference.rename_string_or_value
+   (Private.main_ref) old_name new_name;;
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
