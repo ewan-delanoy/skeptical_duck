@@ -1879,8 +1879,9 @@ let replace_string cs old_string new_string=
   let m=String.length(Root_directory.connectable_to_subpath (root cs)) in
   let temp2=Image.image (fun ap->
     Cull_string.cobeginning m (Absolute_path.to_string ap)) temp1 in
+  let temp3=temp2@["";""] in 
   let message="\n\n The following files will be rewritten : \n\n"^
-  (String.concat "\n" temp2) in
+  (String.concat "\n" temp3) in
   let _=(print_string message;flush stdout) in
   List.iter (Replace_inside.replace_inside_file (old_string,new_string)) temp1;;
 
