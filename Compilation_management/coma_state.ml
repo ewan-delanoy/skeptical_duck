@@ -2050,7 +2050,7 @@ let forget cs x=
       else forget_module_with_backup_before_saving cs x;;
 
 
-let recompile_without_githubbing cs=
+let recompile cs=
   let (cs2,change_exists,short_paths)=recompile cs  in
   let changed_paths=
    (if not change_exists
@@ -2061,14 +2061,9 @@ let recompile_without_githubbing cs=
     (Recently_changed.of_string_list changed_paths)
     (Recently_created.of_string_list [])) ;;
 
-(*
-let recompile cs opt=
-   let (cs2,diff)=recompile_without_githubbing cs in 
-   cs2;;
-*)
 
 let local_register_mlx_file cs mlx=
-    let (cs2,_)=recompile_without_githubbing cs  in 
+    let (cs2,_)=recompile cs  in 
     let cs3=register_mlx_file cs2 mlx in 
     cs3;;  
 
@@ -2148,7 +2143,7 @@ let rename_string_or_value cs old_name new_name=
     (Recently_created.of_string_list []) in
   *)  
   let _=Values_in_modules.rename_string_or_value cs old_name new_name in 
-  let (cs2,diff)=recompile_without_githubbing cs in 
+  let (cs2,diff)=recompile cs in 
   (cs2,diff);;
 
 end;; 

@@ -90,7 +90,7 @@ module And_backup = struct
          cs2;; 
 
       let recompile cs opt_comment=
-         let (cs2,diff)=Coma_state.Almost_concrete.recompile_without_githubbing cs  in 
+         let (cs2,diff)=Coma_state.Almost_concrete.recompile cs  in 
          let _=Private.backup cs2 diff opt_comment in 
          cs2;; 
 
