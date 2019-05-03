@@ -77,7 +77,7 @@ let naive_paren_decomposer (left_paren,right_paren) s=
    ) in 
    tempf([],1);;
 
-let change_paren_denotation_in_string 
+let compress_parenthesed_text_in_string 
   old_parens (new_lparen,new_rparen) s=
   let temp1=naive_paren_decomposer old_parens s in 
   let temp2=Image.image(
@@ -88,10 +88,10 @@ let change_paren_denotation_in_string
   ) temp1 in 
   String.concat "" temp2;;
 
-let  change_paren_denotation_in_file 
+let  compress_parenthesed_text_in_file 
     old_parens new_parens argument_file=
     let old_text=Io.read_whole_file argument_file in 
-    let new_text=change_paren_denotation_in_string old_parens new_parens old_text in 
+    let new_text=compress_parenthesed_text_in_string old_parens new_parens old_text in 
     Io.overwrite_with argument_file new_text;; 
 
 let force_left_spacing_in_string_for_character s c=
