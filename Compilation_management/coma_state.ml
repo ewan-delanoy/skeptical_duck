@@ -2085,15 +2085,17 @@ let register_short_path cs x=
 let local_rename_module cs old_name new_name=
    let idx = Option.unpack(local_seek_module_index cs old_name) in 
    let old_hm = find_half_dressed_module cs old_name 
-   and old_short_paths = short_paths_at_idx cs idx 
    and unslashed_new_name = No_slashes.of_string new_name in 
-   let (cs2,_)=rename_module cs old_hm unslashed_new_name in 
+   rename_module cs old_hm unslashed_new_name;;
+   (*
+   let old_short_paths = short_paths_at_idx cs idx  in 
    let new_short_paths = short_paths_at_idx cs2 idx in 
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_short_paths) in
-   (cs2,diff);;   
+   *)
+
 
 let local_relocate_module cs old_hm_name new_subdir=
   let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
