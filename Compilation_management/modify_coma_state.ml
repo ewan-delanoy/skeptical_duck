@@ -98,28 +98,33 @@ module And_backup = struct
 
       let register_short_path cs x=
          let (cs2,diff)=After_checking.register_short_path cs x  in 
-         let _=Private.backup cs2 diff None in 
+         let msg="register "^x in 
+         let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
       let relocate_module cs old_hm_name new_subdir=
-         let (cs2,diff)=After_checking.relocate_module cs old_hm_name new_subdir  in 
-         let _=Private.backup cs2 diff None in 
+         let (cs2,diff)=After_checking.relocate_module cs old_hm_name new_subdir  in
+         let msg="move "^old_hm_name^" to "^(Subdirectory.connectable_to_subpath new_subdir) in 
+         let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
       let rename_directory  cs old_subdir new_subdirname=
          let (cs2,diff)=After_checking.rename_directory  cs old_subdir new_subdirname  in 
-         let _=Private.backup cs2 diff None in 
+         let msg="rename "^(Subdirectory.connectable_to_subpath old_subdir)^" as "^new_subdirname in 
+         let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
 
-      let rename_module cs old_hm_name new_subdir=
-         let (cs2,diff)=After_checking.rename_module cs old_hm_name new_subdir  in 
-         let _=Private.backup cs2 diff None in 
+      let rename_module cs old_hm_name new_name=
+         let (cs2,diff)=After_checking.rename_module cs old_hm_name new_name  in 
+         let msg="rename "^old_hm_name^" as "^new_name in 
+         let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
-      let rename_string_or_value cs old_hm_name new_subdir=
-         let (cs2,diff)=After_checking.rename_string_or_value cs old_hm_name new_subdir  in 
-         let _=Private.backup cs2 diff None in 
+      let rename_string_or_value cs old_name new_name=
+         let (cs2,diff)=After_checking.rename_string_or_value cs old_name new_name  in 
+         let msg="rename "^old_name^" as "^new_name in 
+         let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
 end;;
