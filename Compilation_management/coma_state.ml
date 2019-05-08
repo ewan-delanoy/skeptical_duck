@@ -463,6 +463,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   ) [
       Coma_constant.name_for_printersfile;
     ] in
+  let modified_files=Image.image Mlx_ended_absolute_path.short_path all_acolytes in  
   let _=Image.image changer (temp3@temp4) in
   let s_root=Root_directory.connectable_to_subpath root_dir in     
   let _=Unix_command.uc
@@ -485,7 +486,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
       cs_walker:=(set_ancestors_at_idx (!cs_walker) k (replacer old_ancestors)); 
      done;
   ) in
-  (!cs_walker,(old_files,new_files));;
+  (!cs_walker,(old_files,new_files),modified_files);;
 
 
 let recompute_complete_card_at_idx cs hm=
@@ -1732,10 +1733,10 @@ let rename_module cs old_name new_name=
         fun jdx->
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
-  let (cs2,(old_files,new_files))=
+  let (cs2,(old_files,new_files),modified_files)=
      rename_module_on_monitored_modules cs old_name new_name in
   let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in 
-  (cs3,(old_files,new_files));;   
+  (cs3,(old_files,new_files),modified_files);;   
 
 let clean_debug_dir cs=
   let s_root=Root_directory.connectable_to_subpath(root cs) in
@@ -2086,13 +2087,11 @@ let local_rename_module cs old_name new_name=
    let idx = Option.unpack(local_seek_module_index cs old_name) in 
    let old_hm = find_half_dressed_module cs old_name 
    and unslashed_new_name = No_slashes.of_string new_name in 
-   let (cs2,_)=rename_module cs old_hm unslashed_new_name in
-   let old_short_paths = short_paths_at_idx cs idx  in 
-   let new_short_paths = short_paths_at_idx cs2 idx in 
+   let (cs2,(old_files,new_files),modified_files)=rename_module cs old_hm unslashed_new_name in
    let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_short_paths)
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_short_paths) in
+    (Recently_deleted.of_string_list old_files)
+    (Recently_changed.of_string_list modified_files)
+    (Recently_created.of_string_list new_files) in
    (cs2,diff);;
 
 
