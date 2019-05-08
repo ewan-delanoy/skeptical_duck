@@ -428,7 +428,8 @@ exception Nonregistered_module of Naked_module_t.t;;
 
 
 
-let rename_module_on_monitored_modules root_dir cs old_name new_name=
+let rename_module_on_monitored_modules cs old_name new_name=
+  let root_dir=root cs in 
   let n=Small_array.size (modules cs) in
   let old_nm=Half_dressed_module.naked_module old_name in
   let opt_idx=seek_module_index cs old_nm in
@@ -1724,7 +1725,6 @@ let rename_directory cs (old_subdir,new_subdirname)=
          
       
 let rename_module cs old_name new_name= 
-  let root_dir=root cs in 
   let old_nm=Half_dressed_module.naked_module old_name in 
   let idx=find_module_index cs old_nm in 
   let n=size cs in 
@@ -1733,7 +1733,7 @@ let rename_module cs old_name new_name=
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
   let (cs2,(old_files,new_files))=
-     rename_module_on_monitored_modules root_dir cs old_name new_name in
+     rename_module_on_monitored_modules cs old_name new_name in
   let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in 
   (cs3,(old_files,new_files));;   
 
