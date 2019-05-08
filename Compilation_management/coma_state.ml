@@ -2084,7 +2084,6 @@ let register_short_path cs x=
 
 
 let local_rename_module cs old_name new_name=
-   let idx = Option.unpack(local_seek_module_index cs old_name) in 
    let old_hm = find_half_dressed_module cs old_name 
    and unslashed_new_name = No_slashes.of_string new_name in 
    let (cs2,(old_files,new_files),modified_files)=rename_module cs old_hm unslashed_new_name in
