@@ -426,7 +426,7 @@ let complete_id_during_new_module_registration cs  mlx=
 
 exception Nonregistered_module of Naked_module_t.t;;
 
-
+exception Future_name_already_taken of Naked_module_t.t;;
 
 let rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
@@ -435,6 +435,10 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let opt_idx=seek_module_index cs old_nm in
   if opt_idx=None
   then raise(Nonregistered_module(old_nm))
+  else 
+  let future_new_nm=Naked_module.of_string (No_slashes.to_string new_name) in 
+  if (seek_module_index cs future_new_nm) <>None 
+  then raise(Future_name_already_taken(future_new_nm))
   else 
   let idx=Option.unpack opt_idx in
   let old_acolytes=acolytes_at_idx cs idx in
