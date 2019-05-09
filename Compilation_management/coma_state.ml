@@ -1791,6 +1791,11 @@ let unregister_module cs hm=
 let decipher_path cs x=Find_suitable_ending.find_file_location 
    (root cs) (directories cs) x;;
 
+(*
+let obsolete_object_files cs= 
+   let te
+*)
+
 exception Absent_module of string;;
 
 let decipher_module cs x=
@@ -1865,15 +1870,7 @@ let rename_value_inside_module cs s new_name=
         else None   
    ) temp5 in
    Overwrite_at_intervals.inside_file temp6 path;;
-   
-   
-   
-   
-   
-   
-   
-   
-   
+
 
 end;;
 

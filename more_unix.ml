@@ -113,7 +113,7 @@ let quick_beheaded_complete_ls s=
   
 end;;    
 
- 
+let simple_ls=Private.ls;; 
 let complete_ls=Private.complete_ls;;
 let is_a_directory=Private.is_a_directory;;
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;
