@@ -469,10 +469,11 @@ let rename_module_on_monitored_modules cs old_name new_name=
     ] in
   let modified_files=Image.image Mlx_ended_absolute_path.short_path all_acolytes in  
   let _=Image.image changer (temp3@temp4) in
-  let s_root=Root_directory.connectable_to_subpath root_dir in     
+  let s_root=Root_directory.connectable_to_subpath root_dir in   
+  let s_build_dir=Subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in   
   let _=Unix_command.uc
-      ("rm -f "^s_root^"_build/"^
-      (Half_dressed_module.uprooted_version old_name)^
+      ("rm -f "^s_root^s_build_dir^
+      (Naked_module.to_string old_mname)^
       ".cm* ") in
   let principal_mt=md_compute_modification_time new_hm (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_hm Ocaml_ending.mli in
@@ -1738,7 +1739,7 @@ let rename_module cs old_name new_name=
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
   let (cs2,(old_files,new_files),modified_files)=
-     rename_module_on_monitored_modules cs old_name new_name in
+     rename_module_on_monitored_modules cs old_name new_name in   
   let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in 
   (cs3,(old_files,new_files),modified_files);;   
 
