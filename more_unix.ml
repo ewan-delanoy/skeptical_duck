@@ -111,9 +111,18 @@ let quick_beheaded_complete_ls s=
   let temp1=complete_ls x in
   Image.image (fun ap->Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
   
+let beheaded_simple_ls dir=
+  let n=String.length(Directory_name.connectable_to_subpath dir) in
+  let temp1=ls dir in
+  Image.image (fun ap->
+   Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
+  
+
+
 end;;    
 
-let simple_ls=Private.ls;; 
+let simple_ls=Private.ls;;
+let beheaded_simple_ls=Private.beheaded_simple_ls;;
 let complete_ls=Private.complete_ls;;
 let is_a_directory=Private.is_a_directory;;
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;
