@@ -1791,7 +1791,7 @@ let unregister_module cs hm=
 let decipher_path cs x=Find_suitable_ending.find_file_location 
    (root cs) (directories cs) x;;
 
-let modules_in_build_subdir cs= 
+let forgotten_files_in_build_subdir cs= 
    let s_root=Root_directory.connectable_to_subpath (root cs) 
    and s_build=Subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in 
    let dir=Directory_name.of_string (s_root^s_build) in 
