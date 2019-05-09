@@ -1796,11 +1796,12 @@ let modules_in_build_subdir cs=
    and s_build=Subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in 
    let dir=Directory_name.of_string (s_root^s_build) in 
    let temp1=More_unix.beheaded_simple_ls dir in 
-   let temp2=Image.image (
-      fun s->Cull_string.before_rightmost_possibly_all s '.') temp1 in 
-   let temp3=Ordered.forget_order(Ordered_string.diforchan temp2) in 
-   let temp4=Image.image Naked_module.of_string temp3 in 
-   temp4;;
+   List.filter (
+      fun s->
+       let s_mn=Cull_string.before_rightmost_possibly_all s '.' in 
+       let mn=Naked_module.of_string s_mn in 
+       (seek_module_index cs mn)=None 
+       ) temp1;;
 (*
 let obsolete_object_files cs= 
    let te
