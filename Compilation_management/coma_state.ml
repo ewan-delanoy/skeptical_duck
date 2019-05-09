@@ -1802,10 +1802,6 @@ let forgotten_files_in_build_subdir cs=
        let mn=Naked_module.of_string s_mn in 
        (seek_module_index cs mn)=None 
        ) temp1;;
-(*
-let obsolete_object_files cs= 
-   let te
-*)
 
 exception Absent_module of string;;
 
