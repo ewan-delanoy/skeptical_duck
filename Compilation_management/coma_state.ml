@@ -582,13 +582,19 @@ let all_mlx_paths cs=Image.image Mlx_ended_absolute_path.to_absolute_path
 let all_short_paths cs=
     let n=Small_array.size (modules cs) in
     List.flatten(Ennig.doyle(short_paths_at_idx cs) 1 n);;  
+     
 
 let short_paths_inside_subdirectory cs subdir =
-   let n=Small_array.size (modules cs) in 
-   let indices=List.filter (
-     fun idx->(subdir_at_idx cs idx)=subdir
-   ) (Ennig.ennig 1 n) in 
-   List.flatten(Image.image(short_paths_at_idx cs) indices);;     
+   let s_root = Root_directory.connectable_to_subpath (root cs) in 
+   let s_subdir_full_name=s_root^(Subdirectory.connectable_to_subpath subdir) in 
+   let the_subdir=Directory_name.of_string s_subdir_full_name in 
+   let temp1=More_unix.complete_ls_with_nondirectories_only the_subdir in 
+   let n=String.length s_subdir_full_name in 
+   Image.image (
+    fun ap->let s_ap=Absolute_path.to_string ap in 
+    Cull_string.cobeginning n s_ap
+   ) temp1;;
+
 
 let files_containing_string cs some_string=
 let temp1=all_mlx_paths cs in
@@ -2103,7 +2109,8 @@ let local_rename_module cs old_name new_name=
    (cs2,diff);;
 
 
-let local_relocate_module cs old_hm_name new_subdir=
+let local_relocate_module cs capitalized_or_not_old_hm_name new_subdir=
+  let old_hm_name = String.uncapitalize_ascii  capitalized_or_not_old_hm_name in 
   let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
   let old_hm = find_half_dressed_module cs old_hm_name 
   and old_short_paths = short_paths_at_idx cs idx  in 
