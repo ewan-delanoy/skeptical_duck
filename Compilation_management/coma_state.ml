@@ -2093,8 +2093,8 @@ let register_short_path cs x=
 
 
 let local_rename_module cs old_name new_name=
-   let old_hm = find_half_dressed_module cs old_name 
-   and unslashed_new_name = No_slashes.of_string new_name in 
+   let old_hm = find_half_dressed_module cs (String.uncapitalize_ascii old_name) 
+   and unslashed_new_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    let (cs2,(old_files,new_files),modified_files)=rename_module cs old_hm unslashed_new_name in
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_files)
