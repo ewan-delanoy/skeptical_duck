@@ -1748,7 +1748,7 @@ let rename_module cs old_name new_name=
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
   let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in *)
-  let cs3=recompile cs2 in 
+  let (cs3,_,_)=recompile cs2 in 
   (cs3,(old_files,new_files),modified_files);;   
 
 let clean_debug_dir cs=
