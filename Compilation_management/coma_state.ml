@@ -1740,13 +1740,14 @@ let rename_module cs old_name new_name=
   let old_nm=Half_dressed_module.naked_module old_name in 
   let idx=find_module_index cs old_nm in 
   let n=size cs in 
+  let (cs2,(old_files,new_files),modified_files)=
+     rename_module_on_monitored_modules cs old_name new_name in   
+  (* 
   let sibling_indices=List.filter(
         fun jdx->
          List.mem old_nm (ancestors_at_idx cs jdx)
     )(Ennig.ennig idx n) in 
-  let (cs2,(old_files,new_files),modified_files)=
-     rename_module_on_monitored_modules cs old_name new_name in   
-  (* let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in *)
+  let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in *)
   let cs3=recompile cs2 in 
   (cs3,(old_files,new_files),modified_files);;   
 
