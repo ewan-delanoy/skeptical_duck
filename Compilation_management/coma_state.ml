@@ -1746,7 +1746,8 @@ let rename_module cs old_name new_name=
     )(Ennig.ennig idx n) in 
   let (cs2,(old_files,new_files),modified_files)=
      rename_module_on_monitored_modules cs old_name new_name in   
-  let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in 
+  (* let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in *)
+  let cs3=recompile cs2 in 
   (cs3,(old_files,new_files),modified_files);;   
 
 let clean_debug_dir cs=
