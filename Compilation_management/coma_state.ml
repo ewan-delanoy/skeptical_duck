@@ -589,7 +589,7 @@ let short_paths_inside_subdirectory cs subdir =
    let s_subdir_full_name=s_root^(Subdirectory.connectable_to_subpath subdir) in 
    let the_subdir=Directory_name.of_string s_subdir_full_name in 
    let temp1=More_unix.complete_ls_with_nondirectories_only the_subdir in 
-   let n=String.length s_subdir_full_name in 
+   let n=String.length s_root in 
    Image.image (
     fun ap->let s_ap=Absolute_path.to_string ap in 
     Cull_string.cobeginning n s_ap
