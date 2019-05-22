@@ -2128,7 +2128,10 @@ let local_rename_directory cs old_subdir new_subdirname=
    let old_short_paths=short_paths_inside_subdirectory cs old_subdir in
    let cs2=rename_directory cs (old_subdir,new_subdirname) in 
    let s_old_subdir=Subdirectory.without_trailing_slash old_subdir in
-   let new_subdir=(Cull_string.before_rightmost s_old_subdir '/')^"/"^new_subdirname in
+   let subdir_father = Cull_string.before_rightmost s_old_subdir '/' in 
+   let new_subdir=(if subdir_father="" 
+                   then new_subdirname 
+                   else subdir_father^"/"^new_subdirname) in 
    let new_short_paths=short_paths_inside_subdirectory cs2 (Subdirectory.of_string new_subdir) in
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_short_paths)
