@@ -2110,7 +2110,6 @@ let local_rename_module cs old_name new_name=
     (Recently_created.of_string_list new_files) in
    (cs2,diff);;
 
-
 let local_relocate_module cs capitalized_or_not_old_hm_name new_subdir=
   let old_hm_name = String.uncapitalize_ascii  capitalized_or_not_old_hm_name in 
   let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
