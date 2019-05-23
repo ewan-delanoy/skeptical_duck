@@ -533,8 +533,8 @@ let relocate_module_on_monitored_modules cs old_name new_subdir=
   let cs2=set_subdir_at_idx cs idx new_subdir in 
   let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
   let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
-  let cs5=set_product_up_to_date_at_idx cs4 idx false in 
-  (cs5,(old_files,new_files));;
+  (* let cs5=set_product_up_to_date_at_idx cs4 idx false in *)
+  (cs4,(old_files,new_files));;
 
 
 
