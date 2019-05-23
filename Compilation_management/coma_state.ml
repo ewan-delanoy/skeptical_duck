@@ -509,7 +509,8 @@ let recompute_module_info cs hm=
 
 exception Nonregistered_module_during_relocation of Half_dressed_module.t;;  
           
-let relocate_module_on_monitored_modules root_dir cs old_name new_subdir=
+let relocate_module_on_monitored_modules cs old_name new_subdir=
+  let root_dir = root cs in 
   let old_nm=Half_dressed_module.naked_module old_name in
   let opt_idx=seek_module_index cs old_nm in
   if opt_idx=None
@@ -1701,7 +1702,7 @@ let register_mlx_file cs mlx=
 
 
 let relocate_module cs old_name new_subdir=
-    relocate_module_on_monitored_modules (root cs) cs old_name new_subdir;;    
+    relocate_module_on_monitored_modules cs old_name new_subdir;;    
 
 module Raneme_directory = struct 
 
