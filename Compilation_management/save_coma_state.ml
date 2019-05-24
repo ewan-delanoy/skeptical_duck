@@ -102,7 +102,7 @@ module Private=struct
     
     let save_all cs=write_all 
       (
-        Coma_constant.name_for_targetfile,
+        Coma_constant.path_for_targetfile,
         Coma_constant.name_for_loadingsfile,
         Coma_constant.name_for_printersfile
       )

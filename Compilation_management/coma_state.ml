@@ -1418,7 +1418,7 @@ let forget_module cs hm=
       (cs2,short_paths);;          
 
 let read_persistent_version x=
-        let s_ap=Root_directory.join (root x)  Coma_constant.name_for_targetfile in
+        let s_ap=Root_directory.join (root x)  Coma_constant.path_for_targetfile in
         let ap=Absolute_path.of_string s_ap in
         let the_archive=Io.read_whole_file ap in
         Coma_state_field.unarchive the_archive;;      

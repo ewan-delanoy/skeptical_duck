@@ -54,11 +54,12 @@ let ucc cs =
        fun subdir ->
         Unix_command.uc ("mkdir -p "^s_dir^(Subdirectory.without_trailing_slash subdir))
     ) [
-        Coma_constant.build_subdir;
-        Coma_constant.exec_build_subdir;
-        Coma_constant.debug_build_subdir;
         Coma_constant.automatically_generated_subdir;
+        Coma_constant.build_subdir;
+        Coma_constant.debug_build_subdir;
+        Coma_constant.exec_build_subdir;
         Coma_constant.parameters_subdir;
+        Coma_constant.persistent_compilation_data_subdir;
       ] in
     (* remember to modify the special files AFTER copying every file ! *)
     let _=Image.image Unix_command.uc (Private.commands_for_copying cs) in 

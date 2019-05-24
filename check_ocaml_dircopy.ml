@@ -18,9 +18,10 @@ let is_admissible s=
   ) (
     (Image.image Subdirectory.connectable_to_subpath
      [
+       Coma_constant.abandoned_ideas_subdir;
        Coma_constant.automatically_generated_subdir;
        Coma_constant.githubbed_archive_subdir;
-       Coma_constant.abandoned_ideas_subdir;
+       Coma_constant.persistent_compilation_data_subdir;
        Coma_constant.temporary_subdir;
      ])
     @
