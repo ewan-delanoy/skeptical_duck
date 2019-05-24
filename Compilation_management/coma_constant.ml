@@ -11,7 +11,7 @@ let automatically_generated_subdir=
 let left_out_of_updating=
     Subdirectory.of_string "Left_out_of_updating";;  
 
-let old_and_hardly_reusable=
+let abandoned_ideas=
     Subdirectory.of_string "Abandoned_ideas";;  
 
 let temporary_subdir=

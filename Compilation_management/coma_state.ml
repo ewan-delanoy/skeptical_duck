@@ -1372,7 +1372,7 @@ let forget_unregistered_file root_dir ap=
    let s_ap=Absolute_path.to_string ap in
    let subpath=Cull_string.cobeginning n_dir s_ap in
    let trash_dir=Subdirectory.without_trailing_slash
-               (Coma_constant.old_and_hardly_reusable) in
+               (Coma_constant.abandoned_ideas) in
    let new_subpath=(Current_date.current_date())^"_"^
          (Replace_inside.replace_inside_string ("/","_dir_") subpath) in
    let _=Unix_command.uc ("mkdir -p "^s_dir^trash_dir) in
@@ -1531,7 +1531,7 @@ let select_good_files s_main_dir=
           [
             Coma_constant.automatically_generated_subdir;
             Coma_constant.left_out_of_updating;
-            Coma_constant.old_and_hardly_reusable;
+            Coma_constant.abandoned_ideas;
             Coma_constant.temporary_subdir;
             Coma_constant.githubbed_archive;
             Coma_constant.build_subdir;
