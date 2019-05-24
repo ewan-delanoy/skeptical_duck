@@ -20,7 +20,7 @@ let is_admissible s=
      [
        Coma_constant.automatically_generated_subdir;
        Coma_constant.githubbed_archive_subdir;
-       Coma_constant.abandoned_ideas;
+       Coma_constant.abandoned_ideas_subdir;
        Coma_constant.temporary_subdir;
      ])
     @

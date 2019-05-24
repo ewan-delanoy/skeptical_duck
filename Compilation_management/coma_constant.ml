@@ -8,7 +8,7 @@
 let automatically_generated_subdir=
   Subdirectory.of_string "Automatically_generated";;
 
-let abandoned_ideas=
+let abandoned_ideas_subdir=
     Subdirectory.of_string "Abandoned_ideas";;  
 
 let temporary_subdir=
