@@ -7,9 +7,9 @@
 
 module Private=struct
   
-    let loadings (main_root,name_for_loadingsfile) (dirs,hms)=
+    let loadings (main_root,path_for_loadingsfile) (dirs,hms)=
       let s_root=Root_directory.connectable_to_subpath main_root in
-      let part1="\n(*\n #use\""^s_root^(name_for_loadingsfile)^"\";"^";\n*)\n\n" in
+      let part1="\n(*\n #use\""^s_root^(path_for_loadingsfile)^"\";"^";\n*)\n\n" in
       let temp5=Image.image (
         fun sd->
         "#directory\""^s_root^(Subdirectory.connectable_to_subpath sd)^"\";"^";"
@@ -46,11 +46,8 @@ module Private=struct
         let part2=String.concat "\n" temp3 in
         part2;;  
 
-    let save_loadingsfile (root,location_for_loadingsfile) (dirs,hms)=
-       let path_for_loadingsfile=
-           (Subdirectory.connectable_to_subpath Coma_constant.automatically_generated_subdir)^
-           location_for_loadingsfile in
-       let s=loadings (root,location_for_loadingsfile)
+    let save_loadingsfile (root,path_for_loadingsfile) (dirs,hms)=
+       let s=loadings (root,path_for_loadingsfile)
         (dirs,hms)
        and lm=Root_directory.force_join root  path_for_loadingsfile in
        Io.overwrite_with (Absolute_path.of_string lm) s;;
@@ -103,7 +100,7 @@ module Private=struct
     let save_all cs=write_all 
       (
         Coma_constant.path_for_targetfile,
-        Coma_constant.name_for_loadingsfile,
+        Coma_constant.path_for_loadingsfile,
         Coma_constant.name_for_printersfile
       )
       (
