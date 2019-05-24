@@ -1533,7 +1533,7 @@ let select_good_files s_main_dir=
             Coma_constant.left_out_of_updating;
             Coma_constant.abandoned_ideas;
             Coma_constant.temporary_subdir;
-            Coma_constant.githubbed_archive;
+            Coma_constant.githubbed_archive_subdir;
             Coma_constant.build_subdir;
             Coma_constant.debug_build_subdir;
             Coma_constant.exec_build_subdir; 

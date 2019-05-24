@@ -17,7 +17,7 @@ let abandoned_ideas=
 let temporary_subdir=
   Subdirectory.of_string "Temporary";;
 
-let githubbed_archive=
+let githubbed_archive_subdir=
   Subdirectory.of_string "Githubbed_archive";;
 
 let persistent_compilation_data_subdir = 
