@@ -57,12 +57,9 @@ module Private=struct
         and lm=Root_directory.force_join root  location_for_merlinfile in
         Io.overwrite_with (Absolute_path.of_string lm) s;;
   
-    let save_printersfile (root,location_for_printersfile) printer_equipped_types=
-       let init_dir=
-        Subdirectory.connectable_to_subpath 
-        (Coma_constant.automatically_generated_subdir) in
+    let save_printersfile (root,path_for_printersfile) printer_equipped_types=
        let s=instructions_for_printersfile printer_equipped_types
-       and lm=Root_directory.force_join root  (init_dir^location_for_printersfile) in
+       and lm=Root_directory.force_join root path_for_printersfile in
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
        Replace_inside.overwrite_between_markers_inside_file
@@ -72,10 +69,10 @@ module Private=struct
     
     
   
-    let save_targetfile location_for_targetfile cs=
+    let save_targetfile path_for_targetfile cs=
       let root_dir = Coma_state.root cs in 
       let s1=Coma_state_field.archive cs in
-      let lt=Root_directory.force_join root_dir location_for_targetfile in
+      let lt=Root_directory.force_join root_dir path_for_targetfile in
       Io.overwrite_with (Absolute_path.of_string lt) s1;;
     
     
@@ -101,7 +98,7 @@ module Private=struct
       (
         Coma_constant.path_for_targetfile,
         Coma_constant.path_for_loadingsfile,
-        Coma_constant.name_for_printersfile
+        Coma_constant.path_for_printersfile
       )
       (
 	      Coma_state.uple_form cs
