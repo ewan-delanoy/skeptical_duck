@@ -8,9 +8,6 @@
 let automatically_generated_subdir=
   Subdirectory.of_string "Automatically_generated";;
 
-let left_out_of_updating=
-    Subdirectory.of_string "Left_out_of_updating";;  
-
 let abandoned_ideas=
     Subdirectory.of_string "Abandoned_ideas";;  
 
