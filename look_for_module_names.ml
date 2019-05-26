@@ -25,7 +25,7 @@ let names_in_ml_ocamlcode z=
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 
-let indices_in_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
+let indices_in_ml_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
 let names_in_file file=names_in_ml_ocamlcode(Io.read_whole_file file);;
 
 
