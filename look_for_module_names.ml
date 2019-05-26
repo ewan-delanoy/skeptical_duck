@@ -5,7 +5,7 @@
 *)
 
 
-let indices_in_string s=
+let indices_in_ml_ocamlcode s=
   let temp1=Outside_comments_and_strings.good_substrings s in
   let temp2=Image.image (fun (a,b,t)->
      let ttemp3=Alternative_str.find_all_occurrences Alternative_str_example.moodle_cases t 1 in
@@ -17,7 +17,7 @@ let indices_in_string s=
   
 
 let names_in_string z=
-  let temp1=indices_in_string z in
+  let temp1=indices_in_ml_ocamlcode z in
   let temp2=Image.image (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
   let temp3=Three_parts.generic temp2 in
   let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
@@ -25,7 +25,7 @@ let names_in_string z=
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 
-let indices_in_file file=indices_in_string(Io.read_whole_file file);;  
+let indices_in_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
 let names_in_file file=names_in_string(Io.read_whole_file file);;
 
 
@@ -36,7 +36,7 @@ let change_module_name_in_string
    let old_name=String.capitalize_ascii(Naked_module.to_string(old_naked_name))
    and new_name=String.capitalize_ascii(Naked_module.to_string(new_naked_name)) in
    let itv=(fun a b->String.sub s (a-1) (b-a+1)) in
-   let temp1=indices_in_string s in
+   let temp1=indices_in_ml_ocamlcode s in
    let temp2=List.filter (fun (j,(a,b))->(itv a b)=old_name ) temp1 in
    if temp2=[]
    then s
