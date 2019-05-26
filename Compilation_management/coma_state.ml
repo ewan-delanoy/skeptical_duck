@@ -133,7 +133,7 @@ let modules_with_their_ancestors cs l=
 
 
 let find_needed_data_for_file cs fn=
-      let temp1=Look_for_module_names.names_in_file fn in
+      let temp1=Look_for_module_names.names_in_ml_file fn in
       Small_array.indices_of_property_in 
       (fun nm->List.mem nm temp1)
       (modules cs);; 
@@ -300,7 +300,7 @@ let find_needed_names cs mlx=
 
 let find_needed_libraries cs mlx genealogy=
   let fn=Mlx_ended_absolute_path.to_path mlx in
-  let temp1=Look_for_module_names.names_in_file fn in
+  let temp1=Look_for_module_names.names_in_ml_file fn in
   List.filter
   (
     fun lib->
@@ -1067,7 +1067,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
     if cmod=Compilation_mode_t.Usual then raise(Command_for_predebuggable_or_preexecutable_exn) else 
     let full_path=Absolute_path.of_string(
         Root_directory.join (root cs) short_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+    let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_indices = Image.image (
        fun nm->let idx=find_module_index cs nm in 
@@ -1105,7 +1105,7 @@ let command_for_debuggable_or_executable cmod cs short_path=
     if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
     let full_path=Absolute_path.of_string(
         Root_directory.join (root cs) short_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+    let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_indices = Image.image (
        fun nm->let idx=find_module_index cs nm in 
@@ -1193,7 +1193,7 @@ let dependencies_inside_shaft cmod cs (opt_indices,opt_short_path)=
    |_->let short_path=Option.unpack opt_short_path in 
        let full_path=Absolute_path.of_string(
         Root_directory.join (root cs) short_path) in 
-       let nm_direct_deps = Look_for_module_names.names_in_file full_path in 
+       let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
        Option.filter_and_unpack (seek_module_index cs) nm_deps;;
 
@@ -1594,7 +1594,7 @@ let select_good_files s_main_dir=
       let temp1=Ennig.index_everything l 
       and n=List.length l in
       let rec tempf=(fun (j1,(ap1,s1))->
-        let ttemp1=Look_for_module_names.names_in_file ap1 in
+        let ttemp1=Look_for_module_names.names_in_ml_file ap1 in
         let ttemp2=Image.image Naked_module.to_string ttemp1 in
         let ttempf=(fun s_nm->
           Option.filter_and_unpack (fun 

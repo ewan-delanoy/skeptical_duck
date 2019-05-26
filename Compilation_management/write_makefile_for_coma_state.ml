@@ -91,7 +91,7 @@ module Private=struct
 
 
   let find_needed_data_for_file cs fn=
-      let temp1=Look_for_module_names.names_in_file fn in
+      let temp1=Look_for_module_names.names_in_ml_file fn in
       Small_array.indices_of_property_in 
       (fun nm->List.mem nm temp1)
       (Coma_state.modules cs);; 
