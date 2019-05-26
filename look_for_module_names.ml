@@ -16,7 +16,7 @@ let indices_in_ml_ocamlcode s=
   List.flatten temp2;;
   
 
-let names_in_string z=
+let names_in_ml_ocamlcode z=
   let temp1=indices_in_ml_ocamlcode z in
   let temp2=Image.image (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
   let temp3=Three_parts.generic temp2 in
@@ -26,7 +26,7 @@ let names_in_string z=
   temp5;;
 
 let indices_in_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
-let names_in_file file=names_in_string(Io.read_whole_file file);;
+let names_in_file file=names_in_ml_ocamlcode(Io.read_whole_file file);;
 
 
 
