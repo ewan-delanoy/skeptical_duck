@@ -34,7 +34,7 @@ let modularize_several prefix l_ap=
     let _=(for k=1 to m do
       let (a,b)=List.nth replacements (k-1) in
       let message=(string_of_int k)^" of "^(string_of_int m)^" done \n" in
-      walker:=Look_for_module_names.change_module_name_in_string
+      walker:=Look_for_module_names.change_module_name_in_ml_ocamlcode
        a b (!walker);
       print_string(message);
       flush stdout 
