@@ -453,7 +453,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let old_mname=Half_dressed_module.naked_module old_name
   and new_mname=Half_dressed_module.naked_module new_hm
   in
-  let changer=Look_for_module_names.change_module_name_in_file old_mname new_mname in
+  let changer=Look_for_module_names.change_module_name_in_ml_file old_mname new_mname in
   let separated_acolytes=Option.filter_and_unpack(
     fun k->
      if List.mem old_mname (ancestors_at_idx cs k)

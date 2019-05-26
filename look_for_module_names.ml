@@ -52,7 +52,7 @@ let change_module_name_in_ml_ocamlcode
    let temp3=sub_f([new_name;itv 1 (a1-1)],a1,b1,List.tl(temp2)) in
    String.concat "" temp3;;
    
- let change_module_name_in_file old_name new_name file=
+ let change_module_name_in_ml_file old_name new_name file=
    let s=Io.read_whole_file file in
    let new_s=change_module_name_in_ml_ocamlcode old_name new_name s in
    Io.overwrite_with file new_s;;  
