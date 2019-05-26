@@ -57,12 +57,12 @@ let change_module_name_in_ml_ocamlcode
    let new_s=change_module_name_in_ml_ocamlcode old_name new_name s in
    Io.overwrite_with file new_s;;  
 
-let change_several_module_names_in_string l_changes s=
+let change_several_module_names_in_ml_ocamlcode l_changes s=
     List.fold_left(fun t (u,v)->change_module_name_in_ml_ocamlcode u v t) s l_changes;;
 
 let change_several_module_names_in_file l_changes file=
    let s=Io.read_whole_file file in
-   let new_s=change_several_module_names_in_string l_changes s in
+   let new_s=change_several_module_names_in_ml_ocamlcode l_changes s in
    Io.overwrite_with file new_s;;  
 
 

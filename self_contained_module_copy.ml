@@ -41,7 +41,7 @@ let self_contained_module_copy prefix hm=
    ) temp1 in
    let contents=Image.image snd temp1 in
    let new_contents=Image.image 
-        (Look_for_module_names.change_several_module_names_in_string replacements  ) 
+        (Look_for_module_names.change_several_module_names_in_ml_ocamlcode replacements  ) 
          contents in
    let temp2=List.combine replacements new_contents in
    let temp3=Image.image (
