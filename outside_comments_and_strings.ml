@@ -150,6 +150,7 @@ good_substrings "ghi(**a\"b\"c**)def";;
 good_substrings "123\"(*\"890\"*)\"567";;
 good_substrings "123(*67\"90\"23*)67";;
 good_substrings "let a=7;; let b='\"';; let c=8;;";;
+good_substrings "let a=7;; let b='\"';; (* ahem *) let c=8;;";;
 
 let nachste (s,n,j,st)=(s,n,j+1,one_more_step s n j (String.get s (j-1)) st);;
 let s0="123456\"\\\\\"123456789";;
