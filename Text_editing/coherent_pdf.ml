@@ -213,6 +213,58 @@ module Bare = struct
       ~inserted_one:inserted_one  
        ~total_length:total_length;;
 
+  (* New code starts here *)
+
+  let remove_first_page_in_a_total_of  ~receiving_one  ~total_length=
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:1 ~total_length:total_length)
+        @
+        (["mv "^receiving_one^"_half2"^".pdf "^receiving_one^".pdf"]  )
+        @
+        [
+           "rm "^receiving_one^"_half1.pdf";
+        ];;
+
+  let remove_nonborder_page_number_in_a_total_of ~page_number ~receiving_one  ~total_length=
+        let temp=receiving_one^"_half2" in 
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:(page_number-1) ~total_length:total_length)
+        @
+        (cut_in_two ~pdfname:temp ~first_half_length:1 ~total_length:(total_length-page_number+1))
+        @
+        (merge [receiving_one^"_half1";temp^"_half2"] receiving_one )
+        @
+        [
+           "rm "^receiving_one^"_half1.pdf";
+           "rm "^receiving_one^"_half2.pdf"; 
+           "rm "^receiving_one^"_half2_half1.pdf"; 
+           "rm "^receiving_one^"_half2_half2.pdf"; 
+        ];;
+
+  let remove_last_page_in_a_total_of  ~receiving_one  ~total_length=
+        (cut_in_two ~pdfname:receiving_one ~first_half_length:(total_length-1) ~total_length:total_length)
+        @
+        ["mv "^receiving_one^"_half1"^".pdf "^receiving_one^".pdf"]  
+        @
+        [
+           "rm "^receiving_one^"_half2.pdf";
+        ];;    
+
+  let remove_page_number_in_in_a_total_of ~page_number ~receiving_one ~total_length=
+    if page_number=1
+    then remove_first_page_in_a_total_of  receiving_one  total_length
+    else 
+    if page_number=total_length
+    then remove_first_page_in_a_total_of  receiving_one  total_length
+    else 
+    remove_nonborder_page_number_in_a_total_of page_number receiving_one total_length;;
+
+  let unlabeled_remove_page_number_in_in_a_total_of page_number receiving_one total_length=
+     remove_page_number_in_in_a_total_of
+    ~page_number:page_number 
+     ~receiving_one:receiving_one 
+       ~total_length:total_length;;
+        
+  (* New code ends here *)
+
   let cut_into_small_pieces pdfname (i,j) max_piece_size=
          let ranges = Helper.small_pieces (i,j) max_piece_size in 
          let base  = Image.image (
@@ -274,7 +326,7 @@ module Bare = struct
            ~num_even:num_even 
              ~final_name:final_name;;
 
-  let remove pdfname=["rm "^pdfname^".pdf"];;           
+  let delete_file pdfname=["rm "^pdfname^".pdf"];;           
 end;;
 
 
@@ -289,6 +341,7 @@ module Command = struct
   let append_on_the_right =bi Bare.append_on_the_right;;
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
   let cut_into_small_pieces =tri Bare.cut_into_small_pieces;;
+  let delete_file =uni Bare.delete_file;;
   let explode =bi Bare.explode;;
   let export =bi Bare.unlabeled_export;;
   let extract_page_range =bi Bare.extract_page_range;;
@@ -302,7 +355,7 @@ module Command = struct
   let lay_down =uni Bare.lay_down;; 
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
-  let remove =uni Bare.remove;;
+  let remove_page_number_in_in_a_total_of = tri Bare.unlabeled_remove_page_number_in_in_a_total_of;;
   let rename =bi Bare.rename;;
   let replace_page_number_in_by=qdi Bare.unlabeled_replace_page_number_in_by;;
   let upside_down =uni Bare.upside_down;; 
@@ -320,6 +373,9 @@ let cut_into_small_pieces pdfname (i,j) max_piece_size=
 let cut_in_two ~pdfname ~first_half_length ~total_length =
   Image.image Unix_command.uc 
   (Command.cut_in_two pdfname first_half_length total_length);;
+
+let delete_file  pdfname=Image.image Unix_command.uc 
+  (Command.delete_file  pdfname);;
 
 let extract_page_range pdfname (i,j)=Image.image Unix_command.uc 
   (Command.extract_page_range pdfname (i,j));;
@@ -365,11 +421,13 @@ let merge parts whole=
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
 
-let remove  pdfname=Image.image Unix_command.uc 
-  (Command.remove  pdfname);;
 
 let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
    (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
+
+let remove_page_number_in_in_a_total_of ~page_number ~receiving_one  ~total_length=
+    Image.image Unix_command.uc 
+    (Command.remove_page_number_in_in_a_total_of page_number receiving_one  total_length);;
 
 let rename  old_pdfname new_pdfname=
    Image.image Unix_command.uc 
