@@ -14,7 +14,8 @@ let cmp=((fun
 
 let joiner = " \n ";;
 
-let of_string s =
+let of_string uncorrected_s =
+  let s = Cull_string.cobeginning 2 uncorrected_s in 
   let temp1=Str.split (Str.regexp_string joiner) s in 
   let temp2=Image.image Hex_partial_game.of_string temp1 in 
   Hex_pgame_collection_t.L(
@@ -22,7 +23,7 @@ let of_string s =
   );;
 
 let to_string (Hex_pgame_collection_t.L(l))=
-  String.concat joiner (Image.image Hex_partial_game.to_string l);;
+  "\n "^(String.concat joiner (Image.image Hex_partial_game.to_string l));;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
