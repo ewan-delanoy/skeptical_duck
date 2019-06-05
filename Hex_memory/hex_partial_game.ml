@@ -12,14 +12,16 @@ let cmp=((fun
        Hex_cell.cmp l1 l2) :> 
        Hex_partial_game_t.t Total_ordering.t) );;
 
+let joiner = " - ";;
+
 let of_string s =
-  let temp1=Str.split (Str.regexp_string " - ") s in 
+  let temp1=Str.split (Str.regexp_string joiner) s in 
   Hex_partial_game_t.PG(
       Image.image Hex_cell.of_string temp1
   );;
 
 let to_string (Hex_partial_game_t.PG(l))=
-  String.concat " - " (Image.image Hex_cell.to_string l);;
+  String.concat joiner (Image.image Hex_cell.to_string l);;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
