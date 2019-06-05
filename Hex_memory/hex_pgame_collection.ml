@@ -25,5 +25,10 @@ let of_string uncorrected_s =
 let to_string (Hex_pgame_collection_t.L(l))=
   "\n "^(String.concat joiner (Image.image Hex_partial_game.to_string l));;
 
+let insert_in pgame (Hex_pgame_collection_t.L(l))=
+  let new_l=Ordered.insert_plaen Hex_partial_game.cmp pgame l in 
+   Hex_pgame_collection_t.L new_l;;
+
+
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
