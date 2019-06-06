@@ -29,5 +29,11 @@ let to_string mmrzr=
   announce_first_player^descr1^announce_second_player^descr2;;
 
 
+let remember_as_example mmrzr =
+  let assignment="\n\n\nlet z=Hex_pgame_memorizer.of_string\n\""^(to_string mmrzr)^"\";;\n\n\n" in 
+  let ap=Absolute_path.of_string "Hex_memory/hex_pgame_memorizer_example.ml" in 
+  Replace_inside.overwrite_between_markers_inside_file 
+  (Overwriter.of_string assignment) ("(* Assignment starts here *)","(* Assignment ends here *)") ap ;;
+
 let print_out (fmt:Format.formatter) memorizer=
    Format.fprintf fmt "@[%s@]" (to_string memorizer);;     
