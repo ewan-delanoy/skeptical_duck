@@ -16,7 +16,7 @@ let of_string s =
      (String.length announce_first_player) s in 
    let i1=Substring.leftmost_index_of_in announce_second_player s1 in
    let descr1=Cull_string.beginning (i1-1) s1 in
-   let descr2=Cull_string.cobeginning (i1+(String.length announce_second_player)) s1 in 
+   let descr2=Cull_string.cobeginning (i1+(String.length announce_second_player)-1) s1 in 
    {
      Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.of_string descr1;
      Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.of_string descr2;
