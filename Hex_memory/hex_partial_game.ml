@@ -21,6 +21,10 @@ let starts_with (Hex_partial_game_t.PG(l1)) (Hex_partial_game_t.PG(l2))=
 let empty_one = Hex_partial_game_t.PG  [];;
 let singleton cell = Hex_partial_game_t.PG [cell];;
 
+let one_move_more (Hex_partial_game_t.PG(l)) cell = 
+  Hex_partial_game_t.PG(l@[cell]);;
+
+
 let of_string s =
   let temp1=Str.split (Str.regexp_string joiner) s in 
   Hex_partial_game_t.PG(
