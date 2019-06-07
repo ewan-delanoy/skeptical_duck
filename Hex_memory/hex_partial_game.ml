@@ -18,6 +18,10 @@ let starts_with (Hex_partial_game_t.PG(l1)) (Hex_partial_game_t.PG(l2))=
   let (common_left,right1,right2)=Listennou.factor (l1,l2) in
   right2=[];; 
 
+let cut_by (Hex_partial_game_t.PG(l1)) (Hex_partial_game_t.PG(l2))=
+  let (common_left,right1,right2)=Listennou.factor (l1,l2) in
+  if right2=[] then Some(Hex_partial_game_t.PG(right1)) else None;; 
+
 let empty_one = Hex_partial_game_t.PG  [];;
 let singleton cell = Hex_partial_game_t.PG [cell];;
 
