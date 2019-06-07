@@ -24,6 +24,9 @@ let singleton cell = Hex_partial_game_t.PG [cell];;
 let one_move_more (Hex_partial_game_t.PG(l)) cell = 
   Hex_partial_game_t.PG(l@[cell]);;
 
+let last_one_to_play (Hex_partial_game_t.PG(l)) =
+   let d=(List.length l) mod 2 in 
+   if d=0 then Hex_player_t.Second_player else Hex_player_t.First_player;;
 
 let of_string s =
   let temp1=Str.split (Str.regexp_string joiner) s in 
