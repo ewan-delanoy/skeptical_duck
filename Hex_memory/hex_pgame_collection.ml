@@ -12,6 +12,8 @@ let cmp=((fun
        Hex_partial_game.cmp l1 l2) :> 
        Hex_pgame_collection_t.t Total_ordering.t) );;
 
+let empty_one = Hex_pgame_collection_t.L [];;
+
 let joiner = " \n ";;
 
 let of_string uncorrected_s =
