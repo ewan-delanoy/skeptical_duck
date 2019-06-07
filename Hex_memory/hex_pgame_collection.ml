@@ -15,6 +15,9 @@ let cmp=((fun
 let empty_one = Hex_pgame_collection_t.L [];;
 let singleton cell = Hex_pgame_collection_t.L [Hex_partial_game.singleton cell];;
 
+let is_foreseen_in pgame (Hex_pgame_collection_t.L(l))=
+   List.exists (fun pgame2->Hex_partial_game.starts_with pgame2 pgame) l;;
+
 
 let joiner = " \n ";;
 
