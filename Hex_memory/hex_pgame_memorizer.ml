@@ -48,6 +48,19 @@ let initial_one cell=
      Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.empty_one;
    };;
 
+let insert_in pgame mmrzr =
+     let last_player = Hex_partial_game.last_one_to_play pgame in  
+     let old_strategies = strategies mmrzr last_player in 
+     let new_strategies = Hex_pgame_collection.insert_in pgame old_strategies in 
+     match last_player with 
+     Hex_player_t.First_player -> 
+        {mmrzr with Hex_pgame_memorizer_t.strategies_for_first_player= new_strategies}
+    |Hex_player_t.Second_player -> 
+        {mmrzr with Hex_pgame_memorizer_t.strategies_for_second_player= new_strategies};;
+
+
+
+
 
 let print_out (fmt:Format.formatter) memorizer=
    Format.fprintf fmt "@[%s@]" (to_string memorizer);;     
