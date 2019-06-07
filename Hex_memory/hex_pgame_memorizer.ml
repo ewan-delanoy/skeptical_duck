@@ -22,14 +22,6 @@ let of_string s =
      Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.of_string descr2;
    };;
 
-
-let initial_one cell= 
-   {
-     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.singleton cell;
-     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.empty_one;
-   };;
-
-
 let to_string mmrzr=
   let descr1=Hex_pgame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_first_player) 
   and descr2=Hex_pgame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_second_player) in 
@@ -41,6 +33,21 @@ let remember_as_example mmrzr =
   let ap=Absolute_path.of_string "Hex_memory/hex_pgame_memorizer_example.ml" in 
   Replace_inside.overwrite_between_markers_inside_file 
   (Overwriter.of_string assignment) ("(* Assignment starts here *)","(* Assignment ends here *)") ap ;;
+
+let strategies mmrzr=function 
+   Hex_player_t.First_player -> mmrzr.Hex_pgame_memorizer_t.strategies_for_first_player
+   |Hex_player_t.Second_player -> mmrzr.Hex_pgame_memorizer_t.strategies_for_second_player ;;
+
+let is_foreseen_in pgame mmrzr=
+   let the_strategies=strategies mmrzr (Hex_partial_game.last_one_to_play pgame) in 
+   Hex_pgame_collection.is_foreseen_in pgame the_strategies;;
+
+let initial_one cell= 
+   {
+     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.singleton cell;
+     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.empty_one;
+   };;
+
 
 let print_out (fmt:Format.formatter) memorizer=
    Format.fprintf fmt "@[%s@]" (to_string memorizer);;     
