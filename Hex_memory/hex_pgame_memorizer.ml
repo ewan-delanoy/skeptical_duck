@@ -22,13 +22,13 @@ let of_string s =
      Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.of_string descr2;
    };;
 
-(*  
+
 let initial_one cell= 
    {
-     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.of_string descr1;
+     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.singleton cell;
      Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.empty_one;
    };;
-*)
+
 
 let to_string mmrzr=
   let descr1=Hex_pgame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_first_player) 
