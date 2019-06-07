@@ -18,6 +18,7 @@ let starts_with (Hex_partial_game_t.PG(l1)) (Hex_partial_game_t.PG(l2))=
   let (common_left,right1,right2)=Listennou.factor (l1,l2) in
   right2=[];; 
 
+let empty_one = Hex_partial_game_t.PG  [];;
 let singleton cell = Hex_partial_game_t.PG [cell];;
 
 let of_string s =
