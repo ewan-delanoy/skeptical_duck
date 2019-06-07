@@ -13,6 +13,7 @@ let cmp=((fun
        Hex_pgame_collection_t.t Total_ordering.t) );;
 
 let empty_one = Hex_pgame_collection_t.L [];;
+let singleton cell = Hex_pgame_collection_t.L [Hex_partial_game.singleton cell];;
 
 
 let joiner = " \n ";;
