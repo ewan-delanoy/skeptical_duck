@@ -58,7 +58,13 @@ let insert_in pgame mmrzr =
     |Hex_player_t.Second_player -> 
         {mmrzr with Hex_pgame_memorizer_t.strategies_for_second_player= new_strategies};;
 
-
+let cut_by mmrzr pgame=
+  let last_player = Hex_partial_game.last_one_to_play pgame in 
+  let future_player = (function 
+      Hex_player_t.First_player -> Hex_player_t.Second_player
+      |_-> Hex_player_t.First_player
+  ) last_player in 
+  Hex_pgame_collection.cut_by (strategies future_player) pgame;;
 
 
 
