@@ -37,6 +37,11 @@ let insert_in pgame (Hex_pgame_collection_t.L(l))=
   let new_l=Ordered.insert_plaen Hex_partial_game.cmp pgame temp1 in 
    Hex_pgame_collection_t.L new_l;;
 
+let cut_by (Hex_pgame_collection_t.L(l)) pgame=
+  let new_l=Option.filter_and_unpack(fun pgame2->Hex_partial_game.cut_by pgame2 pgame) l in 
+  Hex_pgame_collection_t.L(new_l);; 
+
+
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
