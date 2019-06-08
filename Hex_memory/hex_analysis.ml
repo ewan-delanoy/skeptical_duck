@@ -71,7 +71,7 @@ let cs=consult;;
 let u=usual;;
 let omm s=one_move_more (Hex_cell.of_string s);;
 let fz k=finalize(player_at_index k);;
-let v n=let _=(for k=1 to n do usual() done) in (consult(),!state,!memorizer);;
+let v n=let _=(for k=1 to n do let _=usual() in () done) in (consult(),!state,!memorizer);;
 let rs=restart;;
 
 
