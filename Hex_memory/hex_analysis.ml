@@ -23,7 +23,7 @@ let one_move_more cell = match (!state) with
       let _=(state:=new_state) in 
       let forecasts = Hex_pgame_memorizer.cut_by (!memorizer) new_pgame in 
       let offers = Hex_pgame_collection.classify_according_to_depth forecasts in 
-      (offers,new_state,new_pgame);;
+      (offers,new_pgame);;
    
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
