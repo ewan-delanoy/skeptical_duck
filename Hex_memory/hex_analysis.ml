@@ -21,7 +21,9 @@ let one_move_more cell = match (!state) with
       else Hex_analysis_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
       let _=(state:=new_state) in 
-      (new_state,new_pgame);;
+      let forecasts = Hex_pgame_memorizer.cut_by (!memorizer) new_pgame in 
+      let offers = Hex_pgame_collection.classify_according_to_depth forecasts in 
+      (offers,new_state,new_pgame);;
    
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
@@ -30,13 +32,13 @@ let finalize winner =
   match (!state) with 
     |Hex_analysis_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
     |Hex_analysis_state_t.Awaiting_final_outcome(pgame)->
+      let _=(state:=Hex_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one)) in 
       let wanted_winner = Hex_partial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then raise(Result_not_helpful)
       else 
         let new_mmrzr = Hex_pgame_memorizer.insert_in pgame (!memorizer)  in 
         let _=(memorizer:=new_mmrzr;
-               state:=Hex_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one);
                Hex_pgame_memorizer.remember_as_example new_mmrzr) in 
         new_mmrzr;; 
 
