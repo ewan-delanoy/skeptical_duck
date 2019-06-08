@@ -39,6 +39,8 @@ let suggested_move ()=snd(List.hd(consult()));;
 
 let usual ()=one_move_more (suggested_move());;
 
+let restart ()=(state:=Hex_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one));;
+
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
 
@@ -46,7 +48,7 @@ let finalize winner =
   match (!state) with 
     |Hex_analysis_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
     |Hex_analysis_state_t.Awaiting_final_outcome(pgame)->
-      let _=(state:=Hex_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one)) in 
+      let _=restart() in 
       let wanted_winner = Hex_partial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then raise(Result_not_helpful)
@@ -69,8 +71,8 @@ let cs=consult;;
 let u=usual;;
 let omm s=one_move_more (Hex_cell.of_string s);;
 let fz k=finalize(player_at_index k);;
-
-
+let v n=let _=(for k=1 to n do usual() done) in (consult(),!state,!memorizer);;
+let rs=restart;;
 
 
 
