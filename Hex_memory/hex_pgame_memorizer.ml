@@ -64,7 +64,7 @@ let cut_by mmrzr pgame=
       Hex_player_t.First_player -> Hex_player_t.Second_player
       |_-> Hex_player_t.First_player
   ) last_player in 
-  Hex_pgame_collection.cut_by (strategies future_player) pgame;;
+  Hex_pgame_collection.cut_by (strategies mmrzr future_player) pgame;;
 
 
 
