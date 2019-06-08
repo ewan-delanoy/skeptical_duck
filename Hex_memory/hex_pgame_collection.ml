@@ -41,10 +41,17 @@ let cut_by (Hex_pgame_collection_t.L(l)) pgame=
   let new_l=Option.filter_and_unpack(fun pgame2->Hex_partial_game.cut_by pgame2 pgame) l in 
   Hex_pgame_collection_t.L(new_l);; 
 
-(*
+
 let classify_according_to_depth (Hex_pgame_collection_t.L(l)) = 
-   let temp1=Prepared.partition () l in 
-*)
+   let temp1=Image.image (fun pgame->(Hex_partial_game.depth pgame,Hex_partial_game.first_move pgame)) l in
+   let temp2=Prepared.partition snd temp1 in 
+   let temp3=Image.image (fun l->let mov=snd(List.hd l) and d=snd(Max.maximize_it fst l)) temp2 in 
+   let temp4=Tidel2.diforchan temp3 in 
+   Ordered.forget_order temp4;;
+
+
+
+
   
 
 let print_out (fmt:Format.formatter) ap=
