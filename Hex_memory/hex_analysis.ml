@@ -11,6 +11,12 @@ let state = ref(Hex_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one)
 
 exception Your_move_was_ignored;;
 
+let analize_game pgame =
+   let forecasts = Hex_pgame_memorizer.cut_by (!memorizer) pgame in 
+   Hex_pgame_collection.classify_according_to_depth forecasts;;
+
+let consult ()=analize_game Hex_partial_game.empty_one;;
+
 let one_move_more cell = match (!state) with 
     Hex_analysis_state_t.Awaiting_final_outcome(_)->raise(Your_move_was_ignored)
     |Hex_analysis_state_t.Foreseen_so_far(pgame)->
@@ -23,7 +29,7 @@ let one_move_more cell = match (!state) with
       let _=(state:=new_state) in 
       let forecasts = Hex_pgame_memorizer.cut_by (!memorizer) new_pgame in 
       let offers = Hex_pgame_collection.classify_according_to_depth forecasts in 
-      (offers,new_pgame);;
+      (offers,new_state,!memorizer);;
    
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
@@ -51,6 +57,7 @@ let player_at_index = function
    |2->Hex_player_t.Second_player
    |k->raise(Unknown_player_index(k));;
 
+let cs=consult;;
 let omm s=one_move_more (Hex_cell.of_string s);;
 let fz k=finalize(player_at_index k);;
 
