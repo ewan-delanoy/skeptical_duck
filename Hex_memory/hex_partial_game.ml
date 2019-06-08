@@ -32,6 +32,8 @@ let last_one_to_play (Hex_partial_game_t.PG(l)) =
    let d=(List.length l) mod 2 in 
    if d=0 then Hex_player_t.Second_player else Hex_player_t.First_player;;
 
+let depth (Hex_partial_game_t.PG(l)) = List.length l ;; 
+
 let of_string s =
   let temp1=Str.split (Str.regexp_string joiner) s in 
   Hex_partial_game_t.PG(
@@ -40,6 +42,7 @@ let of_string s =
 
 let to_string (Hex_partial_game_t.PG(l))=
   String.concat joiner (Image.image Hex_cell.to_string l);;
+
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
