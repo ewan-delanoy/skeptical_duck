@@ -33,6 +33,7 @@ let last_one_to_play (Hex_partial_game_t.PG(l)) =
    if d=0 then Hex_player_t.Second_player else Hex_player_t.First_player;;
 
 let depth (Hex_partial_game_t.PG(l)) = List.length l ;; 
+let first_move (Hex_partial_game_t.PG(l)) = List.hd l ;; 
 
 let of_string s =
   let temp1=Str.split (Str.regexp_string joiner) s in 
