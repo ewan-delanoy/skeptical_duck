@@ -828,6 +828,34 @@ let quick_update cs idx=
    )   
   ;;
     
+let latest_changes cs = 
+  let n=Small_array.size (modules cs) in
+  let ref_for_changed_modules=ref[] 
+  and ref_for_changed_shortpaths=ref[] in
+  let declare_changed=(fun idx->
+    let nm=Small_array.get (modules cs) idx in
+    ref_for_changed_modules:=nm::(!ref_for_changed_modules);
+    ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
+                        (short_paths_at_idx cs idx))
+    ) in
+  let cs_walker=ref(cs) in   
+  let _=List.iter (fun idx->
+    match quick_update (!cs_walker) idx with
+    None->()
+    |Some(pr_modif_time,mli_modif_time,direct_fathers)->
+    (
+    declare_changed(idx);
+    cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
+    cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
+    cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
+    cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx false;
+    )
+)(Ennig.ennig 1 n) in
+let changed_modules=List.rev(!ref_for_changed_modules) in
+if changed_modules=[] then [] else
+let _=PrivateThree.announce_changed_modules changed_modules in
+(!ref_for_changed_shortpaths);; 
+
 
 let recompile_on_monitored_modules tolerate_cycles cs = 
   let n=Small_array.size (modules cs) in
