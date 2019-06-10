@@ -35,6 +35,8 @@ let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;;
 
 let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
+let latest_changes ()=Coma_state.latest_changes (!(Private.main_ref));;
+
 let list_values_from_module_in_modulesystem module_name=
    Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
    (!(Private.main_ref)) module_name;;
