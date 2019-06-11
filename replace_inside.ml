@@ -84,8 +84,6 @@ let overwrite_and_dump_markers_inside_file
     let s1=Io.read_whole_file fn in
     let s2=overwrite_and_dump_markers_inside_string ovw_b (bm,em) s1 in
     Io.overwrite_with fn s2;;      
-
-let show ()=Unix_command.uc "ocamlc -i replace_inside.ml";;  
  
 (* 
 
@@ -126,6 +124,48 @@ let at_intervals_inside_file
 
 at_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
+*)         
+
+let choose_once_inside_string_from (candidates,replacement) s idx0=
+  match Option.find_and_stop (
+    fun candy ->
+       let idx=Substring.leftmost_index_of_in_from candy s idx0 in 
+       if idx<0 then None else Some(idx,candy)
+  ) candidates with 
+  None->None
+  |Some(idx1,candidate)->
+  let idx1=Substring.leftmost_index_of_in candidate s in 
+  if idx1<0 then None else 
+  let idx2=idx1+(String.length candidate)-1 in 
+  let left_side = Cull_string.beginning (idx1-1) s 
+  and right_side = Cull_string.cobeginning idx2 s in 
+  Some(left_side^replacement^right_side,idx2);;      
+
+(*
+choose_once_inside_string_from (["17";"12";"19"],"34") "abc12def" 1;;
 *)
 
-           
+exception No_equivalent_found_for of string;;
+
+let successively_inside_string_from l_reps s idx0=
+  let rec tempf=(fun (to_be_treated,current_s,idx)->
+      match to_be_treated with 
+      []->current_s
+      |rep::other_reps ->
+        (
+          match choose_once_inside_string_from rep s idx with
+          None->raise(No_equivalent_found_for(snd rep))
+          |Some(new_s,new_idx)->
+            let name=Str.global_replace (Str.regexp_string "\n") " " (snd rep) in 
+            let _=(print_string("Treated "^name^"\n");flush stdout) in 
+            tempf(other_reps,new_s,new_idx)  
+        )
+  ) in 
+  tempf(l_reps,s,idx0);;
+
+(*
+successively_inside_string_from [["q1"],"p1";["q2"],"p2";["q3"],"p3"] "ABq1CDEq2FGq3" 1;;
+successively_inside_string_from [["q1"],"p1";["q7"],"p2";["q3"],"p3"] "ABq1CDEq2FGq3" 1;;
+*)
+
+
