@@ -126,7 +126,7 @@ at_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"
 
 *)         
 
-let choose_once_inside_string_from (candidates,replacement) s idx0=
+let choose_once_inside_string_from (candidates,replacement) s (idx0,idx0_in_old_s)=
   match Option.find_and_stop (
     fun candy ->
        let idx=Substring.leftmost_index_of_in_from candy s idx0 in 
@@ -136,13 +136,14 @@ let choose_once_inside_string_from (candidates,replacement) s idx0=
   |Some(idx1,candidate)->
   let idx1=Substring.leftmost_index_of_in candidate s in 
   if idx1<0 then None else 
-  let idx2=idx1+(String.length candidate)-1 in 
+  let idx2_in_s=idx1+(String.length candidate)-1 in 
   let left_side = Cull_string.beginning (idx1-1) s 
-  and right_side = Cull_string.cobeginning idx2 s in 
+  and right_side = Cull_string.cobeginning idx2_in_s s in
+  let idx2_in_old_s= 
   Some(left_side^replacement^right_side,idx2);;      
 
 (*
-choose_once_inside_string_from (["17";"12";"19"],"34") "abc12def" 1;;
+choose_once_inside_string_from (["17";"12";"19"],"348") "abc12def" 1;;
 *)
 
 exception No_equivalent_found_for of string;;
