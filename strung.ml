@@ -88,21 +88,71 @@ let left_completed_string_of_int l_max m=
    else
    (String.make d '0')^s1;;
 
-(*
 
-longest_match_parsing
-  ["finally";"final";"else";"then";"dog";"if"]
-   "if \n\rfinal then\t finally else dog";;
-longest_match_parsing
-  ["finally";"final";"else";"then";"dog";"if"]
-   "if \n\rfinal then\t finally else dug";;
-
-
-*)     
      
 let reverse s=
    implode(List.rev(explode s));; 
-   
+
+let find_one_of_several_in_at_idx candidates s idx =
+   let tester=(
+      fun candidate ->
+       let j=idx-1 and l_cand=String.length(candidate) in 
+       if (String.length(s)<j+l_cand)||(j<0)
+      then None
+      else if (String.sub s j l_cand)=candidate 
+           then Some(idx,candidate)
+           else None
+   ) in 
+   Option.find_and_stop tester candidates;;
+  
+(*
+
+find_one_of_several_in_at_idx ["ba";"ab"] "123ab67" 4;;
+
+*)
+
+let find_one_of_several_in_from_idx candidates s idx =
+  let n=String.length s in 
+  Option.find_and_stop (
+    find_one_of_several_in_at_idx candidates s
+  ) (Ennig.ennig idx n);;
+
+(*
+
+find_one_of_several_in_from_idx ["ba";"ab"] "123ab67" 1;;
+
+*)
+
+exception Not_found_during_succession;;
+
+let find_successively_in patterns_in_order s=
+  let rec tempf=(fun 
+     (treated,to_be_treated,idx,line_idx)->
+       match to_be_treated with 
+       []->List.rev treated
+       |patt::other_patts->
+         match  find_one_of_several_in_from_idx patt s idx with 
+         None->raise(Not_found_during_succession)
+         |Some(idx2,candidate)->
+          let temp1=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx (idx2-1)) in 
+          let line_idx_for_idx2=line_idx+List.length(temp1) in 
+          let msg="Found "^candidate^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
+          let _=(print_string msg;flush stdout) in 
+          let idx3=idx2+(String.length candidate) in  
+          let temp2=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx2 (idx3-1)) in 
+          let line_idx_for_idx3=line_idx_for_idx2+List.length(temp2) in 
+          tempf((idx2,idx3-1)::treated,other_patts,idx3,line_idx_for_idx3)    
+  ) in 
+  tempf([],patterns_in_order,1,1);;
+
+(*
+
+find_successively_in [["ba";"ab"];["cde";"edc"]] "12\n\n\n\n\n8ab123\n\n67cde12";;
+
+*)
+
+
+
 let insert_prefixes_at_indices l s=
     if l=[] then s else
     let n=String.length s in
