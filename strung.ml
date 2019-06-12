@@ -37,7 +37,7 @@ let explode s=
     Ennig.doyle (String.get s) 0 (n-1);;
     
  
-let finder f s w0=
+let char_finder f s w0=
    let n=(String.length s) in
    let rec tempf=(fun j->
      if j>=n then 0 else

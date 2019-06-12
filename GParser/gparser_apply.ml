@@ -83,7 +83,7 @@ let sample_neg t=
 let sample_star t=
    let lc=Strung.explode t in
    let tempf=(fun s i1->
-        let j=Strung.finder (fun c->not(List.mem c lc)) s i1 in
+        let j=Strung.char_finder (fun c->not(List.mem c lc)) s i1 in
         let better_j=(if j<1 then (String.length s)+1 else j) in
         let res=Gparser_result.veil
                (i1,better_j-1)
@@ -96,7 +96,7 @@ let sample_star t=
 let sample_negstar t=
    let lc=Strung.explode t in
    let tempf=(fun s i1->
-        let j=Strung.finder (fun c->List.mem c lc) s i1 in
+        let j=Strung.char_finder (fun c->List.mem c lc) s i1 in
         let better_j=(if j<1 then (String.length s)+1 else j) in
         let res=Gparser_result.veil
                (i1,better_j-1)
@@ -111,7 +111,7 @@ let sample_plus t=
    let tempf=(fun s i1->
         if i1>(String.length s) then None else
         if (not(List.mem (Strung.get s i1 ) lc)) then None else
-        let j=Strung.finder (fun c->not(List.mem c lc)) s i1 in
+        let j=Strung.char_finder (fun c->not(List.mem c lc)) s i1 in
         let better_j=(if j<1 then (String.length s)+1 else j) in
         let res=Gparser_result.veil
                (i1,better_j-1)

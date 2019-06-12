@@ -44,7 +44,7 @@ parse_comma_separated_words s1 1 (String.length s1);;
 let get_class_info s (i,j)=
     (* j+1 is the index at which the left brace appears *)
     (* the first word is either "class" or "interface" *)
-    let k1=Strung.finder (fun c->
+    let k1=Strung.char_finder (fun c->
       not(List.mem c [' ';'\n';'\r';'\t'])
     ) s i in
     let opt1=seek_keyword_surrounded_by_whites "extends" s k1 j in
