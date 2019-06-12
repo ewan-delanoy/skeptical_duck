@@ -28,8 +28,8 @@ exception Bad_stringified_list of string*string;;
 
 let parse_stringified_helpers  stringified_helpers=
      if stringified_helpers="" then [] else
-     let temp1=Strung.split '@'  stringified_helpers in
-     let temp2=Image.image (fun t->(t,Strung.split '#' t)) temp1 in
+     let temp1=String.split_on_char '@'  stringified_helpers in
+     let temp2=Image.image (fun t->(t,String.split_on_char '#' t)) temp1 in
      Image.image(
         fun (t,l)->if List.length(l)<>2
                    then raise(Bad_stringified_list(t,stringified_helpers)) 
