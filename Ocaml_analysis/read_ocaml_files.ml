@@ -73,7 +73,7 @@ module Private=struct
   
   let prepend_modulenames_and_expand_inclusions data_before (current_module,l)=
       iterator_for_modulename_prepension_and_inclusion_expansion 
-        ((data_before,current_module,Strung.split '.' current_module),l);;
+        ((data_before,current_module,String.split_on_char '.' current_module),l);;
   
   end;;
   
