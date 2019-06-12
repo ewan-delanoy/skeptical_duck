@@ -46,7 +46,7 @@ let char_finder f s w0=
    ) in
    tempf(w0-1);;
 
-let backwards_finder f s w0=
+let backwards_char_finder f s w0=
     let rec tempf=(fun j->
       if j<0 then 0 else
       if f(String.get s  j) then j+1 else

@@ -44,7 +44,7 @@ let old_list_of_labels=
 
 let braced_nspc_case s nspc_name (i,j)=
   let k1=Strung.char_finder (fun c->c='{') s i 
-  and k2=Strung.backwards_finder (fun c->c='}') s j in
+  and k2=Strung.backwards_char_finder (fun c->c='}') s j in
   let t=Cull_string.interval s (k1+1) (k2-1) in
   let temp1=Hrecognize.parse_all t in
   let temp2=
