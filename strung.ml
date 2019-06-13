@@ -123,6 +123,10 @@ find_one_of_several_in_from_idx ["ba";"ab"] "123ab67" 1;;
 
 *)
 
+let remove_newlines s=
+   let temp1=List.filter (fun c->c<>'\n') (explode s) in 
+   implode temp1;;
+
 exception Not_found_during_succession;;
 
 let find_successively_in patterns_in_order s=
@@ -136,7 +140,7 @@ let find_successively_in patterns_in_order s=
          |Some(idx2,candidate)->
           let temp1=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx (idx2-1)) in 
           let line_idx_for_idx2=line_idx+List.length(temp1) in 
-          let msg="Found "^candidate^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
+          let msg="Found "^(remove_newlines candidate)^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
           let _=(print_string msg;flush stdout) in 
           let idx3=idx2+(String.length candidate) in  
           let temp2=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx2 (idx3-1)) in 
