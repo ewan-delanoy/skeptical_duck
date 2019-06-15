@@ -205,9 +205,23 @@ largest_common_prefix ["sad";"again"];;
 
 *)
 
+let leftmost_difference s1 s2=
+   let n1=String.length s1 
+   and n2=String.length s2 in
+   let n=min(n1)(n2) in 
+   match Option.seek(fun j->
+      (get s1 j)<>(get s2 j)
+   )(Ennig.ennig 1 n) with 
+   None->None 
+   |Some(j0)->
+      let common_part=String.sub s1 0 (j0-1) 
+      and s1_part=String.sub s1 j0 (n1-j0)
+      and s2_part=String.sub s2 j0 (n2-j0) in 
+      Some(common_part,get s1 j0,get s2 j0,s1_part,s2_part);;
 
-
-
+(*
+leftmost_difference "abc1def" "abc257";;
+*)
 
    
   
