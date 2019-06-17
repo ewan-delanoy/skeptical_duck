@@ -129,7 +129,7 @@ let remove_newlines s=
 
 exception Not_found_during_succession;;
 
-let find_successively_in patterns_in_order s=
+let find_successively_in_from patterns_in_order s start_idx=
   let rec tempf=(fun 
      (treated,to_be_treated,idx,line_idx)->
        match to_be_treated with 
@@ -147,7 +147,9 @@ let find_successively_in patterns_in_order s=
           let line_idx_for_idx3=line_idx_for_idx2+List.length(temp2) in 
           tempf((idx2,idx3-1)::treated,other_patts,idx3,line_idx_for_idx3)    
   ) in 
-  tempf([],patterns_in_order,1,1);;
+  let temp3=List.filter(fun k->(get s k)='\n')(Ennig.ennig 1 (start_idx-1)) in 
+  let start_line_idx = 1+(List.length(temp3)) in 
+  tempf([],patterns_in_order,start_idx,start_line_idx);;
 
 (*
 
