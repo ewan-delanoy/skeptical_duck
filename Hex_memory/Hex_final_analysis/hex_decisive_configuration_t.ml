@@ -6,4 +6,4 @@
 
 *)
 
-type t= DC of (Hex_cell_t.t*Hex_abstract_color_t.t) list;;
+type t= DC of (Hex_cell_t.t*Hex_player_color_t.t) list;;
