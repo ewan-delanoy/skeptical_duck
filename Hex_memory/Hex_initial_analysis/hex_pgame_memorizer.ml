@@ -18,13 +18,13 @@ let of_string s =
    let descr1=Cull_string.beginning (i1-1) s1 in
    let descr2=Cull_string.cobeginning (i1+(String.length announce_second_player)-1) s1 in 
    {
-     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.of_string descr1;
-     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.of_string descr2;
+     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_cigame_collection.of_string descr1;
+     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.of_string descr2;
    };;
 
 let to_string mmrzr=
-  let descr1=Hex_pgame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_first_player) 
-  and descr2=Hex_pgame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_second_player) in 
+  let descr1=Hex_cigame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_first_player) 
+  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_pgame_memorizer_t.strategies_for_second_player) in 
   announce_first_player^descr1^announce_second_player^descr2;;
 
 
@@ -40,18 +40,18 @@ let strategies mmrzr=function
 
 let is_foreseen_in pgame mmrzr=
    let the_strategies=strategies mmrzr (Hex_checked_initial_game.last_one_to_play pgame) in 
-   Hex_pgame_collection.is_foreseen_in pgame the_strategies;;
+   Hex_cigame_collection.is_foreseen_in pgame the_strategies;;
 
 let initial_one cell= 
    {
-     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_pgame_collection.singleton cell;
-     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_pgame_collection.empty_one;
+     Hex_pgame_memorizer_t.strategies_for_first_player=Hex_cigame_collection.singleton cell;
+     Hex_pgame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.empty_one;
    };;
 
 let insert_in pgame mmrzr =
      let last_player = Hex_checked_initial_game.last_one_to_play pgame in  
      let old_strategies = strategies mmrzr last_player in 
-     let new_strategies = Hex_pgame_collection.insert_in pgame old_strategies in 
+     let new_strategies = Hex_cigame_collection.insert_in pgame old_strategies in 
      match last_player with 
      Hex_player_t.First_player -> 
         {mmrzr with Hex_pgame_memorizer_t.strategies_for_first_player= new_strategies}
@@ -64,7 +64,7 @@ let cut_by mmrzr pgame=
       Hex_player_t.First_player -> Hex_player_t.Second_player
       |_-> Hex_player_t.First_player
   ) last_player in 
-  Hex_pgame_collection.cut_by (strategies mmrzr future_player) pgame;;
+  Hex_cigame_collection.cut_by (strategies mmrzr future_player) pgame;;
 
 
 
