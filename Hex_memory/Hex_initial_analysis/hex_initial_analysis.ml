@@ -7,7 +7,7 @@ First coordinate is column index, second is row index
 *)
 
 let memorizer = ref(Hex_pgame_memorizer.initial_one (Hex_cell.of_string "f6"));;
-let state = ref(Hex_initial_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one));;
+let state = ref(Hex_initial_analysis_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
 
 exception Your_move_was_ignored;;
 
@@ -24,7 +24,7 @@ let consult ()=analize_game (current_pgame());;
 let one_move_more cell = match (!state) with 
     Hex_initial_analysis_state_t.Awaiting_final_outcome(_)->raise(Your_move_was_ignored)
     |Hex_initial_analysis_state_t.Foreseen_so_far(pgame)->
-      let new_pgame = Hex_partial_game.one_move_more pgame cell in 
+      let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
       if Hex_pgame_memorizer.is_foreseen_in new_pgame (!memorizer)
       then Hex_initial_analysis_state_t.Foreseen_so_far(new_pgame)
@@ -39,7 +39,7 @@ let suggested_move ()=snd(List.hd(consult()));;
 
 let usual ()=one_move_more (suggested_move());;
 
-let restart ()=(state:=Hex_initial_analysis_state_t.Foreseen_so_far(Hex_partial_game.empty_one));;
+let restart ()=(state:=Hex_initial_analysis_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
 
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
@@ -49,7 +49,7 @@ let finalize winner =
     |Hex_initial_analysis_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
     |Hex_initial_analysis_state_t.Awaiting_final_outcome(pgame)->
       let _=restart() in 
-      let wanted_winner = Hex_partial_game.last_one_to_play pgame in 
+      let wanted_winner = Hex_checked_initial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then raise(Result_not_helpful)
       else 

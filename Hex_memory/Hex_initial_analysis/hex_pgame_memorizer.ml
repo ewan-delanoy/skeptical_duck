@@ -39,7 +39,7 @@ let strategies mmrzr=function
    |Hex_player_t.Second_player -> mmrzr.Hex_pgame_memorizer_t.strategies_for_second_player ;;
 
 let is_foreseen_in pgame mmrzr=
-   let the_strategies=strategies mmrzr (Hex_partial_game.last_one_to_play pgame) in 
+   let the_strategies=strategies mmrzr (Hex_checked_initial_game.last_one_to_play pgame) in 
    Hex_pgame_collection.is_foreseen_in pgame the_strategies;;
 
 let initial_one cell= 
@@ -49,7 +49,7 @@ let initial_one cell=
    };;
 
 let insert_in pgame mmrzr =
-     let last_player = Hex_partial_game.last_one_to_play pgame in  
+     let last_player = Hex_checked_initial_game.last_one_to_play pgame in  
      let old_strategies = strategies mmrzr last_player in 
      let new_strategies = Hex_pgame_collection.insert_in pgame old_strategies in 
      match last_player with 
@@ -59,7 +59,7 @@ let insert_in pgame mmrzr =
         {mmrzr with Hex_pgame_memorizer_t.strategies_for_second_player= new_strategies};;
 
 let cut_by mmrzr pgame=
-  let last_player = Hex_partial_game.last_one_to_play pgame in 
+  let last_player = Hex_checked_initial_game.last_one_to_play pgame in 
   let future_player = (function 
       Hex_player_t.First_player -> Hex_player_t.Second_player
       |_-> Hex_player_t.First_player
