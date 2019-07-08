@@ -2,8 +2,6 @@
 
 #use"Hex_memory/hex_pgame_memorizer.ml";;
 
-First coordinate is column index, second is row index
-
 *)
 
 let announce_first_player="\nFirst player : \n";;

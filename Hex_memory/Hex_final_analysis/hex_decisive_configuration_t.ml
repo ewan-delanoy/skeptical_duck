@@ -6,4 +6,8 @@
 
 *)
 
-type t= DC of Hex_player_t.t *(Hex_cell_t.t*Hex_active_or_passive_t.t) list;;
+type t= {
+   beneficiary : Hex_player_t.t;
+   active_part : Hex_cell_t.t list; 
+   passive_part : Hex_cell_t.t list; 
+};;
