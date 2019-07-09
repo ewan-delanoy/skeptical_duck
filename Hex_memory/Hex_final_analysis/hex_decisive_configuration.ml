@@ -60,9 +60,10 @@ let of_string s =
      Hex_cigame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.of_string descr2;
    };;
 
-let to_string mmrzr=
+let to_string config=
   let descr1=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_first_player) 
-  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) in 
+  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) 
+  and descr3=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) in 
   announce_first_player^descr1^announce_second_player^descr2;;
 
 *)
