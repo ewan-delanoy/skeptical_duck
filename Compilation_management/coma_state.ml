@@ -5,7 +5,6 @@
 
 *)
 
-
 (* Inherited values *)
 
 let root =Coma_state_field.root;;
