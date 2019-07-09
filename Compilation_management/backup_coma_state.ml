@@ -77,7 +77,3 @@ let backup (source_dir,destination_dir,p_after_b) diff opt=
   backup_with_message (source_dir,destination_dir,p_after_b) diff msg;;
   
 
-
-
-
-

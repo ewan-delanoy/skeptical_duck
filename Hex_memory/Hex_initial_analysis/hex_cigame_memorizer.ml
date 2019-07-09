@@ -65,6 +65,5 @@ let cut_by mmrzr pgame=
   Hex_cigame_collection.cut_by (strategies mmrzr future_player) pgame;;
 
 
-
 let print_out (fmt:Format.formatter) memorizer=
    Format.fprintf fmt "@[%s@]" (to_string memorizer);;     
