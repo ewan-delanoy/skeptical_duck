@@ -21,7 +21,7 @@ let to_t x=(Coma_state_t.CS x);;
 
 let root cs=(of_t cs).Coma_state_t.root;;
 let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
-let github_after_backup cs=(of_t cs).Coma_state_t.github_after_backup;;   
+let push_after_backup cs=(of_t cs).Coma_state_t.push_after_backup;;   
 
 let module_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.modules k ;;
 let subdir_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.subdir_for_module k ;;
@@ -116,7 +116,7 @@ let set_needed_dirs cs  v = let ccs=of_t cs in
 let empty_one x y b=to_t({
      Coma_state_t.root =x;
      dir_for_backup =y;
-     github_after_backup=b;
+     push_after_backup=b;
      modules = Small_array.of_list [];
      subdir_for_module = Small_array.of_list [] ;
      principal_ending_for_module = Small_array.of_list [] ;
@@ -372,7 +372,7 @@ let archive wrapped_cs=
         let cs=of_t wrapped_cs in
         let (Root_directory_t.R t1)=cs.Coma_state_t.root 
         and (Root_directory_t.R t2)=cs.Coma_state_t.dir_for_backup  
-        and  t3=cs.Coma_state_t.github_after_backup
+        and  t3=cs.Coma_state_t.push_after_backup
         and  t4=(modules wrapped_cs)
         and  t5=cs.Coma_state_t.subdir_for_module
         and  t6=cs.Coma_state_t.principal_ending_for_module 
@@ -432,7 +432,7 @@ let unarchive s=
          {
           Coma_state_t.root = Root_directory_t.R(part 1);
           dir_for_backup = Root_directory_t.R(part 2);
-          github_after_backup = bool_of_string(part 3);
+          push_after_backup = bool_of_string(part 3);
           modules = Small_array.unarchive (fun s->Naked_module_t.N s) (part 4);
           subdir_for_module = Small_array.unarchive (fun s->Subdirectory_t.SD s) (part 5);
           principal_ending_for_module = Small_array.unarchive Ocaml_ending.of_string (part 6) ;

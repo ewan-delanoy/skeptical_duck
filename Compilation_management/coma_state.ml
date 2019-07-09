@@ -10,7 +10,7 @@
 
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
-let github_after_backup =Coma_state_field.github_after_backup;;
+let push_after_backup =Coma_state_field.push_after_backup;;
 let module_at_idx = Coma_state_field.module_at_idx ;;
 let subdir_at_idx = Coma_state_field.subdir_at_idx ;;
 let principal_ending_at_idx = Coma_state_field.principal_ending_at_idx ;;
@@ -1325,7 +1325,7 @@ let uple_form cs=
 (*
 
 let backup cs diff opt= Backup_coma_state.backup
-  (root cs,backup_dir cs,github_after_backup cs) 
+  (root cs,backup_dir cs,push_after_backup cs) 
     diff opt;;
 *)
 
@@ -1696,7 +1696,7 @@ let refresh cs=
         Target_system_creation.from_main_directory 
              (root cs)
              (backup_dir cs)
-             (github_after_backup cs)
+             (push_after_backup cs)
          in 
         let new_dirs=compute_subdirectories_list cs2 in
         let new_diff=delchacre_from_scratch (root cs2,backup_dir cs2) cs2 in

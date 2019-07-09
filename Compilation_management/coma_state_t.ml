@@ -9,7 +9,7 @@
 type t={
      root : Root_directory_t.t;
      dir_for_backup : Root_directory_t.t;
-     github_after_backup : bool;
+     push_after_backup : bool;
      modules : Naked_module_t.t Small_array.t ;
      subdir_for_module : Subdirectory_t.t Small_array.t ;
      principal_ending_for_module : Ocaml_ending.t Small_array.t ;
