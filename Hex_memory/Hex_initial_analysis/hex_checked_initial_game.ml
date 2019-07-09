@@ -35,15 +35,13 @@ let last_one_to_play (Hex_checked_initial_game_t.PG(l)) =
 let depth (Hex_checked_initial_game_t.PG(l)) = List.length l ;; 
 let first_move (Hex_checked_initial_game_t.PG(l)) = List.hd l ;; 
 
-let of_string s =
-  let temp1=Str.split (Str.regexp_string joiner) s in 
-  Hex_checked_initial_game_t.PG(
-      Image.image Hex_cell.of_string temp1
-  );;
+let of_string s =Hex_checked_initial_game_t.PG( 
+   Hex_common.cell_list_of_string s
+);;
 
 let to_string (Hex_checked_initial_game_t.PG(l))=
-  String.concat joiner (Image.image Hex_cell.to_string l);;
+  Hex_common.cell_list_to_string  l;;
 
 
-let print_out (fmt:Format.formatter) ap=
-   Format.fprintf fmt "@[%s@]" (to_string ap);;     
+let print_out (fmt:Format.formatter) (Hex_checked_initial_game_t.PG(l))=
+   Format.fprintf fmt "@[%s@]" (Hex_common.cell_list_to_pretty_string l);;     
