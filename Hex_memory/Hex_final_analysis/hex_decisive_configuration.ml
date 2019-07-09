@@ -47,23 +47,26 @@ let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;
 
-(*
+let to_string config=
+  let descr1=Hex_player.to_string(config.Hex_decisive_configuration_t.beneficiary) 
+  and descr2=Hex_common.cell_list_to_string(config.Hex_decisive_configuration_t.active_part) 
+  and descr3=Hex_common.cell_list_to_string(config.Hex_decisive_configuration_t.passive_part) in 
+  announce_beneficiary^descr1^announce_active_part^descr2^announce_passive_part^descr3;;
 
 let of_string s =
    let s1=Cull_string.cobeginning 
-     (String.length announce_first_player) s in 
-   let i1=Substring.leftmost_index_of_in announce_second_player s1 in
-   let descr1=Cull_string.beginning (i1-1) s1 in
-   let descr2=Cull_string.cobeginning (i1+(String.length announce_second_player)-1) s1 in 
+     (String.length announce_beneficiary) s in 
+   let i1=Substring.leftmost_index_of_in announce_active_part s1 in
+   let i2=Substring.leftmost_index_of_in announce_passive_part s1 in
+   let j1=i1+(String.length announce_active_part)-1
+   and j2=i1+(String.length announce_active_part)-1 in 
+   let descr1=Cull_string.interval s1 1 (i1-1) 
+   and descr2=Cull_string.interval s1 (j1+1) (i2-1) 
+   and descr3=Cull_string.interval s1  (j2+1) (String.length s1) in 
    {
-     Hex_cigame_memorizer_t.strategies_for_first_player=Hex_cigame_collection.of_string descr1;
-     Hex_cigame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.of_string descr2;
+     Hex_decisive_configuration_t.beneficiary=Hex_player.of_string descr1;
+     Hex_decisive_configuration_t.active_part=Hex_common.cell_list_of_string descr2;
+     Hex_decisive_configuration_t.passive_part=Hex_common.cell_list_of_string descr3;
    };;
 
-let to_string config=
-  let descr1=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_first_player) 
-  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) 
-  and descr3=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) in 
-  announce_first_player^descr1^announce_second_player^descr2;;
 
-*)
