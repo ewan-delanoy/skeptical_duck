@@ -178,6 +178,19 @@ let redundant_indices l=
 redundant_indices [1; 2; 1; 4; 5; 6; 3; 8; 9; 10; 11; 12; 13; 6; 15];;
 *)
 
+let divide_by_two l=
+   let rec tempf=(
+     fun (treated,to_be_treated)->match to_be_treated with 
+     []->(List.rev treated,None)
+     |a1::others1->(
+         match others1 with 
+         []->(List.rev treated,Some(a1))
+         |a2::others->tempf((a1,a2)::treated,others)
+      )
+   ) in 
+   tempf ([],l);;
+
+
 
 let hi=List.length;;
 let rev=List.rev;;
