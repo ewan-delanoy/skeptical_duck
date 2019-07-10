@@ -136,6 +136,11 @@ module And_save = struct
          let cs2=And_backup.forget cs x in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
+
+      let internet_access cs bowl=   
+         let cs2=And_backup.forget cs bowl in 
+         let _=Save_coma_state.save cs2 in 
+         cs2;;
       
       let recompile cs opt_comment=
          let cs2=And_backup.recompile cs opt_comment in 
@@ -179,8 +184,8 @@ end ;;
 module Reference = struct 
 
       let forget pcs x=
-      let new_cs = And_save.forget (!pcs) x in 
-      pcs:=new_cs;;
+         let new_cs = And_save.forget (!pcs) x in 
+         pcs:=new_cs;;
 
 
       let initialize pcs =
@@ -191,23 +196,27 @@ module Reference = struct
          if Coma_state.system_size (!pcs)  = 0 
          then initialize pcs;;
 
+      let internet_access pcs bowl=
+         let new_cs = And_save.internet_access (!pcs) bowl in 
+          pcs:=new_cs;;
+
       let recompile pcs opt_comment=
-      let new_cs = And_save.recompile (!pcs) opt_comment in 
-      pcs:=new_cs;;
+         let new_cs = And_save.recompile (!pcs) opt_comment in 
+         pcs:=new_cs;;
 
 
       let refresh pcs =
-      let new_cs = And_save.refresh (!pcs)  in 
-      pcs:=new_cs;;
+         let new_cs = And_save.refresh (!pcs)  in 
+         pcs:=new_cs;;
 
       let register_short_path pcs short_path=
-      let new_cs = And_save.register_short_path (!pcs) short_path in 
-      pcs:=new_cs;;
+         let new_cs = And_save.register_short_path (!pcs) short_path in 
+         pcs:=new_cs;;
 
 
       let relocate_module pcs old_hm_name new_subdir=
          let new_cs = And_save.relocate_module (!pcs) old_hm_name new_subdir in 
-      pcs:=new_cs;;  
+         pcs:=new_cs;;  
 
 
       let rename_directory pcs old_subdir new_subdirname=
@@ -217,12 +226,12 @@ module Reference = struct
 
       let rename_module pcs old_name new_name=
          let new_cs = And_save.rename_module (!pcs) old_name new_name in 
-      pcs:=new_cs;;
+         pcs:=new_cs;;
 
 
       let rename_string_or_value pcs old_name new_name=
          let new_cs = And_save.rename_string_or_value (!pcs) old_name new_name in 
-      pcs:=new_cs;;
+         pcs:=new_cs;;
 
 
 end ;;
