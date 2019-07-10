@@ -138,7 +138,7 @@ module And_save = struct
          cs2;;
 
       let internet_access cs bowl=   
-         let cs2=And_backup.forget cs bowl in 
+         let cs2=Coma_state_field.set_push_after_backup cs bowl in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
       
