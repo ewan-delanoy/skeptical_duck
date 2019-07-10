@@ -69,4 +69,19 @@ let of_string s =
      Hex_decisive_configuration_t.passive_part=Hex_common.cell_list_of_string descr3;
    };;
 
+let unveil config=
+  (
+     config.Hex_decisive_configuration_t.beneficiary,
+     config.Hex_decisive_configuration_t.active_part,
+     config.Hex_decisive_configuration_t.passive_part 
+  );;
 
+let cmp = 
+  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
+ ((fun config1 config2 ->
+   (Total_ordering.triple_product 
+     Total_ordering.standard
+     cmp_for_cell_lists
+     cmp_for_cell_lists)
+   (unveil config1) (unveil config2)  
+) :> Hex_decisive_configuration_t.t Total_ordering.t);;
