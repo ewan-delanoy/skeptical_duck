@@ -26,6 +26,8 @@ let hi = List.length ;;
 
 let hmx = Usual_coma_state.find_half_dressed_module;;
 
+let ia = Usual_coma_state.internet_access;;
+
 let image = Image.image ;;
 
 let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
