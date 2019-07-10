@@ -35,6 +35,10 @@ let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;;
 
 let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
+let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
+
+let internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+
 let latest_changes ()=Coma_state.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
