@@ -1844,7 +1844,7 @@ let decipher_module cs capitalized_or_not_x=
   ) Ocaml_ending.all_string_endings) with
   None->raise(Absent_module(x))
   |Some(ap)->Half_dressed_module.of_path_and_root ap (root cs);;
-   
+
 module Local_rename_value_inside_module = struct
 
 exception No_module_given of string;;

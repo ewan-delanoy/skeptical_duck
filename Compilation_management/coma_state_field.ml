@@ -43,6 +43,8 @@ let needed_dirs cs= (of_t cs).Coma_state_t.needed_dirs_for_module;;
 
 (* Setters  *)
 
+let set_push_after_backup cs bowl = let ccs=of_t cs in 
+                            to_t({ccs with Coma_state_t.push_after_backup=bowl });;
 
 let set_module_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.modules=
