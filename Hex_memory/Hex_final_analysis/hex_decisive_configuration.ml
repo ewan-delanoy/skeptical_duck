@@ -41,7 +41,10 @@ let immediate_dangers indexed_configs =
        fun (config_idx,config)->
          let l=config.Hex_decisive_configuration_t.active_part in 
          if List.length(l)=1 
-         then Some(List.hd l,config_idx)
+         then let mandatory_set=
+               Ordered.insert_plaen Hex_cell.cmp 
+                (List.hd l) config.Hex_decisive_configuration_t.passive_part in 
+               Some(mandatory_set,config_idx)
          else None
    ) indexed_configs;;
 

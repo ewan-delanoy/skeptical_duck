@@ -32,7 +32,11 @@ let to_string (Hex_dc_double_list_t.DL(l1,l2))=
 
 
 
+
 (*
+
+let immediate_dangers 
+
 let add_move_to_one (cell,player) (Hex_dc_double_list_t.DL(l1,l2))=
   
 get_order temp4;;
