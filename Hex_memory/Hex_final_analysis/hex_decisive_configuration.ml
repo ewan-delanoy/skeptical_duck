@@ -5,34 +5,37 @@
 *)
 
 
-let add_move_to_one (cell,player) old_config=
-   let beneficiary = old_config.Hex_decisive_configuration_t.beneficiary 
-   and active_part = old_config.Hex_decisive_configuration_t.active_part
+let add_ally_move_to_one cell old_config=
+   let active_part = old_config.Hex_decisive_configuration_t.active_part
    and passive_part = old_config.Hex_decisive_configuration_t.passive_part in 
-   let (active_found,other_actives)=List.partition (fun cell2->cell2=cell) active_part 
-   and (passive_found,other_passives)=List.partition (fun cell2->cell2=cell) passive_part in 
-   let compatible=(
-   if (active_found=[])&&(passive_found=[])
-   then true
-   else player=beneficiary    
-   ) in 
-   if compatible 
-   then let new_config={
-            Hex_decisive_configuration_t.beneficiary = beneficiary;
-            Hex_decisive_configuration_t.active_part = other_actives;
-            Hex_decisive_configuration_t.passive_part = other_passives;
-        } in 
-        Some(new_config)
-   else None;;
+   let new_actives=List.filter (fun cell2->cell2<>cell) active_part 
+   and new_passives=List.filter (fun cell2->cell2<>cell) passive_part in 
+   { old_config with 
+            Hex_decisive_configuration_t.active_part = new_actives;
+            Hex_decisive_configuration_t.passive_part = new_passives;
+    };;
      
-let add_move_to_several move old_configs =
+let add_ally_move_to_several cell old_configs =
+    Image.image(
+      fun (config_idx,current_config)->
+       (config_idx,add_ally_move_to_one cell current_config)
+    ) old_configs;;
+          
+let add_enemy_move_to_one cell old_config=
+   let active_part = old_config.Hex_decisive_configuration_t.active_part
+   and passive_part = old_config.Hex_decisive_configuration_t.passive_part in 
+   if (List.mem cell active_part)&&(List.mem cell passive_part)
+   then None
+   else Some(old_config);;
+     
+let add_enemy_move_to_several cell old_configs =
     Option.filter_and_unpack(
       fun (config_idx,current_config)->match 
-        add_move_to_one move current_config with 
+        add_enemy_move_to_one cell current_config with 
         None->None
         |Some(next_config)->Some(config_idx,next_config)
     ) old_configs;;
-          
+
 let immediate_dangers indexed_configs =
    Option.filter_and_unpack (
        fun (config_idx,config)->
