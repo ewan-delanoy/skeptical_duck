@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_memory/hex_ina_memorizer.ml";;
+#use"Hex_memory/Hex_initial_analysis/hex_ina_memorizer.ml";;
 
 *)
 
