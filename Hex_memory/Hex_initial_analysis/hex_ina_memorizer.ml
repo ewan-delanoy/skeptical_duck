@@ -16,13 +16,13 @@ let of_string s =
    let descr1=Cull_string.beginning (i1-1) s1 in
    let descr2=Cull_string.cobeginning (i1+(String.length announce_second_player)-1) s1 in 
    {
-     Hex_cigame_memorizer_t.strategies_for_first_player=Hex_cigame_collection.of_string descr1;
-     Hex_cigame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.of_string descr2;
+     Hex_ina_memorizer_t.strategies_for_first_player=Hex_cigame_collection.of_string descr1;
+     Hex_ina_memorizer_t.strategies_for_second_player=Hex_cigame_collection.of_string descr2;
    };;
 
 let to_string mmrzr=
-  let descr1=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_first_player) 
-  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player) in 
+  let descr1=Hex_cigame_collection.to_string(mmrzr.Hex_ina_memorizer_t.strategies_for_first_player) 
+  and descr2=Hex_cigame_collection.to_string(mmrzr.Hex_ina_memorizer_t.strategies_for_second_player) in 
   announce_first_player^descr1^announce_second_player^descr2;;
 
 
@@ -33,8 +33,8 @@ let remember_as_example mmrzr =
   (Overwriter.of_string assignment) ("(* Assignment starts here *)","(* Assignment ends here *)") ap ;;
 
 let strategies mmrzr=function 
-   Hex_player_t.First_player -> mmrzr.Hex_cigame_memorizer_t.strategies_for_first_player
-   |Hex_player_t.Second_player -> mmrzr.Hex_cigame_memorizer_t.strategies_for_second_player ;;
+   Hex_player_t.First_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_first_player
+   |Hex_player_t.Second_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_second_player ;;
 
 let is_foreseen_in pgame mmrzr=
    let the_strategies=strategies mmrzr (Hex_checked_initial_game.last_one_to_play pgame) in 
@@ -42,8 +42,8 @@ let is_foreseen_in pgame mmrzr=
 
 let initial_one cell= 
    {
-     Hex_cigame_memorizer_t.strategies_for_first_player=Hex_cigame_collection.singleton cell;
-     Hex_cigame_memorizer_t.strategies_for_second_player=Hex_cigame_collection.empty_one;
+     Hex_ina_memorizer_t.strategies_for_first_player=Hex_cigame_collection.singleton cell;
+     Hex_ina_memorizer_t.strategies_for_second_player=Hex_cigame_collection.empty_one;
    };;
 
 let insert_in pgame mmrzr =
@@ -52,9 +52,9 @@ let insert_in pgame mmrzr =
      let new_strategies = Hex_cigame_collection.insert_in pgame old_strategies in 
      match last_player with 
      Hex_player_t.First_player -> 
-        {mmrzr with Hex_cigame_memorizer_t.strategies_for_first_player= new_strategies}
+        {mmrzr with Hex_ina_memorizer_t.strategies_for_first_player= new_strategies}
     |Hex_player_t.Second_player -> 
-        {mmrzr with Hex_cigame_memorizer_t.strategies_for_second_player= new_strategies};;
+        {mmrzr with Hex_ina_memorizer_t.strategies_for_second_player= new_strategies};;
 
 let cut_by mmrzr pgame=
   let last_player = Hex_checked_initial_game.last_one_to_play pgame in 
