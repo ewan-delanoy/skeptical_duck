@@ -4,7 +4,7 @@
 
 *)
 
-let memorizer = ref(Hex_cigame_memorizer.initial_one (Hex_cell.of_string "f6"));;
+let memorizer = ref(Hex_ina_memorizer.initial_one (Hex_cell.of_string "f6"));;
 let state = ref(Hex_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
 
 exception Your_move_was_ignored;;
@@ -14,7 +14,7 @@ let current_pgame ()=match (!state) with
    |Hex_ina_state_t.Awaiting_final_outcome(pgame)->pgame;;
 
 let analize_game pgame =
-   let forecasts = Hex_cigame_memorizer.cut_by (!memorizer) pgame in 
+   let forecasts = Hex_ina_memorizer.cut_by (!memorizer) pgame in 
    Hex_cigame_collection.classify_according_to_depth forecasts;;
 
 let consult ()=analize_game (current_pgame());;
@@ -24,12 +24,12 @@ let one_move_more cell = match (!state) with
     |Hex_ina_state_t.Foreseen_so_far(pgame)->
       let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
-      if Hex_cigame_memorizer.is_foreseen_in new_pgame (!memorizer)
+      if Hex_ina_memorizer.is_foreseen_in new_pgame (!memorizer)
       then Hex_ina_state_t.Foreseen_so_far(new_pgame)
       else Hex_ina_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
       let _=(state:=new_state) in 
-      let forecasts = Hex_cigame_memorizer.cut_by (!memorizer) new_pgame in 
+      let forecasts = Hex_ina_memorizer.cut_by (!memorizer) new_pgame in 
       let offers = Hex_cigame_collection.classify_according_to_depth forecasts in 
       (offers,new_state,!memorizer);;
 
@@ -51,9 +51,9 @@ let finalize winner =
       if winner <> wanted_winner
       then raise(Result_not_helpful)
       else 
-        let new_mmrzr = Hex_cigame_memorizer.insert_in pgame (!memorizer)  in 
+        let new_mmrzr = Hex_ina_memorizer.insert_in pgame (!memorizer)  in 
         let _=(memorizer:=new_mmrzr;
-               Hex_cigame_memorizer.remember_as_example new_mmrzr) in 
+               Hex_ina_memorizer.remember_as_example new_mmrzr) in 
         new_mmrzr;; 
 
 (* Shortcuts and sugar *)
