@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_memory/hex_initial_analysis_state_t.ml";;
+#use"Hex_memory/hex_ina_state_t.ml";;
 
 First coordinate is column index, second is row index
 
