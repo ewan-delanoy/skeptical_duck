@@ -7,8 +7,6 @@
 let announce_first_player="\nFirst player : \n";;
 let announce_second_player="\nSecond player : \n";;
 
-
-
 let of_string s =
    let s1=Cull_string.cobeginning 
      (String.length announce_first_player) s in 
