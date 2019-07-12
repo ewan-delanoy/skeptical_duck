@@ -18,7 +18,7 @@ let analize_game mmrzr pgame =
 let consult mmrzr sta=analize_game mmrzr (pgame_from_state sta);;
 
 let one_move_more mmrzr cell old_state= match old_state with 
-    Hex_ina_state_t.Awaiting_final_outcome(_)->old_state
+    Hex_ina_state_t.Awaiting_final_outcome(_)->(old_state,[])
     |Hex_ina_state_t.Foreseen_so_far(pgame)->
       let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
@@ -26,7 +26,9 @@ let one_move_more mmrzr cell old_state= match old_state with
       then Hex_ina_state_t.Foreseen_so_far(new_pgame)
       else Hex_ina_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
-      new_state;;
+      let forecasts = Hex_ina_memorizer.cut_by mmrzr new_pgame in 
+      let offers = Hex_cigame_collection.classify_according_to_depth forecasts in 
+      (new_state,offers);;
 
 let declare_winner winner final_state= 
   match final_state with 
