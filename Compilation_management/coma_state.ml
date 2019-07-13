@@ -481,7 +481,11 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
   let cs5=set_product_up_to_date_at_idx cs4 idx false in 
   let replacer=Image.image(function x->if x=old_mname then new_mname else x) in
-  let cs_walker=ref(cs5) in 
+  let hm_replacer=(fun x->if x=old_name then new_hm else x) in 
+  let old_preq_types=preq_types cs5 in 
+  let new_preq_types=Image.image (fun (h,bowl)->(hm_replacer h,bowl)) old_preq_types in 
+  let cs6=set_preq_types cs5 new_preq_types in 
+  let cs_walker=ref(cs6) in 
   let _=(
      for k=idx+1 to n do
       let old_dirfath=direct_fathers_at_idx (!cs_walker) k
@@ -1762,15 +1766,6 @@ let rename_directory cs (old_subdir,new_subdirname)=
 let rename_module cs old_name new_name= 
   let (cs2,(old_files,new_files),modified_files)=
      rename_module_on_monitored_modules cs old_name new_name in   
-  (* 
-  let old_nm=Half_dressed_module.naked_module old_name in 
-  let idx=find_module_index cs old_nm in 
-  let n=size cs in 
-  let sibling_indices=List.filter(
-        fun jdx->
-         List.mem old_nm (ancestors_at_idx cs jdx)
-    )(Ennig.ennig idx n) in 
-  let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 (idx::sibling_indices) in *)
   let (cs3,_,_)=recompile cs2 in 
   (cs3,(old_files,new_files),modified_files);;   
 
