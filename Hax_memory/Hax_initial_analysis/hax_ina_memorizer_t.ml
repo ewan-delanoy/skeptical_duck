@@ -7,6 +7,6 @@ First coordinate is column index, second is row index
 *)
 
 type t= {
-   strategies_for_first_player : Hex_cigame_collection_t.t; (* odd length *)
-   strategies_for_second_player : Hex_cigame_collection_t.t; (* even length *)
+   strategies_for_first_player : Hax_cigame_collection_t.t; (* odd length *)
+   strategies_for_second_player : Hax_cigame_collection_t.t; (* even length *)
 };;
