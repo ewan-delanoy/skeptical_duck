@@ -5,11 +5,11 @@
 *)
 
 
-let initial_empty_state = Hex_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one);;
+let initial_empty_state = Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one);;
 
 let pgame_from_state sta=match sta with 
-    Hex_ina_state_t.Foreseen_so_far(pgame)->pgame
-   |Hex_ina_state_t.Awaiting_final_outcome(pgame)->pgame;;
+    Hax_ina_state_t.Foreseen_so_far(pgame)->pgame
+   |Hax_ina_state_t.Awaiting_final_outcome(pgame)->pgame;;
 
 let analize_game mmrzr pgame =
    let forecasts = Hex_ina_memorizer.cut_by mmrzr pgame in 
@@ -18,13 +18,13 @@ let analize_game mmrzr pgame =
 let consult mmrzr sta=analize_game mmrzr (pgame_from_state sta);;
 
 let one_move_more mmrzr cell old_state= match old_state with 
-    Hex_ina_state_t.Awaiting_final_outcome(_)->(old_state,[])
-    |Hex_ina_state_t.Foreseen_so_far(pgame)->
+    Hax_ina_state_t.Awaiting_final_outcome(_)->(old_state,[])
+    |Hax_ina_state_t.Foreseen_so_far(pgame)->
       let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
       if Hex_ina_memorizer.is_foreseen_in new_pgame mmrzr
-      then Hex_ina_state_t.Foreseen_so_far(new_pgame)
-      else Hex_ina_state_t.Awaiting_final_outcome(new_pgame)
+      then Hax_ina_state_t.Foreseen_so_far(new_pgame)
+      else Hax_ina_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
       let forecasts = Hex_ina_memorizer.cut_by mmrzr new_pgame in 
       let offers = Hex_cigame_collection.classify_according_to_depth forecasts in 
@@ -32,8 +32,8 @@ let one_move_more mmrzr cell old_state= match old_state with
 
 let declare_winner winner final_state= 
   match final_state with 
-    |Hex_ina_state_t.Foreseen_so_far(_)->None
-    |Hex_ina_state_t.Awaiting_final_outcome(pgame)->
+    |Hax_ina_state_t.Foreseen_so_far(_)->None
+    |Hax_ina_state_t.Awaiting_final_outcome(pgame)->
       let wanted_winner = Hex_checked_initial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then None

@@ -5,13 +5,13 @@
 *)
 
 let memorizer = ref(Hex_ina_memorizer.initial_one (Hex_cell.of_string "f6"));;
-let state = ref(Hex_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
+let state = ref(Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
 
 exception Your_move_was_ignored;;
 
 let current_pgame ()=match (!state) with 
-    Hex_ina_state_t.Foreseen_so_far(pgame)->pgame
-   |Hex_ina_state_t.Awaiting_final_outcome(pgame)->pgame;;
+    Hax_ina_state_t.Foreseen_so_far(pgame)->pgame
+   |Hax_ina_state_t.Awaiting_final_outcome(pgame)->pgame;;
 
 let analize_game pgame =
    let forecasts = Hex_ina_memorizer.cut_by (!memorizer) pgame in 
@@ -20,13 +20,13 @@ let analize_game pgame =
 let consult ()=analize_game (current_pgame());;
 
 let one_move_more cell = match (!state) with 
-    Hex_ina_state_t.Awaiting_final_outcome(_)->raise(Your_move_was_ignored)
-    |Hex_ina_state_t.Foreseen_so_far(pgame)->
+    Hax_ina_state_t.Awaiting_final_outcome(_)->raise(Your_move_was_ignored)
+    |Hax_ina_state_t.Foreseen_so_far(pgame)->
       let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
       if Hex_ina_memorizer.is_foreseen_in new_pgame (!memorizer)
-      then Hex_ina_state_t.Foreseen_so_far(new_pgame)
-      else Hex_ina_state_t.Awaiting_final_outcome(new_pgame)
+      then Hax_ina_state_t.Foreseen_so_far(new_pgame)
+      else Hax_ina_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
       let _=(state:=new_state) in 
       let forecasts = Hex_ina_memorizer.cut_by (!memorizer) new_pgame in 
@@ -37,15 +37,15 @@ let suggested_move ()=snd(List.hd(consult()));;
 
 let usual ()=one_move_more (suggested_move());;
 
-let restart ()=(state:=Hex_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
+let restart ()=(state:=Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
 
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
 
 let finalize winner = 
   match (!state) with 
-    |Hex_ina_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
-    |Hex_ina_state_t.Awaiting_final_outcome(pgame)->
+    |Hax_ina_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
+    |Hax_ina_state_t.Awaiting_final_outcome(pgame)->
       let _=restart() in 
       let wanted_winner = Hex_checked_initial_game.last_one_to_play pgame in 
       if winner <> wanted_winner

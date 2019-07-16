@@ -5,7 +5,7 @@
 *)
 
 
-let initial_state = Hex_ina_state_t.Foreseen_so_far
+let initial_state = Hax_ina_state_t.Foreseen_so_far
                       (Hex_checked_initial_game.empty_one);;
 
 
