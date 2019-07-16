@@ -5,6 +5,6 @@
 *)
 
 type t= DL of 
-  Hex_decisive_configuration_t.t list 
+  Hax_decisive_configuration_t.t list 
   * 
-  Hex_decisive_configuration_t.t list ;;
+  Hax_decisive_configuration_t.t list ;;
