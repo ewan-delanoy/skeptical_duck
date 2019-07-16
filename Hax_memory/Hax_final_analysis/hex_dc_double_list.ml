@@ -22,14 +22,14 @@ let of_string s=
    let j1=i1+(String.length joiner_for_two)-1 in 
    let part1=Cull_string.interval s 1 (i1-1) 
    and part2=Cull_string.interval s (j1+1) n in 
-   Hex_dc_double_list_t.DL(
+   Hax_dc_double_list_t.DL(
      (single_list_of_string part1),
      (single_list_of_string part2)
    ) ;;        
 
-let to_string (Hex_dc_double_list_t.DL(l1,l2))=
+let to_string (Hax_dc_double_list_t.DL(l1,l2))=
   (single_list_to_string l1)^joiner_for_two^(single_list_to_string l2);;
 
-let immediate_dangers (Hex_dc_double_list_t.DL(l1,l2))=function 
+let immediate_dangers (Hax_dc_double_list_t.DL(l1,l2))=function 
    Hax_player_t.First_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l2) 
   |Hax_player_t.Second_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l1);; 
