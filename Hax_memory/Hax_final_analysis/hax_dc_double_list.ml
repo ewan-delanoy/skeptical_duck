@@ -8,11 +8,11 @@ let joiner_in_list ="\n&&&\n"
 
 let single_list_of_string s= 
     let temp1=Str.split (Str.regexp_string joiner_in_list) s in 
-    let temp2=Image.image Hex_decisive_configuration.of_string temp1 in 
-     Ordered.diforchan_plaen Hex_decisive_configuration.cmp temp2 ;;
+    let temp2=Image.image Hax_decisive_configuration.of_string temp1 in 
+     Ordered.diforchan_plaen Hax_decisive_configuration.cmp temp2 ;;
   
 let single_list_to_string l=String.concat joiner_in_list 
-    (Image.image Hex_decisive_configuration.to_string l);;
+    (Image.image Hax_decisive_configuration.to_string l);;
 
 let joiner_for_two="\n<<>>\n"
 
@@ -31,5 +31,5 @@ let to_string (Hax_dc_double_list_t.DL(l1,l2))=
   (single_list_to_string l1)^joiner_for_two^(single_list_to_string l2);;
 
 let immediate_dangers (Hax_dc_double_list_t.DL(l1,l2))=function 
-   Hax_player_t.First_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l2) 
-  |Hax_player_t.Second_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l1);; 
+   Hax_player_t.First_player -> Hax_decisive_configuration.immediate_dangers (Ennig.index_everything l2) 
+  |Hax_player_t.Second_player -> Hax_decisive_configuration.immediate_dangers (Ennig.index_everything l1);; 
