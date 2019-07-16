@@ -5,5 +5,5 @@
 *)
 
 
-let main = ref(Hax_ina_memorizer.initial_one (Hex_cell.of_string "f6"));;
+let main = ref(Hax_ina_memorizer.initial_one (Hax_cell.of_string "f6"));;
 

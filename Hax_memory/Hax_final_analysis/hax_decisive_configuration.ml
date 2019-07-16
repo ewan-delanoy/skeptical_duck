@@ -42,7 +42,7 @@ let immediate_dangers indexed_configs =
          let l=config.Hax_decisive_configuration_t.active_part in 
          if List.length(l)=1 
          then let mandatory_set=
-               Ordered.insert_plaen Hex_cell.cmp 
+               Ordered.insert_plaen Hax_cell.cmp 
                 (List.hd l) config.Hax_decisive_configuration_t.passive_part in 
                Some(mandatory_set,config_idx)
          else None
@@ -83,7 +83,7 @@ let unveil config=
   );;
 
 let cmp = 
-  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
+  let cmp_for_cell_lists = Total_ordering.lex_compare Hax_cell.cmp in 
  ((fun config1 config2 ->
    (Total_ordering.triple_product 
      Total_ordering.standard

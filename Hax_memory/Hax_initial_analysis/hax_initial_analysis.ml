@@ -4,7 +4,7 @@
 
 *)
 
-let memorizer = ref(Hax_ina_memorizer.initial_one (Hex_cell.of_string "f6"));;
+let memorizer = ref(Hax_ina_memorizer.initial_one (Hax_cell.of_string "f6"));;
 let state = ref(Hax_ina_state_t.Foreseen_so_far(Hax_checked_initial_game.empty_one));;
 
 exception Your_move_was_ignored;;
@@ -67,7 +67,7 @@ let player_at_index = function
 
 let cs=consult;;
 let u=usual;;
-let omm s=one_move_more (Hex_cell.of_string s);;
+let omm s=one_move_more (Hax_cell.of_string s);;
 let fz k=finalize(player_at_index k);;
 let v n=let _=(for k=1 to n do let _=usual() in () done) in (consult(),!state,!memorizer);;
 let rs=restart;;

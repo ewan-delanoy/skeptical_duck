@@ -9,7 +9,7 @@ First coordinate is column index, second is row index
 let cmp=((fun 
  (Hax_checked_initial_game_t.PG(l1)) (Hax_checked_initial_game_t.PG(l2)) ->
    (Total_ordering.lex_compare 
-       Hex_cell.cmp l1 l2) :> 
+       Hax_cell.cmp l1 l2) :> 
        Hax_checked_initial_game_t.t Total_ordering.t) );;
 
 let joiner = " - ";;
