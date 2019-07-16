@@ -4,7 +4,7 @@
 
 *)
 
-let get (Hex_unchecked_game_t.FG l_moves) cell=
+let get (Hax_unchecked_game_t.FG l_moves) cell=
    match Option.seek (fun (cell1,player)->cell1=cell) l_moves with 
    None->None
    |Some(_,player)->Some(player);;
