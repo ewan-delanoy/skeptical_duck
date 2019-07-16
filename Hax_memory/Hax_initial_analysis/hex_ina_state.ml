@@ -5,7 +5,7 @@
 *)
 
 
-let initial_empty_state = Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one);;
+let initial_empty_state = Hax_ina_state_t.Foreseen_so_far(Hax_checked_initial_game.empty_one);;
 
 let pgame_from_state sta=match sta with 
     Hax_ina_state_t.Foreseen_so_far(pgame)->pgame
@@ -20,7 +20,7 @@ let consult mmrzr sta=analize_game mmrzr (pgame_from_state sta);;
 let one_move_more mmrzr cell old_state= match old_state with 
     Hax_ina_state_t.Awaiting_final_outcome(_)->(old_state,[])
     |Hax_ina_state_t.Foreseen_so_far(pgame)->
-      let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
+      let new_pgame = Hax_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
       if Hex_ina_memorizer.is_foreseen_in new_pgame mmrzr
       then Hax_ina_state_t.Foreseen_so_far(new_pgame)
@@ -34,7 +34,7 @@ let declare_winner winner final_state=
   match final_state with 
     |Hax_ina_state_t.Foreseen_so_far(_)->None
     |Hax_ina_state_t.Awaiting_final_outcome(pgame)->
-      let wanted_winner = Hex_checked_initial_game.last_one_to_play pgame in 
+      let wanted_winner = Hax_checked_initial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then None
       else Some(pgame);;

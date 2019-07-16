@@ -5,7 +5,7 @@
 *)
 
 let memorizer = ref(Hex_ina_memorizer.initial_one (Hex_cell.of_string "f6"));;
-let state = ref(Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
+let state = ref(Hax_ina_state_t.Foreseen_so_far(Hax_checked_initial_game.empty_one));;
 
 exception Your_move_was_ignored;;
 
@@ -22,7 +22,7 @@ let consult ()=analize_game (current_pgame());;
 let one_move_more cell = match (!state) with 
     Hax_ina_state_t.Awaiting_final_outcome(_)->raise(Your_move_was_ignored)
     |Hax_ina_state_t.Foreseen_so_far(pgame)->
-      let new_pgame = Hex_checked_initial_game.one_move_more pgame cell in 
+      let new_pgame = Hax_checked_initial_game.one_move_more pgame cell in 
       let new_state=(
       if Hex_ina_memorizer.is_foreseen_in new_pgame (!memorizer)
       then Hax_ina_state_t.Foreseen_so_far(new_pgame)
@@ -37,7 +37,7 @@ let suggested_move ()=snd(List.hd(consult()));;
 
 let usual ()=one_move_more (suggested_move());;
 
-let restart ()=(state:=Hax_ina_state_t.Foreseen_so_far(Hex_checked_initial_game.empty_one));;
+let restart ()=(state:=Hax_ina_state_t.Foreseen_so_far(Hax_checked_initial_game.empty_one));;
 
 exception Result_not_helpful ;;
 exception Forecast_not_finished;;
@@ -47,7 +47,7 @@ let finalize winner =
     |Hax_ina_state_t.Foreseen_so_far(_)->raise(Forecast_not_finished)
     |Hax_ina_state_t.Awaiting_final_outcome(pgame)->
       let _=restart() in 
-      let wanted_winner = Hex_checked_initial_game.last_one_to_play pgame in 
+      let wanted_winner = Hax_checked_initial_game.last_one_to_play pgame in 
       if winner <> wanted_winner
       then raise(Result_not_helpful)
       else 
