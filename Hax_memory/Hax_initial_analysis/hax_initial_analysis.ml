@@ -15,7 +15,7 @@ let current_pgame ()=match (!state) with
 
 let analize_game pgame =
    let forecasts = Hax_ina_memorizer.cut_by (!memorizer) pgame in 
-   Hex_cigame_collection.classify_according_to_depth forecasts;;
+   Hax_cigame_collection.classify_according_to_depth forecasts;;
 
 let consult ()=analize_game (current_pgame());;
 
@@ -30,7 +30,7 @@ let one_move_more cell = match (!state) with
       ) in 
       let _=(state:=new_state) in 
       let forecasts = Hax_ina_memorizer.cut_by (!memorizer) new_pgame in 
-      let offers = Hex_cigame_collection.classify_according_to_depth forecasts in 
+      let offers = Hax_cigame_collection.classify_according_to_depth forecasts in 
       (offers,new_state,!memorizer);;
 
 let suggested_move ()=snd(List.hd(consult()));;

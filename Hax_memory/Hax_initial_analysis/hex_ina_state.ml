@@ -13,7 +13,7 @@ let pgame_from_state sta=match sta with
 
 let analize_game mmrzr pgame =
    let forecasts = Hax_ina_memorizer.cut_by mmrzr pgame in 
-   Hex_cigame_collection.classify_according_to_depth forecasts;;
+   Hax_cigame_collection.classify_according_to_depth forecasts;;
 
 let consult mmrzr sta=analize_game mmrzr (pgame_from_state sta);;
 
@@ -27,7 +27,7 @@ let one_move_more mmrzr cell old_state= match old_state with
       else Hax_ina_state_t.Awaiting_final_outcome(new_pgame)
       ) in 
       let forecasts = Hax_ina_memorizer.cut_by mmrzr new_pgame in 
-      let offers = Hex_cigame_collection.classify_according_to_depth forecasts in 
+      let offers = Hax_cigame_collection.classify_according_to_depth forecasts in 
       (new_state,offers);;
 
 let declare_winner winner final_state= 
