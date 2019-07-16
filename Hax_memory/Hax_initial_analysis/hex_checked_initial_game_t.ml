@@ -6,4 +6,4 @@ First coordinate is column index, second is row index
 
 *)
 
-type t= PG of Hex_cell_t.t list ;;
+type t= PG of Hax_cell_t.t list ;;

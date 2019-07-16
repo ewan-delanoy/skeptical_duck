@@ -4,4 +4,4 @@
 
 *)
 
-type t= FG of (Hex_cell_t.t*Hax_player_t.t) list;;
+type t= FG of (Hax_cell_t.t*Hax_player_t.t) list;;
