@@ -61,8 +61,8 @@ let finalize winner =
 exception Unknown_player_index of int ;;
 
 let player_at_index = function 
-   1->Hex_player_t.First_player
-   |2->Hex_player_t.Second_player
+   1->Hax_player_t.First_player
+   |2->Hax_player_t.Second_player
    |k->raise(Unknown_player_index(k));;
 
 let cs=consult;;

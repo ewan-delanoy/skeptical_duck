@@ -30,7 +30,7 @@ let one_move_more (Hex_checked_initial_game_t.PG(l)) cell =
 
 let last_one_to_play (Hex_checked_initial_game_t.PG(l)) =
    let d=(List.length l) mod 2 in 
-   if d=0 then Hex_player_t.Second_player else Hex_player_t.First_player;;
+   if d=0 then Hax_player_t.Second_player else Hax_player_t.First_player;;
 
 let depth (Hex_checked_initial_game_t.PG(l)) = List.length l ;; 
 let first_move (Hex_checked_initial_game_t.PG(l)) = List.hd l ;; 

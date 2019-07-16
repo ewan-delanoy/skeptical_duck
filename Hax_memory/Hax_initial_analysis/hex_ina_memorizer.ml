@@ -31,8 +31,8 @@ let remember_as_example mmrzr =
   (Overwriter.of_string assignment) ("(* Assignment starts here *)","(* Assignment ends here *)") ap ;;
 
 let strategies mmrzr=function 
-   Hex_player_t.First_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_first_player
-   |Hex_player_t.Second_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_second_player ;;
+   Hax_player_t.First_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_first_player
+   |Hax_player_t.Second_player -> mmrzr.Hex_ina_memorizer_t.strategies_for_second_player ;;
 
 let is_foreseen_in pgame mmrzr=
    let the_strategies=strategies mmrzr (Hex_checked_initial_game.last_one_to_play pgame) in 
@@ -49,16 +49,16 @@ let insert_in pgame mmrzr =
      let old_strategies = strategies mmrzr last_player in 
      let new_strategies = Hex_cigame_collection.insert_in pgame old_strategies in 
      match last_player with 
-     Hex_player_t.First_player -> 
+     Hax_player_t.First_player -> 
         {mmrzr with Hex_ina_memorizer_t.strategies_for_first_player= new_strategies}
-    |Hex_player_t.Second_player -> 
+    |Hax_player_t.Second_player -> 
         {mmrzr with Hex_ina_memorizer_t.strategies_for_second_player= new_strategies};;
 
 let cut_by mmrzr pgame=
   let last_player = Hex_checked_initial_game.last_one_to_play pgame in 
   let future_player = (function 
-      Hex_player_t.First_player -> Hex_player_t.Second_player
-      |_-> Hex_player_t.First_player
+      Hax_player_t.First_player -> Hax_player_t.Second_player
+      |_-> Hax_player_t.First_player
   ) last_player in 
   Hex_cigame_collection.cut_by (strategies mmrzr future_player) pgame;;
 

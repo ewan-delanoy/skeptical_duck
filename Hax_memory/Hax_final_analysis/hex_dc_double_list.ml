@@ -31,5 +31,5 @@ let to_string (Hex_dc_double_list_t.DL(l1,l2))=
   (single_list_to_string l1)^joiner_for_two^(single_list_to_string l2);;
 
 let immediate_dangers (Hex_dc_double_list_t.DL(l1,l2))=function 
-   Hex_player_t.First_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l2) 
-  |Hex_player_t.Second_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l1);; 
+   Hax_player_t.First_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l2) 
+  |Hax_player_t.Second_player -> Hex_decisive_configuration.immediate_dangers (Ennig.index_everything l1);; 
