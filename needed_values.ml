@@ -4,7 +4,9 @@
 
 *)
 
- let abo = Usual_coma_state.above;; 
+let abo = Usual_coma_state.above;; 
+
+let am = Usual_coma_state.all_modules;;
 
 let bel = Usual_coma_state.below;;
 
