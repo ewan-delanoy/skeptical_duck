@@ -36,12 +36,12 @@ let depth (Hex_checked_initial_game_t.PG(l)) = List.length l ;;
 let first_move (Hex_checked_initial_game_t.PG(l)) = List.hd l ;; 
 
 let of_string s =Hex_checked_initial_game_t.PG( 
-   Hex_common.cell_list_of_string s
+   Hax_common.cell_list_of_string s
 );;
 
 let to_string (Hex_checked_initial_game_t.PG(l))=
-  Hex_common.cell_list_to_string  l;;
+  Hax_common.cell_list_to_string  l;;
 
 
 let print_out (fmt:Format.formatter) (Hex_checked_initial_game_t.PG(l))=
-   Format.fprintf fmt "@[%s@]" (Hex_common.cell_list_to_pretty_string l);;     
+   Format.fprintf fmt "@[%s@]" (Hax_common.cell_list_to_pretty_string l);;     

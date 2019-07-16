@@ -55,8 +55,8 @@ let announce_passive_part="\nPassive part : \n";;
 
 let to_string config=
   let descr1=Hex_player.to_string(config.Hex_decisive_configuration_t.beneficiary) 
-  and descr2=Hex_common.cell_list_to_string(config.Hex_decisive_configuration_t.active_part) 
-  and descr3=Hex_common.cell_list_to_string(config.Hex_decisive_configuration_t.passive_part) in 
+  and descr2=Hax_common.cell_list_to_string(config.Hex_decisive_configuration_t.active_part) 
+  and descr3=Hax_common.cell_list_to_string(config.Hex_decisive_configuration_t.passive_part) in 
   announce_beneficiary^descr1^announce_active_part^descr2^announce_passive_part^descr3;;
 
 let of_string s =
@@ -71,8 +71,8 @@ let of_string s =
    and descr3=Cull_string.interval s1  (j2+1) (String.length s1) in 
    {
      Hex_decisive_configuration_t.beneficiary=Hex_player.of_string descr1;
-     Hex_decisive_configuration_t.active_part=Hex_common.cell_list_of_string descr2;
-     Hex_decisive_configuration_t.passive_part=Hex_common.cell_list_of_string descr3;
+     Hex_decisive_configuration_t.active_part=Hax_common.cell_list_of_string descr2;
+     Hex_decisive_configuration_t.passive_part=Hax_common.cell_list_of_string descr3;
    };;
 
 let unveil config=
