@@ -10,9 +10,9 @@ let initial_state = Hax_ina_state_t.Foreseen_so_far
 
 
 let one_move_more mmrzr cell old_state= 
-   Hex_ina_state.one_move_more (!(Hax_persistent_ina_memorizer.main)) cell old_state;;
+   Hax_ina_state.one_move_more (!(Hax_persistent_ina_memorizer.main)) cell old_state;;
 
 
 let declare_winner winner final_state= 
-   Hex_ina_state.one_move_more (!(Hax_persistent_ina_memorizer.main)) winner final_state;;
+   Hax_ina_state.one_move_more (!(Hax_persistent_ina_memorizer.main)) winner final_state;;
         
