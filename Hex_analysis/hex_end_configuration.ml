@@ -53,7 +53,7 @@ let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;
 
-(*
+
 let to_string config=
   let descr1=Hex_player.to_string(config.Hex_end_configuration_t.beneficiary) 
   and descr2=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.active_part) 
@@ -92,4 +92,3 @@ let cmp =
      cmp_for_cell_lists)
    (unveil config1) (unveil config2)  
 ) :> Hex_end_configuration_t.t Total_ordering.t);;
-*)
