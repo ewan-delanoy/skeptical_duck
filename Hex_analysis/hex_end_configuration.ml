@@ -83,7 +83,7 @@ let unveil config=
   );;
 
 let cmp = 
-  let cmp_for_cell_lists = Total_ordering.lex_compare Hax_cell.cmp in 
+  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
  ((fun config1 config2 ->
    (Total_ordering.triple_product 
      Total_ordering.standard
