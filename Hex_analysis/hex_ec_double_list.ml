@@ -4,6 +4,7 @@
 
 *)
 
+(*
 let joiner_in_list ="\n&&&\n"
 
 let single_list_of_string s= 
@@ -34,3 +35,4 @@ let to_string (Hex_ec_double_list_t.DL(l1,l2))=
 let immediate_dangers (Hex_ec_double_list_t.DL(l1,l2))=function 
    Hax_player_t.First_player -> Hex_end_configuration.immediate_dangers (Ennig.index_everything l2) 
   |Hax_player_t.Second_player -> Hex_end_configuration.immediate_dangers (Ennig.index_everything l1);; 
+*)
