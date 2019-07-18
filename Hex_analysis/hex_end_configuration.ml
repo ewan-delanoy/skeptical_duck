@@ -42,7 +42,7 @@ let immediate_dangers indexed_configs =
          let l=config.Hex_end_configuration_t.active_part in 
          if List.length(l)=1 
          then let mandatory_set=
-               Ordered.insert_plaen Hax_cell.cmp 
+               Ordered.insert_plaen Hex_cell.cmp 
                 (List.hd l) config.Hex_end_configuration_t.passive_part in 
                Some(mandatory_set,config_idx)
          else None
@@ -54,9 +54,9 @@ let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;
 
 let to_string config=
-  let descr1=Hax_player.to_string(config.Hex_end_configuration_t.beneficiary) 
-  and descr2=Hax_common.cell_list_to_string(config.Hex_end_configuration_t.active_part) 
-  and descr3=Hax_common.cell_list_to_string(config.Hex_end_configuration_t.passive_part) in 
+  let descr1=Hex_player.to_string(config.Hex_end_configuration_t.beneficiary) 
+  and descr2=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.active_part) 
+  and descr3=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.passive_part) in 
   announce_beneficiary^descr1^announce_active_part^descr2^announce_passive_part^descr3;;
 
 let of_string s =
@@ -70,9 +70,9 @@ let of_string s =
    and descr2=Cull_string.interval s1 (j1+1) (i2-1) 
    and descr3=Cull_string.interval s1  (j2+1) (String.length s1) in 
    {
-     Hex_end_configuration_t.beneficiary=Hax_player.of_string descr1;
-     Hex_end_configuration_t.active_part=Hax_common.cell_list_of_string descr2;
-     Hex_end_configuration_t.passive_part=Hax_common.cell_list_of_string descr3;
+     Hex_end_configuration_t.beneficiary=Hex_player.of_string descr1;
+     Hex_end_configuration_t.active_part=Hex_common.cell_list_of_string descr2;
+     Hex_end_configuration_t.passive_part=Hex_common.cell_list_of_string descr3;
    };;
 
 let unveil config=

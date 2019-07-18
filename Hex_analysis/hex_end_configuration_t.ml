@@ -6,7 +6,7 @@
 *)
 
 type t= {
-   beneficiary : Hax_player_t.t;
+   beneficiary : Hex_player_t.t;
    active_part : Hex_cell_t.t list; 
    passive_part : Hex_cell_t.t list; 
 };;
