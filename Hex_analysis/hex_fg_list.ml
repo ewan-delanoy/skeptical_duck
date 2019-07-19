@@ -15,3 +15,14 @@ let of_string s=
 let to_string l=String.concat joiner_in_list 
     (Image.image Hex_finished_game.to_string l);;
 
+let remove_redundancies l=
+ let rec tempf=(function
+   (treated,to_be_treated)->match to_be_treated with
+   []->treated
+   |fgame::other_games->
+     let cleaned_games=List.filter (
+       fun fgame2->not(Hex_finished_game.is_more_detailed_than fgame fgame2)
+     ) other_games in 
+     tempf(fgame::treated,cleaned_games)
+ ) in
+ tempf([],List.rev l);;
