@@ -4,8 +4,8 @@
 
 *)
 
-(*
-let joiner_in_list ="\n&&&\n"
+
+let joiner_in_list ="\n&&&\n";;
 
 let single_list_of_string s= 
     let temp1=Str.split (Str.regexp_string joiner_in_list) s in 
@@ -15,7 +15,7 @@ let single_list_of_string s=
 let single_list_to_string l=String.concat joiner_in_list 
     (Image.image Hex_end_configuration.to_string l);;
 
-let joiner_for_two="\n<<>>\n"
+let joiner_for_two="\n<<>>\n";;
 
 let of_string s=
    let n=String.length s 
@@ -31,8 +31,3 @@ let of_string s=
 let to_string (Hex_ec_double_list_t.DL(l1,l2))=
   (single_list_to_string l1)^joiner_for_two^(single_list_to_string l2);;
 
-
-let immediate_dangers (Hex_ec_double_list_t.DL(l1,l2))=function 
-   Hax_player_t.First_player -> Hex_end_configuration.immediate_dangers (Ennig.index_everything l2) 
-  |Hax_player_t.Second_player -> Hex_end_configuration.immediate_dangers (Ennig.index_everything l1);; 
-*)
