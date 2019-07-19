@@ -36,6 +36,11 @@ let use_enemy_move_to_simplify_several cell old_configs =
         |Some(next_config)->Some(config_idx,next_config)
     ) old_configs;;
 
+let use_move_to_simplify_one (player,cell) old_config =
+   if player = old_config.Hex_end_configuration_t.beneficiary 
+   then Some(use_ally_move_to_simplify_one cell old_config)
+   else use_enemy_move_to_simplify_one cell old_config;;
+
 let immediate_dangers indexed_configs =
    Option.filter_and_unpack (
        fun (config_idx,config)->
