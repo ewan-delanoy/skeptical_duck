@@ -4,6 +4,7 @@
 
 *)
 
+let empty_one = Hex_fg_double_list_t.DL([],[]);;
 
 let joiner_for_two="\n<[<>]>\n";;
 

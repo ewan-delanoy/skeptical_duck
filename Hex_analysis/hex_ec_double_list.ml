@@ -17,6 +17,8 @@ let single_list_to_string l=String.concat joiner_in_list
 
 let joiner_for_two="\n<<>>\n";;
 
+let empty_one = Hex_ec_double_list_t.DL([],[]);;
+
 let of_string s=
    let n=String.length s 
    and i1=Substring.leftmost_index_of_in joiner_for_two s in 
