@@ -35,6 +35,12 @@ let compute_largest_unconclusive_beginning end_config fgame =
    ) in 
    tempf([],end_config,temp2);;
 
+let is_more_detailed_than fgame1 fgame2=
+   let l1=fgame1.Hex_finished_game_t.sequence_of_moves
+   and l2=fgame2.Hex_finished_game_t.sequence_of_moves in 
+   let (_,_,r2)=Listennou.factor (l1,l2) in r2=[];;
+
+
 
 let announce_winner ="\nBeneficiary : \n";;
 let announce_moves ="\nActive part : \n";;
