@@ -26,3 +26,12 @@ let remove_redundancies l=
      tempf(fgame::treated,cleaned_games)
  ) in
  tempf([],List.rev l);;
+
+let add_finished_game fgame l=
+   let temp1= Ordered.insert_plaen Hex_finished_game.cmp fgame l  in 
+   remove_redundancies temp1;;
+
+let take_end_config_into_account end_config l=
+    let temp1=Image.image 
+    (Hex_finished_game.compute_largest_unconclusive_beginning end_config) l in 
+    remove_redundancies temp1;;
