@@ -11,16 +11,16 @@ let games_ref = ref (Hex_fg_double_list.empty_one);;
 
 let persist_configs ()=
     let assignment=
-      "\n\n\n Hex_"^"persistent.configs_ref:=Hex_"^"ec_double_list.of_string(\n"^
-      (Hex_ec_double_list.to_string (!configs_ref))^"\";;\n\n\n" in 
+      "\n\n\n Hex_"^"persistent.configs_ref:=Hex_"^"ec_double_list.of_string(\n\""^
+      (Hex_ec_double_list.to_string (!configs_ref))^"\");;\n\n\n" in 
     let ap=Absolute_path.of_string "Hex_analysis/hex_initializer.ml" in 
     Replace_inside.overwrite_between_markers_inside_file 
   (Overwriter.of_string assignment) ("(* Configs start here *)","(* Configs end here *)") ap;;
 
 let persist_games ()=
     let assignment=
-      "\n\n\n Hex_"^"persistent.games_ref:=Hex_"^"fg_double_list.of_string(\n"^
-      (Hex_fg_double_list.to_string (!games_ref))^"\";;\n\n\n" in 
+      "\n\n\n Hex_"^"persistent.games_ref:=Hex_"^"fg_double_list.of_string(\n\""^
+      (Hex_fg_double_list.to_string (!games_ref))^"\");;\n\n\n" in 
     let ap=Absolute_path.of_string "Hex_analysis/hex_initializer.ml" in 
     Replace_inside.overwrite_between_markers_inside_file 
   (Overwriter.of_string assignment) ("(* Games start here *)","(* Games end here *)") ap;;
