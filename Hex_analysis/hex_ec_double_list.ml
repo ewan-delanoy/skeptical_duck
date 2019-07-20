@@ -19,6 +19,15 @@ let joiner_for_two="\n<<>>\n";;
 
 let empty_one = Hex_ec_double_list_t.DL([],[]);;
 
+let add_end_config ec (Hex_ec_double_list_t.DL(l1,l2))=
+   match ec.Hex_end_configuration_t.beneficiary with 
+   Hex_player_t.First_player -> 
+        let new_l1=Ordered.insert_plaen Hex_end_configuration.cmp ec l1 in 
+        Hex_ec_double_list_t.DL(new_l1,l2)
+  |Hex_player_t.Second_player -> 
+        let new_l2=Ordered.insert_plaen Hex_end_configuration.cmp ec l1 in
+        Hex_ec_double_list_t.DL(l1,new_l2) ;;
+
 let of_string s=
    let n=String.length s 
    and i1=Substring.leftmost_index_of_in joiner_for_two s in 
