@@ -39,9 +39,8 @@ let immediate_dangers configs =
        fun config->
          let l=config.Hex_end_configuration_t.active_part in 
          if List.length(l)=1 
-         then let mandatory_set=
-               Ordered.insert_plaen Hex_cell.cmp 
-                (List.hd l) config.Hex_end_configuration_t.passive_part in 
+         then let passive_set = Ordered.safe_set Hex_cell.cmp config.Hex_end_configuration_t.passive_part in 
+              let mandatory_set=Ordered.insert Hex_cell.cmp (List.hd l) passive_set in 
                Some(mandatory_set,config.Hex_end_configuration_t.index)
          else None
    ) configs;;
