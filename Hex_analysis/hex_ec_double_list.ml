@@ -28,6 +28,19 @@ let add_end_config ec (Hex_ec_double_list_t.DL(l1,l2))=
         let new_l2=Hex_end_configuration.insert_carefully ec l2 in
         Hex_ec_double_list_t.DL(l1,new_l2) ;;
 
+let absorb_move (player,cell) (Hex_ec_double_list_t.DL(l1,l2))=
+  match player with 
+   Hex_player_t.First_player -> 
+      Hex_ec_double_list_t.DL
+      (Hex_end_configuration.use_ally_move_to_simplify_several cell l1,
+       Hex_end_configuration.use_enemy_move_to_simplify_several cell l2)
+  |Hex_player_t.Second_player -> 
+      Hex_ec_double_list_t.DL
+      (Hex_end_configuration.use_ally_move_to_simplify_several cell l1,
+       Hex_end_configuration.use_enemy_move_to_simplify_several cell l2)
+     ;; 
+    
+
 let of_string s=
    let n=String.length s 
    and i1=Substring.leftmost_index_of_in joiner_for_two s in 
