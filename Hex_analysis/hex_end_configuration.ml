@@ -57,31 +57,39 @@ let immediate_dangers indexed_configs =
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;
-
+let announce_index="\nIndex : \n";;
 
 let to_string config=
   let descr1=Hex_player.to_string(config.Hex_end_configuration_t.beneficiary) 
   and descr2=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.active_part) 
-  and descr3=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.passive_part) in 
-  announce_beneficiary^descr1^announce_active_part^descr2^announce_passive_part^descr3;;
+  and descr3=Hex_common.cell_list_to_string(config.Hex_end_configuration_t.passive_part) 
+  and descr4=string_of_int(config.Hex_end_configuration_t.index) in 
+  announce_beneficiary^descr1^
+  announce_active_part^descr2^
+  announce_passive_part^descr3^
+  announce_index^descr4;;
 
 let of_string s =
    let s1=Cull_string.cobeginning 
      (String.length announce_beneficiary) s in 
-   let i1=Substring.leftmost_index_of_in announce_active_part s1 in
-   let i2=Substring.leftmost_index_of_in announce_passive_part s1 in
+   let i1=Substring.leftmost_index_of_in announce_active_part s1 
+   and i2=Substring.leftmost_index_of_in announce_passive_part s1 
+   and i3=Substring.leftmost_index_of_in announce_index s1 in
    let j1=i1+(String.length announce_active_part)-1
-   and j2=i2+(String.length announce_passive_part)-1 in 
+   and j2=i2+(String.length announce_passive_part)-1 
+   and j3=i3+(String.length announce_index)-1 in 
    let descr1=Cull_string.interval s1 1 (i1-1) 
    and descr2=Cull_string.interval s1 (j1+1) (i2-1) 
-   and descr3=Cull_string.interval s1  (j2+1) (String.length s1) in 
+   and descr3=Cull_string.interval s1 (j2+1) (i3-1) 
+   and descr4=Cull_string.interval s1  (j3+1) (String.length s1) in 
    {
      Hex_end_configuration_t.beneficiary=Hex_player.of_string descr1;
      Hex_end_configuration_t.active_part=Hex_common.cell_list_of_string descr2;
      Hex_end_configuration_t.passive_part=Hex_common.cell_list_of_string descr3;
+     Hex_end_configuration_t.index=int_of_string descr4;
    };;
 
-let unveil config=
+let partial_unveil config=
   (
      config.Hex_end_configuration_t.beneficiary,
      config.Hex_end_configuration_t.active_part,
@@ -95,5 +103,5 @@ let cmp =
      Total_ordering.standard
      cmp_for_cell_lists
      cmp_for_cell_lists)
-   (unveil config1) (unveil config2)  
+   (partial_unveil config1) (partial_unveil config2)  
 ) :> Hex_end_configuration_t.t Total_ordering.t);;
