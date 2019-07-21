@@ -40,17 +40,17 @@ let use_move_to_simplify_several (player,cell) old_configs =
    else use_enemy_move_to_simplify_several cell old_configs;;
 *)
 
-let immediate_dangers indexed_configs =
+let immediate_dangers configs =
    Option.filter_and_unpack (
-       fun (config_idx,config)->
+       fun config->
          let l=config.Hex_end_configuration_t.active_part in 
          if List.length(l)=1 
          then let mandatory_set=
                Ordered.insert_plaen Hex_cell.cmp 
                 (List.hd l) config.Hex_end_configuration_t.passive_part in 
-               Some(mandatory_set,config_idx)
+               Some(mandatory_set,config.Hex_end_configuration_t.index)
          else None
-   ) indexed_configs;;
+   ) configs;;
 
 
 let announce_beneficiary ="\nBeneficiary : \n";;
