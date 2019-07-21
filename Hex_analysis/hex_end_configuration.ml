@@ -33,12 +33,6 @@ let use_move_to_simplify_one (player,cell) old_config =
    then Some(use_ally_move_to_simplify_one cell old_config)
    else use_enemy_move_to_simplify_one cell old_config;;
 
-(*
-let use_move_to_simplify_several (player,cell) old_configs =
-   if player = (List.hd old_configs).Hex_end_configuration_t.beneficiary 
-   then use_ally_move_to_simplify_several cell old_configs
-   else use_enemy_move_to_simplify_several cell old_configs;;
-*)
 
 let immediate_dangers configs =
    Option.filter_and_unpack (

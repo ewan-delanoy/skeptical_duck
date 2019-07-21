@@ -40,6 +40,14 @@ let absorb_move (player,cell) (Hex_ec_double_list_t.DL(l1,l2))=
        Hex_end_configuration.use_enemy_move_to_simplify_several cell l2)
      ;; 
     
+let immediate_dangers player (Hex_ec_double_list_t.DL(l1,l2))=
+  match player with 
+   Hex_player_t.First_player -> 
+      Hex_end_configuration.immediate_dangers l2
+  |Hex_player_t.Second_player -> 
+      Hex_end_configuration.immediate_dangers l1;; 
+    
+
 
 let of_string s=
    let n=String.length s 
