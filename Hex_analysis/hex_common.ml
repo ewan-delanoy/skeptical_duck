@@ -26,7 +26,11 @@ let cell_list_to_pretty_string l=
   then part1^part2
   else part1^joiner^part2;;
 
-let next_one_to_play l=
-   if ((List.length l) mod 2=0)  
+let next_one_to_play preceding_moves=
+   if ((List.length preceding_moves) mod 2=0)  
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
+
+let  apply_condition opt_condition cell_set=match opt_condition with 
+   None -> cell_set 
+  |Some(condition_set) -> Ordered.kengeij Hex_cell.cmp condition_set cell_set;;   
