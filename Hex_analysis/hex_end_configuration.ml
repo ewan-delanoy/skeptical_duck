@@ -16,30 +16,29 @@ let use_ally_move_to_simplify_one cell old_config=
     };;
      
 let use_ally_move_to_simplify_several cell old_configs =
-    Image.image(
-      fun (config_idx,current_config)->
-       (config_idx,use_ally_move_to_simplify_one cell current_config)
-    ) old_configs;;
+    Image.image(use_ally_move_to_simplify_one cell) old_configs;;
           
 let use_enemy_move_to_simplify_one cell old_config=
    let active_part = old_config.Hex_end_configuration_t.active_part
    and passive_part = old_config.Hex_end_configuration_t.passive_part in 
-   if (List.mem cell active_part)&&(List.mem cell passive_part)
+   if (List.mem cell active_part)||(List.mem cell passive_part)
    then None
    else Some(old_config);;
      
 let use_enemy_move_to_simplify_several cell old_configs =
-    Option.filter_and_unpack(
-      fun (config_idx,current_config)->match 
-        use_enemy_move_to_simplify_one cell current_config with 
-        None->None
-        |Some(next_config)->Some(config_idx,next_config)
-    ) old_configs;;
+    Option.filter_and_unpack (use_enemy_move_to_simplify_one cell) old_configs;;
 
 let use_move_to_simplify_one (player,cell) old_config =
    if player = old_config.Hex_end_configuration_t.beneficiary 
    then Some(use_ally_move_to_simplify_one cell old_config)
    else use_enemy_move_to_simplify_one cell old_config;;
+
+(*
+let use_move_to_simplify_several (player,cell) old_configs =
+   if player = (List.hd old_configs).Hex_end_configuration_t.beneficiary 
+   then use_ally_move_to_simplify_several cell old_configs
+   else use_enemy_move_to_simplify_several cell old_configs;;
+*)
 
 let immediate_dangers indexed_configs =
    Option.filter_and_unpack (
@@ -112,5 +111,8 @@ let insert_carefully ec l=
      Hex_end_configuration_t.index=(List.length(l))+1
   } in 
   Ordered.insert_plaen cmp reindexed_ec l;;
+
+
+
 
 
