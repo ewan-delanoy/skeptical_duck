@@ -70,6 +70,8 @@ let of_string s =
      Hex_finished_game_t.sequence_of_moves=Hex_common.cell_list_of_string descr2;
    };;
 
+let first_move fgame = List.hd(fgame.Hex_finished_game_t.sequence_of_moves);;
+
 let unveil fgame=
   (
      fgame.Hex_finished_game_t.winner,

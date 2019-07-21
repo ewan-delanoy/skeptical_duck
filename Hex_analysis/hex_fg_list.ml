@@ -37,3 +37,9 @@ let take_end_config_into_account end_config l=
     remove_redundancies temp1;;
 
 let absorb_move move l=Option.filter_and_unpack (Hex_finished_game.absorb_move move) l;;     
+
+let first_moves l=
+    Ordered.safe_set Hex_cell.cmp (Image.image Hex_finished_game.first_move l);;
+
+
+
