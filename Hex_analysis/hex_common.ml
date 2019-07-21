@@ -15,7 +15,6 @@ let cell_list_to_string l=
 
 let cell_pair_to_string (cell1,cell2)=cell_list_to_string [cell1;cell2];;
   
-
 let cell_list_to_pretty_string l=
   let (pairs,optional_last)=Listennou.divide_by_two l in 
   let part1= String.concat " | " (Image.image cell_pair_to_string pairs) in 
@@ -26,3 +25,8 @@ let cell_list_to_pretty_string l=
   if (part1="")||(part2="")
   then part1^part2
   else part1^joiner^part2;;
+
+let next_one_to_play l=
+   if ((List.length l) mod 2=0)  
+   then Hex_player_t.First_player
+   else Hex_player_t.Second_player;;
