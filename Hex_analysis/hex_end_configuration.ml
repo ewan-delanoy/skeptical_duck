@@ -105,3 +105,12 @@ let cmp =
      cmp_for_cell_lists)
    (partial_unveil config1) (partial_unveil config2)  
 ) :> Hex_end_configuration_t.t Total_ordering.t);;
+
+let insert_carefully ec l=
+  let reindexed_ec = {
+     ec with 
+     Hex_end_configuration_t.index=(List.length(l))+1
+  } in 
+  Ordered.insert_plaen cmp reindexed_ec l;;
+
+
