@@ -45,6 +45,13 @@ let is_more_detailed_than fgame1 fgame2=
 let announce_winner ="\nBeneficiary : \n";;
 let announce_moves ="\nActive part : \n";;
 
+let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves with 
+  []->None
+  |first_move::other_moves ->
+    if first_move = new_move
+    then Some({fgame with Hex_finished_game_t.sequence_of_moves = other_moves})
+    else None;;
+
 
 let to_string fgame=
   let descr1=Hex_player.to_string(fgame.Hex_finished_game_t.winner) 
