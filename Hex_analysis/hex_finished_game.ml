@@ -35,6 +35,9 @@ let compute_largest_unconclusive_beginning fgame end_config =
    ) in 
    tempf([],end_config,temp2);;
 
+let iterated_largest_unconclusive_beginning fgame end_configs=
+  List.fold_left compute_largest_unconclusive_beginning fgame end_configs;;
+
 let is_more_detailed_than fgame1 fgame2=
    let l1=fgame1.Hex_finished_game_t.sequence_of_moves
    and l2=fgame2.Hex_finished_game_t.sequence_of_moves in 
