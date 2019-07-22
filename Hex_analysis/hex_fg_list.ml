@@ -33,7 +33,7 @@ let add_finished_game fgame l=
 
 let take_end_config_into_account end_config l=
     let temp1=Image.image 
-    (Hex_finished_game.compute_largest_unconclusive_beginning end_config) l in 
+    (fun fgame->Hex_finished_game.compute_largest_unconclusive_beginning fgame end_config) l in 
     remove_redundancies temp1;;
 
 let absorb_move move l=Option.filter_and_unpack (Hex_finished_game.absorb_move move) l;;     

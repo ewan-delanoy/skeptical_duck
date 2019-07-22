@@ -38,7 +38,10 @@ let analize sta=
      already_used_moves = used_moves
   } ;;
 
-
-
+(*
+let add_finished_game sta fgame = {
+  
+};;
+*)
 
   
