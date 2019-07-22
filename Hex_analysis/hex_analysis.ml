@@ -25,11 +25,12 @@ let usual_move ()=
   let cell = Hex_analysis_result.usual_move (snd(!walker)) in 
   absorb_move cell;;
 
-(*
+
 let declare_winner player =
   let new_fgame={
     Hex_finished_game_t.winner = player ;
-
+    Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
-*)
+  Hex_persistent.add_finished_game new_fgame;;
+
   
