@@ -4,15 +4,17 @@
 
 *)
 
-let initial_point = (
-   Hex_state.initial_state,
-   Hex_state.analize (Hex_state.initial_state)
-);;
+let initial_point ()= 
+  let ista = Hex_state.initial_state () in 
+   (
+      ista ,
+      Hex_state.analize ista
+   );;
 
 
-let walker=ref(initial_point);;
+let walker=ref(initial_point());;
 
-let restart () =(walker := initial_point);;
+let restart () =(walker := initial_point());;
 
 let absorb_move cell=
    let (old_state,_)=(!walker) in 
