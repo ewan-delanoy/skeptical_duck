@@ -47,7 +47,8 @@ let immediate_dangers player (Hex_ec_double_list_t.DL(l1,l2))=
   |Hex_player_t.Second_player -> 
       Hex_end_configuration.immediate_dangers l1;; 
     
-
+let iterated_largest_unconclusive_beginning fgame (Hex_ec_double_list_t.DL(l1,l2))=
+    Hex_finished_game.iterated_largest_unconclusive_beginning fgame (l1@l2);;
 
 let of_string s=
    let n=String.length s 
