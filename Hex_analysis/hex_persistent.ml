@@ -35,7 +35,7 @@ let add_end_config_without_persisting ec =
 let add_finished_game_without_persisting fgame =
     let checked_fgame=Hex_ec_double_list.iterated_largest_unconclusive_beginning fgame (!configs_ref) in 
    (
-    games_ref:=Hex_fg_double_list.add_finished_game fgame (!games_ref)
+    games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
 
 let add_end_config ec =
