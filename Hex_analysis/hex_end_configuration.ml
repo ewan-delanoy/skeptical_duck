@@ -21,7 +21,7 @@ let use_ally_move_to_simplify_several cell old_configs =
 let use_enemy_move_to_simplify_one cell old_config=
    let active_part = old_config.Hex_end_configuration_t.active_part
    and passive_part = old_config.Hex_end_configuration_t.passive_part in 
-   if (List.mem cell active_part)||(List.mem cell passive_part)
+   if (Hex_cell_set.mem cell active_part)||(Hex_cell_set.mem cell passive_part)
    then None
    else Some(old_config);;
      
