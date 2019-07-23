@@ -40,7 +40,7 @@ let immediate_dangers configs =
          let l=config.Hex_end_configuration_t.active_part in 
          if Hex_cell_set.length(l)=1 
          then let passive_set = config.Hex_end_configuration_t.passive_part in 
-              let mandatory_set=Hex_cell_set.insert (List.hd l) passive_set in 
+              let mandatory_set=Hex_cell_set.insert (Hex_cell_set.min l) passive_set in 
                Some(mandatory_set,config.Hex_end_configuration_t.index)
          else None
    ) configs;;
