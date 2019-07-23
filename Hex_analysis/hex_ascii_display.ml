@@ -14,7 +14,7 @@ let ipair_of_string s=
 (* ipair_of_string "b5" = (5,2);; *)
 
 let string_of_ipair (i,j)=
-  (String.make 1 (char_of_int(i+96)))^(string_of_int i);;
+  (String.make 1 (char_of_int(j+96)))^(string_of_int i);;
 
 
 let trace_at_point ec (i,j) =
