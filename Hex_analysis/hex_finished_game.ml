@@ -57,12 +57,21 @@ let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves
 
 
 let to_end_configuration fgame=
+   let winner = fgame.Hex_finished_game_t.winner in 
    let (fp_moves,sp_moves)=Hex_common.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in 
    let (actives,rejected_ones)=(
-      match fgame.Hex_finished_game_t.winner with 
+      match winner with 
        Hex_player_t.First_player -> (fp_moves,sp_moves) 
       |Hex_player_t.Second_player ->(sp_moves,fp_moves) 
    )  in 
+   let all_cells = Hex_common.all_cells 11 in 
+   let passives= Hex_cell_set.setminus (Hex_cell_set.setminus all_cells rejected_ones) passives in 
+   {
+     Hex_end_configuration_t.beneficiary=winner;
+     Hex_end_configuration_t.active_part=actives;
+     Hex_end_configuration_t.passive_part=passives;
+     Hex_end_configuration_t.index=0;
+   };;
 
 
 let to_string fgame=
