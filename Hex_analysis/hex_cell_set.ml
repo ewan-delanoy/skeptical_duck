@@ -18,6 +18,7 @@ let fold_intersect l=
     let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
     Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp renamed_l));;
 let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
+let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->a;;
 let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.lemel_plaen Hex_cell.cmp l [elt]);;
 let length (Hex_cell_set_t.S(l))=List.length l;;
 let mem elt (Hex_cell_set_t.S(l))=Ordered.elfenn_plaen Hex_cell.cmp elt l;;
