@@ -130,5 +130,5 @@ end ;;
 
 let make_ready_for_editing = Private.make_ready_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing;;
-
+let visualize = Private.visualize;;
 
