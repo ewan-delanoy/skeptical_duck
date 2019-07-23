@@ -37,6 +37,7 @@ let analize sta=
      winning_moves = winning_moves ;
      already_used_moves = used_moves
   } ;;
+  
 
 
 

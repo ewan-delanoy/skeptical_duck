@@ -5,7 +5,7 @@
 *)
 
 
-let safe_set l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.safe_set Hex_cell.cmp l));;
+let safe_set l=  Hex_cell_set_t.S (Ordered.diforchan_plaen Hex_cell.cmp l);;
 
 let  apply_condition opt_condition cell_set=match opt_condition with 
    None -> cell_set 
