@@ -20,7 +20,7 @@ let absorb_move cell=
    let (old_state,_)=(!walker) in 
    let new_state = Hex_state.absorb_move old_state cell in 
    let new_result = Hex_state.analize new_state in 
-   let _=() in 
+   let _=(walker:=(new_state,new_result)) in 
    new_result;;
 
 let usual_move ()=
