@@ -31,6 +31,3 @@ let next_one_to_play preceding_moves=
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
 
-let  apply_condition opt_condition cell_set=match opt_condition with 
-   None -> cell_set 
-  |Some(condition_set) -> Ordered.kengeij Hex_cell.cmp condition_set cell_set;;   

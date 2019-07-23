@@ -7,12 +7,20 @@
 
 let safe_set l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.safe_set Hex_cell.cmp l));;
 
+let  apply_condition opt_condition cell_set=match opt_condition with 
+   None -> cell_set 
+  |Some(condition_set) -> 
+     let (Hex_cell_set_t.S(l1))=cell_set 
+     and (Hex_cell_set_t.S(l2))=condition_set in 
+     Hex_cell_set_t.S(Ordered.kengeij_plaen Hex_cell.cmp l1 l2);;  
+
+let fold_intersect l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp l));;
 let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
 let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.lemel_plaen Hex_cell.cmp l [elt]);;
 let length (Hex_cell_set_t.S(l))=List.length l;;
 let mem elt (Hex_cell_set_t.S(l))=Ordered.elfenn_plaen Hex_cell.cmp elt l;;
 let min (Hex_cell_set_t.S(l))=List.hd l;;
-let fold_intersect l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp l));;
+let setminus (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=Hex_cell_set_t.S (Ordered.lemel_plaen Hex_cell.cmp l1 l2);;
 let unveil (Hex_cell_set_t.S(l))= l;;
 
 

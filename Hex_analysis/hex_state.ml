@@ -26,12 +26,12 @@ let analize sta=
   let condition = (
      match dangers with 
      []->None
-     |_->Some(Ordered.big_kengeij Hex_cell.cmp (Image.image fst dangers))
+     |_->Some(Hex_cell_set.fold_intersect (Image.image fst dangers))
   ) in 
   let (unconditionned_winning_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
-  let winning_moves=Hex_common.apply_condition condition unconditionned_winning_moves 
-  and used_moves=Hex_common.apply_condition condition unconditioned_used_moves in 
+  let winning_moves=Hex_cell_set.apply_condition condition unconditionned_winning_moves 
+  and used_moves=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
      winning_moves = winning_moves ;
