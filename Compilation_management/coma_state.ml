@@ -1121,7 +1121,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
     Option.add_element_on_the_right   
     [ 
       (Compilation_mode.executioner cmod)^
-      " -I "^s_root^workdir^
+      " -I "^s_root^workdir^" "^
       libs^" -c "^s_root^unpointed_short_path^".ml";
     ] 
     (Unix_command.mv (s_root^unpointed_short_path^".cm*") (s_root^workdir) )
