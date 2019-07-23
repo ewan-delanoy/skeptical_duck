@@ -42,7 +42,6 @@ let absorb_move move (Hex_fg_double_list_t.DL(l1,l2))=
       Hex_fg_list.absorb_move move l2
     ));;    
 
-
 let suggested_moves player (Hex_fg_double_list_t.DL(l1,l2))=
    let (winning_moves,other_moves)=(match player with 
    Hex_player_t.First_player -> 
