@@ -19,10 +19,10 @@ let string_of_ipair (i,j)=
 
 let trace_at_point ec (i,j) =
   let cell=Hex_cell.of_string (string_of_ipair (i,j)) in 
-  if List.mem cell ec.Hex_end_configuration_t.active_part
+  if Hex_cell_set.mem cell ec.Hex_end_configuration_t.active_part
   then "A"
   else 
-  if List.mem cell ec.Hex_end_configuration_t.passive_part
+  if Hex_cell_set.mem cell ec.Hex_end_configuration_t.passive_part
   then "P"
   else " ";;
 
@@ -106,7 +106,7 @@ let read_row_in_drawing row =
 
 let gather_cells l=
    let temp1=Image.image (fun (cell_name,_)->Hex_cell.of_string cell_name) l in 
-   Ordered.diforchan_plaen Hex_cell.cmp temp1;;
+   Hex_cell_set.safe_set temp1;;
 
 let read_ascii_drawing s=
   let temp1= Lines_in_string.core s in 
