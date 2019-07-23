@@ -7,6 +7,7 @@
 
 let safe_set l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.safe_set Hex_cell.cmp l));;
 let insert elt l= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
+let outsert elt l= Hex_cell_set_t.S (Ordered.lemel_plaen Hex_cell.cmp l [elt]);;
 let fold_intersect l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp l));;
 
 let to_string (Hex_cell_set_t.S(l))=
