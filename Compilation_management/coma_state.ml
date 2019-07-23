@@ -1168,7 +1168,7 @@ let command_for_debuggable_or_executable cmod cs short_path=
     Option.add_element_on_the_right  
     [ 
       ((Compilation_mode.executioner cmod)^
-       " -I "^s_root^workdir^
+       " -I "^s_root^workdir^" "^
        libs^" -o "^nm_name^product_ending^
         (String.concat " " all_cm_elements));
     ]
