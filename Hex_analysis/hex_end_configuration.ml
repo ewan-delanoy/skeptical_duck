@@ -8,8 +8,8 @@
 let use_ally_move_to_simplify_one cell old_config=
    let active_part = old_config.Hex_end_configuration_t.active_part
    and passive_part = old_config.Hex_end_configuration_t.passive_part in 
-   let new_actives=List.filter (fun cell2->cell2<>cell) active_part 
-   and new_passives=List.filter (fun cell2->cell2<>cell) passive_part in 
+   let new_actives=Hex_cell_set.outsert cell active_part 
+   and new_passives=Hex_cell_set.outsert cell passive_part in 
    { old_config with 
             Hex_end_configuration_t.active_part = new_actives;
             Hex_end_configuration_t.passive_part = new_passives;
