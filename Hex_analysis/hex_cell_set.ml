@@ -13,6 +13,8 @@ let length (Hex_cell_set_t.S(l))=List.length l;;
 let mem elt (Hex_cell_set_t.S(l))=Ordered.elfenn_plaen Hex_cell.cmp elt l;;
 let min (Hex_cell_set_t.S(l))=List.hd l;;
 let fold_intersect l=  Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp l));;
+let unveil (Hex_cell_set_t.S(l))= l;;
+
 
 let to_string (Hex_cell_set_t.S(l))=
   let temp1=Image.image Hex_cell.to_string l in 
