@@ -45,6 +45,8 @@ let immediate_dangers configs =
          else None
    ) configs;;
 
+
+
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;

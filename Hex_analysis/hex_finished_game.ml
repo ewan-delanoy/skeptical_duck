@@ -55,6 +55,10 @@ let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves
     then Some({fgame with Hex_finished_game_t.sequence_of_moves = other_moves})
     else None;;
 
+(*
+let to_end_configuration fgame=
+   let temp1=Hex_common. 
+*)
 
 let to_string fgame=
   let descr1=Hex_player.to_string(fgame.Hex_finished_game_t.winner) 
