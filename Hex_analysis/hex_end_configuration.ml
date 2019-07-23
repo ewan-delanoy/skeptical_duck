@@ -83,8 +83,8 @@ let of_string s =
 let partial_unveil config=
   (
      config.Hex_end_configuration_t.beneficiary,
-     config.Hex_end_configuration_t.active_part,
-     config.Hex_end_configuration_t.passive_part 
+     Hex_cell_set.unveil(config.Hex_end_configuration_t.active_part),
+     Hex_cell_set.unveil(config.Hex_end_configuration_t.passive_part) 
   );;
 
 let cmp = 
