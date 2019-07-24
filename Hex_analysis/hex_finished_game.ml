@@ -51,7 +51,7 @@ let announce_moves ="\nActive part : \n";;
 let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves with 
   []->None
   |first_move::other_moves ->
-    if first_move = new_move
+    if (first_move = new_move)&&(other_moves <> [])
     then Some({fgame with Hex_finished_game_t.sequence_of_moves = other_moves})
     else None;;
 
