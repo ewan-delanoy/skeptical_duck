@@ -45,7 +45,10 @@ let immediate_dangers configs =
          else None
    ) configs;;
 
-
+(*
+let individual_check_for_union big_union elt_in_union = 
+ *)  
+  
 
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
