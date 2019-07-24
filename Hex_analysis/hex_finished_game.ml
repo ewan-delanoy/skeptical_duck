@@ -5,7 +5,6 @@
 *)
 
 exception End_config_is_too_fast of Hex_end_configuration_t.t;;
-exception Largest_inconclusive_exn of (Hex_player_t.t * Hex_cell_t.t)* Hex_end_configuration_t.t;;
 
 let compute_largest_unconclusive_beginning fgame end_config =
    if Hex_cell_set.length(end_config.Hex_end_configuration_t.active_part)<2
@@ -25,7 +24,7 @@ let compute_largest_unconclusive_beginning fgame end_config =
       |next_move::other_moves->
        (
          match Hex_end_configuration.use_move_to_simplify_one next_move walker with 
-         None->raise(Largest_inconclusive_exn(next_move,walker))
+         None->fgame
          |Some(walker2)->
          if Hex_cell_set.length(walker2.Hex_end_configuration_t.active_part)<2
          then {fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}

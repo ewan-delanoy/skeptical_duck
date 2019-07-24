@@ -34,6 +34,7 @@ let use_move_to_simplify_one (player,cell) old_config =
    else use_enemy_move_to_simplify_one cell old_config;;
 
 
+
 let immediate_dangers configs =
    Option.filter_and_unpack (
        fun config->
