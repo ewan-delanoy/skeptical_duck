@@ -45,9 +45,23 @@ let immediate_dangers configs =
          else None
    ) configs;;
 
-(*
+
 let individual_check_for_union big_union elt_in_union = 
- *)  
+   let d_passive=Hex_cell_set.setminus 
+             elt_in_union.Hex_end_configuration_t.passive_part
+             big_union.Hex_end_configuration_t.passive_part 
+   and d_active=Hex_cell_set.setminus 
+             elt_in_union.Hex_end_configuration_t.active_part
+             big_union.Hex_end_configuration_t.active_part 
+    in  
+   if (Hex_cell_set.length(d_passive)>0)||(Hex_cell_set.length(d_active)<>1)
+   then (Some(elt_in_union),None)
+   else (None,Some(Hex_cell_set.min d_active));;
+
+
+
+   
+
   
 
 let announce_beneficiary ="\nBeneficiary : \n";;
