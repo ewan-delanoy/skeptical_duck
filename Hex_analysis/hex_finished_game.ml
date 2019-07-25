@@ -29,7 +29,6 @@ let compute_largest_unconclusive_beginning fgame end_config =
          if Hex_cell_set.length(walker2.Hex_end_configuration_t.active_part)<2
          then {fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}
          else tempf((snd next_move)::treated,walker2,other_moves)
-
        )
    ) in 
    tempf([],end_config,temp2);;
