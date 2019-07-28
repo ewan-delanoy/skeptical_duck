@@ -71,7 +71,7 @@ let add_definition x defn=
     and support=Abstractified_nonatomic_hrecognizer.support defn  in
     let _=(check_that_name_is_not_used x nahme;
            List.iter (check_that_name_is_used x) support) in
-    let new_recgzr = Concretize_hrecognizer.concretize 
+    let new_recgzr = Tontrecize_hrecognizer.concretize 
        (x.avoidables,x.recognizers)  defn in
     {
         avoidables = x.avoidables;
