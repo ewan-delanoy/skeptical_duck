@@ -41,11 +41,6 @@
          None->(-1)
         |Some(k)->k+1;;
   
-let leftmost_linedex_of_in x y=
-    let j=leftmost_index_of_in x y in
-    if j<0 then (-1) else
-    Strung.number_of_lines_before y j;;
-
 module Friend = struct
 
 let number_of_lines_before s i=
@@ -55,6 +50,13 @@ let number_of_lines_before s i=
 
 
 end;;
+
+let leftmost_linedex_of_in x y=
+    let j=leftmost_index_of_in x y in
+    if j<0 then (-1) else
+    Friend.number_of_lines_before y j;;
+
+
 
 let leftmost_linedex_of_in_from x y i=
         let j=leftmost_index_of_in_from x y i in

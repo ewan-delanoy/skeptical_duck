@@ -58,11 +58,7 @@ let show_indices s=
   let n=String.length s in
   Ennig.doyle (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
-let number_of_lines_before s i=
-   if i<1 then 0 else
-   let m=min i (String.length s) in
-   List.length(List.filter(fun j->(get s j)='\n')(Ennig.ennig 1 m));;
-
+let number_of_lines_before = Substring.Friend.number_of_lines_before;;
 
 exception Integer_too_big_for_string_of_int;; 
 
