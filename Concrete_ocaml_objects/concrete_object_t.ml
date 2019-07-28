@@ -7,6 +7,7 @@
 
 type t= 
     Int of int 
+   |String of string 
    |Uple of t list
    |List of t list
    |Array of t list
