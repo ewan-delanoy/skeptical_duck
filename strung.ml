@@ -250,6 +250,45 @@ let leftmost_difference s1 s2=
 leftmost_difference "abc1def" "abc257";;
 *)
 
-   
+(*
+module Private = struct 
+
+let is_a_substring_located_at y x old_j =
+    let j=old_j-1 in
+    let ly=String.length(y) in
+      if (String.length(x)<j+ly)||(j<0)
+      then false
+      else (String.sub x j ly)=y;;
+
+end;;
+
+
+exception Missing_opener_in_triune_analysis of string*string;;
+
+let triune_analysis 
+  openr separatr closr s=
+    let n=String.length s in 
+    let tester=(fun j->
+       if Private.is_a_substring_located_at openr s j then Some(j,1) else 
+       if Private.is_a_substring_located_at separatr s j then Some(j,2) else
+       if Private.is_a_substring_located_at closr s j then Some(j,3) else
+       None
+    ) in 
+    let seeker = (fun k-> Option.find_and_stop tester (Ennig.ennig k n) in 
+    let opt1=seeker 1 in 
+    if opt1=None 
+    then raise(Missing_opener_in_triune_analysis(openr,s))
+    else  
+    let (idx1,case1)=(Option.unpack opt1) in 
+    
   
+  Substring.leftmost_index_of_in
            
+let leftmost_index_of_in_from x y i=
+      let lx=String.length(x) in
+      let tester=(function j->(String.sub y j lx)=x) in
+      match Ennig.find_it tester (i-1) (String.length(y)-lx) with
+         None->(-1)
+        |Some(k)->k+1;;
+
+*)

@@ -46,10 +46,20 @@ let leftmost_linedex_of_in x y=
     if j<0 then (-1) else
     Strung.number_of_lines_before y j;;
 
+module Friend = struct
+
+let number_of_lines_before s i=
+   if i<1 then 0 else
+   let m=min i (String.length s) in
+   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Ennig.ennig 1 m));;
+
+
+end;;
+
 let leftmost_linedex_of_in_from x y i=
         let j=leftmost_index_of_in_from x y i in
         if j<0 then (-1) else
-        Strung.number_of_lines_before y j;;    
+        Friend.number_of_lines_before y j;;    
 
  let occurrences_of_in x y=
    let lx=String.length x 
