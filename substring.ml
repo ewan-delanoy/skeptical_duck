@@ -74,15 +74,21 @@ let leftmost_linedex_of_in_from x y i=
    )  in
    tempf (1,[]);;
 
-(*
-let leftmost_index_of_from_pattern_in_from patterns whole_string start_idx=  
+
+let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
+    let n=String.length(whole_string) in
     let temp1=Ennig.index_everything patterns in 
-    let tester =(
-       fun idx->
-    )
-    let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      match Ennig.find_it tester (i-1) (String.length(y)-lx) with
-         None->(-1)
-        |Some(k)->k+1;;          
-*)        
+    let tester =(fun idx->Option.find_and_stop (
+         fun (patt_nbr,patt)->
+           if is_a_substring_located_at patt whole_string idx 
+           then Some(patt_nbr,idx)
+           else None
+       ) temp1) in
+    Option.find_and_stop tester (Ennig.ennig start_idx n);;          
+      
+(*
+
+leftmost_index_of_pattern_among_in_from ["uv";"abc";"abcde"] "123abcde90" 1;;
+
+*)
+
