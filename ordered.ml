@@ -200,7 +200,9 @@ let filter f ox=unsafe_set(List.filter(f)(forget_order ox));;
 let for_all f ox=List.for_all(f)(forget_order ox);;
 let singleton x=unsafe_set [x];;
 let empty_set=unsafe_set [];;
-let big_teuzin kenver x=List.fold_left (teuzin kenver) empty_set x;;
+let big_teuzin kenver =function
+    []->empty_set
+    |a::b->List.fold_left (teuzin kenver) a b;;
 let big_kengeij kenver=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(kengeij kenver)(a)(b);;
