@@ -246,45 +246,89 @@ let leftmost_difference s1 s2=
 leftmost_difference "abc1def" "abc257";;
 *)
 
-(*
-module Private = struct 
 
-let is_a_substring_located_at y x old_j =
-    let j=old_j-1 in
-    let ly=String.length(y) in
-      if (String.length(x)<j+ly)||(j<0)
-      then false
-      else (String.sub x j ly)=y;;
 
-end;;
+
+exception Unfinished_expression of int*string;;
+exception Unexpected_case_in_triune_analysis;;
+
+
+module Private = struct
+
+let pusher_inside_triune_analysis 
+    (s,joiners,seeker) state =
+     let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
+     if opt_result<>None then state else 
+     let opt = seeker idx in 
+     if opt = None 
+     then raise(Unfinished_expression(idx,s))
+     else 
+     let (case,new_idx)=Option.unpack opt in
+     let joiner=List.nth joiners (case-1) in 
+     let idx2=new_idx+String.length(joiner) in 
+     if case=1
+     then (None,nbr_of_openers_so_far+1,items_so_far,current_item_start,world_start,idx2)
+     else    
+     if case=2
+     then (
+            if nbr_of_openers_so_far=1
+            then let new_item = Cull_string.interval s current_item_start (new_idx-1) in 
+                 (None,nbr_of_openers_so_far,new_item::items_so_far,idx2,world_start,idx2)
+            else (None,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx2)
+          )
+     else 
+     if case=3
+     then (
+            if nbr_of_openers_so_far=1
+            then let whole_interval=(world_start,idx2-1) in 
+                 let last_item = Cull_string.interval s current_item_start (new_idx-1) in 
+                 let items=List.rev(last_item::items_so_far) in
+                 let answer=Some(items,whole_interval) in  
+                 (answer,0,[],0,0,0)
+            else (None,nbr_of_openers_so_far-1,items_so_far,current_item_start,world_start,idx2)
+          )
+     else raise(Unexpected_case_in_triune_analysis);;
+     
+let iterator_inside_triune_analysis 
+    (s,joiners,seeker) =
+     let rec tempf=(fun state ->
+     let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
+     match opt_result with 
+     Some(result)->result 
+     |None -> tempf(pusher_inside_triune_analysis (s,joiners,seeker) state )) in 
+   tempf;;
+
+end ;;
 
 
 exception Missing_opener_in_triune_analysis of string*string;;
+exception Started_by_nonopener_in_triune_analysis of int*string;;
+
 
 let triune_analysis 
-  openr separatr closr s=
-    let n=String.length s in 
-    let tester=(fun j->
-       if Private.is_a_substring_located_at openr s j then Some(j,1) else 
-       if Private.is_a_substring_located_at separatr s j then Some(j,2) else
-       if Private.is_a_substring_located_at closr s j then Some(j,3) else
-       None
-    ) in 
-    let seeker = (fun k-> Option.find_and_stop tester (Ennig.ennig k n) in 
+  (openr,separatr,closr) s=
+    let joiners = [openr;separatr;closr]  in  
+    let seeker = Substring.leftmost_index_of_pattern_among_in_from 
+       [openr;separatr;closr] s in 
+    
     let opt1=seeker 1 in 
     if opt1=None 
     then raise(Missing_opener_in_triune_analysis(openr,s))
     else  
-    let (idx1,case1)=(Option.unpack opt1) in 
+    let (case1,idx1)=Option.unpack opt1 in
+    if case1<>1
+    then raise(Started_by_nonopener_in_triune_analysis(case1,s))
+    else 
+    let idx2=idx1+(String.length openr) in 
+    let initial_vals=(None,1,[],idx2,idx1,idx2) in 
+    Private.iterator_inside_triune_analysis 
+    (s,joiners,seeker) initial_vals;;
     
-  
-  Substring.leftmost_index_of_in
-           
-let leftmost_index_of_in_from x y i=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      match Ennig.find_it tester (i-1) (String.length(y)-lx) with
-         None->(-1)
-        |Some(k)->k+1;;
+(*
 
-*)
+triune_analysis ("(",",",")") "f(ab,cde,gh)ijk" ;;
+
+triune_analysis ("(",",",")") "g(1,f(ab,cde,gh)ijk,2,h(k(u(6,7),v)),3)" ;;
+
+*)  
+
