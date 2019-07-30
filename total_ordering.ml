@@ -89,7 +89,6 @@ let combine=((fun ~tried_first ~tried_second->
  let rec lex_compare (f:'a t)=
   let rec tempf=(
     fun l1 l2->
-     if l1=l2 then Equal else
      if l1=[] then Lower else
      if l2=[] then Greater else
      let t=f(List.hd l1)(List.hd l2) in
