@@ -90,7 +90,7 @@ let combine=((fun ~tried_first ~tried_second->
   let rec tempf=(
     fun l1 l2->
      match l1 with 
-     []->Lower
+     []->(if l2=[] then Equal else Lower)
      |a1::b1->
       (
         match l2 with 
