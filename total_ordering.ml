@@ -89,11 +89,17 @@ let combine=((fun ~tried_first ~tried_second->
  let rec lex_compare (f:'a t)=
   let rec tempf=(
     fun l1 l2->
-     if l1=[] then Lower else
-     if l2=[] then Greater else
-     let t=f(List.hd l1)(List.hd l2) in
-     if t<>Equal then t else
-     tempf (List.tl l1) (List.tl l2)) in
+     match l1 with 
+     []->Lower
+     |a1::b1->
+      (
+        match l2 with 
+        []->Greater
+        |a2::b2->
+          let t=f(a1)(a2) in
+           if t<>Equal then t else
+           tempf b1 b2
+      )) in
      (tempf:>( ('a list) t));;
  
 
