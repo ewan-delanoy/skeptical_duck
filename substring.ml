@@ -74,5 +74,15 @@ let leftmost_linedex_of_in_from x y i=
    )  in
    tempf (1,[]);;
 
- 
-              
+(*
+let leftmost_index_of_from_pattern_in_from patterns whole_string start_idx=  
+    let temp1=Ennig.index_everything patterns in 
+    let tester =(
+       fun idx->
+    )
+    let lx=String.length(x) in
+      let tester=(function j->(String.sub y j lx)=x) in
+      match Ennig.find_it tester (i-1) (String.length(y)-lx) with
+         None->(-1)
+        |Some(k)->k+1;;          
+*)        
