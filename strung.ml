@@ -301,11 +301,11 @@ let iterator_inside_triune_analysis
 end ;;
 
 
-exception Missing_opener_in_triune_analysis of string*string;;
-exception Started_by_nonopener_in_triune_analysis of int*string;;
+exception Missing_opener of string*string;;
+exception Started_by_nonopener of int*string;;
 
 
-let triune_analysis 
+let parse_nested_parentheses 
   (openr,separatr,closr) s=
     let joiners = [openr;separatr;closr]  in  
     let seeker = Substring.leftmost_index_of_pattern_among_in_from 
@@ -313,11 +313,11 @@ let triune_analysis
     
     let opt1=seeker 1 in 
     if opt1=None 
-    then raise(Missing_opener_in_triune_analysis(openr,s))
+    then raise(Missing_opener(openr,s))
     else  
     let (case1,idx1)=Option.unpack opt1 in
     if case1<>1
-    then raise(Started_by_nonopener_in_triune_analysis(case1,s))
+    then raise(Started_by_nonopener(case1,s))
     else 
     let idx2=idx1+(String.length openr) in 
     let initial_vals=(None,1,[],idx2,idx1,idx2) in 
@@ -326,9 +326,9 @@ let triune_analysis
     
 (*
 
-triune_analysis ("(",",",")") "f(ab,cde,gh)ijk" ;;
+parse_nested_parentheses ("(",",",")") "f(ab,cde,gh)ijk" ;;
 
-triune_analysis ("(",",",")") "g(1,f(ab,cde,gh)ijk,2,h(k(u(6,7),v)),3)" ;;
+parse_nested_parentheses ("(",",",")") "g(1,f(ab,cde,gh)ijk,2,h(k(u(6,7),v)),3)" ;;
 
 *)  
 
