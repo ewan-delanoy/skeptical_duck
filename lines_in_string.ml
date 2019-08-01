@@ -19,6 +19,7 @@ core "a\nb\n";;
 
 *)
 
+let lines s= Image.image snd (core s);;
 
 let interval s i j=
     let temp1=core s in
