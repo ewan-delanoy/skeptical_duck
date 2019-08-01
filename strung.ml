@@ -255,7 +255,7 @@ exception Unexpected_case_in_triune_analysis;;
 
 module Private = struct
 
-let pusher_inside_triune_analysis 
+let pusher_inside_nested_parentheses_parsing
     (s,joiners,seeker) state =
      let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
      if opt_result<>None then state else 
@@ -289,13 +289,13 @@ let pusher_inside_triune_analysis
           )
      else raise(Unexpected_case_in_triune_analysis);;
      
-let iterator_inside_triune_analysis 
+let iterator_inside_nested_parentheses_parsing 
     (s,joiners,seeker) =
      let rec tempf=(fun state ->
      let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
      match opt_result with 
      Some(result)->result 
-     |None -> tempf(pusher_inside_triune_analysis (s,joiners,seeker) state )) in 
+     |None -> tempf(pusher_inside_nested_parentheses_parsing (s,joiners,seeker) state )) in 
    tempf;;
 
 end ;;
@@ -321,7 +321,7 @@ let parse_nested_parentheses
     else 
     let idx2=idx1+(String.length openr) in 
     let initial_vals=(None,1,[],idx2,idx1,idx2) in 
-    Private.iterator_inside_triune_analysis 
+    Private.iterator_inside_nested_parentheses_parsing 
     (s,joiners,seeker) initial_vals;;
     
 (*
