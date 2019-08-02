@@ -90,13 +90,11 @@ let extract_initial_string s=
    (Concrete_object_t.String(Cull_string.interval s idx1 (idx2-1)),idx2+(String.length string_closer));;
 
 let extract_initial_array older_extractor s=
-   let n = String.length s in 
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses array_triple s in 
    let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
    (Concrete_object_t.Array(temp1),i_end+1);;
 
 let extract_initial_list older_extractor s=
-   let n = String.length s in 
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses list_triple s in 
    let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
    (Concrete_object_t.List(temp1),i_end+1);;
@@ -104,19 +102,16 @@ let extract_initial_list older_extractor s=
 
 
 let extract_initial_record older_extractor s=
-   let n = String.length s in 
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses record_triple s in 
    let temp1=Image.image (parse_record_item older_extractor) items in 
    (Concrete_object_t.Record(temp1),i_end+1);;
 
 let extract_initial_uple older_extractor s=
-   let n = String.length s in 
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses uple_triple s in 
    let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
    (Concrete_object_t.Uple(temp1),i_end+1);;
 
 let extract_initial_variant older_extractor s=
-   let n = String.length s in 
    let (unchecked_items,(i_start,i_end))=Strung.parse_nested_parentheses variant_triple s in 
    let constructor=Cull_string.beginning (i_start-1) s in 
    let items = List.filter (fun u->u<>"") unchecked_items in 
