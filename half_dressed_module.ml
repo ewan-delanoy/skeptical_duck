@@ -112,14 +112,14 @@ let unarchive_pair s=
     (unarchive(List.nth l1 0),
      bool_of_string(List.nth l1 1));;
    
-let  to_concrete_object x=
+let  to_concrete_object hm=
    let items=Image.image (
       fun (constructor,content)->
         (constructor,Concrete_object_t.String(content))
    ) [
-     "bundle_main_dir",x.bundle_main_dir;
-     "subdirectory",x.subdirectory;
-     "naked_module",x.naked_module;
+     "bundle_main_dir",hm.bundle_main_dir;
+     "subdirectory",hm.subdirectory;
+     "naked_module",hm.naked_module;
    ] 
    in
    Concrete_object_t.Record items;;
@@ -130,5 +130,15 @@ let of_concrete_object ccrt_obj =
    		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "subdirectory";
         naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
       };;  
+
+(*
+let pair_to_concrete_object (hm,is_compiled_correctly)=
+    Concrete_object_t.Uple [to_concrete_object hm,];;
+*)   
+
+let irchave hm = Concrete_object.to_string (to_concrete_object hm);;
+let unirchave s = of_concrete_object( Concrete_object.of_string s);;
+
+
 
 
