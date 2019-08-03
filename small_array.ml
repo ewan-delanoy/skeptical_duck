@@ -133,12 +133,11 @@ let to_concrete_object old_concretizer (SA(n,l))=
         Concrete_object_t.List(Image.image old_concretizer l);
       ]);;
 
-(*
+
 let of_concrete_object old_unconcretizer ccrt_obj =
    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
-   let temp1=
    SA(
       Concrete_object_field.unwrap_int arg1,
       Image.image old_unconcretizer (Concrete_object_field.unwrap_list arg2)
    );;
-*)                      
+                     
