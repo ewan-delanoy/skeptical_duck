@@ -131,10 +131,13 @@ let of_concrete_object ccrt_obj =
         naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
       };;  
 
-(*
+
 let pair_to_concrete_object (hm,is_compiled_correctly)=
-    Concrete_object_t.Uple [to_concrete_object hm,];;
-*)   
+    Concrete_object_t.Uple [to_concrete_object hm;Concrete_object_field.of_bool is_compiled_correctly];;
+   
+let pair_of_concrete_object ccrt_obj =
+    
+
 
 let irchave hm = Concrete_object.to_string (to_concrete_object hm);;
 let unirchave s = of_concrete_object( Concrete_object.of_string s);;

@@ -11,6 +11,16 @@ let get_record ccrt_obj field =
    Concrete_object_t.Record(l)->List.assoc field l 
    |_->raise(Get_record_exn(ccrt_obj));;
 
+exception Get_pair_exn of Concrete_object_t.t;;
+
+let get_pair ccrt_obj =
+  match ccrt_obj with 
+   Concrete_object_t.Uple(l)->
+        if List.length(l)<>2
+        then raise(Get_pair_exn(ccrt_obj))
+        else (List.nth l 0,List.nth l 1)
+   |_->raise(Get_pair_exn(ccrt_obj));;
+
 exception Unwrap_string_exn of Concrete_object_t.t;;
 
 let unwrap_string ccrt_obj=
