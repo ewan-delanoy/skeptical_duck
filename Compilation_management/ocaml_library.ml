@@ -1,11 +1,7 @@
 
 (* 
 
-
-
-
-#use"Makefile_makers/ocaml_library.ml";;
-
+#use"Compilation_management/ocaml_library.ml";;
 
 *)
 
@@ -50,3 +46,9 @@ let compute_needed_libraries_from_uncapitalized_modules_list l=
       ) l
    ) all_libraries;;
            
+let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
+  correspondances;;
+          
+let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
+  correspondances;;    
+
