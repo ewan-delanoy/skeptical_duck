@@ -136,3 +136,22 @@ let unarchive s=
    and dir=Root_directory.of_string(List.nth l1 2) in
    MLX(Ocaml_ending.of_string("."^edg),s,dir);;
            
+let to_concrete_object (MLX(edg,s,dir))=
+    Concrete_object_t.Variant("Mlx_ended_absolute_path.MLX",
+      [
+        Ocaml_ending.to_concrete_object edg;
+        Concrete_object_t.String(s);
+        Root_directory.to_concrete_object dir;
+      ]);;
+
+let of_concrete_object ccrt_obj =
+   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   MLX(
+      Ocaml_ending.of_concrete_object arg1,
+      Concrete_object_field.unwrap_string arg2,
+      Root_directory.of_concrete_object arg3
+   );;
+  
+
+
+
