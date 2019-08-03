@@ -123,3 +123,12 @@ let  to_concrete_object x=
    ] 
    in
    Concrete_object_t.Record items;;
+
+let of_concrete_object ccrt_obj = 
+     {
+	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "bundle_main_dir";
+   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "subdirectory";
+        naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
+      };;  
+
+
