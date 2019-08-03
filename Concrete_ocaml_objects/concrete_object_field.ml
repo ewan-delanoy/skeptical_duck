@@ -44,12 +44,12 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
    match ccrt_obj with 
    Concrete_object_t.Variant(constructor,l)->
       if  l<>[] then raise(Unwrap_lonely_variant_exn(ccrt_obj)) else 
-      (match Option.seek(fun (key,vaal)->key=constructor) l_pairs with
+      (match Option.seek(fun (_,key)->key=constructor) l_pairs with
       None->raise(Unwrap_lonely_variant_exn(ccrt_obj))
-     |Some(_,vaal)->vaal) 
+     |Some(vaal,_)->vaal) 
    |_->raise(Unwrap_string_exn(ccrt_obj));;
 
-let to_bool =unwrap_lonely_variant ["True",true;"False",false] ;; 
+let to_bool =unwrap_lonely_variant [true,"True";false,"False"] ;; 
 
 
 let get_str_record ccrt_obj field=unwrap_string(get_record ccrt_obj field);;   
