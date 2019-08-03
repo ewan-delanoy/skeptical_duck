@@ -44,4 +44,12 @@ let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
    Subdirectory_t.SD(Concrete_object_field.unwrap_string arg1);;
 
+let list_to_concrete_object l=
+   Concrete_object_t.List(Image.image to_concrete_object l);;
+
+let list_of_concrete_object ccrt_obj=
+    Image.image of_concrete_object (Concrete_object_field.unwrap_list ccrt_obj);;   
+
+    
+
 

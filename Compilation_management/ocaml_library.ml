@@ -52,3 +52,10 @@ let of_concrete_object =Concrete_object_field.unwrap_lonely_variant
 let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
   correspondances;;    
 
+let list_to_concrete_object l=
+   Concrete_object_t.List(Image.image to_concrete_object l);;
+
+let list_of_concrete_object ccrt_obj=
+    Image.image of_concrete_object (Concrete_object_field.unwrap_list ccrt_obj);;   
+
+    
