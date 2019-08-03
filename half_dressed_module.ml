@@ -136,11 +136,17 @@ let pair_to_concrete_object (hm,is_compiled_correctly)=
     Concrete_object_t.Uple [to_concrete_object hm;Concrete_object_field.of_bool is_compiled_correctly];;
    
 let pair_of_concrete_object ccrt_obj =
+    let (hm_o,is_compiled_correctly_o)=Concrete_object_field.get_pair ccrt_obj in 
+    (of_concrete_object hm_o,Concrete_object_field.to_bool is_compiled_correctly_o);;
     
 
 
 let irchave hm = Concrete_object.to_string (to_concrete_object hm);;
 let unirchave s = of_concrete_object( Concrete_object.of_string s);;
+
+let irchave_pair pair = Concrete_object.to_string (pair_to_concrete_object pair);;
+let unirchave_pair s = pair_of_concrete_object( Concrete_object.of_string s);;
+
 
 
 
