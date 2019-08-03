@@ -72,4 +72,7 @@ let mass_copy dir1 dir2 l=
 let to_concrete_object (Root_directory_t.R(s))=
     Concrete_object_t.Variant("Root_directory_t.R",[Concrete_object_t.String(s)]);;
 
+let of_concrete_object ccrt_obj =
+   let (constructor,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   Root_directory_t.R(Concrete_object_field.unwrap_string arg1);;
 
