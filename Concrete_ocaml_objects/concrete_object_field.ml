@@ -49,6 +49,29 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
      |Some(vaal,_)->vaal) 
    |_->raise(Unwrap_string_exn(ccrt_obj));;
 
+exception Variant_too_big of Concrete_object_t.t;;
+exception Variant_too_small of Concrete_object_t.t;;
+exception Unwrap_bounded_variant_exn of Concrete_object_t.t;;
+
+let unwrap_bounded_variant ccrt_obj=
+  match ccrt_obj with 
+   Concrete_object_t.Variant(constructor,l)->
+      let n=List.length(l) in 
+      if  n<1 then raise(Variant_too_small(ccrt_obj)) else 
+      if  n>7 then raise(Variant_too_big(ccrt_obj)) else 
+      let i2=(if n<2 then 1 else 2) 
+      and i3=(if n<3 then 1 else 3)
+      and i4=(if n<4 then 1 else 4)
+      and i5=(if n<5 then 1 else 5)
+      and i6=(if n<6 then 1 else 6)
+      and i7=(if n<7 then 1 else 7) in
+      let get=(fun k->List.nth l (k-1)) in 
+      (constructor,(get 1,get i2,get i3,get i4,get i5,get i6,get i7))
+   | _-> raise(Unwrap_bounded_variant_exn(ccrt_obj));;
+
+
+
+
 let to_bool =unwrap_lonely_variant [true,"True";false,"False"] ;; 
 
 
