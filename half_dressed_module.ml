@@ -112,7 +112,7 @@ let unarchive_pair s=
     (unarchive(List.nth l1 0),
      bool_of_string(List.nth l1 1));;
    
-let  to_concrete_object hm=
+let to_concrete_object hm=
    let items=Image.image (
       fun (constructor,content)->
         (constructor,Concrete_object_t.String(content))

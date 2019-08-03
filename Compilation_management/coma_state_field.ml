@@ -449,7 +449,42 @@ let unarchive s=
           printer_equipped_types = list_unarch Half_dressed_module.unarchive_pair (part 16);
        });; 
       
-       
-       
+(*       
+let to_concrete_object cs=
+   let items= 
+   [
+    "root", Root_directory.to_concrete_object cs.Coma_state_t.root;
+    "dir_for_backup", Root_directory.to_concrete_object cs.Coma_state_t.dir_for_backup;
+    "push_after_backup", Concrete_object_field.of_bool cs.Coma_state_t.push_after_backup;
+    "modules", Small_array.to_concrete_object Naked_module.to_concrete_object cs.Coma_state_t.modules;
+    "subdir_for_module", Small_array.to_concrete_object Subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
+    "principal_ending_for_module", Small_array.to_concrete_object Ocaml_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
+    "mli_presence_for_module", Small_array.to_concrete_object Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
+    "principal_mt_for_module", Small_array.to_concrete_object  cs.Coma_state_t.principal_mt_for_module;
+  
+  
+  principal_mt_for_module : string Small_array.t;
+  mli_mt_for_module : string Small_array.t;
+  needed_libs_for_module : Ocaml_library.t list Small_array.t;
+  direct_fathers_for_module : Naked_module_t.t list Small_array.t;
+  ancestors_for_module : Naked_module_t.t list Small_array.t;
+  needed_dirs_for_module : Subdirectory_t.t list Small_array.t;
+  product_up_to_date_for_module : bool Small_array.t;
+  directories : Subdirectory_t.t list;
+  printer_equipped_types : (Half_dressed_module.t * bool) list;    
+    
+   in
+   Concrete_object_t.Record items;;
+*)
+
+(*
+let of_concrete_object ccrt_obj = 
+     {
+	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "bundle_main_dir";
+   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "subdirectory";
+        naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
+      };;  
+*)       
       
            
+

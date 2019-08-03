@@ -115,5 +115,5 @@ let get_str_record ccrt_obj field=unwrap_string(get_record ccrt_obj field);;
 let truth = Concrete_object_t.Variant("True",[]);;
 let falsity = Concrete_object_t.Variant("False",[]);;
 let of_bool bowl=if bowl then truth else falsity;;
-
+let wrap_string s= Concrete_object_t.String s;;
 
