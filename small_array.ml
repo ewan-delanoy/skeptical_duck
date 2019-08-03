@@ -126,6 +126,19 @@ let unarchive old_unarchiver s=
     let temp2=Image.image old_unarchiver temp1 in 
     of_list temp2;;   
    
+let to_concrete_object old_concretizer (SA(n,l))=
+    Concrete_object_t.Variant("Small_array.SA",
+      [
+        Concrete_object_t.Int(n);
+        Concrete_object_t.List(Image.image old_concretizer l);
+      ]);;
 
-
-                    
+(*
+let of_concrete_object ccrt_obj =
+   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   SA(
+      Ocaml_ending.of_concrete_object arg1,
+      Concrete_object_field.unwrap_string arg2,
+      Root_directory.of_concrete_object arg3
+   );;
+*)                      

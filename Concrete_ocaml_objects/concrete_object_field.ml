@@ -6,6 +6,7 @@
 
 exception Get_record_exn of Concrete_object_t.t;;
 exception Get_pair_exn of Concrete_object_t.t;;
+exception Unwrap_int_exn of Concrete_object_t.t;;
 exception Unwrap_string_exn of Concrete_object_t.t;;
 exception Wrap_lonely_variant_exn;;
 exception Unwrap_lonely_variant_exn of Concrete_object_t.t;;
@@ -26,7 +27,10 @@ let get_pair ccrt_obj =
         else (List.nth l 0,List.nth l 1)
    |_->raise(Get_pair_exn(ccrt_obj));;
 
-
+let unwrap_int ccrt_obj=
+   match ccrt_obj with 
+   Concrete_object_t.Int(i)->i 
+   |_->raise(Unwrap_int_exn(ccrt_obj));;
 
 let unwrap_string ccrt_obj=
    match ccrt_obj with 
