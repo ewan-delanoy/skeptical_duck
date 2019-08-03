@@ -112,4 +112,14 @@ let unarchive_pair s=
     (unarchive(List.nth l1 0),
      bool_of_string(List.nth l1 1));;
    
-           
+let  to_concrete_object x=
+   let items=Image.image (
+      fun (constructor,content)->
+        (constructor,Concrete_object_t.String(content))
+   ) [
+     "bundle_main_dir",x.bundle_main_dir;
+     "subdirectory",x.subdirectory;
+     "naked_module",x.naked_module;
+   ] 
+   in
+   Concrete_object_t.Record items;;
