@@ -69,3 +69,7 @@ let mass_copy dir1 dir2 l=
         else None) l in 
     Image.image Unix_command.uc temp1;;
 
+let to_concrete_object (Root_directory_t.R(s))=
+    Concrete_object_t.Variant("Root_directory_t.R",[Concrete_object_t.String(s)]);;
+
+
