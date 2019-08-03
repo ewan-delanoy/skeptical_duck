@@ -32,13 +32,6 @@ let of_string s=
 
 let to_string edg=snd(Option.find (fun (x,y)->x=edg) correspondances);;  
 
-
-
-let ocaml_name w=
- let c="Ocaml_ending"^"." in
- match w with
- Ml->c^"Ml"
-|Mli->c^"Mli"
-|Mll->c^"Mll"
-|Mly->c^"Mly";;
-           
+(*
+let of_concrete_object 
+*)           
