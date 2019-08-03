@@ -140,12 +140,11 @@ let pair_of_concrete_object ccrt_obj =
     (of_concrete_object hm_o,Concrete_object_field.to_bool is_compiled_correctly_o);;
     
 
+let list_of_pairs_to_concrete_object l=
+   Concrete_object_t.List(Image.image pair_to_concrete_object l);;
 
-let irchave hm = Concrete_object.to_string (to_concrete_object hm);;
-let unirchave s = of_concrete_object( Concrete_object.of_string s);;
-
-let irchave_pair pair = Concrete_object.to_string (pair_to_concrete_object pair);;
-let unirchave_pair s = pair_of_concrete_object( Concrete_object.of_string s);;
+let list_of_pairs_of_concrete_object ccrt_obj=
+    Image.image pair_of_concrete_object (Concrete_object_field.unwrap_list ccrt_obj);;  
 
 
 
