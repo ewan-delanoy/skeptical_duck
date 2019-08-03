@@ -1,7 +1,7 @@
 
 (* 
 
-#use"Makefile_makers/coma_state_field.ml";;
+#use"Compilation_management/coma_state_field.ml";;
 
 Here, we put soma wrappers so that all direct manipulations of
 the Coma_state_t.t datatype should be done here.
@@ -449,7 +449,7 @@ let unarchive s=
           printer_equipped_types = list_unarch Half_dressed_module.unarchive_pair (part 16);
        });; 
       
-(*)
+
 let to_concrete_object cs=
    let items= 
    [
@@ -467,21 +467,35 @@ let to_concrete_object cs=
     "ancestors_for_module", Small_array.to_concrete_object Naked_module.list_to_concrete_object cs.Coma_state_t.ancestors_for_module;   
     "needed_dirs_for_module", Small_array.to_concrete_object Subdirectory.list_to_concrete_object cs.Coma_state_t.needed_dirs_for_module;  
     "product_up_to_date_for_module", Small_array.to_concrete_object Concrete_object_field.of_bool cs.Coma_state_t.product_up_to_date_for_module; 
-    "directories",  Subdirectory.list_to_concrete_object cs.Coma_state_t.directories;    
-    printer_equipped_types : (Half_dressed_module.t * bool) list;     
-    
-   in
+    "directories",  Subdirectory.list_to_concrete_object cs.Coma_state_t.directories; 
+    "printer_equipped_types",  Half_dressed_module.list_of_pairs_to_concrete_object cs.Coma_state_t.printer_equipped_types;    
+   ]  in
    Concrete_object_t.Record items;;
-*)
 
-(*
+
+
 let of_concrete_object ccrt_obj = 
-     {
-	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "bundle_main_dir";
-   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "subdirectory";
-        naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
-      };;  
-*)       
+   let g=Concrete_object_field.get_record ccrt_obj in
+   {
+      Coma_state_t.root = Root_directory.of_concrete_object(g "root");
+      dir_for_backup = Root_directory.of_concrete_object(g "dir_for_backup");
+      push_after_backup = Concrete_object_field.to_bool (g "push_after_backup");
+      modules = Small_array.of_concrete_object Naked_module.of_concrete_object (g "modules");
+      subdir_for_module = Small_array.of_concrete_object Subdirectory.of_concrete_object (g "subdir_for_module");
+      principal_ending_for_module = Small_array.of_concrete_object Ocaml_ending.of_concrete_object (g "principal_ending_for_module") ;
+      mli_presence_for_module = Small_array.of_concrete_object Concrete_object_field.to_bool (g "mli_presence_for_module") ;
+      principal_mt_for_module = Small_array.of_concrete_object Concrete_object_field.unwrap_string (g "principal_mt_for_module") ;
+      mli_mt_for_module = Small_array.of_concrete_object Concrete_object_field.unwrap_string (g "mli_mt_for_module") ;
+      needed_libs_for_module = Small_array.of_concrete_object Ocaml_library.list_of_concrete_object (g "needed_libs_for_module") ;
+      direct_fathers_for_module = Small_array.of_concrete_object Naked_module.list_of_concrete_object (g "direct_fathers_for_module");
+      ancestors_for_module = Small_array.of_concrete_object Naked_module.list_of_concrete_object (g "ancestors_for_module") ; 
+      needed_dirs_for_module = Small_array.of_concrete_object Subdirectory.list_of_concrete_object (g "needed_dirs_for_module");
+      product_up_to_date_for_module = Small_array.of_concrete_object Concrete_object_field.to_bool (g "product_up_to_date_for_module") ;
+      directories = Subdirectory.list_of_concrete_object  (g "directories");
+      printer_equipped_types = Half_dressed_module.list_of_pairs_of_concrete_object (g "printer_equipped_types");
+   };; 
+      
+       
       
            
 
