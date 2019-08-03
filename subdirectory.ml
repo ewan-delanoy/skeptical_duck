@@ -36,3 +36,12 @@ rename_endsubdirectory (SD("Haag/Huug"),"Java") (SD "Haag/Huug/King/Jordan");;
 rename_endsubdirectory (SD("Haag"),"Java") (SD "Haag/Huug/King/Jordan");;
 
 *)              
+
+let to_concrete_object (Subdirectory_t.SD(s))=
+    Concrete_object_t.Variant("Subdirectory_t.SD",[Concrete_object_t.String(s)]);;
+
+let of_concrete_object ccrt_obj =
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   Subdirectory_t.SD(Concrete_object_field.unwrap_string arg1);;
+
+
