@@ -32,11 +32,9 @@ let of_string s=
 
 let to_string edg=snd(Option.find (fun (x,y)->x=edg) correspondances);;  
 
-(*
-let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
-  ["Ml",Ml;"Mli",Mli;"Mll",Mll;"Mly",Mly];;
 
+let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
+  correspondances;;
           
 let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
-  ["Ml",Ml;"Mli",Mli;"Mll",Mll;"Mly",Mly];;           
- *)
+  correspondances;;           
