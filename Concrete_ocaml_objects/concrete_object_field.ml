@@ -5,13 +5,18 @@
 *)
 
 exception Get_record_exn of Concrete_object_t.t;;
+exception Get_pair_exn of Concrete_object_t.t;;
+exception Unwrap_string_exn of Concrete_object_t.t;;
+exception Wrap_lonely_variant_exn;;
+exception Unwrap_lonely_variant_exn of Concrete_object_t.t;;
+
 
 let get_record ccrt_obj field =
    match ccrt_obj with 
    Concrete_object_t.Record(l)->List.assoc field l 
    |_->raise(Get_record_exn(ccrt_obj));;
 
-exception Get_pair_exn of Concrete_object_t.t;;
+
 
 let get_pair ccrt_obj =
   match ccrt_obj with 
@@ -21,14 +26,19 @@ let get_pair ccrt_obj =
         else (List.nth l 0,List.nth l 1)
    |_->raise(Get_pair_exn(ccrt_obj));;
 
-exception Unwrap_string_exn of Concrete_object_t.t;;
+
 
 let unwrap_string ccrt_obj=
    match ccrt_obj with 
    Concrete_object_t.String(s)->s 
    |_->raise(Unwrap_string_exn(ccrt_obj));;
 
-exception Unwrap_lonely_variant_exn of Concrete_object_t.t;;
+
+let wrap_lonely_variant l_pairs unwrapped=
+   match Option.seek(fun (key,vaal)->key=unwrapped) l_pairs with
+      None->raise(Wrap_lonely_variant_exn)
+     |Some(_,constructor)->Concrete_object_t.Variant(constructor,[]) ;;
+
 
 let unwrap_lonely_variant l_pairs ccrt_obj=
    match ccrt_obj with 
@@ -38,8 +48,6 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
       None->raise(Unwrap_lonely_variant_exn(ccrt_obj))
      |Some(_,vaal)->vaal) 
    |_->raise(Unwrap_string_exn(ccrt_obj));;
-
-exception To_bool_exn of Concrete_object_t.t;;
 
 let to_bool =unwrap_lonely_variant ["True",true;"False",false] ;; 
 
