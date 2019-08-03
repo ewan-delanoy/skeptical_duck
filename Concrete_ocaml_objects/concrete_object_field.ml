@@ -6,7 +6,9 @@
 
 exception Get_record_exn of Concrete_object_t.t;;
 exception Get_pair_exn of Concrete_object_t.t;;
+exception Unwrap_array_exn of Concrete_object_t.t;;
 exception Unwrap_int_exn of Concrete_object_t.t;;
+exception Unwrap_list_exn of Concrete_object_t.t;;
 exception Unwrap_string_exn of Concrete_object_t.t;;
 exception Wrap_lonely_variant_exn;;
 exception Unwrap_lonely_variant_exn of Concrete_object_t.t;;
@@ -27,10 +29,20 @@ let get_pair ccrt_obj =
         else (List.nth l 0,List.nth l 1)
    |_->raise(Get_pair_exn(ccrt_obj));;
 
+let unwrap_array ccrt_obj=
+   match ccrt_obj with 
+   Concrete_object_t.Array(l)->Array.of_list l 
+   |_->raise(Unwrap_array_exn(ccrt_obj));;
+
 let unwrap_int ccrt_obj=
    match ccrt_obj with 
    Concrete_object_t.Int(i)->i 
    |_->raise(Unwrap_int_exn(ccrt_obj));;
+
+let unwrap_list ccrt_obj=
+   match ccrt_obj with 
+   Concrete_object_t.List(l)->l 
+   |_->raise(Unwrap_list_exn(ccrt_obj));;
 
 let unwrap_string ccrt_obj=
    match ccrt_obj with 
@@ -52,6 +64,25 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
       None->raise(Unwrap_lonely_variant_exn(ccrt_obj))
      |Some(vaal,_)->vaal) 
    |_->raise(Unwrap_string_exn(ccrt_obj));;
+
+exception Uple_too_big of Concrete_object_t.t;;
+exception Uple_too_small of Concrete_object_t.t;;
+exception Unwrap_bounded_uple_exn of Concrete_object_t.t;;
+
+let unwrap_bounded_uple ccrt_obj=
+  match ccrt_obj with 
+   Concrete_object_t.Uple(l)->
+      let n=List.length(l) in 
+      if  n<2 then raise(Uple_too_small(ccrt_obj)) else 
+      if  n>7 then raise(Uple_too_big(ccrt_obj)) else 
+      let i3=(if n<3 then 1 else 3)
+      and i4=(if n<4 then 1 else 4)
+      and i5=(if n<5 then 1 else 5)
+      and i6=(if n<6 then 1 else 6)
+      and i7=(if n<7 then 1 else 7) in
+      let get=(fun k->List.nth l (k-1)) in 
+      (get 1,get 2,get i3,get i4,get i5,get i6,get i7)
+   | _-> raise(Unwrap_bounded_uple_exn(ccrt_obj));;
 
 exception Variant_too_big of Concrete_object_t.t;;
 exception Variant_too_small of Concrete_object_t.t;;

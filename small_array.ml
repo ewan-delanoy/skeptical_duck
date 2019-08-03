@@ -134,11 +134,11 @@ let to_concrete_object old_concretizer (SA(n,l))=
       ]);;
 
 (*
-let of_concrete_object ccrt_obj =
-   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+let of_concrete_object old_unconcretizer ccrt_obj =
+   let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   let temp1=
    SA(
-      Ocaml_ending.of_concrete_object arg1,
-      Concrete_object_field.unwrap_string arg2,
-      Root_directory.of_concrete_object arg3
+      Concrete_object_field.unwrap_int arg1,
+      Image.image old_unconcretizer (Concrete_object_field.unwrap_list arg2)
    );;
 *)                      
