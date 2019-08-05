@@ -50,10 +50,10 @@ let compute_needed_libraries_from_uncapitalized_modules_list l=
    ) all_libraries;;
            
 let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
-  correspondances;;
+  capitalized_correspondances;;
           
 let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
-  correspondances;;    
+  capitalized_correspondances;;    
 
 let list_to_concrete_object l=
    Concrete_object_t.List(Image.image to_concrete_object l);;
