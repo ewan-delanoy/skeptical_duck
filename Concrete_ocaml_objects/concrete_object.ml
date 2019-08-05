@@ -56,7 +56,7 @@ let parse_record_item older_extractor s=
    let idx2=idx1+String.length(record_arrow) in
    let end_of_s=Cull_string.cobeginning (idx2-1) s in  
    let key=Cull_string.beginning (idx1-1) s in 
-   let recorded_obj=force_extraction_to_be_full s (older_extractor end_of_s) in 
+   let recorded_obj=force_extraction_to_be_full end_of_s (older_extractor end_of_s) in 
    (key,recorded_obj);;
 
 
@@ -91,12 +91,12 @@ let extract_initial_string s=
 
 let extract_initial_array older_extractor s=
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses array_triple s in 
-   let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
+   let temp1=Image.image (fun t->force_extraction_to_be_full t (older_extractor t)) items in 
    (Concrete_object_t.Array(temp1),i_end+1);;
 
 let extract_initial_list older_extractor s=
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses list_triple s in 
-   let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
+   let temp1=Image.image (fun t->force_extraction_to_be_full t (older_extractor t)) items in 
    (Concrete_object_t.List(temp1),i_end+1);;
 
 
@@ -108,14 +108,14 @@ let extract_initial_record older_extractor s=
 
 let extract_initial_uple older_extractor s=
    let (items,(i_start,i_end))=Strung.parse_nested_parentheses uple_triple s in 
-   let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
+   let temp1=Image.image (fun t->force_extraction_to_be_full t (older_extractor t)) items in 
    (Concrete_object_t.Uple(temp1),i_end+1);;
 
 let extract_initial_variant older_extractor s=
    let (unchecked_items,(i_start,i_end))=Strung.parse_nested_parentheses variant_triple s in 
    let constructor=Cull_string.beginning (i_start-1) s in 
    let items = List.filter (fun u->u<>"") unchecked_items in 
-   let temp1=Image.image (fun t->force_extraction_to_be_full s (older_extractor t)) items in 
+   let temp1=Image.image (fun t->force_extraction_to_be_full t (older_extractor t)) items in 
    (Concrete_object_t.Variant(constructor,temp1),i_end+1);;
 
 exception Empty_argument_in_extraction;;
