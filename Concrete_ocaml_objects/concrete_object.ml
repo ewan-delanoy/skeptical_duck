@@ -38,6 +38,12 @@ let record_triple = (record_opener,record_separator,record_closer);;
 let uple_triple = (uple_opener,uple_separator,uple_closer);;
 let variant_triple = (variant_opener,variant_separator,variant_closer);;
 
+end;;
+
+module Old = struct 
+
+open Private;;
+
 exception Nonfull_extraction of int*string;;
 
 let force_extraction_to_be_full 
@@ -171,9 +177,45 @@ let rec to_string = function
 
 end;;
 
-let of_string = Private.of_string;;
-let to_string = Private.to_string;;
+let of_string = Old.of_string;;
+let to_string = Old.to_string;;
 
+
+module New = struct 
+
+exception Missing_string_opener of string;;
+exception Missing_string_closer of string;;
+open Private;;
+
+
+let extract_int_at_index s idx=
+   (* we assume that the first character is ok *)
+   let n=String.length s in 
+   let next_idx=(
+   match Option.seek(
+    fun k->let c=Strung.get s k in 
+    not(List.mem c ['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'])
+   ) (Ennig.ennig (idx+1) n) with 
+   None->n+1
+   |Some(idx2)->idx2) in 
+   (Concrete_object_t.Int(int_of_string(Cull_string.beginning (next_idx-1) s)),next_idx);;
+
+
+let extract_string_at_index s idx=
+   if not(Substring.is_a_substring_located_at string_opener s idx) 
+   then raise(Missing_string_opener(s))
+   else 
+   let idx1=idx+(String.length string_opener) in 
+   let idx2=Substring.leftmost_index_of_in_from string_closer s idx1 in 
+   if idx2<0
+   then raise(Missing_string_closer(s))
+   else
+   (Concrete_object_t.String(Cull_string.interval s idx1 (idx2-1)),idx2+(String.length string_closer));;
+
+
+
+
+end;;
 
 
 
