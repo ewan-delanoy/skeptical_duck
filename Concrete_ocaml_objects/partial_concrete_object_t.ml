@@ -8,13 +8,12 @@ For convenience, the list is reversed when the partial object is closed and beco
 
 *)
 
-type base = Concrete_object_t.t
 
 type t= 
-   |Uple of base list
-   |List of base list
-   |Array of base list
-   |Record of ((string*base) list)
-   |RecordPlusRecordName of ((string*base) list)*string
-   |Variant of string*(base list);;
+   |Uple of Concrete_object_t.t list
+   |List of Concrete_object_t.t list
+   |Array of Concrete_object_t.t list
+   |Record of ((string*Concrete_object_t.t) list)
+   |RecordPlusRecordName of ((string*Concrete_object_t.t) list)*string
+   |Variant of string*(Concrete_object_t.t list);;
 
