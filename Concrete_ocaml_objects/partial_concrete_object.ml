@@ -11,7 +11,7 @@ exception Unused_Record_Name of string;;
 exception Misapplied_Record_Name of string;;
 
 
-let add_one_more_item item =function 
+let push_one_more_item item =function 
     Partial_concrete_object_t.Uple(l)->Partial_concrete_object_t.Uple(item::l)
    |List(l)->Partial_concrete_object_t.List(item::l)
    |Array(l)->Partial_concrete_object_t.Array(item::l)
@@ -19,9 +19,14 @@ let add_one_more_item item =function
    |RecordPlusRecordName(l,rcdname)->Partial_concrete_object_t.Record((rcdname,item)::l)
    |Variant(constructor,l)->Partial_concrete_object_t.Variant(constructor,item :: l);;
 
-let add_record_name recdname=function 
+let push_int i = push_one_more_item (Concrete_object_t.Int(i));;
+let push_string s = push_one_more_item (Concrete_object_t.String(s));;
+
+let push_record_name recdname=function 
     Partial_concrete_object_t.Record(l)->Partial_concrete_object_t.RecordPlusRecordName(l,recdname)
    |_->raise(Misapplied_Record_Name(recdname));;
+
+
 
 let close =function 
     Partial_concrete_object_t.Uple(l)->Concrete_object_t.Uple(List.rev l)
