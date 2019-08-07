@@ -11,5 +11,5 @@ a non-empty list.
 *)
 
 
-type t= bool * bool * Partial_concrete_object_t.t * (Partial_concrete_object_t.t list) ;;
+type t= Double of bool * bool * Partial_concrete_object_t.t * (Partial_concrete_object_t.t list) ;;
 
