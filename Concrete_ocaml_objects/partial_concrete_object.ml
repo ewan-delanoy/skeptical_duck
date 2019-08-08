@@ -3,12 +3,20 @@
 #use"Concrete_ocaml_objects/partial_concrete_object.ml";;
 
 
-
 *)
 
 exception Record_With_No_Name of Concrete_object_t.t;;
 exception Unused_Record_Name of string;;
 exception Misapplied_Record_Name of string;;
+
+let of_opening=function 
+    Crobj_opening_t.Uple -> Partial_concrete_object_t.Uple[]
+   |List -> Partial_concrete_object_t.List[]
+   |Array -> Partial_concrete_object_t.Array[]
+   |Record(first_record_label)->Partial_concrete_object_t.RecordPlusRecordName([],first_record_label)
+   |Variant(constructor)->Partial_concrete_object_t.Variant(constructor,[]);;
+
+
 
 
 let push_one_more_item item =function 

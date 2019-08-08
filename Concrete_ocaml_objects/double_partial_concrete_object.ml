@@ -22,6 +22,12 @@ let push_comma  (Double_partial_concrete_object_t.Double(comma_present,last_open
   else 
   (Double_partial_concrete_object_t.Double(true,last_opened,opened_before));;
 
+
+let open_new opening 
+   (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
+    Double_partial_concrete_object_t.Double(false,
+      Partial_concrete_object.from_opening opening,last_opened::opened_before);;
+
 let open_new_uple 
   (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
     Double_partial_concrete_object_t.Double(false,
