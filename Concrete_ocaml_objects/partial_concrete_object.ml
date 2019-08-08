@@ -8,6 +8,7 @@
 exception Record_With_No_Name of Concrete_object_t.t;;
 exception Unused_Record_Name of string;;
 exception Misapplied_Record_Name of string;;
+exception Category_Mismatch of Crobj_category_t.t * Partial_concrete_object_t.t;;
 
 let of_opening=function 
     Crobj_opening_t.Uple -> Partial_concrete_object_t.Uple[]
@@ -49,3 +50,11 @@ let close =function
    |Record(l)->Concrete_object_t.Record(List.rev l)
    |RecordPlusRecordName(_,rcdname)->raise(Unused_Record_Name(rcdname))
    |Variant(constructor,l)->Concrete_object_t.Variant(constructor,List.rev l);;
+
+
+
+let close_and_check_category ctgr pcrobj=
+   if category(pcrobj)<>ctgr 
+   then raise(Category_Mismatch(ctgr,pcrobj))
+   else 
+   close pcrobj;;
