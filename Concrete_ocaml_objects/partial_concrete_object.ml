@@ -16,8 +16,14 @@ let of_opening=function
    |Record(first_record_label)->Partial_concrete_object_t.RecordPlusRecordName([],first_record_label)
    |Variant(constructor)->Partial_concrete_object_t.Variant(constructor,[]);;
 
-
-
+let category = function 
+    Partial_concrete_object_t.Uple(l)->Crobj_category_t.Uple
+   |List(_)->Crobj_category_t.List
+   |Array(_)->Crobj_category_t.Array
+   |Record(_)->Crobj_category_t.Record
+   |RecordPlusRecordName(l,rcdname)->Crobj_category_t.Record
+   |Variant(constructor,l)->Crobj_category_t.Variant;;
+ 
 
 let push_one_more_item item =function 
     Partial_concrete_object_t.Uple(l)->Partial_concrete_object_t.Uple(item::l)
