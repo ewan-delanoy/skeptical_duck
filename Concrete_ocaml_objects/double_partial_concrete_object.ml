@@ -26,34 +26,7 @@ let push_comma  (Double_partial_concrete_object_t.Double(comma_present,last_open
 let open_new opening 
    (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
     Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object.from_opening opening,last_opened::opened_before);;
-
-let open_new_uple 
-  (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object_t.Uple[],last_opened::opened_before);;
-
-let open_new_list 
-  (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object_t.List[],last_opened::opened_before);;
-
-let open_new_array
-  (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object_t.Array[],last_opened::opened_before);;
-
-let open_new_record item_name
-  (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object_t.RecordPlusRecordName([],item_name),last_opened::opened_before);;
-
-
-let open_new_variant constructor
-  (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
-      Partial_concrete_object_t.Variant(constructor,[]),last_opened::opened_before);;
-
+      Partial_concrete_object.of_opening opening,last_opened::opened_before);;
 
 
 let close_current
