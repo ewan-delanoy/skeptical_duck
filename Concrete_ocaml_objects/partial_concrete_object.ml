@@ -53,7 +53,7 @@ let close =function
 
 
 
-let close_and_check_category ctgr pcrobj=
+let check_category_and_close ctgr pcrobj=
    if category(pcrobj)<>ctgr 
    then raise(Category_Mismatch(ctgr,pcrobj))
    else 
