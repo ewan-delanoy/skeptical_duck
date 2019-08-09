@@ -4,8 +4,9 @@
 
 *)
 
-exception Close_on_comma;;
-exception Comma_on_comma;;
+exception Close_on_separator;;
+exception Redundant_separator;;
+exception Category_Mismatch of Crobj_category_t.t * Partial_concrete_object_t.t;;
 
 let push_int i (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
   (Double_partial_concrete_object_t.Double(false,
@@ -15,11 +16,14 @@ let push_string s (Double_partial_concrete_object_t.Double(_,last_opened,opened_
   (Double_partial_concrete_object_t.Double(false,
     Partial_concrete_object.push_string s last_opened,opened_before));;    
 
-let push_comma  (Double_partial_concrete_object_t.Double(comma_present,last_opened,opened_before))=
-  if comma_present
-  then raise(Comma_on_comma)
+let push_separator ctgr (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
+  if separator_present
+  then raise(Redundant_separator)
   else 
-  (Double_partial_concrete_object_t.Double(true,last_opened,opened_before));;
+        let ctgr2 = Partial_concrete_object.category last_opened in 
+        if ctgr <> ctgr2
+        then raise(Category_Mismatch(ctgr,last_opened))
+        else  (Double_partial_concrete_object_t.Double(true,last_opened,opened_before));;
 
 let push_record_name record_name (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
   (Double_partial_concrete_object_t.Double(false,
@@ -32,9 +36,9 @@ let open_new opening
 
 
 let close_current ctgr
-    (Double_partial_concrete_object_t.Double(comma_present,last_opened,opened_before))=
-    if comma_present 
-    then raise(Close_on_comma)
+    (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
+    if separator_present 
+    then raise(Close_on_separator)
     else 
     let newfound=Partial_concrete_object.check_category_and_close ctgr last_opened in 
     match opened_before with 
