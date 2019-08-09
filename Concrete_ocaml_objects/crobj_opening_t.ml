@@ -12,5 +12,6 @@ type t=
    |List 
    |Array 
    |Record of string
+   |RecordElement of string
    |Variant of string;;
 
