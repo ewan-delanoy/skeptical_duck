@@ -2,7 +2,6 @@
 
 #use"Concrete_ocaml_objects/double_partial_concrete_object.ml";;
 
-
 *)
 
 exception Close_on_comma;;
@@ -29,12 +28,12 @@ let open_new opening
       Partial_concrete_object.of_opening opening,last_opened::opened_before);;
 
 
-let close_current
+let close_current ctgr
     (Double_partial_concrete_object_t.Double(comma_present,last_opened,opened_before))=
     if comma_present 
     then raise(Close_on_comma)
     else 
-    let newfound=Partial_concrete_object.close last_opened in 
+    let newfound=Partial_concrete_object.check_category_and_close ctgr last_opened in 
     match opened_before with 
     []->(None,Some(newfound))
     |next_opened_one::others ->
