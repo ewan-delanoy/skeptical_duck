@@ -10,7 +10,7 @@ exception Unused_Field_Name of string;;
 exception Misapplied_Field_Name of string;;
 exception Category_Mismatch of Crobj_category_t.t * Partial_crobj_t.t;;
 
-let of_opening=function 
+let initialize=function 
     Crobj_opening_t.Uple -> Partial_crobj_t.Uple[]
    |List -> Partial_crobj_t.List[]
    |Array -> Partial_crobj_t.Array[]

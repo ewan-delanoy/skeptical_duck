@@ -35,7 +35,7 @@ let push_field_name record_name (Double_partial_crobj_t.Double(_,last_opened,ope
 let open_new opening 
    (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
     Double_partial_crobj_t.Double(false,
-      Partial_crobj.of_opening opening,last_opened::opened_before);;
+      Partial_crobj.initialize opening,last_opened::opened_before);;
 
 
 
@@ -54,7 +54,7 @@ let close ctgr
 end ;; 
 
 let initialize opening = 
-    Double_partial_crobj_t.Double(false,Partial_crobj.of_opening opening,[]);;
+    Double_partial_crobj_t.Double(false,Partial_crobj.initialize opening,[]);;
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
