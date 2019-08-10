@@ -10,7 +10,9 @@ type t=
      Push_int of int 
     |Push_string of string 
     |Push_record_name  of string 
-    |Usual of Crobj_category_t.t * Crobj_parenthesing_tool_t.t ;;
+    |Open of Crobj_opening_t.t 
+    |Separate of Crobj_category_t.t
+    |Close of Crobj_category_t.t;;
     
 
 

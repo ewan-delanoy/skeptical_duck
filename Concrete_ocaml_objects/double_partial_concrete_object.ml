@@ -7,6 +7,9 @@
 exception Close_on_separator;;
 exception Redundant_separator;;
 exception Category_Mismatch of Crobj_category_t.t * Partial_concrete_object_t.t;;
+exception End_reached of Concrete_object_t.t ;;
+
+module Private = struct 
 
 let push_int i (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
   (Double_partial_concrete_object_t.Double(false,
@@ -34,7 +37,7 @@ let open_new opening
     Double_partial_concrete_object_t.Double(false,
       Partial_concrete_object.of_opening opening,last_opened::opened_before);;
 
-exception End_reached of Concrete_object_t.t ;;
+
 
 let close ctgr
     (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
@@ -48,9 +51,19 @@ let close ctgr
       let new_frontier = Partial_concrete_object.push_one_more_item newfound next_opened_one in 
       Double_partial_concrete_object_t.Double(false,new_frontier,others);;
 
+end ;; 
 
+(*
+
+let increase = function 
+   Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
+    |Push_string(s)->Private.push_string s 
+    |Push_record_name(rcdname)->Private.push_record_name rcdname
+    |Open(opening) -> Private.open_new opening
+    |Separate(cat) -> Private.push_separator cat 
+    |Closer(cat) -> Private.close cat;;
         
-
+*)
 
 
 
