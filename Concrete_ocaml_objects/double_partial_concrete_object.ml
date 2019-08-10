@@ -6,7 +6,7 @@
 
 exception Close_on_separator;;
 exception Redundant_separator;;
-exception Category_Mismatch of Crobj_category_t.t * Partial_concrete_object_t.t;;
+exception Category_Mismatch of Crobj_category_t.t * Partial_crobj_t.t;;
 exception End_reached of Concrete_object_t.t ;;
 
 module Private = struct 
