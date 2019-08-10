@@ -9,6 +9,6 @@ type t=
     {
        parsed_one    : string;
        current_index : int;
-       data : Double_partial_concrete_object_t.t;
+       data : Double_partial_crobj_t.t;
     };;
 

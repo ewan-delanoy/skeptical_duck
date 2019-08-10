@@ -11,36 +11,36 @@ exception End_reached of Concrete_object_t.t ;;
 
 module Private = struct 
 
-let push_int i (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-  (Double_partial_concrete_object_t.Double(false,
+let push_int i (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Double_partial_crobj_t.Double(false,
     Partial_crobj.push_int i last_opened,opened_before));;
 
-let push_string s (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-  (Double_partial_concrete_object_t.Double(false,
+let push_string s (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Double_partial_crobj_t.Double(false,
     Partial_crobj.push_string s last_opened,opened_before));;    
 
-let push_separator ctgr (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
+let push_separator ctgr (Double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
   if separator_present
   then raise(Redundant_separator)
   else 
         let ctgr2 = Partial_crobj.category last_opened in 
         if ctgr <> ctgr2
         then raise(Category_Mismatch(ctgr,last_opened))
-        else  (Double_partial_concrete_object_t.Double(true,last_opened,opened_before));;
+        else  (Double_partial_crobj_t.Double(true,last_opened,opened_before));;
 
-let push_field_name record_name (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-  (Double_partial_concrete_object_t.Double(false,
+let push_field_name record_name (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Double_partial_crobj_t.Double(false,
     Partial_crobj.push_field_name record_name last_opened,opened_before));;    
 
 let open_new opening 
-   (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
-    Double_partial_concrete_object_t.Double(false,
+   (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
+    Double_partial_crobj_t.Double(false,
       Partial_crobj.of_opening opening,last_opened::opened_before);;
 
 
 
 let close ctgr
-    (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
+    (Double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
     if separator_present 
     then raise(Close_on_separator)
     else 
@@ -49,12 +49,12 @@ let close ctgr
     []->raise(End_reached(newfound))
     |next_opened_one::others ->
       let new_frontier = Partial_crobj.push_one_more_item newfound next_opened_one in 
-      Double_partial_concrete_object_t.Double(false,new_frontier,others);;
+      Double_partial_crobj_t.Double(false,new_frontier,others);;
 
 end ;; 
 
 let initialize opening = 
-    Double_partial_concrete_object_t.Double(false,Partial_crobj.of_opening opening,[]);;
+    Double_partial_crobj_t.Double(false,Partial_crobj.of_opening opening,[]);;
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
