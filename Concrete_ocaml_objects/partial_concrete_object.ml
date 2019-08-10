@@ -1,6 +1,6 @@
 (* 
 
-#use"Concrete_ocaml_objects/partial_concrete_object.ml";;
+#use"Concrete_ocaml_objects/partial_crobj.ml";;
 
 
 *)
