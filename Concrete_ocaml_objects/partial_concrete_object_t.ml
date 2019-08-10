@@ -14,6 +14,6 @@ type t=
    |List of Concrete_object_t.t list
    |Array of Concrete_object_t.t list
    |Record of ((string*Concrete_object_t.t) list)
-   |RecordPlusRecordName of ((string*Concrete_object_t.t) list)*string
+   |RecordPlusFieldName of ((string*Concrete_object_t.t) list)*string
    |Variant of string*(Concrete_object_t.t list);;
 
