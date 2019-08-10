@@ -28,9 +28,9 @@ let push_separator ctgr (Double_partial_concrete_object_t.Double(separator_prese
         then raise(Category_Mismatch(ctgr,last_opened))
         else  (Double_partial_concrete_object_t.Double(true,last_opened,opened_before));;
 
-let push_record_name record_name (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
+let push_field_name record_name (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
   (Double_partial_concrete_object_t.Double(false,
-    Partial_concrete_object.push_record_name record_name last_opened,opened_before));;    
+    Partial_concrete_object.push_field_name record_name last_opened,opened_before));;    
 
 let open_new opening 
    (Double_partial_concrete_object_t.Double(_,last_opened,opened_before))=
@@ -53,17 +53,17 @@ let close ctgr
 
 end ;; 
 
-(*
+
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
     |Push_string(s)->Private.push_string s 
-    |Push_record_name(rcdname)->Private.push_record_name rcdname
+    |Push_field_name(rcdname)->Private.push_field_name rcdname
     |Open(opening) -> Private.open_new opening
     |Separate(cat) -> Private.push_separator cat 
-    |Closer(cat) -> Private.close cat;;
+    |Close(cat) -> Private.close cat;;
         
-*)
+
 
 
 
