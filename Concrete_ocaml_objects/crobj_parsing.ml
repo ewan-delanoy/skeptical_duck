@@ -152,11 +152,11 @@ let one_step_more machine =
    {
       machine with 
       Crobj_parsing_machine_t.current_index = next_idx ;
-      Crobj_parsing_machine_t.data = Double_partial_concrete_object.increase action machine.Crobj_parsing_machine_t.data;
+      Crobj_parsing_machine_t.data = Double_partial_crobj.increase action machine.Crobj_parsing_machine_t.data;
    }  ;;
 
 let prudent_push machine = try (None,Some(one_step_more machine)) with 
-   Double_partial_concrete_object.End_reached(solution) -> (Some solution,None);;
+   Double_partial_crobj.End_reached(solution) -> (Some solution,None);;
 
 exception First_step_exn of Crobj_basic_increase_t.t ;; 
 
@@ -165,7 +165,7 @@ let first_step s =
    match action with 
     Crobj_basic_increase_t.Push_int(i)->(Some(Concrete_object_t.Int(i)),None,next_idx)
    |Crobj_basic_increase_t.Push_string(s)->(Some(Concrete_object_t.String(s)),None,next_idx)
-   |Crobj_basic_increase_t.Open(opening)->(None,Some(Double_partial_concrete_object.initialize(opening)),next_idx)
+   |Crobj_basic_increase_t.Open(opening)->(None,Some(Double_partial_crobj.initialize(opening)),next_idx)
    |_->raise(First_step_exn(action));;
 
 exception Ends_too_soon of Concrete_object_t.t * string ;; 
