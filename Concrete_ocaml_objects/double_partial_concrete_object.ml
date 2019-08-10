@@ -53,7 +53,8 @@ let close ctgr
 
 end ;; 
 
-
+let initialize opening = 
+    Double_partial_concrete_object_t.Double(false,Partial_concrete_object.of_opening opening,[]);;
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
