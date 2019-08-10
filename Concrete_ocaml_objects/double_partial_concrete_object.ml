@@ -34,19 +34,19 @@ let open_new opening
     Double_partial_concrete_object_t.Double(false,
       Partial_concrete_object.of_opening opening,last_opened::opened_before);;
 
+exception End_reached of Concrete_object_t.t ;;
 
-let close_current ctgr
+let close ctgr
     (Double_partial_concrete_object_t.Double(separator_present,last_opened,opened_before))=
     if separator_present 
     then raise(Close_on_separator)
     else 
     let newfound=Partial_concrete_object.check_category_and_close ctgr last_opened in 
     match opened_before with 
-    []->(None,Some(newfound))
+    []->raise(End_reached(newfound))
     |next_opened_one::others ->
       let new_frontier = Partial_concrete_object.push_one_more_item newfound next_opened_one in 
-      let answer=(Double_partial_concrete_object_t.Double(false,new_frontier,others)) in 
-      (Some answer,None);;
+      Double_partial_concrete_object_t.Double(false,new_frontier,others);;
 
 
         
