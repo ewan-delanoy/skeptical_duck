@@ -112,25 +112,38 @@ let unarchive_pair s=
     (unarchive(List.nth l1 0),
      bool_of_string(List.nth l1 1));;
    
+module Private = struct 
+
+let salt = "Half_"^"dressed_module.";;
+
+let bundle_main_dir_label = salt ^ "bundle_main_dir";;
+let subdirectory_label = salt ^ "subdirectory";;
+let naked_module_label = salt ^ "naked_module";;
+
 let to_concrete_object hm=
    let items=Image.image (
       fun (constructor,content)->
         (constructor,Concrete_object_t.String(content))
    ) [
-     "Half_"^"dressed_module.bundle_main_dir",hm.bundle_main_dir;
-     "Half_"^"dressed_module.subdirectory",hm.subdirectory;
-     "Half_"^"dressed_module.naked_module",hm.naked_module;
-   ] 
+      bundle_main_dir_label,hm.bundle_main_dir;
+      subdirectory_label,hm.subdirectory;
+      naked_module_label,hm.naked_module;
+     ] 
    in
    Concrete_object_t.Record items;;
-
-let of_concrete_object ccrt_obj = 
+    
+    let of_concrete_object ccrt_obj = 
      {
-	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.bundle_main_dir";
-   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.subdirectory";
-        naked_module    = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.naked_module";
-      };;  
+	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj bundle_main_dir_label;
+   		subdirectory    = Concrete_object_field.get_str_record ccrt_obj subdirectory_label;
+         naked_module    = Concrete_object_field.get_str_record ccrt_obj naked_module_label;
+      };;
 
+end ;;
+
+let to_concrete_object = Private.to_concrete_object;;
+
+let of_concrete_object = Private.of_concrete_object;;
 
 let pair_to_concrete_object (hm,is_compiled_correctly)=
     Concrete_object_t.Uple [to_concrete_object hm;Concrete_object_field.of_bool is_compiled_correctly];;

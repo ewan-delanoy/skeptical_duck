@@ -137,7 +137,7 @@ let unarchive s=
    MLX(Ocaml_ending.of_string("."^edg),s,dir);;
            
 let to_concrete_object (MLX(edg,s,dir))=
-    Concrete_object_t.Variant("Mlx_ended_absolute_path.MLX",
+    Concrete_object_t.Variant("Mlx_"^"ended_absolute_path.MLX",
       [
         Ocaml_ending.to_concrete_object edg;
         Concrete_object_t.String(s);
