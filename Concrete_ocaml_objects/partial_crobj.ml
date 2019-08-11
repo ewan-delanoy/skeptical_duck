@@ -45,7 +45,7 @@ let push_field_name recdname=function
 
 let close =function 
     Partial_crobj_t.Uple(l)->Concrete_object_t.Uple(List.rev l)
-   |List(l)->Concrete_object_t.Uple(List.rev l)
+   |List(l)->Concrete_object_t.List(List.rev l)
    |Array(l)->Concrete_object_t.Array(List.rev l)
    |Record(l)->Concrete_object_t.Record(List.rev l)
    |RecordPlusFieldName(_,rcdname)->raise(Unused_Field_Name(rcdname))
