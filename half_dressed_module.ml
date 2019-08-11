@@ -117,18 +117,18 @@ let to_concrete_object hm=
       fun (constructor,content)->
         (constructor,Concrete_object_t.String(content))
    ) [
-     "bundle_main_dir",hm.bundle_main_dir;
-     "subdirectory",hm.subdirectory;
-     "naked_module",hm.naked_module;
+     "Half_"^"dressed_module.bundle_main_dir",hm.bundle_main_dir;
+     "Half_"^"dressed_module.subdirectory",hm.subdirectory;
+     "Half_"^"dressed_module.naked_module",hm.naked_module;
    ] 
    in
    Concrete_object_t.Record items;;
 
 let of_concrete_object ccrt_obj = 
      {
-	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "bundle_main_dir";
-   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "subdirectory";
-        naked_module    = Concrete_object_field.get_str_record ccrt_obj "naked_module";
+	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.bundle_main_dir";
+   		  subdirectory    = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.subdirectory";
+        naked_module    = Concrete_object_field.get_str_record ccrt_obj "Half_"^"dressed_module.naked_module";
       };;  
 
 
