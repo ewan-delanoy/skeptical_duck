@@ -100,13 +100,13 @@ let next_basic_increase_in_field_naming_case s idx idx1=
    (Crobj_basic_increase_t.Push_field_name(name),idx1+(String.length record_arrow));;
 
 let next_basic_increase_in_preludy_case s idx idx1=
-   if Substring.is_a_substring_located_at variant_opener s idx 
+   if Substring.is_a_substring_located_at variant_opener s idx1 
    then next_basic_increase_in_variant_opening_case s idx idx1
    else 
-   if Substring.is_a_substring_located_at record_arrow s idx 
+   if Substring.is_a_substring_located_at record_arrow s idx1 
    then next_basic_increase_in_field_naming_case s idx idx1
    else 
-   if Substring.is_a_substring_located_at record_opener s idx 
+   if Substring.is_a_substring_located_at record_opener s idx1 
    then next_basic_increase_in_record_opening_case s idx idx1
    else let i=parse_int(Cull_string.interval s idx (idx1-1)) in 
        (Crobj_basic_increase_t.Push_int(i),idx);;
