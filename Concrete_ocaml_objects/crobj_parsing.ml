@@ -67,6 +67,7 @@ let category_of_lexeme lexeme=List.assoc lexeme list_for_category_of_lexeme;;
 let list_for_preludeless_increasers=[
     (array_opener,Crobj_basic_increase_t.Open(Crobj_opening_t.Array)); 
     (list_opener,Crobj_basic_increase_t.Open(Crobj_opening_t.List)); 
+    (record_opener,Crobj_basic_increase_t.Open(Crobj_opening_t.Record)); 
     (uple_opener,Crobj_basic_increase_t.Open(Crobj_opening_t.Uple)); 
 
     (array_separator,Crobj_basic_increase_t.Separate(Crobj_category_t.Array)); 
