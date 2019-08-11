@@ -11,6 +11,6 @@ type t=
     Uple 
    |List 
    |Array 
-   |Record of string
+   |Record 
    |Variant of string;;
 

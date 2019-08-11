@@ -14,7 +14,7 @@ let initialize=function
     Crobj_opening_t.Uple -> Partial_crobj_t.Uple[]
    |List -> Partial_crobj_t.List[]
    |Array -> Partial_crobj_t.Array[]
-   |Record(first_record_label)->Partial_crobj_t.RecordPlusFieldName([],first_record_label)
+   |Record->Partial_crobj_t.Record([])
    |Variant(constructor)->Partial_crobj_t.Variant(constructor,[]);;
 
 let category = function 
