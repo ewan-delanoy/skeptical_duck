@@ -1669,7 +1669,7 @@ let from_main_directory dir backup_dir g_after_b=
         (Private.copy_special_files s_main_dir;
          Private.put_default_content_in_special_files s_main_dir 
         ) in
-      let temp1=Private.select_good_files s_main_dir in
+        let temp1=Private.select_good_files s_main_dir in
         let temp2=Private.clean_list_of_files dir temp1 in
         let temp3=Private.compute_dependencies temp2 in
         let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in

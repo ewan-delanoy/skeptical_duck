@@ -1,5 +1,5 @@
 (* 
-#use"Makefile_makers/unusual_coma_state.ml";;
+#use"Compilation_management/other_coma_state.ml";;
 *)
 
 exception No_module_with_name of string;;
@@ -20,7 +20,7 @@ let below =Coma_state.Almost_concrete.local_below (!(Private.main_ref));;
 let decipher_path = Coma_state.decipher_path (!(Private.main_ref));;
 let decipher_module = Coma_state.decipher_module (!(Private.main_ref));;
 
-let directly_below =Coma_state.Almost_concrete.local_below (!(Private.main_ref));;
+let directly_below =Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref));;
 
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;

@@ -23,7 +23,7 @@ let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
 let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
 let decipher_module modname= Coma_state.decipher_module (!(Private.main_ref)) modname;;
 
-let directly_below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
+let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref)) modname;;
 
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
