@@ -109,7 +109,7 @@ let next_basic_increase_in_preludy_case s idx idx1=
    if Substring.is_a_substring_located_at record_opener s idx1 
    then next_basic_increase_in_record_opening_case s idx idx1
    else let i=parse_int(Cull_string.interval s idx (idx1-1)) in 
-       (Crobj_basic_increase_t.Push_int(i),idx);;
+       (Crobj_basic_increase_t.Push_int(i),idx1);;
 
 
 exception Missing_string_closer of int * string;;
