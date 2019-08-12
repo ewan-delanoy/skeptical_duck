@@ -212,7 +212,7 @@ let ci_expansions_label      = salt ^ "case_insensitive_expansions";;
 let ci_inert_words_label     = salt ^ "case_insensitive_inert_words";;
 let ci_left_abbrevs_label    = salt ^ "case_insensitive_left_core_abbreviations";;
 let ci_prefix_abbrevs_label  = salt ^ "case_insensitive_prefix_abbreviations";;
-(*
+
 let of_concrete_object crobj = 
    let g=Concrete_object_field.get_record crobj in
    {
@@ -233,12 +233,20 @@ let to_concrete_object txl=
       adj_decs_label,   declist_to_concrete_object(txl.Text_lengthener_t.adjustable_decompressions); 
       expansions_label, Concrete_object_field.of_string_list_list(txl.Text_lengthener_t.expansions); 
       inert_words_label, Concrete_object_field.of_string_list(txl.Text_lengthener_t.inert_words); 
+      left_abbrevs_label, Concrete_object_field.of_string_pair_list(txl.Text_lengthener_t.left_core_abbreviations); 
+      prefix_abbrevs_label, Concrete_object_field.of_string_pair_list(txl.Text_lengthener_t.prefix_abbreviations); 
+
+      ci_adj_decs_label,   declist_to_concrete_object(txl.Text_lengthener_t.case_insensitive_adjustable_decompressions); 
+      ci_inert_words_label, Concrete_object_field.of_string_list(txl.Text_lengthener_t.case_insensitive_inert_words); 
+      ci_left_abbrevs_label, Concrete_object_field.of_string_pair_list(txl.Text_lengthener_t.case_insensitive_left_core_abbreviations); 
+      ci_prefix_abbrevs_label, Concrete_object_field.of_string_pair_list(txl.Text_lengthener_t.case_insensitive_prefix_abbreviations); 
+
    ]  in
    Concrete_object_t.Record items;;
-*)
+
 
 end ;; 
 
-(*
+
 let of_concrete_object = Private.of_concrete_object;;
-*)
+let to_concrete_object = Private.to_concrete_object;;
