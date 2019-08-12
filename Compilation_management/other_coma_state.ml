@@ -12,21 +12,21 @@ let main_ref=
 
 end;;
 
-let above =Coma_state.Almost_concrete.local_above (!(Private.main_ref));;
+let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;;
 
 
-let below =Coma_state.Almost_concrete.local_below (!(Private.main_ref));;
+let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
 
-let decipher_path = Coma_state.decipher_path (!(Private.main_ref));;
-let decipher_module = Coma_state.decipher_module (!(Private.main_ref));;
+let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
+let decipher_module modname= Coma_state.decipher_module (!(Private.main_ref)) modname;;
 
-let directly_below =Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref));;
+let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref)) modname;;
 
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
-let find_half_dressed_module = 
-  Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref));;
+let find_half_dressed_module modname= 
+  Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref)) modname;;
 
 let forget x=Modify_coma_state.Reference.forget Private.main_ref;;     
 
