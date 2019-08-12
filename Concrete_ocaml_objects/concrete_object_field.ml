@@ -20,7 +20,7 @@ let get_record ccrt_obj field =
    |_->raise(Get_record_exn(ccrt_obj));;
 
 
-
+(*
 let get_pair ccrt_obj =
   match ccrt_obj with 
    Concrete_object_t.Uple(l)->
@@ -28,6 +28,7 @@ let get_pair ccrt_obj =
         then raise(Get_pair_exn(ccrt_obj))
         else (List.nth l 0,List.nth l 1)
    |_->raise(Get_pair_exn(ccrt_obj));;
+*)
 
 let unwrap_array ccrt_obj=
    match ccrt_obj with 

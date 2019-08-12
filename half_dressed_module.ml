@@ -149,7 +149,7 @@ let pair_to_concrete_object (hm,is_compiled_correctly)=
     Concrete_object_t.Uple [to_concrete_object hm;Concrete_object_field.of_bool is_compiled_correctly];;
    
 let pair_of_concrete_object ccrt_obj =
-    let (hm_o,is_compiled_correctly_o)=Concrete_object_field.get_pair ccrt_obj in 
+    let (hm_o,is_compiled_correctly_o,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple ccrt_obj in 
     (of_concrete_object hm_o,Concrete_object_field.to_bool is_compiled_correctly_o);;
     
 
