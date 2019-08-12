@@ -62,7 +62,7 @@ let level_one_list=Industrial_separator.text_lengthener_level_one_list;;
 let level_two_list=Industrial_separator.text_lengthener_level_two_list;;
 let times=Industrial_separator.string_times_string;;
 
-module Private = struct
+module Bitrate = struct
 
 let archive_triple (s1,s2,s3)=s1^times^s2^times^s3;;
 let unarchive_triple s=
@@ -137,15 +137,15 @@ let archive txl=
         in
         String.concat field
         [
-          Private.archive_decompressions decs ;
-          Private.archive_expansions exps ;
-          Private.archive_inert_words iwds ;
-          Private.archive_cumulable_suffixes cusus ;
-          Private.archive_prefix_abbreviations prefs ;
-          Private.archive_decompressions ci_decs ;
-          Private.archive_inert_words ci_iwds ;
-          Private.archive_cumulable_suffixes ci_cusus ;
-          Private.archive_prefix_abbreviations ci_prefs ;
+          Bitrate.archive_decompressions decs ;
+          Bitrate.archive_expansions exps ;
+          Bitrate.archive_inert_words iwds ;
+          Bitrate.archive_cumulable_suffixes cusus ;
+          Bitrate.archive_prefix_abbreviations prefs ;
+          Bitrate.archive_decompressions ci_decs ;
+          Bitrate.archive_inert_words ci_iwds ;
+          Bitrate.archive_cumulable_suffixes ci_cusus ;
+          Bitrate.archive_prefix_abbreviations ci_prefs ;
         ];;
       
         
@@ -155,15 +155,15 @@ let archive txl=
 let unarchive s=
           let temp1=Str.split_delim (Str.regexp_string field) s in
           let tempf=(fun k->List.nth temp1 (k-1)) in 
-          let decs = Private.unarchive_decompressions (tempf 1) 
-          and exps = Private.unarchive_expansions (tempf 2) 
-          and iwds = Private.unarchive_inert_words (tempf 3) 
-          and cusus = Private.unarchive_cumulable_suffixes (tempf 4) 
-          and prefs = Private.unarchive_prefix_abbreviations (tempf 5) 
-          and ci_decs = Private.unarchive_decompressions (tempf 6) 
-          and ci_iwds = Private.unarchive_inert_words (tempf 7) 
-          and ci_cusus = Private.unarchive_cumulable_suffixes (tempf 8) 
-          and ci_prefs = Private.unarchive_prefix_abbreviations (tempf 9) 
+          let decs = Bitrate.unarchive_decompressions (tempf 1) 
+          and exps = Bitrate.unarchive_expansions (tempf 2) 
+          and iwds = Bitrate.unarchive_inert_words (tempf 3) 
+          and cusus = Bitrate.unarchive_cumulable_suffixes (tempf 4) 
+          and prefs = Bitrate.unarchive_prefix_abbreviations (tempf 5) 
+          and ci_decs = Bitrate.unarchive_decompressions (tempf 6) 
+          and ci_iwds = Bitrate.unarchive_inert_words (tempf 7) 
+          and ci_cusus = Bitrate.unarchive_cumulable_suffixes (tempf 8) 
+          and ci_prefs = Bitrate.unarchive_prefix_abbreviations (tempf 9) 
           in 
           {
             Text_lengthener_t.adjustable_decompressions=decs;
@@ -176,4 +176,8 @@ let unarchive s=
             case_insensitive_inert_words=ci_iwds;
             case_insensitive_prefix_abbreviations=ci_prefs;
         } ;; 
-      
+
+
+
+
+
