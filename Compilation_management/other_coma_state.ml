@@ -40,6 +40,14 @@ let list_values_from_module_in_modulesystem module_name=
 
 let main_ref=Private.main_ref;;
 
+let officialize_confidential_changes l=
+   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.Third_World.root) 
+   and next_root = Root_directory.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   Image.image (
+      fun path->
+         "cp "^next_root^path^" "^this_root^path 
+   ) l;;    
+
 
 let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
@@ -63,6 +71,17 @@ let repopulate ()=
   let _=Update_compiler_copy.ucc
   (!Usual_coma_state.main_ref)  in 
   initialize();; 
+
+let see_confidential_changes ()=
+   let temp1=Coma_state.all_short_paths (!(Usual_coma_state.main_ref)) in 
+   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.Third_World.root) 
+   and next_root = Root_directory.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   Explicit.filter (
+      fun path->
+         let ap1=Absolute_path.of_string(this_root^path) 
+         and ap2=Absolute_path.of_string(next_root^path) in 
+         Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
+   ) temp1;;    
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
