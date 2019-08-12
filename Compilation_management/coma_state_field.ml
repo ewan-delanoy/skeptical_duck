@@ -460,8 +460,8 @@ let to_concrete_object cs=
     "subdir_for_module", Small_array.to_concrete_object Subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     "principal_ending_for_module", Small_array.to_concrete_object Ocaml_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
     "mli_presence_for_module", Small_array.to_concrete_object Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
-    "principal_mt_for_module", Small_array.to_concrete_object Concrete_object_field.wrap_string cs.Coma_state_t.principal_mt_for_module;
-    "mli_mt_for_module", Small_array.to_concrete_object Concrete_object_field.wrap_string cs.Coma_state_t.mli_mt_for_module;
+    "principal_mt_for_module", Small_array.to_concrete_object (fun s->Concrete_object_t.String s) cs.Coma_state_t.principal_mt_for_module;
+    "mli_mt_for_module", Small_array.to_concrete_object (fun s->Concrete_object_t.String s) cs.Coma_state_t.mli_mt_for_module;
     "needed_libs_for_module", Small_array.to_concrete_object Ocaml_library.list_to_concrete_object cs.Coma_state_t.needed_libs_for_module; 
     "direct_fathers_for_module", Small_array.to_concrete_object Naked_module.list_to_concrete_object cs.Coma_state_t.direct_fathers_for_module;   
     "ancestors_for_module", Small_array.to_concrete_object Naked_module.list_to_concrete_object cs.Coma_state_t.ancestors_for_module;   

@@ -132,11 +132,12 @@ let to_concrete_object hm=
    in
    Concrete_object_t.Record items;;
     
-    let of_concrete_object ccrt_obj = 
+    let of_concrete_object ccrt_obj =
+     let g=(fun field->Concrete_object_field.unwrap_string(Concrete_object_field.get_record ccrt_obj field)) in 
      {
-	      bundle_main_dir = Concrete_object_field.get_str_record ccrt_obj bundle_main_dir_label;
-   		subdirectory    = Concrete_object_field.get_str_record ccrt_obj subdirectory_label;
-         naked_module    = Concrete_object_field.get_str_record ccrt_obj naked_module_label;
+	      bundle_main_dir = g bundle_main_dir_label;
+   		subdirectory    = g subdirectory_label;
+         naked_module    = g naked_module_label;
       };;
 
 end ;;
