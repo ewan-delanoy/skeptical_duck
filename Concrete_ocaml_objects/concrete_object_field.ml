@@ -131,3 +131,5 @@ let to_string_pair_list crobj = Image.image to_string_pair (unwrap_list crobj);;
 let of_string_triple_list l= Concrete_object_t.List (Image.image of_string_pair l);;
 let to_string_triple_list crobj = Image.image to_string_pair (unwrap_list crobj);;
 
+let of_string_list_list l=Concrete_object_t.List (Image.image of_string_list l);;
+let to_string_list_list crobj = Image.image to_string_list (unwrap_list crobj);;

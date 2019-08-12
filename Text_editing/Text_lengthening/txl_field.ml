@@ -177,8 +177,8 @@ let unarchive s=
             case_insensitive_prefix_abbreviations=ci_prefs;
         } ;; 
 
-(*
 
+(*
 module Private = struct 
 
 let adjustment_of_concrete_object crobj=
@@ -200,6 +200,7 @@ let decompression_of_concrete_object crobj=
   and us=Concrete_object_field.unwrap_string in 
 
 end ;; 
+
 
 type t={
   (* fundamental variables *)  
