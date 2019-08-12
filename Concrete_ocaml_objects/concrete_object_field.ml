@@ -101,14 +101,33 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
      |Some(vaal,_)->vaal) 
    |_->raise(Exn.Unwrap_string_exn(ccrt_obj));;
 
-
-
-
-let get_str_record ccrt_obj field=unwrap_string(get_record ccrt_obj field);;   
-
 let truth = Concrete_object_t.Variant("True",[]);;
 let falsity = Concrete_object_t.Variant("False",[]);;
 let of_bool bowl=if bowl then truth else falsity;;
 let to_bool =unwrap_lonely_variant [true,"True";false,"False"] ;; 
-let wrap_string s= Concrete_object_t.String s;;
+
+let of_string_pair (s1,s2) = 
+   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2]);;
+
+let to_string_pair crobj=
+  let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj 
+  and us=unwrap_string in 
+  (us arg1,us arg2);;
+
+let of_string_triple (s1,s2,s3)=
+   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2;s3]);;
+
+let to_string_triple crobj=
+  let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
+  and us=unwrap_string in 
+  (us arg1,us arg2,us arg3);;
+  
+let of_string_list l=Concrete_object_t.List (Image.image (fun s->Concrete_object_t.String(s)) l);;
+let to_string_list crobj = Image.image unwrap_string (unwrap_list crobj);;
+
+let of_string_pair_list l= Concrete_object_t.List (Image.image of_string_pair l);;
+let to_string_pair_list crobj = Image.image to_string_pair (unwrap_list crobj);;
+
+let of_string_triple_list l= Concrete_object_t.List (Image.image of_string_pair l);;
+let to_string_triple_list crobj = Image.image to_string_pair (unwrap_list crobj);;
 
