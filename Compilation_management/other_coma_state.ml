@@ -41,7 +41,7 @@ let list_values_from_module_in_modulesystem module_name=
 let main_ref=Private.main_ref;;
 
 let officialize_confidential_changes l=
-   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.Third_World.root) 
+   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Root_directory.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    Image.image (
       fun path->
