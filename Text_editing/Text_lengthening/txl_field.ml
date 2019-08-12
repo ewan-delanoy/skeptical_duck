@@ -177,7 +177,43 @@ let unarchive s=
             case_insensitive_prefix_abbreviations=ci_prefs;
         } ;; 
 
+(*
 
+module Private = struct 
 
+let adjustment_of_concrete_object crobj=
+  let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj 
+  and us=Concrete_object_field.unwrap_string in 
+  (us arg1,us arg2,us arg3);;
+  
+let adjustment_to_concrete_object (s1,s2,s3)=
+   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2;s3]);;
 
+let adjlist_of_concrete_object crobj =
+   Image.image adjustment_of_concrete_object (Concrete_object_field.unwrap_list crobj);;
 
+let adjlist_to_concrete_object l=
+    Concrete_object_t.List(Image.image adjustment_to_concrete_object l);;
+
+let decompression_of_concrete_object crobj=
+  let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj 
+  and us=Concrete_object_field.unwrap_string in 
+
+end ;; 
+
+type t={
+  (* fundamental variables *)  
+  adjustable_decompressions : (string * string * ((string * string * string) list)) list;  
+  expansions : (string list list);
+  inert_words : string list;
+  left_core_abbreviations : (string*string) list;
+  prefix_abbreviations : (string*string) list;
+
+  (* derived variables *)
+  case_insensitive_adjustable_decompressions : (string * string * ((string * string * string) list)) list;  
+  case_insensitive_left_core_abbreviations  : (string*string) list;
+  case_insensitive_inert_words : string list;
+  case_insensitive_prefix_abbreviations  : (string*string) list;
+};;
+
+*)
