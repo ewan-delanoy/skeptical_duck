@@ -178,43 +178,67 @@ let unarchive s=
         } ;; 
 
 
-(*
+
 module Private = struct 
 
-let adjustment_of_concrete_object crobj=
-  let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj 
-  and us=Concrete_object_field.unwrap_string in 
-  (us arg1,us arg2,us arg3);;
-  
-let adjustment_to_concrete_object (s1,s2,s3)=
-   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2;s3]);;
-
-let adjlist_of_concrete_object crobj =
-   Image.image adjustment_of_concrete_object (Concrete_object_field.unwrap_list crobj);;
-
-let adjlist_to_concrete_object l=
-    Concrete_object_t.List(Image.image adjustment_to_concrete_object l);;
 
 let decompression_of_concrete_object crobj=
   let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj 
-  and us=Concrete_object_field.unwrap_string in 
+  and us=Concrete_object_field.unwrap_string in
+  (us arg1,us arg2,Concrete_object_field.to_string_triple_list arg3);;
+
+let decompression_to_concrete_object (s1,s2,l)=
+  Concrete_object_t.Uple [
+    Concrete_object_t.String(s1);
+    Concrete_object_t.String(s2);
+    Concrete_object_field.of_string_triple_list l];;
+
+let declist_of_concrete_object crobj =
+  Image.image decompression_of_concrete_object (Concrete_object_field.unwrap_list crobj);;
+
+let declist_to_concrete_object l = 
+  Concrete_object_t.List(Image.image decompression_to_concrete_object l);; 
+
+let salt = "Text_"^"lengthener_t.";;
+
+let adj_decs_label           = salt ^ "adjustable_decompressions";;
+let expansions_label         = salt ^ "expansions";;
+let inert_words_label        = salt ^ "inert_words";;
+let left_abbrevs_label       = salt ^ "left_core_abbreviations";;
+let prefix_abbrevs_label     = salt ^ "prefix_abbreviations";;
+
+let ci_adj_decs_label        = salt ^ "case_insensitive_adjustable_decompressions";;
+let ci_expansions_label      = salt ^ "case_insensitive_expansions";;
+let ci_inert_words_label     = salt ^ "case_insensitive_inert_words";;
+let ci_left_abbrevs_label    = salt ^ "case_insensitive_left_core_abbreviations";;
+let ci_prefix_abbrevs_label  = salt ^ "case_insensitive_prefix_abbreviations";;
+(*
+let of_concrete_object crobj = 
+   let g=Concrete_object_field.get_record crobj in
+   {
+      Text_lengthener_t.adjustable_decompressions=declist_of_concrete_object(g adj_decs_label);
+      expansions=Concrete_object_field.to_string_list_list(g expansions_label);
+      inert_words=Concrete_object_field.to_string_list(g inert_words_label);
+      left_core_abbreviations=Concrete_object_field.to_string_pair_list(g left_abbrevs_label);
+      prefix_abbreviations=Concrete_object_field.to_string_pair_list(g prefix_abbrevs_label);
+      case_insensitive_adjustable_decompressions=declist_of_concrete_object(g ci_adj_decs_label);
+      case_insensitive_inert_words=Concrete_object_field.to_string_list(g ci_inert_words_label);
+      case_insensitive_left_core_abbreviations=Concrete_object_field.to_string_pair_list(g ci_left_abbrevs_label);
+      case_insensitive_prefix_abbreviations=Concrete_object_field.to_string_pair_list(g prefix_abbrevs_label);
+   };;      
+
+let to_concrete_object txl=
+   let items= 
+   [
+      adj_decs_label,   declist_to_concrete_object(txl.Text_lengthener_t.adjustable_decompressions); 
+      expansions_label, Concrete_object_field.of_string_list_list(txl.Text_lengthener_t.expansions); 
+      inert_words_label, Concrete_object_field.of_string_list(txl.Text_lengthener_t.inert_words); 
+   ]  in
+   Concrete_object_t.Record items;;
+*)
 
 end ;; 
 
-
-type t={
-  (* fundamental variables *)  
-  adjustable_decompressions : (string * string * ((string * string * string) list)) list;  
-  expansions : (string list list);
-  inert_words : string list;
-  left_core_abbreviations : (string*string) list;
-  prefix_abbreviations : (string*string) list;
-
-  (* derived variables *)
-  case_insensitive_adjustable_decompressions : (string * string * ((string * string * string) list)) list;  
-  case_insensitive_left_core_abbreviations  : (string*string) list;
-  case_insensitive_inert_words : string list;
-  case_insensitive_prefix_abbreviations  : (string*string) list;
-};;
-
+(*
+let of_concrete_object = Private.of_concrete_object;;
 *)
