@@ -88,29 +88,6 @@ let rename_endsubdirectory (old_subdir,new_subdirname) x=
     }  ;;    
    
 
-let industrial_separator=Industrial_separator.half_dressed_module;;  
-let industrial_separator2=Industrial_separator.half_dressed_module_times_boolean;;  
-
-let archive x=
-   String.concat industrial_separator 
-    [x.bundle_main_dir;x.subdirectory;x.naked_module];;
-  
-let unarchive s=
-   let l1=Str.split (Str.regexp_string industrial_separator) s in
-   {
-	      bundle_main_dir = List.nth l1 0;
-   		  subdirectory    = List.nth l1 1;
-          naked_module    = List.nth l1 2;
-    };;  
-   
-let archive_pair (x,is_compiled_correctly)=
-  String.concat industrial_separator2 
-  [archive x;string_of_bool is_compiled_correctly];;
-
-let unarchive_pair s=
-    let l1=Str.split (Str.regexp_string industrial_separator2) s in
-    (unarchive(List.nth l1 0),
-     bool_of_string(List.nth l1 1));;
    
 module Private = struct 
 

@@ -110,21 +110,6 @@ let apply_transformation_on_rightmost_interval (SA(n,x)) f i=
 
 let redundant_indices (SA(_,x))=Listennou.redundant_indices x;;
 
-let industrial_separator=Industrial_separator.small_array;;
-
-(*
-
-Do not use those archiving functions on nested small arrays !
-
-*)
-
-let archive old_archiver (SA(_,x))=
-   String.concat industrial_separator (Image.image old_archiver x);;
-   
-let unarchive old_unarchiver s=
-    let temp1=Str.split_delim (Str.regexp_string industrial_separator) s in
-    let temp2=Image.image old_unarchiver temp1 in 
-    of_list temp2;;   
    
 let to_concrete_object old_concretizer (SA(n,l))=
     Concrete_object_t.Variant("Small_array.SA",

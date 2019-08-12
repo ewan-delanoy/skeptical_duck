@@ -1452,7 +1452,8 @@ let read_persistent_version x=
         let s_ap=Root_directory.join (root x)  Coma_constant.path_for_targetfile in
         let ap=Absolute_path.of_string s_ap in
         let the_archive=Io.read_whole_file ap in
-        Coma_state_field.unarchive the_archive;;      
+        let archived_object = Crobj_parsing.parse the_archive in 
+        Coma_state_field.of_concrete_object archived_object;;      
 
 module Try_to_register=struct
 

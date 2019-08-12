@@ -71,7 +71,7 @@ module Private=struct
   
     let save_targetfile path_for_targetfile cs=
       let root_dir = Coma_state.root cs in 
-      let s1=Coma_state_field.archive cs in
+      let s1=Crobj_parsing.unparse(Coma_state_field.to_concrete_object cs) in
       let lt=Root_directory.force_join root_dir path_for_targetfile in
       Io.overwrite_with (Absolute_path.of_string lt) s1;;
     
