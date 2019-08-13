@@ -133,3 +133,15 @@ let to_string_triple_list crobj = Image.image to_string_triple (unwrap_list crob
 
 let of_string_list_list l=Concrete_object_t.List (Image.image of_string_list l);;
 let to_string_list_list crobj = Image.image to_string_list (unwrap_list crobj);;
+
+let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
+let to_pair to_a to_b crobj=
+    let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
+    (to_a arg1,to_b arg2);;
+
+let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
+let to_list to_a crobj= Image.image to_a (unwrap_list crobj);;
+
+let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
+let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
+
