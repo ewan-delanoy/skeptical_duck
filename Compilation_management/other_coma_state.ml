@@ -41,8 +41,8 @@ let list_values_from_module_in_modulesystem module_name=
 let main_ref=Private.main_ref;;
 
 let officialize_confidential_changes l=
-   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Root_directory.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    Image.image (
       fun path->
          "cp "^next_root^path^" "^this_root^path 
@@ -77,8 +77,8 @@ let repopulate ()=
 
 let see_confidential_changes ()=
    let temp1=Coma_state.all_short_paths (!(Usual_coma_state.main_ref)) in 
-   let this_root = Root_directory.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Root_directory.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    Explicit.filter (
       fun path->
          let ap1=Absolute_path.of_string(this_root^path) 

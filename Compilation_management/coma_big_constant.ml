@@ -1,36 +1,32 @@
 
 (* 
-
-#use"Compilation_management/coma_big_constant.ml";;
-
+#use"Makefile_makers/coma_big_constant.ml";;
 *)
 
 module This_World=struct
 
-let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;
-let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_ocaml";; 
-let githubbing=true;;     
-let triple = (root,backup_dir,githubbing);;           
+let root=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;
+let backup_dir=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Githubbed_ocaml";;
+let githubbing=true;;
+let triple = (root,backup_dir,githubbing);;
 
 end;;
-
-
 module Next_World=struct
 
-let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho";;
-let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho_backup";;
-let githubbing=false;;                
+let root=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho";;
+let backup_dir=Dfa_root_t.R "/Users/ewandelanoy/Teuliou/OCaml/Idaho_backup";;
+let githubbing=false;;
 let triple = (root,backup_dir,githubbing);;
 
 end;;
-
 module Third_World=struct
 
-let root=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee";;
-let backup_dir=Root_directory.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee_backup";; 
-let githubbing=false;;                
+let root=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee";;
+let backup_dir=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Cherokee_backup";;
+let githubbing=false;;
 let triple = (root,backup_dir,githubbing);;
 
 end;;
 
-                 
+
+

@@ -44,8 +44,8 @@ let pusher_for_modulename_prepension
   exception Reading_error of Absolute_path.t * string;;
   
   let rofwei hm=
-     let mlx=Mlx_ended_absolute_path.join hm Ocaml_ending.ml in
-     let ap=Mlx_ended_absolute_path.to_path mlx in
+     let mlx=Dfn_full_path.join hm Dfa_ending.ml in
+     let ap=Dfn_full_path.to_path mlx in
      let text=Io.read_whole_file ap in
      let temp1=(
      try Pre_read_ocaml_files.pre_read text  with

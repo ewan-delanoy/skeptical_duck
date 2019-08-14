@@ -9,7 +9,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
    if Dircopy_diff.is_empty diff
    then ([],[])
    else 
-   let s_destination=Root_directory.connectable_to_subpath destination_dir in
+   let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Dircopy_diff.recently_created diff in
    let temp2=Option.filter_and_unpack
    (fun fn->
@@ -19,7 +19,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
      else None 
     ) created_ones in
    let temp3=Ordered.forget_order(Ordered_string.diforchan temp2) in
-   let s_source=Root_directory.connectable_to_subpath source_dir in
+   let s_source=Dfa_root.connectable_to_subpath source_dir in
    let temp4=Image.image(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
@@ -41,7 +41,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
 
 let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
   let (nongit_cmds,git_cmds)=commands_for_backup (source_dir,destination_dir)  diff in
-  let s_destination=Root_directory.connectable_to_subpath destination_dir in
+  let s_destination=Dfa_root.connectable_to_subpath destination_dir in
   let _=Image.image Unix_command.uc nongit_cmds in
   let _=(
   if p_after_b

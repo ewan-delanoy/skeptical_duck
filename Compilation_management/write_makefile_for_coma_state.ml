@@ -15,7 +15,7 @@ module Private=struct
    naked_module     : string;
   };;  
 
-  let naked_module  x=Naked_module.of_string(x.naked_module);;
+  let naked_module  x=Dfa_module.of_string(x.naked_module);;
 
   let uprooted_version x=
    let sub=x.subdirectory in
@@ -23,15 +23,15 @@ module Private=struct
    then x.naked_module
    else sub^"/"^(x.naked_module);;
 
-  let unveil x=(uprooted_version x,Root_directory.of_string(x.bundle_main_dir));;
+  let unveil x=(uprooted_version x,Dfa_root.of_string(x.bundle_main_dir));;
 
   exception Inexistent_module of string;;
  
   let of_string_and_root old_s dir=
         let s=Cull_string.before_rightmost_possibly_all old_s '.' in
-        let s_dir=Root_directory.without_trailing_slash dir in
+        let s_dir=Dfa_root.without_trailing_slash dir in
       if List.for_all (fun edg->not(Sys.file_exists(s_dir^"/"^s^edg)) ) 
-           Ocaml_ending.all_string_endings
+           Dfa_ending.all_string_endings
 	    then raise(Inexistent_module(s_dir^s))
 	    else
 	    {
@@ -45,11 +45,11 @@ module Private=struct
   end;;
 
   let lm_at_idx cs k=
-    let (Root_directory_t.R r)= Coma_state.root cs in
+    let (Dfa_root_t.R r)= Coma_state.root cs in
     {
       Located_module.bundle_main_dir = r;
-      subdirectory = (Subdirectory.without_trailing_slash(Coma_state.subdir_at_idx cs k));
-      naked_module = (Naked_module.to_string(Coma_state.module_at_idx cs k));
+      subdirectory = (Dfa_subdirectory.without_trailing_slash(Coma_state.subdir_at_idx cs k));
+      naked_module = (Dfa_module.to_string(Coma_state.module_at_idx cs k));
     } ;;
 
   let all_located_modules cs=
@@ -58,13 +58,13 @@ module Private=struct
 
   module Mlx_path=struct 
 
-   type t=MLX of Ocaml_ending.t*string*Root_directory_t.t;;
+   type t=MLX of Dfa_ending.t*string*Dfa_root_t.t;;
 
    let short_path (MLX(edg,s,_))=match edg with
-     Ocaml_ending.Ml->  s^".ml"
-    |Ocaml_ending.Mli-> s^".mli"
-    |Ocaml_ending.Mll-> s^".mll"
-    |Ocaml_ending.Mly-> s^".mly";;
+     Dfa_ending.Ml->  s^".ml"
+    |Dfa_ending.Mli-> s^".mli"
+    |Dfa_ending.Mll-> s^".mll"
+    |Dfa_ending.Mly-> s^".mly";;
 
    let to_string=short_path;; 
 
@@ -81,8 +81,8 @@ module Private=struct
       let (hm,edg)=decompose mlx in
       let dir=root mlx in
       let s_hm=Located_module.uprooted_version hm 
-      and s_dir=Root_directory.connectable_to_subpath dir in
-      Absolute_path.of_string( s_dir^s_hm^(Ocaml_ending.to_string edg) );; 
+      and s_dir=Dfa_root.connectable_to_subpath dir in
+      Absolute_path.of_string( s_dir^s_hm^(Dfa_ending.to_string edg) );; 
 
   let half_dressed_core mlx=fst(decompose mlx);;
   let ending mlx=snd(decompose mlx);;
@@ -165,17 +165,17 @@ module Private=struct
 
   let debuggable_targets_from_ancestor_data pr_end hm=
     match pr_end with
-     Ocaml_ending.Mll-> 
-        let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
+     Dfa_ending.Mll-> 
+        let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mll) in
              [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Mly-> 
-        let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+    |Dfa_ending.Mly-> 
+        let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
         [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Ml-> 
-             let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+    |Dfa_ending.Ml-> 
+             let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
              [ml_target;Ocaml_target.cmi hm;Ocaml_target.dcmo hm]
-    |Ocaml_ending.Mli-> 
-             let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    |Dfa_ending.Mli-> 
+             let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
              [mli_target;Ocaml_target.cmi hm];;    
     
     let immediate_ingredients_for_debuggable hm=
@@ -193,7 +193,7 @@ module Private=struct
     Preserve_initial_ordering.preserve_initial_ordering temp1;;
 
     let ingredients_for_debuggable cs hm=
-      let mlfile=Mlx_path.join hm Ocaml_ending.Ml in
+      let mlfile=Mlx_path.join hm Dfa_ending.Ml in
       let genealogy=find_needed_data cs mlfile in
       let dirfath=Image.image (Coma_state.module_at_idx cs) genealogy in
       let temp1=Image.image 
@@ -228,19 +228,19 @@ module Private=struct
   
   let targets_from_ancestor_data cs idx=
     let hm=lm_at_idx cs idx in
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-    then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
+    then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mll) in
          [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm;Ocaml_target.cmo hm]
     else 
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-    then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx
+    then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
          [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm;Ocaml_target.cmo hm]
     else
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
+    if Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx
     then 
-         let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+         let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
          [ml_target;Ocaml_target.cmi hm;Ocaml_target.cmo hm]
-    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
          [mli_target;Ocaml_target.cmi hm];;  
   
   let targets_from_ancestors cs idx=
@@ -253,19 +253,19 @@ module Private=struct
   
   let optimized_targets_from_ancestor_data cs idx=
     let hm=lm_at_idx cs idx in
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-    then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
+    then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mll) in
          [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm;Ocaml_target.cmx hm]
     else 
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-    then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx
+    then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
          [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm;Ocaml_target.cmx hm]
     else
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
+    if Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx
     then 
-         let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+         let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
          [ml_target;Ocaml_target.cmi hm;Ocaml_target.cmx hm]
-    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
          [mli_target;Ocaml_target.cmi hm];;  
   
   let optimized_targets_from_ancestors cs idx=
@@ -278,43 +278,43 @@ module Private=struct
   
   let immediate_ingredients_for_ml_from_mll hm=
     let mll_target=Ocaml_target.no_dependencies
-       (Mlx_path.join hm Ocaml_ending.mll) in
+       (Mlx_path.join hm Dfa_ending.mll) in
     [mll_target];;
   
   let immediate_ingredients_for_ml_from_mly hm=
     let mly_target=Ocaml_target.no_dependencies
-      (Mlx_path.join hm Ocaml_ending.mly) in
+      (Mlx_path.join hm Dfa_ending.mly) in
     [mly_target];;
   
   let immediate_ingredients_for_cmi cs idx hm=
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
       then let mll_target=Ocaml_target.no_dependencies
-             (Mlx_path.join hm Ocaml_ending.mll) in
+             (Mlx_path.join hm Dfa_ending.mll) in
            [mll_target;Ocaml_target.ml_from_mll hm]
       else 
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx
+      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
            [mly_target;Ocaml_target.ml_from_mly hm]
       else
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx
-    then let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx
+    then let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
          [mli_target]
-    else let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+    else let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
          [ml_target];; 
   
   let immediate_ingredients_for_cmo cs idx hm=
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-      then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
+      then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mll) in
            [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm]
       else 
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx
+      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
            [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm]
       else
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
-    then let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx
+    then let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
          [ml_target;Ocaml_target.cmi hm]
-    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
          [mli_target;Ocaml_target.cmi hm];;  
   
   
@@ -323,18 +323,18 @@ module Private=struct
   let immediate_ingredients_for_cma=immediate_ingredients_for_cmo;;
   
   let immediate_ingredients_for_cmx cs idx hm=
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-      then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mll) in
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
+      then let mll_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mll) in
            [mll_target;Ocaml_target.ml_from_mll hm;Ocaml_target.cmi hm]
       else 
-      if Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx
-      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mly) in
+      if Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx
+      then let mly_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mly) in
            [mly_target;Ocaml_target.ml_from_mly hm;Ocaml_target.cmi hm]
       else
-    if Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
-    then let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.ml) in
+    if Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx
+    then let ml_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.ml) in
          [ml_target;Ocaml_target.cmi hm]
-    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Ocaml_ending.mli) in
+    else let mli_target=Ocaml_target.no_dependencies(Mlx_path.join hm Dfa_ending.mli) in
          [mli_target;Ocaml_target.cmi hm];;  
   
   
@@ -413,8 +413,8 @@ module Private=struct
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_executable(hm)) else 
     let idx=Option.unpack opt_idx in
-    let mli_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx
-    and ml_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx in
+    let mli_reg=Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx
+    and ml_reg=Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx in
     if mli_reg&&(not ml_reg)
     then (ingredients_for_cmi cs hm)@[Ocaml_target.cmi hm]
     else (ingredients_for_cmo cs hm)@[Ocaml_target.cmo hm];;  
@@ -511,20 +511,20 @@ module Command_for_ocaml_target=struct
   let cmx_manager=function
    Ocaml_target.CMX(hm2)->
       let s_hm2=Located_module.to_shortened_string hm2 in
-      Some((Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir)^s_hm2^".cmx")
+      Some((Dfa_subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir)^s_hm2^".cmx")
    |_->None;;
   
   let dcmo_manager=function
    Ocaml_target.DCMO(hm2)->
       let s_hm2=Located_module.to_shortened_string hm2 in
-      Some((Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)^s_hm2^".d.cmo")
+      Some((Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)^s_hm2^".d.cmo")
    |_->None;;
   
   let command_for_nodep mlx=[];;
   
   let command_for_ml_from_mll dir hm=
             let s_hm=Located_module.uprooted_version hm in
-            let s_root=Root_directory.connectable_to_subpath dir in
+            let s_root=Dfa_root.connectable_to_subpath dir in
             let s_fhm=s_root^s_hm in
             [
               "ocamllex  -o "^s_fhm^".ml "^s_fhm^".mll";
@@ -532,7 +532,7 @@ module Command_for_ocaml_target=struct
    
   let command_for_ml_from_mly dir hm=
             let s_hm=Located_module.uprooted_version hm in
-            let s_root=Root_directory.connectable_to_subpath dir in
+            let s_root=Dfa_root.connectable_to_subpath dir in
             let s_fhm=s_root^s_hm in
             [
               "ocamlyacc "^s_fhm^".mly"
@@ -543,10 +543,10 @@ let command_for_cmi dir cs hm=
     let opt_idx=Coma_state.seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmi(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_hm=Located_module.uprooted_version hm in
     let s_fhm=s_root^s_hm in
-    let mli_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx in
+    let mli_reg=Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx in
     let ending=(if mli_reg then ".mli" else ".ml") in
     let central_cmd=
         "ocamlc  -bin-annot "^
@@ -564,12 +564,12 @@ let command_for_cmi dir cs hm=
                   [
                    "mv "^full_mli^" "^dummy_mli;
                    central_cmd;
-                   "mv "^s_fhm^".cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir);
+                   "mv "^s_fhm^".cm* "^s_root^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir);
                    "mv "^dummy_mli^" "^full_mli
                   ] 
             else  [
                      central_cmd;
-                     "mv "^s_fhm^".cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir)
+                     "mv "^s_fhm^".cm* "^s_root^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir)
                    ];;
   
   let command_for_cmo dir cs hm=
@@ -578,15 +578,15 @@ let command_for_cmi dir cs hm=
     if opt_idx=None then raise(Unregistered_cmo(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_hm=Located_module.uprooted_version hm in
-    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Usual cs idx in
-    let mli_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx in 
+    let mli_reg=Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx in 
     let full_mli=s_fhm^".mli" in
     let central_cmds=
     [ 
       "ocamlc -bin-annot "^dirs_and_libs^" -o "^s_fhm^".cmo -c "^s_fhm^".ml";
-      "mv "^s_fhm^".cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir)
+      "mv "^s_fhm^".cm* "^s_root^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir)
     ] in 
     if (not mli_reg) &&(Sys.file_exists(full_mli))
     then 
@@ -614,13 +614,13 @@ let command_for_cmi dir cs hm=
     if opt_idx=None then raise(Unregistered_cmo(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_hm=Located_module.uprooted_version hm in
-    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Debug cs idx in
     [ 
       "ocamlc -g "^dirs_and_libs^" -o "^s_fhm^".d.cmo -c "^s_fhm^".ml";
       "mv "^s_fhm^".d.cm* "^s_root^
-       (Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)
+       (Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)
     ];;
   
   let command_for_cma dir cs hm=
@@ -629,12 +629,12 @@ let command_for_cmi dir cs hm=
       if opt_idx=None then raise(Unregistered_cma(hm)) else 
       let idx=Option.unpack opt_idx in
       let s_hm=Located_module.uprooted_version hm in
-      let s_root=Root_directory.connectable_to_subpath(dir) in
+      let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
       let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
       [ 
         "ocamlopt -bin-annot -a "^dirs_and_libs^" -o "^s_fhm^".cma -c "^s_fhm^".ml";
-        "mv "^s_fhm^".cm* "^s_root^(Subdirectory.connectable_to_subpath Coma_constant.build_subdir)
+        "mv "^s_fhm^".cm* "^s_root^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir)
       ];;  
   
   let command_for_cmx dir cs hm=
@@ -643,11 +643,11 @@ let command_for_cmi dir cs hm=
       if opt_idx=None then raise(Unregistered_cmx(hm)) else 
       let idx=Option.unpack opt_idx in
       let s_hm=Located_module.uprooted_version hm in
-      let s_root=Root_directory.connectable_to_subpath(dir) in
+      let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_fhm=s_root^s_hm in
       let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Executable cs idx in
       let dir_for_building=
-        (Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
+        (Dfa_subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
       [ 
         "ocamlopt "^dirs_and_libs^" -o "^s_fhm^".cmx -c "^s_fhm^".ml";
         "mv "^s_fhm^".cm* "^s_root^dir_for_building;
@@ -660,14 +660,14 @@ let command_for_cmi dir cs hm=
     if opt_idx=None then raise(Unregistered_executable(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_hm=Located_module.uprooted_version hm in
-    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let temp1=ingr cs (Ocaml_target.EXECUTABLE(hm)) in
     let temp2=Option.filter_and_unpack cmx_manager temp1 in
     let long_temp2=Image.image (fun t->s_root^t) temp2 in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Executable  cs idx  in
     let dir_for_building=
-        (Subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
+        (Dfa_subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir) in
     [ 
       "ocamlopt "^dirs_and_libs^" -o "^s_fhm^".ocaml_executable "^
         (String.concat " " long_temp2);
@@ -680,14 +680,14 @@ let command_for_cmi dir cs hm=
     if opt_idx=None then raise(Unregistered_debuggable(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_hm=Located_module.uprooted_version hm in
-    let s_root=Root_directory.connectable_to_subpath(dir) in
+    let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let temp1=ingr cs (Ocaml_target.DEBUGGABLE(hm)) in
     let temp2=Option.filter_and_unpack dcmo_manager temp1 in
     let long_temp2=Image.image (fun t->s_root^t) temp2 in
     let dirs_and_libs=Coma_state.needed_dirs_and_libs_in_command Compilation_mode_t.Debug  cs idx in
     let dir_for_building=
-      (Subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir) in
+      (Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir) in
     [ 
       "ocamlc -g "^dirs_and_libs^" -o "^s_fhm^".ocaml_debuggable "^
         (String.concat " " long_temp2);
@@ -714,10 +714,10 @@ end;;
 
    let target_at_idx cs idx=
     let hm=lm_at_idx cs idx 
-    and mlp =Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx
-    and mlip=Coma_state.check_ending_in_at_idx Ocaml_ending.mli cs idx
-    and mllp=Coma_state.check_ending_in_at_idx Ocaml_ending.mll cs idx
-    and mlyp=Coma_state.check_ending_in_at_idx Ocaml_ending.mly cs idx in
+    and mlp =Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx
+    and mlip=Coma_state.check_ending_in_at_idx Dfa_ending.mli cs idx
+    and mllp=Coma_state.check_ending_in_at_idx Dfa_ending.mll cs idx
+    and mlyp=Coma_state.check_ending_in_at_idx Dfa_ending.mly cs idx in
     let temp1=[
                 mllp,Ocaml_target.ml_from_mll hm;
                 mlyp,Ocaml_target.ml_from_mly hm;
@@ -780,12 +780,12 @@ let usual_targets cs=
     let l_idx=Image.image (fun hm->
       let nm=Located_module.naked_module hm in
       Coma_state.find_module_index cs nm) l  in
-    let s_root=Root_directory.connectable_to_subpath(main_root) in
+    let s_root=Dfa_root.connectable_to_subpath(main_root) in
     let long_temp4=Image.image (fun idx->
                let hm=lm_at_idx cs idx in
                let s_hm=(Located_module.uprooted_version hm) in
                let short_s_hm=Cull_string.after_rightmost s_hm '/' in
-               let ml_reg=Coma_state.check_ending_in_at_idx Ocaml_ending.ml cs idx in
+               let ml_reg=Coma_state.check_ending_in_at_idx Dfa_ending.ml cs idx in
                if ml_reg
                then s_root^"_build/"^short_s_hm^".cmo"
                else " "
@@ -813,7 +813,7 @@ let save_makefile  cs=
       let s1="# This makefile was automatocally written by\n"^
       "# the write_makefile function in the ml_manager module. \n\n"^
       (write_makefile cs) in
-      let lm=Root_directory.force_join (Coma_state.root cs) Coma_constant.name_for_makefile in
+      let lm=Dfa_root.force_join (Coma_state.root cs) Coma_constant.name_for_makefile in
       Io.overwrite_with (Absolute_path.of_string lm) s1;;     
 
 end;;

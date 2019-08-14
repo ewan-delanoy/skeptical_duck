@@ -7,7 +7,7 @@
 
 module After_checking = struct
 
-      exception Recompilation_needed of Naked_module_t.t list;;
+      exception Recompilation_needed of Dfa_module_t.t list;;
 
       module Private = struct
 
@@ -20,7 +20,7 @@ module After_checking = struct
             List.exists
                (check_for_change_at_index_and_ending cs idx) 
             [
-               Ocaml_ending.Mli ;
+               Dfa_ending.Mli ;
                (Coma_state.principal_ending_at_idx cs idx)
             ] ;;
 
@@ -104,13 +104,13 @@ module And_backup = struct
 
       let relocate_module cs old_hm_name new_subdir=
          let (cs2,diff)=After_checking.relocate_module cs old_hm_name new_subdir  in
-         let msg="move "^old_hm_name^" to "^(Subdirectory.connectable_to_subpath new_subdir) in 
+         let msg="move "^old_hm_name^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
       let rename_directory  cs old_subdir new_subdirname=
          let (cs2,diff)=After_checking.rename_directory  cs old_subdir new_subdirname  in 
-         let msg="rename "^(Subdirectory.connectable_to_subpath old_subdir)^" as "^new_subdirname in 
+         let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^" as "^new_subdirname in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 

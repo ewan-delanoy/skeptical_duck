@@ -16,7 +16,7 @@ let is_admissible s=
    (List.for_all (
      fun beg->not(Supstring.begins_with s beg)
   ) (
-    (Image.image Subdirectory.connectable_to_subpath
+    (Image.image Dfa_subdirectory.connectable_to_subpath
      [
        Coma_constant.abandoned_ideas_subdir;
        Coma_constant.automatically_generated_subdir;
@@ -55,7 +55,7 @@ let check root_dir=
   then raise(Failure_in_clone_directory_creation)
   else 
   let _=Unix_command.uc("mkdir -p "^name_of_clone_directory) in
-  let remotedir=Root_directory.of_string name_of_clone_directory in
+  let remotedir=Dfa_root.of_string name_of_clone_directory in
   let j=Unix_command.uc github_clone_command in
   if j<>0
   then raise(Failure_during_github_cloning)

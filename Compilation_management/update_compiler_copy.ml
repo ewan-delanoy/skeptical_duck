@@ -14,20 +14,20 @@ let text_for_big_constants_file_in_next_world =
     "#use\"Makefile_makers/coma_big_constant.ml\";;";
    "*)\n"; 
    "module This_World=struct\n";
-   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
-   "let backup_dir=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\";;";
+   "let root=Root_directory.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
+   "let backup_dir=Root_directory.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Next_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
    "module Next_World=struct\n";
-   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
-   "let backup_dir=Root_directory_t.R \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
+   "let root=Root_directory.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Root_directory_t.R \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
    "module Third_World=struct\n";
-   "let root=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
-   "let backup_dir=Root_directory.of_string \""^(Root_directory.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
+   "let root=Root_directory.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Root_directory.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
@@ -43,16 +43,16 @@ let text_for_big_constants_file_in_next_world =
      (sourcedir,Coma_big_constant.Next_World.root) main_diff;;
   
   let path_for_big_constants_in_next_world ()=
-    Root_directory.join Coma_big_constant.Next_World.root Coma_constant.path_for_parametersfile;;
+    Dfa_root.join Coma_big_constant.Next_World.root Coma_constant.path_for_parametersfile;;
   
 end ;;   
   
 let ucc cs =
     let destdir=Coma_big_constant.Next_World.root in 
-    let s_dir=Root_directory.connectable_to_subpath destdir in 
+    let s_dir=Dfa_root.connectable_to_subpath destdir in 
     let _=Image.image (
        fun subdir ->
-        Unix_command.uc ("mkdir -p "^s_dir^(Subdirectory.without_trailing_slash subdir))
+        Unix_command.uc ("mkdir -p "^s_dir^(Dfa_subdirectory.without_trailing_slash subdir))
     ) [
         Coma_constant.automatically_generated_subdir;
         Coma_constant.build_subdir;
