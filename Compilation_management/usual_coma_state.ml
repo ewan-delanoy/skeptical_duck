@@ -66,7 +66,6 @@ let relocate_module old_hm_name new_subdir=
 let rename_directory old_subdir new_subdirname=
     Modify_coma_state.Reference.rename_directory Private.main_ref old_subdir new_subdirname;;
 
-
 let rename_module old_name new_name=
    Modify_coma_state.Reference.rename_module Private.main_ref old_name new_name;;
 
