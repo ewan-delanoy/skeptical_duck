@@ -18,7 +18,6 @@ let of_string s=
   else raise(Non_directory(s));;
 
 
-
 exception Nonexistent_file of string;;
 
 module Private=struct
