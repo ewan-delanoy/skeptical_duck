@@ -233,8 +233,15 @@ let unregister_module_on_monitored_modules cs hm=
     _->raise(Non_registered_module(hm)) ) in
     let acolytes=acolytes_at_idx cs idx  in
    let cs2=Coma_state_field.remove_in_each_at_index cs idx in
+   let old_preqtypes = Coma_state_field.preq_types cs2 in 
+   let new_preqtypes = List.filter (fun (hm2,_)->hm2<>hm ) old_preqtypes in 
+   let cs3=(
+     if new_preqtypes <> old_preqtypes 
+     then Coma_state_field.set_preq_types cs2 new_preqtypes
+     else cs2
+   ) in 
    let short_paths=Image.image Mlx_ended_absolute_path.short_path acolytes in
-   (cs2,short_paths);;     
+   (cs3,short_paths);;     
                     
 
 exception Non_registered_file of Mlx_ended_absolute_path.t;;  
@@ -260,7 +267,15 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
     if (not(check_ending_in_at_idx edg cs idx))
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_idx cs idx
-         then Coma_state_field.remove_in_each_at_index cs idx
+         then let cs5=Coma_state_field.remove_in_each_at_index cs idx in 
+              let old_preqtypes = Coma_state_field.preq_types cs5 in 
+              let new_preqtypes = List.filter (fun (hm2,_)->hm2<>hm ) old_preqtypes in 
+              let cs6=(
+                if new_preqtypes <> old_preqtypes 
+                then Coma_state_field.set_preq_types cs5 new_preqtypes
+                else cs5
+              ) in 
+              cs6
          else (* if we get here, there are two registered endings, one of which
               is the mli *) 
               if edg=Ocaml_ending.mli
