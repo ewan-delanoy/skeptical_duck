@@ -14,7 +14,7 @@ end;;
 module Next_World=struct
 
 let root=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho";;
-let backup_dir=Dfa_root_t.R "/Users/ewandelanoy/Teuliou/OCaml/Idaho_backup";;
+let backup_dir=Dfa_root.of_string "/Users/ewandelanoy/Teuliou/OCaml/Idaho_backup";;
 let githubbing=false;;
 let triple = (root,backup_dir,githubbing);;
 
