@@ -9,7 +9,7 @@ Designates a relative path.
 
 *)
 
-(*
+
 
 let bundle_main_dir x=Dfa_root.of_string(x.Dfn_endingless_t.bundle_main_dir);;
 let subdirectory x=Dfa_subdirectory.of_string(x.Dfn_endingless_t.subdirectory);;
@@ -117,6 +117,6 @@ let to_concrete_object = Private.to_concrete_object;;
 
 let of_concrete_object = Private.of_concrete_object;;
 
-*)
+
 
 
