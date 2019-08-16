@@ -1,10 +1,10 @@
 (*
 
-#use"mlx_ended_absolute_path.ml";;
+#use"Decomposed_filename/dfa_full_path.ml";;
 
 *)
 
-type t=MLX of Dfa_ending.t*string*Dfa_root_t.t;;
+type t=MLX of Dfa_ending_t.t*string*Dfa_root_t.t;;
 
 exception Unknown_ending of string;;
 exception Unpointed_filename of string;;
@@ -12,10 +12,10 @@ exception Unpointed_filename of string;;
 exception Inexistent_filename of string;;
 
 let short_path (MLX(edg,s,_))=match edg with
-   Dfa_ending.Ml->  s^".ml"
-  |Dfa_ending.Mli-> s^".mli"
-  |Dfa_ending.Mll-> s^".mll"
-  |Dfa_ending.Mly-> s^".mly";;
+   Dfa_ending_t.Ml->  s^".ml"
+  |Dfa_ending_t.Mli-> s^".mli"
+  |Dfa_ending_t.Mll-> s^".mll"
+  |Dfa_ending_t.Mly-> s^".mly";;
 
 let to_string=short_path;;
 
@@ -55,7 +55,7 @@ let try_from_path_and_root ap dir=
     try (Some(of_path_and_root ap dir)) with _->None;;
 
 let decompose (MLX(edg,s,dir))=
-  (Dfn_with_ending_removed.of_string_and_root s dir,edg);;
+  (Dfn_endingless.of_string_and_root s dir,edg);;
 
 let half_dressed_core mlx=fst(decompose mlx);;
 let ending mlx=snd(decompose mlx);;
@@ -64,12 +64,12 @@ let ending mlx=snd(decompose mlx);;
 let to_path mlx=
   let (hm,edg)=decompose mlx in
   let dir=root mlx in
-  let s_hm=Dfn_with_ending_removed.uprooted_version hm 
+  let s_hm=Dfn_endingless.uprooted_version hm 
   and s_dir=Dfa_root.connectable_to_subpath dir in
   Absolute_path.of_string( s_dir^s_hm^(Dfa_ending.to_string edg) );;
 
 let join hs ending=
-  let (s,dir)=Dfn_with_ending_removed.unveil hs in
+  let (s,dir)=Dfn_endingless.unveil hs in
   MLX(ending,s,dir);;
 
   

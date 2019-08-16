@@ -18,7 +18,7 @@ module Private=struct
       and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
       let temp2=Image.image (
         function hm->
-          let s=Cull_string.after_rightmost (Dfn_with_ending_removed.uprooted_version hm) '/' in
+          let s=Cull_string.after_rightmost (Dfn_endingless.uprooted_version hm) '/' in
           "#load\""^s^".cmo\";"^";"
       ) hms in
       let temp3="\n\n\n"::temp2 in
@@ -39,7 +39,7 @@ module Private=struct
         let temp2=List.rev_map (
           function (x,compiled_correctly)->
           if compiled_correctly 
-          then "#install_printer "^(Dfn_with_ending_removed.capitalized_module_name x)^".print_out;"^";"
+          then "#install_printer "^(Dfn_endingless.capitalized_module_name x)^".print_out;"^";"
           else ""
         ) printer_equipped_types in
         let temp3="\n\n\n"::(List.rev ("\n\n\n"::temp2)) in

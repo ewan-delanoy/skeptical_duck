@@ -21,7 +21,7 @@ let unsharped_content hm=
 
 let self_contained_module_copy prefix hm=
    let cs=(!(Usual_coma_state.main_ref)) in 
-   let nm=Dfn_with_ending_removed.naked_module hm in
+   let nm=Dfn_endingless.naked_module hm in
    let those_above=(Coma_state.above cs  hm)@[nm] in
    let temp1=Image.image (
        fun nm2->

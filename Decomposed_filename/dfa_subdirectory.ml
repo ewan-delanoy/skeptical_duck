@@ -2,7 +2,8 @@
 
 Subdirectories name, with the trailing slash removed.
 
-#use"subdirectory.ml";;
+#use"Decomposed_filename/dfa_subdirectory.ml";;
+
 
 *)
 
@@ -38,7 +39,7 @@ rename_endsubdirectory (SD("Haag"),"Java") (SD "Haag/Huug/King/Jordan");;
 *)              
 
 let to_concrete_object (Dfa_subdirectory_t.SD(s))=
-    Concrete_object_t.Variant("Subdirectory_t.SD",[Concrete_object_t.String(s)]);;
+    Concrete_object_t.Variant("Dfa_"^"subdirectory_t.SD",[Concrete_object_t.String(s)]);;
 
 let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 

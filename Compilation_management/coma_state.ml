@@ -61,7 +61,7 @@ let seek_module_index cs nm=
 let hm_at_idx cs k=
     let (Dfa_root_t.R r)= root cs in
     {
-      Dfn_with_ending_removed.bundle_main_dir = r;
+      Dfn_endingless_t.bundle_main_dir = r;
       subdirectory = (Dfa_subdirectory.without_trailing_slash(subdir_at_idx cs k));
       naked_module = (Dfa_module.to_string(module_at_idx cs k));
     } ;;
@@ -176,7 +176,7 @@ let all_modules cs=
 
 let get_modification_time cs idx edg=
   if edg=principal_ending_at_idx cs idx then principal_mt_at_idx cs idx else 
-  if edg=Dfa_ending.Mli then mli_mt_at_idx cs idx else 
+  if edg=Dfa_ending.mli then mli_mt_at_idx cs idx else 
   "0.";;
 
 exception Non_existent_mtime of Dfn_full_path.t;;
@@ -184,7 +184,7 @@ exception Non_existent_mtime of Dfn_full_path.t;;
 let force_modification_time root_dir cs mlx=
       let hm=Dfn_full_path.half_dressed_core mlx
       and edg=Dfn_full_path.ending mlx in
-      let nm=Dfn_with_ending_removed.naked_module hm in
+      let nm=Dfn_endingless.naked_module hm in
       let idx=
         (try Small_array.leftmost_index_of_in
           nm (modules cs) with 
@@ -213,12 +213,12 @@ let everyone_except_the_debugger cs=
         
 
 
-exception Non_registered_module of Dfn_with_ending_removed.t;;  
+exception Non_registered_module of Dfn_endingless_t.t;;  
 exception Derelict_children of Dfa_module_t.t*(Dfa_module_t.t list);;  
            
             
 let unregister_module_on_monitored_modules cs hm=
-  let nm=Dfn_with_ending_removed.naked_module hm in
+  let nm=Dfn_endingless.naked_module hm in
   let n=Small_array.size (modules cs) in
   let pre_desc=List.filter(
       fun idx->List.mem nm ( ancestors_at_idx cs idx )
@@ -250,7 +250,7 @@ exception Abandoned_children of Dfn_full_path.t*(Dfa_module_t.t list);;
                      
 let unregister_mlx_file_on_monitored_modules cs mlxfile=
     let hm=Dfn_full_path.half_dressed_core mlxfile in
-    let nm=Dfn_with_ending_removed.naked_module hm in
+    let nm=Dfn_endingless.naked_module hm in
     let n=Small_array.size (modules cs) in
     let pre_desc=List.filter(
       fun idx->List.mem nm ( ancestors_at_idx cs idx )
@@ -300,7 +300,7 @@ let compute_subdirectories_list cs=
     Image.image Dfa_subdirectory.of_string temp3;;
 
 let  check_registrations cs hm=
-   let nm=Dfn_with_ending_removed.naked_module hm in 
+   let nm=Dfn_endingless.naked_module hm in 
     match seek_module_index cs nm with
       None->Dfa_ending.exhaustive_uple (fun _->false)
     |Some(idx)->Dfa_ending.exhaustive_uple 
@@ -356,7 +356,7 @@ let compute_principal_ending (mlr,mlir,mllr,mlyr)=
     if temp2=[] then Dfa_ending.mli else List.hd temp2;;
 
 let md_compute_modification_time hm edg=
-  let dir=Dfn_with_ending_removed.bundle_main_dir hm in
+  let dir=Dfn_endingless.bundle_main_dir hm in
   let mlx=Dfn_full_path.join hm edg in
   let file=(Dfa_root.connectable_to_subpath dir)^(Dfn_full_path.to_string mlx) in
   if not(Sys.file_exists file) then "0." else
@@ -367,10 +367,10 @@ let md_compute_modification_times hm=
       Dfa_ending.exhaustive_uple (md_compute_modification_time hm);;
     
 let md_associated_modification_time  (ml_mt,mli_mt,mly_mt,mll_mt) edg=match edg with
-     Dfa_ending.Ml->ml_mt
-    |Dfa_ending.Mli->mli_mt
-    |Dfa_ending.Mll->mll_mt
-    |Dfa_ending.Mly->mly_mt;;  
+     Dfa_ending_t.Ml->ml_mt
+    |Dfa_ending_t.Mli->mli_mt
+    |Dfa_ending_t.Mll->mll_mt
+    |Dfa_ending_t.Mly->mly_mt;;  
 
 let complete_info cs  mlx=
   let n=Small_array.size((modules cs)) in
@@ -396,8 +396,8 @@ let complete_info cs  mlx=
   (hm,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,false);;
 
   let check_unix_presence hm edg=
-    let (_,dir)=Dfn_with_ending_removed.unveil hm in
-    let s_hm=Dfn_with_ending_removed.uprooted_version hm 
+    let (_,dir)=Dfn_endingless.unveil hm in
+    let s_hm=Dfn_endingless.uprooted_version hm 
     and s_dir=Dfa_root.connectable_to_subpath dir in
     Sys.file_exists(s_dir^s_hm^(Dfa_ending.to_string edg));;
 
@@ -405,10 +405,10 @@ let  check_unix_presences hm=
     Dfa_ending.exhaustive_uple (fun edg->check_unix_presence hm edg);;  
 
 let registrations_for_lonely_ending =function
-   Dfa_ending.Ml->(true,false,false,false)
-  |Dfa_ending.Mli->(false,true,false,false)
-  |Dfa_ending.Mll->(false,false,true,false)
-  |Dfa_ending.Mly->(false,false,false,true);;  
+   Dfa_ending_t.Ml->(true,false,false,false)
+  |Dfa_ending_t.Mli->(false,true,false,false)
+  |Dfa_ending_t.Mll->(false,false,true,false)
+  |Dfa_ending_t.Mly->(false,false,false,true);;  
 
 
 
@@ -445,7 +445,7 @@ exception Future_name_already_taken of Dfa_module_t.t;;
 let rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
   let n=Small_array.size (modules cs) in
-  let old_nm=Dfn_with_ending_removed.naked_module old_name in
+  let old_nm=Dfn_endingless.naked_module old_name in
   let opt_idx=seek_module_index cs old_nm in
   if opt_idx=None
   then raise(Nonregistered_module(old_nm))
@@ -464,8 +464,8 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let new_files=Image.image (fun mlx->Dfn_full_path.short_path mlx) 
      new_acolytes in 
   let new_hm=Dfn_full_path.half_dressed_core(List.hd new_acolytes) in
-  let old_mname=Dfn_with_ending_removed.naked_module old_name
-  and new_mname=Dfn_with_ending_removed.naked_module new_hm
+  let old_mname=Dfn_endingless.naked_module old_name
+  and new_mname=Dfn_endingless.naked_module new_hm
   in
   let changer=Look_for_module_names.change_module_name_in_ml_file old_mname new_mname in
   let separated_acolytes=Option.filter_and_unpack(
@@ -513,23 +513,23 @@ let rename_module_on_monitored_modules cs old_name new_name=
 
 
 let recompute_complete_card_at_idx cs hm=
-      let nm=Dfn_with_ending_removed.naked_module hm in
+      let nm=Dfn_endingless.naked_module hm in
       let idx=find_module_index cs nm in
       let edg=List.hd(registered_endings_at_idx cs idx) in
       let mlx=Dfn_full_path.join hm edg in
       complete_info cs mlx;;
 
 let recompute_module_info cs hm=
-  let nm=Dfn_with_ending_removed.naked_module hm in
+  let nm=Dfn_endingless.naked_module hm in
   let idx=find_module_index cs nm in
   let new_dt=recompute_complete_card_at_idx cs hm in 
   Coma_state_field.set_in_each cs idx new_dt;;  
 
-exception Nonregistered_module_during_relocation of Dfn_with_ending_removed.t;;  
+exception Nonregistered_module_during_relocation of Dfn_endingless_t.t;;  
           
 let relocate_module cs old_name new_subdir=
   let root_dir = root cs in 
-  let old_nm=Dfn_with_ending_removed.naked_module old_name in
+  let old_nm=Dfn_endingless.naked_module old_name in
   let opt_idx=seek_module_index cs old_nm in
   if opt_idx=None
   then raise(Nonregistered_module_during_relocation(old_name))
@@ -545,7 +545,7 @@ let relocate_module cs old_name new_subdir=
    (List.hd new_acolytes) in
   let s_root=Dfa_root.connectable_to_subpath root_dir in     
     let _=Unix_command.uc
-     ("rm -f "^s_root^"_build/"^(Dfn_with_ending_removed.uprooted_version old_name)^".cm* ") in
+     ("rm -f "^s_root^"_build/"^(Dfn_endingless.uprooted_version old_name)^".cm* ") in
   let principal_mt=md_compute_modification_time new_name (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_name Dfa_ending.mli in
   let cs2=set_subdir_at_idx cs idx new_subdir in 
@@ -557,13 +557,13 @@ let relocate_module cs old_name new_subdir=
 
 
 let above cs hm=
-  let nm=Dfn_with_ending_removed.naked_module hm in
+  let nm=Dfn_endingless.naked_module hm in
   match seek_module_index cs nm with
   None->raise(Non_registered_module(hm))
   |Some(idx)->ancestors_at_idx cs idx;;
 
 let below cs hm=
-  let nm=Dfn_with_ending_removed.naked_module hm 
+  let nm=Dfn_endingless.naked_module hm 
   and n=Small_array.size (modules cs) in
   Option.filter_and_unpack(fun idx->
       if List.mem nm (ancestors_at_idx cs idx)
@@ -571,7 +571,7 @@ let below cs hm=
       else None) (Ennig.ennig 1 n);;  
 
 let directly_below cs hm=
-        let nm=Dfn_with_ending_removed.naked_module hm 
+        let nm=Dfn_endingless.naked_module hm 
         and n=Small_array.size (modules cs) in
         Option.filter_and_unpack(fun idx->
             if List.mem nm (direct_fathers_at_idx cs idx)
@@ -627,7 +627,7 @@ exception Inconsistent_constraints of Dfa_module_t.t*Dfa_module_t.t;;
 exception Bad_upper_constraint of Dfa_module_t.t;;  
 
 
-exception Nonregistered_module_during_reposition of Dfn_with_ending_removed.t;;  
+exception Nonregistered_module_during_reposition of Dfn_endingless_t.t;;  
 
  
 let reposition_module cs hm (l_before,l_after)=
@@ -674,7 +674,7 @@ let find_value_definition cs s=
   let idx1=Option.unpack opt in
   let hm1=hm_at_idx cs idx1 in
   let ap1=Dfn_full_path.to_path(Dfn_full_path.join hm1 
-     Dfa_ending.Ml) in
+     Dfa_ending.ml) in
   let temp1=Read_ocaml_files.read_ocaml_files [ap1] in	 
   Option.seek (
      fun itm->Ocaml_gsyntax_item.name(itm)=s
@@ -792,7 +792,7 @@ module PrivateThree=struct
       let _=treat_circular_dependencies tolerate_cycles
            (fun nm->
            let idx=Small_array.leftmost_index_of_in nm (modules cs) in 
-           Dfn_with_ending_removed.uprooted_version( hm_at_idx cs idx) )
+           Dfn_endingless.uprooted_version( hm_at_idx cs idx) )
            cycles in     
       let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
       let cs3=update_ancs_libs_and_dirs cs2 in 
@@ -813,7 +813,7 @@ module PrivateThree=struct
 end;; 
      
 let md_recompute_modification_time hm edg=
- let dir=Dfn_with_ending_removed.bundle_main_dir hm in
+ let dir=Dfn_endingless.bundle_main_dir hm in
   let mlx=Dfn_full_path.join hm edg in
   let file=(Dfa_root.connectable_to_subpath dir)^(Dfn_full_path.to_string mlx) in
   if not(Sys.file_exists file) then "0." else
@@ -824,7 +824,7 @@ let md_recompute_modification_time hm edg=
 let quick_update cs idx=
   let hm=hm_at_idx cs idx 
   and pr_ending=principal_ending_at_idx cs idx in
-  if (Dfn_with_ending_removed.uprooted_version hm)=Coma_constant.name_for_debugged_module
+  if (Dfn_endingless.uprooted_version hm)=Coma_constant.name_for_debugged_module
   then None
   else
   let mli_modif_time=md_recompute_modification_time hm Dfa_ending.mli 
@@ -923,15 +923,15 @@ let printer_equipped_types_from_data cs=
 
 
 exception Already_registered_file of Dfn_full_path.t;;  
-exception Overcrowding of Dfn_full_path.t*(Dfa_ending.t list);;
-exception Bad_pair of Dfn_full_path.t*Dfa_ending.t;; 
+exception Overcrowding of Dfn_full_path.t*(Dfa_ending_t.t list);;
+exception Bad_pair of Dfn_full_path.t*Dfa_ending_t.t;; 
 
 
 let register_mlx_file_on_monitored_modules cs mlx_file =
           let n=Small_array.size (modules cs) in
           let hm=Dfn_full_path.half_dressed_core mlx_file
           and ending=Dfn_full_path.ending mlx_file in 
-          let nm=Dfn_with_ending_removed.naked_module hm in
+          let nm=Dfn_endingless.naked_module hm in
           let opt_idx=seek_module_index cs nm in
           if opt_idx=None
           then  let info=complete_id_during_new_module_registration cs mlx_file in
@@ -966,7 +966,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           else  
           let last_father=List.hd(temp3) in
           let last_father_idx=Small_array.leftmost_index_of_in last_father (modules cs) in
-          let nm=Dfn_with_ending_removed.naked_module hm in 
+          let nm=Dfn_endingless.naked_module hm in 
           let cs_walker=ref(cs) in 
           let _=
             (
@@ -1002,16 +1002,16 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
 
 module Modern = struct 
 
-exception Unregistered_cmi of Dfn_with_ending_removed.t;;
-exception Unregistered_cmo of Dfn_with_ending_removed.t;;
+exception Unregistered_cmi of Dfn_endingless_t.t;;
+exception Unregistered_cmo of Dfn_endingless_t.t;;
 
 let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
-    let nm=Dfn_with_ending_removed.naked_module hm in
+    let nm=Dfn_endingless.naked_module hm in
     let opt_idx=seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmi(hm)) else 
     let idx=Option.unpack opt_idx in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
-    let s_hm=Dfn_with_ending_removed.uprooted_version hm in
+    let s_hm=Dfn_endingless.uprooted_version hm in
     let s_fhm=s_root^s_hm in
     let mli_reg=check_ending_in_at_idx Dfa_ending.mli cs idx in
     let ending=(if mli_reg then ".mli" else ".ml") in
@@ -1047,11 +1047,11 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
             Option.add_element_on_the_right almost_full_answer opt_exec_move;;
    
   let command_for_cmo (cmod:Compilation_mode_t.t) dir cs hm=
-    let nm=Dfn_with_ending_removed.naked_module hm in
+    let nm=Dfn_endingless.naked_module hm in
     let opt_idx=seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_cmo(hm)) else 
     let idx=Option.unpack opt_idx in
-    let s_hm=Dfn_with_ending_removed.uprooted_version hm in
+    let s_hm=Dfn_endingless.uprooted_version hm in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=s_root^s_hm in
     let dir_and_libs=needed_dirs_and_libs_in_command cmod cs idx in
@@ -1087,11 +1087,11 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     else central_cmds)
     in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
 
-exception  Unregistered_element of Dfn_with_ending_removed.t;;   
+exception  Unregistered_element of Dfn_endingless_t.t;;   
 
 let command_for_module_separate_compilation cmod cs hm=
     let dir = root cs in 
-    let nm=Dfn_with_ending_removed.naked_module hm in
+    let nm=Dfn_endingless.naked_module hm in
     let opt_idx=seek_module_index cs nm in
     if opt_idx=None then raise(Unregistered_element(hm)) else 
     let idx=Option.unpack opt_idx in
@@ -1202,7 +1202,7 @@ end;;
 module Ocaml_target_making=struct
 
 
-exception Failed_during_compilation of (int*Dfn_with_ending_removed.t*string);;
+exception Failed_during_compilation of (int*Dfn_endingless_t.t*string);;
 
 let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_be_treated)=
      match to_be_treated with 
@@ -1215,7 +1215,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
             else 
-            let nm=Dfn_with_ending_removed.naked_module hm in 
+            let nm=Dfn_endingless.naked_module hm in 
             let triples_after=snd(Prepared.partition_in_two_parts (fun (idx2,_,_)->idx2<>idx) other_triples) in 
             let (rejected_siblings_as_triples,survivors)=List.partition
            (
@@ -1350,7 +1350,7 @@ let backup cs diff opt= Backup_coma_state.backup
 
   let unregister_mlx_file_on_targets root_dir cs mlx=
     let hm=Dfn_full_path.half_dressed_core mlx in 
-    let nm=Dfn_with_ending_removed.naked_module hm in 
+    let nm=Dfn_endingless.naked_module hm in 
     let idx=find_module_index cs nm in
     let n=size cs in 
     let sibling_indices=List.filter(
@@ -1375,15 +1375,15 @@ Dfn_full_path.t*(Dfa_module_t.t list);;
 
 let forget_file_on_targets root_dir pair ap=
   let (cs,dirs)=pair in
-  let hm=Dfn_with_ending_removed.of_path_and_root ap root_dir 
+  let hm=Dfn_endingless.of_path_and_root ap root_dir 
   and mlx=Dfn_full_path.of_path_and_root ap root_dir  in
-  let nm=Dfn_with_ending_removed.naked_module hm in
+  let nm=Dfn_endingless.naked_module hm in
   match seek_module_index  cs nm with
    None->pair
   |Some(_)->
    let bel=below cs (Dfn_full_path.half_dressed_core mlx) in
     if bel=[]
-    then let s_hm=Dfn_with_ending_removed.uprooted_version hm in
+    then let s_hm=Dfn_endingless.uprooted_version hm in
          let fn=(Dfa_root.connectable_to_subpath(root_dir))^s_hm in
          let _=Image.image
          (fun edg->Unix_command.uc("rm -f "^fn^edg^"*"))
@@ -1427,12 +1427,12 @@ let forget_unregistered_file root_dir ap=
    subpath;;
 
 exception ModuleWithDependenciesDuringForgetting of 
-        Dfn_with_ending_removed.t*(Dfa_module_t.t list);;
+        Dfn_endingless_t.t*(Dfa_module_t.t list);;
 
 exception Non_registered_module_during_forgetting of Dfa_module_t.t;;
       
 let forget_module_on_targets root_dir (cs,dirs) hm=
-        let nm=Dfn_with_ending_removed.naked_module hm in
+        let nm=Dfn_endingless.naked_module hm in
         match seek_module_index  cs nm with
          None->raise(Non_registered_module_during_forgetting(nm))
         |Some(dt)->
@@ -1440,7 +1440,7 @@ let forget_module_on_targets root_dir (cs,dirs) hm=
           if bel=[]
           then let (answer,short_paths)=Unregister_module.on_targets root_dir 
                           cs hm in
-               let sfn=Dfn_with_ending_removed.to_shortened_string hm in
+               let sfn=Dfn_endingless.to_shortened_string hm in
                let _=Image.image
                (fun edg->
                 let cmd="rm -f _build/"^sfn^edg in
@@ -1727,12 +1727,12 @@ module Register_mlx_file=struct
 
 let on_targets (cs,old_dirs) mlx=
     let hm=Dfn_full_path.half_dressed_core mlx in
-    let new_dir=Dfn_with_ending_removed.subdirectory hm in
+    let new_dir=Dfn_endingless.subdirectory hm in
    let cs2=register_mlx_file_on_monitored_modules cs mlx in
    let new_dirs=
    (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
     in
-    let nm=Dfn_with_ending_removed.naked_module hm in 
+    let nm=Dfn_endingless.naked_module hm in 
     let idx=find_module_index cs2 nm in 
     let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [idx] in 
     (cs3,new_dirs);; 
@@ -1751,7 +1751,7 @@ module Raneme_directory = struct
 let on_subdirectory=Dfa_subdirectory.rename_endsubdirectory;;
 
 let on_printer_equipped_type pair (hm,is_compiled_correctly)=
-    (Dfn_with_ending_removed.rename_endsubdirectory pair hm,is_compiled_correctly);;
+    (Dfn_endingless.rename_endsubdirectory pair hm,is_compiled_correctly);;
 
 
 let on_printer_equipped_types (old_subdir,new_subdirname) l=
@@ -1854,7 +1854,7 @@ let decipher_module cs capitalized_or_not_x=
       fun edg->try(Some(decipher_path cs (s^edg))) with _->None
   ) Dfa_ending.all_string_endings) with
   None->raise(Absent_module(x))
-  |Some(ap)->Dfn_with_ending_removed.of_path_and_root ap (root cs);;
+  |Some(ap)->Dfn_endingless.of_path_and_root ap (root cs);;
 
 module Local_rename_value_inside_module = struct
 
@@ -1876,12 +1876,12 @@ let rename_value_inside_module cs s new_name=
    let module_name=Cull_string.beginning (j-1) s in
    let hm=decipher_module cs  module_name 
    and path=decipher_path cs  module_name in 
-   let nm=Dfn_with_ending_removed.naked_module hm in
+   let nm=Dfn_endingless.naked_module hm in
    let idx1=find_module_index cs nm in
    let pre_temp2=(ancestors_at_idx cs idx1)@[nm] in
    let temp2=Image.image (hm_from_nm cs) pre_temp2 in
    let all_files=Image.image  (fun hm2->
-   	 Dfn_full_path.to_path(Dfn_full_path.join hm2 Dfa_ending.Ml)
+   	 Dfn_full_path.to_path(Dfn_full_path.join hm2 Dfa_ending.ml)
    ) temp2 in
    let temp3=Read_ocaml_files.read_ocaml_files all_files in
    let opt_temp4=Option.seek (fun itm->
@@ -2053,7 +2053,7 @@ let find_half_dressed_module cs x=
 
 let local_above cs x=
   Image.image (fun nm->
-   Dfn_with_ending_removed.uprooted_version(
+   Dfn_endingless.uprooted_version(
     hm_from_nm cs nm
    )) 
   (above cs (find_half_dressed_module cs x));;
@@ -2061,14 +2061,14 @@ let local_above cs x=
 
 let local_below cs x=
   Image.image (fun nm->
-   Dfn_with_ending_removed.uprooted_version(
+   Dfn_endingless.uprooted_version(
     hm_from_nm cs nm
    )) 
   (below cs (find_half_dressed_module cs x));;
 
 let local_directly_below cs x=
   Image.image (fun nm->
-   Dfn_with_ending_removed.uprooted_version(
+   Dfn_endingless.uprooted_version(
     hm_from_nm cs nm
    )) 
   (directly_below cs (find_half_dressed_module cs x));;

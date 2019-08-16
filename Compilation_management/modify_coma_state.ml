@@ -20,7 +20,7 @@ module After_checking = struct
             List.exists
                (check_for_change_at_index_and_ending cs idx) 
             [
-               Dfa_ending.Mli ;
+               Dfa_ending.mli ;
                (Coma_state.principal_ending_at_idx cs idx)
             ] ;;
 

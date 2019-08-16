@@ -4,5 +4,5 @@
 
 *)
 
-type t=MLX of Dfa_ending.t*string*Dfa_root_t.t;;
+type t=MLX of Dfa_ending_t.t*string*Dfa_root_t.t;;
 

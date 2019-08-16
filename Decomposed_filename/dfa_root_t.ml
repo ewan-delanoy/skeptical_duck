@@ -1,8 +1,8 @@
 (*
 
-Subdirectories name, with the trailing slash removed.
+The rightmost trailing slash is removed.
 
-#use"root_directory_t.ml";;
+#use"Decomposed_filename/dfa_root_t.ml";;
 
 *)
 

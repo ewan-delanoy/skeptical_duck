@@ -1,16 +1,19 @@
 (*
 
-#use"ocaml_ending.ml";;
+#use"Decomposed_filename/dfa_ending_t.ml";;
 
 *)
 
-type t=Ml |Mli |Mll |Mly;;
-
-let ml=Ml and mli=Mli and mll=Mll and mly=Mly;;
 
 
+let ml=Dfa_ending_t.Ml 
+and mli=Dfa_ending_t.Mli 
+and mll=Dfa_ending_t.Mll 
+and mly=Dfa_ending_t.Mly;;
 
-let exhaustive_uple f=(f Ml,f Mli,f Mll,f Mly);;
+
+
+let exhaustive_uple f=(f ml,f mli,f mll,f mly);;
 
 (*
 Caution! The order is important in the all_endings list below.
@@ -34,8 +37,8 @@ let to_string edg=snd(Option.find (fun (x,y)->x=edg) correspondances);;
 
 
 let crobj_correspondances= 
-  List.combine [Mll;Mly;Ml;Mli] 
-  (Image.image (fun s->"Ocaml_"^"ending."^s) ["Mll";"Mly";"Ml";"Mli"]);;
+  List.combine [mll;mly;ml;mli] 
+  (Image.image (fun s->"Dfa_"^"ending_t."^s) ["Mll";"Mly";"Ml";"Mli"]);;
 
 let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
   crobj_correspondances;;
