@@ -179,7 +179,7 @@ let get_modification_time cs idx edg=
   if edg=(Dfa_ending_t.E "mli") then mli_mt_at_idx cs idx else 
   "0.";;
 
-exception Non_existent_mtime of Dfn_full_path_t.t;;
+exception Non_existent_mtime of Dfn_full_t.t;;
 
 let force_modification_time root_dir cs mlx=
       let edg=Dfn_full.to_ending mlx in
@@ -242,8 +242,8 @@ let unregister_module_on_monitored_modules cs hm=
    (cs3,short_paths);;     
                     
 
-exception Non_registered_file of Dfn_full_path_t.t;;  
-exception Abandoned_children of Dfn_full_path_t.t * (Dfa_module_t.t list);;
+exception Non_registered_file of Dfn_full_t.t;;  
+exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
                       
                      
 let unregister_mlx_file_on_monitored_modules cs mlxfile=
@@ -441,7 +441,7 @@ let do_file_renaming mlx new_name=
   (Dfa_ending.connectable_to_modulename(Dfn_full.to_ending mlx))) in
   let ap=Dfn_full.to_absolute_path mlx in
   let new_ap=Rename_file.rename ap checked_name in
-  let (Dfn_full_path_t.J(r,_,_,_))=mlx in 
+  let (Dfn_full_t.J(r,_,_,_))=mlx in 
   Dfn_full.from_absolute_path_with_root new_ap r;;    
   
 
@@ -942,9 +942,9 @@ let printer_equipped_types_from_data cs=
 
 
 
-exception Already_registered_file of Dfn_full_path_t.t;;  
-exception Overcrowding of Dfn_full_path_t.t*(Dfa_ending_t.t list);;
-exception Bad_pair of Dfn_full_path_t.t*Dfa_ending_t.t;; 
+exception Already_registered_file of Dfn_full_t.t;;  
+exception Overcrowding of Dfn_full_t.t*(Dfa_ending_t.t list);;
+exception Bad_pair of Dfn_full_t.t*Dfa_ending_t.t;; 
 
 
 let register_mlx_file_on_monitored_modules cs mlx_file =
@@ -1387,7 +1387,7 @@ let backup cs diff opt= Backup_coma_state.backup
     (cs3,new_dirs);;   
 
 exception FileWithDependencies of 
-Dfn_full_path_t.t*(Dfa_module_t.t list);;
+Dfn_full_t.t*(Dfa_module_t.t list);;
 
 
 let forget_file_on_targets root_dir pair ap=
