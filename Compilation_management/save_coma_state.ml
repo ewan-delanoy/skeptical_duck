@@ -7,18 +7,20 @@
 
 module Private=struct
   
-    let loadings (main_root,path_for_loadingsfile) (dirs,hms)=
+    let loadings (main_root,rootless_path_for_loadingsfile) (dirs,hms)=
+      let path_for_loadingsfile = Dfn_rootless.to_line rootless_path_for_loadingsfile in 
       let s_root=Dfa_root.connectable_to_subpath main_root in
       let part1="\n(*\n #use\""^s_root^(path_for_loadingsfile)^"\";"^";\n*)\n\n" in
       let temp5=Image.image (
         fun sd->
         "#directory\""^s_root^(Dfa_subdirectory.connectable_to_subpath sd)^"\";"^";"
-      ) ((Dfa_subdirectory.of_string "_build")::dirs) in
+      ) ((Dfa_subdirectory.of_line "_build")::dirs) in
       let part2=String.concat "\n" temp5 
       and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
       let temp2=Image.image (
         function hm->
-          let s=Cull_string.after_rightmost (Dfn_endingless.uprooted_version hm) '/' in
+          let nm = Dfn_endingless.to_module hm in  
+          let s=Cull_string.after_rightmost (Dfa_module.to_line nm) '/' in
           "#load\""^s^".cmo\";"^";"
       ) hms in
       let temp3="\n\n\n"::temp2 in
@@ -39,66 +41,66 @@ module Private=struct
         let temp2=List.rev_map (
           function (x,compiled_correctly)->
           if compiled_correctly 
-          then "#install_printer "^(Dfn_endingless.capitalized_module_name x)^".print_out;"^";"
+          then let modname=Dfn_endingless.to_module x in 
+               "#install_printer "^(Dfa_module.capitalized_form modname)^".print_out;"^";"
           else ""
         ) printer_equipped_types in
         let temp3="\n\n\n"::(List.rev ("\n\n\n"::temp2)) in
         let part2=String.concat "\n" temp3 in
         part2;;  
 
-    let save_loadingsfile (root,path_for_loadingsfile) (dirs,hms)=
-       let s=loadings (root,path_for_loadingsfile)
+    let save_loadingsfile (root,rootless_path_for_loadingsfile) (dirs,hms)=
+       let s=loadings (root,rootless_path_for_loadingsfile)
         (dirs,hms)
-       and lm=Dfa_root.force_join root  path_for_loadingsfile in
-       Io.overwrite_with (Absolute_path.of_string lm) s;;
+       and lm=Dfn_join.root_to root rootless_path_for_loadingsfile in
+       Io.overwrite_with (Dfn_full_path.to_absolute_path lm) s;;
     
-    let save_merlinfile (root,location_for_merlinfile) dirs=
+    let save_merlinfile (root,rootless_path_for_merlinfile) dirs=
         let s=instructions_for_merlinfile root dirs 
-        and lm=Dfa_root.force_join root  location_for_merlinfile in
-        Io.overwrite_with (Absolute_path.of_string lm) s;;
+        and lm=Dfn_join.root_to root rootless_path_for_merlinfile in
+        Io.overwrite_with (Dfn_full_path.to_absolute_path lm) s;;
   
-    let save_printersfile (root,path_for_printersfile) printer_equipped_types=
+    let save_printersfile (root,rootless_path_for_printersfile) printer_equipped_types=
        let s=instructions_for_printersfile printer_equipped_types
-       and lm=Dfa_root.force_join root path_for_printersfile in
+       and lm=Dfn_join.root_to root rootless_path_for_printersfile in
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
        Replace_inside.overwrite_between_markers_inside_file
        (Overwriter.of_string s)
        (beg_mark,end_mark)
-       (Absolute_path.of_string lm);;
+       (Dfn_full_path.to_absolute_path lm);;
     
     
   
-    let save_targetfile path_for_targetfile cs=
+    let save_targetfile rootless_path_for_targetfile cs=
       let root_dir = Coma_state.root cs in 
       let s1=Crobj_parsing.unparse(Coma_state_field.to_concrete_object cs) in
-      let lt=Dfa_root.force_join root_dir path_for_targetfile in
-      Io.overwrite_with (Absolute_path.of_string lt) s1;;
+      let lt=Dfn_join.root_to root_dir rootless_path_for_targetfile in
+      Io.overwrite_with (Dfn_full_path.to_absolute_path lt) s1;;
     
     
     
     let write_all 
     (
-      location_for_targetfile,
-      location_for_loadingsfile,
-      location_for_printersfile
+      rootless_path_for_targetfile,
+      rootless_path_for_loadingsfile,
+      rootless_path_for_printersfile
       )
       uple= 
       let (cs,directories,printer_equipped_types)=uple in
       let root_dir = Coma_state.root cs in  
       let hms=Coma_state.up_to_date_hms cs in 
        (
-        save_merlinfile (root_dir,Coma_constant.name_for_merlinfile) directories;
-        save_loadingsfile (root_dir,location_for_loadingsfile) (directories,hms);
-        save_targetfile location_for_targetfile cs;
-        save_printersfile (root_dir,location_for_printersfile) printer_equipped_types;
+        save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,hms);
+        save_targetfile rootless_path_for_targetfile cs;
+        save_printersfile (root_dir,rootless_path_for_printersfile) printer_equipped_types;
        );;
     
     let save_all cs=write_all 
       (
-        Coma_constant.path_for_targetfile,
-        Coma_constant.path_for_loadingsfile,
-        Coma_constant.path_for_printersfile
+        Coma_constant.rootless_path_for_targetfile,
+        Coma_constant.rootless_path_for_loadingsfile,
+        Coma_constant.rootless_path_for_printersfile
       )
       (
 	      Coma_state.uple_form cs

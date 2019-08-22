@@ -4,11 +4,5 @@
 
 *)
 
-
-          
-type t={
-   bundle_main_dir : string;
-   subdirectory    : string;
-   naked_module     : string;
-};;
+type t = J of Dfa_root_t.t * Dfa_subdirectory_t.t * Dfa_module_t.t  ;;
 

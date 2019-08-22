@@ -53,7 +53,8 @@ let greedy_list sourcedir=
       (Dfa_root.without_trailing_slash sourcedir) in
    let source_paths=More_unix.complete_ls_with_nondirectories_only converted_to_dir in
    Image.image (fun ap->
-   Dfa_root.cut_beginning sourcedir (Absolute_path.to_string ap) ) 
+     let rootless_path = Dfn_join.decompose_absolute_path_using_root ap sourcedir in 
+     Dfn_rootless.to_line rootless_path ) 
    source_paths;;
       
    

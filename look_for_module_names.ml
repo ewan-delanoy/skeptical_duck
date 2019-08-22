@@ -21,7 +21,7 @@ let names_in_ml_ocamlcode z=
   let temp2=Image.image (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
   let temp3=Three_parts.generic temp2 in
   let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
-  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_string 
+  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_line 
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 
@@ -33,8 +33,8 @@ let names_in_ml_file file=names_in_ml_ocamlcode(Io.read_whole_file file);;
 let change_module_name_in_ml_ocamlcode
    old_naked_name
    new_naked_name s=
-   let old_name=String.capitalize_ascii(Dfa_module.to_string(old_naked_name))
-   and new_name=String.capitalize_ascii(Dfa_module.to_string(new_naked_name)) in
+   let old_name=String.capitalize_ascii(Dfa_module.to_line(old_naked_name))
+   and new_name=String.capitalize_ascii(Dfa_module.to_line(new_naked_name)) in
    let itv=(fun a b->String.sub s (a-1) (b-a+1)) in
    let temp1=indices_in_ml_ocamlcode s in
    let temp2=List.filter (fun (j,(a,b))->(itv a b)=old_name ) temp1 in

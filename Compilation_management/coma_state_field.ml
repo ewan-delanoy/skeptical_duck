@@ -163,8 +163,8 @@ to_t({ cs with
 });;
 
 let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-    let nm=Dfn_endingless.naked_module hm
-    and subdir=Dfn_endingless.subdirectory hm 
+    let nm=Dfn_endingless.to_module hm
+    and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.push_right cs.Coma_state_t.modules nm 
     and new_subdirs = Small_array.push_right cs.Coma_state_t.subdir_for_module subdir
@@ -192,8 +192,8 @@ to_t({ cs with
 });;
 
 let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-    let nm=Dfn_endingless.naked_module hm
-    and subdir=Dfn_endingless.subdirectory hm 
+    let nm=Dfn_endingless.to_module hm
+    and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.set cs.Coma_state_t.modules idx nm 
     and new_subdirs = Small_array.set cs.Coma_state_t.subdir_for_module idx subdir
@@ -221,8 +221,8 @@ to_t({ cs with
 });;
   
 let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-    let nm=Dfn_endingless.naked_module hm
-    and subdir=Dfn_endingless.subdirectory hm 
+    let nm=Dfn_endingless.to_module hm
+    and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.push_immediately_after_idx cs.Coma_state_t.modules nm idx  
     and new_subdirs = Small_array.push_immediately_after_idx cs.Coma_state_t.subdir_for_module subdir idx 
@@ -338,8 +338,8 @@ let sizes wrapped_cs =
 
 
 let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-    let nm=Dfn_endingless.naked_module hm
-    and subdir=Dfn_endingless.subdirectory hm 
+    let nm=Dfn_endingless.to_module hm
+    and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.push_immediately_after_idx cs.Coma_state_t.modules nm idx  
     and new_subdirs = Small_array.push_immediately_after_idx cs.Coma_state_t.subdir_for_module subdir idx 
@@ -402,12 +402,12 @@ let of_concrete_object ccrt_obj =
       mli_presence_for_module = Small_array.of_concrete_object Concrete_object_field.to_bool (g mli_presence_for_module_label);
       principal_mt_for_module = Small_array.of_concrete_object Concrete_object_field.unwrap_string (g principal_mt_for_module_label);
       mli_mt_for_module = Small_array.of_concrete_object Concrete_object_field.unwrap_string (g mli_mt_for_module_label);
-      needed_libs_for_module = Small_array.of_concrete_object Ocaml_library.list_of_concrete_object (g needed_libs_for_module_label);
-      direct_fathers_for_module = Small_array.of_concrete_object Dfa_module.list_of_concrete_object (g direct_fathers_for_module_label);
-      ancestors_for_module = Small_array.of_concrete_object Dfa_module.list_of_concrete_object (g ancestors_for_module_label); 
-      needed_dirs_for_module = Small_array.of_concrete_object Dfa_subdirectory.list_of_concrete_object (g needed_dirs_for_module_label);
+      needed_libs_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Ocaml_library.of_concrete_object) (g needed_libs_for_module_label);
+      direct_fathers_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
+      ancestors_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g ancestors_for_module_label); 
+      needed_dirs_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
       product_up_to_date_for_module = Small_array.of_concrete_object Concrete_object_field.to_bool (g product_up_to_date_for_module_label);
-      directories = Dfa_subdirectory.list_of_concrete_object  (g directories_label);
+      directories = (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
       printer_equipped_types = Concrete_object_field.to_pair_list 
                                       Dfn_endingless.of_concrete_object
                                       Concrete_object_field.to_bool (g printer_equipped_types_label);
@@ -426,12 +426,12 @@ let to_concrete_object cs=
     mli_presence_for_module_label, Small_array.to_concrete_object Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
     principal_mt_for_module_label, Small_array.to_concrete_object (fun s->Concrete_object_t.String s) cs.Coma_state_t.principal_mt_for_module;
     mli_mt_for_module_label, Small_array.to_concrete_object (fun s->Concrete_object_t.String s) cs.Coma_state_t.mli_mt_for_module;
-    needed_libs_for_module_label, Small_array.to_concrete_object Ocaml_library.list_to_concrete_object cs.Coma_state_t.needed_libs_for_module; 
-    direct_fathers_for_module_label, Small_array.to_concrete_object Dfa_module.list_to_concrete_object cs.Coma_state_t.direct_fathers_for_module;   
-    ancestors_for_module_label, Small_array.to_concrete_object Dfa_module.list_to_concrete_object cs.Coma_state_t.ancestors_for_module;   
-    needed_dirs_for_module_label, Small_array.to_concrete_object Dfa_subdirectory.list_to_concrete_object cs.Coma_state_t.needed_dirs_for_module;  
+    needed_libs_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
+    direct_fathers_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
+    ancestors_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   
+    needed_dirs_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object)  cs.Coma_state_t.needed_dirs_for_module;  
     product_up_to_date_for_module_label, Small_array.to_concrete_object Concrete_object_field.of_bool cs.Coma_state_t.product_up_to_date_for_module; 
-    directories_label,  Dfa_subdirectory.list_to_concrete_object cs.Coma_state_t.directories; 
+    directories_label,  (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
     printer_equipped_types_label,  Concrete_object_field.of_pair_list 
                                       Dfn_endingless.to_concrete_object
                                       Concrete_object_field.of_bool cs.Coma_state_t.printer_equipped_types;    

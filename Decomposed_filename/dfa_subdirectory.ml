@@ -10,17 +10,14 @@ Subdirectories name, with the trailing slash removed.
 
 let without_trailing_slash (Dfa_subdirectory_t.SD s)=s;;
 
-
-let of_string s=Dfa_subdirectory_t.SD s;;
-
-let depth (Dfa_subdirectory_t.SD s)=
- if s="" then 0 else
- (List.length(Substring.occurrences_of_in "/" s))+1;;
-
 let connectable_to_subpath (Dfa_subdirectory_t.SD s)=
   if s="" 
   then "" 
   else s^"/";;
+
+let of_line s=Dfa_subdirectory_t.SD s;;
+
+let main = Dfa_subdirectory_t.SD "";;
 
 let rename_endsubdirectory (Dfa_subdirectory_t.SD(old_subdir),new_esdname) 
    (Dfa_subdirectory_t.SD s)=
@@ -45,12 +42,6 @@ let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
    Dfa_subdirectory_t.SD(Concrete_object_field.unwrap_string arg1);;
 
-let list_to_concrete_object l=
-   Concrete_object_t.List(Image.image to_concrete_object l);;
 
-let list_of_concrete_object ccrt_obj=
-    Image.image of_concrete_object (Concrete_object_field.unwrap_list ccrt_obj);;   
-
-    
 
 

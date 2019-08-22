@@ -14,20 +14,20 @@ let text_for_big_constants_file_in_next_world =
     "#use\"Makefile_makers/coma_big_constant.ml\";;";
    "*)\n"; 
    "module This_World=struct\n";
-   "let root=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
-   "let backup_dir=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\";;";
+   "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.root)^"\";;";
+   "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Next_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
    "module Next_World=struct\n";
-   "let root=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
-   "let backup_dir=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
+   "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
    "module Third_World=struct\n";
-   "let root=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
-   "let backup_dir=Dfa_root.of_string \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
+   "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\";;";
+   "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\";;";
    "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^";;";
    "let triple = (root,backup_dir,githubbing);;\n"; 
    "end;;";
@@ -43,7 +43,7 @@ let text_for_big_constants_file_in_next_world =
      (sourcedir,Coma_big_constant.Next_World.root) main_diff;;
   
   let path_for_big_constants_in_next_world ()=
-    Dfa_root.join Coma_big_constant.Next_World.root Coma_constant.path_for_parametersfile;;
+    Dfn_join.root_to Coma_big_constant.Next_World.root Coma_constant.rootless_path_for_parametersfile;;
   
 end ;;   
   
@@ -64,7 +64,7 @@ let ucc cs =
     (* remember to modify the special files AFTER copying every file ! *)
     let _=Image.image Unix_command.uc (Private.commands_for_copying cs) in 
     (* the mass copying just done includes the big constants file *)
-    let bc_path=Absolute_path.of_string(Private.path_for_big_constants_in_next_world()) in
+    let bc_path=Dfn_full_path.to_absolute_path(Private.path_for_big_constants_in_next_world()) in
     let _=Io.overwrite_with bc_path Private.text_for_big_constants_file_in_next_world in
     let (other_cs,new_tgts2,preqt)=Coma_state.Target_system_creation.from_main_directory 
       Coma_big_constant.Next_World.root 
