@@ -36,6 +36,6 @@ let decompose_absolute_path_using_root ap root=
   string_to_rootless(String.sub s_ap (ns+1) (nw-ns-1));;
 
 let root_to r (Dfn_rootless_t.J(s,m,e))=Dfn_full_path_t.J(r,s,m,e);;
-let subdirectory_to s (Dfn_short_path_t.J(m,e))=(Dfn_rootless_t.J(s,m,e));;  
+let subdirectory_to s (Dfn_short_t.J(m,e))=(Dfn_rootless_t.J(s,m,e));;  
 let to_ending (Dfn_endingless_t.J(r,s,m)) e = Dfn_full_path_t.J(r,s,m,e);;
 
