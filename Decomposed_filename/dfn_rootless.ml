@@ -6,7 +6,7 @@
 *)
 
 
-let of_line line = Dfn_join.string_to_rootless line;;
+let of_line line = Dfn_common.string_to_rootless line;;
 
 
 let to_line (Dfn_rootless_t.J(s,m,e))=

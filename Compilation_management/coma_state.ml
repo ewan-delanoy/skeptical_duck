@@ -1392,7 +1392,7 @@ Dfn_full_t.t*(Dfa_module_t.t list);;
 
 let forget_file_on_targets root_dir pair ap=
   let (cs,dirs)=pair in
-  let rootless_path = Dfn_join.decompose_absolute_path_using_root ap root_dir in 
+  let rootless_path = Dfn_common.decompose_absolute_path_using_root ap root_dir in 
   let mlx = Dfn_join.root_to root_dir rootless_path in 
   let hm=Dfn_full.to_endingless mlx  in
   let nm=Dfn_endingless.to_module hm in
@@ -1725,7 +1725,7 @@ let delchacre_from_scratch (source_dir,dir_for_backup) cs=
   let temp1=all_mlx_paths cs in
   let temp3=temp1 in
   let temp4=Image.image (fun ap->
-     let rootless_path = Dfn_join.decompose_absolute_path_using_root ap source_dir in 
+     let rootless_path = Dfn_common.decompose_absolute_path_using_root ap source_dir in 
      Dfn_rootless.to_line rootless_path) temp3 in
  Prepare_dircopy_update.compute_diff
     (source_dir,temp4) dir_for_backup;;
@@ -1876,7 +1876,7 @@ let decipher_module cs capitalized_or_not_x=
   ) Dfa_ending.all_ocaml_endings) with
   None->raise(Absent_module(x))
   |Some(ap)->
-    let rootless_path = Dfn_join.decompose_absolute_path_using_root ap (root cs) in 
+    let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root cs) in 
     let mlx = Dfn_join.root_to (root cs) rootless_path in 
     Dfn_full.to_endingless mlx ;;
 
@@ -2096,7 +2096,7 @@ let local_directly_below cs x=
 
 let forget_file_with_backup_before_saving cs x=
    let ap=decipher_path cs x in
-   let rootless_path = Dfn_join.decompose_absolute_path_using_root ap (root cs) in 
+   let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root cs) in 
    let cut_ap=Dfn_rootless.to_line rootless_path in
    let diff=
     Dircopy_diff.veil

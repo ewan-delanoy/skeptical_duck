@@ -25,7 +25,7 @@ let to_line (Dfn_full_t.J(r,s,m,e))=
 let to_absolute_path mlx=Absolute_path.of_string(to_line mlx);;  
 
 let from_absolute_path_with_root ap dir=
-  let rless = Dfn_join.decompose_absolute_path_using_root ap dir in 
+  let rless = Dfn_common.decompose_absolute_path_using_root ap dir in 
   Dfn_join.root_to dir rless;;
 
   
