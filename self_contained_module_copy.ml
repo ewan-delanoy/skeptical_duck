@@ -5,7 +5,7 @@
 
 let unsharped_content hm=
     let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
-    let ap_ml=Dfn_full_path.to_absolute_path mlx in
+    let ap_ml=Dfn_full.to_absolute_path mlx in
     let naive_content=Io.read_whole_file ap_ml in
     if Sys.file_exists((Absolute_path.to_string ap_ml)^"l")
     then (
@@ -28,7 +28,7 @@ let self_contained_module_copy prefix hm=
          let idx2=Coma_state.find_module_index cs nm2 in
          let hm2=Coma_state.hm_at_idx cs idx2 in
          let mlx=Dfn_join.to_ending hm2 Dfa_ending.ml in
-         let ap=Dfn_full_path.to_absolute_path mlx in
+         let ap=Dfn_full.to_absolute_path mlx in
          let naked_name=Modularize.module_name_from_path ap in
          let s_name=Dfa_module.to_line naked_name in
          let mname=String.capitalize_ascii s_name in

@@ -53,12 +53,12 @@ module Private=struct
        let s=loadings (root,rootless_path_for_loadingsfile)
         (dirs,hms)
        and lm=Dfn_join.root_to root rootless_path_for_loadingsfile in
-       Io.overwrite_with (Dfn_full_path.to_absolute_path lm) s;;
+       Io.overwrite_with (Dfn_full.to_absolute_path lm) s;;
     
     let save_merlinfile (root,rootless_path_for_merlinfile) dirs=
         let s=instructions_for_merlinfile root dirs 
         and lm=Dfn_join.root_to root rootless_path_for_merlinfile in
-        Io.overwrite_with (Dfn_full_path.to_absolute_path lm) s;;
+        Io.overwrite_with (Dfn_full.to_absolute_path lm) s;;
   
     let save_printersfile (root,rootless_path_for_printersfile) printer_equipped_types=
        let s=instructions_for_printersfile printer_equipped_types
@@ -68,7 +68,7 @@ module Private=struct
        Replace_inside.overwrite_between_markers_inside_file
        (Overwriter.of_string s)
        (beg_mark,end_mark)
-       (Dfn_full_path.to_absolute_path lm);;
+       (Dfn_full.to_absolute_path lm);;
     
     
   
@@ -76,7 +76,7 @@ module Private=struct
       let root_dir = Coma_state.root cs in 
       let s1=Crobj_parsing.unparse(Coma_state_field.to_concrete_object cs) in
       let lt=Dfn_join.root_to root_dir rootless_path_for_targetfile in
-      Io.overwrite_with (Dfn_full_path.to_absolute_path lt) s1;;
+      Io.overwrite_with (Dfn_full.to_absolute_path lt) s1;;
     
     
     

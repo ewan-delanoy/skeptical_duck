@@ -15,6 +15,6 @@ let read_needed_ocaml_files hm=
   let pre_temp2=(Coma_state.ancestors_at_idx cs idx1)@[nm] in
   let temp2=Image.image (Coma_state.hm_from_nm cs) pre_temp2 in
   let all_files=Image.image  (fun hm2->
-     Dfn_full_path.to_absolute_path(Dfn_join.to_ending hm2 Dfa_ending.ml)
+     Dfn_full.to_absolute_path(Dfn_join.to_ending hm2 Dfa_ending.ml)
   ) temp2 in
    Read_ocaml_files.read_ocaml_files all_files;;

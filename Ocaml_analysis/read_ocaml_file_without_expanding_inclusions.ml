@@ -45,7 +45,7 @@ let pusher_for_modulename_prepension
   
   let rofwei hm=
      let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
-     let ap=Dfn_full_path.to_absolute_path mlx in
+     let ap=Dfn_full.to_absolute_path mlx in
      let text=Io.read_whole_file ap in
      let temp1=(
      try Pre_read_ocaml_files.pre_read text  with

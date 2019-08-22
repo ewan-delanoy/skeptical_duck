@@ -64,7 +64,7 @@ let ucc cs =
     (* remember to modify the special files AFTER copying every file ! *)
     let _=Image.image Unix_command.uc (Private.commands_for_copying cs) in 
     (* the mass copying just done includes the big constants file *)
-    let bc_path=Dfn_full_path.to_absolute_path(Private.path_for_big_constants_in_next_world()) in
+    let bc_path=Dfn_full.to_absolute_path(Private.path_for_big_constants_in_next_world()) in
     let _=Io.overwrite_with bc_path Private.text_for_big_constants_file_in_next_world in
     let (other_cs,new_tgts2,preqt)=Coma_state.Target_system_creation.from_main_directory 
       Coma_big_constant.Next_World.root 
