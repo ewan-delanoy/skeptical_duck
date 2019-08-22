@@ -1812,7 +1812,7 @@ let clean_debug_dir cs=
 
 let start_debugging cs=
   let  _=clean_debug_dir cs in
-  let dbg_path=Dfn_short_path.to_line(Coma_constant.short_path_for_debugged_file) in
+  let dbg_path=Dfn_short.to_line(Coma_constant.short_path_for_debugged_file) in
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs dbg_path in 
   let answer=Unix_command.conditional_multiple_uc cmds in 
 	let msg=(
