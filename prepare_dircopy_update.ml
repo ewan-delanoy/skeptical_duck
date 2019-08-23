@@ -60,16 +60,17 @@ let greedy_list sourcedir=
 let compute_greedy_diff sourcedir destdir=
    compute_diff (sourcedir,greedy_list sourcedir) destdir;;      
    
-let restricted_list sourcedir restrictions=
+let restricted_list sourcedir (ignored_subdirs,ignored_files)=
    let s_dir =  Dfa_root.without_trailing_slash sourcedir in 
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
    let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
-   let restrictions1=Image.image Dfa_subdirectory.without_trailing_slash restrictions in 
+   let ignored_subdirs1=Image.image Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
    Option.filter_and_unpack (fun ap->
      let s_ap = Absolute_path.to_string ap in 
      let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
-     if List.exists(Supstring.begins_with s_rootless) restrictions1
+     if (List.exists(Supstring.begins_with s_rootless) ignored_subdirs1) ||
+        (List.mem s_rootless ignored_files)
      then None
      else 
      let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
