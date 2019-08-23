@@ -61,7 +61,7 @@ let check root_dir=
   then raise(Failure_during_github_cloning)
   else 
   let diff=Prepare_dircopy_update.compute_restricted_diff
-     root_dir remotedir (Coma_constant.git_ignored_subdirectories,["README"]) in
+     root_dir remotedir (Coma_constant.git_ignored_subdirectories,["README";"makefile"]) in
   let rc1=List.filter is_admissible (Dircopy_diff.recently_deleted diff)
   and rc2=List.filter is_admissible (Dircopy_diff.recently_changed diff)
   and rc3=List.filter is_admissible (Dircopy_diff.recently_created diff) in
