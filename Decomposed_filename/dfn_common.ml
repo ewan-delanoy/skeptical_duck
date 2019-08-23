@@ -19,8 +19,10 @@ let string_to_sm s=
    (Dfa_subdirectory_t.SD sub,Dfa_module_t.M mn);;     
 
 let string_to_rootless line=
+  if not(String.contains line '.')
+  then raise(No_dot_in_string_to_rootless(line)) 
+  else 
   let (rest,ending) = Cull_string.split_wrt_rightmost line '.' in 
-  if rest="" then raise(No_dot_in_string_to_rootless(line)) else 
   let (s,m) = string_to_sm rest in 
   Dfn_rootless_t.J(s,m,Dfa_ending_t.E ending);;
 
