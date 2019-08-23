@@ -65,10 +65,11 @@ let restricted_list sourcedir restrictions=
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
    let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
+   let restrictions1=Image.image Dfa_subdirectory.without_trailing_slash restrictions in 
    Option.filter_and_unpack (fun ap->
      let s_ap = Absolute_path.to_string ap in 
      let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
-     if List.exists(Supstring.begins_with s_rootless) restrictions
+     if List.exists(Supstring.begins_with s_rootless) restrictions1
      then None
      else 
      let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
