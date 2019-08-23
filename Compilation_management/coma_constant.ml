@@ -1,7 +1,7 @@
 
 (* 
 
-#use"Makefile_makers/coma_constant.ml";;
+#use"Compilation_management/coma_constant.ml";;
 
 *)
 
@@ -52,6 +52,15 @@ let up_to_date_but_not_registered_files=
        rootless_path_for_printersfile;
     ];;
 
-
+let git_ignored_subdirectories =
+  [
+     automatically_generated_subdir;
+     abandoned_ideas_subdir;
+     temporary_subdir;
+     persistent_compilation_data_subdir;
+     build_subdir;
+     debug_build_subdir;
+     exec_build_subdir
+  ];;
 
            
