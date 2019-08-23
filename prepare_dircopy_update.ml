@@ -57,10 +57,32 @@ let greedy_list sourcedir=
      Dfn_rootless.to_line rootless_path ) 
    source_paths;;
       
-   
 let compute_greedy_diff sourcedir destdir=
-   compute_diff (sourcedir,greedy_list sourcedir) destdir;;
+   compute_diff (sourcedir,greedy_list sourcedir) destdir;;      
    
+let restricted_list sourcedir restrictions=
+   let s_dir =  Dfa_root.without_trailing_slash sourcedir in 
+   let converted_to_dir=Directory_name.of_string
+      (Dfa_root.without_trailing_slash sourcedir) in
+   let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
+   Option.filter_and_unpack (fun ap->
+     let s_ap = Absolute_path.to_string ap in 
+     let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
+     if List.exists(Supstring.begins_with s_rootless) restrictions
+     then None
+     else 
+     let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
+     Some(Dfn_rootless.to_line rootless_path) ) 
+   absolute_paths1;;
+      
+
+let compute_restricted_diff sourcedir destdir restrictions=
+   compute_diff (sourcedir,restricted_list sourcedir restrictions) destdir;;
+   
+
+   
+
+
 let commands_for_update (source_dir,destination_dir) diff=
    if Dircopy_diff.is_empty diff
    then []
