@@ -52,6 +52,13 @@ let up_to_date_but_not_registered_files=
        rootless_path_for_printersfile;
     ];;
 
+let rootless_paths_needed_for_compiler_copy=
+    up_to_date_but_not_registered_files@
+    [
+      rootless_path_for_targetfile;
+      Dfn_rootless.of_line ".ocamlinit"
+    ];;
+
 let git_ignored_subdirectories =
   [
      automatically_generated_subdir;
