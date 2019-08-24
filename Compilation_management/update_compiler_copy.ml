@@ -36,11 +36,11 @@ let text_for_big_constants_file_in_next_world =
 
   let commands_for_copying cs =
     let sourcedir=Coma_state.root cs in 
-    let usual_rootless_paths=Coma_state.all_rootless_paths cs in
-    let special_rootless_paths=[] in 
-    let rootless_paths = usual_rootless_paths@special_rootless_paths in 
+    let usual_rootless_paths=Coma_state.all_rootless_paths cs 
+    and special_rootless_paths=Image.image Dfn_rootless.to_line Coma_constant.rootless_paths_needed_for_compiler_copy in
+    let rootless_paths = usual_rootless_paths@ special_rootless_paths in 
     let main_diff=Prepare_dircopy_update.compute_diff 
-          (sourcedir,l1) Coma_big_constant.Next_World.root in
+          (sourcedir,rootless_paths) Coma_big_constant.Next_World.root in
     Prepare_dircopy_update.commands_for_update 
      (sourcedir,Coma_big_constant.Next_World.root) main_diff;;
   
@@ -48,6 +48,7 @@ let text_for_big_constants_file_in_next_world =
     Dfn_join.root_to Coma_big_constant.Next_World.root Coma_constant.rootless_path_for_parametersfile;;
   
 end ;;   
+  
   
 let ucc cs =
     let destdir=Coma_big_constant.Next_World.root in 
