@@ -617,7 +617,7 @@ let all_mlx_files cs=
 let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path 
         (all_mlx_files cs);;  
 
-let all_short_paths cs=
+let all_rootless_paths cs=
     let n=Small_array.size (modules cs) in
     List.flatten(Ennig.doyle(short_paths_at_idx cs) 1 n);;  
      

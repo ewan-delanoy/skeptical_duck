@@ -76,7 +76,7 @@ let repopulate ()=
   initialize();; 
 
 let see_confidential_changes ()=
-   let temp1=Coma_state.all_short_paths (!(Usual_coma_state.main_ref)) in 
+   let temp1=Coma_state.all_rootless_paths (!(Usual_coma_state.main_ref)) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    Explicit.filter (

@@ -36,7 +36,7 @@ let text_for_big_constants_file_in_next_world =
 
   let commands_for_copying cs =
     let sourcedir=Coma_state.root cs in 
-    let l1=Coma_state.all_short_paths cs in
+    let l1=Coma_state.all_rootless_paths cs in
     let main_diff=Prepare_dircopy_update.compute_diff 
           (sourcedir,l1) Coma_big_constant.Next_World.root in
     Prepare_dircopy_update.commands_for_update 
