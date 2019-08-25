@@ -54,4 +54,3 @@ let of_concrete_object =Concrete_object_field.unwrap_lonely_variant
           
 let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
   capitalized_correspondances;;    
-

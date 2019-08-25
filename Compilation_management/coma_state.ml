@@ -20,7 +20,7 @@ let needed_libs_at_idx  = Coma_state_field.needed_libs_at_idx ;;
 let direct_fathers_at_idx = Coma_state_field.direct_fathers_at_idx ;;
 let ancestors_at_idx = Coma_state_field.ancestors_at_idx ;; 
 let needed_dirs_at_idx  = Coma_state_field.needed_dirs_at_idx ;;
-let product_up_to_date_at_idx = Coma_state_field.product_up_to_date_at_idx ;;
+let product_up_to_date_at_module = Coma_state_field.product_up_to_date_at_module ;;
 let directories = Coma_state_field.directories;;
 let preq_types = Coma_state_field.preq_types;;
 
@@ -34,7 +34,7 @@ let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
 let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
 let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;; 
 let set_needed_dirs_at_idx  = Coma_state_field.set_needed_dirs_at_idx ;;
-let set_product_up_to_date_at_idx = Coma_state_field.set_product_up_to_date_at_idx ;;
+let set_product_up_to_date_at_module = Coma_state_field.set_product_up_to_date_at_module ;;
 let set_directories = Coma_state_field.set_directories;;
 let set_preq_types = Coma_state_field.set_preq_types;;
 
@@ -105,14 +105,15 @@ let check_for_single_ending_at_idx cs idx=
 
 let size cs = Small_array.size (modules cs);;      
 
+let list_of_modules cs = Small_array.to_list (modules cs);; 
+
 let up_to_date_hms cs =
-   let n = size cs in 
    Option.filter_and_unpack (
-     fun idx->
-       if product_up_to_date_at_idx cs idx 
-       then Some(hm_at_idx cs idx)
+     fun mn->
+       if product_up_to_date_at_module cs mn
+       then Some(hm_from_nm cs mn)
        else None
-   )(Ennig.ennig 1 n);;
+   )(list_of_modules cs);;
 
 let modules_with_their_ancestors cs l=
    let unordered_temp1=Option.filter_and_unpack (
@@ -503,7 +504,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let cs2=set_module_at_idx cs idx new_mname in 
   let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
   let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
-  let cs5=set_product_up_to_date_at_idx cs4 idx false in 
+  let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
   let replacer=Image.image(function x->if x=old_mname then new_mname else x) in
   let hm_replacer=(fun x->if x=old_name then new_hm else x) in 
   let old_preq_types=preq_types cs5 in 
@@ -854,7 +855,8 @@ let quick_update cs idx=
   in
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
-  if (old_values=new_values)&&(product_up_to_date_at_idx cs idx)
+  let mn = Dfn_endingless.to_module hm in 
+  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)
   then None
   else
   let mlx=Dfn_join.to_ending hm pr_ending in
@@ -881,12 +883,13 @@ let latest_changes cs =
     match quick_update (!cs_walker) idx with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
+    let mname = module_at_idx (!cs_walker) idx in 
     (
     declare_changed(idx);
     cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
     cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
     cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
-    cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx false;
+    cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Ennig.ennig 1 n) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
@@ -910,12 +913,13 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     match quick_update (!cs_walker) idx with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
+    let mname = module_at_idx (!cs_walker) idx in 
     (
     declare_changed(idx);
     cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
     cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
     cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
-    cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx false;
+    cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Ennig.ennig 1 n) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
@@ -1227,13 +1231,14 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
      []->(cs,rejected,List.rev treated)
      |triple::other_triples->
        let (idx,hm,cmd)=triple in
+       let nm=Dfn_endingless.to_module hm in 
        if (Unix_command.uc cmd)=0
-       then let cs2=set_product_up_to_date_at_idx cs idx true in 
+       then 
+            let cs2=set_product_up_to_date_at_module cs nm true in 
             helper_for_feydeau cmod cs2 (rejected,(idx,hm)::treated,other_triples)
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
             else 
-            let nm=Dfn_endingless.to_module hm in 
             let triples_after=snd(Prepared.partition_in_two_parts (fun (idx2,_,_)->idx2<>idx) other_triples) in 
             let (rejected_siblings_as_triples,survivors)=List.partition
            (
@@ -1247,7 +1252,8 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (idx3,hm3)->
-                cs_walker:=set_product_up_to_date_at_idx (!cs_walker) idx3 false
+                 let mname3=Dfn_endingless.to_module hm3 in 
+                cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname3 false
            ) newly_rejected in 
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
@@ -1376,7 +1382,7 @@ let backup cs diff opt= Backup_coma_state.backup
     )(Ennig.ennig idx (n+1)) in 
     let was_lonely=
       (List.length(registered_endings_at_idx cs idx)=1) in 
-    let _=set_product_up_to_date_at_idx cs idx false in 
+    let _=set_product_up_to_date_at_module cs nm false in 
     let cs2=unregister_mlx_file_on_monitored_modules cs mlx in
     let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
