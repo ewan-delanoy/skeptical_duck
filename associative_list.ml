@@ -69,9 +69,4 @@ let reposition_by_putting_snd_immediately_after_fst l key_i key_j=
 let reorder l key_ordering =Image.image (fun key->(key,List.assoc key l)) key_ordering;;
 
 (* reorder [(1,"u");(2,"v");(3,"w");(4,"x");(5,"y");(6,"z")] [2;5;1;3;4;6];; *) 
-  
-
-let hi=List.length;;
-let rev=List.rev;;
-
-
+ 
