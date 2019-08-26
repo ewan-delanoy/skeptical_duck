@@ -120,8 +120,7 @@ let set_preq_types cs v = let ccs=of_t cs in
 
 let set_subdirs cs  v =     let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.subdir_for_module=v});;
-let set_needed_dirs cs  v = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.needed_dirs_for_module=v});;
+
 
 (* Adhoc setters *)
 
