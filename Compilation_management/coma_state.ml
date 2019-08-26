@@ -41,7 +41,7 @@ let subdirs = Coma_state_field.subdirs;;
 
 
 let set_subdirs = Coma_state_field.set_subdirs;;
-let set_needed_dirs = Coma_state_field.set_needed_dirs;;
+
 
 (* End of inherited values *)
 
