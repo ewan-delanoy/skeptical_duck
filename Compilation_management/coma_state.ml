@@ -670,10 +670,9 @@ let reposition_module cs hm (l_before,l_after)=
 let rename_directory_on_data (old_subdir,new_subdirname) cs= 
   let ren_sub=Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) in 
   let toa=Small_array.apply_transformation_on_all in
-  let new_subdirs = toa (subdirs cs) ren_sub
-  and new_needed_dirs = toa (needed_dirs cs) (Image.image ren_sub) in 
+  let new_subdirs = toa (subdirs cs) ren_sub in 
   let cs2=set_subdirs cs new_subdirs in 
-  set_needed_dirs cs2 new_needed_dirs;;
+  Coma_state_field.modify_all_needed_dirs cs2 ren_sub;;
 
 
 
