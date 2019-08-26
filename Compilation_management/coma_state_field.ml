@@ -42,7 +42,7 @@ let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
 
 let modules cs= (of_t cs).Coma_state_t.modules;;
 let subdirs cs= (of_t cs).Coma_state_t.subdir_for_module;;
-let needed_dirs cs= (of_t cs).Coma_state_t.needed_dirs_for_module;;
+
 
 
 

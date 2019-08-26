@@ -37,7 +37,7 @@ let set_preq_types = Coma_state_field.set_preq_types;;
 
 let modules = Coma_state_field.modules;;
 let subdirs = Coma_state_field.subdirs;;
-(* let needed_dirs = Coma_state_field.needed_dirs;; *)
+
 
 
 let set_subdirs = Coma_state_field.set_subdirs;;
