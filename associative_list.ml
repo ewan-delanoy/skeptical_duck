@@ -9,18 +9,6 @@ exception Push_immediately_after_exn;;
 exception Reposition_first_key_not_found;;
 exception Reposition_second_key_not_found;;
 
-let assoc l x=
- try Some(List.assoc x l) with
- Not_found->None;; 
- 
-let rec r_assoc l x=
-   let rec tempf=(function
-     []->None
-     |(u,v)::peurrest->if v=x
-                   then Some(u)
-				   else tempf(peurrest)
-   ) in
-   tempf l;;
 
 
 let change_value_for_key l (key1,vaal1)=

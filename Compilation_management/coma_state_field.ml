@@ -103,7 +103,7 @@ let set_needed_dirs_at_idx cs k v = let ccs=of_t cs in
 let set_product_up_to_date_at_module cs mn v=
     let ccs=of_t cs in 
     let old_assocs = ccs.Coma_state_t.product_up_to_date_for_module in 
-    let new_assocs=Listennou.change_value_for_key old_assocs (mn,v) in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
     to_t({ccs with Coma_state_t.product_up_to_date_for_module=new_assocs });;
     
 
@@ -155,7 +155,7 @@ let remove_in_each_at_index wrapped_cs idx=
     and new_direct_fathers = Small_array.remove_item_at_index cs.Coma_state_t.direct_fathers_for_module idx 
     and new_ancestors = Small_array.remove_item_at_index cs.Coma_state_t.ancestors_for_module idx 
     and new_needed_dirs = Small_array.remove_item_at_index cs.Coma_state_t.needed_dirs_for_module idx 
-    and new_products_up_to_date = Listennou.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
+    and new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
       Coma_state_t.subdir_for_module = new_subdirs;
@@ -213,7 +213,7 @@ let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,
     and new_direct_fathers = Small_array.set cs.Coma_state_t.direct_fathers_for_module idx dirfath
     and new_ancestors = Small_array.set cs.Coma_state_t.ancestors_for_module idx allanc 
     and new_needed_dirs = Small_array.set cs.Coma_state_t.needed_dirs_for_module idx dirned 
-    and new_products_up_to_date = Listennou.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
+    and new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
       Coma_state_t.subdir_for_module = new_subdirs;
@@ -236,7 +236,7 @@ let reposition_in_each wrapped_cs idx1 idx2=
     and cs=of_t wrapped_cs in
     let mn1 = Small_array.get cs.Coma_state_t.modules idx1 
     and mn2 = Small_array.get cs.Coma_state_t.modules idx2 in 
-    let l_rep=(fun l->Listennou.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
+    let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
     let new_modules = rep cs.Coma_state_t.modules  
     and new_subdirs = rep cs.Coma_state_t.subdir_for_module 
     and new_principal_endings = rep cs.Coma_state_t.principal_ending_for_module 
@@ -287,7 +287,7 @@ let reorder wrapped_cs reordered_list_of_modules =
     and new_direct_fathers = rep cs.Coma_state_t.direct_fathers_for_module 
     and new_ancestors = rep cs.Coma_state_t.ancestors_for_module 
     and new_needed_dirs = rep cs.Coma_state_t.needed_dirs_for_module 
-    and new_products_up_to_date = Listennou.reorder cs.Coma_state_t.product_up_to_date_for_module reordered_list_of_modules in 
+    and new_products_up_to_date = Associative_list.reorder cs.Coma_state_t.product_up_to_date_for_module reordered_list_of_modules in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
       Coma_state_t.subdir_for_module = new_subdirs;
@@ -336,7 +336,7 @@ let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,
     and new_direct_fathers = Small_array.push_immediately_after_idx cs.Coma_state_t.direct_fathers_for_module dirfath idx
     and new_ancestors = Small_array.push_immediately_after_idx cs.Coma_state_t.ancestors_for_module allanc idx
     and new_needed_dirs = Small_array.push_immediately_after_idx cs.Coma_state_t.needed_dirs_for_module dirned idx
-    and new_products_up_to_date = Listennou.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
+    and new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
       Coma_state_t.subdir_for_module = new_subdirs;
