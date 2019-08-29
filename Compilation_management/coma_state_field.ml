@@ -44,7 +44,6 @@ let mli_mt_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.mli_mt_for_modul
 let needed_libs_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.needed_libs_for_module k ;;
 let direct_fathers_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.direct_fathers_for_module k;;
 let ancestors_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.ancestors_for_module k ;; 
-let needed_dirs_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.needed_dirs_for_module k ;;
 let needed_dirs_at_module cs mn=
    List.assoc mn ( temporary_cvrtr_old_to_new cs ((of_t cs).Coma_state_t.needed_dirs_for_module));;
 

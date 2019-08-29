@@ -30,7 +30,7 @@ let set_mli_mt_at_idx = Coma_state_field.set_mli_mt_at_idx ;;
 let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
 let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
 let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;; 
-let set_needed_dirs_at_idx  = Coma_state_field.set_needed_dirs_at_idx ;;
+let set_needed_dirs_at_module  = Coma_state_field.set_needed_dirs_at_module ;;
 let set_product_up_to_date_at_module = Coma_state_field.set_product_up_to_date_at_module ;;
 let set_directories = Coma_state_field.set_directories;;
 let set_preq_types = Coma_state_field.set_preq_types;;
@@ -733,6 +733,7 @@ let modules_using_value cs value_name =
 let update_ancs_libs_and_dirs_at_idx cs idx=
   let hm=hm_at_idx cs idx  
   and pr_end=principal_ending_at_idx cs idx in
+  let mn = Dfn_endingless.to_module hm in 
   let mlx=Dfn_join.to_ending hm pr_end in 
   let fathers=direct_fathers_at_idx cs idx in
   let separated_ancestors=Image.image 
@@ -752,7 +753,7 @@ let update_ancs_libs_and_dirs_at_idx cs idx=
   ) genealogy in
   let cs2=set_ancestors_at_idx cs idx ordered_ancestors in 
   let cs3=set_needed_libs_at_idx cs2 idx new_libs in
-  set_needed_dirs_at_idx cs3 idx new_dirs;;
+  set_needed_dirs_at_module cs3 mn new_dirs;;
 
 let update_ancs_libs_and_dirs cs=
   let n=Small_array.size (modules cs) in
@@ -1017,7 +1018,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     let new_dirs=Ordered.forget_order(ordered_dirs) in
                     cs_walker:=set_ancestors_at_idx (!cs_walker) k new_ancestors;
                     cs_walker:=set_needed_libs_at_idx (!cs_walker) k new_libs;
-                    cs_walker:=set_needed_dirs_at_idx (!cs_walker) k new_dirs;
+                    cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
               done;
               cs_walker:=Coma_state_field.remove_in_each_at_index (!cs_walker) idx;
               cs_walker:=Coma_state_field.push_after_in_each (!cs_walker) last_father_idx new_dt;  
