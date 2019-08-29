@@ -110,9 +110,6 @@ let set_ancestors_at_idx cs k v = let ccs=of_t cs in
                                   (Small_array.set ccs.Coma_state_t.ancestors_for_module k v) });;
 
 
-let set_needed_dirs_at_idx cs k v = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.needed_dirs_for_module=
-                                  (Small_array.set ccs.Coma_state_t.needed_dirs_for_module k v) });;
 
 let set_needed_dirs_at_module cs mn v=
     let ccs=of_t cs in 
