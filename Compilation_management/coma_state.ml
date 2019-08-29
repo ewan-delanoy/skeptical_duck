@@ -16,7 +16,7 @@ let mli_mt_at_idx = Coma_state_field.mli_mt_at_idx ;;
 let needed_libs_at_idx  = Coma_state_field.needed_libs_at_idx ;;
 let direct_fathers_at_idx = Coma_state_field.direct_fathers_at_idx ;;
 let ancestors_at_idx = Coma_state_field.ancestors_at_idx ;; 
-let needed_dirs_at_idx  = Coma_state_field.needed_dirs_at_idx ;;
+let needed_dirs_at_module  = Coma_state_field.needed_dirs_at_module ;;
 let product_up_to_date_at_module = Coma_state_field.product_up_to_date_at_module ;;
 let directories = Coma_state_field.directories;;
 let preq_types = Coma_state_field.preq_types;;
@@ -154,7 +154,9 @@ let needed_dirs_and_libs_in_command cmod cs idx=
 let needed_dirs_and_libs_for_several cmod cs l_idx=
    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
    let pre_dirs1=Image.image 
-     (fun idx->Tidel.diforchan(needed_dirs_at_idx cs idx)) l_idx in
+     (fun idx->
+      let mn = module_at_idx cs idx in 
+      Tidel.diforchan(needed_dirs_at_module cs mn)) l_idx in
    let pre_dirs2=Ordered.forget_order (Tidel.big_teuzin pre_dirs1) in
    let dirs=String.concat(" ")
     (Image.image(fun y->let z=Dfa_subdirectory.connectable_to_subpath(y) in 
@@ -328,7 +330,9 @@ let find_needed_libraries cs mlx genealogy=
 
 
 let find_needed_directories cs mlx genealogy=
-  let temp1=Image.image (fun t->Tidel.diforchan(needed_dirs_at_idx cs t)) genealogy in
+  let temp1=Image.image (fun idx->
+    let mn = module_at_idx cs idx in 
+    Tidel.diforchan(needed_dirs_at_module cs mn)) genealogy in
   let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
   let temp2=(
       if subdir_in_mlx<>Dfa_subdirectory.main 
@@ -1006,8 +1010,9 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     and new_libs=List.filter (
                       fun lib->(List.mem lib libned)||(List.mem lib current_libs)
                     ) Ocaml_library.all_libraries in  
+                    let current_module = module_at_idx (!cs_walker) k in 
                     let ordered_dirs=Tidel.teuzin
-                       (Tidel.safe_set(needed_dirs_at_idx (!cs_walker) k))
+                       (Tidel.safe_set(needed_dirs_at_module (!cs_walker) current_module))
                        (Tidel.safe_set (dirned)) in
                     let new_dirs=Ordered.forget_order(ordered_dirs) in
                     cs_walker:=set_ancestors_at_idx (!cs_walker) k new_ancestors;
