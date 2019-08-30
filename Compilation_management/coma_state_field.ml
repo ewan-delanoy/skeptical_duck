@@ -45,7 +45,7 @@ let needed_libs_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.needed_libs
 let direct_fathers_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.direct_fathers_for_module k;;
 let ancestors_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.ancestors_for_module k ;; 
 let needed_dirs_at_module cs mn=
-   List.assoc mn ( temporary_cvrtr_old_to_new cs ((of_t cs).Coma_state_t.needed_dirs_for_module));;
+   List.assoc mn  ((of_t cs).Coma_state_t.needed_dirs_for_module);;
 
 let product_up_to_date_at_module cs mn=
     List.assoc mn ((of_t cs).Coma_state_t.product_up_to_date_for_module);;    
@@ -113,9 +113,9 @@ let set_ancestors_at_idx cs k v = let ccs=of_t cs in
 
 let set_needed_dirs_at_module cs mn v=
     let ccs=of_t cs in 
-    let old_assocs = temporary_cvrtr_old_to_new cs ccs.Coma_state_t.needed_dirs_for_module in 
+    let old_assocs = ccs.Coma_state_t.needed_dirs_for_module in 
     let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-    to_t({ccs with Coma_state_t.needed_dirs_for_module=temporary_cvrtr_new_to_old new_assocs });;
+    to_t({ccs with Coma_state_t.needed_dirs_for_module=new_assocs });;
     
 
 
@@ -143,9 +143,9 @@ let set_subdirs cs  v =     let ccs=of_t cs in
 
 let modify_all_needed_dirs cs f =
    let ccs=of_t cs in 
-   let old_needed_dirs = temporary_cvrtr_old_to_new cs ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
+   let old_needed_dirs = ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
    let new_needed_dirs = Image.image (fun (key,vaal)->(key,Image.image f vaal)) old_needed_dirs in 
-   to_t({ccs with Coma_state_t.needed_dirs_for_module= temporary_cvrtr_new_to_old new_needed_dirs });;
+   to_t({ccs with Coma_state_t.needed_dirs_for_module= new_needed_dirs });;
 
 (* End of adhoc setters *)
 
@@ -162,7 +162,7 @@ let empty_one x y b=to_t({
      needed_libs_for_module = Small_array.of_list [] ;
      direct_fathers_for_module = Small_array.of_list [];
      ancestors_for_module = Small_array.of_list [] ; 
-     needed_dirs_for_module = Small_array.of_list [];
+     needed_dirs_for_module = [];
      product_up_to_date_for_module = [];
      directories =[];
      printer_equipped_types =[];
@@ -181,7 +181,7 @@ let remove_in_each_at_index wrapped_cs idx=
     and new_needed_libs = Small_array.remove_item_at_index cs.Coma_state_t.needed_libs_for_module idx 
     and new_direct_fathers = Small_array.remove_item_at_index cs.Coma_state_t.direct_fathers_for_module idx 
     and new_ancestors = Small_array.remove_item_at_index cs.Coma_state_t.ancestors_for_module idx 
-    and new_needed_dirs = Associative_list.remove_key (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module) mname  
+    and new_needed_dirs = Associative_list.remove_key (cs.Coma_state_t.needed_dirs_for_module) mname  
     and new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -193,7 +193,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
 
@@ -210,7 +210,7 @@ let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,alla
     and new_needed_libs = Small_array.push_right cs.Coma_state_t.needed_libs_for_module libned 
     and new_direct_fathers = Small_array.push_right cs.Coma_state_t.direct_fathers_for_module dirfath
     and new_ancestors = Small_array.push_right cs.Coma_state_t.ancestors_for_module allanc 
-    and new_needed_dirs = (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module)@[nm,dirned] 
+    and new_needed_dirs = (cs.Coma_state_t.needed_dirs_for_module)@[nm,dirned] 
     and new_products_up_to_date = (cs.Coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -222,7 +222,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
 
@@ -239,7 +239,7 @@ let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,
     and new_needed_libs = Small_array.set cs.Coma_state_t.needed_libs_for_module idx libned 
     and new_direct_fathers = Small_array.set cs.Coma_state_t.direct_fathers_for_module idx dirfath
     and new_ancestors = Small_array.set cs.Coma_state_t.ancestors_for_module idx allanc 
-    and new_needed_dirs = Associative_list.change_value_for_key (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) 
+    and new_needed_dirs = Associative_list.change_value_for_key (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) 
     and new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -251,7 +251,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
   
@@ -273,7 +273,7 @@ let reposition_in_each wrapped_cs idx1 idx2=
     and new_needed_libs = rep cs.Coma_state_t.needed_libs_for_module 
     and new_direct_fathers = rep cs.Coma_state_t.direct_fathers_for_module 
     and new_ancestors = rep cs.Coma_state_t.ancestors_for_module 
-    and new_needed_dirs = l_rep (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module)
+    and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module)
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -285,7 +285,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
 
@@ -314,7 +314,7 @@ let reorder wrapped_cs reordered_list_of_modules =
     and new_needed_libs = rep cs.Coma_state_t.needed_libs_for_module 
     and new_direct_fathers = rep cs.Coma_state_t.direct_fathers_for_module 
     and new_ancestors = rep cs.Coma_state_t.ancestors_for_module 
-    and new_needed_dirs = l_rep (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module) 
+    and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module) 
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -326,7 +326,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;  
 
@@ -344,7 +344,7 @@ let sizes wrapped_cs =
       ["needed_libs",Small_array.size(cs.Coma_state_t.needed_libs_for_module)];
       ["fathers",Small_array.size(cs.Coma_state_t.direct_fathers_for_module)];
       ["ancestors",Small_array.size(cs.Coma_state_t.ancestors_for_module)];
-      ["needed_dirs",List.length(temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module)];
+      ["needed_dirs",List.length(cs.Coma_state_t.needed_dirs_for_module)];
       ["datechecks",List.length(cs.Coma_state_t.product_up_to_date_for_module)];
   ];;
 
@@ -363,7 +363,7 @@ let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,
     and new_needed_libs = Small_array.push_immediately_after_idx cs.Coma_state_t.needed_libs_for_module libned idx
     and new_direct_fathers = Small_array.push_immediately_after_idx cs.Coma_state_t.direct_fathers_for_module dirfath idx
     and new_ancestors = Small_array.push_immediately_after_idx cs.Coma_state_t.ancestors_for_module allanc idx
-    and new_needed_dirs = Associative_list.push_immediately_after (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
+    and new_needed_dirs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
     and new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
@@ -375,7 +375,7 @@ to_t({ cs with
       Coma_state_t.needed_libs_for_module = new_needed_libs;
       Coma_state_t.direct_fathers_for_module = new_direct_fathers;
       Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = temporary_cvrtr_new_to_old new_needed_dirs;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
     
@@ -421,7 +421,7 @@ let of_concrete_object ccrt_obj =
       needed_libs_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Ocaml_library.of_concrete_object) (g needed_libs_for_module_label);
       direct_fathers_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
       ancestors_for_module = Small_array.of_concrete_object (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g ancestors_for_module_label); 
-      needed_dirs_for_module = temporary_cvrtr_new_to_old (cr_to_pair (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label));
+      needed_dirs_for_module = (cr_to_pair (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label));
       product_up_to_date_for_module = cr_to_pair Concrete_object_field.to_bool (g product_up_to_date_for_module_label);
       directories = (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
       printer_equipped_types = Concrete_object_field.to_pair_list 
@@ -445,7 +445,7 @@ let to_concrete_object cs=
     needed_libs_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
     direct_fathers_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
     ancestors_for_module_label, Small_array.to_concrete_object (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   
-    needed_dirs_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object)  (temporary_cvrtr_old_to_new cs cs.Coma_state_t.needed_dirs_for_module);  
+    needed_dirs_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object)  (cs.Coma_state_t.needed_dirs_for_module);  
     product_up_to_date_for_module_label, cr_of_pair Concrete_object_field.of_bool cs.Coma_state_t.product_up_to_date_for_module; 
     directories_label,  (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
     printer_equipped_types_label,  Concrete_object_field.of_pair_list 
