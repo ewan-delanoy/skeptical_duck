@@ -382,13 +382,6 @@ let reorder wrapped_cs reordered_list_of_modules =
         fun elt-> Listennou.find_index elt old_modules
       ) reordered_list_of_modules in 
      let n=List.length old_modules in  
-     let rep=(
-        fun field->
-          let temp1=Ennig.doyle (fun k->
-             Small_array.get field (List.nth indices (k-1))
-          ) 1 n in 
-          Small_array.of_list temp1
-      ) in 
     let l_rep =(fun l->Associative_list.reorder l reordered_list_of_modules) in    
     let new_modules = Small_array.of_list reordered_list_of_modules
     and new_subdirs = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) 
