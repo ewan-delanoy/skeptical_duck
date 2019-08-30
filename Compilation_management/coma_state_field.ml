@@ -171,8 +171,8 @@ let set_preq_types cs v = let ccs=of_t cs in
                             to_t({ccs with Coma_state_t.printer_equipped_types=v});;
 
 
-let set_subdirs cs  v =     let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.subdir_for_module=v});;
+(* let set_subdirs cs  v =     let ccs=of_t cs in 
+                            to_t({ccs with Coma_state_t.subdir_for_module=v});; *)
 
 
 (* Adhoc setters *)
