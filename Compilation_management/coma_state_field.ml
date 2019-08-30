@@ -258,27 +258,27 @@ let remove_in_each_at_index wrapped_cs idx=
     let cs=of_t wrapped_cs in
     let mname = Small_array.get (cs.Coma_state_t.modules) idx in
     let new_modules = Small_array.remove_item_at_index cs.Coma_state_t.modules idx 
-    and new_subdirs = Small_array.remove_item_at_index cs.Coma_state_t.subdir_for_module idx 
-    and new_principal_endings = Small_array.remove_item_at_index cs.Coma_state_t.principal_ending_for_module idx 
-    and new_mli_presences = Small_array.remove_item_at_index cs.Coma_state_t.mli_presence_for_module idx 
-    and new_principal_mts = Small_array.remove_item_at_index cs.Coma_state_t.principal_mt_for_module idx 
-    and new_mli_mts = Small_array.remove_item_at_index cs.Coma_state_t.mli_mt_for_module idx 
-    and new_needed_libs = Small_array.remove_item_at_index cs.Coma_state_t.needed_libs_for_module idx 
-    and new_direct_fathers = Small_array.remove_item_at_index cs.Coma_state_t.direct_fathers_for_module idx 
-    and new_ancestors = Small_array.remove_item_at_index cs.Coma_state_t.ancestors_for_module idx 
+    and new_subdirs = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) mname
+    and new_principal_endings = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module) mname
+    and new_mli_presences = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module) mname
+    and new_principal_mts = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module) mname
+    and new_mli_mts = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module) mname
+    and new_needed_libs = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module) mname
+    and new_direct_fathers = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module) mname
+    and new_ancestors = Associative_list.remove_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module) mname
     and new_needed_dirs = Associative_list.remove_key (cs.Coma_state_t.needed_dirs_for_module) mname  
     and new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
-      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
+      Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module= temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module= temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module= temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module= temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module= temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module= temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module= temporary_cvrtr_alive_to_dead  new_ancestors;
+      Coma_state_t.needed_dirs_for_module= new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
 
@@ -287,26 +287,26 @@ let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,alla
     and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.push_right cs.Coma_state_t.modules nm 
-    and new_subdirs = Small_array.push_right cs.Coma_state_t.subdir_for_module subdir
-    and new_principal_endings = Small_array.push_right cs.Coma_state_t.principal_ending_for_module pr_end 
-    and new_mli_presences = Small_array.push_right cs.Coma_state_t.mli_presence_for_module mlip 
-    and new_principal_mts = Small_array.push_right cs.Coma_state_t.principal_mt_for_module prmt 
-    and new_mli_mts = Small_array.push_right cs.Coma_state_t.mli_mt_for_module mlimt 
-    and new_needed_libs = Small_array.push_right cs.Coma_state_t.needed_libs_for_module libned 
-    and new_direct_fathers = Small_array.push_right cs.Coma_state_t.direct_fathers_for_module dirfath
-    and new_ancestors = Small_array.push_right cs.Coma_state_t.ancestors_for_module allanc 
+    and new_subdirs = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.subdir_for_module) @[nm,subdir]
+    and new_principal_endings = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.principal_ending_for_module) @[nm,pr_end] 
+    and new_mli_presences = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.mli_presence_for_module) @[nm,mlip] 
+    and new_principal_mts = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.principal_mt_for_module) @[nm,prmt] 
+    and new_mli_mts = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.mli_mt_for_module) @[nm,mlimt] 
+    and new_needed_libs = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.needed_libs_for_module) @[nm,libned] 
+    and new_direct_fathers = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.direct_fathers_for_module) @[nm,dirfath]
+    and new_ancestors = (temporary_cvrtr_dead_to_alive cs   cs.Coma_state_t.ancestors_for_module) @[nm,allanc] 
     and new_needed_dirs = (cs.Coma_state_t.needed_dirs_for_module)@[nm,dirned] 
     and new_products_up_to_date = (cs.Coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module= temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module= temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module= temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module= temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module= temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module= temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module= temporary_cvrtr_alive_to_dead  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
@@ -316,26 +316,26 @@ let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,
     and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
     let new_modules = Small_array.set cs.Coma_state_t.modules idx nm 
-    and new_subdirs = Small_array.set cs.Coma_state_t.subdir_for_module idx subdir
-    and new_principal_endings = Small_array.set cs.Coma_state_t.principal_ending_for_module idx pr_end 
-    and new_mli_presences = Small_array.set cs.Coma_state_t.mli_presence_for_module idx  mlip 
-    and new_principal_mts = Small_array.set cs.Coma_state_t.principal_mt_for_module idx prmt 
-    and new_mli_mts = Small_array.set cs.Coma_state_t.mli_mt_for_module idx mlimt 
-    and new_needed_libs = Small_array.set cs.Coma_state_t.needed_libs_for_module idx libned 
-    and new_direct_fathers = Small_array.set cs.Coma_state_t.direct_fathers_for_module idx dirfath
-    and new_ancestors = Small_array.set cs.Coma_state_t.ancestors_for_module idx allanc 
+    and new_subdirs = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) (nm,subdir)
+    and new_principal_endings = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) 
+    and new_mli_presences = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module) (nm, mlip) 
+    and new_principal_mts = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module) (nm,prmt) 
+    and new_mli_mts = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) 
+    and new_needed_libs = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module) (nm,libned) 
+    and new_direct_fathers = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module) (nm,dirfath)
+    and new_ancestors = Associative_list.change_value_for_key (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module) (nm,allanc) 
     and new_needed_dirs = Associative_list.change_value_for_key (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) 
     and new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module= temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module= temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module= temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module= temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module= temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module= temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module= temporary_cvrtr_alive_to_dead  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
@@ -350,26 +350,26 @@ let reposition_in_each wrapped_cs idx1 idx2=
     and mn2 = Small_array.get cs.Coma_state_t.modules idx2 in 
     let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
     let new_modules = rep cs.Coma_state_t.modules  
-    and new_subdirs = rep cs.Coma_state_t.subdir_for_module 
-    and new_principal_endings = rep cs.Coma_state_t.principal_ending_for_module 
-    and new_mli_presences = rep cs.Coma_state_t.mli_presence_for_module 
-    and new_principal_mts = rep cs.Coma_state_t.principal_mt_for_module 
-    and new_mli_mts = rep cs.Coma_state_t.mli_mt_for_module 
-    and new_needed_libs = rep cs.Coma_state_t.needed_libs_for_module 
-    and new_direct_fathers = rep cs.Coma_state_t.direct_fathers_for_module 
-    and new_ancestors = rep cs.Coma_state_t.ancestors_for_module 
+    and new_subdirs = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) 
+    and new_principal_endings = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module) 
+    and new_mli_presences = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module) 
+    and new_principal_mts = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module) 
+    and new_mli_mts = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module) 
+    and new_needed_libs = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module) 
+    and new_direct_fathers = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module) 
+    and new_ancestors = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module) 
     and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module)
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module= temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module= temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module= temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module= temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module= temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module= temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module= temporary_cvrtr_alive_to_dead  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
@@ -391,26 +391,26 @@ let reorder wrapped_cs reordered_list_of_modules =
       ) in 
     let l_rep =(fun l->Associative_list.reorder l reordered_list_of_modules) in    
     let new_modules = Small_array.of_list reordered_list_of_modules
-    and new_subdirs = rep cs.Coma_state_t.subdir_for_module 
-    and new_principal_endings = rep cs.Coma_state_t.principal_ending_for_module 
-    and new_mli_presences = rep cs.Coma_state_t.mli_presence_for_module 
-    and new_principal_mts = rep cs.Coma_state_t.principal_mt_for_module 
-    and new_mli_mts = rep cs.Coma_state_t.mli_mt_for_module 
-    and new_needed_libs = rep cs.Coma_state_t.needed_libs_for_module 
-    and new_direct_fathers = rep cs.Coma_state_t.direct_fathers_for_module 
-    and new_ancestors = rep cs.Coma_state_t.ancestors_for_module 
+    and new_subdirs = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) 
+    and new_principal_endings = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module) 
+    and new_mli_presences = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module) 
+    and new_principal_mts = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module) 
+    and new_mli_mts = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module) 
+    and new_needed_libs = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module) 
+    and new_direct_fathers = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module) 
+    and new_ancestors = l_rep (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module) 
     and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module) 
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module= temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module= temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module= temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module= temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module= temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module= temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module= temporary_cvrtr_alive_to_dead  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;  
@@ -421,14 +421,14 @@ let sizes wrapped_cs =
     let cs=of_t wrapped_cs in
     [ 
       ["modules",Small_array.size(cs.Coma_state_t.modules)];
-      ["subdirs",Small_array.size(cs.Coma_state_t.subdir_for_module)];
-      ["pr_endings",Small_array.size(cs.Coma_state_t.principal_ending_for_module)];
-      ["mlis",Small_array.size(cs.Coma_state_t.mli_presence_for_module)];
-      ["mod_times",Small_array.size(cs.Coma_state_t.principal_mt_for_module)];
-      ["mli_mod_times",Small_array.size(cs.Coma_state_t.mli_mt_for_module)];
-      ["needed_libs",Small_array.size(cs.Coma_state_t.needed_libs_for_module)];
-      ["fathers",Small_array.size(cs.Coma_state_t.direct_fathers_for_module)];
-      ["ancestors",Small_array.size(cs.Coma_state_t.ancestors_for_module)];
+      ["subdirs",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module)];
+      ["pr_endings",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module)];
+      ["mlis",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module)];
+      ["mod_times",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module)];
+      ["mli_mod_times",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module)];
+      ["needed_libs",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module)];
+      ["fathers",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module)];
+      ["ancestors",List.length(temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module)];
       ["needed_dirs",List.length(cs.Coma_state_t.needed_dirs_for_module)];
       ["datechecks",List.length(cs.Coma_state_t.product_up_to_date_for_module)];
   ];;
@@ -440,26 +440,26 @@ let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,
     and  cs=of_t wrapped_cs in
     let pivot= Small_array.get cs.Coma_state_t.modules idx in
     let new_modules = Small_array.push_immediately_after_idx cs.Coma_state_t.modules nm idx  
-    and new_subdirs = Small_array.push_immediately_after_idx cs.Coma_state_t.subdir_for_module subdir idx 
-    and new_principal_endings = Small_array.push_immediately_after_idx cs.Coma_state_t.principal_ending_for_module pr_end idx 
-    and new_mli_presences = Small_array.push_immediately_after_idx cs.Coma_state_t.mli_presence_for_module mlip idx
-    and new_principal_mts = Small_array.push_immediately_after_idx cs.Coma_state_t.principal_mt_for_module prmt idx
-    and new_mli_mts = Small_array.push_immediately_after_idx cs.Coma_state_t.mli_mt_for_module mlimt idx
-    and new_needed_libs = Small_array.push_immediately_after_idx cs.Coma_state_t.needed_libs_for_module libned idx
-    and new_direct_fathers = Small_array.push_immediately_after_idx cs.Coma_state_t.direct_fathers_for_module dirfath idx
-    and new_ancestors = Small_array.push_immediately_after_idx cs.Coma_state_t.ancestors_for_module allanc idx
+    and new_subdirs = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.subdir_for_module) (nm,subdir) pivot 
+    and new_principal_endings = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) pivot 
+    and new_mli_presences = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_presence_for_module) (nm,mlip) pivot 
+    and new_principal_mts = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.principal_mt_for_module) (nm,prmt) pivot 
+    and new_mli_mts = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) pivot 
+    and new_needed_libs = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.needed_libs_for_module) (nm,libned) pivot 
+    and new_direct_fathers = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.direct_fathers_for_module) (nm,dirfath) pivot 
+    and new_ancestors = Associative_list.push_immediately_after (temporary_cvrtr_dead_to_alive cs cs.Coma_state_t.ancestors_for_module) (nm,allanc) pivot 
     and new_needed_dirs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
     and new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
 to_t({ cs with 
       Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module = new_subdirs;
-      Coma_state_t.principal_ending_for_module = new_principal_endings;
-      Coma_state_t.mli_presence_for_module = new_mli_presences;
-      Coma_state_t.principal_mt_for_module = new_principal_mts;
-      Coma_state_t.mli_mt_for_module = new_mli_mts;
-      Coma_state_t.needed_libs_for_module = new_needed_libs;
-      Coma_state_t.direct_fathers_for_module = new_direct_fathers;
-      Coma_state_t.ancestors_for_module = new_ancestors;
+      Coma_state_t.subdir_for_module = temporary_cvrtr_alive_to_dead  new_subdirs;
+      Coma_state_t.principal_ending_for_module = temporary_cvrtr_alive_to_dead  new_principal_endings;
+      Coma_state_t.mli_presence_for_module = temporary_cvrtr_alive_to_dead  new_mli_presences;
+      Coma_state_t.principal_mt_for_module = temporary_cvrtr_alive_to_dead  new_principal_mts;
+      Coma_state_t.mli_mt_for_module = temporary_cvrtr_alive_to_dead  new_mli_mts;
+      Coma_state_t.needed_libs_for_module = temporary_cvrtr_alive_to_dead  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module = temporary_cvrtr_alive_to_dead  new_direct_fathers;
+      Coma_state_t.ancestors_for_module = temporary_cvrtr_alive_to_dead  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
