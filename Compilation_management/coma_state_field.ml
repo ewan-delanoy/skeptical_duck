@@ -21,11 +21,11 @@ let to_t x=(Coma_state_t.CS x);;
 
 (* Temporary converters *)
 
-let temporary_cvrtr_old_to_new cs small_array = 
+let temporary_cvrtr_dead_to_alive cs small_array = 
    let l_mod = Small_array.to_list((of_t cs).Coma_state_t.modules) in 
    List.combine l_mod (Small_array.to_list small_array);;
 
-let temporary_cvrtr_new_to_old assoc_list = 
+let temporary_cvrtr_alive_to_dead assoc_list = 
    Small_array.of_list (Image.image snd assoc_list);;
 
 
@@ -37,13 +37,46 @@ let push_after_backup cs=(of_t cs).Coma_state_t.push_after_backup;;
 
 let module_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.modules k ;;
 let subdir_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.subdir_for_module k ;;
+
+let subdir_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.subdir_for_module);;
+
 let principal_ending_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.principal_ending_for_module k ;;
+
+let principal_ending_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.principal_ending_for_module);;
+
 let mli_presence_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.mli_presence_for_module k ;;
+
+let mli_presence_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.mli_presence_for_module);;
+
 let principal_mt_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.principal_mt_for_module k ;;
+
+let principal_mt_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.principal_mt_for_module);;
+
 let mli_mt_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.mli_mt_for_module k ;;
+
+let mli_mt_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.mli_mt_for_module);;
+
 let needed_libs_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.needed_libs_for_module k ;;
+
+let needed_libs_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.needed_libs_for_module);;
+
 let direct_fathers_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.direct_fathers_for_module k;;
+
+let direct_fathers_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.direct_fathers_for_module);;
+
 let ancestors_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.ancestors_for_module k ;; 
+
+let ancestors_at_module cs mn=
+   List.assoc mn ( temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.ancestors_for_module);;
+
+
 let needed_dirs_at_module cs mn=
    List.assoc mn  ((of_t cs).Coma_state_t.needed_dirs_for_module);;
 
