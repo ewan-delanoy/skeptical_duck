@@ -143,11 +143,11 @@ let set_subdirs cs  v =     let ccs=of_t cs in
 
 let modify_all_needed_dirs cs f =
    let ccs=of_t cs in 
-   let old_needed_dirs =(of_t cs).Coma_state_t.needed_dirs_for_module in 
-   let new_needed_dirs = Small_array.apply_transformation_on_all old_needed_dirs (Image.image f) in 
-   to_t({ccs with Coma_state_t.needed_dirs_for_module=new_needed_dirs });;
+   let old_needed_dirs = temporary_cvrtr_old_to_new cs ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
+   let new_needed_dirs = Image.image (fun (key,vaal)->(key,Image.image f vaal)) old_needed_dirs in 
+   to_t({ccs with Coma_state_t.needed_dirs_for_module= temporary_cvrtr_new_to_old new_needed_dirs });;
 
-
+(* End of adhoc setters *)
 
 let empty_one x y b=to_t({
      Coma_state_t.root =x;
