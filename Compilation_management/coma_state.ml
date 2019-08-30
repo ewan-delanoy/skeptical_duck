@@ -16,6 +16,15 @@ let mli_mt_at_idx = Coma_state_field.mli_mt_at_idx ;;
 let needed_libs_at_idx  = Coma_state_field.needed_libs_at_idx ;;
 let direct_fathers_at_idx = Coma_state_field.direct_fathers_at_idx ;;
 let ancestors_at_idx = Coma_state_field.ancestors_at_idx ;; 
+
+let subdir_at_module = Coma_state_field.subdir_at_module ;;
+let principal_ending_at_module = Coma_state_field.principal_ending_at_module ;;
+let mli_presence_at_module = Coma_state_field.mli_presence_at_module ;;
+let principal_mt_at_module = Coma_state_field.principal_mt_at_module ;;
+let mli_mt_at_module = Coma_state_field.mli_mt_at_module ;;
+let needed_libs_at_module  = Coma_state_field.needed_libs_at_module ;;
+let direct_fathers_at_module = Coma_state_field.direct_fathers_at_module ;;
+let ancestors_at_module = Coma_state_field.ancestors_at_module ;; 
 let needed_dirs_at_module  = Coma_state_field.needed_dirs_at_module ;;
 let product_up_to_date_at_module = Coma_state_field.product_up_to_date_at_module ;;
 let directories = Coma_state_field.directories;;
@@ -49,7 +58,7 @@ let set_preq_types = Coma_state_field.set_preq_types;;
 let modules = Coma_state_field.modules;;
 
 let subdirs = Coma_state_field.subdirs;; 
-
+let all_used_subdirs = Coma_state_field.all_used_subdirs;;
 
 
 let set_subdirs = Coma_state_field.set_subdirs;;
@@ -303,8 +312,7 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
 
 
 let compute_subdirectories_list cs=
-  let temp1=Small_array.image 
-        Dfa_subdirectory.without_trailing_slash (subdirs cs) in
+  let temp1=Image.image Dfa_subdirectory.without_trailing_slash (all_used_subdirs cs) in
     let temp2=Ordered_string.diforchan temp1 in
     let temp3=Ordered_string.forget_order temp2 in
     Image.image Dfa_subdirectory.of_line temp3;;

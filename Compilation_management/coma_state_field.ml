@@ -177,6 +177,12 @@ let set_subdirs cs  v =     let ccs=of_t cs in
 
 (* Adhoc setters *)
 
+let modify_all_subdirs cs f =
+   let ccs=of_t cs in 
+   let old_subdirs = temporary_cvrtr_dead_to_alive cs ((of_t cs).Coma_state_t.subdir_for_module) in 
+   let new_subdirs = Image.image (fun (key,vaal)->(key,f vaal)) old_subdirs in 
+   to_t({ccs with Coma_state_t.subdir_for_module= temporary_cvrtr_alive_to_dead new_subdirs });;
+
 let modify_all_needed_dirs cs f =
    let ccs=of_t cs in 
    let old_needed_dirs = ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
