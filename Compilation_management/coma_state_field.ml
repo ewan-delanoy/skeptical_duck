@@ -88,7 +88,7 @@ let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
 
 
 let modules cs= (of_t cs).Coma_state_t.modules;;
-let subdirs cs= (of_t cs).Coma_state_t.subdir_for_module;;
+
 
 let all_used_subdirs cs =
    let current_assoc = temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.subdir_for_module in 
@@ -110,41 +110,88 @@ let set_subdir_at_idx cs k v = let ccs=of_t cs in
                             to_t({ccs with Coma_state_t.subdir_for_module=
                                   (Small_array.set ccs.Coma_state_t.subdir_for_module k v) });;
 
-
+let set_subdir_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.subdir_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.subdir_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+    
 let set_principal_ending_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.principal_ending_for_module=
                                   (Small_array.set ccs.Coma_state_t.principal_ending_for_module k v) });;
+
+let set_principal_ending_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.principal_ending_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.principal_ending_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
 
 
 let set_mli_presence_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.mli_presence_for_module=
                                   (Small_array.set ccs.Coma_state_t.mli_presence_for_module k v) });;
 
+let set_mli_presence_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.mli_presence_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.mli_presence_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
 
 let set_principal_mt_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.principal_mt_for_module=
                                   (Small_array.set ccs.Coma_state_t.principal_mt_for_module k v) });;
+
+let set_principal_mt_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.principal_mt_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.principal_mt_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+
 
 
 let set_mli_mt_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.mli_mt_for_module=
                                   (Small_array.set ccs.Coma_state_t.mli_mt_for_module k v) });;
 
+let set_mli_mt_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.mli_mt_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.mli_mt_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+
 
 let set_needed_libs_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.needed_libs_for_module=
                                   (Small_array.set ccs.Coma_state_t.needed_libs_for_module k v) });;
+
+let set_needed_libs_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.needed_libs_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.needed_libs_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+
 
 
 let set_direct_fathers_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.direct_fathers_for_module=
                                   (Small_array.set ccs.Coma_state_t.direct_fathers_for_module k v) });;
 
+let set_direct_fathers_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.direct_fathers_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.direct_fathers_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+
 
 let set_ancestors_at_idx cs k v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.ancestors_for_module=
                                   (Small_array.set ccs.Coma_state_t.ancestors_for_module k v) });;
 
+let set_ancestors_at_module cs mn v=
+    let ccs=of_t cs in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.needed_libs_for_module in 
+    let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
+    to_t({ccs with Coma_state_t.needed_libs_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
 
 
 let set_needed_dirs_at_module cs mn v=
@@ -169,10 +216,6 @@ let set_directories cs v = let ccs=of_t cs in
 
 let set_preq_types cs v = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.printer_equipped_types=v});;
-
-
-(* let set_subdirs cs  v =     let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.subdir_for_module=v});; *)
 
 
 (* Adhoc setters *)
