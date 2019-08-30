@@ -40,7 +40,7 @@ let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
 let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
 let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;; 
 
-(*
+
 let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
 let set_principal_ending_at_module = Coma_state_field.set_principal_ending_at_module ;;
 let set_mli_presence_at_module = Coma_state_field.set_mli_presence_at_module ;;
@@ -49,7 +49,7 @@ let set_mli_mt_at_module = Coma_state_field.set_mli_mt_at_module ;;
 let set_needed_libs_at_module  = Coma_state_field.set_needed_libs_at_module ;;
 let set_direct_fathers_at_module = Coma_state_field.set_direct_fathers_at_module ;;
 let set_ancestors_at_module = Coma_state_field.set_ancestors_at_module ;; 
-*)
+
 let set_needed_dirs_at_module  = Coma_state_field.set_needed_dirs_at_module ;;
 let set_product_up_to_date_at_module = Coma_state_field.set_product_up_to_date_at_module ;;
 let set_directories = Coma_state_field.set_directories;;
