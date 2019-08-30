@@ -57,11 +57,10 @@ let set_preq_types = Coma_state_field.set_preq_types;;
 
 let modules = Coma_state_field.modules;;
 
-let subdirs = Coma_state_field.subdirs;; 
+
 let all_used_subdirs = Coma_state_field.all_used_subdirs;;
 
 
-let set_subdirs = Coma_state_field.set_subdirs;;
 
 
 (* End of inherited values *)
@@ -693,9 +692,7 @@ let reposition_module cs hm (l_before,l_after)=
 
 let rename_directory_on_data (old_subdir,new_subdirname) cs= 
   let ren_sub=Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) in 
-  let toa=Small_array.apply_transformation_on_all in
-  let new_subdirs = toa (subdirs cs) ren_sub in 
-  let cs2=set_subdirs cs new_subdirs in 
+  let cs2=Coma_state_field.modify_all_subdirs cs ren_sub in 
   Coma_state_field.modify_all_needed_dirs cs2 ren_sub;;
 
 
