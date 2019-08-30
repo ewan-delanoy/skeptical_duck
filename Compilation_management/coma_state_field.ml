@@ -90,6 +90,9 @@ let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
 let modules cs= (of_t cs).Coma_state_t.modules;;
 let subdirs cs= (of_t cs).Coma_state_t.subdir_for_module;;
 
+let all_used_subdirs cs =
+   let current_assoc = temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.subdir_for_module in 
+   Image.image snd current_assoc ;;
 
 
 
