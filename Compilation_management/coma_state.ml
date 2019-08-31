@@ -35,8 +35,7 @@ let set_subdir_at_idx = Coma_state_field.set_subdir_at_idx ;;
 let set_principal_ending_at_idx = Coma_state_field.set_principal_ending_at_idx ;;
 let set_mli_presence_at_idx = Coma_state_field.set_mli_presence_at_idx ;;
 let set_principal_mt_at_idx = Coma_state_field.set_principal_mt_at_idx ;;
-let set_mli_mt_at_idx = Coma_state_field.set_mli_mt_at_idx ;;
-(* let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;; *)
+
 
 
 
@@ -212,12 +211,12 @@ let force_modification_time root_dir cs mlx=
       let new_val=string_of_float((Unix.stat file).Unix.st_mtime)  in
       let cs2=(
         if edg=principal_ending_at_idx cs idx 
-        then set_principal_mt_at_idx cs idx new_val
+        then set_principal_mt_at_module cs nm new_val
         else cs
       ) in
       let cs3=(
         if edg=(Dfa_ending.mli)
-        then set_mli_mt_at_idx cs2 idx new_val
+        then set_mli_mt_at_module cs2 nm new_val
         else cs2
       ) in     
       cs3;;
@@ -298,14 +297,14 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
               is the mli *) 
               if edg=(Dfa_ending.mli)
               then (
-                       let cs3=set_mli_presence_at_idx cs idx false in 
-                       set_mli_mt_at_idx cs3 idx "0."
+                       let cs3=set_mli_presence_at_module cs nm false in 
+                       set_mli_mt_at_module cs3 nm "0."
                    )
                else 
-                     let old_mt=principal_mt_at_idx cs idx in
+                     let old_mt=principal_mt_at_module cs nm in
                      (
-                      let cs4=set_principal_ending_at_idx cs idx (Dfa_ending.mli) in 
-                      set_principal_mt_at_idx cs4 idx old_mt
+                      let cs4=set_principal_ending_at_module cs nm (Dfa_ending.mli) in 
+                      set_principal_mt_at_module cs4 nm old_mt
                     );;
             
 
@@ -589,9 +588,9 @@ let relocate_module cs old_name new_subdir=
      ("rm -f "^s_root^"_build/"^(Dfn_endingless.middle_element_to_line old_middle)^".cm* ") in
   let principal_mt=md_compute_modification_time new_name (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_name Dfa_ending.mli in
-  let cs2=set_subdir_at_idx cs idx new_subdir in 
-  let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
-  let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
+  let cs2=set_subdir_at_module cs old_nm new_subdir in 
+  let cs3=set_principal_mt_at_module cs2 old_nm principal_mt in 
+  let cs4=set_mli_mt_at_module cs3 old_nm mli_mt in 
   (* let cs5=set_product_up_to_date_at_idx cs4 idx false in *)
   (cs4,(old_files,new_files));;
 
