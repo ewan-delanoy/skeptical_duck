@@ -31,10 +31,11 @@ let directories = Coma_state_field.directories;;
 let preq_types = Coma_state_field.preq_types;;
 
 let set_module_at_idx = Coma_state_field.set_module_at_idx ;;
+(*
 let set_subdir_at_idx = Coma_state_field.set_subdir_at_idx ;;
 let set_principal_ending_at_idx = Coma_state_field.set_principal_ending_at_idx ;;
 let set_mli_presence_at_idx = Coma_state_field.set_mli_presence_at_idx ;;
-
+*)
 
 
 
