@@ -51,3 +51,13 @@ let remove_interval_in_file fn i j=
     let s1=Io.read_whole_file fn in
     let s2=remove_interval s1 i j  in
    Io.overwrite_with fn s2;;   
+
+let tripartition_associated_to_interval s i j=
+   let g2=lines s in 
+   let (g3,g4)=Listennou.big_rht (i1-1) g2 in 
+   let part1=String.concat "\n" (List.rev g3) in 
+   let (g5,g6)=Listennou.big_rht (i2-i1+1) g4 in 
+   let part2=String.concat "\n" (List.rev g5) in 
+   let part3=String.concat "\n" g6 in 
+   (part1^"\n",part2,"\n"^part3);;
+
