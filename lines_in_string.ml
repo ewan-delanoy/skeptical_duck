@@ -53,11 +53,12 @@ let remove_interval_in_file fn i j=
    Io.overwrite_with fn s2;;   
 
 let tripartition_associated_to_interval s i j=
-   let g2=lines s in 
-   let (g3,g4)=Listennou.big_rht (i1-1) g2 in 
-   let part1=String.concat "\n" (List.rev g3) in 
-   let (g5,g6)=Listennou.big_rht (i2-i1+1) g4 in 
-   let part2=String.concat "\n" (List.rev g5) in 
-   let part3=String.concat "\n" g6 in 
+   let temp2=lines s in 
+   let (temp3,temp4)=Listennou.big_rht (i-1) temp2 in 
+   let part1=String.concat "\n" (List.rev temp3) in 
+   let (temp5,temp6)=Listennou.big_rht (j-i+1) temp4 in 
+   let part2=String.concat "\n" (List.rev temp5) in 
+   let part3=String.concat "\n" temp6 in 
    (part1^"\n",part2,"\n"^part3);;
 
+(* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
