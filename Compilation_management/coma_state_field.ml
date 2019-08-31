@@ -189,9 +189,9 @@ let set_ancestors_at_idx cs k v = let ccs=of_t cs in
 
 let set_ancestors_at_module cs mn v=
     let ccs=of_t cs in 
-    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.needed_libs_for_module in 
+    let old_assocs = temporary_cvrtr_dead_to_alive cs ccs.Coma_state_t.ancestors_for_module in 
     let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-    to_t({ccs with Coma_state_t.needed_libs_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
+    to_t({ccs with Coma_state_t.ancestors_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
 
 
 let set_needed_dirs_at_module cs mn v=

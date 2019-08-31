@@ -38,7 +38,7 @@ let set_principal_mt_at_idx = Coma_state_field.set_principal_mt_at_idx ;;
 let set_mli_mt_at_idx = Coma_state_field.set_mli_mt_at_idx ;;
 let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
 let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
-let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;; 
+let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;;  
 
 
 let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
@@ -522,8 +522,8 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let principal_mt=md_compute_modification_time new_hm (principal_ending_at_idx cs idx)
   and mli_mt=md_compute_modification_time new_hm Dfa_ending.mli in
   let cs2=set_module_at_idx cs idx new_mname in 
-  let cs3=set_principal_mt_at_idx cs2 idx principal_mt in 
-  let cs4=set_mli_mt_at_idx cs3 idx mli_mt in 
+  let cs3=set_principal_mt_at_module cs2 new_mname principal_mt in 
+  let cs4=set_mli_mt_at_module cs3 new_mname mli_mt in 
   let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
   let replacer=Image.image(function x->if x=old_mname then new_mname else x) in
   let hm_replacer=(fun x->if x=old_name then new_hm else x) in 
@@ -533,10 +533,11 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let cs_walker=ref(cs6) in 
   let _=(
      for k=idx+1 to n do
-      let old_dirfath=direct_fathers_at_idx (!cs_walker) k
-      and old_ancestors=ancestors_at_idx (!cs_walker) k in
-      cs_walker:=(set_direct_fathers_at_idx (!cs_walker) k (replacer old_dirfath)) ;
-      cs_walker:=(set_ancestors_at_idx (!cs_walker) k (replacer old_ancestors)); 
+      let mn = module_at_idx (!cs_walker) k in  
+      let old_dirfath=direct_fathers_at_module (!cs_walker) mn
+      and old_ancestors=ancestors_at_module (!cs_walker) mn in
+      cs_walker:=(set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
+      cs_walker:=(set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
      done;
   ) in
   (!cs_walker,(old_files,new_files),modified_files);;
