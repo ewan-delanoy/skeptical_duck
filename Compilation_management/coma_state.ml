@@ -37,7 +37,7 @@ let set_mli_presence_at_idx = Coma_state_field.set_mli_presence_at_idx ;;
 let set_principal_mt_at_idx = Coma_state_field.set_principal_mt_at_idx ;;
 let set_mli_mt_at_idx = Coma_state_field.set_mli_mt_at_idx ;;
 let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
-let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
+
 
 
 
@@ -905,9 +905,9 @@ let latest_changes cs =
     let mname = module_at_idx (!cs_walker) idx in 
     (
     declare_changed(idx);
-    cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
-    cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
-    cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
+    cs_walker:=set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
+    cs_walker:=set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
+    cs_walker:=set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
     cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Ennig.ennig 1 n) in
@@ -935,9 +935,9 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     let mname = module_at_idx (!cs_walker) idx in 
     (
     declare_changed(idx);
-    cs_walker:=set_principal_mt_at_idx (!cs_walker) idx pr_modif_time;
-    cs_walker:=set_mli_mt_at_idx (!cs_walker) idx mli_modif_time;
-    cs_walker:=set_direct_fathers_at_idx (!cs_walker) idx direct_fathers;
+    cs_walker:=set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
+    cs_walker:=set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
+    cs_walker:=set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
     cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Ennig.ennig 1 n) in

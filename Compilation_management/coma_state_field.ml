@@ -183,9 +183,6 @@ let set_direct_fathers_at_module cs mn v=
     to_t({ccs with Coma_state_t.direct_fathers_for_module=temporary_cvrtr_alive_to_dead new_assocs });;
 
 
-let set_ancestors_at_idx cs k v = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.ancestors_for_module=
-                                  (Small_array.set ccs.Coma_state_t.ancestors_for_module k v) });;
 
 let set_ancestors_at_module cs mn v=
     let ccs=of_t cs in 
