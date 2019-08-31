@@ -38,7 +38,7 @@ let set_principal_mt_at_idx = Coma_state_field.set_principal_mt_at_idx ;;
 let set_mli_mt_at_idx = Coma_state_field.set_mli_mt_at_idx ;;
 let set_needed_libs_at_idx  = Coma_state_field.set_needed_libs_at_idx ;;
 let set_direct_fathers_at_idx = Coma_state_field.set_direct_fathers_at_idx ;;
-let set_ancestors_at_idx = Coma_state_field.set_ancestors_at_idx ;;  
+
 
 
 let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
@@ -769,8 +769,8 @@ let update_ancs_libs_and_dirs_at_idx cs idx=
   and ordered_ancestors=Image.image (
     Small_array.get (modules cs)
   ) genealogy in
-  let cs2=set_ancestors_at_idx cs idx ordered_ancestors in 
-  let cs3=set_needed_libs_at_idx cs2 idx new_libs in
+  let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
+  let cs3=set_needed_libs_at_module cs2 mn new_libs in
   set_needed_dirs_at_module cs3 mn new_dirs;;
 
 let update_ancs_libs_and_dirs cs=
@@ -1034,8 +1034,8 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                        (Tidel.safe_set(needed_dirs_at_module (!cs_walker) current_module))
                        (Tidel.safe_set (dirned)) in
                     let new_dirs=Ordered.forget_order(ordered_dirs) in
-                    cs_walker:=set_ancestors_at_idx (!cs_walker) k new_ancestors;
-                    cs_walker:=set_needed_libs_at_idx (!cs_walker) k new_libs;
+                    cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
+                    cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
                     cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
               done;
               cs_walker:=Coma_state_field.remove_in_each_at_index (!cs_walker) idx;
