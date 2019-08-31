@@ -101,7 +101,7 @@ overwrite_and_dump_markers_inside_string
      
 *)
 
-let at_intervals_inside_string s l=
+let at_char_intervals_inside_string s l=
   if l=[] then s else
   let n=String.length s in
   let temp1=Listennou.universal_delta_list l 
@@ -114,15 +114,15 @@ let at_intervals_inside_string s l=
   and last_part=rep_last^(String.sub s j_last (n-j_last)) in
   first_part^(String.concat "" temp2)^last_part;;
 
-let at_intervals_inside_file 
+let at_char_intervals_inside_file 
   fn l=
    let s1=Io.read_whole_file fn in
-   let s2=at_intervals_inside_string s1 l in
+   let s2=at_char_intervals_inside_string s1 l in
    Io.overwrite_with fn s2;;     
 
 (*    
 
-at_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
+at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
 *)         
 
