@@ -30,7 +30,7 @@ module After_checking = struct
                if check_for_change_at_module cs mn 
                then Some(mn)
                else None
-            ) (Coma_state_field.ordered_list_of_modules cs);;
+            ) (Coma_state.ordered_list_of_modules cs);;
 
             let check_for_changes cs = 
             let changes = detect_changes cs in 
