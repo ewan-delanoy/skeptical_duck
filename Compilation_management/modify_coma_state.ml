@@ -11,27 +11,27 @@ module After_checking = struct
 
       module Private = struct
 
-            let check_for_change_at_index_and_ending cs idx edg=
-               let hm=Coma_state.hm_at_idx cs idx in 
+            let check_for_change_at_module_and_ending cs mn edg=
+               let hm=Coma_state.hm_from_nm cs mn in 
                (Coma_state.md_recompute_modification_time hm edg)
-               <>(Coma_state.get_modification_time cs idx edg);;
+               <>(Coma_state.get_modification_time cs mn edg);;
 
-            let check_for_change_at_index  cs idx=
+            let check_for_change_at_module  cs mn=
             List.exists
-               (check_for_change_at_index_and_ending cs idx) 
+               (check_for_change_at_module_and_ending cs mn) 
             [
                Dfa_ending.mli ;
-               (Coma_state.principal_ending_at_idx cs idx)
+               (Coma_state.principal_ending_at_module cs mn)
             ] ;;
 
             let detect_changes cs =
             let n=Coma_state.size cs in 
             Option.filter_and_unpack (
-               fun idx->
-               if check_for_change_at_index cs idx 
-               then Some(Coma_state.module_at_idx cs idx)
+               fun mn->
+               if check_for_change_at_module cs mn 
+               then Some(mn)
                else None
-            ) (Ennig.ennig 1 n);;
+            ) (Coma_state_field.ordered_list_of_modules cs);;
 
             let check_for_changes cs = 
             let changes = detect_changes cs in 
