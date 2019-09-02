@@ -25,7 +25,6 @@ module After_checking = struct
             ] ;;
 
             let detect_changes cs =
-            let n=Coma_state.size cs in 
             Option.filter_and_unpack (
                fun mn->
                if check_for_change_at_module cs mn 
