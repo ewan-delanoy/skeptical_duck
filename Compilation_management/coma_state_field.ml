@@ -89,6 +89,9 @@ let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
 
 let modules cs= (of_t cs).Coma_state_t.modules;;
 
+let ordered_list_of_modules cs=
+   Small_array.to_list((of_t cs).Coma_state_t.modules);; 
+   
 
 let all_used_subdirs cs =
    let current_assoc = temporary_cvrtr_dead_to_alive cs (of_t cs).Coma_state_t.subdir_for_module in 
