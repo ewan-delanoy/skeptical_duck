@@ -197,8 +197,7 @@ let all_modules cs=
   let n=Small_array.size((modules cs)) in
   Ennig.doyle (hm_at_idx cs) 1 n;; 
 
-let get_modification_time cs idx edg=
-  let mn=module_at_idx cs idx in  
+let get_modification_time cs mn edg=
   if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
   if edg=Dfa_ending.mli then mli_mt_at_module cs mn else 
   "0.";;
