@@ -20,6 +20,8 @@ let direct_fathers_at_idx = Coma_state_field.direct_fathers_at_idx ;;
 let ancestors_at_idx = Coma_state_field.ancestors_at_idx ;; 
 *)
 
+let principal_ending_at_idx = Coma_state_field.principal_ending_at_idx ;;
+
 let subdir_at_module = Coma_state_field.subdir_at_module ;;
 let principal_ending_at_module = Coma_state_field.principal_ending_at_module ;;
 let mli_presence_at_module = Coma_state_field.mli_presence_at_module ;;
