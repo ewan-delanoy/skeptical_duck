@@ -103,7 +103,7 @@ let acolytes_at_idx cs idx=
      else None
 ) Dfa_ending.all_ocaml_endings;;
 
-let short_paths_at_idx cs idx=
+let rootless_paths_at_idx cs idx=
    Image.image Dfn_full.to_rootless_line (acolytes_at_idx cs idx);;
   
 
@@ -649,7 +649,7 @@ let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path
 
 let all_rootless_paths cs=
     let n=Small_array.size (modules cs) in
-    List.flatten(Ennig.doyle(short_paths_at_idx cs) 1 n);;  
+    List.flatten(Ennig.doyle(rootless_paths_at_idx cs) 1 n);;  
      
 
 let short_paths_inside_subdirectory cs subdir =
@@ -901,7 +901,7 @@ let latest_changes cs =
     let nm=Small_array.get (modules cs) idx in
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (short_paths_at_idx cs idx))
+                        (rootless_paths_at_idx cs idx))
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun idx->
@@ -931,7 +931,7 @@ let recompile_on_monitored_modules tolerate_cycles cs =
     let nm=Small_array.get (modules cs) idx in
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (short_paths_at_idx cs idx))
+                        (rootless_paths_at_idx cs idx))
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun idx->
@@ -2200,9 +2200,9 @@ let local_relocate_module cs capitalized_or_not_old_hm_name new_subdir=
   let old_hm_name = String.uncapitalize_ascii  capitalized_or_not_old_hm_name in 
   let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
   let old_hm = find_half_dressed_module cs old_hm_name 
-  and old_short_paths = short_paths_at_idx cs idx  in 
+  and old_short_paths = rootless_paths_at_idx cs idx  in 
   let (cs2,_)=relocate_module cs old_hm new_subdir in
-  let  new_short_paths = short_paths_at_idx cs2 idx  in 
+  let  new_short_paths = rootless_paths_at_idx cs2 idx  in 
   let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
