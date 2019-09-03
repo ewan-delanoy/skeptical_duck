@@ -1606,8 +1606,8 @@ module Target_system_creation=struct
       (
       "\n#use\""^(Dfn_rootless.to_line Coma_constant.rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
       "\n#use\""^(Dfn_rootless.to_line Coma_constant.rootless_path_for_printersfile)^"\""^Double_semicolon.ds^
-      "\nopen Needed_values;;"^
-      "\ninitialize_toplevel();;"
+      "\nopen Needed_values"^Double_semicolon.ds^
+      "\ninitialize_toplevel()"^Double_semicolon.ds
        );
       Io.overwrite_with 
       (Absolute_path.of_string (s_main_dir^"/"^init_dir^"/my_printers.ml"))
@@ -1962,7 +1962,6 @@ let rename_value_inside_module cs s new_name=
    ) temp3_again in
    let k1=Listennou.find_index temp4_again temp3_again in
    let temp5=Listennou.big_tail k1 temp3_again in
-   
    let temp6=Option.filter_and_unpack(
       fun itm->
         let txt=itm.Ocaml_gsyntax_item.content in
