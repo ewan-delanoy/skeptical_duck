@@ -72,39 +72,46 @@ let seek_module_index cs nm=
   with
   _->None;;   
 
-let hm_at_idx cs k=
-    let mn=module_at_idx cs k in 
-    Dfn_endingless_t.J(
+let hm_from_nm cs mn=
+   Dfn_endingless_t.J(
         root cs,
         subdir_at_module cs mn,
         mn
     );;
 
-  
-let hm_from_nm cs nm=
-   let idx=find_module_index cs nm in
-   hm_at_idx cs idx;;
+let hm_at_idx cs k=
+    hm_from_nm cs (module_at_idx cs k);;
 
-let check_ending_in_at_idx edg cs idx=
-   let mn=module_at_idx cs idx in 
+
+let check_ending_in_at_module edg cs mn=
    if edg=principal_ending_at_module cs mn
    then true 
    else 
-   if edg=Dfa_ending_t.E("mli")
+   if edg=Dfa_ending.mli
    then mli_presence_at_module cs mn
    else false;;
 
-let acolytes_at_idx cs idx=
-  let name=hm_at_idx cs idx in
+let check_ending_in_at_idx edg cs idx=
+   check_ending_in_at_module edg cs (module_at_idx cs idx);;
+
+let acolytes_at_module cs mn=
+  let eless = hm_from_nm cs mn in
   Option.filter_and_unpack (fun 
   edg->
-     if check_ending_in_at_idx edg cs idx
-     then Some(Dfn_join.to_ending name edg)
+     if check_ending_in_at_module edg cs mn
+     then Some(Dfn_join.to_ending eless edg)
      else None
 ) Dfa_ending.all_ocaml_endings;;
 
+let acolytes_at_idx cs idx=
+   acolytes_at_module  cs (module_at_idx cs idx)  ;;
+
+let rootless_paths_at_module cs mn=
+   Image.image Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
+  
+
 let rootless_paths_at_idx cs idx=
-   Image.image Dfn_full.to_rootless_line (acolytes_at_idx cs idx);;
+    rootless_paths_at_module  cs (module_at_idx cs idx)  ;;
   
 
 let registered_endings_at_idx cs idx=
@@ -2198,11 +2205,11 @@ let local_rename_module cs old_name new_name=
 
 let local_relocate_module cs capitalized_or_not_old_hm_name new_subdir=
   let old_hm_name = String.uncapitalize_ascii  capitalized_or_not_old_hm_name in 
-  let idx = Option.unpack(local_seek_module_index cs old_hm_name) in 
-  let old_hm = find_half_dressed_module cs old_hm_name 
-  and old_short_paths = rootless_paths_at_idx cs idx  in 
+  let old_hm = find_half_dressed_module cs old_hm_name in 
+  let mn = Dfn_endingless.to_module old_hm in 
+  let old_short_paths = rootless_paths_at_module cs mn  in 
   let (cs2,_)=relocate_module cs old_hm new_subdir in
-  let  new_short_paths = rootless_paths_at_idx cs2 idx  in 
+  let  new_short_paths = rootless_paths_at_module cs2 mn  in 
   let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_short_paths)
     (Recently_changed.of_string_list [])
