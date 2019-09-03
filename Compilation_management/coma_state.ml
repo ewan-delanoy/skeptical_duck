@@ -72,7 +72,7 @@ let seek_module_index cs nm=
   with
   _->None;;   
 
-let hm_from_nm cs mn=
+let endingless_at_module cs mn=
    Dfn_endingless_t.J(
         root cs,
         subdir_at_module cs mn,
@@ -80,7 +80,7 @@ let hm_from_nm cs mn=
     );;
 
 let hm_at_idx cs k=
-    hm_from_nm cs (module_at_idx cs k);;
+    endingless_at_module cs (module_at_idx cs k);;
 
 
 let check_ending_in_at_module edg cs mn=
@@ -95,7 +95,7 @@ let check_ending_in_at_idx edg cs idx=
    check_ending_in_at_module edg cs (module_at_idx cs idx);;
 
 let acolytes_at_module cs mn=
-  let eless = hm_from_nm cs mn in
+  let eless = endingless_at_module cs mn in
   Option.filter_and_unpack (fun 
   edg->
      if check_ending_in_at_module edg cs mn
@@ -135,7 +135,7 @@ let up_to_date_hms cs =
    Option.filter_and_unpack (
      fun mn->
        if product_up_to_date_at_module cs mn
-       then Some(hm_from_nm cs mn)
+       then Some(endingless_at_module cs mn)
        else None
    )(list_of_modules cs);;
 
@@ -1944,7 +1944,7 @@ let rename_value_inside_module cs s new_name=
    and path=decipher_path cs  module_name in 
    let nm=Dfn_endingless.to_module hm in
    let pre_temp2=(ancestors_at_module cs nm)@[nm] in
-   let temp2=Image.image (hm_from_nm cs) pre_temp2 in
+   let temp2=Image.image (endingless_at_module cs) pre_temp2 in
    let all_files=Image.image  (fun hm2->
    	 Dfn_full.to_absolute_path(Dfn_join.to_ending hm2 Dfa_ending.ml)
    ) temp2 in
@@ -2115,20 +2115,20 @@ let find_half_dressed_module cs x=
 
 let local_above cs x=
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (hm_from_nm cs nm) in 
+    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
   (above cs (find_half_dressed_module cs x));;
 
 
 let local_below cs x=
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (hm_from_nm cs nm) in 
+    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
   (below cs (find_half_dressed_module cs x));;
 
 let local_directly_below cs x=
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (hm_from_nm cs nm) in 
+    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
   (directly_below cs (find_half_dressed_module cs x));;
 

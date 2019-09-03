@@ -12,7 +12,7 @@ module After_checking = struct
       module Private = struct
 
             let check_for_change_at_module_and_ending cs mn edg=
-               let hm=Coma_state.hm_from_nm cs mn in 
+               let hm=Coma_state.endingless_at_module cs mn in 
                (Coma_state.md_recompute_modification_time hm edg)
                <>(Coma_state.get_modification_time cs mn edg);;
 
