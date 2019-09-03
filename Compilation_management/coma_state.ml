@@ -79,7 +79,7 @@ let endingless_at_module cs mn=
         mn
     );;
 
-let hm_at_idx cs k=
+let endingless_at_idx cs k=
     endingless_at_module cs (module_at_idx cs k);;
 
 
@@ -202,7 +202,7 @@ let needed_dirs_and_libs_for_several cmod cs l_idx=
 
 let all_modules cs=
   let n=Small_array.size((modules cs)) in
-  Ennig.doyle (hm_at_idx cs) 1 n;; 
+  Ennig.doyle (endingless_at_idx cs) 1 n;; 
 
 let get_modification_time cs mn edg=
   if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
@@ -233,7 +233,7 @@ let everyone_except_the_debugger cs=
      was registered.
     *)  
         let n=Small_array.size (modules cs) in
-        Image.image (hm_at_idx cs) (Ennig.ennig 1 n);;      
+        Image.image (endingless_at_idx cs) (Ennig.ennig 1 n);;      
         
 
 
@@ -725,7 +725,7 @@ let find_value_definition cs s=
   then None 
   else
   let idx1=Option.unpack opt in
-  let hm1=hm_at_idx cs idx1 in
+  let hm1=endingless_at_idx cs idx1 in
   let ap1=Dfn_full.to_absolute_path(Dfn_join.to_ending hm1 
      Dfa_ending.ml) in
   let temp1=Read_ocaml_files.read_ocaml_files [ap1] in	 
@@ -743,7 +743,7 @@ Option.filter_and_unpack (fun idx->
   if not(check_ending_in_at_idx Dfa_ending.ml cs idx)
   then None
   else 
-  let hm=hm_at_idx cs idx in
+  let hm=endingless_at_idx cs idx in
   let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
   Some(Dfn_full.to_absolute_path mlx)
 ) (Ennig.ennig 1 n);;
@@ -752,7 +752,7 @@ let modules_using_value cs value_name =
   let n=Small_array.size (modules cs) in 
   Option.filter_and_unpack (fun idx->
   let mn_idx = module_at_idx cs idx in  
-  let hm=hm_at_idx cs idx
+  let hm=endingless_at_idx cs idx
   and pr_end=principal_ending_at_module cs mn_idx in
   let mlx=Dfn_join.to_ending hm pr_end in
    let ap=Dfn_full.to_absolute_path mlx in
@@ -766,7 +766,7 @@ let modules_using_value cs value_name =
 
 let update_ancs_libs_and_dirs_at_idx cs idx=
   let mn=module_at_idx cs idx in 
-  let hm=hm_at_idx cs idx  
+  let hm=endingless_at_idx cs idx  
   and pr_end=principal_ending_at_module cs mn in
   let mlx=Dfn_join.to_ending hm pr_end in 
   let fathers=direct_fathers_at_module cs mn in
@@ -843,7 +843,7 @@ module PrivateThree=struct
       let _=treat_circular_dependencies tolerate_cycles (
         (fun nm->
            let idx=Small_array.leftmost_index_of_in nm (modules cs) in 
-           let middle = Dfn_endingless.to_middle_element ( hm_at_idx cs idx) in 
+           let middle = Dfn_endingless.to_middle_element ( endingless_at_idx cs idx) in 
            Dfn_endingless.middle_element_to_line middle )
       ) cycles in     
       let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
@@ -874,7 +874,7 @@ let md_recompute_modification_time hm edg=
 
 let quick_update cs idx=
   let mn_idx = module_at_idx cs idx in 
-  let hm =hm_at_idx cs idx 
+  let hm =endingless_at_idx cs idx 
   and pr_ending=principal_ending_at_module cs mn_idx in
   let middle = Dfn_endingless.to_middle_element hm in 
   if (Dfn_endingless.middle_element_to_line middle)=Coma_constant.name_for_debugged_module
@@ -966,7 +966,7 @@ let printer_equipped_types_from_data cs=
   Option.filter_and_unpack (
     fun idx->
     let mn_idx = module_at_idx cs idx in 
-    let hm=hm_at_idx cs idx
+    let hm=endingless_at_idx cs idx
     and pr_end=principal_ending_at_module cs mn_idx in
     let mlx=Dfn_join.to_ending hm pr_end in
     let ap=Dfn_full.to_absolute_path mlx in
@@ -1307,9 +1307,9 @@ let dependencies_inside_shaft cmod cs (opt_indices,opt_rootless_path)=
 let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
    let l=dependencies_inside_shaft cmod cs (opt_indices,opt_short_path) in 
    let temp1=Image.image (fun idx->
-     let hm=hm_at_idx cs idx in 
+     let hm=endingless_at_idx cs idx in 
      let cmds=Modern.command_for_module_separate_compilation cmod cs hm in 
-    Image.image (fun cmd->(idx,hm_at_idx cs idx,cmd) ) cmds ) l in 
+    Image.image (fun cmd->(idx,endingless_at_idx cs idx,cmd) ) cmds ) l in 
     List.flatten temp1;;
 
 let list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
@@ -1374,7 +1374,7 @@ let recompile cs=
      let indexed_nms=Image.image(
        fun nm->
        let idx=find_module_index cs2 nm in 
-       (idx,hm_at_idx cs2 idx)
+       (idx,endingless_at_idx cs2 idx)
      ) nms_to_be_updated in 
      let indices = Image.image fst indexed_nms in 
      let (cs3,rejected_pairs,accepted_pairs)=
@@ -2108,7 +2108,7 @@ let local_seek_module_index cs x=
 let find_half_dressed_module cs x=
    match local_seek_module_index cs x
    with 
-   Some(idx)->hm_at_idx cs idx
+   Some(idx)->endingless_at_idx cs idx
    |None->raise(No_module_with_name(x));;  
 
 
