@@ -2193,10 +2193,11 @@ let register_short_path cs x=
   (cs2,diff);;
 
 
-let local_rename_module cs old_name new_name=
-   let old_hm = find_half_dressed_module cs (String.uncapitalize_ascii old_name) 
-   and unslashed_new_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
-   let (cs2,(old_files,new_files),modified_files)=rename_module cs old_hm unslashed_new_name in
+let local_rename_module cs old_module_name new_name=
+   let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
+   let old_endingless = endingless_at_module cs mn in  
+   let unslashed_new_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
+   let (cs2,(old_files,new_files),modified_files)=rename_module cs old_endingless unslashed_new_name in
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_files)
     (Recently_changed.of_string_list modified_files)
