@@ -1450,27 +1450,21 @@ let recompile cs=
         recompile_on_monitored_modules false cs in
      if nms_to_be_updated=[] then (cs2,false,[]) else
      let new_dirs=compute_subdirectories_list cs2  in
-     let indexed_nms=Image.image(
-       fun nm->
-       let idx=find_module_index cs2 nm in 
-       (idx,endingless_at_idx cs2 idx)
-     ) nms_to_be_updated in 
-     let indices = Image.image fst indexed_nms in 
      let (cs3,rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.usual_feydeau cs2 indices in 
-     let rejected_hms=Image.image snd rejected_pairs in  
+       Ocaml_target_making.alive_usual_feydeau cs2 nms_to_be_updated in 
+     let rejected_mns=Image.image snd rejected_pairs in  
       let new_preqt=Image.image(
-        fun (hm,_)->(hm,not(List.mem hm rejected_hms))
+        fun (mn,_)->(mn,not(List.mem mn rejected_mns))
       )  (preq_types cs3) in   
      let cs4=set_directories cs3 new_dirs in 
      let cs5=set_preq_types cs4 new_preqt in 
     (cs5,true,short_paths);;       
 
-let add_printer_equipped_type cs hm=
-  set_preq_types cs ((preq_types cs)@[hm]);;
+let add_printer_equipped_type cs mn=
+  set_preq_types cs ((preq_types cs)@[mn]);;
 
-let remove_printer_equipped_type cs hm=
-  set_preq_types cs (List.filter (fun hm2->hm2<>hm) (preq_types cs));;
+let remove_printer_equipped_type cs mn=
+  set_preq_types cs (List.filter (fun mn2->mn2<>mn) (preq_types cs));;
 
 let uple_form cs=
   (cs,
