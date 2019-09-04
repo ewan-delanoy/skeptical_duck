@@ -1427,19 +1427,13 @@ let alive_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
      let _=Image.image  Unix_command.hardcore_uc all_cmds in 
      ()
 
-let feydeau cmod cs (opt_indices,opt_short_path)=
-  let answer=shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path) in 
-  let _=end_part_of_feydeau cmod cs (opt_indices,opt_short_path) in 
-  answer;; 
+
 
 let alive_feydeau cmod cs (opt_modnames,opt_rootless_path)=
   let answer=alive_shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
   let _=alive_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
   answer;; 
 
-(*
-let usual_feydeau cs indices = feydeau Compilation_mode_t.Usual cs (Some(indices),None);;
-*)
 
 let alive_usual_feydeau cs modnames = alive_feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
 
