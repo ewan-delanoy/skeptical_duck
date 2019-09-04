@@ -2203,32 +2203,31 @@ let local_rename_module cs old_name new_name=
     (Recently_created.of_string_list new_files) in
    (cs2,diff);;
 
-let local_relocate_module cs capitalized_or_not_old_hm_name new_subdir=
-  let old_hm_name = String.uncapitalize_ascii  capitalized_or_not_old_hm_name in 
-  let old_hm = find_half_dressed_module cs old_hm_name in 
-  let mn = Dfn_endingless.to_module old_hm in 
-  let old_short_paths = rootless_paths_at_module cs mn  in 
-  let (cs2,_)=relocate_module cs old_hm new_subdir in
-  let  new_short_paths = rootless_paths_at_module cs2 mn  in 
+let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
+  let old_endingless = endingless_at_module cs mn in  
+  let old_rootless_paths = rootless_paths_at_module cs mn  in 
+  let (cs2,_)=relocate_module cs old_endingless new_subdir in
+  let  new_rootless_paths = rootless_paths_at_module cs2 mn  in 
   let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_short_paths)
+    (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_short_paths) in
+    (Recently_created.of_string_list new_rootless_paths) in
    (cs2,diff);;   
 
 let local_rename_directory cs old_subdir new_subdirname=
-   let old_short_paths=short_paths_inside_subdirectory cs old_subdir in
+   let old_rootless_paths=short_paths_inside_subdirectory cs old_subdir in
    let cs2=rename_directory cs (old_subdir,new_subdirname) in 
    let s_old_subdir=Dfa_subdirectory.without_trailing_slash old_subdir in
    let subdir_father = Cull_string.before_rightmost s_old_subdir '/' in 
    let new_subdir=(if subdir_father="" 
                    then new_subdirname 
                    else subdir_father^"/"^new_subdirname) in 
-   let new_short_paths=short_paths_inside_subdirectory cs2 (Dfa_subdirectory.of_line new_subdir) in
+   let new_rootless_paths=short_paths_inside_subdirectory cs2 (Dfa_subdirectory.of_line new_subdir) in
    let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_short_paths)
+    (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_short_paths) in
+    (Recently_created.of_string_list new_rootless_paths) in
    (cs2,diff);;   
 
 
