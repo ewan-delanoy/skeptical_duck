@@ -1435,7 +1435,7 @@ let alive_feydeau cmod cs (opt_modnames,opt_rootless_path)=
   answer;; 
 
 
-let alive_usual_feydeau cs modnames = alive_feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
+let usual_feydeau cs modnames = alive_feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
 
 end;;  
 
@@ -1446,7 +1446,7 @@ let recompile cs=
      if nms_to_be_updated=[] then (cs2,false,[]) else
      let new_dirs=compute_subdirectories_list cs2  in
      let (cs3,rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.alive_usual_feydeau cs2 nms_to_be_updated in 
+       Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
      let rejected_mns=Image.image snd rejected_pairs in  
       let new_preqt=Image.image(
         fun (mn,_)->(mn,not(List.mem mn rejected_mns))
@@ -1486,7 +1486,7 @@ let backup cs diff opt= Backup_coma_state.backup
     let cs3=(if was_lonely 
            then cs2
            else ( fun (cs4,_,_)->cs4)
-           (Ocaml_target_making.alive_usual_feydeau 
+           (Ocaml_target_making.usual_feydeau 
              cs2 following) ) in 
     (cs3,new_dirs);;   
 
@@ -1815,7 +1815,7 @@ let from_main_directory dir backup_dir g_after_b=
         let pre_preqt=printer_equipped_types_from_data cs1 in
         let l_mod=ordered_list_of_modules cs1 in 
         let (cs2,rejected_pairs,_)=
-          Ocaml_target_making.alive_usual_feydeau 
+          Ocaml_target_making.usual_feydeau 
           cs1 l_mod in
         let rejected_endinglesses=Image.image snd rejected_pairs in 
        let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
@@ -1856,7 +1856,7 @@ let on_targets (cs,old_dirs) mlx=
    (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
     in
     let nm=Dfn_full.to_module mlx in 
-    let (cs3,_,_)=Ocaml_target_making.alive_usual_feydeau cs2 [nm] in 
+    let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [nm] in 
     (cs3,new_dirs);; 
   
 
