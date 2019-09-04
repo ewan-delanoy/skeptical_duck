@@ -1252,83 +1252,43 @@ end;;
 module Ocaml_target_making=struct
 
 
-exception Foiled_during_compilation of (int*Dfn_endingless_t.t*string);;
+
+
+exception Failed_during_compilation of (Dfa_module_t.t*Dfn_endingless_t.t*string);;
 
 let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_be_treated)=
      match to_be_treated with 
      []->(cs,rejected,List.rev treated)
      |triple::other_triples->
-       let (idx,hm,cmd)=triple in
-       let nm=Dfn_endingless.to_module hm in 
+       let (nm,eless,cmd)=triple in
        if (Unix_command.uc cmd)=0
        then 
             let cs2=set_product_up_to_date_at_module cs nm true in 
-            helper_for_feydeau cmod cs2 (rejected,(idx,hm)::treated,other_triples)
-       else if (cmod<>Compilation_mode_t.Usual)
-            then raise(Foiled_during_compilation(triple))
-            else 
-            let triples_after=snd(Prepared.partition_in_two_parts (fun (idx2,_,_)->idx2<>idx) other_triples) in 
-            let (rejected_siblings_as_triples,survivors)=List.partition
-           (
-              fun (idx2,hm2,_)->
-                let nm2=Dfn_endingless.to_module hm2 in  
-                List.mem nm (ancestors_at_module cs nm2)
-           ) triples_after in 
-           let rejected_siblings_with_redundancies =  
-              Image.image (fun (idx2,hm2,_)->(idx2,hm2) ) rejected_siblings_as_triples in 
-           let rejected_siblings = Listennou.nonredundant_version rejected_siblings_with_redundancies in    
-           let newly_rejected = (idx,hm)::rejected_siblings in 
-           let cs_walker=ref(cs) in 
-           let _=List.iter(
-              fun (idx3,hm3)->
-                 let mname3=Dfn_endingless.to_module hm3 in 
-                cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname3 false
-           ) newly_rejected in 
-           helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
-
-exception Failed_during_compilation of (Dfa_module_t.t*Dfn_endingless_t.t*string);;
-
-let rec alive_helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_be_treated)=
-     match to_be_treated with 
-     []->(cs,rejected,List.rev treated)
-     |triple::other_triples->
-       let (nm,hm,cmd)=triple in
-       if (Unix_command.uc cmd)=0
-       then 
-            let cs2=set_product_up_to_date_at_module cs nm true in 
-            alive_helper_for_feydeau cmod cs2 (rejected,(nm,hm)::treated,other_triples)
+            helper_for_feydeau cmod cs2 (rejected,(nm,eless)::treated,other_triples)
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
             else 
             let triples_after=snd(Prepared.partition_in_two_parts (fun (nm2,_,_)->nm2<>nm) other_triples) in 
             let (rejected_siblings_as_triples,survivors)=List.partition
            (
-              fun (nm2,hm2,_)->
+              fun (nm2,_,_)->
                 List.mem nm (ancestors_at_module cs nm2)
            ) triples_after in 
            let rejected_siblings_with_redundancies =  
-              Image.image (fun (nm2,hm2,_)->(nm2,hm2) ) rejected_siblings_as_triples in 
+              Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
            let rejected_siblings = Listennou.nonredundant_version rejected_siblings_with_redundancies in    
-           let newly_rejected = (nm,hm)::rejected_siblings in 
+           let newly_rejected = (nm,eless)::rejected_siblings in 
            let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (nm3,hm3)->
                 cs_walker:=set_product_up_to_date_at_module (!cs_walker) nm3 false
            ) newly_rejected in 
-           alive_helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
+           helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
 
-let dependencies_inside_shaft cmod cs (opt_indices,opt_rootless_path)=
-   match cmod with 
-   Compilation_mode_t.Usual->Option.unpack opt_indices
-   |_->let rootless_path=Option.unpack opt_rootless_path in 
-       let full_path=Absolute_path.of_string(
-        (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
-       let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
-       let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
-       Option.filter_and_unpack (seek_module_index cs) nm_deps;;
 
-let alive_dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
+
+let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
    match cmod with 
    Compilation_mode_t.Usual->Option.unpack opt_modnames
    |_->let rootless_path=Option.unpack opt_rootless_path in 
@@ -1338,32 +1298,19 @@ let alive_dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
        List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs);;
 
-let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
-   let l=dependencies_inside_shaft cmod cs (opt_indices,opt_short_path) in 
-   let temp1=Image.image (fun idx->
-     let hm=endingless_at_idx cs idx in 
-     let cmds=Modern.command_for_module_separate_compilation cmod cs hm in 
-    Image.image (fun cmd->(idx,endingless_at_idx cs idx,cmd) ) cmds ) l in 
-    List.flatten temp1;;
 
-let alive_list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modulenames,opt_rootless_path)=
-   let l=alive_dependencies_inside_shaft cmod cs (opt_modulenames,opt_rootless_path) in 
+
+let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modulenames,opt_rootless_path)=
+   let l=dependencies_inside_shaft cmod cs (opt_modulenames,opt_rootless_path) in 
    let temp1=Image.image (fun mn->
      let eless=endingless_at_module cs mn in 
      let cmds=Modern.command_for_module_separate_compilation cmod cs eless in 
     Image.image (fun cmd->(mn,endingless_at_module cs mn,cmd) ) cmds ) l in 
     List.flatten temp1;;
 
-let list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
-   let cmds=(
-   match cmod with 
-   Compilation_mode_t.Usual->[] 
-   |_->
-      let short_path=Option.unpack opt_short_path in 
-      Modern.command_for_predebuggable_or_preexecutable cmod cs short_path) in 
-   cmds;;
 
-let alive_list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootless_path)=
+
+let list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootless_path)=
    let cmds=(
    match cmod with 
    Compilation_mode_t.Usual->[] 
@@ -1373,16 +1320,7 @@ let alive_list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootles
    cmds;;
 
 
-let list_of_commands_for_end_part_of_feydeau cmod cs (opt_indices,opt_short_path)= 
-   let cmds=(
-   match cmod with 
-   Compilation_mode_t.Usual->[] 
-   |_->
-      let short_path=Option.unpack opt_short_path in 
-      Modern.command_for_debuggable_or_executable cmod cs short_path) in 
-   cmds;;
-
-let alive_list_of_commands_for_end_part_of_feydeau cmod cs (_,opt_rootless_path)= 
+let list_of_commands_for_end_part_of_feydeau cmod cs (_,opt_rootless_path)= 
    let cmds=(
    match cmod with 
    Compilation_mode_t.Usual->[] 
@@ -1399,43 +1337,32 @@ let list_of_commands_for_ternary_feydeau cmod cs short_path=
    cmds1@cmds2@cmds3;;
 
 
-let shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
-  let cmds=list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_indices,opt_short_path) in  
+
+let shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
+  let cmds=list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in  
   helper_for_feydeau cmod cs ([],[],cmds);; 
 
-let alive_shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
-  let cmds=alive_list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in  
-  alive_helper_for_feydeau cmod cs ([],[],cmds);; 
 
-let end_part_of_feydeau cmod cs (opt_indices,opt_short_path)=
-  match cmod with 
-   Compilation_mode_t.Usual->()
-   |_->
-     let all_cmds=
-       (list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_indices,opt_short_path))@
-       (list_of_commands_for_end_part_of_feydeau cmod cs (opt_indices,opt_short_path)) in 
-     let _=Image.image  Unix_command.hardcore_uc all_cmds in 
-     ()
   
-let alive_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
+let end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
   match cmod with 
    Compilation_mode_t.Usual->()
    |_->
      let all_cmds=
-       (alive_list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path))@
-       (alive_list_of_commands_for_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)) in 
+       (list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path))@
+       (list_of_commands_for_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)) in 
      let _=Image.image  Unix_command.hardcore_uc all_cmds in 
      ()
 
 
 
-let alive_feydeau cmod cs (opt_modnames,opt_rootless_path)=
-  let answer=alive_shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
-  let _=alive_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
+let feydeau cmod cs (opt_modnames,opt_rootless_path)=
+  let answer=shaft_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
+  let _=end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
   answer;; 
 
 
-let usual_feydeau cs modnames = alive_feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
+let usual_feydeau cs modnames = feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
 
 end;;  
 
