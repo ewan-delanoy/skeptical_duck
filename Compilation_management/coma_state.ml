@@ -1307,7 +1307,7 @@ let rec alive_helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treat
        if (Unix_command.uc cmd)=0
        then 
             let cs2=set_product_up_to_date_at_module cs nm true in 
-            helper_for_feydeau cmod cs2 (rejected,(nm,hm)::treated,other_triples)
+            alive_helper_for_feydeau cmod cs2 (rejected,(nm,hm)::treated,other_triples)
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
             else 
