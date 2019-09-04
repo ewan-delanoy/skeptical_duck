@@ -29,7 +29,7 @@ let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
 let find_half_dressed_module modname= 
-  Coma_state.Almost_concrete.find_half_dressed_module (!(Private.main_ref)) modname;;
+  Coma_state.endingless_from_mildly_capitalized_module_name (!(Private.main_ref)) modname;;
 
 let forget modname=Modify_coma_state.Reference.forget Private.main_ref modname;;
 
