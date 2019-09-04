@@ -50,7 +50,7 @@ module After_checking = struct
 
       let register_short_path cs x=
          let _=Private.check_for_changes cs in 
-         Coma_state.Almost_concrete.register_short_path cs x;; 
+         Coma_state.Almost_concrete.register_rootless_path cs x;; 
 
       let relocate_module cs old_hm_name new_subdir=
          let _=Private.check_for_changes cs in 

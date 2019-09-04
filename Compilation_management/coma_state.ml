@@ -2181,7 +2181,7 @@ let local_register_mlx_file cs mlx=
     cs3;;  
 
 
-let register_short_path cs x=
+let register_rootless_path cs x=
   let rootless_path = Dfn_rootless.of_line x in 
   let mlx=Dfn_join.root_to (root cs) rootless_path in
   let diff=
