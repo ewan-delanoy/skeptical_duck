@@ -1487,24 +1487,18 @@ let backup cs diff opt= Backup_coma_state.backup
 
 
   let unregister_mlx_file_on_targets root_dir cs mlx=
-    let nm=Dfn_full.to_module mlx in 
-    let idx=find_module_index cs nm in
-    let n=size cs in 
-    let sibling_indices=List.filter(
-        fun jdx->
-         let mn_jdx = module_at_idx cs jdx in 
-         List.mem nm (ancestors_at_module cs mn_jdx)
-    )(Ennig.ennig idx (n+1)) in 
+    let mn=Dfn_full.to_module mlx in 
+    let following = mn::(follows_it cs mn) in  
     let was_lonely=
-      (List.length(registered_endings_at_module cs nm)=1) in 
-    let _=set_product_up_to_date_at_module cs nm false in 
+      (List.length(registered_endings_at_module cs mn)=1) in 
+    let _=set_product_up_to_date_at_module cs mn false in 
     let cs2=unregister_mlx_file_on_monitored_modules cs mlx in
     let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
            then cs2
            else ( fun (cs4,_,_)->cs4)
-           (Ocaml_target_making.usual_feydeau 
-             cs2 (idx::sibling_indices)) ) in 
+           (Ocaml_target_making.alive_usual_feydeau 
+             cs2 following) ) in 
     (cs3,new_dirs);;   
 
 exception FileWithDependencies of 
