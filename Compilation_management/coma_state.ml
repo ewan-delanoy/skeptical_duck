@@ -82,6 +82,8 @@ let endingless_at_module cs mn=
 let endingless_at_idx cs k=
     endingless_at_module cs (module_at_idx cs k);;
 
+let endingless_from_mildly_capitalized_module_name cs mname=
+    endingless_at_module cs (Dfa_module.of_line(String.capitalize_ascii mname));;
 
 let check_ending_in_at_module edg cs mn=
    if edg=principal_ending_at_module cs mn
