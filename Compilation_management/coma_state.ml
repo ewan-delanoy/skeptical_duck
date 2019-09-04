@@ -2098,39 +2098,32 @@ let duplicate_module cs old_t1 old_t2=
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 module Almost_concrete = struct 
-exception No_module_with_name of string;;
-
-let local_seek_module_index cs x=
-  let uncapitalized_x=
-    Dfa_module.of_line(String.uncapitalize_ascii x) in
-  seek_module_index cs  uncapitalized_x;;
-
-let find_half_dressed_module cs x=
-   match local_seek_module_index cs x
-   with 
-   Some(idx)->endingless_at_idx cs idx
-   |None->raise(No_module_with_name(x));;  
 
 
-
-let local_above cs x=
+let local_above cs capitalized_or_not_module_name=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
     let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
-  (above cs (find_half_dressed_module cs x));;
+  (above cs endingless);;
 
 
-let local_below cs x=
+let local_below cs capitalized_or_not_module_name=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
     let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
-  (below cs (find_half_dressed_module cs x));;
+  (below cs endingless);;
 
-let local_directly_below cs x=
+let local_directly_below cs capitalized_or_not_module_name=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
     let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
-  (directly_below cs (find_half_dressed_module cs x));;
+  (directly_below cs endingless);;
 
 let forget_file_with_backup_before_saving cs x=
    let ap=decipher_path cs x in
@@ -2145,17 +2138,18 @@ let forget_file_with_backup_before_saving cs x=
    let cs3=forget_file cs2 ap in 
    (cs3,diff);; 
 
-let forget_module_with_backup_before_saving cs x=
-    let hm = find_half_dressed_module cs x in 
-    let (cs2,_,_)=recompile cs in
-    let (cs3,short_paths)=forget_module cs2 hm in    
-    let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(short_paths)) in
-    let diff=
+let forget_module_with_backup_before_saving cs capitalized_or_not_old_module_name=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
+  let old_endingless = endingless_at_module cs mn in   
+  let (cs2,_,_)=recompile cs in
+  let (cs3,rootless_paths)=forget_module cs2 old_endingless in    
+  let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(rootless_paths)) in
+  let diff=
       Dircopy_diff.veil
       (Recently_deleted.of_string_list ordered_paths)
       (Recently_changed.of_string_list [])
       (Recently_created.of_string_list []) in
-    (cs3,diff);; 
+  (cs3,diff);; 
  
 let forget cs x=
       if String.contains x '.'
@@ -2164,11 +2158,11 @@ let forget cs x=
 
 
 let recompile cs=
-  let (cs2,change_exists,short_paths)=recompile cs  in
+  let (cs2,change_exists,rootless_paths)=recompile cs  in
   let changed_paths=
    (if not change_exists
    then []
-   else Ordered_string.forget_order(Ordered_string.safe_set(short_paths))) in
+   else Ordered_string.forget_order(Ordered_string.safe_set(rootless_paths))) in
     (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list changed_paths)
