@@ -1437,8 +1437,9 @@ let alive_feydeau cmod cs (opt_modnames,opt_rootless_path)=
   let _=alive_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path) in 
   answer;; 
 
-
+(*
 let usual_feydeau cs indices = feydeau Compilation_mode_t.Usual cs (Some(indices),None);;
+*)
 
 let alive_usual_feydeau cs modnames = alive_feydeau Compilation_mode_t.Usual cs (Some(modnames),None);;
 
@@ -1446,7 +1447,7 @@ end;;
 
 
 let recompile cs=
-     let ((cs2,nms_to_be_updated),short_paths)=
+     let ((cs2,nms_to_be_updated),rootless_paths)=
         recompile_on_monitored_modules false cs in
      if nms_to_be_updated=[] then (cs2,false,[]) else
      let new_dirs=compute_subdirectories_list cs2  in
@@ -1458,7 +1459,7 @@ let recompile cs=
       )  (preq_types cs3) in   
      let cs4=set_directories cs3 new_dirs in 
      let cs5=set_preq_types cs4 new_preqt in 
-    (cs5,true,short_paths);;       
+    (cs5,true,rootless_paths);;       
 
 let add_printer_equipped_type cs mn=
   set_preq_types cs ((preq_types cs)@[mn]);;
