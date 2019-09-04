@@ -9,18 +9,6 @@ let backup_dir =Coma_state_field.backup_dir;;
 let push_after_backup =Coma_state_field.push_after_backup;;
 let module_at_idx = Coma_state_field.module_at_idx ;;
 
-(*
-let subdir_at_idx = Coma_state_field.subdir_at_idx ;;
-let principal_ending_at_idx = Coma_state_field.principal_ending_at_idx ;;
-let mli_presence_at_idx = Coma_state_field.mli_presence_at_idx ;;
-let principal_mt_at_idx = Coma_state_field.principal_mt_at_idx ;;
-let mli_mt_at_idx = Coma_state_field.mli_mt_at_idx ;;
-let needed_libs_at_idx  = Coma_state_field.needed_libs_at_idx ;;
-let direct_fathers_at_idx = Coma_state_field.direct_fathers_at_idx ;;
-let ancestors_at_idx = Coma_state_field.ancestors_at_idx ;; 
-*)
-
-
 
 let subdir_at_module = Coma_state_field.subdir_at_module ;;
 let principal_ending_at_module = Coma_state_field.principal_ending_at_module ;;
@@ -55,6 +43,7 @@ let set_preq_types = Coma_state_field.set_preq_types;;
 let modules = Coma_state_field.modules;;
 
 let ordered_list_of_modules = Coma_state_field.ordered_list_of_modules;;
+let follows_it = Coma_state_field.follows_it_but_does_not_necessarily_depend_on_it;;
 let all_used_subdirs = Coma_state_field.all_used_subdirs;;
 
 
