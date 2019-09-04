@@ -1757,8 +1757,8 @@ let from_main_directory dir backup_dir g_after_b=
         let (cs2,rejected_pairs,_)=
           Ocaml_target_making.usual_feydeau 
           cs1 (Ennig.ennig 1 n) in
-        let rejected_hms=Image.image snd rejected_pairs in 
-       let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_hms))) pre_preqt in 
+        let rejected_endinglesses=Image.image snd rejected_pairs in 
+       let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_endinglesses))) pre_preqt in 
        (cs2,[],preqt);;
     
     
@@ -1888,9 +1888,9 @@ let unregister_mlx_file cs mlx=
     set_directories cs2 new_dirs;;
           
 
-let unregister_module cs hm=
+let unregister_module cs endingless=
         let ((cs2,new_dirs),short_paths)= 
-         Unregister_module.on_targets (root cs) cs  hm in 
+         Unregister_module.on_targets (root cs) cs  endingless in 
           set_directories cs2 new_dirs;;        
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
@@ -1942,9 +1942,9 @@ let rename_value_inside_module cs s new_name=
    then raise(No_module_given(s))
    else 
    let module_name=Cull_string.beginning (j-1) s in
-   let hm=decipher_module cs  module_name 
+   let endingless=decipher_module cs  module_name 
    and path=decipher_path cs  module_name in 
-   let nm=Dfn_endingless.to_module hm in
+   let nm=Dfn_endingless.to_module endingless in
    let pre_temp2=(ancestors_at_module cs nm)@[nm] in
    let temp2=Image.image (endingless_at_module cs) pre_temp2 in
    let all_files=Image.image  (fun hm2->
