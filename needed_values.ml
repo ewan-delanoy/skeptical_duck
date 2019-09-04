@@ -26,7 +26,7 @@ let fg = Usual_coma_state.forget;;
 
 let hi = List.length ;; 
 
-let hmx = Usual_coma_state.find_half_dressed_module;;
+let hmx = Usual_coma_state.find_endingless;;
 
 let ia = Usual_coma_state.internet_access;;
 

@@ -28,7 +28,7 @@ let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Pr
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
-let find_half_dressed_module modname= 
+let find_endingless modname= 
   Coma_state.endingless_from_mildly_capitalized_module_name (!(Private.main_ref)) modname;;
 
 let forget modname=Modify_coma_state.Reference.forget Private.main_ref modname;;
