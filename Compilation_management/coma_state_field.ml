@@ -65,7 +65,12 @@ let modules cs= (of_t cs).Coma_state_t.modules;;
 
 let ordered_list_of_modules cs=
    Small_array.to_list((of_t cs).Coma_state_t.modules);; 
-   
+
+let follows_it_but_does_not_necessarily_depend_on_it cs mn=
+    let (_,_,after) = Three_parts.select_center_element_and_reverse_left (fun x->x=mn)
+      (ordered_list_of_modules cs) in 
+    after;;
+
 
 let all_used_subdirs cs =
    let current_assoc = (of_t cs).Coma_state_t.subdir_for_module in 

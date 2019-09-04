@@ -1550,8 +1550,8 @@ let forget_file cs ap=
 module Unregister_module=struct
 
 
-let on_targets root_dir cs hm=
-    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs hm in
+let on_targets root_dir cs mn=
+    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs mn in
     let new_dirs=compute_subdirectories_list cs2  in
      ((cs2,new_dirs),rootless_paths);;   
      
@@ -1841,12 +1841,12 @@ let from_main_directory dir backup_dir g_after_b=
         let temp3=Private.compute_dependencies temp2 in
         let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in
         let pre_preqt=printer_equipped_types_from_data cs1 in
-        let n=size cs1 in 
+        let l_mod=ordered_list_of_modules cs1 in 
         let (cs2,rejected_pairs,_)=
-          Ocaml_target_making.usual_feydeau 
-          cs1 (Ennig.ennig 1 n) in
+          Ocaml_target_making.alive_usual_feydeau 
+          cs1 l_mod in
         let rejected_endinglesses=Image.image snd rejected_pairs in 
-       let preqt=Image.image (fun hm->(hm,not(List.mem hm rejected_endinglesses))) pre_preqt in 
+       let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
        (cs2,[],preqt);;
     
     
@@ -1884,8 +1884,7 @@ let on_targets (cs,old_dirs) mlx=
    (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
     in
     let nm=Dfn_full.to_module mlx in 
-    let idx=find_module_index cs2 nm in 
-    let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [idx] in 
+    let (cs3,_,_)=Ocaml_target_making.alive_usual_feydeau cs2 [nm] in 
     (cs3,new_dirs);; 
   
 
@@ -1901,8 +1900,8 @@ module Raneme_directory = struct
 
 let on_subdirectory=Dfa_subdirectory.rename_endsubdirectory;;
 
-let on_printer_equipped_type pair (hm,is_compiled_correctly)=
-    (Dfn_endingless.rename_endsubdirectory pair hm,is_compiled_correctly);;
+let on_printer_equipped_type pair (eless,is_compiled_correctly)=
+    (Dfn_endingless.rename_endsubdirectory pair eless,is_compiled_correctly);;
 
 
 let on_printer_equipped_types (old_subdir,new_subdirname) l=
@@ -2035,8 +2034,8 @@ let rename_value_inside_module cs s new_name=
    let nm=Dfn_endingless.to_module endingless in
    let pre_temp2=(ancestors_at_module cs nm)@[nm] in
    let temp2=Image.image (endingless_at_module cs) pre_temp2 in
-   let all_files=Image.image  (fun hm2->
-   	 Dfn_full.to_absolute_path(Dfn_join.to_ending hm2 Dfa_ending.ml)
+   let all_files=Image.image  (fun eless2->
+   	 Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
    ) temp2 in
    let temp3=Read_ocaml_files.read_ocaml_files all_files in
    let opt_temp4=Option.seek (fun itm->
