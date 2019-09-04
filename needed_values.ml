@@ -44,7 +44,7 @@ let ofo=Ordered.forget_order;;
 
 let reco msg=Usual_coma_state.recompile (Some msg);; 
 
-let regi short_path=Usual_coma_state.register_short_path short_path;;
+let regi short_path=Usual_coma_state.register_rootless_path short_path;;
 
 let relo = Usual_coma_state.relocate_module;;
 
