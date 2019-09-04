@@ -115,11 +115,13 @@ let rootless_paths_at_module cs mn=
 let rootless_paths_at_idx cs idx=
     rootless_paths_at_module  cs (module_at_idx cs idx)  ;;
   
+let registered_endings_at_module cs mn=
+  List.filter (fun edg->
+  check_ending_in_at_module edg cs mn 
+  ) Dfa_ending.all_ocaml_endings;;
 
 let registered_endings_at_idx cs idx=
-  List.filter (fun edg->
-  check_ending_in_at_idx edg cs idx 
-  ) Dfa_ending.all_ocaml_endings;;
+  registered_endings_at_module  cs (module_at_idx cs idx)  ;;
 
 
 let check_for_single_ending_at_idx cs idx=
@@ -1438,14 +1440,14 @@ let forget_file_on_targets root_dir pair ap=
   let (cs,dirs)=pair in
   let rootless_path = Dfn_common.decompose_absolute_path_using_root ap root_dir in 
   let mlx = Dfn_join.root_to root_dir rootless_path in 
-  let hm=Dfn_full.to_endingless mlx  in
-  let nm=Dfn_endingless.to_module hm in
+  let eless=Dfn_full.to_endingless mlx  in
+  let nm=Dfn_endingless.to_module eless in
   match seek_module_index  cs nm with
    None->pair
   |Some(_)->
-   let bel=below cs hm in
+   let bel=below cs eless in
     if bel=[]
-    then let fn=Dfn_endingless.to_line hm  in
+    then let fn=Dfn_endingless.to_line eless  in
          let _=Image.image
          (fun edg->Unix_command.uc("rm -f "^fn^edg^"*"))
          [".cm";".d.cm";".caml_debuggable"] in
@@ -1463,9 +1465,9 @@ module Unregister_module=struct
 
 
 let on_targets root_dir cs hm=
-    let (cs2,short_paths)=unregister_module_on_monitored_modules  cs hm in
+    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs hm in
     let new_dirs=compute_subdirectories_list cs2  in
-     ((cs2,new_dirs),short_paths);;   
+     ((cs2,new_dirs),rootless_paths);;   
      
    
 
@@ -1492,15 +1494,15 @@ exception ModuleWithDependenciesDuringForgetting of
 
 exception Non_registered_module_during_forgetting of Dfa_module_t.t;;
       
-let forget_module_on_targets root_dir (cs,dirs) hm=
-        let nm=Dfn_endingless.to_module hm in
-        match seek_module_index  cs nm with
-         None->raise(Non_registered_module_during_forgetting(nm))
-        |Some(dt)->
-         let bel=below cs hm in
+let forget_module_on_targets root_dir (cs,dirs) eless=
+        let nm=Dfn_endingless.to_module eless in
+        if List.mem nm (ordered_list_of_modules cs)
+        then raise(Non_registered_module_during_forgetting(nm))
+        else 
+         let bel=below cs eless in
           if bel=[]
-          then let (answer,short_paths)=Unregister_module.on_targets root_dir 
-                          cs hm in
+          then let (answer,rootless_paths)=Unregister_module.on_targets root_dir 
+                          cs eless in
                let sfn=Dfa_module.to_line nm in
                let _=Image.image
                (fun edg->
@@ -1509,16 +1511,16 @@ let forget_module_on_targets root_dir (cs,dirs) hm=
                [".cm*";".d.cm*";".caml_debuggable"] in
                let temp1=Image.image (fun t->
                   Absolute_path.of_string((Dfa_root.connectable_to_subpath root_dir)^t)
-               ) short_paths in
+               ) rootless_paths in
                let _=Image.image 
                (forget_unregistered_file root_dir) temp1 in
-               (answer,short_paths)
-          else raise(ModuleWithDependenciesDuringForgetting(hm,bel));;
+               (answer,rootless_paths)
+          else raise(ModuleWithDependenciesDuringForgetting(eless,bel));;
       
 
-let forget_module cs hm=
+let forget_module cs eless=
     let ((cs2,new_dirs),short_paths)= 
-      forget_module_on_targets (root cs) (cs,directories cs) hm in
+      forget_module_on_targets (root cs) (cs,directories cs) eless in
       let _=(
           set_directories cs new_dirs;
       ) in
