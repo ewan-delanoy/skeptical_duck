@@ -260,13 +260,9 @@ to_t({ cs with
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
 
-let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-    let nm=Dfn_endingless.to_module hm
-    and subdir=Dfn_endingless.to_subdirectory hm 
-    and  cs=of_t wrapped_cs in
-    let new_modules = Small_array.set cs.Coma_state_t.modules idx nm 
-    and new_subdirs = Associative_list.change_value_for_key (cs.Coma_state_t.subdir_for_module) (nm,subdir)
-    and new_principal_endings = Associative_list.change_value_for_key (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) 
+let set_in_each wrapped_cs nm (pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
+    let cs=of_t wrapped_cs in
+    let new_principal_endings = Associative_list.change_value_for_key (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) 
     and new_mli_presences = Associative_list.change_value_for_key (cs.Coma_state_t.mli_presence_for_module) (nm, mlip) 
     and new_principal_mts = Associative_list.change_value_for_key (cs.Coma_state_t.principal_mt_for_module) (nm,prmt) 
     and new_mli_mts = Associative_list.change_value_for_key (cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) 
@@ -276,8 +272,7 @@ let set_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,
     and new_needed_dirs = Associative_list.change_value_for_key (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) 
     and new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
 to_t({ cs with 
-      Coma_state_t.modules = new_modules;
-      Coma_state_t.subdir_for_module=  new_subdirs;
+      (* the "module" and "subdir" fields are not changed *)
       Coma_state_t.principal_ending_for_module=  new_principal_endings;
       Coma_state_t.mli_presence_for_module=  new_mli_presences;
       Coma_state_t.principal_mt_for_module=  new_principal_mts;
