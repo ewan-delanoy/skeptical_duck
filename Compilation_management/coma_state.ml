@@ -629,33 +629,27 @@ let relocate_module cs old_name new_subdir=
 
 
 
-let above cs hm=
-  let nm=Dfn_endingless.to_module hm in
-  match seek_module_index cs nm with
-  None->raise(Non_registered_module(hm))
-  |Some(idx)->ancestors_at_module cs nm;;
+let above cs eless=
+  let nm=Dfn_endingless.to_module eless in
+  ancestors_at_module cs nm;;
+ 
 
-let below cs hm=
-  let nm=Dfn_endingless.to_module hm 
-  and n=Small_array.size (modules cs) in
-  Option.filter_and_unpack(fun idx->
-      let mn_idx = module_at_idx cs idx in 
-      if List.mem nm (ancestors_at_module cs mn_idx)
-      then Some(Small_array.get (modules cs) idx)
-      else None) (Ennig.ennig 1 n);;  
+let below cs eless=
+        let mn0=Dfn_endingless.to_module eless  in
+        Option.filter_and_unpack(fun mn->
+            if List.mem mn0 (ancestors_at_module cs mn)
+            then Some(mn)
+            else None) (ordered_list_of_modules cs);;    
 
-let directly_below cs hm=
-        let nm=Dfn_endingless.to_module hm 
-        and n=Small_array.size (modules cs) in
-        Option.filter_and_unpack(fun idx->
-            let mn_idx = module_at_idx cs idx in 
-            if List.mem nm (direct_fathers_at_module cs mn_idx)
-            then Some(Small_array.get (modules cs) idx)
-            else None) (Ennig.ennig 1 n);;        
+let directly_below cs eless=
+        let mn0=Dfn_endingless.to_module eless  in
+        Option.filter_and_unpack(fun mn->
+            if List.mem mn0 (direct_fathers_at_module cs mn)
+            then Some(mn)
+            else None) (ordered_list_of_modules cs);;        
 
 let ordered_as_in_coma_state cs l=
-   let temp1=Small_array.to_list (modules cs) in
-   List.filter (fun x->List.mem x l) temp1;;
+   List.filter (fun x->List.mem x l) (ordered_list_of_modules cs);;
 
 let above_one_in_several_or_inside cs l=
   let temp1=Image.image (ancestors_at_module cs) l in
@@ -664,15 +658,15 @@ let above_one_in_several_or_inside cs l=
 
 
 let all_mlx_files cs=
-  let n=Small_array.size (modules cs) in
-  List.flatten(Ennig.doyle(acolytes_at_idx cs) 1 n);;                
+  let mods=ordered_list_of_modules cs in
+  List.flatten(Image.image(acolytes_at_module cs) mods);;                
       
 let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path 
         (all_mlx_files cs);;  
 
 let all_rootless_paths cs=
-    let n=Small_array.size (modules cs) in
-    List.flatten(Ennig.doyle(rootless_paths_at_idx cs) 1 n);;  
+    let mods=ordered_list_of_modules cs in
+    List.flatten(Image.image(rootless_paths_at_module cs) mods);;  
      
 
 let short_paths_inside_subdirectory cs subdir =
@@ -693,7 +687,7 @@ List.filter (fun ap->Substring.is_a_substring_of
   some_string (Io.read_whole_file ap)) temp1;;
 
 
-let system_size cs=Small_array.size((modules cs));;
+let system_size cs=List.length(ordered_list_of_modules cs);;
 
 exception Inconsistent_constraints of Dfa_module_t.t*Dfa_module_t.t;;
 exception Bad_upper_constraint of Dfa_module_t.t;;  
