@@ -707,8 +707,7 @@ let reposition_module cs eless (l_before,l_after)=
     let n=List.length(l_mods) in 
     let find_idx=(fun mn->Listennou.find_index mn l_mods) 
     and get=(fun j->List.nth l_mods (j-1)) in
-    let main_idx=find_idx eless
-    and indices_before=Image.image find_idx l_before
+    let indices_before=Image.image find_idx l_before
     and indices_after=Image.image find_idx l_after in
     let max_before=(if indices_before=[] then 1 else Max.list indices_before)
     and min_after=(if indices_after=[] then n else Min.list indices_after)
