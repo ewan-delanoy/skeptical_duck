@@ -8,6 +8,10 @@
 
 
 exception Ht_exn;;
+exception Reposition_first_key_not_found;;
+exception Reposition_second_key_not_found;;
+
+
 
 let ht x=match x with
     []->raise(Ht_exn)
@@ -92,6 +96,30 @@ let extract_interval l i j=
   (List.rev r_part1,List.rev r_part2,part3);;
 
 (* extract_interval [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
+
+let decompose_wrt_element l elt1=
+  let rec tempf=(
+     fun (treated,to_be_treated)->match to_be_treated with 
+     []->(List.rev treated,false,[])
+    |elt::other_elts ->
+       if elt=elt1
+      then (List.rev(treated),true,other_elts)
+      else tempf(elt::treated,other_elts)
+  ) in 
+  tempf([],l);; 
+
+(* decompose_wrt_element [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3;; *)
+
+
+
+let reposition_by_putting_snd_immediately_after_fst l elt_i elt_j=
+    let (left1,found1,right1)=decompose_wrt_element l elt_i in 
+    if not found1 then raise(Reposition_first_key_not_found) else 
+    let (left2,found2,right2)=decompose_wrt_element right1 elt_j in 
+    if not found2 then raise(Reposition_second_key_not_found) else
+    left1@(elt_i::elt_j::(left2@right2));; 
+  
+(* reposition_by_putting_snd_immediately_after_fst [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)  
 
 
 let power_set l=
