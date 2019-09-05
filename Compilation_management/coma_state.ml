@@ -975,7 +975,7 @@ exception Bad_pair of Dfn_full_t.t*Dfa_ending_t.t;;
 
 let register_mlx_file_on_monitored_modules cs mlx_file =
           let n=Small_array.size (modules cs) in
-          let hm=Dfn_full.to_endingless mlx_file
+          let eless=Dfn_full.to_endingless mlx_file
           and ending=Dfn_full.to_ending mlx_file in 
           let nm=Dfn_full.to_module mlx_file in
           let opt_idx=seek_module_index cs nm in
@@ -997,22 +997,22 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           if ending = Dfa_ending.mli
           then let old_pr_end = List.hd edgs in
                let old_mlx_file =
-                Dfn_join.to_ending hm old_pr_end in
+                Dfn_join.to_ending eless old_pr_end in
               let (hm,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
                  complete_info cs old_mlx_file in
                let new_mlimt = md_compute_modification_time hm ending in
-               let new_dt=(hm,old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
-               Coma_state_field.set_in_each cs idx new_dt
+               let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
+               Coma_state_field.set_in_each cs nm new_dt
           else
           let new_dt=complete_id_during_new_module_registration cs mlx_file in 
-          let (_,_,_,_,_,libned,dirfath,allanc,dirned,_)=new_dt in
+          let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=new_dt in
           let temp3=List.rev(dirfath) in
           if temp3=[]
-          then Coma_state_field.set_in_each cs idx new_dt 
+          then Coma_state_field.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
           else  
           let last_father=List.hd(temp3) in
           let last_father_idx=Small_array.leftmost_index_of_in last_father (modules cs) in
-          let nm=Dfn_endingless.to_module hm in 
+          let nm=Dfn_endingless.to_module eless in 
           let cs_walker=ref(cs) in 
           let _=
             (
