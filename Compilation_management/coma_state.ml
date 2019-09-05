@@ -159,8 +159,7 @@ let find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
       find_needed_data_for_file cs fn;;         
 
-let needed_dirs_and_libs_in_command cmod cs idx=
-   let mn=module_at_idx cs idx in 
+let alive_needed_dirs_and_libs_in_command cmod cs mn=
    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
    let s_root=Dfa_root.connectable_to_subpath(root cs) in
    let dirs=
@@ -169,6 +168,9 @@ let needed_dirs_and_libs_in_command cmod cs idx=
     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
     (needed_libs_at_module cs mn)) in
     String.concat " " ["";dirs;libs;""];;
+
+let needed_dirs_and_libs_in_command cmod cs idx=
+   alive_needed_dirs_and_libs_in_command cmod cs (module_at_idx cs idx);;
 
 
 
@@ -1059,12 +1061,9 @@ exception Unregistered_cmo of Dfn_endingless_t.t;;
 
 let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let nm=Dfn_endingless.to_module hm in
-    let opt_idx=seek_module_index cs nm in
-    if opt_idx=None then raise(Unregistered_cmi(hm)) else 
-    let idx=Option.unpack opt_idx in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=Dfn_endingless.to_line hm in
-    let mli_reg=check_ending_in_at_idx Dfa_ending.mli cs idx in
+    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in
     let ending=(if mli_reg then ".mli" else ".ml") in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
     let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
@@ -1072,7 +1071,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
                        else None) in 
     let central_cmd=
         (Compilation_mode.executioner cmod)^
-        (needed_dirs_and_libs_in_command cmod cs idx)^
+        (alive_needed_dirs_and_libs_in_command cmod cs nm)^
             " -c "^s_fhm^ending in
             let full_mli=s_fhm^".mli" in
             let almost_full_answer=(
@@ -1097,24 +1096,21 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
             ) in 
             Option.add_element_on_the_right almost_full_answer opt_exec_move;;
    
-  let command_for_cmo (cmod:Compilation_mode_t.t) dir cs hm=
-    let nm=Dfn_endingless.to_module hm in
-    let opt_idx=seek_module_index cs nm in
-    if opt_idx=None then raise(Unregistered_cmo(hm)) else 
-    let idx=Option.unpack opt_idx in
+  let command_for_cmo (cmod:Compilation_mode_t.t) dir cs eless=
+    let nm=Dfn_endingless.to_module eless in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
-    let s_fhm=Dfn_endingless.to_line hm in
-    let dir_and_libs=needed_dirs_and_libs_in_command cmod cs idx in
-    let mli_reg=check_ending_in_at_idx Dfa_ending.mli cs idx in 
-    let full_mli=s_fhm^".mli" in
+    let s_eless=Dfn_endingless.to_line eless in
+    let dir_and_libs=alive_needed_dirs_and_libs_in_command cmod cs nm in
+    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in 
+    let full_mli=s_eless^".mli" in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
     let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
-                       then Some("mv "^s_fhm^".o "^s_root^workdir) 
+                       then Some("mv "^s_eless^".o "^s_root^workdir) 
                        else None) in 
     let central_cmds=
     [ 
-      (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_fhm^".ml";
-      "mv "^s_fhm^".cm* "^s_root^workdir
+      (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_eless^".ml";
+      "mv "^s_eless^".cm* "^s_root^workdir
     ] in 
     let almost_full_answer= 
     (if (not mli_reg) &&(Sys.file_exists(full_mli))
@@ -1139,18 +1135,15 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
 
 exception  Unregistered_element of Dfn_endingless_t.t;;   
 
-let command_for_module_separate_compilation cmod cs hm=
+let command_for_module_separate_compilation cmod cs eless=
     let dir = root cs in 
-    let nm=Dfn_endingless.to_module hm in
-    let opt_idx=seek_module_index cs nm in
-    if opt_idx=None then raise(Unregistered_element(hm)) else 
-    let idx=Option.unpack opt_idx in
-    let mli_reg=check_ending_in_at_idx Dfa_ending.mli cs idx
-    and ml_reg=check_ending_in_at_idx Dfa_ending.ml cs idx in
+    let nm=Dfn_endingless.to_module eless in
+    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm
+    and ml_reg=check_ending_in_at_module Dfa_ending.ml cs nm in
     let temp2=(
-    let co=command_for_cmo cmod dir cs hm in 
+    let co=command_for_cmo cmod dir cs eless in 
     if mli_reg
-    then let ci=command_for_cmi cmod dir cs hm in 
+    then let ci=command_for_cmi cmod dir cs eless in 
          if ml_reg
          then [ci;co]
          else [ci]
@@ -1165,10 +1158,10 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
         (Dfa_root.connectable_to_subpath(root cs))^short_path) in 
     let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_indices = Image.image (
-       fun nm->let idx=find_module_index cs nm in 
+    let nm_deps_with_subdirs = Image.image (
+       fun nm->
                let subdir=subdir_at_module cs nm in 
-        (idx,subdir,nm)
+        (subdir,nm)
     ) nm_deps in 
     let s_root=Dfa_root.connectable_to_subpath(root cs) in
     let workdir=
@@ -1179,7 +1172,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,_,nm) -> Tidel.diforchan(needed_libs_at_module cs nm)) nm_deps_with_indices in
+     (fun (_,nm) -> Tidel.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Ordered.forget_order (Tidel.big_teuzin (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
@@ -1203,10 +1196,9 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
     let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_indices = Image.image (
-       fun nm->let idx=find_module_index cs nm in 
-               let subdir=subdir_at_module cs nm in 
-        (idx,subdir,nm)
+    let nm_deps_with_subdirs = Image.image (
+       fun nm->let subdir=subdir_at_module cs nm in 
+        (subdir,nm)
     ) nm_deps in 
     let s_root=Dfa_root.connectable_to_subpath(root cs) in
     let workdir=
@@ -1214,9 +1206,8 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     and ending=Compilation_mode.ending_for_element_module cmod 
     and product_ending=Compilation_mode.ending_for_final_product cmod  in
     let cm_elements_but_the_last = Image.image (
-      fun (idx,subdir,nm)->
-         (* s_root^workdir ^ *) (Dfa_module.to_line nm)^ending
-    ) nm_deps_with_indices in 
+      fun (subdir,nm)->(Dfa_module.to_line nm)^ending
+    ) nm_deps_with_subdirs in 
     let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
     let nm_name = (Cull_string.after_rightmost unpointed_short_path '/') in 
     let last_cm_element=nm_name^ending in 
@@ -1226,7 +1217,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,_,nm) -> Tidel.diforchan(needed_libs_at_module cs nm)) nm_deps_with_indices in
+     (fun (_,nm) -> Tidel.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Ordered.forget_order (Tidel.big_teuzin (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
