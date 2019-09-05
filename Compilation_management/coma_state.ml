@@ -354,6 +354,22 @@ let find_needed_libraries cs mlx genealogy=
   )
   Ocaml_library.all_libraries;;
 
+let alive_find_needed_libraries cs mlx ordered_ancestors=
+  let fn=Dfn_full.to_absolute_path mlx in
+  let temp1=Look_for_module_names.names_in_ml_file fn in
+  List.filter
+  (
+    fun lib->
+      if List.exists 
+         (fun mdl->List.mem(Dfa_module.of_line mdl)(temp1))
+           (Ocaml_library.modules_telling_a_library_away lib)
+      then true
+      else List.exists 
+           (fun mn->
+            List.mem lib (needed_libs_at_module cs mn) ) 
+           ordered_ancestors
+  )
+  Ocaml_library.all_libraries;;
 
 let find_needed_directories cs mlx genealogy=
   let temp1=Image.image (fun idx->
@@ -368,6 +384,17 @@ let find_needed_directories cs mlx genealogy=
   let temp3=Tidel.big_teuzin temp2 in
   Ordered.forget_order temp3;;
               
+let alive_find_needed_directories cs mlx ordered_ancestors=
+  let temp1=Image.image (fun mn->
+    Tidel.diforchan(needed_dirs_at_module cs mn)) ordered_ancestors in
+  let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
+  let temp2=(
+      if subdir_in_mlx<>Dfa_subdirectory.main 
+      then Tidel.singleton(subdir_in_mlx)::temp1
+      else temp1
+  ) in    
+  let temp3=Tidel.big_teuzin temp2 in
+  Ordered.forget_order temp3;;              
                     
 end;;  
 
@@ -709,80 +736,63 @@ let find_value_definition cs s=
   let j1=String.index(s)('.')+1 in
   let module_name=Cull_string.beginning (j1-1) s in
   let nm=Dfa_module.of_line(String.uncapitalize_ascii(module_name)) in
-  let opt=seek_module_index cs nm in
-  if opt=None
-  then None 
-  else
-  let idx1=Option.unpack opt in
-  let hm1=endingless_at_idx cs idx1 in
+  let hm1=endingless_at_module cs nm in
   let ap1=Dfn_full.to_absolute_path(Dfn_join.to_ending hm1 
      Dfa_ending.ml) in
   let temp1=Read_ocaml_files.read_ocaml_files [ap1] in	 
   Option.seek (
      fun itm->Ocaml_gsyntax_item.name(itm)=s
   ) temp1;;
+     
 
-
-let all_naked_modules cs=
-  Small_array.image Dfa_module.to_line (modules cs);;     
-
-let all_ml_absolute_paths cs=
-  let n=Small_array.size (modules cs) in   
-Option.filter_and_unpack (fun idx->
-  if not(check_ending_in_at_idx Dfa_ending.ml cs idx)
+let all_ml_absolute_paths cs=  
+Option.filter_and_unpack (fun mn->
+  if not(check_ending_in_at_module Dfa_ending.ml cs mn)
   then None
   else 
-  let hm=endingless_at_idx cs idx in
+  let hm=endingless_at_module cs mn in
   let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
   Some(Dfn_full.to_absolute_path mlx)
-) (Ennig.ennig 1 n);;
+) (ordered_list_of_modules cs);;
 
 let modules_using_value cs value_name =
-  let n=Small_array.size (modules cs) in 
-  Option.filter_and_unpack (fun idx->
-  let mn_idx = module_at_idx cs idx in  
-  let hm=endingless_at_idx cs idx
-  and pr_end=principal_ending_at_module cs mn_idx in
-  let mlx=Dfn_join.to_ending hm pr_end in
+  Option.filter_and_unpack (fun mn->
+  let eless=endingless_at_module cs mn
+  and pr_end=principal_ending_at_module cs mn in
+  let mlx=Dfn_join.to_ending eless pr_end in
    let ap=Dfn_full.to_absolute_path mlx in
    if Substring.is_a_substring_of 
        value_name (Io.read_whole_file ap)
-   then Some hm
-   else None ) (Ennig.ennig 1 n);;
+   then Some eless
+   else None ) (ordered_list_of_modules cs);;
 
 
 
 
-let update_ancs_libs_and_dirs_at_idx cs idx=
-  let mn=module_at_idx cs idx in 
-  let hm=endingless_at_idx cs idx  
+
+let update_ancs_libs_and_dirs_at_module cs mn=
+  let eless=endingless_at_module cs mn  
   and pr_end=principal_ending_at_module cs mn in
-  let mlx=Dfn_join.to_ending hm pr_end in 
+  let mlx=Dfn_join.to_ending eless pr_end in 
   let fathers=direct_fathers_at_module cs mn in
   let separated_ancestors=Image.image 
   (fun nm2->
     Tidel.safe_set(ancestors_at_module cs nm2)
   ) fathers in
-  let all_ancestors=Tidel.big_teuzin((Tidel.safe_set fathers)::separated_ancestors) in
-  let unordered_ancestor_indices=Tidel.image (
-    fun nm3->Small_array.leftmost_index_of_in nm3 (modules cs)
-  ) all_ancestors in
-  let genealogy=Ordered.forget_order(Tidel.diforchan unordered_ancestor_indices) in
-  let new_libs=PrivateTwo.find_needed_libraries cs mlx genealogy
-  and new_dirs=PrivateTwo.find_needed_directories cs mlx genealogy 
-  and ordered_ancestors=Image.image (
-    Small_array.get (modules cs)
-  ) genealogy in
+  let ancestors_with_wrong_order=Tidel.big_teuzin((Tidel.safe_set fathers)::separated_ancestors) in
+  let ordered_ancestors=List.filter (
+    fun mn->Tidel.elfenn mn ancestors_with_wrong_order
+  ) (ordered_list_of_modules cs) in
+  let new_libs=PrivateTwo.alive_find_needed_libraries cs mlx ordered_ancestors
+  and new_dirs=PrivateTwo.alive_find_needed_directories cs mlx ordered_ancestors in
   let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
   let cs3=set_needed_libs_at_module cs2 mn new_libs in
   set_needed_dirs_at_module cs3 mn new_dirs;;
 
+
 let update_ancs_libs_and_dirs cs=
-  let n=Small_array.size (modules cs) in
   let cs_walker=ref(cs) in 
-  let _=(for idx=1 to n do
-    cs_walker:=update_ancs_libs_and_dirs_at_idx (!cs_walker) idx
-  done) in
+  let _=List.iter(fun mn->cs_walker:=update_ancs_libs_and_dirs_at_module (!cs_walker) mn)(ordered_list_of_modules cs) in
   (!cs_walker);;  
 
 
@@ -831,16 +841,13 @@ module PrivateThree=struct
          coat md_list in
       let _=treat_circular_dependencies tolerate_cycles (
         (fun nm->
-           let idx=Small_array.leftmost_index_of_in nm (modules cs) in 
-           let middle = Dfn_endingless.to_middle_element ( endingless_at_idx cs idx) in 
+           let middle = Dfn_endingless.to_middle_element ( endingless_at_module cs nm) in 
            Dfn_endingless.middle_element_to_line middle )
       ) cycles in     
       let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
       let cs3=update_ancs_libs_and_dirs cs2 in 
-      let n=Small_array.size (modules cs3) in
       let active_descendants=Option.filter_and_unpack (
-          fun idx->
-            let nm=Small_array.get (modules cs) idx in
+          fun nm->
             if List.mem nm initially_active_nms
             then Some(nm)
             else
@@ -848,39 +855,38 @@ module PrivateThree=struct
                  (ancestors_at_module cs nm)
             then Some(nm)
             else None
-      ) (Ennig.ennig 1 n) in  
+      ) (ordered_list_of_modules cs) in  
       (cs3,active_descendants);;
      
 end;; 
      
-let md_recompute_modification_time hm edg=
-  let mlx=Dfn_join.to_ending hm edg in
+let md_recompute_modification_time eless edg=
+  let mlx=Dfn_join.to_ending eless edg in
   let file=Dfn_full.to_line mlx in
   if not(Sys.file_exists file) then "0." else
   let st=Unix.stat file in
   string_of_float(st.Unix.st_mtime);;
   
 
-let quick_update cs idx=
-  let mn_idx = module_at_idx cs idx in 
-  let hm =endingless_at_idx cs idx 
-  and pr_ending=principal_ending_at_module cs mn_idx in
-  let middle = Dfn_endingless.to_middle_element hm in 
+let quick_update cs mn=
+  let eless =endingless_at_module cs mn 
+  and pr_ending=principal_ending_at_module cs mn in
+  let middle = Dfn_endingless.to_middle_element eless in 
   if (Dfn_endingless.middle_element_to_line middle)=Coma_constant.name_for_debugged_module
   then None
   else
-  let mli_modif_time=md_recompute_modification_time hm Dfa_ending.mli 
-  and pr_modif_time=md_recompute_modification_time hm pr_ending 
-  and old_mli_modif_time=mli_mt_at_module cs mn_idx
-  and old_pr_modif_time=principal_mt_at_module cs mn_idx 
+  let mli_modif_time=md_recompute_modification_time eless Dfa_ending.mli 
+  and pr_modif_time=md_recompute_modification_time eless pr_ending 
+  and old_mli_modif_time=mli_mt_at_module cs mn
+  and old_pr_modif_time=principal_mt_at_module cs mn 
   in
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
-  let mn = Dfn_endingless.to_module hm in 
+  let mn = Dfn_endingless.to_module eless in 
   if (old_values=new_values)&&(product_up_to_date_at_module cs mn)
   then None
   else
-  let mlx=Dfn_join.to_ending hm pr_ending in
+  let mlx=Dfn_join.to_ending eless pr_ending in
   let direct_fathers=PrivateTwo.find_needed_names cs mlx in
   Some(
     pr_modif_time,
@@ -890,29 +896,22 @@ let quick_update cs idx=
   ;;
     
 let latest_changes cs = 
-  let n=Small_array.size (modules cs) in
   let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
-  let declare_changed=(fun idx->
-    let nm=Small_array.get (modules cs) idx in
+  let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (rootless_paths_at_idx cs idx))
+                        (rootless_paths_at_module cs nm))
     ) in
   let cs_walker=ref(cs) in   
-  let _=List.iter (fun idx->
-    match quick_update (!cs_walker) idx with
+  let _=List.iter (fun mname->
+    match quick_update (!cs_walker) mname with
     None->()
-    |Some(pr_modif_time,mli_modif_time,direct_fathers)->
-    let mname = module_at_idx (!cs_walker) idx in 
+    |_->
     (
-    declare_changed(idx);
-    cs_walker:=set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
-    cs_walker:=set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
-    cs_walker:=set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
-    cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
+    declare_changed(mname);
     )
-)(Ennig.ennig 1 n) in
+)(ordered_list_of_modules cs) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
 if changed_modules=[] then [] else
 let _=PrivateThree.announce_changed_modules changed_modules in
@@ -920,29 +919,26 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 
 
 let recompile_on_monitored_modules tolerate_cycles cs = 
-  let n=Small_array.size (modules cs) in
   let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
-  let declare_changed=(fun idx->
-    let nm=Small_array.get (modules cs) idx in
+  let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (rootless_paths_at_idx cs idx))
+                        (rootless_paths_at_module cs nm))
     ) in
   let cs_walker=ref(cs) in   
-  let _=List.iter (fun idx->
-    match quick_update (!cs_walker) idx with
+  let _=List.iter (fun mname->
+    match quick_update (!cs_walker) mname with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
-    let mname = module_at_idx (!cs_walker) idx in 
     (
-    declare_changed(idx);
+    declare_changed(mname);
     cs_walker:=set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
     cs_walker:=set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
     cs_walker:=set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
     cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
     )
-)(Ennig.ennig 1 n) in
+)(ordered_list_of_modules cs) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
 if changed_modules=[] then ((!cs_walker,[]),[]) else
 let _=PrivateThree.announce_changed_modules changed_modules in
@@ -951,19 +947,17 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 (!ref_for_changed_shortpaths));;  
 
 let printer_equipped_types_from_data cs=
-  let n=Small_array.size (modules cs) in
   Option.filter_and_unpack (
-    fun idx->
-    let mn_idx = module_at_idx cs idx in 
-    let hm=endingless_at_idx cs idx
-    and pr_end=principal_ending_at_module cs mn_idx in
-    let mlx=Dfn_join.to_ending hm pr_end in
+    fun mn->
+    let eless=endingless_at_module cs mn
+    and pr_end=principal_ending_at_module cs mn in
+    let mlx=Dfn_join.to_ending eless pr_end in
     let ap=Dfn_full.to_absolute_path mlx in
     let text=Io.read_whole_file ap in
     if (Substring.is_a_substring_of ("let "^"print_out ") text)
-    then Some(hm)
+    then Some(eless)
     else None
-  ) (Ennig.ennig 1 n);;
+  ) (ordered_list_of_modules cs);;
  
 
 
