@@ -702,25 +702,25 @@ exception Bad_upper_constraint of Dfa_module_t.t;;
 exception Nonregistered_module_during_reposition of Dfn_endingless_t.t;;  
 
  
-let reposition_module cs hm (l_before,l_after)=
-    let n=Small_array.size((modules cs)) in 
-    let find_idx=find_module_index cs in
-    let main_idx=find_idx hm
+let reposition_module cs eless (l_before,l_after)=
+    let l_mods = ordered_list_of_modules cs in 
+    let n=List.length(l_mods) in 
+    let find_idx=(fun mn->Listennou.find_index mn l_mods) 
+    and get=(fun j->List.nth l_mods (j-1)) in
+    let main_idx=find_idx eless
     and indices_before=Image.image find_idx l_before
     and indices_after=Image.image find_idx l_after in
     let max_before=(if indices_before=[] then 1 else Max.list indices_before)
     and min_after=(if indices_after=[] then n else Min.list indices_after)
     in
+    let pivot=get max_before in 
     if max_before>min_after
-    then let hm_before=Small_array.get (modules cs) max_before
-         and hm_after=Small_array.get (modules cs) min_after in
-         raise(Inconsistent_constraints(hm_before,hm_after))
+    then raise(Inconsistent_constraints(pivot,get min_after))
     else 
-    if max_before>main_idx
-    then let hm_before=Small_array.get (modules cs) max_before in
-         raise(Bad_upper_constraint(hm_before))
+    if max_before>(find_idx eless)
+    then raise(Bad_upper_constraint(pivot))
     else 
-    Coma_state_field.reposition_in_each cs max_before main_idx;;  
+    Coma_state_field.reposition_in_each cs pivot eless;;  
 
 let rename_directory_on_data (old_subdir,new_subdirname) cs= 
   let ren_sub=Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) in 

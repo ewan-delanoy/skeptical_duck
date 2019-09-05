@@ -286,14 +286,10 @@ to_t({ cs with
   
 
     
-let reposition_in_each wrapped_cs idx1 idx2=
-    let rep=(fun elt->
-    Small_array.reposition_by_putting_snd_immediately_after_fst elt idx1 idx2) 
-    and cs=of_t wrapped_cs in
-    let mn1 = Small_array.get cs.Coma_state_t.modules idx1 
-    and mn2 = Small_array.get cs.Coma_state_t.modules idx2 in 
+let reposition_in_each wrapped_cs mn1 mn2=
+    let cs=of_t wrapped_cs in
     let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
-    let new_modules = rep cs.Coma_state_t.modules  
+    let new_modules = Listennou.reposition_by_putting_snd_immediately_after_fst (ordered_list_of_modules cs) mn1 mn2 
     and new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
     and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
     and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
@@ -305,7 +301,7 @@ let reposition_in_each wrapped_cs idx1 idx2=
     and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module)
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
 to_t({ cs with 
-      Coma_state_t.modules = new_modules;
+      Coma_state_t.modules = Small_array.of_list new_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
       Coma_state_t.principal_ending_for_module=  new_principal_endings;
       Coma_state_t.mli_presence_for_module=  new_mli_presences;
