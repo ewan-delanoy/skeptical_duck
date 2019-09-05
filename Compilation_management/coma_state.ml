@@ -562,12 +562,6 @@ let recompute_complete_card_at_idx cs hm=
       let mlx=Dfn_join.to_ending hm edg in
       complete_info cs mlx;;
 
-let recompute_module_info cs hm=
-  let nm=Dfn_endingless.to_module hm in
-  let idx=find_module_index cs nm in
-  let new_dt=recompute_complete_card_at_idx cs hm in 
-  Coma_state_field.set_in_each cs idx new_dt;;  
-
 exception Nonregistered_module_during_relocation of Dfn_endingless_t.t;;  
 exception Error_during_unix_physical_relocation;;          
 
@@ -990,7 +984,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                 Coma_state_field.push_right_in_each cs info 
           else
           let idx=Option.unpack(opt_idx) in
-          let edgs=registered_endings_at_idx cs idx in
+          let edgs=registered_endings_at_module cs nm in
           if List.length(edgs)>1
           then  raise(Overcrowding(mlx_file,edgs))
           else  
@@ -1055,10 +1049,10 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           (!cs_walker);;
 
 module Modern = struct 
-
+(*
 exception Unregistered_cmi of Dfn_endingless_t.t;;
 exception Unregistered_cmo of Dfn_endingless_t.t;;
-
+*)
 let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let nm=Dfn_endingless.to_module hm in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
