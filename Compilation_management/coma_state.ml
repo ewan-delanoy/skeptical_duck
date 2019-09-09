@@ -516,12 +516,12 @@ let rename_module_on_monitored_modules cs old_name new_name=
   if opt_idx=None
   then raise(Nonregistered_module(old_nm))
   else 
+  let idx=Option.unpack opt_idx in
   let future_new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
   if (seek_module_index cs future_new_nm) <>None 
   then raise(Future_name_already_taken(future_new_nm))
   else 
-  let idx=Option.unpack opt_idx in
-  let old_acolytes=acolytes_at_idx cs idx in
+  let old_acolytes=acolytes_at_module cs old_nm in
   let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
        old_acolytes in 
   let new_acolytes=Image.image 
@@ -530,14 +530,12 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
      new_acolytes in 
   let new_hm=Dfn_full.to_endingless(List.hd new_acolytes) in
-  let old_mname=Dfn_endingless.to_module old_name
-  and new_mname=Dfn_full.to_module (List.hd new_acolytes)
-  in
-  let changer=Look_for_module_names.change_module_name_in_ml_file old_mname new_mname in
+  let new_mname=Dfn_full.to_module (List.hd new_acolytes) in
+  let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_mname in
   let separated_acolytes=Option.filter_and_unpack(
     fun k->
      let mn_k=module_at_idx cs k in 
-     if List.mem old_mname (ancestors_at_module cs mn_k)
+     if List.mem old_nm (ancestors_at_module cs mn_k)
     then Some(acolytes_at_idx cs k)
     else None
 ) (Ennig.ennig 1 n) in

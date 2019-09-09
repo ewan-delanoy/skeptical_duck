@@ -66,6 +66,9 @@ let modules cs= (of_t cs).Coma_state_t.modules;;
 let ordered_list_of_modules cs=
    Small_array.to_list((of_t cs).Coma_state_t.modules);; 
 
+let test_module_for_registration cs modname=
+  List.mem modname (ordered_list_of_modules cs);;
+
 let follows_it_but_does_not_necessarily_depend_on_it cs mn=
     let (_,_,after) = Three_parts.select_center_element_and_reverse_left (fun x->x=mn)
       (ordered_list_of_modules cs) in 
