@@ -346,7 +346,7 @@ let find_needed_names cs mlx=
   Image.image (Small_array.get (modules cs) ) temp1;;  
 
 
-let alive_find_needed_libraries cs mlx ordered_ancestors=
+let find_needed_libraries cs mlx ordered_ancestors=
   let fn=Dfn_full.to_absolute_path mlx in
   let temp1=Look_for_module_names.names_in_ml_file fn in
   List.filter
@@ -421,7 +421,7 @@ let complete_info cs  mlx=
               then Some(mn)
               else None) in
   let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
-  let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
+  let libned=PrivateTwo.find_needed_libraries cs mlx modules_written_in_file
   and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
   (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
@@ -462,7 +462,7 @@ let complete_id_during_new_module_registration cs  mlx=
               then Some(mn)
               else None) in
     let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
-    let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
+    let libned=PrivateTwo.find_needed_libraries cs mlx modules_written_in_file
     and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
   
@@ -723,7 +723,7 @@ let update_ancs_libs_and_dirs_at_module cs mn=
   let ordered_ancestors=List.filter (
     fun mn->Tidel.elfenn mn ancestors_with_wrong_order
   ) (ordered_list_of_modules cs) in
-  let new_libs=PrivateTwo.alive_find_needed_libraries cs mlx ordered_ancestors
+  let new_libs=PrivateTwo.find_needed_libraries cs mlx ordered_ancestors
   and new_dirs=PrivateTwo.find_needed_directories cs mlx ordered_ancestors in
   let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
   let cs3=set_needed_libs_at_module cs2 mn new_libs in
