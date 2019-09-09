@@ -364,7 +364,7 @@ let alive_find_needed_libraries cs mlx ordered_ancestors=
   Ocaml_library.all_libraries;;
 
 
-let alive_find_needed_directories cs mlx ordered_ancestors=
+let find_needed_directories cs mlx ordered_ancestors=
   let temp1=Image.image (fun mn->
     Tidel.diforchan(needed_dirs_at_module cs mn)) ordered_ancestors in
   let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
@@ -422,7 +422,7 @@ let complete_info cs  mlx=
               else None) in
   let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
   let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
-  and dirned=PrivateTwo.alive_find_needed_directories cs mlx modules_written_in_file in
+  and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
   (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
   let check_unix_presence eless edg=
@@ -463,7 +463,7 @@ let complete_id_during_new_module_registration cs  mlx=
               else None) in
     let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
     let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
-    and dirned=PrivateTwo.alive_find_needed_directories cs mlx modules_written_in_file in
+    and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
   
 let do_file_renaming mlx new_name=
@@ -724,7 +724,7 @@ let update_ancs_libs_and_dirs_at_module cs mn=
     fun mn->Tidel.elfenn mn ancestors_with_wrong_order
   ) (ordered_list_of_modules cs) in
   let new_libs=PrivateTwo.alive_find_needed_libraries cs mlx ordered_ancestors
-  and new_dirs=PrivateTwo.alive_find_needed_directories cs mlx ordered_ancestors in
+  and new_dirs=PrivateTwo.find_needed_directories cs mlx ordered_ancestors in
   let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
   let cs3=set_needed_libs_at_module cs2 mn new_libs in
   set_needed_dirs_at_module cs3 mn new_dirs;;
