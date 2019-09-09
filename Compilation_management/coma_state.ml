@@ -556,13 +556,13 @@ let rename_module_on_monitored_modules cs old_name new_name=
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
       ".cm* ") in
-  let principal_mt=md_compute_modification_time new_hm (principal_ending_at_module cs old_mname)
+  let principal_mt=md_compute_modification_time new_hm (principal_ending_at_module cs old_nm)
   and mli_mt=md_compute_modification_time new_hm Dfa_ending.mli in
   let cs2=set_module_at_idx cs idx new_mname in 
   let cs3=set_principal_mt_at_module cs2 new_mname principal_mt in 
   let cs4=set_mli_mt_at_module cs3 new_mname mli_mt in 
   let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
-  let replacer=Image.image(function x->if x=old_mname then new_mname else x) in
+  let replacer=Image.image(function x->if x=old_nm then new_mname else x) in
   let hm_replacer=(fun x->if x=old_name then new_hm else x) in 
   let old_preq_types=preq_types cs5 in 
   let new_preq_types=Image.image (fun (h,bowl)->(hm_replacer h,bowl)) old_preq_types in 
