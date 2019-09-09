@@ -329,13 +329,10 @@ let compute_subdirectories_list cs=
     let temp3=Ordered_string.forget_order temp2 in
     Image.image Dfa_subdirectory.of_line temp3;;
 
-let  check_registrations cs hm=
-   let nm=Dfn_endingless.to_module hm in 
-    match seek_module_index cs nm with
-      None->(false,false,false,false)
-    |Some(idx)->
-       Dfa_ending.compute_on_all_ocaml_endings 
-      (fun edg->check_ending_in_at_idx edg cs idx);;
+let  check_registrations cs eless=
+   let mn=Dfn_endingless.to_module eless in 
+   Dfa_ending.compute_on_all_ocaml_endings 
+      (fun edg->check_ending_in_at_module edg cs mn);;
 
 
 module PrivateTwo=struct
