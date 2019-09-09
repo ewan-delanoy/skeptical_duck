@@ -554,7 +554,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in   
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
-      (Dfa_module.to_line old_mname)^
+      (Dfa_module.to_line old_nm)^
       ".cm* ") in
   let principal_mt=md_compute_modification_time new_hm (principal_ending_at_module cs old_mname)
   and mli_mt=md_compute_modification_time new_hm Dfa_ending.mli in
