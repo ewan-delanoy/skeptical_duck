@@ -341,11 +341,6 @@ let  check_registrations cs hm=
 module PrivateTwo=struct
 
 
-let find_needed_names cs mlx=
-  let temp1=find_needed_data cs mlx in
-  Image.image (Small_array.get (modules cs) ) temp1;;  
-
-
 let find_needed_libraries cs mlx ordered_ancestors=
   let fn=Dfn_full.to_absolute_path mlx in
   let temp1=Look_for_module_names.names_in_ml_file fn in
@@ -827,7 +822,7 @@ let quick_update cs mn=
   then None
   else
   let mlx=Dfn_join.to_ending eless pr_ending in
-  let direct_fathers=PrivateTwo.find_needed_names cs mlx in
+  let direct_fathers=alive_find_needed_data cs mlx in
   Some(
     pr_modif_time,
     mli_modif_time,
