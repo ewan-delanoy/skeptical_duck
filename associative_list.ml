@@ -10,6 +10,8 @@ exception Reposition_first_key_not_found;;
 exception Reposition_second_key_not_found;;
 
 
+let change_name_for_key l (key1,key2)=
+   Image.image (fun pair->if fst(pair)=key1 then (key2,snd pair) else pair) l;; 
 
 let change_value_for_key l (key1,vaal1)=
    Image.image (fun pair->if fst(pair)=key1 then (key1,vaal1) else pair) l;; 

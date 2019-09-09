@@ -518,7 +518,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   else 
   let idx=Option.unpack opt_idx in
   let future_new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
-  if (seek_module_index cs future_new_nm) <>None 
+  if Coma_state_field.test_module_for_registration cs  future_new_nm
   then raise(Future_name_already_taken(future_new_nm))
   else 
   let old_acolytes=acolytes_at_module cs old_nm in
@@ -529,16 +529,15 @@ let rename_module_on_monitored_modules cs old_name new_name=
      old_acolytes in
   let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
      new_acolytes in 
-  let new_hm=Dfn_full.to_endingless(List.hd new_acolytes) in
+  let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
   let new_mname=Dfn_full.to_module (List.hd new_acolytes) in
   let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_mname in
   let separated_acolytes=Option.filter_and_unpack(
-    fun k->
-     let mn_k=module_at_idx cs k in 
-     if List.mem old_nm (ancestors_at_module cs mn_k)
-    then Some(acolytes_at_idx cs k)
+    fun mn->
+     if List.mem old_nm (ancestors_at_module cs mn)
+    then Some(acolytes_at_module cs mn)
     else None
-) (Ennig.ennig 1 n) in
+) (ordered_list_of_modules cs) in
   let all_acolytes=List.flatten separated_acolytes in
   let temp3=Image.image Dfn_full.to_absolute_path all_acolytes in
   let temp4=Option.filter_and_unpack (
@@ -556,16 +555,16 @@ let rename_module_on_monitored_modules cs old_name new_name=
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
       ".cm* ") in
-  let principal_mt=md_compute_modification_time new_hm (principal_ending_at_module cs old_nm)
-  and mli_mt=md_compute_modification_time new_hm Dfa_ending.mli in
+  let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
+  and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
   let cs2=set_module_at_idx cs idx new_mname in 
   let cs3=set_principal_mt_at_module cs2 new_mname principal_mt in 
   let cs4=set_mli_mt_at_module cs3 new_mname mli_mt in 
   let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
   let replacer=Image.image(function x->if x=old_nm then new_mname else x) in
-  let hm_replacer=(fun x->if x=old_name then new_hm else x) in 
+  let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
   let old_preq_types=preq_types cs5 in 
-  let new_preq_types=Image.image (fun (h,bowl)->(hm_replacer h,bowl)) old_preq_types in 
+  let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
   let cs6=set_preq_types cs5 new_preq_types in 
   let cs_walker=ref(cs6) in 
   let _=(

@@ -205,6 +205,35 @@ let empty_one x y b=to_t({
      printer_equipped_types =[];
 });;
 
+(*
+let change_one_module_name wrapped_cs old_mn new_mn=
+    let cs=of_t wrapped_cs in
+    
+    let new_modules = Small_array.remove_item_at_index cs.Coma_state_t.modules idx 
+    and new_subdirs = Associative_list.remove_key (cs.Coma_state_t.subdir_for_module) mname
+    and new_principal_endings = Associative_list.remove_key (cs.Coma_state_t.principal_ending_for_module) mname
+    and new_mli_presences = Associative_list.remove_key (cs.Coma_state_t.mli_presence_for_module) mname
+    and new_principal_mts = Associative_list.remove_key (cs.Coma_state_t.principal_mt_for_module) mname
+    and new_mli_mts = Associative_list.remove_key (cs.Coma_state_t.mli_mt_for_module) mname
+    and new_needed_libs = Associative_list.remove_key (cs.Coma_state_t.needed_libs_for_module) mname
+    and new_direct_fathers = Associative_list.remove_key (cs.Coma_state_t.direct_fathers_for_module) mname
+    and new_ancestors = Associative_list.remove_key (cs.Coma_state_t.ancestors_for_module) mname
+    and new_needed_dirs = Associative_list.remove_key (cs.Coma_state_t.needed_dirs_for_module) mname  
+    and new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
+to_t({ cs with 
+      Coma_state_t.modules = new_modules;
+      Coma_state_t.subdir_for_module=  new_subdirs;
+      Coma_state_t.principal_ending_for_module=  new_principal_endings;
+      Coma_state_t.mli_presence_for_module=  new_mli_presences;
+      Coma_state_t.principal_mt_for_module=  new_principal_mts;
+      Coma_state_t.mli_mt_for_module=  new_mli_mts;
+      Coma_state_t.needed_libs_for_module=  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
+      Coma_state_t.ancestors_for_module=  new_ancestors;
+      Coma_state_t.needed_dirs_for_module= new_needed_dirs;
+      Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+});;
+*)
 
 let remove_in_each_at_index wrapped_cs idx=
     let cs=of_t wrapped_cs in
