@@ -147,13 +147,21 @@ let modules_with_their_ancestors cs l=
    let temp3=List.flatten temp2 in 
    Listennou.nonredundant_version temp3;;
 
-
+let alive_find_needed_data_for_file cs fn=
+      let temp1=Look_for_module_names.names_in_ml_file fn in
+      List.filter (
+         fun mn->List.mem mn temp1  
+      )(ordered_list_of_modules cs);;
 
 let find_needed_data_for_file cs fn=
       let temp1=Look_for_module_names.names_in_ml_file fn in
       Small_array.indices_of_property_in 
       (fun nm->List.mem nm temp1)
       (modules cs);; 
+
+let  alive_find_needed_data cs mlx=
+      let fn=Dfn_full.to_absolute_path mlx in
+      alive_find_needed_data_for_file cs fn;;    
 
 let find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
@@ -332,27 +340,11 @@ let  check_registrations cs hm=
 
 module PrivateTwo=struct
 
+
 let find_needed_names cs mlx=
   let temp1=find_needed_data cs mlx in
   Image.image (Small_array.get (modules cs) ) temp1;;  
 
-let find_needed_libraries cs mlx genealogy=
-  let fn=Dfn_full.to_absolute_path mlx in
-  let temp1=Look_for_module_names.names_in_ml_file fn in
-  List.filter
-  (
-    fun lib->
-      if List.exists 
-         (fun mdl->List.mem(Dfa_module.of_line mdl)(temp1))
-           (Ocaml_library.modules_telling_a_library_away lib)
-      then true
-      else List.exists 
-           (fun k->
-            let mn=module_at_idx cs k in 
-            List.mem lib (needed_libs_at_module cs mn) ) 
-           genealogy
-  )
-  Ocaml_library.all_libraries;;
 
 let alive_find_needed_libraries cs mlx ordered_ancestors=
   let fn=Dfn_full.to_absolute_path mlx in
@@ -371,19 +363,7 @@ let alive_find_needed_libraries cs mlx ordered_ancestors=
   )
   Ocaml_library.all_libraries;;
 
-let find_needed_directories cs mlx genealogy=
-  let temp1=Image.image (fun idx->
-    let mn = module_at_idx cs idx in 
-    Tidel.diforchan(needed_dirs_at_module cs mn)) genealogy in
-  let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
-  let temp2=(
-      if subdir_in_mlx<>Dfa_subdirectory.main 
-      then Tidel.singleton(subdir_in_mlx)::temp1
-      else temp1
-  ) in    
-  let temp3=Tidel.big_teuzin temp2 in
-  Ordered.forget_order temp3;;
-              
+
 let alive_find_needed_directories cs mlx ordered_ancestors=
   let temp1=Image.image (fun mn->
     Tidel.diforchan(needed_dirs_at_module cs mn)) ordered_ancestors in
@@ -425,32 +405,28 @@ let md_associated_modification_time  (ml_mt,mli_mt,mll_mt,mly_mt) edg=
     |Mly->mly_mt;;  
 
 let complete_info cs  mlx=
-  let n=Small_array.size((modules cs)) in
   let hm=Dfn_full.to_endingless mlx  in
-  let genealogy=find_needed_data cs mlx in
+  let modules_written_in_file=alive_find_needed_data cs mlx in
   let (mlr,mlir,mllr,mlyr)=check_registrations cs hm
   and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times hm in
   let pr_end=compute_principal_ending (mlr,mlir,mllr,mlyr) in
   let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
-  let dirfath=Image.image (Small_array.get (modules cs)) genealogy in
   let temp1=Image.image 
-        (fun t->
-         let mn_t=module_at_idx cs t in 
-         Tidel.diforchan(ancestors_at_module cs mn_t)) 
-        genealogy in
-  let temp2=Tidel.big_teuzin ((Tidel.diforchan(dirfath) )::temp1) in
-  let tempf=(fun t->
-            let nam_t=Small_array.get (modules cs) t in
-            if Tidel.elfenn nam_t temp2
-            then Some(nam_t)
-            else None) in
-  let allanc=Option.filter_and_unpack tempf (Ennig.ennig 1 n) in
-  let libned=PrivateTwo.find_needed_libraries cs mlx genealogy
-  and dirned=PrivateTwo.find_needed_directories cs mlx genealogy in
-  (hm,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,false);;
+          (fun mn->
+           Tidel.diforchan(ancestors_at_module cs mn)) 
+          modules_written_in_file in
+  let temp2=Tidel.big_teuzin ((Tidel.diforchan(modules_written_in_file) )::temp1) in
+  let tempf=(fun mn->
+              if Tidel.elfenn mn temp2
+              then Some(mn)
+              else None) in
+  let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
+  let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
+  and dirned=PrivateTwo.alive_find_needed_directories cs mlx modules_written_in_file in
+  (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
-  let check_unix_presence e_less edg=
-    let full_path=Dfn_join.to_ending e_less edg in 
+  let check_unix_presence eless edg=
+    let full_path=Dfn_join.to_ending eless edg in 
     Sys.file_exists(Dfn_full.to_line full_path);;
 
 let  check_unix_presences hm=
@@ -469,30 +445,26 @@ let registrations_for_lonely_ending old_edg =
 
 
 let complete_id_during_new_module_registration cs  mlx=
-    let n=Small_array.size((modules cs)) in
-    let hm=Dfn_full.to_endingless mlx 
+    let eless=Dfn_full.to_endingless mlx 
     and edg=Dfn_full.to_ending mlx in
-    let genealogy=find_needed_data cs mlx in
+    let modules_written_in_file=alive_find_needed_data cs mlx in
     let (mlp,mlir,mllr,mlyr)=registrations_for_lonely_ending edg
-    and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times hm in
+    and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times eless in
     let pr_end=edg in
     let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
-    let dirfath=Image.image (Small_array.get (modules cs)) genealogy in
     let temp1=Image.image 
-          (fun t->
-           let mn_t = module_at_idx cs t in 
-           Tidel.diforchan(ancestors_at_module cs mn_t)) 
-          genealogy in
-    let temp2=Tidel.big_teuzin ((Tidel.diforchan(dirfath) )::temp1) in
-    let tempf=(fun t->
-              let nam_t=Small_array.get (modules cs) t in
-              if Tidel.elfenn nam_t temp2
-              then Some(nam_t)
+          (fun mn->
+           Tidel.diforchan(ancestors_at_module cs mn)) 
+          modules_written_in_file in
+    let temp2=Tidel.big_teuzin ((Tidel.diforchan(modules_written_in_file) )::temp1) in
+    let tempf=(fun mn->
+              if Tidel.elfenn mn temp2
+              then Some(mn)
               else None) in
-    let allanc=Option.filter_and_unpack tempf (Ennig.ennig 1 n) in
-    let libned=PrivateTwo.find_needed_libraries cs mlx genealogy
-    and dirned=PrivateTwo.find_needed_directories cs mlx genealogy in
-    (hm,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,false);;
+    let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
+    let libned=PrivateTwo.alive_find_needed_libraries cs mlx modules_written_in_file
+    and dirned=PrivateTwo.alive_find_needed_directories cs mlx modules_written_in_file in
+    (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
   
 let do_file_renaming mlx new_name=
   let core=Cull_string.before_rightmost_possibly_all (No_slashes.to_string new_name) '.' in
