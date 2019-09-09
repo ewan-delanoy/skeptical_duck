@@ -504,19 +504,11 @@ let do_file_renaming mlx new_name=
   Dfn_full.from_absolute_path_with_root new_ap r;;    
   
 
-exception Nonregistered_module of Dfa_module_t.t;;
-
 exception Future_name_already_taken of Dfa_module_t.t;;
 
 let rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
-  let n=Small_array.size (modules cs) in
   let old_nm=Dfn_endingless.to_module old_name in
-  let opt_idx=seek_module_index cs old_nm in
-  if opt_idx=None
-  then raise(Nonregistered_module(old_nm))
-  else 
-  let idx=Option.unpack opt_idx in
   let future_new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
   if Coma_state_field.test_module_for_registration cs  future_new_nm
   then raise(Future_name_already_taken(future_new_nm))
@@ -557,7 +549,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
       ".cm* ") in
   let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
   and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
-  let cs2=set_module_at_idx cs idx new_mname in 
+  let cs2=Coma_state_field.change_one_module_name cs old_nm new_mname in 
   let cs3=set_principal_mt_at_module cs2 new_mname principal_mt in 
   let cs4=set_mli_mt_at_module cs3 new_mname mli_mt in 
   let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
@@ -567,15 +559,14 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
   let cs6=set_preq_types cs5 new_preq_types in 
   let cs_walker=ref(cs6) in 
-  let _=(
-     for k=idx+1 to n do
-      let mn = module_at_idx (!cs_walker) k in  
+  let _=List.iter(fun mn->
       let old_dirfath=direct_fathers_at_module (!cs_walker) mn
       and old_ancestors=ancestors_at_module (!cs_walker) mn in
+      (
       cs_walker:=(set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
       cs_walker:=(set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
-     done;
-  ) in
+      )
+  )(follows_it cs old_nm) in
   (!cs_walker,(old_files,new_files),modified_files);;
 
 
