@@ -582,25 +582,12 @@ let rename_module_on_monitored_modules cs old_name new_name=
   (!cs_walker,(old_files,new_files),modified_files);;
 
 
-let recompute_complete_card_at_idx cs hm=
-      let nm=Dfn_endingless.to_module hm in
-      let idx=find_module_index cs nm in
-      let edg=List.hd(registered_endings_at_idx cs idx) in
-      let mlx=Dfn_join.to_ending hm edg in
-      complete_info cs mlx;;
-
-exception Nonregistered_module_during_relocation of Dfn_endingless_t.t;;  
 exception Error_during_unix_physical_relocation;;          
 
 let relocate_module cs old_name new_subdir=
   let root_dir = root cs in 
-  let old_nm=Dfn_endingless.to_module old_name in
-  let opt_idx=seek_module_index cs old_nm in
-  if opt_idx=None
-  then raise(Nonregistered_module_during_relocation(old_name))
-  else 
-  let idx=Option.unpack opt_idx in 
-  let old_acolytes=acolytes_at_idx cs idx in
+  let mn=Dfn_endingless.to_module old_name in
+  let old_acolytes=acolytes_at_module cs mn in
   let old_files=Image.image Dfn_full.to_rootless_line old_acolytes in 
   let new_acolytes=Image.image 
     (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
@@ -620,11 +607,11 @@ let relocate_module cs old_name new_subdir=
   let old_middle = Dfn_endingless.to_middle_element old_name in
     let _=Unix_command.uc
      ("rm -f "^s_root^"_build/"^(Dfn_endingless.middle_element_to_line old_middle)^".cm* ") in
-  let principal_mt=md_compute_modification_time new_name (principal_ending_at_module cs old_nm)
+  let principal_mt=md_compute_modification_time new_name (principal_ending_at_module cs mn)
   and mli_mt=md_compute_modification_time new_name Dfa_ending.mli in
-  let cs2=set_subdir_at_module cs old_nm new_subdir in 
-  let cs3=set_principal_mt_at_module cs2 old_nm principal_mt in 
-  let cs4=set_mli_mt_at_module cs3 old_nm mli_mt in 
+  let cs2=set_subdir_at_module cs mn new_subdir in 
+  let cs3=set_principal_mt_at_module cs2 mn principal_mt in 
+  let cs4=set_mli_mt_at_module cs3 mn mli_mt in 
   (cs4,(old_files,new_files));;
 
 
