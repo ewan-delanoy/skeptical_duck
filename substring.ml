@@ -70,7 +70,7 @@ let leftmost_linedex_of_in_from x y i=
       if j>n then List.rev(accu) else
       let k=leftmost_index_of_in_from x y j in
       if k<0 then List.rev(accu) else
-      tempf(k+lx,k::accu)
+      tempf(k+1,k::accu)
    )  in
    tempf (1,[]);;
 
