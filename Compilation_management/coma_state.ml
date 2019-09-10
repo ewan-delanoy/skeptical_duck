@@ -149,7 +149,7 @@ let modules_with_their_ancestors cs l=
    let temp3=List.flatten temp2 in 
    Listennou.nonredundant_version temp3;;
 
-let alive_find_needed_data_for_file cs fn=
+let find_needed_data_for_file cs fn=
       let temp1=Look_for_module_names.names_in_ml_file fn in
       List.filter (
          fun mn->List.mem mn temp1  
@@ -157,7 +157,7 @@ let alive_find_needed_data_for_file cs fn=
 
 let  alive_find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
-      alive_find_needed_data_for_file cs fn;;    
+      find_needed_data_for_file cs fn;;    
 
  
 
