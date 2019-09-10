@@ -169,7 +169,7 @@ let find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
       find_needed_data_for_file cs fn;;         
 
-let alive_needed_dirs_and_libs_in_command cmod cs mn=
+let needed_dirs_and_libs_in_command cmod cs mn=
    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
    let s_root=Dfa_root.connectable_to_subpath(root cs) in
    let dirs=
@@ -944,7 +944,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
                        else None) in 
     let central_cmd=
         (Compilation_mode.executioner cmod)^
-        (alive_needed_dirs_and_libs_in_command cmod cs nm)^
+        (needed_dirs_and_libs_in_command cmod cs nm)^
             " -c "^s_fhm^ending in
             let full_mli=s_fhm^".mli" in
             let almost_full_answer=(
@@ -973,7 +973,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let nm=Dfn_endingless.to_module eless in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_eless=Dfn_endingless.to_line eless in
-    let dir_and_libs=alive_needed_dirs_and_libs_in_command cmod cs nm in
+    let dir_and_libs=needed_dirs_and_libs_in_command cmod cs nm in
     let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in 
     let full_mli=s_eless^".mli" in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
