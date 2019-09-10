@@ -113,11 +113,13 @@ let registered_endings_at_idx cs idx=
   registered_endings_at_module  cs (module_at_idx cs idx)  ;;
 
 
-let check_for_single_ending_at_idx cs idx=
-  let mn=module_at_idx cs idx in 
+let check_for_single_ending_at_module cs mn=
   if mli_presence_at_module cs mn
   then (principal_ending_at_module cs mn)=(Dfa_ending.mli)
   else true ;;
+
+let check_for_single_ending_at_idx cs idx=
+  check_for_single_ending_at_module cs (module_at_idx cs idx);;
 
 
 let size cs = Small_array.size (modules cs);;      
@@ -278,29 +280,26 @@ exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
                       
                      
 let unregister_mlx_file_on_monitored_modules cs mlxfile=
-    let hm=Dfn_full.to_endingless mlxfile
+    let eless=Dfn_full.to_endingless mlxfile
     and nm=Dfn_full.to_module mlxfile in
-    let n=Small_array.size (modules cs) in
     let pre_desc=List.filter(
-      fun idx7->
-      let mn7=module_at_idx cs idx7 in 
+      fun mn7->
       List.mem nm ( ancestors_at_module cs mn7)
-    ) (Ennig.ennig 1 n) in
+    ) (ordered_list_of_modules cs) in
     if pre_desc<>[]
-    then let temp1=Image.image ( module_at_idx cs ) pre_desc in
-        raise(Abandoned_children(mlxfile,temp1))
+    then raise(Abandoned_children(mlxfile,pre_desc))
     else
     let idx=
       (try Small_array.leftmost_index_of_in
         nm (modules cs) with 
       _->raise(Non_registered_file(mlxfile)) ) in
     let edg=Dfn_full.to_ending mlxfile in
-    if (not(check_ending_in_at_idx edg cs idx))
+    if (not(check_ending_in_at_module edg cs nm))
     then raise(Non_registered_file(mlxfile))
-    else if check_for_single_ending_at_idx cs idx
+    else if check_for_single_ending_at_module cs nm
          then let cs5=Coma_state_field.remove_in_each_at_index cs idx in 
               let old_preqtypes = Coma_state_field.preq_types cs5 in 
-              let new_preqtypes = List.filter (fun (hm2,_)->hm2<>hm ) old_preqtypes in 
+              let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
               let cs6=(
                 if new_preqtypes <> old_preqtypes 
                 then Coma_state_field.set_preq_types cs5 new_preqtypes
