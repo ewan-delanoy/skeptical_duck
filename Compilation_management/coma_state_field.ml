@@ -238,8 +238,8 @@ to_t({ cs with
 
 let remove_in_each_at_module wrapped_cs mname=
     let cs=of_t wrapped_cs in
-    let new_list_of_modules = Small_array.get (cs.Coma_state_t.modules) idx in
-    let new_modules = Small_array.remove_item_at_index cs.Coma_state_t.modules idx 
+    let new_list_of_modules = List.filter (fun x->x<>mname) (ordered_list_of_modules cs) in
+    let new_modules = Small_array.of_list new_list_of_modules
     and new_subdirs = Associative_list.remove_key (cs.Coma_state_t.subdir_for_module) mname
     and new_principal_endings = Associative_list.remove_key (cs.Coma_state_t.principal_ending_for_module) mname
     and new_mli_presences = Associative_list.remove_key (cs.Coma_state_t.mli_presence_for_module) mname
