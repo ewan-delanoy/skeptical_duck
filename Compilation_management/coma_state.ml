@@ -155,7 +155,7 @@ let find_needed_data_for_file cs fn=
          fun mn->List.mem mn temp1  
       )(ordered_list_of_modules cs);;
 
-let  alive_find_needed_data cs mlx=
+let  find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
       find_needed_data_for_file cs fn;;    
 
@@ -343,7 +343,7 @@ let md_associated_modification_time  (ml_mt,mli_mt,mll_mt,mly_mt) edg=
 
 let complete_info cs  mlx=
   let hm=Dfn_full.to_endingless mlx  in
-  let modules_written_in_file=alive_find_needed_data cs mlx in
+  let modules_written_in_file=find_needed_data cs mlx in
   let (mlr,mlir,mllr,mlyr)=check_registrations cs hm
   and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times hm in
   let pr_end=compute_principal_ending (mlr,mlir,mllr,mlyr) in
@@ -384,7 +384,7 @@ let registrations_for_lonely_ending old_edg =
 let complete_id_during_new_module_registration cs  mlx=
     let eless=Dfn_full.to_endingless mlx 
     and edg=Dfn_full.to_ending mlx in
-    let modules_written_in_file=alive_find_needed_data cs mlx in
+    let modules_written_in_file=find_needed_data cs mlx in
     let (mlp,mlir,mllr,mlyr)=registrations_for_lonely_ending edg
     and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times eless in
     let pr_end=edg in
@@ -764,7 +764,7 @@ let quick_update cs mn=
   then None
   else
   let mlx=Dfn_join.to_ending eless pr_ending in
-  let direct_fathers=alive_find_needed_data cs mlx in
+  let direct_fathers=find_needed_data cs mlx in
   Some(
     pr_modif_time,
     mli_modif_time,
