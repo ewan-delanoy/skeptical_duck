@@ -125,13 +125,6 @@ let check_for_single_ending_at_idx cs idx=
 let size cs = Small_array.size (modules cs);;      
 
 
-let up_to_date_hms cs =
-   Option.filter_and_unpack (
-     fun mn->
-       if product_up_to_date_at_module cs mn
-       then Some(endingless_at_module cs mn)
-       else None
-   )(ordered_list_of_modules cs);;
 
 let modules_with_their_ancestors cs l=
    let temp1=List.filter (
