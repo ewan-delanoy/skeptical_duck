@@ -179,35 +179,8 @@ let alive_needed_dirs_and_libs_in_command cmod cs mn=
     (needed_libs_at_module cs mn)) in
     String.concat " " ["";dirs;libs;""];;
 
-let needed_dirs_and_libs_in_command cmod cs idx=
-   alive_needed_dirs_and_libs_in_command cmod cs (module_at_idx cs idx);;
-
-
-
-let needed_dirs_and_libs_for_several cmod cs l_idx=
-   let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
-   let pre_dirs1=Image.image 
-     (fun idx->
-      let mn = module_at_idx cs idx in 
-      Tidel.diforchan(needed_dirs_at_module cs mn)) l_idx in
-   let pre_dirs2=Ordered.forget_order (Tidel.big_teuzin pre_dirs1) in
-   let dirs=String.concat(" ")
-    (Image.image(fun y->let z=Dfa_subdirectory.connectable_to_subpath(y) in 
-    if z="" then "" else "-I "^z )
-    pre_dirs2) in
-   let pre_libs1=Image.image 
-     (fun idx->
-     let mn=module_at_idx cs idx in 
-     Tidel.diforchan(needed_libs_at_module cs mn)) l_idx in
-   let pre_libs2=Ordered.forget_order (Tidel.big_teuzin pre_libs1) in 
-   let libs=String.concat(" ")
-    (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
-    pre_libs2) in
-    String.concat " " ["";dirs;libs;""];;
-
 let all_modules cs=
-  let n=Small_array.size((modules cs)) in
-  Ennig.doyle (endingless_at_idx cs) 1 n;; 
+  Image.image (endingless_at_module cs) (ordered_list_of_modules cs);; 
 
 let get_modification_time cs mn edg=
   if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
