@@ -233,46 +233,31 @@ let force_modification_time root_dir cs mlx=
       ) in     
       cs3;;
 
-let everyone_except_the_debugger cs=
-   (* used to be a more complicated function, when the debug module
-     was registered.
-    *)  
-        let n=Small_array.size (modules cs) in
-        Image.image (endingless_at_idx cs) (Ennig.ennig 1 n);;      
-        
-
 
 exception Non_registered_module of Dfn_endingless_t.t;;  
 exception Derelict_children of Dfa_module_t.t*(Dfa_module_t.t list);;  
            
             
-let unregister_module_on_monitored_modules cs hm=
-  let nm=Dfn_endingless.to_module hm in
-  let n=Small_array.size (modules cs) in
+let unregister_module_on_monitored_modules cs eless=
+  let nm=Dfn_endingless.to_module eless in
   let pre_desc=List.filter(
-      fun idx7->
-       let mn7=module_at_idx cs idx7 in 
+      fun mn7->
        List.mem nm ( ancestors_at_module cs mn7 )
-  ) (Ennig.ennig 1 n) in
+  ) (ordered_list_of_modules cs) in
    if pre_desc<>[]
-   then let temp1=Image.image ( module_at_idx cs ) pre_desc in
-        raise(Derelict_children(nm,temp1))
+   then raise(Derelict_children(nm,pre_desc))
    else
-   let idx=
-    (try Small_array.leftmost_index_of_in
-      nm (modules cs) with 
-    _->raise(Non_registered_module(hm)) ) in
-    let acolytes=acolytes_at_idx cs idx  in
-   let cs2=Coma_state_field.remove_in_each_at_index cs idx in
+   let acolytes=acolytes_at_module cs nm  in
+   let cs2=Coma_state_field.remove_in_each_at_module cs nm in
    let old_preqtypes = Coma_state_field.preq_types cs2 in 
-   let new_preqtypes = List.filter (fun (hm2,_)->hm2<>hm ) old_preqtypes in 
+   let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
    let cs3=(
      if new_preqtypes <> old_preqtypes 
      then Coma_state_field.set_preq_types cs2 new_preqtypes
      else cs2
    ) in 
-   let short_paths=Image.image Dfn_full.to_rootless_line acolytes in
-   (cs3,short_paths);;     
+   let rootless_paths=Image.image Dfn_full.to_rootless_line acolytes in
+   (cs3,rootless_paths);;     
                     
 
 exception Non_registered_file of Dfn_full_t.t;;  
@@ -289,15 +274,11 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
     if pre_desc<>[]
     then raise(Abandoned_children(mlxfile,pre_desc))
     else
-    let idx=
-      (try Small_array.leftmost_index_of_in
-        nm (modules cs) with 
-      _->raise(Non_registered_file(mlxfile)) ) in
     let edg=Dfn_full.to_ending mlxfile in
     if (not(check_ending_in_at_module edg cs nm))
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_module cs nm
-         then let cs5=Coma_state_field.remove_in_each_at_index cs idx in 
+         then let cs5=Coma_state_field.remove_in_each_at_module cs nm in 
               let old_preqtypes = Coma_state_field.preq_types cs5 in 
               let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
               let cs6=(
