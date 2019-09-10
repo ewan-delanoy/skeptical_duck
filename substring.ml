@@ -64,8 +64,7 @@ let leftmost_linedex_of_in_from x y i=
         Friend.number_of_lines_before y j;;    
 
  let occurrences_of_in x y=
-   let lx=String.length x 
-   and n=String.length y in
+   let n=String.length y in
    let rec tempf=(fun (j,accu)->
       if j>n then List.rev(accu) else
       let k=leftmost_index_of_in_from x y j in
