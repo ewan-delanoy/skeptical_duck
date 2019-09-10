@@ -89,7 +89,7 @@ module Private=struct
       uple= 
       let (cs,directories,printer_equipped_types)=uple in
       let root_dir = Coma_state.root cs in  
-      let hms=Coma_state.up_to_date_hms cs in 
+      let hms=Coma_state.up_to_date_elesses cs in 
        (
         save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,hms);
         save_targetfile rootless_path_for_targetfile cs;

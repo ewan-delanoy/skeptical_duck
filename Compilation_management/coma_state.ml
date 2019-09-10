@@ -125,7 +125,7 @@ let check_for_single_ending_at_idx cs idx=
 let size cs = Small_array.size (modules cs);;      
 
 
-let up_to_date_hms cs =
+let up_to_date_elesses cs =
    Option.filter_and_unpack (
      fun mn->
        if product_up_to_date_at_module cs mn
