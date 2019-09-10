@@ -124,7 +124,6 @@ let check_for_single_ending_at_idx cs idx=
 
 let size cs = Small_array.size (modules cs);;      
 
-let list_of_modules cs = Small_array.to_list (modules cs);; 
 
 let up_to_date_hms cs =
    Option.filter_and_unpack (
@@ -132,18 +131,14 @@ let up_to_date_hms cs =
        if product_up_to_date_at_module cs mn
        then Some(endingless_at_module cs mn)
        else None
-   )(list_of_modules cs);;
+   )(ordered_list_of_modules cs);;
 
 let modules_with_their_ancestors cs l=
-   let unordered_temp1=Option.filter_and_unpack (
-     fun nm->
-       match seek_module_index cs nm with 
-       None->None
-       |Some(idx)->Some(idx,nm)
-   ) l in 
-   let temp1=Ordered.forget_order(Tidel2.diforchan unordered_temp1) in 
+   let temp1=List.filter (
+     fun nm->List.mem nm l 
+     ) (ordered_list_of_modules cs )   in 
    let temp2=Image.image (
-     fun (idx,nm)->
+     fun nm->
        (ancestors_at_module cs nm)@[nm] 
    ) temp1 in 
    let temp3=List.flatten temp2 in 
