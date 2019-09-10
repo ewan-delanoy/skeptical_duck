@@ -155,19 +155,11 @@ let alive_find_needed_data_for_file cs fn=
          fun mn->List.mem mn temp1  
       )(ordered_list_of_modules cs);;
 
-let find_needed_data_for_file cs fn=
-      let temp1=Look_for_module_names.names_in_ml_file fn in
-      Small_array.indices_of_property_in 
-      (fun nm->List.mem nm temp1)
-      (modules cs);; 
-
 let  alive_find_needed_data cs mlx=
       let fn=Dfn_full.to_absolute_path mlx in
       alive_find_needed_data_for_file cs fn;;    
 
-let find_needed_data cs mlx=
-      let fn=Dfn_full.to_absolute_path mlx in
-      find_needed_data_for_file cs fn;;         
+ 
 
 let needed_dirs_and_libs_in_command cmod cs mn=
    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
