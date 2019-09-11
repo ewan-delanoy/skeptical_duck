@@ -6,7 +6,7 @@
 
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
-let push_after_backup =Coma_state_field.push_after_backup;;
+let gitpush_after_backup =Coma_state_field.push_after_backup;;
 
 
 let subdir_at_module = Coma_state_field.subdir_at_module ;;
@@ -1590,7 +1590,7 @@ let refresh cs=
         Target_system_creation.from_main_directory 
              (root cs)
              (backup_dir cs)
-             (push_after_backup cs)
+             (gitpush_after_backup cs)
          in 
         let new_dirs=compute_subdirectories_list cs2 in
         let new_diff=delchacre_from_scratch (root cs2,backup_dir cs2) cs2 in
