@@ -424,6 +424,37 @@ let sizes wrapped_cs =
   ];;
 
 
+let push_after_module_in_each wrapped_cs pivot (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
+    let nm=Dfn_endingless.to_module hm
+    and subdir=Dfn_endingless.to_subdirectory hm 
+    and  cs=of_t wrapped_cs in
+    let new_modules_l = Listennou.push_immediately_after (ordered_list_of_modules cs) nm  pivot in
+    let new_modules = Small_array.of_list new_modules_l 
+    and new_subdirs = Associative_list.push_immediately_after (cs.Coma_state_t.subdir_for_module) (nm,subdir) pivot 
+    and new_principal_endings = Associative_list.push_immediately_after (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) pivot 
+    and new_mli_presences = Associative_list.push_immediately_after (cs.Coma_state_t.mli_presence_for_module) (nm,mlip) pivot 
+    and new_principal_mts = Associative_list.push_immediately_after (cs.Coma_state_t.principal_mt_for_module) (nm,prmt) pivot 
+    and new_mli_mts = Associative_list.push_immediately_after (cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) pivot 
+    and new_needed_libs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_libs_for_module) (nm,libned) pivot 
+    and new_direct_fathers = Associative_list.push_immediately_after (cs.Coma_state_t.direct_fathers_for_module) (nm,dirfath) pivot 
+    and new_ancestors = Associative_list.push_immediately_after (cs.Coma_state_t.ancestors_for_module) (nm,allanc) pivot 
+    and new_needed_dirs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
+    and new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
+to_t({ cs with 
+      Coma_state_t.modules = new_modules;
+      Coma_state_t.subdir_for_module =  new_subdirs;
+      Coma_state_t.principal_ending_for_module =  new_principal_endings;
+      Coma_state_t.mli_presence_for_module =  new_mli_presences;
+      Coma_state_t.principal_mt_for_module =  new_principal_mts;
+      Coma_state_t.mli_mt_for_module =  new_mli_mts;
+      Coma_state_t.needed_libs_for_module =  new_needed_libs;
+      Coma_state_t.direct_fathers_for_module =  new_direct_fathers;
+      Coma_state_t.ancestors_for_module =  new_ancestors;
+      Coma_state_t.needed_dirs_for_module = new_needed_dirs;
+      Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+});;
+    
+
 let push_after_in_each wrapped_cs idx (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
     let nm=Dfn_endingless.to_module hm
     and subdir=Dfn_endingless.to_subdirectory hm 
@@ -454,8 +485,6 @@ to_t({ cs with
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
     
-
-
 
 module Private = struct 
 
