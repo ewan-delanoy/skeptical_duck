@@ -68,8 +68,6 @@ let endingless_at_module cs mn=
         mn
     );;
 
-let endingless_at_idx cs k=
-    endingless_at_module cs (module_at_idx cs k);;
 
 let endingless_from_mildly_capitalized_module_name cs mname=
     endingless_at_module cs (Dfa_module.of_line(String.capitalize_ascii mname));;
@@ -82,8 +80,7 @@ let check_ending_in_at_module edg cs mn=
    then mli_presence_at_module cs mn
    else false;;
 
-let check_ending_in_at_idx edg cs idx=
-   check_ending_in_at_module edg cs (module_at_idx cs idx);;
+
 
 let acolytes_at_module cs mn=
   let eless = endingless_at_module cs mn in
@@ -94,23 +91,18 @@ let acolytes_at_module cs mn=
      else None
 ) Dfa_ending.all_ocaml_endings;;
 
-let acolytes_at_idx cs idx=
-   acolytes_at_module  cs (module_at_idx cs idx)  ;;
+
 
 let rootless_paths_at_module cs mn=
    Image.image Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
   
 
-let rootless_paths_at_idx cs idx=
-    rootless_paths_at_module  cs (module_at_idx cs idx)  ;;
   
 let registered_endings_at_module cs mn=
   List.filter (fun edg->
   check_ending_in_at_module edg cs mn 
   ) Dfa_ending.all_ocaml_endings;;
 
-let registered_endings_at_idx cs idx=
-  registered_endings_at_module  cs (module_at_idx cs idx)  ;;
 
 
 let check_for_single_ending_at_module cs mn=
@@ -118,8 +110,6 @@ let check_for_single_ending_at_module cs mn=
   then (principal_ending_at_module cs mn)=(Dfa_ending.mli)
   else true ;;
 
-let check_for_single_ending_at_idx cs idx=
-  check_for_single_ending_at_module cs (module_at_idx cs idx);;
 
 
 let size cs = Small_array.size (modules cs);;      
@@ -840,12 +830,11 @@ exception Bad_pair of Dfn_full_t.t*Dfa_ending_t.t;;
 
 
 let register_mlx_file_on_monitored_modules cs mlx_file =
-          let n=Small_array.size (modules cs) in
           let eless=Dfn_full.to_endingless mlx_file
           and ending=Dfn_full.to_ending mlx_file in 
           let nm=Dfn_full.to_module mlx_file in
           let opt_idx=seek_module_index cs nm in
-          if opt_idx=None
+          if not(Coma_state_field.test_module_for_registration cs nm)
           then  let info=complete_id_during_new_module_registration cs mlx_file in
                 Coma_state_field.push_right_in_each cs info 
           else
@@ -864,9 +853,9 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           then let old_pr_end = List.hd edgs in
                let old_mlx_file =
                 Dfn_join.to_ending eless old_pr_end in
-              let (hm,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
+              let (eless,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
                  complete_info cs old_mlx_file in
-               let new_mlimt = md_compute_modification_time hm ending in
+               let new_mlimt = md_compute_modification_time eless ending in
                let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
                Coma_state_field.set_in_each cs nm new_dt
           else
@@ -880,16 +869,13 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           let last_father_idx=Small_array.leftmost_index_of_in last_father (modules cs) in
           let nm=Dfn_endingless.to_module eless in 
           let cs_walker=ref(cs) in 
-          let _=
-            (
-              for k=last_father_idx+1 to n 
-              do
-              let mn_k=module_at_idx (!cs_walker) k in 
-              let current_anc= ancestors_at_module (!cs_walker) mn_k in  
+          let _=List.iter(
+                 fun current_module ->
+              let current_anc= ancestors_at_module (!cs_walker) current_module in  
               if not(List.mem nm current_anc)
               then ()
               else  
-                   let current_libs= needed_libs_at_module cs mn_k in
+                   let current_libs= needed_libs_at_module cs current_module in
                    let new_ancestors=Small_array.filter_and_unpack(
                       fun nm2->
                       if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
@@ -899,7 +885,6 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     and new_libs=List.filter (
                       fun lib->(List.mem lib libned)||(List.mem lib current_libs)
                     ) Ocaml_library.all_libraries in  
-                    let current_module = module_at_idx (!cs_walker) k in 
                     let ordered_dirs=Tidel.teuzin
                        (Tidel.safe_set(needed_dirs_at_module (!cs_walker) current_module))
                        (Tidel.safe_set (dirned)) in
@@ -907,7 +892,9 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
                     cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
                     cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
-              done;
+          )(follows_it cs last_father) in 
+          let _=
+            ( 
               cs_walker:=Coma_state_field.remove_in_each_at_index (!cs_walker) idx;
               cs_walker:=Coma_state_field.push_after_in_each (!cs_walker) last_father_idx new_dt;  
             )

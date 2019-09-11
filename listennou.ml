@@ -10,7 +10,7 @@
 exception Ht_exn;;
 exception Reposition_first_key_not_found;;
 exception Reposition_second_key_not_found;;
-
+exception Push_immediately_after_exn;;
 
 
 let ht x=match x with
@@ -206,9 +206,22 @@ let divide_by_two l=
    ) in 
    tempf ([],l);;
 
-
+let push_immediately_after l elt2 elt1 =
+  let rec tempf=(
+    fun (treated,to_be_treated)->match to_be_treated with 
+     []->raise(Push_immediately_after_exn)
+    |elt::others ->
+      if elt=elt1
+      then List.rev_append treated (elt::elt2::others)
+      else tempf(elt::treated,others)
+  ) in 
+  tempf([],l);; 
 
 let hi=List.length;;
 let rev=List.rev;;
 
+(*
 
+push_immediately_after [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 145 3;;
+
+*)
