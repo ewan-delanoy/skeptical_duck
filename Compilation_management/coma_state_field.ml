@@ -24,7 +24,6 @@ let root cs=(of_t cs).Coma_state_t.root;;
 let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
 let push_after_backup cs=(of_t cs).Coma_state_t.push_after_backup;;   
 
-let module_at_idx cs k = Small_array.get (of_t cs).Coma_state_t.modules k ;;
 
 let subdir_at_module cs mn=
    List.assoc mn ( (of_t cs).Coma_state_t.subdir_for_module);;

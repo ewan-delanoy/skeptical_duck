@@ -49,15 +49,6 @@ let all_used_subdirs = Coma_state_field.all_used_subdirs;;
 
 (* End of inherited values *)
 
-let find_module_index cs nm=
-  Small_array.leftmost_index_of_in
-   nm (modules cs);;   
-
-let seek_module_index cs nm=
-  try
-  Some(find_module_index cs nm)
-  with
-  _->None;;  
 
 let endingless_at_module cs mn=
    Dfn_endingless_t.J(
@@ -1260,9 +1251,9 @@ let forget_file_on_targets root_dir pair ap=
   let mlx = Dfn_join.root_to root_dir rootless_path in 
   let eless=Dfn_full.to_endingless mlx  in
   let nm=Dfn_endingless.to_module eless in
-  match seek_module_index  cs nm with
-   None->pair
-  |Some(_)->
+  if not(Coma_state_field.test_module_for_registration cs nm)
+  then pair  
+  else 
    let bel=below cs eless in
     if bel=[]
     then let fn=Dfn_endingless.to_line eless  in
@@ -1724,7 +1715,7 @@ let forgotten_files_in_build_subdir cs=
       fun s->
        let s_mn=Cull_string.before_rightmost_possibly_all s '.' in 
        let mn=Dfa_module.of_line s_mn in 
-       (seek_module_index cs mn)=None 
+       not(Coma_state_field.test_module_for_registration cs mn)
        ) temp1;;
 
 exception Absent_module of string;;
