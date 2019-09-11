@@ -38,7 +38,6 @@ let set_product_up_to_date_at_module = Coma_state_field.set_product_up_to_date_a
 let set_directories = Coma_state_field.set_directories;;
 let set_preq_types = Coma_state_field.set_preq_types;;
 
-let modules = Coma_state_field.modules;;
 
 let ordered_list_of_modules = Coma_state_field.ordered_list_of_modules;;
 let follows_it = Coma_state_field.follows_it_but_does_not_necessarily_depend_on_it;;
@@ -101,7 +100,7 @@ let check_for_single_ending_at_module cs mn=
 
 
 
-let size cs = Small_array.size (modules cs);;      
+let size cs = List.length (ordered_list_of_modules cs);;      
 
 
 let up_to_date_elesses cs =
@@ -686,7 +685,7 @@ module PrivateThree=struct
     
     let put_md_list_back_in_order tolerate_cycles 
       cs initially_active_nms=
-      let md_list=Small_array.to_list (modules cs) in
+      let md_list=ordered_list_of_modules cs in
       let coat=Memoized.make (fun nm->direct_fathers_at_module cs nm) in
       let (cycles,reordered_list)=Reconstruct_linear_poset.reconstruct_linear_poset 
          coat md_list in
@@ -862,12 +861,12 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
               then ()
               else  
                    let current_libs= needed_libs_at_module cs current_module in
-                   let new_ancestors=Small_array.filter_and_unpack(
+                   let new_ancestors=Option.filter_and_unpack(
                       fun nm2->
                       if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
                       then Some(nm2)
                       else None
-                    ) (modules (!cs_walker)) 
+                    ) (ordered_list_of_modules (!cs_walker)) 
                     and new_libs=List.filter (
                       fun lib->(List.mem lib libned)||(List.mem lib current_libs)
                     ) Ocaml_library.all_libraries in  

@@ -16,8 +16,6 @@ let ced ()=Usual_coma_state.clean_exec_dir ();;
 
 let cod ()=Check_ocaml_dircopy.check Coma_big_constant.This_World.root;;
 
-let cr ()=Small_array.redundant_indices (Coma_state.modules (!(Usual_coma_state.main_ref)));;
-
 let dbel = Usual_coma_state.directly_below;;
 
 let dm = Usual_coma_state.duplicate_module;;
@@ -53,6 +51,8 @@ let ren = Usual_coma_state.rename_module;;
 let rendir = Usual_coma_state.rename_directory;;
 
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
+
+let ri () = Listennou.redundant_indices (Coma_state.ordered_list_of_modules (!Usual_coma_state.main_ref));;
 
 let rsh = Usual_coma_state.refresh;;
 

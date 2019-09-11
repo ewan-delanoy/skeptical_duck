@@ -8,8 +8,8 @@
 type t={
      root : Dfa_root_t.t;
      dir_for_backup : Dfa_root_t.t;
-     push_after_backup : bool;
-     modules : Dfa_module_t.t Small_array.t ;
+     gitpush_after_backup : bool;
+     modules : Dfa_module_t.t list ;
      subdir_for_module : (Dfa_module_t.t * Dfa_subdirectory_t.t ) list;
      principal_ending_for_module : (Dfa_module_t.t * Dfa_ending_t.t ) list;
      mli_presence_for_module : (Dfa_module_t.t * bool ) list;

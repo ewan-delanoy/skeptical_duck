@@ -22,7 +22,7 @@ let to_t x=(Coma_state_t.CS x);;
 
 let root cs=(of_t cs).Coma_state_t.root;;
 let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
-let gitpush_after_backup cs=(of_t cs).Coma_state_t.push_after_backup;;   
+let gitpush_after_backup cs=(of_t cs).Coma_state_t.gitpush_after_backup;;   
 
 
 let subdir_at_module cs mn=
@@ -60,10 +60,8 @@ let directories cs=(of_t cs).Coma_state_t.directories;;
 let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
 
 
-let modules cs= (of_t cs).Coma_state_t.modules;;
 
-let ordered_list_of_modules cs=
-   Small_array.to_list((of_t cs).Coma_state_t.modules);; 
+let ordered_list_of_modules cs=((of_t cs).Coma_state_t.modules);; 
 
 let test_module_for_registration cs modname=
   List.mem modname (ordered_list_of_modules cs);;
@@ -84,11 +82,9 @@ let all_used_subdirs cs =
 
 
 let set_push_after_backup cs bowl = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.push_after_backup=bowl });;
+                            to_t({ccs with Coma_state_t.gitpush_after_backup=bowl });;
 
-let set_module_at_idx cs k v = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.modules=
-                                  (Small_array.set ccs.Coma_state_t.modules k v) });;
+
 
 let set_subdir_at_module cs mn v=
     let ccs=of_t cs in 
@@ -188,8 +184,8 @@ let modify_all_needed_dirs cs f =
 let empty_one x y b=to_t({
      Coma_state_t.root =x;
      dir_for_backup =y;
-     push_after_backup=b;
-     modules = Small_array.of_list [];
+     gitpush_after_backup=b;
+     modules = [];
      subdir_for_module = [] ;
      principal_ending_for_module = [] ;
      mli_presence_for_module = [] ;
@@ -208,8 +204,7 @@ let empty_one x y b=to_t({
 let change_one_module_name wrapped_cs old_mn new_mn=
     (* note that preq_types are not dealt with here *)
     let cs=of_t wrapped_cs in
-    let new_modules_list = Image.image (fun x->if x=old_mn then new_mn else x)(ordered_list_of_modules cs) in 
-    let new_modules = Small_array.of_list new_modules_list in 
+    let new_modules = Image.image (fun x->if x=old_mn then new_mn else x)(ordered_list_of_modules cs) in  
     let rep_pair = (old_mn,new_mn) in 
     let new_subdirs = Associative_list.change_name_for_key (cs.Coma_state_t.subdir_for_module) rep_pair
     and new_principal_endings = Associative_list.change_name_for_key (cs.Coma_state_t.principal_ending_for_module) rep_pair
@@ -237,8 +232,7 @@ to_t({ cs with
 
 let remove_in_each_at_module wrapped_cs mname=
     let cs=of_t wrapped_cs in
-    let new_list_of_modules = List.filter (fun x->x<>mname) (ordered_list_of_modules cs) in
-    let new_modules = Small_array.of_list new_list_of_modules
+    let new_modules = List.filter (fun x->x<>mname) (ordered_list_of_modules cs) 
     and new_subdirs = Associative_list.remove_key (cs.Coma_state_t.subdir_for_module) mname
     and new_principal_endings = Associative_list.remove_key (cs.Coma_state_t.principal_ending_for_module) mname
     and new_mli_presences = Associative_list.remove_key (cs.Coma_state_t.mli_presence_for_module) mname
@@ -269,7 +263,7 @@ let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,alla
     let nm=Dfn_endingless.to_module hm
     and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
-    let new_modules = Small_array.push_right cs.Coma_state_t.modules nm 
+    let new_modules = (cs.Coma_state_t.modules)@[nm] 
     and new_subdirs = (  cs.Coma_state_t.subdir_for_module) @[nm,subdir]
     and new_principal_endings = (  cs.Coma_state_t.principal_ending_for_module) @[nm,pr_end] 
     and new_mli_presences = (  cs.Coma_state_t.mli_presence_for_module) @[nm,mlip] 
@@ -335,7 +329,7 @@ let reposition_in_each wrapped_cs mn1 mn2=
     and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module)
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
 to_t({ cs with 
-      Coma_state_t.modules = Small_array.of_list new_modules;
+      Coma_state_t.modules = new_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
       Coma_state_t.principal_ending_for_module=  new_principal_endings;
       Coma_state_t.mli_presence_for_module=  new_mli_presences;
@@ -352,8 +346,7 @@ to_t({ cs with
 let reorder wrapped_cs reordered_list_of_modules =
      let cs=of_t wrapped_cs in 
     let l_rep =(fun l->Associative_list.reorder l reordered_list_of_modules) in    
-    let new_modules = Small_array.of_list reordered_list_of_modules
-    and new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
+    let new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
     and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
     and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
     and new_principal_mts = l_rep (cs.Coma_state_t.principal_mt_for_module) 
@@ -364,7 +357,7 @@ let reorder wrapped_cs reordered_list_of_modules =
     and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module) 
     and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
 to_t({ cs with 
-      Coma_state_t.modules = new_modules;
+      Coma_state_t.modules = reordered_list_of_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
       Coma_state_t.principal_ending_for_module=  new_principal_endings;
       Coma_state_t.mli_presence_for_module=  new_mli_presences;
@@ -382,7 +375,7 @@ to_t({ cs with
 let sizes wrapped_cs =
     let cs=of_t wrapped_cs in
     [ 
-      ["modules",Small_array.size(cs.Coma_state_t.modules)];
+      ["modules",List.length(cs.Coma_state_t.modules)];
       ["subdirs",List.length(cs.Coma_state_t.subdir_for_module)];
       ["pr_endings",List.length(cs.Coma_state_t.principal_ending_for_module)];
       ["mlis",List.length(cs.Coma_state_t.mli_presence_for_module)];
@@ -400,8 +393,7 @@ let push_after_module_in_each wrapped_cs pivot (hm,pr_end,mlip,prmt,mlimt,libned
     let nm=Dfn_endingless.to_module hm
     and subdir=Dfn_endingless.to_subdirectory hm 
     and  cs=of_t wrapped_cs in
-    let new_modules_l = Listennou.push_immediately_after (ordered_list_of_modules cs) nm  pivot in
-    let new_modules = Small_array.of_list new_modules_l 
+    let new_modules = Listennou.push_immediately_after (ordered_list_of_modules cs) nm  pivot 
     and new_subdirs = Associative_list.push_immediately_after (cs.Coma_state_t.subdir_for_module) (nm,subdir) pivot 
     and new_principal_endings = Associative_list.push_immediately_after (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) pivot 
     and new_mli_presences = Associative_list.push_immediately_after (cs.Coma_state_t.mli_presence_for_module) (nm,mlip) pivot 
@@ -434,7 +426,7 @@ let salt = "Coma_"^"state_field.";;
 
 let root_label                          = salt ^ "root";;
 let dir_for_backup_label                = salt ^ "dir_for_backup";;
-let push_after_backup_label             = salt ^ "push_after_backup";;
+let gitpush_after_backup_label          = salt ^ "gitpush_after_backup";;
 let modules_label                       = salt ^ "modules";;
 let subdir_for_module_label             = salt ^ "subdir_for_module";;
 let principal_ending_for_module_label   = salt ^ "principal_ending_for_module";;
@@ -457,8 +449,8 @@ let of_concrete_object ccrt_obj =
    {
       Coma_state_t.root = Dfa_root.of_concrete_object(g root_label);
       dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
-      push_after_backup = Concrete_object_field.to_bool (g push_after_backup_label);
-      modules = Small_array.of_concrete_object Dfa_module.of_concrete_object (g modules_label);
+      gitpush_after_backup = Concrete_object_field.to_bool (g gitpush_after_backup_label);
+      modules = Concrete_object_field.to_list Dfa_module.of_concrete_object (g modules_label);
       subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
       principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
       mli_presence_for_module = cr_to_pair Concrete_object_field.to_bool (g mli_presence_for_module_label);
@@ -480,8 +472,8 @@ let to_concrete_object cs=
    [
     root_label, Dfa_root.to_concrete_object cs.Coma_state_t.root;
     dir_for_backup_label, Dfa_root.to_concrete_object cs.Coma_state_t.dir_for_backup;
-    push_after_backup_label, Concrete_object_field.of_bool cs.Coma_state_t.push_after_backup;
-    modules_label, Small_array.to_concrete_object Dfa_module.to_concrete_object cs.Coma_state_t.modules;
+    gitpush_after_backup_label, Concrete_object_field.of_bool cs.Coma_state_t.gitpush_after_backup;
+    modules_label, Concrete_object_field.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
     subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
     mli_presence_for_module_label, cr_of_pair Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
