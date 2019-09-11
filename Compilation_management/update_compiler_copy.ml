@@ -23,7 +23,7 @@ let text_for_big_constants_file_in_next_world =
    "module Next_World=struct\n";
    "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\""^ds;
    "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\""^ds;
-   "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^"\""^ds;
+   "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^ds;
    "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
    "end"^ds;
    "module Third_World=struct\n";
