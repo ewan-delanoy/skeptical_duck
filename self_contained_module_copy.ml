@@ -25,8 +25,7 @@ let self_contained_module_copy prefix hm=
    let those_above=(Coma_state.above cs  hm)@[nm] in
    let temp1=Image.image (
        fun nm2->
-         let idx2=Coma_state.find_module_index cs nm2 in
-         let hm2=Coma_state.endingless_at_idx cs idx2 in
+         let hm2=Coma_state.endingless_at_module cs nm2 in
          let mlx=Dfn_join.to_ending hm2 Dfa_ending.ml in
          let ap=Dfn_full.to_absolute_path mlx in
          let naked_name=Modularize.module_name_from_path ap in
