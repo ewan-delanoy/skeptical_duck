@@ -7,7 +7,6 @@
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
 let push_after_backup =Coma_state_field.push_after_backup;;
-let module_at_idx = Coma_state_field.module_at_idx ;;
 
 
 let subdir_at_module = Coma_state_field.subdir_at_module ;;
@@ -23,7 +22,6 @@ let product_up_to_date_at_module = Coma_state_field.product_up_to_date_at_module
 let directories = Coma_state_field.directories;;
 let preq_types = Coma_state_field.preq_types;;
 
-let set_module_at_idx = Coma_state_field.set_module_at_idx ;;
 
 
 let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
@@ -59,7 +57,7 @@ let seek_module_index cs nm=
   try
   Some(find_module_index cs nm)
   with
-  _->None;;   
+  _->None;;  
 
 let endingless_at_module cs mn=
    Dfn_endingless_t.J(
