@@ -6,7 +6,7 @@
 
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
-let gitpush_after_backup =Coma_state_field.push_after_backup;;
+let gitpush_after_backup =Coma_state_field.gitpush_after_backup;;
 
 
 let subdir_at_module = Coma_state_field.subdir_at_module ;;
