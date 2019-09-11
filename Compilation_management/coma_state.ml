@@ -833,12 +833,10 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           let eless=Dfn_full.to_endingless mlx_file
           and ending=Dfn_full.to_ending mlx_file in 
           let nm=Dfn_full.to_module mlx_file in
-          let opt_idx=seek_module_index cs nm in
           if not(Coma_state_field.test_module_for_registration cs nm)
           then  let info=complete_id_during_new_module_registration cs mlx_file in
                 Coma_state_field.push_right_in_each cs info 
           else
-          let idx=Option.unpack(opt_idx) in
           let edgs=registered_endings_at_module cs nm in
           if List.length(edgs)>1
           then  raise(Overcrowding(mlx_file,edgs))
@@ -866,7 +864,6 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           then Coma_state_field.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
           else  
           let last_father=List.hd(temp3) in
-          let last_father_idx=Small_array.leftmost_index_of_in last_father (modules cs) in
           let nm=Dfn_endingless.to_module eless in 
           let cs_walker=ref(cs) in 
           let _=List.iter(
@@ -895,8 +892,8 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
           )(follows_it cs last_father) in 
           let _=
             ( 
-              cs_walker:=Coma_state_field.remove_in_each_at_index (!cs_walker) idx;
-              cs_walker:=Coma_state_field.push_after_in_each (!cs_walker) last_father_idx new_dt;  
+              cs_walker:=Coma_state_field.remove_in_each_at_module (!cs_walker) nm;
+              cs_walker:=Coma_state_field.push_after_module_in_each (!cs_walker) last_father new_dt;  
             )
           in
           (!cs_walker);;
