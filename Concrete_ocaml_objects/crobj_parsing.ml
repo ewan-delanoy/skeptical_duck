@@ -9,7 +9,7 @@ exception Unreadable of int * string ;;
 
 module Private = struct
 
-let salt = "aY2ukkwDzyKd";;
+let salt = String.concat "" ["a"; "Y"; "2"; "u"; "k"; "k"; "w"; "D"; "z"; "y"; "K"; "d"];;
 
 let array_opener = salt ^ "ao";;
 let list_opener = salt ^ "lo";;
