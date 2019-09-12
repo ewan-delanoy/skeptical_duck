@@ -1304,7 +1304,7 @@ exception Non_registered_module_during_forgetting of Dfa_module_t.t;;
       
 let forget_module_on_targets root_dir (cs,dirs) eless=
         let nm=Dfn_endingless.to_module eless in
-        if List.mem nm (ordered_list_of_modules cs)
+        if not(List.mem nm (ordered_list_of_modules cs))
         then raise(Non_registered_module_during_forgetting(nm))
         else 
          let bel=below cs eless in
