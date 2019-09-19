@@ -35,14 +35,16 @@ let remove_special_watched_files fw rootless_paths=
       ) (fw.Fw_wrapper_t.special_watched_files)  
    };;
 
-(*
-let remove_files_from_module fw mod_name =
+
+let remove_files_associated_to_module fw mod_name =
    let the_files = Option.filter_and_unpack (
       fun (path,_,_)-> 
-        if Dfn_rootless.
+        if (Dfn_rootless.to_module path)=mod_name 
+        then Some path
+        else None
    ) fw.Fw_wrapper_t.watched_files in 
-   remove_watched_files the_files;;
-*)
+   remove_watched_files fw the_files;;
+
 
 
 
