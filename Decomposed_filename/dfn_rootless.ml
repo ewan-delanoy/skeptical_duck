@@ -13,6 +13,8 @@ let to_line (Dfn_rootless_t.J(s,m,e))=
    (Dfa_subdirectory.connectable_to_subpath s)^
    (Dfa_module.to_line m)^(Dfa_ending.connectable_to_modulename e);;
 
+let to_module (Dfn_rootless_t.J(s,m,e))=m;;
+
 let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
    Concrete_object_t.Variant("Dfn_"^"rootless.J",
      [
