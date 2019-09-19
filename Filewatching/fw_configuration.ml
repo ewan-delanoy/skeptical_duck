@@ -20,17 +20,18 @@ let of_concrete_object ccrt_obj =
       additional_files = Concrete_object_field.to_list Dfn_rootless.of_concrete_object (g additional_files_label);
    };; 
 
-let to_concrete_object cs=
+let to_concrete_object config=
    let items= 
    [
-    root_label, Dfa_root.to_concrete_object cs.Fw_configuration_t.root;
-    ignored_subdirectories_label, Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object cs.Fw_configuration_t.ignored_subdirectories;
-    additional_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object  cs.Fw_configuration_t.additional_files;
+    root_label, Dfa_root.to_concrete_object config.Fw_configuration_t.root;
+    ignored_subdirectories_label, Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object config.Fw_configuration_t.ignored_subdirectories;
+    additional_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object  config.Fw_configuration_t.additional_files;
    ]  in
    Concrete_object_t.Record items;;
 
 end ;;
 
+let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
