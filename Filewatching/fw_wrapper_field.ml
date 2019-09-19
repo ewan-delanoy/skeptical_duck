@@ -55,6 +55,6 @@ end ;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-(*
-let root fw = (fw.Fw_wrapper_t.configuration).Fw_co
-*)
+
+let root fw = Fw_configuration.root (fw.Fw_wrapper_t.configuration);;
+
