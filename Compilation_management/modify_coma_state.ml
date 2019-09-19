@@ -48,7 +48,7 @@ module After_checking = struct
 
       (* No check needed before refreshing *)
 
-      let register_short_path cs x=
+      let register_rootless_path cs x=
          let _=Private.check_for_changes cs in 
          Coma_state.Almost_concrete.register_rootless_path cs x;; 
 
@@ -95,8 +95,8 @@ module And_backup = struct
 
       (* No backup during refresh *)   
 
-      let register_short_path cs x=
-         let (cs2,diff)=After_checking.register_short_path cs x  in 
+      let register_rootless_path cs x=
+         let (cs2,diff)=After_checking.register_rootless_path cs x  in 
          let msg="register "^x in 
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
@@ -151,8 +151,8 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
-      let register_short_path cs short_path=
-         let cs2=And_backup.register_short_path cs short_path in 
+      let register_rootless_path cs rootless_path=
+         let cs2=And_backup.register_rootless_path cs rootless_path in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -208,8 +208,8 @@ module Reference = struct
          let new_cs = And_save.refresh (!pcs)  in 
          pcs:=new_cs;;
 
-      let register_short_path pcs short_path=
-         let new_cs = And_save.register_short_path (!pcs) short_path in 
+      let register_rootless_path pcs rootless_path=
+         let new_cs = And_save.register_rootless_path (!pcs) rootless_path in 
          pcs:=new_cs;;
 
 
