@@ -15,6 +15,9 @@ let to_line (Dfn_rootless_t.J(s,m,e))=
 
 let to_module (Dfn_rootless_t.J(s,m,e))=m;;
 
+let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
+     
+
 let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
    Concrete_object_t.Variant("Dfn_"^"rootless.J",
      [
