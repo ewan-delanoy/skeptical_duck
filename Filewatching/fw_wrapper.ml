@@ -9,6 +9,19 @@ exception Register_rootless_path_exn of string;;
 
 let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
 
+let recompute_mtime fw path =
+     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
+     and s_path=Dfn_rootless.to_line path in 
+     let file = s_root^s_path in 
+     mtime file;;
+
+
+let recompute_all_info fw path =
+     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
+     and s_path=Dfn_rootless.to_line path in 
+     let file = s_root^s_path in 
+     (path,mtime file,Io.read_whole_file(Absolute_path.of_string file));;
+
 let remove_watched_files fw rootless_paths =
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
@@ -57,12 +70,10 @@ let register_rootless_path fw rootless_path=
    if not(Sys.file_exists s_full_path)
    then raise(Register_rootless_path_exn(s_full_path))
    else
-     let m_time =mtime s_full_path  
-     and content =Io.read_whole_file (Absolute_path.of_string s_full_path) in
     {
       fw with 
       Fw_wrapper_t.watched_files =  
-        (fw.Fw_wrapper_t.watched_files)@[rootless_path,m_time,content]  
+        (fw.Fw_wrapper_t.watched_files)@[recompute_all_info fw rootless_path]  
     };;
 
 let register_special_rootless_path fw rootless_path= 
@@ -71,15 +82,13 @@ let register_special_rootless_path fw rootless_path=
    if not(Sys.file_exists s_full_path)
    then raise(Register_rootless_path_exn(s_full_path))
    else
-     let m_time =mtime s_full_path  
-     and content =Io.read_whole_file (Absolute_path.of_string s_full_path) in
     {
       fw with 
       Fw_wrapper_t.special_watched_files =  
-        (fw.Fw_wrapper_t.special_watched_files)@[rootless_path,m_time,content]  
+        (fw.Fw_wrapper_t.special_watched_files)@[recompute_all_info fw rootless_path]  
     };;
 
-(*
+
 
 let relocate_watched_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
@@ -92,11 +101,11 @@ let relocate_watched_files_to fw rootless_paths new_subdir=
    {
       fw with 
       Fw_wrapper_t.watched_files = Image.image (fun triple->
-         let (path,_,_)=triple in 
+         let (path,_,content)=triple in 
          if(List.mem path rootless_paths) 
-         then let the_module=Dfb.to_module path in 
-              let new_path = s_root^s_subdir^
-         else 
+         then let new_path = Dfn_rootless.relocate_to path new_subdir in 
+              (new_path,recompute_mtime fw new_path,content)
+         else triple
       ) (fw.Fw_wrapper_t.watched_files)  
    };;
 
@@ -109,4 +118,3 @@ let relocate_module_to fw mod_name new_subdir=
    ) fw.Fw_wrapper_t.watched_files in 
    relocate_watched_files_to fw the_files new_subdir;;
 
-*)   
