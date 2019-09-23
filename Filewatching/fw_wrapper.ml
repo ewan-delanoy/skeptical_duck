@@ -45,6 +45,13 @@ let forget_module fw mod_name =
    ) fw.Fw_wrapper_t.watched_files in 
    remove_watched_files fw the_files;;
 
+let forget fw x=
+      if String.contains x '.'
+      then remove_watched_files fw [Dfn_rootless.of_line x]
+      else forget_module fw (Dfa_module.of_line(x));;
+
+
+
 let register_rootless_path fw rootless_path= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
    let s_full_path = s_root^(Dfn_rootless.to_line rootless_path)  in 
