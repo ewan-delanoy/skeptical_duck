@@ -62,7 +62,7 @@ let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
 
 let register_rootless_path x=Modify_coma_state.Reference.register_rootless_path Private.main_ref x;;
   
-let relocate_module old_hm_name new_subdir=
+let relocate_module_to old_hm_name new_subdir=
    Modify_coma_state.Reference.relocate_module_to Private.main_ref old_hm_name new_subdir;;
 
 let rename_directory old_subdir new_subdirname=
