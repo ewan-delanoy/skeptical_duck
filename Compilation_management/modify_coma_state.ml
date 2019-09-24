@@ -52,7 +52,7 @@ module After_checking = struct
          let _=Private.check_for_changes cs in 
          Coma_state.Almost_concrete.register_rootless_path cs x;; 
 
-      let relocate_module cs old_hm_name new_subdir=
+      let relocate_module_to cs old_hm_name new_subdir=
          let _=Private.check_for_changes cs in 
          Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir;; 
 
@@ -101,8 +101,8 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
-      let relocate_module cs old_hm_name new_subdir=
-         let (cs2,diff)=After_checking.relocate_module cs old_hm_name new_subdir  in
+      let relocate_module_to cs old_hm_name new_subdir=
+         let (cs2,diff)=After_checking.relocate_module_to cs old_hm_name new_subdir  in
          let msg="move "^old_hm_name^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
@@ -156,8 +156,8 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
-      let relocate_module cs old_hm_name new_subdir=
-      let cs2 = And_backup.relocate_module cs old_hm_name new_subdir in 
+      let relocate_module_to cs old_hm_name new_subdir=
+      let cs2 = And_backup.relocate_module_to cs old_hm_name new_subdir in 
       let _=Save_coma_state.save cs2 in 
       cs2;;   
 
@@ -214,7 +214,7 @@ module Reference = struct
 
 
       let relocate_module_to pcs old_hm_name new_subdir=
-         let new_cs = And_save.relocate_module (!pcs) old_hm_name new_subdir in 
+         let new_cs = And_save.relocate_module_to (!pcs) old_hm_name new_subdir in 
          pcs:=new_cs;;  
 
 
