@@ -46,7 +46,7 @@ let reco msg=Usual_coma_state.recompile (Some msg);;
 
 let regi short_path=Usual_coma_state.register_rootless_path short_path;;
 
-let relo = Usual_coma_state.relocate_module;;
+let relo = Usual_coma_state.relocate_module_to;;
 
 let ren = Usual_coma_state.rename_module;;
 
