@@ -213,7 +213,7 @@ module Reference = struct
          pcs:=new_cs;;
 
 
-      let relocate_module pcs old_hm_name new_subdir=
+      let relocate_module_to pcs old_hm_name new_subdir=
          let new_cs = And_save.relocate_module (!pcs) old_hm_name new_subdir in 
          pcs:=new_cs;;  
 
