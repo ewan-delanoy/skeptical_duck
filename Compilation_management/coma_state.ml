@@ -1745,56 +1745,23 @@ let get_module_inside_name s=
    then raise(No_module_given(s))
    else f;;
    
-let rename_value_inside_module cs s new_name=
-   let j=Substring.leftmost_index_of_in "." s in
+let rename_value_inside_module cs old_name new_name=
+   let j=Substring.leftmost_index_of_in "." old_name in
    if j<0 
-   then raise(No_module_given(s))
+   then raise(No_module_given(old_name))
    else 
-   let module_name=Cull_string.beginning (j-1) s in
+   let module_name=Cull_string.beginning (j-1) old_name in
    let endingless=decipher_module cs  module_name 
    and path=decipher_path cs  module_name in 
    let nm=Dfn_endingless.to_module endingless in
    let pre_temp2=(ancestors_at_module cs nm)@[nm] in
    let temp2=Image.image (endingless_at_module cs) pre_temp2 in
-   let all_files=Image.image  (fun eless2->
+   let preceding_files=Image.image  (fun eless2->
    	 Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
    ) temp2 in
-   let temp3=Read_ocaml_files.read_ocaml_files all_files in
-   let opt_temp4=Option.seek (fun itm->
-     (itm.Ocaml_gsyntax_item.name)=s
-   ) temp3 in
-   if opt_temp4=None
-   then raise(No_value_with_name(s))
-   else
-   let temp4=Option.unpack(opt_temp4) in
-   let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
-   let _=Overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
-   let temp3_again=Read_ocaml_files.read_ocaml_files all_files in
-   let beheaded_name=Cull_string.cobeginning j s in
-   let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
-   (Cull_string.before_rightmost beheaded_name '.',Overwriter.to_string new_name) in
-   let new_beheaded_name=Overwriter.of_string s_new_beheaded_name in
-   let s_new_full_name=module_name^"."^s_new_beheaded_name in
-   let temp4_again=Option.find (fun itm->
-     (itm.Ocaml_gsyntax_item.name)=s_new_full_name
-   ) temp3_again in
-   let k1=Listennou.find_index temp4_again temp3_again in
-   let temp5=Listennou.big_tail k1 temp3_again in
-   let temp6=Option.filter_and_unpack(
-      fun itm->
-        let txt=itm.Ocaml_gsyntax_item.content in
-        let ttemp7=Isolated_occurrences.of_in 
-           beheaded_name txt in
-        if ttemp7<>[]
-        then  let isoc=Isolated_occurrences.of_in beheaded_name txt in
-              let replacings=Image.image (fun p->(p,new_beheaded_name)) isoc in
-              let new_txt=Overwrite_at_intervals.inside_string
-                   replacings txt in
-             Some(itm.Ocaml_gsyntax_item.interval_for_content,
-                  Overwriter.of_string new_txt)
-        else None   
-   ) temp5 in
-   Overwrite_at_intervals.inside_file temp6 path;;
+   Rename_moduled_value_in_file.rename_moduled_value_in_file 
+      preceding_files old_name new_name path;;
+
 
 
 end;;
