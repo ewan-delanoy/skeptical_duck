@@ -118,3 +118,36 @@ let relocate_module_to fw mod_name new_subdir=
    ) fw.Fw_wrapper_t.watched_files in 
    relocate_watched_files_to fw the_files new_subdir;;
 
+let helper_during_string_replacement fw (old_string,new_string) accu old_list=
+    let new_list =Image.image (
+       fun triple->
+         let (old_path,_,old_content)=triple in 
+         if not(Supstring.contains old_content old_string)
+         then triple 
+         else 
+            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to (Fw_wrapper_field.root fw) old_path) in 
+            let _=(
+             Replace_inside.replace_inside_file (old_string,new_string) ap;
+             accu:=old_path::(!accu)
+            ) in 
+            recompute_all_info fw old_path 
+         ) old_list in 
+    (new_list,List.rev(!accu));;
+
+let replace_string fw (old_string,new_string)=
+    let ref_for_usual_ones=ref[] 
+    and ref_for_special_ones=ref[] in 
+    let (new_usual_files,changed_usual_files)=
+        helper_during_string_replacement 
+           fw (old_string,new_string) ref_for_usual_ones fw.Fw_wrapper_t.watched_files 
+    and  (new_special_files,changed_special_files)=
+        helper_during_string_replacement 
+           fw (old_string,new_string) ref_for_special_ones fw.Fw_wrapper_t.special_watched_files   in 
+    let new_fw ={
+       fw with
+       Fw_wrapper_t.watched_files         = new_usual_files ;
+       Fw_wrapper_t.special_watched_files = new_special_files ;
+    }  in 
+    (new_fw,(changed_usual_files,changed_special_files));;         
+       
+  
