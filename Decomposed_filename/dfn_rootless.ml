@@ -13,10 +13,18 @@ let to_line (Dfn_rootless_t.J(s,m,e))=
    (Dfa_subdirectory.connectable_to_subpath s)^
    (Dfa_module.to_line m)^(Dfa_ending.connectable_to_modulename e);;
 
+let to_subdirectory (Dfn_rootless_t.J(s,m,e))=s;;
+
 let to_module (Dfn_rootless_t.J(s,m,e))=m;;
 
 let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
      
+let rename_subdirectory_as old_path (old_subdir,new_subdir)=
+   let (Dfn_rootless_t.J(s,m,e))=old_path in 
+   if s=old_subdir
+   then Dfn_rootless_t.J(new_subdir,m,e)
+   else old_path;;
+
 
 let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
    Concrete_object_t.Variant("Dfn_"^"rootless.J",
