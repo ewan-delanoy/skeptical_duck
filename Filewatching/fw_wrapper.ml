@@ -166,7 +166,7 @@ let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_p
        Fw_wrapper_t.watched_files = new_watched_files
    };;  
 
-(*
+
 let helper1_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root triple=
    let (rootless_path,_,_)=triple in 
    if Dfn_rootless.to_subdirectory rootless_path = old_subdir 
@@ -176,8 +176,8 @@ let helper1_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root tripl
         let _=Unix_command.hardcore_uc cmd in 
         recompute_all_info fw new_rootless_path;;
 
-let helper2_during_subdirectory_renaming (old_subdir,new_subdir) s_root l_triples =
-     Image.image (helper1_during_subdirectory_renaming (old_subdir,new_subdir) s_root) l_triples;;
+let helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root l_triples =
+     Image.image (helper1_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root) l_triples;;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw)  in 
@@ -186,4 +186,3 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       Fw_wrapper_t.watched_files = helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root (fw.Fw_wrapper_t.watched_files)  ;
       Fw_wrapper_t.special_watched_files = helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root (fw.Fw_wrapper_t.special_watched_files)  ;
    };;   
-*)
