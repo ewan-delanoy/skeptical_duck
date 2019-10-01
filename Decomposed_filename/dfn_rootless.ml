@@ -19,7 +19,7 @@ let to_module (Dfn_rootless_t.J(s,m,e))=m;;
 
 let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
      
-let rename_subdirectory_as old_path (old_subdir,new_subdir)=
+let rename_subdirectory_as  (old_subdir,new_subdir) old_path=
    let (Dfn_rootless_t.J(s,m,e))=old_path in 
    if s=old_subdir
    then Dfn_rootless_t.J(new_subdir,m,e)
