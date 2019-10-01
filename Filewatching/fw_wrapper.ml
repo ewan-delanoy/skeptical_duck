@@ -186,3 +186,30 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       Fw_wrapper_t.watched_files = helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root (fw.Fw_wrapper_t.watched_files)  ;
       Fw_wrapper_t.special_watched_files = helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root (fw.Fw_wrapper_t.special_watched_files)  ;
    };;   
+
+let helper1_during_inspection fw accu triple=
+   let (rootless_path,old_mtime,_)=triple in 
+   let new_mtime = recompute_mtime fw rootless_path in 
+   if new_mtime <> old_mtime
+   then let _=(accu:=rootless_path::(!accu)) in 
+        recompute_all_info fw rootless_path
+   else triple;;
+
+let helper2_during_inspection fw accu l_triples =
+   let new_l_triples = Image.image (helper1_during_inspection fw accu) l_triples in 
+   (new_l_triples,List.rev(!accu));;
+
+let inspect_and_update fw = 
+    let ref_for_usual_ones=ref[] 
+    and ref_for_special_ones=ref[] in 
+    let (new_usual_files,changed_usual_files)=
+        helper2_during_inspection fw ref_for_usual_ones fw.Fw_wrapper_t.watched_files 
+    and  (new_special_files,changed_special_files)=
+        helper2_during_inspection fw ref_for_special_ones fw.Fw_wrapper_t.special_watched_files   in 
+    let new_fw ={
+       fw with
+       Fw_wrapper_t.watched_files         = new_usual_files ;
+       Fw_wrapper_t.special_watched_files = new_special_files ;
+    }  in 
+    (new_fw,(changed_usual_files,changed_special_files));;         
+       
