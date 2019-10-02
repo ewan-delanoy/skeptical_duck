@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-let salt = "Fw_"^"configuration.";;
+let salt = "Fw_"^"configuration_t.";;
 
 let root_label                      = salt ^ "root";;
 let ignored_subdirectories_label    = salt ^ "ignored_subdirectories";;
