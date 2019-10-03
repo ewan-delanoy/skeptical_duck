@@ -42,3 +42,6 @@ let constructor root_dir ign_subdirs ign_files =
       ignored_files = ign_files;
     };; 
 
+let empty_one root_dir = constructor root_dir [] [];;
+
+
