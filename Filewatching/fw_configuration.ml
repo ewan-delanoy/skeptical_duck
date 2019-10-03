@@ -35,4 +35,10 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
+let constructor root_dir ign_subdirs ign_files = 
+    {
+      Fw_configuration_t.root = root_dir;
+      ignored_subdirectories = ign_subdirs;
+      ignored_files = ign_files;
+    };; 
 
