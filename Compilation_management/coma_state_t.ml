@@ -6,7 +6,7 @@
 *)
 
 type t={
-     root : Dfa_root_t.t;
+     frontier_with_unix_world : Fw_wrapper_t.t;
      dir_for_backup : Dfa_root_t.t;
      gitpush_after_backup : bool;
      modules : Dfa_module_t.t list ;

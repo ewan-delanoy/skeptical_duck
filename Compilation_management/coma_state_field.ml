@@ -19,8 +19,8 @@ let to_t x=(Coma_state_t.CS x);;
 *)
 (* End of converters *)
 
-
-let root cs=(of_t cs).Coma_state_t.root;;
+let configuration cs=((of_t cs).Coma_state_t.frontier_with_unix_world).Fw_wrapper_t.configuration;;
+let root cs= Fw_configuration.root (configuration cs);;
 let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
 let gitpush_after_backup cs=(of_t cs).Coma_state_t.gitpush_after_backup;;   
 
@@ -181,8 +181,10 @@ let modify_all_needed_dirs cs f =
 
 (* End of adhoc setters *)
 
-let empty_one x y b=to_t({
-     Coma_state_t.root =x;
+let empty_one x y b (ign_subdirs,ign_files)=
+    let config = Fw_configuration.constructor x ign_subdirs ign_files in 
+    to_t({
+     Coma_state_t.frontier_with_unix_world= Fw_wrapper.empty_one config;
      dir_for_backup =y;
      gitpush_after_backup=b;
      modules = [];
@@ -424,7 +426,7 @@ module Private = struct
 
 let salt = "Coma_"^"state_field.";;
 
-let root_label                          = salt ^ "root";;
+let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
 let dir_for_backup_label                = salt ^ "dir_for_backup";;
 let gitpush_after_backup_label          = salt ^ "gitpush_after_backup";;
 let modules_label                       = salt ^ "modules";;
@@ -447,7 +449,7 @@ let cr_to_pair f crobj= Concrete_object_field.to_pair_list  Dfa_module.of_concre
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
    {
-      Coma_state_t.root = Dfa_root.of_concrete_object(g root_label);
+      Coma_state_t.frontier_with_unix_world = Fw_wrapper.of_concrete_object (g frontier_with_unix_world_label);
       dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
       gitpush_after_backup = Concrete_object_field.to_bool (g gitpush_after_backup_label);
       modules = Concrete_object_field.to_list Dfa_module.of_concrete_object (g modules_label);
@@ -470,7 +472,7 @@ let of_concrete_object ccrt_obj =
 let to_concrete_object cs=
    let items= 
    [
-    root_label, Dfa_root.to_concrete_object cs.Coma_state_t.root;
+    frontier_with_unix_world_label, Fw_wrapper.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
     dir_for_backup_label, Dfa_root.to_concrete_object cs.Coma_state_t.dir_for_backup;
     gitpush_after_backup_label, Concrete_object_field.of_bool cs.Coma_state_t.gitpush_after_backup;
     modules_label, Concrete_object_field.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;

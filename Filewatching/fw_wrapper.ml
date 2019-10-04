@@ -256,3 +256,12 @@ let to_concrete_object wr=
    Concrete_object_t.Record items;;
 
 end;;
+
+let of_concrete_object = Private.of_concrete_object;;
+let to_concrete_object = Private.to_concrete_object;;
+
+let empty_one config= {
+   Fw_wrapper_t.configuration = config;
+   watched_files = [];
+   special_watched_files = [];
+};; 
