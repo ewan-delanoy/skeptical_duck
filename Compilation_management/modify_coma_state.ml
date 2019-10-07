@@ -5,6 +5,16 @@
 
 *)
 
+(*
+module External_followed_by_internal = struct
+
+let forget cs  x=
+   let old_fw = Coma_state_field.fron
+
+end;;
+
+*)
+
 module After_checking = struct
 
       exception Recompilation_needed of Dfa_module_t.t list;;

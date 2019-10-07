@@ -19,7 +19,8 @@ let to_t x=(Coma_state_t.CS x);;
 *)
 (* End of converters *)
 
-let configuration cs=((of_t cs).Coma_state_t.frontier_with_unix_world).Fw_wrapper_t.configuration;;
+let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
+let configuration cs=(frontier_with_unix_world cs).Fw_wrapper_t.configuration;;
 let root cs= Fw_configuration.root (configuration cs);;
 let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
 let gitpush_after_backup cs=(of_t cs).Coma_state_t.gitpush_after_backup;;   
