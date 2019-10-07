@@ -265,3 +265,6 @@ let empty_one config= {
    watched_files = [];
    special_watched_files = [];
 };; 
+
+let forget = Private.forget;;
+

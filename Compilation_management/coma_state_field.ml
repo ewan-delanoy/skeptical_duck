@@ -81,6 +81,10 @@ let all_used_subdirs cs =
 
 (* Setters  *)
 
+let set_frontier_with_unix_world cs v= 
+   let ccs=of_t cs in 
+   to_t({ccs with Coma_state_t.frontier_with_unix_world=v});;
+
 
 let set_push_after_backup cs bowl = let ccs=of_t cs in 
                             to_t({ccs with Coma_state_t.gitpush_after_backup=bowl });;

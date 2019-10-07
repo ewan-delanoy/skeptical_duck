@@ -5,15 +5,17 @@
 
 *)
 
+
 (*
 module External_followed_by_internal = struct
 
 let forget cs  x=
-   let old_fw = Coma_state_field.fron
+   let old_fw = Coma_state_field.frontier_with_unix_world cs in 
+   let new_fw = Fw_wrapper.Private.forget 
 
 end;;
-
 *)
+
 
 module After_checking = struct
 
