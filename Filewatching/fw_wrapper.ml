@@ -258,7 +258,6 @@ let to_concrete_object wr=
 end;;
 
 let of_concrete_object = Private.of_concrete_object;;
-let to_concrete_object = Private.to_concrete_object;;
 
 let empty_one config= {
    Fw_wrapper_t.configuration = config;
@@ -267,4 +266,12 @@ let empty_one config= {
 };; 
 
 let forget = Private.forget;;
+
+let register_rootless_path = Private.register_rootless_path;;
+
+let relocate_module_to = Private.relocate_module_to;;
+
+let rename_subdirectory_as = Private.rename_subdirectory_as;;
+
+let to_concrete_object = Private.to_concrete_object;;
 
