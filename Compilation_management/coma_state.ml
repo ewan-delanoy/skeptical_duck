@@ -388,7 +388,7 @@ let do_file_renaming mlx new_name=
 
 exception Future_name_already_taken of Dfa_module_t.t;;
 
-let rename_module_on_monitored_modules cs old_name new_name=
+let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
   let old_nm=Dfn_endingless.to_module old_name in
   let future_new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
@@ -416,7 +416,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let temp3=Image.image Dfn_full.to_absolute_path all_acolytes in
   let temp4=Option.filter_and_unpack (
     fun s->
-    let full_path = Dfn_join.root_to (root cs) s in 
+    let full_path = Dfn_join.root_to root_dir s in 
     try Some(Dfn_full.to_absolute_path full_path) with _->None
   ) [
       Coma_constant.rootless_path_for_printersfile;
@@ -428,7 +428,13 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
-      ".cm* ") in
+      ".cm* ") in 
+  (old_files,old_nm,new_files,new_eless,new_mname,modified_files);;
+
+
+let rename_module_on_monitored_modules cs old_name new_name=
+  let  (old_files,old_nm,new_files,new_eless,new_mname,modified_files)=
+      physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
   let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
   and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
   let cs2=Coma_state_field.change_one_module_name cs old_nm new_mname in 
