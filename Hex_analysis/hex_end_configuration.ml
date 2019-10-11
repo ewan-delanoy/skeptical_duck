@@ -46,35 +46,6 @@ let immediate_dangers configs =
          else None
    ) configs;;
 
-exception Not_a_subcase of Hex_end_configuration_t.t * Hex_end_configuration_t.t ;;
-exception Escape_still_exists of Hex_cell_t.t;;
-
-
-let check_for_union big_union l=
-  let opt1=Option.seek (fun elt_in_union -> 
-    not(
-      Hex_cell_set.is_included_in
-             elt_in_union.Hex_end_configuration_t.passive_part
-             big_union.Hex_end_configuration_t.passive_part
-    )) l in
-  if opt1<>None
-  then raise(Not_a_subcase(Option.unpack opt1,big_union))
-  else 
-  let mandatory_sets=Image.image (
-    fun elt_in_union -> 
-      Hex_cell_set.setminus
-             elt_in_union.Hex_end_configuration_t.active_part
-             big_union.Hex_end_configuration_t.active_part     
-  ) l in  
-  let mandatory_set = Hex_cell_set.fold_intersect mandatory_sets in 
-  if Hex_cell_set.length (mandatory_set)>0
-  then let escape = Hex_cell_set.min mandatory_set in 
-       raise(Escape_still_exists(escape)) 
-  else true;;     
-
-
-
-
   
 
 let announce_beneficiary ="\nBeneficiary : \n";;
