@@ -92,6 +92,7 @@ let to_string config=
   announce_passive_part^descr3^
   announce_index^descr4;;
 
+
 let of_string s =
    let s1=Cull_string.cobeginning 
      (String.length announce_beneficiary) s in 

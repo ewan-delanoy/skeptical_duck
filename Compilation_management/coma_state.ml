@@ -396,8 +396,6 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
   then raise(Future_name_already_taken(future_new_nm))
   else 
   let old_acolytes=acolytes_at_module cs old_nm in
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
-       old_acolytes in 
   let new_acolytes=Image.image 
      (fun mlx->do_file_renaming mlx new_name) 
      old_acolytes in
@@ -423,18 +421,23 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
     ] in
   let modified_files=Image.image Dfn_full.to_rootless_line all_acolytes in  
   let _=Image.image changer (temp3@temp4) in
-  let s_root=Dfa_root.connectable_to_subpath root_dir in   
-  let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in   
-  let _=Unix_command.uc
-      ("rm -f "^s_root^s_build_dir^
-      (Dfa_module.to_line old_nm)^
-      ".cm* ") in 
-  (old_files,old_nm,new_files,new_eless,new_mname,modified_files);;
+  (new_files,new_eless,new_mname,modified_files);;
 
 
 let rename_module_on_monitored_modules cs old_name new_name=
-  let  (old_files,old_nm,new_files,new_eless,new_mname,modified_files)=
+  let root_dir=root cs in 
+  let old_nm=Dfn_endingless.to_module old_name in
+  let s_root=Dfa_root.connectable_to_subpath root_dir in   
+  let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
+  let old_acolytes=acolytes_at_module cs old_nm in
+  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
+       old_acolytes in  
+  let  (new_files,new_eless,new_mname,modified_files)=
       physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
+  let _=Unix_command.uc
+      ("rm -f "^s_root^s_build_dir^
+      (Dfa_module.to_line old_nm)^
+      ".cm* ") in     
   let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
   and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
   let cs2=Coma_state_field.change_one_module_name cs old_nm new_mname in 
