@@ -421,7 +421,7 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
     ] in
   let modified_files=Image.image Dfn_full.to_rootless_line all_acolytes in  
   let _=Image.image changer (temp3@temp4) in
-  (new_files,new_eless,new_mname,modified_files);;
+  (new_files,new_eless,modified_files);;
 
 
 let rename_module_on_monitored_modules cs old_name new_name=
@@ -430,9 +430,9 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
   let old_acolytes=acolytes_at_module cs old_nm in
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
-       old_acolytes in  
-  let  (new_files,new_eless,new_mname,modified_files)=
+  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+  let  (new_files,new_eless,modified_files)=
       physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
@@ -440,11 +440,11 @@ let rename_module_on_monitored_modules cs old_name new_name=
       ".cm* ") in     
   let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
   and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
-  let cs2=Coma_state_field.change_one_module_name cs old_nm new_mname in 
-  let cs3=set_principal_mt_at_module cs2 new_mname principal_mt in 
-  let cs4=set_mli_mt_at_module cs3 new_mname mli_mt in 
-  let cs5=set_product_up_to_date_at_module cs4 new_mname false in 
-  let replacer=Image.image(function x->if x=old_nm then new_mname else x) in
+  let cs2=Coma_state_field.change_one_module_name cs old_nm new_nm in 
+  let cs3=set_principal_mt_at_module cs2 new_nm principal_mt in 
+  let cs4=set_mli_mt_at_module cs3 new_nm mli_mt in 
+  let cs5=set_product_up_to_date_at_module cs4 new_nm false in 
+  let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
   let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
   let old_preq_types=preq_types cs5 in 
   let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
