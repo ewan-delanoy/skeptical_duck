@@ -395,6 +395,10 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
   if Coma_state_field.test_module_for_registration cs  new_nm
   then raise(Future_name_already_taken(new_nm))
   else 
+  let old_acolytes=acolytes_at_module cs old_nm in
+  let _=Image.image 
+     (fun mlx->do_file_renaming mlx new_name) 
+     old_acolytes in
   let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_nm in
   let separated_acolytes=Option.filter_and_unpack(
     fun mn->
