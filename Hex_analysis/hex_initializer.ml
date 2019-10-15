@@ -11,7 +11,7 @@ This file should be used not compiled.
 (* Configs start here *)
 
 
- Hex_persistent.configs_ref:=Hex_ec_double_list.of_string(
+ Hex_persistent.configs_ref:=Hex_ec_double_indexed_list.of_string(
 "
 Beneficiary : 
 1

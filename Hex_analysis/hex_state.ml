@@ -14,14 +14,14 @@ let initial_state ()= {
 let absorb_move sta cell=
    let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
    {
-      Hex_state_t.config_remains = Hex_ec_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
+      Hex_state_t.config_remains = Hex_ec_double_indexed_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.moves_before = cell::(sta.Hex_state_t.moves_before) ;
    };;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
-  let dangers = Hex_ec_double_list.immediate_dangers player sta.Hex_state_t.config_remains in 
+  let dangers = Hex_ec_double_indexed_list.immediate_dangers player sta.Hex_state_t.config_remains in 
   let condition = (
      match dangers with 
      []->None
