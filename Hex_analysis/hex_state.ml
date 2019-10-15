@@ -5,7 +5,6 @@
 *)
 
 
-
 let initial_state ()= {
    Hex_state_t.config_remains = (!(Hex_persistent.configs_ref)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
