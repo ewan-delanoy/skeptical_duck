@@ -391,19 +391,11 @@ exception Future_name_already_taken of Dfa_module_t.t;;
 let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
   let old_nm=Dfn_endingless.to_module old_name in
-  let future_new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
-  if Coma_state_field.test_module_for_registration cs  future_new_nm
-  then raise(Future_name_already_taken(future_new_nm))
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
+  if Coma_state_field.test_module_for_registration cs  new_nm
+  then raise(Future_name_already_taken(new_nm))
   else 
-  let old_acolytes=acolytes_at_module cs old_nm in
-  let new_acolytes=Image.image 
-     (fun mlx->do_file_renaming mlx new_name) 
-     old_acolytes in
-  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
-     new_acolytes in 
-  let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
-  let new_mname=Dfn_full.to_module (List.hd new_acolytes) in
-  let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_mname in
+  let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_nm in
   let separated_acolytes=Option.filter_and_unpack(
     fun mn->
      if List.mem old_nm (ancestors_at_module cs mn)
@@ -421,7 +413,7 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
     ] in
   let modified_files=Image.image Dfn_full.to_rootless_line all_acolytes in  
   let _=Image.image changer (temp3@temp4) in
-  (new_files,new_eless,modified_files);;
+  modified_files;;
 
 
 let rename_module_on_monitored_modules cs old_name new_name=
@@ -429,10 +421,16 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let old_nm=Dfn_endingless.to_module old_name in
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
-  let old_acolytes=acolytes_at_module cs old_nm in
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
-  let  (new_files,new_eless,modified_files)=
+  let old_acolytes=acolytes_at_module cs old_nm in
+  let new_acolytes=Image.image (
+    fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
+  ) old_acolytes in 
+  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
+  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
+     new_acolytes in 
+  let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
+  let  modified_files=
       physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
