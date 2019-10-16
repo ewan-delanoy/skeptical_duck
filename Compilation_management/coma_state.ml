@@ -400,14 +400,20 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
      (fun mlx->do_file_renaming mlx new_name) 
      old_acolytes in
   let changer=Look_for_module_names.change_module_name_in_ml_file old_nm new_nm in
-  let separated_acolytes=Option.filter_and_unpack(
+  let chengar=(fun 
+     rootless ->
+       let full_path = Dfn_join.root_to root_dir rootless in
+       let ap =  Dfn_full.to_absolute_path full_path in 
+       Look_for_module_names.change_module_name_in_ml_file old_nm new_nm ap
+  ) in 
+  let separated_acolytes_below=Option.filter_and_unpack(
     fun mn->
      if List.mem old_nm (ancestors_at_module cs mn)
     then Some(acolytes_at_module cs mn)
     else None
 ) (ordered_list_of_modules cs) in
-  let all_acolytes=List.flatten separated_acolytes in
-  let temp3=Image.image Dfn_full.to_absolute_path all_acolytes in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
+  let temp3=Image.image Dfn_full.to_absolute_path all_acolytes_below in
   let temp4=Option.filter_and_unpack (
     fun s->
     let full_path = Dfn_join.root_to root_dir s in 
@@ -415,7 +421,7 @@ let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
   ) [
       Coma_constant.rootless_path_for_printersfile;
     ] in
-  let modified_files=Image.image Dfn_full.to_rootless_line all_acolytes in  
+  let modified_files=Image.image Dfn_full.to_rootless_line all_acolytes_below in  
   let _=Image.image changer (temp3@temp4) in
   modified_files;;
 
@@ -434,6 +440,13 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
      new_acolytes in 
   let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
+  let separated_acolytes_below=Option.filter_and_unpack(
+    fun mn->
+     if List.mem old_nm (ancestors_at_module cs mn)
+    then Some(acolytes_at_module cs mn)
+    else None
+) (ordered_list_of_modules cs) in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
   let  modified_files=
       physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
   let _=Unix_command.uc

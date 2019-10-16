@@ -9,7 +9,7 @@ let to_subdirectory  (Dfn_full_t.J(r,s,m,e))=s;;
 let to_module  (Dfn_full_t.J(r,s,m,e))=m;;
 let to_ending (Dfn_full_t.J(r,s,m,e))=e;;
 
-
+let to_rootless (Dfn_full_t.J(r,s,m,e))=(Dfn_rootless_t.J(s,m,e));; 
 let to_endingless (Dfn_full_t.J(r,s,m,e))=(Dfn_endingless_t.J(r,s,m));; 
 
    
