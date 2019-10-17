@@ -388,7 +388,7 @@ let do_file_renaming mlx new_name=
 
 exception Future_name_already_taken of Dfa_module_t.t;;
 
-let physical_part_in_rename_module_on_monitored_modules cs old_name new_name=
+let physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name)=
   let root_dir=root cs in 
   let old_nm=Dfn_endingless.to_module old_name in
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
@@ -438,7 +438,7 @@ let rename_module_on_monitored_modules cs old_name new_name=
 ) (ordered_list_of_modules cs) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
   let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
-  let  _=physical_part_in_rename_module_on_monitored_modules cs old_name new_name in 
+  let  _=physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name) in 
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
