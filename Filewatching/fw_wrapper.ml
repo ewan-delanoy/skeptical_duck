@@ -255,16 +255,15 @@ let to_concrete_object wr=
    ]  in
    Concrete_object_t.Record items;;
 
-let rename_module_in_filename_only fw rootless_path nonslashed_new_name =
+let rename_module_in_filename_only fw rootless_path new_module =
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
    and (Dfn_rootless_t.J(s,m,e))=rootless_path
-   and  new_name = No_slashes.to_string nonslashed_new_name in 
+   and  new_name = Dfa_module.to_line new_module in 
    let s_old_ap=s_root^(Dfn_rootless.to_line rootless_path)
    and s_new_ap=s_root^(Dfa_subdirectory.connectable_to_subpath s)
                 ^new_name^(Dfa_ending.connectable_to_modulename e) in 
    let cmd="mv "^s_old_ap^" "^s_new_ap in              
-   let _ =Unix_command.hardcore_uc cmd in 
-   let new_module = snd(Dfn_common.string_to_sm new_name) in 
+   let _ =Unix_command.hardcore_uc cmd in  
    let new_rootless_path=Dfn_rootless_t.J(s,new_module,e) 
    and old_watched_files = fw.Fw_wrapper_t.watched_files  in    
    let new_watched_files = Image.image (
@@ -279,8 +278,48 @@ let rename_module_in_filename_only fw rootless_path nonslashed_new_name =
       Fw_wrapper_t.watched_files = new_watched_files
    }     ;;
     
-   
+let rename_module_in_files fw (old_module,new_module) involved_files =
+  let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
+  let _=List.iter (
+    fun rootless_path->
+      let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless_path)) in 
+      Look_for_module_names.change_module_name_in_ml_file old_module new_module ap 
+  ) involved_files in 
+  let old_watched_files = fw.Fw_wrapper_t.watched_files  in    
+  let new_watched_files = Image.image (
+     fun triple->
+       let (rootless,_,_)=triple in 
+       if List.mem rootless involved_files
+       then recompute_all_info fw rootless 
+       else triple 
+   )  old_watched_files in 
+   {
+      fw with 
+      Fw_wrapper_t.watched_files = new_watched_files
+   }     ;;
       
+let rename_module_in_special_files fw (old_module,new_module) =
+  let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
+  let old_special_files = fw.Fw_wrapper_t.special_watched_files   in    
+  let new_special_files = Image.image (
+     fun triple->
+       let (rootless,mtime,content)=triple in 
+       if List.mem old_module (Look_for_module_names.names_in_ml_ocamlcode content)
+       then let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless)) in 
+            let _=Look_for_module_names.change_module_name_in_ml_file old_module new_module ap in 
+            recompute_all_info fw rootless 
+       else triple 
+   )  old_special_files in 
+   {
+      fw with 
+      Fw_wrapper_t.special_watched_files = new_special_files
+   }     ;;   
+
+let rename_module_everywhere fw rootless_path new_module involved_files=
+   let (Dfn_rootless_t.J(_,old_module,_))=rootless_path in
+   let fw2=rename_module_in_filename_only fw rootless_path new_module in 
+   let fw3=rename_module_in_files fw2 (old_module,new_module) involved_files in 
+   rename_module_in_special_files fw3 (old_module,new_module);;
 
 end;;
 
@@ -298,7 +337,7 @@ let register_rootless_path = Private.register_rootless_path;;
 
 let relocate_module_to = Private.relocate_module_to;;
 
-let rename_module_in_filename_only = Private.rename_module_in_filename_only;;
+let rename_module = Private.rename_module_everywhere;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 
