@@ -255,23 +255,30 @@ let to_concrete_object wr=
    ]  in
    Concrete_object_t.Record items;;
 
-let rename_module_in_filename_only fw rootless_path new_module =
-   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
-   and (Dfn_rootless_t.J(s,m,e))=rootless_path
-   and  new_name = Dfa_module.to_line new_module in 
+let helper1_inside_module_renaming_in_filename fw s_new_module rootless_path =
+  let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
+   and (Dfn_rootless_t.J(s,m,e))=rootless_path in 
    let s_old_ap=s_root^(Dfn_rootless.to_line rootless_path)
    and s_new_ap=s_root^(Dfa_subdirectory.connectable_to_subpath s)
-                ^new_name^(Dfa_ending.connectable_to_modulename e) in 
-   let cmd="mv "^s_old_ap^" "^s_new_ap in              
-   let _ =Unix_command.hardcore_uc cmd in  
-   let new_rootless_path=Dfn_rootless_t.J(s,new_module,e) 
-   and old_watched_files = fw.Fw_wrapper_t.watched_files  in    
+                ^s_new_module^(Dfa_ending.connectable_to_modulename e) in 
+   "mv "^s_old_ap^" "^s_new_ap;;
+
+let helper2_inside_module_renaming_in_filename fw new_module rootless_path =
+  let (Dfn_rootless_t.J(s,m,e))=rootless_path in 
+  (rootless_path,Dfn_rootless_t.J(s,new_module,e));;
+
+let rename_module_in_filename_only fw rootless_paths new_module =
+   let s_new_module = Dfa_module.to_line new_module in 
+   let l_cmds = Image.image (helper1_inside_module_renaming_in_filename fw s_new_module) rootless_paths in 
+   let replacements = Image.image (helper2_inside_module_renaming_in_filename fw new_module) rootless_paths in            
+   let _ =Unix_command.conditional_multiple_uc l_cmds in  
+   let old_watched_files = fw.Fw_wrapper_t.watched_files  in    
    let new_watched_files = Image.image (
      fun triple->
        let (rootless,_,_)=triple in 
-       if rootless<>rootless_path 
-       then triple 
-       else recompute_all_info fw new_rootless_path 
+       match Option.seek (fun (old_one,_)->old_one=rootless) replacements with  
+       Some(_,new_rootless_path)-> recompute_all_info fw new_rootless_path  
+       |None -> triple 
    )  old_watched_files in 
    {
       fw with 
@@ -315,9 +322,9 @@ let rename_module_in_special_files fw (old_module,new_module) =
       Fw_wrapper_t.special_watched_files = new_special_files
    }     ;;   
 
-let rename_module_everywhere fw rootless_path new_module involved_files=
-   let (Dfn_rootless_t.J(_,old_module,_))=rootless_path in
-   let fw2=rename_module_in_filename_only fw rootless_path new_module in 
+let rename_module_everywhere fw rootless_paths new_module involved_files=
+   let (Dfn_rootless_t.J(_,old_module,_))=List.hd rootless_paths in
+   let fw2=rename_module_in_filename_only fw rootless_paths new_module in 
    let fw3=rename_module_in_files fw2 (old_module,new_module) involved_files in 
    rename_module_in_special_files fw3 (old_module,new_module);;
 
