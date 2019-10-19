@@ -17,6 +17,10 @@ let  apply_condition opt_condition cell_set=match opt_condition with
 let fold_intersect l=  
     let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
     Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp renamed_l));;
+let fold_merge l=  
+    let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
+    Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_teuzin Hex_cell.cmp renamed_l));;
+
 let is_included_in (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
         Ordered.ental Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;    
 let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
