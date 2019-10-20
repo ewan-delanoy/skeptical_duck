@@ -109,15 +109,43 @@ let create_new_strategy_in_ref factory_ref static_constructor indices =
   let (new_factory,new_ec)=create_new_strategy (!factory_ref) static_constructor indices in 
   let _=(factory_ref:=new_factory) in new_ec;;
 
+let create_new_strategies old_factory entries =
+   let walker=ref(old_factory) in 
+   let _=Image.image (fun (constr,indices)->create_new_strategy_in_ref walker constr indices) in 
+   !walker;;
+
+
 let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor indices =
   match player with 
    Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor indices 
   |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor indices ;;
 
+let announce_beneficiary ="\nBeneficiary : \n";;
+let announce_data ="\nData : \n";;
 
+let to_string  (Hex_strategy_factory_t.F(player,l))=
+   let shortened_l=Image.image (fun (x,y,_)->(x,y)) l in 
+   let descr1=Hex_player.to_string player 
+   and descr2=Hex_strategy_entry_summary.list_to_string shortened_l in 
+   announce_beneficiary^descr1^announce_data^descr2;;
 
+let of_string text = 
+   let text1 = Cull_string.two_sided_cutting (announce_beneficiary,"") text in 
+   let i1=Substring.leftmost_index_of_in announce_data text1 in
+   let j1=i1+(String.length announce_data)-1 in 
+   let descr1=Cull_string.interval text1 1 (i1-1) 
+   and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
+   let initial_one = Hex_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
+   create_new_strategies initial_one (Hex_strategy_entry_summary.list_of_string descr2);;
 
 end;;
 
-let empty_one player = Hex_strategy_factory_t.F(player,[]);;
+let fill_with_string raf text= (raf:=Private.of_string text);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
+let empty_one player = Hex_strategy_factory_t.F(player,[]);;
+let to_string raf = Private.to_string (!raf);;
+
+
+
+
+
