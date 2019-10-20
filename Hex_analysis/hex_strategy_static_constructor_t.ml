@@ -6,6 +6,6 @@
 
 type t= 
     Basic_Linker of Hex_cell_set_t.t * Hex_cell_pair_set_t.t
-   |Glued 
+   |Gluing 
    |Disjunction of Hex_cell_t.t  list;;
    

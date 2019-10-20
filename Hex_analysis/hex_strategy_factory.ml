@@ -27,7 +27,7 @@ let compute_parts factory (static_constructor,indices)=
     Hex_strategy_static_constructor_t.Basic_Linker(active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
         let temp2=Image.image (fun (x,y)->Hex_cell_set.safe_set [x;y]) passive_pairs in 
         (active_ones,Hex_cell_set.fold_merge temp2)
-    | Glued -> (Hex_cell_set.fold_merge active_parts,Hex_cell_set.fold_merge passive_parts) 
+    | Gluing -> (Hex_cell_set.fold_merge active_parts,Hex_cell_set.fold_merge passive_parts) 
     | Disjunction (cells)->
         let temp3=List.combine cells active_parts in 
         let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
@@ -98,7 +98,7 @@ let check_disjunction factory cells indices=
 
 let check_new_strategy factory static_constructor indices = match static_constructor with 
   Hex_strategy_static_constructor_t.Basic_Linker(active_ones,passive_pairs)->check_basic_linker (active_ones,passive_pairs)
-  | Glued -> check_gluing factory indices 
+  | Gluing -> check_gluing factory indices 
   | Disjunction (cells)->check_disjunction factory cells indices;;
 
 let create_new_strategy factory static_constructor indices =
