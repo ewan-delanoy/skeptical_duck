@@ -245,3 +245,17 @@ partition_from_set_of_ranges [(3,7);(41,52)] 100;;
 partition_from_set_of_ranges [(1,7);(41,52)] 100;;
 
 *)
+
+let extract_intervals_in_complement l n =
+   let enhanced_l = 0::(l@[n+1]) in 
+   let temp1=universal_delta_list enhanced_l in
+   let temp2= Image.image (fun (x,y)->(x+1,y-1)) temp1 in 
+   List.filter (fun (a,b)->a<=b) temp2;;
+
+(*
+
+extract_intervals_in_complement [3;7;8;20] 30;;
+extract_intervals_in_complement [1;7;8;20] 30;;
+extract_intervals_in_complement [1;7;8;30] 30;;
+
+*)   
