@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_strategy_constructor_t.ml";;
+#use"Hex_analysis/hex_strategy_static_constructor_t.ml";;
 
 *)
 
