@@ -4,6 +4,7 @@
 
 *)
 
+
 let joiner = " - ";;
 
 let cell_list_of_string s =
@@ -12,6 +13,10 @@ let cell_list_of_string s =
 
 let cell_list_to_string l=
   String.concat joiner (Image.image Hex_cell.to_string l);;
+
+let cell_pair_of_string text =
+   let l=cell_list_of_string text in 
+   (List.nth l 0,List.nth l 1);;
 
 let cell_pair_to_string (cell1,cell2)=cell_list_to_string [cell1;cell2];;
   
