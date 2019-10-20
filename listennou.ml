@@ -259,3 +259,16 @@ extract_intervals_in_complement [1;7;8;20] 30;;
 extract_intervals_in_complement [1;7;8;30] 30;;
 
 *)   
+
+
+let split_list_in_half l=
+   let temp1=Ennig.index_everything(l) in 
+   let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
+   (Image.image snd temp2,Image.image snd temp3);;
+
+(*
+
+split_list_in_half [1; 2; 3; 4; 5; 6; 7];;
+split_list_in_half [1; 2; 3; 4; 5; 6; 7; 8];;
+
+*)   
