@@ -61,6 +61,10 @@ let before_and_after w x=
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
+(*
+let extract_intervals 
+*)
+
 let trim_spaces_on_the_left s=
       let n=String.length s in
       match Option.seek(fun j->

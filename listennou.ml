@@ -225,3 +225,23 @@ let rev=List.rev;;
 push_immediately_after [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 145 3;;
 
 *)
+
+let partition_from_set_of_ranges l n=
+    if l=[] then [1,n,false] else 
+    let (last_i,last_j)=List.hd(List.rev l) 
+    and (first_i,_)=List.hd l in
+    let temp2=universal_delta_list l in  
+    let temp3=Image.image (fun ((i1,j1),(i2,j2))->
+      [(i1,j1,true);(j1+1,i2-1,false)]
+    ) temp2 in 
+    let middle_part=List.flatten temp3 in
+    let first_part=(if first_i>1 then [(1,first_i-1,false)] else []) 
+    and last_part=(if last_j<n then [(last_j+1,n,false)] else []) in 
+    first_part@middle_part@[(last_i,last_j,true)]@last_part;;
+
+(*
+
+partition_from_set_of_ranges [(3,7);(41,52)] 100;;
+partition_from_set_of_ranges [(1,7);(41,52)] 100;;
+
+*)
