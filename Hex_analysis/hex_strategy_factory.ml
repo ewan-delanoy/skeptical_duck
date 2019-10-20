@@ -45,7 +45,7 @@ let compute_end_configuration factory  (static_constructor,indices)=
         index = (List.length l)+1;
    }  ;;    
 
-    
+
 
 let create_and_remember_already_checked_params old_factory static_constructor indices=
     let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
@@ -119,5 +119,5 @@ let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor indi
 
 end;;
 
-
-let  create_new_strategy = Private.create_new_strategy_in_double_ref;;
+let empty_one player = Hex_strategy_factory_t.F(player,[]);;
+let create_new_strategy = Private.create_new_strategy_in_double_ref;;

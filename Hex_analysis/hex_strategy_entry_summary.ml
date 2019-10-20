@@ -78,9 +78,17 @@ let entry_of_string text=
    if Supstring.begins_with text announce_disjunction  then disjunction_of_string text else 
    raise(Entry_of_string_exn(text));;
    
+let joiner_in_entry_list="\n ** \n";;
+
+let list_to_string l= String.concat joiner_in_entry_list (Image.image entry_to_string l);;
+let list_of_string text =
+   let temp1=Cull_string.extract_intervals_in_wrt_separator text joiner_in_entry_list in 
+   Image.image entry_of_string temp1;; 
+   
+
 end ;;
 
-let to_string = Private.entry_to_string;;
-let of_string = Private.entry_of_string;;
+let list_to_string = Private.list_to_string;;
+let list_of_string = Private.list_of_string;;
 
    
