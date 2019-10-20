@@ -4,7 +4,6 @@
 
 *)
 
-exception Not_defined_yet ;;
 
 exception Bad_index_in_factory of int;;
 exception Overlap_in_linker of Hex_cell_t.t list;;
@@ -106,7 +105,19 @@ let create_new_strategy factory static_constructor indices =
     let _= check_new_strategy factory static_constructor indices in 
     create_and_remember_already_checked_params factory static_constructor indices;;
 
+let create_new_strategy_in_ref factory_ref static_constructor indices =
+  let (new_factory,new_ec)=create_new_strategy (!factory_ref) static_constructor indices in 
+  let _=(factory_ref:=new_factory) in new_ec;;
+
+let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor indices =
+  match player with 
+   Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor indices 
+  |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor indices ;;
+
+
+
+
 end;;
 
 
-let  create_new_strategy = Private.create_new_strategy;;
+let  create_new_strategy = Private.create_new_strategy_in_double_ref;;
