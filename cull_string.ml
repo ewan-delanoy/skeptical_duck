@@ -61,8 +61,16 @@ let before_and_after w x=
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
+let extract_intervals_in_complement l s=
+   let n=String.length s in 
+   let temp1=Listennou.extract_intervals_in_complement l n in 
+   Image.image (fun (u,v)->interval s u v) temp1;;
+
+let extract_intervals_in_wrt_separator s sep =
+  extract_intervals_in_complement (Substring.occurrences_of_in sep s) s;;    
+
 (*
-let extract_intervals 
+extract_intervals_in_wrt_separator "123+ab+++c+d+45+678+" "+" ;;
 *)
 
 let trim_spaces_on_the_left s=
