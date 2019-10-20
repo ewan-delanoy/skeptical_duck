@@ -55,7 +55,7 @@ let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves
 
 let to_end_configuration fgame=
    let winner = fgame.Hex_finished_game_t.winner in 
-   let (fp_moves,sp_moves)=Hex_common.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
+   let (fp_moves,sp_moves)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
    let ordered_fp_moves = Hex_cell_set.safe_set fp_moves 
    and ordered_sp_moves = Hex_cell_set.safe_set sp_moves in 
    let (actives,rejected_ones)=(

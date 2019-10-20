@@ -31,11 +31,6 @@ let next_one_to_play preceding_moves=
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
 
-let split_list_in_half l=
-   let temp1=Ennig.index_everything(l) in 
-   let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
-   (Image.image snd temp2,Image.image snd temp3);;
-
 let all_cells dimension=
    let temp1=Ennig.doyle (fun j->String.make 1 (char_of_int(j+96))) 1 dimension 
    and temp2=Ennig.doyle (fun i->string_of_int i) 1 dimension in 
