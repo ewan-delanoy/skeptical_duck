@@ -33,9 +33,24 @@ let setminus (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=Hex_cell_set_t.S (Ord
 let unveil (Hex_cell_set_t.S(l))= l;;
 
 
+let of_string enclosed_s =
+   let n=String.length enclosed_s in 
+   let s=Cull_string.interval enclosed_s 2 (n-1) in 
+   let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
+   safe_set(Image.image Hex_cell.of_string temp1);;
+
 let to_string (Hex_cell_set_t.S(l))=
   let temp1=Image.image Hex_cell.to_string l in 
   "{"^(String.concat "," temp1)^"}";;
+
+(*
+
+let pre_z1="{t5,y4,a2,b3}";;
+let z1=of_string pre_z1;;
+let z2=to_string z1;;
+let check =(of_string(z2)=z1);;
+
+*)
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
