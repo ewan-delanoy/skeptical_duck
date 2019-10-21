@@ -448,18 +448,18 @@ let rename_module_on_monitored_modules cs old_name new_name=
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
       ".cm* ") in     
-  let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs old_nm)
+  let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs2 old_nm)
   and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
-  let cs2=Coma_state_field.change_one_module_name cs old_nm new_nm in 
-  let cs3=set_principal_mt_at_module cs2 new_nm principal_mt in 
-  let cs4=set_mli_mt_at_module cs3 new_nm mli_mt in 
-  let cs5=set_product_up_to_date_at_module cs4 new_nm false in 
+  let cs3=Coma_state_field.change_one_module_name cs2 old_nm new_nm in 
+  let cs4=set_principal_mt_at_module cs3 new_nm principal_mt in 
+  let cs5=set_mli_mt_at_module cs4 new_nm mli_mt in 
+  let cs6=set_product_up_to_date_at_module cs5 new_nm false in 
   let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
   let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
-  let old_preq_types=preq_types cs5 in 
+  let old_preq_types=preq_types cs6 in 
   let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
-  let cs6=set_preq_types cs5 new_preq_types in 
-  let cs_walker=ref(cs6) in 
+  let cs7=set_preq_types cs6 new_preq_types in 
+  let cs_walker=ref(cs7) in 
   let _=List.iter(fun mn->
       let old_dirfath=direct_fathers_at_module (!cs_walker) mn
       and old_ancestors=ancestors_at_module (!cs_walker) mn in
