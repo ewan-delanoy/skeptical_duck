@@ -4,6 +4,7 @@
 
 (* Inherited values *)
 
+let frontier_with_unix_world = Coma_state_field.frontier_with_unix_world;;
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
 let gitpush_after_backup =Coma_state_field.gitpush_after_backup;;
@@ -23,7 +24,7 @@ let directories = Coma_state_field.directories;;
 let preq_types = Coma_state_field.preq_types;;
 
 
-
+let set_frontier_with_unix_world = Coma_state_field.set_frontier_with_unix_world;;
 let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
 let set_principal_ending_at_module = Coma_state_field.set_principal_ending_at_module ;;
 let set_mli_presence_at_module = Coma_state_field.set_mli_presence_at_module ;;
@@ -438,7 +439,11 @@ let rename_module_on_monitored_modules cs old_name new_name=
 ) (ordered_list_of_modules cs) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
   let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
-  let  _=physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name) in 
+  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
+  let old_fw = frontier_with_unix_world cs in 
+  let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
+  let cs2= set_frontier_with_unix_world cs new_fw in 
+  (* let  _=physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name) in *)
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
