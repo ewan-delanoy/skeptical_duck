@@ -126,7 +126,7 @@ let announce_data ="\nData : \n";;
 let to_string  (Hex_end_strategy_factory_t.F(player,l))=
    let shortened_l=Image.image (fun (x,y,_)->(x,y)) l in 
    let descr1=Hex_player.to_string player 
-   and descr2=Hex_strategy_entry_summary.list_to_string shortened_l in 
+   and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
    announce_beneficiary^descr1^announce_data^descr2;;
 
 let of_string text = 
@@ -136,7 +136,7 @@ let of_string text =
    let descr1=Cull_string.interval text1 1 (i1-1) 
    and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
    let initial_one = Hex_end_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
-   create_new_strategies initial_one (Hex_strategy_entry_summary.list_of_string descr2);;
+   create_new_strategies initial_one (Hex_end_strategy_entry_summary.list_of_string descr2);;
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_ec_double_indexed_list_t.DL(
