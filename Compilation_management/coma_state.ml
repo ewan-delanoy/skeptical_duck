@@ -375,15 +375,30 @@ let complete_id_during_new_module_registration cs  mlx=
     and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
   
-
+let external_rename_module cs old_name new_name=
+  let old_nm=Dfn_endingless.to_module old_name in
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+  let old_acolytes=acolytes_at_module cs old_nm in
+  let separated_acolytes_below=Option.filter_and_unpack(
+    fun mn->
+     if List.mem old_nm (ancestors_at_module cs mn)
+    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs mn))
+    else None
+) (ordered_list_of_modules cs) in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
+  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
+  let old_fw = frontier_with_unix_world cs in 
+  let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
+  set_frontier_with_unix_world cs new_fw ;;
   
 let rename_module_on_monitored_modules cs old_name new_name=
-  let root_dir=root cs in 
+  let cs2=external_rename_module cs old_name new_name in 
+  let root_dir=root cs2 in 
   let old_nm=Dfn_endingless.to_module old_name in
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
-  let old_acolytes=acolytes_at_module cs old_nm in
+  let old_acolytes=acolytes_at_module cs2 old_nm in
   let new_acolytes=Image.image (
     fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
   ) old_acolytes in 
@@ -393,17 +408,12 @@ let rename_module_on_monitored_modules cs old_name new_name=
   let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
   let separated_acolytes_below=Option.filter_and_unpack(
     fun mn->
-     if List.mem old_nm (ancestors_at_module cs mn)
-    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs mn))
+     if List.mem old_nm (ancestors_at_module cs2 mn)
+    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs2 mn))
     else None
-) (ordered_list_of_modules cs) in
+) (ordered_list_of_modules cs2) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
   let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
-  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
-  let old_fw = frontier_with_unix_world cs in 
-  let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
-  let cs2= set_frontier_with_unix_world cs new_fw in 
-  (* let  _=physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name) in *)
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
