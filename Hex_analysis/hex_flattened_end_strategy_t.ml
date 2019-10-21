@@ -4,6 +4,7 @@
 
 "Flattened" means that the details of how the strategy proceeds are ommited,
 and all that's left is the cells that are involved in it.
+The "index" field refers to the index Hex_end_strategy_factory_t.t object.
 
 *)
 
