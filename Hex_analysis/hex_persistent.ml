@@ -55,7 +55,7 @@ let add_end_strategy_without_persisting (player,static_constructor,indices) =
 
 
 let add_finished_game_without_persisting fgame =
-    let checked_fgame=Hex_ec_double_indexed_list.iterated_largest_unconclusive_beginning 
+    let checked_fgame=Hex_fles_double_list.iterated_largest_unconclusive_beginning 
              fgame (Hex_end_strategy_factory.compute_all_end_configs wes_pair) in 
    (
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
