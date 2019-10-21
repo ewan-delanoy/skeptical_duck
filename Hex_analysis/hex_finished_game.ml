@@ -23,7 +23,7 @@ let compute_largest_unconclusive_beginning fgame end_config =
       []->{fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}
       |next_move::other_moves->
        (
-         match Hex_end_configuration.use_move_to_simplify_one next_move walker with 
+         match Hex_flattened_end_strategy.use_move_to_simplify_one next_move walker with 
          None->fgame
          |Some(walker2)->
          if Hex_cell_set.length(walker2.Hex_flattened_end_strategy_t.active_part)<2
