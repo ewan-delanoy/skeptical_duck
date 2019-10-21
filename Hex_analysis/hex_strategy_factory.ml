@@ -14,12 +14,12 @@ exception Escape_in_disjunction of Hex_cell_t.t list;;
 
 module Private = struct 
 
-let get_elt_at_idx (Hex_strategy_factory_t.F(player,l)) k=
+let get_elt_at_idx (Hex_end_strategy_factory_t.F(player,l)) k=
    let n=List.length(l) in 
    if (k<1)||(k>n) then raise(Bad_index_in_factory(k)) else List.nth l (k-1);;
 
 let compute_parts factory (static_constructor,indices)=
-   let Hex_strategy_factory_t.F(player,l)=factory in 
+   let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
    let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
    and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
@@ -36,7 +36,7 @@ let compute_parts factory (static_constructor,indices)=
         (active_whole,Hex_cell_set.setminus temp5 active_whole);;
 
 let compute_end_configuration factory  (static_constructor,indices)=
-   let Hex_strategy_factory_t.F(player,l)=factory 
+   let Hex_end_strategy_factory_t.F(player,l)=factory 
    and (active_p,passive_p)=compute_parts factory (static_constructor,indices) in 
    {
         Hex_flattened_end_strategy_t.beneficiary = player;
@@ -49,9 +49,9 @@ let compute_end_configuration factory  (static_constructor,indices)=
 
 let create_and_remember_already_checked_params old_factory static_constructor indices=
     let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
-    let Hex_strategy_factory_t.F(player,l)=old_factory in
+    let Hex_end_strategy_factory_t.F(player,l)=old_factory in
     let new_l = l @ [(static_constructor,indices,ec)] in 
-    (Hex_strategy_factory_t.F(player,new_l),ec);;
+    (Hex_end_strategy_factory_t.F(player,new_l),ec);;
 
 
 let helper_during_gluing_check parts =
@@ -81,7 +81,7 @@ let check_gluing factory indices=
    else raise(Overlap_in_gluing(redundant_actives,redundant_passives));;
 
 let check_disjunction factory cells indices=
-   let Hex_strategy_factory_t.F(player,l)=factory in 
+   let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
    let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
    and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
@@ -123,7 +123,7 @@ let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor indi
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_data ="\nData : \n";;
 
-let to_string  (Hex_strategy_factory_t.F(player,l))=
+let to_string  (Hex_end_strategy_factory_t.F(player,l))=
    let shortened_l=Image.image (fun (x,y,_)->(x,y)) l in 
    let descr1=Hex_player.to_string player 
    and descr2=Hex_strategy_entry_summary.list_to_string shortened_l in 
@@ -135,10 +135,10 @@ let of_string text =
    let j1=i1+(String.length announce_data)-1 in 
    let descr1=Cull_string.interval text1 1 (i1-1) 
    and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
-   let initial_one = Hex_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
+   let initial_one = Hex_end_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
    create_new_strategies initial_one (Hex_strategy_entry_summary.list_of_string descr2);;
 
-let compute_all_end_configs (Hex_strategy_factory_t.F(_,l1),Hex_strategy_factory_t.F(_,l2))=
+let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_ec_double_indexed_list_t.DL(
       Image.image (fun (_,_,z)->z) l1,
       Image.image (fun (_,_,z)->z) l2
@@ -148,7 +148,7 @@ end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
-let empty_one player = Hex_strategy_factory_t.F(player,[]);;
+let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let to_string raf = Private.to_string (!raf);;
 
