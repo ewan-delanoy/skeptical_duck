@@ -5,7 +5,7 @@
 *)
 
 
-
+let configs_ref = ref (Hex_ec_double_indexed_list.empty_one);;
 
 let games_ref = ref (Hex_fg_double_list.empty_one);;
 
