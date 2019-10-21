@@ -353,8 +353,6 @@ let registrations_for_lonely_ending old_edg =
      );;
 
      
-
-
 let complete_id_during_new_module_registration cs  mlx=
     let eless=Dfn_full.to_endingless mlx 
     and edg=Dfn_full.to_ending mlx in
@@ -377,46 +375,8 @@ let complete_id_during_new_module_registration cs  mlx=
     and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
   
-let do_file_renaming mlx new_name=
-  let core=Cull_string.before_rightmost_possibly_all (No_slashes.to_string new_name) '.' in
-  let checked_name=No_slashes.of_string(core^
-  (Dfa_ending.connectable_to_modulename(Dfn_full.to_ending mlx))) in
-  let ap=Dfn_full.to_absolute_path mlx in
-  let new_ap=Rename_file.rename ap checked_name in
-  let (Dfn_full_t.J(r,_,_,_))=mlx in 
-  Dfn_full.from_absolute_path_with_root new_ap r;;    
+
   
-
-exception Future_name_already_taken of Dfa_module_t.t;;
-
-let physical_part_in_rename_module_on_monitored_modules cs (old_name,new_name)=
-  let root_dir=root cs in 
-  let old_nm=Dfn_endingless.to_module old_name in
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in 
-  if Coma_state_field.test_module_for_registration cs  new_nm
-  then raise(Future_name_already_taken(new_nm))
-  else 
-  let old_acolytes=acolytes_at_module cs old_nm in
-  let _=Image.image 
-     (fun mlx->do_file_renaming mlx new_name) 
-     old_acolytes in
-  let changer=(fun 
-     rootless ->
-       let full_path = Dfn_join.root_to root_dir rootless in
-       let ap =  Dfn_full.to_absolute_path full_path in 
-       Look_for_module_names.change_module_name_in_ml_file old_nm new_nm ap
-  ) in 
-  let separated_acolytes_below=Option.filter_and_unpack(
-    fun mn->
-     if List.mem old_nm (ancestors_at_module cs mn)
-    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs mn))
-    else None
-) (ordered_list_of_modules cs) in
-  let all_acolytes_below=List.flatten separated_acolytes_below in
-  let _=Image.image changer (all_acolytes_below@[Coma_constant.rootless_path_for_printersfile]) in
-  ();;
-
-
 let rename_module_on_monitored_modules cs old_name new_name=
   let root_dir=root cs in 
   let old_nm=Dfn_endingless.to_module old_name in
