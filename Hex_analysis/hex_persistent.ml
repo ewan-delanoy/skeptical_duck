@@ -5,7 +5,7 @@
 *)
 
 
-let configs_ref = ref (Hex_ec_double_indexed_list.empty_one);;
+
 
 let games_ref = ref (Hex_fg_double_list.empty_one);;
 
@@ -55,7 +55,8 @@ let add_end_strategy_without_persisting (player,static_constructor,indices) =
 
 
 let add_finished_game_without_persisting fgame =
-    let checked_fgame=Hex_ec_double_indexed_list.iterated_largest_unconclusive_beginning fgame (!configs_ref) in 
+    let checked_fgame=Hex_ec_double_indexed_list.iterated_largest_unconclusive_beginning 
+             fgame (Hex_strategy_factory.compute_all_end_configs wes_pair) in 
    (
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
