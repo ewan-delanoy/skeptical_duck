@@ -14,26 +14,6 @@ This file should be used not compiled.
 (* End strategies end here *)
 
 
-(* Configs start here *)
-
-
- Hex_persistent.configs_ref:=Hex_ec_double_indexed_list.of_string(
-"
-Beneficiary : 
-1
-Active part : 
-b6 - c4 - c6 - c9 - d4 - d6 - d7 - d8 - e3
-Passive part : 
-a11 - b5 - b10 - b11 - c5 - c10 - c11 - d9 - d10 - d11 - e1 - e2 - f1 - f2 - f3 - g1 - g2 - h1
-Index : 
-1
-<<>>
-");;
-
-
-(* Configs end here *)
-
-
 (* Games start here *)
 
 

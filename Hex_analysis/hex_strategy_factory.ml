@@ -138,11 +138,18 @@ let of_string text =
    let initial_one = Hex_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
    create_new_strategies initial_one (Hex_strategy_entry_summary.list_of_string descr2);;
 
+let compute_all_end_configs (Hex_strategy_factory_t.F(_,l1),Hex_strategy_factory_t.F(_,l2))=
+  Hex_ec_double_indexed_list_t.DL(
+      Image.image (fun (_,_,z)->z) l1,
+      Image.image (fun (_,_,z)->z) l2
+  );;
+
 end;;
 
-let fill_with_string raf text= (raf:=Private.of_string text);;
+let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
 let empty_one player = Hex_strategy_factory_t.F(player,[]);;
+let fill_with_string raf text= (raf:=Private.of_string text);;
 let to_string raf = Private.to_string (!raf);;
 
 
