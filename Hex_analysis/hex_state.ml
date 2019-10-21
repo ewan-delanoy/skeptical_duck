@@ -6,7 +6,7 @@
 
 
 let initial_state ()= {
-   Hex_state_t.config_remains = (!(Hex_persistent.configs_ref)) ;
+   Hex_state_t.config_remains = ((Hex_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.moves_before = [] 
 };;
