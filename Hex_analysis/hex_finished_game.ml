@@ -4,11 +4,11 @@
 
 *)
 
-exception End_config_is_too_fast of Hex_flattened_end_strategy_t.t;;
+exception End_strategy_is_too_fast of Hex_flattened_end_strategy_t.t;;
 
-let compute_largest_unconclusive_beginning fgame end_config =
-   if Hex_cell_set.length(end_config.Hex_flattened_end_strategy_t.active_part)<2
-   then raise(End_config_is_too_fast(end_config))
+let compute_largest_unconclusive_beginning fgame fles =
+   if Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)<2
+   then raise(End_strategy_is_too_fast(fles))
    else 
    let temp1= Ennig.index_everything (fgame.Hex_finished_game_t.sequence_of_moves) in 
    let temp2= Image.image (
@@ -31,10 +31,10 @@ let compute_largest_unconclusive_beginning fgame end_config =
          else tempf((snd next_move)::treated,walker2,other_moves)
        )
    ) in 
-   tempf([],end_config,temp2);;
+   tempf([],fles,temp2);;
 
-let iterated_largest_unconclusive_beginning fgame end_configs=
-  List.fold_left compute_largest_unconclusive_beginning fgame end_configs;;
+let iterated_largest_unconclusive_beginning fgame flesses=
+  List.fold_left compute_largest_unconclusive_beginning fgame flesses;;
 
 let is_more_detailed_than fgame1 fgame2=
    let l1=fgame1.Hex_finished_game_t.sequence_of_moves
