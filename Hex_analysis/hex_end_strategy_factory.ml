@@ -139,7 +139,7 @@ let of_string text =
    create_new_strategies initial_one (Hex_end_strategy_entry_summary.list_of_string descr2);;
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
-  Hex_ec_double_indexed_list_t.DL(
+  Hex_fles_double_list_t.DL(
       Image.image (fun (_,_,z)->z) l1,
       Image.image (fun (_,_,z)->z) l2
   );;
