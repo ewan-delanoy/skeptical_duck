@@ -19,10 +19,10 @@ let string_of_ipair (i,j)=
 
 let trace_at_point ec (i,j) =
   let cell=Hex_cell.of_string (string_of_ipair (i,j)) in 
-  if Hex_cell_set.mem cell ec.Hex_end_configuration_t.active_part
+  if Hex_cell_set.mem cell ec.Hex_flattened_end_strategy_t.active_part
   then "A"
   else 
-  if Hex_cell_set.mem cell ec.Hex_end_configuration_t.passive_part
+  if Hex_cell_set.mem cell ec.Hex_flattened_end_strategy_t.passive_part
   then "P"
   else " ";;
 
@@ -69,7 +69,7 @@ let full_line ec line_idx =
    (main_content_of_line ec line_idx);;
 
 let to_ascii_drawing ec =
-   let player = ec.Hex_end_configuration_t.beneficiary in
+   let player = ec.Hex_flattened_end_strategy_t.beneficiary in
    "Config benefitting Player "^(Hex_player.to_string player)^"\n\n\n"^
    (String.concat "\n" (Ennig.doyle (full_line ec) 1 (2*dim+2)));;
 
@@ -120,10 +120,10 @@ let read_ascii_drawing s=
   let temp5=List.flatten temp4 in 
   let (active1,passive1)=List.partition snd temp5 in 
   {
-      Hex_end_configuration_t.beneficiary = (read_player s);
-      Hex_end_configuration_t.active_part = gather_cells active1;
-      Hex_end_configuration_t.passive_part = gather_cells passive1;
-      Hex_end_configuration_t.index = 0
+      Hex_flattened_end_strategy_t.beneficiary = (read_player s);
+      Hex_flattened_end_strategy_t.active_part = gather_cells active1;
+      Hex_flattened_end_strategy_t.passive_part = gather_cells passive1;
+      Hex_flattened_end_strategy_t.index = 0
   };; 
 
 end ;;

@@ -20,7 +20,7 @@ let joiner_for_two="\n<<>>\n";;
 let empty_one = Hex_ec_double_indexed_list_t.DL([],[]);;
 
 let add_end_config ec (Hex_ec_double_indexed_list_t.DL(l1,l2))=
-   match ec.Hex_end_configuration_t.beneficiary with 
+   match ec.Hex_flattened_end_strategy_t.beneficiary with 
    Hex_player_t.First_player -> 
         let new_l1=Hex_end_configuration.insert_carefully ec l1 in 
         Hex_ec_double_indexed_list_t.DL(new_l1,l2)

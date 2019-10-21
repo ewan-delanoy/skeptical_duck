@@ -5,6 +5,6 @@
 *)
 
 type t= DL of 
-  Hex_end_configuration_t.t list 
+  Hex_flattened_end_strategy_t.t list 
   * 
-  Hex_end_configuration_t.t list ;;
+  Hex_flattened_end_strategy_t.t list ;;

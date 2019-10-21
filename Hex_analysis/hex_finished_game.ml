@@ -4,10 +4,10 @@
 
 *)
 
-exception End_config_is_too_fast of Hex_end_configuration_t.t;;
+exception End_config_is_too_fast of Hex_flattened_end_strategy_t.t;;
 
 let compute_largest_unconclusive_beginning fgame end_config =
-   if Hex_cell_set.length(end_config.Hex_end_configuration_t.active_part)<2
+   if Hex_cell_set.length(end_config.Hex_flattened_end_strategy_t.active_part)<2
    then raise(End_config_is_too_fast(end_config))
    else 
    let temp1= Ennig.index_everything (fgame.Hex_finished_game_t.sequence_of_moves) in 
@@ -26,7 +26,7 @@ let compute_largest_unconclusive_beginning fgame end_config =
          match Hex_end_configuration.use_move_to_simplify_one next_move walker with 
          None->fgame
          |Some(walker2)->
-         if Hex_cell_set.length(walker2.Hex_end_configuration_t.active_part)<2
+         if Hex_cell_set.length(walker2.Hex_flattened_end_strategy_t.active_part)<2
          then {fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}
          else tempf((snd next_move)::treated,walker2,other_moves)
        )
@@ -66,10 +66,10 @@ let to_end_configuration fgame=
    let all_cells = Hex_common.all_cells 11 in 
    let passives= Hex_cell_set.setminus (Hex_cell_set.setminus all_cells rejected_ones) actives in 
    {
-     Hex_end_configuration_t.beneficiary=winner;
-     Hex_end_configuration_t.active_part=actives;
-     Hex_end_configuration_t.passive_part=passives;
-     Hex_end_configuration_t.index=0;
+     Hex_flattened_end_strategy_t.beneficiary=winner;
+     Hex_flattened_end_strategy_t.active_part=actives;
+     Hex_flattened_end_strategy_t.passive_part=passives;
+     Hex_flattened_end_strategy_t.index=0;
    };;
 
 

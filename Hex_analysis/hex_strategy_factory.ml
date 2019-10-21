@@ -21,8 +21,8 @@ let get_elt_at_idx (Hex_strategy_factory_t.F(player,l)) k=
 let compute_parts factory (static_constructor,indices)=
    let Hex_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_end_configuration_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_end_configuration_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    match static_constructor with
     Hex_strategy_static_constructor_t.Basic_Linker(active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
         let temp2=Image.image (fun (x,y)->Hex_cell_set.safe_set [x;y]) passive_pairs in 
@@ -39,7 +39,7 @@ let compute_end_configuration factory  (static_constructor,indices)=
    let Hex_strategy_factory_t.F(player,l)=factory 
    and (active_p,passive_p)=compute_parts factory (static_constructor,indices) in 
    {
-        Hex_end_configuration_t.beneficiary = player;
+        Hex_flattened_end_strategy_t.beneficiary = player;
         active_part = active_p ; 
         passive_part = passive_p ; 
         index = (List.length l)+1;
@@ -71,8 +71,8 @@ let check_basic_linker (active_ones,Hex_cell_pair_set_t.S(passive_pairs))=
 
 let check_gluing factory indices=
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_end_configuration_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_end_configuration_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let redundant_actives = helper_during_gluing_check active_parts 
    and redundant_passives = helper_during_gluing_check passive_parts in 
    let check= (redundant_actives,redundant_passives) in 
@@ -83,8 +83,8 @@ let check_gluing factory indices=
 let check_disjunction factory cells indices=
    let Hex_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_end_configuration_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_end_configuration_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let temp3=List.combine cells active_parts in 
    let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
    let active_whole=Hex_cell_set.fold_merge temp4 in 
