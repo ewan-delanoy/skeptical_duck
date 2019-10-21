@@ -35,7 +35,7 @@ let use_move_to_simplify_one (player,cell) old_fles =
 
 
 
-let immediate_dangers flesses =
+let immediate_opportunities flesses =
    Option.filter_and_unpack (
        fun fles->
          let l=fles.Hex_flattened_end_strategy_t.active_part in 

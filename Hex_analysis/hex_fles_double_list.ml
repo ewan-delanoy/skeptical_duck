@@ -36,9 +36,9 @@ let absorb_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
 let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
   match player with 
    Hex_player_t.First_player -> 
-      Hex_flattened_end_strategy.immediate_dangers l2
+      Hex_flattened_end_strategy.immediate_opportunities l2
   |Hex_player_t.Second_player -> 
-      Hex_flattened_end_strategy.immediate_dangers l1;; 
+      Hex_flattened_end_strategy.immediate_opportunities l1;; 
     
 let iterated_largest_unconclusive_beginning fgame (Hex_fles_double_list_t.DL(l1,l2))=
     Hex_finished_game.iterated_largest_unconclusive_beginning fgame (l1@l2);;
