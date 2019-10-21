@@ -101,14 +101,5 @@ let cmp =
    (partial_unveil fles1) (partial_unveil fles2)  
 ) :> Hex_flattened_end_strategy_t.t Total_ordering.t);;
 
-let insert_carefully fles l=
-  let reindexed_fles = {
-     fles with 
-     Hex_flattened_end_strategy_t.index=(List.length(l))+1
-  } in 
-  Ordered.insert_plaen cmp reindexed_fles l;;
-
-
-
 
 
