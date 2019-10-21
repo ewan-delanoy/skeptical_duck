@@ -1,50 +1,50 @@
 (* 
 
-#use"Hex_analysis/hex_end_configuration.ml";;
+#use"Hex_analysis/hex_flattened_end_strategy_t.ml";;
 
 *)
 
 
-let use_ally_move_to_simplify_one cell old_config=
-   let active_part = old_config.Hex_flattened_end_strategy_t.active_part
-   and passive_part = old_config.Hex_flattened_end_strategy_t.passive_part in 
+let use_ally_move_to_simplify_one cell old_fles=
+   let active_part = old_fles.Hex_flattened_end_strategy_t.active_part
+   and passive_part = old_fles.Hex_flattened_end_strategy_t.passive_part in 
    let new_actives=Hex_cell_set.outsert cell active_part 
    and new_passives=Hex_cell_set.outsert cell passive_part in 
-   { old_config with 
+   { old_fles with 
             Hex_flattened_end_strategy_t.active_part = new_actives;
             Hex_flattened_end_strategy_t.passive_part = new_passives;
     };;
      
-let use_ally_move_to_simplify_several cell old_configs =
-    Image.image(use_ally_move_to_simplify_one cell) old_configs;;
+let use_ally_move_to_simplify_several cell old_flesses =
+    Image.image(use_ally_move_to_simplify_one cell) old_flesses;;
           
-let use_enemy_move_to_simplify_one cell old_config=
-   let active_part = old_config.Hex_flattened_end_strategy_t.active_part
-   and passive_part = old_config.Hex_flattened_end_strategy_t.passive_part in 
+let use_enemy_move_to_simplify_one cell old_fles=
+   let active_part = old_fles.Hex_flattened_end_strategy_t.active_part
+   and passive_part = old_fles.Hex_flattened_end_strategy_t.passive_part in 
    if (Hex_cell_set.mem cell active_part)||(Hex_cell_set.mem cell passive_part)
    then None
-   else Some(old_config);;
+   else Some(old_fles);;
      
-let use_enemy_move_to_simplify_several cell old_configs =
-    Option.filter_and_unpack (use_enemy_move_to_simplify_one cell) old_configs;;
+let use_enemy_move_to_simplify_several cell old_flesses =
+    Option.filter_and_unpack (use_enemy_move_to_simplify_one cell) old_flesses;;
 
-let use_move_to_simplify_one (player,cell) old_config =
-   if player = old_config.Hex_flattened_end_strategy_t.beneficiary 
-   then Some(use_ally_move_to_simplify_one cell old_config)
-   else use_enemy_move_to_simplify_one cell old_config;;
+let use_move_to_simplify_one (player,cell) old_fles =
+   if player = old_fles.Hex_flattened_end_strategy_t.beneficiary 
+   then Some(use_ally_move_to_simplify_one cell old_fles)
+   else use_enemy_move_to_simplify_one cell old_fles;;
 
 
 
-let immediate_dangers configs =
+let immediate_dangers flesses =
    Option.filter_and_unpack (
-       fun config->
-         let l=config.Hex_flattened_end_strategy_t.active_part in 
+       fun fles->
+         let l=fles.Hex_flattened_end_strategy_t.active_part in 
          if Hex_cell_set.length(l)=1 
-         then let passive_set = config.Hex_flattened_end_strategy_t.passive_part in 
+         then let passive_set = fles.Hex_flattened_end_strategy_t.passive_part in 
               let mandatory_set=Hex_cell_set.insert (Hex_cell_set.min l) passive_set in 
-               Some(mandatory_set,config.Hex_flattened_end_strategy_t.index)
+               Some(mandatory_set,fles.Hex_flattened_end_strategy_t.index)
          else None
-   ) configs;;
+   ) flesses;;
 
   
 
@@ -53,11 +53,11 @@ let announce_active_part ="\nActive part : \n";;
 let announce_passive_part="\nPassive part : \n";;
 let announce_index="\nIndex : \n";;
 
-let to_string config=
-  let descr1=Hex_player.to_string(config.Hex_flattened_end_strategy_t.beneficiary) 
-  and descr2=Hex_common.cell_list_to_string(Hex_cell_set.unveil(config.Hex_flattened_end_strategy_t.active_part)) 
-  and descr3=Hex_common.cell_list_to_string(Hex_cell_set.unveil(config.Hex_flattened_end_strategy_t.passive_part)) 
-  and descr4=string_of_int(config.Hex_flattened_end_strategy_t.index) in 
+let to_string fles=
+  let descr1=Hex_player.to_string(fles.Hex_flattened_end_strategy_t.beneficiary) 
+  and descr2=Hex_common.cell_list_to_string(Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part)) 
+  and descr3=Hex_common.cell_list_to_string(Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part)) 
+  and descr4=string_of_int(fles.Hex_flattened_end_strategy_t.index) in 
   announce_beneficiary^descr1^
   announce_active_part^descr2^
   announce_passive_part^descr3^
@@ -84,29 +84,29 @@ let of_string s =
      Hex_flattened_end_strategy_t.index=int_of_string descr4;
    };;
 
-let partial_unveil config=
+let partial_unveil fles=
   (
-     config.Hex_flattened_end_strategy_t.beneficiary,
-     Hex_cell_set.unveil(config.Hex_flattened_end_strategy_t.active_part),
-     Hex_cell_set.unveil(config.Hex_flattened_end_strategy_t.passive_part) 
+     fles.Hex_flattened_end_strategy_t.beneficiary,
+     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part),
+     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part) 
   );;
 
 let cmp = 
   let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
- ((fun config1 config2 ->
+ ((fun fles1 fles2 ->
    (Total_ordering.triple_product 
      Total_ordering.standard
      cmp_for_cell_lists
      cmp_for_cell_lists)
-   (partial_unveil config1) (partial_unveil config2)  
+   (partial_unveil fles1) (partial_unveil fles2)  
 ) :> Hex_flattened_end_strategy_t.t Total_ordering.t);;
 
-let insert_carefully ec l=
-  let reindexed_ec = {
-     ec with 
+let insert_carefully fles l=
+  let reindexed_fles = {
+     fles with 
      Hex_flattened_end_strategy_t.index=(List.length(l))+1
   } in 
-  Ordered.insert_plaen cmp reindexed_ec l;;
+  Ordered.insert_plaen cmp reindexed_fles l;;
 
 
 
