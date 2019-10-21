@@ -8,6 +8,12 @@ This file should be used not compiled.
 
 *)
 
+(* End strategies start here *)
+
+
+(* End strategies end here *)
+
+
 (* Configs start here *)
 
 
