@@ -52,8 +52,10 @@ let create_and_remember_already_checked_params old_factory static_constructor co
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
     let new_l = l @ [(static_constructor,comment,indices,ec)] in
     let sn=string_of_int(List.length(l)+1) in 
-    let added_cmt=(fun cmt->if cmt="" then "" else "("^cmt^")") comment in  
-    let msg="\n\n Just created strategy number "^sn^" "^added_cmt^"\n\n" in 
+    let added_cmt=(if comment="" 
+                   then "("^(Hex_strategy_static_constructor.summarize_in_string static_constructor)^")" 
+                   else "("^comment^")")  in  
+    let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^")\n\n" in 
     let _=(print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),ec);;
 
