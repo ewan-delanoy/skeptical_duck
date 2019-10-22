@@ -99,14 +99,14 @@ let read_row_in_drawing row =
       let si=String.make 1 (char_of_int(96+i)) in 
       let cell_name=si^sj in 
       let cleaned_t=Cull_string.trim_spaces t in 
-      if cleaned_t="A" then Some(cell_name,true) else 
-      if cleaned_t="P" then Some(cell_name,false) else 
-      None
+      if String.length cleaned_t=1
+      then Some(Hex_cell.of_string cell_name,String.get cleaned_t 0)
+      else None
   ) temp2;;
 
-let gather_cells l=
-   let temp1=Image.image (fun (cell_name,_)->Hex_cell.of_string cell_name) l in 
-   Hex_cell_set.safe_set temp1;;
+
+
+exception Unbalanced_label of char * (Hex_cell_t.t list);;
 
 let read_ascii_drawing s=
   let temp1= Lines_in_string.core s in 
@@ -118,13 +118,20 @@ let read_ascii_drawing s=
   ) temp2 in 
   let temp4=Image.image read_row_in_drawing temp3 in 
   let temp5=List.flatten temp4 in 
-  let (active1,passive1)=List.partition snd temp5 in 
-  {
-      Hex_flattened_end_strategy_t.beneficiary = (read_player s);
-      Hex_flattened_end_strategy_t.active_part = gather_cells active1;
-      Hex_flattened_end_strategy_t.passive_part = gather_cells passive1;
-      Hex_flattened_end_strategy_t.index = 0
-  };; 
+  let all_used_labels=Listennou.nonredundant_version(Image.image snd temp5) in 
+  let temp6=Image.image (fun c0->
+     (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp5) 
+  ) all_used_labels in 
+  let (temp7,temp8)=List.partition (fun (c,l)->c='A') temp6 in 
+  let active_ones = Hex_cell_set.safe_set  (snd (List.hd temp7)) in 
+  let list_of_passive_pairs = Image.image (fun (c,l)->
+     if List.length(l)<>2
+     then raise(Unbalanced_label(c,l))
+     else let tf=(fun j->List.nth l j) in
+          (tf 0,tf 1)
+     ) temp8 in  
+  let passive_pairs = Hex_cell_pair_set.constructor list_of_passive_pairs in    
+  (active_ones,passive_pairs);; 
 
 end ;;
 
