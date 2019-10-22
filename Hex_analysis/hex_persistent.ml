@@ -61,7 +61,7 @@ let add_finished_game_without_persisting fgame =
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
 
-let add_end_config ec =
+let add_end_strategy ec =
    (
      add_end_strategy_without_persisting ec;
      persist_strategies();
