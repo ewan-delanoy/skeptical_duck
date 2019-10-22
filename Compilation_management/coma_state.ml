@@ -374,23 +374,7 @@ let complete_id_during_new_module_registration cs  mlx=
     let libned=PrivateTwo.find_needed_libraries cs mlx modules_written_in_file
     and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
-  
-let external_rename_module cs old_name new_name=
-  let old_nm=Dfn_endingless.to_module old_name in
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
-  let old_acolytes=acolytes_at_module cs old_nm in
-  let separated_acolytes_below=Option.filter_and_unpack(
-    fun mn->
-     if List.mem old_nm (ancestors_at_module cs mn)
-    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs mn))
-    else None
-) (ordered_list_of_modules cs) in
-  let all_acolytes_below=List.flatten separated_acolytes_below in
-  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
-  let old_fw = frontier_with_unix_world cs in 
-  let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
-  set_frontier_with_unix_world cs new_fw ;;
-  
+    
 exception Error_during_unix_physical_relocation;;          
 
 let relocate_module cs old_name new_subdir=
@@ -1899,65 +1883,6 @@ let register_rootless_path cs x=
     (Recently_created.of_string_list [x]) in
   let cs2=register_mlx_file cs mlx in 
   (cs2,diff);;
-
-
-let local_rename_module cs old_module_name new_name=
-   let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-   let old_name = endingless_at_module cs mn in  
-   let new_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
-   let cs2=external_rename_module cs old_name new_name in 
-  let root_dir=root cs2 in 
-  let old_nm=Dfn_endingless.to_module old_name in
-  let s_root=Dfa_root.connectable_to_subpath root_dir in   
-  let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
-  let old_acolytes=acolytes_at_module cs2 old_nm in
-  let new_acolytes=Image.image (
-    fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
-  ) old_acolytes in 
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
-  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
-     new_acolytes in 
-  let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
-  let separated_acolytes_below=Option.filter_and_unpack(
-    fun mn->
-     if List.mem old_nm (ancestors_at_module cs2 mn)
-    then Some(Image.image (Dfn_full.to_rootless) (acolytes_at_module cs2 mn))
-    else None
-) (ordered_list_of_modules cs2) in
-  let all_acolytes_below=List.flatten separated_acolytes_below in
-  let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
-  let _=Unix_command.uc
-      ("rm -f "^s_root^s_build_dir^
-      (Dfa_module.to_line old_nm)^
-      ".cm* ") in     
-  let principal_mt=md_compute_modification_time new_eless (principal_ending_at_module cs2 old_nm)
-  and mli_mt=md_compute_modification_time new_eless Dfa_ending.mli in
-  let cs3=Coma_state_field.change_one_module_name cs2 old_nm new_nm in 
-  let cs4=set_principal_mt_at_module cs3 new_nm principal_mt in 
-  let cs5=set_mli_mt_at_module cs4 new_nm mli_mt in 
-  let cs6=set_product_up_to_date_at_module cs5 new_nm false in 
-  let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
-  let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
-  let old_preq_types=preq_types cs6 in 
-  let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
-  let cs7=set_preq_types cs6 new_preq_types in 
-  let cs_walker=ref(cs7) in 
-  let _=List.iter(fun mn->
-      let old_dirfath=direct_fathers_at_module (!cs_walker) mn
-      and old_ancestors=ancestors_at_module (!cs_walker) mn in
-      (
-      cs_walker:=(set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
-      cs_walker:=(set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
-      )
-  )(follows_it cs old_nm) in
-  let cs8=(!cs_walker) in    
-  let (cs9,_,_)=rucompile cs8 in 
-   let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_files)
-    (Recently_changed.of_string_list modified_files)
-    (Recently_created.of_string_list new_files) in
-   (cs9,diff);;
 
 let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in

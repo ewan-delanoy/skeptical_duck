@@ -316,7 +316,7 @@ module Syntactic_sugar = struct
 let rename_module cs_ref old_module_name new_name=
    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
    let old_eless = Coma_state.endingless_at_module (!cs_ref) mn in
-   let old_middle_name = (fun (Dfn_endingless_t.J(r,s,m))->Dfn_middle_t.J(s,m)) old_eless in    
+   let old_middle_name = Dfn_endingless.to_middle old_eless in    
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
