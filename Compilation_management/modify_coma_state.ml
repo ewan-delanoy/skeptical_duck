@@ -136,7 +136,7 @@ module After_checking = struct
 
       let rename_module cs old_middle_name new_nonslashed_name=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.local_rename_module cs old_middle_name new_nonslashed_name;; 
+         Physical_followed_by_internal.rename_module cs old_middle_name new_nonslashed_name;; 
 
       let rename_string_or_value cs old_hm_name new_name=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
@@ -190,11 +190,8 @@ module And_backup = struct
 
       let rename_module cs old_middle_name new_nonslashed_name=
          let (cs2,diff)=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
-         (*
          let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
-                 " as "^(No_slashes.to_string new_nonslashed_name) in 
-         *)
-         let msg="blah blah" in         
+                 " as "^(No_slashes.to_string new_nonslashed_name) in       
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
@@ -245,8 +242,8 @@ module And_save = struct
          cs2;;  
 
 
-      let rename_module cs old_name new_name=
-         let cs2=And_backup.rename_module cs old_name new_name in 
+      let rename_module cs old_middle_name new_nonslashed_name=
+         let cs2=And_backup.rename_module cs old_middle_name new_nonslashed_name in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -301,8 +298,8 @@ module Reference = struct
          pcs:=new_cs;;
          
 
-      let rename_module pcs old_name new_name=
-         let new_cs = And_save.rename_module (!pcs) old_name new_name in 
+      let rename_module pcs old_middle_name new_nonslashed_name=
+         let new_cs = And_save.rename_module (!pcs) old_middle_name new_nonslashed_name in 
          pcs:=new_cs;;
 
 
@@ -318,10 +315,11 @@ module Syntactic_sugar = struct
 
 let rename_module cs_ref old_module_name new_name=
    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-   let old_name = Coma_state.endingless_at_module (!cs_ref) mn in  
-   let new_name2 = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
-   (* Reference.rename_module cs_ref old_name new_name;; *)
+   let old_eless = Coma_state.endingless_at_module (!cs_ref) mn in
+   let old_middle_name = (fun (Dfn_endingless_t.J(r,s,m))->Dfn_middle_t.J(s,m)) old_eless in    
+   let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
+   Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
-   Reference.rename_module cs_ref old_module_name new_name;;
+   
 
 end;;
