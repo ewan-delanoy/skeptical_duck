@@ -21,8 +21,8 @@ let get_elt_at_idx (Hex_end_strategy_factory_t.F(player,l)) k=
 let compute_parts factory (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    match static_constructor with
     Hex_strategy_static_constructor_t.Basic_Linker(active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
         let temp2=Image.image (fun (x,y)->Hex_cell_set.safe_set [x;y]) passive_pairs in 
@@ -47,10 +47,14 @@ let compute_end_configuration factory  (static_constructor,indices)=
 
 
 
-let create_and_remember_already_checked_params old_factory static_constructor indices=
+let create_and_remember_already_checked_params old_factory static_constructor comment indices=
     let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
-    let new_l = l @ [(static_constructor,indices,ec)] in 
+    let new_l = l @ [(static_constructor,comment,indices,ec)] in
+    let sn=string_of_int(List.length(l)+1) in 
+    let added_cmt=(fun cmt->if cmt="" then "" else "("^cmt^")") comment in  
+    let msg="\n\n Just created strategy number "^sn^" "^added_cmt^"\n\n" in 
+    let _=(print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),ec);;
 
 
@@ -101,24 +105,24 @@ let check_new_strategy factory static_constructor indices = match static_constru
   | Gluing -> check_gluing factory indices 
   | Disjunction (cells)->check_disjunction factory cells indices;;
 
-let create_new_strategy factory static_constructor indices =
+let create_new_strategy factory static_constructor comment indices =
     let _= check_new_strategy factory static_constructor indices in 
-    create_and_remember_already_checked_params factory static_constructor indices;;
+    create_and_remember_already_checked_params factory static_constructor comment indices;;
 
-let create_new_strategy_in_ref factory_ref static_constructor indices =
-  let (new_factory,new_ec)=create_new_strategy (!factory_ref) static_constructor indices in 
+let create_new_strategy_in_ref factory_ref static_constructor comment indices =
+  let (new_factory,new_ec)=create_new_strategy (!factory_ref) static_constructor comment indices in 
   let _=(factory_ref:=new_factory) in new_ec;;
 
 let create_new_strategies old_factory entries =
    let walker=ref(old_factory) in 
-   let _=Image.image (fun (constr,indices)->create_new_strategy_in_ref walker constr indices) in 
+   let _=Image.image (fun (constr,comment,indices)->create_new_strategy_in_ref walker constr comment indices) in 
    !walker;;
 
 
-let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor indices =
+let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor comment indices =
   match player with 
-   Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor indices 
-  |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor indices ;;
+   Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor comment indices 
+  |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor comment indices ;;
 
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_data ="\nData : \n";;
@@ -140,8 +144,8 @@ let of_string text =
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_fles_double_list_t.DL(
-      Image.image (fun (_,_,z)->z) l1,
-      Image.image (fun (_,_,z)->z) l2
+      Image.image (fun (_,_,_,z)->z) l1,
+      Image.image (fun (_,_,_,z)->z) l2
   );;
 
 end;;
