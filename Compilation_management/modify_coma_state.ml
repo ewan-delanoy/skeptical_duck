@@ -9,9 +9,14 @@
 
 module Physical = struct 
 
-let rename_module cs removable_old_name new_name=
-  let old_nm=Dfn_endingless.to_module removable_old_name in
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+(*
+let rename_module cs old_middle_name new_nonslashed_name=
+  let old_nm=Dfn_middle.to_module old_middle_name in
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in
+*)  
+let rename_module cs old_middle_name new_nonslashed_name=
+  let old_nm=Dfn_endingless.to_module old_middle_name in
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
   let old_acolytes=Coma_state.acolytes_at_module cs old_nm in
   let separated_acolytes_below=Option.filter_and_unpack(
     fun mn->

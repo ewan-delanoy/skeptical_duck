@@ -6,4 +6,4 @@
 
 
 
-let to_module (Dfn_short_t.J(s,m))=m;;
+let to_module (Dfn_middle_t.J(s,m))=m;;
