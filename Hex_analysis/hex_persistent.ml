@@ -21,9 +21,12 @@ let wes_pair =
      winning_end_strategies_for_second_player_ref
    );;
 
-(*
-let fst_player_strat_at_idx k=
-*)   
+
+let fst_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx 
+       winning_end_strategies_for_first_player_ref k;;
+
+let snd_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx 
+       winning_end_strategies_for_second_player_ref k;;       
 
 let persist_strategies ()=
     let assignment1=
