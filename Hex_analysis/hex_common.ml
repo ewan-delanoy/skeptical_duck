@@ -62,5 +62,5 @@ let translate_row dimension d i1=
 let translate_horizontally dim d (Hex_cell_t.C(s,i))= Hex_cell_t.C(translate_column dim d s,i);; 
 let translate_vertically dim d (Hex_cell_t.C(s,i))= Hex_cell_t.C(s,translate_row dim d i);; 
 
-let translate dim (dx,dy) cell = translate_vertically dim  dy (ranslate_horizontally dim dx cell);;
+let translate dim (dx,dy) cell = translate_vertically dim  dy (translate_horizontally dim dx cell);;
 
