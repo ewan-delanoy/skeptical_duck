@@ -7,7 +7,86 @@
 
 
 
-module External_followed_by_internal = struct
+module Physical = struct 
+
+let rename_module cs old_name new_name=
+  let old_nm=Dfn_endingless.to_module old_name in
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+  let old_acolytes=Coma_state.acolytes_at_module cs old_nm in
+  let separated_acolytes_below=Option.filter_and_unpack(
+    fun mn->
+     if List.mem old_nm (Coma_state.ancestors_at_module cs mn)
+    then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs mn))
+    else None
+) (Coma_state.ordered_list_of_modules cs) in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
+  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
+  let old_fw = Coma_state.frontier_with_unix_world cs in 
+  let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
+  Coma_state.set_frontier_with_unix_world cs new_fw ;;
+
+end;;
+
+module Internal = struct
+
+let rename_module cs old_name new_name=
+   let cs2=Physical.rename_module cs old_name new_name in 
+  let root_dir=Coma_state.root cs2 in 
+  let old_nm=Dfn_endingless.to_module old_name in
+  let s_root=Dfa_root.connectable_to_subpath root_dir in   
+  let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+  let old_acolytes=Coma_state.acolytes_at_module cs2 old_nm in
+  let new_acolytes=Image.image (
+    fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
+  ) old_acolytes in 
+  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
+  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
+     new_acolytes in 
+  let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
+  let separated_acolytes_below=Option.filter_and_unpack(
+    fun mn->
+     if List.mem old_nm (Coma_state.ancestors_at_module cs2 mn)
+    then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs2 mn))
+    else None
+) (Coma_state.ordered_list_of_modules cs2) in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
+  let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
+  let _=Unix_command.uc
+      ("rm -f "^s_root^s_build_dir^
+      (Dfa_module.to_line old_nm)^
+      ".cm* ") in     
+  let principal_mt=Coma_state.md_compute_modification_time new_eless (Coma_state.principal_ending_at_module cs2 old_nm)
+  and mli_mt=Coma_state.md_compute_modification_time new_eless Dfa_ending.mli in
+  let cs3=Coma_state_field.change_one_module_name cs2 old_nm new_nm in 
+  let cs4=Coma_state.set_principal_mt_at_module cs3 new_nm principal_mt in 
+  let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
+  let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
+  let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
+  let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
+  let old_preq_types=Coma_state.preq_types cs6 in 
+  let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
+  let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
+  let cs_walker=ref(cs7) in 
+  let _=List.iter(fun mn->
+      let old_dirfath=Coma_state.direct_fathers_at_module (!cs_walker) mn
+      and old_ancestors=Coma_state.ancestors_at_module (!cs_walker) mn in
+      (
+      cs_walker:=(Coma_state.set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
+      cs_walker:=(Coma_state.set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
+      )
+  )(Coma_state.follows_it cs old_nm) in
+  let cs8=(!cs_walker) in    
+  let (cs9,_,_)=Coma_state.recompile cs8 in 
+   let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_files)
+    (Recently_changed.of_string_list modified_files)
+    (Recently_created.of_string_list new_files) in
+   (cs9,diff);;
+
+end;;
+
+module Physical_followed_by_internal = struct
 
 let forget cs  x=
    let old_fw = Coma_state_field.frontier_with_unix_world cs in 
@@ -22,6 +101,10 @@ let register_rootless_path cs  x=
    let cs1 = Coma_state_field.set_frontier_with_unix_world cs new_fw in 
    Coma_state.Almost_concrete.register_rootless_path cs1 x;; 
 *)
+
+let rename_module cs old_name new_name=
+   let cs2=Physical.rename_module cs old_name new_name in
+   Internal.rename_module cs2 old_name new_name;;
 
 end;;
 
@@ -256,3 +339,16 @@ module Reference = struct
 
 
 end ;;
+
+
+module Syntactic_sugar = struct 
+
+let rename_module cs_ref old_module_name new_name=
+   let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
+   let old_name = Coma_state.endingless_at_module (!cs_ref) mn in  
+   let new_name2 = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
+   (* Reference.rename_module cs_ref old_name new_name;; *)
+
+   Reference.rename_module cs_ref old_module_name new_name;;
+
+end;;
