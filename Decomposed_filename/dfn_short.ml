@@ -11,6 +11,9 @@ let of_line line =
    if mn=""
    then raise(Of_line_exn(line))
    else Dfn_short_t.J(Dfa_module.of_line mn,Dfa_ending.of_line(e));;
-          
+
+
 let to_line (Dfn_short_t.J(m,e))=
    (Dfa_module.to_line m)^(Dfa_ending.connectable_to_modulename e);;
+
+let to_module (Dfn_short_t.J(m,e))=m;;
