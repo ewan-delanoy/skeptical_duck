@@ -75,8 +75,8 @@ let check_basic_linker (active_ones,Hex_cell_pair_set_t.S(passive_pairs))=
 
 let check_gluing factory indices=
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let redundant_actives = helper_during_gluing_check active_parts 
    and redundant_passives = helper_during_gluing_check passive_parts in 
    let check= (redundant_actives,redundant_passives) in 
@@ -87,8 +87,8 @@ let check_gluing factory indices=
 let check_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let temp3=List.combine cells active_parts in 
    let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
    let active_whole=Hex_cell_set.fold_merge temp4 in 
@@ -128,7 +128,7 @@ let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_data ="\nData : \n";;
 
 let to_string  (Hex_end_strategy_factory_t.F(player,l))=
-   let shortened_l=Image.image (fun (x,y,_)->(x,y)) l in 
+   let shortened_l=Image.image (fun (x,y,z,_)->(x,y,z)) l in 
    let descr1=Hex_player.to_string player 
    and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
    announce_beneficiary^descr1^announce_data^descr2;;
