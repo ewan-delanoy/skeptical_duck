@@ -9,13 +9,9 @@
 
 module Physical = struct 
 
-(*
+
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in
-*)  
-let rename_module cs old_middle_name new_nonslashed_name=
-  let old_nm=Dfn_endingless.to_module old_middle_name in
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
   let old_acolytes=Coma_state.acolytes_at_module cs old_nm in
   let separated_acolytes_below=Option.filter_and_unpack(
@@ -34,13 +30,13 @@ end;;
 
 module Internal = struct
 
-let rename_module cs removable_old_name new_name=
-   let cs2=Physical.rename_module cs removable_old_name new_name in 
+let rename_module cs old_middle_name new_nonslashed_name=
+   let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in 
   let root_dir=Coma_state.root cs2 in 
-  let old_nm=Dfn_endingless.to_module removable_old_name in
+  let old_nm=Dfn_middle.to_module old_middle_name in
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
-  let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
+  let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in
   let old_acolytes=Coma_state.acolytes_at_module cs2 old_nm in
   let new_acolytes=Image.image (
     fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
@@ -68,7 +64,8 @@ let rename_module cs removable_old_name new_name=
   let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
   let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
   let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
-  let eless_replacer=(fun x->if x=removable_old_name then new_eless else x) in 
+  let old_eless = Dfn_join.root_to_middle root_dir old_middle_name in
+  let eless_replacer=(fun x->if x=old_eless then new_eless else x) in 
   let old_preq_types=Coma_state.preq_types cs6 in 
   let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
   let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
@@ -107,9 +104,9 @@ let register_rootless_path cs  x=
    Coma_state.Almost_concrete.register_rootless_path cs1 x;; 
 *)
 
-let rename_module cs old_name new_name=
-   let cs2=Physical.rename_module cs old_name new_name in
-   Internal.rename_module cs2 old_name new_name;;
+let rename_module cs old_middle_name new_nonslashed_name=
+   let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
+   Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
 
 end;;
 
@@ -170,9 +167,9 @@ module After_checking = struct
          let _=Private.check_for_changes cs in 
          Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname;; 
 
-      let rename_module cs old_hm_name new_name=
+      let rename_module cs old_middle_name new_nonslashed_name=
          let _=Private.check_for_changes cs in 
-         Coma_state.Almost_concrete.local_rename_module cs old_hm_name new_name;; 
+         Coma_state.Almost_concrete.local_rename_module cs old_middle_name new_nonslashed_name;; 
 
       let rename_string_or_value cs old_hm_name new_name=
          let _=Private.check_for_changes cs in 
@@ -224,9 +221,13 @@ module And_backup = struct
          cs2;; 
 
 
-      let rename_module cs old_hm_name new_name=
-         let (cs2,diff)=After_checking.rename_module cs old_hm_name new_name  in 
-         let msg="rename "^old_hm_name^" as "^new_name in 
+      let rename_module cs old_middle_name new_nonslashed_name=
+         let (cs2,diff)=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
+         (*
+         let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
+                 " as "^(No_slashes.to_string new_nonslashed_name) in 
+         *)
+         let msg="blah blah" in         
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 

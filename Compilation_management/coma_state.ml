@@ -1995,3 +1995,37 @@ let rename_string_or_value cs old_name new_name=
 end;; 
 
 
+
+
+module Recent_changes = struct
+           
+    exception Recompilation_needed of Dfa_module_t.t list;;       
+
+            let check_for_change_at_module_and_ending cs mn edg=
+               let hm=endingless_at_module cs mn in 
+               (md_recompute_modification_time hm edg)
+               <>(get_modification_time cs mn edg);;
+
+            let check_for_change_at_module  cs mn=
+            List.exists
+               (check_for_change_at_module_and_ending cs mn) 
+            [
+               Dfa_ending.mli ;
+               (principal_ending_at_module cs mn)
+            ] ;;
+
+            let detect_changes cs =
+            Option.filter_and_unpack (
+               fun mn->
+               if check_for_change_at_module cs mn 
+               then Some(mn)
+               else None
+            ) (ordered_list_of_modules cs);;
+
+            let check_for_changes cs = 
+            let changes = detect_changes cs in 
+            if changes<>[]
+            then raise(Recompilation_needed(changes))
+            else ();;
+
+end;;    
