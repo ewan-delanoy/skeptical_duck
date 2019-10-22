@@ -23,6 +23,10 @@ let absorb_move cell=
    let _=(walker:=(new_state,new_result)) in 
    new_result;;
 
+let absorb_moves cells=
+   let _=List.iter (fun cell->let _=absorb_move cell in ()) cells in 
+   snd(!walker);; 
+
 let usual_move ()=
   let cell = Hex_analysis_result.usual_move (snd(!walker)) in 
   absorb_move cell;;
