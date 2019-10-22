@@ -63,7 +63,7 @@ let rename_module cs removable_old_name new_name=
   let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
   let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
   let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
-  let eless_replacer=(fun x->if x=old_name then new_eless else x) in 
+  let eless_replacer=(fun x->if x=removable_old_name then new_eless else x) in 
   let old_preq_types=Coma_state.preq_types cs6 in 
   let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
   let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
