@@ -53,8 +53,8 @@ let create_and_remember_already_checked_params old_factory static_constructor co
     let new_l = l @ [(static_constructor,comment,indices,ec)] in
     let sn=string_of_int(List.length(l)+1) in 
     let added_cmt=(if comment="" 
-                   then "("^(Hex_strategy_static_constructor.summarize_in_string static_constructor)^")" 
-                   else "("^comment^")")  in  
+                   then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
+                   else comment)  in  
     let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^")\n\n" in 
     let _=(print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),ec);;
@@ -154,6 +154,7 @@ end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
+let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let to_string raf = Private.to_string (!raf);;
