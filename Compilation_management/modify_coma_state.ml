@@ -9,8 +9,8 @@
 
 module Physical = struct 
 
-let rename_module cs old_name new_name=
-  let old_nm=Dfn_endingless.to_module old_name in
+let rename_module cs removable_old_name new_name=
+  let old_nm=Dfn_endingless.to_module removable_old_name in
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
   let old_acolytes=Coma_state.acolytes_at_module cs old_nm in
   let separated_acolytes_below=Option.filter_and_unpack(
@@ -29,10 +29,10 @@ end;;
 
 module Internal = struct
 
-let rename_module cs old_name new_name=
-   let cs2=Physical.rename_module cs old_name new_name in 
+let rename_module cs removable_old_name new_name=
+   let cs2=Physical.rename_module cs removable_old_name new_name in 
   let root_dir=Coma_state.root cs2 in 
-  let old_nm=Dfn_endingless.to_module old_name in
+  let old_nm=Dfn_endingless.to_module removable_old_name in
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_name) in
