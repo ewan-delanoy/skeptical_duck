@@ -11,7 +11,7 @@ This file should be used not compiled.
 (* End strategies start here *)
 
 
- Hex_strategy_factory.fill_with_string Hex_persistent.winning_end_strategies_for_first_player_ref 
+ Hex_end_strategy_factory.fill_with_string Hex_persistent.winning_end_strategies_for_first_player_ref 
 
 ("
 Beneficiary : 
@@ -28,7 +28,7 @@ Basic linker :
 
 
 
- Hex_strategy_factory.fill_with_string Hex_persistent.winning_end_strategies_for_second_player_ref 
+ Hex_end_strategy_factory.fill_with_string Hex_persistent.winning_end_strategies_for_second_player_ref 
 
 ("
 Beneficiary : 
