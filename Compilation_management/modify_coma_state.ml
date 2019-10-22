@@ -114,41 +114,8 @@ end;;
 
 module After_checking = struct
 
-      exception Recompilation_needed of Dfa_module_t.t list;;
-
-      module Private = struct
-
-            let check_for_change_at_module_and_ending cs mn edg=
-               let hm=Coma_state.endingless_at_module cs mn in 
-               (Coma_state.md_recompute_modification_time hm edg)
-               <>(Coma_state.get_modification_time cs mn edg);;
-
-            let check_for_change_at_module  cs mn=
-            List.exists
-               (check_for_change_at_module_and_ending cs mn) 
-            [
-               Dfa_ending.mli ;
-               (Coma_state.principal_ending_at_module cs mn)
-            ] ;;
-
-            let detect_changes cs =
-            Option.filter_and_unpack (
-               fun mn->
-               if check_for_change_at_module cs mn 
-               then Some(mn)
-               else None
-            ) (Coma_state.ordered_list_of_modules cs);;
-
-            let check_for_changes cs = 
-            let changes = detect_changes cs in 
-            if changes<>[]
-            then raise(Recompilation_needed(changes))
-            else ();;
-
-      end;;    
-
       let forget cs x=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.forget cs x;; 
 
       (* No check needed before recompiling *)
@@ -156,23 +123,23 @@ module After_checking = struct
       (* No check needed before refreshing *)
 
       let register_rootless_path cs x=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.register_rootless_path cs x;; 
 
       let relocate_module_to cs old_hm_name new_subdir=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir;; 
 
       let rename_directory  cs old_subdir new_subdirname=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname;; 
 
       let rename_module cs old_middle_name new_nonslashed_name=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.local_rename_module cs old_middle_name new_nonslashed_name;; 
 
       let rename_string_or_value cs old_hm_name new_name=
-         let _=Private.check_for_changes cs in 
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.rename_string_or_value cs old_hm_name new_name;; 
 
 end;;
