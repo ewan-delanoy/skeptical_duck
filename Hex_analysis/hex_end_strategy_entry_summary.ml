@@ -20,11 +20,11 @@ let til_to_string (comment,cell_set,pair_set)=
    comment^joiner_in_til^(Hex_cell_set.to_string cell_set)^joiner_in_til^(Hex_cell_pair_set.to_string pair_set);;
 
 let til_of_string text =
-    let temp1=Cull_string.extract_intervals_in_wrt_separator text joiner_in_til in 
+    let temp1=Cull_string.extract_intervals_in_wrt_separator (" "^text) joiner_in_til in 
     if List.length(temp1)<>3
     then raise(Til_of_string_exn(text,temp1))
     else let tf=(fun j->List.nth temp1 (j-1)) in
-    (tf 1,Hex_cell_set.of_string (tf 2),Hex_cell_pair_set.of_string (tf 3));;
+    (Cull_string.cobeginning 1 (tf 1),Hex_cell_set.of_string (tf 2),Hex_cell_pair_set.of_string (tf 3));;
 
 let inside_arrowed="->";;
 let outside_arrowed=" , ";;
