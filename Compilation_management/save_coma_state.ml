@@ -52,17 +52,17 @@ module Private=struct
     let save_loadingsfile (root,rootless_path_for_loadingsfile) (dirs,hms)=
        let s=loadings (root,rootless_path_for_loadingsfile)
         (dirs,hms)
-       and lm=Dfn_join.root_to root rootless_path_for_loadingsfile in
+       and lm=Dfn_join.root_to_rootless root rootless_path_for_loadingsfile in
        Io.overwrite_with (Dfn_full.to_absolute_path lm) s;;
     
     let save_merlinfile (root,rootless_path_for_merlinfile) dirs=
         let s=instructions_for_merlinfile root dirs 
-        and lm=Dfn_join.root_to root rootless_path_for_merlinfile in
+        and lm=Dfn_join.root_to_rootless root rootless_path_for_merlinfile in
         Io.overwrite_with (Dfn_full.to_absolute_path lm) s;;
   
     let save_printersfile (root,rootless_path_for_printersfile) printer_equipped_types=
        let s=instructions_for_printersfile printer_equipped_types
-       and lm=Dfn_join.root_to root rootless_path_for_printersfile in
+       and lm=Dfn_join.root_to_rootless root rootless_path_for_printersfile in
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
        Replace_inside.overwrite_between_markers_inside_file
@@ -75,7 +75,7 @@ module Private=struct
     let save_targetfile rootless_path_for_targetfile cs=
       let root_dir = Coma_state.root cs in 
       let s1=Crobj_parsing.unparse(Coma_state_field.to_concrete_object cs) in
-      let lt=Dfn_join.root_to root_dir rootless_path_for_targetfile in
+      let lt=Dfn_join.root_to_rootless root_dir rootless_path_for_targetfile in
       Io.overwrite_with (Dfn_full.to_absolute_path lt) s1;;
     
     

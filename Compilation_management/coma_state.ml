@@ -1188,7 +1188,7 @@ Dfn_full_t.t*(Dfa_module_t.t list);;
 let forget_file_on_targets root_dir pair ap=
   let (cs,dirs)=pair in
   let rootless_path = Dfn_common.decompose_absolute_path_using_root ap root_dir in 
-  let mlx = Dfn_join.root_to root_dir rootless_path in 
+  let mlx = Dfn_join.root_to_rootless root_dir rootless_path in 
   let eless=Dfn_full.to_endingless mlx  in
   let nm=Dfn_endingless.to_module eless in
   if not(Coma_state_field.test_module_for_registration cs nm)
@@ -1276,7 +1276,7 @@ let forget_module cs eless=
       (cs2,short_paths);;          
 
 let read_persistent_version x=
-        let full_path=Dfn_join.root_to (root x)  Coma_constant.rootless_path_for_targetfile in
+        let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
         let ap= Dfn_full.to_absolute_path full_path in
         let the_archive=Io.read_whole_file ap in
         let archived_object = Crobj_parsing.parse the_archive in 
@@ -1666,7 +1666,7 @@ let decipher_module cs capitalized_or_not_x=
   None->raise(Absent_module(x))
   |Some(ap)->
     let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root cs) in 
-    let mlx = Dfn_join.root_to (root cs) rootless_path in 
+    let mlx = Dfn_join.root_to_rootless (root cs) rootless_path in 
     Dfn_full.to_endingless mlx ;;
 
 module Local_rename_value_inside_module = struct
@@ -1891,7 +1891,7 @@ let local_register_mlx_file cs mlx=
 
 let register_rootless_path cs x=
   let rootless_path = Dfn_rootless.of_line x in 
-  let mlx=Dfn_join.root_to (root cs) rootless_path in
+  let mlx=Dfn_join.root_to_rootless (root cs) rootless_path in
   let diff=
     Dircopy_diff.veil
     (Recently_deleted.of_string_list [])

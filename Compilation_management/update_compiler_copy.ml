@@ -46,7 +46,7 @@ let text_for_big_constants_file_in_next_world =
      (sourcedir,Coma_big_constant.Next_World.root) main_diff;;
   
   let path_for_big_constants_in_next_world ()=
-    Dfn_join.root_to Coma_big_constant.Next_World.root Coma_constant.rootless_path_for_parametersfile;;
+    Dfn_join.root_to_rootless Coma_big_constant.Next_World.root Coma_constant.rootless_path_for_parametersfile;;
   
 end ;;   
   

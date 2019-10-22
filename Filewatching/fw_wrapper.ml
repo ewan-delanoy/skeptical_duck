@@ -126,7 +126,7 @@ let helper_during_string_replacement fw (old_string,new_string) accu old_list=
          if not(Supstring.contains old_content old_string)
          then triple 
          else 
-            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to (Fw_wrapper_field.root fw) old_path) in 
+            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to_rootless (Fw_wrapper_field.root fw) old_path) in 
             let _=(
              Replace_inside.replace_inside_file (old_string,new_string) ap;
              accu:=old_path::(!accu)
@@ -152,7 +152,7 @@ let replace_string fw (old_string,new_string)=
     (new_fw,(changed_usual_files,changed_special_files));;         
        
 let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_path=
-   let full_path = Dfn_join.root_to (Fw_wrapper_field.root fw) rootless_path in 
+   let full_path = Dfn_join.root_to_rootless (Fw_wrapper_field.root fw) rootless_path in 
    let absolute_path=Dfn_full.to_absolute_path  full_path in 
    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files old_name new_name absolute_path in 
