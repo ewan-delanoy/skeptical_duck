@@ -12,7 +12,7 @@ exception Entry_of_string_exn of string;;
 module Private = struct
 (* pil is for "pair in linker" *)
 
-let joiner_in_pil = " -|- ";;
+let joiner_in_pil = " |||\n\n";;
 
 let pil_to_string (cell_set,pair_set)= 
    (Hex_cell_set.to_string cell_set)^joiner_in_pil^(Hex_cell_pair_set.to_string pair_set);;
