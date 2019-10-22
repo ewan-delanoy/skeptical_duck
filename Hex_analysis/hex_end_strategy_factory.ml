@@ -117,7 +117,7 @@ let create_new_strategy_in_ref factory_ref static_constructor comment indices =
 
 let create_new_strategies old_factory entries =
    let walker=ref(old_factory) in 
-   let _=Image.image (fun (constr,comment,indices)->create_new_strategy_in_ref walker constr comment indices) in 
+   let _=Image.image (fun (constr,comment,indices)->create_new_strategy_in_ref walker constr comment indices) entries in 
    !walker;;
 
 
