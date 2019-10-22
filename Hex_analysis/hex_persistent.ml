@@ -23,11 +23,11 @@ let wes_pair =
 
 let persist_strategies ()=
     let assignment1=
-      "\n\n\n Hex_"^"strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_first_player_ref \n"^
+      "\n\n\n Hex_"^"end_strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_first_player_ref \n"^
       "\n(\""^
       (Hex_end_strategy_factory.to_string (fst wes_pair))^"\");;\n\n\n" 
     and assignment2=
-      "\n\n\n Hex_"^"strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_second_player_ref \n"^
+      "\n\n\n Hex_"^"end_strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_second_player_ref \n"^
       "\n(\""^
       (Hex_end_strategy_factory.to_string (snd wes_pair))^"\");;\n\n\n" in 
     let assignment = assignment1 ^ "\n\n\n" ^ assignment2 in    
