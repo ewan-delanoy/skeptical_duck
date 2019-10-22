@@ -46,12 +46,11 @@ let persist_games ()=
   (Overwriter.of_string assignment) ("(* Games start here *)","(* Games end here *)") ap;;
 
 
-let add_end_strategy_without_persisting (player,static_constructor,indices) =
-   let ec = Hex_end_strategy_factory.create_new_strategy wes_pair player static_constructor indices in 
+let add_end_strategy_without_persisting (player,static_constructor,comment,indices) =
+   let ec = Hex_end_strategy_factory.create_new_strategy wes_pair player static_constructor comment indices in 
    (
     games_ref:=Hex_fg_double_list.take_end_config_into_account ec (!games_ref)
    );;
-
 
 
 let add_finished_game_without_persisting fgame =
