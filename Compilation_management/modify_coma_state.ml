@@ -30,8 +30,7 @@ end;;
 
 module Internal = struct
 
-let rename_module cs old_middle_name new_nonslashed_name=
-   let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in 
+let rename_module cs2 old_middle_name new_nonslashed_name=
   let root_dir=Coma_state.root cs2 in 
   let old_nm=Dfn_middle.to_module old_middle_name in
   let s_root=Dfa_root.connectable_to_subpath root_dir in   
@@ -77,7 +76,7 @@ let rename_module cs old_middle_name new_nonslashed_name=
       cs_walker:=(Coma_state.set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
       cs_walker:=(Coma_state.set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
       )
-  )(Coma_state.follows_it cs old_nm) in
+  )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
   let (cs9,_,_)=Coma_state.recompile cs8 in 
    let diff=Dircopy_diff.veil
@@ -320,6 +319,5 @@ let rename_module cs_ref old_module_name new_name=
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
-   
 
 end;;
