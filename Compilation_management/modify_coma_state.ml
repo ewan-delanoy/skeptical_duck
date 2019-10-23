@@ -319,5 +319,4 @@ let rename_module cs_ref old_module_name new_name=
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
-
 end;;
