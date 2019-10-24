@@ -147,11 +147,9 @@ let read_ascii_drawing s=
   let temp1= Lines_in_string.core s in 
   let temp2=Image.image (fun (_,line)->Cull_string.trim_spaces line) temp1 in 
   let temp3=List.filter (fun line->
-    if line="" then false else
-    let c=int_of_char(String.get line 0) in 
-    (49<=c)&&(c<=57) (* meaning that c is a digit *)
+    if line="" then false else (String.get line 0)<>'-'
   ) temp2 in 
-  let temp4=Image.image read_row_in_drawing temp3 in 
+  let temp4=Image.image read_row_in_drawing (Listennou.big_tail 2 temp3) in 
   let associations=List.flatten temp4 in 
   let diagonal_names=Cull_string.extract_intervals_in_wrt_separator (List.nth temp3 1) " " in 
   {
