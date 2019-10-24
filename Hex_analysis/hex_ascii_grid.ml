@@ -111,6 +111,16 @@ let read_player s=
   then Hex_player_t.First_player
   else Hex_player_t.Second_player;;
 
+(*
+let of_basic_linker dim player 
+     (Hex_cell_set_t.S(actives),Hex_cell_pair_set_t.S(passives)) = 
+   let active_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) actives 
+   and passive_ipairs = Image.image () passives
+{
+
+};;
+*)
+
 let of_finished_game fgame =
    let winner = fgame.Hex_finished_game_t.winner in 
    let (fp_cells,sp_cells)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
