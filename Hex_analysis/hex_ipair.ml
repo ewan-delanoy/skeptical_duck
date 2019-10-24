@@ -40,13 +40,13 @@ let core_support_for_upwards_pyramid=
    ];;
 
 let core_support_for_downwards_pyramid =
-   Image.image (fun ((x,y),c)->((9-x,9-y),c))  core_support_for_downwards_pyramid;;  
+   Image.image (fun ((x,y),c)->((9-x,9-y),c))  core_support_for_upwards_pyramid;;  
 
 let core_support_for_leftwards_pyramid =
-   Image.image (fun ((x,y),c)->((y,x),c))  core_support_for_leftwards_pyramid;; 
+   Image.image (fun ((x,y),c)->((y,x),c))  core_support_for_upwards_pyramid;; 
 
 let core_support_for_rightwards_pyramid =
-   Image.image (fun ((x,y),c)->((9-y,9-x),c))  core_support_for_rightwards_pyramid;; 
+   Image.image (fun ((x,y),c)->((9-y,9-x),c))  core_support_for_upwards_pyramid;; 
 
 
 let translator (dx,dy) l=
