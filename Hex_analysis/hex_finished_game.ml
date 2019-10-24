@@ -51,24 +51,6 @@ let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves
     then Some({fgame with Hex_finished_game_t.sequence_of_moves = other_moves})
     else None;;
 
-let to_end_configuration fgame=
-   let winner = fgame.Hex_finished_game_t.winner in 
-   let (fp_moves,sp_moves)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
-   let ordered_fp_moves = Hex_cell_set.safe_set fp_moves 
-   and ordered_sp_moves = Hex_cell_set.safe_set sp_moves in 
-   let (actives,rejected_ones)=(
-      match winner with 
-       Hex_player_t.First_player -> (ordered_fp_moves,ordered_sp_moves) 
-      |Hex_player_t.Second_player ->(ordered_sp_moves,ordered_fp_moves) 
-   )  in 
-   let all_cells = Hex_common.all_cells 11 in 
-   let passives= Hex_cell_set.setminus (Hex_cell_set.setminus all_cells rejected_ones) actives in 
-   {
-     Hex_flattened_end_strategy_t.beneficiary=winner;
-     Hex_flattened_end_strategy_t.active_part=actives;
-     Hex_flattened_end_strategy_t.passive_part=passives;
-     Hex_flattened_end_strategy_t.index=0;
-   };;
 
 let announce_dimension ="\nDimension : \n";;
 let announce_winner ="\nBeneficiary : \n";;
