@@ -40,7 +40,7 @@ let core_support_for_upwards_pyramid=
    ];;
 
 let translator (dx,dy) l=
-   Image.image (fun ((a,b),c)->((a+dx,a+dy),c)) l;;
+   Image.image (fun ((a,b),c)->((a+dx,b+dy),c)) l;;
 
 end;;
 
