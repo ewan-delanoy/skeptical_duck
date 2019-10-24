@@ -102,15 +102,25 @@ let read_player s=
   then Hex_player_t.First_player
   else Hex_player_t.Second_player;;
 
-(*
+
 let of_basic_linker dim player 
      (Hex_cell_set_t.S(actives),Hex_cell_pair_set_t.S(passives)) = 
-   let active_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) actives 
-   and passive_ipairs = Image.image () passives
+   let active_ipairs = Image.image Hex_ipair.of_cell actives 
+   and passive_ipairs = Image.image 
+    (fun (cell1,cell2)->(Hex_ipair.of_cell cell1,Hex_ipair.of_cell cell2)) passives in 
+   let temp1=Ennig.index_everything passive_ipairs in 
+   let temp2=Image.image ( fun (k,(p1,p2))->
+      let c=char_of_int(k+96) in 
+      let s=" "^(String.make 1 c)^" " in 
+      [p1,s;p2,s] )temp1 in 
+   let associations1=Image.image (fun p->(p," A ")) active_ipairs 
+   and associations2=List.flatten temp2 in  
 {
-
+   Hex_ascii_grid_t.beneficiary = player;
+    dimension = dim;
+    data = associations1 @ associations2;
 };;
-*)
+
 
 let of_finished_game fgame =
    let winner = fgame.Hex_finished_game_t.winner in 
@@ -185,6 +195,7 @@ let read_ascii_drawing s=
 end ;;
 
 let make_ready_for_editing = Private.make_ready_for_editing;;
+let of_basic_linker = Private.of_basic_linker;;
 let of_finished_game = Private.of_finished_game;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
 let to_basic_linker = Private.to_basic_linker;;
