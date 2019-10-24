@@ -41,7 +41,7 @@ let declare_winner player =
     Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
   let _=Hex_persistent.add_finished_game new_fgame in 
-  let new_grid = Hex_ascii_grid.of_finished_game current_dim new_fgame in 
+  let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
   Hex_ascii_grid.make_ready_for_editing new_grid;;
 
   

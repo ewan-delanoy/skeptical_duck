@@ -111,7 +111,7 @@ let read_player s=
   then Hex_player_t.First_player
   else Hex_player_t.Second_player;;
 
-let of_finished_game dim fgame =
+let of_finished_game fgame =
    let winner = fgame.Hex_finished_game_t.winner in 
    let (fp_cells,sp_cells)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
    let (l_winner_cells,l_loser_cells)=(
@@ -129,7 +129,7 @@ let of_finished_game dim fgame =
    and associations2=Image.image (fun (i,j)->((i,j)," P ")) empty_ipairs in 
    {
     Hex_ascii_grid_t.beneficiary = winner;
-    dimension = dim;
+    dimension = fgame.Hex_finished_game_t.dimension;
     data = associations1 @ associations2;
   };;
 
