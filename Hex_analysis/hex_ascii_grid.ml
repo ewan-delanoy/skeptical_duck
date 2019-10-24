@@ -78,7 +78,7 @@ let main_content_of_line grid line_idx =
   else 
   let i=(line_idx-1)/2 in 
   let temp1=Ennig.doyle (fun j->
-     (List.assoc (i,j) grid.Hex_ascii_grid_t.data)^"|"
+     (get grid (i,j))^"|"
   ) 1 dim in 
   String.concat "" ("|"::temp1);; 
 
