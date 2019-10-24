@@ -39,6 +39,16 @@ let core_support_for_upwards_pyramid=
       ((3,2),'*');((3,5),'*');  
    ];;
 
+let core_support_for_downwards_pyramid =
+   Image.image (fun ((x,y),c)->((9-x,9-y),c))  core_support_for_downwards_pyramid;;  
+
+let core_support_for_leftwards_pyramid =
+   Image.image (fun ((x,y),c)->((y,x),c))  core_support_for_leftwards_pyramid;; 
+
+let core_support_for_rightwards_pyramid =
+   Image.image (fun ((x,y),c)->((9-y,9-x),c))  core_support_for_rightwards_pyramid;; 
+
+
 let translator (dx,dy) l=
    Image.image (fun ((a,b),c)->((a+dx,b+dy),c)) l;;
 
@@ -46,6 +56,15 @@ end;;
 
 let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
+
+let support_for_downwards_pyramid (x,y)=
+   Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid;;
+
+let support_for_leftwards_pyramid (x,y)=
+   Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid;;
+
+let support_for_rightwards_pyramid (x,y)=
+   Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid;;
 
 let support_for_upwards_pyramid (x,y)=
    Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
