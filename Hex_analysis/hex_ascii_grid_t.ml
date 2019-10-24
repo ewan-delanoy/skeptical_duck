@@ -5,6 +5,7 @@
 *)
 
 type t = {
+   beneficiary : Hex_player_t.t ;
    dimension : int ;
    data : ( (int * int) * string) list;
 };;
