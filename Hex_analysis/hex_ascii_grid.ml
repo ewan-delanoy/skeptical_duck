@@ -6,15 +6,6 @@
 
 module Private = struct 
 
-let ipair_of_string s=
-  let j=(int_of_char(String.get s 0))-96
-  and i=int_of_string(Cull_string.cobeginning 1 s) in 
-  (i,j);;
-
-(* ipair_of_string "b5" = (5,2);; *)
-
-let string_of_ipair (i,j)=
-  (String.make 1 (char_of_int(j+96)))^(string_of_int i);;
 
 let triple_blank = String.make 3 ' ';;
 
@@ -25,7 +16,7 @@ let get grid (i,j)=
 let of_flattened_end_strategy dim ec =
   let square = Cartesian.square (Ennig.ennig 1 dim) in
   let tracer1 =  (fun (i,j)->
-     let cell=Hex_cell.of_string (string_of_ipair (i,j)) in 
+     let cell=Hex_ipair.to_cell (i,j) in 
      if Hex_cell_set.mem cell ec.Hex_flattened_end_strategy_t.active_part
      then " A "
      else 
@@ -133,8 +124,8 @@ let of_finished_game fgame =
    and loser_cells = Hex_cell_set.safe_set l_loser_cells in  
    let all_cells = Hex_common.all_cells 11 in 
    let (Hex_cell_set_t.S l_empty_cells) = Hex_cell_set.setminus (Hex_cell_set.setminus all_cells winner_cells) loser_cells in 
-   let winner_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) l_winner_cells
-   and empty_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) l_empty_cells in
+   let winner_ipairs = Image.image Hex_ipair.of_cell l_winner_cells
+   and empty_ipairs = Image.image Hex_ipair.of_cell l_empty_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
    and associations2=Image.image (fun (i,j)->((i,j)," P ")) empty_ipairs in 
    {
@@ -147,7 +138,7 @@ exception Unbalanced_label of string * (Hex_cell_t.t list);;
 
 let to_basic_linker grid=
   let temp1= grid.Hex_ascii_grid_t.data in  
-  let temp2=Image.image (fun ((i,j),content)->(Hex_cell.of_string (string_of_ipair (i,j)),content)) temp1 in 
+  let temp2=Image.image (fun ((i,j),content)->(Hex_ipair.to_cell (i,j),content)) temp1 in 
   let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
   let temp3=Image.image (fun c0->
      (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
