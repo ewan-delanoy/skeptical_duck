@@ -114,15 +114,17 @@ let read_player s=
 let of_finished_game dim fgame =
    let winner = fgame.Hex_finished_game_t.winner in 
    let (fp_cells,sp_cells)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
-   let (winner_cells,loser_cells)=(
+   let (l_winner_cells,l_loser_cells)=(
        if winner=Hex_player_t.First_player
        then (fp_cells,sp_cells)
        else (sp_cells,fp_cells)
    ) in 
+   let winner_cells = Hex_cell_set.safe_set l_winner_cells 
+   and loser_cells = Hex_cell_set.safe_set l_loser_cells in  
    let all_cells = Hex_common.all_cells 11 in 
-   let (Hex_cell_set_t.S empty_cells) = Hex_cell_set.setminus (Hex_cell_set.setminus all_cells winner_cells) loser_cells in 
-   let winner_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) winner_cells
-   and empty_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) empty_cells in
+   let (Hex_cell_set_t.S l_empty_cells) = Hex_cell_set.setminus (Hex_cell_set.setminus all_cells winner_cells) loser_cells in 
+   let winner_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) l_winner_cells
+   and empty_ipairs = Image.image (fun cell->ipair_of_string(Hex_cell.to_string cell)) l_empty_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
    and associations2=Image.image (fun (i,j)->((i,j)," P ")) empty_ipairs in 
    {
