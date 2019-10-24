@@ -43,8 +43,6 @@ let is_more_detailed_than fgame1 fgame2=
 
 
 
-let announce_winner ="\nBeneficiary : \n";;
-let announce_moves ="\nActive part : \n";;
 
 let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves with 
   []->None
@@ -72,28 +70,36 @@ let to_end_configuration fgame=
      Hex_flattened_end_strategy_t.index=0;
    };;
 
+let announce_dimension ="\nDimension : \n";;
+let announce_winner ="\nBeneficiary : \n";;
+let announce_moves ="\nActive part : \n";;
 
 
 let to_string fgame=
-  let descr1=Hex_player.to_string(fgame.Hex_finished_game_t.winner) 
-  and descr2=Hex_common.cell_list_to_string(fgame.Hex_finished_game_t.sequence_of_moves) in 
-  announce_winner^descr1^announce_moves^descr2;;
+  let descr1=string_of_int(fgame.Hex_finished_game_t.dimension)
+  and descr2=Hex_player.to_string(fgame.Hex_finished_game_t.winner) 
+  and descr3=Hex_common.cell_list_to_string(fgame.Hex_finished_game_t.sequence_of_moves) in 
+  announce_dimension^descr1^announce_winner^descr2^announce_moves^descr3;;
 
 let of_string s =
    let s1=Cull_string.cobeginning 
-     (String.length announce_winner) s in 
-   let i1=Substring.leftmost_index_of_in announce_moves s1 in
-   let j1=i1+(String.length announce_moves)-1 in 
+     (String.length announce_dimension) s in 
+   let i1=Substring.leftmost_index_of_in announce_winner s1 
+   and i2=Substring.leftmost_index_of_in announce_moves s1 in
+   let j1=i1+(String.length announce_winner)-1 
+   and j2=i2+(String.length announce_moves)-1 in 
    let descr1=Cull_string.interval s1 1 (i1-1) 
-   and descr2=Cull_string.interval s1 (j1+1) (String.length s1) in 
+   and descr2=Cull_string.interval s1 (j1+1) (i2-1)
+   and descr3=Cull_string.interval s1 (j2+1) (String.length s1) in 
    {
-     Hex_finished_game_t.winner=Hex_player.of_string descr1;
-     Hex_finished_game_t.sequence_of_moves=Hex_common.cell_list_of_string descr2;
+     Hex_finished_game_t.dimension=int_of_string descr1;
+     Hex_finished_game_t.winner=Hex_player.of_string descr2;
+     Hex_finished_game_t.sequence_of_moves=Hex_common.cell_list_of_string descr3;
    };;
 
 let first_move fgame = List.hd(fgame.Hex_finished_game_t.sequence_of_moves);;
 
-let unveil fgame=
+let partial_unveil fgame=
   (
      fgame.Hex_finished_game_t.winner,
      fgame.Hex_finished_game_t.sequence_of_moves
@@ -105,6 +111,6 @@ let cmp =
    (Total_ordering.product 
      Total_ordering.standard
      cmp_for_cell_lists)
-   (unveil fgame1) (unveil fgame2)  
+   (partial_unveil fgame1) (partial_unveil fgame2)  
 ) :> Hex_finished_game_t.t Total_ordering.t);;
 
