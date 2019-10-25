@@ -9,7 +9,8 @@ let empty_state =
    Hex_state_t.whoami = Hex_player_t.First_player; (* random decision, should never be used *)
    Hex_state_t.config_remains = Hex_fles_double_list.empty_one ;
    Hex_state_t.games_remains = Hex_fg_double_list.empty_one ;
-   Hex_state_t.moves_before = [] 
+   Hex_state_t.moves_before = [] ;
+   Hex_state_t.still_strong = true;
 };;
 
 let initial_state my_name= 
@@ -18,17 +19,9 @@ let initial_state my_name=
    Hex_state_t.whoami = my_name;
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
-   Hex_state_t.moves_before = [] 
+   Hex_state_t.moves_before = [];
+   Hex_state_t.still_strong = true; 
 };;
-
-let absorb_move sta cell=
-   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
-   {
-      sta with
-      Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
-      Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
-      Hex_state_t.moves_before = cell::(sta.Hex_state_t.moves_before) ;
-   };;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
@@ -47,6 +40,24 @@ let analize sta=
      winning_moves = winning_moves ;
      already_used_moves = used_moves
   } ;;
+
+let absorb_move sta cell=
+   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
+   let ana = analize sta in 
+   let still_strong_now =(
+      if sta.Hex_state_t.still_strong 
+      then Hex_cell_set.mem cell ana.Hex_analysis_result_t.winning_moves
+      else false
+   ) in 
+   {
+      sta with
+      Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
+      Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
+      Hex_state_t.moves_before = cell::(sta.Hex_state_t.moves_before) ;
+      Hex_state_t.still_strong = still_strong_now;
+   };;
+
+
   
 
 
