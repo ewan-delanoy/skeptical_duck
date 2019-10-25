@@ -213,12 +213,13 @@ let list_of_default_labels = Ennig.doyle (fun j->
   let c=char_of_int(123-j) in " "^(String.make 1 c)^" "
 ) 1 56;; 
 
-(*
+
 let preprocess grid =
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,Option.seek (fun (macro_text,support)->macro_text = s) list_for_macros)
    ) grid.Hex_ascii_grid_t.data in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
+   if macros1=[] then grid else 
    let non_macros2=Image.image fst non_macros1 in 
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Tidel.safe_set(Option.filter_and_unpack
@@ -233,10 +234,9 @@ let preprocess grid =
    {
      grid with 
      data = final_map
-   }
+   };;
 
-   and  
-*)
+  
 
 end ;;
 
