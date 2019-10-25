@@ -13,8 +13,7 @@ let initial_point ()=
       Hex_state.analize ista
    );;
 
-
-let walker=ref(initial_point());;
+let walker=ref(Hex_state.empty_state);;
 
 let restart () =(walker := initial_point());;
 
