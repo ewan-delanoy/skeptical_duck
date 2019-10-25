@@ -10,4 +10,5 @@ type t= {
    games_remains : Hex_fg_double_list_t.t;
    moves_before : Hex_cell_t.t list;
    still_strong : bool;
+   strong_moves_before : Hex_cell_t.t list;
 };;

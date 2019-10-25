@@ -11,6 +11,7 @@ let empty_state =
    Hex_state_t.games_remains = Hex_fg_double_list.empty_one ;
    Hex_state_t.moves_before = [] ;
    Hex_state_t.still_strong = true;
+   Hex_state_t.strong_moves_before = [] ;
 };;
 
 let initial_state my_name= 
@@ -21,6 +22,7 @@ let initial_state my_name=
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.moves_before = [];
    Hex_state_t.still_strong = true; 
+   Hex_state_t.strong_moves_before = [] ;
 };;
 
 let analize sta=
@@ -31,13 +33,13 @@ let analize sta=
      []->None
      |_->Some(Hex_cell_set.fold_intersect (Image.image fst dangers))
   ) in 
-  let (unconditioned_winning_moves,unconditioned_used_moves)=
+  let (unconditioned_strong_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
-  let winning_moves=Hex_cell_set.apply_condition condition unconditioned_winning_moves 
+  let strong_moves=Hex_cell_set.apply_condition condition unconditioned_strong_moves 
   and used_moves=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
-     winning_moves = winning_moves ;
+     strong_moves = strong_moves ;
      already_used_moves = used_moves
   } ;;
 
@@ -46,8 +48,11 @@ let absorb_move sta cell=
    let ana = analize sta in 
    let still_strong_now =(
       if sta.Hex_state_t.still_strong 
-      then Hex_cell_set.mem cell ana.Hex_analysis_result_t.winning_moves
+      then Hex_cell_set.mem cell ana.Hex_analysis_result_t.strong_moves
       else false
+   ) in 
+   let smb=(
+
    ) in 
    {
       sta with
@@ -55,6 +60,7 @@ let absorb_move sta cell=
       Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.moves_before = cell::(sta.Hex_state_t.moves_before) ;
       Hex_state_t.still_strong = still_strong_now;
+      Hex_state_t.strong_moves_before = smb;
    };;
 
 
