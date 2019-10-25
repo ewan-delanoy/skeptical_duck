@@ -152,7 +152,6 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (_,_,_,z)->z) l2
   );;
 
-let fill_with_string raf text= (raf:=Private.of_string text);;
 
 end;;
 
