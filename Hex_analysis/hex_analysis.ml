@@ -42,6 +42,6 @@ let declare_winner player =
   } in 
   let _=Hex_persistent.add_finished_game new_fgame in 
   let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
-  Hex_ascii_grid.make_ready_for_editing new_grid;;
+  Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
   

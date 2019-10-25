@@ -240,7 +240,7 @@ let preprocess grid =
 
 end ;;
 
-let make_ready_for_editing = Private.make_ready_for_editing;;
+let print_on_sheet_for_editing = Private.make_ready_for_editing;;
 let of_basic_linker = Private.of_basic_linker;;
 let of_finished_game = Private.of_finished_game;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
