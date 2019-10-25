@@ -12,3 +12,4 @@ type t= {
    still_strong : bool;
    strong_moves_before : Hex_cell_t.t list;
 };;
+
