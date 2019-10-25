@@ -6,14 +6,23 @@
 
 let current_dim = 11;;
 
+let empty_point = 
+  let ista = Hex_state.empty_state  in 
+   (
+      ista ,
+      Hex_state.analize ista
+   );;
+
+
+
+let walker=ref(empty_point);;
+
 let initial_point ()= 
   let ista = Hex_state.initial_state () in 
    (
       ista ,
       Hex_state.analize ista
    );;
-
-let walker=ref(Hex_state.empty_state);;
 
 let restart () =(walker := initial_point());;
 
