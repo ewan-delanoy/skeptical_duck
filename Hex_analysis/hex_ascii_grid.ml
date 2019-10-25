@@ -225,7 +225,15 @@ let preprocess grid =
      (fun (_,s)->if s=triple_blank then None else Some(s)) non_macros2) in 
    let unused_labels = List.filter (fun x->Tidel.nelfenn x labels_used_by_nonmacros) list_of_default_labels in 
    let fourtuples = List.flatten(Image.image snd macros2) in
-   Listennou.big_head
+   let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
+   let overrider1=List.flatten(Image.image (fun ((i1,j1,i2,j2),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
+   and overrider2=Image.image (fun (p,_)->(p," A ")) macros1 in 
+   let overrider=overrider1@overrider2 in 
+   let final_map=Associative_list.override_with non_macros2 overrider in 
+   {
+     grid with 
+     data = final_map
+   }
 
    and  
 *)
