@@ -87,11 +87,12 @@ let to_ascii_drawing grid =
 
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
+let path_for_sheet = Absolute_path.of_string "Hex_analysis/hex_config_sheet.txt";;
+
 let print_on_sheet_for_editing grid =
     let drawing = to_ascii_drawing grid in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
-    let ap=Absolute_path.of_string "Hex_analysis/hex_config_sheet.txt" in 
-    Io.overwrite_with ap assignment;;
+    Io.overwrite_with path_for_sheet assignment;;
 
 
 
@@ -234,13 +235,20 @@ let preprocess grid =
      data = final_map
    };;
 
-  
+let process_sheet ()=
+   let old_drawing = Io.read_whole_file path_for_sheet in 
+   let old_grid = read_ascii_drawing old_drawing in 
+   let new_grid = preprocess old_grid in 
+   let _ = print_on_sheet_for_editing new_grid in 
+   new_grid;;
 
 end ;;
 
-let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
+
 let of_basic_linker = Private.of_basic_linker;;
 let of_finished_game = Private.of_finished_game;;
+let process_sheet = Private.process_sheet;;
+let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
 let to_basic_linker = Private.to_basic_linker;;
 let visualize = Private.visualize;;
