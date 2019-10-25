@@ -52,7 +52,8 @@ let add_labels l_fourtuples=
    let temp1=Ennig.index_everything l_fourtuples in 
    let temp2=Image.image (fun (k,(i1,j1,i2,j2))->
       let c=char_of_int(123-k) in 
-      [((i1,j1),c);((i2,j2),c)]
+      let s=" "^(String.make 1 c)^" " in
+      [((i1,j1),s);((i2,j2),s)]
    ) temp1 in 
    List.flatten temp2;; 
 
