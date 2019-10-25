@@ -216,7 +216,7 @@ let list_of_default_labels = Ennig.doyle (fun j->
 
 let preprocess grid =
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
-     (p,Option.seek (fun (macro_text,support)->macro_text = s) list_for_macros)
+     (p,List.assoc_opt s list_for_macros)
    ) grid.Hex_ascii_grid_t.data in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
    if macros1=[] then grid else 
