@@ -8,5 +8,6 @@ type t= {
    whoami : Hex_player_t.t ; 
    config_remains : Hex_fles_double_list_t.t ;
    games_remains : Hex_fg_double_list_t.t;
-   moves_before : Hex_cell_t.t list 
+   moves_before : Hex_cell_t.t list;
+   still_strong : bool;
 };;
