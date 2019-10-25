@@ -4,9 +4,6 @@
 
 *)
 
-
-
-
 let games_ref = ref (Hex_fg_double_list.empty_one);;
 
 let winning_end_strategies_for_first_player_ref 
@@ -14,6 +11,10 @@ let winning_end_strategies_for_first_player_ref
 
 let winning_end_strategies_for_second_player_ref 
       = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
+
+module Private = struct 
+
+
 
 let wes_pair = 
    (
@@ -78,6 +79,12 @@ let add_finished_game fgame =
      add_finished_game_without_persisting fgame;
      persist_games()
    );;
+
+end ;;
+
+let add_end_strategy = Private.add_end_strategy;;
+let add_finished_game = Private.add_finished_game;;
+let wes_pair = Private.wes_pair;;
 
 
 
