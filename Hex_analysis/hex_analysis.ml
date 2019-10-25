@@ -17,14 +17,14 @@ let empty_point =
 
 let walker=ref(empty_point);;
 
-let initial_point ()= 
-  let ista = Hex_state.initial_state () in 
+let initial_point my_name= 
+  let ista = Hex_state.initial_state my_name in 
    (
       ista ,
       Hex_state.analize ista
    );;
 
-let restart () =(walker := initial_point());;
+let restart my_name =(walker := initial_point my_name);;
 
 let absorb_move cell=
    let (old_state,_)=(!walker) in 
