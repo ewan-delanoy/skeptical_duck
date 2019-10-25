@@ -84,6 +84,7 @@ end ;;
 
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
+let retrieve_all_data = Private.retrieve_all_data;;
 let wes_pair = Private.wes_pair;;
 
 

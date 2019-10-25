@@ -5,7 +5,9 @@
 *)
 
 
-let initial_state ()= {
+let initial_state ()= 
+   let _=Hex_persistent.retrieve_all_data () in 
+{
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.moves_before = [] 
