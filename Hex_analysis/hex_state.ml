@@ -6,7 +6,7 @@
 
 let empty_state = 
 {
-   Hex_state_t.whoami = Hex_player_t.First_player (* random decision, should never be used *)
+   Hex_state_t.whoami = Hex_player_t.First_player; (* random decision, should never be used *)
    Hex_state_t.config_remains = Hex_fles_double_list.empty_one ;
    Hex_state_t.games_remains = Hex_fg_double_list.empty_one ;
    Hex_state_t.moves_before = [] 
