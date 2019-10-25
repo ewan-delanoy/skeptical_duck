@@ -52,16 +52,19 @@ let absorb_move sta cell=
       else false
    ) in 
    let smb=(
-
+     if still_strong_now 
+     then cell :: (sta.Hex_state_t.strong_moves_before)
+     else sta.Hex_state_t.strong_moves_before
    ) in 
    {
       sta with
       Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
-      Hex_state_t.moves_before = cell::(sta.Hex_state_t.moves_before) ;
+      Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
       Hex_state_t.still_strong = still_strong_now;
       Hex_state_t.strong_moves_before = smb;
    };;
+
 
 
   
