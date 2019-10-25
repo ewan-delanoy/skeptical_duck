@@ -18,41 +18,43 @@ let ipair_of_string s=
 let string_of_ipair (i,j)=
   (String.make 1 (char_of_int(j+96)))^(string_of_int i);;
 
-let core_support_for_upwards_pyramid=
-   [
-      ((1,1),'b');((1,2),'b');  
-      ((1,3),'c');((1,4),'c');
-      ((2,1),'d');((2,3),'d');
-      ((2,2),'e');((3,1),'e');
-      ((3,3),'f');((4,2),'f');
-   ]
-   @
-   [
-      ((1,7),'B');((1,8),'B');  
-      ((1,5),'C');((1,6),'C');
-      ((2,5),'D');((2,7),'D');
-      ((2,6),'E');((3,6),'E');
-      ((3,4),'F');((4,4),'F');
-   ]
-   @
-   [
-      ((3,2),'*');((3,5),'*');  
-   ];;
+
+
+
+ 
+let adhoc_translate core_f l=
+   Image.image (fun (x,y,a,b)->
+     let (x1,y1)=core_f(x,y)
+     and (a1,b1)=core_f(a,b) in 
+     (x1,y1,a1,b1)
+   ) l;; 
+
+let core_support_for_upwards_pyramid =
+  [(1,1,1,2);(1,3,1,4);(2,1,2,3);(2,2,3,1);(3,3,4,2);
+(1,7,1,8);(1,5,1,6);(2,5,2,7);(2,6,3,6);(3,4,4,4);
+(3,2,3,5)];;    
 
 let core_support_for_downwards_pyramid =
-   Image.image (fun ((x,y),c)->((9-x,9-y),c))  core_support_for_upwards_pyramid;;  
+   adhoc_translate (fun (x,y)->(9-x,9-y))  core_support_for_upwards_pyramid;;  
 
 let core_support_for_leftwards_pyramid =
-   Image.image (fun ((x,y),c)->((y,x),c))  core_support_for_upwards_pyramid;; 
+   adhoc_translate (fun (x,y)->(y,x))  core_support_for_upwards_pyramid;; 
 
 let core_support_for_rightwards_pyramid =
-   Image.image (fun ((x,y),c)->((9-y,9-x),c))  core_support_for_upwards_pyramid;; 
+   adhoc_translate (fun (x,y)->(9-y,9-x))  core_support_for_upwards_pyramid;; 
 
-
-let translator (dx,dy) l=
-   Image.image (fun ((a,b),c)->((a+dx,b+dy),c)) l;;
+let translator (dx,dy) l=adhoc_translate (fun (x,y)->(x+dx,y+dy)) l;;
+   
 
 end;;
+
+let add_labels l_fourtuples=
+   let temp1=Ennig.index_everything l_fourtuples in 
+   let temp2=Image.image (fun (k,(i1,j1,i2,j2))->
+      let c=char_of_int(123-k) in 
+      [((i1,j1),c);((i2,j2),c)]
+   ) temp1 in 
+   List.flatten temp2;; 
 
 let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
