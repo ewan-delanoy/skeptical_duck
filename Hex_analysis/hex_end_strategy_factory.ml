@@ -135,6 +135,8 @@ let to_string  (Hex_end_strategy_factory_t.F(player,l))=
    and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
    announce_beneficiary^descr1^announce_data^descr2;;
 
+let empty_one player= Hex_end_strategy_factory_t.F(player,[]);;
+
 let of_string text = 
    let text1 = Cull_string.two_sided_cutting (announce_beneficiary,"") text in 
    let i1=Substring.leftmost_index_of_in announce_data text1 in
@@ -149,6 +151,8 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (_,_,_,z)->z) l1,
       Image.image (fun (_,_,_,z)->z) l2
   );;
+
+let fill_with_string raf text= (raf:=Private.of_string text);;
 
 end;;
 
