@@ -191,6 +191,29 @@ let read_ascii_drawing s=
     data = associations ;
   };; 
 
+let list_for_macros=[
+   ("ddd", Hex_ipair.support_for_downwards_pyramid);
+   ("lll", Hex_ipair.support_for_leftwards_pyramid);
+   ("rrr", Hex_ipair.support_for_downwards_pyramid);
+   ("uuu", Hex_ipair.support_for_leftwards_pyramid);
+   
+   ("bds", Hex_ipair.support_for_bs_downwards_claw);
+   ("bls", Hex_ipair.support_for_bs_leftwards_claw);
+   ("brs", Hex_ipair.support_for_bs_rightwards_claw);
+   ("bus", Hex_ipair.support_for_bs_upwards_claw); 
+
+   ("sdb", Hex_ipair.support_for_sb_downwards_claw);
+   ("slb", Hex_ipair.support_for_sb_leftwards_claw);
+   ("srb", Hex_ipair.support_for_sb_rightwards_claw);
+   ("sub", Hex_ipair.support_for_sb_upwards_claw); 
+
+];;
+
+(*
+let preprocess grid =
+   let (macros,non_macros)=List.partition (fun ((i,j),s)->) 
+      grid.Hex_ascii_grid_t.data
+*)
 
 end ;;
 
