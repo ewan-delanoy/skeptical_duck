@@ -293,3 +293,26 @@ split_list_in_half [1; 2; 3; 4; 5; 6; 7];;
 split_list_in_half [1; 2; 3; 4; 5; 6; 7; 8];;
 
 *)   
+
+
+
+let unequal_combine l1 l2 =
+   let rec tempf=(fun
+     (treated,to_be_treated1,to_be_treated2)->
+       match to_be_treated1 with 
+       []->List.rev(treated)
+       |a1::others1->(
+                       match to_be_treated2 with 
+                        []->List.rev(treated)
+                        |a2::others2 -> tempf((a1,a2)::treated,others1,others2)
+                     )
+   ) in 
+   tempf([],l1,l2);;
+
+exception Fst_is_smallest of int * int;;
+  
+
+let unequal_combine_where_fst_is_smallest l1 l2 =
+   let n1=List.length(l1) and n2=List.length(l2) in 
+   if n1>n2 then raise(Fst_is_smallest(n1,n2)) else   
+   unequal_combine l1 l2;;
