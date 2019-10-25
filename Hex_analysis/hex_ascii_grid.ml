@@ -87,13 +87,11 @@ let to_ascii_drawing grid =
 
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
-let make_ready_for_editing grid =
+let print_on_sheet_for_editing grid =
     let drawing = to_ascii_drawing grid in 
-    let assignment = "\n\n\nlet z=\"\n\n\n"^drawing^"\n\n\n\""^Double_semicolon.ds^"\n\n\n" in 
-    let ap=Absolute_path.of_string "Hex_analysis/hex_config_sheet.ml" in 
-    Replace_inside.overwrite_between_markers_inside_file 
-  (Overwriter.of_string assignment) 
-    ("(* Draft starts here *)","(* Draft ends here *)") ap;;
+    let assignment = "\n\n\n"^drawing^"\n\n\n" in 
+    let ap=Absolute_path.of_string "Hex_analysis/hex_config_sheet.txt" in 
+    Io.overwrite_with ap assignment;;
 
 
 
@@ -240,7 +238,7 @@ let preprocess grid =
 
 end ;;
 
-let print_on_sheet_for_editing = Private.make_ready_for_editing;;
+let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let of_basic_linker = Private.of_basic_linker;;
 let of_finished_game = Private.of_finished_game;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
