@@ -28,30 +28,29 @@ let fst_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx
 let snd_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx 
        winning_end_strategies_for_second_player_ref k;;       
 
+
+let path_for_fp_strats = Absolute_path.of_string "Hex_analysis/hex_end_strategies_for_first_player.txt";;
+let path_for_sp_strats = Absolute_path.of_string "Hex_analysis/hex_end_strategies_for_second_player.txt";;
+let path_for_fgames = Absolute_path.of_string "Hex_analysis/hex_finished_games.txt";;
+
+
 let persist_strategies ()=
-    let assignment1=
-      "\n\n\n Hex_"^"end_strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_first_player_ref \n"^
-      "\n(\""^
-      (Hex_end_strategy_factory.to_string (fst wes_pair))^"\");;\n\n\n" 
-    and assignment2=
-      "\n\n\n Hex_"^"end_strategy_factory.fill_with_string Hex_"^"persistent.winning_end_strategies_for_second_player_ref \n"^
-      "\n(\""^
-      (Hex_end_strategy_factory.to_string (snd wes_pair))^"\");;\n\n\n" in 
-    let assignment = assignment1 ^ "\n\n\n" ^ assignment2 in    
-    let ap=Absolute_path.of_string "Hex_analysis/hex_initializer.ml" in 
-    Replace_inside.overwrite_between_markers_inside_file 
-  (Overwriter.of_string assignment) ("(* End strategies start here *)","(* End strategies end here *)") ap;;
+   (
+     Io.overwrite_with path_for_fp_strats (Hex_end_strategy_factory.to_string (fst wes_pair));
+     Io.overwrite_with path_for_sp_strats (Hex_end_strategy_factory.to_string (snd wes_pair));
+   );;
 
 
 
 let persist_games ()=
-    let assignment=
-      "\n\n\n Hex_"^"persistent.games_ref:=Hex_"^"fg_double_list.of_string(\n\""^
-      (Hex_fg_double_list.to_string (!games_ref))^"\");;\n\n\n" in 
-    let ap=Absolute_path.of_string "Hex_analysis/hex_initializer.ml" in 
-    Replace_inside.overwrite_between_markers_inside_file 
-  (Overwriter.of_string assignment) ("(* Games start here *)","(* Games end here *)") ap;;
+     Io.overwrite_with path_for_fgames (Hex_fg_double_list.to_string (!games_ref));;   
 
+let retrieve_all_data ()=
+  (
+    Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
+    Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
+    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_sp_strats))
+  );;
 
 let add_end_strategy_without_persisting (player,static_constructor,comment,indices) =
    let ec = Hex_end_strategy_factory.create_new_strategy wes_pair player static_constructor comment indices in 
@@ -79,4 +78,6 @@ let add_finished_game fgame =
      add_finished_game_without_persisting fgame;
      persist_games()
    );;
+
+
 
