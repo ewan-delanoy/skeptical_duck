@@ -29,6 +29,8 @@ let adhoc_translate core_f l=
      (x1,y1,a1,b1)
    ) l;; 
 
+let translator (dx,dy) l=adhoc_translate (fun (x,y)->(x+dx,y+dy)) l;;   
+
 let core_support_for_upwards_pyramid =
   [(1,1,1,2);(1,3,1,4);(2,1,2,3);(2,2,3,1);(3,3,4,2);
 (1,7,1,8);(1,5,1,6);(2,5,2,7);(2,6,3,6);(3,4,4,4);
@@ -43,8 +45,30 @@ let core_support_for_leftwards_pyramid =
 let core_support_for_rightwards_pyramid =
    adhoc_translate (fun (x,y)->(9-y,9-x))  core_support_for_upwards_pyramid;; 
 
-let translator (dx,dy) l=adhoc_translate (fun (x,y)->(x+dx,y+dy)) l;;
-   
+let core_support_for_sb_upwards_claw = [(1,1,1,2);(1,3,1,4);(2,1,2,3);(2,1,2,3);(2,2,3,2)];;    
+
+let core_support_for_bs_downwards_claw =
+   adhoc_translate (fun (x,y)->(5-x,5-y))  core_support_for_sb_upwards_claw;;  
+
+let core_support_for_sb_leftwards_claw =
+   adhoc_translate (fun (x,y)->(y,x))  core_support_for_sb_upwards_claw;; 
+
+let core_support_for_bs_rightwards_claw =
+   adhoc_translate (fun (x,y)->(5-y,5-x))  core_support_for_sb_upwards_claw;; 
+
+
+let core_support_for_bs_upwards_claw = [(1,1,1,2);(1,3,1,4);(2,1,2,3);(2,1,2,3);(2,2,3,1)];;    
+
+let core_support_for_sb_downwards_claw =
+   adhoc_translate (fun (x,y)->(5-x,5-y))  core_support_for_bs_upwards_claw;;  
+
+let core_support_for_bs_leftwards_claw =
+   adhoc_translate (fun (x,y)->(y,x))  core_support_for_bs_upwards_claw;; 
+
+let core_support_for_sb_rightwards_claw =
+   adhoc_translate (fun (x,y)->(5-y,5-x))  core_support_for_bs_upwards_claw;; 
+
+
 
 end;;
 
@@ -72,3 +96,26 @@ let support_for_rightwards_pyramid (x,y)=
 let support_for_upwards_pyramid (x,y)=
    Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
 
+let support_for_bs_downwards_claw (x,y)=
+   Private.translator (x-2,y-4) Private.core_support_for_bs_downwards_claw;;
+
+let support_for_bs_leftwards_claw (x,y)=
+   Private.translator (x-2,y-3) Private.core_support_for_bs_leftwards_claw;;
+
+let support_for_bs_rightwards_claw (x,y)=
+   Private.translator (x-4,y-2) Private.core_support_for_bs_rightwards_claw;;
+
+let support_for_bs_upwards_claw (x,y)=
+   Private.translator (x-3,y-2) Private.core_support_for_bs_upwards_claw;;
+
+let support_for_sb_downwards_claw (x,y)=
+   Private.translator (x-2,y-3) Private.core_support_for_sb_downwards_claw;;
+
+let support_for_sb_leftwards_claw (x,y)=
+   Private.translator (x-1,y-3) Private.core_support_for_sb_leftwards_claw;;
+
+let support_for_sb_rightwards_claw (x,y)=
+   Private.translator (x-3,y-2) Private.core_support_for_sb_rightwards_claw;;
+
+let support_for_sb_upwards_claw (x,y)=
+   Private.translator (x-3,y-1) Private.core_support_for_sb_upwards_claw;;
