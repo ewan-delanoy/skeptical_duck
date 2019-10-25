@@ -89,7 +89,7 @@ let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
 let make_ready_for_editing grid =
     let drawing = to_ascii_drawing grid in 
-    let assignment = "\n\n\nlet z=\"\n\n\n"^drawing^"\n\n\n\";;\n\n\n" in 
+    let assignment = "\n\n\nlet z=\"\n\n\n"^drawing^"\n\n\n\""^Double_semicolon.ds^"\n\n\n" in 
     let ap=Absolute_path.of_string "Hex_analysis/hex_config_sheet.ml" in 
     Replace_inside.overwrite_between_markers_inside_file 
   (Overwriter.of_string assignment) 
