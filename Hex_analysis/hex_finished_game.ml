@@ -36,7 +36,7 @@ let compute_largest_unconclusive_beginning fgame fles =
 let iterated_largest_unconclusive_beginning fgame flesses=
   List.fold_left compute_largest_unconclusive_beginning fgame flesses;;
 
-let is_more_detailed_than fgame1 fgame2=
+let extends fgame1 fgame2=
    let l1=fgame1.Hex_finished_game_t.sequence_of_moves
    and l2=fgame2.Hex_finished_game_t.sequence_of_moves in 
    let (_,_,r2)=Listennou.factor (l1,l2) in r2=[];;

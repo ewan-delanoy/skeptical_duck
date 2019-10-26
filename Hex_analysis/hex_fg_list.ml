@@ -21,7 +21,7 @@ let remove_redundancies l=
    []->treated
    |fgame::other_games->
      let cleaned_games=List.filter (
-       fun fgame2->not(Hex_finished_game.is_more_detailed_than fgame fgame2)
+       fun fgame2->not(Hex_finished_game.extends fgame fgame2)
      ) other_games in 
      tempf(fgame::treated,cleaned_games)
  ) in
