@@ -36,7 +36,7 @@ let take_end_config_into_account end_config (Hex_fg_double_list_t.DL(l1,l2))=
     and new_l2=Hex_fg_list.take_new_end_strategy_into_account end_config l2 in  
     Hex_fg_double_list_t.DL(new_l1,new_l2) ;;
 
-let absorb_move move (Hex_fg_double_list_t.DL(l1,l2))=
+let simplify_by_move move (Hex_fg_double_list_t.DL(l1,l2))=
    (Hex_fg_double_list_t.DL(
       Hex_fg_list.simplify_by_move move l1,
       Hex_fg_list.simplify_by_move move l2

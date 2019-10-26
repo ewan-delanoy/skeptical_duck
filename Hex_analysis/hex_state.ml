@@ -56,7 +56,7 @@ let absorb_move sta cell=
    {
       sta with
       Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
-      Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
+      Hex_state_t.games_remains = Hex_fg_double_list.simplify_by_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
       Hex_state_t.strong_moves_before = new_smb;
    };;
