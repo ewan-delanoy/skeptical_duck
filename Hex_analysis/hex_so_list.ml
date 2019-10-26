@@ -13,7 +13,7 @@ let of_string s=
      Ordered.diforchan_plaen Hex_strong_opening.cmp temp2 ;;
   
 let to_string l=String.concat joiner_in_list 
-    (Image.image Hex_finished_game.to_string l);;
+    (Image.image Hex_strong_opening.to_string l);;
 
 let insert_in new_so l=
    if List.exists (fun so -> Hex_strong_opening.extends so new_so ) l

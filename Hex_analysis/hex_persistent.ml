@@ -12,6 +12,9 @@ let winning_end_strategies_for_first_player_ref
 let winning_end_strategies_for_second_player_ref 
       = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
 
+let strong_openings_ref = ref [];;
+      
+
 module Private = struct 
 
 
@@ -32,7 +35,8 @@ let snd_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx
 
 let path_for_fp_strats = Absolute_path.of_string "Hex_analysis/hex_end_strategies_for_first_player.txt";;
 let path_for_sp_strats = Absolute_path.of_string "Hex_analysis/hex_end_strategies_for_second_player.txt";;
-let path_for_fgames = Absolute_path.of_string "Hex_analysis/hex_finished_games.txt";;
+let path_for_fgames =   Absolute_path.of_string "Hex_analysis/hex_finished_games.txt";;
+let path_for_openings = Absolute_path.of_string "Hex_analysis/hex_boomerangs.txt";;
 
 
 let persist_strategies ()=
@@ -42,15 +46,18 @@ let persist_strategies ()=
    );;
 
 
-
 let persist_games ()=
      Io.overwrite_with path_for_fgames (Hex_fg_double_list.to_string (!games_ref));;   
+
+let persist_openings ()=
+    Io.overwrite_with path_for_openings (Hex_so_list.to_string(!strong_openings_ref));;
 
 let retrieve_all_data ()=
   (
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
-    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_sp_strats))
+    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_sp_strats));
+    strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
   );;
 
 let add_end_strategy_without_persisting (player,static_constructor,comment,indices) =
