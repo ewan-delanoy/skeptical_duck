@@ -128,15 +128,11 @@ let of_finished_game fgame =
        if winner=Hex_player_t.First_player
        then (fp_cells,sp_cells)
        else (sp_cells,fp_cells)
-   ) in 
-   let winner_cells = Hex_cell_set.safe_set l_winner_cells 
-   and loser_cells = Hex_cell_set.safe_set l_loser_cells in  
-   let all_cells = Hex_common.all_cells 11 in 
-   let (Hex_cell_set_t.S l_empty_cells) = Hex_cell_set.setminus (Hex_cell_set.setminus all_cells winner_cells) loser_cells in 
+   ) in  
    let winner_ipairs = Image.image Hex_ipair.of_cell l_winner_cells
-   and empty_ipairs = Image.image Hex_ipair.of_cell l_empty_cells in
+   and loser_ipairs = Image.image Hex_ipair.of_cell l_loser_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
-   and associations2=Image.image (fun (i,j)->((i,j)," P ")) empty_ipairs in 
+   and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
    {
     Hex_ascii_grid_t.beneficiary = winner;
     dimension = fgame.Hex_finished_game_t.dimension;
