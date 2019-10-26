@@ -20,6 +20,7 @@ let initial_state my_name=
    Hex_state_t.whoami = my_name;
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
+   Hex_state_t.openings_remains = (!(Hex_persistent.strong_openings_ref));
    Hex_state_t.moves_before = [];
    Hex_state_t.strong_moves_before = (None,[]) ;
 };;
@@ -58,6 +59,7 @@ let absorb_move sta cell=
       sta with
       Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.simplify_by_move cell sta.Hex_state_t.games_remains ;
+      Hex_state_t.openings_remains = Hex_so_list.simplify_by_move cell sta.Hex_state_t.openings_remains ;
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
       Hex_state_t.strong_moves_before = new_smb;
    };;
