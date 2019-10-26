@@ -44,7 +44,7 @@ let is_more_detailed_than fgame1 fgame2=
 
 
 
-let absorb_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves with 
+let simplify_by_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_moves with 
   []->None
   |first_move::other_moves ->
     if (first_move = new_move)&&(other_moves <> [])
