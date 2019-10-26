@@ -5,7 +5,7 @@
 *)
 
 
-let is_more_detailed_than 
+let extends 
    (Hex_strong_opening_t.O l1) (Hex_strong_opening_t.O l2)=
    let (_,_,r2)=Listennou.factor (l1,l2) in r2=[];;
 
