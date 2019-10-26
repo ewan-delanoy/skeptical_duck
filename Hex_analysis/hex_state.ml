@@ -36,7 +36,7 @@ let analize sta=
   let (unconditioned_strong_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
   let easy_advances = Hex_cell_set.safe_set(Hex_so_list.easy_advances sta.Hex_state_t.openings_remains) in 
-  let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves in 
+  let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves 
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
