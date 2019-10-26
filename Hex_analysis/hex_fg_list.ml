@@ -36,7 +36,7 @@ let take_new_end_strategy_into_account end_config l=
     (fun fgame->Hex_finished_game.compute_largest_unconclusive_beginning fgame end_config) l in 
     remove_redundancies temp1;;
 
-let absorb_move move l=Option.filter_and_unpack (Hex_finished_game.simplify_by_move move) l;;     
+let simplify_by_move move l=Option.filter_and_unpack (Hex_finished_game.simplify_by_move move) l;;     
 
 let first_moves l=
     Hex_cell_set.safe_set (Image.image Hex_finished_game.first_move l);;
