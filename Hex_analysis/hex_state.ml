@@ -10,8 +10,7 @@ let empty_state =
    Hex_state_t.config_remains = Hex_fles_double_list.empty_one ;
    Hex_state_t.games_remains = Hex_fg_double_list.empty_one ;
    Hex_state_t.moves_before = [] ;
-   Hex_state_t.still_strong = true;
-   Hex_state_t.strong_moves_before = [] ;
+   Hex_state_t.strong_moves_before = (None,[]) ;
 };;
 
 let initial_state my_name= 
@@ -21,8 +20,7 @@ let initial_state my_name=
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.moves_before = [];
-   Hex_state_t.still_strong = true; 
-   Hex_state_t.strong_moves_before = [] ;
+   Hex_state_t.strong_moves_before = (None,[]) ;
 };;
 
 let analize sta=
@@ -46,23 +44,21 @@ let analize sta=
 let absorb_move sta cell=
    let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
    let ana = analize sta in 
-   let still_strong_now =(
-      if sta.Hex_state_t.still_strong 
-      then Hex_cell_set.mem cell ana.Hex_analysis_result_t.strong_moves
-      else false
-   ) in 
-   let smb=(
-     if still_strong_now 
-     then cell :: (sta.Hex_state_t.strong_moves_before)
-     else sta.Hex_state_t.strong_moves_before
-   ) in 
+   let old_smb= sta.Hex_state_t.strong_moves_before in 
+   let new_smb=(
+       let (opt,mb)=old_smb in 
+       match opt with 
+      None->if Hex_cell_set.mem cell ana.Hex_analysis_result_t.strong_moves
+            then (None,cell::mb)
+            else (Some(cell),mb)
+     |Some(_)->old_smb     
+   ) in
    {
       sta with
       Hex_state_t.config_remains = Hex_fles_double_list.absorb_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.absorb_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
-      Hex_state_t.still_strong = still_strong_now;
-      Hex_state_t.strong_moves_before = smb;
+      Hex_state_t.strong_moves_before = new_smb;
    };;
 
 
