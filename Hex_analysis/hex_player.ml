@@ -18,3 +18,6 @@ let of_string s=
 let to_string=function  
      Hex_player_t.First_player->"1" 
     |Hex_player_t.Second_player->"2";;
+
+let of_int i=of_string(string_of_int i);;
+
