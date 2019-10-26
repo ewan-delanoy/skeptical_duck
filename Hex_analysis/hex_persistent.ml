@@ -60,6 +60,7 @@ let retrieve_all_data ()=
     strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
   );;
 
+
 let add_end_strategy_without_persisting (player,static_constructor,comment,indices) =
    let ec = Hex_end_strategy_factory.create_new_strategy wes_pair player static_constructor comment indices in 
    (
@@ -74,6 +75,11 @@ let add_finished_game_without_persisting fgame =
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
 
+let add_strong_opening_without_persisting opng=
+   let old_ones=(!strong_openings_ref) in 
+   let new_ones = Hex_so_list.insert_in opng old_ones in 
+   strong_openings_ref := new_ones;;
+
 let add_end_strategy ec =
    (
      add_end_strategy_without_persisting ec;
@@ -87,10 +93,17 @@ let add_finished_game fgame =
      persist_games()
    );;
 
+let add_strong_opening opng=
+   (
+     add_strong_opening_without_persisting opng;
+     persist_openings()
+   );;
+
 end ;;
 
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
+let add_strong_opening = Private.add_strong_opening;;
 let retrieve_all_data = Private.retrieve_all_data;;
 let wes_pair = Private.wes_pair;;
 
