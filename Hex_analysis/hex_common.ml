@@ -47,20 +47,3 @@ let all_cells dimension=
    let temp4=Image.image (fun (sj,si)->Hex_cell.of_string(sj^si)) temp3 in 
    Hex_cell_set.safe_set temp4;;
 
-let translate_column dimension d s1=
-   let i2=(int_of_char(String.get s1 0))+d-96 in 
-   if (i2<1)||(i2>dimension)
-   then raise(Translate_horizontally_exn(d,s1))
-   else String.make 1 (char_of_int(i2+96));;
-
-let translate_row dimension d i1=
-   let i2=i1+d in 
-   if (i2<1)||(i2>dimension)
-   then raise(Translate_vertically_exn(d,i1))
-   else i2;;
-
-let translate_horizontally dim d (Hex_cell_t.C(s,i))= Hex_cell_t.C(translate_column dim d s,i);; 
-let translate_vertically dim d (Hex_cell_t.C(s,i))= Hex_cell_t.C(s,translate_row dim d i);; 
-
-let translate dim (dx,dy) cell = translate_vertically dim  dy (translate_horizontally dim dx cell);;
-
