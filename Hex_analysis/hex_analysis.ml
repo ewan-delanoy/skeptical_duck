@@ -41,6 +41,19 @@ let usual_move ()=
   let cell = Hex_analysis_result.usual_move (snd(!walker)) in 
   absorb_move cell;;
 
+let remember_opening_if_necessary winner =
+   if winner = (fst(!walker)).Hex_state_t.whoami 
+   then ()
+   else 
+   let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
+   (* It may happen that there is no new opening to remember if the
+   "whoami" player has not obeyed the rules *)
+   if Hex_common.next_one_to_play(strong_moves_before) <> winner 
+   then ()
+   else let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
+        let new_opng = Hex_strong_opening_t.O(new_l) in 
+        Hex_persistent.add_strong_opening new_opng;;
+
 
 let declare_winner player =
   let new_fgame={
