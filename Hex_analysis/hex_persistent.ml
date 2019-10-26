@@ -52,6 +52,15 @@ let persist_games ()=
 let persist_openings ()=
     Io.overwrite_with path_for_openings (Hex_so_list.to_string(!strong_openings_ref));;
 
+let reset_all_to_empty ()=
+   let _=(
+    games_ref := (Hex_fg_double_list.empty_one);
+    fst(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);
+    snd(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);
+    strong_openings_ref := []) in 
+    (persist_games();persist_strategies();persist_openings())
+    ;;
+
 let retrieve_all_data ()=
   (
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
@@ -104,6 +113,7 @@ end ;;
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let add_strong_opening = Private.add_strong_opening;;
+let reset_all_to_empty = Private.reset_all_to_empty;;
 let retrieve_all_data = Private.retrieve_all_data;;
 let wes_pair = Private.wes_pair;;
 
