@@ -28,6 +28,8 @@ let simplify_by_move new_move (Hex_strong_opening_t.O l) =
 
 let first_move (Hex_strong_opening_t.O l) = List.hd l;;
 
+let easy_advance (Hex_strong_opening_t.O l) =
+   if List.length l=1 then Some(List.hd l) else None;;
 
 let cmp = 
  ((fun (Hex_strong_opening_t.O l1) (Hex_strong_opening_t.O l2) ->
