@@ -50,7 +50,10 @@ let suggested_moves player (Hex_fg_double_list_t.DL(l1,l2))=
        (Hex_fg_list.first_moves l2,Hex_fg_list.first_moves l1) ) in 
   (winning_moves,Hex_cell_set.setminus other_moves winning_moves);;
 
-
+let lookup_dimension (Hex_fg_double_list_t.DL(l1,l2))=
+  match Hex_fg_list.lookup_dimension l1 with 
+  Some(dim)->Some(dim)
+  |None -> Hex_fg_list.lookup_dimension l2 ;;
 
 
 
