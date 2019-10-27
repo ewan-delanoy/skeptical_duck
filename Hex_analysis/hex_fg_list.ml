@@ -41,5 +41,8 @@ let simplify_by_move move l=Option.filter_and_unpack (Hex_finished_game.simplify
 let first_moves l=
     Hex_cell_set.safe_set (Image.image Hex_finished_game.first_move l);;
 
+let lookup_dimension =function 
+    []->None
+   |fgame::_->Some(fgame.Hex_finished_game_t.dimension);;
 
 

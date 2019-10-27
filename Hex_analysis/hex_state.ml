@@ -25,6 +25,22 @@ let initial_state my_name=
    Hex_state_t.strong_moves_before = (None,[]) ;
 };;
 
+exception No_moves_to_choose_from;;
+
+let compute_usual_move (easy_advances,strong_moves,already_used_moves,moves_before) =
+  let opt1=Hex_cell_set.optional_min(easy_advances) in 
+  if opt1<>None then Option.unpack opt1 else 
+  let opt2=Hex_cell_set.optional_min(strong_moves) in 
+  if opt2<>None then Option.unpack opt2 else 
+  let opt3=Hex_cell_set.optional_min(already_used_moves) in 
+  if opt3<>None then Option.unpack opt3 else 
+  let dim=Hex_persistent.dimension () in 
+  let free_cells=Hex_cell_set.setminus (Hex_common.all_cells dim) (Hex_cell_set.safe_set moves_before) in 
+  let opt4=Hex_cell_set.optional_min(free_cells) in 
+  if opt4<>None then Option.unpack opt4 else 
+  raise(No_moves_to_choose_from);;  
+
+
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
   let dangers = Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in 
@@ -40,12 +56,14 @@ let analize sta=
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
+  let u_move = compute_usual_move (easy_advances,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
      involved_end_strategies = Image.image snd dangers ;
      easy_advances = easy_advances ;
      strong_moves = strong_moves ;
-     already_used_moves = used_moves
+     already_used_moves = used_moves ;
+     usual_move = u_move;
   } ;;
 
 let absorb_move sta cell=
@@ -66,7 +84,7 @@ let absorb_move sta cell=
       Hex_state_t.games_remains = Hex_fg_double_list.simplify_by_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.openings_remains = Hex_so_list.simplify_by_move cell sta.Hex_state_t.openings_remains ;
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
-      Hex_state_t.strong_moves_before = new_smb;
+      Hex_state_t.strong_moves_before = new_smb;   
    };;
 
 
