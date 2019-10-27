@@ -12,7 +12,5 @@ let wk=Hex_analysis.walker;;
 let ps=Hex_ascii_grid.process_sheet;;
 let refs ()=(!Hex_persistent.games_ref,!Hex_persistent.strong_openings_ref,
 !Hex_persistent.winning_end_strategies_for_first_player_ref,!Hex_persistent.winning_end_strategies_for_second_player_ref);;
-let add_linker i msg (a,p)=Hex_persistent.add_end_strategy 
-   (Hex_player.of_int i,Hex_strategy_static_constructor_t.Basic_Linker(a,p),msg,[]);;
 let rep i = Hex_analysis.replay_and_declare_winner (Hex_player.of_int i);;   
-let res i = Hex_analysis.restart (Hex_player.of_string i);;   
+let res i = Hex_analysis.restart (Hex_player.of_int i);;   
