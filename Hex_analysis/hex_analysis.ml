@@ -4,8 +4,6 @@
 
 *)
 
-let current_dim = 11;;
-
 let walker=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 
 let initial_point my_name= 
