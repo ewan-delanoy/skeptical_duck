@@ -48,13 +48,7 @@ exception Ending_failure;;
    then (String.make d c)^s
    else ending p s;;  
      
- type leftwing_length=int;;
- type rightwing_length=int;;  
-   
- let without_the_lid  (a:leftwing_length) s (b:rightwing_length)=
-   String.sub s a (String.length(s)-b-a);;
- 
- 
+
 let before_and_after w x=
   let j=Substring.leftmost_index_of_in(w)(x) in
   if j=(-1) then None else 
