@@ -12,4 +12,5 @@ let ps=Hex_ascii_grid.process_sheet;;
 let refs ()=(!Hex_persistent.games_ref,!Hex_persistent.strong_openings_ref,
 !Hex_persistent.winning_end_strategies_for_first_player_ref,!Hex_persistent.winning_end_strategies_for_second_player_ref);;
 let add_linker i msg (a,p)=Hex_persistent.add_end_strategy 
-   (Hex_player.of_int i,Hex_strategy_static_constructor_t.Basic_Linker(a,p),msg,[]);
+   (Hex_player.of_int i,Hex_strategy_static_constructor_t.Basic_Linker(a,p),msg,[]);;
+let res = Hex_analysis.restart;;   
