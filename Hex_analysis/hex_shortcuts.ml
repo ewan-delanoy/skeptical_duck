@@ -4,6 +4,7 @@
 
 *)
 
+let abl = Hex_analysis.add_basic_linker ;;
 let am s = Hex_analysis.absorb_move (Hex_cell.of_string s);;
 let ams l = Hex_analysis.absorb_moves (Image.image Hex_cell.of_string l);;
 let dw k=Hex_analysis.declare_winner (Hex_player.of_int k);;

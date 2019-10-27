@@ -72,7 +72,7 @@ let declare_winner player =
   let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
   Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
-(*
+
 let add_basic_linker comment=
    let winner = get_latest_winner () 
    and grid = Hex_ascii_grid.read_sheet () in 
@@ -80,4 +80,4 @@ let add_basic_linker comment=
    let linker = Hex_strategy_static_constructor_t.Basic_Linker(a,p) in
    Hex_persistent.add_end_strategy
    (winner,linker,comment,[]);;
-*)
+
