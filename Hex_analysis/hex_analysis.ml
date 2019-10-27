@@ -75,7 +75,7 @@ let declare_winner player =
 
 let add_basic_linker comment=
    let winner = get_latest_winner () 
-   and grid = Hex_ascii_grid.read_sheet () in 
+   and grid = Hex_ascii_grid.process_sheet () in 
    let (a,p) = Hex_ascii_grid.to_basic_linker grid in 
    let linker = Hex_strategy_static_constructor_t.Basic_Linker(a,p) in
    Hex_persistent.add_end_strategy
