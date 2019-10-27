@@ -6,16 +6,7 @@
 
 let current_dim = 11;;
 
-let empty_point = 
-  let ista = Hex_state.empty_state  in 
-   (
-      ista ,
-      Hex_state.analize ista
-   );;
-
-
-
-let walker=ref(empty_point);;
+let walker=ref(Hex_state.empty_state,Hex_result.empty_result);;
 
 let initial_point my_name= 
   let ista = Hex_state.initial_state my_name in 
@@ -63,7 +54,7 @@ let remember_opening_if_necessary winner =
 let declare_winner player =
   let _=(latest_winner:=Some(player)) in 
   let new_fgame={
-    Hex_finished_game_t.dimension = current_dim;
+    Hex_finished_game_t.dimension = Hex_persistent.dimension();
     Hex_finished_game_t.winner = player ;
     Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
