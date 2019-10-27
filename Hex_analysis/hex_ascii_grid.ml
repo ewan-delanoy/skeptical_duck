@@ -143,12 +143,12 @@ exception Unbalanced_label of string * (Hex_cell_t.t list);;
 
 let to_basic_linker grid=
   let temp1= grid.Hex_ascii_grid_t.data in  
-  let temp2=Image.image (fun ((i,j),content)->(Hex_ipair.to_cell (i,j),content)) temp1 in 
+  let temp2=Image.image (fun ((i,j),content)->(Hex_ipair.to_cell (i,j),Cull_string.trim_spaces content)) temp1 in 
   let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
   let temp3=Image.image (fun c0->
      (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
   ) all_used_labels in 
-  let (temp4,temp5)=List.partition (fun (c,l)->c=" A ") temp3 in 
+  let (temp4,temp5)=List.partition (fun (c,l)->c="A") temp3 in 
   let active_ones = Hex_cell_set.safe_set  (snd (List.hd temp4)) in 
   let list_of_passive_pairs = Image.image (fun (c,l)->
      if List.length(l)<>2
@@ -166,7 +166,7 @@ let read_row_in_drawing row =
   let temp2=Ennig.index_everything (List.tl temp1) in 
   Option.filter_and_unpack(
     fun (j,t)->
-      if t=triple_blank
+      if (Cull_string.trim_spaces t)=""
       then None
       else Some((i,j),t)
   ) temp2;;
