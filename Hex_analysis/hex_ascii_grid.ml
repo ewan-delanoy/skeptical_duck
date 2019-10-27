@@ -4,6 +4,8 @@
 
 *)
 
+
+
 module Private = struct 
 
 
@@ -233,12 +235,24 @@ let preprocess grid =
      data = final_map
    };;
 
+let ref_for_sheet_processing_error=ref({
+   Hex_ascii_grid_t.beneficiary = Hex_player_t.First_player ;
+   dimension = 11 ;
+   data = [];
+});;
+
 let process_sheet ()=
    let old_drawing = Io.read_whole_file path_for_sheet in 
    let old_grid = read_ascii_drawing old_drawing in 
+   let _=(ref_for_sheet_processing_error:=old_grid) in 
    let new_grid = preprocess old_grid in 
    let _ = print_on_sheet_for_editing new_grid in 
    new_grid;;
+
+let recover_unprocessed_grid ()=
+   let old_grid = (!ref_for_sheet_processing_error) in 
+   let _ = print_on_sheet_for_editing old_grid in 
+   old_grid;;
 
 end ;;
 
@@ -248,6 +262,7 @@ let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
 let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
+let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
 let to_basic_linker = Private.to_basic_linker;;
 let visualize = Private.visualize;;
 
