@@ -189,8 +189,8 @@ let read_ascii_drawing s=
 let list_for_macros=[
    ("ddd", Hex_ipair.support_for_downwards_pyramid);
    ("lll", Hex_ipair.support_for_leftwards_pyramid);
-   ("rrr", Hex_ipair.support_for_downwards_pyramid);
-   ("uuu", Hex_ipair.support_for_leftwards_pyramid);
+   ("rrr", Hex_ipair.support_for_rightwards_pyramid);
+   ("uuu", Hex_ipair.support_for_upwards_pyramid);
    
    ("bds", Hex_ipair.support_for_bs_downwards_claw);
    ("bls", Hex_ipair.support_for_bs_leftwards_claw);
