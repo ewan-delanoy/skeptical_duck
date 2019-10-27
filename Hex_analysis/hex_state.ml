@@ -57,6 +57,9 @@ let analize sta=
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
   let u_move = compute_usual_move (easy_advances,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
+  let (d1,d2) = Hex_fles_double_list.sizes sta.Hex_state_t.config_remains in 
+  let (d3,d4) = Hex_fg_double_list.sizes sta.Hex_state_t.games_remains in 
+  let d5 = List.length (sta.Hex_state_t.openings_remains) in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
      involved_end_strategies = Image.image snd dangers ;
@@ -64,6 +67,7 @@ let analize sta=
      strong_moves = strong_moves ;
      already_used_moves = used_moves ;
      usual_move = u_move;
+     sizes = (d1,d2,d3,d4,d5);
   } ;;
 
 let absorb_move sta cell=
