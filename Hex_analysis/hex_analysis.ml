@@ -70,3 +70,8 @@ let add_basic_linker comment=
    Hex_persistent.add_end_strategy
    (winner,linker,comment,[]);;
 
+let replay_and_declare_winner winner=
+  let (role_played,cells) = Hex_parse_playok_format.parse () in 
+  let _=restart role_played in 
+  let _=absorb_moves cells in 
+  declare_winner winner;;
