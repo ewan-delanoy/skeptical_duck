@@ -13,7 +13,7 @@ let winning_end_strategies_for_second_player_ref
       = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
 
 let strong_openings_ref = ref [];;
-      
+exception Dimension_could_not_be_found;;      
 
 module Private = struct 
 
@@ -62,6 +62,12 @@ let reset_all_to_empty ()=
     ;;
 
 let data_has_been_initialized_already=ref(false);;
+let dimension_ref = ref(0);;
+
+let compute_dim_the_first_time ()=
+   match Hex_fg_double_list.lookup_dimension (!games_ref) with 
+   None->raise(Dimension_could_not_be_found)
+   |Some(dim)->dim;;
 
 let initialize_all_data_if_necessary ()=
   if (!data_has_been_initialized_already)
@@ -72,6 +78,7 @@ let initialize_all_data_if_necessary ()=
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
     games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_fgames));
     strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
+    dimension_ref:=compute_dim_the_first_time();
     data_has_been_initialized_already:=true;
   );;
 
@@ -119,6 +126,7 @@ end ;;
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let add_strong_opening = Private.add_strong_opening;;
+let dimension ()=(!(Private.dimension_ref));;
 let reset_all_to_empty = Private.reset_all_to_empty;;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let wes_pair = Private.wes_pair;;
