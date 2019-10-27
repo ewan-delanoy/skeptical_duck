@@ -42,6 +42,7 @@ let analize sta=
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
+     involved_end_strategies = Image.image snd dangers ;
      easy_advances = easy_advances ;
      strong_moves = strong_moves ;
      already_used_moves = used_moves
