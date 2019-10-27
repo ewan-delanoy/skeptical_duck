@@ -210,12 +210,13 @@ let list_of_default_labels = Ennig.doyle (fun j->
   let c=char_of_int(123-j) in " "^(String.make 1 c)^" "
 ) 1 56;; 
 
+let trim = Cull_string.trim_spaces;;
 
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
-   let data2 = List.filter (fun (p,s)->s<>"EEE") data1 in 
+   let data2 = List.filter (fun (p,s)-> (trim s)<>"EEE") data1 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
-     (p,List.assoc_opt s list_for_macros)
+     (p,List.assoc_opt (trim s) list_for_macros)
    ) data2 in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
    if macros1=[] then grid else 
