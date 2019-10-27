@@ -76,3 +76,7 @@ let replay_and_declare_winner winner=
   let _=restart role_played in 
   let _=absorb_moves cells in 
   declare_winner winner;;
+
+let move_as_usual () =
+   let cell = (snd(!walker)).Hex_analysis_result_t.usual_move in 
+   absorb_move cell;; 
