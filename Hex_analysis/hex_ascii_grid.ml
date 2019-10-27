@@ -254,6 +254,8 @@ let recover_unprocessed_grid ()=
    let _ = print_on_sheet_for_editing old_grid in 
    old_grid;;
 
+let read_sheet ()=   read_ascii_drawing (Io.read_whole_file path_for_sheet);;
+
 end ;;
 
 
@@ -262,6 +264,7 @@ let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
 let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
+let read_sheet = Private.read_sheet;;
 let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
 let to_basic_linker = Private.to_basic_linker;;
 let visualize = Private.visualize;;
