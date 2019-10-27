@@ -24,7 +24,7 @@ let initial_point my_name=
       Hex_state.analize ista
    );;
 
-let restart my_name =(walker := initial_point my_name);;
+let restart my_name =let _=(walker := initial_point my_name) in snd(!walker);;
 
 let absorb_move cell=
    let (old_state,_)=(!walker) in 
