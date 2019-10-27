@@ -26,7 +26,7 @@ let of_flattened_end_strategy dim ec =
   ) in 
   let tracer2=(fun pair->
      let t=tracer1 pair in 
-     if t="   "
+     if Cull_string.trim_spaces(t)=""
      then None
      else Some(pair,tracer1 pair)) in 
   {
@@ -220,7 +220,7 @@ let preprocess grid =
    let non_macros2=Image.image fst non_macros1 in 
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Tidel.safe_set(Option.filter_and_unpack
-     (fun (_,s)->if s=triple_blank then None else Some(s)) non_macros2) in 
+     (fun (_,s)->if Cull_string.trim_spaces s="" then None else Some(s)) non_macros2) in 
    let unused_labels = List.filter (fun x->Tidel.nelfenn x labels_used_by_nonmacros) list_of_default_labels in 
    let fourtuples = List.flatten(Image.image snd macros2) in
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
