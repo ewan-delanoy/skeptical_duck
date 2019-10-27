@@ -21,7 +21,7 @@ let empty_one = Hex_fles_double_list_t.DL([],[]);;
 
 
 
-let absorb_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
+let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
   match player with 
    Hex_player_t.First_player -> 
       Hex_fles_double_list_t.DL
