@@ -91,6 +91,3 @@ let absorb_move sta cell=
 
   
 
-
-
-  
