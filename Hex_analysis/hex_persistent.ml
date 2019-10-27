@@ -65,7 +65,7 @@ let retrieve_all_data ()=
   (
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
-    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_sp_strats));
+    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_fgames));
     strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
   );;
 
