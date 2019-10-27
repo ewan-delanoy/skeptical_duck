@@ -37,12 +37,12 @@ let absorb_moves cells=
 
 
 let remember_opening_if_necessary winner =
-   if winner = (fst(!walker)).Hex_state_t.whoami 
+   if winner = (fst(!walker)).Hex_state_t.role_played 
    then ()
    else 
    let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
    (* It may happen that there is no new opening to remember if the
-   "whoami" player has not obeyed the rules *)
+   "role_played" player has not obeyed the rules *)
    if Hex_common.next_one_to_play(strong_moves_before) <> winner 
    then ()
    else let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
@@ -69,6 +69,7 @@ let add_basic_linker comment=
    let linker = Hex_strategy_static_constructor_t.Basic_Linker(a,p) in
    Hex_persistent.add_end_strategy
    (winner,linker,comment,[]);;
+
 
 let replay_and_declare_winner winner=
   let (role_played,cells) = Hex_parse_playok_format.parse () in 
