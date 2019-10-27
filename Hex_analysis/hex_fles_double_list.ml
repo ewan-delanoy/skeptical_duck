@@ -57,3 +57,4 @@ let of_string s=
 let to_string (Hex_fles_double_list_t.DL(l1,l2))=
   (single_list_to_string l1)^joiner_for_two^(single_list_to_string l2);;
 
+let sizes (Hex_fles_double_list_t.DL(l1,l2))=(List.length l1,List.length l2);;

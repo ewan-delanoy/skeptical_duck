@@ -55,6 +55,7 @@ let lookup_dimension (Hex_fg_double_list_t.DL(l1,l2))=
   Some(dim)->Some(dim)
   |None -> Hex_fg_list.lookup_dimension l2 ;;
 
+let sizes (Hex_fg_double_list_t.DL(l1,l2))=(List.length l1,List.length l2);;
 
 
 
