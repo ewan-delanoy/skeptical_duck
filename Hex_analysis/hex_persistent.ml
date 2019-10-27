@@ -61,12 +61,18 @@ let reset_all_to_empty ()=
     (persist_games();persist_strategies();persist_openings())
     ;;
 
-let retrieve_all_data ()=
+let data_has_been_initialized_already=ref(false);;
+
+let initialize_all_data_if_necessary ()=
+  if (!data_has_been_initialized_already)
+  then ()
+  else 
   (
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
     games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_fgames));
     strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
+    data_has_been_initialized_already:=true;
   );;
 
 
@@ -114,7 +120,7 @@ let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let add_strong_opening = Private.add_strong_opening;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
-let retrieve_all_data = Private.retrieve_all_data;;
+let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let wes_pair = Private.wes_pair;;
 
 

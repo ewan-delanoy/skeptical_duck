@@ -15,7 +15,7 @@ let empty_state =
 };;
 
 let initial_state my_name= 
-   let _=Hex_persistent.retrieve_all_data () in 
+   let _=Hex_persistent.initialize_all_data_if_necessary () in 
 {
    Hex_state_t.whoami = Hex_player.of_int my_name;
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
