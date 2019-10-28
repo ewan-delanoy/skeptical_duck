@@ -55,7 +55,7 @@ let create_and_remember_already_checked_params old_factory static_constructor co
     let added_cmt=(if comment="" 
                    then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
                    else comment)  in  
-    let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^")\n\n" in 
+    let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^" for "^(Hex_player.color player)^")\n\n" in 
     let _=(print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),ec);;
 
