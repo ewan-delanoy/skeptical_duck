@@ -27,7 +27,7 @@ let initial_state my_name=
 
 exception No_moves_to_choose_from;;
 
-let compute_usual_move (easy_advances,strong_moves,already_used_moves,moves_before) =
+let compute_usual_move (condition,easy_advances,strong_moves,already_used_moves,moves_before) =
   let opt1=Hex_cell_set.optional_min(easy_advances) in 
   if opt1<>None then Option.unpack opt1 else 
   let opt2=Hex_cell_set.optional_min(strong_moves) in 
@@ -35,7 +35,8 @@ let compute_usual_move (easy_advances,strong_moves,already_used_moves,moves_befo
   let opt3=Hex_cell_set.optional_min(already_used_moves) in 
   if opt3<>None then Option.unpack opt3 else 
   let dim=Hex_persistent.dimension () in 
-  let free_cells=Hex_cell_set.setminus (Hex_common.all_cells dim) (Hex_cell_set.safe_set moves_before) in 
+  let remaining_world = Hex_cell_set.apply_condition condition (Hex_common.all_cells dim) in
+  let free_cells=Hex_cell_set.setminus remaining_world (Hex_cell_set.safe_set moves_before) in 
   let opt4=Hex_cell_set.optional_min(free_cells) in 
   if opt4<>None then Option.unpack opt4 else 
   raise(No_moves_to_choose_from);;  
@@ -56,7 +57,7 @@ let analize sta=
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
-  let u_move = compute_usual_move (easy_advances,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
+  let u_move = compute_usual_move (condition,easy_advances,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
   let (d1,d2) = Hex_fles_double_list.sizes sta.Hex_state_t.config_remains in 
   let (d3,d4) = Hex_fg_double_list.sizes sta.Hex_state_t.games_remains in 
   let d5 = List.length (sta.Hex_state_t.openings_remains) in 
