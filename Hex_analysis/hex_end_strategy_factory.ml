@@ -10,7 +10,7 @@ exception Overlap_in_linker of Hex_cell_t.t list;;
 exception Overlap_in_gluing of ((Hex_cell_t.t * (Hex_cell_set_t.t list)) list) * 
                                ((Hex_cell_t.t * (Hex_cell_set_t.t list)) list);;
 exception Escape_in_disjunction of Hex_cell_t.t list;;                               
-
+exception Bad_index_in_disjunction of int * (Hex_cell_t.t list);; 
 
 module Private = struct 
 
@@ -152,14 +152,27 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (_,_,_,z)->z) l2
   );;
 
+let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_cells indices =
+   let cell_of_index=(fun k->
+     let fles = List.nth l (k-1) in 
+     let missing_cells= Hex_cell_set.setminus 
+       (fles.Hex_flattened_end_strategy_t.active_part) occupied_cells in 
+     let  (Hex_cell_set_t.S l_missing_cells)= missing_cells in 
+     if   List.length(l_missing_cells)<>1
+     then raise(Bad_index_in_disjunction(k,l_missing_cells))
+     else List.hd l_missing_cells 
+   ) in 
+   Image.image cell_of_index indices;;
+
 
 end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
-let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
+let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
+let reconstruct_disjunction = Private.reconstruct_disjunction;;
 let to_string raf = Private.to_string (!raf);;
 
 
