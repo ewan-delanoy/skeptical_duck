@@ -154,7 +154,7 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
 
 let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_cells indices =
    let cell_of_index=(fun k->
-     let fles = List.nth l (k-1) in 
+     let (_,_,_,fles) = List.nth l (k-1) in 
      let missing_cells= Hex_cell_set.setminus 
        (fles.Hex_flattened_end_strategy_t.active_part) occupied_cells in 
      let  (Hex_cell_set_t.S l_missing_cells)= missing_cells in 
