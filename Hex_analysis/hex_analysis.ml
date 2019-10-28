@@ -5,6 +5,7 @@
 *)
 
 let walker=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
+let preceding_position=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 
 let initial_point my_name= 
   let ista = Hex_state.initial_state my_name in 
@@ -25,11 +26,18 @@ let get_latest_winner () = match (!latest_winner) with
 let restart my_name =let _=(walker := initial_point my_name;latest_winner:=None) in snd(!walker);;
 
 let absorb_move cell=
-   let (old_state,_)=(!walker) in 
+   let (old_state,old_res)=(!walker) in
+   let _=(preceding_position:=(old_state,old_res)) in 
    let new_state = Hex_state.absorb_move old_state cell in 
    let new_result = Hex_state.analize new_state in 
    let _=(walker:=(new_state,new_result)) in 
    new_result;;
+
+let undo_last_absorption ()=
+    let (old_state,old_res)=(!preceding_position) in
+    let _=(walker:=(old_state,old_res)) in 
+    old_res;;
+
 
 let absorb_moves cells=
    let _=List.iter (fun cell->let _=absorb_move cell in ()) cells in 
@@ -71,8 +79,9 @@ let add_basic_linker comment=
    (winner,linker,comment,[]);;
 
 
-let replay_and_declare_winner winner=
+let replay_and_declare_winner ()=
   let (role_played,cells) = Hex_parse_playok_format.parse () in 
+  let winner = Hex_common.has_just_played cells in 
   let _=restart role_played in 
   let _=absorb_moves cells in 
   declare_winner winner;;
