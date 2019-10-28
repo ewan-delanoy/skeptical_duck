@@ -44,20 +44,21 @@ let absorb_moves cells=
    snd(!walker);; 
 
 
-let remember_opening_if_necessary winner =
-   if winner = (fst(!walker)).Hex_state_t.role_played 
-   then ()
+let remember_opening_if_necessary winner status =
+   if status = Hex_status_t.Winner 
+   then (* If I won, there is no difficult opening to remember *)
+        ()
    else 
    let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
-   (* It may happen that there is no new opening to remember if the
-   "role_played" player has not obeyed the rules *)
    if Hex_common.next_one_to_play(strong_moves_before) <> winner 
-   then ()
+   then (* in this case, the first non-strong was played by me and was a mistake, and is
+           not to be remembered *)
+        ()
    else let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
         let new_opng = Hex_strong_opening_t.O(new_l) in 
         Hex_persistent.add_strong_opening new_opng;;
 
-let declare_winner player =
+let declare_winner player status=
   let _=(latest_winner:=Some(player)) in 
   let new_fgame={
     Hex_finished_game_t.dimension = Hex_persistent.dimension();
@@ -65,7 +66,7 @@ let declare_winner player =
     Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
   let _=Hex_persistent.add_finished_game new_fgame in
-  let _=remember_opening_if_necessary player in  
+  let _=remember_opening_if_necessary player status in  
   let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
   Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
@@ -82,9 +83,14 @@ let add_basic_linker comment=
 let replay_and_declare_winner ()=
   let (role_played,cells) = Hex_parse_playok_format.parse () in 
   let winner = Hex_common.has_just_played cells in 
+  let status = (
+      if winner = role_played 
+      then Hex_status_t.Winner 
+      else Hex_status_t.Loser
+  ) in 
   let _=restart role_played in 
   let _=absorb_moves cells in 
-  declare_winner winner;;
+  declare_winner winner status;;
 
 let move_as_usual () =
    let cell = (snd(!walker)).Hex_analysis_result_t.usual_move in 
