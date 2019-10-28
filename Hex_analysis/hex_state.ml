@@ -6,7 +6,6 @@
 
 let empty_state = 
 {
-   Hex_state_t.role_played = Hex_player_t.First_player; (* random decision, should never be used *)
    Hex_state_t.config_remains = Hex_fles_double_list.empty_one ;
    Hex_state_t.games_remains = Hex_fg_double_list.empty_one ;
    Hex_state_t.openings_remains = [] ;
@@ -14,10 +13,9 @@ let empty_state =
    Hex_state_t.strong_moves_before = (None,[]) ;
 };;
 
-let initial_state my_name= 
+let initial_state ()= 
    let _=Hex_persistent.initialize_all_data_if_necessary () in 
 {
-   Hex_state_t.role_played = my_name;
    Hex_state_t.config_remains = ((Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair)) ;
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.openings_remains = (!(Hex_persistent.strong_openings_ref));
@@ -84,7 +82,7 @@ let absorb_move sta cell=
      |Some(_)->old_smb     
    ) in
    {
-      sta with
+      
       Hex_state_t.config_remains = Hex_fles_double_list.simplify_by_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.simplify_by_move cell sta.Hex_state_t.games_remains ;
       Hex_state_t.openings_remains = Hex_so_list.simplify_by_move cell sta.Hex_state_t.openings_remains ;
