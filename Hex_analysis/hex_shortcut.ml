@@ -15,4 +15,5 @@ let refs ()=(!Hex_persistent.games_ref,!Hex_persistent.strong_openings_ref,
 let rep = Hex_analysis.replay_and_declare_winner ;;   
 let res i = Hex_analysis.restart (Hex_player.of_int i);;   
 let u = Hex_analysis.move_as_usual;;
+let uo = Hex_analysis.undo_last_absorption;;
 let wk=Hex_analysis.walker;;
