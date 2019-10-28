@@ -7,8 +7,8 @@
 let walker=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 let preceding_position=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 
-let initial_point my_name= 
-  let ista = Hex_state.initial_state my_name in 
+let initial_point ()= 
+  let ista = Hex_state.initial_state () in 
    (
       ista ,
       Hex_state.analize ista
@@ -23,7 +23,7 @@ let get_latest_winner () = match (!latest_winner) with
    |Some(player)->player;;
 
 
-let restart my_name =let _=(walker := initial_point my_name;latest_winner:=None) in snd(!walker);;
+let restart () =let _=(walker := initial_point ();latest_winner:=None) in snd(!walker);;
 
 let absorb_move cell=
    let (old_state,old_res)=(!walker) in
@@ -88,7 +88,7 @@ let replay_and_declare_winner ()=
       then Hex_status_t.Winner 
       else Hex_status_t.Loser
   ) in 
-  let _=restart role_played in 
+  let _=restart () in 
   let _=absorb_moves cells in 
   declare_winner winner status;;
 
