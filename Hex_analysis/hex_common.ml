@@ -35,6 +35,11 @@ let cell_list_to_pretty_string l=
   then part1^part2
   else part1^joiner^part2;;
 
+let has_just_played preceding_moves=
+   if ((List.length preceding_moves) mod 2=1)  
+   then Hex_player_t.First_player
+   else Hex_player_t.Second_player;;
+
 let next_one_to_play preceding_moves=
    if ((List.length preceding_moves) mod 2=0)  
    then Hex_player_t.First_player
