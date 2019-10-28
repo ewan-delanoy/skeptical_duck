@@ -5,7 +5,6 @@
 *)
 
 type t= {
-   role_played : Hex_player_t.t ; 
    config_remains : Hex_fles_double_list_t.t ;
    games_remains : Hex_fg_double_list_t.t;
    openings_remains : Hex_strong_opening_t.t list;
