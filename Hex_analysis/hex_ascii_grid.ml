@@ -5,6 +5,8 @@
 *)
 
 
+exception Cell_too_wide of string;;
+
 
 module Private = struct 
 
@@ -212,14 +214,24 @@ let list_of_default_labels = Ennig.doyle (fun j->
 
 let trim = Cull_string.trim_spaces;;
 
+let force_length_three s =
+   let t=trim s in 
+   match String.length(t) with 
+   0->triple_blank
+   |1->" "^t^" " 
+   |2->t^" "
+   |3->t
+   |_->raise(Cell_too_wide(s));;
+
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
-   let data2 = List.filter (fun (p,s)-> (trim s)<>"EEE") data1 in 
+   let data2 = Image.image (fun (p,s)->(p,force_length_three s) ) data1 in 
+   let data3 = List.filter (fun (p,s)-> (trim s)<>"EEE") data2 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
    ) data2 in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
-   if macros1=[] then {grid with Hex_ascii_grid_t.data=data2} else 
+   if macros1=[] then {grid with Hex_ascii_grid_t.data=data3} else 
    let non_macros2=Image.image fst non_macros1 in 
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Tidel.safe_set(Option.filter_and_unpack
