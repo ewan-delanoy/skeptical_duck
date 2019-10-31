@@ -229,7 +229,7 @@ let preprocess grid =
    let data3 = List.filter (fun (p,s)-> (trim s)<>"EEE") data2 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
-   ) data2 in 
+   ) data3 in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
    if macros1=[] then {grid with Hex_ascii_grid_t.data=data3} else 
    let non_macros2=Image.image fst non_macros1 in 
