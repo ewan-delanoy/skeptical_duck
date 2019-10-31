@@ -91,7 +91,7 @@ let replay_and_declare_winner ()=
       else Hex_status_t.Loser
   ) in 
   let _=restart () in 
-  let _=absorb_moves cells in 
+  let _=absorb_all_moves cells in 
   declare_winner winner status;;
 
 let move_as_usual () =
