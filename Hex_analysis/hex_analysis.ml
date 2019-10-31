@@ -39,9 +39,11 @@ let undo_last_absorption ()=
     old_res;;
 
 
-let absorb_moves cells=
+let absorb_all_moves cells=
    let _=List.iter (fun cell->let _=absorb_move cell in ()) cells in 
    snd(!walker);; 
+
+let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
 
 let remember_opening_if_necessary winner status =

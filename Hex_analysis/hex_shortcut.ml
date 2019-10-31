@@ -4,9 +4,12 @@
 
 *)
 
+let list_for_spec1=["f6"; "f8"; "c9"; "e7"; "d7"; "e6"; "d6"; "e4"; "e5"; "f4"; "f5"; "g4"];;
+
 let abl = Hex_analysis.add_basic_linker ;;
 let am s = Hex_analysis.absorb_move (Hex_cell.of_string s);;
-let ams l = Hex_analysis.absorb_moves (Image.image Hex_cell.of_string l);;
+let spec1 j = Hex_analysis.absorb_some_moves 
+     (Image.image Hex_cell.of_string list_for_spec1) j;;
 let dw k=Hex_analysis.declare_winner (Hex_player.of_int k);;
 let init = Hex_persistent.initialize_all_data_if_necessary ;;
 let ps=Hex_ascii_grid.process_sheet;;
