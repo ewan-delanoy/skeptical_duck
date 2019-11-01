@@ -15,6 +15,8 @@ let winning_end_strategies_for_second_player_ref
 let strong_openings_ref = ref [];;
 exception Dimension_could_not_be_found;;      
 
+let data_has_been_initialized_already=ref(false);;
+
 module Private = struct 
 
 
@@ -61,7 +63,7 @@ let reset_all_to_empty ()=
     (persist_games();persist_strategies();persist_openings())
     ;;
 
-let data_has_been_initialized_already=ref(false);;
+
 let dimension_ref = ref(0);;
 
 let compute_dim_the_first_time ()=
