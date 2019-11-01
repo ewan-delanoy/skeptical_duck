@@ -71,6 +71,8 @@ let compute_dim_the_first_time ()=
    None->raise(Dimension_could_not_be_found)
    |Some(dim)->dim;;
 
+
+
 let initialize_all_data_if_necessary ()=
   if (!data_has_been_initialized_already)
   then ()

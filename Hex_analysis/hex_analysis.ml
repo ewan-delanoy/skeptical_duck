@@ -4,6 +4,8 @@
 
 *)
 
+
+
 let walker=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 let preceding_position=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 
@@ -25,7 +27,12 @@ let get_latest_winner () = match (!latest_winner) with
 
 let restart () =let _=(walker := initial_point ();latest_winner:=None) in snd(!walker);;
 
+exception Absorb_move_exn of string;;
+
 let absorb_move cell=
+   if (not(!(Hex_persistent.data_has_been_initialized_already)))
+   then raise(Absorb_move_exn("call Hex_analysis.restart before playing a game"))
+   else 
    let (old_state,old_res)=(!walker) in
    let _=(preceding_position:=(old_state,old_res)) in 
    let new_state = Hex_state.absorb_move old_state cell in 
