@@ -64,11 +64,11 @@ let reset_all_to_empty ()=
     ;;
 
 
-let dimension_ref = ref(0);;
+let dimension_ref = ref(11);;
 
 let compute_dim_the_first_time ()=
    match Hex_fg_double_list.lookup_dimension (!games_ref) with 
-   None->raise(Dimension_could_not_be_found)
+   None->(!dimension_ref) (* raise(Dimension_could_not_be_found) *)
    |Some(dim)->dim;;
 
 
