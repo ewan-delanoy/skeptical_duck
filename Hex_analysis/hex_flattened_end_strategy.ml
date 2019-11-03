@@ -96,6 +96,9 @@ let to_concrete_object fles =
 end;;
 
 let of_concrete_object = Private.of_concrete_object ;;
+let immediate_opportunities = Private.immediate_opportunities;;
+let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
+let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
 let use_move_to_simplify_one = Private.use_move_to_simplify_one;;
 let to_concrete_object = Private.to_concrete_object ;;
 
