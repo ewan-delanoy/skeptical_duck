@@ -22,3 +22,14 @@ let to_string (Hex_cell_t.C(s1,i1))=
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
+
+let of_concrete_object crobj = 
+    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+   Hex_cell_t.C(
+      Concrete_object_field.unwrap_string arg1,
+      Concrete_object_field.unwrap_int arg2
+   );;
+
+let to_concrete_object (Hex_cell_t.C(s,i))= 
+    Concrete_object_t.Variant("Hex_"^"cell_t.C",[Concrete_object_t.String(s);Concrete_object_t.Int(i)]);;
+
