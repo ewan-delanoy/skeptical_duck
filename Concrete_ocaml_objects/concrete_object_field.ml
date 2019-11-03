@@ -121,7 +121,10 @@ let to_string_triple crobj=
   let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
   and us=unwrap_string in 
   (us arg1,us arg2,us arg3);;
-  
+
+let of_int_list l=Concrete_object_t.List (Image.image (fun i->Concrete_object_t.Int(i)) l);;
+let to_int_list crobj = Image.image unwrap_int (unwrap_list crobj);;
+
 let of_string_list l=Concrete_object_t.List (Image.image (fun s->Concrete_object_t.String(s)) l);;
 let to_string_list crobj = Image.image unwrap_string (unwrap_list crobj);;
 

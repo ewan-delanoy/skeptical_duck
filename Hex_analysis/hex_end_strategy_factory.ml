@@ -127,30 +127,7 @@ let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor comm
    Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor comment indices 
   |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor comment indices ;;
 
-(*
-let elt_of_concrete_object crobj= 
-   let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
-*)
-
-let announce_beneficiary ="\nBeneficiary : \n";;
-let announce_data ="\nData : \n";;
-
-let to_string  (Hex_end_strategy_factory_t.F(player,l))=
-   let shortened_l=Image.image (fun (x,y,z,_)->(x,y,z)) l in 
-   let descr1=Hex_player.to_string player 
-   and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
-   announce_beneficiary^descr1^announce_data^descr2;;
-
 let empty_one player= Hex_end_strategy_factory_t.F(player,[]);;
-
-let of_string text = 
-   let text1 = Cull_string.two_sided_cutting (announce_beneficiary,"") text in 
-   let i1=Substring.leftmost_index_of_in announce_data text1 in
-   let j1=i1+(String.length announce_data)-1 in 
-   let descr1=Cull_string.interval text1 1 (i1-1) 
-   and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
-   let initial_one = Hex_end_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
-   create_new_strategies initial_one (Hex_end_strategy_entry_summary.list_of_string descr2);;
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_fles_double_list_t.DL(
@@ -169,6 +146,37 @@ let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_ce
      else List.hd l_missing_cells 
    ) in 
    Image.image cell_of_index indices;;
+
+(*
+let elt_of_concrete_object crobj= 
+   let (arg1,arg2,arg3,arg4,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
+   (
+    Hex_strategy_static_constructor.of_concrete_object arg1,
+    Concrete_object_field.unwrap_string(arg2),
+    Concrete_object_field.of_i
+   );;
+*)
+
+let announce_beneficiary ="\nBeneficiary : \n";;
+let announce_data ="\nData : \n";;
+
+let to_string  (Hex_end_strategy_factory_t.F(player,l))=
+   let shortened_l=Image.image (fun (x,y,z,_)->(x,y,z)) l in 
+   let descr1=Hex_player.to_string player 
+   and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
+   announce_beneficiary^descr1^announce_data^descr2;;
+
+
+
+let of_string text = 
+   let text1 = Cull_string.two_sided_cutting (announce_beneficiary,"") text in 
+   let i1=Substring.leftmost_index_of_in announce_data text1 in
+   let j1=i1+(String.length announce_data)-1 in 
+   let descr1=Cull_string.interval text1 1 (i1-1) 
+   and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
+   let initial_one = Hex_end_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
+   create_new_strategies initial_one (Hex_end_strategy_entry_summary.list_of_string descr2);;
+
 
 
 end;;
