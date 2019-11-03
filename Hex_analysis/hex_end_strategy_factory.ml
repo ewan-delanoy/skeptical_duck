@@ -40,6 +40,7 @@ let compute_end_configuration factory  (static_constructor,indices)=
    and (active_p,passive_p)=compute_parts factory (static_constructor,indices) in 
    {
         Hex_flattened_end_strategy_t.beneficiary = player;
+        character = Hex_strategy_character_t.Total_strategy;
         active_part = active_p ; 
         passive_part = passive_p ; 
         index = (List.length l)+1;
@@ -125,6 +126,11 @@ let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor comm
   match player with 
    Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor comment indices 
   |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor comment indices ;;
+
+(*
+let elt_of_concrete_object crobj= 
+   let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
+*)
 
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_data ="\nData : \n";;
