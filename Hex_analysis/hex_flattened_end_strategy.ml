@@ -72,23 +72,33 @@ let active_part_label    = salt ^ "active_part";;
 let passive_part_label   = salt ^ "passive_part";;
 let index_label          = salt ^ "index";;
 
-(*
+
 let of_concrete_object  crobj= 
    let g = Concrete_object_field.get_record crobj in 
    {
-      beneficiary : Hex_player_t.t;
-      character : Hex_strategy_character_t.t;
-      active_part : Hex_cell_set_t.t;
-      passive_part : Hex_cell_set_t.t;
-      index : int;
-
+      Hex_flattened_end_strategy_t.beneficiary = Hex_player.of_concrete_object (g beneficiary_label);
+      character = Hex_strategy_character.of_concrete_object (g character_label);
+      active_part = Hex_cell_set.of_concrete_object (g active_part_label);
+      passive_part = Hex_cell_set.of_concrete_object (g passive_part_label);
+      index = Concrete_object_field.unwrap_int (g index_label);
    };;
-*)
 
+let to_concrete_object fles =
+ 
+   Concrete_object_t.Record([
+     beneficiary_label,Hex_player.to_concrete_object(fles.Hex_flattened_end_strategy_t.beneficiary);
+     character_label, Hex_strategy_character.to_concrete_object(fles.Hex_flattened_end_strategy_t.character);
+     active_part_label, Hex_cell_set.to_concrete_object(fles.Hex_flattened_end_strategy_t.active_part);
+     passive_part_label, Hex_cell_set.to_concrete_object(fles.Hex_flattened_end_strategy_t.passive_part);
+     index_label, Concrete_object_t.Int(fles.Hex_flattened_end_strategy_t.index); 
+   ]);;
 
 end;;
 
-  
+let of_concrete_object = Private.of_concrete_object ;;
+let use_move_to_simplify_one = Private.use_move_to_simplify_one;;
+let to_concrete_object = Private.to_concrete_object ;;
+
 (*
 
 let announce_beneficiary ="\nBeneficiary : \n";;
