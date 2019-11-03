@@ -53,3 +53,14 @@ let check =(of_string(z2)=z1);;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
+
+let of_concrete_object crobj=
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+   Hex_cell_set_t.S(
+      Concrete_object_field.to_list Hex_cell.of_concrete_object arg1
+   );;
+
+let to_concrete_object (Hex_cell_set_t.S(l))=
+   Concrete_object_t.Variant("Hex_"^"cell_set_t.S",[Concrete_object_field.of_list Hex_cell.to_concrete_object l]);;
+
+
