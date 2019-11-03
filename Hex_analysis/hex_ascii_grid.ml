@@ -206,6 +206,8 @@ let list_for_macros=[
    ("srb", Hex_ipair.support_for_sb_rightwards_claw);
    ("sub", Hex_ipair.support_for_sb_upwards_claw); 
 
+   ("sp1", Hex_ipair.support_for_sp1); 
+
 ];;
 
 let list_of_default_labels = Ennig.doyle (fun j->
