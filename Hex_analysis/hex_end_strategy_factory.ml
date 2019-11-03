@@ -147,37 +147,41 @@ let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_ce
    ) in 
    Image.image cell_of_index indices;;
 
-(*
+
 let elt_of_concrete_object crobj= 
    let (arg1,arg2,arg3,arg4,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
    (
     Hex_strategy_static_constructor.of_concrete_object arg1,
     Concrete_object_field.unwrap_string(arg2),
-    Concrete_object_field.of_i
+    Concrete_object_field.to_int_list(arg3),
+    Hex_flattened_end_strategy.of_concrete_object(arg4)
    );;
-*)
 
-let announce_beneficiary ="\nBeneficiary : \n";;
-let announce_data ="\nData : \n";;
+let elt_to_concrete_object (constr,comment,indices,fles) =
+   Concrete_object_t.Uple [
+      Hex_strategy_static_constructor.to_concrete_object constr;
+      Concrete_object_t.String(comment);
+      Concrete_object_field.of_int_list(indices);
+      Hex_flattened_end_strategy.to_concrete_object(fles)
+   ]  ;;
 
-let to_string  (Hex_end_strategy_factory_t.F(player,l))=
-   let shortened_l=Image.image (fun (x,y,z,_)->(x,y,z)) l in 
-   let descr1=Hex_player.to_string player 
-   and descr2=Hex_end_strategy_entry_summary.list_to_string shortened_l in 
-   announce_beneficiary^descr1^announce_data^descr2;;
+let elt_list_of_concrete_object crobj = Concrete_object_field.to_list elt_of_concrete_object crobj;;
+let elt_list_to_concrete_object l = Concrete_object_field.of_list elt_to_concrete_object l;;
 
+let of_concrete_object crobj=
+    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+    Hex_end_strategy_factory_t.F(Hex_player.of_concrete_object arg1,elt_list_of_concrete_object arg2);;
 
+let to_concrete_object (Hex_end_strategy_factory_t.F(player,l))=
+   Concrete_object_t.Variant("Hex_"^"end_strategy_factory_t.F",[
+      Hex_player.to_concrete_object player;
+      elt_list_to_concrete_object l
+   ]);;
+
+let to_string factory = Crobj_parsing.unparse (to_concrete_object factory) ;;
 
 let of_string text = 
-   let text1 = Cull_string.two_sided_cutting (announce_beneficiary,"") text in 
-   let i1=Substring.leftmost_index_of_in announce_data text1 in
-   let j1=i1+(String.length announce_data)-1 in 
-   let descr1=Cull_string.interval text1 1 (i1-1) 
-   and descr2=Cull_string.interval text1 (j1+1) (String.length text1) in  
-   let initial_one = Hex_end_strategy_factory_t.F(Hex_player.of_string descr1,[]) in 
-   create_new_strategies initial_one (Hex_end_strategy_entry_summary.list_of_string descr2);;
-
-
+   of_concrete_object (Crobj_parsing.parse text);;
 
 end;;
 
