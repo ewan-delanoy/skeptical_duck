@@ -99,7 +99,7 @@ let unwrap_lonely_variant l_pairs ccrt_obj=
       (match Option.seek(fun (_,key)->key=constructor) l_pairs with
       None->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj))
      |Some(vaal,_)->vaal) 
-   |_->raise(Exn.Unwrap_string_exn(ccrt_obj));;
+   |_->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
 
 let truth = Concrete_object_t.Variant("True",[]);;
 let falsity = Concrete_object_t.Variant("False",[]);;
