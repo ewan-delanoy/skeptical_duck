@@ -34,7 +34,7 @@ let check =(of_string(z2)=z1);;
 
 *)
 
-(*
+
 let of_concrete_object crobj=
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Hex_cell_pair_set_t.S(
@@ -44,6 +44,5 @@ let of_concrete_object crobj=
 let to_concrete_object (Hex_cell_pair_set_t.S(l))= 
     Concrete_object_t.Variant(
       "Hex_"^"cell_pair_set_t.",
-      Concrete_object_field.of_list Hex_cell.pair_of_concrete_object arg2
+      [Concrete_object_field.of_list Hex_cell.pair_to_concrete_object l]
     ) ;;     
-*)
