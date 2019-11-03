@@ -25,3 +25,19 @@ let color=function
 
 let of_int i=of_string(string_of_int i);;
 
+
+module Private = struct
+
+let salt = "Hex_"^"player.";;
+
+let namings =
+   [
+     Hex_player_t.First_player, salt ^ "First_player";
+     Hex_player_t.Second_player, salt ^ "Second_player";
+   ];;
+
+end ;;
+
+let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.namings;;
+let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.namings;;
+

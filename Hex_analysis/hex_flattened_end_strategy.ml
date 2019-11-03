@@ -4,6 +4,7 @@
 
 *)
 
+module Private = struct
 
 let use_ally_move_to_simplify_one cell old_fles=
    let active_part = old_fles.Hex_flattened_end_strategy_t.active_part
@@ -46,7 +47,49 @@ let immediate_opportunities flesses =
          else None
    ) flesses;;
 
+let partial_unveil fles=
+  (
+     fles.Hex_flattened_end_strategy_t.beneficiary,
+     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part),
+     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part) 
+  );;
+
+let cmp = 
+  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
+ ((fun fles1 fles2 ->
+   (Total_ordering.triple_product 
+     Total_ordering.standard
+     cmp_for_cell_lists
+     cmp_for_cell_lists)
+   (partial_unveil fles1) (partial_unveil fles2)  
+) :> Hex_flattened_end_strategy_t.t Total_ordering.t);;
+
+let salt = "Hex_"^"flattened_end_strategy_t.";;
+
+let beneficiary_label    = salt ^ "beneficiary";;
+let character_label      = salt ^ "character";;
+let active_part_label    = salt ^ "active_part";;
+let passive_part_label   = salt ^ "passive_part";;
+let index_label          = salt ^ "index";;
+
+(*
+let of_concrete_object  crobj= 
+   let g = Concrete_object_field.get_record crobj in 
+   {
+      beneficiary : Hex_player_t.t;
+      character : Hex_strategy_character_t.t;
+      active_part : Hex_cell_set_t.t;
+      passive_part : Hex_cell_set_t.t;
+      index : int;
+
+   };;
+*)
+
+
+end;;
+
   
+(*
 
 let announce_beneficiary ="\nBeneficiary : \n";;
 let announce_active_part ="\nActive part : \n";;
@@ -84,22 +127,5 @@ let of_string s =
      Hex_flattened_end_strategy_t.index=int_of_string descr4;
    };;
 
-let partial_unveil fles=
-  (
-     fles.Hex_flattened_end_strategy_t.beneficiary,
-     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part),
-     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part) 
-  );;
-
-let cmp = 
-  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
- ((fun fles1 fles2 ->
-   (Total_ordering.triple_product 
-     Total_ordering.standard
-     cmp_for_cell_lists
-     cmp_for_cell_lists)
-   (partial_unveil fles1) (partial_unveil fles2)  
-) :> Hex_flattened_end_strategy_t.t Total_ordering.t);;
-
-
+*)
 
