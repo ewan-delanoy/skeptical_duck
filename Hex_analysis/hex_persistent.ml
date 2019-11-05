@@ -49,7 +49,7 @@ let persist_strategies ()=
 
 
 let persist_games ()=
-     Io.overwrite_with path_for_fgames (Hex_fg_double_list.to_string (!games_ref));;   
+     Io.overwrite_with path_for_fgames (Crobj_parsing.unparse(Hex_fg_double_list.to_concrete_object (!games_ref)));;   
 
 let persist_openings ()=
     Io.overwrite_with path_for_openings (Hex_so_list.to_string(!strong_openings_ref));;
@@ -80,7 +80,7 @@ let initialize_all_data_if_necessary ()=
   (
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
-    games_ref:=(Hex_fg_double_list.of_string(Io.read_whole_file path_for_fgames));
+    games_ref:=(Hex_fg_double_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_fgames)));
     strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
     dimension_ref:=compute_dim_the_first_time();
     data_has_been_initialized_already:=true;
