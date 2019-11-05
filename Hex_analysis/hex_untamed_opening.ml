@@ -47,6 +47,8 @@ let easy_advance (Hex_untamed_opening_t.O l) =
 
 let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=0);;
 
+let is_a_singleton (Hex_untamed_opening_t.O l)=((List.length l)=1);;
+
 let cmp = 
  ((fun (Hex_untamed_opening_t.O l1) (Hex_untamed_opening_t.O l2) ->
     Total_ordering.silex_compare Hex_cell.cmp l1 l2
