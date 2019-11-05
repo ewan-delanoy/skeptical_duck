@@ -12,7 +12,7 @@ let winning_end_strategies_for_first_player_ref
 let winning_end_strategies_for_second_player_ref 
       = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
 
-let strong_openings_ref = ref [];;
+let untamed_openings_ref = ref [];;
 exception Dimension_could_not_be_found;;      
 
 let data_has_been_initialized_already=ref(false);;
@@ -52,14 +52,14 @@ let persist_games ()=
      Io.overwrite_with path_for_fgames (Crobj_parsing.unparse(Hex_fg_double_list.to_concrete_object (!games_ref)));;   
 
 let persist_openings ()=
-    Io.overwrite_with path_for_openings (Crobj_parsing.unparse(Hex_uog_list.to_concrete_object(!strong_openings_ref)));;
+    Io.overwrite_with path_for_openings (Crobj_parsing.unparse(Hex_uog_list.to_concrete_object(!untamed_openings_ref)));;
 
 let reset_all_to_empty ()=
    let _=(
     games_ref := (Hex_fg_double_list.empty_one);
     fst(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);
     snd(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);
-    strong_openings_ref := []) in 
+    untamed_openings_ref := []) in 
     (persist_games();persist_strategies();persist_openings())
     ;;
 
@@ -81,7 +81,7 @@ let initialize_all_data_if_necessary ()=
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
     games_ref:=(Hex_fg_double_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_fgames)));
-    strong_openings_ref:=(Hex_uog_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_openings)));
+    untamed_openings_ref:=(Hex_uog_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_openings)));
     dimension_ref:=compute_dim_the_first_time();
     data_has_been_initialized_already:=true;
   );;
@@ -101,10 +101,10 @@ let add_finished_game_without_persisting fgame =
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
 
-let add_strong_opening_without_persisting opng=
-   let old_ones=(!strong_openings_ref) in 
+let add_untamed_opening_without_persisting opng=
+   let old_ones=(!untamed_openings_ref) in 
    let new_ones = Hex_uog_list.insert_in opng old_ones in 
-   strong_openings_ref := new_ones;;
+   untamed_openings_ref := new_ones;;
 
 let add_end_strategy ec =
    (
@@ -119,9 +119,9 @@ let add_finished_game fgame =
      persist_games()
    );;
 
-let add_strong_opening opng=
+let add_untamed_opening opng=
    (
-     add_strong_opening_without_persisting opng;
+     add_untamed_opening_without_persisting opng;
      persist_openings()
    );;
 
@@ -129,7 +129,7 @@ end ;;
 
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
-let add_untamed_opening = Private.add_strong_opening;;
+let add_untamed_opening = Private.add_untamed_opening;;
 let dimension ()=(!(Private.dimension_ref));;
 let reset_all_to_empty = Private.reset_all_to_empty;;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
