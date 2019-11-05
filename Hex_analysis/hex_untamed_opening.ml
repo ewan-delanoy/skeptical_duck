@@ -45,6 +45,8 @@ let first_move (Hex_untamed_opening_t.O l) = List.hd l;;
 let easy_advance (Hex_untamed_opening_t.O l) =
    if List.length l=1 then Some(List.hd l) else None;;
 
+let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=0);;
+
 let cmp = 
  ((fun (Hex_untamed_opening_t.O l1) (Hex_untamed_opening_t.O l2) ->
     Total_ordering.silex_compare Hex_cell.cmp l1 l2
