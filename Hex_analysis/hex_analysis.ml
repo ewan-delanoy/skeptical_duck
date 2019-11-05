@@ -62,7 +62,7 @@ let remember_opening_if_necessary winner =
             let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
             Hex_untamed_opening_t.O(new_l)
    ) in 
-   Hex_persistent.add_strong_opening new_opng;;
+   Hex_persistent.add_untamed_opening new_opng;;
 
 let declare_winner player =
   let _=(latest_winner:=Some(player)) in 

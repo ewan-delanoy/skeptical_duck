@@ -129,7 +129,7 @@ end ;;
 
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
-let add_strong_opening = Private.add_strong_opening;;
+let add_untamed_opening = Private.add_strong_opening;;
 let dimension ()=(!(Private.dimension_ref));;
 let reset_all_to_empty = Private.reset_all_to_empty;;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
