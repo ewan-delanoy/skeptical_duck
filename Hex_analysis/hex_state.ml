@@ -62,14 +62,14 @@ let analize sta=
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
-  let u_move = compute_usual_move (condition,easy_advances,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
+  let u_move = compute_usual_move (condition,easy_advancer,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
   let (d1,d2) = Hex_fles_double_list.sizes sta.Hex_state_t.config_remains in 
   let (d3,d4) = Hex_fg_double_list.sizes sta.Hex_state_t.games_remains in 
   let d5 = List.length (sta.Hex_state_t.openings_remains) in 
   {
      Hex_analysis_result_t.mandatory_set = condition ;
      involved_end_strategies = Image.image snd dangers ;
-     easy_advances = easy_advances ;
+     easy_advancer = easy_advancer ;
      strong_moves = strong_moves ;
      already_used_moves = used_moves ;
      usual_move = u_move;
@@ -92,7 +92,7 @@ let absorb_move sta cell=
       
       Hex_state_t.config_remains = Hex_fles_double_list.simplify_by_move (player,cell) sta.Hex_state_t.config_remains ;
       Hex_state_t.games_remains = Hex_fg_double_list.simplify_by_move cell sta.Hex_state_t.games_remains ;
-      Hex_state_t.openings_remains = Hex_so_list.simplify_by_move cell sta.Hex_state_t.openings_remains ;
+      Hex_state_t.openings_remains = Hex_uog_list.simplify_by_move cell sta.Hex_state_t.openings_remains ;
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
       Hex_state_t.strong_moves_before = new_smb;   
    };;
