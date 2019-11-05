@@ -52,7 +52,7 @@ let persist_games ()=
      Io.overwrite_with path_for_fgames (Crobj_parsing.unparse(Hex_fg_double_list.to_concrete_object (!games_ref)));;   
 
 let persist_openings ()=
-    Io.overwrite_with path_for_openings (Hex_so_list.to_string(!strong_openings_ref));;
+    Io.overwrite_with path_for_openings (Crobj_parsing.unparse(Hex_uog_list.to_concrete_object(!strong_openings_ref)));;
 
 let reset_all_to_empty ()=
    let _=(
