@@ -81,7 +81,7 @@ let initialize_all_data_if_necessary ()=
     Hex_end_strategy_factory.fill_with_string (fst(wes_pair)) (Io.read_whole_file path_for_fp_strats);
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
     games_ref:=(Hex_fg_double_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_fgames)));
-    strong_openings_ref:=(Hex_so_list.of_string(Io.read_whole_file path_for_openings));
+    strong_openings_ref:=(Hex_uog_list.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file path_for_openings)));
     dimension_ref:=compute_dim_the_first_time();
     data_has_been_initialized_already:=true;
   );;
@@ -103,7 +103,7 @@ let add_finished_game_without_persisting fgame =
 
 let add_strong_opening_without_persisting opng=
    let old_ones=(!strong_openings_ref) in 
-   let new_ones = Hex_so_list.insert_in opng old_ones in 
+   let new_ones = Hex_uog_list.insert_in opng old_ones in 
    strong_openings_ref := new_ones;;
 
 let add_end_strategy ec =
