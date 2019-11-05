@@ -39,6 +39,7 @@ let compute_usual_move (condition,easy_advancer,strong_moves,already_used_moves,
   if opt4<>None then Option.unpack opt4 else 
   raise(No_moves_to_choose_from);;  
 
+exception Disjunction_found of int* (int list);;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
@@ -48,6 +49,9 @@ let analize sta=
      []->None
      |_->Some(Hex_cell_set.fold_intersect (Image.image fst dangers))
   ) in 
+  if condition = Some(Hex_cell_set_t.S[])
+  then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,Image.image snd dangers))
+  else 
   let (unconditioned_strong_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
   let pre_easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in

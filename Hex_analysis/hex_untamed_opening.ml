@@ -4,13 +4,6 @@
 
 *)
 
-let to_string (Hex_untamed_opening_t.O l)=
-   "O("^(Hex_common.cell_list_to_string l)^")";;
-
-let of_string text =
-     let text1=Cull_string.two_sided_cutting ("O(",")") text in 
-     Hex_untamed_opening_t.O(Hex_common.cell_list_of_string text1);;
-
 
 let of_concrete_object crobj=
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
@@ -23,7 +16,6 @@ let to_concrete_object (Hex_untamed_opening_t.O(l))=
      [Concrete_object_field.of_list Hex_cell.to_concrete_object l
      ]);;
 
-let recipient (Hex_untamed_opening_t.O(l))=Hex_common.has_just_played l;;
 
 let extends 
    (Hex_untamed_opening_t.O l1) (Hex_untamed_opening_t.O l2)=
@@ -42,8 +34,6 @@ let simplify_by_move new_move (Hex_untamed_opening_t.O l) =
 
 let first_move (Hex_untamed_opening_t.O l) = List.hd l;;
 
-let easy_advance (Hex_untamed_opening_t.O l) =
-   if List.length l=1 then Some(List.hd l) else None;;
 
 let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=0);;
 
