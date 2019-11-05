@@ -25,8 +25,8 @@ let initial_state ()=
 
 exception No_moves_to_choose_from;;
 
-let compute_usual_move (condition,easy_advances,strong_moves,already_used_moves,moves_before) =
-  let opt1=Hex_cell_set.optional_min(easy_advances) in 
+let compute_usual_move (condition,easy_advancer,strong_moves,already_used_moves,moves_before) =
+  let opt1=easy_advancer in 
   if opt1<>None then Option.unpack opt1 else 
   let opt2=Hex_cell_set.optional_min(strong_moves) in 
   if opt2<>None then Option.unpack opt2 else 
@@ -50,7 +50,14 @@ let analize sta=
   ) in 
   let (unconditioned_strong_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
-  let easy_advances = Hex_cell_set.safe_set(Hex_so_list.easy_advances sta.Hex_state_t.openings_remains) in 
+  let pre_easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
+  let (easy_advancer,easy_advances)= (
+      match pre_easy_advancer with 
+       None -> (None,Hex_cell_set.safe_set [])
+      |Some(cell,is_easy)->if is_easy 
+                           then (Some(cell),Hex_cell_set.safe_set [cell]) 
+                           else  (None,Hex_cell_set.safe_set [])
+  ) in
   let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves 
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
