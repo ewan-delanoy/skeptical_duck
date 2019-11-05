@@ -15,6 +15,9 @@ let of_string s=
 let to_string l=String.concat joiner_in_list 
     (Image.image Hex_finished_game.to_string l);;
 
+let of_concrete_object crobj = Concrete_object_field.to_list Hex_finished_game.of_concrete_object crobj;;
+let to_concrete_object l = Concrete_object_field.of_list Hex_finished_game.to_concrete_object l;;
+
 let remove_redundancies l=
  let rec tempf=(function
    (treated,to_be_treated)->match to_be_treated with
