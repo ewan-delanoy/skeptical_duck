@@ -64,7 +64,7 @@ let remember_opening_if_necessary winner status =
            not to be remembered *)
         ()
    else let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
-        let new_opng = Hex_strong_opening_t.O(new_l) in 
+        let new_opng = Hex_untamed_opening_t.O(new_l) in 
         Hex_persistent.add_strong_opening new_opng;;
 
 let declare_winner player status=
