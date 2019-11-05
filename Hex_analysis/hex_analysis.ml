@@ -55,11 +55,14 @@ let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
 let remember_opening_if_necessary winner =
    let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
-   if Hex_common.next_one_to_play(strong_moves_before) <> winner 
-   then ()
-   else let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
-        let new_opng = Hex_untamed_opening_t.O(new_l) in 
-        Hex_persistent.add_strong_opening new_opng;;
+   let new_opng=(
+       if Hex_common.next_one_to_play(strong_moves_before) <> winner 
+       then Hex_untamed_opening_t.O(List.rev strong_moves_before)
+       else 
+            let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
+            Hex_untamed_opening_t.O(new_l)
+   ) in 
+   Hex_persistent.add_strong_opening new_opng;;
 
 let declare_winner player =
   let _=(latest_winner:=Some(player)) in 
