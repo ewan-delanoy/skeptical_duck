@@ -51,6 +51,48 @@ let simplify_by_move new_move fgame=match fgame.Hex_finished_game_t.sequence_of_
     then Some({fgame with Hex_finished_game_t.sequence_of_moves = other_moves})
     else None;;
 
+let first_move fgame = List.hd(fgame.Hex_finished_game_t.sequence_of_moves);;
+
+let partial_unveil fgame=
+  (
+     fgame.Hex_finished_game_t.winner,
+     fgame.Hex_finished_game_t.sequence_of_moves
+  );;
+
+let cmp = 
+  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
+ ((fun fgame1 fgame2 ->
+   (Total_ordering.product 
+     Total_ordering.standard
+     cmp_for_cell_lists)
+   (partial_unveil fgame1) (partial_unveil fgame2)  
+) :> Hex_finished_game_t.t Total_ordering.t);;
+
+let salt = "Hex_"^"finished_game_t.";;
+
+let dimension_label          = salt ^ "dimension";;
+let winner_label             = salt ^ "winner";;
+let sequences_of_moves_label = salt ^ "sequences_of_moves";;
+
+
+
+let of_concrete_object  crobj= 
+   let g = Concrete_object_field.get_record crobj in 
+   {
+      Hex_finished_game_t.dimension = Concrete_object_field.unwrap_int (g dimension_label);
+      winner = Hex_player.of_concrete_object (g winner_label);
+      sequence_of_moves = Concrete_object_field.to_list Hex_cell.of_concrete_object (g sequences_of_moves_label);
+   };;
+
+let to_concrete_object fgame =
+ 
+   Concrete_object_t.Record([
+     dimension_label,Concrete_object_t.Int(fgame.Hex_finished_game_t.dimension);
+     winner_label, Hex_player.to_concrete_object(fgame.Hex_finished_game_t.winner);
+     sequences_of_moves_label, Concrete_object_field.of_list Hex_cell.to_concrete_object(fgame.Hex_finished_game_t.sequence_of_moves);
+   ]);;
+
+
 
 let announce_dimension ="\nDimension : \n";;
 let announce_winner ="\nBeneficiary : \n";;
@@ -79,20 +121,4 @@ let of_string s =
      Hex_finished_game_t.sequence_of_moves=Hex_common.cell_list_of_string descr3;
    };;
 
-let first_move fgame = List.hd(fgame.Hex_finished_game_t.sequence_of_moves);;
-
-let partial_unveil fgame=
-  (
-     fgame.Hex_finished_game_t.winner,
-     fgame.Hex_finished_game_t.sequence_of_moves
-  );;
-
-let cmp = 
-  let cmp_for_cell_lists = Total_ordering.lex_compare Hex_cell.cmp in 
- ((fun fgame1 fgame2 ->
-   (Total_ordering.product 
-     Total_ordering.standard
-     cmp_for_cell_lists)
-   (partial_unveil fgame1) (partial_unveil fgame2)  
-) :> Hex_finished_game_t.t Total_ordering.t);;
 
