@@ -101,18 +101,3 @@ let absorb_move sta cell=
       Hex_state_t.strong_moves_before = new_smb;   
    };;
 
-let report_on_danger res=
-    match res.Hex_analysis_result_t.mandatory_set with 
-    None->""
-    |Some(set)->"Danger, because of "^
-                (Strung.of_intlist res.Hex_analysis_result_t.involved_end_strategies)^
-                ": play in "^(Hex_cell_set.to_string(set))^"\n";; 
-
-   
-let report_on_possible_advances res=
-     match res.Hex_analysis_result_t.easy_advancer with 
-     None->""
-     |Some(cell,remaining)->
-        "Suggested : "^(Hex_cell.to_string cell)^", from "^(string_of_int remaining)^" to go";;  
-
-
