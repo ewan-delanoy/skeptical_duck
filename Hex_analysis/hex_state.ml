@@ -75,7 +75,7 @@ let analize sta=
      strong_moves = strong_moves ;
      already_used_moves = used_moves ;
      usual_move = u_move;
-     number_of_enemy_strategies = enem;
+     number_of_remaining_enemies = enem;
   } ;;
 
 let absorb_move sta cell=
