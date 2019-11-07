@@ -32,5 +32,5 @@ let seek_interesting_move l=
    let temp1=Private.select_openings_with_next_player_as_recipient l in 
    if temp1=[] then None else 
    let temp2=List.hd temp1 in 
-   Some(Hex_untamed_opening.first_move temp2,Hex_untamed_opening.is_a_singleton temp2);;
+   Some(Hex_untamed_opening.first_move temp2,Hex_untamed_opening.length temp2);;
 
