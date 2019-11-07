@@ -37,7 +37,7 @@ let first_move (Hex_untamed_opening_t.O l) = List.hd l;;
 
 let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=0);;
 
-let is_a_singleton (Hex_untamed_opening_t.O l)=((List.length l)=1);;
+let unveil (Hex_untamed_opening_t.O l)=l;;
 
 let length (Hex_untamed_opening_t.O l)=List.length l;;
 

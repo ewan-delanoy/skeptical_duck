@@ -27,7 +27,7 @@ exception No_moves_to_choose_from;;
 
 let compute_usual_move (condition,easy_advancer,strong_moves,already_used_moves,moves_before) =
   let opt1=easy_advancer in 
-  if opt1<>None then Option.unpack opt1 else 
+  if opt1<>None then fst(Option.unpack opt1) else 
   let opt2=Hex_cell_set.optional_min(strong_moves) in 
   if opt2<>None then Option.unpack opt2 else 
   let opt3=Hex_cell_set.optional_min(already_used_moves) in 
@@ -56,13 +56,11 @@ let analize sta=
   else 
   let (unconditioned_strong_moves,unconditioned_used_moves)=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
-  let pre_easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
-  let (easy_advancer,easy_advances)= (
-      match pre_easy_advancer with 
-       None -> (None,Hex_cell_set.safe_set [])
-      |Some(cell,is_easy)->if is_easy 
-                           then (Some(cell),Hex_cell_set.safe_set [cell]) 
-                           else  (None,Hex_cell_set.safe_set [])
+  let easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
+  let easy_advances= (
+      match easy_advancer with 
+       None -> Hex_cell_set.safe_set []
+      |Some(cell,_)->Hex_cell_set.safe_set [cell]
   ) in
   let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves 
   and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
@@ -110,8 +108,11 @@ let report_on_danger res=
                 (Strung.of_intlist res.Hex_analysis_result_t.involved_end_strategies)^
                 ": play in "^(Hex_cell_set.to_string(set))^"\n";; 
 
-(*      
+   
 let report_on_possible_advances res=
-     match 
-*)  
+     match res.Hex_analysis_result_t.easy_advancer with 
+     None->""
+     |Some(cell,remaining)->
+        "Suggested : "^(Hex_cell.to_string cell)^", from "^(string_of_int remaining)^" to go";;  
+
 
