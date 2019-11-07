@@ -12,7 +12,7 @@ let empty_result =
      strong_moves =  Hex_cell_set_t.S [];
      already_used_moves = Hex_cell_set_t.S [] ;
      usual_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
-     sizes = (0,0,0,0,0);
+     number_of_remaining_enemies = 0 ;
   } ;;
 
 let report_on_danger res=
@@ -31,7 +31,14 @@ let report_on_possible_advances res=
         let s_remaining = String.concat "," temp1 in 
         "Suggested : "^(Hex_cell.to_string cell)^", from "^s_remaining^"\n";;  
 
+let report_on_enemies res = 
+   match res.Hex_analysis_result_t.number_of_remaining_enemies with 
+    0->"No enemy remaining."
+   |1->"One enemy remaining."
+   |k->(string_of_int k)^" enemies remaining.";; 
 
-let full_report res = (report_on_danger res)^(report_on_possible_advances res)^"\n";;
+let full_report res = (report_on_danger res)^
+                      (report_on_possible_advances res)^
+                      (report_on_enemies_advances res)^"\n";;
   
   
