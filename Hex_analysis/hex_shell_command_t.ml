@@ -13,4 +13,5 @@ type t=
    |Quit
    |Replay_written_game
    |Start_new_game
-   |Undo_last_move;;
+   |Undo_last_move
+   |Unknown_command;;
