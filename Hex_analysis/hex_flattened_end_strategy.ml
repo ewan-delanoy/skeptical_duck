@@ -47,6 +47,11 @@ let immediate_opportunities flesses =
          else None
    ) flesses;;
 
+let support fles =
+   Hex_cell_set.fold_merge
+   [fles.Hex_flattened_end_strategy_t.active_part;
+    fles.Hex_flattened_end_strategy_t.passive_part];;
+
 let partial_unveil fles=
   (
      fles.Hex_flattened_end_strategy_t.beneficiary,
@@ -97,48 +102,9 @@ end;;
 
 let of_concrete_object = Private.of_concrete_object ;;
 let immediate_opportunities = Private.immediate_opportunities;;
+let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
 let use_move_to_simplify_one = Private.use_move_to_simplify_one;;
 let to_concrete_object = Private.to_concrete_object ;;
-
-(*
-
-let announce_beneficiary ="\nBeneficiary : \n";;
-let announce_active_part ="\nActive part : \n";;
-let announce_passive_part="\nPassive part : \n";;
-let announce_index="\nIndex : \n";;
-
-let to_string fles=
-  let descr1=Hex_player.to_string(fles.Hex_flattened_end_strategy_t.beneficiary) 
-  and descr2=Hex_common.cell_list_to_string(Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part)) 
-  and descr3=Hex_common.cell_list_to_string(Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part)) 
-  and descr4=string_of_int(fles.Hex_flattened_end_strategy_t.index) in 
-  announce_beneficiary^descr1^
-  announce_active_part^descr2^
-  announce_passive_part^descr3^
-  announce_index^descr4;;
-
-
-let of_string s =
-   let s1=Cull_string.cobeginning 
-     (String.length announce_beneficiary) s in 
-   let i1=Substring.leftmost_index_of_in announce_active_part s1 
-   and i2=Substring.leftmost_index_of_in announce_passive_part s1 
-   and i3=Substring.leftmost_index_of_in announce_index s1 in
-   let j1=i1+(String.length announce_active_part)-1
-   and j2=i2+(String.length announce_passive_part)-1 
-   and j3=i3+(String.length announce_index)-1 in 
-   let descr1=Cull_string.interval s1 1 (i1-1) 
-   and descr2=Cull_string.interval s1 (j1+1) (i2-1) 
-   and descr3=Cull_string.interval s1 (j2+1) (i3-1) 
-   and descr4=Cull_string.interval s1  (j3+1) (String.length s1) in 
-   {
-     Hex_flattened_end_strategy_t.beneficiary=Hex_player.of_string descr1;
-     Hex_flattened_end_strategy_t.active_part=Hex_cell_set.safe_set(Hex_common.cell_list_of_string descr2);
-     Hex_flattened_end_strategy_t.passive_part=Hex_cell_set.safe_set(Hex_common.cell_list_of_string descr3);
-     Hex_flattened_end_strategy_t.index=int_of_string descr4;
-   };;
-
-*)
 

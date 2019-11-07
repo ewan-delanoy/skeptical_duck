@@ -66,6 +66,19 @@ let cmp =
    (partial_unveil fgame1) (partial_unveil fgame2)  
 ) :> Hex_finished_game_t.t Total_ordering.t);;
 
+let compute_optional_fit fles fgame =
+  let (fst_player_moves,snd_player_moves) = 
+      Listennou.split_list_in_half (fgame.Hex_finished_game_t.sequence_of_moves) in 
+  let (ally_moves,enemy_moves) = (
+     match fles.Hex_flattened_end_strategy_t.beneficiary with 
+      Hex_player_t.First_player -> (fst_player_moves,snd_player_moves) 
+     |Hex_player_t.Second_player -> (snd_player_moves,fst_player_moves) 
+  ) in 
+  let ally_set = Hex_cell_set.safe_set ally_moves 
+  and enemy_set = Hex_cell_set.safe_set ally_moves in 
+  Hex_flattened_end_strategy.immediate_opportunities;;
+
+
 let salt = "Hex_"^"finished_game_t.";;
 
 let dimension_label          = salt ^ "dimension";;

@@ -7,7 +7,8 @@
 
 let safe_set l=  Hex_cell_set_t.S (Ordered.diforchan_plaen Hex_cell.cmp l);;
 
-
+let does_not_intersect (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
+        Ordered.kengeij_goullo Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;  
 let fold_intersect l=  
     let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
     Hex_cell_set_t.S (Ordered.forget_order(Ordered.big_kengeij Hex_cell.cmp renamed_l));;
