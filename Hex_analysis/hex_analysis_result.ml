@@ -29,7 +29,7 @@ let report_on_possible_advances res=
      |Some(cell,remaining)->
         let temp1 = Image.image Hex_cell.to_string remaining in 
         let s_remaining = String.concat "," temp1 in 
-        "Suggested : "^(Hex_cell.to_string cell)^", from "^s_remaining^"\n";;  
+        "Suggested : "^(Hex_cell.to_string cell)^", to "^s_remaining^"\n";;  
 
 let report_on_enemies res = 
    match res.Hex_analysis_result_t.number_of_remaining_enemies with 
