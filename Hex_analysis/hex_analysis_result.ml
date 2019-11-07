@@ -39,6 +39,6 @@ let report_on_enemies res =
 
 let full_report res = (report_on_danger res)^
                       (report_on_possible_advances res)^
-                      (report_on_enemies_advances res)^"\n";;
+                      (report_on_enemies res)^"\n";;
   
   
