@@ -31,6 +31,12 @@ let iterated_largest_unconclusive_beginning fgame (Hex_fles_double_list_t.DL(l1,
 
 let sizes (Hex_fles_double_list_t.DL(l1,l2))=(List.length l1,List.length l2);;
 
+let number_of_enemy_strategies player (Hex_fg_double_list_t.DL(l1,l2))=
+   let l=(match player with 
+   Hex_player_t.First_player ->l2
+  |Hex_player_t.Second_player ->l1) in  
+    List.length l;; 
+
 let of_concrete_object crobj=
    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Hex_fles_double_list_t.DL(
