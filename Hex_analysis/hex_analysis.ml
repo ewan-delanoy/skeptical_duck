@@ -52,7 +52,6 @@ let absorb_all_moves cells=
 
 let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
-
 let remember_opening_if_necessary winner =
    let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
    let new_opng=(

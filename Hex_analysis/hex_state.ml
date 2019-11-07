@@ -39,6 +39,8 @@ let compute_usual_move (condition,easy_advancer,strong_moves,already_used_moves,
   if opt4<>None then Option.unpack opt4 else 
   raise(No_moves_to_choose_from);;  
 
+
+
 exception Disjunction_found of int* (int list);;
 
 let analize sta=
@@ -101,7 +103,15 @@ let absorb_move sta cell=
       Hex_state_t.strong_moves_before = new_smb;   
    };;
 
+let report_on_danger res=
+    match res.Hex_analysis_result_t.mandatory_set with 
+    None->""
+    |Some(set)->"Danger, because of "^
+                (Strung.of_intlist res.Hex_analysis_result_t.involved_end_strategies)^
+                ": play in "^(Hex_cell_set.to_string(set))^"\n";; 
 
-
-  
+(*      
+let report_on_possible_advances res=
+     match 
+*)  
 
