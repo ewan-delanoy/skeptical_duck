@@ -76,8 +76,16 @@ let compute_optional_fit fles fgame =
   ) in 
   let ally_set = Hex_cell_set.safe_set ally_moves 
   and enemy_set = Hex_cell_set.safe_set ally_moves in 
-  Hex_flattened_end_strategy.immediate_opportunities;;
+  if (not(Hex_cell_set.does_not_intersect enemy_set (Hex_flattened_end_strategy.support fles))) 
+  then None
+  else 
+  let remaining_cells = Hex_cell_set.setminus fles.Hex_flattened_end_strategy_t.active_part ally_set in 
+  Some(Hex_cell_set.length remaining_cells,fgame);;
 
+let best_fits fles fgames =
+   let temp1=Option.filter_and_unpack (compute_optional_fit fles) fgames in 
+   let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
+   (found_min,Image.image snd sols)
 
 let salt = "Hex_"^"finished_game_t.";;
 
