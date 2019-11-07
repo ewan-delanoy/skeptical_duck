@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_shortcuts.ml";;
+#use"Hex_analysis/hex_shortcut.ml";;
 
 *)
 
@@ -11,7 +11,7 @@ let am s = Hex_analysis.absorb_move (Hex_cell.of_string s);;
 let spec1 j = Hex_analysis.absorb_some_moves 
      (Image.image Hex_cell.of_string list_for_spec1) j;;
 let dw k=Hex_analysis.declare_winner (Hex_player.of_int k);;
-let init = Hex_persistent.initialize_all_data_if_necessary ;;$
+let init = Hex_persistent.initialize_all_data_if_necessary ;;
 let lau = Hex_shell.launch ;;
 let ps=Hex_ascii_grid.process_sheet;;
 let refs ()=(!Hex_persistent.games_ref,!Hex_persistent.untamed_openings_ref,
