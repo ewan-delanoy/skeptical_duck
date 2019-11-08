@@ -65,7 +65,7 @@ let analize sta=
   let u_move = compute_usual_move (condition,easy_advancer,strong_moves,sta.Hex_state_t.moves_before) in 
   let enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
   {
-     Hex_analysis_result_t.next_one_to_play = player ; 
+     Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
      involved_end_strategies = Image.image snd dangers ;
      easy_advancer = easy_advancer ;
