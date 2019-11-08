@@ -52,7 +52,7 @@ let analize sta=
   if condition = Some(Hex_cell_set_t.S[])
   then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,Image.image snd dangers))
   else 
-  let (unconditioned_strong_moves,unconditioned_used_moves)=
+  let unconditioned_strong_moves=
       Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
   let easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let easy_advances= (
@@ -60,18 +60,16 @@ let analize sta=
        None -> Hex_cell_set.safe_set []
       |Some(cell,_)->Hex_cell_set.safe_set [cell]
   ) in
-  let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves 
-  and used_moves1=Hex_cell_set.apply_condition condition unconditioned_used_moves in 
+  let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves  in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
-  let used_moves = Hex_cell_set.setminus used_moves1 easy_advances in 
-  let u_move = compute_usual_move (condition,easy_advancer,strong_moves,used_moves,sta.Hex_state_t.moves_before) in 
+  let u_move = compute_usual_move (condition,easy_advancer,strong_moves,sta.Hex_state_t.moves_before) in 
   let enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
   {
-     Hex_analysis_result_t.mandatory_set = condition ;
+     Hex_analysis_result_t.next_one_to_play = player ; 
+     mandatory_set = condition ;
      involved_end_strategies = Image.image snd dangers ;
      easy_advancer = easy_advancer ;
      strong_moves = strong_moves ;
-     already_used_moves = used_moves ;
      usual_move = u_move;
      number_of_remaining_enemies = enem;
   } ;;
