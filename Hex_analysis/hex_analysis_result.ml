@@ -6,11 +6,11 @@
 
 let empty_result = 
 {
-     Hex_analysis_result_t.mandatory_set = None;
+     Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
+     mandatory_set = None;
      involved_end_strategies = [] ;
      easy_advancer =  None ;
      strong_moves =  Hex_cell_set_t.S [];
-     already_used_moves = Hex_cell_set_t.S [] ;
      usual_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
      number_of_remaining_enemies = 0 ;
   } ;;

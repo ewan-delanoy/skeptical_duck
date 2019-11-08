@@ -25,18 +25,16 @@ let initial_state ()=
 
 exception No_moves_to_choose_from;;
 
-let compute_usual_move (condition,easy_advancer,strong_moves,already_used_moves,moves_before) =
+let compute_usual_move (condition,easy_advancer,strong_moves,moves_before) =
   let opt1=easy_advancer in 
   if opt1<>None then fst(Option.unpack opt1) else 
   let opt2=Hex_cell_set.optional_min(strong_moves) in 
   if opt2<>None then Option.unpack opt2 else 
-  let opt3=Hex_cell_set.optional_min(already_used_moves) in 
-  if opt3<>None then Option.unpack opt3 else 
   let dim=Hex_persistent.dimension () in 
   let remaining_world = Hex_cell_set.apply_condition condition (Hex_common.all_cells dim) in
   let free_cells=Hex_cell_set.setminus remaining_world (Hex_cell_set.safe_set moves_before) in 
-  let opt4=Hex_cell_set.optional_min(free_cells) in 
-  if opt4<>None then Option.unpack opt4 else 
+  let opt3=Hex_cell_set.optional_min(free_cells) in 
+  if opt3<>None then Option.unpack opt3 else 
   raise(No_moves_to_choose_from);;  
 
 

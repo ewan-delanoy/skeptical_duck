@@ -41,12 +41,11 @@ let simplify_by_move move (Hex_fg_double_list_t.DL(l1,l2))=
     ));;    
 
 let suggested_moves player (Hex_fg_double_list_t.DL(l1,l2))=
-   let (winning_moves,other_moves)=(match player with 
+   match player with 
    Hex_player_t.First_player -> 
        (Hex_fg_list.first_moves l1,Hex_fg_list.first_moves l2)
   |Hex_player_t.Second_player -> 
-       (Hex_fg_list.first_moves l2,Hex_fg_list.first_moves l1) ) in 
-  (winning_moves,Hex_cell_set.setminus other_moves winning_moves);;
+       (Hex_fg_list.first_moves l2,Hex_fg_list.first_moves l1);;
 
 let lookup_dimension (Hex_fg_double_list_t.DL(l1,l2))=
   match Hex_fg_list.lookup_dimension l1 with 
