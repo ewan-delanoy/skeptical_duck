@@ -26,7 +26,8 @@ let insert_in new_uog l=
      Ordered.insert_plaen Hex_untamed_opening.cmp new_uog cleaned_l;;  
 
 
-let simplify_by_move move l=Option.filter_and_unpack (Hex_untamed_opening.simplify_by_move move) l;;     
+let simplify_by_move move l=Option.filter_and_unpack 
+(Hex_untamed_opening.simplify_by_move move) l;;     
 
 let seek_interesting_move l=
    let temp1=Private.select_openings_with_next_player_as_recipient l in 

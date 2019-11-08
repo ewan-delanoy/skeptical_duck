@@ -35,7 +35,7 @@ let simplify_by_move new_move (Hex_untamed_opening_t.O l) =
 let first_move (Hex_untamed_opening_t.O l) = List.hd l;;
 
 
-let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=0);;
+let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=1);;
 
 let unveil (Hex_untamed_opening_t.O l)=l;;
 

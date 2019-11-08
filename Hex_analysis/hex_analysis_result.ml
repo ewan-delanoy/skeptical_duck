@@ -29,13 +29,15 @@ let report_on_possible_advances res=
      |Some(cell,remaining)->
         let temp1 = Image.image Hex_cell.to_string remaining in 
         let s_remaining = String.concat "," temp1 in 
-        "Suggested : "^(Hex_cell.to_string cell)^", to "^s_remaining^"\n";;  
+        let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+        "Suggestion for "^plyr^" : "^(Hex_cell.to_string cell)^", expecting "^s_remaining^"\n";;  
 
 let report_on_enemies res = 
+   let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
    match res.Hex_analysis_result_t.number_of_remaining_enemies with 
-    0->"No enemy remaining."
-   |1->"One enemy remaining."
-   |k->(string_of_int k)^" enemies remaining.";; 
+    0->"No enemy remaining against "^plyr^"."
+   |1->"One enemy remaining against "^plyr^"."
+   |k->(string_of_int k)^" enemies remaining against "^plyr^".";; 
 
 let full_report res = (report_on_danger res)^
                       (report_on_possible_advances res)^
