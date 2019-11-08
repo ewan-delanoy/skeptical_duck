@@ -27,10 +27,14 @@ let report_on_possible_advances res=
      match res.Hex_analysis_result_t.easy_advancer with 
      None->""
      |Some(cell,remaining)->
+        let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+        let sug = "Suggestion for "^plyr^" : "^(Hex_cell.to_string cell)^", " in 
+        if remaining = []
+        then sug^"forcing move\n"
+        else 
         let temp1 = Image.image Hex_cell.to_string remaining in 
         let s_remaining = String.concat "," temp1 in 
-        let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
-        "Suggestion for "^plyr^" : "^(Hex_cell.to_string cell)^", expecting "^s_remaining^"\n";;  
+        sug^"expecting "^s_remaining^"\n";;  
 
 let report_on_enemies res = 
    let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
