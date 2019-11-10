@@ -28,7 +28,7 @@ then 1
 else (-1);;
 
 let ls2 p=
-if Set_of_integers.elfenn(p mod 8)(Set_of_integers.safe_set[1;7])
+if Set_of_integers.mem(p mod 8)(Set_of_integers.safe_set[1;7])
 then 1
 else (-1);;
 
