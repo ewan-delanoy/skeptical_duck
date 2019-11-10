@@ -97,58 +97,54 @@ let setminus (cmpr:'a Total_ordering.t) ox oy=
    unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
 let kengeij (cmpr:'a Total_ordering.t) ox oy=
-let rec kengeij0=
-(function (u,v,accu)->
-if u=[] then (List.rev(accu)) else
-if v=[] then (List.rev(accu)) else
-let xu=List.hd(u) and yu=List.tl(u) 
-and xv=List.hd(v) and yv=List.tl(v) in
-match cmpr(xu)(xv) with
-   Total_ordering.Lower->kengeij0(yu,v,accu)
-   |Total_ordering.Equal->kengeij0(yu,yv,xu::accu)
-   |Total_ordering.Greater->kengeij0(u,yv,accu)
-
-) in
-unsafe_set(kengeij0(forget_order ox,forget_order oy,[]));;
+    let rec tempf=(function (u,v,accu)->
+      if u=[] then (List.rev(accu)) else
+      if v=[] then (List.rev(accu)) else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+       Total_ordering.Lower->tempf(yu,v,accu)
+      |Total_ordering.Equal->tempf(yu,yv,xu::accu)
+      |Total_ordering.Greater->tempf(u,yv,accu)
+    ) in
+    unsafe_set(tempf0(forget_order ox,forget_order oy,[]));;
 
 let kengeij_goullo (cmpr:'a Total_ordering.t) ox oy=
-let rec kengeij_goullo0=
-(function (u,v)->
-if (u=[])||(v=[]) then true else
-let xu=List.hd(u) and yu=List.tl(u) 
-and xv=List.hd(v) and yv=List.tl(v) in
-match cmpr(xu)(xv) with
-   Total_ordering.Lower->kengeij_goullo0(yu,v)
-   |Total_ordering.Equal->false
-   |Total_ordering.Greater->kengeij_goullo0(u,yv)
-) in
-kengeij_goullo0(forget_order ox,forget_order oy);;
+    let rec tempf=(function (u,v)->
+        if (u=[])||(v=[]) then true else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+        match cmpr(xu)(xv) with
+          Total_ordering.Lower->tempf(yu,v)
+        |Total_ordering.Equal->false
+        |Total_ordering.Greater->tempf(u,yv)
+    ) in
+    tempf(forget_order ox,forget_order oy);;
 
 
 let ental (cmpr:'a Total_ordering.t) ox oy=
-let rec ental0=
-(function (u,v)->
-if u=[] then true else
-if v=[] then false else
-let xu=List.hd(u) and yu=List.tl(u) 
-and xv=List.hd(v) and yv=List.tl(v) in
-match cmpr(xu)(xv) with
-   Total_ordering.Lower->false
-   |Total_ordering.Equal->ental0(yu,yv)
-   |Total_ordering.Greater->ental0(u,yv)
-) in
-ental0(forget_order ox,forget_order oy);;
+    let rec tempf=(function (u,v)->
+      if u=[] then true else
+      if v=[] then false else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+        Total_ordering.Lower->false
+      |Total_ordering.Equal->tempf(yu,yv)
+      |Total_ordering.Greater->tempf(u,yv)
+    ) in
+    tempf(forget_order ox,forget_order oy);;
 
 let min=((fun cmpr x->match x with
   []->failwith("The empty set has no min")
   |a::b->
     let rec tempf=(fun 
-     (trecher,to_be_treated)->match to_be_treated with
-      []->trecher
+     (candidate,to_be_treated)->match to_be_treated with
+      []->candidate
       |c::others->
-        if cmpr(c)(trecher)=Total_ordering.Lower
+        if cmpr(c)(candidate)=Total_ordering.Lower
         then tempf(c,others)
-        else tempf(trecher,others)
+        else tempf(candidate,others)
     ) in
     tempf(a,b)):> ('a Total_ordering.t -> 'a list->'a));;
 
@@ -156,12 +152,12 @@ let max=((fun cmpr x->match x with
   []->failwith("The empty set has no max")
   |a::b->
     let rec tempf=(fun 
-     (trecher,to_be_treated)->match to_be_treated with
-      []->trecher
+     (candidate,to_be_treated)->match to_be_treated with
+      []->candidate
       |c::others->
-        if cmpr(c)(trecher)=Total_ordering.Greater
+        if cmpr(c)(candidate)=Total_ordering.Greater
         then tempf(c,others)
-        else tempf(trecher,others)
+        else tempf(candidate,others)
     ) in
     tempf(a,b)):> ('a Total_ordering.t -> 'a list->'a));;
 
@@ -171,18 +167,18 @@ let cooperation_for_two cmpr x y=
 let expand_boolean_algebra cmpr l=
   if List.length(l)<2 then l else
   let rec tempf=(fun 
-    (graet,y0,etre,to_be_treated)->
-      if etre=[] 
+    (graet,y0,between,to_be_treated)->
+      if between=[] 
       then if to_be_treated=[]
            then y0::graet
            else let z0=List.hd(to_be_treated) and others=List.tl(to_be_treated) in
                 tempf([],z0,y0::graet,others)
       else 
-      let x0=List.hd(etre) and others_etre=List.tl(etre) in
+      let x0=List.hd(between) and others_between=List.tl(between) in
       let t1=kengeij cmpr x0 y0 and t2=setminus cmpr x0 y0 in
       let y1=setminus cmpr y0 t1 in
       let temp1=List.filter (fun ox->forget_order ox<>[]) [t1;t2] in
-      tempf(List.rev_append temp1 graet,y1,others_etre,to_be_treated)
+      tempf(List.rev_append temp1 graet,y1,others_between,to_be_treated)
   )  in
   let x1=List.hd(l) and r1=List.tl(l) in
   tempf([],x1,[],r1);;
@@ -225,22 +221,22 @@ let insert_plaen cmpr x l=
         forget_order(insert cmpr x (unsafe_set l));;     
 let diff_plaen (cmpr: 'a Total_ordering.t) =
           let rec tempf=(fun
-            (graet_bc,graet_b,graet_c,to_be_treated1,to_be_treated2)->
+            (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
               match to_be_treated1 with
-              []->(graet_bc,graet_b,List.rev_append graet_c to_be_treated2)
+              []->(treated_bc,treated_b,List.rev_append treated_c to_be_treated2)
               |(a1,b1)::others1->
               (
                 match to_be_treated2 with
-              []->(graet_bc,List.rev_append graet_b to_be_treated1,graet_c)     
+              []->(treated_bc,List.rev_append treated_b to_be_treated1,treated_c)     
               |(a2,c2)::others2->
                 (
                   match cmpr a1 a2 with
                   Total_ordering.Lower->
-                    tempf(graet_bc,(a1,b1)::graet_b,graet_c,others1,to_be_treated2)
+                    tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
                   |Total_ordering.Greater->
-                  tempf(graet_bc,graet_b,(a2,c2)::graet_c,to_be_treated1,others2)
+                  tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
                   |Total_ordering.Equal->
-                  tempf((a1,b1,c2)::graet_bc,graet_b,graet_c,others1,others2)  
+                  tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
                 )
               )      
           ) in
