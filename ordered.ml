@@ -82,7 +82,7 @@ let rec sort (cmpr:'a Total_ordering.t) x=
        merge cmpr y1 y2;;
   
   
-let lemel (cmpr:'a Total_ordering.t) ox oy=
+let setminus (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=
     (function (u,v,accu)->
       if u=[] then (List.rev(accu)) else
@@ -166,7 +166,7 @@ let max=((fun cmpr x->match x with
     tempf(a,b)):> ('a Total_ordering.t -> 'a list->'a));;
 
 let cooperation_for_two cmpr x y=
-   (kengeij cmpr x y,lemel cmpr x y,lemel cmpr y x);;
+   (kengeij cmpr x y,setminus cmpr x y,setminus cmpr y x);;
   
 let expand_boolean_algebra cmpr l=
   if List.length(l)<2 then l else
@@ -179,8 +179,8 @@ let expand_boolean_algebra cmpr l=
                 tempf([],z0,y0::graet,others)
       else 
       let x0=List.hd(etre) and others_etre=List.tl(etre) in
-      let t1=kengeij cmpr x0 y0 and t2=lemel cmpr x0 y0 in
-      let y1=lemel cmpr y0 t1 in
+      let t1=kengeij cmpr x0 y0 and t2=setminus cmpr x0 y0 in
+      let y1=setminus cmpr y0 t1 in
       let temp1=List.filter (fun ox->forget_order ox<>[]) [t1;t2] in
       tempf(List.rev_append temp1 graet,y1,others_etre,to_be_treated)
   )  in
@@ -220,7 +220,7 @@ let mem_silently cmpr e x=
 let kengeij_plaen cmpr x y=
     forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
 let setminus_silently cmpr x y=
-      forget_order(lemel cmpr  (unsafe_set x) (unsafe_set y) );;
+      forget_order(setminus cmpr  (unsafe_set x) (unsafe_set y) );;
 let insert_plaen cmpr x l=
         forget_order(insert cmpr x (unsafe_set l));;     
 let diff_plaen (cmpr: 'a Total_ordering.t) =
