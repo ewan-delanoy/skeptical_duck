@@ -206,7 +206,6 @@ let fold_intersect cmpr=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(intersect cmpr)(a)(b);;
 let nmem cmpr a ox=not(mem cmpr a ox);;
-let nental cmpr a ox=not(is_included_in cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   
 let sort_silently cmpr x=
