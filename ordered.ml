@@ -82,20 +82,19 @@ let rec sort (cmpr:'a Total_ordering.t) x=
        merge cmpr y1 y2;;
   
   
-  let lemel (cmpr:'a Total_ordering.t) ox oy=
-let rec lemel0=
-(function (u,v,accu)->
-if u=[] then (List.rev(accu)) else
-if v=[] then (List.rev_append(accu)(u)) else
-let xu=List.hd(u) and yu=List.tl(u) 
-and xv=List.hd(v) and yv=List.tl(v) in
-match cmpr(xu)(xv) with
-   Total_ordering.Lower->lemel0(yu,v,xu::accu)
-   |Total_ordering.Equal->lemel0(yu,yv,accu)
-   |Total_ordering.Greater->lemel0(u,yv,accu)
-
-) in
-unsafe_set(lemel0(forget_order ox,forget_order oy,[]));;
+let lemel (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=
+    (function (u,v,accu)->
+      if u=[] then (List.rev(accu)) else
+      if v=[] then (List.rev_append(accu)(u)) else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+         Total_ordering.Lower->tempf(yu,v,xu::accu)
+        |Total_ordering.Equal->tempf(yu,yv,accu)
+        |Total_ordering.Greater->tempf(u,yv,accu)
+   ) in
+   unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
 let kengeij (cmpr:'a Total_ordering.t) ox oy=
 let rec kengeij0=
