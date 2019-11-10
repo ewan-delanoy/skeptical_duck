@@ -34,7 +34,7 @@ let iterator coat
     let not_yet_checked2=List.filter (fun z->z<>a) not_yet_checked in
     let coat_a=coat(a) in
     let coatoms_of_a=Set_of_polys.safe_set(coat_a) in
-    let temp1=Set_of_polys.lemel coatoms_of_a checked_union in
+    let temp1=Set_of_polys.setminus coatoms_of_a checked_union in
     if Set_of_polys.length(temp1)=0
     then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in

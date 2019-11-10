@@ -103,7 +103,7 @@ sub_f([],l);;
    let n=Set_of_polys.length(l) in
    if (k<0)||(k>n) then [] else
    if (2*k>n)
-   then List.rev_map (Set_of_polys.lemel l) (naive_combinations (n-k) l)	
+   then List.rev_map (Set_of_polys.setminus l) (naive_combinations (n-k) l)	
    else naive_combinations k l;;
    
    let arrangements_in_above_board_case the_k l=

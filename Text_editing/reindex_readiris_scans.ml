@@ -53,7 +53,7 @@ let indices_of_renamed_files ()=
 let missing_indices_in_renamed_files ()=
    let temp1=Set_of_polys.safe_set (indices_of_renamed_files ())
    and whole=Set_of_polys.safe_set (Ennig.ennig 1 500) in 
-   let temp2=Set_of_polys.lemel whole temp1 in 
+   let temp2=Set_of_polys.setminus whole temp1 in 
    Ordered.forget_order temp2;;
 
 module IndexPairList = struct
