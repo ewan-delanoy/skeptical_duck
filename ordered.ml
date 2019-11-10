@@ -96,7 +96,7 @@ let setminus (cmpr:'a Total_ordering.t) ox oy=
    ) in
    unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
-let kengeij (cmpr:'a Total_ordering.t) ox oy=
+let intersect (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v,accu)->
       if u=[] then (List.rev(accu)) else
       if v=[] then (List.rev(accu)) else
@@ -162,7 +162,7 @@ let max=((fun cmpr x->match x with
     tempf(a,b)):> ('a Total_ordering.t -> 'a list->'a));;
 
 let cooperation_for_two cmpr x y=
-   (kengeij cmpr x y,setminus cmpr x y,setminus cmpr y x);;
+   (intersect cmpr x y,setminus cmpr x y,setminus cmpr y x);;
   
 let expand_boolean_algebra cmpr l=
   if List.length(l)<2 then l else
@@ -175,7 +175,7 @@ let expand_boolean_algebra cmpr l=
                 tempf([],z0,y0::graet,others)
       else 
       let x0=List.hd(between) and others_between=List.tl(between) in
-      let t1=kengeij cmpr x0 y0 and t2=setminus cmpr x0 y0 in
+      let t1=intersect cmpr x0 y0 and t2=setminus cmpr x0 y0 in
       let y1=setminus cmpr y0 t1 in
       let temp1=List.filter (fun ox->forget_order ox<>[]) [t1;t2] in
       tempf(List.rev_append temp1 graet,y1,others_between,to_be_treated)
@@ -204,7 +204,7 @@ let big_teuzin cmpr l=
    tempf(empty_set,l);;
 let big_kengeij cmpr=function
    []->failwith("empty intersection undefined")
-  |a::b->List.fold_left(kengeij cmpr)(a)(b);;
+  |a::b->List.fold_left(intersect cmpr)(a)(b);;
 let nelfenn cmpr a ox=not(mem cmpr a ox);;
 let nental cmpr a ox=not(ental cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
