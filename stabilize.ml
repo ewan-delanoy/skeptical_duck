@@ -4,7 +4,7 @@ let one_more_time f (an_holl,da_ober)=
  let temp1=List.flatten(List.rev_map(f)(l_da_ober)) in
  let temp2=Set_of_polys.sort(temp1) in
  let re_nevez=Set_of_polys.setminus(temp2)(an_holl) in
- let hollad_nevez=Set_of_polys.teuzin(an_holl)(re_nevez) in
+ let hollad_nevez=Set_of_polys.merge(an_holl)(re_nevez) in
  (hollad_nevez,re_nevez);; 
   
 let rec morzholan f (an_holl,da_ober)=
@@ -24,7 +24,7 @@ let one_more_time2 f (an_holl,graet,da_ober)=
  let temp1=List.flatten(List.rev_map (function (x,y)->[f x y]) zz ) in
  let temp2=Set_of_polys.sort(temp1) in
  let re_nevez=Set_of_polys.setminus(temp2)(an_holl) in
- let hollad_nevez=Set_of_polys.teuzin(an_holl)(re_nevez) in
+ let hollad_nevez=Set_of_polys.merge(an_holl)(re_nevez) in
  (hollad_nevez,an_holl,re_nevez);; 
   
 let rec morzholan2 f (an_holl,graet,da_ober)=
@@ -82,7 +82,7 @@ let pusher_for_hierarchization (graet,hollad,da_ober)=
   let temp4=Image.image fst temp2 in
   let o_temp4=Set_of_polys.sort(temp4) in
   let temp5=Image.image (fun (x,z)->(x,Set_of_polys.setminus z o_temp4)) temp3 in
-  (Normal(o_temp4::graet,Set_of_polys.teuzin hollad o_temp4,temp5));;
+  (Normal(o_temp4::graet,Set_of_polys.merge hollad o_temp4,temp5));;
   
 type 'a list_of_ancestors_map=('a -> 'a list);;  
   

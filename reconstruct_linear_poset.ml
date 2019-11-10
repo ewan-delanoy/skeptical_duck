@@ -68,7 +68,7 @@ let iterator coat
         let ordered_cycle=Set_of_polys.sort new_cycle in
         let not_yet_checked3=List.filter (fun z->Set_of_polys.nmem z ordered_cycle) not_yet_checked in
         (checked,checked_union,new_cycle::cycles,
-        Set_of_polys.teuzin ordered_cycle cycles_union,
+        Set_of_polys.merge ordered_cycle cycles_union,
         [],not_yet_checked3,None);;
 
 let reconstruct_linear_poset coat l=

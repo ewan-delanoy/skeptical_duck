@@ -12,7 +12,7 @@ let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 
 let mem=((fun a ox->Ordered.mem cmp a ox):>('a->'a set->bool));;
-let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set->'a set->'a set));;
+let merge=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set->'a set->'a set));;
 let sort=((fun x->Ordered.sort cmp x):>('a list->'a set));;
 let setminus=((fun ox oy->Ordered.setminus cmp ox oy):>('a set->'a set->'a set));;
 let is_included_in=((fun ox oy->Ordered.is_included_in cmp ox oy):>('a set->'a set->bool));;
@@ -35,14 +35,14 @@ let length x=List.length(forget_order x);;
 let nmem a ox=not(mem a ox);;
 let nental ox oy=not(is_included_in ox oy);;
 
-let insert x oy=teuzin(singleton x) oy;;
+let insert x oy=merge(singleton x) oy;;
 let safe_set x=if kreskus_strizh(x) then unsafe_set(x) else sort(x);;
 let outsert x oy=setminus(oy)(singleton x);;
-let delta_set ox oy=teuzin(setminus ox oy)(setminus oy ox);;
+let delta_set ox oy=merge(setminus ox oy)(setminus oy ox);;
 let delta_distance ox oy=length(delta_set ox oy);;
 
 
-let fold_merge x=List.fold_left teuzin empty_set x;;
+let fold_merge x=List.fold_left merge empty_set x;;
 let big_kengeij=function
     []->failwith("empty intersection undefined")
     |a::b->List.fold_left(kengeij)(a)(b);;

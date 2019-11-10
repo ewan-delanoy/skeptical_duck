@@ -793,7 +793,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     and new_libs=List.filter (
                       fun lib->(List.mem lib libned)||(List.mem lib current_libs)
                     ) Ocaml_library.all_libraries in  
-                    let ordered_dirs=Set_of_polys.teuzin
+                    let ordered_dirs=Set_of_polys.merge
                        (Set_of_polys.safe_set(needed_dirs_at_module (!cs_walker) current_module))
                        (Set_of_polys.safe_set (dirned)) in
                     let new_dirs=Ordered.forget_order(ordered_dirs) in

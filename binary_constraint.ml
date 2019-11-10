@@ -49,8 +49,8 @@ type t=
  let intersection cx cy=
    if (cx=Impossible)||(cy=Impossible) then Impossible else
    let (n1,e1)=unveil(cx) and (n2,e2)=unveil(cy) in
-   let new_n=Set_of_polys.teuzin n1 n2 
-   and new_e=Set_of_polys.teuzin e1 e2 in
+   let new_n=Set_of_polys.merge n1 n2 
+   and new_e=Set_of_polys.merge e1 e2 in
    usual_constructor(new_n,new_e);;
    
  let push_element_inside i x=match x with
@@ -76,7 +76,7 @@ type t=
     
  let support=((function
     Impossible->Set_of_polys.empty_set
-    |Possible(n,e)->Set_of_polys.teuzin n e):t -> int_set);;
+    |Possible(n,e)->Set_of_polys.merge n e):t -> int_set);;
     
  let forget x=function
      Impossible->Impossible
