@@ -40,8 +40,6 @@ let muv=Usual_coma_state.modules_using_value;;
 
 let ocs=Other_coma_state.main_ref;;
 
-let ofo=Ordered.forget_order;;
-
 let reco msg=Usual_coma_state.recompile (Some msg);; 
 
 let regi short_path=Usual_coma_state.register_rootless_path short_path;;
