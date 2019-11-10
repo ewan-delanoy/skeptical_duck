@@ -107,7 +107,7 @@ let kengeij (cmpr:'a Total_ordering.t) ox oy=
       |Total_ordering.Equal->tempf(yu,yv,xu::accu)
       |Total_ordering.Greater->tempf(u,yv,accu)
     ) in
-    unsafe_set(tempf0(forget_order ox,forget_order oy,[]));;
+    unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
 let kengeij_goullo (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v)->
