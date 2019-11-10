@@ -796,7 +796,7 @@ let register_mlx_file_on_monitored_modules cs mlx_file =
                     let ordered_dirs=Set_of_polys.merge
                        (Set_of_polys.safe_set(needed_dirs_at_module (!cs_walker) current_module))
                        (Set_of_polys.safe_set (dirned)) in
-                    let new_dirs=Ordered.forget_order(ordered_dirs) in
+                    let new_dirs=Set_of_polys.forget_order(ordered_dirs) in
                     cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
                     cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
                     cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
@@ -928,7 +928,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
+    let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
     Option.add_element_on_the_right   
@@ -973,7 +973,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
+    let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
     Option.add_element_on_the_right  
@@ -1743,7 +1743,7 @@ let list_values_from_module_in_modulesystem cs module_name=
    let temp3=List.flatten temp2 in
    let temp4=Image.image fst temp3 in 
    let temp5=Ordered_string.diforchan temp4 in
-   let temp6=Ordered.forget_order temp5 in
+   let temp6=Set_of_polys.forget_order temp5 in
    let temp7=Image.image (
       fun x->(x,Option.filter_and_unpack(
         fun (y,ap)->if y=x then Some(ap) else None
