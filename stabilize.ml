@@ -3,7 +3,7 @@ let one_more_time f (an_holl,da_ober)=
  let l_da_ober=Set_of_polys.forget_order(da_ober) in
  let temp1=List.flatten(List.rev_map(f)(l_da_ober)) in
  let temp2=Set_of_polys.sort(temp1) in
- let re_nevez=Set_of_polys_t.tminus(temp2)(an_holl) in
+ let re_nevez=Set_of_polys.setminus(temp2)(an_holl) in
  let hollad_nevez=Set_of_polys.merge(an_holl)(re_nevez) in
  (hollad_nevez,re_nevez);; 
   
@@ -23,7 +23,7 @@ let one_more_time2 f (an_holl,graet,da_ober)=
  let zz=List.flatten [zz1;zz2;zz3] in
  let temp1=List.flatten(List.rev_map (function (x,y)->[f x y]) zz ) in
  let temp2=Set_of_polys.sort(temp1) in
- let re_nevez=Set_of_polys_t.tminus(temp2)(an_holl) in
+ let re_nevez=Set_of_polys.setminus(temp2)(an_holl) in
  let hollad_nevez=Set_of_polys.merge(an_holl)(re_nevez) in
  (hollad_nevez,an_holl,re_nevez);; 
   
@@ -72,16 +72,16 @@ type 'a hierarchize_data=
 
 let pusher_for_hierarchization (graet,hollad,da_ober)=
   if da_ober=[]
-  then Succeeded(List.rev_map Ordered.forget_order graet)
+  then Succeeded(List.rev_map Set_of_polys.forget_order graet)
   else 
-  let temp1=Image.image (fun (x,y)->(x,Set_of_polys_t.tminus y hollad)) da_ober in
+  let temp1=Image.image (fun (x,y)->(x,Set_of_polys.setminus y hollad)) da_ober in
   let (temp2,temp3)=List.partition (fun (x,z)->Set_of_polys.length z=0) temp1 in
   if temp2=[]
   then Failed(graet,hollad,da_ober)
   else
   let temp4=Image.image fst temp2 in
   let o_temp4=Set_of_polys.sort(temp4) in
-  let temp5=Image.image (fun (x,z)->(x,Set_of_polys_t.tminus z o_temp4)) temp3 in
+  let temp5=Image.image (fun (x,z)->(x,Set_of_polys.setminus z o_temp4)) temp3 in
   (Normal(o_temp4::graet,Set_of_polys.merge hollad o_temp4,temp5));;
   
 type 'a list_of_ancestors_map=('a -> 'a list);;  
