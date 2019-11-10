@@ -18,7 +18,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
           Some("mkdir -p "^s_destination^dn)
      else None 
     ) created_ones in
-   let temp3=Ordered.forget_order(Ordered_string.diforchan temp2) in
+   let temp3=Ordered.forget_order(Set_of_strings.diforchan temp2) in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
    let temp4=Image.image(
       fun fn->

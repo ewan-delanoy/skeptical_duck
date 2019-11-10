@@ -38,7 +38,7 @@ let summarize_short_path s=
  
 let summarize_short_path_list l=
     let temp1=Image.image summarize_short_path l in
-    Ordered.forget_order(Ordered_string.diforchan temp1);;
+    Ordered.forget_order(Set_of_strings.diforchan temp1);;
 
 end;;
 

@@ -244,8 +244,8 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
 
 let compute_subdirectories_list cs=
   let temp1=Image.image Dfa_subdirectory.without_trailing_slash (all_used_subdirs cs) in
-    let temp2=Ordered_string.diforchan temp1 in
-    let temp3=Ordered_string.forget_order temp2 in
+    let temp2=Set_of_strings.diforchan temp1 in
+    let temp3=Set_of_strings.forget_order temp2 in
     Image.image Dfa_subdirectory.of_line temp3;;
 
 let  check_registrations cs eless=
@@ -1732,18 +1732,18 @@ let list_values_from_module_in_file module_name file=
     let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
      Cull_string.interval s (j+2) end_idx
    ) temp2 in
-   Ordered_string.diforchan temp3;;
+   Set_of_strings.diforchan temp3;;
 
 let list_values_from_module_in_modulesystem cs module_name=
    let temp1=all_mlx_paths cs in
    let temp2=Image.image (fun ap->
     let ttemp1=list_values_from_module_in_file module_name ap in
-    Ordered_string.image (fun x->(x,ap) ) ttemp1
+    Set_of_strings.image (fun x->(x,ap) ) ttemp1
     ) temp1 in
    let temp3=List.flatten temp2 in
    let temp4=Image.image fst temp3 in 
-   let temp5=Ordered_string.diforchan temp4 in
-   let temp6=Ordered_string.forget_order temp5 in
+   let temp5=Set_of_strings.diforchan temp4 in
+   let temp6=Set_of_strings.forget_order temp5 in
    let temp7=Image.image (
       fun x->(x,Option.filter_and_unpack(
         fun (y,ap)->if y=x then Some(ap) else None
@@ -1841,7 +1841,7 @@ let forget_module_with_backup_before_saving cs capitalized_or_not_old_module_nam
   let old_endingless = endingless_at_module cs mn in   
   let (cs2,_,_)=recompile cs in
   let (cs3,rootless_paths)=forget_module cs2 old_endingless in    
-  let ordered_paths=Ordered_string.forget_order(Ordered_string.safe_set(rootless_paths)) in
+  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
   let diff=
       Dircopy_diff.veil
       (Recently_deleted.of_string_list ordered_paths)
@@ -1860,7 +1860,7 @@ let recompile cs=
   let changed_paths=
    (if not change_exists
    then []
-   else Ordered_string.forget_order(Ordered_string.safe_set(rootless_paths))) in
+   else Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths))) in
     (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list changed_paths)
