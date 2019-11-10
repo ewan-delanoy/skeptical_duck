@@ -53,7 +53,7 @@ let iterator coat
     then ([],Set_of_polys.empty_set,[a]::cycles,Set_of_polys.insert a cycles_union,
          [],not_yet_checked2,None) 
     else 
-    if (not(Set_of_polys.kengeij_goullo temp1 cycles_union))
+    if (not(Set_of_polys.does_not_intersect temp1 cycles_union))
     then (checked,checked_union,cycles,Set_of_polys.insert a cycles_union,
          [],not_yet_checked2,None) 
     else 

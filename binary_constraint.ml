@@ -36,7 +36,7 @@ type t=
  
 
  let usual_constructor ((x:elements_outside),(y:elements_inside))=
-    if Set_of_polys.kengeij_goullo(x)(y)
+    if Set_of_polys.does_not_intersect(x)(y)
     then Possible(x,y)
     else Impossible;;
     
@@ -72,7 +72,7 @@ type t=
      
  let check (z:int_set)=function
     Impossible->false
-    |Possible(n,e)->(Set_of_polys.kengeij_goullo n z)&&(Set_of_polys.is_included_in e z);;
+    |Possible(n,e)->(Set_of_polys.does_not_intersect n z)&&(Set_of_polys.is_included_in e z);;
     
  let support=((function
     Impossible->Set_of_polys.empty_set

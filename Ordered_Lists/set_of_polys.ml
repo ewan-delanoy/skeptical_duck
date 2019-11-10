@@ -17,7 +17,7 @@ let sort=((fun x->Ordered.sort cmp x):>('a list->'a set));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>('a set->'a set->'a set));;
 let is_included_in=((fun ox oy->Ordered.is_included_in cmp ox oy):>('a set->'a set->bool));;
 let kengeij=((fun ox oy->Ordered.intersect cmp ox oy):>'a set->'a set->'a set);;
-let kengeij_goullo=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>'a set->'a set->bool);;
+let does_not_intersect=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>'a set->'a set->bool);;
 let min=((fun x->Ordered.min cmp x):>'a list->'a);;
 let max=((fun x->Ordered.max cmp x):>'a list->'a);;
 
