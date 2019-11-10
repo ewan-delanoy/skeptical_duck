@@ -1,5 +1,8 @@
-(* file created using the "write_contents_of_ordered_list_module" function *)
-(* in Creators/ordered_list_creator.ml *)
+(* 
+
+#use"Ordered_Lists/set_of_poly_pairs.ml";;s
+
+*)
 
 type ('a,'b) set=('a*'b) Ordered.old_set;;
 let lt ((u1,u2):'a*'b) ((v1,v2):'a*'b)=
