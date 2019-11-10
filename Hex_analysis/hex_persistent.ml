@@ -98,11 +98,20 @@ let last_game_added=ref(Hex_finished_game.empty_one);;
 
 
 let add_finished_game_without_persisting fgame =
+    
     let checked_fgame=Hex_fles_double_list.iterated_largest_unconclusive_beginning 
              fgame (Hex_end_strategy_factory.compute_all_end_configs wes_pair) in 
+    let _=(last_game_added:=checked_fgame) in 
    (
     games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref)
    );;
+
+let remove_last_finished_game_without_persisting () =
+    let fgame=(!last_game_added) in 
+   (
+    games_ref:=Hex_fg_double_list.remove_finished_game fgame (!games_ref)
+   );;
+
 
 let add_untamed_opening_without_persisting opng=
    let old_ones=(!untamed_openings_ref) in 
@@ -122,6 +131,13 @@ let add_finished_game fgame =
      persist_games()
    );;
 
+let remove_last_finished_game fgame =
+   (
+     remove_last_finished_game_without_persisting fgame;
+     persist_games()
+   );;
+
+
 let add_untamed_opening opng=
    (
      add_untamed_opening_without_persisting opng;
@@ -133,6 +149,7 @@ end ;;
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let add_untamed_opening = Private.add_untamed_opening;;
+let cancel_last_game = Private.remove_last_finished_game;;
 let dimension ()=(!(Private.dimension_ref));;
 let reset_all_to_empty = Private.reset_all_to_empty;;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
