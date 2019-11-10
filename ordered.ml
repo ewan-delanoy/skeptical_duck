@@ -202,7 +202,7 @@ let fold_merge cmpr l=
       |a::b->tempf(merge cmpr a already_treated,b)
    ) in 
    tempf(empty_set,l);;
-let big_kengeij cmpr=function
+let fold_intersect cmpr=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(intersect cmpr)(a)(b);;
 let nelfenn cmpr a ox=not(mem cmpr a ox);;
