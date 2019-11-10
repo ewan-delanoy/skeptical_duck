@@ -36,7 +36,7 @@ let is_nondecreasing (kenver:'a Total_ordering.t) l=
   ) in
   tempf(List.hd l,List.tl l);;
   
-let kreskus_strizh (kenver:'a Total_ordering.t) l=
+let is_increasing (kenver:'a Total_ordering.t) l=
   if List.length(l)<2 then true else
   let rec tempf=(function
   (a,da_ober)->match da_ober with
