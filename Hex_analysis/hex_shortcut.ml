@@ -8,6 +8,7 @@ let list_for_spec1=["f6"; "f8"; "c9"; "e7"; "d7"; "e6"; "d6"; "e4"; "e5"; "f4"; 
 
 let abl = Hex_analysis.add_basic_linker ;;
 let am s = Hex_analysis.absorb_move (Hex_cell.of_string s);;
+let clg = Hex_persistent.cancel_last_game;;
 let spec1 j = Hex_analysis.absorb_some_moves 
      (Image.image Hex_cell.of_string list_for_spec1) j;;
 let dw k=Hex_analysis.declare_winner (Hex_player.of_int k);;
