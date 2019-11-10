@@ -109,7 +109,7 @@ let kengeij (cmpr:'a Total_ordering.t) ox oy=
     ) in
     unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
-let kengeij_goullo (cmpr:'a Total_ordering.t) ox oy=
+let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v)->
         if (u=[])||(v=[]) then true else
         let xu=List.hd(u) and yu=List.tl(u) 

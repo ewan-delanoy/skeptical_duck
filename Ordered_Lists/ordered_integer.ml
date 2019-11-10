@@ -15,7 +15,7 @@ let diforchan=((fun x->Ordered.sort cmp x):>(int list->set));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>(set->set->set));;
 let ental=((fun ox oy->Ordered.ental cmp ox oy):>(set->set->bool));;
 let kengeij=((fun ox oy->Ordered.kengeij cmp ox oy):>set->set->set);;
-let kengeij_goullo=((fun ox oy->Ordered.kengeij_goullo cmp ox oy):>set->set->bool);;
+let kengeij_goullo=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>set->set->bool);;
 let min=((fun x->Ordered.min cmp x):>int list->int);;
 let max=((fun x->Ordered.max cmp x):>int list->int);;
 

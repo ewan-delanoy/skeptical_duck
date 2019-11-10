@@ -23,7 +23,7 @@ let diforchan=((fun x->Ordered.sort cmp x):>(('a Tidel.set) list->'a set2));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>('a set2->'a set2->'a set2));;
 let ental=((fun ox oy->Ordered.ental cmp ox oy):>('a set2->'a set2->bool));;
 let kengeij=((fun ox oy->Ordered.kengeij cmp ox oy):>'a set2->'a set2->'a set2);;
-let kengeij_goullo=((fun ox oy->Ordered.kengeij_goullo cmp ox oy):>'a set2->'a set2->bool);;
+let kengeij_goullo=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>'a set2->'a set2->bool);;
 let min=((fun x->Ordered.min cmp x):>('a Tidel.set) list->('a Tidel.set));;
 let max=((fun x->Ordered.max cmp x):>('a Tidel.set) list->('a Tidel.set));;
 
