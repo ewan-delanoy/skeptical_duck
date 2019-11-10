@@ -6,7 +6,7 @@ let cmp=Variable.cmp;;let lt x y=Total_ordering.lt cmp x y;;
 let unsafe_set=(Ordered.unsafe_set:>(Variable.t list-> set));;
 let forget_order=(Ordered.forget_order:>(set->Variable.t list));;
 
-let kreskus_strizh x=Ordered.is_nondecreasing_strizh cmp x;;
+let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.elfenn cmp a ox):>(Variable.t->set->bool));;

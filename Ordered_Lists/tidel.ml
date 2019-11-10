@@ -7,7 +7,7 @@ let cmp=Total_ordering.standard;;
 let unsafe_set=(Ordered.unsafe_set:>('a list-> 'a set));;
 let forget_order=(Ordered.forget_order:>('a set->'a list));;
 
-let kreskus_strizh x=Ordered.is_nondecreasing_strizh cmp x;;
+let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 

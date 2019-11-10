@@ -11,7 +11,7 @@ let cmp=((fun x y->
 let unsafe_set=(Ordered.unsafe_set:>(('a*'b) list-> ('a,'b) set));;
 let forget_order=(Ordered.forget_order:>(('a,'b) set->('a*'b) list));;
 
-let kreskus_strizh x=Ordered.is_nondecreasing_strizh cmp x;;
+let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.elfenn cmp a ox):>(('a*'b)->('a,'b) set->bool));;
