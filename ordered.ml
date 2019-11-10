@@ -195,7 +195,7 @@ let filter f ox=unsafe_set(List.filter(f)(forget_order ox));;
 let for_all f ox=List.for_all(f)(forget_order ox);;
 let singleton x=unsafe_set [x];;
 let empty_set=unsafe_set [];;
-let big_teuzin cmpr l=
+let fold_merge cmpr l=
    let rec tempf=(function
       (already_treated,to_be_treated)->match to_be_treated with 
       []->already_treated
