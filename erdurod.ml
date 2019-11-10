@@ -6,6 +6,19 @@
 
 module Private = struct 
 
+let intersect (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=(function (u,v,accu)->
+      if u=[] then (List.rev(accu)) else
+      if v=[] then (List.rev(accu)) else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+       Total_ordering.Lower->tempf(yu,v,accu)
+      |Total_ordering.Equal->tempf(yu,yv,xu::accu)
+      |Total_ordering.Greater->tempf(u,yv,accu)
+    ) in
+    tempf(ox,oy,[]);;
+
 let is_nondecreasing (cmpr:'a Total_ordering.t) l=
   if List.length(l)<2 then true else
   let rec tempf=(function
@@ -93,6 +106,10 @@ let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
     ) in
     tempf(ox,oy);;
 
+let fold_intersect cmpr=function
+   []->failwith("empty intersection undefined")
+  |a::b->List.fold_left(Private.intersect cmpr)(a)(b);;
+
 let fold_merge cmpr l=
    let rec tempf=(function
       (already_treated,to_be_treated)->match to_be_treated with 
@@ -103,6 +120,7 @@ let fold_merge cmpr l=
 
 let insert cmpr x oy=Private.merge cmpr [x] oy;; 
 
+let intersect = Private.intersect;;
 
 let is_included_in (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v)->
@@ -295,9 +313,7 @@ let for_all f ox=List.for_all(f)(forget_order ox);;
 let singleton x=unsafe_set [x];;
 let empty_set=unsafe_set [];;
 
-let fold_intersect cmpr=function
-   []->failwith("empty intersection undefined")
-  |a::b->List.fold_left(intersect cmpr)(a)(b);;
+
 let nmem cmpr a ox=not(mem cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   

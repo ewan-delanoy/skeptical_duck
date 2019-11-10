@@ -4,6 +4,7 @@
 
 *)
 
+(* Beginning of directly set-related methods *)
 
 let safe_set l=  Hex_cell_set_t.S (Ordered.sort_silently Hex_cell.cmp l);;
 
@@ -22,16 +23,19 @@ let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_silently 
 let length (Hex_cell_set_t.S(l))=List.length l;;
 let mem elt (Hex_cell_set_t.S(l))=Ordered.mem_silently Hex_cell.cmp elt l;;
 let min (Hex_cell_set_t.S(l))=List.hd l;;
-let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
+
 let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l [elt]);;
 let setminus (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l1 l2);;
 let forget_order (Hex_cell_set_t.S(l))= l;;
+
+
+(* End of directly set-related methods *)
+
 let  apply_condition opt_condition cell_set=match opt_condition with 
    None -> cell_set 
   |Some(condition_set) -> 
      fold_intersect [cell_set;condition_set];;
-
-
+let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 
 let of_string enclosed_s =
    let n=String.length enclosed_s in 
