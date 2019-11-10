@@ -22,7 +22,7 @@ let followed_values_from_items l=
               Some(x.Ocaml_gsyntax_item.name,x.Ocaml_gsyntax_item.content)
       | _->None
   ) l in
-  let temp2=Ordered.diforchan_plaen order_for_string_pairs temp1 in
+  let temp2=Ordered.sort_silently order_for_string_pairs temp1 in
   Followed_ocaml_values.F(temp2);;
 
 end;;

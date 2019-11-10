@@ -214,7 +214,7 @@ let nelfenn cmpr a ox=not(mem cmpr a ox);;
 let nental cmpr a ox=not(ental cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   
-let diforchan_plaen cmpr x=
+let sort_silently cmpr x=
   forget_order(diforchan cmpr  x);;
 let mem_silently cmpr e x=
     mem cmpr e (unsafe_set  x);;  
