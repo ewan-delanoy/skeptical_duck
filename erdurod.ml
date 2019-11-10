@@ -4,6 +4,7 @@
 
 *)
 
+(*
 type 'a old_set=S of 'a list;;
 
 let unsafe_set x=S(x);;
@@ -225,3 +226,4 @@ let diff_silently (cmpr: 'a Total_ordering.t) =
               )      
           ) in
           tempf;;                   
+*)          
