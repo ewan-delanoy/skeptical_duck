@@ -58,6 +58,29 @@ let rec sort (cmpr:'a Total_ordering.t) x=
 end;;
 
 
+let diff (cmpr: 'a Total_ordering.t) =
+          let rec tempf=(fun
+            (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
+              match to_be_treated1 with
+              []->(treated_bc,treated_b,List.rev_append treated_c to_be_treated2)
+              |(a1,b1)::others1->
+              (
+                match to_be_treated2 with
+              []->(treated_bc,List.rev_append treated_b to_be_treated1,treated_c)     
+              |(a2,c2)::others2->
+                (
+                  match cmpr a1 a2 with
+                  Total_ordering.Lower->
+                    tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
+                  |Total_ordering.Greater->
+                  tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
+                  |Total_ordering.Equal->
+                  tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
+                )
+              )      
+          ) in
+          tempf;;   
+
 let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v)->
         if (u=[])||(v=[]) then true else
