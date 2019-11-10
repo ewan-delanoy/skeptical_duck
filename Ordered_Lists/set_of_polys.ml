@@ -1,5 +1,8 @@
-(* file created using the "write_contents_of_ordered_list_module" function *)
-(* in Creators/ordered_list_creator.ml *)
+(* 
+
+#use"set_of_polys.ml";;
+
+ *)
 
 type 'a set='a Ordered.old_set;;
 let lt x y=x<y;;
