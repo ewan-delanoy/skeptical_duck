@@ -34,13 +34,13 @@ let next_prime n=
 let power=Easy_arithmetic.power;;
 
 let rec naive_list_of_divisors=function
-1->Ordered_integer.singleton(1)
+1->Set_of_integers.singleton(1)
 |n->
 let p=mp(n) in
 let m=(n/p) in
 let temp1=naive_list_of_divisors(m) in
-let temp2=Ordered_integer.image(function x->p*x)(temp1) in 
-Ordered_integer.teuzin(temp1)(Ordered_integer.unsafe_set(temp2));;
+let temp2=Set_of_integers.image(function x->p*x)(temp1) in 
+Set_of_integers.teuzin(temp1)(Set_of_integers.unsafe_set(temp2));;
 
 let naive_factorization n=
 let rec sub_f=
@@ -78,8 +78,8 @@ let list_of_divisors=Memoized.make(fun n->
   let temp2=Image.image (fun (a,ea)->Ennig.doyle (fun j->(a,j)) 0 ea ) temp1 in
   let temp3=Cartesian.general_product temp2 in
   let temp4=Image.image compute_factorized_term temp3 in
-  let temp5=Ordered_integer.diforchan temp4 in
-  Ordered_integer.forget_order temp5
+  let temp5=Set_of_integers.diforchan temp4 in
+  Set_of_integers.forget_order temp5
 );;
 
 

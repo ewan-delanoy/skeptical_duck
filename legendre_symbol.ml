@@ -28,7 +28,7 @@ then 1
 else (-1);;
 
 let ls2 p=
-if Ordered_integer.elfenn(p mod 8)(Ordered_integer.safe_set[1;7])
+if Set_of_integers.elfenn(p mod 8)(Set_of_integers.safe_set[1;7])
 then 1
 else (-1);;
 
@@ -87,7 +87,7 @@ if ((r=1)||(r=2)) then ([],[]) else
 let temp1=Ennig.ennig(0)(Arithmetic.isqrt(dd/3)) in
 let temp2=List.filter(function x->(x mod 2)=r)(temp1) in
 let temp3=List.flatten(Image.image(function b->let m=(b*b+dd)/4 in
-Image.image(function a->(a,b,m/a) )(Ordered_integer.forget_order(Basics_on_small_primes.naive_list_of_divisors(m))) )(temp2)) in
+Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Basics_on_small_primes.naive_list_of_divisors(m))) )(temp2)) in
 let temp4=List.filter(function (a,b,c)->(b<=a)&&(a<=c)&&(gcd_for_three(a)(b)(c)=1 ) )(temp3) in
 let temp5=List.filter(function (a,b,c)->(0<b)&&(b<a)&&(a<c) )(temp4) in
 (temp4,Image.image(function (a,b,c)->(a,-b,c))(temp5));;
