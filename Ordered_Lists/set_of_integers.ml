@@ -1,5 +1,8 @@
-(* file created using the "write_contents_of_ordered_list_module" function *)
-(* in Creators/ordered_list_creator.ml *)
+(* 
+
+#use"Ordered_Lists/set_of_integers.ml";;s
+
+*)
 
 type set=int Ordered.old_set;;
 let cmp=(Total_ordering.standard:>(int Total_ordering.t));;let lt x y=x<y;;
