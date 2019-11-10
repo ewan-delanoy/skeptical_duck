@@ -48,14 +48,14 @@ let is_increasing (cmpr:'a Total_ordering.t) l=
   tempf(List.hd l,List.tl l);;
 
 let rec mem (cmpr:'a Total_ordering.t) x ol=
-   let rec elfenn0=(function
+   let rec mem0=(function
     []->false
     |a::others->match cmpr(x)(a) with
        Total_ordering.Lower->false
        |Total_ordering.Equal->true
        |Total_ordering.Greater->elfenn0 others
    )  in
-   elfenn0 (forget_order ol);;
+   mem0 (forget_order ol);;
 		
             
 let teuzin (cmpr:'a Total_ordering.t) ox oy=
@@ -222,8 +222,6 @@ let kengeij_plaen cmpr x y=
     forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
 let lemel_plaen cmpr x y=
       forget_order(lemel cmpr  (unsafe_set x) (unsafe_set y) );;
-let teuzin_kalz_plaen cmpr l=
-        forget_order(big_teuzin cmpr  (Image.image unsafe_set l) );;
 let insert_plaen cmpr x l=
         forget_order(insert cmpr x (unsafe_set l));;     
 let diff_plaen (cmpr: 'a Total_ordering.t) =
