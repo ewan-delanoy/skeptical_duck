@@ -42,7 +42,7 @@ let delta_set ox oy=teuzin(lemel ox oy)(lemel oy ox);;
 let delta_distance ox oy=length(delta_set ox oy);;
 
 
-let big_teuzin x=List.fold_left teuzin empty_set x;;
+let fold_merge x=List.fold_left teuzin empty_set x;;
 let big_kengeij=function
     []->failwith("empty intersection undefined")
     |a::b->List.fold_left(kengeij)(a)(b);;

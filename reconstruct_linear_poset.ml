@@ -38,7 +38,7 @@ let iterator coat
     if Set_of_polys.length(temp1)=0
     then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in
-         let ordered_set_version=Set_of_polys.big_teuzin(temp3) in
+         let ordered_set_version=Set_of_polys.fold_merge(temp3) in
          let temp4=Option.filter_and_unpack (
            fun (b,_)->if Set_of_polys.elfenn b ordered_set_version
              then Some(b)

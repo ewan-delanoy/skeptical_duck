@@ -284,7 +284,7 @@ let find_needed_directories cs mlx ordered_ancestors=
       then Set_of_polys.singleton(subdir_in_mlx)::temp1
       else temp1
   ) in    
-  let temp3=Set_of_polys.big_teuzin temp2 in
+  let temp3=Set_of_polys.fold_merge temp2 in
   Ordered.forget_order temp3;;              
                     
 end;;  
@@ -326,7 +326,7 @@ let complete_info cs  mlx=
           (fun mn->
            Set_of_polys.diforchan(ancestors_at_module cs mn)) 
           modules_written_in_file in
-  let temp2=Set_of_polys.big_teuzin ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
+  let temp2=Set_of_polys.fold_merge ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
   let tempf=(fun mn->
               if Set_of_polys.elfenn mn temp2
               then Some(mn)
@@ -365,7 +365,7 @@ let complete_id_during_new_module_registration cs  mlx=
           (fun mn->
            Set_of_polys.diforchan(ancestors_at_module cs mn)) 
           modules_written_in_file in
-    let temp2=Set_of_polys.big_teuzin ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
+    let temp2=Set_of_polys.fold_merge ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
     let tempf=(fun mn->
               if Set_of_polys.elfenn mn temp2
               then Some(mn)
@@ -552,7 +552,7 @@ let update_ancs_libs_and_dirs_at_module cs mn=
   (fun nm2->
     Set_of_polys.safe_set(ancestors_at_module cs nm2)
   ) fathers in
-  let ancestors_with_wrong_order=Set_of_polys.big_teuzin((Set_of_polys.safe_set fathers)::separated_ancestors) in
+  let ancestors_with_wrong_order=Set_of_polys.fold_merge((Set_of_polys.safe_set fathers)::separated_ancestors) in
   let ordered_ancestors=List.filter (
     fun mn->Set_of_polys.elfenn mn ancestors_with_wrong_order
   ) (ordered_list_of_modules cs) in
@@ -928,7 +928,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Ordered.forget_order (Set_of_polys.big_teuzin (libs_for_prow::pre_libs1)) in 
+    let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
     Option.add_element_on_the_right   
@@ -973,7 +973,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Ordered.forget_order (Set_of_polys.big_teuzin (libs_for_prow::pre_libs1)) in 
+    let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
     Option.add_element_on_the_right  
