@@ -47,6 +47,13 @@ let leq (computer:'a t) x y=
          else Greater
  ): 'a t);;
  
+let standard2=((fun (x1,y1) (x2,y2)->
+    let t1=standard x1 x2 in 
+    if t1<> Equal 
+    then t1
+    else standard y1 y2
+ ): ('a * 'b) t);;
+
  let completion f (g:'a t)=
   let answer=(fun x y->
    if f(y)(x)
