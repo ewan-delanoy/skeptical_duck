@@ -40,7 +40,7 @@ let p=mp(n) in
 let m=(n/p) in
 let temp1=naive_list_of_divisors(m) in
 let temp2=Set_of_integers.image(function x->p*x)(temp1) in 
-Set_of_integers.teuzin(temp1)(Set_of_integers.unsafe_set(temp2));;
+Set_of_integers.merge(temp1)(Set_of_integers.unsafe_set(temp2));;
 
 let naive_factorization n=
 let rec sub_f=
