@@ -10,9 +10,9 @@
 
 (*******************************************************************************)
 
-type elements_outside=int Set_of_polys.set;;
-type elements_inside=int Set_of_polys.set;;
-type int_set=int Set_of_polys.set;;
+type elements_outside=int Set_of_polys_t.t;;
+type elements_inside=int Set_of_polys_t.t;;
+type int_set=int Set_of_polys_t.t;;
 
 
 type list_of_elements_outside=int list;;

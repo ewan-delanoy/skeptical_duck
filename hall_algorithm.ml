@@ -2,7 +2,7 @@
 type ('a,'b) t=
 { 
   choices_made:('a*'b) list; 
-  raw_matter:('a*('b Set_of_polys.set)) list
+  raw_matter:('a*('b Set_of_polys_t.t)) list
 };;
 
 

@@ -7,8 +7,8 @@ let cmp=((fun (Var v1) (Var v2)->
   let n1=String.length(v1)
   and n2=String.length(v2) in
  if n1=n2 
- then Set_of_polys.cmp v1 v2 
- else Set_of_polys.cmp n1 n2):t Total_ordering.t);;
+ then Total_ordering.standard v1 v2 
+ else Total_ordering.standard n1 n2):t Total_ordering.t);;
  
  let eq (Var s1) (Var s2)=(s1=s2);;
  

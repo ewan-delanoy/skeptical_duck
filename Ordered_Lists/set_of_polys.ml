@@ -19,6 +19,7 @@ let mem a x= Functor_for_sets.mem tr a x;;
 let merge l= Functor_for_sets.merge tr l;;
 let nmem a x= Functor_for_sets.nmem tr a x;;
 let outsert a x= Functor_for_sets.outsert tr a x;;
+let safe_set l= Functor_for_sets.safe_set tr l;;
 let setminus x y= Functor_for_sets.setminus tr x y;;
 let singleton a= Functor_for_sets.singleton tr a;;
 let sort l= Functor_for_sets.sort tr l;;
