@@ -25,7 +25,7 @@ let forget_order (S x)=x;;
 let eq (S x) (S y)=(x=y);;
 let neq (S x) (S y)=(x<>y);;
 
-let kreskus (kenver:'a Total_ordering.t) l=
+let is_increasing (kenver:'a Total_ordering.t) l=
   if List.length(l)<2 then true else
   let rec tempf=(function
   (a,da_ober)->match da_ober with
@@ -192,7 +192,7 @@ let length ox=List.length(forget_order ox);;
 let image f ox=Image.image(f)(forget_order ox);;
 let insert kenver x oy=teuzin kenver (unsafe_set [x])(oy);;
 let exists f ox=List.exists f (forget_order ox);;
-let safe_set kenver ox=if kreskus(kenver)(ox) 
+let safe_set kenver ox=if is_increasing(kenver)(ox) 
                        then unsafe_set ox 
                        else diforchan kenver ox;;
 let rev_map f ox=List.rev_map(f)(forget_order ox);;
