@@ -15,7 +15,7 @@ let mem=((fun a ox->Ordered.mem cmp a ox):>('a->'a set->bool));;
 let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set->'a set->'a set));;
 let sort=((fun x->Ordered.sort cmp x):>('a list->'a set));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>('a set->'a set->'a set));;
-let ental=((fun ox oy->Ordered.is_included_in cmp ox oy):>('a set->'a set->bool));;
+let is_included_in=((fun ox oy->Ordered.is_included_in cmp ox oy):>('a set->'a set->bool));;
 let kengeij=((fun ox oy->Ordered.intersect cmp ox oy):>'a set->'a set->'a set);;
 let kengeij_goullo=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>'a set->'a set->bool);;
 let min=((fun x->Ordered.min cmp x):>'a list->'a);;
@@ -33,7 +33,7 @@ let partition f ox=
 let length x=List.length(forget_order x);;
 
 let nelfenn a ox=not(mem a ox);;
-let nental ox oy=not(ental ox oy);;
+let nental ox oy=not(is_included_in ox oy);;
 
 let insert x oy=teuzin(singleton x) oy;;
 let safe_set x=if kreskus_strizh(x) then unsafe_set(x) else sort(x);;

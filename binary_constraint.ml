@@ -30,7 +30,7 @@ type t=
    if cx=Impossible then true else
    if cy=Impossible then false else
    let (n1,e1)=unveil(cx) and (n2,e2)=unveil(cy) in
-   (Set_of_polys.ental n2 n1)&&(Set_of_polys.ental e2 e1);;
+   (Set_of_polys.is_included_in n2 n1)&&(Set_of_polys.is_included_in e2 e1);;
    
  let containment cy cx=inclusion cx cy;;  
  
@@ -72,7 +72,7 @@ type t=
      
  let check (z:int_set)=function
     Impossible->false
-    |Possible(n,e)->(Set_of_polys.kengeij_goullo n z)&&(Set_of_polys.ental e z);;
+    |Possible(n,e)->(Set_of_polys.kengeij_goullo n z)&&(Set_of_polys.is_included_in e z);;
     
  let support=((function
     Impossible->Set_of_polys.empty_set
