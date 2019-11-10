@@ -10,7 +10,7 @@ let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.mem cmp a ox):>(int->set->bool));;
-let teuzin=((fun ox oy->Ordered.teuzin cmp ox oy):>( set->set->set));;
+let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( set->set->set));;
 let diforchan=((fun x->Ordered.diforchan cmp x):>(int list->set));;
 let lemel=((fun ox oy->Ordered.lemel cmp ox oy):>(set->set->set));;
 let ental=((fun ox oy->Ordered.ental cmp ox oy):>(set->set->bool));;

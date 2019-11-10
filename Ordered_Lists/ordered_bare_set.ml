@@ -18,7 +18,7 @@ let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.mem cmp a ox):>(('a Tidel.set)->'a set2->bool));;
-let teuzin=((fun ox oy->Ordered.teuzin cmp ox oy):>( 'a set2->'a set2->'a set2));;
+let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set2->'a set2->'a set2));;
 let diforchan=((fun x->Ordered.diforchan cmp x):>(('a Tidel.set) list->'a set2));;
 let lemel=((fun ox oy->Ordered.lemel cmp ox oy):>('a set2->'a set2->'a set2));;
 let ental=((fun ox oy->Ordered.ental cmp ox oy):>('a set2->'a set2->bool));;

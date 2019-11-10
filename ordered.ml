@@ -53,12 +53,12 @@ let rec mem (cmpr:'a Total_ordering.t) x ol=
     |a::others->match cmpr(x)(a) with
        Total_ordering.Lower->false
        |Total_ordering.Equal->true
-       |Total_ordering.Greater->elfenn0 others
+       |Total_ordering.Greater->mem0 others
    )  in
    mem0 (forget_order ol);;
 		
             
-let teuzin (cmpr:'a Total_ordering.t) ox oy=
+let merge (cmpr:'a Total_ordering.t) ox oy=
 let rec teuzin0=
 (function (u,v,accu)->
 if u=[] then (List.rev_append(accu)(v)) else
@@ -79,7 +79,7 @@ let rec diforchan (cmpr:'a Total_ordering.t) x=
   else let temp1=Listennou.didrochan(x) in
        let y1=diforchan(cmpr)(fst temp1)
        and y2=diforchan(cmpr)(snd temp1) in
-       teuzin cmpr y1 y2;;
+       merge cmpr y1 y2;;
   
   
   let lemel (cmpr:'a Total_ordering.t) ox oy=
@@ -190,7 +190,7 @@ let expand_boolean_algebra cmpr l=
 
 let length ox=List.length(forget_order ox);;
 let image f ox=Image.image(f)(forget_order ox);;
-let insert cmpr x oy=teuzin cmpr (unsafe_set [x])(oy);;
+let insert cmpr x oy=merge cmpr (unsafe_set [x])(oy);;
 let exists f ox=List.exists f (forget_order ox);;
 let safe_set cmpr ox=if is_nondecreasing(cmpr)(ox) 
                        then unsafe_set ox 
@@ -204,7 +204,7 @@ let big_teuzin cmpr l=
    let rec tempf=(function
       (already_treated,to_be_treated)->match to_be_treated with 
       []->already_treated
-      |a::b->tempf(teuzin cmpr a already_treated,b)
+      |a::b->tempf(merge cmpr a already_treated,b)
    ) in 
    tempf(empty_set,l);;
 let big_kengeij cmpr=function
