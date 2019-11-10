@@ -31,7 +31,7 @@ end;;
 
 
 let local_delchacre (Followed_ocaml_values.F l1) (Followed_ocaml_values.F l2)=
-  let (common,in_l1_only,in_l2_only)=Ordered.diff_plaen  Total_ordering.lex_for_strings 
+  let (common,in_l1_only,in_l2_only)=Ordered.diff_silently  Total_ordering.lex_for_strings 
     ([],[],[],l1,l2) in
   (
     Image.image fst in_l1_only, 
