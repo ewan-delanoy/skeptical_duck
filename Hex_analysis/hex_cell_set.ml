@@ -20,7 +20,7 @@ let is_included_in (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
         Ordered.ental Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;    
 let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
 let length (Hex_cell_set_t.S(l))=List.length l;;
-let mem elt (Hex_cell_set_t.S(l))=Ordered.elfenn_plaen Hex_cell.cmp elt l;;
+let mem elt (Hex_cell_set_t.S(l))=Ordered.mem_silently Hex_cell.cmp elt l;;
 let min (Hex_cell_set_t.S(l))=List.hd l;;
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.lemel_plaen Hex_cell.cmp l [elt]);;

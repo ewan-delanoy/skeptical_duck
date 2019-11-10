@@ -216,7 +216,7 @@ let eq ox oy=(forget_order ox)=(forget_order oy);;
   
 let diforchan_plaen cmpr x=
   forget_order(diforchan cmpr  x);;
-let elfenn_plaen cmpr e x=
+let mem_silently cmpr e x=
     elfenn cmpr e (unsafe_set  x);;  
 let kengeij_plaen cmpr x y=
     forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
