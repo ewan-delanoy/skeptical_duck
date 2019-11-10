@@ -66,7 +66,7 @@ let iterator coat
         let temp2=Image.image fst before in
         let new_cycle=(fst p)::(temp2@[a]) in
         let ordered_cycle=Set_of_polys.sort new_cycle in
-        let not_yet_checked3=List.filter (fun z->Set_of_polys.nelfenn z ordered_cycle) not_yet_checked in
+        let not_yet_checked3=List.filter (fun z->Set_of_polys.nmem z ordered_cycle) not_yet_checked in
         (checked,checked_union,new_cycle::cycles,
         Set_of_polys.teuzin ordered_cycle cycles_union,
         [],not_yet_checked3,None);;

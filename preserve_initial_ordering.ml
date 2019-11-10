@@ -11,7 +11,7 @@ let preserve_initial_ordering l=
       []->List.flatten(List.rev(treated_part))
       |x::remains->
         let better_x=List.filter 
-        (fun y->Set_of_polys.nelfenn y ordered_treated_part) x in
+        (fun y->Set_of_polys.nmem y ordered_treated_part) x in
         if better_x=[]
         then tempf(treated_part,ordered_treated_part,remains)
         else
@@ -27,7 +27,7 @@ let and_mark_endings l=
       []->List.flatten(List.rev(treated_part))
       |x::remains->
         let better_x=List.filter 
-        (fun y->Set_of_polys.nelfenn y ordered_treated_part) x in
+        (fun y->Set_of_polys.nmem y ordered_treated_part) x in
         if better_x=[]
         then tempf(treated_part,ordered_treated_part,remains)
         else

@@ -32,7 +32,7 @@ let partition f ox=
            (u,v)->(unsafe_set u,unsafe_set v);;
 let length x=List.length(forget_order x);;
 
-let nelfenn a ox=not(mem a ox);;
+let nmem a ox=not(mem a ox);;
 let nental ox oy=not(is_included_in ox oy);;
 
 let insert x oy=teuzin(singleton x) oy;;
