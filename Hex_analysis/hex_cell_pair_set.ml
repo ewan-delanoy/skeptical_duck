@@ -11,7 +11,7 @@ let constructor l=
      if (Hex_cell.cmp x y)=Total_ordering.Greater 
      then (y,x) 
      else (x,y) ) l in 
-   let temp2=Ordered.sort_silently Hex_cell.cmp_for_pairs temp1 in 
+   let temp2=Erdurod.sort Hex_cell.cmp_for_pairs temp1 in 
    Hex_cell_pair_set_t.S(temp2);;
 
 

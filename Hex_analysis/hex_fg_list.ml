@@ -22,7 +22,7 @@ let remove_redundancies l=
  tempf([],List.rev l);;
 
 let add_finished_game fgame l=
-   let temp1= Ordered.insert_silently Hex_finished_game.cmp fgame l  in 
+   let temp1= Erdurod.insert Hex_finished_game.cmp fgame l  in 
    remove_redundancies temp1;;
 
 let take_new_end_strategy_into_account end_config l=
