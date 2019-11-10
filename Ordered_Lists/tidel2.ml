@@ -14,7 +14,7 @@ let forget_order=(Ordered.forget_order:>(('a,'b) set->('a*'b) list));;
 let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
-let elfenn=((fun a ox->Ordered.elfenn cmp a ox):>(('a*'b)->('a,'b) set->bool));;
+let elfenn=((fun a ox->Ordered.mem cmp a ox):>(('a*'b)->('a,'b) set->bool));;
 let teuzin=((fun ox oy->Ordered.teuzin cmp ox oy):>( ('a,'b) set->('a,'b) set->('a,'b) set));;
 let diforchan=((fun x->Ordered.diforchan cmp x):>(('a*'b) list->('a,'b) set));;
 let lemel=((fun ox oy->Ordered.lemel cmp ox oy):>(('a,'b) set->('a,'b) set->('a,'b) set));;

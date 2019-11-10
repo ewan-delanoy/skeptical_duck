@@ -47,7 +47,7 @@ let is_increasing (cmpr:'a Total_ordering.t) l=
   ) in
   tempf(List.hd l,List.tl l);;
 
-let rec elfenn (cmpr:'a Total_ordering.t) x ol=
+let rec mem (cmpr:'a Total_ordering.t) x ol=
    let rec elfenn0=(function
     []->false
     |a::others->match cmpr(x)(a) with
@@ -210,14 +210,14 @@ let big_teuzin cmpr l=
 let big_kengeij cmpr=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(kengeij cmpr)(a)(b);;
-let nelfenn cmpr a ox=not(elfenn cmpr a ox);;
+let nelfenn cmpr a ox=not(mem cmpr a ox);;
 let nental cmpr a ox=not(ental cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   
 let diforchan_plaen cmpr x=
   forget_order(diforchan cmpr  x);;
 let mem_silently cmpr e x=
-    elfenn cmpr e (unsafe_set  x);;  
+    mem cmpr e (unsafe_set  x);;  
 let kengeij_plaen cmpr x y=
     forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
 let lemel_plaen cmpr x y=
