@@ -277,7 +277,7 @@ let find_needed_libraries cs mlx ordered_ancestors=
 
 let find_needed_directories cs mlx ordered_ancestors=
   let temp1=Image.image (fun mn->
-    Set_of_polys.diforchan(needed_dirs_at_module cs mn)) ordered_ancestors in
+    Set_of_polys.sort(needed_dirs_at_module cs mn)) ordered_ancestors in
   let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
   let temp2=(
       if subdir_in_mlx<>Dfa_subdirectory.main 
@@ -324,9 +324,9 @@ let complete_info cs  mlx=
   let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
   let temp1=Image.image 
           (fun mn->
-           Set_of_polys.diforchan(ancestors_at_module cs mn)) 
+           Set_of_polys.sort(ancestors_at_module cs mn)) 
           modules_written_in_file in
-  let temp2=Set_of_polys.fold_merge ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
+  let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
   let tempf=(fun mn->
               if Set_of_polys.elfenn mn temp2
               then Some(mn)
@@ -363,9 +363,9 @@ let complete_id_during_new_module_registration cs  mlx=
     let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
     let temp1=Image.image 
           (fun mn->
-           Set_of_polys.diforchan(ancestors_at_module cs mn)) 
+           Set_of_polys.sort(ancestors_at_module cs mn)) 
           modules_written_in_file in
-    let temp2=Set_of_polys.fold_merge ((Set_of_polys.diforchan(modules_written_in_file) )::temp1) in
+    let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
     let tempf=(fun mn->
               if Set_of_polys.elfenn mn temp2
               then Some(mn)
@@ -923,11 +923,11 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
       (Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) in
     let unpointed_short_path = Cull_string.before_rightmost short_path '.' in 
     let libs_for_prow = 
-      Set_of_polys.diforchan(
+      Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
+     (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
@@ -968,11 +968,11 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let last_cm_element=nm_name^ending in 
     let all_cm_elements= (cm_elements_but_the_last) @ [last_cm_element] in 
     let libs_for_prow = 
-      Set_of_polys.diforchan(
+      Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.diforchan(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
+     (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Ordered.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 

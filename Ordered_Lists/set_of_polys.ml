@@ -13,7 +13,7 @@ let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.mem cmp a ox):>('a->'a set->bool));;
 let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set->'a set->'a set));;
-let diforchan=((fun x->Ordered.sort cmp x):>('a list->'a set));;
+let sort=((fun x->Ordered.sort cmp x):>('a list->'a set));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>('a set->'a set->'a set));;
 let ental=((fun ox oy->Ordered.is_included_in cmp ox oy):>('a set->'a set->bool));;
 let kengeij=((fun ox oy->Ordered.intersect cmp ox oy):>'a set->'a set->'a set);;
@@ -36,7 +36,7 @@ let nelfenn a ox=not(elfenn a ox);;
 let nental ox oy=not(ental ox oy);;
 
 let insert x oy=teuzin(singleton x) oy;;
-let safe_set x=if kreskus_strizh(x) then unsafe_set(x) else diforchan(x);;
+let safe_set x=if kreskus_strizh(x) then unsafe_set(x) else sort(x);;
 let outsert x oy=lemel(oy)(singleton x);;
 let delta_set ox oy=teuzin(lemel ox oy)(lemel oy ox);;
 let delta_distance ox oy=length(delta_set ox oy);;

@@ -65,7 +65,7 @@ let iterator coat
         let (before,_,after)=Three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
         let temp2=Image.image fst before in
         let new_cycle=(fst p)::(temp2@[a]) in
-        let ordered_cycle=Set_of_polys.diforchan new_cycle in
+        let ordered_cycle=Set_of_polys.sort new_cycle in
         let not_yet_checked3=List.filter (fun z->Set_of_polys.nelfenn z ordered_cycle) not_yet_checked in
         (checked,checked_union,new_cycle::cycles,
         Set_of_polys.teuzin ordered_cycle cycles_union,

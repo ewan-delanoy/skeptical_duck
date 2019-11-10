@@ -2,7 +2,7 @@
 let one_more_time f (an_holl,da_ober)=
  let l_da_ober=Set_of_polys.forget_order(da_ober) in
  let temp1=List.flatten(List.rev_map(f)(l_da_ober)) in
- let temp2=Set_of_polys.diforchan(temp1) in
+ let temp2=Set_of_polys.sort(temp1) in
  let re_nevez=Set_of_polys.lemel(temp2)(an_holl) in
  let hollad_nevez=Set_of_polys.teuzin(an_holl)(re_nevez) in
  (hollad_nevez,re_nevez);; 
@@ -12,7 +12,7 @@ let rec morzholan f (an_holl,da_ober)=
   then an_holl
   else morzholan f (one_more_time f (an_holl,da_ober));;
   
-let father f l=let tl=Set_of_polys.diforchan(l) in morzholan f (tl,tl);;
+let father f l=let tl=Set_of_polys.sort(l) in morzholan f (tl,tl);;
 
 let one_more_time2 f (an_holl,graet,da_ober)=
  let l_graet=Set_of_polys.forget_order(graet) 
@@ -22,7 +22,7 @@ let one_more_time2 f (an_holl,graet,da_ober)=
  and zz3=Cartesian.product(l_da_ober)(l_da_ober) in
  let zz=List.flatten [zz1;zz2;zz3] in
  let temp1=List.flatten(List.rev_map (function (x,y)->[f x y]) zz ) in
- let temp2=Set_of_polys.diforchan(temp1) in
+ let temp2=Set_of_polys.sort(temp1) in
  let re_nevez=Set_of_polys.lemel(temp2)(an_holl) in
  let hollad_nevez=Set_of_polys.teuzin(an_holl)(re_nevez) in
  (hollad_nevez,an_holl,re_nevez);; 
@@ -32,7 +32,7 @@ let rec morzholan2 f (an_holl,graet,da_ober)=
   then an_holl
   else morzholan2 f (one_more_time2 f (an_holl,graet,da_ober));; 
   
-let binary_operation f l=let tl=Set_of_polys.diforchan(l) in morzholan2 f (tl,Set_of_polys.empty_set,tl);;  
+let binary_operation f l=let tl=Set_of_polys.sort(l) in morzholan2 f (tl,Set_of_polys.empty_set,tl);;  
 
 let explore_tree f l0=
  let modified_l0=List.rev_map(function x->(x,0))(l0) in
@@ -80,14 +80,14 @@ let pusher_for_hierarchization (graet,hollad,da_ober)=
   then Failed(graet,hollad,da_ober)
   else
   let temp4=Image.image fst temp2 in
-  let o_temp4=Set_of_polys.diforchan(temp4) in
+  let o_temp4=Set_of_polys.sort(temp4) in
   let temp5=Image.image (fun (x,z)->(x,Set_of_polys.lemel z o_temp4)) temp3 in
   (Normal(o_temp4::graet,Set_of_polys.teuzin hollad o_temp4,temp5));;
   
 type 'a list_of_ancestors_map=('a -> 'a list);;  
   
 let try_hierarchizing (f: 'a list_of_ancestors_map) l=
-  let temp1=Image.image (fun t->(t,Set_of_polys.diforchan(f t))) l in
+  let temp1=Image.image (fun t->(t,Set_of_polys.sort(f t))) l in
   let rec tempf=(fun x->
     let y=pusher_for_hierarchization x in
     match y  with
