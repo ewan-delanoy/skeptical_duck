@@ -76,7 +76,7 @@ unsafe_set(merge0(forget_order ox,forget_order oy,[]));;
 let rec diforchan (cmpr:'a Total_ordering.t) x=
   if List.length(x)<2
   then unsafe_set(x)
-  else let temp1=Listennou.didrochan(x) in
+  else let temp1=Listennou.split_list_in_half(x) in
        let y1=diforchan(cmpr)(fst temp1)
        and y2=diforchan(cmpr)(snd temp1) in
        merge cmpr y1 y2;;
