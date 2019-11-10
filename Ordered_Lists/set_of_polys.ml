@@ -26,7 +26,6 @@ let sort l= Functor_for_sets.sort tr l;;
 let unsafe_set l= Functor_for_sets.unsafe_set tr l;;
 
 
-
 (*
 type 'a set='a Ordered.old_set;;
 let lt x y=x<y;;
