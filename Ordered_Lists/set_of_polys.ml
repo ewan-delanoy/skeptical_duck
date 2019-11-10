@@ -11,7 +11,7 @@ let kreskus_strizh x=Ordered.is_increasing cmp x;;
 let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 
-let elfenn=((fun a ox->Ordered.mem cmp a ox):>('a->'a set->bool));;
+let mem=((fun a ox->Ordered.mem cmp a ox):>('a->'a set->bool));;
 let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( 'a set->'a set->'a set));;
 let sort=((fun x->Ordered.sort cmp x):>('a list->'a set));;
 let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>('a set->'a set->'a set));;
@@ -32,7 +32,7 @@ let partition f ox=
            (u,v)->(unsafe_set u,unsafe_set v);;
 let length x=List.length(forget_order x);;
 
-let nelfenn a ox=not(elfenn a ox);;
+let nelfenn a ox=not(mem a ox);;
 let nental ox oy=not(ental ox oy);;
 
 let insert x oy=teuzin(singleton x) oy;;

@@ -40,7 +40,7 @@ let iterator coat
                       (coat_a)) in
          let ordered_set_version=Set_of_polys.fold_merge(temp3) in
          let temp4=Option.filter_and_unpack (
-           fun (b,_)->if Set_of_polys.elfenn b ordered_set_version
+           fun (b,_)->if Set_of_polys.mem b ordered_set_version
              then Some(b)
              else None
          ) checked in
@@ -49,7 +49,7 @@ let iterator coat
          ((a,data_for_a)::checked,Set_of_polys.insert a checked_union,
          cycles,cycles_union,[],not_yet_checked2,None)
     else
-    if Set_of_polys.elfenn a temp1
+    if Set_of_polys.mem a temp1
     then ([],Set_of_polys.empty_set,[a]::cycles,Set_of_polys.insert a cycles_union,
          [],not_yet_checked2,None) 
     else 
@@ -58,7 +58,7 @@ let iterator coat
          [],not_yet_checked2,None) 
     else 
     (*see if we can close the cycle *)
-    match Option.seek(fun (x,y)->Set_of_polys.elfenn x temp1) between with
+    match Option.seek(fun (x,y)->Set_of_polys.mem x temp1) between with
      None->(checked,checked_union,cycles,cycles_union,
      		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->

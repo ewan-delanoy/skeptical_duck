@@ -56,14 +56,14 @@ type t=
  let push_element_inside i x=match x with
    Impossible->Impossible
    |Possible(n,e)->
-       if Set_of_polys.elfenn i n
+       if Set_of_polys.mem i n
        then Impossible
        else Possible(n,Set_of_polys.insert i e);;
        
   let push_element_outside i x=match x with
    Impossible->Impossible
    |Possible(n,e)->
-       if Set_of_polys.elfenn i e
+       if Set_of_polys.mem i e
        then Impossible
        else Possible(Set_of_polys.insert i n,e);;    
        

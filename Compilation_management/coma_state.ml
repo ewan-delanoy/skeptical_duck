@@ -328,7 +328,7 @@ let complete_info cs  mlx=
           modules_written_in_file in
   let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
   let tempf=(fun mn->
-              if Set_of_polys.elfenn mn temp2
+              if Set_of_polys.mem mn temp2
               then Some(mn)
               else None) in
   let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
@@ -367,7 +367,7 @@ let complete_id_during_new_module_registration cs  mlx=
           modules_written_in_file in
     let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
     let tempf=(fun mn->
-              if Set_of_polys.elfenn mn temp2
+              if Set_of_polys.mem mn temp2
               then Some(mn)
               else None) in
     let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
@@ -554,7 +554,7 @@ let update_ancs_libs_and_dirs_at_module cs mn=
   ) fathers in
   let ancestors_with_wrong_order=Set_of_polys.fold_merge((Set_of_polys.safe_set fathers)::separated_ancestors) in
   let ordered_ancestors=List.filter (
-    fun mn->Set_of_polys.elfenn mn ancestors_with_wrong_order
+    fun mn->Set_of_polys.mem mn ancestors_with_wrong_order
   ) (ordered_list_of_modules cs) in
   let new_libs=PrivateTwo.find_needed_libraries cs mlx ordered_ancestors
   and new_dirs=PrivateTwo.find_needed_directories cs mlx ordered_ancestors in
