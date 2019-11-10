@@ -1,5 +1,8 @@
-(* file created using the "write_contents_of_ordered_list_module" function *)
-(* in Creators/ordered_list_creator.ml *)
+(* 
+
+#use"Ordered_Lists/set_of_strings.ml";;
+
+*)
 
 type set=string Ordered.old_set;;
 let lt s1 s2=
