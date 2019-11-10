@@ -4,6 +4,120 @@
 
 *)
 
+module Private = struct 
+
+let is_nondecreasing (cmpr:'a Total_ordering.t) l=
+  if List.length(l)<2 then true else
+  let rec tempf=(function
+  (a,to_be_treated)->match to_be_treated with
+   []->true
+   |b::others->if (cmpr(a)(b)<>Total_ordering.Greater)
+                 then tempf(b,others)
+                 else false
+  ) in
+  tempf(List.hd l,List.tl l);;
+  
+
+let merge (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=(function (u,v,accu)->
+      if u=[] then (List.rev_append(accu)(v)) else
+      if v=[] then (List.rev_append(accu)(u)) else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+    match cmpr(xu)(xv) with
+      Total_ordering.Lower->tempf(yu,v,xu::accu)
+    |Total_ordering.Equal->tempf(yu,yv,xu::accu)
+    |Total_ordering.Greater->tempf(u,yv,xv::accu)
+    ) in
+    tempf(ox,oy,[]);;
+
+
+let setminus (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=
+    (function (u,v,accu)->
+      if u=[] then (List.rev(accu)) else
+      if v=[] then (List.rev_append(accu)(u)) else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+         Total_ordering.Lower->tempf(yu,v,xu::accu)
+        |Total_ordering.Equal->tempf(yu,yv,accu)
+        |Total_ordering.Greater->tempf(u,yv,accu)
+   ) in
+   tempf(ox,oy,[]);;
+
+let rec sort (cmpr:'a Total_ordering.t) x=
+  if List.length(x)<2
+  then x
+  else let temp1=Listennou.split_list_in_half(x) in
+       let y1=sort(cmpr)(fst temp1)
+       and y2=sort(cmpr)(snd temp1) in
+       merge cmpr y1 y2;;
+
+
+end;;
+
+
+let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=(function (u,v)->
+        if (u=[])||(v=[]) then true else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+        match cmpr(xu)(xv) with
+          Total_ordering.Lower->tempf(yu,v)
+        |Total_ordering.Equal->false
+        |Total_ordering.Greater->tempf(u,yv)
+    ) in
+    tempf(ox,oy);;
+
+let fold_merge cmpr l=
+   let rec tempf=(function
+      (already_treated,to_be_treated)->match to_be_treated with 
+      []->already_treated
+      |a::b->tempf(Private.merge cmpr a already_treated,b)
+   ) in 
+   tempf([],l);;    
+
+let insert cmpr x oy=Private.merge cmpr [x] oy;; 
+
+
+let is_included_in (cmpr:'a Total_ordering.t) ox oy=
+    let rec tempf=(function (u,v)->
+      if u=[] then true else
+      if v=[] then false else
+      let xu=List.hd(u) and yu=List.tl(u) 
+      and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+        Total_ordering.Lower->false
+      |Total_ordering.Equal->tempf(yu,yv)
+      |Total_ordering.Greater->tempf(u,yv)
+    ) in
+    tempf(ox,oy);;
+
+
+let rec mem (cmpr:'a Total_ordering.t) x ol=
+   let rec tempf=(function
+    []->false
+    |a::others->match cmpr(x)(a) with
+       Total_ordering.Lower->false
+       |Total_ordering.Equal->true
+       |Total_ordering.Greater->tempf others
+   )  in
+   tempf ol;;    
+
+let merge = Private.merge;;
+
+let outsert x oy=Private.setminus(oy) [x];;
+
+let safe_set cmpr ox=if Private.is_nondecreasing(cmpr)(ox) 
+                     then ox 
+                     else Private.sort cmpr ox;;
+
+let setminus = Private.setminus;;
+
+let sort = Private.sort;;
+
+
 (*
 type 'a old_set=S of 'a list;;
 
@@ -46,21 +160,6 @@ let rec mem (cmpr:'a Total_ordering.t) x ol=
    mem0 (forget_order ol);;
 		
             
-let merge (cmpr:'a Total_ordering.t) ox oy=
-let rec merge0=
-(function (u,v,accu)->
-if u=[] then (List.rev_append(accu)(v)) else
-if v=[] then (List.rev_append(accu)(u)) else
-let xu=List.hd(u) and yu=List.tl(u) 
-and xv=List.hd(v) and yv=List.tl(v) in
-match cmpr(xu)(xv) with
-   Total_ordering.Lower->merge0(yu,v,xu::accu)
-   |Total_ordering.Equal->merge0(yu,yv,xu::accu)
-   |Total_ordering.Greater->merge0(u,yv,xv::accu)
-
-) in
-unsafe_set(merge0(forget_order ox,forget_order oy,[]));;
-
 let rec sort (cmpr:'a Total_ordering.t) x=
   if List.length(x)<2
   then unsafe_set(x)
@@ -97,17 +196,6 @@ let intersect (cmpr:'a Total_ordering.t) ox oy=
     ) in
     unsafe_set(tempf(forget_order ox,forget_order oy,[]));;
 
-let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
-    let rec tempf=(function (u,v)->
-        if (u=[])||(v=[]) then true else
-        let xu=List.hd(u) and yu=List.tl(u) 
-        and xv=List.hd(v) and yv=List.tl(v) in
-        match cmpr(xu)(xv) with
-          Total_ordering.Lower->tempf(yu,v)
-        |Total_ordering.Equal->false
-        |Total_ordering.Greater->tempf(u,yv)
-    ) in
-    tempf(forget_order ox,forget_order oy);;
 
 
 let is_included_in (cmpr:'a Total_ordering.t) ox oy=
@@ -183,13 +271,7 @@ let filter f ox=unsafe_set(List.filter(f)(forget_order ox));;
 let for_all f ox=List.for_all(f)(forget_order ox);;
 let singleton x=unsafe_set [x];;
 let empty_set=unsafe_set [];;
-let fold_merge cmpr l=
-   let rec tempf=(function
-      (already_treated,to_be_treated)->match to_be_treated with 
-      []->already_treated
-      |a::b->tempf(merge cmpr a already_treated,b)
-   ) in 
-   tempf(empty_set,l);;
+
 let fold_intersect cmpr=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(intersect cmpr)(a)(b);;
