@@ -4,66 +4,13 @@
 
 *)
 
-type set=string Ordered.old_set;;
-let lt s1 s2=
-	let n1=String.length(s1) and n2=String.length(s2) in
-	if n1=n2
-	then match Ennig.find_it(function j->String.get(s1)(j)<>String.get(s2)(j) )(0)(n1-1)
-		with
-			 None->false
-			|Some(j0)->String.get(s1)(j0)<String.get(s2)(j0) 
-	else n1<n2;;
-let cmp=((Total_ordering.from_lt lt):>(string Total_ordering.t));;
+let tr = ((fun x->Set_of_strings_t.S(x)),(fun (Set_of_strings_t.S(x))->x),Total_ordering.silex_for_strings);;
 
 
-let unsafe_set=(Ordered.unsafe_set:>(string list-> set));;
-let forget_order=(Ordered.forget_order:>(set->string list));;
-
-let kreskus_strizh x=Ordered.is_increasing cmp x;;
-let kreskus x=Ordered.is_nondecreasing cmp x;;
-
-let elfenn=((fun a ox->Ordered.mem cmp a ox):>(string->set->bool));;
-let teuzin=((fun ox oy->Ordered.merge cmp ox oy):>( set->set->set));;
-let sort=((fun x->Ordered.sort cmp x):>(string list->set));;
-let lemel=((fun ox oy->Ordered.setminus cmp ox oy):>(set->set->set));;
-let ental=((fun ox oy->Ordered.is_included_in cmp ox oy):>(set->set->bool));;
-let kengeij=((fun ox oy->Ordered.intersect cmp ox oy):>set->set->set);;
-let kengeij_goullo=((fun ox oy->Ordered.does_not_intersect cmp ox oy):>set->set->bool);;
-let min=((fun x->Ordered.min cmp x):>string list->string);;
-let max=((fun x->Ordered.max cmp x):>string list->string);;
-
-let hd ox=List.hd(forget_order ox);;
-let image f ox=Image.image f (forget_order ox);;
-let rev_map f ox=Image.image f (forget_order ox);;
-let empty_set=unsafe_set [];;
-let singleton x=unsafe_set [x];;
-let filter f x=unsafe_set(List.filter(f)(forget_order x));;
-let partition f ox=
-         match List.partition(f)(forget_order ox) with
-           (u,v)->(unsafe_set u,unsafe_set v);;
-let length x=List.length(forget_order x);;
-
-let nelfenn a ox=not(elfenn a ox);;
-let nental ox oy=not(ental ox oy);;
-
-let insert x oy=teuzin(singleton x) oy;;
-let safe_set x=if kreskus_strizh(x) then unsafe_set(x) else sort(x);;
-let outsert x oy=lemel(oy)(singleton x);;
-let delta_set ox oy=teuzin(lemel ox oy)(lemel oy ox);;
-let delta_distance ox oy=length(delta_set ox oy);;
+let forget_order x= Functor_for_sets.forget_order tr x;;
+let image f x= Functor_for_sets.image tr f x;;
+let safe_set l= Functor_for_sets.safe_set tr l;;
+let sort l= Functor_for_sets.sort tr l;;
 
 
-let big_teuzin x=List.fold_left teuzin empty_set x;;
-let big_kengeij=function
-    []->failwith("empty intersection undefined")
-    |a::b->List.fold_left(kengeij)(a)(b);;
 
-let cooperation_for_two=
-			((fun x y->Ordered.cooperation_for_two cmp x y):>
-			 (set->set->set*set*set ));; 		
-    
-let expand_boolean_algebra=
- ((fun x->Ordered.expand_boolean_algebra cmp x):>(set list->(set list)));; 
- 
- 
-           
