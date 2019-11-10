@@ -16,8 +16,8 @@ let cmp=((Total_ordering.from_lt lt):>(string Total_ordering.t));;
 let unsafe_set=(Ordered.unsafe_set:>(string list-> set));;
 let forget_order=(Ordered.forget_order:>(set->string list));;
 
-let kreskus_strizh x=Ordered.is_increasing_strizh cmp x;;
-let kreskus x=Ordered.is_increasing cmp x;;
+let kreskus_strizh x=Ordered.is_nondecreasing_strizh cmp x;;
+let kreskus x=Ordered.is_nondecreasing cmp x;;
 
 let elfenn=((fun a ox->Ordered.elfenn cmp a ox):>(string->set->bool));;
 let teuzin=((fun ox oy->Ordered.teuzin cmp ox oy):>( set->set->set));;
