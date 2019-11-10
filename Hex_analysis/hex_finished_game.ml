@@ -6,6 +6,12 @@
 
 exception End_strategy_is_too_fast of Hex_flattened_end_strategy_t.t;;
 
+let empty_one = {
+   Hex_finished_game_t.dimension = 11;
+   winner = Hex_player_t.First_player;
+   sequence_of_moves = [];
+};;
+
 let compute_largest_unconclusive_beginning fgame fles =
    if Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)<2
    then raise(End_strategy_is_too_fast(fles))
