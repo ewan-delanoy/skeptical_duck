@@ -29,6 +29,17 @@ let add_finished_game fgame (Hex_fg_double_list_t.DL(l1,l2))=
         let new_l2=Hex_fg_list.add_finished_game fgame l2 in 
         Hex_fg_double_list_t.DL(l1,new_l2) ;;
 
+let remove_finished_game fgame (Hex_fg_double_list_t.DL(l1,l2))=
+   match fgame.Hex_finished_game_t.winner with 
+   Hex_player_t.First_player -> 
+        let new_l1=Hex_fg_list.remove_finished_game fgame l1 in 
+        Hex_fg_double_list_t.DL(new_l1,l2)
+  |Hex_player_t.Second_player -> 
+        let new_l2=Hex_fg_list.remove_finished_game fgame l2 in 
+        Hex_fg_double_list_t.DL(l1,new_l2) ;;
+
+
+
 let take_end_config_into_account end_config (Hex_fg_double_list_t.DL(l1,l2))=
     let new_l1=Hex_fg_list.take_new_end_strategy_into_account end_config l1 
     and new_l2=Hex_fg_list.take_new_end_strategy_into_account end_config l2 in  
