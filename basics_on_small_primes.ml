@@ -78,7 +78,7 @@ let list_of_divisors=Memoized.make(fun n->
   let temp2=Image.image (fun (a,ea)->Ennig.doyle (fun j->(a,j)) 0 ea ) temp1 in
   let temp3=Cartesian.general_product temp2 in
   let temp4=Image.image compute_factorized_term temp3 in
-  let temp5=Set_of_integers.diforchan temp4 in
+  let temp5=Set_of_integers.sort temp4 in
   Set_of_integers.forget_order temp5
 );;
 
