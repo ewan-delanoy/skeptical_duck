@@ -93,9 +93,9 @@ let add_end_strategy_without_persisting (player,static_constructor,comment,indic
     games_ref:=Hex_fg_double_list.take_end_config_into_account ec (!games_ref)
    );;
 
-(*
-let last_game_added=ref({});;
-*)
+
+let last_game_added=ref(Hex_finished_game.empty_one);;
+
 
 let add_finished_game_without_persisting fgame =
     let checked_fgame=Hex_fles_double_list.iterated_largest_unconclusive_beginning 
