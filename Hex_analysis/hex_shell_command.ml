@@ -15,6 +15,7 @@ let parse_list_of_moves s=
 let execute = function 
     Hex_shell_command_t.Add_basic_linker_from_sheet(msg) -> Hex_analysis.add_basic_linker msg
    |Absorb_moves(l)->let _=Hex_analysis.absorb_all_moves l in send_report()
+   |Cancel_last_game -> Hex_persistent.cancel_last_game()
    |Declare_winner(player)->Hex_analysis.declare_winner player
    |Make_usual_move ->let _=Hex_analysis.move_as_usual () in send_report()
    |Preprocess_sheet -> let _=Hex_ascii_grid.process_sheet () in ()
@@ -31,6 +32,7 @@ let of_string untrimmed_text =
    then let msg = Cull_string.two_sided_cutting ("abl","") text in 
         Hex_shell_command_t.Add_basic_linker_from_sheet msg 
    else 
+   if text = "clg" then  Hex_shell_command_t.Cancel_last_game else
    if text = "dwb" then  Hex_shell_command_t.Declare_winner(Hex_player_t.First_player) else 
    if text = "dww" then  Hex_shell_command_t.Declare_winner(Hex_player_t.Second_player) else    
    if text = "u"   then  Hex_shell_command_t.Make_usual_move else
