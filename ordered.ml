@@ -219,7 +219,7 @@ let mem_silently cmpr e x=
     mem cmpr e (unsafe_set  x);;  
 let kengeij_plaen cmpr x y=
     forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
-let lemel_plaen cmpr x y=
+let setminus_silently cmpr x y=
       forget_order(lemel cmpr  (unsafe_set x) (unsafe_set y) );;
 let insert_plaen cmpr x l=
         forget_order(insert cmpr x (unsafe_set l));;     
