@@ -73,7 +73,7 @@ match cmpr(xu)(xv) with
 ) in
 unsafe_set(merge0(forget_order ox,forget_order oy,[]));;
 
-let rec diforchan (cmpr:'a Total_ordering.t) x=
+let rec sort (cmpr:'a Total_ordering.t) x=
   if List.length(x)<2
   then unsafe_set(x)
   else let temp1=Listennou.split_list_in_half(x) in
@@ -194,7 +194,7 @@ let insert cmpr x oy=merge cmpr (unsafe_set [x])(oy);;
 let exists f ox=List.exists f (forget_order ox);;
 let safe_set cmpr ox=if is_nondecreasing(cmpr)(ox) 
                        then unsafe_set ox 
-                       else diforchan cmpr ox;;
+                       else sort cmpr ox;;
 let rev_map f ox=List.rev_map(f)(forget_order ox);;
 let filter f ox=unsafe_set(List.filter(f)(forget_order ox));;
 let for_all f ox=List.for_all(f)(forget_order ox);;
@@ -215,7 +215,7 @@ let nental cmpr a ox=not(ental cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   
 let sort_silently cmpr x=
-  forget_order(diforchan cmpr  x);;
+  forget_order(sort cmpr  x);;
 let mem_silently cmpr e x=
     mem cmpr e (unsafe_set  x);;  
 let kengeij_plaen cmpr x y=
