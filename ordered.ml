@@ -213,8 +213,6 @@ let sort_silently cmpr x=
   forget_order(sort cmpr  x);;
 let mem_silently cmpr e x=
     mem cmpr e (unsafe_set  x);;  
-let kengeij_plaen cmpr x y=
-    forget_order(kengeij cmpr  (unsafe_set x) (unsafe_set y) );;
 let setminus_silently cmpr x y=
       forget_order(setminus cmpr  (unsafe_set x) (unsafe_set y) );;
 let insert_plaen cmpr x l=
