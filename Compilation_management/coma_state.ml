@@ -244,7 +244,7 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
 
 let compute_subdirectories_list cs=
   let temp1=Image.image Dfa_subdirectory.without_trailing_slash (all_used_subdirs cs) in
-    let temp2=Set_of_strings.diforchan temp1 in
+    let temp2=Set_of_strings.sort temp1 in
     let temp3=Set_of_strings.forget_order temp2 in
     Image.image Dfa_subdirectory.of_line temp3;;
 
@@ -1732,7 +1732,7 @@ let list_values_from_module_in_file module_name file=
     let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
      Cull_string.interval s (j+2) end_idx
    ) temp2 in
-   Set_of_strings.diforchan temp3;;
+   Set_of_strings.sort temp3;;
 
 let list_values_from_module_in_modulesystem cs module_name=
    let temp1=all_mlx_paths cs in
@@ -1742,7 +1742,7 @@ let list_values_from_module_in_modulesystem cs module_name=
     ) temp1 in
    let temp3=List.flatten temp2 in
    let temp4=Image.image fst temp3 in 
-   let temp5=Set_of_strings.diforchan temp4 in
+   let temp5=Set_of_strings.sort temp4 in
    let temp6=Set_of_strings.forget_order temp5 in
    let temp7=Image.image (
       fun x->(x,Option.filter_and_unpack(
