@@ -95,7 +95,7 @@ module Bare = struct
            try (fun i->Some(i,fn))(int_of_string temp3) with 
            _->None
       ) temp2 in 
-      let temp4=Ordered.forget_order (Tidel2.diforchan temp3) in 
+      let temp4=Ordered.forget_order (Set_of_poly_pairs.diforchan temp3) in 
       let all_pages=String.concat " " (Image.image snd temp4) in 
       [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
 
