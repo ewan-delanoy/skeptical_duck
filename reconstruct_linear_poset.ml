@@ -21,9 +21,9 @@ let iterator coat
     (stocked in reverse actually)
     that will possibly lead to a cycle
     *)
-    if opt1<>None then ([],Tidel.empty_set,[],Tidel.empty_set,[],[],opt1) else
+    if opt1<>None then ([],Set_of_polys.empty_set,[],Set_of_polys.empty_set,[],[],opt1) else
     if (between,not_yet_checked)=([],[]) 
-    then ([],Tidel.empty_set,[],Tidel.empty_set,[],[],
+    then ([],Set_of_polys.empty_set,[],Set_of_polys.empty_set,[],[],
           Some(cycles,Listennou.rev_map (fun (z,p)->(z,fst p)) checked)) 
     else
     let a=
@@ -33,42 +33,42 @@ let iterator coat
           ) in
     let not_yet_checked2=List.filter (fun z->z<>a) not_yet_checked in
     let coat_a=coat(a) in
-    let coatoms_of_a=Tidel.safe_set(coat_a) in
-    let temp1=Tidel.lemel coatoms_of_a checked_union in
-    if Tidel.length(temp1)=0
+    let coatoms_of_a=Set_of_polys.safe_set(coat_a) in
+    let temp1=Set_of_polys.lemel coatoms_of_a checked_union in
+    if Set_of_polys.length(temp1)=0
     then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in
-         let ordered_set_version=Tidel.big_teuzin(temp3) in
+         let ordered_set_version=Set_of_polys.big_teuzin(temp3) in
          let temp4=Option.filter_and_unpack (
-           fun (b,_)->if Tidel.elfenn b ordered_set_version
+           fun (b,_)->if Set_of_polys.elfenn b ordered_set_version
              then Some(b)
              else None
          ) checked in
          let list_version=List.rev(temp4) in
          let data_for_a=(list_version,ordered_set_version) in
-         ((a,data_for_a)::checked,Tidel.insert a checked_union,
+         ((a,data_for_a)::checked,Set_of_polys.insert a checked_union,
          cycles,cycles_union,[],not_yet_checked2,None)
     else
-    if Tidel.elfenn a temp1
-    then ([],Tidel.empty_set,[a]::cycles,Tidel.insert a cycles_union,
+    if Set_of_polys.elfenn a temp1
+    then ([],Set_of_polys.empty_set,[a]::cycles,Set_of_polys.insert a cycles_union,
          [],not_yet_checked2,None) 
     else 
-    if (not(Tidel.kengeij_goullo temp1 cycles_union))
-    then (checked,checked_union,cycles,Tidel.insert a cycles_union,
+    if (not(Set_of_polys.kengeij_goullo temp1 cycles_union))
+    then (checked,checked_union,cycles,Set_of_polys.insert a cycles_union,
          [],not_yet_checked2,None) 
     else 
     (*see if we can close the cycle *)
-    match Option.seek(fun (x,y)->Tidel.elfenn x temp1) between with
+    match Option.seek(fun (x,y)->Set_of_polys.elfenn x temp1) between with
      None->(checked,checked_union,cycles,cycles_union,
-     		(a,Tidel.hd temp1)::between,not_yet_checked,None)
+     		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->
         let (before,_,after)=Three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
         let temp2=Image.image fst before in
         let new_cycle=(fst p)::(temp2@[a]) in
-        let ordered_cycle=Tidel.diforchan new_cycle in
-        let not_yet_checked3=List.filter (fun z->Tidel.nelfenn z ordered_cycle) not_yet_checked in
+        let ordered_cycle=Set_of_polys.diforchan new_cycle in
+        let not_yet_checked3=List.filter (fun z->Set_of_polys.nelfenn z ordered_cycle) not_yet_checked in
         (checked,checked_union,new_cycle::cycles,
-        Tidel.teuzin ordered_cycle cycles_union,
+        Set_of_polys.teuzin ordered_cycle cycles_union,
         [],not_yet_checked3,None);;
 
 let reconstruct_linear_poset coat l=
@@ -79,7 +79,7 @@ let reconstruct_linear_poset coat l=
     else tempf(iterator coat 
     (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt))
     ) in
-    tempf([],Tidel.empty_set,[],Tidel.empty_set,[],l,None);;
+    tempf([],Set_of_polys.empty_set,[],Set_of_polys.empty_set,[],l,None);;
     
 (*
 

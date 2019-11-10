@@ -96,14 +96,14 @@ sub_f([],l);;
     first_part_of_answer@second_part_of_answer;;
     
   let naive_combinations k l=
-   Image.image Tidel.safe_set (l_naive_combinations k (Tidel.forget_order l));;
+   Image.image Set_of_polys.safe_set (l_naive_combinations k (Set_of_polys.forget_order l));;
 	
   let combinations k l=
    (*we suppose that l is already ordred with respect to < *)
-   let n=Tidel.length(l) in
+   let n=Set_of_polys.length(l) in
    if (k<0)||(k>n) then [] else
    if (2*k>n)
-   then List.rev_map (Tidel.lemel l) (naive_combinations (n-k) l)	
+   then List.rev_map (Set_of_polys.lemel l) (naive_combinations (n-k) l)	
    else naive_combinations k l;;
    
    let arrangements_in_above_board_case the_k l=
@@ -118,9 +118,9 @@ sub_f([],l);;
     
    
    let arrangements k l=
-   let n=Tidel.length(l) in
+   let n=Set_of_polys.length(l) in
    if (k<0)||(k>n) then [] else
-   arrangements_in_above_board_case k (Tidel.forget_order l);; 
+   arrangements_in_above_board_case k (Set_of_polys.forget_order l);; 
    
    
    
