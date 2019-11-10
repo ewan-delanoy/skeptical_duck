@@ -107,7 +107,7 @@ let rec mem (cmpr:'a Total_ordering.t) x ol=
 
 let merge = Private.merge;;
 
-let outsert x oy=Private.setminus(oy) [x];;
+let outsert cmpr x oy=Private.setminus cmpr oy [x];;
 
 let safe_set cmpr ox=if Private.is_nondecreasing(cmpr)(ox) 
                      then ox 
