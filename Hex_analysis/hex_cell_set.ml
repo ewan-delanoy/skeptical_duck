@@ -17,7 +17,7 @@ let fold_merge l=
     Hex_cell_set_t.S (Ordered.forget_order(Ordered.fold_merge Hex_cell.cmp renamed_l));;
 
 let is_included_in (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
-        Ordered.ental Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;    
+        Ordered.is_included_in Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;    
 let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_plaen Hex_cell.cmp elt l);;
 let length (Hex_cell_set_t.S(l))=List.length l;;
 let mem elt (Hex_cell_set_t.S(l))=Ordered.mem_silently Hex_cell.cmp elt l;;

@@ -122,7 +122,7 @@ let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
     tempf(forget_order ox,forget_order oy);;
 
 
-let ental (cmpr:'a Total_ordering.t) ox oy=
+let is_included_in (cmpr:'a Total_ordering.t) ox oy=
     let rec tempf=(function (u,v)->
       if u=[] then true else
       if v=[] then false else
@@ -206,7 +206,7 @@ let big_kengeij cmpr=function
    []->failwith("empty intersection undefined")
   |a::b->List.fold_left(intersect cmpr)(a)(b);;
 let nelfenn cmpr a ox=not(mem cmpr a ox);;
-let nental cmpr a ox=not(ental cmpr a ox);;
+let nental cmpr a ox=not(is_included_in cmpr a ox);;
 let eq ox oy=(forget_order ox)=(forget_order oy);;
   
 let sort_silently cmpr x=
