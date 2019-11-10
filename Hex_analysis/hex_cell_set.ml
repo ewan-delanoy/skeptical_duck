@@ -6,27 +6,19 @@
 
 (* Beginning of directly set-related methods *)
 
-let safe_set l=  Hex_cell_set_t.S (Ordered.sort_silently Hex_cell.cmp l);;
+let tr = ((fun x->Hex_cell_set_t.S(x)),(fun (Hex_cell_set_t.S(x))->x),Total_ordering.standard);;
 
-let does_not_intersect (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
-        Ordered.does_not_intersect Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;  
-let fold_intersect l=  
-    let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
-    Hex_cell_set_t.S (Ordered.forget_order(Ordered.fold_intersect Hex_cell.cmp renamed_l));;
-let fold_merge l=  
-    let renamed_l=Image.image (fun (Hex_cell_set_t.S(e))->Ordered.S(e) ) l in 
-    Hex_cell_set_t.S (Ordered.forget_order(Ordered.fold_merge Hex_cell.cmp renamed_l));;
+let does_not_intersect x y= Functor_for_sets.does_not_intersect tr x y;;
+let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
+let fold_merge l= Functor_for_sets.fold_merge tr l;;
+let forget_order x= Functor_for_sets.forget_order tr x;;
+let insert a x= Functor_for_sets.insert tr a x;;
+let length x= Functor_for_sets.length tr x;;
+let mem a x= Functor_for_sets.mem tr a x;;
+let outsert a x= Functor_for_sets.outsert tr a x;;
+let safe_set l= Functor_for_sets.safe_set tr l;;
+let setminus x y= Functor_for_sets.setminus tr x y;;
 
-let is_included_in (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=
-        Ordered.is_included_in Hex_cell.cmp (Ordered.S l1) (Ordered.S l2);;    
-let insert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.insert_silently Hex_cell.cmp elt l);;
-let length (Hex_cell_set_t.S(l))=List.length l;;
-let mem elt (Hex_cell_set_t.S(l))=Ordered.mem_silently Hex_cell.cmp elt l;;
-let min (Hex_cell_set_t.S(l))=List.hd l;;
-
-let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l [elt]);;
-let setminus (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l1 l2);;
-let forget_order (Hex_cell_set_t.S(l))= l;;
 
 
 (* End of directly set-related methods *)
@@ -35,6 +27,7 @@ let  apply_condition opt_condition cell_set=match opt_condition with
    None -> cell_set 
   |Some(condition_set) -> 
      fold_intersect [cell_set;condition_set];;
+let min (Hex_cell_set_t.S(l))=List.hd l;;     
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 
 let of_string enclosed_s =
