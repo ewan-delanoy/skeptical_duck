@@ -17,6 +17,9 @@ let empty_set ((co,deco,cmpr):('a,'b) parameter) = co [];;
 
 let fold_merge ((co,deco,cmpr):('a,'b) parameter) 
      l=co (Erdurod.fold_merge cmpr (Image.image deco l));;
+
+let fold_intersect ((co,deco,cmpr):('a,'b) parameter) 
+     l=co (Erdurod.fold_intersect cmpr (Image.image deco l));;
     
 let forget_order ((co,deco,cmpr):('a,'b) parameter) =deco;;
 
@@ -26,6 +29,9 @@ let image ((co,deco,cmpr):('a,'b) parameter) f ox= Image.image f (deco ox);;
 
 let insert ((co,deco,cmpr):('a,'b) parameter) 
      x oy= co(Erdurod.insert cmpr x (deco oy));;
+
+let intersect ((co,deco,cmpr):('a,'b) parameter) 
+     ox oy= co(Erdurod.intersect cmpr (deco ox) (deco oy));;
 
 let is_included_in ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= Erdurod.is_included_in cmpr (deco ox) (deco oy);;
