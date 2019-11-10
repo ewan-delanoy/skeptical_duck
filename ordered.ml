@@ -59,19 +59,19 @@ let rec mem (cmpr:'a Total_ordering.t) x ol=
 		
             
 let merge (cmpr:'a Total_ordering.t) ox oy=
-let rec teuzin0=
+let rec merge0=
 (function (u,v,accu)->
 if u=[] then (List.rev_append(accu)(v)) else
 if v=[] then (List.rev_append(accu)(u)) else
 let xu=List.hd(u) and yu=List.tl(u) 
 and xv=List.hd(v) and yv=List.tl(v) in
 match cmpr(xu)(xv) with
-   Total_ordering.Lower->teuzin0(yu,v,xu::accu)
-   |Total_ordering.Equal->teuzin0(yu,yv,xu::accu)
-   |Total_ordering.Greater->teuzin0(u,yv,xv::accu)
+   Total_ordering.Lower->merge0(yu,v,xu::accu)
+   |Total_ordering.Equal->merge0(yu,yv,xu::accu)
+   |Total_ordering.Greater->merge0(u,yv,xv::accu)
 
 ) in
-unsafe_set(teuzin0(forget_order ox,forget_order oy,[]));;
+unsafe_set(merge0(forget_order ox,forget_order oy,[]));;
 
 let rec diforchan (cmpr:'a Total_ordering.t) x=
   if List.length(x)<2
