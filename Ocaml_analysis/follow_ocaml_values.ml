@@ -22,7 +22,7 @@ let followed_values_from_items l=
               Some(x.Ocaml_gsyntax_item.name,x.Ocaml_gsyntax_item.content)
       | _->None
   ) l in
-  let temp2=Erdurod.sort order_for_string_pairs temp1 in
+  let temp2=Ordered.sort order_for_string_pairs temp1 in
   Followed_ocaml_values.F(temp2);;
 
 end;;
@@ -31,7 +31,7 @@ end;;
 
 
 let local_delchacre (Followed_ocaml_values.F l1) (Followed_ocaml_values.F l2)=
-  let (common,in_l1_only,in_l2_only)=Erdurod.diff  Total_ordering.lex_for_strings 
+  let (common,in_l1_only,in_l2_only)=Ordered.diff  Total_ordering.lex_for_strings 
     ([],[],[],l1,l2) in
   (
     Image.image fst in_l1_only, 

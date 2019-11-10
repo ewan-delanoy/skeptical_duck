@@ -23,7 +23,7 @@ let insert_in new_uog l=
    else 
      let cleaned_l=List.filter 
        (fun uog->not(Hex_untamed_opening.extends new_uog uog)) l in 
-     Erdurod.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
+     Ordered.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
 
 
 let simplify_by_move move l=Option.filter_and_unpack 
