@@ -36,7 +36,7 @@ let index_of_nonrenamed_file fn=
 let indices_of_nonrenamed_files ()=
   let temp1=More_unix.quick_beheaded_complete_ls (!main_dir_path) in 
   let temp2=Option.filter_and_unpack index_of_nonrenamed_file temp1 in 
-  Ordered.forget_order(Set_of_polys.sort(temp2));;
+  Set_of_polys.forget_order(Set_of_polys.sort(temp2));;
 
 let index_of_renamed_file fn=
   if not(Supstring.begins_with fn prefix_for_renamed_scan) then None else
@@ -48,13 +48,13 @@ let index_of_renamed_file fn=
 let indices_of_renamed_files ()=
   let temp1=More_unix.quick_beheaded_complete_ls (!main_dir_path) in 
   let temp2=Option.filter_and_unpack index_of_renamed_file temp1 in 
-  Ordered.forget_order(Set_of_polys.sort(temp2));;
+  Set_of_polys.forget_order(Set_of_polys.sort(temp2));;
 
 let missing_indices_in_renamed_files ()=
    let temp1=Set_of_polys.safe_set (indices_of_renamed_files ())
    and whole=Set_of_polys.safe_set (Ennig.ennig 1 500) in 
    let temp2=Set_of_polys.setminus whole temp1 in 
-   Ordered.forget_order temp2;;
+   Set_of_polys.forget_order temp2;;
 
 module IndexPairList = struct
 

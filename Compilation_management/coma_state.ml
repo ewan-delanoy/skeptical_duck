@@ -285,7 +285,7 @@ let find_needed_directories cs mlx ordered_ancestors=
       else temp1
   ) in    
   let temp3=Set_of_polys.fold_merge temp2 in
-  Ordered.forget_order temp3;;              
+  Set_of_polys.forget_order temp3;;              
                     
 end;;  
 
