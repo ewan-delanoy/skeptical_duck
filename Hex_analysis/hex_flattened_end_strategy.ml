@@ -55,8 +55,8 @@ let support fles =
 let partial_unveil fles=
   (
      fles.Hex_flattened_end_strategy_t.beneficiary,
-     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.active_part),
-     Hex_cell_set.unveil(fles.Hex_flattened_end_strategy_t.passive_part) 
+     Hex_cell_set.forget_order(fles.Hex_flattened_end_strategy_t.active_part),
+     Hex_cell_set.forget_order(fles.Hex_flattened_end_strategy_t.passive_part) 
   );;
 
 let cmp = 

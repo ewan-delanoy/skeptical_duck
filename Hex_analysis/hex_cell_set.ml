@@ -25,7 +25,7 @@ let min (Hex_cell_set_t.S(l))=List.hd l;;
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 let outsert elt (Hex_cell_set_t.S(l))= Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l [elt]);;
 let setminus (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))=Hex_cell_set_t.S (Ordered.setminus_silently Hex_cell.cmp l1 l2);;
-let unveil (Hex_cell_set_t.S(l))= l;;
+let forget_order (Hex_cell_set_t.S(l))= l;;
 let  apply_condition opt_condition cell_set=match opt_condition with 
    None -> cell_set 
   |Some(condition_set) -> 
