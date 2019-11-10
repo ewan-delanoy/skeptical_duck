@@ -33,8 +33,8 @@ let order_expansions = Ordered.sort_silently Private.for_expansions;;
 let order_inert_words = Ordered.sort_silently Private.for_inert_words;;
 
 
-let insert_abbreviation = Ordered.insert_plaen Private.for_abbreviations;;
-let insert_adjustment = Ordered.insert_plaen Private.for_adjustments;;
-let insert_expansion = Ordered.insert_plaen Private.for_expansions;;
-let insert_inert_word = Ordered.insert_plaen Private.for_inert_words;;
+let insert_abbreviation = Ordered.insert_silently Private.for_abbreviations;;
+let insert_adjustment = Ordered.insert_silently Private.for_adjustments;;
+let insert_expansion = Ordered.insert_silently Private.for_expansions;;
+let insert_inert_word = Ordered.insert_silently Private.for_inert_words;;
 
