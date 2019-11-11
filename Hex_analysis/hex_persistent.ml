@@ -88,7 +88,7 @@ let initialize_all_data_if_necessary ()=
 
 
 let add_end_strategy_without_persisting (player,static_constructor,comment,indices) =
-   let ec = Hex_end_strategy_factory.create_new_strategy wes_pair player static_constructor comment indices in 
+   let ec = Hex_end_strategy_factory.create_new_strategy true wes_pair player static_constructor comment indices in 
    (
     games_ref:=Hex_fg_double_list.take_end_config_into_account ec (!games_ref)
    );;
