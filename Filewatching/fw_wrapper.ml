@@ -328,9 +328,37 @@ let rename_module_everywhere fw rootless_paths new_module involved_files=
    let fw3=rename_module_in_files fw2 (old_module,new_module) involved_files in 
    rename_module_in_special_files fw3 (old_module,new_module);;
 
+let replace_string_in_list_of_triples fw (replacee,replacer) l=
+   let changed_ones=ref[] in 
+   let new_l=Image.image (
+      fun triple ->
+        let (rootless,mtime,content)=triple in 
+        if Substring.is_a_substring_of replacee content 
+        then let _=(changed_ones:= rootless:: (!changed_ones)) in 
+             let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
+             and s_path=Dfn_rootless.to_line rootless in 
+             let file = s_root^s_path in  
+             let ap=Absolute_path.of_string file in 
+             let _=Replace_inside.replace_inside_file (replacee,replacer) ap in 
+             recompute_all_info fw rootless 
+        else triple     
+   ) l in 
+   (new_l,List.rev(!changed_ones));;
+
+let replace_string fw (replacee,replacer) =
+   let rep = replace_string_in_list_of_triples fw (replacee,replacer)  in 
+   let (new_w_files,changed_w_files) =  rep fw.Fw_wrapper_t.watched_files 
+   and (new_sw_files,changed_sw_files) =  rep fw.Fw_wrapper_t.special_watched_files in 
+   let new_fw ={
+       fw with
+       Fw_wrapper_t.watched_files = new_w_files;
+       special_watched_files = new_sw_files;
+   } in 
+   (new_fw,(changed_w_files,changed_sw_files));;
+
+
 end;;
 
-let of_concrete_object = Private.of_concrete_object;;
 
 let empty_one config= {
    Fw_wrapper_t.configuration = config;
@@ -339,6 +367,9 @@ let empty_one config= {
 };; 
 
 let forget = Private.forget;;
+
+let of_concrete_object = Private.of_concrete_object;;
+
 
 let register_rootless_path = Private.register_rootless_path;;
 
