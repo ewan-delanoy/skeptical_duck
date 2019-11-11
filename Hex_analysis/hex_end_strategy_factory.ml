@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_strategy_factory.ml";;
+#use"Hex_analysis/hex_end_strategy_factory.ml";;
 
 *)
 
@@ -48,7 +48,7 @@ let compute_end_configuration factory  (static_constructor,indices)=
 
 
 
-let create_and_remember_already_checked_params old_factory static_constructor comment indices=
+let create_and_remember_already_checked_params show_msg old_factory static_constructor comment indices=
     let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
     let new_l = l @ [(static_constructor,comment,indices,ec)] in
@@ -57,7 +57,7 @@ let create_and_remember_already_checked_params old_factory static_constructor co
                    then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
                    else comment)  in  
     let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^" for "^(Hex_player.color player)^")\n\n" in 
-    let _=(print_string msg;flush stdout) in 
+    let _=(if show_msg then print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),ec);;
 
 
@@ -108,24 +108,27 @@ let check_new_strategy factory static_constructor indices = match static_constru
   | Gluing -> check_gluing factory indices 
   | Disjunction (cells)->check_disjunction factory cells indices;;
 
-let create_new_strategy factory static_constructor comment indices =
+let create_new_strategy show_msg factory static_constructor comment indices =
     let _= check_new_strategy factory static_constructor indices in 
-    create_and_remember_already_checked_params factory static_constructor comment indices;;
+    create_and_remember_already_checked_params show_msg factory static_constructor comment indices;;
 
-let create_new_strategy_in_ref factory_ref static_constructor comment indices =
-  let (new_factory,new_ec)=create_new_strategy (!factory_ref) static_constructor comment indices in 
+
+
+let create_new_strategy_in_ref show_msg factory_ref static_constructor comment indices =
+  let (new_factory,new_ec)=create_new_strategy show_msg (!factory_ref) static_constructor comment indices in 
   let _=(factory_ref:=new_factory) in new_ec;;
 
-let create_new_strategies old_factory entries =
+let create_new_strategies show_msg old_factory entries =
    let walker=ref(old_factory) in 
-   let _=Image.image (fun (constr,comment,indices)->create_new_strategy_in_ref walker constr comment indices) entries in 
+   let _=Image.image (fun (constr,comment,indices)->
+     create_new_strategy_in_ref show_msg walker constr comment indices) entries in 
    !walker;;
 
 
-let create_new_strategy_in_double_ref (ref1,ref2) player static_constructor comment indices =
+let create_new_strategy_in_double_ref show_msg (ref1,ref2) player static_constructor comment indices =
   match player with 
-   Hex_player_t.First_player -> create_new_strategy_in_ref ref1 static_constructor comment indices 
-  |Hex_player_t.Second_player -> create_new_strategy_in_ref ref2 static_constructor comment indices ;;
+   Hex_player_t.First_player -> create_new_strategy_in_ref show_msg ref1 static_constructor comment indices 
+  |Hex_player_t.Second_player -> create_new_strategy_in_ref show_msg ref2 static_constructor comment indices ;;
 
 let empty_one player= Hex_end_strategy_factory_t.F(player,[]);;
 
