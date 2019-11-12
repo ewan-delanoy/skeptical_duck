@@ -23,6 +23,21 @@ let recompute_all_info fw path =
      let file = s_root^s_path in 
      (path,mtime file,Io.read_whole_file(Absolute_path.of_string file));;
 
+let update_in_list_of_triples fw  to_be_updated triples  =
+   Image.image (
+      fun triple -> 
+        let (rootless,mtime,content)=triple in 
+        if List.mem rootless to_be_updated 
+        then recompute_all_info fw rootless 
+        else triple
+   ) triples;;
+
+let update_some_files fw (w_files,sw_files) = {
+    fw with 
+      Fw_wrapper_t.watched_files = update_in_list_of_triples fw w_files (fw.Fw_wrapper_t.watched_files) ;
+      special_watched_files = update_in_list_of_triples fw sw_files (fw.Fw_wrapper_t.special_watched_files) ;
+} ;;
+
 let remove_watched_files fw rootless_paths =
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
@@ -356,7 +371,19 @@ let replace_string fw (replacee,replacer) =
    } in 
    (new_fw,(changed_w_files,changed_sw_files));;
 
-
+let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
+    let replacer=(
+      if String.contains replacee '.'
+      then (Cull_string.before_rightmost replacee '.')^"."^pre_replacer
+      else pre_replacer 
+    ) in 
+    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
+      preceding_files replacee (Overwriter.of_string pre_replacer) path in 
+    let rootless = Dfn_common.decompose_absolute_path_using_root path (Fw_wrapper_field.root fw)  in 
+    let fw2= update_some_files fw ([rootless],[]) in 
+    let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
+    (fw3,rootless::changed_w_files,changed_sw_files);;
+    
 end;;
 
 
@@ -378,6 +405,10 @@ let relocate_module_to = Private.relocate_module_to;;
 let rename_module = Private.rename_module_everywhere;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
+
+let replace_string = Private.replace_string;;
+
+let replace_value = Private.replace_value;;
 
 let to_concrete_object = Private.to_concrete_object;;
 
