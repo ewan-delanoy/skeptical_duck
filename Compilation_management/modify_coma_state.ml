@@ -26,6 +26,21 @@ let rename_module cs old_middle_name new_nonslashed_name=
   let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
   Coma_state.set_frontier_with_unix_world cs new_fw ;;
 
+(*
+let rename_string_or_value cs old_sov new_sov =
+   let old_fw = Coma_state.frontier_with_unix_world cs in 
+   let (new_fw,changed_w_files,changed_sw_files)=(
+      if not(String.contains old_sov '.')
+      then Fw_wrapper.replace_string old_fw (old_sov,new_sov)
+      else 
+   ) in 
+    let new_full_name=(Cull_string.before_rightmost old_name '.')^"."^new_name in
+    (Local_rename_value_inside_module.rename_value_inside_module 
+            cs old_name (Overwriter.of_string new_name); 
+     replace_string cs old_name new_full_name        
+*)
+
+
 end;;
 
 module Internal = struct
