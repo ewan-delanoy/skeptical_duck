@@ -84,6 +84,12 @@ let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)))
 
 let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
 
+let remove_element_at_idx l k=
+   let (kleiz,dehou)=big_rht k l in 
+   List.rev_append (List.tl kleiz) dehou;;
+
+(* remove_element_at_idx [1; 2; 3; 4; 5; 6; 7] 3;; *)   
+
 let decompose_wrt_two_indices l i j=
    let (r_part1,temp1)=big_rht (i-1) l in 
    let (ei,temp2)=ht temp1 in 
