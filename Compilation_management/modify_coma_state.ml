@@ -52,6 +52,7 @@ let rename_string_or_value cs old_sov new_sov =
    (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_w_files,changed_sw_files));;       
 
 
+
 end;;
 
 module Internal = struct
@@ -111,17 +112,27 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
     (Recently_created.of_string_list new_files) in
    (cs9,diff);;
 
+let rename_string_or_value cs (changed_w_files,changed_sw_files)=
+   let unordered_changed_paths = Image.image Dfn_rootless.to_line changed_w_files in 
+   let changed_paths = Ordered.sort Total_ordering.silex_for_strings unordered_changed_paths in 
+   let diff = Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list changed_paths)
+    (Recently_created.of_string_list []) in 
+   diff;; 
+
 end;;
 
 module Physical_followed_by_internal = struct
 
+(*
 let forget cs  x=
    let old_fw = Coma_state_field.frontier_with_unix_world cs in 
    let new_fw = Fw_wrapper.forget old_fw x in 
    let cs1 = Coma_state_field.set_frontier_with_unix_world cs new_fw in 
    Coma_state.Almost_concrete.forget cs1 x;; 
 
-(*
+
 let register_rootless_path cs  x=
    let old_fw = Coma_state_field.frontier_with_unix_world cs in 
    let new_fw = Fw_wrapper.forget old_fw x in 

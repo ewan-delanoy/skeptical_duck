@@ -1860,7 +1860,7 @@ let recompile cs=
   let changed_paths=
    (if not change_exists
    then []
-   else Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths))) in
+   else Ordered.sort Total_ordering.silex_for_strings rootless_paths) in
     (cs2,Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list changed_paths)
