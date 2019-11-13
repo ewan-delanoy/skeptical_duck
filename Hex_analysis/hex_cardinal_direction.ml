@@ -19,3 +19,7 @@ let opt_of_char c =
        fun p->if fst(p)=c then Some(snd p) else None) 
        Private.correspondences ;;
    
+let is_vertical = function 
+    Hex_cardinal_direction_t.Down 
+   |Hex_cardinal_direction_t.Up -> true 
+   | _ -> false ;;   

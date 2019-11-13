@@ -7,6 +7,8 @@
 
 exception Bad_parameters of 
     Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
+exception Bad_params_in_powder of 
+    Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;    
 
 module Private = struct 
    
@@ -31,6 +33,9 @@ let opt_of_string untrimmed_s =
     then raise(Bad_parameters(dir1,dir2))
     else Some(Hex_eyed_claw_t.C(dir1,dir2));;
 
+(*
+let powder_for_downwards_claw  = function 
+*)   
 
 end ;;
 
