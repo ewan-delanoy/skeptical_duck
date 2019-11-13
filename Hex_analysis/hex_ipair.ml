@@ -133,6 +133,14 @@ let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
 
 
+let powder_for_left_eyed_upwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_left_eyed_upwards_claw;;
+
+let powder_for_right_eyed_upwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_right_eyed_upwards_claw;;
+
 let powder_for_high_eyed_leftwards_claw =
     Private.adjust_by_translation 
       Private.core_powder_for_high_eyed_leftwards_claw;;

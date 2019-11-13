@@ -11,14 +11,10 @@ exception Bad_params_in_powder of
     Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;    
 
 module Private = struct 
-   
-let is_vertical = function 
-    Hex_cardinal_direction_t.Down 
-   |Hex_cardinal_direction_t.Up -> true 
-   | _ -> false ;;
 
 let pair_is_bad (direction1,direction2) =
-   (is_vertical direction1)=(is_vertical direction2);;
+   (Hex_cardinal_direction.is_vertical direction1)=
+   (Hex_cardinal_direction.is_vertical direction2);;
 
 let opt_of_string untrimmed_s =
     let s= Cull_string.trim_spaces untrimmed_s in 
@@ -33,9 +29,20 @@ let opt_of_string untrimmed_s =
     then raise(Bad_parameters(dir1,dir2))
     else Some(Hex_eyed_claw_t.C(dir1,dir2));;
 
-(*
+
 let powder_for_downwards_claw  = function 
-*)   
+    Hex_cardinal_direction_t.Left -> Hex_ipair.powder_for_left_eyed_downwards_claw
+   |Hex_cardinal_direction_t.Right -> Hex_ipair.powder_for_right_eyed_downwards_claw 
+   | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Down)) ;;
+
+
+let powder_for_upwards_claw  = function 
+    Hex_cardinal_direction_t.Left -> Hex_ipair.powder_for_left_eyed_downwards_claw
+   |Hex_cardinal_direction_t.Right -> Hex_ipair.powder_for_right_eyed_downwards_claw 
+   | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Up)) ;;
+
+
+
 
 end ;;
 
