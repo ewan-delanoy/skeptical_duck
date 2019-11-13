@@ -372,17 +372,13 @@ let replace_string fw (replacee,replacer) =
    (new_fw,(changed_w_files,changed_sw_files));;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
-    let replacer=(
-      if String.contains replacee '.'
-      then (Cull_string.before_rightmost replacee '.')^"."^pre_replacer
-      else pre_replacer 
-    ) in 
+    let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
     let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files replacee (Overwriter.of_string pre_replacer) path in 
     let rootless = Dfn_common.decompose_absolute_path_using_root path (Fw_wrapper_field.root fw)  in 
     let fw2= update_some_files fw ([rootless],[]) in 
     let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
-    (fw3,rootless::changed_w_files,changed_sw_files);;
+    (fw3,(rootless::changed_w_files,changed_sw_files));;
     
 end;;
 

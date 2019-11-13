@@ -26,19 +26,30 @@ let rename_module cs old_middle_name new_nonslashed_name=
   let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
   Coma_state.set_frontier_with_unix_world cs new_fw ;;
 
-(*
+exception Rename_string_or_value_exn of string ;;
+
+
 let rename_string_or_value cs old_sov new_sov =
    let old_fw = Coma_state.frontier_with_unix_world cs in 
-   let (new_fw,changed_w_files,changed_sw_files)=(
+   let (new_fw,(changed_w_files,changed_sw_files))=(
       if not(String.contains old_sov '.')
       then Fw_wrapper.replace_string old_fw (old_sov,new_sov)
       else 
+           let j=Substring.leftmost_index_of_in "." old_sov in
+           if j<0 
+           then raise(Rename_string_or_value_exn(old_sov))
+           else let module_name=Cull_string.beginning (j-1) old_sov in
+                let endingless=Coma_state.decipher_module cs  module_name 
+                and path=Coma_state.decipher_path cs  module_name in 
+                let nm=Dfn_endingless.to_module endingless in
+                let pre_temp2=(Coma_state.ancestors_at_module cs nm)@[nm] in
+                let temp2=Image.image (Coma_state.endingless_at_module cs) pre_temp2 in
+                let preceding_files=Image.image  (fun eless2->
+   	               Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
+                ) temp2 in
+                Fw_wrapper.replace_value old_fw (preceding_files,path) (old_sov,new_sov)
    ) in 
-    let new_full_name=(Cull_string.before_rightmost old_name '.')^"."^new_name in
-    (Local_rename_value_inside_module.rename_value_inside_module 
-            cs old_name (Overwriter.of_string new_name); 
-     replace_string cs old_name new_full_name        
-*)
+   (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_w_files,changed_sw_files));;       
 
 
 end;;
