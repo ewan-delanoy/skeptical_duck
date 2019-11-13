@@ -225,10 +225,17 @@ let force_length_three s =
    |3->t
    |_->raise(Cell_too_wide(s));;
 
+let detect_appendages l=
+   let temp1=Image.image (fun (p,s)->(Hex_appendage.opt_of_string s,(p,s))) l in 
+   let (temp2,temp3)=List.partition (fun q->fst(q)=None) temp1 in 
+   let non_adgs = Image.image snd temp2 
+   and adgs = Image.image (fun (opt,(p,_))->(Option.unpack opt,p))  temp3 in 
+   (adgs,non_adgs);;
+
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
    let data2 = Image.image (fun (p,s)->(p,force_length_three s) ) data1 in 
-   let data3 = List.filter (fun (p,s)-> (trim s)<>"EEE") data2 in 
+   let data3 = List.filter (fun (p,s)-> s<>"EEE") data2 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
    ) data3 in 
@@ -250,11 +257,16 @@ let preprocess grid =
      data = final_map
    };;
 
-let ref_for_sheet_processing_error=ref({
+let empty_one = {
    Hex_ascii_grid_t.beneficiary = Hex_player_t.First_player ;
    dimension = 11 ;
    data = [];
-});;
+};;
+
+let ref_for_sheet_processing_error=ref(empty_one);;
+
+let clear_sheet ()=
+  print_on_sheet_for_editing (empty_one);;
 
 let process_sheet ()=
    let old_drawing = Io.read_whole_file path_for_sheet in 
@@ -273,7 +285,7 @@ let read_sheet ()=   read_ascii_drawing (Io.read_whole_file path_for_sheet);;
 
 end ;;
 
-
+let clear_sheet = Private.clear_sheet;;
 let of_basic_linker = Private.of_basic_linker;;
 let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
