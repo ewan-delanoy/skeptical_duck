@@ -59,12 +59,12 @@ let fles_for_right_eyed_claw=
    create1 (Hex_strategy_static_constructor_t.Disjunction
     (helper_for_right_eyed_claw)) "" list_for_right_eyed_claw;;
 
-let ipairs_in_right_eyed_claw =
+let ipairs_in_right_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      fles_for_right_eyed_claw.Hex_flattened_end_strategy_t.passive_part in 
    Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;
 
-(* Explaining a left-eyed upper claw *)   
+(* Explaining a left-eyed upper upwards claw *)   
 
 
 let for_strat5=
@@ -99,7 +99,7 @@ let fles_for_left_eyed_claw=
    create1 (Hex_strategy_static_constructor_t.Disjunction
     (helper_for_left_eyed_claw)) "" list_for_left_eyed_claw;;
 
-let ipairs_in_left_eyed_claw =
+let ipairs_in_left_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      fles_for_left_eyed_claw.Hex_flattened_end_strategy_t.passive_part in 
    Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;

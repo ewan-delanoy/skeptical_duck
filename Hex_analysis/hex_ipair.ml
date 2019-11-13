@@ -68,7 +68,55 @@ let core_support_for_bs_leftwards_claw =
 let core_support_for_sb_rightwards_claw =
    adhoc_translate (fun (x,y)->(5-y,5-x))  core_support_for_bs_upwards_claw;; 
 
+let core_powder_for_left_eyed_upwards_claw =
+  (
+    (4,2),
+    [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
+     (2, 1); (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); 
+     (3, 1); (3, 2); (3, 3); (3, 4); (3, 5);
+     (4, 3)]
+  );;
 
+let core_powder_for_right_eyed_upwards_claw =
+  (
+    (4,3),
+    [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
+     (2, 1); (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); 
+     (3, 1); (3, 2); (3, 3); (3, 4); (3, 5);
+     (4, 2)]
+  );;
+
+let diag_sym (p,q) (x,y) = (p+y,q+x);;
+let odiag_sym (p,q) (x,y)= (p-y,q-x);;
+
+let apply_on_both f (a,b)=(f a,Ordered.sort Total_ordering.standard2 (Image.image f b));;
+
+let diag_sym_on_both t p = apply_on_both (diag_sym t) p;;
+let odiag_sym_on_both t p = apply_on_both (odiag_sym t) p;;
+
+let adjust_by_translation whole (x1,y1)=
+    let ((x0,y0),l)=whole in 
+    let temp1=Image.image (fun (x,y)->(x1-x0+x,y1-y0+y)) l in
+    Ordered.sort Total_ordering.standard2 temp1;; 
+
+
+let core_powder_for_high_eyed_leftwards_claw =
+    diag_sym_on_both (0,0) core_powder_for_left_eyed_upwards_claw;;
+  
+let core_powder_for_low_eyed_leftwards_claw =
+    diag_sym_on_both (0,0) core_powder_for_right_eyed_upwards_claw;;
+
+let core_powder_for_left_eyed_downwards_claw =
+    odiag_sym_on_both (5,8) core_powder_for_low_eyed_leftwards_claw;;
+
+let core_powder_for_right_eyed_downwards_claw =
+    odiag_sym_on_both (5,8) core_powder_for_high_eyed_leftwards_claw;;
+
+let core_powder_for_high_eyed_rightwards_claw =
+    diag_sym_on_both (0,0) core_powder_for_left_eyed_downwards_claw;;
+
+let core_powder_for_low_eyed_rightwards_claw =
+    diag_sym_on_both (0,0) core_powder_for_right_eyed_downwards_claw;;
 
 end;;
 
@@ -83,6 +131,32 @@ let add_labels l_fourtuples=
 
 let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
+
+
+let powder_for_high_eyed_leftwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_high_eyed_leftwards_claw;;
+  
+let powder_for_low_eyed_leftwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_low_eyed_leftwards_claw;;
+
+let powder_for_left_eyed_downwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_left_eyed_downwards_claw;;
+
+let powder_for_right_eyed_downwards_claw =
+    Private.adjust_by_translation 
+      Private.core_powder_for_right_eyed_downwards_claw;;
+
+let powder_for_high_eyed_rightwards_claw =
+     Private.adjust_by_translation 
+      Private.core_powder_for_high_eyed_rightwards_claw;;
+
+let powder_for_low_eyed_rightwards_claw =
+   Private.adjust_by_translation 
+      Private.core_powder_for_low_eyed_leftwards_claw;;;;
+
 
 let support_for_downwards_pyramid (x,y)=
    Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid;;
