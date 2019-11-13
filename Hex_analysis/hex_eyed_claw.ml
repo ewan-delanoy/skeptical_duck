@@ -35,15 +35,29 @@ let powder_for_downwards_claw  = function
    |Hex_cardinal_direction_t.Right -> Hex_ipair.powder_for_right_eyed_downwards_claw 
    | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Down)) ;;
 
+let powder_for_leftwards_claw  = function 
+    Hex_cardinal_direction_t.Down -> Hex_ipair.powder_for_low_eyed_leftwards_claw
+   |Hex_cardinal_direction_t.Up -> Hex_ipair.powder_for_high_eyed_leftwards_claw 
+   | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Left)) ;;
+
+let powder_for_rightwards_claw  = function 
+    Hex_cardinal_direction_t.Down -> Hex_ipair.powder_for_low_eyed_rightwards_claw
+   |Hex_cardinal_direction_t.Up -> Hex_ipair.powder_for_high_eyed_rightwards_claw 
+   | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Left)) ;;
 
 let powder_for_upwards_claw  = function 
-    Hex_cardinal_direction_t.Left -> Hex_ipair.powder_for_left_eyed_downwards_claw
-   |Hex_cardinal_direction_t.Right -> Hex_ipair.powder_for_right_eyed_downwards_claw 
+    Hex_cardinal_direction_t.Left -> Hex_ipair.powder_for_left_eyed_upwards_claw
+   |Hex_cardinal_direction_t.Right -> Hex_ipair.powder_for_right_eyed_upwards_claw 
    | other -> raise(Bad_params_in_powder(other,Hex_cardinal_direction_t.Up)) ;;
 
 
-
+let powder (Hex_eyed_claw_t.C(dir1,dir2))= match dir2 with 
+   Hex_cardinal_direction_t.Down ->  powder_for_downwards_claw dir1
+  |Hex_cardinal_direction_t.Left ->  powder_for_leftwards_claw dir1
+  |Hex_cardinal_direction_t.Right -> powder_for_rightwards_claw dir1
+  |Hex_cardinal_direction_t.Up -> powder_for_upwards_claw dir1 ;;
 
 end ;;
 
 let opt_of_string = Private.opt_of_string ;; 
+let powder = Private.powder ;;
