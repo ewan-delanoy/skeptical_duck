@@ -57,7 +57,21 @@ let powder (Hex_eyed_claw_t.C(dir1,dir2))= match dir2 with
   |Hex_cardinal_direction_t.Right -> powder_for_rightwards_claw dir1
   |Hex_cardinal_direction_t.Up -> powder_for_upwards_claw dir1 ;;
 
+let of_concrete_object crobj=
+    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+    Hex_eyed_claw_t.C(Hex_cardinal_direction.of_concrete_object arg1,
+                      Hex_cardinal_direction.of_concrete_object arg2);;
+
+let to_concrete_object (Hex_eyed_claw_t.C(dir1,dir2))=
+   Concrete_object_t.Variant("Hex_"^"eyed_claw_t.C",[
+      Hex_cardinal_direction.to_concrete_object dir1;
+      Hex_cardinal_direction.to_concrete_object dir2
+   ]);;
+
 end ;;
 
+let of_concrete_object = Private.of_concrete_object;;
 let opt_of_string = Private.opt_of_string ;; 
 let powder = Private.powder ;;
+
+let to_concrete_object = Private.to_concrete_object;;
