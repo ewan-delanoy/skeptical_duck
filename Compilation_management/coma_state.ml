@@ -1795,6 +1795,17 @@ let duplicate_module cs old_t1 old_t2=
     (txt1,txt2) ap2  in 
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
+let recompile_and_return_diff cs=
+  let (cs2,change_exists,rootless_paths)=recompile cs  in
+  let changed_paths=
+   (if not change_exists
+   then []
+   else Ordered.sort Total_ordering.silex_for_strings rootless_paths) in
+    (cs2,Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list changed_paths)
+    (Recently_created.of_string_list [])) ;;
+
 module Almost_concrete = struct 
 
 
