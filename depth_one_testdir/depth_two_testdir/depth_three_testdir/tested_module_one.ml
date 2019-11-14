@@ -15,10 +15,10 @@ let f x y=
 
 module A_Submodule = struct 
 
-let a_value = 1 ;;
+let o_value = 1 ;;
 
 end ;;
 
-let a_deduced_value = A_Submodule.a_value + 2;;
+let a_deduced_value = A_Submodule.o_value + 2;;
 
 
