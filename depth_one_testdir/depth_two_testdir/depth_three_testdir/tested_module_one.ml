@@ -12,3 +12,13 @@ let f x y=
   if x=11 
   then raise(Hound)
   else x+y;;
+
+module A_Submodule = struct 
+
+let a_value = 1 ;;
+
+end ;;
+
+let a_deduced_value = A_Submodule.a_value + 2;;
+
+
