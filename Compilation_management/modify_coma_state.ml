@@ -112,14 +112,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
     (Recently_created.of_string_list new_files) in
    (cs9,diff);;
 
-let rename_string_or_value cs (changed_w_files,changed_sw_files)=
-   let unordered_changed_paths = Image.image Dfn_rootless.to_line changed_w_files in 
-   let changed_paths = Ordered.sort Total_ordering.silex_for_strings unordered_changed_paths in 
-   let diff = Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list changed_paths)
-    (Recently_created.of_string_list []) in 
-   diff;; 
+let rename_string_or_value = Coma_state.recompile_and_return_diff ;; 
 
 end;;
 
@@ -143,6 +136,10 @@ let register_rootless_path cs  x=
 let rename_module cs old_middle_name new_nonslashed_name=
    let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
    Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
+
+let rename_string_or_value cs old_sov new_sov =
+   let cs2=Physical.rename_module cs old_sov new_sov in
+   Internal.rename_string_or_value cs2;;
 
 end;;
 
@@ -174,9 +171,9 @@ module After_checking = struct
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Physical_followed_by_internal.rename_module cs old_middle_name new_nonslashed_name;; 
 
-      let rename_string_or_value cs old_hm_name new_name=
+      let rename_string_or_value cs old_sov new_sov=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.rename_string_or_value cs old_hm_name new_name;; 
+         Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
 
 end;;
 
@@ -231,9 +228,9 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
-      let rename_string_or_value cs old_name new_name=
-         let (cs2,diff)=After_checking.rename_string_or_value cs old_name new_name  in 
-         let msg="rename "^old_name^" as "^new_name in 
+      let rename_string_or_value cs old_sov new_sov=
+         let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
+         let msg="rename "^old_sov^" as "^new_sov in 
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
@@ -284,8 +281,8 @@ module And_save = struct
          cs2;;  
 
 
-      let rename_string_or_value cs old_name new_name=
-         let cs2=And_backup.rename_string_or_value cs old_name new_name in 
+      let rename_string_or_value cs old_sov new_sov=
+         let cs2=And_backup.rename_string_or_value cs old_sov new_sov in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -339,8 +336,8 @@ module Reference = struct
          pcs:=new_cs;;
 
 
-      let rename_string_or_value pcs old_name new_name=
-         let new_cs = And_save.rename_string_or_value (!pcs) old_name new_name in 
+      let rename_string_or_value pcs old_sov new_sov=
+         let new_cs = And_save.rename_string_or_value (!pcs) old_sov new_sov in 
          pcs:=new_cs;;
 
 
