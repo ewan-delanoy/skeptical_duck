@@ -138,7 +138,7 @@ let rename_module cs old_middle_name new_nonslashed_name=
    Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
 
 let rename_string_or_value cs old_sov new_sov =
-   let cs2=Physical.rename_module cs old_sov new_sov in
+   let (cs2,_)=Physical.rename_string_or_value cs old_sov new_sov in
    Internal.rename_string_or_value cs2;;
 
 end;;
@@ -173,8 +173,7 @@ module After_checking = struct
 
       let rename_string_or_value cs old_sov new_sov=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.rename_string_or_value cs old_sov new_sov;;
-         (* Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; *)
+         Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
 
 end;;
 
