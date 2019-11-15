@@ -245,7 +245,7 @@ let detect_appendages l=
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
    let data2 = Image.image (fun (p,s)->(p,force_length_three s) ) data1 in 
-   let data3 = List.filter (fun (p,s)-> (s<>"EEE")&&(s<>"eee") ) data2 in 
+   let data3 = List.filter (fun (p,s)-> (s<>"EEE") ) data2 in 
    let adgs = detect_appendages data3 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
