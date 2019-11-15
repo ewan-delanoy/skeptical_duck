@@ -25,7 +25,7 @@ let create1 =
 let create2 = 
    Hex_end_strategy_factory.create_new_strategy 
      false for_both Hex_player_t.Second_player;;
-let bali (x,y) = Hex_strategy_static_constructor_t.Basic_linker ([],x,y);;      
+let bali (x,y) = Hex_strategy_static_constructor_t.Basic_Linker (Hex_octopus.empty_one,x,y);;      
 
 (* Explaining a right-eyed upper claw *)   
 
