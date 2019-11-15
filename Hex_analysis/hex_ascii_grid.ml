@@ -251,7 +251,7 @@ let preprocess grid =
      (p,List.assoc_opt (trim s) list_for_macros)
    ) data3 in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
-   if macros1=[] then {grid with Hex_ascii_grid_t.data=data3} else 
+   if (macros1=[])&&(adgs=[]) then {grid with Hex_ascii_grid_t.data=data3} else 
    let non_macros2=Image.image fst non_macros1 in 
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Set_of_polys.safe_set(Option.filter_and_unpack
