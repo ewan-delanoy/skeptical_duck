@@ -30,6 +30,11 @@ let  apply_condition opt_condition cell_set=match opt_condition with
 let min (Hex_cell_set_t.S(l))=List.hd l;;     
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 
+let seek_nondisjoint_parts l=
+   Option.seek (fun (a,b)->not(does_not_intersect a b)) (Uple.list_of_pairs l);;
+
+
+
 let of_string enclosed_s =
    let n=String.length enclosed_s in 
    let s=Cull_string.interval enclosed_s 2 (n-1) in 
