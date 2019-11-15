@@ -262,9 +262,8 @@ let preprocess grid =
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
    let overrider1=List.flatten(Image.image (fun ((i1,j1,i2,j2),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
    and overrider2=Image.image (fun (p,_)->(fst p," A ")) (macros1) 
-   and overrider3=Image.image (fun (_,p)->(p, " A ")) adgs 
-   and overrider4=Image.image (fun p->(p,"eee")) powder_from_adgs in 
-   let overrider=overrider1@overrider2@overrider3@overrider4 in 
+   and overrider3=Image.image (fun p->(p,"eee")) powder_from_adgs in 
+   let overrider=overrider1@overrider2@overrider3 in 
    let final_map=Associative_list.override_with non_macros2 overrider in 
    {
      grid with 
