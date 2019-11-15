@@ -143,10 +143,20 @@ let of_finished_game fgame =
     data = associations1 @ associations2;
   };;
 
+let extract_octopus old_data=
+   let temp1 = Image.image (fun (p,s) -> (Hex_appendage.opt_of_string s,(p,s)) ) l in 
+   let (temp2,temp3) = List.filter (fun (opt,_)->opt=None) temp1 in 
+   let cleaned_data=Option.filter_and_unpack(
+     fun (_,(p,s))->if s="eee" then None else Some(p,s)
+   ) temp2 in 
+   let l_octop=Image.image (fun ((opt,(p,_)))->(Option.unpack opt,p)) temp3 in 
+   ((Hex_octopus_t.O l_octop),cleaned_data);;
+
+
 exception Unbalanced_label of string * (Hex_cell_t.t list);;
 
 let to_basic_linker grid=
-  let temp1= grid.Hex_ascii_grid_t.data in  
+  let (octop,temp1)= extract_octopus grid.Hex_ascii_grid_t.data in  
   let temp2=Image.image (fun ((i,j),content)->(Hex_ipair.to_cell (i,j),Cull_string.trim_spaces content)) temp1 in 
   let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
   let temp3=Image.image (fun c0->
@@ -161,7 +171,7 @@ let to_basic_linker grid=
           (tf 0,tf 1)
      ) temp5  in  
  let passive_pairs = Hex_cell_pair_set.constructor list_of_passive_pairs in    
- (active_ones,passive_pairs);; 
+ (octop,active_ones,passive_pairs);; 
 
 
 let read_row_in_drawing row =
