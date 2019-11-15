@@ -4,6 +4,8 @@
 
 *)
 
+
+(*
 exception Til_of_string_exn of string * (string list);;
 exception Arrowed_of_string_exn of string;;
 exception Glued_content_of_string_exn of string;;
@@ -116,4 +118,4 @@ end ;;
 let list_to_string = Private.list_to_string;;
 let list_of_string = Private.list_of_string;;
 
-   
+*)   
