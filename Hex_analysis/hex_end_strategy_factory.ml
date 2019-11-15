@@ -6,7 +6,7 @@
 
 
 exception Bad_index_in_factory of int;;
-exception Overlap_in_linker of Hex_cell_t.t list;;
+exception Overlap_in_linker of Hex_cell_set_t.t * Hex_cell_set_t.t;;
 exception Overlap_in_gluing of ((Hex_cell_t.t * (Hex_cell_set_t.t list)) list) * 
                                ((Hex_cell_t.t * (Hex_cell_set_t.t list)) list);;
 exception Escape_in_disjunction of Hex_cell_t.t list;;                               
@@ -24,9 +24,10 @@ let compute_parts factory (static_constructor,indices)=
    let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
    and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    match static_constructor with
-    Hex_strategy_static_constructor_t.Basic_Linker(active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
+    Hex_strategy_static_constructor_t.Basic_Linker(octop,active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
+        let (a,p)=Hex_octopus.actives_and_passives octop in 
         let temp2=Image.image (fun (x,y)->Hex_cell_set.safe_set [x;y]) passive_pairs in 
-        (active_ones,Hex_cell_set.fold_merge temp2)
+        (Hex_cell_set.fold_merge [a;active_ones],Hex_cell_set.fold_merge (p::temp2))
     | Gluing -> (Hex_cell_set.fold_merge active_parts,Hex_cell_set.fold_merge passive_parts) 
     | Disjunction (cells)->
         let temp3=List.combine cells active_parts in 
@@ -67,13 +68,14 @@ let helper_during_gluing_check parts =
    List.filter ( fun (x,l)->List.length(l)>1) temp1;;
 
 
-let check_basic_linker (active_ones,Hex_cell_pair_set_t.S(passive_pairs))=
+let check_basic_linker (octop,active_ones,Hex_cell_pair_set_t.S(passive_pairs))=
   let temp1=Image.image (fun (x,y)->Hex_cell_set.safe_set [x;y]) passive_pairs in 
-  let temp2=Hex_cell_set.fold_merge temp1 in 
-  let (Hex_cell_set_t.S temp3)=Hex_cell_set.fold_intersect [active_ones;temp2] in 
-  if temp3<>[]
-  then raise(Overlap_in_linker(temp3))
-  else ();;
+  let passive_ones=Hex_cell_set.fold_merge temp1 in 
+  let (o_actives,o_passives) = Hex_octopus.actives_and_passives octop in 
+  match Hex_cell_set.seek_nondisjoint_parts [o_actives;o_passives;active_ones;passive_ones] with 
+  None -> ()
+  |Some(a,b)->raise(Overlap_in_linker(a,b));;
+  
 
 
 let check_gluing factory indices=
@@ -104,7 +106,7 @@ let check_disjunction factory cells indices=
 
 
 let check_new_strategy factory static_constructor indices = match static_constructor with 
-  Hex_strategy_static_constructor_t.Basic_Linker(active_ones,passive_pairs)->check_basic_linker (active_ones,passive_pairs)
+  Hex_strategy_static_constructor_t.Basic_Linker(octop,active_ones,passive_pairs)->check_basic_linker (octop,active_ones,passive_pairs)
   | Gluing -> check_gluing factory indices 
   | Disjunction (cells)->check_disjunction factory cells indices;;
 
