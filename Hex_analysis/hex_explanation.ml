@@ -6,7 +6,7 @@ Here we explain of how some strategies are constructed.
 
 *)
 
-let basic_linker cells pairs =
+let basic_linker  cells pairs =
    let ceos = Hex_cell.of_string in 
    (Hex_cell_set.safe_set (Image.image ceos cells), 
     Hex_cell_pair_set.constructor 
@@ -25,25 +25,25 @@ let create1 =
 let create2 = 
    Hex_end_strategy_factory.create_new_strategy 
      false for_both Hex_player_t.Second_player;;
-let bali (x,y) = Hex_strategy_static_constructor_t.Basic_Linker (x,y);;      
+let bali (x,y) = Hex_strategy_static_constructor_t.Basic_linker ([],x,y);;      
 
 (* Explaining a right-eyed upper claw *)   
 
 let for_strat1=
-  basic_linker ["c4";"d3"] 
+  basic_linker  ["c4";"d3"] 
    ["d2","f2";"f1","g1";"d1","e1";"e2","e3"] ;;
 let strat1_constructor = bali for_strat1;;
 let fles1=create1 strat1_constructor "" [];;
 
 let for_strat2=
-  basic_linker ["c3";"c4"] 
+  basic_linker  ["c3";"c4"] 
    ["b2","e2";"b1","c1";"e1","f1";
      "b3","c2";"d2","d3"] ;;
 let strat2_constructor = bali for_strat2;;
 let fles2=create1 strat2_constructor "" [];;
 
 let for_strat3=
-  basic_linker ["b3";"c4"] 
+  basic_linker  ["b3";"c4"] 
    ["a2","c2";"a1","b1";"c1","d1";
      "a3","b2";"b4","c3"] ;;
 let strat3_constructor = bali for_strat3;;
@@ -68,14 +68,14 @@ let ipairs_in_right_eyed_upwards_claw =
 
 
 let for_strat5=
-  basic_linker ["b3";"b4"] 
+  basic_linker  ["b3";"b4"] 
    ["a2","c2";"a1","b1";"c1","d1";"a3","b2"] ;;
 let strat5_constructor = bali for_strat5;;
 let fles5=create1 strat5_constructor "" [];;
 
 
 let for_strat6=
-  basic_linker ["c3";"b4"] 
+  basic_linker  ["c3";"b4"] 
    ["a2","d2";"b1","c1";"e1","f1";
      "b3","c2";"d2","d3"] ;;
 let strat6_constructor = bali for_strat6;;
@@ -83,7 +83,7 @@ let fles6=create1 strat6_constructor "" [];;
 
 
 let for_strat7=
-  basic_linker ["b4";"d3"] 
+  basic_linker  ["b4";"d3"] 
    ["d2","f2";"d1","e1";"f1","g1";
      "c3","c4";"e2","e3"] ;;
 let strat7_constructor = bali for_strat7;;

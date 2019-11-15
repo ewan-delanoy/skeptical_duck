@@ -31,6 +31,8 @@ let actives_and_passives (Hex_octopus_t.O l)=
    let passives=Hex_cell_set.safe_set(Image.image Hex_ipair.to_cell temp1) in
    (actives,passives);;
 
+let empty_one = Hex_octopus_t.O [];;
+
 let of_concrete_object crobj= 
     Hex_octopus_t.O(Private.list_of_concrete_object crobj);;
 
