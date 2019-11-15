@@ -226,16 +226,17 @@ let force_length_three s =
    |_->raise(Cell_too_wide(s));;
 
 let detect_appendages l=
-   let temp1=Image.image (fun (p,s)->(Hex_appendage.opt_of_string s,(p,s))) l in 
-   let (temp2,temp3)=List.partition (fun q->fst(q)=None) temp1 in 
-   let non_adgs = Image.image snd temp2 
-   and adgs = Image.image (fun (opt,(p,_))->(Option.unpack opt,p))  temp3 in 
-   (adgs,non_adgs);;
+   Option.filter_and_unpack (
+      fun (p,s)->match Hex_appendage.opt_of_string s with 
+      None -> None 
+      |Some(adg)->Some(adg,p)
+   ) l ;;
 
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
    let data2 = Image.image (fun (p,s)->(p,force_length_three s) ) data1 in 
-   let data3 = List.filter (fun (p,s)-> s<>"EEE") data2 in 
+   let data3 = List.filter (fun (p,s)-> (s<>"EEE")&&(s<>"eee") ) data2 in 
+   let adgs = detect_appendages data3 in 
    let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
    ) data3 in 
@@ -245,12 +246,15 @@ let preprocess grid =
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Set_of_polys.safe_set(Option.filter_and_unpack
      (fun (_,s)->if Cull_string.trim_spaces s="" then None else Some(s)) non_macros2) in 
+   let powder_from_adgs =List.flatten (Image.image (fun (adg,p)->Hex_appendage.powder adg p) adgs) in   
    let unused_labels = List.filter (fun x->Set_of_polys.nmem x labels_used_by_nonmacros) list_of_default_labels in 
    let fourtuples = List.flatten(Image.image snd macros2) in
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
    let overrider1=List.flatten(Image.image (fun ((i1,j1,i2,j2),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
-   and overrider2=Image.image (fun (p,_)->(fst p," A ")) macros1 in 
-   let overrider=overrider1@overrider2 in 
+   and overrider2=Image.image (fun (p,_)->(fst p," A ")) (macros1) 
+   and overrider3=Image.image (fun (_,p)->(p, " A ")) adgs 
+   and overrider4=Image.image (fun p->(p,"eee")) powder_from_adgs in 
+   let overrider=overrider1@overrider2@overrider3@overrider4 in 
    let final_map=Associative_list.override_with non_macros2 overrider in 
    {
      grid with 

@@ -21,7 +21,8 @@ let of_concrete_object crobj =
     let (hook,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
     if hook = hook_for_basic_linker 
     then Hex_strategy_static_constructor_t.Basic_Linker(
-           Hex_cell_set.of_concrete_object arg1,Hex_cell_pair_set.of_concrete_object arg2) 
+           Hex_cell_set.of_concrete_object arg1,
+           Hex_cell_pair_set.of_concrete_object arg2) 
     else 
     if hook = hook_for_gluing
     then Hex_strategy_static_constructor_t.Gluing
