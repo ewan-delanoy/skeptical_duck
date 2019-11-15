@@ -144,7 +144,7 @@ let of_finished_game fgame =
   };;
 
 let extract_octopus old_data=
-   let temp1 = Image.image (fun (p,s) -> (Hex_appendage.opt_of_string s,(p,s)) ) l in 
+   let temp1 = Image.image (fun (p,s) -> (Hex_appendage.opt_of_string s,(p,s)) ) old_data in 
    let (temp2,temp3) = List.filter (fun (opt,_)->opt=None) temp1 in 
    let cleaned_data=Option.filter_and_unpack(
      fun (_,(p,s))->if s="eee" then None else Some(p,s)
