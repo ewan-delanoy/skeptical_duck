@@ -34,7 +34,8 @@ let actives_and_passives (Hex_octopus_t.O l)=
 let empty_one = Hex_octopus_t.O [];;
 
 let of_concrete_object crobj= 
-    Hex_octopus_t.O(Private.list_of_concrete_object crobj);;
+    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+    Hex_octopus_t.O(Private.list_of_concrete_object arg1);;
 
 let to_concrete_object (Hex_octopus_t.O l) =
    Concrete_object_t.Variant("Hex_"^"octopus_t.O",[
