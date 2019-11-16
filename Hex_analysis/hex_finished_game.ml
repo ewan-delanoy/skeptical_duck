@@ -123,7 +123,7 @@ let compute_optional_fit fles fgame =
      |Hex_player_t.Second_player -> (snd_player_moves,fst_player_moves) 
   ) in 
   let ally_set = Hex_cell_set.safe_set ally_moves 
-  and enemy_set = Hex_cell_set.safe_set ally_moves in 
+  and enemy_set = Hex_cell_set.safe_set enemy_moves in 
   if (not(Hex_cell_set.does_not_intersect enemy_set (Hex_flattened_end_strategy.support fles))) 
   then None
   else 
