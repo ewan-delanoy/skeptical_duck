@@ -104,3 +104,12 @@ let best_fits fles =
   ) in 
   Hex_finished_game.best_fits fles fgames;;
 
+let relevancies ()=
+   Hex_fg_double_list.relevancies 
+    (!(Hex_persistent.games_ref)) 
+   (Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair);;
+
+let check_relevancies ()=
+   Hex_fg_double_list.check_relevancies 
+    (!(Hex_persistent.games_ref)) 
+   (Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair);;
