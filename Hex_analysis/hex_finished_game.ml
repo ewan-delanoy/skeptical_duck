@@ -128,12 +128,18 @@ let compute_optional_fit fles fgame =
   then None
   else 
   let remaining_cells = Hex_cell_set.setminus fles.Hex_flattened_end_strategy_t.active_part ally_set in 
-  Some(Hex_cell_set.length remaining_cells,fgame);;
+  Some(Hex_cell_set.length remaining_cells,(fgame,fles));;
 
 let best_fits_for_strategy fles fgames =
    let temp1=Option.filter_and_unpack (compute_optional_fit fles) fgames in 
    let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
-   (found_min,Image.image snd sols)
+   (found_min,Image.image (fun (_,x)->fst x) sols);;
+
+let best_fits_for_game fgame flesses =
+   let temp1=Option.filter_and_unpack (fun fles->compute_optional_fit fles fgame) flesses in 
+   let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
+   (found_min,Image.image (fun (_,x)->snd x) sols);;
+
 
 let salt = "Hex_"^"finished_game_t.";;
 
