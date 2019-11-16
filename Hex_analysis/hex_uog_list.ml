@@ -15,16 +15,24 @@ let absorb_move move (moves_before,next_to_move,dfg)=
     Hex_player.other_player next_to_move, 
      Hex_fg_double_list.simplify_by_move move dfg);;
 
+let insert_in new_uog l=
+   if List.exists (fun uog -> Hex_untamed_opening.extends uog new_uog ) l
+   then l 
+   else 
+     let cleaned_l=List.filter 
+       (fun uog->not(Hex_untamed_opening.extends new_uog uog)) l in 
+     Ordered.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
+
 let rec compute_maximal_strong_openings (treated,to_be_treated)=
    match to_be_treated with 
-   []->Ordered.sort Hex_untamed_opening.cmp (List.rev treated) 
+   []->treated 
    |triple :: others-> 
       let (moves_before,next_to_move,dfg) = triple in 
       let (Hex_cell_set_t.S new_pushes) = Hex_fg_double_list.first_moves next_to_move dfg in
       if new_pushes = []
       then let new_untamed = Hex_untamed_opening_t.O(List.rev(moves_before)) in 
            compute_maximal_strong_openings 
-             (new_untamed::treated,others)    
+             (insert_in new_untamed treated,others)    
       else compute_maximal_strong_openings 
              (treated, 
                (Image.image (fun move -> absorb_move move triple) new_pushes) @ others);;
@@ -38,13 +46,7 @@ let compute_maximal_strong_openings dfg=
 let of_concrete_object crobj = Concrete_object_field.to_list Hex_untamed_opening.of_concrete_object crobj;;
 
 
-let insert_in new_uog l=
-   if List.exists (fun uog -> Hex_untamed_opening.extends uog new_uog ) l
-   then l 
-   else 
-     let cleaned_l=List.filter 
-       (fun uog->not(Hex_untamed_opening.extends new_uog uog)) l in 
-     Ordered.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
+let insert_in = Private.insert_in;;  
 
 
 let seek_interesting_move l=
