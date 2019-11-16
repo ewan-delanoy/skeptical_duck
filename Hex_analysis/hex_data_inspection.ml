@@ -5,6 +5,13 @@
 *)
 
 
+let best_fits_for_game fgame =
+  let (Hex_fles_double_list_t.DL(l1,l2))=(Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair) in 
+  let flesses = (match fgame.Hex_finished_game_t.winner  with 
+      Hex_player_t.First_player -> l1
+     |Hex_player_t.Second_player -> l2
+  ) in 
+  Hex_finished_game.best_fits_for_game fgame flesses;;
 
 
 let best_fits_for_strategy fles =
