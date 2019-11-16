@@ -43,4 +43,28 @@ let lookup_dimension =function
     []->None
    |fgame::_->Some(fgame.Hex_finished_game_t.dimension);;
 
+let relevancies fgames flesses=
+  let for_games=Image.image 
+    (fun fgame->(fgame,Hex_finished_game.seek_relevant_strategies fgame flesses) ) fgames in 
+  let tempf=(fun fles -> 
+      (fles,Option.filter_and_unpack (
+        fun (_,(fgame,flesses2))->
+         if List.mem fles flesses2 
+         then Some(fgame)
+         else None
+     ) for_games) 
+   ) in 
+   let for_strats = Image.image tempf flesses in 
+   (for_games,for_strats);;
+
+let check_relevancies  fgames flesses=
+  let (for_games,for_strats)=relevancies fgames flesses in 
+  let bad_games1=List.filter(fun (fgame1,(fgame2,_))->fgame1<>fgame2) for_games 
+  and bad_games2=List.filter(fun (_,(_,l))->l=[]) for_games
+  and bad_strats= List.filter(fun (_,(_,l))->l=[]) for_games in 
+  (bad_games1,bad_games2,bad_strats);;
+
+
+
+
 
