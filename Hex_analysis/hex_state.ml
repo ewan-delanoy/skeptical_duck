@@ -53,7 +53,7 @@ let analize sta=
   then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,Image.image snd dangers))
   else 
   let unconditioned_strong_moves=
-      Hex_fg_double_list.suggested_moves player sta.Hex_state_t.games_remains in 
+      Hex_fg_double_list.first_moves player sta.Hex_state_t.games_remains in 
   let easy_advancer = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let easy_advances= (
       match easy_advancer with 
