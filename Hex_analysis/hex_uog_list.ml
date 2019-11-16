@@ -5,15 +5,13 @@
 *)
 
 
+exception Extract_untamed_exn of Hex_cell_t.t list;;
 module Private = struct 
 
 let select_openings_with_next_player_as_recipient l =
    List.filter Hex_untamed_opening.has_odd_length l;;
 
-let absorb_move move (moves_before,next_to_move,dfg)=
-  (move::moves_before,
-    Hex_player.other_player next_to_move, 
-     Hex_fg_double_list.simplify_by_move move dfg);;
+
 
 let insert_in new_uog l=
    if List.exists (fun uog -> Hex_untamed_opening.extends uog new_uog ) l
@@ -23,25 +21,27 @@ let insert_in new_uog l=
        (fun uog->not(Hex_untamed_opening.extends new_uog uog)) l in 
      Ordered.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
 
-let rec compute_maximal_strong_openings (treated,to_be_treated)=
-   match to_be_treated with 
-   []->treated 
-   |triple :: others-> 
-      let (moves_before,next_to_move,dfg) = triple in 
-      let (Hex_cell_set_t.S new_pushes) = Hex_fg_double_list.first_moves next_to_move dfg in
-      if new_pushes = []
-      then let new_untamed = Hex_untamed_opening_t.O(List.rev(moves_before)) in 
-           compute_maximal_strong_openings 
-             (insert_in new_untamed treated,others)    
-      else compute_maximal_strong_openings 
-             (treated, 
-               (Image.image (fun move -> absorb_move move triple) new_pushes) @ others);;
+let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
+  match moves_after with 
+   []->raise(Extract_untamed_exn(List.rev moves_before)) 
+  |move::others->
+     let (Hex_cell_set_t.S next_pushes)=Hex_fg_double_list.first_moves next_to_move dfgl in 
+     if next_pushes = []
+     then Hex_untamed_opening_t.O(List.rev(move::moves_before))
+     else let new_dfgl = Hex_fg_double_list.simplify_by_move move dfgl in 
+          helper_during_extraction 
+           (move::moves_before,Hex_player.other_player next_to_move,others,new_dfgl);;
 
 end ;; 
 
-let compute_maximal_strong_openings dfg=
-  Private.compute_maximal_strong_openings 
-   ([],[[],Hex_player_t.First_player,dfg]);;
+let extract_untamed_openings dfgl =
+   let (Hex_fg_double_list_t.DL(l1,_)) = dfgl in 
+   let temp1 = Image.image (fun fg->
+      Private.helper_during_extraction 
+       ([],Hex_player_t.First_player,fg.Hex_finished_game_t.sequence_of_moves,dfgl)
+    ) l1 in 
+   Ordered.sort Hex_untamed_opening.cmp temp1 ;;
+
 
 let of_concrete_object crobj = Concrete_object_field.to_list Hex_untamed_opening.of_concrete_object crobj;;
 
