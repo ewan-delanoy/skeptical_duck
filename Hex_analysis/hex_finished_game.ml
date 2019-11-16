@@ -130,7 +130,7 @@ let compute_optional_fit fles fgame =
   let remaining_cells = Hex_cell_set.setminus fles.Hex_flattened_end_strategy_t.active_part ally_set in 
   Some(Hex_cell_set.length remaining_cells,fgame);;
 
-let best_fits fles fgames =
+let best_fits_for_strategy fles fgames =
    let temp1=Option.filter_and_unpack (compute_optional_fit fles) fgames in 
    let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
    (found_min,Image.image snd sols)
