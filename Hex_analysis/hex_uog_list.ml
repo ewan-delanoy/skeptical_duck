@@ -10,6 +10,11 @@ module Private = struct
 let select_openings_with_next_player_as_recipient l =
    List.filter Hex_untamed_opening.has_odd_length l;;
 
+let compute_maximal_strong_openings (treated,to_be_treated)=
+   match to_be_treated with 
+   []->List.rev treated 
+   |(moves_before,next_to_move,dfg)
+
 end ;; 
 
 

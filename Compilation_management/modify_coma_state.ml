@@ -173,7 +173,10 @@ module After_checking = struct
 
       let rename_string_or_value cs old_sov new_sov=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
+         Coma_state.Almost_concrete.rename_string_or_value cs old_sov new_sov;; 
+
+
+         (* Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; *)
 
 end;;
 
