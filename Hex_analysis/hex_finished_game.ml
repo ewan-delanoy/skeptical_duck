@@ -12,30 +12,23 @@ let empty_one = {
    sequence_of_moves = [];
 };;
 
-let rec helper1_for_relevant_strategy_seeking (moves_before,player,moves_after,fles)=
-   if Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)=1
-   then  (* Here the next player is forced to move in a certain set,
-         so the strategy is relevant indeed *)
-         Some(List.rev(moves_before)) 
-   else (
-          match moves_after with 
-          []->None 
-          |move::following_moves ->
-             (match Hex_flattened_end_strategy.use_move_to_simplify_one (player,move) fles with
-               None -> None 
-               |Some(new_fles) ->
-               helper1_for_relevant_strategy_seeking 
-                 (move::moves_before,Hex_player.other_player player,following_moves,new_fles) 
-             ) 
-        );;
-
+let rec helper1_for_relevant_strategy_seeking fles seq_moves=
+   let fgame={
+     Hex_finished_game_t.winner = fles.Hex_flattened_end_strategy_t.beneficiary;
+     dimension = 11;
+     sequence_of_moves = seq_moves;
+   } in   
+   match Hex_meeting_result.meet fles fgame with
+     Hex_meeting_result_t.Separation(_,_) 
+    |Hex_meeting_result_t.Incomplete(_)->None
+    |Hex_meeting_result_t.Relevance (shorter_seq,_)->Some(shorter_seq);; 
+ 
 let rec helper2_for_relevant_strategy_seeking 
    (seq_of_moves,already_found_relevants,flesses) = 
     match flesses with 
      []->(seq_of_moves,List.rev already_found_relevants)
     |fles::others ->
-       (match helper1_for_relevant_strategy_seeking 
-        ([],Hex_player_t.First_player,seq_of_moves,fles) with 
+       (match helper1_for_relevant_strategy_seeking fles seq_of_moves with 
         None -> helper2_for_relevant_strategy_seeking 
                (seq_of_moves,already_found_relevants,others)
        |Some(shorter_seq)->
@@ -51,38 +44,12 @@ let seek_relevant_strategies fgame flesses =
    (fgame.Hex_finished_game_t.sequence_of_moves,[],flesses)  in 
    ({fgame with Hex_finished_game_t.sequence_of_moves=seq},relvs);;
 
+let largest_unconclusive_beginning fgame flesses =
+   let (shortened_fgame,relvs) = seek_relevant_strategies fgame flesses in 
+   if relvs=[]
+   then fgame 
+   else shortened_fgame;;
 
-
-
-let compute_largest_unconclusive_beginning fgame fles =
-   if Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)<2
-   then raise(End_strategy_is_too_fast(fles))
-   else 
-   let temp1= Ennig.index_everything (fgame.Hex_finished_game_t.sequence_of_moves) in 
-   let temp2= Image.image (
-       fun (k,move)->
-         let player=(if k mod 2 = 1 
-                     then Hex_player_t.First_player 
-                     else Hex_player_t.Second_player )  in 
-         (player,move)            
-   ) temp1 in 
-   let rec tempf=(fun (treated,walker,to_be_treated)->
-      match to_be_treated with 
-      []->{fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}
-      |next_move::other_moves->
-       (
-         match Hex_flattened_end_strategy.use_move_to_simplify_one next_move walker with 
-         None->fgame
-         |Some(walker2)->
-         if Hex_cell_set.length(walker2.Hex_flattened_end_strategy_t.active_part)<2
-         then {fgame with Hex_finished_game_t.sequence_of_moves = (List.rev treated)}
-         else tempf((snd next_move)::treated,walker2,other_moves)
-       )
-   ) in 
-   tempf([],fles,temp2);;
-
-let iterated_largest_unconclusive_beginning fgame flesses=
-  List.fold_left compute_largest_unconclusive_beginning fgame flesses;;
 
 let extends fgame1 fgame2=
    Listennou.extends 
@@ -115,20 +82,10 @@ let cmp =
 ) :> Hex_finished_game_t.t Total_ordering.t);;
 
 let compute_optional_fit fles fgame =
-  let (fst_player_moves,snd_player_moves) = 
-      Listennou.split_list_in_half (fgame.Hex_finished_game_t.sequence_of_moves) in 
-  let (ally_moves,enemy_moves) = (
-     match fles.Hex_flattened_end_strategy_t.beneficiary with 
-      Hex_player_t.First_player -> (fst_player_moves,snd_player_moves) 
-     |Hex_player_t.Second_player -> (snd_player_moves,fst_player_moves) 
-  ) in 
-  let ally_set = Hex_cell_set.safe_set ally_moves 
-  and enemy_set = Hex_cell_set.safe_set enemy_moves in 
-  if (not(Hex_cell_set.does_not_intersect enemy_set (Hex_flattened_end_strategy.support fles))) 
-  then None
-  else 
-  let remaining_cells = Hex_cell_set.setminus fles.Hex_flattened_end_strategy_t.active_part ally_set in 
-  Some(Hex_cell_set.length remaining_cells,(fgame,fles));;
+   match Hex_meeting_result.meet fles fgame with
+     Hex_meeting_result_t.Separation(_,_) ->None
+    |Hex_meeting_result_t.Incomplete(remaining_ones)->Some(Hex_cell_set.length remaining_ones,(fgame,fles))
+    |Hex_meeting_result_t.Relevance (shorter_seq,_)->Some(1,(fgame,fles));; 
 
 let best_fits_for_strategy fles fgames =
    let temp1=Option.filter_and_unpack (compute_optional_fit fles) fgames in 
