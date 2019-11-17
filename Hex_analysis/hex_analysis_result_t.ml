@@ -9,7 +9,7 @@ type t= {
    next_to_play : Hex_player_t.t ; 
    mandatory_set : Hex_cell_set_t.t option;
    dangerous_enemy_strategies : int list;
-   strong_move : (Hex_cell_t.t * (Hex_cell_t.t list)) option;
+   completion_for_strong_move :  (Hex_cell_t.t list) option;
    familiar_moves : Hex_cell_set_t.t ;
    chosen_move : Hex_cell_t.t ; 
    number_of_remaining_enemies : int ;

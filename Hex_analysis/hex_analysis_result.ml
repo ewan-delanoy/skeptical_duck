@@ -15,7 +15,7 @@ let report_on_danger res=
                 " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
 
 let explanation_for_move res =
-    match res.Hex_analysis_result_t.strong_move with 
+    match res.Hex_analysis_result_t.completion_for_strong_move with 
     Some(expected_seq)->
         if expected_seq = []
         then (false,"forcing move")
@@ -62,7 +62,7 @@ let empty_result =
      Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
      mandatory_set = None;
      dangerous_enemy_strategies = [] ;
-     strong_move =  None ;
+     completion_for_strong_move =  None ;
      familiar_moves =  Hex_cell_set_t.S [];
      chosen_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
      number_of_remaining_enemies = 0 ;
