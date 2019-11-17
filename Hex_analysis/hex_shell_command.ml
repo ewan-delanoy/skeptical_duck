@@ -21,7 +21,8 @@ let execute = function
    |Preprocess_sheet -> let _=Hex_ascii_grid.process_sheet () in ()
    |Quit -> (Hex_shell_internals.game_is_on:=false)
    |Replay_written_game -> Hex_analysis.replay_and_declare_winner ()
-   |Start_new_game -> let _=Hex_analysis.restart() in send_report()
+   |Start_incognito -> let _=Hex_analysis.restart None in send_report()
+   |Start_officially(plyr) -> let _=Hex_analysis.restart(Some plyr) in send_report()
    |Undo_last_move -> let _=Hex_analysis.undo_last_absorption() in send_report() 
    |Unknown_command -> (print_string "Unknown command";flush stdout);;
 
