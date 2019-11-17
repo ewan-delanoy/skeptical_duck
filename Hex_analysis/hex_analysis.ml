@@ -9,8 +9,8 @@
 let walker=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 let preceding_position=ref(Hex_state.empty_state,Hex_analysis_result.empty_result);;
 
-let initial_point ()= 
-  let ista = Hex_state.initial_state () in 
+let initial_point opt_participant= 
+  let ista = Hex_state.initial_state opt_participant in 
    (
       ista ,
       Hex_state.analize ista
@@ -25,7 +25,7 @@ let get_latest_winner () = match (!latest_winner) with
    |Some(player)->player;;
 
 
-let restart () =let _=(walker := initial_point ();latest_winner:=None) in snd(!walker);;
+let restart opt_participant =let _=(walker := initial_point opt_participant;latest_winner:=None) in snd(!walker);;
 
 exception Absorb_move_exn of string;;
 
@@ -83,5 +83,5 @@ let replay_and_declare_winner ()=
   declare_winner winner;;
 
 let move_as_usual () =
-   let cell = (snd(!walker)).Hex_analysis_result_t.usual_move in 
+   let cell = (snd(!walker)).Hex_analysis_result_t.chosen_move in 
    absorb_move cell;; 
