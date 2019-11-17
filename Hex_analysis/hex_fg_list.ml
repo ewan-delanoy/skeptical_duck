@@ -61,7 +61,7 @@ let check_relevancies  fgames flesses=
   let (for_games,for_strats)=relevancies fgames flesses in 
   let bad_games1=List.filter(fun (fgame1,(fgame2,_))->fgame1<>fgame2) for_games 
   and bad_games2=List.filter(fun (_,(_,l))->l=[]) for_games
-  and bad_strats= List.filter(fun (_,(_,l))->l=[]) for_games in 
+  and bad_strats= List.filter(fun (_,l)->l=[]) for_strats in 
   (bad_games1,bad_games2,bad_strats);;
 
 
