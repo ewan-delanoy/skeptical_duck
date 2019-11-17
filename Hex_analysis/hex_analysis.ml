@@ -78,7 +78,7 @@ let add_basic_linker comment=
 let replay_and_declare_winner ()=
   let (_,cells) = Hex_parse_playok_format.parse () in 
   let winner = Hex_common.has_just_played cells in 
-  let _=restart () in 
+  let _=restart None in 
   let _=absorb_all_moves cells in 
   declare_winner winner;;
 
