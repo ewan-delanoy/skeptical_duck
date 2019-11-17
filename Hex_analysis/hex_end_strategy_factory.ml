@@ -21,8 +21,8 @@ let get_elt_at_idx (Hex_end_strategy_factory_t.F(player,l)) k=
 let compute_parts factory (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    match static_constructor with
     Hex_strategy_static_constructor_t.Basic_Linker(octop,active_ones,Hex_cell_pair_set_t.S(passive_pairs))->
         let (a,p)=Hex_octopus.actives_and_passives octop in 
@@ -52,7 +52,7 @@ let compute_end_configuration factory  (static_constructor,indices)=
 let create_and_remember_already_checked_params show_msg old_factory static_constructor comment indices=
     let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
-    let new_l = l @ [(static_constructor,comment,indices,ec)] in
+    let new_l = l @ [Hex_cog_in_machine_t.C(static_constructor,comment,indices,ec)] in
     let sn=string_of_int(List.length(l)+1) in 
     let added_cmt=(if comment="" 
                    then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
@@ -80,8 +80,8 @@ let check_basic_linker (octop,active_ones,Hex_cell_pair_set_t.S(passive_pairs))=
 
 let check_gluing factory indices=
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let redundant_actives = helper_during_gluing_check active_parts 
    and redundant_passives = helper_during_gluing_check passive_parts in 
    let check= (redundant_actives,redundant_passives) in 
@@ -92,8 +92,8 @@ let check_gluing factory indices=
 let check_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts = Image.image  (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (_,_,_,ec)->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1
+   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
    let temp3=List.combine cells active_parts in 
    let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
    let active_whole=Hex_cell_set.fold_merge temp4 in 
@@ -136,13 +136,13 @@ let empty_one player= Hex_end_strategy_factory_t.F(player,[]);;
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_fles_double_list_t.DL(
-      Image.image (fun (_,_,_,z)->z) l1,
-      Image.image (fun (_,_,_,z)->z) l2
+      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec) l1,
+      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec) l2
   );;
 
 let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_cells indices =
    let cell_of_index=(fun k->
-     let (_,_,_,fles) = List.nth l (k-1) in 
+     let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (k-1) in 
      let missing_cells= Hex_cell_set.setminus 
        (fles.Hex_flattened_end_strategy_t.active_part) occupied_cells in 
      let  (Hex_cell_set_t.S l_missing_cells)= missing_cells in 
@@ -152,35 +152,14 @@ let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_ce
    ) in 
    Image.image cell_of_index indices;;
 
-
-let elt_of_concrete_object crobj= 
-   let (arg1,arg2,arg3,arg4,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
-   (
-    Hex_strategy_static_constructor.of_concrete_object arg1,
-    Concrete_object_field.unwrap_string(arg2),
-    Concrete_object_field.to_int_list(arg3),
-    Hex_flattened_end_strategy.of_concrete_object(arg4)
-   );;
-
-let elt_to_concrete_object (constr,comment,indices,fles) =
-   Concrete_object_t.Uple [
-      Hex_strategy_static_constructor.to_concrete_object constr;
-      Concrete_object_t.String(comment);
-      Concrete_object_field.of_int_list(indices);
-      Hex_flattened_end_strategy.to_concrete_object(fles)
-   ]  ;;
-
-let elt_list_of_concrete_object crobj = Concrete_object_field.to_list elt_of_concrete_object crobj;;
-let elt_list_to_concrete_object l = Concrete_object_field.of_list elt_to_concrete_object l;;
-
 let of_concrete_object crobj=
     let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
-    Hex_end_strategy_factory_t.F(Hex_player.of_concrete_object arg1,elt_list_of_concrete_object arg2);;
+    Hex_end_strategy_factory_t.F(Hex_player.of_concrete_object arg1, Hex_cog_in_machine.list_of_concrete_object arg2);;
 
 let to_concrete_object (Hex_end_strategy_factory_t.F(player,l))=
    Concrete_object_t.Variant("Hex_"^"end_strategy_factory_t.F",[
       Hex_player.to_concrete_object player;
-      elt_list_to_concrete_object l
+      Hex_cog_in_machine.list_to_concrete_object l
    ]);;
 
 let to_string factory = Crobj_parsing.unparse (to_concrete_object factory) ;;
