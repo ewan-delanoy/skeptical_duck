@@ -16,6 +16,8 @@ let ced ()=Usual_coma_state.clean_exec_dir ();;
 
 let cod ()=Check_ocaml_dircopy.check Coma_big_constant.This_World.root;;
 
+let dabo = Usual_coma_state.directly_above;;
+
 let dbel = Usual_coma_state.directly_below;;
 
 let dm = Usual_coma_state.duplicate_module;;
