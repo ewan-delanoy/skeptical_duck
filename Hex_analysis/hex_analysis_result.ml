@@ -4,6 +4,59 @@
 
 *)
 
+
+module Private = struct
+
+let report_on_danger res=
+    match res.Hex_analysis_result_t.mandatory_set with 
+    None->""
+    |Some(set)->"Danger, because of "^
+                (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
+                " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
+
+let explanation_for_move res =
+    match res.Hex_analysis_result_t.strong_move with 
+    Some(expected_seq)->
+        if expected_seq = []
+        then (false,"forcing move")
+        else let temp1 = Image.image Hex_cell.to_string expected_seq in 
+             let s_remaining = String.concat "," temp1 in 
+             (false,"expecting "^s_remaining)
+    |None -> let (Hex_cell_set_t.S l)=res.Hex_analysis_result_t.familiar_moves in 
+              match l with 
+               []->(true,"")
+              |_->(false,"familiar move");;    
+
+let explanation_is_not_useful res=fst(explanation_for_move res );;
+   
+let report_on_chosen_move res=
+     let (expl_not_useful,expl) = explanation_for_move res  in 
+     if expl_not_useful then "" else 
+     let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+     and s_move = Hex_cell.to_string (res.Hex_analysis_result_t.chosen_move) in 
+     "Suggestion for "^plyr^" : "^s_move^" ("^expl^")\n" ;;  
+
+let report_on_enemies res = 
+   let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+   match res.Hex_analysis_result_t.number_of_remaining_enemies with 
+    0->"No enemy remaining against "^plyr^"."
+   |1->"One enemy remaining against "^plyr^"."
+   |k->(string_of_int k)^" enemies remaining against "^plyr^".";; 
+
+
+
+let full_report res = 
+   if res.Hex_analysis_result_t.info_needed
+   then ""
+   else 
+   if explanation_is_not_useful res 
+   then  (report_on_enemies res)^"\n"
+   else  (report_on_danger res)^
+         (report_on_chosen_move res)^
+         (report_on_enemies res)^"\n";;
+  
+end;;
+
 let empty_result = 
 {
      Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
@@ -17,39 +70,4 @@ let empty_result =
      info_needed = true;
   } ;;
 
-let report_on_danger res=
-    match res.Hex_analysis_result_t.mandatory_set with 
-    None->""
-    |Some(set)->"Danger, because of "^
-                (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
-                " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
-
-let explanation_for_move res =
-    match res.Hex_analysis_result_t.strong_move
-
-   
-let report_on_possible_advances res=
-     match res.Hex_analysis_result_t.easy_advancer with 
-     None->""
-     |Some(cell,remaining)->
-        let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
-        let sug = "Suggestion for "^plyr^" : "^(Hex_cell.to_string cell)^", " in 
-        if remaining = []
-        then sug^"forcing move\n"
-        else 
-        let temp1 = Image.image Hex_cell.to_string remaining in 
-        let s_remaining = String.concat "," temp1 in 
-        sug^"expecting "^s_remaining^"\n";;  
-
-let report_on_enemies res = 
-   let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
-   match res.Hex_analysis_result_t.number_of_remaining_enemies with 
-    0->"No enemy remaining against "^plyr^"."
-   |1->"One enemy remaining against "^plyr^"."
-   |k->(string_of_int k)^" enemies remaining against "^plyr^".";; 
-
-let full_report res = (report_on_danger res)^
-                      (report_on_possible_advances res)^
-                      (report_on_enemies res)^"\n";;
-  
-  
+let full_report = Private.full_report;;    
