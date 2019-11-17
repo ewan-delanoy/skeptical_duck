@@ -50,16 +50,34 @@ let compute_end_configuration factory  (static_constructor,indices)=
 
 
 let create_and_remember_already_checked_params show_msg old_factory static_constructor comment indices=
-    let ec = compute_end_configuration old_factory  (static_constructor,indices) in 
+    let presumed_fles = compute_end_configuration old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
-    let new_l = l @ [Hex_cog_in_machine_t.C(static_constructor,comment,indices,ec)] in
-    let sn=string_of_int(List.length(l)+1) in 
     let added_cmt=(if comment="" 
                    then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
-                   else comment)  in  
-    let msg="\n\n Just created strategy number "^sn^" ("^added_cmt^" for "^(Hex_player.color player)^")\n\n" in 
-    let _=(if show_msg then print_string msg;flush stdout) in 
-    (Hex_end_strategy_factory_t.F(player,new_l),ec);;
+                   else comment)  in 
+    let sn=string_of_int(List.length(l)+1) in 
+    let (fles,new_l,msg,reduncancy)=(
+       match Option.seek ( 
+          fun (Hex_cog_in_machine_t.C(static_constructor1,_,indices1,_))->
+             (static_constructor1,indices1) = (static_constructor,indices)
+       ) l with 
+       None ->(
+                presumed_fles,
+                l @ [Hex_cog_in_machine_t.C(static_constructor,comment,indices,presumed_fles)],
+                "\n\n Just created strategy number "^sn^" ("^added_cmt^" for "^(Hex_player.color player)^")\n\n",
+                false
+              )
+      |Some(Hex_cog_in_machine_t.C(_,_,_,old_fles))->
+              let si = string_of_int(old_fles.Hex_flattened_end_strategy_t.index) in 
+              (
+                 old_fles,
+                 l,
+                 "\n\n Strategy already exists (number "^si^"). Nothing created",
+                 true
+              )        
+    ) in 
+    let _=(if show_msg || reduncancy then print_string msg;flush stdout) in 
+    (Hex_end_strategy_factory_t.F(player,new_l),fles);;
 
 
 let helper_during_gluing_check parts =
@@ -136,8 +154,8 @@ let empty_one player= Hex_end_strategy_factory_t.F(player,[]);;
 
 let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy_factory_t.F(_,l2))=
   Hex_fles_double_list_t.DL(
-      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec) l1,
-      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,ec))->ec) l2
+      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l1,
+      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
   );;
 
 let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_cells indices =
