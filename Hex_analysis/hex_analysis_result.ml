@@ -14,6 +14,12 @@ let report_on_danger res=
                 (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
                 " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
 
+let explanation_for_familiar_move other_possible_moves =
+   if other_possible_moves = []
+   then "familiar_move"
+   else let temp1 = Image.image Hex_cell.to_string other_possible_moves in 
+        "or "^(String.concat "," temp1)^" : familiar moves" ;;
+
 let explanation_for_move res =
     match res.Hex_analysis_result_t.completion_for_strong_move with 
     Some(expected_seq)->
@@ -25,7 +31,7 @@ let explanation_for_move res =
     |None -> let (Hex_cell_set_t.S l)=res.Hex_analysis_result_t.familiar_moves in 
               match l with 
                []->(true,"")
-              |_->(false,"familiar move");;    
+              | _ :: others->(false,explanation_for_familiar_move others);;    
 
 let explanation_is_not_useful res=fst(explanation_for_move res );;
    
