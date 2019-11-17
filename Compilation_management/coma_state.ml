@@ -421,6 +421,10 @@ let below cs eless=
             then Some(mn)
             else None) (ordered_list_of_modules cs);;    
 
+let directly_above cs eless=
+    let nm=Dfn_endingless.to_module eless in
+     direct_fathers_at_module cs nm;;     
+
 let directly_below cs eless=
         let mn0=Dfn_endingless.to_module eless  in
         Option.filter_and_unpack(fun mn->
@@ -1825,6 +1829,14 @@ let local_below cs capitalized_or_not_module_name=
     let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
     Dfn_endingless.middle_element_to_line middle )
   (below cs endingless);;
+
+let local_directly_above cs capitalized_or_not_module_name=
+  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  let endingless = endingless_at_module cs mn in   
+  Image.image (fun nm-> 
+    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
+    Dfn_endingless.middle_element_to_line middle )
+  (directly_above cs endingless);;
 
 let local_directly_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
