@@ -4,7 +4,8 @@
 
 *)
 
-exception End_strategy_is_too_fast of Hex_flattened_end_strategy_t.t;;
+module Private = struct
+
 
 let empty_one = {
    Hex_finished_game_t.dimension = 11;
@@ -121,3 +122,18 @@ let to_concrete_object fgame =
      winner_label, Hex_player.to_concrete_object(fgame.Hex_finished_game_t.winner);
      sequences_of_moves_label, Concrete_object_field.of_list Hex_cell.to_concrete_object(fgame.Hex_finished_game_t.sequence_of_moves);
    ]);;
+
+end;;
+
+let cmp = Private.cmp;;
+let extends = Private.extends;;
+let empty_one = Private.empty_one;;
+let first_move = Private.first_move;;
+let simplify_by_move = Private.simplify_by_move;;
+let best_fits_for_game = Private.best_fits_for_game;;
+let of_concrete_object = Private.of_concrete_object;;
+let to_concrete_object = Private.to_concrete_object;;
+let best_fits_for_strategy = Private.best_fits_for_strategy;;
+let seek_relevant_strategies = Private.seek_relevant_strategies;;
+let largest_unconclusive_beginning = Private.largest_unconclusive_beginning;;
+
