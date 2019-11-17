@@ -63,8 +63,14 @@ let analize sta=
   ) in
   let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves  in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
-  let u_move = compute_usual_move (condition,easy_advancer,strong_moves,sta.Hex_state_t.moves_before) in 
+  let u_move = compute_chosen_move (condition,easy_advancer,strong_moves,sta.Hex_state_t.moves_before) in 
   let n_enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
+  let info_requested =(
+     match sta.Hex_state_t.declared_participant with 
+     None -> true 
+     |Some(declared)->player = declared
+  ) in 
+
   {
      Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
@@ -73,7 +79,7 @@ let analize sta=
      familiar_moves = strong_moves ;
      chosen_move = u_move;
      number_of_remaining_enemies = n_enem;
-     info_needed : bool;
+     info_needed = info_requested;
   } ;;
 
 let absorb_move sta cell=

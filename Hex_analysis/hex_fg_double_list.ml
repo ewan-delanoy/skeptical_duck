@@ -56,6 +56,11 @@ let first_moves player (Hex_fg_double_list_t.DL(l1,l2))=
    Hex_player_t.First_player -> Hex_fg_list.first_moves l1
   |Hex_player_t.Second_player -> Hex_fg_list.first_moves l2;;
 
+let familiar_moves player (Hex_fg_double_list_t.DL(l1,l2))=
+   match player with 
+   Hex_player_t.First_player -> Hex_fg_list.first_moves l2
+  |Hex_player_t.Second_player -> Hex_fg_list.first_moves l1;;
+
 let lookup_dimension (Hex_fg_double_list_t.DL(l1,l2))=
   match Hex_fg_list.lookup_dimension l1 with 
   Some(dim)->Some(dim)
