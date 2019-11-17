@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_strategy_factory_t.ml";;
+#use"Hex_analysis/hex_end_strategy_factory_t.ml";;
 
 *)
 
