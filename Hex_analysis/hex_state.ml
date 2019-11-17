@@ -73,8 +73,7 @@ let analize sta=
      familiar_moves = strong_moves ;
      chosen_move = u_move;
      number_of_remaining_enemies = n_enem;
-     declared_participant = sta.Hex_state_t.declared_participant ;
-      info_needed : bool;
+     info_needed : bool;
   } ;;
 
 let absorb_move sta cell=
