@@ -13,6 +13,7 @@ type t=
    |Preprocess_sheet
    |Quit
    |Replay_written_game
-   |Start_new_game
+   |Start_in_the_open
+   |Start_incognito
    |Undo_last_move
    |Unknown_command;;
