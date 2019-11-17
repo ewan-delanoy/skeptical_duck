@@ -59,8 +59,8 @@ let reset_all_to_empty ()=
     fst(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);
     snd(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);
     untamed_openings_ref := []) in 
-    (persist_games();persist_strategies();persist_openings())
-    ;;
+    (* (persist_games();persist_strategies()) *)
+    ();;
 
 
 let dimension_ref = ref(11);;
