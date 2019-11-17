@@ -31,7 +31,7 @@ let remove_finished_game fgame l=
 
 let take_new_end_strategy_into_account end_config l=
     let temp1=Image.image 
-    (fun fgame->Hex_finished_game.compute_largest_unconclusive_beginning fgame end_config) l in 
+    (fun fgame->Hex_finished_game.largest_unconclusive_beginning fgame [end_config]) l in 
     remove_redundancies temp1;;
 
 let simplify_by_move move l=Option.filter_and_unpack (Hex_finished_game.simplify_by_move move) l;;     
