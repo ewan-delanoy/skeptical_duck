@@ -8,19 +8,24 @@ let empty_result =
 {
      Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
      mandatory_set = None;
-     involved_end_strategies = [] ;
-     easy_advancer =  None ;
-     strong_moves =  Hex_cell_set_t.S [];
-     usual_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
+     dangerous_enemy_strategies = [] ;
+     strong_move =  None ;
+     familiar_moves =  Hex_cell_set_t.S [];
+     chosen_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
      number_of_remaining_enemies = 0 ;
+     declared_partipant = None;
+     info_needed = true;
   } ;;
 
 let report_on_danger res=
     match res.Hex_analysis_result_t.mandatory_set with 
     None->""
     |Some(set)->"Danger, because of "^
-                (Strung.of_intlist res.Hex_analysis_result_t.involved_end_strategies)^
-                ": play in "^(Hex_cell_set.to_string(set))^"\n";; 
+                (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
+                " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
+
+let explanation_for_move res =
+    match res.Hex_analysis_result_t.strong_move
 
    
 let report_on_possible_advances res=
