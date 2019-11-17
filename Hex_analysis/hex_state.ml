@@ -20,7 +20,7 @@ let initial_state opt_participant=
    Hex_state_t.games_remains = (!(Hex_persistent.games_ref)) ;
    Hex_state_t.openings_remains = (!(Hex_persistent.untamed_openings_ref));
    Hex_state_t.moves_before = [];
-   Hex_state_t.declared_participant = None ;
+   Hex_state_t.declared_participant = opt_participant ;
 };;
 
 exception No_moves_to_choose_from;;
