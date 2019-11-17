@@ -13,7 +13,7 @@ type t=
    |Preprocess_sheet
    |Quit
    |Replay_written_game
-   |Start_officially
+   |Start_officially of Hex_player_t.t 
    |Start_incognito
    |Undo_last_move
    |Unknown_command;;
