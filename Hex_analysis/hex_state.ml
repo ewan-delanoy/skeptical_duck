@@ -25,7 +25,8 @@ let initial_state ()=
 
 exception No_moves_to_choose_from;;
 
-let compute_usual_move (condition,easy_advancer,strong_moves,moves_before) =
+let compute_chosen_move (condition,openings,familiar_moves,moves_before) =
+  
   let opt1=easy_advancer in 
   if opt1<>None then fst(Option.unpack opt1) else 
   let opt2=Hex_cell_set.optional_min(strong_moves) in 
@@ -63,15 +64,17 @@ let analize sta=
   let strong_moves1=Hex_cell_set.apply_condition condition unconditioned_strong_moves  in 
   let strong_moves = Hex_cell_set.setminus strong_moves1 easy_advances in 
   let u_move = compute_usual_move (condition,easy_advancer,strong_moves,sta.Hex_state_t.moves_before) in 
-  let enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
+  let n_enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
   {
      Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
      dangerous_enemy_strategies = Image.image snd dangers ;
-     easy_advancer = easy_advancer ;
-     strong_moves = strong_moves ;
-     usual_move = u_move;
-     number_of_remaining_enemies = enem;
+     completion_for_strong_move = easy_advancer ;
+     familiar_moves = strong_moves ;
+     chosen_move = u_move;
+     number_of_remaining_enemies = n_enem;
+     declared_participant = sta.Hex_state_t.declared_participant ;
+      info_needed : bool;
   } ;;
 
 let absorb_move sta cell=

@@ -66,7 +66,6 @@ let empty_result =
      familiar_moves =  Hex_cell_set_t.S [];
      chosen_move = Hex_cell.of_string "a1"; (* arbitrary, will never be used *)
      number_of_remaining_enemies = 0 ;
-     declared_participant = None;
      info_needed = true;
   } ;;
 
