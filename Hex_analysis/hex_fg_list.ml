@@ -59,9 +59,12 @@ let relevancies fgames flesses=
 
 let check_relevancies  fgames flesses=
   let (for_games,for_strats)=relevancies fgames flesses in 
-  let bad_games1=List.filter(fun (fgame1,(fgame2,_))->fgame1<>fgame2) for_games 
-  and bad_games2=List.filter(fun (_,(_,l))->l=[]) for_games
-  and bad_strats= List.filter(fun (_,l)->l=[]) for_strats in 
+  let bad_games1 = Option.filter_and_unpack(fun (fgame1,(fgame2,_))->
+     if fgame1<>fgame2 then Some(fgame1,fgame2) else None) for_games 
+  and bad_games2 = Option.filter_and_unpack(fun (_,(fgame,l))->
+    if l=[] then Some(fgame) else None) for_games
+  and bad_strats= Option.filter_and_unpack(fun (fles,l)->
+    if l=[] then Some(fles) else None) for_strats in 
   (bad_games1,bad_games2,bad_strats);;
 
 
