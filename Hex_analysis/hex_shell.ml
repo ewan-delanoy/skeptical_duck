@@ -5,7 +5,7 @@
 *)
 
 let launch () = 
-  let _= Hex_analysis.restart () in 
+  let _= Hex_analysis.restart None  in 
   let _=(Hex_shell_internals.game_is_on:=true;
          print_string "Game started ...\n";
          Hex_shell_command.send_report()) in 
