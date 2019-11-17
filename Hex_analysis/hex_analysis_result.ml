@@ -32,7 +32,7 @@ let explanation_is_not_useful res=fst(explanation_for_move res );;
 let report_on_chosen_move res=
      let (expl_not_useful,expl) = explanation_for_move res  in 
      if expl_not_useful then "" else 
-     let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+     let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) 
      and s_move = Hex_cell.to_string (res.Hex_analysis_result_t.chosen_move) in 
      "Suggestion for "^plyr^" : "^s_move^" ("^expl^")\n" ;;  
 
