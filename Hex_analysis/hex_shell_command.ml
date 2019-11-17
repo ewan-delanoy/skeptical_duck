@@ -42,7 +42,7 @@ let of_string untrimmed_text =
    if text = "r"   then  Hex_shell_command_t.Replay_written_game else 
    if text = "s"   then  Hex_shell_command_t.Start_incognito else
    if text = "sab" then  Hex_shell_command_t.Start_officially(Hex_player_t.First_player) else
-   if text = "saw" then  Hex_shell_command_t.Start_officially(Hex_player_t.First_player) else
+   if text = "saw" then  Hex_shell_command_t.Start_officially(Hex_player_t.Second_player) else
    if text = "uo"  then  Hex_shell_command_t.Undo_last_move else
                    try   Hex_shell_command_t.Absorb_moves(parse_list_of_moves text) with 
                    _->   Hex_shell_command_t.Unknown_command;; 
