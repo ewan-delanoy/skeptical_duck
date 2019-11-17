@@ -13,7 +13,7 @@ type t= {
    familiar_moves : Hex_cell_set_t.t ;
    chosen_move : Hex_cell_t.t ; 
    number_of_remaining_enemies : int ;
-   declared_partipant : Hex_player_t.t option;
+   declared_participant : Hex_player_t.t option;
    info_needed : bool;
 };;
 

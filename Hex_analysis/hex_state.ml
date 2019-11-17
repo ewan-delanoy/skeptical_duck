@@ -67,7 +67,7 @@ let analize sta=
   {
      Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
-     involved_end_strategies = Image.image snd dangers ;
+     dangerous_enemy_strategies = Image.image snd dangers ;
      easy_advancer = easy_advancer ;
      strong_moves = strong_moves ;
      usual_move = u_move;
