@@ -46,7 +46,7 @@ let report_on_enemies res =
 
 
 let full_report res = 
-   if res.Hex_analysis_result_t.info_needed
+   if not(res.Hex_analysis_result_t.info_needed)
    then ""
    else 
    if explanation_is_not_useful res 
