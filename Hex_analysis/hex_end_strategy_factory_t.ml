@@ -4,7 +4,5 @@
 
 *)
 
-type t= F of 
-  Hex_player_t.t *
- ((Hex_strategy_static_constructor_t.t * string * (int list) * Hex_flattened_end_strategy_t.t ) list);;
+type t= F of (Hex_player_t.t * Hex_cog_in_machine_t.t list);;
    
