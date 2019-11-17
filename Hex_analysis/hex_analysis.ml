@@ -52,16 +52,7 @@ let absorb_all_moves cells=
 
 let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
-let remember_opening_if_necessary winner =
-   let (opt,strong_moves_before)=(fst(!walker)).Hex_state_t.strong_moves_before in 
-   let new_opng=(
-       if Hex_common.next_one_to_play(strong_moves_before) <> winner 
-       then Hex_untamed_opening_t.O(List.rev strong_moves_before)
-       else 
-            let new_l=List.rev((Option.unpack opt)::strong_moves_before) in 
-            Hex_untamed_opening_t.O(new_l)
-   ) in 
-   Hex_persistent.add_untamed_opening new_opng;;
+
 
 let declare_winner player =
   let _=(latest_winner:=Some(player)) in 
@@ -71,7 +62,6 @@ let declare_winner player =
     Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
   let _=Hex_persistent.add_finished_game new_fgame in
-  let _=remember_opening_if_necessary player  in  
   let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
   Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
