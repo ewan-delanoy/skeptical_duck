@@ -167,6 +167,17 @@ let to_string factory = Crobj_parsing.unparse (to_concrete_object factory) ;;
 let of_string text = 
    of_concrete_object (Crobj_parsing.parse text);;
 
+let restrict_to_strats_with_indices (Hex_end_strategy_factory_t.F(player,l)) indices =
+   let partial_l=List.filter (
+      fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+        List.mem (fles.Hex_flattened_end_strategy_t.index) indices
+   ) l in 
+   let pre_reindexer = Ennig.index_everything indices in 
+   let reindexer=Image.image (fun (x,y)->(y,x)) pre_reindexer in
+   let new_l=Image.image (Hex_reindex.cog reindexer) partial_l in 
+   Hex_end_strategy_factory_t.F(player,new_l);; 
+
+
 end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
@@ -175,6 +186,7 @@ let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let reconstruct_disjunction = Private.reconstruct_disjunction;;
+let restrict_to_strats_with_indices = Private.restrict_to_strats_with_indices;;
 let to_string raf = Private.to_string (!raf);;
 
 
