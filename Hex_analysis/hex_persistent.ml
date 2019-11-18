@@ -106,7 +106,7 @@ let add_finished_game_without_persisting fgame =
     let _=(last_game_added:=checked_fgame) in 
     let new_games = Hex_fg_double_list.add_finished_game checked_fgame (!games_ref) in 
    (
-    games_ref:=Hex_fg_double_list.add_finished_game checked_fgame (!games_ref);
+    games_ref:=new_games;
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
    );;
 
@@ -114,7 +114,7 @@ let remove_last_finished_game_without_persisting () =
     let fgame=(!last_game_added) in 
     let new_games = Hex_fg_double_list.remove_finished_game fgame (!games_ref) in 
    (
-    games_ref:=Hex_fg_double_list.remove_finished_game fgame (!games_ref);
+    games_ref:=new_games;
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
    );;
 
