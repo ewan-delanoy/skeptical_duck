@@ -19,12 +19,12 @@ let intersect (cmpr:'a Total_ordering.t) ox oy=
     ) in
     tempf(ox,oy,[]);;
 
-let is_nondecreasing (cmpr:'a Total_ordering.t) l=
+let is_increasing (cmpr:'a Total_ordering.t) l=
   if List.length(l)<2 then true else
   let rec tempf=(function
   (a,to_be_treated)->match to_be_treated with
    []->true
-   |b::others->if (cmpr(a)(b)<>Total_ordering.Greater)
+   |b::others->if (cmpr(a)(b)=Total_ordering.Lower)
                  then tempf(b,others)
                  else false
   ) in
@@ -150,7 +150,7 @@ let merge = Private.merge;;
 
 let outsert cmpr x oy=Private.setminus cmpr oy [x];;
 
-let safe_set cmpr ox=if Private.is_nondecreasing(cmpr)(ox) 
+let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
                      then ox 
                      else Private.sort cmpr ox;;
 
