@@ -28,7 +28,7 @@ exception No_moves_to_choose_from;;
 let compute_chosen_move (strong_moves_data,fam_moves,condition,moves_before) =
   
   let opt1=strong_moves_data in 
-  if opt1<>None then fst(Option.unpack opt1) else 
+  if opt1<>None then (fun (_,move,_)->move)(Option.unpack opt1) else 
   let opt2=Hex_cell_set.optional_min(fam_moves) in 
   if opt2<>None then Option.unpack opt2 else 
   let dim=Hex_persistent.dimension () in 
@@ -66,7 +66,7 @@ let analize sta=
      Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
      dangerous_enemy_strategies = Image.image snd dangers ;
-     completion_for_strong_move = Option.propagate snd strong_moves_data ;
+     completion_for_strong_move = Option.propagate (fun (forcing,_,x)->(forcing,x) ) strong_moves_data ;
      familiar_moves = fam_moves;
      chosen_move = u_move;
      number_of_remaining_enemies = n_enem;

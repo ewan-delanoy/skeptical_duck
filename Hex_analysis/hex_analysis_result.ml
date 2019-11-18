@@ -22,7 +22,10 @@ let explanation_for_familiar_move other_possible_moves =
 
 let explanation_for_move res =
     match res.Hex_analysis_result_t.completion_for_strong_move with 
-    Some(expected_seq)->
+    Some(forcing_possible,expected_seq)->
+        if (not forcing_possible) 
+        then (false,"prudent move")
+        else 
         if expected_seq = []
         then (false,"forcing move")
         else let temp1 = Image.image Hex_cell.to_string expected_seq in 
