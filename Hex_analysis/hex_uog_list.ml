@@ -9,7 +9,7 @@ exception Extract_untamed_exn of Hex_cell_t.t list;;
 module Private = struct 
 
 let select_openings_with_next_player_as_recipient l =
-   List.filter Hex_untamed_opening.has_odd_length l;;
+   List.partition Hex_untamed_opening.has_odd_length l;;
 
 
 
@@ -50,10 +50,15 @@ let insert_in = Private.insert_in;;
 
 
 let seek_interesting_move l=
-   let temp1=Private.select_openings_with_next_player_as_recipient l in 
-   if temp1=[] then None else 
-   let temp2=List.hd temp1 in 
-   Some(Hex_untamed_opening.first_move temp2,List.tl(Hex_untamed_opening.unveil temp2));;
+   let (first_choice,second_choice)=Private.select_openings_with_next_player_as_recipient l in 
+   if first_choice<>[] 
+   then let temp1=List.hd first_choice in 
+        Some(true,Hex_untamed_opening.first_move temp1,List.tl(Hex_untamed_opening.unveil temp1))
+   else 
+   if first_choice<>[] 
+   then let temp1=List.hd first_choice in 
+        Some(false,Hex_untamed_opening.first_move temp1,[])
+   else None;;
 
 let simplify_by_move move l=Option.filter_and_unpack 
 (Hex_untamed_opening.simplify_by_move move) l;;     
