@@ -46,6 +46,8 @@ let rootless_path_for_printersfile=
 let rootless_path_for_targetfile=
   Dfn_join.subdirectory_to  persistent_compilation_data_subdir short_path_for_targetfile;;     
 
+let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
+
 let up_to_date_but_not_registered_files=
     [
        rootless_path_for_loadingsfile;
@@ -56,7 +58,7 @@ let rootless_paths_needed_for_compiler_copy=
     up_to_date_but_not_registered_files@
     [
       rootless_path_for_targetfile;
-      Dfn_rootless.of_line ".ocamlinit"
+      rootless_path_for_ocamlinit
     ];;
 
 let git_ignored_subdirectories =
@@ -70,4 +72,16 @@ let git_ignored_subdirectories =
      exec_build_subdir
   ];;
 
-           
+let files_with_default_content = 
+   let text_for_ocamlinit = (
+      "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
+      "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Double_semicolon.ds^
+      "\nopen Needed_values"^Double_semicolon.ds^
+      "\ninitialize_toplevel()"^Double_semicolon.ds
+       ) 
+   and text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" in     
+   [
+     rootless_path_for_ocamlinit, text_for_ocamlinit ;
+     rootless_path_for_printersfile, text_for_printersfile
+   ] ;;          
+   
