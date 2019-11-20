@@ -117,19 +117,36 @@ let beheaded_simple_ls dir=
   Image.image (fun ap->
    Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
   
+let create_conventional_context dir subdirs files_with_content =
+   (* we assume that each file in files_with_content has its subir in the subdirs list *)
+   let s_dir = Directory_name.connectable_to_subpath dir in 
+   let commands_for_subdirs = Image.image (
+      fun subdir->
+         "mkdir -p "^s_dir^(Dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Unix_command.conditional_multiple_uc commands_for_subdirs in 
+   let temp1 = Option.filter_and_unpack (
+      fun (rootless,content)->
+          let fn = s_dir^(Dfn_rootless.to_line rootless) in 
+          if Sys.file_exists fn 
+          then None
+         else let ap = Absolute_path.of_string fn in 
+              Some("touch "^fn,ap,content)
+   ) files_with_content in 
+   List.iter (fun (cmd,ap,content)->
+        let i=Unix_command.hardcore_uc cmd in 
+        if i=0 then Io.overwrite_with ap content
+    ) temp1 ;;
+    
+     
+
 
 
 end;;    
 
-let simple_ls=Private.ls;;
-let beheaded_simple_ls=Private.beheaded_simple_ls;;
-let complete_ls=Private.complete_ls;;
-let is_a_directory=Private.is_a_directory;;
-let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;
-let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
 
 let all_files_with_endings dir l_endings=
-   let temp1=complete_ls dir in
+   let temp1=Private.complete_ls dir in
    let temp2=List.filter(
    fun ap->
      let s_ap=Absolute_path.to_string ap in
@@ -138,8 +155,10 @@ let all_files_with_endings dir l_endings=
      l_endings  
    ) temp1 in
    temp2;;  
-
-
-
-   
-           
+let beheaded_simple_ls=Private.beheaded_simple_ls;;
+let complete_ls=Private.complete_ls;;
+let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
+let create_conventional_context = Private.create_conventional_context;;
+let is_a_directory=Private.is_a_directory;;   
+let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
+let simple_ls=Private.ls;;
