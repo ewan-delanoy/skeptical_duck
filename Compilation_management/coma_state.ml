@@ -1339,7 +1339,7 @@ module Target_system_creation=struct
       let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir)) in
       let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)) in
       let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir)) in
-      let augen = Image.image Dfn_rootless.to_line Coma_constant.up_to_date_but_not_registered_files in 
+      let augen = Image.image Dfn_rootless.to_line Coma_constant.updated_not_compiled_files in 
       let _=Image.image (fun s->
         Unix_command.uc ("touch "^s_main_dir^"/"^s)
          ) ([dname^".ml";

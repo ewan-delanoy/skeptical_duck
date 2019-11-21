@@ -48,14 +48,14 @@ let rootless_path_for_targetfile=
 
 let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 
-let up_to_date_but_not_registered_files=
+let updated_not_compiled_files=
     [
        rootless_path_for_loadingsfile;
        rootless_path_for_printersfile;
     ];;
 
 let rootless_paths_needed_for_compiler_copy=
-    up_to_date_but_not_registered_files@
+    updated_not_compiled_files@
     [
       rootless_path_for_targetfile;
       rootless_path_for_ocamlinit
@@ -84,4 +84,3 @@ let files_with_default_content =
      rootless_path_for_ocamlinit, text_for_ocamlinit ;
      rootless_path_for_printersfile, text_for_printersfile
    ] ;;          
-   
