@@ -379,8 +379,21 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let fw2= update_some_files fw ([rootless],[]) in 
     let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
     (fw3,(rootless::changed_w_files,changed_sw_files));;
-    
 
+(*    
+let initialize fw =
+   let config = fw.Fw_wrapper_t.configuration in 
+   let the_root = config.Fw_configuration_t.root in 
+   let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
+   let list1 = More_unix.complete_ls_with_nondirectories_only the_dir in 
+   let list2 = Image.image  (
+     fun ap-> Dfn_common.decompose_absolute_path_using_root ap the_root 
+   ) list1 in
+   let (specials,nonspecials) = List.filter (
+      fun rootless -> List.mem rootless config.Fw_configuration_t.special
+   ) list2 in  
+   list2;;
+*)
 
 end;;
 
