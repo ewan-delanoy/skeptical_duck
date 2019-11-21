@@ -72,7 +72,14 @@ let git_ignored_subdirectories =
      exec_build_subdir
   ];;
 
-let files_with_default_content = 
+let conventional_subdirs =
+   [
+     build_subdir;
+     debug_build_subdir;
+     exec_build_subdir
+   ];;
+
+let conventional_files_with_content = 
    let text_for_ocamlinit = (
       "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
       "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Double_semicolon.ds^
