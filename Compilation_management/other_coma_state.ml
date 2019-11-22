@@ -8,7 +8,7 @@ module Private = struct
 
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple in 
-  ref(Coma_state_field.empty_one root backup_dir githubbing ([],[]));;
+  ref(Coma_state_field.empty_one root backup_dir githubbing (Dfa_ending.all_ocaml_endings,[],[]));;
 
 end;;
 
