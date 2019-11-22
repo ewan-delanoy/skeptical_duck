@@ -1476,7 +1476,7 @@ let select_good_files s_main_dir=
           try (Some(Dfn_full.from_absolute_path_with_root ap dir)) with 
           _->None
        ) l in
-       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b ([],[])) temp1;;
+       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b ([],[],[])) temp1;;
     
     end;;   
     
