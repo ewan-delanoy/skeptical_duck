@@ -9,23 +9,26 @@ module Private = struct
 let salt = "Fw_"^"configuration_t.";;
 
 let root_label                   = salt ^ "root";;
+let allowed_endings_label        = salt ^ "allowed_endings";;
 let ignored_subdirectories_label = salt ^ "ignored_subdirectories";;
-let ignored_files_label          = salt ^ "ignored_files";;
+let special_files_label          = salt ^ "special_files";;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
    {
       Fw_configuration_t.root = Dfa_root.of_concrete_object(g root_label);
+      allowed_endings = Concrete_object_field.to_list Dfa_ending.of_concrete_object (g allowed_endings_label);
       ignored_subdirectories = Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object(g ignored_subdirectories_label);
-      ignored_files = Concrete_object_field.to_string_list (g ignored_files_label);
+      special_files = Concrete_object_field.to_list Dfn_rootless.of_concrete_object (g special_files_label);
    };; 
 
 let to_concrete_object config=
    let items= 
    [
     root_label, Dfa_root.to_concrete_object config.Fw_configuration_t.root;
+    allowed_endings_label, Concrete_object_field.of_list Dfa_ending.to_concrete_object config.Fw_configuration_t.allowed_endings;
     ignored_subdirectories_label, Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object config.Fw_configuration_t.ignored_subdirectories;
-    ignored_files_label, Concrete_object_field.of_string_list config.Fw_configuration_t.ignored_files;
+    special_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object config.Fw_configuration_t.special_files;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -35,13 +38,14 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let constructor root_dir ign_subdirs ign_files = 
+let constructor root_dir edgs  ign_subdirs spc_files = 
     {
       Fw_configuration_t.root = root_dir;
+      allowed_endings = edgs;
       ignored_subdirectories = ign_subdirs;
-      ignored_files = ign_files;
+      special_files = spc_files;
     };; 
 
-let empty_one root_dir = constructor root_dir [] [];;
+let empty_one root_dir = constructor root_dir [] [] [];;
 
 
