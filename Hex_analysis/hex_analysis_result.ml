@@ -35,8 +35,6 @@ let explanation_for_move res =
               match l with 
                []->(true,"")
               | _ :: others->(false,explanation_for_familiar_move others);;    
-
-let explanation_is_not_useful res=fst(explanation_for_move res );;
    
 let report_on_chosen_move res=
      let (expl_not_useful,expl) = explanation_for_move res  in 
@@ -58,9 +56,7 @@ let full_report res =
    if not(res.Hex_analysis_result_t.info_needed)
    then ""
    else 
-   if explanation_is_not_useful res 
-   then  (report_on_enemies res)^"\n"
-   else  (report_on_danger res)^
+         (report_on_danger res)^
          (report_on_chosen_move res)^
          (report_on_enemies res)^"\n";;
   

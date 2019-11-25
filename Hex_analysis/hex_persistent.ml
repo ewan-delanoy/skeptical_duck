@@ -110,13 +110,17 @@ let add_finished_game_without_persisting fgame =
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
    );;
 
-let remove_last_finished_game_without_persisting () =
-    let fgame=(!last_game_added) in 
+let remove_finished_game_without_persisting fgame =
     let new_games = Hex_fg_double_list.remove_finished_game fgame (!games_ref) in 
    (
     games_ref:=new_games;
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
    );;
+
+
+let remove_last_finished_game_without_persisting () =
+    remove_finished_game_without_persisting (!last_game_added);;
+    
 
 let add_end_strategy fles =
    (
