@@ -5,7 +5,7 @@
 *)
 
 let launch () = 
-  let _= Hex_analysis.initialize_all_data_if_necessary ()  in 
+  let _= Hex_persistent.initialize_all_data_if_necessary ()  in 
   let _=(Hex_shell_internals.game_is_on:=true;
          print_string "Welcome to the Ocaml Hex player.\nType s to start a game.\n";
          Hex_shell_command.send_report()) in 
