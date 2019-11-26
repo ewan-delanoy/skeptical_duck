@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_ec_double_indexed_list.ml";;
+#use"Hex_analysis/hex_fles_double_list.ml";;
 
 *)
 
@@ -15,8 +15,8 @@ let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
        Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l2)
   |Hex_player_t.Second_player -> 
       Hex_fles_double_list_t.DL
-      (Hex_flattened_end_strategy.use_ally_move_to_simplify_several cell l1,
-       Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l2)
+      (Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l1,
+       Hex_flattened_end_strategy.use_ally_move_to_simplify_several cell l2)
      ;; 
     
 let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
