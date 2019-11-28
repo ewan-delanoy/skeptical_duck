@@ -380,7 +380,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
     (fw3,(rootless::changed_w_files,changed_sw_files));;
 
-(*    
+(*
 let initialize fw =
    let config = fw.Fw_wrapper_t.configuration in 
    let the_root = config.Fw_configuration_t.root in 
@@ -389,10 +389,27 @@ let initialize fw =
    let list2 = Image.image  (
      fun ap-> Dfn_common.decompose_absolute_path_using_root ap the_root 
    ) list1 in
-   let (specials,nonspecials) = List.filter (
-      fun rootless -> List.mem rootless config.Fw_configuration_t.special
+   let (specials,nonspecials) = List.partition (
+      fun rootless -> List.mem rootless config.Fw_configuration_t.special_files
    ) list2 in  
-   list2;;
+   let nonspecials_to_be_watched = List.filter (
+      fun rootless ->  (List.mem (Dfn_rootless.to_ending rootless)
+         config.Fw_configuration_t.allowed_endings )
+         &&
+         (
+            not(List.mem (Dfn_rootless.to_subdirectory rootless)
+             config.Fw_configuration_t.ignored_subdirectories
+            )
+         )
+   ) nonspecials in 
+   let w_files = Image.image (recompute_all_info fw) nonspecials_to_be_watched 
+   and sw_files = Image.image (recompute_all_info fw) specials in 
+   {
+      fw with 
+      Fw_wrapper_t.watched_files = w_files;
+       special_watched_files = sw_files;
+   }
+   ;;
 *)
 
 end;;
