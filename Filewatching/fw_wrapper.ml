@@ -386,8 +386,9 @@ let refresh fw =
    let the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let list1 = More_unix.complete_ls_with_nondirectories_only the_dir in 
-   let list2 = Image.image  (
-     fun ap-> Dfn_common.decompose_absolute_path_using_root ap the_root 
+   let list2 = Option.filter_and_unpack(
+     fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
+              _->None 
    ) list1 in
    let (specials,nonspecials) = List.partition (
       fun rootless -> List.mem rootless config.Fw_configuration_t.special_files
