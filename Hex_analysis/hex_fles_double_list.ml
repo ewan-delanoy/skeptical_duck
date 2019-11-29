@@ -20,8 +20,8 @@ let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
      ) in  
   let new_ally_l=(
      if player = Hex_player_t.First_player
-     then new_l2
-     else new_l1
+     then new_l1
+     else new_l2
   )  in 
   match Option.seek Hex_flattened_end_strategy.is_fulfilled new_ally_l with 
    Some(fles)-> raise(Nail_in_coffin(player,cell,fles.Hex_flattened_end_strategy_t.index))
