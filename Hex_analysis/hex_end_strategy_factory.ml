@@ -196,6 +196,20 @@ let restrict_to_strats_with_indices (Hex_end_strategy_factory_t.F(player,l)) ind
    Hex_end_strategy_factory_t.F(player,new_l);; 
 
 
+let remove_strats_with_indices factory  unordered_removed_indices =
+   let removed_indices = Set_of_integers.sort unordered_removed_indices in 
+   let (Hex_end_strategy_factory_t.F(player,l)) = factory in 
+   let old_indices=Image.image (
+      fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+         (fles.Hex_flattened_end_strategy_t.index) 
+   ) l in 
+   let remaining_indices = List.filter (fun idx->
+      not(Set_of_integers.mem idx removed_indices)
+   ) old_indices in 
+   restrict_to_strats_with_indices factory remaining_indices;;
+
+
+
 end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
@@ -204,7 +218,7 @@ let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let reconstruct_disjunction = Private.reconstruct_disjunction;;
-let restrict_to_strats_with_indices = Private.restrict_to_strats_with_indices;;
+let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let to_string raf = Private.to_string (!raf);;
 
 
