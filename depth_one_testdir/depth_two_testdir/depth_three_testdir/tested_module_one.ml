@@ -19,6 +19,6 @@ let a_value = 1 ;;
 
 end ;;
 
-let a_deduced_value = A_Submodule.a_value + 2;;
+let o_deduced_value = A_Submodule.a_value + 2;;
 
 

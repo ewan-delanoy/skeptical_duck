@@ -12,4 +12,4 @@ let f x y=
 
 let an_imported_value = Tested_module_one.A_Submodule.a_value + 2;;  
 
-let snd_imported_value = Tested_module_one.a_deduced_value + 2;; 
+let snd_imported_value = Tested_module_one.o_deduced_value + 2;; 
