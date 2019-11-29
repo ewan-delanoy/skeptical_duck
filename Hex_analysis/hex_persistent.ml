@@ -96,13 +96,9 @@ let add_end_strategy_without_persisting (player,static_constructor,comment,indic
    );;
 
 let remove_strats_with_indices_without_persisting (l1_idx,l2_idx) =
-   let old_wes1=(!winning_end_strategies_for_first_player_ref)
-   and old_wes2=(!winning_end_strategies_for_second_player_ref) in 
-   let new_wes1=Hex_end_strategy_factory.remove_strats_with_indices old_wes1 l1_idx
-   and new_wes2=Hex_end_strategy_factory.remove_strats_with_indices old_wes2 l2_idx in 
    (
-    winning_end_strategies_for_first_player_ref:=new_wes1;
-    winning_end_strategies_for_second_player_ref:=new_wes2;
+    Hex_end_strategy_factory.remove_strats_with_indices (fst wes_pair) l1_idx;
+    Hex_end_strategy_factory.remove_strats_with_indices (snd wes_pair) l2_idx;
    );;
 
 let last_game_added=ref(Hex_finished_game.empty_one);;
