@@ -8,16 +8,24 @@ let empty_one = Hex_fles_double_list_t.DL([],[]);;
 
 
 let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
-  match player with 
+  let (new_l1,new_l2)=
+  (match player with 
    Hex_player_t.First_player -> 
-      Hex_fles_double_list_t.DL
       (Hex_flattened_end_strategy.use_ally_move_to_simplify_several cell l1,
        Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l2)
   |Hex_player_t.Second_player -> 
-      Hex_fles_double_list_t.DL
       (Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l1,
        Hex_flattened_end_strategy.use_ally_move_to_simplify_several cell l2)
-     ;; 
+     ) in 
+  (*   
+  let new_enemy_l=(
+     if player = Hex_player_t.First_player
+     then new_l2
+     else new_l1
+  )  in 
+  match Option.seek () new_enemy_l in 
+  *)
+  Hex_fles_double_list_t.DL(new_l1,new_l2)      ;; 
     
 let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
   match player with 

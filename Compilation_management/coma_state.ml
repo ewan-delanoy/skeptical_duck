@@ -1348,7 +1348,7 @@ module Target_system_creation=struct
            augen
         ) in ();;
     
-    let put_default_content_in_special_files s_main_dir=
+    let  put_default_content_in_conventional_files s_main_dir=
       (Io.overwrite_with 
       (Absolute_path.of_string (s_main_dir^"/.ocamlinit"))
       (
@@ -1485,7 +1485,7 @@ let from_main_directory dir backup_dir g_after_b=
       let s_main_dir=Cull_string.coending 1 old_s in (* mind the trailing slash *)
       let _=
         (Private.copy_special_files s_main_dir;
-         Private.put_default_content_in_special_files s_main_dir 
+         Private. put_default_content_in_conventional_files s_main_dir 
         ) in
         let temp1=Private.select_good_files s_main_dir in
         let temp2=Private.clean_list_of_files dir temp1 in

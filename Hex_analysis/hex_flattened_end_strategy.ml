@@ -47,6 +47,10 @@ let immediate_opportunities flesses =
          else None
    ) flesses;;
 
+let is_fulfilled fles = 
+ (Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)=0);;
+
+
 let support fles =
    Hex_cell_set.fold_merge
    [fles.Hex_flattened_end_strategy_t.active_part;
@@ -102,6 +106,7 @@ end;;
 
 let of_concrete_object = Private.of_concrete_object ;;
 let immediate_opportunities = Private.immediate_opportunities;;
+let is_fulfilled = Private.is_fulfilled;;
 let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
