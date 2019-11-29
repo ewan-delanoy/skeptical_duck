@@ -34,6 +34,12 @@ let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
   |Hex_player_t.Second_player -> 
       Hex_flattened_end_strategy.immediate_opportunities l1;; 
     
+let mandatory_set player dl = (
+     match immediate_dangers player dl with 
+     []->None
+     |dangers->Some(Hex_cell_set.fold_intersect (Image.image fst dangers))
+  ) ;;
+
 let iterated_largest_unconclusive_beginning fgame (Hex_fles_double_list_t.DL(l1,l2))=
     Hex_finished_game.largest_unconclusive_beginning fgame (l1@l2);;
 
