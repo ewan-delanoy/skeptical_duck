@@ -173,10 +173,10 @@ module After_checking = struct
 
       let rename_string_or_value cs old_sov new_sov=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.rename_string_or_value cs old_sov new_sov;; 
+         (* Coma_state.Almost_concrete.rename_string_or_value cs old_sov new_sov;; *)
 
 
-         (* Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; *)
+         Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
 
 end;;
 
@@ -233,8 +233,7 @@ module And_backup = struct
 
       let rename_string_or_value cs old_sov new_sov=
          let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
-         (* let msg="rename "^old_sov^" as "^new_sov in *)
-         let msg = "..." in 
+         let msg="rename "^old_sov^" as "^new_sov in 
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
