@@ -95,6 +95,15 @@ let add_end_strategy_without_persisting (player,static_constructor,comment,indic
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
    );;
 
+let remove_strats_with_indices_without_persisting (l1_idx,l2_idx) =
+   let old_wes1=(!winning_end_strategies_for_first_player_ref)
+   and old_wes2=(!winning_end_strategies_for_second_player_ref) in 
+   let new_wes1=Hex_end_strategy_factory.remove_strats_with_indices old_wes1 l1_idx
+   and new_wes2=Hex_end_strategy_factory.remove_strats_with_indices old_wes2 l2_idx in 
+   (
+    winning_end_strategies_for_first_player_ref:=new_wes1;
+    winning_end_strategies_for_second_player_ref:=new_wes2;
+   );;
 
 let last_game_added=ref(Hex_finished_game.empty_one);;
 
@@ -129,6 +138,12 @@ let add_end_strategy fles =
      persist_games()
    );;
 
+let remove_strats_with_indices pair =
+   (
+      remove_strats_with_indices_without_persisting pair;
+      persist_strategies();
+   );;
+
 let add_finished_game fgame =
    (
      add_finished_game_without_persisting fgame;
@@ -148,6 +163,7 @@ let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let cancel_last_game = Private.remove_last_finished_game;;
 let dimension ()=(!(Private.dimension_ref));;
+let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let wes_pair = Private.wes_pair;;
