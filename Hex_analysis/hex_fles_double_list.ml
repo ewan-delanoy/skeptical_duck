@@ -6,6 +6,7 @@
 
 let empty_one = Hex_fles_double_list_t.DL([],[]);;
 
+exception Nail_in_coffin of Hex_player_t.t * Hex_cell_t.t * int ;; 
 
 let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
   let (new_l1,new_l2)=
@@ -16,16 +17,15 @@ let simplify_by_move (player,cell) (Hex_fles_double_list_t.DL(l1,l2))=
   |Hex_player_t.Second_player -> 
       (Hex_flattened_end_strategy.use_enemy_move_to_simplify_several cell l1,
        Hex_flattened_end_strategy.use_ally_move_to_simplify_several cell l2)
-     ) in 
-  (*   
-  let new_enemy_l=(
+     ) in  
+  let new_ally_l=(
      if player = Hex_player_t.First_player
      then new_l2
      else new_l1
   )  in 
-  match Option.seek () new_enemy_l in 
-  *)
-  Hex_fles_double_list_t.DL(new_l1,new_l2)      ;; 
+  match Option.seek Hex_flattened_end_strategy.is_fulfilled new_ally_l with 
+   Some(fles)-> raise(Nail_in_coffin(player,cell,fles.Hex_flattened_end_strategy_t.index))
+  |None -> Hex_fles_double_list_t.DL(new_l1,new_l2)      ;; 
     
 let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
   match player with 
