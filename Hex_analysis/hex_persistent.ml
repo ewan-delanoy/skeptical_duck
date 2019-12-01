@@ -106,7 +106,7 @@ let last_game_added=ref(Hex_finished_game.empty_one);;
 
 let add_finished_game_without_persisting fgame =
     
-    let checked_fgame=Hex_fles_double_list.iterated_largest_unconclusive_beginning 
+    let checked_fgame=Hex_fles_double_list.iterated_largest_nonsurrendering_beginning
              fgame (Hex_end_strategy_factory.compute_all_end_configs wes_pair) in 
     let _=(last_game_added:=checked_fgame) in 
     let new_games = Hex_fg_double_list.add_finished_game checked_fgame (!games_ref) in 
