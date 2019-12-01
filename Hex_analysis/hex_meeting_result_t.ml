@@ -15,6 +15,6 @@ In the Stalemate variant, the argument is the set of remaining unplayed active c
 
 type t= 
    Victory of Hex_player_t.t * Hex_cell_t.t 
-  |Attack_but_no_surrender of (Hex_cell_t.t list) * (Hex_cell_t.t) 
+  |Attack_but_no_surrender of (Hex_cell_t.t list) * (Hex_cell_t.t) * int
   |Surrender of (Hex_cell_t.t list) * (Hex_cell_t.t) * (Hex_cell_t.t)  
   |Stalemate of Hex_cell_set_t.t;;

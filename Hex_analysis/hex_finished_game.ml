@@ -13,43 +13,16 @@ let empty_one = {
    sequence_of_moves = [];
 };;
 
-let rec helper1_for_relevant_strategy_seeking fles seq_moves=
-   let fgame={
-     Hex_finished_game_t.winner = fles.Hex_flattened_end_strategy_t.beneficiary;
-     dimension = 11;
-     sequence_of_moves = seq_moves;
-   } in   
-   match Hex_meeting_result.meet fles fgame with
-     Hex_meeting_result_t.Separation(_,_) 
-    |Hex_meeting_result_t.Incomplete(_)->None
-    |Hex_meeting_result_t.Relevance (shorter_seq,_)->Some(shorter_seq);; 
- 
-let rec helper2_for_relevant_strategy_seeking 
-   (seq_of_moves,already_found_relevants,flesses) = 
-    match flesses with 
-     []->(seq_of_moves,List.rev already_found_relevants)
-    |fles::others ->
-       (match helper1_for_relevant_strategy_seeking fles seq_of_moves with 
-        None -> helper2_for_relevant_strategy_seeking 
-               (seq_of_moves,already_found_relevants,others)
-       |Some(shorter_seq)->
-             if shorter_seq = seq_of_moves 
-             then  helper2_for_relevant_strategy_seeking 
-                   (seq_of_moves,fles::already_found_relevants,others)
-             else  helper2_for_relevant_strategy_seeking 
-                   (shorter_seq,[fles],others)        
-       );;
 
-let seek_relevant_strategies fgame flesses = 
-    let (seq,relvs)= helper2_for_relevant_strategy_seeking 
-   (fgame.Hex_finished_game_t.sequence_of_moves,[],flesses)  in 
-   ({fgame with Hex_finished_game_t.sequence_of_moves=seq},relvs);;
 
-let largest_unconclusive_beginning fgame flesses =
-   let (shortened_fgame,relvs) = seek_relevant_strategies fgame flesses in 
-   if relvs=[]
-   then fgame 
-   else shortened_fgame;;
+
+let largest_nonsurrendering_beginning_for_one fgame fles = 
+    match Hex_meeting_result.meet fles fgame with 
+     Hex_meeting_result_t.Surrender(moves_before,_,_)->{fgame with Hex_finished_game_t.sequence_of_moves = moves_before}
+    |_->fgame;;
+
+let largest_nonsurrendering_beginning_for_several fgame flesses =
+   List.fold_left largest_nonsurrendering_beginning_for_one fgame flesses;;     
 
 
 let extends fgame1 fgame2=
@@ -88,10 +61,12 @@ let compute_optional_fit fles fgame =
     |Hex_meeting_result_t.Incomplete(remaining_ones)->Some(Hex_cell_set.length remaining_ones,(fgame,fles))
     |Hex_meeting_result_t.Relevance (shorter_seq,_)->Some(1,(fgame,fles));; 
 
-let best_fits_for_strategy fles fgames =
-   let temp1=Option.filter_and_unpack (compute_optional_fit fles) fgames in 
-   let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
-   (found_min,Image.image (fun (_,x)->fst x) sols);;
+
+let seek_companion_for_strategy fles fgames =
+   Option.find_and_stop (
+     fun fgame -> match Hex_meeting_result.meet fles fgame with
+       Hex_meeting_result_t.Attack_but_no_surrender(moves_before,pivot)
+   ) fgames ;;
 
 let best_fits_for_game fgame flesses =
    let temp1=Option.filter_and_unpack (fun fles->compute_optional_fit fles fgame) flesses in 
@@ -134,6 +109,5 @@ let best_fits_for_game = Private.best_fits_for_game;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 let best_fits_for_strategy = Private.best_fits_for_strategy;;
-let seek_relevant_strategies = Private.seek_relevant_strategies;;
-let largest_unconclusive_beginning = Private.largest_unconclusive_beginning;;
+let largest_nonsurrendering_beginning = Private.largest_nonsurrendering_beginning_for_several;;
 
