@@ -41,10 +41,10 @@ let simplify_by_move (player,cell) dl=
      ) in  
   Hex_fles_double_list_t.DL(new_l1,new_l2)      ;; 
     
-(*
-let iterated_largest_unconclusive_beginning fgame (Hex_fles_double_list_t.DL(l1,l2))=
-    Hex_finished_game.largest_unconclusive_beginning fgame (l1@l2);;
-*)
+
+let iterated_largest_nonsurrendering_beginning fgame (Hex_fles_double_list_t.DL(l1,l2))=
+    Hex_finished_game.largest_nonsurrendering_beginning fgame (l1@l2);;
+
 
 let number_of_enemy_strategies player (Hex_fles_double_list_t.DL(l1,l2))=
    let l=(match player with 
