@@ -13,10 +13,10 @@ let rec helper (moves_before,player,moves_after,fles)=
    then  (
            match moves_after with 
            []->Hex_meeting_result_t.Attack_but_no_surrender (
-              List.rev(moves_before),Hex_cell_set.min a) 
+              List.rev(moves_before),Hex_cell_set.min a,0) 
            |next_move::_->
               if (Hex_cell_set.mem next_move (Hex_flattened_end_strategy.support fles))
-              then Hex_meeting_result_t.Attack_but_no_surrender (List.rev(moves_before),Hex_cell_set.min a) 
+              then Hex_meeting_result_t.Attack_but_no_surrender (List.rev(moves_before),Hex_cell_set.min a,List.length moves_after) 
               else Hex_meeting_result_t.Surrender(List.rev(moves_before),Hex_cell_set.min a,next_move) 
          )     
    else (
