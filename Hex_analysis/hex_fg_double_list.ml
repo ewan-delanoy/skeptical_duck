@@ -73,7 +73,7 @@ let seek_companions
       Hex_fg_list.seek_companions_for_games games1 flesses1,
       Hex_fg_list.seek_companions_for_games games2 flesses2,
       Hex_fg_list.seek_companions_for_strategies flesses1 games1,
-      Hex_fg_list.seek_companions_for_strategies flesses1 games1 
+      Hex_fg_list.seek_companions_for_strategies flesses2 games2 
    );;
 
 let check_companions  fg_dl fles_dl = 
