@@ -10,14 +10,21 @@ module Private = struct
 let rec helper (moves_before,player,moves_after,fles)=
    let a = fles.Hex_flattened_end_strategy_t.active_part in 
    if Hex_cell_set.length a=1
-   then  Hex_meeting_result_t.Relevance(
+   then  (
+           match moves_after with 
+           []->Hex_meeting_result_t.Attack_but_no_surrender (
               List.rev(moves_before),Hex_cell_set.min a) 
+           |next_move::_->
+              if (Hex_cell_set.mem next_move (Hex_flattened_end_strategy.support fles))
+              then Hex_meeting_result_t.Attack_but_no_surrender (List.rev(moves_before),Hex_cell_set.min a) 
+              else Hex_meeting_result_t.Surrender(List.rev(moves_before),Hex_cell_set.min a,next_move) 
+         )     
    else (
           match moves_after with 
-          []->Hex_meeting_result_t.Incomplete(a)
+          []->Hex_meeting_result_t.Stalemate(a)
           |move::following_moves ->
              (match Hex_flattened_end_strategy.use_move_to_simplify_one (player,move) fles with
-               None -> Hex_meeting_result_t.Separation(player,move)
+               None -> Hex_meeting_result_t.Victory(player,move)
                |Some(new_fles) ->
                helper
                  (move::moves_before,Hex_player.other_player player,following_moves,new_fles) 
