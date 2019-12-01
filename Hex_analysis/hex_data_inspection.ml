@@ -5,29 +5,14 @@
 *)
 
 
-let best_fits_for_game fgame =
-  let (Hex_fles_double_list_t.DL(l1,l2))=(Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair) in 
-  let flesses = (match fgame.Hex_finished_game_t.winner  with 
-      Hex_player_t.First_player -> l1
-     |Hex_player_t.Second_player -> l2
-  ) in 
-  Hex_finished_game.best_fits_for_game fgame flesses;;
-
-
-let best_fits_for_strategy fles =
-  let (Hex_fg_double_list_t.DL(l1,l2))=(!(Hex_persistent.games_ref)) in 
-  let fgames = (match fles.Hex_flattened_end_strategy_t.beneficiary with 
-      Hex_player_t.First_player -> l1
-     |Hex_player_t.Second_player -> l2
-  ) in 
-  Hex_finished_game.best_fits_for_strategy fles fgames;;
-
-let relevancies ()=
-   Hex_fg_double_list.relevancies 
+let seek_companions ()=
+   let _=Hex_persistent.initialize_all_data_if_necessary () in 
+   Hex_fg_double_list.seek_companions 
     (!(Hex_persistent.games_ref)) 
    (Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair);;
 
-let check_relevancies ()=
-   Hex_fg_double_list.check_relevancies 
+let check_companions ()=
+   let _=Hex_persistent.initialize_all_data_if_necessary () in 
+   Hex_fg_double_list.check_companions
     (!(Hex_persistent.games_ref)) 
    (Hex_end_strategy_factory.compute_all_end_configs Hex_persistent.wes_pair);;
