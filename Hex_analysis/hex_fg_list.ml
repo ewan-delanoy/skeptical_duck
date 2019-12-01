@@ -44,7 +44,11 @@ let lookup_dimension =function
    |fgame::_->Some(fgame.Hex_finished_game_t.dimension);;
 
 
+let seek_companions_for_games fgames flesses =
+   Image.image (fun fgame->(fgame,Hex_finished_game.seek_companion_for_game fgame flesses) ) fgames;;   
 
+let seek_companions_for_strategies flesses fgames =
+   Image.image (fun fles->(fles,Hex_finished_game.seek_companion_for_strategy fles fgames) ) flesses;;   
 
 
 
