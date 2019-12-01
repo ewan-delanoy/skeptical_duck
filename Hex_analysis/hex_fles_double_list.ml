@@ -14,7 +14,7 @@ let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
       Hex_flattened_end_strategy.immediate_opportunities l1;; 
     
 
-let test_for_non_compliance (player,cell) dl=
+let test_for_surrender (player,cell) dl=
    match immediate_dangers player dl with 
    []->None
    |dangers -> let mandatory_set = Hex_cell_set.fold_intersect (Image.image fst dangers) in 
@@ -23,11 +23,11 @@ let test_for_non_compliance (player,cell) dl=
                else None;;
 
 
-exception Suicide of Hex_player_t.t * Hex_cell_t.t * (int list) ;; 
+exception Surrender of Hex_player_t.t * Hex_cell_t.t * (int list) ;; 
 
 let simplify_by_move (player,cell) dl=
-  match test_for_non_compliance (player,cell) dl with 
-  Some(killers)->raise(Suicide(player,cell,killers))
+  match test_for_surrender (player,cell) dl with 
+  Some(killers)->raise(Surrender(player,cell,killers))
   |None->
   let  (Hex_fles_double_list_t.DL(l1,l2))= dl in 
   let (new_l1,new_l2)=
@@ -41,9 +41,10 @@ let simplify_by_move (player,cell) dl=
      ) in  
   Hex_fles_double_list_t.DL(new_l1,new_l2)      ;; 
     
-
+(*
 let iterated_largest_unconclusive_beginning fgame (Hex_fles_double_list_t.DL(l1,l2))=
     Hex_finished_game.largest_unconclusive_beginning fgame (l1@l2);;
+*)
 
 let number_of_enemy_strategies player (Hex_fles_double_list_t.DL(l1,l2))=
    let l=(match player with 
