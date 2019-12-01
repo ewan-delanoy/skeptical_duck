@@ -66,21 +66,24 @@ let lookup_dimension (Hex_fg_double_list_t.DL(l1,l2))=
   Some(dim)->Some(dim)
   |None -> Hex_fg_list.lookup_dimension l2 ;;
 
-let relevancies 
+let seek_companions 
   (Hex_fg_double_list_t.DL(games1,games2)) 
    (Hex_fles_double_list_t.DL(flesses1,flesses2))=
    (
-      Hex_fg_list.relevancies games1 flesses1,
-      Hex_fg_list.relevancies games2 flesses2
+      Hex_fg_list.seek_companions_for_games games1 flesses1,
+      Hex_fg_list.seek_companions_for_games games2 flesses2,
+      Hex_fg_list.seek_companions_for_strategies flesses1 games1,
+      Hex_fg_list.seek_companions_for_strategies flesses1 games1 
    );;
 
-let check_relevancies  
- (Hex_fg_double_list_t.DL(games1,games2)) 
-   (Hex_fles_double_list_t.DL(flesses1,flesses2))=
-   (
-      Hex_fg_list.check_relevancies games1 flesses1,
-      Hex_fg_list.check_relevancies games2 flesses2
-   );;
+let check_companions  fg_dl fles_dl = 
+   let (a1,a2,a3,a4) = seek_companions fg_dl fles_dl 
+   and finder =(fun l->Option.filter_and_unpack (
+       fun (x,opt)->match opt with 
+        None -> Some(x)
+       | _ ->None
+   ) l) in 
+   (finder a1,finder a2,finder a3,finder a4);;
 
  
 
