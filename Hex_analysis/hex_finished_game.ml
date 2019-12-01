@@ -55,23 +55,22 @@ let cmp =
    (partial_unveil fgame1) (partial_unveil fgame2)  
 ) :> Hex_finished_game_t.t Total_ordering.t);;
 
-let compute_optional_fit fles fgame =
-   match Hex_meeting_result.meet fles fgame with
-     Hex_meeting_result_t.Separation(_,_) ->None
-    |Hex_meeting_result_t.Incomplete(remaining_ones)->Some(Hex_cell_set.length remaining_ones,(fgame,fles))
-    |Hex_meeting_result_t.Relevance (shorter_seq,_)->Some(1,(fgame,fles));; 
-
-
 let seek_companion_for_strategy fles fgames =
    Option.find_and_stop (
      fun fgame -> match Hex_meeting_result.meet fles fgame with
-       Hex_meeting_result_t.Attack_but_no_surrender(moves_before,pivot)
+       Hex_meeting_result_t.Attack_but_no_surrender(_,_,_)->Some(fgame)
+       |_->None
    ) fgames ;;
 
-let best_fits_for_game fgame flesses =
-   let temp1=Option.filter_and_unpack (fun fles->compute_optional_fit fles fgame) flesses in 
-   let (found_min,sols)=Min.minimize_it_with_care fst temp1 in 
-   (found_min,Image.image (fun (_,x)->snd x) sols);;
+let seek_companion_for_game fgame flesses =
+  Option.find_and_stop (
+     fun fles -> match Hex_meeting_result.meet fles fgame with
+       Hex_meeting_result_t.Attack_but_no_surrender(moves_before,_,nbr_of_moves_remaining)->
+           if nbr_of_moves_remaining = 0 
+           then Some(fles)
+           else None
+       |_->None
+   ) flesses ;;
 
 
 let salt = "Hex_"^"finished_game_t.";;
@@ -104,10 +103,11 @@ let cmp = Private.cmp;;
 let extends = Private.extends;;
 let empty_one = Private.empty_one;;
 let first_move = Private.first_move;;
-let simplify_by_move = Private.simplify_by_move;;
-let best_fits_for_game = Private.best_fits_for_game;;
-let of_concrete_object = Private.of_concrete_object;;
-let to_concrete_object = Private.to_concrete_object;;
-let best_fits_for_strategy = Private.best_fits_for_strategy;;
 let largest_nonsurrendering_beginning = Private.largest_nonsurrendering_beginning_for_several;;
+let of_concrete_object = Private.of_concrete_object;;
+let seek_companion_for_game = Private.seek_companion_for_game;;
+let seek_companion_for_strategy = Private.seek_companion_for_strategy;;
+let simplify_by_move = Private.simplify_by_move;;
+let to_concrete_object = Private.to_concrete_object;;
+
 
