@@ -27,7 +27,7 @@ let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
   |move::others->
      let (Hex_cell_set_t.S next_pushes)=Hex_fg_double_list.first_moves next_to_move dfgl in 
      if next_pushes = []
-     then Hex_untamed_opening_t.O(List.rev(move::moves_before))
+     then Hex_untamed_opening_t.O(List.rev(moves_before))
      else let new_dfgl = Hex_fg_double_list.simplify_by_move move dfgl in 
           helper_during_extraction 
            (move::moves_before,Hex_player.other_player next_to_move,others,new_dfgl);;
