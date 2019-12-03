@@ -55,8 +55,8 @@ let seek_interesting_move l=
    then let temp1=List.hd first_choice in 
         Some(true,Hex_untamed_opening.first_move temp1,List.tl(Hex_untamed_opening.unveil temp1))
    else 
-   if first_choice<>[] 
-   then let temp1=List.hd first_choice in 
+   if second_choice<>[] 
+   then let temp1=List.hd second_choice in 
         Some(false,Hex_untamed_opening.first_move temp1,[])
    else None;;
 
