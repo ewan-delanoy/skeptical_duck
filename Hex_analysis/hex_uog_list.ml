@@ -35,11 +35,11 @@ let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
 end ;; 
 
 let extract_untamed_openings dfgl =
-   let (Hex_fg_double_list_t.DL(l1,_)) = dfgl in 
+   let (Hex_fg_double_list_t.DL(l1,l2)) = dfgl in 
    let temp1 = Image.image (fun fg->
       Private.helper_during_extraction 
        ([],Hex_player_t.First_player,fg.Hex_finished_game_t.sequence_of_moves,dfgl)
-    ) l1 in 
+    ) (l1@l2) in 
    Ordered.sort Hex_untamed_opening.cmp temp1 ;;
 
 
