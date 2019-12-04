@@ -92,3 +92,8 @@ let conventional_files_with_content =
      rootless_path_for_ocamlinit, text_for_ocamlinit ;
      rootless_path_for_printersfile, text_for_printersfile
    ] ;;          
+
+let endings_for_cleaning  = [
+    Dfa_ending.mll, Dfa_ending.ml;
+    Dfa_ending.mly, Dfa_ending.ml
+];;
