@@ -28,6 +28,10 @@ let to_concrete_object cleaner=
 
 end ;; 
 
+let constructor l= {
+  Fw_final_cleaner_t.redundant_dependencies = l;
+};;
+
 let clean cleaner l_to_be_cleaned=
     let pairs = cleaner.Fw_final_cleaner_t.redundant_dependencies in 
     let l_to_be_excluded = Option.filter_and_unpack (fun 
