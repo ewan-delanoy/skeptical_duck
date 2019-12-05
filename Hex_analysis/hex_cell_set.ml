@@ -13,6 +13,7 @@ let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
 let fold_merge l= Functor_for_sets.fold_merge tr l;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
 let insert a x= Functor_for_sets.insert tr a x;;
+let intersect l= Functor_for_sets.intersect tr l;;
 let length x= Functor_for_sets.length tr x;;
 let mem a x= Functor_for_sets.mem tr a x;;
 let outsert a x= Functor_for_sets.outsert tr a x;;
@@ -53,6 +54,11 @@ let z2=to_string z1;;
 let check =(of_string(z2)=z1);;
 
 *)
+
+let neighbors dim amoeba =
+   let (Hex_cell_set_t.S(l))=amoeba in 
+   let temp1 = Image.image (fun cell->safe_set (Hex_cell.neighbors dim cell)) l in 
+   setminus (fold_merge temp1) amoeba;;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
