@@ -412,9 +412,30 @@ let refresh fw =
    }
    ;;
 
+let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
+   let s_root = Dfa_root.connectable_to_subpath root in 
+   let cmds1=Image.image (
+      fun subdir -> 
+         "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Unix_command.conditional_multiple_uc cmds1 in 
+   let temp1=Option.filter_and_unpack (
+     fun (rootless,content)->
+        let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
+        if Sys.file_exists full_path 
+        then None 
+        else Some(full_path,content)
+   ) files_with_content in 
+   Image.image (
+      fun (full_path,content) ->
+         let _=Unix_command.hardcore_uc("touch "^full_path) in 
+         Io.overwrite_with (Absolute_path.of_string full_path) content
+   )  temp1;;
+
 
 end;;
 
+let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
 
 let empty_one config= {
    Fw_wrapper_t.configuration = config;
