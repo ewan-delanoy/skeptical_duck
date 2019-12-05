@@ -153,9 +153,16 @@ let add_finished_game fgame =
      persist_games()
    );;
 
-let remove_last_finished_game fgame =
+let remove_finished_game fgame =
    (
-     remove_last_finished_game_without_persisting fgame;
+     remove_finished_game_without_persisting fgame;
+     persist_games()
+   );;
+
+
+let remove_last_finished_game () =
+   (
+     remove_last_finished_game_without_persisting ();
      persist_games()
    );;
 
