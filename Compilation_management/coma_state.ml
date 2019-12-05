@@ -1320,49 +1320,9 @@ module Target_system_creation=struct
       let temp2="\n\n The following cycles have been detected : "^
         (String.concat "\n\n" temp1) in
       (print_string temp2;flush stdout);;
-     
-    let init_dir=
-      Dfa_subdirectory.connectable_to_subpath 
-      (Coma_constant.automatically_generated_subdir);;
-    
-    let copy_special_files s_main_dir=
-      let dname=Coma_constant.name_for_debugged_module in
-      let _=Image.image(
-       fun s->
-        Unix_command.uc 
-          ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.without_trailing_slash s))
-      ) [
-           Coma_constant.automatically_generated_subdir;
-           Coma_constant.temporary_subdir;
-        ]
-      in 
-      let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.build_subdir)) in
-      let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir)) in
-      let _=Unix_command.uc ("mkdir -p "^s_main_dir^"/"^(Dfa_subdirectory.connectable_to_subpath Coma_constant.exec_build_subdir)) in
-      let augen = Image.image Dfn_rootless.to_line Coma_constant.updated_not_compiled_files in 
-      let _=Image.image (fun s->
-        Unix_command.uc ("touch "^s_main_dir^"/"^s)
-         ) ([dname^".ml";
-           ".ocamlinit"]
-           @
-           augen
-        ) in ();;
-    
-    let  put_default_content_in_conventional_files s_main_dir=
-      (Io.overwrite_with 
-      (Absolute_path.of_string (s_main_dir^"/.ocamlinit"))
-      (
-      "\n#use\""^(Dfn_rootless.to_line Coma_constant.rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
-      "\n#use\""^(Dfn_rootless.to_line Coma_constant.rootless_path_for_printersfile)^"\""^Double_semicolon.ds^
-      "\nopen Needed_values"^Double_semicolon.ds^
-      "\ninitialize_toplevel()"^Double_semicolon.ds
-       );
-      Io.overwrite_with 
-      (Absolute_path.of_string (s_main_dir^"/"^init_dir^"/my_printers.ml"))
-      "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n");; 
-      
-    
-let select_good_files s_main_dir=
+
+let select_good_files main_root=
+       let s_main_dir = Dfa_root.without_trailing_slash main_root in 
        let ap1=Absolute_path.of_string s_main_dir in        
        let temp1=More_unix.complete_ls (Directory_name.of_string s_main_dir) in
        let s_ap1=Absolute_path.to_string ap1 in
@@ -1476,18 +1436,17 @@ let select_good_files s_main_dir=
           try (Some(Dfn_full.from_absolute_path_with_root ap dir)) with 
           _->None
        ) l in
-       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b (Dfa_ending.all_ocaml_endings,[],[])) temp1;;
+       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b 
+       (Dfa_ending.all_ocaml_endings,[],[],Coma_constant.endings_for_cleaning)) temp1;;
     
     end;;   
     
 let from_main_directory dir backup_dir g_after_b=
-      let old_s=Dfa_root.connectable_to_subpath(dir) in
-      let s_main_dir=Cull_string.coending 1 old_s in (* mind the trailing slash *)
-      let _=
-        (Private.copy_special_files s_main_dir;
-         Private. put_default_content_in_conventional_files s_main_dir 
-        ) in
-        let temp1=Private.select_good_files s_main_dir in
+        let _=(Fw_wrapper.create_subdirs_and_fill_files_if_necessary  dir
+           Coma_constant.git_ignored_subdirectories 
+             Coma_constant.conventional_files_with_content
+           ) in
+        let temp1=Private.select_good_files dir in
         let temp2=Private.clean_list_of_files dir temp1 in
         let temp3=Private.compute_dependencies temp2 in
         let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in

@@ -186,8 +186,8 @@ let modify_all_needed_dirs cs f =
 
 (* End of adhoc setters *)
 
-let empty_one x y b (edgs,ign_subdirs,ign_files)=
-    let config = Fw_configuration.constructor x edgs ign_subdirs ign_files in 
+let empty_one x y b (edgs,ign_subdirs,ign_files,cleaner)=
+    let config = Fw_configuration.constructor x edgs ign_subdirs ign_files cleaner in 
     to_t({
      Coma_state_t.frontier_with_unix_world= Fw_wrapper.empty_one config;
      dir_for_backup =y;
