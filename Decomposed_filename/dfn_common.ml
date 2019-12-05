@@ -36,3 +36,7 @@ let decompose_absolute_path_using_root ap root=
   if (String.sub s_ap 0 (ns+1))<>(s_root^"/") then raise(Decompose_absolute_path_using_root_exn(ap,root)) else
   string_to_rootless(String.sub s_ap (ns+1) (nw-ns-1));;
 
+let recompose_potential_absolute_path root 
+      (Dfn_rootless_t.J(Dfa_subdirectory_t.SD(s),Dfa_module_t.M(m),Dfa_ending_t.E(e))) =
+    let s_subdir = (if s="" then "" else "/"^s) in 
+    (Dfa_root.connectable_to_subpath root)^s_subdir^m^"."^e;;

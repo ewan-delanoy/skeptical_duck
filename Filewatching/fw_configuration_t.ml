@@ -9,4 +9,5 @@ type t ={
   allowed_endings : Dfa_ending_t.t list;
   ignored_subdirectories : Dfa_subdirectory_t.t list;
   special_files : Dfn_rootless_t.t list;
+  final_cleaner : Fw_final_cleaner_t.t ;
 };;
