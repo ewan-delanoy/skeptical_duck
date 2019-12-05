@@ -32,7 +32,13 @@ let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
           helper_during_extraction 
            (move::moves_before,Hex_player.other_player next_to_move,others,new_dfgl);;
 
+let compute_maximal_jockeyed_opening fgame dfgl= 
+   helper_during_extraction 
+       ([],Hex_player_t.First_player,fgame.Hex_finished_game_t.sequence_of_moves,dfgl);;
+
 end ;; 
+
+let compute_maximal_jockeyed_opening = Private.compute_maximal_jockeyed_opening;;
 
 let extract_untamed_openings dfgl =
    let (Hex_fg_double_list_t.DL(l1,l2)) = dfgl in 
