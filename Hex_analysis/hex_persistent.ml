@@ -113,7 +113,7 @@ let add_finished_game_without_persisting fgame =
     let old_untamed_openings =(!untamed_openings_ref) 
     and candidate = Hex_uog_list.compute_maximal_jockeyed_opening checked_fgame new_games in 
     let _=(if not(List.mem candidate old_untamed_openings) 
-           then let msg = "New untamed : " in 
+           then let msg = "New untamed : "^(Hex_untamed_opening.to_readable_string candidate) in 
                 print_string msg; flush stdout 
            ) in 
    (
