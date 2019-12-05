@@ -110,6 +110,12 @@ let add_finished_game_without_persisting fgame =
              fgame (Hex_end_strategy_factory.compute_all_end_configs wes_pair) in 
     let _=(last_game_added:=checked_fgame) in 
     let new_games = Hex_fg_double_list.add_finished_game checked_fgame (!games_ref) in 
+    let old_untamed_openings =(!untamed_openings_ref) 
+    and candidate = Hex_uog_list.compute_maximal_jockeyed_opening checked_fgame new_games in 
+    let _=(if not(List.mem candidate old_untamed_openings) 
+           then let msg = "New untamed : " in 
+                print_string msg; flush stdout 
+           ) in 
    (
     games_ref:=new_games;
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
