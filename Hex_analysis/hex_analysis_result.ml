@@ -16,7 +16,7 @@ let report_on_danger res=
 
 let explanation_for_familiar_move other_possible_moves =
    if other_possible_moves = []
-   then "familiar_move"
+   then "familiar move"
    else let temp1 = Image.image Hex_cell.to_string other_possible_moves in 
         "or "^(String.concat "," temp1)^" : familiar moves" ;;
 
