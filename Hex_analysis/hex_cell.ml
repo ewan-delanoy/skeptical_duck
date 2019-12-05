@@ -12,7 +12,7 @@ let cmp=((fun (Hex_cell_t.C(s1,i1)) (Hex_cell_t.C(s2,i2)) ->
 let cmp_for_pairs = Total_ordering.product cmp cmp;; 
 
 let neighbors dim (Hex_cell_t.C(s1,i1)) = 
-   let j1=(int_of_char(String.get s1 1))-96 in 
+   let j1=(int_of_char(String.get s1 0))-96 in 
    let unchecked = [
                       j1,(i1-1);(j1+1),(i1-1);
        (j1-1),i1               ;(j1+1),i1    ;
