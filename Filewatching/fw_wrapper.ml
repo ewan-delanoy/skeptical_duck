@@ -391,18 +391,20 @@ let refresh fw =
               _->None 
    ) list1 in
    let (specials,nonspecials) = List.partition (
-      fun rootless -> List.mem rootless config.Fw_configuration_t.special_files
+      fun rootless -> List.mem rootless config.Fw_configuration_t.special_git_saved_files 
    ) list2 in  
-   let nonspecials_to_be_watched = List.filter (
+   let nonspecials_to_be_watched1 = List.filter (
       fun rootless ->  (List.mem (Dfn_rootless.to_ending rootless)
          config.Fw_configuration_t.allowed_endings )
          &&
          (
             not(List.mem (Dfn_rootless.to_subdirectory rootless)
-             config.Fw_configuration_t.ignored_subdirectories
+             config.Fw_configuration_t.git_ignored_subdirectories
             )
          )
    ) nonspecials in 
+   let the_cleaner = (fw.Fw_wrapper_t.configuration).Fw_configuration_t.final_cleaner in 
+   let nonspecials_to_be_watched = Fw_final_cleaner.clean the_cleaner  nonspecials_to_be_watched1 in 
    let w_files = Image.image (recompute_all_info fw) nonspecials_to_be_watched 
    and sw_files = Image.image (recompute_all_info fw) specials in 
    {
@@ -437,8 +439,8 @@ end;;
 
 let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
 
-let empty_one config= {
-   Fw_wrapper_t.configuration = config;
+let default root_dir= {
+   Fw_wrapper_t.configuration = Fw_configuration.default(root_dir);
    watched_files = [];
    special_watched_files = [];
 };; 
