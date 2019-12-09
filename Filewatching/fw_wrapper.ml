@@ -434,6 +434,15 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
          Io.overwrite_with (Absolute_path.of_string full_path) content
    )  temp1;;
 
+let nonspecial_absolute_paths fw= 
+   let root = Fw_wrapper_field.root fw in 
+   Image.image (
+     fun (rootless,_,_)-> 
+        Absolute_path.of_string (
+           Dfn_common.recompose_potential_absolute_path root rootless
+        )
+   ) fw.Fw_wrapper_t.watched_files;;
+   
 
 end;;
 
@@ -446,6 +455,8 @@ let default root_dir= {
 };; 
 
 let forget = Private.forget;;
+
+let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
 
 let of_concrete_object = Private.of_concrete_object;;
 
