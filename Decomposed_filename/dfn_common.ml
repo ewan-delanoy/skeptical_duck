@@ -38,5 +38,5 @@ let decompose_absolute_path_using_root ap root=
 
 let recompose_potential_absolute_path root 
       (Dfn_rootless_t.J(Dfa_subdirectory_t.SD(s),Dfa_module_t.M(m),Dfa_ending_t.E(e))) =
-    let s_subdir = (if s="" then "" else "/"^s) in 
+    let s_subdir = (if s="" then "" else s^"/") in 
     (Dfa_root.connectable_to_subpath root)^s_subdir^m^"."^e;;
