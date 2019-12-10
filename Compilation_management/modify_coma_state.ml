@@ -9,6 +9,11 @@
 
 module Physical = struct 
 
+let refresh cs =
+    (Fw_wrapper.create_subdirs_and_fill_files_if_necessary (Coma_state_field.root cs)
+      Coma_constant.git_ignored_subdirectories 
+        Coma_constant.conventional_files_with_content
+    );;
 
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -56,6 +61,30 @@ let rename_string_or_value cs old_sov new_sov =
 end;;
 
 module Internal = struct
+
+let refresh cs = 
+        let dir =Coma_state_field.root cs 
+        and backup_dir = Coma_state_field.backup_dir cs 
+        and g_after_b = Coma_state_field.gitpush_after_backup cs in 
+        let config = Fw_configuration.default dir in 
+        let fw1 = Fw_initialize.init config in 
+        let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
+        let temp2=Coma_state.Target_system_creation.clean_list_of_files dir temp1 in
+        let temp3=Coma_state.Target_system_creation.compute_dependencies temp2 in
+        let (failures,cs1)=Coma_state.Target_system_creation.from_prepared_list dir backup_dir g_after_b temp3 in
+        let pre_preqt=Coma_state.printer_equipped_types_from_data cs1 in
+        let l_mod=Coma_state_field.ordered_list_of_modules cs1 in 
+        let (cs2,rejected_pairs,_)=
+          Coma_state.Ocaml_target_making.usual_feydeau 
+          cs1 l_mod in
+        let rejected_endinglesses=Image.image snd rejected_pairs in 
+        let new_ptypes=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
+        let new_dirs=Coma_state.compute_subdirectories_list cs2 in
+        let new_diff=Coma_state.Target_system_creation.delchacre_from_scratch (dir,backup_dir) cs2 in
+        let cs3=Coma_state_field.set_directories cs2 new_dirs in 
+        let cs4=Coma_state_field.set_preq_types cs3 new_ptypes in
+        (cs4,new_diff)    ;;
+
 
 let rename_module cs2 old_middle_name new_nonslashed_name=
   let root_dir=Coma_state.root cs2 in 
@@ -132,6 +161,11 @@ let register_rootless_path cs  x=
    let cs1 = Coma_state_field.set_frontier_with_unix_world cs new_fw in 
    Coma_state.Almost_concrete.register_rootless_path cs1 x;; 
 *)
+
+let refresh cs =
+   let _=Physical.refresh cs  in
+   Internal.refresh cs;;
+
 
 let rename_module cs old_middle_name new_nonslashed_name=
    let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
@@ -257,8 +291,9 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;
       
+
       let refresh cs =
-         let (cs2,_)=Coma_state.refresh cs  in 
+         let (cs2,_)=Physical_followed_by_internal.refresh cs  in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 

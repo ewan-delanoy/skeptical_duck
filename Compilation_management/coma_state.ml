@@ -1371,7 +1371,11 @@ let select_good_files main_root=
          then detect_identical_names(((a,b)::temp1)::identical_names,temp2)
          else detect_identical_names(identical_names,temp2);;  
          
-     exception Identical_names of (((string*string) list) list);;    
+     
+    
+    end;;   
+    
+exception Identical_names of (((string*string) list) list);;    
          
      let clean_list_of_files main_dir l=
       (*
@@ -1387,7 +1391,7 @@ let select_good_files main_root=
         let s=Absolute_path.to_string ap in
         (ap,Cull_string.after_rightmost s '/')
       ) temp1 in
-      let temp3=detect_identical_names ([],temp2) in
+      let temp3=Private.detect_identical_names ([],temp2) in
       if temp3<>[]
       then let n1=String.length s_dir in
            let tempf1=(fun (x,y)->
@@ -1427,7 +1431,7 @@ let select_good_files main_root=
       let (cycles,good_list)=
         Reconstruct_linear_poset.reconstruct_linear_poset coat 
         (Ennig.ennig 1 n) in
-      let _=display_circular_dependencies
+      let _=Private.display_circular_dependencies
       (fun (j1,(ap1,s1))->s1) temp1 cycles in
       Image.image (fun (j,_)->snd(List.nth temp1 (j-1)) ) good_list;;
       
@@ -1437,30 +1441,6 @@ let select_good_files main_root=
           _->None
        ) l in
        Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b) temp1;;
-    
-    end;;   
-    
-let from_main_directory dir backup_dir g_after_b=
-        let _=(Fw_wrapper.create_subdirs_and_fill_files_if_necessary  dir
-           Coma_constant.git_ignored_subdirectories 
-             Coma_constant.conventional_files_with_content
-           ) in
-        let temp1=Private.select_good_files dir in
-        let temp2=Private.clean_list_of_files dir temp1 in
-        let temp3=Private.compute_dependencies temp2 in
-        let (failures,cs1)=Private.from_prepared_list dir backup_dir g_after_b temp3 in
-        let pre_preqt=printer_equipped_types_from_data cs1 in
-        let l_mod=ordered_list_of_modules cs1 in 
-        let (cs2,rejected_pairs,_)=
-          Ocaml_target_making.usual_feydeau 
-          cs1 l_mod in
-        let rejected_endinglesses=Image.image snd rejected_pairs in 
-       let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
-       (cs2,[],preqt);;
-    
-    
-
-end;;  
 
 let delchacre_from_scratch (source_dir,dir_for_backup) cs=
   let temp1=all_mlx_paths cs in
@@ -1471,18 +1451,29 @@ let delchacre_from_scratch (source_dir,dir_for_backup) cs=
  Prepare_dircopy_update.compute_diff
     (source_dir,temp4) dir_for_backup;;
 
-let refresh cs=
-      let (cs2,new_tgts,new_ptypes)=
-        Target_system_creation.from_main_directory 
-             (root cs)
-             (backup_dir cs)
-             (gitpush_after_backup cs)
-         in 
-        let new_dirs=compute_subdirectories_list cs2 in
-        let new_diff=delchacre_from_scratch (root cs2,backup_dir cs2) cs2 in
-        let cs3=set_directories cs2 new_dirs in 
-        let cs4=set_preq_types cs3 new_ptypes in
-        (cs4,new_diff);; 
+let from_main_directory dir backup_dir g_after_b=
+        let _=(Fw_wrapper.create_subdirs_and_fill_files_if_necessary  dir
+           Coma_constant.git_ignored_subdirectories 
+             Coma_constant.conventional_files_with_content
+           ) in
+        let config = Fw_configuration.default dir in 
+        let fw1 = Fw_initialize.init config in 
+        let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
+        let temp2=clean_list_of_files dir temp1 in
+        let temp3=compute_dependencies temp2 in
+        let (failures,cs1)=from_prepared_list dir backup_dir g_after_b temp3 in
+        let pre_preqt=printer_equipped_types_from_data cs1 in
+        let l_mod=ordered_list_of_modules cs1 in 
+        let (cs2,rejected_pairs,_)=
+          Ocaml_target_making.usual_feydeau 
+          cs1 l_mod in
+        let rejected_endinglesses=Image.image snd rejected_pairs in 
+       let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
+       (cs2,[],preqt);;
+
+    
+
+end;;  
 
 module Register_mlx_file=struct
 
