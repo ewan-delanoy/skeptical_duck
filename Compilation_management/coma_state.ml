@@ -1117,7 +1117,7 @@ let usual_feydeau cs modnames = feydeau Compilation_mode_t.Usual cs (Some(modnam
 end;;  
 
 
-let recompile cs=
+let rucompile cs=
      let ((cs2,nms_to_be_updated),rootless_paths)=
         recompile_on_monitored_modules false cs in
      if nms_to_be_updated=[] then (cs2,false,[]) else
@@ -1132,7 +1132,7 @@ let recompile cs=
      let cs5=set_preq_types cs4 new_preqt in 
     (cs5,true,rootless_paths);;       
 
-let rucompile = recompile;; 
+
 
 let add_printer_equipped_type cs mn=
   set_preq_types cs ((preq_types cs)@[mn]);;
@@ -1749,7 +1749,7 @@ let duplicate_module cs old_t1 old_t2=
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 let recompile_and_return_diff cs=
-  let (cs2,change_exists,rootless_paths)=recompile cs  in
+  let (cs2,change_exists,rootless_paths)=rucompile cs  in
   let changed_paths=
    (if not change_exists
    then []
@@ -1804,14 +1804,14 @@ let forget_file_with_backup_before_saving cs x=
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in
-   let (cs2,_,_)=recompile cs in 
+   let (cs2,_,_)=rucompile cs in 
    let cs3=forget_file cs2 ap in 
    (cs3,diff);; 
 
 let forget_module_with_backup_before_saving cs capitalized_or_not_old_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
   let old_endingless = endingless_at_module cs mn in   
-  let (cs2,_,_)=recompile cs in
+  let (cs2,_,_)=rucompile cs in
   let (cs3,rootless_paths)=forget_module cs2 old_endingless in    
   let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
   let diff=
@@ -1827,21 +1827,8 @@ let forget cs x=
       else forget_module_with_backup_before_saving cs x;;
 
 
-let recompile cs=
-  let (cs2,change_exists,rootless_paths)=recompile cs  in
-  let changed_paths=
-   (if not change_exists
-   then []
-   else Ordered.sort Total_ordering.silex_for_strings rootless_paths) in
-    (cs2,Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list changed_paths)
-    (Recently_created.of_string_list [])) ;;
-
-
 let local_register_mlx_file cs mlx=
-    let (cs2,_)=recompile cs  in 
-    let cs3=register_mlx_file cs2 mlx in 
+    let cs3=register_mlx_file cs mlx in 
     cs3;;  
 
 
@@ -1884,11 +1871,6 @@ let local_rename_directory cs old_subdir new_subdirname=
    (cs2,diff);;   
 
 
-let rename_string_or_value cs old_name new_name=
-  let _=Values_in_modules.rename_string_or_value cs old_name new_name in 
-  let (cs2,diff)=recompile cs in 
-  (cs2,diff);;
-
 end;; 
 
 
@@ -1926,3 +1908,5 @@ module Recent_changes = struct
             else ();;
 
 end;;    
+
+let recompile = rucompile;;
