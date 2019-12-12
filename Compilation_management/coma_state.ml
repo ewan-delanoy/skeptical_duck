@@ -1452,7 +1452,7 @@ let delchacre_from_scratch (source_dir,dir_for_backup) cs=
     (source_dir,temp4) dir_for_backup;;
 
 let from_main_directory dir backup_dir g_after_b=
-        let _=(Fw_wrapper.create_subdirs_and_fill_files_if_necessary  dir
+        let _=(More_unix.create_subdirs_and_fill_files_if_necessary  dir
            Coma_constant.git_ignored_subdirectories 
              Coma_constant.conventional_files_with_content
            ) in

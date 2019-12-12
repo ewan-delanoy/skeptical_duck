@@ -12,7 +12,7 @@ module Physical = struct
 (* No physical component during recompilation *)
 
 let refresh cs =
-    (Fw_wrapper.create_subdirs_and_fill_files_if_necessary (Coma_state_field.root cs)
+    (More_unix.create_subdirs_and_fill_files_if_necessary (Coma_state_field.root cs)
       Coma_constant.git_ignored_subdirectories 
         Coma_constant.conventional_files_with_content
     );;
@@ -64,17 +64,46 @@ end;;
 
 module Internal = struct
 
-let recompile_on_monitored_modules tolerate_cycles cs = 
+let quick_update cs new_fw  mn=
+  let eless =Coma_state.endingless_at_module cs mn 
+  and pr_ending=Coma_state.principal_ending_at_module cs mn in
+  let middle = Dfn_endingless.to_middle eless in 
+  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
+  then None
+  else
+  let mli_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
+  and pr_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
+  and old_mli_modif_time=Coma_state.mli_mt_at_module cs mn
+  and old_pr_modif_time=Coma_state.principal_mt_at_module cs mn 
+  in
+  let new_values=(mli_modif_time,pr_modif_time)
+  and old_values=(old_mli_modif_time,old_pr_modif_time) in
+  let mn = Dfn_endingless.to_module eless in 
+  if (old_values=new_values)&&(Coma_state.product_up_to_date_at_module cs mn)
+  then None
+  else
+  let mlx=Dfn_join.to_ending eless pr_ending in
+  let direct_fathers=Coma_state.find_needed_data cs mlx in
+  Some(
+    pr_modif_time,
+    mli_modif_time,
+    direct_fathers
+   )   
+  ;;
+
+let recompile_on_monitored_modules tolerate_cycles cs0 = 
   let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
   let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (Coma_state.rootless_paths_at_module cs nm))
+                        (Coma_state.rootless_paths_at_module cs0 nm))
     ) in
+  let (new_fw,changed_rootlesses)=Fw_wrapper.inspect_and_update (cs0.Coma_state_t.frontier_with_unix_world) in  
+  let cs= Coma_state_field.set_frontier_with_unix_world cs0 new_fw in 
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
-    match Coma_state.quick_update (!cs_walker) mname with
+    match quick_update (!cs_walker) new_fw mname with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
