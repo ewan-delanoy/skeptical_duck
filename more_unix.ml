@@ -139,7 +139,25 @@ let create_conventional_context dir subdirs files_with_content =
     ) temp1 ;;
     
      
-
+let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
+   let s_root = Dfa_root.connectable_to_subpath root in 
+   let cmds1=Image.image (
+      fun subdir -> 
+         "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Image.image Sys.command cmds1 in 
+   let temp1=Option.filter_and_unpack (
+     fun (rootless,content)->
+        let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
+        if Sys.file_exists full_path 
+        then None 
+        else Some(full_path,content)
+   ) files_with_content in 
+   Image.image (
+      fun (full_path,content) ->
+         let _=Sys.command("touch "^full_path) in 
+         Io.overwrite_with (Absolute_path.of_string full_path) content
+   )  temp1;;
 
 
 end;;    
@@ -159,6 +177,7 @@ let beheaded_simple_ls=Private.beheaded_simple_ls;;
 let complete_ls=Private.complete_ls;;
 let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
 let create_conventional_context = Private.create_conventional_context;;
+let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
 let is_a_directory=Private.is_a_directory;;   
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
 let simple_ls=Private.ls;;
