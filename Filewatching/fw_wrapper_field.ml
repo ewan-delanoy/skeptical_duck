@@ -7,6 +7,9 @@ defined in  the configuration parameter
 
 *)
 
+exception Rootless_not_found of Dfn_rootless_t.t;;
+
+
 module Private = struct 
 
 let triple_of_crobj crobj=
@@ -41,16 +44,27 @@ let of_concrete_object ccrt_obj =
       special_watched_files = Concrete_object_field.to_list triple_of_crobj (g special_watched_files_label);
    };; 
 
-let to_concrete_object cs=
+let to_concrete_object fw=
    let items= 
    [
-    configuration_label, Fw_configuration.to_concrete_object cs.Fw_wrapper_t.configuration;
-    watched_files_label, Concrete_object_field.of_list triple_to_crobj cs.Fw_wrapper_t.watched_files;
-    special_watched_files_label, Concrete_object_field.of_list triple_to_crobj cs.Fw_wrapper_t.special_watched_files;
+    configuration_label, Fw_configuration.to_concrete_object fw.Fw_wrapper_t.configuration;
+    watched_files_label, Concrete_object_field.of_list triple_to_crobj fw.Fw_wrapper_t.watched_files;
+    special_watched_files_label, Concrete_object_field.of_list triple_to_crobj fw.Fw_wrapper_t.special_watched_files;
    ]  in
    Concrete_object_t.Record items;;
 
+let get_all_info fw rootless  =
+  match Option.seek (fun (rootless1,_,_)->rootless1=rootless) 
+    ((fw.Fw_wrapper_t.watched_files)@(fw.Fw_wrapper_t.special_watched_files)) with 
+   None -> raise (Rootless_not_found(rootless))
+  |Some(_,mtime,content)->(mtime,content)  ;; 
+
 end ;;
+
+let get_all_info = Private.get_all_info ;;
+
+let get_content fw rootless = let (_,content) = Private.get_all_info fw rootless in content;;
+let get_mtime fw rootless = let (mtime,_) = Private.get_all_info fw rootless in mtime;;
 
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
