@@ -427,19 +427,23 @@ to_t({ cs with
 
 let restrict wrapped_cs smaller_list_of_modules =
      let cs=of_t wrapped_cs in 
-    let l_rep =(fun l->Associative_list.reorder l smaller_list_of_modules) in    
-    let new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
-    and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
-    and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
-    and new_principal_mts = l_rep (cs.Coma_state_t.principal_mt_for_module) 
-    and new_mli_mts = l_rep (cs.Coma_state_t.mli_mt_for_module) 
-    and new_needed_libs = l_rep (cs.Coma_state_t.needed_libs_for_module) 
-    and new_direct_fathers = l_rep (cs.Coma_state_t.direct_fathers_for_module) 
-    and new_ancestors = l_rep (cs.Coma_state_t.ancestors_for_module) 
-    and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module) 
-    and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
+    let restr =(fun l->Associative_list.restrict l smaller_list_of_modules) in    
+    let temp_direct_fathers = restr (cs.Coma_state_t.direct_fathers_for_module) 
+    and temp_ancestors = restr (cs.Coma_state_t.ancestors_for_module) in 
+    let among_fathers =Image.image (fun (key,fathers)->
+       (key,List.filter (fun father -> List.mem father smaller_list_of_modules) fathers) ) in 
+    let new_subdirs = restr (cs.Coma_state_t.subdir_for_module) 
+    and new_principal_endings = restr (cs.Coma_state_t.principal_ending_for_module) 
+    and new_mli_presences = restr (cs.Coma_state_t.mli_presence_for_module) 
+    and new_principal_mts = restr (cs.Coma_state_t.principal_mt_for_module) 
+    and new_mli_mts = restr (cs.Coma_state_t.mli_mt_for_module) 
+    and new_needed_libs = restr (cs.Coma_state_t.needed_libs_for_module) 
+    and new_direct_fathers = among_fathers  temp_direct_fathers  
+    and new_ancestors = among_fathers  temp_ancestors
+    and new_needed_dirs = restr (cs.Coma_state_t.needed_dirs_for_module) 
+    and new_products_up_to_date = restr cs.Coma_state_t.product_up_to_date_for_module  in 
 to_t({ cs with 
-      Coma_state_t.modules = reordered_list_of_modules;
+      Coma_state_t.modules = smaller_list_of_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
       Coma_state_t.principal_ending_for_module=  new_principal_endings;
       Coma_state_t.mli_presence_for_module=  new_mli_presences;
@@ -451,6 +455,7 @@ to_t({ cs with
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;  
+
 
 module Private = struct 
 
