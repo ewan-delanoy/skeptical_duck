@@ -60,6 +60,8 @@ let reorder l key_ordering =Image.image (fun key->(key,List.assoc key l)) key_or
 
 (* reorder [(1,"u");(2,"v");(3,"w");(4,"x");(5,"y");(6,"z")] [2;5;1;3;4;6];; *) 
  
+let restrict l fewer_keys =List.filter (fun (key,_)->List.mem key fewer_keys) l;;
+
 let override_with overriden_one overrider =
   let unchecked_keys = Image.image fst (overrider@overriden_one) in 
   let keys = Listennou.nonredundant_version unchecked_keys in 
