@@ -24,4 +24,5 @@ let encode s=
         then raise(Forbidden_substring)
         else Encoded_string_t.E(encoded_s);;
 
+let retrieve encoded_s = (Encoded_string_t.E(encoded_s));;
 let store (Encoded_string_t.E(encoded_s))= encoded_s;;
