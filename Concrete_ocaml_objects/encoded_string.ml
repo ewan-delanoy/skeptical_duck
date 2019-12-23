@@ -13,6 +13,9 @@ let salt =
 let replacement_salt = 
   String.concat "" ["b"; "Z"; "3"; "v"; "l"; "m"; "x"; "E"; "A"; "z"; "L"; "e"];;
 
+let decode (Encoded_string_t.E(encoded_s))=
+   Replace_inside.replace_inside_string (replacement_salt,salt) encoded_s;;
+
 let encode s=
    if Substring.is_a_substring_of replacement_salt s 
    then raise(Forbidden_substring)
@@ -21,5 +24,4 @@ let encode s=
         then raise(Forbidden_substring)
         else Encoded_string_t.E(encoded_s);;
 
-let decode (Encoded_string_t.E(encoded_s))=
-   Replace_inside.replace_inside_string (replacement_salt,salt) encoded_s;;
+let store (Encoded_string_t.E(encoded_s))= encoded_s;;
