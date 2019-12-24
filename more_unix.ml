@@ -116,7 +116,7 @@ let beheaded_simple_ls dir=
   let temp1=ls dir in
   Image.image (fun ap->
    Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
-  
+(*  
 let create_conventional_context dir subdirs files_with_content =
    (* we assume that each file in files_with_content has its subir in the subdirs list *)
    let s_dir = Directory_name.connectable_to_subpath dir in 
@@ -137,8 +137,14 @@ let create_conventional_context dir subdirs files_with_content =
         let i=Unix_command.hardcore_uc cmd in 
         if i=0 then Io.overwrite_with ap content
     ) temp1 ;;
-    
-     
+*)    
+
+let clear_directory_contents root =
+    let s_root = Dfa_root.connectable_to_subpath root in 
+    let cmd = "rm -rf "^s_root^"*" in 
+    Sys.command cmd;;
+
+
 let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
    let s_root = Dfa_root.connectable_to_subpath root in 
    let cmds1=Image.image (
@@ -160,6 +166,20 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
    )  temp1;;
 
 
+let create_subdirs_and_fill_files root subdirs files_with_content =
+   let s_root = Dfa_root.connectable_to_subpath root in 
+   let cmds1=Image.image (
+      fun subdir -> 
+         "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Image.image Sys.command cmds1 in 
+   Image.image (
+     fun (rootless,content)->
+        let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
+         let _=Sys.command("touch "^full_path) in 
+         Io.overwrite_with (Absolute_path.of_string full_path) content
+   ) files_with_content;;
+
 end;;    
 
 
@@ -176,7 +196,8 @@ let all_files_with_endings dir l_endings=
 let beheaded_simple_ls=Private.beheaded_simple_ls;;
 let complete_ls=Private.complete_ls;;
 let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
-let create_conventional_context = Private.create_conventional_context;;
+let clear_directory_contents = Private.clear_directory_contents;;
+let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
 let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
 let is_a_directory=Private.is_a_directory;;   
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           

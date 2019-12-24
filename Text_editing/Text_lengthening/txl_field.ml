@@ -69,8 +69,8 @@ let decompression_of_concrete_object crobj=
 
 let decompression_to_concrete_object (s1,s2,l)=
   Concrete_object_t.Uple [
-    Concrete_object_t.String(s1);
-    Concrete_object_t.String(s2);
+    Concrete_object_field.wrap_string(s1);
+    Concrete_object_field.wrap_string(s2);
     Concrete_object_field.of_string_triple_list l];;
 
 let declist_of_concrete_object crobj =

@@ -15,9 +15,9 @@ let push_int i (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
   (Double_partial_crobj_t.Double(false,
     Partial_crobj.push_int i last_opened,opened_before));;
 
-let push_string s (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
+let push_string encoded_s (Double_partial_crobj_t.Double(_,last_opened,opened_before))=
   (Double_partial_crobj_t.Double(false,
-    Partial_crobj.push_string s last_opened,opened_before));;    
+    Partial_crobj.push_string encoded_s last_opened,opened_before));;    
 
 let push_separator ctgr (Double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
   if separator_present
@@ -58,7 +58,7 @@ let initialize opening =
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
-    |Push_string(s)->Private.push_string s 
+    |Push_string(encoded_s)->Private.push_string encoded_s 
     |Push_field_name(rcdname)->Private.push_field_name rcdname
     |Open(opening) -> Private.open_new opening
     |Separate(cat) -> Private.push_separator cat 

@@ -25,12 +25,12 @@ let triple_to_crobj (watched_file,modif_date,content)=
      [
         
         Dfn_rootless.to_concrete_object watched_file;
-        Concrete_object_t.String(modif_date);
-        Concrete_object_t.String(content);
+        Concrete_object_field.wrap_string(modif_date);
+        Concrete_object_field.wrap_string(content);
      ]
    ) ;;
 
-let salt = "Fw_"^"wrapper.";;
+let salt = "Fw_"^"wrapper_t.";;
 
 let configuration_label         = salt ^ "configuration";;
 let watched_files_label         = salt ^ "watched_files";;
@@ -64,7 +64,8 @@ end ;;
 let get_all_info = Private.get_all_info ;;
 
 let get_content fw rootless = let (_,content) = Private.get_all_info fw rootless in content;;
-let get_mtime fw rootless = let (mtime,_) = Private.get_all_info fw rootless in mtime;;
+let get_mtime fw rootless = 
+   try (let (mtime,_) = Private.get_all_info fw rootless in mtime) with _-> "0.";;
 
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;

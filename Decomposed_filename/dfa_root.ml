@@ -13,7 +13,7 @@ let of_line line = Dfa_root_t.R(Tools_for_absolute_path.remove_trailing_slash li
 
 
 let to_concrete_object (Dfa_root_t.R(line))=
-    Concrete_object_t.Variant("Dfa_"^"root.R",[Concrete_object_t.String(line)]);;
+    Concrete_object_t.Variant("Dfa_"^"root.R",[Concrete_object_field.wrap_string(line)]);;
 
 let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 

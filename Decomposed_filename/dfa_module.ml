@@ -16,7 +16,7 @@ let add_prefix_and_capitalize prefix (Dfa_module_t.M name)=
 let capitalized_form (Dfa_module_t.M name)= String.capitalize_ascii name;;
 
 let to_concrete_object (Dfa_module_t.M(s))=
-    Concrete_object_t.Variant("Dfa_"^"module_t.M",[Concrete_object_t.String(s)]);;
+    Concrete_object_t.Variant("Dfa_"^"module_t.M",[Concrete_object_field.wrap_string(s)]);;
 
 let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 

@@ -18,7 +18,7 @@ let of_concrete_object crobj=
 let to_concrete_object (Hex_cog_in_machine_t.C(constr,comment,indices,fles)) =
    Concrete_object_t.Uple [
       Hex_strategy_static_constructor.to_concrete_object constr;
-      Concrete_object_t.String(comment);
+      Concrete_object_field.wrap_string(comment);
       Concrete_object_field.of_int_list(indices);
       Hex_flattened_end_strategy.to_concrete_object(fles)
    ]  ;;

@@ -4,7 +4,7 @@
 
 *)
 
-let init config =
+let first_init config =
    let the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let list1 = More_unix.complete_ls_with_nondirectories_only the_dir in 
@@ -13,7 +13,8 @@ let init config =
               _->None 
    ) list1 in
    let (specials,nonspecials) = List.partition (
-      fun rootless -> List.mem rootless config.Fw_configuration_t.special_git_saved_files 
+      fun rootless -> (List.mem rootless config.Fw_configuration_t.special_git_saved_files)
+          || ((Dfn_rootless.to_ending rootless)=Dfa_ending.of_line "txt") 
    ) list2 in  
    let nonspecials_to_be_watched1 = List.filter (
       fun rootless ->  (List.mem (Dfn_rootless.to_ending rootless)
@@ -27,17 +28,23 @@ let init config =
    ) nonspecials in 
    let the_cleaner =config.Fw_configuration_t.final_cleaner in 
    let nonspecials_to_be_watched = Fw_final_cleaner.clean the_cleaner  nonspecials_to_be_watched1 in 
-   let compute_info=( fun path->
+   (nonspecials_to_be_watched,specials);;
+
+let second_init config (nonspecials_to_be_watched,specials) =
+    let the_root = config.Fw_configuration_t.root in  
+    let compute_info=( fun path->
       let s_root = Dfa_root.connectable_to_subpath the_root
-     and s_path=Dfn_rootless.to_line path in 
-     let file = s_root^s_path in 
-     (path,string_of_float((Unix.stat file).Unix.st_mtime),Io.read_whole_file(Absolute_path.of_string file))
+      and s_path=Dfn_rootless.to_line path in 
+      let file = s_root^s_path in 
+      (path,string_of_float((Unix.stat file).Unix.st_mtime),
+       Io.read_whole_file(Absolute_path.of_string file))
    ) in 
-   let w_files = Image.image compute_info nonspecials_to_be_watched 
-   and sw_files = Image.image compute_info specials in 
-   {
-      Fw_wrapper_t.configuration = config;
-      Fw_wrapper_t.watched_files = w_files;
-       special_watched_files = sw_files;
-   }
-   ;;
+     {
+       Fw_wrapper_t.configuration = config;
+       Fw_wrapper_t.watched_files = Image.image compute_info nonspecials_to_be_watched;
+       special_watched_files = Image.image compute_info specials;
+     };;
+
+let init config = 
+   let (nonspecials_to_be_watched,specials) = first_init config in 
+   second_init config (nonspecials_to_be_watched,specials);;

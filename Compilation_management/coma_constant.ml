@@ -80,18 +80,34 @@ let conventional_subdirs =
      exec_build_subdir
    ];;
 
-let conventional_files_with_content = 
-   let text_for_ocamlinit = (
-      "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
-      "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Double_semicolon.ds^
+let minimalist_text_for_ocamlinit =
+   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Double_semicolon.ds^
+  "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Double_semicolon.ds;;
+
+ let usual_text_for_ocamlinit = (
+      minimalist_text_for_ocamlinit^
       "\nopen Needed_values"^Double_semicolon.ds^
       "\ninitialize_toplevel()"^Double_semicolon.ds
-       ) 
-   and text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" in     
+       ) ;; 
+
+let conventional_files_other_than_ocamlinit =
+  let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" in     
    [
-     rootless_path_for_ocamlinit, text_for_ocamlinit ;
-     rootless_path_for_printersfile, text_for_printersfile
-   ] ;;          
+    rootless_path_for_printersfile, text_for_printersfile ; 
+     rootless_path_for_loadingsfile, "" ;
+     rootless_path_for_targetfile, "";
+   ] ;;     
+
+let conventional_files_with_usual_content =  
+   [
+     rootless_path_for_ocamlinit, usual_text_for_ocamlinit ;
+   ] @ conventional_files_other_than_ocamlinit ;;      
+
+let conventional_files_with_minimal_content =    
+   [
+     rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit ;
+   ] @ conventional_files_other_than_ocamlinit ;;      
+
 
 let endings_for_cleaning  = [
     Dfa_ending.mll, Dfa_ending.ml;

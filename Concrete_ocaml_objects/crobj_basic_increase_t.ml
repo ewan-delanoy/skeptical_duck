@@ -8,7 +8,7 @@
 
 type t= 
      Push_int of int 
-    |Push_string of string 
+    |Push_string of Encoded_string_t.t 
     |Push_field_name  of string 
     |Open of Crobj_opening_t.t 
     |Separate of Crobj_category_t.t

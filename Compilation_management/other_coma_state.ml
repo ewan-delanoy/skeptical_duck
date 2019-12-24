@@ -70,17 +70,22 @@ let replace_string old_string new_string=
    Coma_state.Values_in_modules.replace_string 
    (!(Private.main_ref)) old_string new_string ;;
 
-let repopulate ()=
+let repopulate opt_limitation=
   let _=Update_compiler_copy.ucc
-  (!Usual_coma_state.main_ref)  in 
+  (!Usual_coma_state.main_ref) opt_limitation  in 
   initialize();; 
 
 let see_confidential_changes ()=
-   let temp1=Coma_state.all_rootless_paths (!(Usual_coma_state.main_ref)) in 
+   let temp1=Coma_state.all_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    Explicit.filter (
-      fun path->
+      fun full_path->
+         let rootless = Dfn_full.to_rootless full_path in 
+         if rootless = Coma_constant.rootless_path_for_parametersfile 
+         then false 
+         else 
+         let path = Dfn_rootless.to_line rootless in 
          let ap1=Absolute_path.of_string(this_root^path) 
          and ap2=Absolute_path.of_string(next_root^path) in 
          Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)

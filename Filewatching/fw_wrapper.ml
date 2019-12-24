@@ -239,8 +239,8 @@ let triple_to_concrete_object (rootless_path,mtime,content)=
    Concrete_object_t.Uple
    [
     Dfn_rootless.to_concrete_object rootless_path;
-    Concrete_object_t.String(mtime);
-    Concrete_object_t.String(content);
+    Concrete_object_field.wrap_string(mtime);
+    Concrete_object_field.wrap_string(content);
    ];;     
 
 let triplelist_of_concrete_object crobj = Concrete_object_field.to_list triple_of_concrete_object crobj;;
@@ -423,6 +423,17 @@ let nonspecial_absolute_paths fw=
         )
    ) fw.Fw_wrapper_t.watched_files;;
    
+let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
+   let root = Fw_wrapper_field.root fw in 
+   if List.exists ( fun (r,_,_)->r=rootless ) fw.Fw_wrapper_t.watched_files 
+   then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
+        let _=Io.overwrite_with ap new_content in 
+        {
+           fw with 
+           Fw_wrapper_t.watched_files = update_in_list_of_triples fw [rootless] (fw.Fw_wrapper_t.watched_files);
+        }
+   else fw;;
+
 
 end;;
 
@@ -440,6 +451,8 @@ let inspect_and_update = Private.inspect_and_update;;
 let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
 
 let of_concrete_object = Private.of_concrete_object;;
+
+let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_if_it_exists;;
 
 let refresh = Private.refresh ;;
 

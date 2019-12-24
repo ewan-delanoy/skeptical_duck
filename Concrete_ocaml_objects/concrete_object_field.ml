@@ -25,7 +25,8 @@ exception Unwrap_bounded_variant_exn of Concrete_object_t.t;;
 
 end;;
 
-
+let wrap_encoded_string encoded_s=Concrete_object_t.String(encoded_s);;
+let wrap_string s = Concrete_object_t.String(Encoded_string.encode s);;
 
 let unwrap_int ccrt_obj=
    match ccrt_obj with 
@@ -34,7 +35,7 @@ let unwrap_int ccrt_obj=
 
 let unwrap_string ccrt_obj=
    match ccrt_obj with 
-   Concrete_object_t.String(s)->s 
+   Concrete_object_t.String(encoded_s)->Encoded_string.decode encoded_s 
    |_->raise(Exn.Unwrap_string_exn(ccrt_obj));;
 
 let unwrap_list ccrt_obj=
@@ -107,7 +108,7 @@ let of_bool bowl=if bowl then truth else falsity;;
 let to_bool =unwrap_lonely_variant [true,"True";false,"False"] ;; 
 
 let of_string_pair (s1,s2) = 
-   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2]);;
+   Concrete_object_t.Uple (Image.image wrap_string [s1;s2]);;
 
 let to_string_pair crobj=
   let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj 
@@ -115,7 +116,7 @@ let to_string_pair crobj=
   (us arg1,us arg2);;
 
 let of_string_triple (s1,s2,s3)=
-   Concrete_object_t.Uple (Image.image (fun s->Concrete_object_t.String(s)) [s1;s2;s3]);;
+   Concrete_object_t.Uple (Image.image wrap_string [s1;s2;s3]);;
 
 let to_string_triple crobj=
   let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
@@ -132,7 +133,7 @@ let to_int_pair crobj =
      let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
     (unwrap_int arg1,unwrap_int arg2);;
 
-let of_string_list l=Concrete_object_t.List (Image.image (fun s->Concrete_object_t.String(s)) l);;
+let of_string_list l=Concrete_object_t.List (Image.image wrap_string l);;
 let to_string_list crobj = Image.image unwrap_string (unwrap_list crobj);;
 
 let of_string_pair_list l= Concrete_object_t.List (Image.image of_string_pair l);;

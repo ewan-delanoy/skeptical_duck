@@ -9,13 +9,19 @@
 
 module Physical = struct 
 
-(* No physical component during recompilation *)
+let recompile cs =
+   let (new_fw,changed_rootlesses)=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
+   let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
+   new_cs;;
 
 let refresh cs =
-    (More_unix.create_subdirs_and_fill_files_if_necessary (Coma_state_field.root cs)
+    let _=(More_unix.create_subdirs_and_fill_files_if_necessary 
+       (Coma_state_field.root cs)
       Coma_constant.git_ignored_subdirectories 
-        Coma_constant.conventional_files_with_content
-    );;
+        Coma_constant.conventional_files_with_usual_content) in 
+   let config = Fw_configuration.default (Coma_state_field.root cs) in 
+   let fw = Fw_initialize.init config in 
+   Coma_state_field.set_frontier_with_unix_world cs fw;;
 
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -64,46 +70,18 @@ end;;
 
 module Internal = struct
 
-let quick_update cs new_fw  mn=
-  let eless =Coma_state.endingless_at_module cs mn 
-  and pr_ending=Coma_state.principal_ending_at_module cs mn in
-  let middle = Dfn_endingless.to_middle eless in 
-  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
-  then None
-  else
-  let mli_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
-  and pr_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
-  and old_mli_modif_time=Coma_state.mli_mt_at_module cs mn
-  and old_pr_modif_time=Coma_state.principal_mt_at_module cs mn 
-  in
-  let new_values=(mli_modif_time,pr_modif_time)
-  and old_values=(old_mli_modif_time,old_pr_modif_time) in
-  let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(Coma_state.product_up_to_date_at_module cs mn)
-  then None
-  else
-  let mlx=Dfn_join.to_ending eless pr_ending in
-  let direct_fathers=Coma_state.find_needed_data cs mlx in
-  Some(
-    pr_modif_time,
-    mli_modif_time,
-    direct_fathers
-   )   
-  ;;
-
-let recompile_on_monitored_modules tolerate_cycles cs0 = 
-  let ref_for_changed_modules=ref[] 
+let recompile cs = 
+   let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
+   let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
   let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (Coma_state.rootless_paths_at_module cs0 nm))
+                        (Coma_state.rootless_paths_at_module cs nm))
     ) in
-  let (new_fw,changed_rootlesses)=Fw_wrapper.inspect_and_update (cs0.Coma_state_t.frontier_with_unix_world) in  
-  let cs= Coma_state_field.set_frontier_with_unix_world cs0 new_fw in 
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
-    match quick_update (!cs_walker) new_fw mname with
+    match Coma_state.Late_Recompilation.quick_update (!cs_walker) new_fw mname with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
@@ -115,22 +93,20 @@ let recompile_on_monitored_modules tolerate_cycles cs0 =
     )
 )(Coma_state.ordered_list_of_modules cs) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
-if changed_modules=[] then ((!cs_walker,[]),[]) else
-let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in
-(Coma_state.PrivateThree.put_md_list_back_in_order tolerate_cycles 
-  (!cs_walker) changed_modules,
-(!ref_for_changed_shortpaths));;  
-
-let recompile cs = 
-   let ((cs2,nms_to_be_updated),rootless_paths)=
-        Coma_state.recompile_on_monitored_modules false cs in
-   let diff_veiler =(fun paths->
+let diff_veiler =(fun paths->
        Dircopy_diff.veil
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list paths)
     (Recently_created.of_string_list [])
-   ) in      
+   ) in    
+if changed_modules=[] then (!cs_walker,diff_veiler []) else
+let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in
+let ((cs2,nms_to_be_updated),rootless_paths)= 
+ (Coma_state.PrivateThree.put_md_list_back_in_order false 
+  (!cs_walker) changed_modules,
+(!ref_for_changed_shortpaths))  in   
    if nms_to_be_updated=[] then (cs2,diff_veiler []) else
+   (
    let new_dirs=Coma_state.compute_subdirectories_list cs2  in
    let (cs3,rejected_pairs,accepted_pairs)=
        Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
@@ -140,20 +116,21 @@ let recompile cs =
       )  (Coma_state_field.preq_types cs3) in   
    let cs4=Coma_state_field.set_directories cs3 new_dirs in 
    let cs5=Coma_state_field.set_preq_types cs4 new_preqt in 
-   let changed_paths=Ordered.sort Total_ordering.silex_for_strings rootless_paths in 
-   (cs5,diff_veiler changed_paths) ;;
- 
+   let changed_paths=Ordered.sort 
+      Total_ordering.silex_for_strings rootless_paths in 
+   let the_diff = diff_veiler changed_paths in    
+     (cs5,the_diff) 
+   );;
+
 
 let refresh cs = 
         let dir =Coma_state_field.root cs 
-        and backup_dir = Coma_state_field.backup_dir cs 
-        and g_after_b = Coma_state_field.gitpush_after_backup cs in 
-        let config = Fw_configuration.default dir in 
-        let fw1 = Fw_initialize.init config in 
+        and backup_dir = Coma_state_field.backup_dir cs in 
+        let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
         let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
         let temp2=Coma_state.Target_system_creation.clean_list_of_files dir temp1 in
         let temp3=Coma_state.Target_system_creation.compute_dependencies temp2 in
-        let (failures,cs1)=Coma_state.Target_system_creation.from_prepared_list dir backup_dir g_after_b temp3 in
+        let (failures,cs1)=Coma_state.Target_system_creation.from_prepared_list cs temp3 in
         let pre_preqt=Coma_state.printer_equipped_types_from_data cs1 in
         let l_mod=Coma_state_field.ordered_list_of_modules cs1 in 
         let (cs2,rejected_pairs,_)=
@@ -216,14 +193,14 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
       )
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
-  let (cs9,_,_)=Coma_state.recompile cs8 in 
+  let (cs9,_)=recompile cs8 in 
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_files)
     (Recently_changed.of_string_list modified_files)
     (Recently_created.of_string_list new_files) in
    (cs9,diff);;
 
-let rename_string_or_value = Coma_state.recompile_and_return_diff ;; 
+let rename_string_or_value = recompile ;; 
 
 end;;
 
@@ -244,13 +221,15 @@ let register_rootless_path cs  x=
    Coma_state.Almost_concrete.register_rootless_path cs1 x;; 
 *)
 
-(* No physical component during recompilation *)
-let recompile cs = Internal.recompile cs;;
+
+let recompile cs = 
+  let cs2=Physical.recompile cs  in
+  Internal.recompile cs2;;
   
 
 let refresh cs =
-   let _=Physical.refresh cs  in
-   Internal.refresh cs;;
+   let cs2=Physical.refresh cs  in
+   Internal.refresh cs2;;
 
 
 let rename_module cs old_middle_name new_nonslashed_name=

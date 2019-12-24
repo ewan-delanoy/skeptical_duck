@@ -9,7 +9,7 @@ exception Unreadable of int * string ;;
 
 module Private = struct
 
-let salt = String.concat "" ["a"; "Y"; "2"; "u"; "k"; "k"; "w"; "D"; "z"; "y"; "K"; "d"];;
+let salt = Encoded_string.salt ;; 
 
 let array_opener = salt ^ "ao";;
 let list_opener = salt ^ "lo";;
@@ -114,7 +114,9 @@ let next_basic_increase_in_push_string_case s idx=
    if idx2<0
    then raise(Missing_string_closer(idx1,s))
    else
-   (Crobj_basic_increase_t.Push_string(Cull_string.interval s idx1 (idx2-1)),idx2+(String.length string_closer));;
+   (* we know that the string is already encoded *)
+   let encoded_s = Encoded_string.retrieve (Cull_string.interval s idx1 (idx2-1)) in 
+   (Crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
 
 
 
@@ -158,7 +160,7 @@ let first_step s =
    let (action,next_idx) = next_basic_increase s 1 in 
    match action with 
     Crobj_basic_increase_t.Push_int(i)->(Some(Concrete_object_t.Int(i)),None,next_idx)
-   |Crobj_basic_increase_t.Push_string(s)->(Some(Concrete_object_t.String(s)),None,next_idx)
+   |Crobj_basic_increase_t.Push_string(encoded_s)->(Some(Concrete_object_field.wrap_encoded_string(encoded_s)),None,next_idx)
    |Crobj_basic_increase_t.Open(opening)->(None,Some(Double_partial_crobj.initialize(opening)),next_idx)
    |_->raise(First_step_exn(action));;
 
@@ -186,7 +188,7 @@ let parse s =
 
 let rec unparse = function 
    Concrete_object_t.Int(i)->string_of_int i 
-   |String(t)->string_opener^t^string_closer
+   |String(t)->string_opener^(Encoded_string.store t)^string_closer
    |Uple(l)->let temp1=Image.image unparse l in 
              uple_opener^(String.concat uple_separator temp1)^uple_closer
    |List(l)->let temp1=Image.image unparse l in 

@@ -7,7 +7,7 @@
 
 type t= 
     Int of int 
-   |String of string 
+   |String of Encoded_string_t.t 
    |Uple of t list
    |List of t list
    |Array of t list

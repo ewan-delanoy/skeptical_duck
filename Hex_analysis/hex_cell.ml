@@ -45,7 +45,7 @@ let of_concrete_object crobj =
    );;
 
 let to_concrete_object (Hex_cell_t.C(s,i))= 
-    Concrete_object_t.Variant("Hex_"^"cell_t.C",[Concrete_object_t.String(s);Concrete_object_t.Int(i)]);;
+    Concrete_object_t.Variant("Hex_"^"cell_t.C",[Concrete_object_field.wrap_string(s);Concrete_object_t.Int(i)]);;
 
 let pair_of_concrete_object crobj =
    let (arg1,arg2,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 

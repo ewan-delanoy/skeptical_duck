@@ -186,6 +186,8 @@ let modify_all_needed_dirs cs f =
 
 (* End of adhoc setters *)
 
+
+
 let empty_one x y b=
     to_t({
      Coma_state_t.frontier_with_unix_world= Fw_wrapper.default x;
@@ -424,9 +426,33 @@ to_t({ cs with
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
 });;
     
+let endingless_at_module cs mn=
+   Dfn_endingless_t.J(
+        root cs,
+        subdir_at_module cs mn,
+        mn
+    );;
+
+let printer_equipped_types_from_preceding_data  
+   (frontier_with_unix_world_field,
+      modules_field,
+        subdir_for_modules_field,
+          principal_ending_at_module_field)=
+  let the_root = Fw_wrapper_field.root frontier_with_unix_world_field in         
+  Option.filter_and_unpack (
+    fun mn->
+    let subdir = List.assoc mn subdir_for_modules_field 
+    and pr_end= List.assoc mn principal_ending_at_module_field  in
+    let rootless=Dfn_rootless_t.J(subdir,mn,pr_end) in 
+    let text=Fw_wrapper_field.get_content frontier_with_unix_world_field rootless in
+    if (Substring.is_a_substring_of ("let "^"print_out ") text)
+    then let eless=Dfn_endingless_t.J(the_root,subdir,mn) in 
+         Some(eless)
+    else None
+  ) modules_field;;    
 
 let restrict wrapped_cs smaller_list_of_modules =
-     let cs=of_t wrapped_cs in 
+    let cs=of_t wrapped_cs in 
     let restr =(fun l->Associative_list.restrict l smaller_list_of_modules) in    
     let temp_direct_fathers = restr (cs.Coma_state_t.direct_fathers_for_module) 
     and temp_ancestors = restr (cs.Coma_state_t.ancestors_for_module) in 
@@ -441,7 +467,13 @@ let restrict wrapped_cs smaller_list_of_modules =
     and new_direct_fathers = among_fathers  temp_direct_fathers  
     and new_ancestors = among_fathers  temp_ancestors
     and new_needed_dirs = restr (cs.Coma_state_t.needed_dirs_for_module) 
-    and new_products_up_to_date = restr cs.Coma_state_t.product_up_to_date_for_module  in 
+    and new_products_up_to_date = restr cs.Coma_state_t.product_up_to_date_for_module in  
+    let new_preq_types= List.filter (
+        fun (eless,_)->
+          let middle = Dfn_endingless.to_middle eless in 
+        List.exists (fun (mn,subdir)->middle = Dfn_middle_t.J(subdir,mn) ) new_subdirs 
+        )  cs.Coma_state_t.printer_equipped_types   in 
+    let new_directories = Ordered.sort Total_ordering.standard (Image.image snd new_subdirs) in 
 to_t({ cs with 
       Coma_state_t.modules = smaller_list_of_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
@@ -454,8 +486,36 @@ to_t({ cs with
       Coma_state_t.ancestors_for_module=  new_ancestors;
       Coma_state_t.needed_dirs_for_module = new_needed_dirs;
       Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Coma_state_t.directories = new_directories;
+      Coma_state_t.printer_equipped_types = new_preq_types;
 });;  
 
+let transplant wrapped_cs (new_frontier,new_backup_dir,new_g_after_b) = 
+     let cs=of_t wrapped_cs in 
+     let new_principal_mts=Image.image (fun (mn,_)->
+          let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
+          and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
+          let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
+          (mn,Fw_wrapper_field.get_mtime new_frontier rootless)
+     ) cs.Coma_state_t.principal_ending_for_module
+     and new_mli_mts=Image.image (fun (mn,subdir)->
+          let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
+          (mn,Fw_wrapper_field.get_mtime new_frontier rootless)
+     ) cs.Coma_state_t.subdir_for_module 
+     and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
+     ) cs.Coma_state_t.product_up_to_date_for_module
+     and new_preq_types=Image.image (fun (eless,_)->(eless,false)
+     ) cs.Coma_state_t.printer_equipped_types in 
+     to_t({
+           cs with    
+            Coma_state_t.frontier_with_unix_world= new_frontier;
+            dir_for_backup =new_backup_dir;
+            gitpush_after_backup= new_g_after_b;
+            principal_mt_for_module = new_principal_mts;
+            mli_mt_for_module = new_mli_mts;
+            product_up_to_date_for_module = new_products_up_to_date;
+            printer_equipped_types = new_preq_types;
+     });;
 
 module Private = struct 
 
@@ -514,8 +574,8 @@ let to_concrete_object cs=
     subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
     mli_presence_for_module_label, cr_of_pair Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
-    principal_mt_for_module_label, cr_of_pair (fun s->Concrete_object_t.String s) cs.Coma_state_t.principal_mt_for_module;
-    mli_mt_for_module_label, cr_of_pair (fun s->Concrete_object_t.String s) cs.Coma_state_t.mli_mt_for_module;
+    principal_mt_for_module_label, cr_of_pair (fun s->Concrete_object_field.wrap_string s) cs.Coma_state_t.principal_mt_for_module;
+    mli_mt_for_module_label, cr_of_pair (fun s->Concrete_object_field.wrap_string s) cs.Coma_state_t.mli_mt_for_module;
     needed_libs_for_module_label, cr_of_pair (Concrete_object_field.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
     direct_fathers_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
     ancestors_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   

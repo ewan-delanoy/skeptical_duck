@@ -336,6 +336,15 @@ let complete_info cs  mlx=
   and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
   (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
+let update_just_one_module cs rootless =
+    let mn = Dfn_rootless.to_module rootless in 
+    if not(List.mem mn (ordered_list_of_modules cs))
+    then cs 
+    else let mlx=Dfn_join.root_to_rootless (root cs) rootless in 
+         let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=complete_info cs  mlx in 
+         Coma_state_field.set_in_each cs mn (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated);;
+
+
   let check_unix_presence eless edg=
     let full_path=Dfn_join.to_ending eless edg in 
     Sys.file_exists(Dfn_full.to_line full_path);;
@@ -695,33 +704,6 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 (!ref_for_changed_shortpaths);; 
 
 
-let recompile_on_monitored_modules tolerate_cycles cs = 
-  let ref_for_changed_modules=ref[] 
-  and ref_for_changed_shortpaths=ref[] in
-  let declare_changed=(fun nm->
-    ref_for_changed_modules:=nm::(!ref_for_changed_modules);
-    ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (rootless_paths_at_module cs nm))
-    ) in
-  let cs_walker=ref(cs) in   
-  let _=List.iter (fun mname->
-    match quick_update (!cs_walker) mname with
-    None->()
-    |Some(pr_modif_time,mli_modif_time,direct_fathers)->
-    (
-    declare_changed(mname);
-    cs_walker:=set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
-    cs_walker:=set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
-    cs_walker:=set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
-    cs_walker:=set_product_up_to_date_at_module (!cs_walker) mname false;
-    )
-)(ordered_list_of_modules cs) in
-let changed_modules=List.rev(!ref_for_changed_modules) in
-if changed_modules=[] then ((!cs_walker,[]),[]) else
-let _=PrivateThree.announce_changed_modules changed_modules in
-(PrivateThree.put_md_list_back_in_order tolerate_cycles 
-  (!cs_walker) changed_modules,
-(!ref_for_changed_shortpaths));;  
 
 let printer_equipped_types_from_data cs=
   Option.filter_and_unpack (
@@ -1117,23 +1099,6 @@ let usual_feydeau cs modnames = feydeau Compilation_mode_t.Usual cs (Some(modnam
 end;;  
 
 
-let rucompile cs=
-     let ((cs2,nms_to_be_updated),rootless_paths)=
-        recompile_on_monitored_modules false cs in
-     if nms_to_be_updated=[] then (cs2,false,[]) else
-     let new_dirs=compute_subdirectories_list cs2  in
-     let (cs3,rejected_pairs,accepted_pairs)=
-       Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-     let rejected_mns=Image.image snd rejected_pairs in  
-      let new_preqt=Image.image(
-        fun (mn,_)->(mn,not(List.mem mn rejected_mns))
-      )  (preq_types cs3) in   
-     let cs4=set_directories cs3 new_dirs in 
-     let cs5=set_preq_types cs4 new_preqt in 
-    (cs5,true,rootless_paths);;       
-
-
-
 let add_printer_equipped_type cs mn=
   set_preq_types cs ((preq_types cs)@[mn]);;
 
@@ -1146,15 +1111,8 @@ let uple_form cs=
    preq_types cs
    );;
 
-    
-(*
-let backup cs diff opt= Backup_coma_state.backup
-  (root cs,backup_dir cs,push_after_backup cs) 
-    diff opt;;
-*)
 
-
-  let unregister_mlx_file_on_targets root_dir cs mlx=
+let unregister_mlx_file_on_targets root_dir cs mlx=
     let mn=Dfn_full.to_module mlx in 
     let following = mn::(follows_it cs mn) in  
     let was_lonely=
@@ -1435,12 +1393,13 @@ exception Identical_names of (((string*string) list) list);;
       (fun (j1,(ap1,s1))->s1) temp1 cycles in
       Image.image (fun (j,_)->snd(List.nth temp1 (j-1)) ) good_list;;
       
-    let from_prepared_list dir backup_dir g_after_b l=
+    let from_prepared_list cs l=
+       let dir = Coma_state_field.root cs in 
        let temp1=Option.filter_and_unpack (fun (ap,s)->
           try (Some(Dfn_full.from_absolute_path_with_root ap dir)) with 
           _->None
        ) l in
-       Try_to_register.mlx_files (Coma_state_field.empty_one dir backup_dir g_after_b) temp1;;
+       Try_to_register.mlx_files cs temp1;;
 
 let delchacre_from_scratch (source_dir,dir_for_backup) cs=
   let temp1=all_mlx_paths cs in
@@ -1452,24 +1411,22 @@ let delchacre_from_scratch (source_dir,dir_for_backup) cs=
     (source_dir,temp4) dir_for_backup;;
 
 let from_main_directory dir backup_dir g_after_b=
-        let _=(More_unix.create_subdirs_and_fill_files_if_necessary  dir
-           Coma_constant.git_ignored_subdirectories 
-             Coma_constant.conventional_files_with_content
-           ) in
         let config = Fw_configuration.default dir in 
         let fw1 = Fw_initialize.init config in 
+        let cs0 = Coma_state_field.empty_one dir backup_dir g_after_b in
+        let cs1 = Coma_state_field.set_frontier_with_unix_world cs0 fw1 in  
         let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
         let temp2=clean_list_of_files dir temp1 in
         let temp3=compute_dependencies temp2 in
-        let (failures,cs1)=from_prepared_list dir backup_dir g_after_b temp3 in
-        let pre_preqt=printer_equipped_types_from_data cs1 in
-        let l_mod=ordered_list_of_modules cs1 in 
-        let (cs2,rejected_pairs,_)=
+        let (failures,cs2)=from_prepared_list cs1 temp3 in
+        let pre_preqt=printer_equipped_types_from_data cs2 in
+        let l_mod=ordered_list_of_modules cs2 in 
+        let (cs3,rejected_pairs,_)=
           Ocaml_target_making.usual_feydeau 
-          cs1 l_mod in
+          cs2 l_mod in
         let rejected_endinglesses=Image.image snd rejected_pairs in 
        let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
-       (cs2,[],preqt);;
+       (cs3,[],preqt);;
 
     
 
@@ -1748,16 +1705,6 @@ let duplicate_module cs old_t1 old_t2=
     (txt1,txt2) ap2  in 
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
-let recompile_and_return_diff cs=
-  let (cs2,change_exists,rootless_paths)=rucompile cs  in
-  let changed_paths=
-   (if not change_exists
-   then []
-   else Ordered.sort Total_ordering.silex_for_strings rootless_paths) in
-    (cs2,Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list changed_paths)
-    (Recently_created.of_string_list [])) ;;
 
 module Almost_concrete = struct 
 
@@ -1804,15 +1751,13 @@ let forget_file_with_backup_before_saving cs x=
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in
-   let (cs2,_,_)=rucompile cs in 
-   let cs3=forget_file cs2 ap in 
+   let cs3=forget_file cs ap in 
    (cs3,diff);; 
 
 let forget_module_with_backup_before_saving cs capitalized_or_not_old_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
   let old_endingless = endingless_at_module cs mn in   
-  let (cs2,_,_)=rucompile cs in
-  let (cs3,rootless_paths)=forget_module cs2 old_endingless in    
+  let (cs3,rootless_paths)=forget_module cs old_endingless in    
   let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
   let diff=
       Dircopy_diff.veil
@@ -1909,4 +1854,37 @@ module Recent_changes = struct
 
 end;;    
 
-let recompile = rucompile;;
+
+module Late_Recompilation = struct 
+
+let quick_update cs new_fw  mn=
+  let eless =endingless_at_module cs mn 
+  and pr_ending=principal_ending_at_module cs mn in
+  let middle = Dfn_endingless.to_middle eless in 
+  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
+  then None
+  else
+  let mli_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
+  and pr_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
+  and old_mli_modif_time=mli_mt_at_module cs mn
+  and old_pr_modif_time=principal_mt_at_module cs mn 
+  in
+  let new_values=(mli_modif_time,pr_modif_time)
+  and old_values=(old_mli_modif_time,old_pr_modif_time) in
+  let mn = Dfn_endingless.to_module eless in 
+  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)
+  then None
+  else
+  let mlx=Dfn_join.to_ending eless pr_ending in
+  let direct_fathers=find_needed_data cs mlx in
+  Some(
+    pr_modif_time,
+    mli_modif_time,
+    direct_fathers
+   )   
+  ;;
+
+
+end ;;
+
+
