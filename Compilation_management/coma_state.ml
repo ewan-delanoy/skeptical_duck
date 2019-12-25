@@ -1410,24 +1410,6 @@ let delchacre_from_scratch (source_dir,dir_for_backup) cs=
  Prepare_dircopy_update.compute_diff
     (source_dir,temp4) dir_for_backup;;
 
-let from_main_directory dir backup_dir g_after_b=
-        let config = Fw_configuration.default dir in 
-        let fw1 = Fw_initialize.init config in 
-        let cs0 = Coma_state_field.empty_one dir backup_dir g_after_b in
-        let cs1 = Coma_state_field.set_frontier_with_unix_world cs0 fw1 in  
-        let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
-        let temp2=clean_list_of_files dir temp1 in
-        let temp3=compute_dependencies temp2 in
-        let (failures,cs2)=from_prepared_list cs1 temp3 in
-        let pre_preqt=printer_equipped_types_from_data cs2 in
-        let l_mod=ordered_list_of_modules cs2 in 
-        let (cs3,rejected_pairs,_)=
-          Ocaml_target_making.usual_feydeau 
-          cs2 l_mod in
-        let rejected_endinglesses=Image.image snd rejected_pairs in 
-       let preqt=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
-       (cs3,[],preqt);;
-
     
 
 end;;  
