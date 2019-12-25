@@ -71,7 +71,7 @@ let replace_string old_string new_string=
    (!(Private.main_ref)) old_string new_string ;;
 
 let repopulate opt_limitation=
-  let _=Update_compiler_copy.ucc
+  let _=Create_world_copy.ucc
   (!Usual_coma_state.main_ref) opt_limitation  in 
   initialize();; 
 
