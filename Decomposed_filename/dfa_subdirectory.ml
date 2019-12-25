@@ -7,7 +7,6 @@ Subdirectories name, with the trailing slash removed.
 
 *)
 
-
 let without_trailing_slash (Dfa_subdirectory_t.SD s)=s;;
 
 let connectable_to_subpath (Dfa_subdirectory_t.SD s)=
@@ -15,9 +14,20 @@ let connectable_to_subpath (Dfa_subdirectory_t.SD s)=
   then "" 
   else s^"/";;
 
-let of_line s=Dfa_subdirectory_t.SD s;;
+let begins_with (Dfa_subdirectory_t.SD s1) (Dfa_subdirectory_t.SD s2)=
+   Supstring.begins_with s1 s2;;
+    
 
 let main = Dfa_subdirectory_t.SD "";;
+
+let of_line s=
+  let n = String.length s in 
+  let indices = List.rev(Ennig.ennig 1 n) in 
+  let limit_idx=(match Option.seek(fun j->(Strung.get s j)<>'/')(indices) with 
+     None -> 0 |Some(j)->j
+  ) in 
+  Dfa_subdirectory_t.SD (Cull_string.beginning limit_idx s);;
+
 
 let rename_endsubdirectory (Dfa_subdirectory_t.SD(old_subdir),new_esdname) 
    (Dfa_subdirectory_t.SD s)=
