@@ -544,7 +544,7 @@ let cr_to_pair f crobj= Concrete_object_field.to_pair_list  Dfa_module.of_concre
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
    {
-      Coma_state_t.frontier_with_unix_world = Fw_wrapper.of_concrete_object (g frontier_with_unix_world_label);
+      Coma_state_t.frontier_with_unix_world = Fw_wrapper_field.of_concrete_object (g frontier_with_unix_world_label);
       dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
       gitpush_after_backup = Concrete_object_field.to_bool (g gitpush_after_backup_label);
       modules = Concrete_object_field.to_list Dfa_module.of_concrete_object (g modules_label);
@@ -567,7 +567,7 @@ let of_concrete_object ccrt_obj =
 let to_concrete_object cs=
    let items= 
    [
-    frontier_with_unix_world_label, Fw_wrapper.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
+    frontier_with_unix_world_label, Fw_wrapper_field.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
     dir_for_backup_label, Dfa_root.to_concrete_object cs.Coma_state_t.dir_for_backup;
     gitpush_after_backup_label, Concrete_object_field.of_bool cs.Coma_state_t.gitpush_after_backup;
     modules_label, Concrete_object_field.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
