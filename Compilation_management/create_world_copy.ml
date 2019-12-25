@@ -102,7 +102,7 @@ end ;;
   
 
 
-let ucc cs opt_selection=
+let cwc cs opt_selection=
     let destdir=Coma_big_constant.Next_World.root in 
     let conv_files = (
       match opt_selection with 
