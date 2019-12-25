@@ -21,7 +21,7 @@ let first_init config =
          config.Fw_configuration_t.allowed_endings )
          &&
          (
-            not(List.mem (Dfn_rootless.to_subdirectory rootless)
+            not(List.exists ( Dfa_subdirectory.begins_with (Dfn_rootless.to_subdirectory rootless))
              config.Fw_configuration_t.git_ignored_subdirectories
             )
          )
@@ -48,3 +48,5 @@ let second_init config (nonspecials_to_be_watched,specials) =
 let init config = 
    let (nonspecials_to_be_watched,specials) = first_init config in 
    second_init config (nonspecials_to_be_watched,specials);;
+
+   
