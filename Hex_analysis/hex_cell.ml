@@ -4,6 +4,8 @@
 
 *)
 
+let abscissa (Hex_cell_t.C(s,i))=i;;
+
 let cmp=((fun (Hex_cell_t.C(s1,i1)) (Hex_cell_t.C(s2,i2)) ->
    (Total_ordering.product 
      Total_ordering.lex_for_strings Total_ordering.standard)
@@ -30,6 +32,9 @@ let of_string s =
       String.sub s 0 1,
       int_of_string(String.sub s 1 (String.length(s)-1))
   );;
+
+let ordinate (Hex_cell_t.C(s,i))=(int_of_char(String.get s 0))-96;;
+
 
 let to_string (Hex_cell_t.C(s1,i1))=
   s1^(string_of_int i1);;
