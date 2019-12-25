@@ -230,45 +230,6 @@ let inspect_and_update fw =
     }  in 
     (new_fw,(changed_usual_files,changed_special_files));;         
 
-let triple_of_concrete_object crobj=   
-    let (arg1,arg2,arg3,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj 
-    and us=Concrete_object_field.unwrap_string in
-   (Dfn_rootless.of_concrete_object arg1,us arg2,us arg3);;     
-
-let triple_to_concrete_object (rootless_path,mtime,content)=   
-   Concrete_object_t.Uple
-   [
-    Dfn_rootless.to_concrete_object rootless_path;
-    Concrete_object_field.wrap_string(mtime);
-    Concrete_object_field.wrap_string(content);
-   ];;     
-
-let triplelist_of_concrete_object crobj = Concrete_object_field.to_list triple_of_concrete_object crobj;;
-let triplelist_to_concrete_object l = Concrete_object_field.of_list triple_to_concrete_object l;;
-
- 
-let salt = "Fw_"^"wrapper_t.";;
-
-let configuration_label         = salt ^ "configuration";;
-let watched_files_label         = salt ^ "watched_files";;
-let special_watched_files_label = salt ^ "special_watched_files";;
-
-let of_concrete_object ccrt_obj = 
-   let g=Concrete_object_field.get_record ccrt_obj in
-   {
-      Fw_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
-      watched_files = triplelist_of_concrete_object(g watched_files_label);
-      special_watched_files = triplelist_of_concrete_object(g special_watched_files_label);
-   };; 
-
-let to_concrete_object wr=
-   let items= 
-   [
-    configuration_label, Fw_configuration.to_concrete_object wr.Fw_wrapper_t.configuration;
-    watched_files_label, triplelist_to_concrete_object wr.Fw_wrapper_t.watched_files;
-    special_watched_files_label, triplelist_to_concrete_object wr.Fw_wrapper_t.special_watched_files;
-   ]  in
-   Concrete_object_t.Record items;;
 
 let helper1_inside_module_renaming_in_filename fw s_new_module rootless_path =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
@@ -450,8 +411,6 @@ let inspect_and_update = Private.inspect_and_update;;
 
 let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
 
-let of_concrete_object = Private.of_concrete_object;;
-
 let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_if_it_exists;;
 
 let refresh = Private.refresh ;;
@@ -468,5 +427,4 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
-let to_concrete_object = Private.to_concrete_object;;
 
