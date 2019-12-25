@@ -6,4 +6,4 @@
 type t= 
   Pair of Hex_cell_t.t * Hex_cell_t.t 
  |
- C of string * int ;;
+  Eyed_claw of string * int ;;
