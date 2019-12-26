@@ -6,7 +6,7 @@
 
 (* Beginning of directly set-related methods *)
 
-let tr = ((fun x->Hex_cell_set_t.S(x)),(fun (Hex_cell_set_t.S(x))->x),Total_ordering.standard);;
+let tr = ((fun x->Hex_cell_set_t.S(x)),(fun (Hex_cell_set_t.S(x))->x),Hex_cell.cmp);;
 
 let does_not_intersect x y= Functor_for_sets.does_not_intersect tr x y;;
 let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
