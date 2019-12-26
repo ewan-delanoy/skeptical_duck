@@ -171,8 +171,27 @@ let of_concrete_object crobj=
                                  Hex_cell.of_concrete_object arg2)
    else raise(Of_concrete_object_exn);;                                   
 
+let cmp_for_pair (cell1,cell2) = function 
+   Hex_atomic_linker_t.Pair (cell3,cell4) -> Hex_cell.cmp_for_pairs (cell1,cell2) (cell3,cell4)
+ | Eyed_claw (direction1,direction2,cell) -> Total_ordering.Lower ;;
+
+let cmp_for_eyed (direction1,direction2,cell) = function 
+   Hex_atomic_linker_t.Pair (_,_) ->  Total_ordering.Greater
+ | Eyed_claw (direction3,direction4,cell2) ->  
+     Total_ordering.triple_product 
+        Total_ordering.standard Total_ordering.standard Hex_cell.cmp 
+          (direction1,direction2,cell) (direction1,direction2,cell2)
+ ;;
+
+let cmp = ((function 
+   Hex_atomic_linker_t.Pair (cell1,cell2) -> cmp_for_pair (cell1,cell2)
+ | Eyed_claw (direction1,direction2,cell) -> cmp_for_eyed (direction1,direction2,cell)):>
+    Hex_atomic_linker_t.t Total_ordering.t
+ ) ;;  
+
 end;;
 
+let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let of_concrete_object = Private.of_concrete_object;;
 let pair = Private.pair;;
