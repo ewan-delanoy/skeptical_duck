@@ -225,7 +225,6 @@ let recompile cs =
   let cs2=Physical.recompile cs  in
   Internal.recompile cs2;;
   
-
 let refresh cs =
    let cs2=Physical.refresh 
      (Coma_state.root cs,Coma_state.backup_dir cs,Coma_state.gitpush_after_backup cs)  in
