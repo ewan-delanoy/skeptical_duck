@@ -76,7 +76,7 @@ let fles5=create1 strat5_constructor "" [];;
 
 let for_strat6=
   basic_linker  ["c3";"b4"] 
-   ["a2","d2";"b1","c1";"e1","f1";
+   ["b2","e2";"b1","c1";"e1","f1";
      "b3","c2";"d2","d3"] ;;
 let strat6_constructor = bali for_strat6;;
 let fles6=create1 strat6_constructor "" [];;
