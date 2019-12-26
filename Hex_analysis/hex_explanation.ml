@@ -2,7 +2,27 @@
 
 #use"Hex_analysis/hex_explanation.ml";;
 
+
 Here we explain of how some strategies are constructed.
+
+On the board, there are exactly two cells with valence 2 : the upper left and lower 
+right corners. They must therefore be fixed or exchanegd by any symmetry of the board. 
+It easily follows that the group of symmetries of the board is a Klein group, generated 
+by sigma(x,y)=(y,x) (symmetry wrt to main diagonal) and tau(x,y)=(d+1-x,d+1-y) (central
+symmetry).
+
+Also,
+
+sigma(left-eyed upwards)  = high-eyed leftwards
+sigma(right-eyed upwards) = low-eyed leftwards
+
+tau(left-eyed upwards)  = right-eyed downwards
+tau(right-eyed upwards) = left-eyed downtwards
+
+tau(high-eyed leftwards)  = high-eyed rightwards
+tau(low-eyed leftwards) = low-eyed rightwards
+
+
 
 *)
 

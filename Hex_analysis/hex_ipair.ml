@@ -86,13 +86,13 @@ let core_powder_for_right_eyed_upwards_claw =
      (4, 2)]
   );;
 
-let diag_sym (p,q) (x,y) = (p+y,q+x);;
-let odiag_sym (p,q) (x,y)= (p-y,q-x);;
+let reflection (x,y) = (y,x);;
+let central_sym (x,y)= (7-x,7-y);;
 
 let apply_on_both f (a,b)=(f a,Ordered.sort Total_ordering.standard2 (Image.image f b));;
 
-let diag_sym_on_both t p = apply_on_both (diag_sym t) p;;
-let odiag_sym_on_both t p = apply_on_both (odiag_sym t) p;;
+let reflection_on_both p = apply_on_both reflection p;;
+let central_sym_on_both p = apply_on_both central_sym p;;
 
 let adjust_by_translation whole (x1,y1)=
     let ((x0,y0),l)=whole in 
@@ -101,22 +101,22 @@ let adjust_by_translation whole (x1,y1)=
 
 
 let core_powder_for_high_eyed_leftwards_claw =
-    diag_sym_on_both (0,0) core_powder_for_left_eyed_upwards_claw;;
+    reflection_on_both core_powder_for_left_eyed_upwards_claw;;
   
 let core_powder_for_low_eyed_leftwards_claw =
-    diag_sym_on_both (0,0) core_powder_for_right_eyed_upwards_claw;;
+    reflection_on_both core_powder_for_right_eyed_upwards_claw;;
 
 let core_powder_for_left_eyed_downwards_claw =
-    odiag_sym_on_both (5,8) core_powder_for_low_eyed_leftwards_claw;;
+    central_sym_on_both core_powder_for_right_eyed_upwards_claw;;
 
 let core_powder_for_right_eyed_downwards_claw =
-    odiag_sym_on_both (5,8) core_powder_for_high_eyed_leftwards_claw;;
+    central_sym_on_both core_powder_for_left_eyed_upwards_claw;;
 
 let core_powder_for_high_eyed_rightwards_claw =
-    diag_sym_on_both (0,0) core_powder_for_left_eyed_downwards_claw;;
+    central_sym_on_both  core_powder_for_low_eyed_leftwards_claw;;
 
 let core_powder_for_low_eyed_rightwards_claw =
-    diag_sym_on_both (0,0) core_powder_for_right_eyed_downwards_claw;;
+    central_sym_on_both  core_powder_for_high_eyed_leftwards_claw;;
 
 end;;
 
