@@ -163,7 +163,7 @@ let powder_for_high_eyed_rightwards_claw =
 
 let powder_for_low_eyed_rightwards_claw =
    Private.adjust_by_translation 
-      Private.core_powder_for_low_eyed_leftwards_claw;;;;
+      Private.core_powder_for_low_eyed_rightwards_claw;;;;
 
 
 let support_for_downwards_pyramid (x,y)=
