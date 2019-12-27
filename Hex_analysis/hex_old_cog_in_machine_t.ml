@@ -1,0 +1,10 @@
+(* 
+
+#use"Hex_analysis/hex_old_cog_in_machine_t.ml";;
+
+*)
+
+type t= C of 
+ ( Hex_old_strategy_static_constructor_t.t * string * 
+   (int list) * Hex_flattened_end_strategy_t.t ) ;;
+   
