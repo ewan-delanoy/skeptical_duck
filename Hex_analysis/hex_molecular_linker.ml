@@ -5,6 +5,8 @@
 *)
 
 
+exception Nondisjoint_atoms of Hex_atomic_linker_t.t * Hex_atomic_linker_t.t;;
+
 module Private = struct
 
 let tr = ((fun x->Hex_molecular_linker_t.M(x)),
@@ -18,7 +20,15 @@ let of_concrete_object crobj=
       Concrete_object_field.to_list Hex_atomic_linker.of_concrete_object arg1
    );;
 
-let safe_set l= Functor_for_sets.safe_set Private.tr l;;
+let constructor unordered_l= 
+  let l= Ordered.sort Hex_atomic_linker.cmp unordered_l in 
+  let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.support atl)) l in 
+  let temp2=Uple.list_of_pairs temp1 in 
+  match Option.seek(fun ((atl1,supp1),(atl2,supp2))->
+    not(Hex_cell_set.does_not_intersect supp1 supp2)
+  ) temp2 with 
+  None -> Hex_molecular_linker_t.M(l)
+  |Some((atl1,supp1),(atl2,supp2))->raise(Nondisjoint_atoms(atl1,atl2));;
 
 let support (Hex_molecular_linker_t.M(l))= 
    Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
