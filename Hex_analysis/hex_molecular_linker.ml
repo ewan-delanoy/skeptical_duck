@@ -13,9 +13,10 @@ let tr = ((fun x->Hex_molecular_linker_t.M(x)),
           (fun (Hex_molecular_linker_t.M(x))->x),Hex_atomic_linker.cmp);;
 end;;
 
-(*
-let active_and_passive_parts (Hex_molecular_linker_t.M l)=
-*)   
+
+let active_part (Hex_molecular_linker_t.M l)=
+    Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.active_part l);;    
+   
 
 let of_concrete_object crobj=
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
