@@ -142,10 +142,6 @@ let support_for_eyed = function
   |Hex_cardinal_direction_t.Right -> support_for_right_eyed 
   |Hex_cardinal_direction_t.Up    -> support_for_high_eyed ;;  
  
-let support = function 
-   Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
- | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
-    
 
 let salt = "Hex_"^"atomic_linker_t.";;
 let pair_label = salt ^ "Pair";;
@@ -195,6 +191,11 @@ let active_part = function
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set_t.S []
  | Eyed_claw (direction1,direction2,cell) -> Hex_cell_set_t.S [cell];;
 
+let passive_part = function 
+   Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
+ | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
+    
+
 
 
 end;;
@@ -204,5 +205,5 @@ let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let of_concrete_object = Private.of_concrete_object;;
 let pair = Private.pair;;
-let support = Private.support;;
+let passive_part = Private.passive_part;;
 let to_concrete_object = Private.to_concrete_object;;
