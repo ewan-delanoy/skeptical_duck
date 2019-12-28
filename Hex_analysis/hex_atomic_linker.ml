@@ -189,8 +189,17 @@ let cmp = ((function
     Hex_atomic_linker_t.t Total_ordering.t
  ) ;;  
 
+
+
+let active_part = function 
+   Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set_t.S []
+ | Eyed_claw (direction1,direction2,cell) -> Hex_cell_set_t.S [cell];;
+
+
+
 end;;
 
+let active_part = Private.active_part;;
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let of_concrete_object = Private.of_concrete_object;;
