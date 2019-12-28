@@ -26,7 +26,7 @@ let of_concrete_object crobj=
 
 let constructor unordered_l= 
   let l= Ordered.sort Hex_atomic_linker.cmp unordered_l in 
-  let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.support atl)) l in 
+  let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.passive_part atl)) l in 
   let temp2=Uple.list_of_pairs temp1 in 
   match Option.seek(fun ((atl1,supp1),(atl2,supp2))->
     not(Hex_cell_set.does_not_intersect supp1 supp2)
@@ -34,8 +34,8 @@ let constructor unordered_l=
   None -> Hex_molecular_linker_t.M(l)
   |Some((atl1,supp1),(atl2,supp2))->raise(Nondisjoint_atoms(atl1,atl2));;
 
-let support (Hex_molecular_linker_t.M(l))= 
-   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
+let passive_part (Hex_molecular_linker_t.M(l))= 
+   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.passive_part l);;
 
 let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",
