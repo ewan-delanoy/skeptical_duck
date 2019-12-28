@@ -3,8 +3,6 @@
 #use"Hex_analysis/hex_molecular_extraction.ml";;
 
 *)
-
-type t= E of Hex_molecular_linker_t.t * Hex_cell_set_t.t ;;
   
 let extract_from fles mlclr =
     let remaining_ones =
