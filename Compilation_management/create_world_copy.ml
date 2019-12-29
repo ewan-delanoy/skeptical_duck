@@ -130,7 +130,7 @@ let cwc cs opt_selection=
     let faraway_cs1 = Coma_state_field.transplant 
        restricted_cs (faraway_fw,Coma_big_constant.Next_World.backup_dir,Coma_big_constant.Next_World.githubbing) in 
     let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
-    let (faraway_cs2,_) = Modify_coma_state.Internal.recompile faraway_cs in 
+    let (faraway_cs2,_) = Modify_coma_state.Internal.recompile (faraway_cs,[]) in 
     let _=Save_coma_state.save faraway_cs2 in   
     faraway_cs2;;
 

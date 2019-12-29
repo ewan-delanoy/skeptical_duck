@@ -10,9 +10,9 @@
 module Physical = struct 
 
 let recompile cs =
-   let (new_fw,changed_rootlesses)=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
+   let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
-   new_cs;;
+   (new_cs,changed_rootlesses);;
 
 let refresh (root,backup_dir,g_after_b) =
     let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
@@ -70,7 +70,7 @@ end;;
 
 module Internal = struct
 
-let recompile cs = 
+let recompile (cs,changed_rootlesses) = 
    let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
    let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
@@ -81,7 +81,7 @@ let recompile cs =
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
-    match Coma_state.Late_Recompilation.quick_update (!cs_walker) new_fw mname with
+    match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_rootlesses) mname with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
@@ -193,14 +193,14 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
       )
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
-  let (cs9,_)=recompile cs8 in 
+  let (cs9,_)=recompile (cs8,[]) in 
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_files)
     (Recently_changed.of_string_list modified_files)
     (Recently_created.of_string_list new_files) in
    (cs9,diff);;
 
-let rename_string_or_value = recompile ;; 
+let rename_string_or_value cs = recompile (cs,[]);; 
 
 end;;
 
@@ -222,8 +222,8 @@ let register_rootless_path cs  x=
 *)
 
 let recompile cs = 
-  let cs2=Physical.recompile cs  in
-  Internal.recompile cs2;;
+  let (cs2,changed_rootlesses)=Physical.recompile cs  in
+  Internal.recompile (cs2,changed_rootlesses);;
   
 let refresh cs =
    let cs2=Physical.refresh 

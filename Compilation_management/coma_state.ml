@@ -1836,10 +1836,9 @@ module Recent_changes = struct
 
 end;;    
 
-
 module Late_Recompilation = struct 
 
-let quick_update cs new_fw  mn=
+let quick_update cs (new_fw,changed_rootlesses)  mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
   let middle = Dfn_endingless.to_middle eless in 
@@ -1854,7 +1853,8 @@ let quick_update cs new_fw  mn=
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
   let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)
+  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)&&
+     (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
   then None
   else
   let mlx=Dfn_join.to_ending eless pr_ending in
