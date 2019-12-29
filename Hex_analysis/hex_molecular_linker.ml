@@ -31,6 +31,8 @@ let constructor unordered_l=
   None -> Hex_molecular_linker_t.M(l)
   |Some((atl1,supp1),(atl2,supp2))->raise(Nondisjoint_atoms(atl1,atl2));;
 
+let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
+
 let is_included_in = Functor_for_sets.is_included_in Private.tr ;;
 
 let of_concrete_object crobj=
