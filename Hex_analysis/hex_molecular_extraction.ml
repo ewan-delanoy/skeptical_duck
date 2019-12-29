@@ -25,3 +25,5 @@ let to_concrete_object (Hex_molecular_extraction_t.E(mlclr,remaining_ones)) =
       Hex_molecular_linker.to_concrete_object mlclr;
       Hex_cell_set.to_concrete_object(remaining_ones)
    ]  ;;
+
+let trivial_case mlclr = Hex_molecular_extraction_t.E(mlclr,Hex_cell_set_t.S[]);;
