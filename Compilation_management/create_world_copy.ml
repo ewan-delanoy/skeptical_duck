@@ -134,5 +134,3 @@ let cwc cs opt_selection=
     let _=Save_coma_state.save faraway_cs2 in   
     faraway_cs2;;
 
-
-         
