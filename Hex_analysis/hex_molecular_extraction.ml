@@ -9,7 +9,7 @@ let extract_from_set mlclr passive_part =
       Hex_cell_set.setminus passive_part (Hex_molecular_linker.passive_part mlclr) in 
     Hex_molecular_extraction_t.E(mlclr,remaining_ones);;
 
-let extract_from_strategy fles mlclr =
+let extract_from_strategy  mlclr fles =
     extract_from_set mlclr (fles.Hex_flattened_end_strategy_t.passive_part);;
 
 let of_concrete_object crobj= 
