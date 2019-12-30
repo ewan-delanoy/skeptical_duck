@@ -254,7 +254,7 @@ let preprocess grid =
    let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Set_of_polys.safe_set(Option.filter_and_unpack
      (fun (_,s)->if Cull_string.trim_spaces s="" then None else Some(s)) non_macros2) in 
-   let powder_from_claws =List.flatten (Image.image (fun (claw,p)->Hex_molecular_linker.ipair_support claw) claws) in   
+   let powder_from_claws =List.flatten (Image.image (fun (claw,p)->Hex_atomic_linker.ipair_support claw) claws) in   
    let unused_labels = List.filter (fun x->Set_of_polys.nmem x labels_used_by_nonmacros) list_of_default_labels in 
    let fourtuples = List.flatten(Image.image snd macros2) in
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
