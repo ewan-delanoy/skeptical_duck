@@ -18,7 +18,7 @@ let get_elt_at_idx (Hex_end_strategy_factory_t.F(player,l)) k=
 let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
-        (active_ones,Hex_molecular_linker.passive_part mlclr)
+        (active_ones,Hex_molecular_linker.support mlclr)
     | Disjunction (cells)->
         let temp1=Image.image (get_elt_at_idx factory) indices in 
         let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1

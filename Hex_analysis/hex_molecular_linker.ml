@@ -12,9 +12,6 @@ module Private = struct
 let tr = ((fun x->Hex_molecular_linker_t.M(x)),
           (fun (Hex_molecular_linker_t.M(x))->x),Hex_atomic_linker.cmp);;
 
-let support (Hex_molecular_linker_t.M(l))= 
-   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
-
 
 end;;
 
@@ -30,9 +27,7 @@ let constructor unordered_l=
 
 let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
 
-let ipair_support mlclr = 
-   let (Hex_cell_set_t.S l)=Private.support mlclr in 
-   Image.image Hex_ipair.of_cell l;;
+
 
 let is_included_in = Functor_for_sets.is_included_in Private.tr ;;
 
@@ -42,10 +37,11 @@ let of_concrete_object crobj=
       Concrete_object_field.to_list Hex_atomic_linker.of_concrete_object arg1
    );;
 
-
-let support = Private.support ;;
-
 let setminus = Functor_for_sets.setminus Private.tr ;;
+
+let support (Hex_molecular_linker_t.M(l))= 
+   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
+
 
 let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",

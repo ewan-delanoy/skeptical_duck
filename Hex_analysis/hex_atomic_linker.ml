@@ -190,6 +190,10 @@ let support = function
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
     
+let ipair_support mlclr = 
+   let (Hex_cell_set_t.S l)=support mlclr in 
+   Image.image Hex_ipair.of_cell l;;
+
 
 let opt_eyed dim (p,untrimmed_s) =
     let s= Cull_string.trim_spaces untrimmed_s in 
@@ -206,6 +210,7 @@ end;;
 
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
+let ipair_support = Private.ipair_support;;
 let of_concrete_object = Private.of_concrete_object;;
 let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
