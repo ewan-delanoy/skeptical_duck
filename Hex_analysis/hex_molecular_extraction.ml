@@ -6,7 +6,7 @@
 
 let extract_from_set mlclr passive_part =
     let remaining_ones =
-      Hex_cell_set.setminus passive_part (Hex_molecular_linker.passive_part mlclr) in 
+      Hex_cell_set.setminus passive_part (Hex_molecular_linker.support mlclr) in 
     Hex_molecular_extraction_t.E(mlclr,remaining_ones);;
 
 let extract_from_strategy  mlclr fles =
