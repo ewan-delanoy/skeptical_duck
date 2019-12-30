@@ -196,7 +196,15 @@ let passive_part = function
  | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
     
 
-
+let opt_eyed dim (p,untrimmed_s) =
+    let s= Cull_string.trim_spaces untrimmed_s in 
+    if String.length(s)<>3 then None else 
+    let opt1 = Hex_cardinal_direction.opt_of_char (String.get s 0)
+    and opt2 = Hex_cardinal_direction.opt_of_char (String.get s 2)
+    in 
+    if (opt1=None)||(opt2=None) then None else 
+    try Some (eyed dim (Option.unpack opt1) (Option.unpack opt2) (Hex_ipair.to_cell p)) with 
+    _->None;;
 
 end;;
 
@@ -204,6 +212,7 @@ let active_part = Private.active_part;;
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let of_concrete_object = Private.of_concrete_object;;
+let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
 let passive_part = Private.passive_part;;
 let to_concrete_object = Private.to_concrete_object;;
