@@ -79,7 +79,7 @@ let see_confidential_changes ()=
    let temp1=Coma_state.all_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
-   Explicit.filter (
+   let temp2=Explicit.filter (
       fun full_path->
          let rootless = Dfn_full.to_rootless full_path in 
          if rootless = Coma_constant.rootless_path_for_parametersfile 
@@ -89,7 +89,10 @@ let see_confidential_changes ()=
          let ap1=Absolute_path.of_string(this_root^path) 
          and ap2=Absolute_path.of_string(next_root^path) in 
          Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
-   ) temp1;;    
+   ) temp1 in 
+   Image.image (fun full_path->
+      Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
+   ) temp2;;    
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
