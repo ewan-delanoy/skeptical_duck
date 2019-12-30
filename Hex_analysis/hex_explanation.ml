@@ -26,11 +26,11 @@ tau(low-eyed leftwards) = low-eyed rightwards
 
 *)
 
-let basic_linker  cells pairs =
+let molecular_with_actives  cells pairs =
    let ceos = Hex_cell.of_string in 
-   (Hex_cell_set.safe_set (Image.image ceos cells), 
-    Hex_cell_pair_set.constructor 
-      (Image.image (fun (x,y)->(ceos x,ceos y)) pairs));; 
+   (Hex_molecular_linker.constructor 
+      (Image.image (fun (x,y)->Hex_atomic_linker.pair(ceos x,ceos y)) pairs),
+    Hex_cell_set.safe_set (Image.image ceos cells) );; 
    
 
 
@@ -38,35 +38,35 @@ let for_Black =
   ref(Hex_end_strategy_factory.empty_one Hex_player_t.First_player);;
 let for_White =
   ref(Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;  
-let for_both = (for_Black,for_White);;
+let each_his_own = (for_Black,for_White);;
 let create1 = 
    Hex_end_strategy_factory.create_new_strategy 
-     false for_both Hex_player_t.First_player;;
+     false each_his_own Hex_player_t.First_player;;
 let create2 = 
    Hex_end_strategy_factory.create_new_strategy 
-     false for_both Hex_player_t.Second_player;;
-let bali (x,y) = Hex_strategy_static_constructor_t.Basic_Linker (Hex_octopus.empty_one,x,y);;      
+     false each_his_own Hex_player_t.Second_player;;
+let mol (x,y) = Hex_strategy_static_constructor_t.Molecular (x,y);;      
 
 (* Explaining a right-eyed upper claw *)   
 
 let for_strat1=
-  basic_linker  ["c4";"d3"] 
+  molecular_with_actives  ["c4";"d3"] 
    ["d2","f2";"f1","g1";"d1","e1";"e2","e3"] ;;
-let strat1_constructor = bali for_strat1;;
+let strat1_constructor = mol for_strat1;;
 let fles1=create1 strat1_constructor "" [];;
 
 let for_strat2=
-  basic_linker  ["c3";"c4"] 
+  molecular_with_actives  ["c3";"c4"] 
    ["b2","e2";"b1","c1";"e1","f1";
      "b3","c2";"d2","d3"] ;;
-let strat2_constructor = bali for_strat2;;
+let strat2_constructor = mol for_strat2;;
 let fles2=create1 strat2_constructor "" [];;
 
 let for_strat3=
-  basic_linker  ["b3";"c4"] 
+  molecular_with_actives  ["b3";"c4"] 
    ["a2","c2";"a1","b1";"c1","d1";
      "a3","b2";"b4","c3"] ;;
-let strat3_constructor = bali for_strat3;;
+let strat3_constructor = mol for_strat3;;
 let fles3=create1 strat3_constructor "" [];;
 
 let lonely_c4=Hex_cell_set.safe_set [Hex_cell.of_string "c4"];;
@@ -88,25 +88,25 @@ let ipairs_in_right_eyed_upwards_claw =
 
 
 let for_strat5=
-  basic_linker  ["b3";"b4"] 
+  molecular_with_actives  ["b3";"b4"] 
    ["a2","c2";"a1","b1";"c1","d1";"a3","b2"] ;;
-let strat5_constructor = bali for_strat5;;
+let strat5_constructor = mol for_strat5;;
 let fles5=create1 strat5_constructor "" [];;
 
 
 let for_strat6=
-  basic_linker  ["c3";"b4"] 
+  molecular_with_actives  ["c3";"b4"] 
    ["b2","e2";"b1","c1";"e1","f1";
      "b3","c2";"d2","d3"] ;;
-let strat6_constructor = bali for_strat6;;
+let strat6_constructor = mol for_strat6;;
 let fles6=create1 strat6_constructor "" [];;
 
 
 let for_strat7=
-  basic_linker  ["b4";"d3"] 
+  molecular_with_actives  ["b4";"d3"] 
    ["d2","f2";"d1","e1";"f1","g1";
      "c3","c4";"e2","e3"] ;;
-let strat7_constructor = bali for_strat7;;
+let strat7_constructor = mol for_strat7;;
 let fles7=create1 strat7_constructor "" [];;
 
 let lonely_b4=Hex_cell_set.safe_set [Hex_cell.of_string "b4"];;

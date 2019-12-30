@@ -174,6 +174,29 @@ let to_basic_linker grid=
  (octop,active_ones,passive_pairs);; 
 
 
+let to_molecular_linker_with_active_points grid =
+    let temp6=List.filter (fun (p,s)->not(List.mem s ["eee";"EEE"])) grid.Hex_ascii_grid_t.data in
+    let temp7=Image.image (fun (p,s) -> (Hex_atomic_linker.opt_eyed grid.Hex_ascii_grid_t.dimension (p,s),(p,s)) ) temp6 in 
+    let (temp8,temp9) = List.partition (fun (opt,_)->opt=None) temp7 in 
+    let eyed_claws = Image.image (fun (opt,_)->Option.unpack opt) temp9 in 
+    let temp2=Image.image (fun (_,((i,j),content))->(Hex_ipair.to_cell (i,j),Cull_string.trim_spaces content)) temp8 in 
+    let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
+    let temp3=Image.image (fun c0->
+      (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
+    ) all_used_labels in 
+    let (temp4,temp5)=List.partition (fun (c,l)->c="A") temp3 in 
+    let active_ones = Hex_cell_set.safe_set  (snd (List.hd temp4)) in 
+    let pairs = Image.image (fun (c,l)->
+     if List.length(l)<>2
+     then raise(Unbalanced_label(c,l))
+     else let tf=(fun j->List.nth l j) in
+          Hex_atomic_linker.pair (tf 0,tf 1)
+     ) temp5  in    
+     (Hex_molecular_linker.constructor(pairs@eyed_claws),active_ones);;   
+
+
+
+
 let read_row_in_drawing row =
   let temp1=Str.split (Str.regexp_string "|") row in 
   let i=int_of_string(List.hd(temp1)) in 
@@ -307,5 +330,6 @@ let read_ascii_drawing = Private.read_ascii_drawing ;;
 let read_sheet = Private.read_sheet;;
 let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
 let to_basic_linker = Private.to_basic_linker;;
+let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 let visualize = Private.visualize;;
 
