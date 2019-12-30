@@ -186,12 +186,7 @@ let cmp = ((function
  ) ;;  
 
 
-
-let active_part = function 
-   Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set_t.S []
- | Eyed_claw (direction1,direction2,cell) -> Hex_cell_set_t.S [cell];;
-
-let passive_part = function 
+let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
     
@@ -208,11 +203,11 @@ let opt_eyed dim (p,untrimmed_s) =
 
 end;;
 
-let active_part = Private.active_part;;
+
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let of_concrete_object = Private.of_concrete_object;;
 let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
-let passive_part = Private.passive_part;;
+let support = Private.support;;
 let to_concrete_object = Private.to_concrete_object;;

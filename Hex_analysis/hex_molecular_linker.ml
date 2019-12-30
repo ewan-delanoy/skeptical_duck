@@ -36,7 +36,7 @@ let of_concrete_object crobj=
    );;
 
 
-let passive_part (Hex_molecular_linker_t.M(l))= 
+let support (Hex_molecular_linker_t.M(l))= 
    Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.passive_part l);;
 
 let setminus = Functor_for_sets.setminus Private.tr ;;
