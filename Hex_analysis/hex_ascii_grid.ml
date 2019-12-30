@@ -143,35 +143,10 @@ let of_finished_game fgame =
     data = associations1 @ associations2;
   };;
 
-let extract_octopus old_data=
-   let temp1 = Image.image (fun (p,s) -> (Hex_appendage.opt_of_string s,(p,s)) ) old_data in 
-   let (temp2,temp3) = List.partition (fun (opt,_)->opt=None) temp1 in 
-   let cleaned_data=Option.filter_and_unpack(
-     fun (_,(p,s))->if s="eee" then None else Some(p,s)
-   ) temp2 in 
-   let l_octop=Image.image (fun ((opt,(p,_)))->(Option.unpack opt,p)) temp3 in 
-   ((Hex_octopus_t.O l_octop),cleaned_data);;
+
 
 
 exception Unbalanced_label of string * (Hex_cell_t.t list);;
-
-let to_basic_linker grid=
-  let (octop,temp1)= extract_octopus grid.Hex_ascii_grid_t.data in  
-  let temp2=Image.image (fun ((i,j),content)->(Hex_ipair.to_cell (i,j),Cull_string.trim_spaces content)) temp1 in 
-  let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
-  let temp3=Image.image (fun c0->
-     (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
-  ) all_used_labels in 
-  let (temp4,temp5)=List.partition (fun (c,l)->c="A") temp3 in 
-  let active_ones = Hex_cell_set.safe_set  (snd (List.hd temp4)) in 
-  let list_of_passive_pairs = Image.image (fun (c,l)->
-     if List.length(l)<>2
-     then raise(Unbalanced_label(c,l))
-     else let tf=(fun j->List.nth l j) in
-          (tf 0,tf 1)
-     ) temp5  in  
- let passive_pairs = Hex_cell_pair_set.constructor list_of_passive_pairs in    
- (octop,active_ones,passive_pairs);; 
 
 
 let to_molecular_linker_with_active_points grid =
@@ -329,7 +304,5 @@ let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
 let read_sheet = Private.read_sheet;;
 let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
-let to_basic_linker = Private.to_basic_linker;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 let visualize = Private.visualize;;
-
