@@ -15,12 +15,6 @@ let tr = ((fun x->Hex_molecular_linker_t.M(x)),
 
 end;;
 
-
-let active_part (Hex_molecular_linker_t.M l)=
-    Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.active_part l);;    
-   
-
-
 let constructor unordered_l= 
   let l= Ordered.sort Hex_atomic_linker.cmp unordered_l in 
   let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.passive_part atl)) l in 
