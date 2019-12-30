@@ -406,9 +406,9 @@ let relocate_module cs old_name new_subdir=
   let new_name=Dfn_full.to_endingless
    (List.hd new_acolytes) in
   let s_root=Dfa_root.connectable_to_subpath root_dir in     
-  let old_middle = Dfn_endingless.to_middle_element old_name in
+  let old_middle = Dfn_endingless.to_middle old_name in
     let _=Unix_command.uc
-     ("rm -f "^s_root^"_build/"^(Dfn_endingless.middle_element_to_line old_middle)^".cm* ") in
+     ("rm -f "^s_root^"_build/"^(Dfn_middle.to_line old_middle)^".cm* ") in
   let principal_mt=md_compute_modification_time new_name (principal_ending_at_module cs mn)
   and mli_mt=md_compute_modification_time new_name Dfa_ending.mli in
   let cs2=set_subdir_at_module cs mn new_subdir in 
@@ -627,8 +627,8 @@ module PrivateThree=struct
          coat md_list in
       let _=treat_circular_dependencies tolerate_cycles (
         (fun nm->
-           let middle = Dfn_endingless.to_middle_element ( endingless_at_module cs nm) in 
-           Dfn_endingless.middle_element_to_line middle )
+           let middle = Dfn_endingless.to_middle ( endingless_at_module cs nm) in 
+           Dfn_middle.to_line middle )
       ) cycles in     
       let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
       let cs3=update_ancs_libs_and_dirs cs2 in 
@@ -657,8 +657,8 @@ let md_recompute_modification_time eless edg=
 let quick_update cs mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
-  let middle = Dfn_endingless.to_middle_element eless in 
-  if (Dfn_endingless.middle_element_to_line middle)=Coma_constant.name_for_debugged_module
+  let middle = Dfn_endingless.to_middle eless in 
+  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
   then None
   else
   let mli_modif_time=md_recompute_modification_time eless Dfa_ending.mli 
@@ -1695,8 +1695,8 @@ let local_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
-    Dfn_endingless.middle_element_to_line middle )
+    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
+    Dfn_middle.to_line middle )
   (above cs endingless);;
 
 
@@ -1704,24 +1704,24 @@ let local_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
-    Dfn_endingless.middle_element_to_line middle )
+    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
+    Dfn_middle.to_line middle )
   (below cs endingless);;
 
 let local_directly_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
-    Dfn_endingless.middle_element_to_line middle )
+    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
+    Dfn_middle.to_line middle )
   (directly_above cs endingless);;
 
 let local_directly_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle_element (endingless_at_module cs nm) in 
-    Dfn_endingless.middle_element_to_line middle )
+    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
+    Dfn_middle.to_line middle )
   (directly_below cs endingless);;
 
 let forget_file_with_backup_before_saving cs x=
