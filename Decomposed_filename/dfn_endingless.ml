@@ -18,10 +18,6 @@ let to_line (Dfn_endingless_t.J(r,s,m))=
 
 let to_middle (Dfn_endingless_t.J(r,s,m)) = Dfn_middle_t.J(s,m) ;;
 
-let to_middle_element (Dfn_endingless_t.J(r,s,m)) = (s,m) ;;
-
-let middle_element_to_line (s,m) = (Dfa_subdirectory.connectable_to_subpath s)^ (Dfa_module.to_line m);;
-
 let rename_endsubdirectory 
    (old_subdir,new_subdirname) 
       (Dfn_endingless_t.J(r,s,m))=
