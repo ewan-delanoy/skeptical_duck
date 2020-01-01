@@ -36,8 +36,8 @@ let second_init config (nonspecials_to_be_watched,specials) =
       let s_root = Dfa_root.connectable_to_subpath the_root
       and s_path=Dfn_rootless.to_line path in 
       let file = s_root^s_path in 
-      (path,string_of_float((Unix.stat file).Unix.st_mtime),
-       Io.read_whole_file(Absolute_path.of_string file))
+      let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
+      (path,mtime)
    ) in 
      {
        Fw_wrapper_t.configuration = config;

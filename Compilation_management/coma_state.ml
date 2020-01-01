@@ -1845,7 +1845,7 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
   if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
   then None
   else
-  let mli_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
+  let mli_modif_time=Fw_wrapper_field.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
   and pr_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
   and old_mli_modif_time=mli_mt_at_module cs mn
   and old_pr_modif_time=principal_mt_at_module cs mn 

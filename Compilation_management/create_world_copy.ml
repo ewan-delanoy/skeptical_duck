@@ -59,14 +59,14 @@ let text_for_big_constants_file_in_next_world =
   let rootlesses_to_be_copied cs opt_selection =
      let fw = cs.Coma_state_t.frontier_with_unix_world in 
      match opt_selection with 
-     None -> let sr = Image.image (fun (rootless,_,_)->rootless) in 
+     None -> let sr = Image.image (fun (rootless,_)->rootless) in 
              ( 
                Coma_state.ordered_list_of_modules cs,
                sr (fw.Fw_wrapper_t.watched_files),
                sr (fw.Fw_wrapper_t.special_watched_files) )
     |Some(needed_modules,imposed_subdirs)-> 
           let selector = Option.filter_and_unpack(
-             fun (rootless,_,_)->
+             fun (rootless,_)->
                if List.mem( Dfn_rootless.to_subdirectory(rootless) ) imposed_subdirs 
                then Some(rootless)
                else None
