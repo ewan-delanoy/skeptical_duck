@@ -202,7 +202,7 @@ let support_for_sb_rightwards_claw (x,y)=
 let support_for_sb_upwards_claw (x,y)=
    Private.translator (x-3,y-1) Private.core_support_for_sb_upwards_claw;;
 
-let support_for_sp1 (x,y)=
+let support_for_ps1 (x,y)=
    [(11, 1, 11, 2); (10, 2, 10, 4); (4, 3, 4, 4); (5, 3, 3, 5); (6, 3, 5, 4);
    (8, 3, 8, 4); (10, 3, 9, 4); (11, 3, 11, 4); (1, 4, 1, 5); (2, 4, 1, 6);
    (3, 4, 2, 5); (2, 6, 1, 7); (2, 7, 1, 8); (2, 8, 1, 9); (2, 9, 2, 10);
