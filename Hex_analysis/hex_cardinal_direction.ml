@@ -23,6 +23,21 @@ let crobj_correspondences =
        Hex_cardinal_direction_t.Up,    salt ^ "Up" ;
     ];;
 
+let char_for_first_direction = function
+     Hex_cardinal_direction_t.Down  -> "l"
+    |Hex_cardinal_direction_t.Left  -> "l"
+    |Hex_cardinal_direction_t.Right -> "r"
+    |Hex_cardinal_direction_t.Up    -> "h";;
+
+let char_for_second_direction = function
+     Hex_cardinal_direction_t.Down  -> "d"
+    |Hex_cardinal_direction_t.Left  -> "l"
+    |Hex_cardinal_direction_t.Right -> "r"
+    |Hex_cardinal_direction_t.Up    -> "u";;
+            
+let short_name_for_pair (d1,d2)=
+   (char_for_first_direction d1)^(char_for_first_direction d2);;
+
 
 end ;;
 
@@ -38,6 +53,8 @@ let is_vertical = function
     Hex_cardinal_direction_t.Down 
    |Hex_cardinal_direction_t.Up -> true 
    | _ -> false ;;   
+
+let short_name_for_pair = Private.short_name_for_pair;;
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
