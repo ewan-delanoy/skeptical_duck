@@ -205,6 +205,14 @@ let opt_eyed dim (p,untrimmed_s) =
     try Some (eyed dim (Option.unpack opt1) (Option.unpack opt2) (Hex_ipair.to_cell p)) with 
     _->None;;
 
+let to_readable_string = function
+  Hex_atomic_linker_t.Pair (cell1,cell2) -> 
+    (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
+ | Eyed_claw (direction1,direction2,cell) -> 
+     let l=support_for_eyed direction1 direction2 cell in 
+     (Hex_cardinal_direction.short_name_for_pair (direction1,direction2))^
+     "("^(Hex_cell_set.to_string l)^")";;
+
 end;;
 
 
@@ -216,3 +224,4 @@ let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
 let support = Private.support;;
 let to_concrete_object = Private.to_concrete_object;;
+let to_readable_string = Private.to_readable_string;;
