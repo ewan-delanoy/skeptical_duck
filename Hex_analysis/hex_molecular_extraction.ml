@@ -6,23 +6,35 @@
 
 module Private = struct 
 
+let extract_from_set mlclr passive_part =
+    let remaining_ones =
+      Hex_cell_set.setminus passive_part (Hex_molecular_linker.support mlclr) in 
+    Hex_molecular_extraction_t.E(mlclr,remaining_ones);;
+
+
 let first_part_in_readable_string remaining_ones =
    let (Hex_cell_set_t.S l)=remaining_ones in 
    if l=[]
    then ""
    else (Hex_cell_set.to_string remaining_ones)^",";;
 
-   
+let support  (Hex_molecular_extraction_t.E(mlclr,remaining_ones))=
+    Hex_cell_set.merge (Hex_molecular_linker.support mlclr) remaining_ones;;
+
 
 end ;; 
 
-let extract_from_set mlclr passive_part =
-    let remaining_ones =
-      Hex_cell_set.setminus passive_part (Hex_molecular_linker.support mlclr) in 
-    Hex_molecular_extraction_t.E(mlclr,remaining_ones);;
+let apply_to_immediate_dangers l=
+     let supports=Image.image (fun (x,xtracn)->
+       Hex_cell_set.insert x (Private.support xtracn)
+     ) l in     
+     let mandatory_set = Hex_cell_set.fold_intersect supports in 
+     let common_part = Hex_molecular_linker.fold_intersect (Image.image 
+     (fun (x,Hex_molecular_extraction_t.E(mlclr,_))->mlclr) l) in 
+      Private.extract_from_set common_part mandatory_set ;; 
 
 let extract_from_strategy  mlclr fles =
-    extract_from_set mlclr (fles.Hex_flattened_end_strategy_t.passive_part);;
+    Private.extract_from_set mlclr (fles.Hex_flattened_end_strategy_t.passive_part);;
 
 let of_concrete_object crobj= 
    let (arg1,arg2,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
