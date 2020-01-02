@@ -46,3 +46,6 @@ let support (Hex_molecular_linker_t.M(l))=
 let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",
      [Concrete_object_field.of_list Hex_atomic_linker.to_concrete_object l]);;
+
+let to_readable_string (Hex_molecular_linker_t.M(l))=
+   String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
