@@ -15,6 +15,11 @@ let get_elt_at_idx (Hex_end_strategy_factory_t.F(player,l)) k=
    let n=List.length(l) in 
    if (k<1)||(k>n) then raise(Bad_index_in_factory(k)) else List.nth l (k-1);;
 
+let get_elt_at_idx_in_pair (factory1,factory2) (player,idx)=
+  match player with 
+   Hex_player_t.First_player -> get_elt_at_idx factory1 idx 
+  |Hex_player_t.Second_player -> get_elt_at_idx factory2 idx ;;  
+
 let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
@@ -193,6 +198,7 @@ let create_new_strategy = Private.create_new_strategy_in_double_ref;;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
+let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
 let reconstruct_disjunction = Private.reconstruct_disjunction;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
 let to_string raf = Private.to_string (!raf);;
