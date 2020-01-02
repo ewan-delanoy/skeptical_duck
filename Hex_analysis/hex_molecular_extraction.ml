@@ -4,6 +4,18 @@
 
 *)
 
+module Private = struct 
+
+let first_part_in_readable_string remaining_ones =
+   let (Hex_cell_set_t.S l)=remaining_ones in 
+   if l=[]
+   then ""
+   else (Hex_cell_set.to_string remaining_ones)^",";;
+
+   
+
+end ;; 
+
 let extract_from_set mlclr passive_part =
     let remaining_ones =
       Hex_cell_set.setminus passive_part (Hex_molecular_linker.support mlclr) in 
@@ -26,4 +38,9 @@ let to_concrete_object (Hex_molecular_extraction_t.E(mlclr,remaining_ones)) =
       Hex_cell_set.to_concrete_object(remaining_ones)
    ]  ;;
 
+let to_readable_string (Hex_molecular_extraction_t.E(mlclr,remaining_ones))=
+  (Private.first_part_in_readable_string remaining_ones)^" common part :"^
+    (Hex_molecular_linker.to_readable_string mlclr);;
+
 let trivial_case mlclr = Hex_molecular_extraction_t.E(mlclr,Hex_cell_set_t.S[]);;
+
