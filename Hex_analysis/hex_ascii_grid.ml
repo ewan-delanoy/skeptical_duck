@@ -214,7 +214,7 @@ let list_for_macros=[
    ("srb", Hex_ipair.support_for_sb_rightwards_claw);
    ("sub", Hex_ipair.support_for_sb_upwards_claw); 
 
-   ("sp1", Hex_ipair.support_for_ps1); 
+   ("sp1", Hex_ipair.support_for_sp1); 
 
 ];;
 
