@@ -53,8 +53,8 @@ let is_fulfilled fles =
 
 let support fles =
    Hex_cell_set.fold_merge
-   [fles.Hex_flattened_end_strategy_t.active_part;
-    fles.Hex_flattened_end_strategy_t.passive_part];;
+   [Hex_flattened_end_strategy_field.active_part fles;
+    Hex_flattened_end_strategy_field.passive_part fles];;
 
 end;;
 

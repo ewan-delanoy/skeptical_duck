@@ -6,6 +6,14 @@
 *)
 
 module Private = struct
+
+let change_parts fles (new_active_part,new_passive_part) = 
+   {
+      fles with 
+      Hex_flattened_end_strategy_t.active_part = new_active_part ;
+      Hex_flattened_end_strategy_t.passive_part = new_passive_part ;
+   }
+
 let partial_unveil fles=
   (
      fles.Hex_flattened_end_strategy_t.beneficiary,
@@ -56,7 +64,7 @@ end;;
 
 
 let active_part fles = fles.Hex_flattened_end_strategy_t.active_part;;
-let cmp = Private.cmp ;;
+let change_parts = Private.change_parts;;
 let of_concrete_object = Private.of_concrete_object;;
 let passive_part fles = fles.Hex_flattened_end_strategy_t.active_part;;
 let to_concrete_object = Private.to_concrete_object;;
