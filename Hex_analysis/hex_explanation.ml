@@ -81,7 +81,7 @@ let fles_for_right_eyed_claw=
 
 let ipairs_in_right_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
-     fles_for_right_eyed_claw.Hex_flattened_end_strategy_t.passive_part in 
+     Hex_flattened_end_strategy_field.passive_part fles_for_right_eyed_claw in 
    Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;
 
 (* Explaining a left-eyed upper upwards claw *)   
@@ -121,5 +121,5 @@ let fles_for_left_eyed_claw=
 
 let ipairs_in_left_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
-     fles_for_left_eyed_claw.Hex_flattened_end_strategy_t.passive_part in 
+     Hex_flattened_end_strategy_field.passive_part fles_for_left_eyed_claw in 
    Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;

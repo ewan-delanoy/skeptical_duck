@@ -7,8 +7,8 @@
 module Private = struct
 
 let use_ally_move_to_simplify_one cell old_fles=
-   let active_part = old_fles.Hex_flattened_end_strategy_t.active_part
-   and passive_part = old_fles.Hex_flattened_end_strategy_t.passive_part in 
+   let active_part = Hex_flattened_end_strategy_field.active_part old_fles
+   and passive_part = Hex_flattened_end_strategy_field.passive_part old_fles in 
    let new_actives=Hex_cell_set.outsert cell active_part 
    and new_passives=Hex_cell_set.outsert cell passive_part in 
    Hex_flattened_end_strategy_field.change_parts 
@@ -42,13 +42,9 @@ let immediate_opportunities flesses =
          if Hex_cell_set.length(l)=1 
          then let passive_set = Hex_flattened_end_strategy_field.passive_part fles in 
               let mandatory_set=Hex_cell_set.insert (Hex_cell_set.min l) passive_set in 
-               Some(mandatory_set,fles.Hex_flattened_end_strategy_t.index)
+               Some(mandatory_set,Hex_flattened_end_strategy_field.index fles)
          else None
    ) flesses;;
-
-let is_fulfilled fles = 
- (Hex_cell_set.length(Hex_flattened_end_strategy_field.active_part fles)=0);;
-
 
 let support fles =
    Hex_cell_set.fold_merge
@@ -59,7 +55,6 @@ end;;
 
 
 let immediate_opportunities = Private.immediate_opportunities;;
-let is_fulfilled = Private.is_fulfilled;;
 let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
