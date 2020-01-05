@@ -29,7 +29,7 @@ let use_enemy_move_to_simplify_several cell old_flesses =
     Option.filter_and_unpack (use_enemy_move_to_simplify_one cell) old_flesses;;
 
 let use_move_to_simplify_one (player,cell) old_fles =
-   if player = old_fles.Hex_flattened_end_strategy_t.beneficiary 
+   if player = Hex_flattened_end_strategy_field.beneficiary  old_fles
    then Some(use_ally_move_to_simplify_one cell old_fles)
    else use_enemy_move_to_simplify_one cell old_fles;;
 
@@ -38,16 +38,16 @@ let use_move_to_simplify_one (player,cell) old_fles =
 let immediate_opportunities flesses =
    Option.filter_and_unpack (
        fun fles->
-         let l=fles.Hex_flattened_end_strategy_t.active_part in 
+         let l=Hex_flattened_end_strategy_field.active_part fles in 
          if Hex_cell_set.length(l)=1 
-         then let passive_set = fles.Hex_flattened_end_strategy_t.passive_part in 
+         then let passive_set = Hex_flattened_end_strategy_field.passive_part fles in 
               let mandatory_set=Hex_cell_set.insert (Hex_cell_set.min l) passive_set in 
                Some(mandatory_set,fles.Hex_flattened_end_strategy_t.index)
          else None
    ) flesses;;
 
 let is_fulfilled fles = 
- (Hex_cell_set.length(fles.Hex_flattened_end_strategy_t.active_part)=0);;
+ (Hex_cell_set.length(Hex_flattened_end_strategy_field.active_part fles)=0);;
 
 
 let support fles =
