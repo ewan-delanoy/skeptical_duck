@@ -11,17 +11,16 @@ let use_ally_move_to_simplify_one cell old_fles=
    and passive_part = old_fles.Hex_flattened_end_strategy_t.passive_part in 
    let new_actives=Hex_cell_set.outsert cell active_part 
    and new_passives=Hex_cell_set.outsert cell passive_part in 
-   { old_fles with 
-            Hex_flattened_end_strategy_t.active_part = new_actives;
-            Hex_flattened_end_strategy_t.passive_part = new_passives;
-    };;
+   Hex_flattened_end_strategy_field.change_parts 
+      old_fles (new_actives,new_passives);;
+  
      
 let use_ally_move_to_simplify_several cell old_flesses =
     Image.image(use_ally_move_to_simplify_one cell) old_flesses;;
           
 let use_enemy_move_to_simplify_one cell old_fles=
-   let active_part = old_fles.Hex_flattened_end_strategy_t.active_part
-   and passive_part = old_fles.Hex_flattened_end_strategy_t.passive_part in 
+   let active_part = Hex_flattened_end_strategy_field.active_part old_fles
+   and passive_part = Hex_flattened_end_strategy_field.passive_part old_fles in 
    if (Hex_cell_set.mem cell active_part)||(Hex_cell_set.mem cell passive_part)
    then None
    else Some(old_fles);;
