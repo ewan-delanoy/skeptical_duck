@@ -43,13 +43,8 @@ let get_molecular_part_at_idx factory k=
 let compute_dependencies factory  (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory 
    and (active_p,passive_p)=compute_parts factory (static_constructor,indices) in 
-   let fles ={
-        Hex_flattened_end_strategy_t.beneficiary = player;
-        character = Hex_strategy_character_t.Total_strategy;
-        active_part = active_p ; 
-        passive_part = passive_p ; 
-        index = (List.length l)+1;
-   } in 
+   let fles = Hex_flattened_end_strategy_field.constructor 
+      (player,active_p,passive_p,(List.length l)+1) in 
    let xtracn=(
       match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,_)->Hex_molecular_extraction.trivial_case mlclr 

@@ -80,4 +80,5 @@ let change_parts = Private.change_parts;;
 let index fles = fles.Hex_flattened_end_strategy_t.index;;
 let of_concrete_object = Private.of_concrete_object;;
 let passive_part fles = fles.Hex_flattened_end_strategy_t.active_part;;
+let set_index fles new_idx = {fles with Hex_flattened_end_strategy_t.index = new_idx};;
 let to_concrete_object = Private.to_concrete_object;;
