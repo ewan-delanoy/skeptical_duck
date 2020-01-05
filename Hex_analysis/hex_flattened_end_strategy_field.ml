@@ -62,7 +62,6 @@ let to_concrete_object fles =
 
 end;;
 
-
 let active_part fles = fles.Hex_flattened_end_strategy_t.active_part;;
 let change_parts = Private.change_parts;;
 let of_concrete_object = Private.of_concrete_object;;
