@@ -26,8 +26,10 @@ let compute_parts factory (static_constructor,indices)=
         (active_ones,Hex_molecular_linker.support mlclr)
     | Disjunction (cells)->
         let temp1=Image.image (get_elt_at_idx factory) indices in 
-        let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1
-        and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,_,ec))->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+        let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
+            Hex_flattened_end_strategy_field.active_part fles) temp1
+        and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
+            Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
         let temp3=List.combine cells active_parts in 
         let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
         let active_whole=Hex_cell_set.fold_merge temp4 in 
@@ -78,7 +80,7 @@ let create_and_remember_already_checked_params show_msg old_factory static_const
                 false
               )
       |Some(Hex_cog_in_machine_t.C(_,_,_,_,old_fles))->
-              let si = string_of_int(old_fles.Hex_flattened_end_strategy_t.index) in 
+              let si = string_of_int(Hex_flattened_end_strategy_field.index old_fles) in 
               (
                  old_fles,
                  l,
@@ -92,8 +94,10 @@ let create_and_remember_already_checked_params show_msg old_factory static_const
 let check_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts  = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,ec))->ec.Hex_flattened_end_strategy_t.active_part) temp1
-   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,_,ec))->ec.Hex_flattened_end_strategy_t.passive_part) temp1 in 
+   let active_parts  = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
+       Hex_flattened_end_strategy_field.active_part fles) temp1
+   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
+       Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
    let temp3=List.combine cells active_parts in 
    let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
    let active_whole=Hex_cell_set.fold_merge temp4 in 
@@ -143,7 +147,7 @@ let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_ce
    let cell_of_index=(fun k->
      let (Hex_cog_in_machine_t.C(_,_,_,_,fles)) = List.nth l (k-1) in 
      let missing_cells= Hex_cell_set.setminus 
-       (fles.Hex_flattened_end_strategy_t.active_part) occupied_cells in 
+       (Hex_flattened_end_strategy_field.active_part fles) occupied_cells in 
      let  (Hex_cell_set_t.S l_missing_cells)= missing_cells in 
      if   List.length(l_missing_cells)<>1
      then raise(Bad_index_in_disjunction(k,l_missing_cells))
@@ -169,7 +173,7 @@ let of_string text =
 let restrict_to_strats_with_indices (Hex_end_strategy_factory_t.F(player,l)) indices =
    let partial_l=List.filter (
       fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
-        List.mem (fles.Hex_flattened_end_strategy_t.index) indices
+        List.mem (Hex_flattened_end_strategy_field.index fles) indices
    ) l in 
    let pre_reindexer = Ennig.index_everything indices in 
    let reindexer=Image.image (fun (x,y)->(y,x)) pre_reindexer in
@@ -182,7 +186,7 @@ let remove_strats_with_indices factory  unordered_removed_indices =
    let (Hex_end_strategy_factory_t.F(player,l)) = factory in 
    let old_indices=Image.image (
       fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
-         (fles.Hex_flattened_end_strategy_t.index) 
+         (Hex_flattened_end_strategy_field.index fles) 
    ) l in 
    let remaining_indices = List.filter (fun idx->
       not(Set_of_integers.mem idx removed_indices)

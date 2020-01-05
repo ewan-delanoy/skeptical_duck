@@ -14,7 +14,16 @@ let change_parts fles (new_active_part,new_passive_part) =
       fles with 
       Hex_flattened_end_strategy_t.active_part = new_active_part ;
       Hex_flattened_end_strategy_t.passive_part = new_passive_part ;
-   }
+   };;
+
+let constructor (player,a,p,i) =
+{
+        Hex_flattened_end_strategy_t.beneficiary = player;
+        character = Hex_strategy_character_t.Total_strategy;
+        active_part = a ; 
+        passive_part = p ; 
+        index = i;
+};; 
 
 let partial_unveil fles=
   (
@@ -66,6 +75,7 @@ end;;
 
 let active_part fles = fles.Hex_flattened_end_strategy_t.active_part;;
 let beneficiary fles = fles.Hex_flattened_end_strategy_t.beneficiary;;
+let constructor = Private.constructor;;
 let change_parts = Private.change_parts;;
 let index fles = fles.Hex_flattened_end_strategy_t.index;;
 let of_concrete_object = Private.of_concrete_object;;

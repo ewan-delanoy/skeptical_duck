@@ -17,14 +17,14 @@ let get grid (i,j)=
    try List.assoc (i,j) grid.Hex_ascii_grid_t.data with 
    _->triple_blank;;
 
-let of_flattened_end_strategy dim ec =
+let of_flattened_end_strategy dim fles =
   let square = Cartesian.square (Ennig.ennig 1 dim) in
   let tracer1 =  (fun (i,j)->
      let cell=Hex_ipair.to_cell (i,j) in 
-     if Hex_cell_set.mem cell ec.Hex_flattened_end_strategy_t.active_part
+     if Hex_cell_set.mem cell (Hex_flattened_end_strategy_field.active_part fles)
      then " A "
      else 
-     if Hex_cell_set.mem cell ec.Hex_flattened_end_strategy_t.passive_part
+     if Hex_cell_set.mem cell (Hex_flattened_end_strategy_field.passive_part fles)
      then " P "
      else "   "
   ) in 
@@ -34,7 +34,7 @@ let of_flattened_end_strategy dim ec =
      then None
      else Some(pair,tracer1 pair)) in 
   {
-    Hex_ascii_grid_t.beneficiary = ec.Hex_flattened_end_strategy_t.beneficiary;
+    Hex_ascii_grid_t.beneficiary = (Hex_flattened_end_strategy_field.beneficiary fles);
     dimension = dim;
     data = Option.filter_and_unpack tracer2 square;
   };;
