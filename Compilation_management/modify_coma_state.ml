@@ -23,6 +23,10 @@ let refresh (root,backup_dir,g_after_b) =
    let cs0 = Coma_state_field.empty_one root backup_dir g_after_b in  
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
 
+let register_rootless_path cs rp=
+   let new_fw=Fw_wrapper.register_rootless_path (cs.Coma_state_t.frontier_with_unix_world) rp in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
@@ -145,6 +149,18 @@ let refresh cs =
         (cs4,new_diff)    ;;
 
 
+let register_rootless_path cs rp_line=
+  let rootless_path = Dfn_rootless.of_line rp_line in 
+  let mlx=Dfn_join.root_to_rootless (Coma_state.root cs) rootless_path in
+  let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list [rp_line]) in
+  let cs2=Coma_state.register_mlx_file cs mlx in 
+  (cs2,diff);;
+
+
 let rename_module cs2 old_middle_name new_nonslashed_name=
   let root_dir=Coma_state.root cs2 in 
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -214,11 +230,6 @@ let forget cs  x=
    Coma_state.Almost_concrete.forget cs1 x;; 
 
 
-let register_rootless_path cs  x=
-   let old_fw = Coma_state_field.frontier_with_unix_world cs in 
-   let new_fw = Fw_wrapper.forget old_fw x in 
-   let cs1 = Coma_state_field.set_frontier_with_unix_world cs new_fw in 
-   Coma_state.Almost_concrete.register_rootless_path cs1 x;; 
 *)
 
 let recompile cs = 
@@ -230,6 +241,9 @@ let refresh cs =
      (Coma_state.root cs,Coma_state.backup_dir cs,Coma_state.gitpush_after_backup cs)  in
    Internal.refresh cs2;;
 
+let register_rootless_path cs rp_line= 
+   let cs2=Physical.register_rootless_path cs (Dfn_rootless.of_line rp_line) in
+   Internal.register_rootless_path cs2 rp_line;;
 
 let rename_module cs old_middle_name new_nonslashed_name=
    let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
@@ -253,9 +267,9 @@ module After_checking = struct
 
       (* No check needed before refreshing *)
 
-      let register_rootless_path cs x=
+      let register_rootless_path cs rp=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.register_rootless_path cs x;; 
+         Physical_followed_by_internal.register_rootless_path cs rp;; 
 
       let relocate_module_to cs old_hm_name new_subdir=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
