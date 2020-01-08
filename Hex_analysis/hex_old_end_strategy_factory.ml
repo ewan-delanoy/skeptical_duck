@@ -38,7 +38,8 @@ let compute_parts factory (static_constructor,indices)=
 
 let get_molecular_part_at_idx factory k= 
   let  (Hex_old_cog_in_machine_t.C(_,_,_,xtracn0,_)) = get_elt_at_idx factory k in 
-  match xtracn0 with Hex_molecular_extraction_t.E(mlclr,_)->mlclr;;
+  match xtracn0 with Hex_old_molecular_extraction_t.E(mlclr,_)->mlclr;;
+
 
 let compute_dependencies factory  (static_constructor,indices)=
    let Hex_old_end_strategy_factory_t.F(player,l)=factory 
@@ -47,10 +48,10 @@ let compute_dependencies factory  (static_constructor,indices)=
       (player,active_p,passive_p,(List.length l)+1) in 
    let xtracn=(
       match static_constructor with
-    Hex_strategy_static_constructor_t.Molecular(mlclr,_)->Hex_molecular_extraction.trivial_case mlclr 
+    Hex_strategy_static_constructor_t.Molecular(mlclr,_)->Hex_old_molecular_extraction.trivial_case mlclr 
     |Disjunction (cells)->
         let mlclr=Hex_molecular_linker.fold_intersect( Image.image (get_molecular_part_at_idx factory) indices) in 
-        Hex_molecular_extraction.extract_from_strategy mlclr fles
+        Hex_old_molecular_extraction.extract_from_strategy mlclr fles
    ) in 
    (xtracn,fles);;    
 
