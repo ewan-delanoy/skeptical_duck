@@ -7,5 +7,5 @@
 type t= C of 
  ( Hex_strategy_static_constructor_t.t * 
   string * (int list) * 
-  Hex_old_molecular_extraction_t.t * Hex_old_flattened_end_strategy_t.t ) ;;
+  Hex_molecular_extraction_t.t * Hex_old_flattened_end_strategy_t.t ) ;;
    
