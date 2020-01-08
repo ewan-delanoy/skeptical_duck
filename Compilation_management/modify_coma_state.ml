@@ -9,6 +9,11 @@
 
 module Physical = struct 
 
+let forget cs x=
+   let new_fw=Fw_wrapper.forget (cs.Coma_state_t.frontier_with_unix_world) x in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
+
 let recompile cs =
    let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
@@ -73,6 +78,9 @@ let rename_string_or_value cs old_sov new_sov =
 end;;
 
 module Internal = struct
+
+let forget cs x =
+Coma_state.Almost_concrete.forget cs x;;
 
 let recompile (cs,changed_rootlesses) = 
    let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
@@ -232,6 +240,10 @@ let forget cs  x=
 
 *)
 
+let forget cs  x=
+   let cs2=Physical.forget cs x in 
+   Internal.forget cs2 x;;
+
 let recompile cs = 
   let (cs2,changed_rootlesses)=Physical.recompile cs  in
   Internal.recompile (cs2,changed_rootlesses);;
@@ -261,7 +273,7 @@ module After_checking = struct
 
       let forget cs x=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.forget cs x;; 
+         Physical_followed_by_internal.forget cs x;; 
 
       (* No check needed before recompiling *)
 

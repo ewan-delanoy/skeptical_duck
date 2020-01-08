@@ -1753,22 +1753,11 @@ let forget cs x=
       then forget_file_with_backup_before_saving cs x
       else forget_module_with_backup_before_saving cs x;;
 
-
+(*
 let local_register_mlx_file cs mlx=
     let cs3=register_mlx_file cs mlx in 
     cs3;;  
-
-
-let register_rootless_path cs x=
-  let rootless_path = Dfn_rootless.of_line x in 
-  let mlx=Dfn_join.root_to_rootless (root cs) rootless_path in
-  let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list [x]) in
-  let cs2=register_mlx_file cs mlx in 
-  (cs2,diff);;
+*)
 
 let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
