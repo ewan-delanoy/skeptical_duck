@@ -231,18 +231,13 @@ end;;
 module Physical_followed_by_internal = struct
 
 (*
-let forget cs  x=
-   let old_fw = Coma_state_field.frontier_with_unix_world cs in 
-   let new_fw = Fw_wrapper.forget old_fw x in 
-   let cs1 = Coma_state_field.set_frontier_with_unix_world cs new_fw in 
-   Coma_state.Almost_concrete.forget cs1 x;; 
-
-
+The code below is sub-optimal and to be improved : the correct order 
+physical then internal must be respected.
 *)
 
 let forget cs  x=
-   let cs2=Physical.forget cs x in 
-   Internal.forget cs2 x;;
+   let (cs2,diff)=Internal.forget cs x in 
+   (Physical.forget cs2 x,diff);;
 
 let recompile cs = 
   let (cs2,changed_rootlesses)=Physical.recompile cs  in
