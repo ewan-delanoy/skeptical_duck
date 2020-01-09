@@ -500,7 +500,8 @@ let transplant wrapped_cs (new_frontier,new_backup_dir,new_g_after_b) =
      ) cs.Coma_state_t.principal_ending_for_module
      and new_mli_mts=Image.image (fun (mn,subdir)->
           let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
-          (mn,Fw_wrapper_field.get_mtime new_frontier rootless)
+          (mn,Fw_wrapper_field.get_mtime_or_zero_if_file_is_nonregistered 
+           new_frontier rootless)
      ) cs.Coma_state_t.subdir_for_module 
      and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
      ) cs.Coma_state_t.product_up_to_date_for_module
