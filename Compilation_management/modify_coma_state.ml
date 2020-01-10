@@ -79,6 +79,32 @@ end;;
 
 module Internal = struct
 
+exception ModuleWithDependenciesDuringForgetting of Dfn_endingless_t.t *
+            Dfa_module_t.t list;;
+
+let forget_module cs mn=
+  let old_endingless = Coma_state.endingless_at_module cs mn in   
+  let bel=Coma_state.below cs old_endingless in 
+  if bel<>[]
+  then raise(ModuleWithDependenciesDuringForgetting(old_endingless,bel))
+  else 
+  let (cs2,rootless_paths)=Coma_state.unregister_module_on_monitored_modules  cs old_endingless in
+  let new_dirs=Coma_state.compute_subdirectories_list cs2  in
+  let sfn=Dfa_module.to_line mn in
+  let _=Image.image
+               (fun edg->
+                let cmd="rm -f _build/"^sfn^edg in
+                Unix_command.uc(cmd))
+               [".cm*";".d.cm*";".caml_debuggable"] in
+  let cs3=Coma_state.set_directories cs2 new_dirs in 
+  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
+  let diff=
+      Dircopy_diff.veil
+      (Recently_deleted.of_string_list ordered_paths)
+      (Recently_changed.of_string_list [])
+      (Recently_created.of_string_list []) in
+   (cs3,diff);;    
+
 let forget_rootless_path cs rootless_path=
    let the_root = Coma_state.root cs in 
    let full_path = Dfn_join.root_to_rootless the_root rootless_path in  
