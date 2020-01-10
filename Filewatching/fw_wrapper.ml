@@ -38,7 +38,7 @@ let update_some_files fw (w_files,sw_files) = {
       special_watched_files = update_in_list_of_pairs fw sw_files (fw.Fw_wrapper_t.special_watched_files) ;
 } ;;
 
-let remove_watched_files fw rootless_paths =
+let remove_nonspecial_watched_files fw rootless_paths =
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 

@@ -9,6 +9,14 @@
 
 module Physical = struct 
 
+let forget_module cs mod_name=
+   let new_fw=Fw_wrapper.forget_module (cs.Coma_state_t.frontier_with_unix_world) mod_name in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
+let forget_rootless_path cs rootless_path=
+   let new_fw=Fw_wrapper.remove_watched_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
+
 let forget cs x=
    let new_fw=Fw_wrapper.forget (cs.Coma_state_t.frontier_with_unix_world) x in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
@@ -270,6 +278,14 @@ end;;
 
 module Physical_followed_by_internal = struct
 
+let forget_module cs mod_name= 
+  let cs2=Physical.forget_module cs mod_name  in
+  Internal.forget_module cs2 mod_name;;
+
+let forget_rootless_path cs rootless_path= 
+  let cs2=Physical.forget_rootless_path cs rootless_path  in
+  Internal.forget_rootless_path cs2 rootless_path;;
+
 (*
 The code below is sub-optimal and to be improved : the correct order 
 physical then internal must be respected.
@@ -305,6 +321,14 @@ end;;
 
 
 module After_checking = struct
+
+      let forget_module cs mod_name=
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
+         Physical_followed_by_internal.forget_module cs mod_name;; 
+
+      let forget_rootless_path cs rootless_path=
+         let _=Coma_state.Recent_changes.check_for_changes cs in 
+         Physical_followed_by_internal.forget_rootless_path cs rootless_path;;    
 
       let forget cs x=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
@@ -348,6 +372,17 @@ module And_backup = struct
             else (print_string "No recent changes to commit ...";flush stdout);;
 
       end;;    
+
+      let forget_module cs mod_name=
+         let (cs2,diff)=After_checking.forget_module cs mod_name in 
+         let _=Private.backup cs2 diff None in 
+         cs2;; 
+
+      let forget_rootless_path cs rootless_path=
+         let (cs2,diff)=After_checking.forget_rootless_path cs rootless_path in 
+         let _=Private.backup cs2 diff None in 
+         cs2;; 
+
 
       let forget cs x=
          let (cs2,diff)=After_checking.forget cs x in 
@@ -398,10 +433,21 @@ end;;
 
 module And_save = struct 
 
+      let forget_module cs mod_name=
+         let cs2=And_backup.forget_module cs mod_name in 
+         let _=Save_coma_state.save cs2 in 
+         cs2;;
+
+      let forget_rootless_path cs rootless_path=
+         let cs2=And_backup.forget_rootless_path cs rootless_path in 
+         let _=Save_coma_state.save cs2 in 
+         cs2;;
+
       let forget cs x=
          let cs2=And_backup.forget cs x in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
+
 
       let internet_access cs bowl=   
          let cs2=Coma_state_field.set_push_after_backup cs bowl in 
@@ -450,10 +496,17 @@ end ;;
 
 module Reference = struct 
 
-      let forget pcs x=
-         let new_cs = And_save.forget (!pcs) x in 
+      let forget_module pcs mod_name=
+         let new_cs = And_save.forget_module (!pcs) mod_name in 
          pcs:=new_cs;;
 
+      let forget_rootless_path pcs rootless_path=
+         let new_cs = And_save.forget_rootless_path (!pcs) rootless_path in 
+         pcs:=new_cs;;
+
+      let forget pcs x=
+         let new_cs = And_save.forget (!pcs) x in 
+         pcs:=new_cs;;   
 
       let initialize pcs =
       let new_cs = Coma_state.read_persistent_version (!pcs) in 
@@ -512,6 +565,13 @@ let rename_module cs_ref old_module_name new_name=
    let old_middle_name = Dfn_endingless.to_middle old_eless in    
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
+
+
+let forget cs text = 
+      if String.contains text '.'
+      then Reference.forget_rootless_path cs (Dfn_rootless.of_line text)
+      else Reference.forget_module cs (Dfa_module.of_line text) ;;
+
 
 end;;
 
