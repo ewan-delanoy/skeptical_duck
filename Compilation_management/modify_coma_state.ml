@@ -79,6 +79,20 @@ end;;
 
 module Internal = struct
 
+let forget_rootless_path cs rootless_path=
+   let the_root = Coma_state.root cs in 
+   let full_path = Dfn_join.root_to_rootless the_root rootless_path in  
+   let cut_ap=Dfn_rootless.to_line rootless_path in
+   let diff=
+    Dircopy_diff.veil
+    (Recently_deleted.of_string_list [cut_ap])
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list []) in 
+   let (cs2,new_dirs)=Coma_state.unregister_mlx_file_on_targets the_root cs full_path in   
+   let cs3=Coma_state.set_directories cs2 new_dirs in 
+   (cs3,diff);; 
+
+
 let forget cs x =
 Coma_state.Almost_concrete.forget cs x;;
 
