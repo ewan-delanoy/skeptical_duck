@@ -426,6 +426,8 @@ let default root_dir= {
 
 let forget = Private.forget;;
 
+let forget_module = Private.forget_module;;
+
 let inspect_and_update = Private.inspect_and_update;;
 
 let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
