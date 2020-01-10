@@ -17,11 +17,6 @@ let forget_rootless_path cs rootless_path=
    let new_fw=Fw_wrapper.remove_watched_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
 
-let forget cs x=
-   let new_fw=Fw_wrapper.forget (cs.Coma_state_t.frontier_with_unix_world) x in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
-
-
 let recompile cs =
    let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
@@ -126,9 +121,6 @@ let forget_rootless_path cs rootless_path=
    let cs3=Coma_state.set_directories cs2 new_dirs in 
    (cs3,diff);; 
 
-
-let forget cs x =
-Coma_state.Almost_concrete.forget cs x;;
 
 let recompile (cs,changed_rootlesses) = 
    let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
@@ -286,14 +278,6 @@ let forget_rootless_path cs rootless_path=
   let cs2=Physical.forget_rootless_path cs rootless_path  in
   Internal.forget_rootless_path cs2 rootless_path;;
 
-(*
-The code below is sub-optimal and to be improved : the correct order 
-physical then internal must be respected.
-*)
-
-let forget cs  x=
-   let (cs2,diff)=Internal.forget cs x in 
-   (Physical.forget cs2 x,diff);;
 
 let recompile cs = 
   let (cs2,changed_rootlesses)=Physical.recompile cs  in
@@ -329,10 +313,6 @@ module After_checking = struct
       let forget_rootless_path cs rootless_path=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Physical_followed_by_internal.forget_rootless_path cs rootless_path;;    
-
-      let forget cs x=
-         let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Physical_followed_by_internal.forget cs x;; 
 
       (* No check needed before recompiling *)
 
@@ -383,11 +363,6 @@ module And_backup = struct
          let _=Private.backup cs2 diff None in 
          cs2;; 
 
-
-      let forget cs x=
-         let (cs2,diff)=After_checking.forget cs x in 
-         let _=Private.backup cs2 diff None in 
-         cs2;; 
 
       let recompile cs opt_comment=
          let (cs2,diff)=Physical_followed_by_internal.recompile cs  in 
@@ -443,12 +418,6 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;
 
-      let forget cs x=
-         let cs2=And_backup.forget cs x in 
-         let _=Save_coma_state.save cs2 in 
-         cs2;;
-
-
       let internet_access cs bowl=   
          let cs2=Coma_state_field.set_push_after_backup cs bowl in 
          let _=Save_coma_state.save cs2 in 
@@ -502,11 +471,7 @@ module Reference = struct
 
       let forget_rootless_path pcs rootless_path=
          let new_cs = And_save.forget_rootless_path (!pcs) rootless_path in 
-         pcs:=new_cs;;
-
-      let forget pcs x=
-         let new_cs = And_save.forget (!pcs) x in 
-         pcs:=new_cs;;   
+         pcs:=new_cs;; 
 
       let initialize pcs =
       let new_cs = Coma_state.read_persistent_version (!pcs) in 
