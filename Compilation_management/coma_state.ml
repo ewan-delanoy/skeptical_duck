@@ -1753,11 +1753,6 @@ let forget cs x=
       then forget_file_with_backup_before_saving cs x
       else forget_module_with_backup_before_saving cs x;;
 
-(*
-let local_register_mlx_file cs mlx=
-    let cs3=register_mlx_file cs mlx in 
-    cs3;;  
-*)
 
 let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in

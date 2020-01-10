@@ -64,6 +64,23 @@ let remove_special_watched_files fw rootless_paths=
       ) (fw.Fw_wrapper_t.special_watched_files)  
    };;
 
+let remove_watched_files fw rootless_paths=
+    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
+    let removals_to_be_made = Image.image (
+      fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
+    ) rootless_paths in 
+    let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
+   {
+      fw with 
+      Fw_wrapper_t.watched_files = List.filter (fun (path,_)->
+         not(List.mem path rootless_paths)
+      ) (fw.Fw_wrapper_t.watched_files)  ;
+      Fw_wrapper_t.special_watched_files = List.filter (fun (path,_)->
+         not(List.mem path rootless_paths)
+      ) (fw.Fw_wrapper_t.special_watched_files)  
+   };;
+
+
 
 let forget_module fw mod_name =
    let the_files = Option.filter_and_unpack (
@@ -420,6 +437,8 @@ let refresh = Private.refresh ;;
 let register_rootless_path = Private.register_rootless_path;;
 
 let relocate_module_to = Private.relocate_module_to;;
+
+let remove_watched_files = Private.remove_watched_files;;
 
 let rename_module = Private.rename_module_everywhere;;
 
