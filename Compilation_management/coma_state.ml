@@ -1156,70 +1156,8 @@ let forget_file cs ap=
      forget_file_on_targets (root cs) (cs,directories cs) ap in  
      set_directories cs2 new_dirs;;
 
-module Unregister_module=struct
 
 
-let on_targets root_dir cs mn=
-    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs mn in
-    let new_dirs=compute_subdirectories_list cs2  in
-     ((cs2,new_dirs),rootless_paths);;   
-     
-   
-
-end;;          
-   
-
-
-let forget_unregistered_file root_dir ap=
-   let s_dir=Dfa_root.connectable_to_subpath root_dir in
-   let n_dir=String.length s_dir in
-   let s_ap=Absolute_path.to_string ap in
-   let subpath=Cull_string.cobeginning n_dir s_ap in
-   let trash_dir=Dfa_subdirectory.without_trailing_slash
-               (Coma_constant.abandoned_ideas_subdir) in
-   let new_subpath=(Current_date.current_date())^"_"^
-         (Replace_inside.replace_inside_string ("/","_dir_") subpath) in
-   let _=Unix_command.uc ("mkdir -p "^s_dir^trash_dir) in
-   let _=Unix_command.uc ("touch "^s_dir^trash_dir^"/"^new_subpath) in
-   let _=Unix_command.uc ("mv "^s_ap^" "^s_dir^trash_dir^"/"^new_subpath) in
-   subpath;;
-
-exception ModuleWithDependenciesDuringForgetting of 
-        Dfn_endingless_t.t*(Dfa_module_t.t list);;
-
-exception Non_registered_module_during_forgetting of Dfa_module_t.t;;
-      
-let forget_module_on_targets root_dir (cs,dirs) eless=
-        let nm=Dfn_endingless.to_module eless in
-        if not(List.mem nm (ordered_list_of_modules cs))
-        then raise(Non_registered_module_during_forgetting(nm))
-        else 
-         let bel=below cs eless in
-          if bel=[]
-          then let (answer,rootless_paths)=Unregister_module.on_targets root_dir 
-                          cs eless in
-               let sfn=Dfa_module.to_line nm in
-               let _=Image.image
-               (fun edg->
-                let cmd="rm -f _build/"^sfn^edg in
-                Unix_command.uc(cmd))
-               [".cm*";".d.cm*";".caml_debuggable"] in
-               let temp1=Image.image (fun t->
-                  Absolute_path.of_string((Dfa_root.connectable_to_subpath root_dir)^t)
-               ) rootless_paths in
-               let _=Image.image 
-               (forget_unregistered_file root_dir) temp1 in
-               (answer,rootless_paths)
-          else raise(ModuleWithDependenciesDuringForgetting(eless,bel));;
-      
-
-let forget_module cs eless=
-    let ((cs2,new_dirs),short_paths)= 
-      forget_module_on_targets (root cs) (cs,directories cs) eless in
-      let _=(
-          set_directories cs new_dirs;
-      ) in
-      (cs2,short_paths);;          
 
 let read_persistent_version x=
         let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
@@ -1507,11 +1445,16 @@ let start_executing cs short_path=
 let unregister_mlx_file cs mlx=
     let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
     set_directories cs2 new_dirs;;
-          
+
+let unregister_module_on_targets root_dir cs mn=
+    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs mn in
+    let new_dirs=compute_subdirectories_list cs2  in
+     ((cs2,new_dirs),rootless_paths);;   
+               
 
 let unregister_module cs endingless=
         let ((cs2,new_dirs),short_paths)= 
-         Unregister_module.on_targets (root cs) cs  endingless in 
+         unregister_module_on_targets (root cs) cs  endingless in 
           set_directories cs2 new_dirs;;        
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
@@ -1723,36 +1666,6 @@ let local_directly_below cs capitalized_or_not_module_name=
     let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
     Dfn_middle.to_line middle )
   (directly_below cs endingless);;
-
-let forget_file_with_backup_before_saving cs x=
-   let ap=decipher_path cs x in
-   let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root cs) in 
-   let cut_ap=Dfn_rootless.to_line rootless_path in
-   let diff=
-    Dircopy_diff.veil
-    (Recently_deleted.of_string_list [cut_ap])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list []) in
-   let cs3=forget_file cs ap in 
-   (cs3,diff);; 
-
-let forget_module_with_backup_before_saving cs capitalized_or_not_old_module_name=
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
-  let old_endingless = endingless_at_module cs mn in   
-  let (cs3,rootless_paths)=forget_module cs old_endingless in    
-  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
-  let diff=
-      Dircopy_diff.veil
-      (Recently_deleted.of_string_list ordered_paths)
-      (Recently_changed.of_string_list [])
-      (Recently_created.of_string_list []) in
-  (cs3,diff);; 
- 
-let forget cs x=
-      if String.contains x '.'
-      then forget_file_with_backup_before_saving cs x
-      else forget_module_with_backup_before_saving cs x;;
-
 
 let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
