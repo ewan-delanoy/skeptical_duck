@@ -6,6 +6,11 @@
 
 module Private = struct  
 
+let passive_part extmol =
+     Hex_cell_set.merge 
+       (Hex_molecular_linker.support extmol.Hex_extended_molecular_t.molecular_part)
+         extmol.Hex_extended_molecular_t.nonmolecular_passive_part;;
+
 let salt = "Hex_"^"extended_molecular_t.";;
 
 let molecular_part_label            = salt ^ "molecular_part";;
@@ -31,5 +36,7 @@ let to_concrete_object extmol =
 
 end ;;
 
+let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let of_concrete_object = Private.of_concrete_object;;
+let passive_part = Private.passive_part ;; 
 let to_concrete_object = Private.to_concrete_object;;
