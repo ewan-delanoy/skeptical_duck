@@ -33,10 +33,38 @@ let of_molecular mlclr =
       active_part = Hex_molecular_linker.active_complement mlclr;
    };;
 
+let full_support extmol =
+   Hex_cell_set.fold_merge 
+    [
+        Hex_molecular_linker.support extmol.Hex_extended_molecular_t.molecular_part;
+        extmol.Hex_extended_molecular_t.nonmolecular_passive_part;
+        extmol.Hex_extended_molecular_t.active_part
+    ];; 
+
 (*
 let disjunction l =
-   let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
+    let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
+    let whole = Hex_molecular_linker.fold_merge mols in 
+    let tester1_for_commonality =(fun atm extmol ->
+        (Hex_molecular_linker.mem atm extmol.Hex_extended_molecular_t.molecular_part)
+        ||
+        (Hex_cell_set.does_not_intersect (Hex_atomic_linker.support atm) (full_support extmol))
+    ) in 
+    let is_common = (fun atm->List.for_all (tester1_for_commonality atm) l) in 
+    let common_part = Hex_molecular_linker.filter is_common whole in 
+    (* all members differ from the full intersection by 1 elt, which justifies the following *)
+    let final_active_part = Hex_cell_set.fold_intersect 
+      (Image.image (fun extmol->extmol.Hex_extended_molecular_t.active_part) l) in 
+    let total_passive_part = Hex_cell_set.fold_merge(Image.image passive_part l) in 
+    let final_passive_part = Hex_cell_set.setminus total_passive_part 
+                                   (Hex_molecular_linker.support common_part) in  
+    {
+      Hex_extended_molecular_t.molecular_part = common_part;
+      nonmolecular_passive_part = final_passive_part;
+      active_part = final_active_part;
+   };;
 *)
+
 
 let salt = "Hex_"^"extended_molecular_t.";;
 

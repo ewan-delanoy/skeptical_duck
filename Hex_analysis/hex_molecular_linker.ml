@@ -30,8 +30,12 @@ let constructor unordered_l=
   None -> Hex_molecular_linker_t.M(l)
   |Some((atl1,supp1),(atl2,supp2))->raise(Nondisjoint_atoms(atl1,atl2));;
 
+let filter f (Hex_molecular_linker_t.M l)= 
+  Hex_molecular_linker_t.M(List.filter f l);;
+
 let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
 
+let fold_merge = Functor_for_sets.fold_intersect Private.tr ;;
 
 
 
