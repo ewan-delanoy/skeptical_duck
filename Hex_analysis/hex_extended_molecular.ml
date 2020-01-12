@@ -26,6 +26,13 @@ let withstands_enemy_move cell extmol =
     &&
     (not(Hex_cell_set.mem cell extmol.Hex_extended_molecular_t.active_part));;    
 
+let of_molecular mlclr = 
+   {
+      Hex_extended_molecular_t.molecular_part = mlclr;
+      nonmolecular_passive_part = Hex_cell_set_t.S[];
+      active_part = Hex_molecular_linker.active_complement mlclr;
+   };;
+
 let salt = "Hex_"^"extended_molecular_t.";;
 
 let molecular_part_label            = salt ^ "molecular_part";;
@@ -53,6 +60,7 @@ end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let of_concrete_object = Private.of_concrete_object;;
+let of_molecular = Private.of_molecular;;
 let passive_part = Private.passive_part ;; 
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;
