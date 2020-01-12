@@ -15,6 +15,10 @@ let tr = ((fun x->Hex_molecular_linker_t.M(x)),
 
 end;;
 
+let active_complement (Hex_molecular_linker_t.M(l))= 
+   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.active_complement l);;
+
+
 let constructor unordered_l= 
   let l= Ordered.sort Hex_atomic_linker.cmp unordered_l in 
   let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.support atl)) l in 
@@ -57,5 +61,4 @@ let use_ally_move_to_simplify_one cell (Hex_molecular_linker_t.M(l))=
 
 let withstands_enemy_move cell mlclr= 
   not(Hex_cell_set.mem cell (support mlclr)) ;; 
-  
-     
+
