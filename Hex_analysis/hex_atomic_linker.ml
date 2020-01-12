@@ -213,12 +213,24 @@ let to_readable_string = function
      (Hex_cardinal_direction.short_name_for_pair (direction1,direction2))^
      "("^(Hex_cell_set.to_string l)^")";;
 
+(*
+
+Note : the function below does not take into account the case where an 
+eyed_claw strategy is progressively fulfilled by several moves.
+
+*)
+
+let nonfulfilment_by_ally_move cell = function 
+    Hex_atomic_linker_t.Pair (cell1,cell2) -> (cell <> cell1) || (cell <> cell2) 
+   | Eyed_claw (_,_,_) -> true;; 
+
 end;;
 
 
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let ipair_support = Private.ipair_support;;
+let nonfulfilment_by_ally_move = Private.nonfulfilment_by_ally_move;;
 let of_concrete_object = Private.of_concrete_object;;
 let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
