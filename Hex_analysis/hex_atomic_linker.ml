@@ -224,9 +224,13 @@ let nonfulfilment_by_ally_move cell = function
     Hex_atomic_linker_t.Pair (cell1,cell2) -> (cell <> cell1) || (cell <> cell2) 
    | Eyed_claw (_,_,_) -> true;; 
 
+let active_complement = function 
+   Hex_atomic_linker_t.Pair (_,_) -> Hex_cell_set_t.S [] 
+   | Eyed_claw (_,_,cell) -> Hex_cell_set_t.S [cell]  ;;
+
 end;;
 
-
+let active_complement = Private.active_complement;;
 let cmp = Private.cmp;;
 let eyed = Private.eyed;;
 let ipair_support = Private.ipair_support;;
