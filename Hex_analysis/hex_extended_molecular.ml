@@ -11,6 +11,16 @@ let passive_part extmol =
        (Hex_molecular_linker.support extmol.Hex_extended_molecular_t.molecular_part)
          extmol.Hex_extended_molecular_t.nonmolecular_passive_part;;
 
+(*
+let use_ally_move_to_simplify_one cell extmol =
+   {
+      Hex_extended_molecular_t.molecular_part = Hex_molecular_linker.of_concrete_object (g molecular_part_label);
+      nonmolecular_passive_part = Hex_cell_set.of_concrete_object (g nonmolecular_passive_part_label);
+      active_part = Hex_cell_set.of_concrete_object (g active_part_label);
+   };;
+*)   
+
+
 let salt = "Hex_"^"extended_molecular_t.";;
 
 let molecular_part_label            = salt ^ "molecular_part";;

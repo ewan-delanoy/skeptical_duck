@@ -49,3 +49,6 @@ let to_concrete_object (Hex_molecular_linker_t.M(l))=
 
 let to_readable_string (Hex_molecular_linker_t.M(l))=
    String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
+
+let survival_to_enemy_move cell mlclr= 
+  not(Hex_cell_set.mem cell (support mlclr)) ;; 
