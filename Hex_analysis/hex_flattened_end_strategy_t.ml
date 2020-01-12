@@ -10,8 +10,6 @@ The "index" field refers to the index Hex_end_strategy_factory_t.t object.
 
 type t= {
    beneficiary : Hex_player_t.t;
-   character : Hex_strategy_character_t.t;
-   active_part : Hex_cell_set_t.t ; 
-   passive_part : Hex_cell_set_t.t ; 
+   data : Hex_extended_molecular_t.t;
    index : int;
 };;

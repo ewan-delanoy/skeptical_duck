@@ -26,11 +26,11 @@ let withstands_enemy_move cell extmol =
     &&
     (not(Hex_cell_set.mem cell extmol.Hex_extended_molecular_t.active_part));;    
 
-let of_molecular mlclr = 
+let of_molecular_and_active_ones (mlclr,active_ones) = 
    {
       Hex_extended_molecular_t.molecular_part = mlclr;
       nonmolecular_passive_part = Hex_cell_set_t.S[];
-      active_part = Hex_molecular_linker.active_complement mlclr;
+      active_part = Hex_cell_set.merge (Hex_molecular_linker.active_complement mlclr) active_ones;
    };;
 
 let full_support extmol =
@@ -94,7 +94,7 @@ end ;;
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let disjunction = Private.disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
-let of_molecular = Private.of_molecular;;
+let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;

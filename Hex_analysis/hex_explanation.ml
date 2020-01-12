@@ -123,3 +123,5 @@ let ipairs_in_left_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      Hex_flattened_end_strategy_field.passive_part fles_for_left_eyed_claw in 
    Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;
+
+

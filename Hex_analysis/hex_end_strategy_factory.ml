@@ -23,18 +23,12 @@ let get_elt_at_idx_in_pair (factory1,factory2) (player,idx)=
 let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
-        (active_ones,Hex_molecular_linker.support mlclr)
+        Hex_extended_molecular.of_molecular_and_active_ones (mlclr,active_ones)
     | Disjunction (cells)->
         let temp1=Image.image (get_elt_at_idx factory) indices in 
-        let active_parts = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
-            Hex_flattened_end_strategy_field.active_part fles) temp1
-        and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->
-            Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
-        let temp3=List.combine cells active_parts in 
-        let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
-        let active_whole=Hex_cell_set.fold_merge temp4 in 
-        let temp5=Hex_cell_set.fold_merge passive_parts in 
-        (active_whole,Hex_cell_set.setminus temp5 active_whole);;
+        let constituants = Image.image  
+           (fun (Hex_cog_in_machine_t.C(_,_,_,_,fles))->fles.Hex_flattened_end_strategy_t.data) temp1 in 
+        Hex_extended_molecular.disjunction constituants;;
 
 let get_molecular_part_at_idx factory k= 
   let  (Hex_cog_in_machine_t.C(_,_,_,xtracn0,_)) = get_elt_at_idx factory k in 
@@ -42,15 +36,19 @@ let get_molecular_part_at_idx factory k=
 
 let compute_dependencies factory  (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory 
-   and (active_p,passive_p)=compute_parts factory (static_constructor,indices) in 
-   let fles = Hex_flattened_end_strategy_field.constructor 
-      (player,active_p,passive_p,(List.length l)+1) in 
+   and extmol=compute_parts factory (static_constructor,indices) in 
+   let fles = {
+      Hex_flattened_end_strategy_t.beneficiary = player ;
+      data = extmol ;
+      index = (List.length(l)+1)
+   } in 
    let xtracn=(
       match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,_)->Hex_molecular_extraction.trivial_case mlclr 
     |Disjunction (cells)->
-        let mlclr=Hex_molecular_linker.fold_intersect( Image.image (get_molecular_part_at_idx factory) indices) in 
-        Hex_molecular_extraction.extract_from_strategy mlclr fles
+        let mlclr0=Hex_molecular_linker.fold_intersect( Image.image (get_molecular_part_at_idx factory) indices) in 
+        (*The following is nonsense filler to be deleted soon *)
+        Hex_molecular_extraction.trivial_case mlclr0
    ) in 
    (xtracn,fles);;    
 

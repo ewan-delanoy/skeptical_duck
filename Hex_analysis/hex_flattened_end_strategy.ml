@@ -6,13 +6,14 @@
 
 module Private = struct
 
+
 let use_ally_move_to_simplify_one cell old_fles=
-   let active_part = Hex_flattened_end_strategy_field.active_part old_fles
-   and passive_part = Hex_flattened_end_strategy_field.passive_part old_fles in 
-   let new_actives=Hex_cell_set.outsert cell active_part 
-   and new_passives=Hex_cell_set.outsert cell passive_part in 
-   Hex_flattened_end_strategy_field.change_parts 
-      old_fles (new_actives,new_passives);;
+    {
+       old_fles with 
+       Hex_flattened_end_strategy_t.data = 
+         Hex_extended_molecular.use_ally_move_to_simplify_one cell 
+          (old_fles.Hex_flattened_end_strategy_t.data)
+    };;
   
      
 let use_ally_move_to_simplify_several cell old_flesses =
@@ -32,8 +33,6 @@ let use_move_to_simplify_one (player,cell) old_fles =
    if player = Hex_flattened_end_strategy_field.beneficiary  old_fles
    then Some(use_ally_move_to_simplify_one cell old_fles)
    else use_enemy_move_to_simplify_one cell old_fles;;
-
-
 
 let immediate_opportunities flesses =
    Option.filter_and_unpack (

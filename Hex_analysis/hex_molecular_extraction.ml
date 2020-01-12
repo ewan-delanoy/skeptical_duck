@@ -33,8 +33,10 @@ let apply_to_immediate_dangers l=
      (fun (x,Hex_molecular_extraction_t.E(mlclr,_))->mlclr) l) in 
       Private.extract_from_set common_part mandatory_set ;; 
 
+(*
 let extract_from_strategy  mlclr fles =
     Private.extract_from_set mlclr (Hex_flattened_end_strategy_field.passive_part fles);;
+*)
 
 let of_concrete_object crobj= 
    let (arg1,arg2,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
