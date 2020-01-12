@@ -41,7 +41,7 @@ let full_support extmol =
         extmol.Hex_extended_molecular_t.active_part
     ];; 
 
-(*
+
 let disjunction l =
     let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
     let whole = Hex_molecular_linker.fold_merge mols in 
@@ -63,7 +63,7 @@ let disjunction l =
       nonmolecular_passive_part = final_passive_part;
       active_part = final_active_part;
    };;
-*)
+
 
 
 let salt = "Hex_"^"extended_molecular_t.";;
@@ -92,6 +92,7 @@ let to_concrete_object extmol =
 end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
+let disjunction = Private.disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular = Private.of_molecular;;
 let passive_part = Private.passive_part ;; 
