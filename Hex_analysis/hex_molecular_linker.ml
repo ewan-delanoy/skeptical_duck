@@ -13,6 +13,7 @@ let tr = ((fun x->Hex_molecular_linker_t.M(x)),
           (fun (Hex_molecular_linker_t.M(x))->x),Hex_atomic_linker.cmp);;
 
 
+
 end;;
 
 let active_complement (Hex_molecular_linker_t.M(l))= 
@@ -33,7 +34,10 @@ let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
 
 
 
+
 let is_included_in = Functor_for_sets.is_included_in Private.tr ;;
+
+let mem = Functor_for_sets.mem Private.tr ;;
 
 let of_concrete_object crobj=
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
@@ -53,6 +57,7 @@ let to_concrete_object (Hex_molecular_linker_t.M(l))=
 
 let to_readable_string (Hex_molecular_linker_t.M(l))=
    String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
+
 
 
 let use_ally_move_to_simplify_one cell (Hex_molecular_linker_t.M(l))=

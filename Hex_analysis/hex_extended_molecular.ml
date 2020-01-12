@@ -33,6 +33,11 @@ let of_molecular mlclr =
       active_part = Hex_molecular_linker.active_complement mlclr;
    };;
 
+(*
+let disjunction l =
+   let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
+*)
+
 let salt = "Hex_"^"extended_molecular_t.";;
 
 let molecular_part_label            = salt ^ "molecular_part";;
