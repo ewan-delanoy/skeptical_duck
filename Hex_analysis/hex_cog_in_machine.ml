@@ -13,16 +13,14 @@ let of_concrete_object crobj=
     Hex_strategy_static_constructor.of_concrete_object arg1,
     Concrete_object_field.unwrap_string(arg2),
     Concrete_object_field.to_int_list(arg3),
-    Hex_molecular_extraction.of_concrete_object arg4,
-    Hex_flattened_end_strategy_field.of_concrete_object(arg5)
+    Hex_flattened_end_strategy_field.of_concrete_object(arg4)
    );;
 
-let to_concrete_object (Hex_cog_in_machine_t.C(constr,comment,indices,mlxtr,fles)) =
+let to_concrete_object (Hex_cog_in_machine_t.C(constr,comment,indices,fles)) =
    Concrete_object_t.Uple [
       Hex_strategy_static_constructor.to_concrete_object constr;
       Concrete_object_field.wrap_string(comment);
       Concrete_object_field.of_int_list(indices);
-      Hex_molecular_extraction.to_concrete_object mlxtr;
       Hex_flattened_end_strategy_field.to_concrete_object(fles)
    ]  ;;
 

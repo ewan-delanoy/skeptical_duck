@@ -17,10 +17,9 @@ let flattened_end_strategy reindexer fles =
   Hex_flattened_end_strategy_field.set_index fles new_idx;;
 
 
-let cog reindexer (Hex_cog_in_machine_t.C(statconstr,msg,indices,xtracn,fles)) = 
+let cog reindexer (Hex_cog_in_machine_t.C(statconstr,msg,indices,fles)) = 
   Hex_cog_in_machine_t.C(statconstr,msg,
    Image.image (local_list_assoc reindexer) indices,
-   xtracn,
    flattened_end_strategy reindexer fles)
 
 
