@@ -62,7 +62,7 @@ let support fles =
 end;;
 
 
-let neuop = Private.immediate_opportunities;;
+let immediate_opportunities = Private.immediate_opportunities;;
 let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
