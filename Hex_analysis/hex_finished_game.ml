@@ -8,7 +8,7 @@ module Private = struct
 
 
 let empty_one = {
-   Hex_finished_game_t.dimension = 11;
+   Hex_finished_game_t.dimension = Hex_dimension.eleven;
    winner = Hex_player_t.First_player;
    sequence_of_moves = [];
 };;
@@ -94,7 +94,7 @@ let sequences_of_moves_label = salt ^ "sequences_of_moves";;
 let of_concrete_object  crobj= 
    let g = Concrete_object_field.get_record crobj in 
    {
-      Hex_finished_game_t.dimension = Concrete_object_field.unwrap_int (g dimension_label);
+      Hex_finished_game_t.dimension = Hex_dimension.of_concrete_object (g dimension_label);
       winner = Hex_player.of_concrete_object (g winner_label);
       sequence_of_moves = Concrete_object_field.to_list Hex_cell.of_concrete_object (g sequences_of_moves_label);
    };;
@@ -102,7 +102,7 @@ let of_concrete_object  crobj=
 let to_concrete_object fgame =
  
    Concrete_object_t.Record([
-     dimension_label,Concrete_object_t.Int(fgame.Hex_finished_game_t.dimension);
+     dimension_label,Hex_dimension.to_concrete_object(fgame.Hex_finished_game_t.dimension);
      winner_label, Hex_player.to_concrete_object(fgame.Hex_finished_game_t.winner);
      sequences_of_moves_label, Concrete_object_field.of_list Hex_cell.to_concrete_object(fgame.Hex_finished_game_t.sequence_of_moves);
    ]);;
