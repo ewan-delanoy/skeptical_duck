@@ -41,8 +41,15 @@ let full_support extmol =
         extmol.Hex_extended_molecular_t.active_part
     ];; 
 
+let empty_one = 
+   {
+      Hex_extended_molecular_t.molecular_part = Hex_molecular_linker_t.M [];
+      nonmolecular_passive_part = Hex_cell_set_t.S[];
+      active_part = Hex_cell_set_t.S[];
+   };;
 
 let disjunction l =
+    if l=[] then empty_one else 
     let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
     let whole = Hex_molecular_linker.fold_merge mols in 
     let tester1_for_commonality =(fun atm extmol ->
