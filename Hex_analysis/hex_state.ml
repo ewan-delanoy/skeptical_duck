@@ -43,7 +43,7 @@ exception Disjunction_found of int* (int list);;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
-  let (enemy_strats,mandatory_set,condition)=Hex_fles_double_list.neuop player sta.Hex_state_t.config_remains in
+  let (enemy_strats,mandatory_set,condition)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
   if condition = Some(Hex_cell_set_t.S[])
   then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,enemy_strats))
   else 
