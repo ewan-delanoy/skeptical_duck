@@ -20,12 +20,13 @@ let explain = function
      ) in
      first_choice^joiner^second_choice;;
 
-let no_constraint = function 
-   Hex_mandatory_set_t.No_constraint -> true 
-  |Constraint(_,_) -> false ;;
 
 let of_extended_molecular extmol = 
    Hex_mandatory_set_t.Constraint(
       extmol.Hex_extended_molecular_t.molecular_part,
       extmol.Hex_extended_molecular_t.nonmolecular_passive_part
       );;
+
+let test_for_no_constraint = function 
+   Hex_mandatory_set_t.No_constraint -> true 
+  |Constraint(_,_) -> false ;;

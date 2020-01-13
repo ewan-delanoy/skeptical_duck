@@ -106,8 +106,10 @@ let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
     ) in
     tempf(ox,oy);;
 
+exception Empty_intersection_undefined;;    
+
 let fold_intersect cmpr=function
-   []->failwith("empty intersection undefined")
+   []->raise(Empty_intersection_undefined)
   |a::b->List.fold_left(Private.intersect cmpr)(a)(b);;
 
 let fold_merge cmpr l=
