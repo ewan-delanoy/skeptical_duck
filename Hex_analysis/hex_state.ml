@@ -43,14 +43,17 @@ exception Disjunction_found of int* (int list);;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
+  (*
   let dangers = Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in 
   let condition = (
      match dangers with 
      []->None
      |_->Some(Hex_cell_set.fold_intersect (Image.image fst dangers))
   ) in 
+  *)
+  let (enemy_strats,mandatory_set,condition)=Hex_fles_double_list.neuop player sta.Hex_state_t.config_remains in
   if condition = Some(Hex_cell_set_t.S[])
-  then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,Image.image snd dangers))
+  then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,enemy_strats))
   else 
   let strong_moves_data = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let fam_moves = Hex_cell_set.apply_condition condition (Hex_fg_double_list.familiar_moves player sta.Hex_state_t.games_remains) in 
@@ -65,7 +68,7 @@ let analize sta=
   {
      Hex_analysis_result_t.next_to_play = player ; 
      mandatory_set = condition ;
-     dangerous_enemy_strategies = Image.image snd dangers ;
+     dangerous_enemy_strategies = enemy_strats ;
      completion_for_strong_move = Option.propagate (fun (forcing,_,x)->(forcing,x) ) strong_moves_data ;
      familiar_moves = fam_moves;
      chosen_move = u_move;
