@@ -34,6 +34,7 @@ let use_move_to_simplify_one (player,cell) old_fles =
    then Some(use_ally_move_to_simplify_one cell old_fles)
    else use_enemy_move_to_simplify_one cell old_fles;;
 
+(*
 let immediate_opportunities flesses =
    Option.filter_and_unpack (
        fun fles->
@@ -44,6 +45,7 @@ let immediate_opportunities flesses =
                Some(mandatory_set,Hex_flattened_end_strategy_field.index fles)
          else None
    ) flesses;;
+*)
 
 let neuop flesses =
    let temp1 = Option.filter_and_unpack (
@@ -70,8 +72,9 @@ let support fles =
 
 end;;
 
-
+(*
 let immediate_opportunities = Private.immediate_opportunities;;
+*)
 let neuop = Private.neuop;;
 let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
