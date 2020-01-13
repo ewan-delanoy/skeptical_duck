@@ -61,7 +61,7 @@ let neuop flesses =
    let condition =(if temp1=[] then None else 
      Some(Hex_cell_set.fold_intersect (Image.image snd temp1))
    ) in 
-   (interesting_indices,main,condition);;
+   (interesting_indices,Hex_mandatory_set.of_extended_molecular main,condition);;
 
 let support fles =
    Hex_cell_set.fold_merge
@@ -72,6 +72,7 @@ end;;
 
 
 let immediate_opportunities = Private.immediate_opportunities;;
+let neuop = Private.neuop;;
 let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
