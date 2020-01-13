@@ -8,11 +8,12 @@
 module Private = struct
 
 let report_on_danger res=
-    match res.Hex_analysis_result_t.mandatory_set with 
-    None->""
-    |Some(set)->"Danger, because of "^
+    let mand = res.Hex_analysis_result_t.mandatory_set in 
+    match mand with 
+     Hex_mandatory_set_t.No_constraint->""
+    |_->"Danger, because of "^
                 (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
-                " : play in "^(Hex_cell_set.to_string(set))^"\n";; 
+                " : play in "^(Hex_mandatory_set.explain(mand))^"\n";; 
 
 let explanation_for_familiar_move other_possible_moves =
    if other_possible_moves = []
@@ -65,7 +66,7 @@ end;;
 let empty_result = 
 {
      Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
-     mandatory_set = None;
+     mandatory_set = Hex_mandatory_set_t.No_constraint;
      dangerous_enemy_strategies = [] ;
      completion_for_strong_move =  None ;
      familiar_moves =  Hex_cell_set_t.S [];
