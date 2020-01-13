@@ -27,14 +27,14 @@ let pair (cell1,cell2) =
    |Total_ordering.Greater -> Hex_atomic_linker_t.Pair(cell1,cell2);;
 
 
-let left_eyed_downwards dim cell=
+let left_eyed_downwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if x<>dim-3         then raise(Incorrect_abscissa(left,down)) else 
     if (y<5)||(y>dim-2) then raise(Incorrect_ordinate(left,down)) else
     Hex_atomic_linker_t.Eyed_claw(left,down,cell);;
 
-let right_eyed_downwards dim cell=
+let right_eyed_downwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if x<>dim-3         then raise(Incorrect_abscissa(right,down)) else 
@@ -42,28 +42,28 @@ let right_eyed_downwards dim cell=
     Hex_atomic_linker_t.Eyed_claw(right,down,cell);;    
 
 
-let left_eyed_upwards dim cell=
+let left_eyed_upwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if x<>4         then raise(Incorrect_abscissa(left,up)) else 
     if (y<2)||(y>dim-5) then raise(Incorrect_ordinate(left,up)) else
     Hex_atomic_linker_t.Eyed_claw(left,up,cell);;
 
-let right_eyed_upwards dim cell=
+let right_eyed_upwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if x<>4         then raise(Incorrect_abscissa(right,up)) else 
     if (y<3)||(y>dim-4) then raise(Incorrect_ordinate(right,up)) else
     Hex_atomic_linker_t.Eyed_claw(right,up,cell);;    
 
-let high_eyed_leftwards dim cell=
+let high_eyed_leftwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if  y<>4            then raise(Incorrect_ordinate(high,left)) else
     if (x<2)||(x>dim-5) then raise(Incorrect_abscissa(high,left)) else 
     Hex_atomic_linker_t.Eyed_claw(high,left,cell);;
 
-let low_eyed_leftwards dim cell=
+let low_eyed_leftwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if  y<>4            then raise(Incorrect_ordinate(low,left)) else
@@ -71,14 +71,14 @@ let low_eyed_leftwards dim cell=
     Hex_atomic_linker_t.Eyed_claw(low,left,cell);;    
 
 
-let high_eyed_rightwards dim cell=
+let high_eyed_rightwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if  y<>dim-3        then raise(Incorrect_ordinate(high,left)) else
     if (x<5)||(x>dim-2) then raise(Incorrect_abscissa(high,left)) else 
     Hex_atomic_linker_t.Eyed_claw(high,right,cell);;
 
-let low_eyed_rightwards dim cell=
+let low_eyed_rightwards (Hex_dimension_t.D dim) cell=
     let x=Hex_cell.abscissa cell 
     and y=Hex_cell.ordinate cell in 
     if  y<>dim-3        then raise(Incorrect_ordinate(low,left)) else

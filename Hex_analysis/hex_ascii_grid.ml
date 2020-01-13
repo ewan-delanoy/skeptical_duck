@@ -17,7 +17,8 @@ let get grid (i,j)=
    try List.assoc (i,j) grid.Hex_ascii_grid_t.data with 
    _->triple_blank;;
 
-let of_flattened_end_strategy dim fles =
+let of_flattened_end_strategy formal_dim fles =
+  let (Hex_dimension_t.D dim)=formal_dim in 
   let square = Cartesian.square (Ennig.ennig 1 dim) in
   let tracer1 =  (fun (i,j)->
      let cell=Hex_ipair.to_cell (i,j) in 
@@ -35,7 +36,7 @@ let of_flattened_end_strategy dim fles =
      else Some(pair,tracer1 pair)) in 
   {
     Hex_ascii_grid_t.beneficiary = (Hex_flattened_end_strategy_field.beneficiary fles);
-    dimension = dim;
+    dimension = formal_dim;
     data = Option.filter_and_unpack tracer2 square;
   };;
    
@@ -57,16 +58,17 @@ let coordinate_mention line_idx =
   else " ";;
 
 
-let first_row dimension= 
+let first_row (Hex_dimension_t.D dimension)= 
  let temp1=Ennig.doyle (fun j->
      " "^(String.make 1 (char_of_int(j+96)))^"  "
   ) 1 dimension in 
   String.concat "" (" "::temp1)
 
 let main_content_of_line grid line_idx =
-  let dim = grid.Hex_ascii_grid_t.dimension in 
+  let formal_dim = grid.Hex_ascii_grid_t.dimension in 
+  let (Hex_dimension_t.D dim)=formal_dim in 
   if line_idx=1
-  then first_row dim 
+  then first_row formal_dim 
   else 
   if (line_idx mod 2)=0
   then String.make (4*dim+2) '-'
@@ -84,7 +86,7 @@ let full_line grid line_idx =
    (main_content_of_line grid line_idx);;
 
 let to_ascii_drawing grid =
-   let dim = grid.Hex_ascii_grid_t.dimension in 
+   let (Hex_dimension_t.D dim) = grid.Hex_ascii_grid_t.dimension in 
    let player = grid.Hex_ascii_grid_t.beneficiary in
    "Config benefitting Player "^(Hex_player.to_string player)^"\n\n\n"^
    (String.concat "\n" (Ennig.doyle (full_line grid) 1 (2*dim+2)));;
@@ -194,7 +196,7 @@ let read_ascii_drawing s=
   let diagonal_names=Cull_string.extract_intervals_in_wrt_separator (List.nth temp3 1) " " in 
   {
     Hex_ascii_grid_t.beneficiary = read_player (List.nth temp3 0);
-    dimension = List.length (diagonal_names);
+    dimension = (Hex_dimension_t.D(List.length (diagonal_names)));
     data = associations ;
   };; 
 
@@ -270,7 +272,7 @@ let preprocess grid =
 
 let empty_one = {
    Hex_ascii_grid_t.beneficiary = Hex_player_t.First_player ;
-   dimension = 11 ;
+   dimension = Hex_dimension.eleven ;
    data = [];
 };;
 
