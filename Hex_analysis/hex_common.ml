@@ -45,7 +45,7 @@ let next_one_to_play preceding_moves=
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
 
-let all_cells dimension=
+let all_cells (Hex_dimension_t.D dimension)=
    let temp1=Ennig.doyle (fun j->String.make 1 (char_of_int(j+96))) 1 dimension 
    and temp2=Ennig.doyle (fun i->string_of_int i) 1 dimension in 
    let temp3=Cartesian.product temp1 temp2 in 
