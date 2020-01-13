@@ -6,6 +6,6 @@
 
 type t = {
    beneficiary : Hex_player_t.t ;
-   dimension : int ;
+   dimension : Hex_dimension_t.t ;
    data : ( (int * int) * string) list;
 };;

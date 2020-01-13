@@ -5,7 +5,7 @@
 *)
 
 type t= {
-    dimension : int;
+    dimension : Hex_dimension_t.t ;
     winner : Hex_player_t.t;
     sequence_of_moves : Hex_cell_t.t list
 };;
