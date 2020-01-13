@@ -22,6 +22,9 @@ let explain = function
 
 
 let of_extended_molecular extmol = 
+   if Hex_cell_set.length(Hex_extended_molecular.passive_part extmol)=0 
+   then Hex_mandatory_set_t.No_constraint
+   else 
    Hex_mandatory_set_t.Constraint(
       extmol.Hex_extended_molecular_t.molecular_part,
       extmol.Hex_extended_molecular_t.nonmolecular_passive_part
