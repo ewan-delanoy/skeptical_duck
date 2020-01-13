@@ -63,7 +63,7 @@ let reset_all_to_empty ()=
     ();;
 
 
-let dimension_ref = ref(11);;
+let dimension_ref = ref(Hex_dimension.eleven);;
 
 let compute_dim_the_first_time ()=
    match Hex_fg_double_list.lookup_dimension (!games_ref) with 
