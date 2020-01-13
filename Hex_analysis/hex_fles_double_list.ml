@@ -23,11 +23,12 @@ let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
   
 
 let test_for_surrender (player,cell) dl=
-   match immediate_dangers player dl with 
-   []->None
-   |dangers -> let mandatory_set = Hex_cell_set.fold_intersect (Image.image fst dangers) in 
-               if not(Hex_cell_set.mem cell mandatory_set) 
-               then Some(Image.image snd dangers)
+   let (indices,mandatory_set,condition) = neuop player dl in 
+   match condition with 
+   None->None
+   |Some(full_set) -> 
+               if not(Hex_cell_set.mem cell full_set) 
+               then Some(indices)
                else None;;
 
 
