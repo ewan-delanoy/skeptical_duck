@@ -12,6 +12,9 @@ module Private = struct
 let tr = ((fun x->Hex_molecular_linker_t.M(x)),
           (fun (Hex_molecular_linker_t.M(x))->x),Hex_atomic_linker.cmp);;
 
+let to_readable_string (Hex_molecular_linker_t.M(l))=
+   String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
+
 
 
 end;;
@@ -49,6 +52,9 @@ let of_concrete_object crobj=
       Concrete_object_field.to_list Hex_atomic_linker.of_concrete_object arg1
    );;
 
+let print_out (fmt:Format.formatter) ap=
+   Format.fprintf fmt "@[%s@]" (Private.to_readable_string ap);;    
+
 let setminus = Functor_for_sets.setminus Private.tr ;;
 
 let support (Hex_molecular_linker_t.M(l))= 
@@ -59,10 +65,7 @@ let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",
      [Concrete_object_field.of_list Hex_atomic_linker.to_concrete_object l]);;
 
-let to_readable_string (Hex_molecular_linker_t.M(l))=
-   String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
-
-
+let to_readable_string = Private.to_readable_string;; 
 
 let use_ally_move_to_simplify_one cell (Hex_molecular_linker_t.M(l))=
    let simplified_l=List.filter (Hex_atomic_linker.nonfulfilment_by_ally_move cell) l in 
@@ -71,3 +74,4 @@ let use_ally_move_to_simplify_one cell (Hex_molecular_linker_t.M(l))=
 let withstands_enemy_move cell mlclr= 
   not(Hex_cell_set.mem cell (support mlclr)) ;; 
 
+ 
