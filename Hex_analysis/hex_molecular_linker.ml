@@ -38,7 +38,7 @@ let filter f (Hex_molecular_linker_t.M l)=
 
 let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
 
-let fold_merge = Functor_for_sets.fold_intersect Private.tr ;;
+let fold_merge = Functor_for_sets.fold_merge Private.tr ;;
 
 
 
