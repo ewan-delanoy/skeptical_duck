@@ -15,6 +15,7 @@ let report_on_danger res=
                 (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^
                 " : play in "^(Hex_mandatory_compound.explain(mand))^"\n";; 
 
+
 let explanation_for_familiar_move other_possible_moves =
    if other_possible_moves = []
    then "familiar move"
