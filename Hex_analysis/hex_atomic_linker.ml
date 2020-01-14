@@ -22,9 +22,9 @@ let high = up and low = down;;
 
 let pair (cell1,cell2) = 
    match Hex_cell.cmp cell1 cell2 with 
-    Total_ordering.Lower -> Hex_atomic_linker_t.Pair(cell2,cell1)
+    Total_ordering.Lower -> Hex_atomic_linker_t.Pair(cell1,cell2)
    |Total_ordering.Equal -> raise(Degenerate_pair(cell1))
-   |Total_ordering.Greater -> Hex_atomic_linker_t.Pair(cell1,cell2);;
+   |Total_ordering.Greater -> Hex_atomic_linker_t.Pair(cell2,cell1);;
 
 
 let left_eyed_downwards (Hex_dimension_t.D dim) cell=
