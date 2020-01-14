@@ -27,6 +27,12 @@ let wes_pair =
      winning_end_strategies_for_second_player_ref
    );;
 
+let strategies_for_player = function 
+    Hex_player_t.First_player -> (winning_end_strategies_for_first_player_ref)
+   |Hex_player_t.Second_player -> (winning_end_strategies_for_second_player_ref);;
+
+let cog_at_idx player idx = Hex_end_strategy_factory.get_elt_at_idx (strategies_for_player player) idx;;   
+ 
 
 let fst_player_strat_at_idx k=Hex_end_strategy_factory.get_elt_at_idx 
        winning_end_strategies_for_first_player_ref k;;
@@ -167,11 +173,13 @@ let remove_last_finished_game () =
    );;
 
 
+
 end ;;
 
 let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let cancel_last_game = Private.remove_last_finished_game;;
+let cog_at_idx = Private.cog_at_idx;;
 let dimension ()=(!(Private.dimension_ref));;
 let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
