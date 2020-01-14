@@ -52,3 +52,6 @@ let all_cells (Hex_dimension_t.D dimension)=
    let temp4=Image.image (fun (sj,si)->Hex_cell.of_string(sj^si)) temp3 in 
    Hex_cell_set.safe_set temp4;;
 
+let parse_list_of_moves s=
+   let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
+   Image.image Hex_cell.of_string temp1;;

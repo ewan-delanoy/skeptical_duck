@@ -8,9 +8,7 @@ let send_report ()=
    let msg = Hex_analysis_result.full_report(snd(!(Hex_analysis.walker))) in 
    print_string msg;flush stdout;;
 
-let parse_list_of_moves s=
-   let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
-   Image.image Hex_cell.of_string temp1;;
+
 
 let execute = function 
     Hex_shell_command_t.Add_basic_linker_from_sheet(msg) -> Hex_analysis.add_basic_linker msg
@@ -44,7 +42,7 @@ let of_string untrimmed_text =
    if text = "sab" then  Hex_shell_command_t.Start_officially(Hex_player_t.First_player) else
    if text = "saw" then  Hex_shell_command_t.Start_officially(Hex_player_t.Second_player) else
    if text = "uo"  then  Hex_shell_command_t.Undo_last_move else
-                   try   Hex_shell_command_t.Absorb_moves(parse_list_of_moves text) with 
+                   try   Hex_shell_command_t.Absorb_moves(Hex_common.parse_list_of_moves text) with 
                    _->   Hex_shell_command_t.Unknown_command;; 
 
    

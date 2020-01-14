@@ -31,6 +31,7 @@ let compute_parts factory (static_constructor,indices)=
         Hex_extended_molecular.disjunction constituants;;
 
 
+
 let compute_flattened_version factory  (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory 
    and extmol=compute_parts factory (static_constructor,indices) in 
