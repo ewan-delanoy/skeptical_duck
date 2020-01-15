@@ -126,7 +126,7 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
   );;
 
-let redis (Hex_end_strategy_factory_t.F(player,l)) indices =
+let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
    let extmols = Image.image (fun idx -> 
       let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
       fles.Hex_flattened_end_strategy_t.data
@@ -182,7 +182,7 @@ let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
-let reconstruct_disjunction = Private.redis;;
+let reconstruct_disjunction = Private.reconstruct_disjunction;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
 let to_string raf = Private.to_string (!raf);;
 

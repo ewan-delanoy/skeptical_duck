@@ -25,10 +25,20 @@ let setminus x y= Functor_for_sets.setminus tr x y;;
 
 (* End of directly set-related methods *)
 
+
+
 let  apply_condition opt_condition cell_set=match opt_condition with 
    None -> cell_set 
   |Some(condition_set) -> 
      fold_intersect [cell_set;condition_set];;
+
+let elements_appearing_more_than_once l = 
+   let (Hex_cell_set_t.S(temp1)) = fold_merge l in
+   let temp2=List.filter (fun elt->
+      List.length(List.filter (mem elt) l)>1
+   ) temp1 in 
+   Hex_cell_set_t.S(temp2);;
+
 let min (Hex_cell_set_t.S(l))=List.hd l;;     
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 
