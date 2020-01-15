@@ -121,7 +121,7 @@ let add_finished_game_without_persisting fgame =
     let s_candidate = (Hex_untamed_opening.to_readable_string candidate)  in 
     let msg = (if not(List.mem candidate old_untamed_openings) 
            then "New untamed : "^s_candidate^"\n" 
-           else "Jockeying on : "^s_candidate^" (Nothing new)\n" ) in 
+           else "This game features an ineffective reply to : "^s_candidate^" (so, nothing new).\n" ) in 
     let _=(print_string msg; flush stdout) in        
    (
     games_ref:=new_games;

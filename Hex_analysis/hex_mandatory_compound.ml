@@ -21,14 +21,6 @@ let explain = function
      first_choice^joiner^second_choice;;
 
 
-let of_extended_molecular extmol = 
-   if Hex_cell_set.length(Hex_extended_molecular.passive_part extmol)=0 
-   then Hex_mandatory_compound_t.No_constraint
-   else 
-   Hex_mandatory_compound_t.Constraint(
-      extmol.Hex_extended_molecular_t.molecular_part,
-      extmol.Hex_extended_molecular_t.nonmolecular_passive_part
-      );;
 
 let of_extended_molecular_with_condition extmol condition = 
    if Hex_cell_set.length(Hex_extended_molecular.passive_part extmol)=0 
@@ -43,3 +35,7 @@ let of_extended_molecular_with_condition extmol condition =
 let test_for_no_constraint = function 
    Hex_mandatory_compound_t.No_constraint -> true 
   |Constraint(_,_) -> false ;;
+
+let test_for_unrealizable_constraint = function 
+   Hex_mandatory_compound_t.No_constraint -> false
+  |Constraint(_,condition) -> (condition = (Hex_cell_set_t.S[])) ;;
