@@ -107,7 +107,7 @@ let read_player s=
   then Hex_player_t.First_player
   else Hex_player_t.Second_player;;
 
-
+(*
 let of_basic_linker dim player 
      (Hex_cell_set_t.S(actives),Hex_cell_pair_set_t.S(passives)) = 
    let active_ipairs = Image.image Hex_ipair.of_cell actives 
@@ -125,7 +125,7 @@ let of_basic_linker dim player
     dimension = dim;
     data = associations1 @ associations2;
 };;
-
+*)
 
 let of_finished_game fgame =
    let winner = fgame.Hex_finished_game_t.winner in 
@@ -299,7 +299,9 @@ let read_sheet ()=   read_ascii_drawing (Io.read_whole_file path_for_sheet);;
 end ;;
 
 let clear_sheet = Private.clear_sheet;;
+(*
 let of_basic_linker = Private.of_basic_linker;;
+*)
 let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
 let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
