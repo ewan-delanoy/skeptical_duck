@@ -126,6 +126,15 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
   );;
 
+let extract_admissible_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
+   let extmols = Image.image (fun idx -> 
+      let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
+      fles.Hex_flattened_end_strategy_t.data
+   ) indices in 
+   let (stat_constr,ind_in_ind,_)=Hex_extended_molecular.extract_admissible_disjunction extmols in 
+   let good_indices = Image.image (fun ii->List.nth indices (ii-1)) ind_in_ind in 
+   (stat_constr,good_indices);;
+
 let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
    let extmols = Image.image (fun idx -> 
       let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
@@ -179,6 +188,7 @@ end;;
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
+let extract_admissible_disjunction = Private.extract_admissible_disjunction;;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
