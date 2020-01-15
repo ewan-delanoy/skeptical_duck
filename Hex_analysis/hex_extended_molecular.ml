@@ -77,7 +77,7 @@ let disjunction l =
 
 let reconstruct_disjunction l=
    let active_parts = Image.image (fun extmol -> extmol.Hex_extended_molecular_t.active_part ) l in
-   let common_active_core = Hex_cell_set.fold_intersect active_parts in 
+   let common_active_core = Hex_cell_set.elements_appearing_more_than_once active_parts in 
    let indexed_active_parts = Ennig.index_everything active_parts in 
    let temp1=Image.image (
       fun (i,z)->
