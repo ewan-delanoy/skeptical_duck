@@ -6,6 +6,11 @@
 
 
 exception Bad_index_in_factory of int;;
+
+exception Disjunction_is_too_long of (int list) * (int list) ;;
+exception Inadequate_constructor  of Hex_strategy_static_constructor_t.t * Hex_strategy_static_constructor_t.t ;;
+
+
 exception Escape_in_disjunction of Hex_cell_t.t list;;                               
 exception Bad_index_in_disjunction of int * (Hex_cell_t.t list);; 
 
@@ -74,6 +79,52 @@ let create_and_remember_already_checked_params show_msg old_factory static_const
     let _=(if show_msg || reduncancy then print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),fles);;
 
+let extract_admissible_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
+   let extmols = Image.image (fun idx -> 
+      let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
+      fles.Hex_flattened_end_strategy_t.data
+   ) indices in 
+   let (stat_constr,ind_in_ind,_)=Hex_extended_molecular.extract_admissible_disjunction extmols in 
+   let good_indices = Image.image (fun ii->List.nth indices (ii-1)) ind_in_ind in 
+   (stat_constr,good_indices);;
+
+
+let check_admissibility_in_disjunction factory cells indices =
+   let (true_constr,good_indices)=extract_admissible_disjunction factory indices in 
+   if good_indices <> indices 
+   then raise(Disjunction_is_too_long(indices,good_indices))
+   else 
+   let proposed_constr = Hex_strategy_static_constructor_t.Disjunction(cells) in 
+   if true_constr <> proposed_constr
+   then raise(Inadequate_constructor(proposed_constr,true_constr))
+   else ();;  
+
+(*
+let check_completeness_in_disjunction factory cells indices=
+   let Hex_end_strategy_factory_t.F(player,l)=factory in 
+   let extmols=Image.image (fun idx->
+      let (Hex_cog_in_machine_t.C(_,_,_,fles))=get_elt_at_idx factory idx in 
+      fles.Hex_flattened_end_strategy_t.data
+      ) indices in 
+   let dis = Hex_extended_molecular.disjunction extmols in 
+   let common_molecular = dis.Hex_extended_molecular_t.molecular_part in 
+   let common_passive = Hex_molecular_linker.support common_molecular in 
+
+   let active_parts  = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+       Hex_flattened_end_strategy_field.active_part fles) temp1
+   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+       Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
+   let temp3=List.combine cells active_parts in 
+   let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
+   let active_whole=Hex_cell_set.fold_merge temp4 in 
+   let temp6=List.combine active_parts passive_parts in 
+   let temp7=Image.image (fun (a,p)->Hex_cell_set.fold_merge [a;p]) temp6 in 
+   let (Hex_cell_set_t.S escape_set) = Hex_cell_set.setminus (Hex_cell_set.fold_intersect temp7) active_whole in 
+   if escape_set = []
+   then ()
+   else raise(Escape_in_disjunction(escape_set));;
+*)
+
 let check_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let temp1=Image.image (get_elt_at_idx factory) indices in 
@@ -126,14 +177,7 @@ let compute_all_end_configs (Hex_end_strategy_factory_t.F(_,l1),Hex_end_strategy
       Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
   );;
 
-let extract_admissible_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
-   let extmols = Image.image (fun idx -> 
-      let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
-      fles.Hex_flattened_end_strategy_t.data
-   ) indices in 
-   let (stat_constr,ind_in_ind,_)=Hex_extended_molecular.extract_admissible_disjunction extmols in 
-   let good_indices = Image.image (fun ii->List.nth indices (ii-1)) ind_in_ind in 
-   (stat_constr,good_indices);;
+
 
 let of_concrete_object crobj=
     let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 

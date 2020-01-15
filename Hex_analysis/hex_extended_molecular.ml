@@ -48,8 +48,8 @@ let empty_one =
       active_part = Hex_cell_set_t.S[];
    };;
 
-let disjunction l =
-    if l=[] then empty_one else 
+let common_molecular_part l =
+     if l=[] then Hex_molecular_linker_t.M[] else 
     let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
     let whole = Hex_molecular_linker.fold_merge mols in 
     let tester1_for_commonality =(fun atm extmol ->
@@ -58,9 +58,12 @@ let disjunction l =
         (Hex_cell_set.does_not_intersect (Hex_atomic_linker.support atm) (full_support extmol))
     ) in 
     let is_common = (fun atm->List.for_all (tester1_for_commonality atm) l) in 
-    let common_part = Hex_molecular_linker.filter is_common whole in 
-    (* all members differ from the full intersection by 1 elt, which justifies the following *)
-    let final_active_part = Hex_cell_set.fold_intersect 
+    Hex_molecular_linker.filter is_common whole ;;
+
+let disjunction l =
+    if l=[] then empty_one else 
+    let common_part = common_molecular_part l in 
+    let final_active_part = Hex_cell_set.elements_appearing_more_than_once
       (Image.image (fun extmol->extmol.Hex_extended_molecular_t.active_part) l) in 
     let total_passive_part = Hex_cell_set.fold_merge(Image.image passive_part l) in 
     let final_passive_part = Hex_cell_set.setminus total_passive_part 
@@ -114,6 +117,7 @@ let to_concrete_object extmol =
 end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
+let common_molecular_part = Private.common_molecular_part;;
 let disjunction = Private.disjunction;;
 let extract_admissible_disjunction = Private.extract_admissible_disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
