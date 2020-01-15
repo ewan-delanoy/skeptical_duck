@@ -138,6 +138,15 @@ let reconstruct_disjunction (Hex_end_strategy_factory_t.F(player,l)) occupied_ce
    ) in 
    Image.image cell_of_index indices;;
 
+(*
+let redis (Hex_end_strategy_factory_t.F(player,l)) indices =
+   let extmols = Image.image (fun idx -> 
+      let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
+      fles.Hex_flattened_end_strategy_t.data
+   ) indices in 
+   Hex_extended_molecular.reconstruct_disjunction extmols;;
+*)
+
 let of_concrete_object crobj=
     let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
     Hex_end_strategy_factory_t.F(Hex_player.of_concrete_object arg1, Hex_cog_in_machine.list_of_concrete_object arg2);;

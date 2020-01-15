@@ -4,6 +4,8 @@
 
 *)
 
+exception Construction_error_in_disjunction of (int * Hex_cell_set_t.t) list;;
+
 module Private = struct  
 
 let passive_part extmol =
@@ -73,6 +75,22 @@ let disjunction l =
 
 
 
+let reconstruct_disjunction l=
+   let active_parts = Image.image (fun extmol -> extmol.Hex_extended_molecular_t.active_part ) l in
+   let common_active_core = Hex_cell_set.fold_intersect active_parts in 
+   let indexed_active_parts = Ennig.index_everything active_parts in 
+   let temp1=Image.image (
+      fun (i,z)->
+      let gutted_z=Hex_cell_set.setminus z common_active_core in 
+      (i,gutted_z)
+   ) indexed_active_parts in 
+   let (good_ones,bad_ones)=List.partition (fun (i,gutted_z)->Hex_cell_set.length(gutted_z)=1) temp1 in 
+   if bad_ones <>[]
+   then raise(Construction_error_in_disjunction(bad_ones))
+   else let solvers = Image.image (fun (_,gutted_z)->Hex_cell_set.min gutted_z) good_ones in 
+        Hex_strategy_static_constructor_t.Disjunction(solvers);;
+
+
 let salt = "Hex_"^"extended_molecular_t.";;
 
 let molecular_part_label            = salt ^ "molecular_part";;
@@ -103,6 +121,7 @@ let disjunction = Private.disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
+let reconstruct_disjunction= Private.reconstruct_disjunction;;
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;
 let withstands_enemy_move = Private.withstands_enemy_move;;
