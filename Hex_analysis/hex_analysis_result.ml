@@ -8,7 +8,7 @@
 module Private = struct
 
 let report_on_danger res=
-    let mand = res.Hex_analysis_result_t.mandatory_set in 
+    let mand = res.Hex_analysis_result_t.mandatory_compound in 
     match mand with 
      Hex_mandatory_compound_t.No_constraint->""
     |_->"Danger, because of "^
@@ -67,7 +67,7 @@ end;;
 let empty_result = 
 {
      Hex_analysis_result_t.next_to_play = Hex_player_t.First_player;
-     mandatory_set = Hex_mandatory_compound_t.No_constraint;
+     mandatory_compound = Hex_mandatory_compound_t.No_constraint;
      dangerous_enemy_strategies = [] ;
      completion_for_strong_move =  None ;
      familiar_moves =  Hex_cell_set_t.S [];

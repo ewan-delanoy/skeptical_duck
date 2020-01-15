@@ -59,7 +59,7 @@ let analize sta=
 
   {
      Hex_analysis_result_t.next_to_play = player ; 
-     mandatory_set = mand ;
+     mandatory_compound = mand ;
      dangerous_enemy_strategies = enemy_strats ;
      completion_for_strong_move = Option.propagate (fun (forcing,_,x)->(forcing,x) ) strong_moves_data ;
      familiar_moves = fam_moves;
