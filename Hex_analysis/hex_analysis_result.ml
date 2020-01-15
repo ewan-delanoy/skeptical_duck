@@ -54,7 +54,8 @@ let report_on_enemies res =
 
 let report_critical_accumulation res =
    let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
-   "Critical accumulation encountered ! "^plyr^" has lost." 
+   "Critical accumulation encountered !\nThe list is "^
+   (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^". "^plyr^" has lost." 
 
 let full_report res = 
    if Hex_mandatory_compound.test_for_unrealizable_constraint(res.Hex_analysis_result_t.mandatory_compound)
