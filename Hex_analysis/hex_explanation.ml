@@ -72,9 +72,11 @@ let fles3=create1 strat3_constructor "" [];;
 let lonely_c4=Hex_cell_set.safe_set [Hex_cell.of_string "c4"];;
 
 let list_for_right_eyed_claw = [1;2;3];;
-let helper_for_right_eyed_claw =
-    Hex_end_strategy_factory.reconstruct_disjunction (!for_Black) list_for_right_eyed_claw;;
-     
+let (helper_for_right_eyed_claw,_) =
+    Hex_end_strategy_factory.extract_admissible_disjunction (!for_Black) list_for_right_eyed_claw;;
+          
+
+
 let fles_for_right_eyed_claw=
    create1 helper_for_right_eyed_claw "" list_for_right_eyed_claw;;
 
@@ -110,9 +112,12 @@ let fles7=create1 strat7_constructor "" [];;
 
 let lonely_b4=Hex_cell_set.safe_set [Hex_cell.of_string "b4"];;
 
-let list_for_left_eyed_claw = [5;6;7];;
-let helper_for_left_eyed_claw =  Hex_end_strategy_factory.reconstruct_disjunction
-    (!for_Black) list_for_left_eyed_claw;;   
+let list_for_left_eyed_claw = [5;6;7];; 
+let (helper_for_left_eyed_claw,_) =
+    Hex_end_strategy_factory.extract_admissible_disjunction (!for_Black) list_for_left_eyed_claw;;
+          
+
+
 let fles_for_left_eyed_claw=
    create1 helper_for_left_eyed_claw "" list_for_left_eyed_claw;;
 
