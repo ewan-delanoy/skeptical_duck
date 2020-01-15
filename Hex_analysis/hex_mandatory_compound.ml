@@ -30,6 +30,16 @@ let of_extended_molecular extmol =
       extmol.Hex_extended_molecular_t.nonmolecular_passive_part
       );;
 
+let of_extended_molecular_with_condition extmol condition = 
+   if Hex_cell_set.length(Hex_extended_molecular.passive_part extmol)=0 
+   then Hex_mandatory_compound_t.No_constraint
+   else 
+   Hex_mandatory_compound_t.Constraint(
+      extmol.Hex_extended_molecular_t.molecular_part,
+      Hex_cell_set.apply_condition condition (extmol.Hex_extended_molecular_t.nonmolecular_passive_part)
+      );;
+
+
 let test_for_no_constraint = function 
    Hex_mandatory_compound_t.No_constraint -> true 
   |Constraint(_,_) -> false ;;
