@@ -25,6 +25,10 @@ let get_elt_at_idx_in_pair (factory1,factory2) (player,idx)=
    Hex_player_t.First_player -> get_elt_at_idx factory1 idx 
   |Hex_player_t.Second_player -> get_elt_at_idx factory2 idx ;;  
 
+let get_extmol_at_idx factory k= 
+   let (Hex_cog_in_machine_t.C(_,_,_,fles))= get_elt_at_idx factory k in 
+   fles.Hex_flattened_end_strategy_t.data;;
+
 let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
@@ -99,48 +103,27 @@ let check_admissibility_in_disjunction factory cells indices =
    then raise(Inadequate_constructor(proposed_constr,true_constr))
    else ();;  
 
-(*
+
 let check_completeness_in_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
-   let extmols=Image.image (fun idx->
-      let (Hex_cog_in_machine_t.C(_,_,_,fles))=get_elt_at_idx factory idx in 
-      fles.Hex_flattened_end_strategy_t.data
-      ) indices in 
-   let dis = Hex_extended_molecular.disjunction extmols in 
-   let common_molecular = dis.Hex_extended_molecular_t.molecular_part in 
+   let extmols=Image.image (get_extmol_at_idx factory) indices in 
+   let common_molecular = Hex_extended_molecular.common_molecular_part extmols in 
    let common_passive = Hex_molecular_linker.support common_molecular in 
-
-   let active_parts  = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-       Hex_flattened_end_strategy_field.active_part fles) temp1
-   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-       Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
-   let temp3=List.combine cells active_parts in 
-   let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
-   let active_whole=Hex_cell_set.fold_merge temp4 in 
-   let temp6=List.combine active_parts passive_parts in 
-   let temp7=Image.image (fun (a,p)->Hex_cell_set.fold_merge [a;p]) temp6 in 
-   let (Hex_cell_set_t.S escape_set) = Hex_cell_set.setminus (Hex_cell_set.fold_intersect temp7) active_whole in 
-   if escape_set = []
+   let local_escape_sets  = Image.image  (fun (cell,extmol) ->
+     let full_active_part = Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol) in 
+     Hex_cell_set.setminus full_active_part common_passive
+   ) (List.combine cells extmols) in 
+   let (Hex_cell_set_t.S global_escape_set) = Hex_cell_set.fold_intersect local_escape_sets in 
+   if global_escape_set = []
    then ()
-   else raise(Escape_in_disjunction(escape_set));;
-*)
+   else raise(Escape_in_disjunction(global_escape_set));;
+
 
 let check_disjunction factory cells indices=
-   let Hex_end_strategy_factory_t.F(player,l)=factory in 
-   let temp1=Image.image (get_elt_at_idx factory) indices in 
-   let active_parts  = Image.image  (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-       Hex_flattened_end_strategy_field.active_part fles) temp1
-   and passive_parts = Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-       Hex_flattened_end_strategy_field.passive_part fles) temp1 in 
-   let temp3=List.combine cells active_parts in 
-   let temp4=Image.image (fun (c,part)->Hex_cell_set.outsert c part) temp3 in 
-   let active_whole=Hex_cell_set.fold_merge temp4 in 
-   let temp6=List.combine active_parts passive_parts in 
-   let temp7=Image.image (fun (a,p)->Hex_cell_set.fold_merge [a;p]) temp6 in 
-   let (Hex_cell_set_t.S escape_set) = Hex_cell_set.setminus (Hex_cell_set.fold_intersect temp7) active_whole in 
-   if escape_set = []
-   then ()
-   else raise(Escape_in_disjunction(escape_set));;
+    (
+      check_admissibility_in_disjunction factory cells indices;
+      check_completeness_in_disjunction factory cells indices
+    );;
 
 
 let check_new_strategy factory static_constructor indices = match static_constructor with 
