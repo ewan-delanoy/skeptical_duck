@@ -182,7 +182,7 @@ let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
-let redis = Private.redis;;
+let reconstruct_disjunction = Private.redis;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
 let to_string raf = Private.to_string (!raf);;
 
