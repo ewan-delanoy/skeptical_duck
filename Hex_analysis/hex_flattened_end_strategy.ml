@@ -52,7 +52,7 @@ let immediate_opportunities flesses =
    let condition =(if temp1=[] then None else 
      Some(Hex_cell_set.fold_intersect (Image.image snd temp1))
    ) in 
-   (interesting_indices,Hex_mandatory_compound.of_extended_molecular main,condition);;
+   (interesting_indices,Hex_mandatory_compound.of_extended_molecular_with_condition main condition,condition);;
 
 let support fles =
    Hex_cell_set.fold_merge
