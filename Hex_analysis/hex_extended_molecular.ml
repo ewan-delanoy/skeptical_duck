@@ -73,6 +73,21 @@ let disjunction l =
       active_part = final_active_part;
    };;
 
+let extract_admissible_disjunction l=
+   let active_parts = Image.image (fun extmol -> extmol.Hex_extended_molecular_t.active_part ) l in
+   let common_active_core = Hex_cell_set.elements_appearing_more_than_once active_parts in 
+   let indexed_l = Ennig.index_everything l in 
+   let temp1=Option.filter_and_unpack (
+      fun (j,extmol)->
+        let gutted_z=Hex_cell_set.setminus (extmol.Hex_extended_molecular_t.active_part) common_active_core in 
+        if Hex_cell_set.length(gutted_z)=1
+        then Some(j,extmol,Hex_cell_set.min gutted_z)
+        else None 
+   ) indexed_l in 
+   let solvers = Image.image (fun (_,_,solver)->solver) temp1 in 
+   (Hex_strategy_static_constructor_t.Disjunction(solvers),
+     Image.image (fun (idx,_,_)->idx) temp1,
+     Image.image (fun (_,extmol,_)->extmol) temp1);; 
 
 
 let reconstruct_disjunction l=
@@ -118,6 +133,7 @@ end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let disjunction = Private.disjunction;;
+let extract_admissible_disjunction = Private.extract_admissible_disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
