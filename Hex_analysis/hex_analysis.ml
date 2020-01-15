@@ -66,7 +66,7 @@ let declare_winner player =
   Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
 
-let add_basic_linker comment=
+let add_molecular_linker comment=
    let winner = get_latest_winner () 
    and grid = Hex_ascii_grid.process_sheet () in 
    let (mlclr,actives) = Hex_ascii_grid.to_molecular_linker_with_active_points grid in 

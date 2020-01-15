@@ -8,7 +8,7 @@
 
 let list_for_spec1=["f6"; "f8"; "c9"; "e7"; "d7"; "e6"; "d6"; "e4"; "e5"; "f4"; "f5"; "g4"];;
 
-let abl = Hex_analysis.add_basic_linker ;;
+let abl = Hex_analysis.add_molecular_linker ;;
 let am s = Hex_analysis.absorb_move (Hex_cell.of_string s);;
 let ams s = Hex_analysis.absorb_all_moves (Hex_common.parse_list_of_moves s);;
 let clg = Hex_persistent.cancel_last_game;;

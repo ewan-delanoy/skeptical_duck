@@ -11,7 +11,7 @@ let send_report ()=
 
 
 let execute = function 
-    Hex_shell_command_t.Add_basic_linker_from_sheet(msg) -> Hex_analysis.add_basic_linker msg
+    Hex_shell_command_t.Add_basic_linker_from_sheet(msg) -> Hex_analysis.add_molecular_linker msg
    |Absorb_moves(l)->let _=Hex_analysis.absorb_all_moves l in send_report()
    |Cancel_last_game -> Hex_persistent.cancel_last_game()
    |Declare_winner(player)->Hex_analysis.declare_winner player
