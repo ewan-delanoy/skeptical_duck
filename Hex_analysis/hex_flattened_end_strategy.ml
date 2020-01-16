@@ -50,8 +50,8 @@ let immediate_opportunities flesses =
    let cells = Image.image (fun (_,_,cell)->cell) temp1 in 
    let older_extmols = Image.image (fun (fles,_,_)->fles.Hex_flattened_end_strategy_t.data) temp1 in
    let interesting_indices = Image.image (fun (fles,_,_)->Hex_flattened_end_strategy_field.index fles) temp1 in 
-   let (mand,condition) = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
-   (interesting_indices,mand,condition,cells);;
+   let mand = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
+   (interesting_indices,mand,cells);;
 
 let support fles =
    Hex_cell_set.fold_merge
