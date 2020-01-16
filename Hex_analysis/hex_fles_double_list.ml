@@ -18,7 +18,7 @@ let immediate_dangers player dl=
 
 
 let test_for_surrender (player,cell) dl=
-   let (indices,mandatory_compound,cells) = immediate_dangers player dl in 
+   let (cells,indices,mandatory_compound) = immediate_dangers player dl in 
    let condition = Hex_mandatory_compound.global_escape_set mandatory_compound in 
    match condition with 
    None->None
