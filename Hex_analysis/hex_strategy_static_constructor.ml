@@ -6,7 +6,7 @@
 
 let summarize_in_string = function
     Hex_strategy_static_constructor_t.Molecular(_,_)->"Molecular"
-   |Disjunction (_)->"Exhaustive_Disjunction";;
+   |Exhaustive_Disjunction (_)->"Exhaustive_Disjunction";;
    
 let salt = "Hex_"^"strategy_static_constructor_t.";;
 
