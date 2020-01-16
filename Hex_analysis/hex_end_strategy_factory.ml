@@ -33,7 +33,7 @@ let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
         Hex_extended_molecular.of_molecular_and_active_ones (mlclr,active_ones)
-    | Disjunction (cells)->
+    | Exhaustive_Disjunction (cells)->
         let temp1=Image.image (get_elt_at_idx factory) indices in 
         let constituants = Image.image  
            (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles.Hex_flattened_end_strategy_t.data) temp1 in 
@@ -113,7 +113,7 @@ let check_disjunction factory cells indices=
 
 let check_new_strategy factory static_constructor indices = match static_constructor with 
   Hex_strategy_static_constructor_t.Molecular(_)->() (* checking should already have been done in  Hex_molecular_linker.constructor *)
-  | Disjunction (cells)->check_disjunction factory cells indices;;
+  | Exhaustive_Disjunction (cells)->check_disjunction factory cells indices;;
 
 let create_new_strategy show_msg factory static_constructor comment indices =
     let _= check_new_strategy factory static_constructor indices in 
