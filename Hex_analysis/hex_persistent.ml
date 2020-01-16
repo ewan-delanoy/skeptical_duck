@@ -181,9 +181,10 @@ let add_finished_game = Private.add_finished_game;;
 let cancel_last_game = Private.remove_last_finished_game;;
 let cog_at_idx = Private.cog_at_idx;;
 let dimension ()=(!(Private.dimension_ref));;
+let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
-let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
+let strategies_for_player player= (!(Private.strategies_for_player player));;
 let wes_pair = Private.wes_pair;;
 
 
