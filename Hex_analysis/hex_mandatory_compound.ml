@@ -9,7 +9,7 @@ exception Missing_constraint ;;
 
 let escape_compound_in_disjunction cells older_extmols = 
    if cells=[] 
-   then (Hex_mandatory_compound_t.No_constraint,None)
+   then Hex_mandatory_compound_t.No_constraint
    else 
    let common_molecular = Hex_extended_molecular.common_molecular_part older_extmols in 
    let common_passive = Hex_molecular_linker.support common_molecular in 
@@ -18,10 +18,10 @@ let escape_compound_in_disjunction cells older_extmols =
       Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol)
    ) temp1 in 
    let global_escape_set = Hex_cell_set.fold_intersect local_escape_sets in 
-   (Hex_mandatory_compound_t.Constraint(
+   Hex_mandatory_compound_t.Constraint(
       common_molecular,
       Hex_cell_set.setminus global_escape_set common_passive
-      ),Some(global_escape_set));;
+      );;
 
 let explain = function 
    Hex_mandatory_compound_t.No_constraint -> ""
@@ -45,6 +45,7 @@ let assert_exhaustibility = function
   |Constraint(_,escape_set) -> if Hex_cell_set.length escape_set = 0
                                then ()
                                else raise(Escape_set(escape_set));;
+
 let global_escape_set = function 
    Hex_mandatory_compound_t.No_constraint -> None 
   |Constraint(mlclr,small_escape_set) -> 
