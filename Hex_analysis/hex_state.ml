@@ -75,3 +75,8 @@ let absorb_move sta cell=
       Hex_state_t.moves_before =  (cell::(sta.Hex_state_t.moves_before)) ;
    };;
 
+let finish_game sta={
+    Hex_finished_game_t.dimension = Hex_persistent.dimension();
+    Hex_finished_game_t.winner = Hex_common.has_just_played(sta.Hex_state_t.moves_before) ;
+    Hex_finished_game_t.sequence_of_moves = List.rev(sta.Hex_state_t.moves_before)
+  } ;;
