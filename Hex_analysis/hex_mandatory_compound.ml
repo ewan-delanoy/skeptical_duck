@@ -4,6 +4,9 @@
 
 *)
 
+exception Escape_set of Hex_cell_set_t.t ;;
+exception Missing_constraint ;;
+
 let escape_compound_in_disjunction cells older_extmols = 
    if cells=[] 
    then (Hex_mandatory_compound_t.No_constraint,None)
@@ -36,6 +39,12 @@ let explain = function
      ) in
      first_choice^joiner^second_choice;;
 
+
+let assert_exhaustibility = function 
+   Hex_mandatory_compound_t.No_constraint -> raise(Missing_constraint) 
+  |Constraint(_,escape_set) -> if Hex_cell_set.length escape_set = 0
+                               then raise(Escape_set(escape_set))
+                               else ();;
 
 let test_for_no_constraint = function 
    Hex_mandatory_compound_t.No_constraint -> true 

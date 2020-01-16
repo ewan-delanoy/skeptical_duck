@@ -29,6 +29,17 @@ let get_extmol_at_idx factory k=
    let (Hex_cog_in_machine_t.C(_,_,_,fles))= get_elt_at_idx factory k in 
    fles.Hex_flattened_end_strategy_t.data;;
 
+(*
+let compute_flattened_version_for_allegedly_exhaustive_disjunction factory cells indices=
+   let Hex_end_strategy_factory_t.F(player,l)=factory in 
+   let older_extmols=Image.image (get_extmol_at_idx factory) indices in 
+   let global_extmol = Hex_extended_molecular.dj cells older_extmols (* active part checked here *)
+   and (mand,_) = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
+   if Hex_mandatory_compound.test_for_unrealizable_constraint global_escape_set = []
+   then ()
+   else raise(Escape_in_disjunction(global_escape_set));;
+*)
+
 let compute_parts factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
