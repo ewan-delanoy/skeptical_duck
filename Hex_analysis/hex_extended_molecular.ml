@@ -88,21 +88,6 @@ let dj cells older_extmols =
 
 
 
-let disjunction l =
-    if l=[] then empty_one else 
-    let common_part = common_molecular_part l in 
-    let final_active_part = Hex_cell_set.elements_appearing_more_than_once
-      (Image.image (fun extmol->extmol.Hex_extended_molecular_t.active_part) l) in 
-    let total_passive_part = Hex_cell_set.fold_merge(Image.image passive_part l) in 
-    let final_passive_part = Hex_cell_set.setminus total_passive_part 
-                                   (Hex_molecular_linker.support common_part) in  
-    {
-      Hex_extended_molecular_t.molecular_part = common_part;
-      nonmolecular_passive_part = final_passive_part;
-      active_part = final_active_part;
-   };;
-
-
 
 let salt = "Hex_"^"extended_molecular_t.";;
 
@@ -131,7 +116,6 @@ end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let common_molecular_part = Private.common_molecular_part;;
-let disjunction = Private.disjunction;;
 let dj = Private.dj;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
