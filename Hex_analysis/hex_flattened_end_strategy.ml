@@ -42,17 +42,19 @@ let immediate_opportunities flesses =
          let l=Hex_flattened_end_strategy_field.active_part fles in 
          if Hex_cell_set.length(l)=1 
          then let passive_set = Hex_flattened_end_strategy_field.passive_part fles in 
-              let mandatory_set=Hex_cell_set.insert (Hex_cell_set.min l) passive_set in 
-               Some(fles,mandatory_set)
+              let m = Hex_cell_set.min l in 
+              let mandatory_set=Hex_cell_set.insert m passive_set in 
+               Some(fles,mandatory_set,m)
          else None
    ) flesses in 
-   let interesting_indices = Image.image (fun (fles,_)->Hex_flattened_end_strategy_field.index fles) temp1 in 
-   let temp2 = Image.image (fun (fles,_)->fles.Hex_flattened_end_strategy_t.data) temp1 in
+   let interesting_indices = Image.image (fun (fles,_,_)->Hex_flattened_end_strategy_field.index fles) temp1 in 
+   let temp2 = Image.image (fun (fles,_,_)->fles.Hex_flattened_end_strategy_t.data) temp1 in
    let main = Hex_extended_molecular.disjunction temp2 in  
    let condition =(if temp1=[] then None else 
-     Some(Hex_cell_set.fold_intersect (Image.image snd temp1))
+     Some(Hex_cell_set.fold_intersect (Image.image (fun (_,m_set,_)->m_set ) temp1))
    ) in 
-   (interesting_indices,Hex_mandatory_compound.of_extended_molecular_with_condition main condition,condition);;
+   let cells = Image.image (fun (_,_,cell)->cell) temp1 in 
+   (interesting_indices,Hex_mandatory_compound.of_extended_molecular_with_condition main condition,condition,cells);;
 
 let support fles =
    Hex_cell_set.fold_merge
