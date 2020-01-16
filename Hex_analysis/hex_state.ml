@@ -39,14 +39,11 @@ let compute_chosen_move (strong_moves_data,fam_moves,condition,moves_before) =
   raise(No_moves_to_choose_from);;  
 
 
-exception Disjunction_found of int* (int list);;
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
   let (enemy_strats,mand,condition,cells)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
-  if condition = Some(Hex_cell_set_t.S[])
-  then raise(Disjunction_found(List.length sta.Hex_state_t.moves_before,enemy_strats))
-  else 
+  let condition = Hex_mandatory_compound.global_escape_set mand in 
   let strong_moves_data = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let fam_moves = Hex_cell_set.apply_condition condition (Hex_fg_double_list.familiar_moves player sta.Hex_state_t.games_remains) in 
   let u_move = compute_chosen_move (strong_moves_data,fam_moves,condition,sta.Hex_state_t.moves_before) in 
