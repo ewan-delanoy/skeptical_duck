@@ -29,42 +29,36 @@ let get_extmol_at_idx factory k=
    let (Hex_cog_in_machine_t.C(_,_,_,fles))= get_elt_at_idx factory k in 
    fles.Hex_flattened_end_strategy_t.data;;
 
-(*
-let compute_flattened_version_for_allegedly_exhaustive_disjunction factory cells indices=
+
+let compute_extmol_for_allegedly_exhaustive_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let older_extmols=Image.image (get_extmol_at_idx factory) indices in 
    let global_extmol = Hex_extended_molecular.dj cells older_extmols (* active part checked here *)
    and (mand,_) = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
-   if Hex_mandatory_compound.test_for_unrealizable_constraint global_escape_set = []
-   then ()
-   else raise(Escape_in_disjunction(global_escape_set));;
-*)
+   let _= Hex_mandatory_compound.assert_exhaustibility mand in 
+   global_extmol;;
 
-let compute_parts factory (static_constructor,indices)=
+
+let compute_extmol factory (static_constructor,indices)=
    match static_constructor with
     Hex_strategy_static_constructor_t.Molecular(mlclr,active_ones)->
         Hex_extended_molecular.of_molecular_and_active_ones (mlclr,active_ones)
-    | Exhaustive_Disjunction (cells)->
-        let temp1=Image.image (get_elt_at_idx factory) indices in 
-        let constituants = Image.image  
-           (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles.Hex_flattened_end_strategy_t.data) temp1 in 
-        Hex_extended_molecular.disjunction constituants;;
+    | Exhaustive_Disjunction (cells)->compute_extmol_for_allegedly_exhaustive_disjunction factory cells indices;;
 
 
 
 let compute_flattened_version factory  (static_constructor,indices)=
    let Hex_end_strategy_factory_t.F(player,l)=factory 
-   and extmol=compute_parts factory (static_constructor,indices) in 
-   let fles = {
+   and extmol=compute_extmol factory (static_constructor,indices) in 
+   {
       Hex_flattened_end_strategy_t.beneficiary = player ;
       data = extmol ;
       index = (List.length(l)+1)
-   } in 
-   fles;;    
+   };;    
 
 
 
-let create_and_remember_already_checked_params show_msg old_factory static_constructor comment indices=
+let create_new_strategy show_msg old_factory static_constructor comment indices=
     let presumed_fles = compute_flattened_version old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
     let added_cmt=(if comment="" 
@@ -93,42 +87,6 @@ let create_and_remember_already_checked_params show_msg old_factory static_const
     ) in 
     let _=(if show_msg || reduncancy then print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),fles);;
-
-
-
-let check_admissibility_in_disjunction factory cells indices = ();;
-  
-
-
-let check_completeness_in_disjunction factory cells indices=
-   let Hex_end_strategy_factory_t.F(player,l)=factory in 
-   let extmols=Image.image (get_extmol_at_idx factory) indices in 
-   let common_molecular = Hex_extended_molecular.common_molecular_part extmols in 
-   let common_passive = Hex_molecular_linker.support common_molecular in 
-   let local_escape_sets  = Image.image  (fun (cell,extmol) ->
-     let full_active_part = Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol) in 
-     Hex_cell_set.setminus full_active_part common_passive
-   ) (List.combine cells extmols) in 
-   let (Hex_cell_set_t.S global_escape_set) = Hex_cell_set.fold_intersect local_escape_sets in 
-   if global_escape_set = []
-   then ()
-   else raise(Escape_in_disjunction(global_escape_set));;
-
-
-let check_disjunction factory cells indices=
-    (
-      check_admissibility_in_disjunction factory cells indices;
-      check_completeness_in_disjunction factory cells indices
-    );;
-
-
-let check_new_strategy factory static_constructor indices = match static_constructor with 
-  Hex_strategy_static_constructor_t.Molecular(_)->() (* checking should already have been done in  Hex_molecular_linker.constructor *)
-  | Exhaustive_Disjunction (cells)->check_disjunction factory cells indices;;
-
-let create_new_strategy show_msg factory static_constructor comment indices =
-    let _= check_new_strategy factory static_constructor indices in 
-    create_and_remember_already_checked_params show_msg factory static_constructor comment indices;;
 
 
 
