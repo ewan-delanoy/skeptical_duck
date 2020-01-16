@@ -10,6 +10,6 @@ allowing to fall back in an already known winning position.
 
 type t= 
     Molecular of Hex_molecular_linker_t.t * Hex_cell_set_t.t 
-   |Disjunction of Hex_cell_t.t  list;;
+   |Exhaustive_Disjunction of Hex_cell_t.t  list;;
    
    
