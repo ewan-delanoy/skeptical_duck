@@ -71,7 +71,7 @@ let check_active_part_in_disjunction l_pairs=
    Some(cell0,extmol0)-> raise(Leaky_disjunction(cell0,extmol0))
   |None -> global_active_part ;;
 
-let dj cells older_extmols =
+let disjunction cells older_extmols =
     if older_extmols=[] then empty_one else 
     let common_part = common_molecular_part older_extmols in 
     let final_active_part = check_active_part_in_disjunction (List.combine cells older_extmols) in 
@@ -116,7 +116,7 @@ end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let common_molecular_part = Private.common_molecular_part;;
-let disjunction = Private.dj;;
+let disjunction = Private.disjunction;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
