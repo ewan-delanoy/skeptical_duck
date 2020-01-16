@@ -6,12 +6,12 @@
 
 let summarize_in_string = function
     Hex_strategy_static_constructor_t.Molecular(_,_)->"Molecular"
-   |Disjunction (_)->"Disjunction";;
+   |Disjunction (_)->"Exhaustive_Disjunction";;
    
 let salt = "Hex_"^"strategy_static_constructor_t.";;
 
 let hook_for_molecular    = salt ^ "Molecular";;
-let hook_for_disjunction  = salt ^ "Disjunction";;
+let hook_for_disjunction  = salt ^ "Exhaustive_Disjunction";;
 
 exception Of_concrete_object_exn of string;;
 
@@ -24,7 +24,7 @@ let of_concrete_object crobj =
          )  
     else 
     if hook = hook_for_disjunction
-    then Hex_strategy_static_constructor_t.Disjunction(
+    then Hex_strategy_static_constructor_t.Exhaustive_Disjunction(
         Concrete_object_field.to_list Hex_cell.of_concrete_object arg1
          )
     else raise(Of_concrete_object_exn(hook));;
@@ -35,7 +35,7 @@ let to_concrete_object = function
            [Hex_molecular_linker.to_concrete_object mlclr;
             Hex_cell_set.to_concrete_object active_part
            ])
-   |Disjunction (cells)->
+   |Exhaustive_Disjunction (cells)->
             Concrete_object_t.Variant(hook_for_disjunction,
            [Concrete_object_field.of_list Hex_cell.to_concrete_object cells]) ;;
    
