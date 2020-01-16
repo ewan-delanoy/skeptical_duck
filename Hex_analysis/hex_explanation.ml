@@ -73,7 +73,7 @@ let lonely_c4=Hex_cell_set.safe_set [Hex_cell.of_string "c4"];;
 
 let list_for_right_eyed_claw = [1;2;3];;
 let helper_for_right_eyed_claw = 
- Hex_strategy_static_constructor_t.Disjunction(Image.image Hex_cell.of_string 
+ Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.image Hex_cell.of_string 
  ["d3";"c3";"b3"]);;
 
 
@@ -115,7 +115,7 @@ let lonely_b4=Hex_cell_set.safe_set [Hex_cell.of_string "b4"];;
 
 let list_for_left_eyed_claw = [5;6;7];;
 let helper_for_left_eyed_claw = 
- Hex_strategy_static_constructor_t.Disjunction(Image.image Hex_cell.of_string 
+ Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.image Hex_cell.of_string 
  ["b3";"c3";"d3"]);;
 
 let fles_for_left_eyed_claw=
