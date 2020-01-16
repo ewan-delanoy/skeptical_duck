@@ -60,6 +60,34 @@ let common_molecular_part l =
     let is_common = (fun atm->List.for_all (tester1_for_commonality atm) l) in 
     Hex_molecular_linker.filter is_common whole ;;
 
+exception Leaky_disjunction of Hex_cell_t.t * Hex_extended_molecular_t.t ;;
+
+let check_active_part_in_disjunction l_pairs=
+   let local_active_parts=Image.image (fun (cell,extmol)->
+      Hex_cell_set.outsert cell (extmol.Hex_extended_molecular_t.active_part)
+   ) l_pairs  in 
+   let global_active_part = Hex_cell_set.fold_merge local_active_parts in 
+   match Option.seek (fun (cell,extmol)->Hex_cell_set.mem cell global_active_part ) l_pairs with 
+   Some(cell0,extmol0)-> raise(Leaky_disjunction(cell0,extmol0))
+  |None -> global_active_part ;;
+
+let dj cells older_extmols =
+    if older_extmols=[] then empty_one else 
+    let common_part = common_molecular_part older_extmols in 
+    let final_active_part = check_active_part_in_disjunction (List.combine cells older_extmols) in 
+    let total_passive_part = Hex_cell_set.fold_merge((Hex_cell_set.safe_set cells)
+                           ::(Image.image passive_part older_extmols)) in 
+    let removable_passive_part = Hex_cell_set.setminus final_active_part 
+                                   (Hex_molecular_linker.support common_part) in                     
+    let final_passive_part = Hex_cell_set.setminus total_passive_part removable_passive_part in  
+    {
+      Hex_extended_molecular_t.molecular_part = common_part;
+      nonmolecular_passive_part = final_passive_part;
+      active_part = final_active_part;
+   };;
+
+
+
 let disjunction l =
     if l=[] then empty_one else 
     let common_part = common_molecular_part l in 
@@ -104,6 +132,7 @@ end ;;
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let common_molecular_part = Private.common_molecular_part;;
 let disjunction = Private.disjunction;;
+let dj = Private.dj;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
