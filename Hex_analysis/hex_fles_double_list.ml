@@ -6,12 +6,15 @@
 
 let empty_one = Hex_fles_double_list_t.DL([],[]);;
 
-let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
+let enemy_strategies player (Hex_fles_double_list_t.DL(l1,l2))=
   match player with 
-   Hex_player_t.First_player -> 
-      Hex_flattened_end_strategy.immediate_opportunities l2
-  |Hex_player_t.Second_player -> 
-      Hex_flattened_end_strategy.immediate_opportunities l1;; 
+   Hex_player_t.First_player ->  l2
+  |Hex_player_t.Second_player -> l1;;
+      
+
+
+let immediate_dangers player dl=
+    Hex_flattened_end_strategy.immediate_opportunities (enemy_strategies player dl);;
 
 
 let test_for_surrender (player,cell) dl=
