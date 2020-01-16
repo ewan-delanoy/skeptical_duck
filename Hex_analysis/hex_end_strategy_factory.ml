@@ -62,7 +62,7 @@ let create_new_strategy show_msg old_factory static_constructor comment indices=
     let presumed_fles = compute_flattened_version old_factory  (static_constructor,indices) in 
     let Hex_end_strategy_factory_t.F(player,l)=old_factory in
     let added_cmt=(if comment="" 
-                   then (Hex_strategy_static_constructor.summarize_in_string static_constructor) 
+                   then (Hex_strategy_static_constructor.summarize_in_string static_constructor indices) 
                    else comment)  in 
     let sn=string_of_int(List.length(l)+1) in 
     let (fles,new_l,msg,reduncancy)=(

@@ -52,14 +52,9 @@ let report_on_enemies res =
    |1->"One enemy remaining against "^plyr^"."
    |k->(string_of_int k)^" enemies remaining against "^plyr^".";; 
 
-let report_critical_accumulation res =
-   let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
-   "Critical accumulation encountered !\nThe list is "^
-   (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^". "^plyr^" has lost.\n";; 
-
 let full_report res = 
    if Hex_mandatory_compound.test_for_unrealizable_constraint(res.Hex_analysis_result_t.mandatory_compound)
-   then report_critical_accumulation res
+   then ""  (* report has already been done, in Hex_analysis.deal_with_critical_accumulation  *)
    else 
    if not(res.Hex_analysis_result_t.info_needed)
    then ""

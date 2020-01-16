@@ -27,18 +27,36 @@ let get_latest_winner () = match (!latest_winner) with
 
 let restart opt_participant =let _=(walker := initial_point opt_participant;latest_winner:=None) in snd(!walker);;
 
+let declare_winner_without_writing_on_the_grid player =
+  let _=(latest_winner:=Some(player)) in 
+  let pre_new_fgame=Hex_state.finish_game (fst(!walker)) in 
+  let new_fgame= { pre_new_fgame with 
+    Hex_finished_game_t.winner = player ;
+  } in 
+  let _=(Hex_persistent.add_finished_game new_fgame;restart None) in
+  new_fgame;;
+
+let declare_winner player =
+  let new_fgame = declare_winner_without_writing_on_the_grid player in 
+  let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
+  Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
+
+
 let deal_with_critical_accumulation ()=
-    let sta=fst(!walker) in 
+    let (sta,res)=(!walker) in 
     let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
+    let other_player = Hex_player.other_player player in 
     let (cells,enemy_indices,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in 
     if not(Hex_mandatory_compound.test_for_unrealizable_constraint mand) 
     then ()
     else 
-    let fgame = Hex_state.finish_game sta in 
-    let _=Hex_persistent.add_finished_game fgame in 
+    let plyr = Hex_player.color (res.Hex_analysis_result_t.next_to_play) in 
+    let fst_msg = "Critical accumulation encountered !\nThe list is "^
+   (Strung.of_intlist res.Hex_analysis_result_t.dangerous_enemy_strategies)^". "^plyr^" has lost.\n" in 
+    let _=(print_string fst_msg;flush stdout) in 
+    let _=declare_winner_without_writing_on_the_grid other_player in 
     let constructor = Hex_strategy_static_constructor_t.Exhaustive_Disjunction(cells) in 
-    let _ = Hex_persistent.add_end_strategy
-   (Hex_player.other_player player,constructor,"disjunction from ",enemy_indices) in 
+    let _ = Hex_persistent.add_end_strategy (other_player,constructor,"",enemy_indices) in 
    ();;
 
 
@@ -75,15 +93,7 @@ let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
 
 
-let declare_winner player =
-  let _=(latest_winner:=Some(player)) in 
-  let pre_new_fgame=Hex_state.finish_game (fst(!walker)) in 
-  let new_fgame= { pre_new_fgame with 
-    Hex_finished_game_t.winner = player ;
-  } in 
-  let _=Hex_persistent.add_finished_game new_fgame in
-  let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
-  Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
+
 
 
 let add_molecular_linker comment=

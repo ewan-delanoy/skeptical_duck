@@ -4,9 +4,9 @@
 
 *)
 
-let summarize_in_string = function
+let summarize_in_string constr indices= match constr with 
     Hex_strategy_static_constructor_t.Molecular(_,_)->"Molecular"
-   |Exhaustive_Disjunction (_)->"Exhaustive_Disjunction";;
+   |Exhaustive_Disjunction (_)->"Disjunction, from "^(Strung.of_intlist indices);;
    
 let salt = "Hex_"^"strategy_static_constructor_t.";;
 
