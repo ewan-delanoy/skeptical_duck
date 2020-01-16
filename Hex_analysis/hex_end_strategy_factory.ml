@@ -83,25 +83,10 @@ let create_and_remember_already_checked_params show_msg old_factory static_const
     let _=(if show_msg || reduncancy then print_string msg;flush stdout) in 
     (Hex_end_strategy_factory_t.F(player,new_l),fles);;
 
-let extract_admissible_disjunction (Hex_end_strategy_factory_t.F(player,l)) indices =
-   let extmols = Image.image (fun idx -> 
-      let (Hex_cog_in_machine_t.C(_,_,_,fles)) = List.nth l (idx-1) in 
-      fles.Hex_flattened_end_strategy_t.data
-   ) indices in 
-   let (stat_constr,ind_in_ind,_)=Hex_extended_molecular.extract_admissible_disjunction extmols in 
-   let good_indices = Image.image (fun ii->List.nth indices (ii-1)) ind_in_ind in 
-   (stat_constr,good_indices);;
 
 
-let check_admissibility_in_disjunction factory cells indices =
-   let (true_constr,good_indices)=extract_admissible_disjunction factory indices in 
-   if good_indices <> indices 
-   then raise(Disjunction_is_too_long(indices,good_indices))
-   else 
-   let proposed_constr = Hex_strategy_static_constructor_t.Disjunction(cells) in 
-   if true_constr <> proposed_constr
-   then raise(Inadequate_constructor(proposed_constr,true_constr))
-   else ();;  
+let check_admissibility_in_disjunction factory cells indices = ();;
+  
 
 
 let check_completeness_in_disjunction factory cells indices=
@@ -207,7 +192,6 @@ end;;
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
-let extract_admissible_disjunction = Private.extract_admissible_disjunction;;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
