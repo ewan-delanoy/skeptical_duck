@@ -15,7 +15,7 @@ let immediate_dangers player (Hex_fles_double_list_t.DL(l1,l2))=
 
 
 let test_for_surrender (player,cell) dl=
-   let (indices,mandatory_set,condition) = immediate_dangers player dl in 
+   let (indices,mandatory_set,condition,cells) = immediate_dangers player dl in 
    match condition with 
    None->None
    |Some(full_set) -> 
