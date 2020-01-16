@@ -56,10 +56,9 @@ let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
 let declare_winner player =
   let _=(latest_winner:=Some(player)) in 
-  let new_fgame={
-    Hex_finished_game_t.dimension = Hex_persistent.dimension();
+  let pre_new_fgame=Hex_state.finish_game (fst(!walker)) in 
+  let new_fgame= { pre_new_fgame with 
     Hex_finished_game_t.winner = player ;
-    Hex_finished_game_t.sequence_of_moves = List.rev((fst(!walker)).Hex_state_t.moves_before)
   } in 
   let _=Hex_persistent.add_finished_game new_fgame in
   let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
