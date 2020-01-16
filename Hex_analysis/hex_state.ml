@@ -42,7 +42,7 @@ let compute_chosen_move (strong_moves_data,fam_moves,condition,moves_before) =
 
 let analize sta=
   let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
-  let (enemy_strats,mand,condition,cells)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
+  let (cells,enemy_strats,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
   let condition = Hex_mandatory_compound.global_escape_set mand in 
   let strong_moves_data = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let fam_moves = Hex_cell_set.apply_condition condition (Hex_fg_double_list.familiar_moves player sta.Hex_state_t.games_remains) in 

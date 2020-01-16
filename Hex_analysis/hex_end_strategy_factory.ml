@@ -34,7 +34,7 @@ let compute_extmol_for_allegedly_exhaustive_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(player,l)=factory in 
    let older_extmols=Image.image (get_extmol_at_idx factory) indices in 
    let global_extmol = Hex_extended_molecular.disjunction cells older_extmols (* active part checked here *)
-   and (mand,_) = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
+   and mand = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
    let _= Hex_mandatory_compound.assert_exhaustibility mand in 
    global_extmol;;
 
