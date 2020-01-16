@@ -45,7 +45,12 @@ let assert_exhaustibility = function
   |Constraint(_,escape_set) -> if Hex_cell_set.length escape_set = 0
                                then ()
                                else raise(Escape_set(escape_set));;
-
+let global_escape_set = function 
+   Hex_mandatory_compound_t.No_constraint -> None 
+  |Constraint(mlclr,small_escape_set) -> 
+    Some( Hex_cell_set.merge small_escape_set
+        (Hex_molecular_linker.support mlclr)
+    );;
 
 let test_for_unrealizable_constraint = function 
    Hex_mandatory_compound_t.No_constraint -> false
