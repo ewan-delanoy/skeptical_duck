@@ -43,12 +43,9 @@ let explain = function
 let assert_exhaustibility = function 
    Hex_mandatory_compound_t.No_constraint -> raise(Missing_constraint) 
   |Constraint(_,escape_set) -> if Hex_cell_set.length escape_set = 0
-                               then raise(Escape_set(escape_set))
-                               else ();;
+                               then ()
+                               else raise(Escape_set(escape_set));;
 
-let test_for_no_constraint = function 
-   Hex_mandatory_compound_t.No_constraint -> true 
-  |Constraint(_,_) -> false ;;
 
 let test_for_unrealizable_constraint = function 
    Hex_mandatory_compound_t.No_constraint -> false
