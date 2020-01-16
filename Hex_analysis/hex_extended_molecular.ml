@@ -116,7 +116,7 @@ end ;;
 
 let active_part extmol = extmol.Hex_extended_molecular_t.active_part;;
 let common_molecular_part = Private.common_molecular_part;;
-let dj = Private.dj;;
+let disjunction = Private.dj;;
 let of_concrete_object = Private.of_concrete_object;;
 let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
