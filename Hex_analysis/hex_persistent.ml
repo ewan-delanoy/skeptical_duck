@@ -184,7 +184,7 @@ let dimension ()=(!(Private.dimension_ref));;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
-let strategies_for_player player= (!(Private.strategies_for_player player));;
+let strategies_for_player = Private.strategies_for_player ;;
 let wes_pair = Private.wes_pair;;
 
 
