@@ -47,14 +47,13 @@ let immediate_opportunities flesses =
                Some(fles,mandatory_set,m)
          else None
    ) flesses in 
+   let cells = Image.image (fun (_,_,cell)->cell) temp1 in 
+   let older_extmols = Image.image (fun (fles,_,_)->fles.Hex_flattened_end_strategy_t.data) temp1 in
    let interesting_indices = Image.image (fun (fles,_,_)->Hex_flattened_end_strategy_field.index fles) temp1 in 
-   let temp2 = Image.image (fun (fles,_,_)->fles.Hex_flattened_end_strategy_t.data) temp1 in
-   let main = Hex_extended_molecular.disjunction temp2 in  
    let condition =(if temp1=[] then None else 
      Some(Hex_cell_set.fold_intersect (Image.image (fun (_,m_set,_)->m_set ) temp1))
    ) in 
-   let cells = Image.image (fun (_,_,cell)->cell) temp1 in 
-   (interesting_indices,Hex_mandatory_compound.of_extended_molecular_with_condition main condition,condition,cells);;
+   (interesting_indices,Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols,condition,cells);;
 
 let support fles =
    Hex_cell_set.fold_merge

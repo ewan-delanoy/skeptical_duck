@@ -6,7 +6,7 @@
 
 let escape_compound_in_disjunction cells older_extmols = 
    if cells=[] 
-   then Hex_mandatory_compound_t.No_constraint
+   then (Hex_mandatory_compound_t.No_constraint,None)
    else 
    let common_molecular = Hex_extended_molecular.common_molecular_part older_extmols in 
    let common_passive = Hex_molecular_linker.support common_molecular in 
@@ -15,10 +15,10 @@ let escape_compound_in_disjunction cells older_extmols =
       Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol)
    ) temp1 in 
    let global_escape_set = Hex_cell_set.fold_intersect local_escape_sets in 
-   Hex_mandatory_compound_t.Constraint(
+   (Hex_mandatory_compound_t.Constraint(
       common_molecular,
       Hex_cell_set.setminus global_escape_set common_passive
-      );;
+      ),Some(global_escape_set));;
 
 let explain = function 
    Hex_mandatory_compound_t.No_constraint -> ""
@@ -35,19 +35,6 @@ let explain = function
         else ("",pre_second_choice)
      ) in
      first_choice^joiner^second_choice;;
-
-
-
-let of_extended_molecular_with_condition extmol condition = 
-   if Hex_cell_set.length(Hex_extended_molecular.passive_part extmol)=0 
-   then Hex_mandatory_compound_t.No_constraint
-   else 
-   Hex_mandatory_compound_t.Constraint(
-      extmol.Hex_extended_molecular_t.molecular_part,
-      Hex_cell_set.apply_condition condition (extmol.Hex_extended_molecular_t.nonmolecular_passive_part)
-      );;
-
-
 
 
 let test_for_no_constraint = function 
