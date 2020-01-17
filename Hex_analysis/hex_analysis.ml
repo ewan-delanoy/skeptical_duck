@@ -33,7 +33,7 @@ let declare_winner_without_writing_on_the_grid player =
   let new_fgame= { pre_new_fgame with 
     Hex_finished_game_t.winner = player ;
   } in 
-  let _=(Hex_persistent.add_finished_game new_fgame;restart None) in
+  let _=(Hex_persistent.add_finished_game new_fgame;restart (Some player)) in
   new_fgame;;
 
 let declare_winner player =
