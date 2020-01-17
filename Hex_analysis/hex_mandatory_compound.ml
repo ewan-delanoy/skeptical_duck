@@ -8,8 +8,17 @@ exception Escape_set of Hex_cell_set_t.t ;;
 exception Missing_constraint ;;
 
 let escape_compound_in_disjunction cells older_extmols = 
-   if cells=[] 
+   let n =List.length(cells) in 
+   if n=0
    then Hex_mandatory_compound_t.No_constraint
+   else 
+   if n=1
+   then let cell=List.hd cells 
+        and extmol = List.hd older_extmols in 
+        Hex_mandatory_compound_t.Constraint(
+          Hex_molecular_linker_t.M[],
+          Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol)
+       )
    else 
    let common_molecular = Hex_extended_molecular.common_molecular_part older_extmols in 
    let common_passive = Hex_molecular_linker.support common_molecular in 
