@@ -40,7 +40,10 @@ let explain = function
          then ""
          else (Hex_cell_set.to_string remaining_ones)
      ) 
-     and pre_second_choice = "Molecular component : "^(Hex_molecular_linker.to_readable_string mlclr)  in
+     and pre_second_choice = (
+        if mlclr = Hex_molecular_linker_t.M[] 
+        then ""
+        else "Molecular component : "^(Hex_molecular_linker.to_readable_string mlclr))  in
      let (joiner,second_choice) = (
         if (first_choice<>"")&&(pre_second_choice<>"") 
         then (", or in the ",String.uncapitalize_ascii pre_second_choice)
