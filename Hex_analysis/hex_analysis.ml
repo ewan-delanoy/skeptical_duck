@@ -25,7 +25,7 @@ let get_latest_winner () = match (!latest_winner) with
    |Some(player)->player;;
 
 
-let restart opt_participant =let _=(walker := initial_point opt_participant;latest_winner:=None) in snd(!walker);;
+let restart opt_participant =let _=(walker := initial_point opt_participant) in snd(!walker);;
 
 let declare_winner_without_writing_on_the_grid player =
   let _=(latest_winner:=Some(player)) in 
@@ -99,6 +99,7 @@ let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 let add_molecular_linker comment=
    let winner = get_latest_winner () 
    and grid = Hex_ascii_grid.process_sheet () in 
+   let _=(latest_winner:=None) in
    let (mlclr,actives) = Hex_ascii_grid.to_molecular_linker_with_active_points grid in 
    let linker = Hex_strategy_static_constructor_t.Molecular(mlclr,actives) in
    Hex_persistent.add_end_strategy
