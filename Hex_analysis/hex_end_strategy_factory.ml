@@ -154,16 +154,36 @@ let remove_strats_with_indices factory  unordered_removed_indices =
    ) old_indices in 
    restrict_to_strats_with_indices factory remaining_indices;;
 
+let indices_used_in_exhaustive_disjunctions (Hex_end_strategy_factory_t.F(player,l))=
+    let temp1 = Image.image (fun (Hex_cog_in_machine_t.C(constr,_,indices,_))->indices) l in 
+    Ordered.fold_merge Total_ordering.standard temp1;;
 
+let compute_isolated_end_configs_in_one_factory factory =
+   let (Hex_end_strategy_factory_t.F(player,l)) = factory in 
+   let syndicated_indices = indices_used_in_exhaustive_disjunctions factory in 
+   Option.filter_and_unpack (
+     fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+        if List.mem (Hex_flattened_end_strategy_field.index fles)  syndicated_indices 
+        then None 
+        else Some(fles)
+   ) l;;
+
+let compute_isolated_end_configs (factory1,factory2)=
+  Hex_fles_double_list_t.DL(
+      compute_isolated_end_configs_in_one_factory factory1,
+      compute_isolated_end_configs_in_one_factory factory2
+  );;
 
 end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
+let compute_isolated_end_configs (raf1,raf2) = Private.compute_isolated_end_configs (!raf1,!raf2);;
 let create_new_strategy = Private.create_new_strategy_in_double_ref;;
 let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
+let indices_used_in_exhaustive_disjunctions = Private.indices_used_in_exhaustive_disjunctions;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
 let to_string raf = Private.to_string (!raf);;
 
