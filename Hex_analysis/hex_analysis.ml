@@ -92,10 +92,6 @@ let absorb_all_moves cells=
 let absorb_some_moves cells j=absorb_all_moves (Listennou.big_head j cells);;
 
 
-
-
-
-
 let add_molecular_linker comment=
    let winner = get_latest_winner () 
    and grid = Hex_ascii_grid.process_sheet () in 
