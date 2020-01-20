@@ -12,6 +12,7 @@ let does_not_intersect x y= Functor_for_sets.does_not_intersect tr x y;;
 let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
 let fold_merge l= Functor_for_sets.fold_merge tr l;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
+let image f (Hex_cell_set_t.S x) = Image.image f x;;
 let insert a x= Functor_for_sets.insert tr a x;;
 let intersect l= Functor_for_sets.intersect tr l;;
 let length x= Functor_for_sets.length tr x;;
