@@ -66,10 +66,6 @@ let check =(of_string(z2)=z1);;
 
 *)
 
-let neighbors dim amoeba =
-   let (Hex_cell_set_t.S(l))=amoeba in 
-   let temp1 = Image.image (fun cell->safe_set (Hex_cell.neighbors dim cell)) l in 
-   setminus (fold_merge temp1) amoeba;;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
