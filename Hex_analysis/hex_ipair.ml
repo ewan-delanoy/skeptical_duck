@@ -130,7 +130,8 @@ let add_labels l_fourtuples=
    List.flatten temp2;; 
 
 let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
-let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
+
+let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
 
 let powder_for_left_eyed_upwards_claw =
@@ -207,6 +208,8 @@ let support_for_sp1 (x,y)=
    (8, 3, 8, 4); (10, 3, 9, 4); (11, 3, 11, 4); (1, 4, 1, 5); (2, 4, 1, 6);
    (3, 4, 2, 5); (2, 6, 1, 7); (2, 7, 1, 8); (2, 8, 1, 9); (2, 9, 2, 10);
    (1, 10, 1, 11)];;
+
+let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
 
 
 
