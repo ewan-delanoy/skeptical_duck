@@ -38,7 +38,9 @@ let bridges_touching_a_cell dim cell =
    let unordered_ipairs = List.filter checker2 [
       p1,p2;p2,p3;p3,p4;p4,p5;p5,p6;p6,p1
    ] in 
-   let unordered_cells = Image.image (fun (p,q)->(Hex_ipair.to_cell p,Hex_ipair.to_cell q)) unordered_ipairs in 
+   let unordered_cells = Image.image (fun (p,q)->
+       let l = Ordered.sort Hex_cell.cmp (Image.image Hex_ipair.to_cell [p;q]) in  
+      (List.nth l 0,List.nth l 1)) unordered_ipairs in 
    Ordered.sort Hex_cell.cmp_for_pairs unordered_cells;;
    
 let cells_touching_a_bridge dim (cell1,cell2)=
