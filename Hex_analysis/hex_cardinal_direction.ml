@@ -38,6 +38,13 @@ let char_for_second_direction = function
 let short_name_for_pair (d1,d2)=
    (char_for_first_direction d1)^(char_for_first_direction d2);;
 
+let test_for_low_border    (Hex_dimension_t.D dim) (i,j)= (i=dim);;
+let test_for_left_border                           (i,j)= (j=1);;
+let test_for_right_border  (Hex_dimension_t.D dim) (i,j)= (j=dim);;
+let test_for_upper_border                          (i,j)= (i=1);;
+   
+    
+
 
 end ;;
 
@@ -55,6 +62,16 @@ let is_vertical = function
    | _ -> false ;;   
 
 let short_name_for_pair = Private.short_name_for_pair;;
+
+let test_for_border (dim,direction) cell=
+     let p = Hex_ipair.of_cell cell in
+     match direction with   
+     Hex_cardinal_direction_t.Down  -> Private.test_for_low_border dim p
+    |Hex_cardinal_direction_t.Left  -> Private.test_for_left_border p
+    |Hex_cardinal_direction_t.Right -> Private.test_for_right_border dim p
+    |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_border p;;
+            
+
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
