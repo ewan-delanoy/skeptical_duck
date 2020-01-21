@@ -32,6 +32,15 @@ let cmp = ((fun elt1 elt2->
    Total_ordering.standard (Private.unveil elt1) (Private.unveil elt2) 
 ):> Hex_kite_element_t.t Total_ordering.t);;
 
+(*
+let is_final (dim,direction) = function 
+   Hex_kite_element_t.Active_cell(cell)->
+     Hex_cardinal_direction.test_for_border (dim,direction)
+  |Bridge(cell1,cell2)->
+      let temp1=Hex_bridge.cells_touching_a_bridge dim (cell1,cell2) in 
+      List.for_all (Hex_cardinal_direction.test_for_border (dim,direction)) [cell1;cell2];;
+*)
+
 let neighbors dim = function 
    Hex_kite_element_t.Active_cell(cell)->
       let temp1=Hex_bridge.bridges_touching_a_cell dim cell in 

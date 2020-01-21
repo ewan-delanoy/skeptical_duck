@@ -50,6 +50,12 @@ end ;;
 
 let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
 
+let opposite = function  
+     Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Up
+    |Hex_cardinal_direction_t.Left  -> Hex_cardinal_direction_t.Right
+    |Hex_cardinal_direction_t.Right -> Hex_cardinal_direction_t.Left
+    |Hex_cardinal_direction_t.Up    -> Hex_cardinal_direction_t.Down;;
+            
 
 let opt_of_char c =
    Option.find_and_stop (
