@@ -48,6 +48,10 @@ let test_for_upper_border                          (i,j)= (i=1);;
 
 end ;;
 
+let sides_for_player = function 
+    Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
+   |Hex_player_t.Second_player -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right];;
+
 let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
 
 let opposite = function  
