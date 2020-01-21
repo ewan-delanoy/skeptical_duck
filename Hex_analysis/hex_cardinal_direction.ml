@@ -48,6 +48,27 @@ let test_for_upper_border                          (i,j)= (i=1);;
 
 end ;;
 
+let border_enumerator (Hex_dimension_t.D dim) side k= 
+    let transfo j = (String.make 1 (char_of_int(j+96))) in 
+    match side with 
+     Hex_cardinal_direction_t.Down  -> Hex_cell_t.C(transfo k,dim)
+    |Hex_cardinal_direction_t.Left  -> Hex_cell_t.C(transfo 1,k)
+    |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo dim,k)
+    |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,1);;
+            
+let ipair_of_string s=
+  let j=(int_of_char(String.get s 0))-96
+  and i=int_of_string(Cull_string.cobeginning 1 s) in 
+  (i,j);;
+
+(* ipair_of_string "b5" = (5,2);; *)
+
+let string_of_ipair (i,j)=
+  (String.make 1 (char_of_int(j+96)))^(string_of_int i);;
+
+
+
+
 let sides_for_player = function 
     Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
    |Hex_player_t.Second_player -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right];;
