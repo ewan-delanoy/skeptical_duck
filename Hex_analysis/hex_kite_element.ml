@@ -76,9 +76,7 @@ neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e8",Hex_cell.of_strin
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "f8"));; 
 *)
 
-let support = function 
-    Hex_kite_element_t.Active_cell(cell)->Hex_cell_set_t.S[cell]
-                    |Bridge(cell1,cell2)->Hex_cell_set.safe_set [cell1;cell2];;
+let support elt = Hex_cell_set.safe_set (Private.support elt);;
 
 let to_atomic_linker = function 
     Hex_kite_element_t.Active_cell(cell)->None

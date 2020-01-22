@@ -58,14 +58,15 @@ let starters_for_side end_of_battle side =
 end;;
 
 
-let extensions dim partial_kite =
+let extensions (dim,end_of_battle) partial_kite =
    let (Hex_partial_kite_t.P (l,old_supp,starting_direction)) =partial_kite in 
    match l with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
       let candidates = Hex_kite_element.neighbors dim last_elt in 
       let retained_ones= List.filter (fun elt->
-         Hex_cell_set.does_not_intersect (Hex_kite_element.support elt) old_supp
+         (Hex_cell_set.does_not_intersect (Hex_kite_element.support elt) old_supp) &&
+         (Hex_kite_element.check_compatiblity end_of_battle elt)
       ) candidates in
       let (finished1,unfinished1) =List.partition (Hex_kite_element.is_final (dim,starting_direction)) retained_ones in 
       let finished2 = Image.image (fun elt->Private.to_molecular_linker(elt::l)) finished1 
