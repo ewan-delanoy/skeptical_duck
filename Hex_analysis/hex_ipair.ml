@@ -194,30 +194,6 @@ let support_for_claw qualifier = match qualifier with
    Hex_double_hump_qualifier_t.Big_followed_by_small -> Private.support_for_bs_claw 
   |Hex_double_hump_qualifier_t.Small_followed_by_big -> Private.support_for_sb_claw ;;
 
-let support_for_bs_downwards_claw (x,y)=
-   Private.translator (x-2,y-4) Private.core_support_for_bs_downwards_claw;;
-
-let support_for_bs_leftwards_claw (x,y)=
-   Private.translator (x-2,y-3) Private.core_support_for_bs_leftwards_claw;;
-
-let support_for_bs_rightwards_claw (x,y)=
-   Private.translator (x-4,y-2) Private.core_support_for_bs_rightwards_claw;;
-
-let support_for_bs_upwards_claw (x,y)=
-   Private.translator (x-3,y-2) Private.core_support_for_bs_upwards_claw;;
-
-let support_for_sb_downwards_claw (x,y)=
-   Private.translator (x-2,y-3) Private.core_support_for_sb_downwards_claw;;
-
-let support_for_sb_leftwards_claw (x,y)=
-   Private.translator (x-1,y-3) Private.core_support_for_sb_leftwards_claw;;
-
-let support_for_sb_rightwards_claw (x,y)=
-   Private.translator (x-3,y-2) Private.core_support_for_sb_rightwards_claw;;
-
-let support_for_sb_upwards_claw (x,y)=
-   Private.translator (x-3,y-1) Private.core_support_for_sb_upwards_claw;;
-
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
 
 
