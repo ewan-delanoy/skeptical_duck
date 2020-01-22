@@ -24,3 +24,17 @@ let of_finished_game fgame =
          ally_territory  = Hex_cell_set.safe_set winner_moves ; 
          enemy_territory = Hex_cell_set.safe_set loser_moves ;
      } ;;
+
+let of_molecular (dim,the_winner) mlclr = 
+    let active_part = Hex_molecular_linker.active_complement mlclr 
+    and passive_part = Hex_molecular_linker.support mlclr in 
+    let needed_cells = Hex_cell_set.merge active_part passive_part in 
+    let all_cells = Hex_common.all_cells dim in 
+    let unneeded_cells = Hex_cell_set.setminus all_cells needed_cells in 
+    {
+    Hex_end_of_battle_t.dimension       
+                         = dim ;
+         winner          = the_winner ; 
+         ally_territory  = active_part ; 
+         enemy_territory = unneeded_cells ;
+     } ;;
