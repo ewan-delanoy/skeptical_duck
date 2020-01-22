@@ -116,32 +116,8 @@ let translated_support_map f cell=
    let ipair=Hex_ipair.of_cell cell in 
    Hex_cell_set.safe_set (Image.image Hex_ipair.to_cell (f ipair)) ;; 
 
-let support_for_high_eyed = function 
-     Hex_cardinal_direction_t.Left  -> translated_support_map Hex_ipair.powder_for_high_eyed_leftwards_claw
-    |Hex_cardinal_direction_t.Right -> translated_support_map Hex_ipair.powder_for_high_eyed_rightwards_claw    
-    |                    direction  -> raise(Support_mismatch(high,direction));;
 
-let support_for_left_eyed = function 
-     Hex_cardinal_direction_t.Down -> translated_support_map Hex_ipair.powder_for_left_eyed_downwards_claw
-    |Hex_cardinal_direction_t.Up   -> translated_support_map Hex_ipair.powder_for_left_eyed_upwards_claw    
-    |                    direction -> raise(Support_mismatch(left,direction));;
-
-let support_for_low_eyed = function 
-     Hex_cardinal_direction_t.Left  -> translated_support_map Hex_ipair.powder_for_low_eyed_leftwards_claw
-    |Hex_cardinal_direction_t.Right -> translated_support_map Hex_ipair.powder_for_low_eyed_rightwards_claw    
-    |                     direction -> raise(Support_mismatch(low,direction));; 
-
-let support_for_right_eyed = function 
-     Hex_cardinal_direction_t.Down -> translated_support_map Hex_ipair.powder_for_right_eyed_downwards_claw
-    |Hex_cardinal_direction_t.Up   -> translated_support_map Hex_ipair.powder_for_right_eyed_upwards_claw    
-    |                    direction -> raise(Support_mismatch(right,direction));;
-
-let support_for_eyed = function 
-   Hex_cardinal_direction_t.Down  -> support_for_low_eyed 
-  |Hex_cardinal_direction_t.Left  -> support_for_left_eyed 
-  |Hex_cardinal_direction_t.Right -> support_for_right_eyed 
-  |Hex_cardinal_direction_t.Up    -> support_for_high_eyed ;;  
- 
+let support_for_eyed direction1 direction2 =  translated_support_map (Hex_ipair.powder_for_eyed_claw direction1 direction2);;
 
 let salt = "Hex_"^"atomic_linker_t.";;
 let pair_label = salt ^ "Pair";;
