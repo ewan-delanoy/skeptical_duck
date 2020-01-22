@@ -148,6 +148,18 @@ let powder_for_right_eyed_claw = function
     |other -> raise(Bad_eyed_claw_specification(right,other));;
 
 
+let support_for_bs_claw direction (x,y) = match direction with 
+     Hex_cardinal_direction_t.Down  ->  translator (x-2,y-4) core_support_for_bs_downwards_claw
+    |Hex_cardinal_direction_t.Left  ->  translator (x-2,y-3) core_support_for_bs_leftwards_claw
+    |Hex_cardinal_direction_t.Right ->  translator (x-4,y-2) core_support_for_bs_rightwards_claw
+    |Hex_cardinal_direction_t.Up    ->  translator (x-3,y-2) core_support_for_bs_upwards_claw;;
+            
+let support_for_sb_claw direction (x,y) = match direction with 
+     Hex_cardinal_direction_t.Down  ->  translator (x-2,y-3) core_support_for_sb_downwards_claw
+    |Hex_cardinal_direction_t.Left  ->  translator (x-1,y-3) core_support_for_sb_leftwards_claw
+    |Hex_cardinal_direction_t.Right ->  translator (x-3,y-2) core_support_for_sb_rightwards_claw
+    |Hex_cardinal_direction_t.Up    ->  translator (x-3,y-1) core_support_for_sb_upwards_claw;;
+            
 
 
 end;;
@@ -172,13 +184,15 @@ let powder_for_eyed_claw = function
     |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
     |Hex_cardinal_direction_t.Up    -> Private.powder_for_high_eyed_claw;;
             
- let support_for_pyramid direction (x,y) = match direction with 
+let support_for_pyramid direction (x,y) = match direction with 
      Hex_cardinal_direction_t.Down  ->  Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid
     |Hex_cardinal_direction_t.Left  ->  Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid
     |Hex_cardinal_direction_t.Right ->  Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid
     |Hex_cardinal_direction_t.Up    ->  Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
             
-
+let support_for_claw qualifier = match qualifier with 
+   Hex_double_hump_qualifier_t.Big_followed_by_small -> Private.support_for_bs_claw 
+  |Hex_double_hump_qualifier_t.Small_followed_by_big -> Private.support_for_sb_claw ;;
 
 let support_for_bs_downwards_claw (x,y)=
    Private.translator (x-2,y-4) Private.core_support_for_bs_downwards_claw;;
@@ -203,12 +217,6 @@ let support_for_sb_rightwards_claw (x,y)=
 
 let support_for_sb_upwards_claw (x,y)=
    Private.translator (x-3,y-1) Private.core_support_for_sb_upwards_claw;;
-
-let support_for_sp1 (x,y)=
-   [(11, 1, 11, 2); (10, 2, 10, 4); (4, 3, 4, 4); (5, 3, 3, 5); (6, 3, 5, 4);
-   (8, 3, 8, 4); (10, 3, 9, 4); (11, 3, 11, 4); (1, 4, 1, 5); (2, 4, 1, 6);
-   (3, 4, 2, 5); (2, 6, 1, 7); (2, 7, 1, 8); (2, 8, 1, 9); (2, 9, 2, 10);
-   (1, 10, 1, 11)];;
 
 let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
 
