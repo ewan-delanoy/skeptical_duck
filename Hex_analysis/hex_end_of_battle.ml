@@ -25,9 +25,8 @@ let of_finished_game fgame =
          enemy_territory = Hex_cell_set.safe_set loser_moves ;
      } ;;
 
-let of_molecular (dim,the_winner) mlclr = 
-    let active_part = Hex_molecular_linker.active_complement mlclr 
-    and passive_part = Hex_molecular_linker.support mlclr in 
+let of_activated_molecular (dim,the_winner) (active_part,mlclr) = 
+    let passive_part = Hex_molecular_linker.support mlclr in 
     let needed_cells = Hex_cell_set.merge active_part passive_part in 
     let all_cells = Hex_common.all_cells dim in 
     let unneeded_cells = Hex_cell_set.setminus all_cells needed_cells in 

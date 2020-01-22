@@ -174,11 +174,11 @@ let compute_isolated_end_configs (factory1,factory2)=
       compute_isolated_end_configs_in_one_factory factory2
   );;
 
-let get_moleculars (Hex_end_strategy_factory_t.F(player,l)) = 
+let get_activated_moleculars (Hex_end_strategy_factory_t.F(player,l)) = 
    Option.filter_and_unpack (
      fun (Hex_cog_in_machine_t.C(constr,_,_,_))->
         match constr with  
-        Hex_strategy_static_constructor_t.Molecular(mlclr,_)->Some(mlclr)
+        Hex_strategy_static_constructor_t.Molecular(mlclr,active_part)->Some(active_part,mlclr)
         |Exhaustive_Disjunction (cells)->None 
    ) l;;
 
@@ -191,7 +191,7 @@ let empty_one player = Hex_end_strategy_factory_t.F(player,[]);;
 let fill_with_string raf text= (raf:=Private.of_string text);;
 let get_elt_at_idx raf = Private.get_elt_at_idx (!raf);;
 let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!raf2);;
-let get_moleculars raf = Private.get_moleculars (!raf);;
+let get_activated_moleculars raf = Private.get_activated_moleculars (!raf);;
 let indices_used_in_exhaustive_disjunctions = Private.indices_used_in_exhaustive_disjunctions;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
 let to_string raf = Private.to_string (!raf);;

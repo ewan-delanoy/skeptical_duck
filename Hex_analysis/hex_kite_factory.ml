@@ -33,7 +33,7 @@ let pusher (factory,_) =
 let rec main walker =
    let (factory,computation_has_finished) = walker in 
    if computation_has_finished 
-   then factory.Hex_kite_factory_t.finished 
+   then (factory.Hex_kite_factory_t.finished,factory.Hex_kite_factory_t.unfinished)
    else main (pusher walker) ;; 
 
 
