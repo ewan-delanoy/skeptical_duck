@@ -187,10 +187,10 @@ let right = Hex_cardinal_direction_t.Right;;
 let up = Hex_cardinal_direction_t.Up;;
 
 let list_for_macros=[
-   ("ddd", Hex_ipair.support_for_downwards_pyramid);
-   ("lll", Hex_ipair.support_for_leftwards_pyramid);
-   ("rrr", Hex_ipair.support_for_rightwards_pyramid);
-   ("uuu", Hex_ipair.support_for_upwards_pyramid);
+   ("ddd", Hex_ipair.support_for_pyramid down);
+   ("lll", Hex_ipair.support_for_pyramid left);
+   ("rrr", Hex_ipair.support_for_pyramid right);
+   ("uuu", Hex_ipair.support_for_pyramid up);
    
    ("bds", Hex_ipair.support_for_bs_downwards_claw);
    ("bls", Hex_ipair.support_for_bs_leftwards_claw);
