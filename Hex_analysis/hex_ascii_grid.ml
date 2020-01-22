@@ -181,6 +181,11 @@ let read_ascii_drawing s=
     data = associations ;
   };; 
 
+let down = Hex_cardinal_direction_t.Down;;
+let left = Hex_cardinal_direction_t.Left;;
+let right = Hex_cardinal_direction_t.Right;;
+let up = Hex_cardinal_direction_t.Up;;
+
 let list_for_macros=[
    ("ddd", Hex_ipair.support_for_downwards_pyramid);
    ("lll", Hex_ipair.support_for_leftwards_pyramid);

@@ -172,52 +172,13 @@ let powder_for_eyed_claw = function
     |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
     |Hex_cardinal_direction_t.Up    -> Private.powder_for_high_eyed_claw;;
             
-    
-(*
-let powder_for_left_eyed_upwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_left_eyed_upwards_claw;;
+ let support_for_pyramid direction (x,y) = match direction with 
+     Hex_cardinal_direction_t.Down  ->  Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid
+    |Hex_cardinal_direction_t.Left  ->  Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid
+    |Hex_cardinal_direction_t.Right ->  Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid
+    |Hex_cardinal_direction_t.Up    ->  Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
+            
 
-let powder_for_right_eyed_upwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_right_eyed_upwards_claw;;
-
-let powder_for_high_eyed_leftwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_high_eyed_leftwards_claw;;
-  
-let powder_for_low_eyed_leftwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_low_eyed_leftwards_claw;;
-
-let powder_for_left_eyed_downwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_left_eyed_downwards_claw;;
-
-let powder_for_right_eyed_downwards_claw =
-    Private.adjust_by_translation 
-      Private.core_powder_for_right_eyed_downwards_claw;;
-
-let powder_for_high_eyed_rightwards_claw =
-     Private.adjust_by_translation 
-      Private.core_powder_for_high_eyed_rightwards_claw;;
-
-let powder_for_low_eyed_rightwards_claw =
-   Private.adjust_by_translation 
-      Private.core_powder_for_low_eyed_rightwards_claw;;
-*)
-
-let support_for_downwards_pyramid (x,y)=
-   Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid;;
-
-let support_for_leftwards_pyramid (x,y)=
-   Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid;;
-
-let support_for_rightwards_pyramid (x,y)=
-   Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid;;
-
-let support_for_upwards_pyramid (x,y)=
-   Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
 
 let support_for_bs_downwards_claw (x,y)=
    Private.translator (x-2,y-4) Private.core_support_for_bs_downwards_claw;;
