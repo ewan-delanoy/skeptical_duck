@@ -6,6 +6,8 @@ Alternate coordinate system, used in Hex_ascii_grid.
 
 *)
 
+exception Bad_eyed_claw_specification of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
+
 module Private = struct
 
 let ipair_of_string s=
@@ -118,6 +120,36 @@ let core_powder_for_high_eyed_rightwards_claw =
 let core_powder_for_low_eyed_rightwards_claw =
     central_sym_on_both  core_powder_for_high_eyed_leftwards_claw;;
 
+let down = Hex_cardinal_direction_t.Down;;
+let left = Hex_cardinal_direction_t.Left;;
+let right = Hex_cardinal_direction_t.Right;;
+let up = Hex_cardinal_direction_t.Up;;
+let high = up and low = down;;
+
+let powder_for_high_eyed_claw = function 
+     Hex_cardinal_direction_t.Left -> adjust_by_translation core_powder_for_high_eyed_leftwards_claw
+    |Hex_cardinal_direction_t.Right -> adjust_by_translation core_powder_for_high_eyed_rightwards_claw
+    |other -> raise(Bad_eyed_claw_specification(high,other));;
+
+let powder_for_left_eyed_claw = function 
+     Hex_cardinal_direction_t.Up -> adjust_by_translation core_powder_for_left_eyed_upwards_claw
+    |Hex_cardinal_direction_t.Down -> adjust_by_translation core_powder_for_left_eyed_downwards_claw
+    |other -> raise(Bad_eyed_claw_specification(left,other));;
+
+let powder_for_low_eyed_claw = function 
+     Hex_cardinal_direction_t.Left -> adjust_by_translation core_powder_for_low_eyed_leftwards_claw
+    |Hex_cardinal_direction_t.Right -> adjust_by_translation core_powder_for_low_eyed_rightwards_claw
+    |other -> raise(Bad_eyed_claw_specification(low,other));;
+
+
+let powder_for_right_eyed_claw = function 
+     Hex_cardinal_direction_t.Up -> adjust_by_translation core_powder_for_right_eyed_upwards_claw
+    |Hex_cardinal_direction_t.Down -> adjust_by_translation core_powder_for_right_eyed_downwards_claw
+    |other -> raise(Bad_eyed_claw_specification(right,other));;
+
+
+
+
 end;;
 
 let add_labels l_fourtuples=
@@ -134,6 +166,14 @@ let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
 
+let powder_for_eyed_claw = function 
+     Hex_cardinal_direction_t.Down  -> Private.powder_for_low_eyed_claw
+    |Hex_cardinal_direction_t.Left  -> Private.powder_for_left_eyed_claw
+    |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
+    |Hex_cardinal_direction_t.Up    -> Private.powder_for_high_eyed_claw;;
+            
+    
+(*
 let powder_for_left_eyed_upwards_claw =
     Private.adjust_by_translation 
       Private.core_powder_for_left_eyed_upwards_claw;;
@@ -165,7 +205,7 @@ let powder_for_high_eyed_rightwards_claw =
 let powder_for_low_eyed_rightwards_claw =
    Private.adjust_by_translation 
       Private.core_powder_for_low_eyed_rightwards_claw;;
-
+*)
 
 let support_for_downwards_pyramid (x,y)=
    Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid;;
