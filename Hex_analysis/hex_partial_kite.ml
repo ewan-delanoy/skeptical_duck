@@ -8,8 +8,8 @@ exception Kite_is_not_started;;
 
 module Private = struct 
 
-let unchecked_extend (Hex_partial_kite_t.P (l,old_support,starting_direction,eob)) elt =
-   Hex_partial_kite_t.P (elt::l,Hex_cell_set.merge (Hex_kite_element.support elt) old_support,starting_direction,eob);;
+let unchecked_extend (Hex_partial_kite_t.P (l,old_support,starting_direction)) elt =
+   Hex_partial_kite_t.P (elt::l,Hex_cell_set.merge (Hex_kite_element.support elt) old_support,starting_direction);;
 
 let to_molecular_linker  l =
    (* The kite is assumed to be finished *)  
@@ -51,14 +51,14 @@ let starting_elements_for_side end_of_battle side=
 let starters_for_side end_of_battle side =
    Image.image (
      fun elt -> 
-       Hex_partial_kite_t.P ([elt],Hex_kite_element.support elt,side,end_of_battle)
+       Hex_partial_kite_t.P ([elt],Hex_kite_element.support elt,side)
    ) (starting_elements_for_side end_of_battle side);;
 
 end;;
 
 
 let extensions dim partial_kite =
-   let (Hex_partial_kite_t.P (l,old_supp,starting_direction,eob)) =partial_kite in 
+   let (Hex_partial_kite_t.P (l,old_supp,starting_direction)) =partial_kite in 
    match l with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
