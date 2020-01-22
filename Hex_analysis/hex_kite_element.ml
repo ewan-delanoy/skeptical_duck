@@ -16,6 +16,14 @@ let unveil = function
    Hex_kite_element_t.Active_cell(cell)->(cell,cell)
   |Bridge(cell1,cell2)->(cell1,cell2);;
 
+let is_active = function 
+    Hex_kite_element_t.Active_cell(cell)->true
+   |Bridge(cell1,cell2)->false;;   
+
+let support = function 
+    Hex_kite_element_t.Active_cell(cell)-> [cell]
+   |Bridge(cell1,cell2)->[cell1;cell2];;   
+
 end ;;
 
 let active_cell cell = Hex_kite_element_t.Active_cell(cell);;
@@ -24,6 +32,14 @@ let bridge (cell1,cell2) = match Hex_cell.cmp cell1 cell2 with
    Total_ordering.Lower -> Hex_kite_element_t.Bridge(cell1,cell2)
    |Equal -> raise(Doubled_cell_in_bridge(cell1))
    |Greater -> Hex_kite_element_t.Bridge(cell2,cell1);;
+
+let check_compatiblity end_of_battle elt = 
+ let expected_result = (
+     if Private.is_active elt 
+     then Hex_eob_result_t.Ally_territory
+     else Hex_eob_result_t.Unoccupied) in 
+ List.for_all (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) (Private.support elt);;   
 
 let cmp = ((fun elt1 elt2->
    let i1=Private.level elt1 in 

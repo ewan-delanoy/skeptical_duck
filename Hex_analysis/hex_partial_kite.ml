@@ -54,6 +54,7 @@ let starters_for_side end_of_battle side =
        Hex_partial_kite_t.P ([elt],Hex_kite_element.support elt,side)
    ) (starting_elements_for_side end_of_battle side);;
 
+
 end;;
 
 

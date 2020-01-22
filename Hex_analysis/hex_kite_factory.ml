@@ -12,6 +12,7 @@ let starters eob =
       Hex_kite_factory_t.dimension  = eob.Hex_end_of_battle_t.dimension ;
       winner         = eob.Hex_end_of_battle_t.winner ;
       finished       = [] ;
+      initial_data   = eob ;
       unfinished     = Hex_partial_kite.starters eob;
     };;    
 
