@@ -4,7 +4,8 @@
 
 The second argument is the set of cells involved in the kite.
 The third argument says on which side of the board the kite started.
+The fourth argument is the original end of battles upon which  kites are sought. 
 
 *)
 
-type t= P of Hex_kite_element_t.t list * Hex_cell_set_t.t * Hex_cardinal_direction_t.t ;;
+type t= P of Hex_kite_element_t.t list * Hex_cell_set_t.t * Hex_cardinal_direction_t.t * Hex_end_of_battle_t.t ;;
