@@ -194,15 +194,15 @@ let list_for_macros=[
    ("rrr", Hex_ipair.support_for_pyramid right);
    ("uuu", Hex_ipair.support_for_pyramid up);
    
-   ("bds", Hex_ipair.support_for_claw bs down);
-   ("bls", Hex_ipair.support_for_claw bs left);
-   ("brs", Hex_ipair.support_for_claw bs right);
-   ("bus", Hex_ipair.support_for_claw bs up); 
+   ("bds", Hex_ipair.ipair_support_for_noneyed_claw bs down);
+   ("bls", Hex_ipair.ipair_support_for_noneyed_claw bs left);
+   ("brs", Hex_ipair.ipair_support_for_noneyed_claw bs right);
+   ("bus", Hex_ipair.ipair_support_for_noneyed_claw bs up); 
 
-   ("sdb", Hex_ipair.support_for_claw sb down);
-   ("slb", Hex_ipair.support_for_claw sb down);
-   ("srb", Hex_ipair.support_for_claw sb down);
-   ("sub", Hex_ipair.support_for_claw sb down); 
+   ("sdb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
+   ("slb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
+   ("srb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
+   ("sub", Hex_ipair.ipair_support_for_noneyed_claw sb down); 
 
 ];;
 

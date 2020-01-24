@@ -190,7 +190,7 @@ let support_for_pyramid direction (x,y) = match direction with
     |Hex_cardinal_direction_t.Right ->  Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid
     |Hex_cardinal_direction_t.Up    ->  Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
             
-let support_for_claw qualifier = match qualifier with 
+let ipair_support_for_noneyed_claw qualifier = match qualifier with 
    Hex_double_hump_qualifier_t.Big_followed_by_small -> Private.support_for_bs_claw 
   |Hex_double_hump_qualifier_t.Small_followed_by_big -> Private.support_for_sb_claw ;;
 
