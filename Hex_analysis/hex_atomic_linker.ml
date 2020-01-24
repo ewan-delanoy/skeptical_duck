@@ -117,7 +117,7 @@ let translated_support_map f cell=
    Hex_cell_set.safe_set (Image.image Hex_ipair.to_cell (f ipair)) ;; 
 
 
-let support_for_eyed direction1 direction2 =  translated_support_map (Hex_ipair.powder_for_eyed_claw direction1 direction2);;
+let support_for_eyed direction1 direction2 =  translated_support_map (Hex_ipair.ipair_powder_for_eyed_claw direction1 direction2);;
 
 let salt = "Hex_"^"atomic_linker_t.";;
 let pair_label = salt ^ "Pair";;

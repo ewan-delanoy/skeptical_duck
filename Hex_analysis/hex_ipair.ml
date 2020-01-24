@@ -178,7 +178,7 @@ let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
 
-let powder_for_eyed_claw = function 
+let ipair_powder_for_eyed_claw = function 
      Hex_cardinal_direction_t.Down  -> Private.powder_for_low_eyed_claw
     |Hex_cardinal_direction_t.Left  -> Private.powder_for_left_eyed_claw
     |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
