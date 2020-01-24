@@ -9,7 +9,7 @@ match l with
 |u::v->sub_f([],u,v);;
 
 
-let big_sum=function
+let fold_sum=function
 []->0
 |a::b->List.fold_left(+)(a)(b);;
 

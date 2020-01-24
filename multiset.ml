@@ -7,7 +7,7 @@ let filter_odd_multiplicities (M l)=
    let temp1=List.filter(function (x,j)->(j mod 2)=1)(l) in
    Image.image(fst)(temp1);;
             
-let length (M l)=Basic.big_sum(Image.image snd l);;            
+let length (M l)=Basic.fold_sum(Image.image snd l);;            
             
 let teuzin (M x) (M y)=
 let rec teuzin0=
