@@ -160,7 +160,19 @@ let support_for_sb_claw direction (x,y) = match direction with
     |Hex_cardinal_direction_t.Right ->  translator (x-3,y-2) core_support_for_sb_rightwards_claw
     |Hex_cardinal_direction_t.Up    ->  translator (x-3,y-1) core_support_for_sb_upwards_claw;;
             
+let of_cell cell= ipair_of_string (Hex_cell.to_string cell);;
 
+let to_cell pair =Hex_cell.of_string(string_of_ipair pair);;
+
+let translated_support_map f cell=
+   let ipair=of_cell cell in 
+   Hex_cell_set.safe_set (Image.image to_cell (f ipair)) ;; 
+
+let ipair_powder_for_eyed_claw = function 
+     Hex_cardinal_direction_t.Down  -> powder_for_low_eyed_claw
+    |Hex_cardinal_direction_t.Left  -> powder_for_left_eyed_claw
+    |Hex_cardinal_direction_t.Right -> powder_for_right_eyed_claw
+    |Hex_cardinal_direction_t.Up    -> powder_for_high_eyed_claw;;
 
 end;;
 
@@ -173,7 +185,7 @@ let add_labels l_fourtuples=
    ) temp1 in 
    List.flatten temp2;; 
 
-let of_cell cell= Private.ipair_of_string (Hex_cell.to_string cell);;
+let of_cell cell= Private.of_cell;;
 
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
@@ -194,7 +206,13 @@ let ipair_support_for_noneyed_claw qualifier = match qualifier with
    Hex_double_hump_qualifier_t.Big_followed_by_small -> Private.support_for_bs_claw 
   |Hex_double_hump_qualifier_t.Small_followed_by_big -> Private.support_for_sb_claw ;;
 
-let to_cell pair =Hex_cell.of_string(Private.string_of_ipair pair);;
+
+
+let support_for_eyed_claw direction1 direction2 =  
+    Private.translated_support_map (Private.ipair_powder_for_eyed_claw direction1 direction2);;
+
+
+let to_cell pair =Private.to_cell;;
 
 
 
