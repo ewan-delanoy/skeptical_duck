@@ -184,7 +184,7 @@ let ipair_powder_for_eyed_claw = function
     |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
     |Hex_cardinal_direction_t.Up    -> Private.powder_for_high_eyed_claw;;
             
-let support_for_pyramid direction (x,y) = match direction with 
+let ipair_support_for_pyramid direction (x,y) = match direction with 
      Hex_cardinal_direction_t.Down  ->  Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid
     |Hex_cardinal_direction_t.Left  ->  Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid
     |Hex_cardinal_direction_t.Right ->  Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid
