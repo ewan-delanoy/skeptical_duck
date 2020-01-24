@@ -185,7 +185,7 @@ let add_labels l_fourtuples=
    ) temp1 in 
    List.flatten temp2;; 
 
-let of_cell cell= Private.of_cell;;
+let of_cell cell= Private.of_cell cell;;
 
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
@@ -212,7 +212,7 @@ let support_for_eyed_claw direction1 direction2 =
     Private.translated_support_map (Private.ipair_powder_for_eyed_claw direction1 direction2);;
 
 
-let to_cell pair =Private.to_cell;;
+let to_cell pair =Private.to_cell pair;;
 
 
 
