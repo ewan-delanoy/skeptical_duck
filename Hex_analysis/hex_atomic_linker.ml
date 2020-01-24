@@ -112,12 +112,6 @@ let eyed dim =function
   |Hex_cardinal_direction_t.Right -> right_eyed dim
   |Hex_cardinal_direction_t.Up    -> high_eyed dim ;;  
 
-let translated_support_map f cell=
-   let ipair=Hex_ipair.of_cell cell in 
-   Hex_cell_set.safe_set (Image.image Hex_ipair.to_cell (f ipair)) ;; 
-
-
-let support_for_eyed direction1 direction2 =  translated_support_map (Hex_ipair.ipair_powder_for_eyed_claw direction1 direction2);;
 
 let salt = "Hex_"^"atomic_linker_t.";;
 let pair_label = salt ^ "Pair";;
@@ -164,7 +158,7 @@ let cmp = ((function
 
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
- | Eyed_claw (direction1,direction2,cell) -> support_for_eyed direction1 direction2 cell ;;
+ | Eyed_claw (direction1,direction2,cell) -> Hex_ipair.support_for_eyed_claw direction1 direction2 cell ;;
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
@@ -185,7 +179,7 @@ let to_readable_string = function
   Hex_atomic_linker_t.Pair (cell1,cell2) -> 
     (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
  | Eyed_claw (direction1,direction2,cell) -> 
-     let l=support_for_eyed direction1 direction2 cell in 
+     let l=Hex_ipair.support_for_eyed_claw direction1 direction2 cell in 
      (Hex_cardinal_direction.short_name_for_pair (direction1,direction2))^
      "("^(Hex_cell_set.to_string l)^")";;
 
