@@ -189,12 +189,6 @@ let of_cell cell= Private.of_cell cell;;
 
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
-
-let ipair_powder_for_eyed_claw = function 
-     Hex_cardinal_direction_t.Down  -> Private.powder_for_low_eyed_claw
-    |Hex_cardinal_direction_t.Left  -> Private.powder_for_left_eyed_claw
-    |Hex_cardinal_direction_t.Right -> Private.powder_for_right_eyed_claw
-    |Hex_cardinal_direction_t.Up    -> Private.powder_for_high_eyed_claw;;
             
 let ipair_support_for_pyramid direction (x,y) = match direction with 
      Hex_cardinal_direction_t.Down  ->  Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid
@@ -210,6 +204,18 @@ let ipair_support_for_noneyed_claw qualifier = match qualifier with
 
 let support_for_eyed_claw direction1 direction2 =  
     Private.translated_support_map (Private.ipair_powder_for_eyed_claw direction1 direction2);;
+
+let support_for_noneyed_claw qualifier direction cell =
+   let ipair = Private.of_cell cell in 
+   let temp1 =  (ipair_support_for_noneyed_claw qualifier direction ipair) in 
+   let temp2 = Image.image (fun (i,j,k,l)->Image.image Private.to_cell [i,j;k,l]) temp1 in 
+   Hex_cell_set.safe_set (List.flatten temp2);;
+
+let support_for_pyramid direction cell =
+   let ipair = Private.of_cell cell in 
+   let temp1 =  (ipair_support_for_pyramid direction ipair) in 
+   let temp2 = Image.image (fun (i,j,k,l)->Image.image Private.to_cell [i,j;k,l]) temp1 in 
+   Hex_cell_set.safe_set (List.flatten temp2);;
 
 
 let to_cell pair =Private.to_cell pair;;
