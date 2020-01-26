@@ -97,11 +97,11 @@ let low_eyed_rightwards_claw = {
     Hex_movable_ground_linker_data_t.ground = Hex_cardinal_direction_t.Right ; 
     Hex_movable_ground_linker_data_t.distance_from_ground = 3 ; 
     Hex_movable_ground_linker_data_t.is_reducible_to_pairs = false ; 
-    Hex_movable_ground_linker_data_t.apex = (5,1) ;
+    Hex_movable_ground_linker_data_t.apex = (6,1) ;
     Hex_movable_ground_linker_data_t.support =  
-        [(1, 4); (2, 3); (2, 4); (3, 2); (3, 3); (3, 4); (4, 2); (4, 3); (4, 4);
-         (5, 2); (5, 3); (5, 4); (6, 1); (6, 2); (6, 3); (6, 4); (7, 2); (7, 3);
-         (7, 4)] ;
+       [(1, 4); (2, 3); (2, 4); (3, 2); (3, 3); (3, 4); (4, 2); (4, 3); 
+        (4, 4); (5, 1); (5, 2); (5, 3); (5, 4); (6, 2); (6, 3); (6, 4); 
+        (7, 2); (7, 3); (7, 4)]
 };; 
 
 let low_eyed_leftwards_claw = oppose high_eyed_rightwards_claw;;
