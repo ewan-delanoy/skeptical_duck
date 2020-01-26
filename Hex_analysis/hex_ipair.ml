@@ -174,6 +174,19 @@ let ipair_powder_for_eyed_claw = function
     |Hex_cardinal_direction_t.Right -> powder_for_right_eyed_claw
     |Hex_cardinal_direction_t.Up    -> powder_for_high_eyed_claw;;
 
+let ipair_support_for_noneyed_claw qualifier = match qualifier with 
+   Hex_double_hump_qualifier_t.Big_followed_by_small -> support_for_bs_claw 
+  |Hex_double_hump_qualifier_t.Small_followed_by_big -> support_for_sb_claw ;;
+
+
+
+let ipair_support_for_pyramid direction (x,y) = match direction with 
+     Hex_cardinal_direction_t.Down  ->  translator (x-5,y-6) core_support_for_downwards_pyramid
+    |Hex_cardinal_direction_t.Left  ->  translator (x-3,y-4) core_support_for_leftwards_pyramid
+    |Hex_cardinal_direction_t.Right ->  translator (x-6,y-5) core_support_for_rightwards_pyramid
+    |Hex_cardinal_direction_t.Up    ->  translator (x-4,y-3) core_support_for_upwards_pyramid;;
+            
+
 end;;
 
 let add_labels l_fourtuples=
@@ -190,30 +203,20 @@ let of_cell cell= Private.of_cell cell;;
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
             
-let ipair_support_for_pyramid direction (x,y) = match direction with 
-     Hex_cardinal_direction_t.Down  ->  Private.translator (x-5,y-6) Private.core_support_for_downwards_pyramid
-    |Hex_cardinal_direction_t.Left  ->  Private.translator (x-3,y-4) Private.core_support_for_leftwards_pyramid
-    |Hex_cardinal_direction_t.Right ->  Private.translator (x-6,y-5) Private.core_support_for_rightwards_pyramid
-    |Hex_cardinal_direction_t.Up    ->  Private.translator (x-4,y-3) Private.core_support_for_upwards_pyramid;;
-            
-let ipair_support_for_noneyed_claw qualifier = match qualifier with 
-   Hex_double_hump_qualifier_t.Big_followed_by_small -> Private.support_for_bs_claw 
-  |Hex_double_hump_qualifier_t.Small_followed_by_big -> Private.support_for_sb_claw ;;
 
 
-
-let support_for_eyed_claw direction1 direction2 =  
+let support_for_eyed_claw  direction1 direction2 =  
     Private.translated_support_map (Private.ipair_powder_for_eyed_claw direction1 direction2);;
 
 let support_for_noneyed_claw qualifier direction cell =
    let ipair = Private.of_cell cell in 
-   let temp1 =  (ipair_support_for_noneyed_claw qualifier direction ipair) in 
+   let temp1 =  (Private.ipair_support_for_noneyed_claw qualifier direction ipair) in 
    let temp2 = Image.image (fun (i,j,k,l)->Image.image Private.to_cell [i,j;k,l]) temp1 in 
    Hex_cell_set.safe_set (List.flatten temp2);;
 
 let support_for_pyramid direction cell =
    let ipair = Private.of_cell cell in 
-   let temp1 =  (ipair_support_for_pyramid direction ipair) in 
+   let temp1 =  (Private.ipair_support_for_pyramid direction ipair) in 
    let temp2 = Image.image (fun (i,j,k,l)->Image.image Private.to_cell [i,j;k,l]) temp1 in 
    Hex_cell_set.safe_set (List.flatten temp2);;
 

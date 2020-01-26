@@ -48,6 +48,10 @@ let bridge (cell1,cell2) = match Hex_cell.cmp cell1 cell2 with
    |Equal -> raise(Doubled_cell_in_bridge(cell1))
    |Greater -> Hex_kite_element_t.Bridge(cell2,cell1);;
 
+(*
+let eyed_claw d1 d2 cell= Hex_kite_element_t.Eyed_claw(d1,d2,cell);;
+*)
+
 let check_compatiblity end_of_battle elt = 
  let expected_result = (
      if Private.is_active elt 
