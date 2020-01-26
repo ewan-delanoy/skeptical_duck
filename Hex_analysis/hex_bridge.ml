@@ -30,7 +30,7 @@ let ipairs_touching_an_ipair_bridge dim (i1,j1) (i2,j2)=
 end ;;
 
 let bridges_touching_a_cell dim cell =
-    let (i,j) = Hex_ipair.of_cell cell in 
+    let (i,j) = Hex_cell.to_int_pair cell in 
     let p1=(i,j+1) and p2=(i-1,j+1) and p3=(i-1,j)
     and p4=(i,j-1) and p5=(i+1,j-1) and p6=(i+1,j) in 
    let checker1 = Hex_ipair.is_valid dim   in
@@ -39,12 +39,12 @@ let bridges_touching_a_cell dim cell =
       p1,p2;p2,p3;p3,p4;p4,p5;p5,p6;p6,p1
    ] in 
    let unordered_cells = Image.image (fun (p,q)->
-       let l = Ordered.sort Hex_cell.cmp (Image.image Hex_ipair.to_cell [p;q]) in  
+       let l = Ordered.sort Hex_cell.cmp (Image.image Hex_cell.of_int_pair [p;q]) in  
       (List.nth l 0,List.nth l 1)) unordered_ipairs in 
    Ordered.sort Hex_cell.cmp_for_pairs unordered_cells;;
    
 let cells_touching_a_bridge dim (cell1,cell2)=
-   let p1=Hex_ipair.of_cell cell1 
-   and p2=Hex_ipair.of_cell cell2 in 
+   let p1=Hex_cell.to_int_pair cell1 
+   and p2=Hex_cell.to_int_pair cell2 in 
    let temp1=Private.ipairs_touching_an_ipair_bridge dim p1 p2 in 
-   Hex_cell_set.safe_set (Image.image Hex_ipair.to_cell temp1);;
+   Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair temp1);;

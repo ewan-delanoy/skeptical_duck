@@ -21,7 +21,7 @@ let of_flattened_end_strategy formal_dim fles =
   let (Hex_dimension_t.D dim)=formal_dim in 
   let square = Cartesian.square (Ennig.ennig 1 dim) in
   let tracer1 =  (fun (i,j)->
-     let cell=Hex_ipair.to_cell (i,j) in 
+     let cell=Hex_cell.of_int_pair (i,j) in 
      if Hex_cell_set.mem cell (Hex_flattened_end_strategy_field.active_part fles)
      then " A "
      else 
@@ -116,8 +116,8 @@ let of_finished_game fgame =
        then (fp_cells,sp_cells)
        else (sp_cells,fp_cells)
    ) in  
-   let winner_ipairs = Image.image Hex_ipair.of_cell l_winner_cells
-   and loser_ipairs = Image.image Hex_ipair.of_cell l_loser_cells in
+   let winner_ipairs = Image.image Hex_cell.to_int_pair l_winner_cells
+   and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
    and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
    {
@@ -137,7 +137,7 @@ let to_molecular_linker_with_active_points grid =
     let temp7=Image.image (fun (p,s) -> (Hex_atomic_linker.opt_eyed grid.Hex_ascii_grid_t.dimension (p,s),(p,s)) ) temp6 in 
     let (temp8,temp9) = List.partition (fun (opt,_)->opt=None) temp7 in 
     let eyed_claws = Image.image (fun (opt,_)->Option.unpack opt) temp9 in 
-    let temp2=Image.image (fun (_,((i,j),content))->(Hex_ipair.to_cell (i,j),Cull_string.trim_spaces content)) temp8 in 
+    let temp2=Image.image (fun (_,((i,j),content))->(Hex_cell.of_int_pair (i,j),Cull_string.trim_spaces content)) temp8 in 
     let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
     let temp3=Image.image (fun c0->
       (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
