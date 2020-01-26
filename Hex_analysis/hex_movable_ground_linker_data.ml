@@ -257,11 +257,11 @@ let ipair_is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j)
 
 let ipair_support_for_noneyed_claw double_hump d p =
     let the_data = Private.noneyed_claw double_hump d p in 
-    the_data.Hex_movable_ground_linker_data_t.support;;
+    Listennou.four_by_four(the_data.Hex_movable_ground_linker_data_t.support);;
 
 let ipair_support_for_pyramid d p =
     let the_data = Private.pyramid d p in 
-    the_data.Hex_movable_ground_linker_data_t.support;;
+    Listennou.four_by_four(the_data.Hex_movable_ground_linker_data_t.support);;
 
 
 let support_for_eyed_claw d1 d2 cell =
