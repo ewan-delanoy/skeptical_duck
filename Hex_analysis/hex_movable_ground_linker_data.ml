@@ -58,12 +58,21 @@ let oppose_without_renormalizing data =
         (Image.image tr1 (data.Hex_movable_ground_linker_data_t.support)) ;
 };; 
 
+let put_support_in_order_if_allowed data = 
+   if data.Hex_movable_ground_linker_data_t.is_reducible_to_pairs 
+   then data 
+   else {
+           data with 
+           Hex_movable_ground_linker_data_t.support = 
+            (Ordered.safe_set Total_ordering.standard2 data.Hex_movable_ground_linker_data_t.support)
+        };;
+
 let renormalize data= 
    (* ensure that all coordinates are positive *)
    let points=(data.Hex_movable_ground_linker_data_t.apex)::(data.Hex_movable_ground_linker_data_t.support) in 
    let (_,xmin) = Min.minimize_it fst points 
    and (_,ymin) = Min.minimize_it snd points in 
-   translate (1-xmin,1-ymin) data ;;
+   put_support_in_order_if_allowed (translate (1-xmin,1-ymin) data);;
 
 let reflect data = renormalize(reflect_without_renormalizing data);;
 let oppose data = renormalize(oppose_without_renormalizing data);;
@@ -88,8 +97,11 @@ let low_eyed_rightwards_claw = {
     Hex_movable_ground_linker_data_t.ground = Hex_cardinal_direction_t.Right ; 
     Hex_movable_ground_linker_data_t.distance_from_ground = 3 ; 
     Hex_movable_ground_linker_data_t.is_reducible_to_pairs = false ; 
-    Hex_movable_ground_linker_data_t.apex = (6,1) ;
-    Hex_movable_ground_linker_data_t.support = list_for_eyed_rightwards_claw ;
+    Hex_movable_ground_linker_data_t.apex = (5,1) ;
+    Hex_movable_ground_linker_data_t.support =  
+        [(1, 4); (2, 3); (2, 4); (3, 2); (3, 3); (3, 4); (4, 2); (4, 3); (4, 4);
+         (5, 2); (5, 3); (5, 4); (6, 1); (6, 2); (6, 3); (6, 4); (7, 2); (7, 3);
+         (7, 4)] ;
 };; 
 
 let low_eyed_leftwards_claw = oppose high_eyed_rightwards_claw;;
@@ -211,4 +223,3 @@ let support_for_eyed_claw d1 d2 cell =
    let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
    Private.cell_support the_data;;
 
-   
