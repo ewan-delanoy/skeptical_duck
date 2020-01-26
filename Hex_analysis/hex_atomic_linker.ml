@@ -162,7 +162,7 @@ let support = function
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
-   Image.image Hex_ipair.of_cell l;;
+   Image.image Hex_cell.to_int_pair l;;
 
 
 let opt_eyed dim (p,untrimmed_s) =
@@ -172,7 +172,7 @@ let opt_eyed dim (p,untrimmed_s) =
     and opt2 = Hex_cardinal_direction.opt_of_char (String.get s 2)
     in 
     if (opt1=None)||(opt2=None) then None else 
-    try Some (eyed dim (Option.unpack opt1) (Option.unpack opt2) (Hex_ipair.to_cell p)) with 
+    try Some (eyed dim (Option.unpack opt1) (Option.unpack opt2) (Hex_cell.of_int_pair p)) with 
     _->None;;
 
 let to_readable_string = function
