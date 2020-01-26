@@ -91,14 +91,20 @@ let reflect = function
 let short_name_for_pair = Private.short_name_for_pair;;
 
 let test_for_border (dim,direction) cell=
-     let p = Hex_ipair.of_cell cell in
+     let p = Hex_cell.to_int_pair  cell in
      match direction with   
      Hex_cardinal_direction_t.Down  -> Private.test_for_low_border dim p
     |Hex_cardinal_direction_t.Left  -> Private.test_for_left_border p
     |Hex_cardinal_direction_t.Right -> Private.test_for_right_border dim p
     |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_border p;;
             
-
+let test_for_distance (Hex_dimension_t.D(dim),direction) (x,y) d=
+     match direction with   
+     Hex_cardinal_direction_t.Down  -> y = dim+1 - d
+    |Hex_cardinal_direction_t.Left  -> x = d
+    |Hex_cardinal_direction_t.Right -> x = dim+1 - d
+    |Hex_cardinal_direction_t.Up    -> y = d;;
+            
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
