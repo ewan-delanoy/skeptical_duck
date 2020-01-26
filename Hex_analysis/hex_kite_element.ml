@@ -34,10 +34,7 @@ let support = function
     Hex_kite_element_t.Active_cell(cell)-> [cell]
    |Bridge(cell1,cell2)->[cell1;cell2];;   
 
-let increment_support =function 
-   Hex_kite_element_t.Eyed_claw(d1,d2,cell) -> Hex_ipair.support_for_eyed_claw d1 d2 cell
-   |Noneyed_claw(q,d,cell) -> Hex_ipair.support_for_noneyed_claw q d cell
-   |Pyramid(d,cell) -> Hex_ipair.support_for_pyramid d cell;;   
+
 
 end ;;
 
