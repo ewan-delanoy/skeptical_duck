@@ -200,6 +200,12 @@ let add_labels l_fourtuples=
 
 let of_cell cell= Private.of_cell cell;;
 
+let ipair_powder_for_eyed_claw = Private.ipair_powder_for_eyed_claw;;
+
+let ipair_support_for_noneyed_claw = Private.ipair_support_for_noneyed_claw ;;
+
+let ipair_support_for_pyramid  = Private.ipair_support_for_noneyed_claw;; 
+
 let is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
 
             
