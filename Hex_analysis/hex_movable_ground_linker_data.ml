@@ -211,6 +211,40 @@ let some_eyed_claw d1 d2= match d1 with
 let eyed_claw d1 d2 p = 
    force_new_apex p (some_eyed_claw d1 d2);;
 
+let some_bs_claw d = 
+    match d with 
+     Hex_cardinal_direction_t.Down  -> bs_downwards_claw 
+    |Hex_cardinal_direction_t.Left  -> bs_leftwards_claw  
+    |Hex_cardinal_direction_t.Right -> bs_rightwards_claw  
+    |Hex_cardinal_direction_t.Up    -> bs_upwards_claw  ;;
+
+let bs_claw d p = 
+   force_new_apex p (some_bs_claw d);;
+
+let some_sb_claw d = 
+    match d with 
+     Hex_cardinal_direction_t.Down  -> sb_downwards_claw 
+    |Hex_cardinal_direction_t.Left  -> sb_leftwards_claw  
+    |Hex_cardinal_direction_t.Right -> sb_rightwards_claw  
+    |Hex_cardinal_direction_t.Up    -> sb_upwards_claw  ;;
+
+let sb_claw d p = 
+   force_new_apex p (some_sb_claw d);;
+
+let noneyed_claw double_hump d p = match double_hump with 
+   Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d p 
+  |Hex_double_hump_qualifier_t.Small_followed_by_big -> sb_claw d p;;
+
+let some_pyramid d = 
+    match d with 
+     Hex_cardinal_direction_t.Down  -> downwards_pyramid
+    |Hex_cardinal_direction_t.Left  -> leftwards_pyramid
+    |Hex_cardinal_direction_t.Right -> rightwards_pyramid 
+    |Hex_cardinal_direction_t.Up    -> upwards_pyramid  ;;
+  
+let pyramid d p = 
+   force_new_apex p (some_pyramid d);;
+
 let cell_support data =
    Hex_cell_set.safe_set 
     (Image.image Hex_cell.of_int_pair 
@@ -218,6 +252,15 @@ let cell_support data =
      );;
 
  end ;; 
+
+let ipair_support_for_noneyed_claw double_hump d cell =
+    let the_data = Private.noneyed_claw double_hump d (Hex_cell.to_int_pair cell) in 
+    the_data.Hex_movable_ground_linker_data_t.support;;
+
+let ipair_support_for_pyramid double_hump d cell =
+    let the_data = Private.pyramid d (Hex_cell.to_int_pair cell) in 
+    the_data.Hex_movable_ground_linker_data_t.support;;
+
 
 let support_for_eyed_claw d1 d2 cell =
    let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
