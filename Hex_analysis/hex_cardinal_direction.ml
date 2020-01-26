@@ -56,18 +56,11 @@ let border_enumerator (Hex_dimension_t.D dim) side k=
     |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo dim,k)
     |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,1);;
             
-let ipair_of_string s=
-  let j=(int_of_char(String.get s 0))-96
-  and i=int_of_string(Cull_string.cobeginning 1 s) in 
-  (i,j);;
 
-(* ipair_of_string "b5" = (5,2);; *)
-
-let string_of_ipair (i,j)=
-  (String.make 1 (char_of_int(j+96)))^(string_of_int i);;
-
-
-
+let is_vertical = function 
+    Hex_cardinal_direction_t.Down 
+   |Hex_cardinal_direction_t.Up -> true 
+   | _ -> false ;;  
 
 let sides_for_player = function 
     Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
@@ -87,10 +80,13 @@ let opt_of_char c =
        fun p->if fst(p)=c then Some(snd p) else None) 
        Private.correspondences ;;
    
-let is_vertical = function 
-    Hex_cardinal_direction_t.Down 
-   |Hex_cardinal_direction_t.Up -> true 
-   | _ -> false ;;   
+ 
+
+let reflect = function 
+     Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Right
+    |Hex_cardinal_direction_t.Left  -> Hex_cardinal_direction_t.Up
+    |Hex_cardinal_direction_t.Right -> Hex_cardinal_direction_t.Down
+    |Hex_cardinal_direction_t.Up    -> Hex_cardinal_direction_t.Left;;
 
 let short_name_for_pair = Private.short_name_for_pair;;
 
