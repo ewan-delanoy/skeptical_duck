@@ -189,20 +189,20 @@ let bs = Hex_double_hump_qualifier_t.Big_followed_by_small;;
 let sb = Hex_double_hump_qualifier_t.Small_followed_by_big;;
 
 let list_for_macros=[
-   ("ddd", Hex_ipair.ipair_support_for_pyramid down);
-   ("lll", Hex_ipair.ipair_support_for_pyramid left);
-   ("rrr", Hex_ipair.ipair_support_for_pyramid right);
-   ("uuu", Hex_ipair.ipair_support_for_pyramid up);
+   ("ddd", Hex_movable_ground_linker_data.ipair_support_for_pyramid down);
+   ("lll", Hex_movable_ground_linker_data.ipair_support_for_pyramid left);
+   ("rrr", Hex_movable_ground_linker_data.ipair_support_for_pyramid right);
+   ("uuu", Hex_movable_ground_linker_data.ipair_support_for_pyramid up);
    
-   ("bds", Hex_ipair.ipair_support_for_noneyed_claw bs down);
-   ("bls", Hex_ipair.ipair_support_for_noneyed_claw bs left);
-   ("brs", Hex_ipair.ipair_support_for_noneyed_claw bs right);
-   ("bus", Hex_ipair.ipair_support_for_noneyed_claw bs up); 
+   ("bds", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs down);
+   ("bls", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs left);
+   ("brs", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs right);
+   ("bus", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs up); 
 
-   ("sdb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
-   ("slb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
-   ("srb", Hex_ipair.ipair_support_for_noneyed_claw sb down);
-   ("sub", Hex_ipair.ipair_support_for_noneyed_claw sb down); 
+   ("sdb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
+   ("slb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
+   ("srb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
+   ("sub", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down); 
 
 ];;
 

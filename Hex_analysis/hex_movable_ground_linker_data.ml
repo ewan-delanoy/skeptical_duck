@@ -253,6 +253,8 @@ let cell_support data =
 
  end ;; 
 
+let ipair_is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;
+
 let ipair_support_for_noneyed_claw double_hump d p =
     let the_data = Private.noneyed_claw double_hump d p in 
     the_data.Hex_movable_ground_linker_data_t.support;;
