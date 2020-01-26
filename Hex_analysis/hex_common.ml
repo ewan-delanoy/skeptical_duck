@@ -55,3 +55,5 @@ let all_cells (Hex_dimension_t.D dimension)=
 let parse_list_of_moves s=
    let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
    Image.image Hex_cell.of_string temp1;;
+
+let ipair_is_valid  (Hex_dimension_t.D dim) (i,j) = (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;   
