@@ -253,12 +253,12 @@ let cell_support data =
 
  end ;; 
 
-let ipair_support_for_noneyed_claw double_hump d cell =
-    let the_data = Private.noneyed_claw double_hump d (Hex_cell.to_int_pair cell) in 
+let ipair_support_for_noneyed_claw double_hump d p =
+    let the_data = Private.noneyed_claw double_hump d p in 
     the_data.Hex_movable_ground_linker_data_t.support;;
 
-let ipair_support_for_pyramid double_hump d cell =
-    let the_data = Private.pyramid d (Hex_cell.to_int_pair cell) in 
+let ipair_support_for_pyramid d p =
+    let the_data = Private.pyramid d p in 
     the_data.Hex_movable_ground_linker_data_t.support;;
 
 
