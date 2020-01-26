@@ -84,7 +84,7 @@ let fles_for_right_eyed_claw=
 let ipairs_in_right_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      Hex_flattened_end_strategy_field.passive_part fles_for_right_eyed_claw in 
-   Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;
+   Ordered.sort Total_ordering.standard2 (Image.image Hex_cell.to_int_pair pp);;
 
 (* Explaining a left-eyed upper upwards claw *)   
 
@@ -124,6 +124,21 @@ let fles_for_left_eyed_claw=
 let ipairs_in_left_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      Hex_flattened_end_strategy_field.passive_part fles_for_left_eyed_claw in 
-   Ordered.sort Total_ordering.standard2 (Image.image Hex_ipair.of_cell pp);;
+   Ordered.sort Total_ordering.standard2 (Image.image Hex_cell.to_int_pair pp);;
+
+(*
+
+One can make the following checks : 
+
+let g1=Hex_explanation.ipairs_in_left_eyed_upwards_claw ;;
+let g2=(Hex_movable_ground_linker_data.Private.eyed_claw left up (4,2)).Hex_movable_ground_linker_data_t.support;;
+let check1=(g1=g2);;
+
+let g3=Hex_explanation.ipairs_in_right_eyed_upwards_claw ;;
+let g4=(Hex_movable_ground_linker_data.Private.eyed_claw right up (4,3)).Hex_movable_ground_linker_data_t.support;;
+let check2=(g3=g4);;
+
+
+*)
 
 
