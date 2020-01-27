@@ -110,6 +110,7 @@ let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj
 
 
 let to_int = function 
+    (* the correspondance is arbitrary, it just needs to be bijective. *)
      Hex_cardinal_direction_t.Left  -> 1
     |Hex_cardinal_direction_t.Up    -> 2
     |Hex_cardinal_direction_t.Right -> 3
