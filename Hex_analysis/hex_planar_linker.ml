@@ -6,6 +6,17 @@ Static constructors for Hex_planar_linker_data_t.t objects
 
 *)
 
+module Private = struct
+
+let to_readable_string = function 
+    Hex_planar_linker_t.Eyed_claw(d1,d2) -> 
+         (Hex_cardinal_direction.for_eye_description d1)^"e"^(Hex_cardinal_direction.for_ground_description d2)
+   |Noneyed_claw(dh,d) -> let s = (Hex_double_hump_qualifier.to_readable_string dh) in 
+                          (String.sub s 0 1)^(Hex_cardinal_direction.for_ground_description d)^(String.sub s 1 1)
+   |Pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"py" ;;
+
+end ;;
+
 let check dim pllk cell = match pllk with 
     Hex_planar_linker_t.Eyed_claw(d1,d2) -> Hex_planar_linker_data.check_eyed_claw dim d1 d2 cell  
    |Noneyed_claw(double_hump,d) -> Hex_planar_linker_data.check_noneyed_claw dim double_hump d cell
@@ -22,6 +33,9 @@ let level = function
     Hex_planar_linker_t.Eyed_claw(d1,d2) -> 4*((Hex_cardinal_direction.to_int d1)-1)+(Hex_cardinal_direction.to_int d2)  
    |Noneyed_claw(dh,d) ->16+4*((Hex_double_hump_qualifier.to_int dh)-1)+(Hex_cardinal_direction.to_int d)
    |Pyramid(d) -> 24 + (Hex_cardinal_direction.to_int d) ;;
+
+let print_out (fmt:Format.formatter) pllk=
+   Format.fprintf fmt "@[%s@]" (Private.to_readable_string pllk);;     
 
 
 let support pllk cell = match pllk with 
@@ -46,7 +60,7 @@ let to_molecular_linker pllk cell =
         Hex_molecular_linker.constructor pairs
     ;;
 
-
+let to_readable_string = Private.to_readable_string;;  
 
 let unfold_all_around_cell dim cell=
    let part1=Image.image (
