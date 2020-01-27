@@ -33,7 +33,7 @@ let support = function
 
 let to_readable_string = function
   Hex_kite_element_t.Active_cell(cell)-> Hex_cell.to_string cell
-   |Bridge(cell1,cell2)->(Hex_cell.to_string cell1)^(Hex_cell.to_string cell2)
+   |Bridge(cell1,cell2)->(Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2)
    |Hex_kite_element_t.Planar(plnr,cell) -> 
       (Hex_planar_linker.to_readable_string plnr)^"("^(Hex_cell.to_string cell)^")";;
 
