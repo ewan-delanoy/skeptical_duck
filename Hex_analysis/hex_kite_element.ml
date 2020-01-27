@@ -124,3 +124,5 @@ let to_molecular_linker = function
     Hex_kite_element_t.Active_cell(cell)->None
    |Bridge(cell1,cell2)->Some(Hex_molecular_linker.constructor[Hex_atomic_linker.pair(cell1,cell2)]);;
 
+let incremented_to_molecular_linker = function 
+   (Hex_kite_element_t.Planar (plnr,cell)) -> Some(Hex_planar_linker.to_molecular_linker plnr cell);;
