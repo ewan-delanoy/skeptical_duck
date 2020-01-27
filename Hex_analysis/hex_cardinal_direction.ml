@@ -80,7 +80,12 @@ let opt_of_char c =
        fun p->if fst(p)=c then Some(snd p) else None) 
        Private.correspondences ;;
    
- 
+let orthogonal_directions = function  
+     Hex_cardinal_direction_t.Down  
+    |Hex_cardinal_direction_t.Up    -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right]
+    |Hex_cardinal_direction_t.Left  
+    |Hex_cardinal_direction_t.Right -> [Hex_cardinal_direction_t.Up;Hex_cardinal_direction_t.Down];;
+          
 
 let reflect = function 
      Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Right

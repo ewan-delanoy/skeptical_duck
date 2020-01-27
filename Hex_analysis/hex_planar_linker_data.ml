@@ -254,15 +254,27 @@ let cell_support data =
       data.Hex_planar_linker_data_t.support
      );;
 
+let list_for_eyed_claws =
+   [
+       left,up; left,down;high,left;high,right;
+      right,up;right,down; low,left; low,right;
+     ];;
 
 let unfold_eyed_claws_around_ipair dim ipair=
    List.filter (
        fun (d1,d2) ->
         test_finished_data dim (eyed_claw d1 d2 ipair)
-   ) [
-       left,up; left,down;high,left;high,right;
-      right,up;right,down; low,left; low,right;
-     ];;
+   ) list_for_eyed_claws;;
+
+(*
+let unfold_eyed_claws_around_side dim side=
+   let temp1 = List.filter () list_for_eyed_ in 
+   List.filter (
+       fun (d1,d2) ->
+        test_finished_data dim (eyed_claw d1 d2 ipair)
+   ) list_for_eyed_claws;;
+*)
+
 
 let unfold_noneyed_claws_around_ipair dim ipair=
    List.filter (
