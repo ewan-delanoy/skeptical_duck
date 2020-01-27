@@ -9,10 +9,7 @@ type t=
   |Bridge of Hex_cell_t.t * Hex_cell_t.t (* the pair is in Hex_cell.cmp order *)
   ;;
 
-type increment_t =
-    Eyed_claw of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t * Hex_cell_t.t
-   |Noneyed_claw of Hex_double_hump_qualifier_t.t *  Hex_cardinal_direction_t.t * Hex_cell_t.t
-   |Pyramid of  Hex_cardinal_direction_t.t * Hex_cell_t.t ;;
+type increment_t = Planar of Hex_planar_linker_t.t ;;
 
 type new_whole_t =
     Old of t 
