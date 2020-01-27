@@ -8,7 +8,7 @@ exception Kite_is_not_started;;
 
 module Private = struct 
 
-let initial_atom (initial_side,elt) elt =
+let initial_atom (initial_side,elt) =
    Hex_partial_kite_t.P ([elt],(Hex_kite_element.support elt),initial_side);;
 
 
