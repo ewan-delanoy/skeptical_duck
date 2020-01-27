@@ -10,35 +10,26 @@ module Private = struct
 
 let level = function 
    Hex_kite_element_t.Active_cell(_)->1
-  |Bridge(_,_)->2;;
-
-let increment_level = function 
-    Hex_kite_element_t.Planar(plnr,_) -> 3 + (Hex_planar_linker.level plnr);;
+  |Bridge(_,_)->2
+  |Hex_kite_element_t.Planar(plnr,_) -> 3 + (Hex_planar_linker.level plnr);;
 
 let unveil = function 
    Hex_kite_element_t.Active_cell(cell)->(cell,cell)
-  |Bridge(cell1,cell2)->(cell1,cell2);;
-
-
-let increment_unveil = function 
-    Hex_kite_element_t.Planar(_,cell) -> (cell,cell);;
+  |Bridge(cell1,cell2)->(cell1,cell2)
+  |Hex_kite_element_t.Planar(_,cell) -> (cell,cell);;
 
 
 let is_active = function 
     Hex_kite_element_t.Active_cell(cell)->true
-   |Bridge(cell1,cell2)->false;;   
-
-
-let increment_is_active = function 
-   Hex_kite_element_t.Planar(_,cell) -> false ;;
+   |Bridge(cell1,cell2)->false
+   |Hex_kite_element_t.Planar(_,cell) -> false ;;
   
 
 let support = function 
     Hex_kite_element_t.Active_cell(cell)-> [cell]
-   |Bridge(cell1,cell2)->[cell1;cell2];;   
-
-let increment_support = function 
-   Hex_kite_element_t.Planar(plnr,cell) -> Hex_planar_linker.support plnr cell ;;
+   |Bridge(cell1,cell2)->[cell1;cell2]
+   |Hex_kite_element_t.Planar(plnr,cell) -> 
+     let (Hex_cell_set_t.S l)=Hex_planar_linker.support plnr cell in l;;
 
 end ;;
 
@@ -85,11 +76,8 @@ let is_final (dim,direction) elt =
    Hex_kite_element_t.Active_cell(cell)->
      Hex_cardinal_direction.Border.test dim opp cell
   |Bridge(cell1,cell2)->
-      List.for_all (Hex_cardinal_direction.Border.test  dim opp ) [cell1;cell2];;
-
-let incremented_is_final (dim,direction) elt = 
-    let opp = Hex_cardinal_direction.opposite direction in match elt with 
-    Hex_kite_element_t.Planar(plnr,_)-> ((Hex_planar_linker.ground plnr)=opp);;
+      List.for_all (Hex_cardinal_direction.Border.test  dim opp ) [cell1;cell2]
+  |Hex_kite_element_t.Planar(plnr,_)-> ((Hex_planar_linker.ground plnr)=opp);;
 
 
 
@@ -99,12 +87,10 @@ let neighbors_for_element dim = function
       and temp2=Hex_bridge.bridges_touching_a_cell dim cell in
       (Image.image active_cell temp1) 
       @(Image.image bridge temp2)
-  |Bridge(cell1,cell2)->
+   |Bridge(cell1,cell2)->
       let temp1=Hex_bridge.cells_touching_a_bridge dim (cell1,cell2) in 
-      Hex_cell_set.image active_cell temp1;;
-
-let incremented_neighbors_for_element dim = function 
-  Hex_kite_element_t.Planar(plnr,cell)->[active_cell cell];;
+      Hex_cell_set.image active_cell temp1
+   |Hex_kite_element_t.Planar(plnr,cell)->[active_cell cell];;
 
 
 
@@ -118,17 +104,15 @@ neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e8",Hex_cell.of_strin
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "f8"));; 
 *)
 
-let neighbors_for_side (Hex_dimension_t.D dim) side =
-   let be = Hex_cardinal_direction.Border.enumerate (Hex_dimension_t.D dim) side in 
+let neighbors_for_side formal_dim (Hex_dimension_t.D dim) side =
+   let (Hex_dimension_t.D dim) = formal_dim in 
+   let be = Hex_cardinal_direction.Border.enumerate formal_dim side in 
    let part1 = Ennig.doyle (fun idx->active_cell(be idx)) 1 dim 
-   and part2 = Ennig.doyle (fun idx->bridge(be idx,be (idx+1)) ) 1 (dim-1)  in 
-   part1@part2;; 
-
-let incremented_neighbors_for_side dim side =
-   let part3 = Image.image (fun (plnr,cell)->
+   and part2 = Ennig.doyle (fun idx->bridge(be idx,be (idx+1)) ) 1 (dim-1)  
+   and part3 = Image.image (fun (plnr,cell)->
        Hex_kite_element_t.Planar(plnr,cell)
-   ) (Hex_planar_linker.unfold_all_around_side dim side)   in 
-   part3;;    
+   ) (Hex_planar_linker.unfold_all_around_side formal_dim side)   in 
+   part1@part2@part3;;    
 
 let planar = Constructors.planar ;;
 
@@ -137,7 +121,5 @@ let support elt = Hex_cell_set.safe_set (Private.support elt);;
 
 let to_molecular_linker = function 
     Hex_kite_element_t.Active_cell(cell)->None
-   |Bridge(cell1,cell2)->Some(Hex_molecular_linker.constructor[Hex_atomic_linker.pair(cell1,cell2)]);;
-
-let incremented_to_molecular_linker = function 
-   (Hex_kite_element_t.Planar (plnr,cell)) -> Some(Hex_planar_linker.to_molecular_linker plnr cell);;
+   |Bridge(cell1,cell2)->Some(Hex_molecular_linker.constructor[Hex_atomic_linker.pair(cell1,cell2)])
+   |Planar (plnr,cell) -> Some(Hex_planar_linker.to_molecular_linker plnr cell);;
