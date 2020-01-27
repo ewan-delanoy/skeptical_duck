@@ -31,6 +31,12 @@ let support = function
    |Hex_kite_element_t.Planar(plnr,cell) -> 
      let (Hex_cell_set_t.S l)=Hex_planar_linker.support plnr cell in l;;
 
+let to_readable_string = function
+  Hex_kite_element_t.Active_cell(cell)-> Hex_cell.to_string cell
+   |Bridge(cell1,cell2)->(Hex_cell.to_string cell1)^(Hex_cell.to_string cell2)
+   |Hex_kite_element_t.Planar(plnr,cell) -> 
+      (Hex_planar_linker.to_readable_string plnr)^"("^(Hex_cell.to_string cell)^")";;
+
 end ;;
 
 module Constructors = struct 
@@ -116,6 +122,10 @@ let neighbors_for_side formal_dim  side =
 
 let planar = Constructors.planar ;;
 
+let print_out (fmt:Format.formatter) elt=
+   Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
+
+
 let support elt = Hex_cell_set.safe_set (Private.support elt);;
 
 
@@ -123,3 +133,5 @@ let to_molecular_linker = function
     Hex_kite_element_t.Active_cell(cell)->None
    |Bridge(cell1,cell2)->Some(Hex_molecular_linker.constructor[Hex_atomic_linker.pair(cell1,cell2)])
    |Planar (plnr,cell) -> Some(Hex_planar_linker.to_molecular_linker plnr cell);;
+
+let to_readable_string = Private.to_readable_string;;   
