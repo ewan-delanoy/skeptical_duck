@@ -104,7 +104,7 @@ neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e8",Hex_cell.of_strin
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "f8"));; 
 *)
 
-let neighbors_for_side formal_dim (Hex_dimension_t.D dim) side =
+let neighbors_for_side formal_dim  side =
    let (Hex_dimension_t.D dim) = formal_dim in 
    let be = Hex_cardinal_direction.Border.enumerate formal_dim side in 
    let part1 = Ennig.doyle (fun idx->active_cell(be idx)) 1 dim 
