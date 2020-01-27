@@ -18,7 +18,7 @@ let starters eob =
 
 let pusher (factory,_) = 
    let raw_result=Image.image (
-         Hex_partial_kite.extensions (factory.Hex_kite_factory_t.dimension,factory.Hex_kite_factory_t.initial_data)
+         Hex_partial_kite.extensions factory.Hex_kite_factory_t.initial_data
    ) factory.Hex_kite_factory_t.unfinished in 
    let new_moleculars = List.flatten (Image.image fst raw_result)
    and new_partial_kites = List.flatten (Image.image snd raw_result) in 

@@ -58,7 +58,8 @@ let starters_for_side end_of_battle side =
 end;;
 
 
-let extensions (dim,end_of_battle) partial_kite =
+let extensions end_of_battle partial_kite =
+   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let (Hex_partial_kite_t.P (l,old_supp,starting_direction)) =partial_kite in 
    match l with 
     []->raise(Kite_is_not_started)
