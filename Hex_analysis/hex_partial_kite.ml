@@ -18,11 +18,11 @@ let to_molecular_linker  l =
 
 
 let potential_active_cells_for_side (Hex_dimension_t.D dim) side=
-   Ennig.doyle (Hex_cardinal_direction.border_enumerator (Hex_dimension_t.D dim) side) 1 dim;;
+   Ennig.doyle (Hex_cardinal_direction.Border.enumerate (Hex_dimension_t.D dim) side) 1 dim;;
    
 
 let potential_bridges_for_side (Hex_dimension_t.D dim) side=
-   let be = Hex_cardinal_direction.border_enumerator (Hex_dimension_t.D dim) side in 
+   let be = Hex_cardinal_direction.Border.enumerate (Hex_dimension_t.D dim) side in 
    Ennig.doyle (fun k->(be k,be (k+1))) 1 (dim-1);;
    
 

@@ -160,11 +160,10 @@ let downwards_pyramid = oppose upwards_pyramid;;
 
 let check_finished_data formal_dim data =
     let (Hex_dimension_t.D dim) = formal_dim in   
-    if not(Hex_cardinal_direction.test_for_distance 
-         (formal_dim,data.Hex_planar_linker_data_t.ground) 
-          data.Hex_planar_linker_data_t.apex 
-            data.Hex_planar_linker_data_t.distance_from_ground
-           )
+    if not(Hex_cardinal_direction.Parallel_To_Border.test 
+         data.Hex_planar_linker_data_t.distance_from_ground 
+         formal_dim data.Hex_planar_linker_data_t.ground
+          (Hex_cell.of_int_pair data.Hex_planar_linker_data_t.apex) )
     then raise(Bad_distance(data))
     else 
     match Option.seek (

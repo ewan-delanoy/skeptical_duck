@@ -83,9 +83,9 @@ let is_final (dim,direction) elt =
    let opp = Hex_cardinal_direction.opposite direction in 
    match elt with  
    Hex_kite_element_t.Active_cell(cell)->
-     Hex_cardinal_direction.test_for_border (dim,opp) cell
+     Hex_cardinal_direction.Border.test dim opp cell
   |Bridge(cell1,cell2)->
-      List.for_all (Hex_cardinal_direction.test_for_border (dim,opp)) [cell1;cell2];;
+      List.for_all (Hex_cardinal_direction.Border.test  dim opp ) [cell1;cell2];;
 
 let incremented_is_final (dim,direction) elt = 
     let opp = Hex_cardinal_direction.opposite direction in match elt with 

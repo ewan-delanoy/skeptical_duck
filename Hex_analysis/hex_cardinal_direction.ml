@@ -76,17 +76,7 @@ module Border = struct
 let enumerate = Parallel_To_Border.enumerate 1;;
 let test = Parallel_To_Border.test 1;;
 
-end ;;
-
-
-let border_enumerator (Hex_dimension_t.D dim) side k= 
-    let transfo j = (String.make 1 (char_of_int(j+96))) in 
-    match side with 
-     Hex_cardinal_direction_t.Down  -> Hex_cell_t.C(transfo k,dim)
-    |Hex_cardinal_direction_t.Left  -> Hex_cell_t.C(transfo 1,k)
-    |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo dim,k)
-    |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,1);;
-            
+end ;;      
 
 let is_vertical = function 
     Hex_cardinal_direction_t.Down 
@@ -125,22 +115,7 @@ let reflect = function
     |Hex_cardinal_direction_t.Up    -> Hex_cardinal_direction_t.Left;;
 
 let short_name_for_pair = Private.short_name_for_pair;;
-
-let test_for_border (dim,direction) cell=
-     let p = Hex_cell.to_int_pair  cell in
-     match direction with   
-     Hex_cardinal_direction_t.Down  -> Private.test_for_low_border dim p
-    |Hex_cardinal_direction_t.Left  -> Private.test_for_left_border p
-    |Hex_cardinal_direction_t.Right -> Private.test_for_right_border dim p
-    |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_border p;;
-            
-let test_for_distance (Hex_dimension_t.D(dim),direction) (x,y) d=
-     match direction with   
-     Hex_cardinal_direction_t.Down  -> y = dim+1 - d
-    |Hex_cardinal_direction_t.Left  -> x = d
-    |Hex_cardinal_direction_t.Right -> x = dim+1 - d
-    |Hex_cardinal_direction_t.Up    -> y = d;;
-            
+         
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
