@@ -48,9 +48,11 @@ let bridge (cell1,cell2) = match Hex_cell.cmp cell1 cell2 with
    |Equal -> raise(Doubled_cell_in_bridge(cell1))
    |Greater -> Hex_kite_element_t.Bridge(cell2,cell1);;
 
-(*
-let planar plnr cell= 
-*)   
+
+let planar dim plnr cell= 
+   let _=Hex_planar_linker.check dim plnr cell in 
+   Hex_kite_element_t.Planar(plnr,cell);;
+   
 
 end;;
 
@@ -100,6 +102,8 @@ neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e7",Hex_cell.of_strin
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e8",Hex_cell.of_string "f7"));; 
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "f8"));; 
 *)
+
+let planar = Constructors.planar ;;
 
 let support elt = Hex_cell_set.safe_set (Private.support elt);;
 

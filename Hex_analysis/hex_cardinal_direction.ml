@@ -108,3 +108,9 @@ let test_for_distance (Hex_dimension_t.D(dim),direction) (x,y) d=
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
+
+let to_int = function 
+     Hex_cardinal_direction_t.Left  -> 1
+    |Hex_cardinal_direction_t.Up    -> 2
+    |Hex_cardinal_direction_t.Right -> 3
+    |Hex_cardinal_direction_t.Down  -> 4 ;;

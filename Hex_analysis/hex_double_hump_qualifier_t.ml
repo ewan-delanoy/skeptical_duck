@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_pyramid_qualifier_t.ml";;
+#use"Hex_analysis/hex_double_hump_qualifier_t.ml";;
 
 *)
 
