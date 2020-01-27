@@ -25,12 +25,10 @@ let is_active = function
     Hex_kite_element_t.Active_cell(cell)->true
    |Bridge(cell1,cell2)->false;;   
 
-(*
+
 let increment_is_active = function 
-    Hex_kite_element_t.Eyed_claw(_,_,_) -> false
-   |Noneyed_claw(_,_,_) -> false
-   |Pyramid(_,_) -> false;;   
-*)
+   Hex_kite_element_t.Planar(_,cell) -> false ;;
+  
 
 let support = function 
     Hex_kite_element_t.Active_cell(cell)-> [cell]

@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_planer_linker_t.ml";;
+#use"Hex_analysis/hex_planar_linker_t.ml";;
 
 Static constructors for Hex_planar_linker_data_t.t objects 
 

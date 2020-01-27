@@ -268,3 +268,10 @@ let support_for_eyed_claw d1 d2 cell =
    let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
    Private.cell_support the_data;;
 
+let support_for_noneyed_claw double_hump d cell =
+   let the_data = Private.noneyed_claw double_hump d (Hex_cell.to_int_pair cell) in 
+   Private.cell_support the_data;;
+
+let support_for_pyramid d cell =
+   let the_data = Private.pyramid  d (Hex_cell.to_int_pair cell) in 
+   Private.cell_support the_data;;
