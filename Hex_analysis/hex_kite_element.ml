@@ -39,6 +39,8 @@ let increment_support = function
 
 end ;;
 
+module Constructors = struct 
+
 let active_cell cell = Hex_kite_element_t.Active_cell(cell);;
 
 let bridge (cell1,cell2) = match Hex_cell.cmp cell1 cell2 with 
@@ -47,8 +49,14 @@ let bridge (cell1,cell2) = match Hex_cell.cmp cell1 cell2 with
    |Greater -> Hex_kite_element_t.Bridge(cell2,cell1);;
 
 (*
-let eyed_claw d1 d2 cell= Hex_kite_element_t.Eyed_claw(d1,d2,cell);;
-*)
+let planar plnr cell= 
+*)   
+
+end;;
+
+let active_cell = Constructors.active_cell ;;
+let bridge = Constructors.bridge ;;
+
 
 let check_compatiblity end_of_battle elt = 
  let expected_result = (

@@ -158,7 +158,7 @@ let upwards_pyramid = reflect leftwards_pyramid;;
 let downwards_pyramid = oppose upwards_pyramid;;
 
 
-let check_distance_on_finished_data formal_dim data =
+let check_finished_data formal_dim data =
     let (Hex_dimension_t.D dim) = formal_dim in   
     if not(Hex_cardinal_direction.test_for_distance 
          (formal_dim,data.Hex_planar_linker_data_t.ground) 
@@ -263,6 +263,20 @@ let bridges_in_pyramid d p =
     let the_data = Private.pyramid d p in 
     Listennou.extract_successive_pairs_from_even_list
       (the_data.Hex_planar_linker_data_t.support);;
+
+let check_eyed_claw dim d1 d2 cell =
+   let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
+   Private.check_finished_data dim the_data;;
+
+let check_noneyed_claw dim double_hump d cell =
+   let the_data = Private.noneyed_claw double_hump d (Hex_cell.to_int_pair cell) in 
+   Private.check_finished_data dim the_data;;
+
+let check_pyramid dim d cell =
+   let the_data = Private.pyramid  d (Hex_cell.to_int_pair cell) in 
+   Private.check_finished_data dim the_data;;
+
+
 
 let support_for_eyed_claw d1 d2 cell =
    let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
