@@ -23,20 +23,20 @@ let crobj_correspondences =
        Hex_cardinal_direction_t.Up,    salt ^ "Up" ;
     ];;
 
-let char_for_first_direction = function
+let char_for_eye_description = function
      Hex_cardinal_direction_t.Down  -> "l"
     |Hex_cardinal_direction_t.Left  -> "l"
     |Hex_cardinal_direction_t.Right -> "r"
     |Hex_cardinal_direction_t.Up    -> "h";;
 
-let char_for_second_direction = function
+let char_for_ground_description = function
      Hex_cardinal_direction_t.Down  -> "d"
     |Hex_cardinal_direction_t.Left  -> "l"
     |Hex_cardinal_direction_t.Right -> "r"
     |Hex_cardinal_direction_t.Up    -> "u";;
             
 let short_name_for_pair (d1,d2)=
-   (char_for_first_direction d1)^(char_for_first_direction d2);;
+   (char_for_eye_description d1)^(char_for_eye_description d2);;
 
 let test_for_low_parallel    (Hex_dimension_t.D dim) (i,j) d= (i=dim+1-d);;
 let test_for_left_parallel                           (i,j) d= (j=d);;
@@ -71,6 +71,10 @@ let enumerate = Parallel_To_Border.enumerate 1;;
 let test dim side cell = Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
 
 end ;;      
+
+let for_eye_description    = Private.char_for_eye_description ;;
+let for_ground_description = Private.char_for_ground_description ;;
+
 
 let is_vertical = function 
     Hex_cardinal_direction_t.Down 
