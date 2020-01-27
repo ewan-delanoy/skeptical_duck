@@ -189,20 +189,20 @@ let bs = Hex_double_hump_qualifier_t.Big_followed_by_small;;
 let sb = Hex_double_hump_qualifier_t.Small_followed_by_big;;
 
 let list_for_macros=[
-   ("ddd", Hex_movable_ground_linker_data.ipair_support_for_pyramid down);
-   ("lll", Hex_movable_ground_linker_data.ipair_support_for_pyramid left);
-   ("rrr", Hex_movable_ground_linker_data.ipair_support_for_pyramid right);
-   ("uuu", Hex_movable_ground_linker_data.ipair_support_for_pyramid up);
+   ("ddd", Hex_movable_ground_linker_data.bridges_in_pyramid down);
+   ("lll", Hex_movable_ground_linker_data.bridges_in_pyramid left);
+   ("rrr", Hex_movable_ground_linker_data.bridges_in_pyramid right);
+   ("uuu", Hex_movable_ground_linker_data.bridges_in_pyramid up);
    
-   ("bds", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs down);
-   ("bls", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs left);
-   ("brs", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs right);
-   ("bus", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw bs up); 
+   ("bds", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs down);
+   ("bls", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs left);
+   ("brs", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs right);
+   ("bus", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs up); 
 
-   ("sdb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
-   ("slb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
-   ("srb", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down);
-   ("sub", Hex_movable_ground_linker_data.ipair_support_for_noneyed_claw sb down); 
+   ("sdb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
+   ("slb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
+   ("srb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
+   ("sub", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down); 
 
 ];;
 
@@ -246,7 +246,7 @@ let preprocess grid =
    let unused_labels = List.filter (fun x->Set_of_polys.nmem x labels_used_by_nonmacros) list_of_default_labels in 
    let fourtuples = List.flatten(Image.image snd macros2) in
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
-   let overrider1=List.flatten(Image.image (fun ((i1,j1,i2,j2),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
+   let overrider1=List.flatten(Image.image (fun (((i1,j1),(i2,j2)),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
    and overrider2=Image.image (fun (p,_)->(fst p," A ")) (macros1) 
    and overrider3=Image.image (fun p->(p,"eee")) powder_from_claws in 
    let overrider=overrider1@overrider2@overrider3 in 
