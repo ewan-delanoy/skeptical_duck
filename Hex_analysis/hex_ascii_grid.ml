@@ -189,20 +189,20 @@ let bs = Hex_double_hump_qualifier_t.Big_followed_by_small;;
 let sb = Hex_double_hump_qualifier_t.Small_followed_by_big;;
 
 let list_for_macros=[
-   ("ddd", Hex_movable_ground_linker_data.bridges_in_pyramid down);
-   ("lll", Hex_movable_ground_linker_data.bridges_in_pyramid left);
-   ("rrr", Hex_movable_ground_linker_data.bridges_in_pyramid right);
-   ("uuu", Hex_movable_ground_linker_data.bridges_in_pyramid up);
+   ("ddd", Hex_planar_linker_data.bridges_in_pyramid down);
+   ("lll", Hex_planar_linker_data.bridges_in_pyramid left);
+   ("rrr", Hex_planar_linker_data.bridges_in_pyramid right);
+   ("uuu", Hex_planar_linker_data.bridges_in_pyramid up);
    
-   ("bds", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs down);
-   ("bls", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs left);
-   ("brs", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs right);
-   ("bus", Hex_movable_ground_linker_data.bridges_in_noneyed_claw bs up); 
+   ("bds", Hex_planar_linker_data.bridges_in_noneyed_claw bs down);
+   ("bls", Hex_planar_linker_data.bridges_in_noneyed_claw bs left);
+   ("brs", Hex_planar_linker_data.bridges_in_noneyed_claw bs right);
+   ("bus", Hex_planar_linker_data.bridges_in_noneyed_claw bs up); 
 
-   ("sdb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
-   ("slb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
-   ("srb", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down);
-   ("sub", Hex_movable_ground_linker_data.bridges_in_noneyed_claw sb down); 
+   ("sdb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
+   ("slb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
+   ("srb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
+   ("sub", Hex_planar_linker_data.bridges_in_noneyed_claw sb down); 
 
 ];;
 

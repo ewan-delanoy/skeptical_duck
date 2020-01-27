@@ -158,7 +158,7 @@ let cmp = ((function
 
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
- | Eyed_claw (direction1,direction2,cell) -> Hex_movable_ground_linker_data.support_for_eyed_claw direction1 direction2 cell ;;
+ | Eyed_claw (direction1,direction2,cell) -> Hex_planar_linker_data.support_for_eyed_claw direction1 direction2 cell ;;
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
@@ -179,7 +179,7 @@ let to_readable_string = function
   Hex_atomic_linker_t.Pair (cell1,cell2) -> 
     (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
  | Eyed_claw (direction1,direction2,cell) -> 
-     let l=Hex_movable_ground_linker_data.support_for_eyed_claw direction1 direction2 cell in 
+     let l=Hex_planar_linker_data.support_for_eyed_claw direction1 direction2 cell in 
      (Hex_cardinal_direction.short_name_for_pair (direction1,direction2))^
      "("^(Hex_cell_set.to_string l)^")";;
 
