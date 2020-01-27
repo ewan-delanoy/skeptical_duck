@@ -173,6 +173,9 @@ let check_finished_data formal_dim data =
     Some(x0,y0)->raise(Coordinate_out_of_bounds(x0,y0))
     |None -> ();;
 
+let test_finished_data dim data =
+   try (fun _->true)(check_finished_data dim data) with _->false;;
+
 let down = Hex_cardinal_direction_t.Down;;
 let left = Hex_cardinal_direction_t.Left;;
 let right = Hex_cardinal_direction_t.Right;;
@@ -251,6 +254,34 @@ let cell_support data =
       data.Hex_planar_linker_data_t.support
      );;
 
+
+let unfold_eyed_claws_around_ipair dim ipair=
+   List.filter (
+       fun (d1,d2) ->
+        test_finished_data dim (eyed_claw d1 d2 ipair)
+   ) [
+       left,up; left,down;high,left;high,right;
+      right,up;right,down; low,left; low,right;
+     ];;
+
+let unfold_noneyed_claws_around_ipair dim ipair=
+   List.filter (
+       fun (dh,d) ->
+        test_finished_data dim (noneyed_claw dh d ipair)
+   ) [
+       bs,left;bs,up;bs,right;bs,down;
+       sb,left;sb,up;sb,right;sb,down; 
+     ];;
+
+let unfold_pyramids_around_ipair dim ipair=
+   List.filter (
+       fun d ->
+        test_finished_data dim (pyramid d ipair)
+   ) [
+       left;up;right;down
+     ];;
+
+
  end ;; 
 
 
@@ -289,3 +320,13 @@ let support_for_noneyed_claw double_hump d cell =
 let support_for_pyramid d cell =
    let the_data = Private.pyramid  d (Hex_cell.to_int_pair cell) in 
    Private.cell_support the_data;;
+
+let unfold_eyed_claws_around_cell dim  cell =
+   Private.unfold_eyed_claws_around_ipair dim (Hex_cell.to_int_pair cell);;
+
+let unfold_noneyed_claws_around_cell dim  cell =
+   Private.unfold_noneyed_claws_around_ipair dim (Hex_cell.to_int_pair cell);;
+
+let unfold_pyramids_around_cell dim  cell =
+   Private.unfold_pyramids_around_ipair dim (Hex_cell.to_int_pair cell);;
+

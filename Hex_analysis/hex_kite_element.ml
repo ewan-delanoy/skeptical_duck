@@ -87,11 +87,18 @@ let is_final (dim,direction) elt =
   |Bridge(cell1,cell2)->
       List.for_all (Hex_cardinal_direction.test_for_border (dim,opp)) [cell1;cell2];;
 
+let incremented_is_final (dim,direction) elt = 
+    let opp = Hex_cardinal_direction.opposite direction in match elt with 
+    Hex_kite_element_t.Planar(plnr,_)-> ((Hex_planar_linker.ground plnr)=opp);;
+
+
 
 let neighbors dim = function 
    Hex_kite_element_t.Active_cell(cell)->
-      let temp1=Hex_bridge.bridges_touching_a_cell dim cell in 
-      Image.image bridge temp1
+      let temp1=Hex_cell.neighbors dim cell 
+      and temp2=Hex_bridge.bridges_touching_a_cell dim cell in
+      (Image.image active_cell temp1) 
+      @(Image.image bridge temp2)
   |Bridge(cell1,cell2)->
       let temp1=Hex_bridge.cells_touching_a_bridge dim (cell1,cell2) in 
       Hex_cell_set.image active_cell temp1;;
