@@ -16,12 +16,10 @@ let unveil = function
    Hex_kite_element_t.Active_cell(cell)->(cell,cell)
   |Bridge(cell1,cell2)->(cell1,cell2);;
 
-(*
+
 let increment_unveil = function 
-    Hex_kite_element_t.Eyed_claw(_,_,cell) -> (cell,cell)
-   |Noneyed_claw(_,_,cell) -> (cell,cell)
-   |Pyramid(_,cell) -> (cell,cell);;
-*)
+    Hex_kite_element_t.Planar(_,cell) -> (cell,cell);;
+
 
 let is_active = function 
     Hex_kite_element_t.Active_cell(cell)->true

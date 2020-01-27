@@ -9,7 +9,7 @@ type t=
   |Bridge of Hex_cell_t.t * Hex_cell_t.t (* the pair is in Hex_cell.cmp order *)
   ;;
 
-type increment_t = Planar of Hex_planar_linker_t.t ;;
+type increment_t = Planar of Hex_planar_linker_t.t * Hex_cell_t.t;;
 
 type new_whole_t =
     Old of t 
