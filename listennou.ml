@@ -337,3 +337,13 @@ let four_by_four l=
       and (x2,y2)=List.nth l (2*j) in 
       (x1,y1,x2,y2)
    ) 1 m2;;
+
+exception  Extract_successive_pairs_exn of int;;
+
+let extract_successive_pairs_from_even_list l=
+   let m1 =(List.length l) in 
+   if (m1 mod 2)<>0 then raise(Extract_successive_pairs_exn(m1)) else 
+   let m2=m1/2 in 
+   Ennig.doyle (fun j->
+      (List.nth l (2*j-2),List.nth l (2*j-1)) 
+   ) 1 m2;;
