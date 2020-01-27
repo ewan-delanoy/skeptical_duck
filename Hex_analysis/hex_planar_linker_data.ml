@@ -163,7 +163,7 @@ let check_finished_data formal_dim data =
     if not(Hex_cardinal_direction.Parallel_To_Border.test 
          data.Hex_planar_linker_data_t.distance_from_ground 
          formal_dim data.Hex_planar_linker_data_t.ground
-          (Hex_cell.of_int_pair data.Hex_planar_linker_data_t.apex) )
+          (data.Hex_planar_linker_data_t.apex) )
     then raise(Bad_distance(data))
     else 
     match Option.seek (
