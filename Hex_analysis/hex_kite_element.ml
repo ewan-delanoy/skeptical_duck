@@ -119,12 +119,8 @@ let planar = Constructors.planar ;;
 
 let support elt = Hex_cell_set.safe_set (Private.support elt);;
 
-let to_atomic_linker = function 
-    Hex_kite_element_t.Active_cell(cell)->None
-   |Bridge(cell1,cell2)->Some(Hex_atomic_linker.pair(cell1,cell2));;                    
-   
+
 let to_molecular_linker = function 
     Hex_kite_element_t.Active_cell(cell)->None
    |Bridge(cell1,cell2)->Some(Hex_molecular_linker.constructor[Hex_atomic_linker.pair(cell1,cell2)]);;
-   
-        
+

@@ -29,6 +29,24 @@ let support pllk cell = match pllk with
    |Noneyed_claw(double_hump,d) -> Hex_planar_linker_data.support_for_noneyed_claw double_hump d cell
    |Pyramid(d) -> Hex_planar_linker_data.support_for_pyramid d cell ;;
 
+let to_molecular_linker pllk cell = 
+   let ipair = Hex_cell.to_int_pair cell in 
+   let (first_trial,helper)=
+   (match pllk with 
+    Hex_planar_linker_t.Eyed_claw(d1,d2) -> 
+      (Some(Hex_molecular_linker_t.M[Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)]),[])   
+   |Noneyed_claw(dh,d) -> (None, Hex_planar_linker_data.bridges_in_noneyed_claw dh d ipair )
+   |Pyramid(d) -> (None, Hex_planar_linker_data.bridges_in_pyramid d ipair ) ) in 
+   if first_trial<>None 
+   then Option.unpack first_trial
+   else 
+        let pairs = Image.image (
+            fun (p,q) -> Hex_atomic_linker.pair (Hex_cell.of_int_pair p,Hex_cell.of_int_pair q)
+        ) helper in 
+        Hex_molecular_linker.constructor pairs
+    ;;
+
+
 
 let unfold_all_around_cell dim cell=
    let part1=Image.image (
