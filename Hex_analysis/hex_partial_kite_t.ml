@@ -4,7 +4,7 @@
 
 The second argument is the set of cells involved in the kite.
 The third argument says on which side of the board the kite started.
-The fourth argument is the original end of battles upon which  kites are sought. 
+
 
 *)
 

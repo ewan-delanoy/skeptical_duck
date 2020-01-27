@@ -8,13 +8,17 @@ exception Kite_is_not_started;;
 
 module Private = struct 
 
+let initial_atom (initial_side,elt) elt =
+   Hex_partial_kite_t.P ([elt],(Hex_kite_element.support elt),initial_side);;
+
+
 let to_molecular_linker  l =
    (* The kite is assumed to be finished *)  
    Hex_molecular_linker.fold_merge (Option.filter_and_unpack Hex_kite_element.to_molecular_linker l);;
 
 
-let unchecked_extend (Hex_partial_kite_t.P (l,old_support,starting_direction)) elt =
-   Hex_partial_kite_t.P (elt::l,Hex_cell_set.merge (Hex_kite_element.support elt) old_support,starting_direction);;
+let unchecked_extend (Hex_partial_kite_t.P (l,old_support,initial_side)) elt =
+   Hex_partial_kite_t.P (elt::l,Hex_cell_set.merge (Hex_kite_element.support elt) old_support,initial_side);;
 
 
 end;;
@@ -40,10 +44,12 @@ let extensions end_of_battle partial_kite =
 let starters end_of_battle = 
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-   let candidates = List.flatten(Image.image (Hex_kite_element.neighbors_for_side dim) sides) in 
-   let retained_ones= List.filter (fun elt->
+   let candidates = List.flatten(Image.image (fun side -> 
+      Image.image (fun neighbor->(side,neighbor))
+   (Hex_kite_element.neighbors_for_side dim side)) sides) in 
+   let retained_ones= List.filter (fun (side,elt)->
          (Hex_kite_element.check_compatiblity end_of_battle elt)
       ) candidates in 
-   retained_ones;;
+   Image.image Private.initial_atom retained_ones;;
       
 
