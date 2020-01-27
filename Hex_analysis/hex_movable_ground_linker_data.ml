@@ -254,6 +254,16 @@ let cell_support data =
  end ;; 
 
 
+let bridges_in_noneyed_claw double_hump d p =
+    let the_data = Private.noneyed_claw double_hump d p in 
+    Listennou.extract_successive_pairs_from_even_list 
+      (the_data.Hex_movable_ground_linker_data_t.support);;
+
+let bridges_in_pyramid d p =
+    let the_data = Private.pyramid d p in 
+    Listennou.extract_successive_pairs_from_even_list
+      (the_data.Hex_movable_ground_linker_data_t.support);;
+
 
 let ipair_support_for_noneyed_claw double_hump d p =
     let the_data = Private.noneyed_claw double_hump d p in 
