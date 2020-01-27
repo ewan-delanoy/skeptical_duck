@@ -93,7 +93,7 @@ let incremented_is_final (dim,direction) elt =
 
 
 
-let neighbors_for_cell dim = function 
+let neighbors_for_element dim = function 
    Hex_kite_element_t.Active_cell(cell)->
       let temp1=Hex_cell.neighbors dim cell 
       and temp2=Hex_bridge.bridges_touching_a_cell dim cell in

@@ -63,7 +63,7 @@ let extensions (dim,end_of_battle) partial_kite =
    match l with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
-      let candidates = Hex_kite_element.neighbors_for_cell dim last_elt in 
+      let candidates = Hex_kite_element.neighbors_for_element dim last_elt in 
       let retained_ones= List.filter (fun elt->
          (Hex_cell_set.does_not_intersect (Hex_kite_element.support elt) old_supp) &&
          (Hex_kite_element.check_compatiblity end_of_battle elt)
