@@ -103,6 +103,11 @@ let neighbors_for_element dim = function
       let temp1=Hex_bridge.cells_touching_a_bridge dim (cell1,cell2) in 
       Hex_cell_set.image active_cell temp1;;
 
+let incremented_neighbors_for_element dim = function 
+  Hex_kite_element_t.Planar(plnr,cell)->[active_cell cell];;
+
+
+
 (*
 neighbors Hex_dimension.eleven (active_cell(Hex_cell.of_string "f7"));; 
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "g7"));; 
@@ -113,7 +118,17 @@ neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "e8",Hex_cell.of_strin
 neighbors Hex_dimension.eleven (bridge(Hex_cell.of_string "f7",Hex_cell.of_string "f8"));; 
 *)
 
+let neighbors_for_side (Hex_dimension_t.D dim) side =
+   let be = Hex_cardinal_direction.Border.enumerate (Hex_dimension_t.D dim) side in 
+   let part1 = Ennig.doyle (fun idx->active_cell(be idx)) 1 dim 
+   and part2 = Ennig.doyle (fun idx->bridge(be idx,be (idx+1)) ) 1 (dim-1)  in 
+   part1@part2;; 
 
+let incremented_neighbors_for_side dim side =
+   let part3 = Image.image (fun (plnr,cell)->
+       Hex_kite_element_t.Planar(plnr,cell)
+   ) (Hex_planar_linker.unfold_all_around_side dim side)   in 
+   part3;;    
 
 let planar = Constructors.planar ;;
 
