@@ -30,3 +30,14 @@ let support pllk cell = match pllk with
    |Pyramid(d) -> Hex_planar_linker_data.support_for_pyramid d cell ;;
 
 
+let unfold_all_around_cell dim cell=
+   let part1=Image.image (
+      fun (d1,d2) -> Hex_planar_linker_t.Eyed_claw(d1,d2)
+   ) (Hex_planar_linker_data.unfold_eyed_claws_around_cell dim cell)
+   and part2=Image.image (
+      fun (dh,d) -> Hex_planar_linker_t.Noneyed_claw(dh,d)
+   ) (Hex_planar_linker_data.unfold_noneyed_claws_around_cell dim cell)
+   and part3=Image.image (
+      fun d  -> Hex_planar_linker_t.Pyramid d
+   ) (Hex_planar_linker_data.unfold_pyramids_around_cell dim cell) in 
+   part1@part2@part3;;
