@@ -34,7 +34,8 @@ let support = function
     Hex_kite_element_t.Active_cell(cell)-> [cell]
    |Bridge(cell1,cell2)->[cell1;cell2];;   
 
-
+let increment_support = function 
+   Hex_kite_element_t.Planar(plnr,cell) -> Hex_planar_linker.support plnr cell ;;
 
 end ;;
 
