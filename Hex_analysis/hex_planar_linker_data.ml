@@ -263,17 +263,18 @@ let unfold_eyed_claws_around_ipair dim ipair=
       right,up;right,down; low,left; low,right;
      ];;
 
-(*
-let unfold_eyed_claws_around_side dim side=
+
+let unfold_eyed_claws_around_side formal_dim side=
+   let (Hex_dimension_t.D dim)=formal_dim in  
    let part1 = Image.image (fun ortho->(ortho,side)) 
       (Hex_cardinal_direction.orthogonal_directions side) in 
-   let part2 = Hex_cardinal_direction.Distance.enumerate dim side 3 in 
+   let part2 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 3 formal_dim side) 1 dim   in 
    let whole = Cartesian.product part1 part2 in 
    List.filter (
        fun ((d1,d2),cell)->
-        test_finished_data dim (eyed_claw d1 d2 (Hex_cell.to_int_pair cell))
-   ) whole;;
-*)
+        test_finished_data formal_dim (eyed_claw d1 d2 (Hex_cell.to_int_pair cell))
+    ) whole;;
+
 
 
 let unfold_noneyed_claws_around_ipair dim ipair=
@@ -285,6 +286,17 @@ let unfold_noneyed_claws_around_ipair dim ipair=
        sb,left;sb,up;sb,right;sb,down; 
      ];;
 
+let unfold_noneyed_claws_around_side formal_dim side=
+   let (Hex_dimension_t.D dim)=formal_dim in  
+   let part1 = [bs,side;sb,side] in 
+   let part2 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 3 formal_dim side) 1 dim   in 
+   let whole = Cartesian.product part1 part2 in 
+   List.filter (
+       fun ((dh,d),cell)->
+        test_finished_data formal_dim (noneyed_claw dh d (Hex_cell.to_int_pair cell))
+    ) whole;;
+
+
 let unfold_pyramids_around_ipair dim ipair=
    List.filter (
        fun d ->
@@ -292,6 +304,15 @@ let unfold_pyramids_around_ipair dim ipair=
    ) [
        left;up;right;down
      ];;
+
+let unfold_pyramids_around_side formal_dim side=
+   let (Hex_dimension_t.D dim)=formal_dim in  
+   let part1 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 3 formal_dim side) 1 dim   in 
+   let whole = Image.image (fun cell -> (side,cell)) part1  in 
+   List.filter (
+       fun (d,cell)->
+        test_finished_data formal_dim (pyramid d (Hex_cell.to_int_pair cell))
+    ) whole;;
 
 
  end ;; 
@@ -341,4 +362,12 @@ let unfold_noneyed_claws_around_cell dim  cell =
 
 let unfold_pyramids_around_cell dim  cell =
    Private.unfold_pyramids_around_ipair dim (Hex_cell.to_int_pair cell);;
+
+
+let unfold_eyed_claws_around_side    = Private.unfold_eyed_claws_around_side;;
+let unfold_noneyed_claws_around_side = Private.unfold_noneyed_claws_around_side;;
+let unfold_pyramids_around_side      = Private.unfold_pyramids_around_side;;
+
+
+
 
