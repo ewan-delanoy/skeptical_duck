@@ -326,17 +326,6 @@ let unequal_combine_where_fst_is_smallest l1 l2 =
    if n1>n2 then raise(Fst_is_largest(n1,n2)) else   
    unequal_combine l1 l2;;
 
-exception Four_by_four_exn of (int*int) list;;
-
-let four_by_four l=
-   let m1 =(List.length l) in 
-   if (m1 mod 2)<>0 then raise(Four_by_four_exn(l)) else 
-   let m2=m1/2 in 
-   Ennig.doyle (fun j->
-      let (x1,y1)=List.nth l (2*j-1) 
-      and (x2,y2)=List.nth l (2*j) in 
-      (x1,y1,x2,y2)
-   ) 1 m2;;
 
 exception  Extract_successive_pairs_exn of int;;
 

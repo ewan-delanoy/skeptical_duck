@@ -264,16 +264,6 @@ let bridges_in_pyramid d p =
     Listennou.extract_successive_pairs_from_even_list
       (the_data.Hex_movable_ground_linker_data_t.support);;
 
-
-let ipair_support_for_noneyed_claw double_hump d p =
-    let the_data = Private.noneyed_claw double_hump d p in 
-    Listennou.four_by_four(the_data.Hex_movable_ground_linker_data_t.support);;
-
-let ipair_support_for_pyramid d p =
-    let the_data = Private.pyramid d p in 
-    Listennou.four_by_four(the_data.Hex_movable_ground_linker_data_t.support);;
-
-
 let support_for_eyed_claw d1 d2 cell =
    let the_data = Private.eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
    Private.cell_support the_data;;
