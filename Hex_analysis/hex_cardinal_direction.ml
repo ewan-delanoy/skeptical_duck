@@ -43,10 +43,41 @@ let test_for_left_border                           (i,j)= (j=1);;
 let test_for_right_border  (Hex_dimension_t.D dim) (i,j)= (j=dim);;
 let test_for_upper_border                          (i,j)= (i=1);;
    
-    
+let test_for_low_parallel    (Hex_dimension_t.D dim) (i,j) d= (i=dim+1-d);;
+let test_for_left_parallel                           (i,j) d= (j=d);;
+let test_for_right_parallel  (Hex_dimension_t.D dim) (i,j) d= (j=dim+1-d);;
+let test_for_upper_parallel                          (i,j) d= (i=d);;    
 
 
 end ;;
+
+module Parallel_To_Border = struct 
+
+let enumerate d (Hex_dimension_t.D dim) side k= 
+    let transfo j = (String.make 1 (char_of_int(j+96))) in 
+    match side with 
+     Hex_cardinal_direction_t.Down  -> Hex_cell_t.C(transfo k,dim+1-d)
+    |Hex_cardinal_direction_t.Left  -> Hex_cell_t.C(transfo d,k)
+    |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo (dim+1-d),k)
+    |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,d);;
+
+let test d dim side cell=
+     let p = Hex_cell.to_int_pair  cell in
+     match side with   
+     Hex_cardinal_direction_t.Down  -> Private.test_for_low_parallel dim p d
+    |Hex_cardinal_direction_t.Left  -> Private.test_for_left_parallel p d
+    |Hex_cardinal_direction_t.Right -> Private.test_for_right_parallel dim p d
+    |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_parallel p d;;
+
+end ;;
+
+module Border = struct 
+
+let enumerate = Parallel_To_Border.enumerate 1;;
+let test = Parallel_To_Border.test 1;;
+
+end ;;
+
 
 let border_enumerator (Hex_dimension_t.D dim) side k= 
     let transfo j = (String.make 1 (char_of_int(j+96))) in 

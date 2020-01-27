@@ -254,25 +254,26 @@ let cell_support data =
       data.Hex_planar_linker_data_t.support
      );;
 
-let list_for_eyed_claws =
-   [
-       left,up; left,down;high,left;high,right;
-      right,up;right,down; low,left; low,right;
-     ];;
 
 let unfold_eyed_claws_around_ipair dim ipair=
    List.filter (
        fun (d1,d2) ->
         test_finished_data dim (eyed_claw d1 d2 ipair)
-   ) list_for_eyed_claws;;
+   ) [
+       left,up; left,down;high,left;high,right;
+      right,up;right,down; low,left; low,right;
+     ];;
 
 (*
 let unfold_eyed_claws_around_side dim side=
-   let temp1 = List.filter () list_for_eyed_ in 
+   let part1 = Image.image (fun ortho->(ortho,side)) 
+      (Hex_cardinal_direction.orthogonal_directions side) in 
+   let part2 = Hex_cardinal_direction.Distance.enumerate dim side 3 in 
+   let whole = Cartesian.product part1 part2 in 
    List.filter (
-       fun (d1,d2) ->
-        test_finished_data dim (eyed_claw d1 d2 ipair)
-   ) list_for_eyed_claws;;
+       fun ((d1,d2),cell)->
+        test_finished_data dim (eyed_claw d1 d2 (Hex_cell.to_int_pair cell))
+   ) whole;;
 *)
 
 
