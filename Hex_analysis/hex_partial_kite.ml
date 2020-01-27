@@ -13,7 +13,7 @@ let unchecked_extend (Hex_partial_kite_t.P (l,old_support,starting_direction)) e
 
 let to_molecular_linker  l =
    (* The kite is assumed to be finished *)  
-   Hex_molecular_linker.constructor (Option.filter_and_unpack Hex_kite_element.to_atomic_linker l);;
+   Hex_molecular_linker.fold_merge (Option.filter_and_unpack Hex_kite_element.to_molecular_linker l);;
 
 
 
