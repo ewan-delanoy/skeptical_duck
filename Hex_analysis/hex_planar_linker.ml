@@ -11,6 +11,12 @@ let check dim pllk cell = match pllk with
    |Noneyed_claw(double_hump,d) -> Hex_planar_linker_data.check_noneyed_claw dim double_hump d cell
    |Pyramid(d) -> Hex_planar_linker_data.check_pyramid dim d cell ;;
 
+let ground pllk = 
+    match pllk with 
+    Hex_planar_linker_t.Eyed_claw(d1,d2) -> d2 
+   |Noneyed_claw(double_hump,d) -> d
+   |Pyramid(d) -> d ;;
+
 
 let level = function 
     Hex_planar_linker_t.Eyed_claw(d1,d2) -> 4*((Hex_cardinal_direction.to_int d1)-1)+(Hex_cardinal_direction.to_int d2)  

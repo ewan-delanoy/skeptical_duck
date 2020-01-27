@@ -12,6 +12,9 @@ let level = function
    Hex_kite_element_t.Active_cell(_)->1
   |Bridge(_,_)->2;;
 
+let increment_level = function 
+    Hex_kite_element_t.Planar(plnr,_) -> 3 + (Hex_planar_linker.level plnr);;
+
 let unveil = function 
    Hex_kite_element_t.Active_cell(cell)->(cell,cell)
   |Bridge(cell1,cell2)->(cell1,cell2);;
