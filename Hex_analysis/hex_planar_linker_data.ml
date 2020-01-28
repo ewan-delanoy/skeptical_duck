@@ -160,7 +160,7 @@ let downwards_pyramid = oppose upwards_pyramid;;
 let rightwards_small_pyramid = {
     
     Hex_planar_linker_data_t.ground = Hex_cardinal_direction_t.Right ; 
-    Hex_planar_linker_data_t.distance_from_ground = 2 ; 
+    Hex_planar_linker_data_t.distance_from_ground = 3 ; 
     Hex_planar_linker_data_t.is_reducible_to_pairs = true ; 
     Hex_planar_linker_data_t.apex = (4,1) ;
     Hex_planar_linker_data_t.support = 
@@ -349,7 +349,7 @@ let unfold_small_pyramids_around_ipair dim ipair=
 
 let unfold_small_pyramids_around_side formal_dim side=
    let (Hex_dimension_t.D dim)=formal_dim in  
-   let part1 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 2 formal_dim side) 1 dim   in 
+   let part1 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 3 formal_dim side) 1 dim   in 
    let whole = Image.image (fun cell -> (side,cell)) part1  in 
    List.filter (
        fun (d,cell)->
