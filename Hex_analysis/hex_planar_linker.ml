@@ -77,7 +77,7 @@ let unfold_all_around_cell dim cell=
    ) (Hex_planar_linker_data.unfold_noneyed_claws_around_cell dim cell)
    and part3=Image.image (
       fun d  -> Hex_planar_linker_t.Pyramid d
-   ) (Hex_planar_linker_data.unfold_pyramids_around_cell dim cell) in 
+   ) (Hex_planar_linker_data.unfold_pyramids_around_cell dim cell) 
    and part4=Image.image (
       fun d  -> Hex_planar_linker_t.Small_pyramid d
    ) (Hex_planar_linker_data.unfold_small_pyramids_around_cell dim cell) in 
@@ -92,7 +92,7 @@ let unfold_all_around_side dim side=
    ) (Hex_planar_linker_data.unfold_noneyed_claws_around_side dim side)
    and part3=Image.image (
       fun (d,cell)  -> (Hex_planar_linker_t.Pyramid d,cell)
-   ) (Hex_planar_linker_data.unfold_pyramids_around_side dim side) in 
+   ) (Hex_planar_linker_data.unfold_pyramids_around_side dim side) 
    and part4=Image.image (
       fun (d,cell)  -> (Hex_planar_linker_t.Small_pyramid d,cell)
    ) (Hex_planar_linker_data.unfold_small_pyramids_around_side dim side) in 
