@@ -90,9 +90,11 @@ let is_final (dim,direction) elt =
 let neighbors_for_element dim = function 
    Hex_kite_element_t.Active_cell(cell)->
       let temp1=Hex_cell.neighbors dim cell 
-      and temp2=Hex_bridge.bridges_touching_a_cell dim cell in
+      and temp2=Hex_bridge.bridges_touching_a_cell dim cell 
+      and temp3=Hex_planar_linker.unfold_all_around_cell dim cell in
       (Image.image active_cell temp1) 
       @(Image.image bridge temp2)
+      @(Image.image (fun plnr ->Hex_kite_element_t.Planar(plnr,cell)) temp3)
    |Bridge(cell1,cell2)->
       let temp1=Hex_bridge.cells_touching_a_bridge dim (cell1,cell2) in 
       Hex_cell_set.image active_cell temp1
