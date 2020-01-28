@@ -157,6 +157,20 @@ let leftwards_pyramid = oppose rightwards_pyramid;;
 let upwards_pyramid = reflect leftwards_pyramid;;
 let downwards_pyramid = oppose upwards_pyramid;;
 
+let rightwards_small_pyramid = {
+    
+    Hex_planar_linker_data_t.ground = Hex_cardinal_direction_t.Right ; 
+    Hex_planar_linker_data_t.distance_from_ground = 2 ; 
+    Hex_planar_linker_data_t.is_reducible_to_pairs = true ; 
+    Hex_planar_linker_data_t.apex = (4,1) ;
+    Hex_planar_linker_data_t.support = 
+        [(5, 3); (4, 3); (2, 3); (1, 3); (5, 2); (2, 2); (4, 2); (5, 1); 
+     (3, 2); (3, 1)];
+};; 
+
+let leftwards_small_pyramid = oppose rightwards_pyramid;;
+let upwards_small_pyramid = reflect leftwards_pyramid;;
+let downwards_small_pyramid = oppose upwards_pyramid;;
 
 let check_finished_data formal_dim data =
     let (Hex_dimension_t.D dim) = formal_dim in   
@@ -247,6 +261,17 @@ let some_pyramid d =
 let pyramid d p = 
    force_new_apex p (some_pyramid d);;
 
+
+let some_small_pyramid d = 
+    match d with 
+     Hex_cardinal_direction_t.Down  -> downwards_small_pyramid
+    |Hex_cardinal_direction_t.Left  -> leftwards_small_pyramid
+    |Hex_cardinal_direction_t.Right -> rightwards_small_pyramid 
+    |Hex_cardinal_direction_t.Up    -> upwards_small_pyramid  ;;
+  
+let small_pyramid d p = 
+   force_new_apex p (some_small_pyramid d);;
+
 let cell_support data =
    Hex_cell_set.safe_set 
     (Image.image Hex_cell.of_int_pair 
@@ -314,6 +339,23 @@ let unfold_pyramids_around_side formal_dim side=
         test_finished_data formal_dim (pyramid d (Hex_cell.to_int_pair cell))
     ) whole;;
 
+let unfold_small_pyramids_around_ipair dim ipair=
+   List.filter (
+       fun d ->
+        test_finished_data dim (small_pyramid d ipair)
+   ) [
+       left;up;right;down
+     ];;
+
+let unfold_small_pyramids_around_side formal_dim side=
+   let (Hex_dimension_t.D dim)=formal_dim in  
+   let part1 = Ennig.doyle (Hex_cardinal_direction.Parallel_To_Border.enumerate 2 formal_dim side) 1 dim   in 
+   let whole = Image.image (fun cell -> (side,cell)) part1  in 
+   List.filter (
+       fun (d,cell)->
+        test_finished_data formal_dim (small_pyramid d (Hex_cell.to_int_pair cell))
+    ) whole;;
+
 
  end ;; 
 
@@ -325,6 +367,11 @@ let bridges_in_noneyed_claw double_hump d p =
 
 let bridges_in_pyramid d p =
     let the_data = Private.pyramid d p in 
+    Listennou.extract_successive_pairs_from_even_list
+      (the_data.Hex_planar_linker_data_t.support);;
+
+let bridges_in_small_pyramid d p =
+    let the_data = Private.small_pyramid d p in 
     Listennou.extract_successive_pairs_from_even_list
       (the_data.Hex_planar_linker_data_t.support);;
 
@@ -340,6 +387,9 @@ let check_pyramid dim d cell =
    let the_data = Private.pyramid  d (Hex_cell.to_int_pair cell) in 
    Private.check_finished_data dim the_data;;
 
+let check_small_pyramid dim d cell =
+   let the_data = Private.small_pyramid  d (Hex_cell.to_int_pair cell) in 
+   Private.check_finished_data dim the_data;;
 
 
 let support_for_eyed_claw d1 d2 cell =
@@ -354,6 +404,10 @@ let support_for_pyramid d cell =
    let the_data = Private.pyramid  d (Hex_cell.to_int_pair cell) in 
    Private.cell_support the_data;;
 
+let support_for_small_pyramid d cell =
+   let the_data = Private.small_pyramid  d (Hex_cell.to_int_pair cell) in 
+   Private.cell_support the_data;;
+
 let unfold_eyed_claws_around_cell dim  cell =
    Private.unfold_eyed_claws_around_ipair dim (Hex_cell.to_int_pair cell);;
 
@@ -363,11 +417,13 @@ let unfold_noneyed_claws_around_cell dim  cell =
 let unfold_pyramids_around_cell dim  cell =
    Private.unfold_pyramids_around_ipair dim (Hex_cell.to_int_pair cell);;
 
+let unfold_small_pyramids_around_cell dim  cell =
+   Private.unfold_small_pyramids_around_ipair dim (Hex_cell.to_int_pair cell);;
 
-let unfold_eyed_claws_around_side    = Private.unfold_eyed_claws_around_side;;
-let unfold_noneyed_claws_around_side = Private.unfold_noneyed_claws_around_side;;
-let unfold_pyramids_around_side      = Private.unfold_pyramids_around_side;;
-
+let unfold_eyed_claws_around_side     = Private.unfold_eyed_claws_around_side;;
+let unfold_noneyed_claws_around_side  = Private.unfold_noneyed_claws_around_side;;
+let unfold_pyramids_around_side       = Private.unfold_pyramids_around_side;;
+let unfold_small_pyramids_around_side = Private.unfold_small_pyramids_around_side;;
 
 
 
