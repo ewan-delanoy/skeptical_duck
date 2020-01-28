@@ -168,9 +168,9 @@ let rightwards_small_pyramid = {
      (3, 2); (3, 1)];
 };; 
 
-let leftwards_small_pyramid = oppose rightwards_pyramid;;
-let upwards_small_pyramid = reflect leftwards_pyramid;;
-let downwards_small_pyramid = oppose upwards_pyramid;;
+let leftwards_small_pyramid = oppose rightwards_small_pyramid;;
+let upwards_small_pyramid = reflect leftwards_small_pyramid;;
+let downwards_small_pyramid = oppose upwards_small_pyramid;;
 
 let check_finished_data formal_dim data =
     let (Hex_dimension_t.D dim) = formal_dim in   
