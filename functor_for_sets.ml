@@ -61,7 +61,7 @@ let singleton ((co,deco,cmpr):('a,'b) parameter)  x=co[x];;
 let sort ((co,deco,cmpr):('a,'b) parameter) 
      l= co(Ordered.sort cmpr l);;
 
-let tl ((co,deco,cmpr):('a,'b) parameter) ox= List.tl(deco ox);;
+let tl ((co,deco,cmpr):('a,'b) parameter) ox= co(List.tl(deco ox));;
 
 let unsafe_set ((co,deco,cmpr):('a,'b) parameter) 
      l= co l;;
