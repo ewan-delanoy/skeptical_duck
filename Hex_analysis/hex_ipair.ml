@@ -71,3 +71,6 @@ let is_connected dim l =
 
 let neighbors_for_several = Private.neighbors_for_several ;;
 
+let oppose (Hex_dimension_t.D dim) (x,y) = (dim+1-x,dim+1-y);;
+
+let reflect (x,y) = (y,x);;
