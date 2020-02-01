@@ -23,7 +23,24 @@ let constructor dim opt_direction l=
   then raise(Lonely_side(direction))
   else Hex_island_t.I(opt_direction,z) ;;
 
-    
+let decompose eob =     
+    let dim = eob.Hex_end_of_battle_t.dimension 
+    and w = eob.Hex_end_of_battle_t.winner 
+    and cells = eob.Hex_end_of_battle_t.ally_territory in 
+    let ipairs = Hex_cell_set.image Hex_cell.to_int_pair cells in 
+    let components = Hex_ipair.compute_connected_components dim ipairs in 
+    let sides = Hex_cardinal_direction.sides_for_player w in 
+    Image.image (
+       fun l->
+       let opt = Option.seek (fun side->
+          List.exists(fun 
+          p-> Hex_cardinal_direction.Border.test dim side 
+         (Hex_cell.of_int_pair p)) l
+       ) sides in 
+       Hex_island_t.I(opt,Set_of_poly_pairs.safe_set l)
+    ) components ;;
+
+
 let neighbors dim (Hex_island_t.I(opt_direction,z)) =
    let part1 =(
      match opt_direction with 
