@@ -5,9 +5,6 @@
 *)
 
 
-exception Translate_horizontally_exn of int * string;;
-exception Translate_vertically_exn of int * int;;
-
 
 module Private = struct 
 
