@@ -9,7 +9,7 @@ exception Lonely_side of Hex_cardinal_direction_t.t ;;
 
 let constructor dim opt_direction l=
   let z=Set_of_poly_pairs.safe_set l in 
-  let ccs = Hex_common.compute_connected_components dim l in 
+  let ccs = Hex_ipair.compute_connected_components dim l in 
   if (List.length ccs) <> 1 
   then  raise(Disconnected_cells (Image.image List.hd ccs)) 
   else 
