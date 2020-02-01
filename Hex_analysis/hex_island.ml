@@ -39,6 +39,26 @@ let neighbors dim (Hex_island_t.I(opt_direction,z)) =
    Set_of_poly_pairs.setminus excessive_whole z;;
 
 
+let oppose dim (Hex_island_t.I(old_opt,z)) =
+   let new_opt = (match old_opt with 
+      None -> None 
+      |Some(direction)->Some(Hex_cardinal_direction.oppose direction)
+   ) 
+   and new_z = Set_of_poly_pairs.safe_set 
+      (Set_of_poly_pairs.image (Hex_ipair.oppose dim) z) in 
+   Hex_island_t.I(new_opt,new_z);;
+
+
+let reflect (Hex_island_t.I(old_opt,z)) =
+   let new_opt = (match old_opt with 
+      None -> None 
+      |Some(direction)->Some(Hex_cardinal_direction.reflect direction)
+   ) 
+   and new_z = Set_of_poly_pairs.safe_set 
+      (Set_of_poly_pairs.image Hex_ipair.reflect z) in 
+   Hex_island_t.I(new_opt,new_z);;
+
+
 
 
    
