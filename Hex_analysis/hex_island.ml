@@ -33,7 +33,8 @@ let neighbors dim (Hex_island_t.I(opt_direction,z)) =
        let temp2=Image.image Hex_cell.to_int_pair temp1 in 
        Set_of_poly_pairs.safe_set temp2
    ) 
-   and part2 = Hex_common.neighbors_for_several dim z in 
+   and part2 = Hex_ipair.neighbors_for_several dim 
+       (Set_of_poly_pairs.forget_order z) in 
    let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
    Set_of_poly_pairs.setminus excessive_whole z;;
 
