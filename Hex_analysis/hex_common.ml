@@ -26,10 +26,16 @@ let neighbors_for_one dim (i,j) =
    let temp1 = List.filter (ipair_is_valid dim) 
    [
         j,(i-1);(j+1),(i-1);
-       (j-1),i               ;(j+1),i1    ;
+       (j-1),i               ;(j+1),i    ;
        (j-1),(i+1); j,(i+1);
    ] in 
    Set_of_poly_pairs.safe_set temp1;;
+
+let neighbors_for_several dim z=
+    let temp1 = Set_of_poly_pairs.image (neighbors_for_one dim) z in 
+    Set_of_poly_pairs.setminus 
+     (Set_of_poly_pairs.fold_merge temp1) z ;;
+    
 
 end ;;
 
