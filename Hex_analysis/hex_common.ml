@@ -38,7 +38,7 @@ let neighbors_for_several dim z=
     
 let rec helper1_for_cc_computing 
    (dim,old_whole,news_from_whole,to_be_exhausted) =
-    if (Set_of_poly_pairs.length to_be_treated = 0)
+    if (Set_of_poly_pairs.length news_from_whole = 0)
     then (old_whole,to_be_exhausted)
     else 
     let temp1 = neighbors_for_several dim news_from_whole in 
@@ -50,8 +50,21 @@ let rec helper1_for_cc_computing
                    to_be_exhausted new_whole in 
          helper1_for_cc_computing 
          (dim,new_whole,new_ones,remaining_ones);;
-         
-                   
+
+let rec helper2_for_cc_computing 
+   (dim,already_treated,to_be_treated) =
+   if (Set_of_poly_pairs.length to_be_treated = 0)
+   then List.rev already_treated
+   else 
+   let      p = Set_of_poly_pairs.hd  to_be_treated
+   and others = Set_of_poly_pairs.tl  to_be_treated in
+   let (component,remaining_ones) = helper1_for_cc_computing 
+   (dim,Set_of_poly_pairs.empty_set,
+        Set_of_poly_pairs_t.S[p],others)  in   
+   helper2_for_cc_computing 
+   (dim,component::already_treated,remaining_ones);;     
+
+
 
 
 
