@@ -64,10 +64,6 @@ let rec helper2_for_cc_computing
    helper2_for_cc_computing 
    (dim,component::already_treated,remaining_ones);;     
 
-
-
-
-
 end ;;
 
 let all_cells (Hex_dimension_t.D dimension)=
@@ -76,6 +72,8 @@ let all_cells (Hex_dimension_t.D dimension)=
    let temp3=Cartesian.product temp1 temp2 in 
    let temp4=Image.image (fun (sj,si)->Hex_cell.of_string(sj^si)) temp3 in 
    Hex_cell_set.safe_set temp4;;
+
+
 
 let cell_list_of_string s =
   let temp1=Str.split (Str.regexp_string Private.joiner) s in 
@@ -100,12 +98,20 @@ let cell_pair_of_string text =
 
 let cell_pair_to_string = Private.cell_pair_to_string;;
 
+let compute_connected_components dim l=
+   let components = Private.helper2_for_cc_computing 
+   (dim,[],Set_of_poly_pairs.safe_set l) in 
+   Image.image Set_of_poly_pairs.forget_order components;; 
+
 let has_just_played preceding_moves=
    if ((List.length preceding_moves) mod 2=1)  
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
   
 let ipair_is_valid  = Private.ipair_is_valid  ;;   
+
+let is_connected dim l =
+  (List.length(compute_connected_components dim l)=1);;
 
 let next_one_to_play preceding_moves=
    if ((List.length preceding_moves) mod 2=0)  
