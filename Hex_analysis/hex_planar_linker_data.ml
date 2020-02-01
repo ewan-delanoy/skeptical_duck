@@ -52,7 +52,7 @@ let oppose_without_renormalizing data =
    let tr1 = oppose_point in 
    {
     data with  
-    Hex_planar_linker_data_t.ground = Hex_cardinal_direction.opposite (data.Hex_planar_linker_data_t.ground) ; 
+    Hex_planar_linker_data_t.ground = Hex_cardinal_direction.oppose (data.Hex_planar_linker_data_t.ground) ; 
     Hex_planar_linker_data_t.apex = tr1 (data.Hex_planar_linker_data_t.apex) ;
     Hex_planar_linker_data_t.support = 
         (Image.image tr1 (data.Hex_planar_linker_data_t.support)) ;

@@ -93,7 +93,7 @@ let sides_for_player = function
 
 let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
 
-let opposite = function  
+let oppose = function  
      Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Up
     |Hex_cardinal_direction_t.Left  -> Hex_cardinal_direction_t.Right
     |Hex_cardinal_direction_t.Right -> Hex_cardinal_direction_t.Left

@@ -77,7 +77,7 @@ let cmp = ((fun elt1 elt2->
 
 
 let is_final (dim,direction) elt = 
-   let opp = Hex_cardinal_direction.opposite direction in 
+   let opp = Hex_cardinal_direction.oppose direction in 
    match elt with  
    Hex_kite_element_t.Active_cell(cell)->
      Hex_cardinal_direction.Border.test dim opp cell
