@@ -56,6 +56,11 @@ let enumerate d (Hex_dimension_t.D dim) side k=
     |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo (dim+1-d),k)
     |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,d);;
 
+let enumerate_all d (Hex_dimension_t.D dim) side =
+   Ennig.doyle (
+        enumerate d (Hex_dimension_t.D dim) side
+   ) 1 dim;;
+
 let test d dim side p=
      match side with   
      Hex_cardinal_direction_t.Down  -> Private.test_for_low_parallel dim p d
@@ -68,6 +73,7 @@ end ;;
 module Border = struct 
 
 let enumerate = Parallel_To_Border.enumerate 1;;
+let enumerate_all = Parallel_To_Border.enumerate_all 1;;
 let test dim side cell = Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
 
 end ;;      
