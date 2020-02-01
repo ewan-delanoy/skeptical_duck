@@ -19,6 +19,18 @@ let cell_list_to_string l=
 
 let cell_pair_to_string (cell1,cell2)=cell_list_to_string [cell1;cell2];;
 
+let ipair_is_valid  (Hex_dimension_t.D dim) (i,j) = 
+     (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;   
+
+let neighbors_for_one dim (i,j) =
+   let temp1 = List.filter (ipair_is_valid dim) 
+   [
+        j,(i-1);(j+1),(i-1);
+       (j-1),i               ;(j+1),i1    ;
+       (j-1),(i+1); j,(i+1);
+   ] in 
+   Set_of_poly_pairs.safe_set temp1;;
+
 end ;;
 
 let all_cells (Hex_dimension_t.D dimension)=
@@ -56,8 +68,7 @@ let has_just_played preceding_moves=
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
   
-let ipair_is_valid  (Hex_dimension_t.D dim) (i,j) = 
-     (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;   
+let ipair_is_valid  = Private.ipair_is_valid  ;;   
 
 let next_one_to_play preceding_moves=
    if ((List.length preceding_moves) mod 2=0)  
