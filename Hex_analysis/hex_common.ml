@@ -113,6 +113,8 @@ let ipair_is_valid  = Private.ipair_is_valid  ;;
 let is_connected dim l =
   (List.length(compute_connected_components dim l)=1);;
 
+let neighbors_for_several = Private.neighbors_for_several ;;
+
 let next_one_to_play preceding_moves=
    if ((List.length preceding_moves) mod 2=0)  
    then Hex_player_t.First_player
