@@ -55,6 +55,19 @@ let neighbors dim (Hex_island_t.I(opt_direction,z)) =
    let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
    Set_of_poly_pairs.setminus excessive_whole z;;
 
+let is_included_in 
+  (Hex_island_t.I(opt1,z1)) 
+    (Hex_island_t.I(opt2,z2)) = 
+  if (not (Set_of_poly_pairs.is_included_in z1 z2)) 
+  then false 
+  else match opt1 with 
+       None -> true 
+       | _ -> (opt2 = opt1);;
+ 
+
+
+
+
 
 let oppose dim (Hex_island_t.I(old_opt,z)) =
    let new_opt = (match old_opt with 
