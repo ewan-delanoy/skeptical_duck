@@ -105,10 +105,6 @@ let has_just_played preceding_moves=
    then Hex_player_t.First_player
    else Hex_player_t.Second_player;;
   
-let ipair_is_valid  = Private.ipair_is_valid  ;;   
-
-let is_connected dim l =
-  (List.length(compute_connected_components dim l)=1);;
 
 
 let next_one_to_play preceding_moves=

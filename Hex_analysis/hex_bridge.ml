@@ -22,7 +22,7 @@ let ipairs_touching_an_ipair_bridge dim (i1,j1) (i2,j2)=
       ]  with 
     None -> raise(Invalid_bridge(current_diff))
     |Some(_,res)->
-      List.filter (Hex_common.ipair_is_valid dim) res;;
+      List.filter (Hex_ipair.is_valid dim) res;;
 
 
 
@@ -33,7 +33,7 @@ let bridges_touching_a_cell dim cell =
     let (i,j) = Hex_cell.to_int_pair cell in 
     let p1=(i,j+1) and p2=(i-1,j+1) and p3=(i-1,j)
     and p4=(i,j-1) and p5=(i+1,j-1) and p6=(i+1,j) in 
-   let checker1 = Hex_common.ipair_is_valid dim   in
+   let checker1 = Hex_ipair.is_valid dim   in
    let checker2 = (fun (p,q)-> (checker1 p)&&(checker1 q) ) in 
    let unordered_ipairs = List.filter checker2 [
       p1,p2;p2,p3;p3,p4;p4,p5;p5,p6;p6,p1
