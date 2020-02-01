@@ -36,6 +36,24 @@ let neighbors_for_several dim z=
     Set_of_poly_pairs.setminus 
      (Set_of_poly_pairs.fold_merge temp1) z ;;
     
+let rec helper1_for_cc_computing 
+   (dim,old_whole,news_from_whole,to_be_exhausted) =
+    if (Set_of_poly_pairs.length to_be_treated = 0)
+    then (old_whole,to_be_exhausted)
+    else 
+    let temp1 = neighbors_for_several dim news_from_whole in 
+    let new_ones = Set_of_poly_pairs.setminus temp1 old_whole in 
+    if (Set_of_poly_pairs.length new_ones = 0)
+    then (old_whole,to_be_exhausted)
+    else let new_whole = Set_of_poly_pairs.merge old_whole new_ones in 
+         let remaining_ones = Set_of_poly_pairs.setminus 
+                   to_be_exhausted new_whole in 
+         helper1_for_cc_computing 
+         (dim,new_whole,new_ones,remaining_ones);;
+         
+                   
+
+
 
 end ;;
 
