@@ -68,12 +68,7 @@ let translates formal_dim cnnctr =
    Image.image (Private.translate cnnctr) cleaned_base ;; 
 
 module Example = struct 
-
-let bs_rightwards_claw = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,1)]);
-    junction = [(4, 3); (3, 3); (2, 3); (1, 3); (4, 2); (2, 2); (3, 2); (3, 1)];
-    exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Right),Set_of_poly_pairs.empty_set);
-} ;;   
+ 
 
 let bs_upwards_claw = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,1)]);
@@ -118,6 +113,16 @@ let northwest_bridge = {
     exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,2)]);
 } ;;   
 
+let right_eyed_upwards_claw = {
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,3)]);
+    junction = [ 
+        (1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
+        (2, 1); (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); 
+        (3, 1); (3, 2); (3, 3); (3, 4); (3, 5); 
+                (4, 2)
+    ];
+    exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Up),Set_of_poly_pairs.empty_set);
+} ;;   
 
 let rightwards_pyramid = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(6,1)]);
