@@ -30,7 +30,7 @@ let decompose eob =
     let ipairs = Hex_cell_set.image Hex_cell.to_int_pair cells in 
     let components = Hex_ipair.compute_connected_components dim ipairs in 
     let sides = Hex_cardinal_direction.sides_for_player w in 
-    Image.image (
+    let pre_answer = Image.image (
        fun l->
        let opt = Option.seek (fun side->
           List.exists(fun 
@@ -38,7 +38,16 @@ let decompose eob =
          (Hex_cell.of_int_pair p)) l
        ) sides in 
        Hex_island_t.I(opt,Set_of_poly_pairs.safe_set l)
-    ) components ;;
+    ) components in 
+    let complements = Option.filter_and_unpack (
+       fun side -> 
+        if List.exists (fun (Hex_island_t.I(opt,_)) ->
+           opt = Some side
+         ) pre_answer   
+        then None 
+        else Some(Hex_island_t.I(Some side,Set_of_poly_pairs.empty_set))   
+    )  sides in 
+    pre_answer @ complements ;;
 
 
 let neighbors dim (Hex_island_t.I(opt_direction,z)) =
