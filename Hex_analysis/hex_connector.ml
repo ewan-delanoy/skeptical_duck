@@ -33,13 +33,13 @@ let oppose dim cnnctr =
 {
     Hex_connector_t.entry =on_island (cnnctr.Hex_connector_t.entry);
     junction =  on_pairs (cnnctr.Hex_connector_t.junction) ;
-    exit = on_island (cnnctr.Hex_connector_t.entry);
+    exit = on_island (cnnctr.Hex_connector_t.exit);
 };;
 
 let reflect cnnctr = {
     Hex_connector_t.entry = Hex_island.reflect (cnnctr.Hex_connector_t.entry);
     junction = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.junction) ;
-    exit = Hex_island.reflect (cnnctr.Hex_connector_t.entry);
+    exit = Hex_island.reflect (cnnctr.Hex_connector_t.exit);
 };;
 
 let reverse cnnctr = {
