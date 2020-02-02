@@ -34,3 +34,11 @@ let reverse cnnctr = {
     Hex_connector_t.entry = (cnnctr.Hex_connector_t.exit);
                     exit  = (cnnctr.Hex_connector_t.entry);
 };;
+
+(*
+let translates (Hex_dimension_t.D dim) cnnctr = 
+   let (Hex_island_t.I(opt1,elts1)) = cnnctr.Hex_connector_t.entry 
+   and (Hex_island_t.I(opt2,elts2)) = cnnctr.Hex_connector_t.exit 
+   and elts3 = cnnctr.Hex_connector_t.junction in 
+   let opt = (if opt1<>None then opt1 else opt2) in 
+*)

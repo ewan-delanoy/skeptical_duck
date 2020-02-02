@@ -4,6 +4,7 @@
 
 *)
 
+
 module Private = struct 
 let correspondences = 
     [
@@ -77,6 +78,18 @@ let enumerate_all = Parallel_To_Border.enumerate_all 1;;
 let test dim side cell = Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
 
 end ;;      
+
+let authorized_translations (Hex_dimension_t.D dim) opt = 
+   let base = Cartesian.square (Ennig.ennig (1-dim) (dim-1)) in 
+   match opt with 
+   None -> base 
+   |Some(direction) ->
+     (
+        match direction with 
+        Hex_cardinal_direction_t.Down 
+       |Hex_cardinal_direction_t.Up -> List.filter (fun (dx,dy)->dy=0) base
+       | _ -> List.filter (fun (dx,dy)->dx=0) base
+     );;
 
 let for_eye_description    = Private.char_for_eye_description ;;
 let for_ground_description = Private.char_for_ground_description ;;
