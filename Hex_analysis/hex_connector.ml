@@ -114,13 +114,6 @@ let right_eyed_upwards_claw = {
     exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Up),Set_of_poly_pairs.empty_set);
 } ;;   
 
-let rightwards_pyramid = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(6,1)]);
-    junction =  [(7, 4); (8, 4); (5, 4); (6, 4); (6, 3); (8, 3); (8, 2); (7, 3); (7, 1);
-   (6, 2); (1, 4); (2, 4); (3, 4); (4, 4); (2, 3); (4, 3); (3, 2); (3, 3);
-   (5, 1); (5, 2); (4, 2); (7, 2)];
-    exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Right),Set_of_poly_pairs.empty_set);
-} ;;   
 
 let rightwards_small_pyramid = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,1)]);
@@ -134,6 +127,16 @@ let sb_rightwards_claw = {
     junction = [(4, 3); (3, 3); (2, 3); (1, 3); (4, 2); (2, 2); (3, 2); (4, 1)];
     exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Right),Set_of_poly_pairs.empty_set);
 } ;;   
+
+let upwards_pyramid = 
+{Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [(4, 3)]);
+   junction =
+    [(1, 1); (1, 2);    (1, 3); (1, 4);   (1, 5); (1, 6);   (1, 7); (1, 8); 
+     (2, 1); (2, 3);    (2, 5); (2, 7);   (2, 2); (3, 1);   (2, 6); (3, 6); 
+     (3, 2); (3, 5);    (3, 3); (4, 2);   (3, 4); (4, 4);
+    ];
+   exit =
+    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S [])};;
 
 (*
 let oppose = Hex_connector.oppose Hex_dimension.eleven and reflect = Hex_connector.reflect ;;
