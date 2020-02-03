@@ -20,6 +20,16 @@ let translate cnnctr (dx,dy)=
 
 end ;;
 
+let bring_to_left_upper_corner cnnctr = 
+   let (Hex_island_t.I(_,elts1)) = cnnctr.Hex_connector_t.entry 
+   and (Hex_island_t.I(_,elts2)) = cnnctr.Hex_connector_t.exit 
+   and elts3 = cnnctr.Hex_connector_t.junction in 
+   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3] in 
+   let abscissas = Set_of_poly_pairs.image fst elts 
+   and ordinates = Set_of_poly_pairs.image snd elts in 
+   let xmin = Min.list abscissas 
+   and ymin = Min.list ordinates in    
+   Private.translate cnnctr (1-xmin,1-ymin);; 
 
 let check_entry island cnnctr =
     Hex_island.is_included_in cnnctr.Hex_connector_t.entry island;;
@@ -47,6 +57,7 @@ let reverse cnnctr = {
     Hex_connector_t.entry = (cnnctr.Hex_connector_t.exit);
                     exit  = (cnnctr.Hex_connector_t.entry);
 };;
+
 
 
 let translates formal_dim cnnctr = 
