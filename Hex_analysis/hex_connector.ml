@@ -37,6 +37,14 @@ let check_entry island cnnctr =
 let check_exit island cnnctr =
     Hex_island.is_included_in cnnctr.Hex_connector_t.exit island;;
 
+let force_order_on_junction cnnctr = 
+   let old_junction = cnnctr.Hex_connector_t.junction in 
+   let new_junction = Ordered.sort Total_ordering.standard2 old_junction in 
+   {
+    cnnctr with     
+    Hex_connector_t.junction =  new_junction ;
+};;
+
 let oppose dim cnnctr = 
   let on_island = Hex_island.oppose dim
   and on_pairs =  Image.image (Hex_ipair.oppose dim) in 
