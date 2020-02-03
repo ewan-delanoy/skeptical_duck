@@ -103,15 +103,15 @@ let left_eyed_upwards_claw = {Hex_connector_t.entry =
 
 
 let northeast_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,3)]);
-    junction = [(2, 4); (3, 4)];
-    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,5)]);
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,1)]);
+    junction = [(1, 2); (2, 2)];
+    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,3)]);
 } ;;   
 
 let northwest_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,3)]);
-    junction = [(2, 3); (3, 2)];
-    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,2)]);
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,2)]);
+    junction = [(1, 2); (2, 1)];
+    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,1)]);
 } ;;   
 
 let right_eyed_upwards_claw = {
