@@ -44,6 +44,12 @@ let test_for_left_parallel                           (i,j) d= (j=d);;
 let test_for_right_parallel  (Hex_dimension_t.D dim) (i,j) d= (j=dim+1-d);;
 let test_for_upper_parallel                          (i,j) d= (i=d);;    
 
+let orthogonal_directions = function  
+     Hex_cardinal_direction_t.Down  
+    |Hex_cardinal_direction_t.Up    -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right]
+    |Hex_cardinal_direction_t.Left  
+    |Hex_cardinal_direction_t.Right -> [Hex_cardinal_direction_t.Up;Hex_cardinal_direction_t.Down];;
+  
 
 end ;;
 
@@ -69,6 +75,8 @@ let test d dim side p=
     |Hex_cardinal_direction_t.Right -> Private.test_for_right_parallel dim p d
     |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_parallel p d;;
 
+
+
 end ;;
 
 module Border = struct 
@@ -78,6 +86,20 @@ let enumerate_all = Parallel_To_Border.enumerate_all 1;;
 let test dim side cell = Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
 
 end ;;      
+
+let all =  
+[
+ Hex_cardinal_direction_t.Down;
+ Hex_cardinal_direction_t.Left;
+ Hex_cardinal_direction_t.Right;
+ Hex_cardinal_direction_t.Up;
+];;
+
+let all_eyed_claws =
+  let temp1 = Image.image (fun d->
+     Image.image (fun d2->(d,d2)) (Private.orthogonal_directions d)
+  ) all in 
+  List.flatten temp1;;
 
 let authorized_translations (Hex_dimension_t.D dim) opt = 
    let base = Cartesian.square (Ennig.ennig (1-dim) (dim-1)) in 
@@ -100,10 +122,6 @@ let is_vertical = function
    |Hex_cardinal_direction_t.Up -> true 
    | _ -> false ;;  
 
-let sides_for_player = function 
-    Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
-   |Hex_player_t.Second_player -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right];;
-
 let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
 
 let oppose = function  
@@ -118,12 +136,8 @@ let opt_of_char c =
        fun p->if fst(p)=c then Some(snd p) else None) 
        Private.correspondences ;;
    
-let orthogonal_directions = function  
-     Hex_cardinal_direction_t.Down  
-    |Hex_cardinal_direction_t.Up    -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right]
-    |Hex_cardinal_direction_t.Left  
-    |Hex_cardinal_direction_t.Right -> [Hex_cardinal_direction_t.Up;Hex_cardinal_direction_t.Down];;
-          
+let orthogonal_directions = Private.orthogonal_directions ;;
+
 
 let reflect = function 
      Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Right
@@ -133,6 +147,11 @@ let reflect = function
 
 let short_name_for_pair = Private.short_name_for_pair;;
          
+let sides_for_player = function 
+    Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
+   |Hex_player_t.Second_player -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right];;
+
+
 
 let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;;
 
