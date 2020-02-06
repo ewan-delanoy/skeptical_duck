@@ -5,8 +5,5 @@
 *)
 
 type t= 
-     Bridge of Hex_unit_side_t.t 
-    |Eyed_claw of Hex_borderwise_t.t * Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t 
-    |Noneyed_claw of Hex_borderwise_t.t * Hex_double_hump_qualifier_t.t *  Hex_cardinal_direction_t.t 
-    |Pyramid of  Hex_borderwise_t.t * Hex_cardinal_direction_t.t
-    |Small_pyramid of Hex_borderwise_t.t * Hex_cardinal_direction_t.t  ;;
+      Inner of  Hex_inner_connector_name_t.t 
+     |Border of Hex_borderwise_t.t * Hex_border_connector_name_t.t ;;
