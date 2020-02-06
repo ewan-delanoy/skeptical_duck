@@ -4,6 +4,10 @@
 
 *)
 
+(*
+let base_for_starters =
+*)   
+
 let is_inner = function
     Hex_connector_name_t.Bridge(_)-> true
    |Eyed_claw(_,_,_) 
