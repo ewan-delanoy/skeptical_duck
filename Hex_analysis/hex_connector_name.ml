@@ -16,6 +16,10 @@ end ;;
 
 let enders_for_side = Private.siders Hex_borderwise_t.To_border;;
 
+let middlers = Image.image (
+  fun inner -> Hex_connector_name_t.Inner(inner)
+) Hex_inner_connector_name.all;;
+
 let starters_for_side = Private.siders Hex_borderwise_t.From_border;;
    
 
