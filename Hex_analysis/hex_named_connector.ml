@@ -6,6 +6,10 @@
 
 exception Bad_specification_for_eyed_claw of 
      Hex_cardinal_direction_t.t *  Hex_cardinal_direction_t.t;;
+exception Precomputed_starter_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
+exception Precomputed_middler_exn of Hex_dimension_t.t  ;;
+exception Precomputed_ender_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
+
 
  module Private = struct 
 
@@ -151,38 +155,91 @@ let expand_name = function
    Hex_connector_name_t.Inner(inner)-> expand_inner_name inner 
    |Border(bw,border) -> expand_border_name bw border;;
    
-
-let of_name nm = 
-   let temp = expand_name nm in 
+let add_name nm cnnctr = 
    {
      Hex_named_connector_t.name     = nm ;
-     entry    = temp.Hex_connector_t.entry ;
-     junction = temp.Hex_connector_t.junction ;
-     exit     = temp.Hex_connector_t.exit
+     entry    = cnnctr.Hex_connector_t.entry ;
+     junction = cnnctr.Hex_connector_t.junction ;
+     exit     = cnnctr.Hex_connector_t.exit
    };;   
+
+let of_name nm = add_name nm (expand_name nm);; 
 
 let to_connector nc = 
    {
-     Hex_connector_t.entry = nc.Hex_connector_t.entry ;
-     junction = nc.Hex_connector_t.junction ;
-     exit     = nc.Hex_connector_t.exit
+     Hex_connector_t.entry = nc.Hex_named_connector_t.entry ;
+     junction = nc.Hex_named_connector_t.junction ;
+     exit     = nc.Hex_named_connector_t.exit
    };;   
 
+let all_translates dim nc =
+   let nm =nc.Hex_named_connector_t.name 
+   and cnnctr = to_connector nc in 
+   Image.image (add_name nm) (Hex_connector.all_translates dim cnnctr);;
+
+let expand_all dim cnnctrs = 
+    List.flatten( Image.image (fun cnnctr ->
+    let nc=of_name cnnctr in all_translates dim nc ) cnnctrs);; 
 
 
 let to_readable_string nc = Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name;;
 
 
-let starters_for_side f (dim,side)=
-    let temp1 = Hex_connector_name.starters_for_side side in 
-    let temp2 = Image.image of_name temp1 in 
+let starters_for_side (dim,side)=
+    expand_all dim (Hex_connector_name.starters_for_side side);;
+    
+let middlers dim= 
+    expand_all dim  (Hex_connector_name.middlers);;   
 
+let enders_for_side (dim,side)=
+    expand_all dim (Hex_connector_name.enders_for_side side);;    
  
+module Precomputed = struct 
+
+let usual_range = Image.image (
+   fun d -> (Hex_dimension.eleven,d)
+) Hex_cardinal_direction.all;; 
+
+let data_for_starters = 
+   Image.image (fun (dim,d)->((dim,d),starters_for_side (dim,d)) ) usual_range;;
+
+let data_for_middlers = 
+   Image.image (fun dim->(dim,middlers dim) ) [Hex_dimension.eleven];;
+
+
+let data_for_enders = 
+   Image.image (fun (dim,d)->((dim,d),enders_for_side (dim,d)) ) usual_range;;
+
+let starters_for_side dim side=
+     match Option.seek (fun p->fst(p)=(dim,side)) data_for_starters with 
+     Some(_,vaal)->vaal
+    |None -> raise (Precomputed_starter_exn(dim,side));;
+    
+let middlers dim=
+     match Option.seek (fun p->fst(p)=dim) data_for_middlers with 
+     Some(_,vaal)->vaal
+    |None -> raise (Precomputed_middler_exn(dim));;
+
+let enders_for_side dim side=
+     match Option.seek (fun p->fst(p)=(dim,side)) data_for_enders with 
+     Some(_,vaal)->vaal
+    |None -> raise (Precomputed_ender_exn(dim,side));;
+    
+
+
+end ;;
+
    
 
 end ;;
+
+let enders_for_side = Private.Precomputed.enders_for_side ;;
+
+let middlers = Private.Precomputed.middlers ;;
 
 let of_name = Private.of_name;;
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
+
+let starters_for_side = Private.Precomputed.starters_for_side ;;
