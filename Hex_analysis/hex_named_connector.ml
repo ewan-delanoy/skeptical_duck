@@ -164,7 +164,12 @@ let of_name nm =
 
 let to_readable_string nc = Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name;;
 
-
+(*
+let starters_for_side f (dim,side)=
+    let temp1 = Hex_connector_name.starters_for_side side in 
+*)   
+ 
+   
 
 end ;;
 

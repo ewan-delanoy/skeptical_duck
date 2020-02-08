@@ -12,6 +12,12 @@ let to_readable_string = function
 
 end ;; 
 
+let all =
+   [
+      Hex_double_hump_qualifier_t.Big_followed_by_small ;
+      Hex_double_hump_qualifier_t.Small_followed_by_big
+   ];;
+
 let print_out (fmt:Format.formatter) dh=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string dh);;     
 
