@@ -161,13 +161,22 @@ let of_name nm =
      exit     = temp.Hex_connector_t.exit
    };;   
 
+let to_connector nc = 
+   {
+     Hex_connector_t.entry = nc.Hex_connector_t.entry ;
+     junction = nc.Hex_connector_t.junction ;
+     exit     = nc.Hex_connector_t.exit
+   };;   
+
+
 
 let to_readable_string nc = Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name;;
 
-(*
+
 let starters_for_side f (dim,side)=
     let temp1 = Hex_connector_name.starters_for_side side in 
-*)   
+    let temp2 = Image.image of_name temp1 in 
+
  
    
 
