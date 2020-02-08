@@ -4,18 +4,25 @@
 
 *)
 
-(*
+
 let for_side side =
     let ortho = Hex_cardinal_direction.orthogonal_directions side in 
-    let part1=Image.image (fun specifier->
+    (Image.image (fun specifier->
         Hex_border_connector_name_t.Eyed_claw(specifier,side)
-    ) ortho in 
+    ) ortho)
+    @
+    (
+     Image.image (
+       fun qualifier -> Hex_border_connector_name_t.Noneyed_claw(qualifier,side)
+     )   Hex_double_hump_qualifier.all
+    )
+    @
+    [
+      Hex_border_connector_name_t.Pyramid(side);
+      Hex_border_connector_name_t.Small_pyramid(side)  
+    ] ;;
 
-     Eyed_claw of     Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t 
-    |Noneyed_claw of  Hex_double_hump_qualifier_t.t *  Hex_cardinal_direction_t.t 
-    |Pyramid of       Hex_cardinal_direction_t.t
-    |Small_pyramid of Hex_cardinal_direction_t.t  ;;
-*)
+    
 
 let to_readable_string = function 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
