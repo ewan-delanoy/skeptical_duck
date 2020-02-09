@@ -149,6 +149,11 @@ let to_readable_string = function
   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
    |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
 
+(*
+let test_for_successor_for_earth island0 = function 
+  Hex_kite_element_t.Earth(_)-> false
+   |Sea(nc)-> Hex_connector.check_entry island (Hex_named_connector.to_);;
+*)
 
 end ;;
 

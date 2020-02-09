@@ -165,7 +165,7 @@ let add_name nm cnnctr =
 
 let of_name nm = add_name nm (expand_name nm);; 
 
-let to_connector nc = 
+let forget_name nc = 
    {
      Hex_connector_t.entry = nc.Hex_named_connector_t.entry ;
      junction = nc.Hex_named_connector_t.junction ;
@@ -174,7 +174,7 @@ let to_connector nc =
 
 let all_translates dim nc =
    let nm =nc.Hex_named_connector_t.name 
-   and cnnctr = to_connector nc in 
+   and cnnctr = forget_name nc in 
    Image.image (add_name nm) (Hex_connector.all_translates dim cnnctr);;
 
 let expand_all dim cnnctrs = 
@@ -231,18 +231,12 @@ end ;;
 
 
 
-let to_molecular_linker nc = 
-     match Hex_connector_name.to_nondefault_molecular_linker 
-             nc.Hex_named_connector_t.name 
-              nc.Hex_named_connector_t.junction with 
-     None -> Hex_connector.to_default_molecular_linker (to_connector nc)           
-    |Some(mlclr) -> mlclr  ;; 
-   
-
 
 end ;;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
+
+let forget_name = Private.forget_name ;; 
 
 let middlers = Private.Precomputed.middlers ;;
 
@@ -257,7 +251,13 @@ let print_out (fmt:Format.formatter) nc=
 
 let starters_for_side = Private.Precomputed.starters_for_side ;;
 
-let to_molecular_linker = Private.to_molecular_linker ;; 
+let to_molecular_linker nc = 
+     match Hex_connector_name.to_nondefault_molecular_linker 
+             nc.Hex_named_connector_t.name 
+              nc.Hex_named_connector_t.junction with 
+     None -> Hex_connector.to_default_molecular_linker (Private.forget_name nc)           
+    |Some(mlclr) -> mlclr  ;; 
+   
 
 let to_readable_string nc = 
    Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name ;;
