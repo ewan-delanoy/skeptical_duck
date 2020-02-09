@@ -92,6 +92,7 @@ let oppose dim (Hex_island_t.I(old_opt,z)) =
       (Set_of_poly_pairs.image (Hex_ipair.oppose dim) z) in 
    Hex_island_t.I(new_opt,new_z);;
 
+let outer_earth (Hex_island_t.I(opt,z))= opt ;;
 
 let reflect (Hex_island_t.I(old_opt,z)) =
    let new_opt = (match old_opt with 

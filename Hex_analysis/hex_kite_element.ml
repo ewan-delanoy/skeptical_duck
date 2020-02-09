@@ -149,11 +149,19 @@ let to_readable_string = function
   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
    |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
 
-(*
-let test_for_successor_for_earth island0 = function 
+
+let test_for_successor_for_earth island = function 
   Hex_kite_element_t.Earth(_)-> false
-   |Sea(nc)-> Hex_connector.check_entry island (Hex_named_connector.to_);;
-*)
+   |Sea(nc)-> Hex_connector.check_entry island (Hex_named_connector.forget_name nc);;
+
+let test_for_successor_for_sea nc = function 
+  Hex_kite_element_t.Sea(_)-> false
+   |Earth(island)-> Hex_connector.check_exit island (Hex_named_connector.forget_name nc);;
+
+let test_for_successor = function 
+  Hex_kite_element_t.Earth(island)-> test_for_successor_for_earth island
+   |Sea(nc)-> test_for_successor_for_sea nc;;
+  
 
 end ;;
 
@@ -166,9 +174,22 @@ let check_compatiblity end_of_battle elt =
    List.for_all (fun cell -> 
     (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) inner_data ;;
 
+(*
+let is_final initial_side elt = 
+   let final_side = Hex_cardinal_direction.oppose initial_side in 
+   match elt with  
+   Hex_kite_element_t.Sea(_)-> false
+   |Earth(island)-> (Hex_island.outer_earth island = final_side);;
+;;
+
+*)
+
+
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
+
+let test_for_successor = Private.test_for_successor ;;
 
 let to_molecular_linker = function
   Hex_kite_element_t.Earth(island)-> None
