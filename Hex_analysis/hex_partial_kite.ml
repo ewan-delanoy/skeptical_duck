@@ -4,6 +4,8 @@
 
 *)
 
+module Elderly = struct 
+
 exception Kite_is_not_started;;
 
 module Private = struct 
@@ -53,3 +55,4 @@ let starters end_of_battle =
    Image.image Private.initial_atom retained_ones;;
       
 
+end ;; 
