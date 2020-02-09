@@ -55,6 +55,10 @@ let check_entry island cnnctr =
 let check_exit island cnnctr =
     Hex_island.is_included_in cnnctr.Hex_connector_t.exit island;;
 
+let inner_earth cnnctr =
+   Hex_cell_set.merge 
+                     (Hex_island.inner_earth cnnctr.Hex_connector_t.entry)
+                     (Hex_island.inner_earth cnnctr.Hex_connector_t.exit);;
 
 let oppose dim cnnctr = 
   let on_island = Hex_island.oppose dim
