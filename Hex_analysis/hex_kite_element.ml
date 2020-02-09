@@ -152,18 +152,15 @@ let to_readable_string = function
 
 end ;;
 
-let check_compatiblity end_of_battle = function  
-   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
-   |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
+let check_compatiblity end_of_battle elt = 
+   let (ordered_inner_data,expected_result) = (match elt with 
+   Hex_kite_element_t.Earth(island)-> (Hex_island.inner_earth island,Hex_eob_result_t.Ally_territory)
+   |Sea(nc)-> (Hex_named_connector.inner_sea nc,Hex_eob_result_t.Unoccupied)
+   ) in 
+   let inner_data = Hex_cell_set.forget_order ordered_inner_data in 
+   List.for_all (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) inner_data ;;
 
-(*
- let expected_result = (
-     if Private.is_active elt 
-     then Hex_eob_result_t.Ally_territory
-     else Hex_eob_result_t.Unoccupied) in 
- List.for_all (fun cell -> 
-    (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) (Private.support elt);;   
-*)
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
