@@ -246,6 +246,10 @@ let enders_for_side = Private.Precomputed.enders_for_side ;;
 
 let middlers = Private.Precomputed.middlers ;;
 
+let inner_sea nc =
+   Hex_cell_set.safe_set 
+     (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction) ;;
+
 let of_name = Private.of_name;;
 
 let print_out (fmt:Format.formatter) nc=
