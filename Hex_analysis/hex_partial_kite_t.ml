@@ -8,4 +8,4 @@ The third argument says on which side of the board the kite started.
 
 *)
 
-type t= P of Hex_kite_element_t.t list * Hex_cell_set_t.t * Hex_cardinal_direction_t.t ;;
+type t= P of Hex_kite_element_t.old_t list * Hex_cell_set_t.t * Hex_cardinal_direction_t.t ;;

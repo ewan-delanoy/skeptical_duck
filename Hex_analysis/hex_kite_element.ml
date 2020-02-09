@@ -73,7 +73,7 @@ let cmp = ((fun elt1 elt2->
    let trial1 = Total_ordering.standard i1 (Private.level elt2) in 
    if trial1 <> Total_ordering.Equal then trial1 else 
    Total_ordering.standard (Private.unveil elt1) (Private.unveil elt2) 
-):> Hex_kite_element_t.t Total_ordering.t);;
+):> Hex_kite_element_t.old_t Total_ordering.t);;
 
 
 let is_final (dim,direction) elt = 
