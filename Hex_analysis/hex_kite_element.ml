@@ -174,15 +174,15 @@ let check_compatiblity end_of_battle elt =
    List.for_all (fun cell -> 
     (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) inner_data ;;
 
-(*
+
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
    match elt with  
    Hex_kite_element_t.Sea(_)-> false
-   |Earth(island)-> (Hex_island.outer_earth island = final_side);;
+   |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
 ;;
 
-*)
+
 
 
 
