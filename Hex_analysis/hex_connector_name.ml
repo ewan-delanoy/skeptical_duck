@@ -27,6 +27,10 @@ let is_inner = function
     Hex_connector_name_t.Inner(_)-> true
    |Border(_,_) -> false ;;
 
+let to_nondefault_molecular_linker cname junction= match cname with 
+    Hex_connector_name_t.Inner(inner)-> Hex_inner_connector_name.to_nondefault_molecular_linker inner
+   |Border(_,border) -> Hex_border_connector_name.to_nondefault_molecular_linker border junction;;
+
 let to_readable_string = function 
     Hex_connector_name_t.Inner(inner)-> Hex_inner_connector_name.to_readable_string inner
    |Border(_,border) -> Hex_border_connector_name.to_readable_string border;;
