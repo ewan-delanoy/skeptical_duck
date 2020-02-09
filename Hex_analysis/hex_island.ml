@@ -50,7 +50,7 @@ let decompose eob =
     pre_answer @ complements ;;
 
 
-let inner_content (Hex_island_t.I(opt,z))= 
+let inner_earth (Hex_island_t.I(opt,z))= 
    Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair z) ;;
 
 let is_included_in 
