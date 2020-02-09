@@ -4,6 +4,8 @@
 
 *)
 
+module Elderly = struct 
+
 exception Doubled_cell_in_bridge of Hex_cell_t.t ;; 
 
 module Private = struct 
@@ -137,3 +139,5 @@ let to_molecular_linker = function
    |Planar (plnr,cell) -> Some(Hex_planar_linker.to_molecular_linker plnr cell);;
 
 let to_readable_string = Private.to_readable_string;;   
+
+end ;; 
