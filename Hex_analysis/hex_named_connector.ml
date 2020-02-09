@@ -230,7 +230,7 @@ let enders_for_side dim side=
 end ;;
 
 
-(*
+
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
              nc.Hex_named_connector_t.name 
@@ -238,7 +238,7 @@ let to_molecular_linker nc =
      None -> Hex_connector.to_default_molecular_linker (to_connector nc)           
     |Some(mlclr) -> mlclr  ;; 
    
-*)
+
 
 end ;;
 
@@ -252,3 +252,5 @@ let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
 let starters_for_side = Private.Precomputed.starters_for_side ;;
+
+let to_molecular_linker = Private.to_molecular_linker ;; 
