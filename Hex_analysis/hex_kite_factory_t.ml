@@ -9,6 +9,6 @@ type t= {
       winner        : Hex_player_t.t ;
       initial_data  : Hex_end_of_battle_t.t ;
       finished      : Hex_molecular_linker_t.t list ;
-      unfinished    : Hex_partial_kite_t.t list;
+      unfinished    : Hex_partial_kite_t.old_t list;
 };;
 
