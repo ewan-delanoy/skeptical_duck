@@ -78,7 +78,10 @@ let reverse cnnctr = {
 };;
 
 
-
+let to_default_molecular_linker cnnctr = 
+    let temp1=Image.image Hex_cell.of_int_pair cnnctr.Hex_connector_t.junction in 
+    let temp2=Listennou.extract_successive_pairs_from_even_list temp1 in 
+    Hex_molecular_linker.constructor (Image.image Hex_atomic_linker.pair temp2);;    
 
 
 module Example = struct 
