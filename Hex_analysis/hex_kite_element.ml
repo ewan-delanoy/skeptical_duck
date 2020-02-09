@@ -154,3 +154,8 @@ end ;;
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
+
+let to_molecular_linker = function
+  Hex_kite_element_t.Earth(island)-> None
+   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
+
