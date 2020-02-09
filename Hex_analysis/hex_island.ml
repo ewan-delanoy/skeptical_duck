@@ -50,6 +50,20 @@ let decompose eob =
     pre_answer @ complements ;;
 
 
+let inner_content (Hex_island_t.I(opt,z))= 
+   Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair z) ;;
+
+let is_included_in 
+  (Hex_island_t.I(opt1,z1)) 
+    (Hex_island_t.I(opt2,z2)) = 
+  if (not (Set_of_poly_pairs.is_included_in z1 z2)) 
+  then false 
+  else match opt1 with 
+       None -> true 
+       | _ -> (opt2 = opt1);;
+ 
+
+
 let neighbors dim (Hex_island_t.I(opt_direction,z)) =
    let part1 =(
      match opt_direction with 
@@ -64,15 +78,6 @@ let neighbors dim (Hex_island_t.I(opt_direction,z)) =
    let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
    Set_of_poly_pairs.setminus excessive_whole z;;
 
-let is_included_in 
-  (Hex_island_t.I(opt1,z1)) 
-    (Hex_island_t.I(opt2,z2)) = 
-  if (not (Set_of_poly_pairs.is_included_in z1 z2)) 
-  then false 
-  else match opt1 with 
-       None -> true 
-       | _ -> (opt2 = opt1);;
- 
 
 
 
