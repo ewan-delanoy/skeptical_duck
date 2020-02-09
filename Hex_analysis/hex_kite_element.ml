@@ -144,10 +144,13 @@ end ;;
 
 module Private = struct 
 
-(*
+
 let to_readable_string = function
   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
    |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
-*)
+
 
 end ;;
+
+let print_out (fmt:Format.formatter) elt=
+   Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
