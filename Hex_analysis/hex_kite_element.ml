@@ -141,3 +141,13 @@ let to_molecular_linker = function
 let to_readable_string = Private.to_readable_string;;   
 
 end ;; 
+
+module Private = struct 
+
+(*
+let to_readable_string = function
+  Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
+   |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
+*)
+
+end ;;

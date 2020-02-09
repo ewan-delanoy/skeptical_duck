@@ -98,6 +98,16 @@ let reflect (Hex_island_t.I(old_opt,z)) =
    Hex_island_t.I(new_opt,new_z);;
 
 
-
+let to_readable_string (Hex_island_t.I(opt,z)) =
+   match opt with 
+    Some(direction)->"<"^(Hex_cardinal_direction.for_ground_description direction)^">"
+   |None -> 
+       let l = Ordered.sort Hex_cell.cmp (Set_of_poly_pairs.image Hex_cell.of_int_pair z) in 
+       let n = List.length l in 
+       let p1 = Hex_cell.to_string(List.hd l) in 
+       if n=1 then p1 else 
+       let p2 = Hex_cell.to_string(List.hd(List.rev l)) in 
+       let joiner = (if n>2 then ".." else ",") in 
+       p1^joiner^p2;;
 
    

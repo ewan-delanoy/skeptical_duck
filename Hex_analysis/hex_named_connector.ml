@@ -254,3 +254,6 @@ let print_out (fmt:Format.formatter) nc=
 let starters_for_side = Private.Precomputed.starters_for_side ;;
 
 let to_molecular_linker = Private.to_molecular_linker ;; 
+
+let to_readable_string nc = 
+   Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name ;;
