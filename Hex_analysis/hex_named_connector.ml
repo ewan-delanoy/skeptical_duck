@@ -229,8 +229,15 @@ let enders_for_side dim side=
 
 end ;;
 
-(*   
-let to_default_molecular
+
+(*
+let to_molecular_linker nc = 
+     match Hex_connector_name.to_nondefault_molecular_linker 
+             nc.Hex_named_connector_t.name 
+              nc.Hex_named_connector_t.junction with 
+     None -> Hex_connector.to_default_molecular_linker (to_connector nc)           
+    |Some(mlclr) -> mlclr  ;; 
+   
 *)
 
 end ;;
