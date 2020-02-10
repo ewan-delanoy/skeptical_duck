@@ -60,27 +60,28 @@ end ;;
 
 module Private = struct 
 
-(*
+
 let starters_for_side end_of_battle side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
-   let clean = List.filter_and_unpack (
-      Hex_kite_element.check_compatiblity end_of_battle ) in 
-   let base1 = clean (Hex_named_connector.starters_for_side dim side) in 
+   let clean = List.filter (
+      Hex_named_connector.check_compatiblity end_of_battle ) in 
+   let base1 = clean (Hex_named_connector.starters_for_side dim side)
    and base2 = clean ((Hex_named_connector.middlers dim)@
                        (Hex_named_connector.enders_for_side dim side)
                       ) in 
    let islands = Hex_island.decompose end_of_battle in 
-   let first_island = Hex_island.get_side islands side in                    
+   let first_island = Hex_island.get_side side islands  in                    
    let constructor = (
-      fun first_elt ->
-        let first_sea = Hex_kite_element.inner_sea first_elt in 
-        let new_base=List.filter (Hex_kite_element.check_disjointness) base2 in
+      fun first_nc ->
+        let new_base=List.filter (Hex_named_connector.check_disjointness first_nc) base2 in
+        let elt1 = Hex_kite_element_t.Earth(first_island)
+        and elt2 = Hex_kite_element_t.Sea(first_nc) in 
         {
-            stops_so_far : Hex_kite_element_t.t list;
-            original_side : Hex_cardinal_direction_t.t;
-            unvisited_islands : Hex_island_t.t list;
-            unvisited_seas : Hex_named_connector_t.t list;
-        };; 
+            Hex_partial_kite_t.stops_so_far = [elt2;elt1];
+            original_side = side ;
+            unvisited_islands = List.filter (fun x->x<>first_island ) islands;
+            unvisited_seas = new_base ;
+        }
 
    ) in 
    Image.image constructor base1 ;; 
@@ -89,16 +90,8 @@ let starters_for_side end_of_battle side =
 end ;;
 
 
-type t={
-   stops_so_far : Hex_kite_element_t.t list;
-   original_side : Hex_cardinal_direction_t.t;
-   unvisited_islands : Hex_island_t.t list;
-   unvisited_seas : Hex_named_connector_t.t list;
-};;
-
-
 let starters end_of_battle = 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
    List.flatten (Image.image (Private.starters_for_side end_of_battle) sides);;
 
-*)   
+ 
