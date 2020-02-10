@@ -6,6 +6,7 @@
 
 exception Disconnected_cells of (int * int) list;;
 exception Lonely_side of Hex_cardinal_direction_t.t ;;
+exception Missing_side of Hex_cardinal_direction_t.t * (Hex_island_t.t list) ;;
 
 let constructor dim opt_direction l=
   let z=Set_of_poly_pairs.safe_set l in 
@@ -48,6 +49,11 @@ let decompose eob =
         else Some(Hex_island_t.I(Some side,Set_of_poly_pairs.empty_set))   
     )  sides in 
     pre_answer @ complements ;;
+
+let get_side side l=
+   match Option.seek (fun (Hex_island_t.I(opt,_))->opt=Some side) l with 
+   Some(island) -> island 
+   |None ->raise(Missing_side(side,l));;
 
 
 let inner_earth (Hex_island_t.I(opt,z))= 
