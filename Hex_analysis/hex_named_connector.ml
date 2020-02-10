@@ -237,6 +237,12 @@ let inner_sea nc =
 
 end ;;
 
+
+let check_compatiblity end_of_battle nc = 
+   let inner_data = Hex_cell_set.forget_order (Private.inner_sea nc) in 
+   List.for_all (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell)=Hex_eob_result_t.Unoccupied ) inner_data ;;
+
 let check_disjointness nc1 nc2 =
     Hex_cell_set.does_not_intersect (Private.inner_sea nc1) (Private.inner_sea nc2);; 
    
