@@ -177,6 +177,8 @@ let check_compatiblity end_of_battle elt =
    List.for_all (fun cell -> 
     (Hex_end_of_battle.assess end_of_battle cell)=expected_result ) inner_data ;;
 
+let check_disjointness to_be_avoided elt =
+   Hex_cell_set.does_not_intersect to_be_avoided (Private.inner_sea elt);;
 
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
