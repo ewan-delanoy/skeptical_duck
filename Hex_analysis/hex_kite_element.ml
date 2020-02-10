@@ -180,6 +180,8 @@ let check_compatiblity end_of_battle elt =
 let check_disjointness to_be_avoided elt =
    Hex_cell_set.does_not_intersect to_be_avoided (Private.inner_sea elt);;
 
+let inner_sea = Private.inner_sea ;;
+
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
    match elt with  

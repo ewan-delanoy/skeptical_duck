@@ -70,12 +70,28 @@ let starters_for_side end_of_battle side =
         ) in 
    let base1 = clean (Hex_named_connector.starters_for_side dim side) in 
    and base2 = clean ((Hex_named_connector.middlers dim)@
-                       (Hex_named_connector.starters_for_side dim side)
+                       (Hex_named_connector.enders_for_side dim side)
                       ) in 
+   let islands = Hex_island.decompose end_of_battle in 
+   let first_island = Hex_island.get_side islands side in                    
+   let constructor = (
+      fun first_elt ->
+        let 
+        let new_base=List.filter () base2 in 
 
+   ) in 
+   Image.image constructor base1 ;; 
    
 
 end ;;
+
+
+type t={
+   stops_so_far : Hex_kite_element_t.t list;
+   original_side : Hex_cardinal_direction_t.t;
+   unvisited_islands : Hex_island_t.t list;
+   unvisited_seas : Hex_named_connector_t.t list;
+};;
 
 
 let starters end_of_battle = 
