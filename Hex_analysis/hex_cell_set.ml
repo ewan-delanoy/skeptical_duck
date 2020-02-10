@@ -9,6 +9,7 @@
 let tr = ((fun x->Hex_cell_set_t.S(x)),(fun (Hex_cell_set_t.S(x))->x),Hex_cell.cmp);;
 
 let does_not_intersect x y= Functor_for_sets.does_not_intersect tr x y;;
+let empty_set = Functor_for_sets.empty_set tr ;;
 let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
 let fold_merge l= Functor_for_sets.fold_merge tr l;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
@@ -33,12 +34,7 @@ let  apply_condition opt_condition cell_set=match opt_condition with
   |Some(condition_set) -> 
      fold_intersect [cell_set;condition_set];;
 
-let elements_appearing_more_than_once l = 
-   let (Hex_cell_set_t.S(temp1)) = fold_merge l in
-   let temp2=List.filter (fun elt->
-      List.length(List.filter (mem elt) l)>1
-   ) temp1 in 
-   Hex_cell_set_t.S(temp2);;
+
 
 let min (Hex_cell_set_t.S(l))=List.hd l;;     
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;

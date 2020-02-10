@@ -56,3 +56,30 @@ let starters end_of_battle =
       
 
 end ;; 
+
+(*
+module Private = struct 
+
+
+let starters_for_side end_of_battle side =
+   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
+   let clean = Option.filter_and_unpack (
+        fun nc-> if Hex_kite_element.check_compatiblity end_of_battle nc 
+                 then Some(Hex_kite_element_t.Sea(nc))
+                 else None
+        ) in 
+   let base1 = clean (Hex_named_connector.starters_for_side dim side) in 
+   and base2 = clean ((Hex_named_connector.middlers dim)@
+                       (Hex_named_connector.starters_for_side dim side)
+                      ) in 
+
+   
+
+end ;;
+
+
+let starters end_of_battle = 
+   let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
+   List.flatten (Image.image (Private.starters_for_side end_of_battle) sides);;
+
+*)   

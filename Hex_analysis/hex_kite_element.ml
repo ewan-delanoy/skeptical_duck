@@ -162,6 +162,9 @@ let test_for_successor = function
   Hex_kite_element_t.Earth(island)-> test_for_successor_for_earth island
    |Sea(nc)-> test_for_successor_for_sea nc;;
   
+let inner_sea = function 
+    Hex_kite_element_t.Earth(island)-> Hex_cell_set.empty_set
+   |Sea(nc)-> Hex_named_connector.inner_sea nc;;
 
 end ;;
 
@@ -181,10 +184,6 @@ let is_final initial_side elt =
    Hex_kite_element_t.Sea(_)-> false
    |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
 ;;
-
-
-
-
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
