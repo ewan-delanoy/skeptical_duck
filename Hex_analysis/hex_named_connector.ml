@@ -246,6 +246,9 @@ let check_compatiblity end_of_battle nc =
 let check_disjointness nc1 nc2 =
     Hex_cell_set.does_not_intersect (Private.inner_sea nc1) (Private.inner_sea nc2);; 
    
+let check_entry island nc = Hex_connector.check_entry island (Private.forget_name nc);;  
+
+let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 

@@ -4,9 +4,11 @@
 
 *)
 
+exception Kite_is_not_started;;
+
 module Elderly = struct 
 
-exception Kite_is_not_started;;
+
 
 module Private = struct 
 
@@ -85,10 +87,33 @@ let starters_for_side end_of_battle side =
 
    ) in 
    Image.image constructor base1 ;; 
-   
+
+(*   
+let extensions_after_island end_of_battle partial_kite last_island =
+   let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
+   let retained_ones  = List.filter (
+      Hex_named_connector.c    
+   )  candidates in 
+*)
 
 end ;;
 
+(*
+let extensions end_of_battle partial_kite =
+   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
+   match partial_kite.Hex_partial_kite_t.stops_so_far with 
+    []->raise(Kite_is_not_started)
+   |last_elt::_->
+      let candidates = partial_kite.Hex_partial_kite_t. in 
+      let retained_ones= List.filter (fun elt->
+         (Hex_cell_set.does_not_intersect (Hex_kite_element.Elderly.support elt) old_supp) &&
+         (Hex_kite_element.Elderly.check_compatiblity end_of_battle elt)
+      ) candidates in
+      let (finished1,unfinished1) =List.partition (Hex_kite_element.Elderly.is_final (dim,starting_direction)) retained_ones in 
+      let finished2 = Image.image (fun elt->Private.to_molecular_linker(elt::l)) finished1 
+      and unfinished2 = Image.image (Private.unchecked_extend partial_kite) unfinished1 in 
+      (finished2,unfinished2);; 
+*)
 
 let starters end_of_battle = 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
