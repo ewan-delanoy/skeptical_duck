@@ -229,10 +229,17 @@ let enders_for_side dim side=
 
 end ;;
 
+let inner_sea nc =
+   Hex_cell_set.safe_set 
+     (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction) ;;
 
 
 
 end ;;
+
+let check_disjointness nc1 nc2 =
+    Hex_cell_set.does_not_intersect (Private.inner_sea nc1) (Private.inner_sea nc2);; 
+   
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
@@ -240,9 +247,7 @@ let forget_name = Private.forget_name ;;
 
 let middlers = Private.Precomputed.middlers ;;
 
-let inner_sea nc =
-   Hex_cell_set.safe_set 
-     (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction) ;;
+let inner_sea = Private.inner_sea ;;
 
 let of_name = Private.of_name;;
 

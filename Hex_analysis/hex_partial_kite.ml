@@ -76,8 +76,14 @@ let starters_for_side end_of_battle side =
    let first_island = Hex_island.get_side islands side in                    
    let constructor = (
       fun first_elt ->
-        let 
-        let new_base=List.filter () base2 in 
+        let first_sea = Hex_kite_element.inner_sea first_elt in 
+        let new_base=List.filter (Hex_kite_element.check_disjointness) base2 in
+        {
+            stops_so_far : Hex_kite_element_t.t list;
+            original_side : Hex_cardinal_direction_t.t;
+            unvisited_islands : Hex_island_t.t list;
+            unvisited_seas : Hex_named_connector_t.t list;
+        };; 
 
    ) in 
    Image.image constructor base1 ;; 
