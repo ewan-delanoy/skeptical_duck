@@ -4,11 +4,6 @@
 
 *)
 
-type old_t= 
-   Active_cell of Hex_cell_t.t 
-  |Bridge of Hex_cell_t.t * Hex_cell_t.t (* the pair is in Hex_cell.cmp order *)
-  |Planar of Hex_planar_linker_t.t * Hex_cell_t.t;;
-
 type t =
     Earth of Hex_island_t.t 
    |Sea   of Hex_named_connector_t.t ;; 
