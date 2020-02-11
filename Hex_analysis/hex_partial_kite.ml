@@ -88,32 +88,69 @@ let starters_for_side end_of_battle side =
    ) in 
    Image.image constructor base1 ;; 
 
-(*   
-let extensions_after_island end_of_battle partial_kite last_island =
+let to_molecular_linker  pk =
+   (* The kite is assumed to be finished *)  
+   Hex_molecular_linker.fold_merge 
+     (Option.filter_and_unpack Hex_kite_element.to_molecular_linker pk.Hex_partial_kite_t.stops_so_far);;
+
+
+
+let extend_with_island pk new_island = 
+        let new_elt = Hex_kite_element_t.Earth(new_island) in 
+     (new_elt,   
+     {
+         pk with 
+          Hex_partial_kite_t.stops_so_far = new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+          unvisited_islands = List.filter (fun x->x<>new_island ) 
+             (pk.Hex_partial_kite_t.unvisited_islands);
+    });;
+    
+
+let extend_with_sea pk new_nc = 
+        let new_elt = Hex_kite_element_t.Sea(new_nc) in 
+     (new_elt,   
+     {
+         pk with 
+          Hex_partial_kite_t.stops_so_far = new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+            unvisited_seas = List.filter 
+              (Hex_named_connector.check_disjointness new_nc) (pk.Hex_partial_kite_t.unvisited_seas);
+    });;
+
+
+
+let extensions_after_island partial_kite last_island =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
    let retained_ones  = List.filter (
-      Hex_named_connector.c    
+      Hex_named_connector.check_entry last_island    
    )  candidates in 
-*)
+   Image.image (extend_with_sea partial_kite) retained_ones ;;
+
+let extensions_after_sea partial_kite last_nc =
+   let candidates = partial_kite.Hex_partial_kite_t.unvisited_islands in
+   let retained_ones  = List.filter (
+      Hex_named_connector.check_exit last_nc  
+   )  candidates in 
+   Image.image (extend_with_island partial_kite) retained_ones ;;
+
+let extensions partial_kite = function 
+    Hex_kite_element_t.Earth(last_island) ->  extensions_after_island partial_kite last_island 
+   |Hex_kite_element_t.Sea(last_nc) ->  extensions_after_sea partial_kite last_nc ;;
 
 end ;;
 
-(*
-let extensions end_of_battle partial_kite =
-   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
+
+let extensions partial_kite =
    match partial_kite.Hex_partial_kite_t.stops_so_far with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
-      let candidates = partial_kite.Hex_partial_kite_t. in 
-      let retained_ones= List.filter (fun elt->
-         (Hex_cell_set.does_not_intersect (Hex_kite_element.Elderly.support elt) old_supp) &&
-         (Hex_kite_element.Elderly.check_compatiblity end_of_battle elt)
-      ) candidates in
-      let (finished1,unfinished1) =List.partition (Hex_kite_element.Elderly.is_final (dim,starting_direction)) retained_ones in 
-      let finished2 = Image.image (fun elt->Private.to_molecular_linker(elt::l)) finished1 
-      and unfinished2 = Image.image (Private.unchecked_extend partial_kite) unfinished1 in 
+      let base = Private.extensions partial_kite last_elt 
+      and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
+      let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
+          Hex_kite_element.is_final orig_side last_elt) base in 
+      let finished2 = Image.image (fun (_,pk)->Private.to_molecular_linker pk) finished1 
+      and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
-*)
+
 
 let starters end_of_battle = 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
