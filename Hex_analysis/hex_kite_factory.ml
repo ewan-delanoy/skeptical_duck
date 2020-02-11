@@ -13,6 +13,7 @@ let starters eob =
       winner         = eob.Hex_end_of_battle_t.winner ;
       finished       = [] ;
       initial_data   = eob ;
+      failures       = [] ;
       unfinished     = Hex_partial_kite.Elderly.starters eob;
     };;    
 
