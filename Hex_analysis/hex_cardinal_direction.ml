@@ -94,6 +94,13 @@ let compute_apex_coordinates_in_eyed_claw d1 d2 junction = match d2 with
 
 (*
 
+let force_apex_in_eyed_claw apex d1 d2 old_junction =
+   let (old_i,old_j) = compute_apex_coordinates_in_eyed_claw d1 d2 old_junction 
+   and (new_i,new_j) = apex in 
+   let di=new_i-old_i and dj=new_j-old_j in 
+   Image.image (fun (i,j)->(i+di,j+dj)) old_junction;;
+   
+
 let compute_support_in_eyed_claw d1 d2 apex_cell =
     let representative = Private.eyed_claw (d1,d2) in
     let old_junction =  representative.Hex_connector_t.junction in 

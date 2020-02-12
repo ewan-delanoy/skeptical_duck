@@ -4,57 +4,6 @@
 
 *)
 
-exception Bad_eyed_claw_specification ;; 
-
-module Private = struct 
-
-
-let apex_for_downwards_claw d1 junction = 
-  let (_,minimizers) =Min.minimize_it_with_care fst junction in 
-  let (x1,y1) = List.hd minimizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Left -> (x1,y1-1)
-  |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_leftwards_claw d1 junction = 
-  let (_,maximizers) =Max.maximize_it_with_care snd junction in 
-  let (x1,y1) = List.hd maximizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Down -> (x1+1,y1)
-  |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_rightwards_claw d1 junction = 
-  let (_,minimizers) =Min.minimize_it_with_care snd junction in 
-  let (x1,y1) = List.hd minimizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Down -> (x1+1,y1)
-  |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_upwards_claw d1 junction = 
-  let (_,maximizers) =Max.maximize_it_with_care fst junction in 
-  let (x1,y1) = List.hd maximizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Left -> (x1,y1-1)
-  |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let compute_apex_coordinates_in_eyed_claw d1 d2 junction = match d2 with 
-   Hex_cardinal_direction_t.Down -> apex_for_downwards_claw d1 junction
-  |Hex_cardinal_direction_t.Left -> apex_for_leftwards_claw d1 junction
-  |Hex_cardinal_direction_t.Right -> apex_for_rightwards_claw d1 junction
-  |Hex_cardinal_direction_t.Up -> apex_for_upwards_claw d1 junction ;;
-
-let force_apex_in_eyed_claw apex d1 d2 old_junction =
-   let (old_i,old_j) = compute_apex_coordinates_in_eyed_claw d1 d2 old_junction 
-   and (new_i,new_j) = apex in 
-   let di=new_i-old_i and dj=new_j-old_j in 
-   Image.image (fun (i,j)->(i+di,j+dj)) old_junction;;
-   
-
-end ;;
 
 let for_side side =
     let ortho = Hex_cardinal_direction.orthogonal_directions side in 
@@ -75,7 +24,7 @@ let for_side side =
 
 let to_nondefault_molecular_linker nm junction = match nm with 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
-         let p= Private.compute_apex_coordinates_in_eyed_claw d1 d2 junction in 
+         let p= Hex_cardinal_direction.compute_apex_coordinates_in_eyed_claw d1 d2 junction in 
          Some(Hex_molecular_linker.constructor [
               Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair p)])
    |Noneyed_claw(_,_) -> None
