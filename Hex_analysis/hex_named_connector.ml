@@ -113,11 +113,7 @@ let bridge = function
    |Hex_unit_side_t.South_east ->  southeast_bridge
    |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
-let eyed_claw (d1,d2) = match d1 with 
-     Hex_cardinal_direction_t.Down  -> low_eyed_claw d2
-    |Hex_cardinal_direction_t.Left  -> left_eyed_claw d2
-    |Hex_cardinal_direction_t.Right -> right_eyed_claw d2
-    |Hex_cardinal_direction_t.Up    -> high_eyed_claw d2;;
+let eyed_claw (d1,d2) = Hex_eyed_claw.constructor d1 d2;;
 
 let noneyed_claw (dh,d) = match dh with 
       Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d 
