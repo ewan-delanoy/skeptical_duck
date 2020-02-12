@@ -56,10 +56,6 @@ let force_apex_in_eyed_claw apex d1 d2 old_junction =
 
 end ;;
 
-let compute_support_in_eyed_claw d1 d2 apex old_junction=
-    let new_junction = Private.force_apex_in_eyed_claw apex d1 d2 old_junction  in 
-    Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair new_junction);;
-
 let for_side side =
     let ortho = Hex_cardinal_direction.orthogonal_directions side in 
     (Image.image (fun specifier->
