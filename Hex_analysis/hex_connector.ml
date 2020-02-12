@@ -88,6 +88,8 @@ let to_default_molecular_linker cnnctr =
     Hex_molecular_linker.constructor (Image.image Hex_atomic_linker.pair temp2);;    
 
 
+let translate p cnnctr= Private.translate cnnctr p;;
+
 module Example = struct 
  
 
