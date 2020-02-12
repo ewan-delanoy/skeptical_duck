@@ -51,6 +51,16 @@ let orthogonal_directions = function
     |Hex_cardinal_direction_t.Right -> [Hex_cardinal_direction_t.Up;Hex_cardinal_direction_t.Down];;
   
 
+(*
+
+let compute_support_in_eyed_claw d1 d2 apex_cell =
+    let representative = Private.eyed_claw (d1,d2) in
+    let old_junction =  representative.Hex_connector_t.junction in 
+    Hex_border_connector_name.compute_support_in_eyed_claw 
+          d1 d2 (Hex_cell.to_int_pair apex_cell) old_junction;;
+
+*)  
+
 end ;;
 
 module Parallel_To_Border = struct 
