@@ -53,44 +53,6 @@ let orthogonal_directions = function
     |Hex_cardinal_direction_t.Right -> [Hex_cardinal_direction_t.Up;Hex_cardinal_direction_t.Down];;
   
 
-let apex_for_downwards_claw d1 junction = 
-  let (_,minimizers) =Min.minimize_it_with_care fst junction in 
-  let (x1,y1) = List.hd minimizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Left -> (x1,y1-1)
-  |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_leftwards_claw d1 junction = 
-  let (_,maximizers) =Max.maximize_it_with_care snd junction in 
-  let (x1,y1) = List.hd maximizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Down -> (x1+1,y1)
-  |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_rightwards_claw d1 junction = 
-  let (_,minimizers) =Min.minimize_it_with_care snd junction in 
-  let (x1,y1) = List.hd minimizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Down -> (x1+1,y1)
-  |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let apex_for_upwards_claw d1 junction = 
-  let (_,maximizers) =Max.maximize_it_with_care fst junction in 
-  let (x1,y1) = List.hd maximizers in 
-  match d1 with 
-   Hex_cardinal_direction_t.Left -> (x1,y1-1)
-  |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_eyed_claw_specification);;
-
-let compute_apex_coordinates_in_eyed_claw d1 d2 junction = match d2 with 
-   Hex_cardinal_direction_t.Down -> apex_for_downwards_claw d1 junction
-  |Hex_cardinal_direction_t.Left -> apex_for_leftwards_claw d1 junction
-  |Hex_cardinal_direction_t.Right -> apex_for_rightwards_claw d1 junction
-  |Hex_cardinal_direction_t.Up -> apex_for_upwards_claw d1 junction ;;
-
 
 (*
 
@@ -153,11 +115,6 @@ let all =
  Hex_cardinal_direction_t.Up;
 ];;
 
-let all_eyed_claws =
-  let temp1 = Image.image (fun d->
-     Image.image (fun d2->(d,d2)) (Private.orthogonal_directions d)
-  ) all in 
-  List.flatten temp1;;
 
 let authorized_translations (Hex_dimension_t.D dim) opt = 
    let base = Cartesian.square (Ennig.ennig (1-dim) (dim-1)) in 
@@ -171,7 +128,6 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
        | _ -> List.filter (fun (dx,dy)->dx=0) base
      );;
 
-let compute_apex_coordinates_in_eyed_claw = Private.compute_apex_coordinates_in_eyed_claw;;
 
 let for_eye_description    = Private.char_for_eye_description ;;
 let for_ground_description = Private.char_for_ground_description ;;
