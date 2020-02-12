@@ -55,11 +55,11 @@ let compute_apex_coordinates d1 d2 junction = match d2 with
 let arbitrary_dim = Hex_dimension.eleven;;
 
 
-let oppose = Hex_connector.oppose arbitrary_dim
-and reflect = Hex_connector.reflect ;;
+let oppose (apex,cnnctr)= (Hex_ipair.oppose arbitrary_dim apex,Hex_connector.oppose arbitrary_dim cnnctr);;
+let reflect (apex,cnnctr)= (Hex_ipair.reflect apex,Hex_connector.reflect cnnctr);;
 
-let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;; 
-let right_eyed_upwards_claw = Hex_connector.Example.right_eyed_upwards_claw ;; 
+let left_eyed_upwards_claw = ((4,2),Hex_connector.Example.left_eyed_upwards_claw);; 
+let right_eyed_upwards_claw = ((4,3),Hex_connector.Example.right_eyed_upwards_claw);; 
 
 let low_eyed_leftwards_claw = reflect right_eyed_upwards_claw;;
 let left_eyed_downwards_claw = oppose right_eyed_upwards_claw ;;
