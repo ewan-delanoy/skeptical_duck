@@ -62,31 +62,31 @@ let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;;
 let right_eyed_upwards_claw = Hex_connector.Example.right_eyed_upwards_claw ;; 
 
 let low_eyed_leftwards_claw = reflect right_eyed_upwards_claw;;
-let left_eyed_downwards_claw dim = oppose dim right_eyed_upwards_claw ;;
-let high_eyed_rightwards_claw dim = oppose dim low_eyed_leftwards_claw;;
+let left_eyed_downwards_claw = oppose right_eyed_upwards_claw ;;
+let high_eyed_rightwards_claw = oppose low_eyed_leftwards_claw;;
 
 let high_eyed_leftwards_claw = reflect left_eyed_upwards_claw;;
-let right_eyed_downwards_claw dim = oppose dim left_eyed_upwards_claw ;;
-let low_eyed_rightwards_claw dim = oppose dim high_eyed_leftwards_claw;;
+let right_eyed_downwards_claw = oppose left_eyed_upwards_claw ;;
+let low_eyed_rightwards_claw = oppose high_eyed_leftwards_claw;;
 
 
 let high_eyed_claw = function 
      Hex_cardinal_direction_t.Left  -> high_eyed_leftwards_claw 
-    |Hex_cardinal_direction_t.Right -> high_eyed_rightwards_claw arbitrary_dim
+    |Hex_cardinal_direction_t.Right -> high_eyed_rightwards_claw 
     |d->raise(Bad_specification(high,d));;  
 
 let left_eyed_claw = function 
-     Hex_cardinal_direction_t.Down  -> left_eyed_downwards_claw arbitrary_dim
+     Hex_cardinal_direction_t.Down  -> left_eyed_downwards_claw 
     |Hex_cardinal_direction_t.Up    -> left_eyed_upwards_claw
     |d->raise(Bad_specification(left,d));;  
 
 let low_eyed_claw = function 
      Hex_cardinal_direction_t.Left  -> low_eyed_leftwards_claw 
-    |Hex_cardinal_direction_t.Right -> low_eyed_rightwards_claw arbitrary_dim
+    |Hex_cardinal_direction_t.Right -> low_eyed_rightwards_claw 
     |d->raise(Bad_specification(low,d));;  
 
 let right_eyed_claw = function 
-     Hex_cardinal_direction_t.Down  -> right_eyed_downwards_claw arbitrary_dim
+     Hex_cardinal_direction_t.Down  -> right_eyed_downwards_claw 
     |Hex_cardinal_direction_t.Up    -> right_eyed_upwards_claw
     |d->raise(Bad_specification(right,d));;  
 
