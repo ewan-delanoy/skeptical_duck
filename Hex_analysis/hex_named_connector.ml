@@ -4,8 +4,7 @@
 
 *)
 
-exception Bad_specification_for_eyed_claw of 
-     Hex_cardinal_direction_t.t *  Hex_cardinal_direction_t.t;;
+
 exception Precomputed_starter_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
 exception Precomputed_middler_exn of Hex_dimension_t.t  ;;
 exception Precomputed_ender_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
@@ -22,22 +21,12 @@ and arbitrary_dim = Hex_dimension.eleven;;
 
 
 let bs_upwards_claw = Hex_connector.Example.bs_upwards_claw ;;    
-let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;; 
 let northeast_bridge = Hex_connector.Example.northeast_bridge ;;  
 let northwest_bridge = Hex_connector.Example.northwest_bridge ;;   
-let right_eyed_upwards_claw = Hex_connector.Example.right_eyed_upwards_claw ;;   
 let upwards_pyramid = Hex_connector.Example.upwards_pyramid ;;  
 let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
 let sb_upwards_claw = Hex_connector.Example.sb_upwards_claw ;;   
 
-
-let low_eyed_leftwards_claw = reflect right_eyed_upwards_claw;;
-let left_eyed_downwards_claw dim = oppose dim right_eyed_upwards_claw ;;
-let high_eyed_rightwards_claw dim = oppose dim low_eyed_leftwards_claw;;
-
-let high_eyed_leftwards_claw = reflect left_eyed_upwards_claw;;
-let right_eyed_downwards_claw dim = oppose dim left_eyed_upwards_claw ;;
-let low_eyed_rightwards_claw dim = oppose dim high_eyed_leftwards_claw;;
 
 let sb_leftwards_claw = reflect bs_upwards_claw;;
 let sb_downwards_claw dim = oppose dim bs_upwards_claw;;
@@ -64,30 +53,11 @@ let southeast_bridge = reverse northwest_bridge ;;
 
 
 
-
+(*)
 let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  
 and right = Hex_cardinal_direction_t.Right and up = Hex_cardinal_direction_t.Up ;;
 let high = up and low =down;;
-
-let high_eyed_claw = function 
-     Hex_cardinal_direction_t.Left  -> high_eyed_leftwards_claw 
-    |Hex_cardinal_direction_t.Right -> high_eyed_rightwards_claw arbitrary_dim
-    |d->raise(Bad_specification_for_eyed_claw(high,d));;  
-
-let left_eyed_claw = function 
-     Hex_cardinal_direction_t.Down  -> left_eyed_downwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> left_eyed_upwards_claw
-    |d->raise(Bad_specification_for_eyed_claw(left,d));;  
-
-let low_eyed_claw = function 
-     Hex_cardinal_direction_t.Left  -> low_eyed_leftwards_claw 
-    |Hex_cardinal_direction_t.Right -> low_eyed_rightwards_claw arbitrary_dim
-    |d->raise(Bad_specification_for_eyed_claw(low,d));;  
-
-let right_eyed_claw = function 
-     Hex_cardinal_direction_t.Down  -> right_eyed_downwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> right_eyed_upwards_claw
-    |d->raise(Bad_specification_for_eyed_claw(right,d));;  
+*)
 
 let bs_claw = function 
      Hex_cardinal_direction_t.Down  -> bs_downwards_claw arbitrary_dim

@@ -54,7 +54,6 @@ let compute_apex_coordinates d1 d2 junction = match d2 with
 
 let oppose = Hex_connector.oppose 
 and reflect = Hex_connector.reflect 
-and reverse = Hex_connector.reverse  
 and arbitrary_dim = Hex_dimension.eleven;;
 
 let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;; 
