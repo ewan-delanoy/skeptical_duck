@@ -4,10 +4,14 @@
 
 *)
 
-exception Bad_specification;;
+exception Bad_specification of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
 
 
 module Private = struct 
+
+let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  
+and right = Hex_cardinal_direction_t.Right and up = Hex_cardinal_direction_t.Up ;;
+let high = up and low =down;;
 
 
 let apex_for_downwards_claw d1 junction = 
@@ -16,7 +20,7 @@ let apex_for_downwards_claw d1 junction =
   match d1 with 
    Hex_cardinal_direction_t.Left -> (x1,y1-1)
   |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_specification);;
+  |_->raise(Bad_specification(d1,down));;
 
 let apex_for_leftwards_claw d1 junction = 
   let (_,maximizers) =Max.maximize_it_with_care snd junction in 
@@ -24,7 +28,7 @@ let apex_for_leftwards_claw d1 junction =
   match d1 with 
    Hex_cardinal_direction_t.Down -> (x1+1,y1)
   |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_specification);;
+  |_->raise(Bad_specification(d1,left));;
 
 let apex_for_rightwards_claw d1 junction = 
   let (_,minimizers) =Min.minimize_it_with_care snd junction in 
@@ -32,7 +36,7 @@ let apex_for_rightwards_claw d1 junction =
   match d1 with 
    Hex_cardinal_direction_t.Down -> (x1+1,y1)
   |Hex_cardinal_direction_t.Up -> (x1-1,y1)
-  |_->raise(Bad_specification);;
+  |_->raise(Bad_specification(d1,right));;
 
 let apex_for_upwards_claw d1 junction = 
   let (_,maximizers) =Max.maximize_it_with_care fst junction in 
@@ -40,7 +44,7 @@ let apex_for_upwards_claw d1 junction =
   match d1 with 
    Hex_cardinal_direction_t.Left -> (x1,y1-1)
   |Hex_cardinal_direction_t.Right -> (x1,y1+1)
-  |_->raise(Bad_specification);;
+  |_->raise(Bad_specification(d1,up));;
 
 let compute_apex_coordinates d1 d2 junction = match d2 with 
    Hex_cardinal_direction_t.Down -> apex_for_downwards_claw d1 junction
@@ -48,28 +52,54 @@ let compute_apex_coordinates d1 d2 junction = match d2 with
   |Hex_cardinal_direction_t.Right -> apex_for_rightwards_claw d1 junction
   |Hex_cardinal_direction_t.Up -> apex_for_upwards_claw d1 junction ;;
 
+let oppose = Hex_connector.oppose 
+and reflect = Hex_connector.reflect 
+and reverse = Hex_connector.reverse  
+and arbitrary_dim = Hex_dimension.eleven;;
 
-(*
+let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;; 
+let right_eyed_upwards_claw = Hex_connector.Example.right_eyed_upwards_claw ;; 
 
-let force_apex_in_eyed_claw apex d1 d2 old_junction =
-   let (old_i,old_j) = compute_apex_coordinates_in_eyed_claw d1 d2 old_junction 
-   and (new_i,new_j) = apex in 
-   let di=new_i-old_i and dj=new_j-old_j in 
-   Image.image (fun (i,j)->(i+di,j+dj)) old_junction;;
-   
+let low_eyed_leftwards_claw = reflect right_eyed_upwards_claw;;
+let left_eyed_downwards_claw dim = oppose dim right_eyed_upwards_claw ;;
+let high_eyed_rightwards_claw dim = oppose dim low_eyed_leftwards_claw;;
 
-let compute_support_in_eyed_claw d1 d2 apex_cell =
-    let representative = Private.eyed_claw (d1,d2) in
-    let old_junction =  representative.Hex_connector_t.junction in 
-    Hex_border_connector_name.compute_support_in_eyed_claw 
-          d1 d2 (Hex_cell.to_int_pair apex_cell) old_junction;;
+let high_eyed_leftwards_claw = reflect left_eyed_upwards_claw;;
+let right_eyed_downwards_claw dim = oppose dim left_eyed_upwards_claw ;;
+let low_eyed_rightwards_claw dim = oppose dim high_eyed_leftwards_claw;;
 
-*)  
+
+let high_eyed_claw = function 
+     Hex_cardinal_direction_t.Left  -> high_eyed_leftwards_claw 
+    |Hex_cardinal_direction_t.Right -> high_eyed_rightwards_claw arbitrary_dim
+    |d->raise(Bad_specification(high,d));;  
+
+let left_eyed_claw = function 
+     Hex_cardinal_direction_t.Down  -> left_eyed_downwards_claw arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> left_eyed_upwards_claw
+    |d->raise(Bad_specification(left,d));;  
+
+let low_eyed_claw = function 
+     Hex_cardinal_direction_t.Left  -> low_eyed_leftwards_claw 
+    |Hex_cardinal_direction_t.Right -> low_eyed_rightwards_claw arbitrary_dim
+    |d->raise(Bad_specification(low,d));;  
+
+let right_eyed_claw = function 
+     Hex_cardinal_direction_t.Down  -> right_eyed_downwards_claw arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> right_eyed_upwards_claw
+    |d->raise(Bad_specification(right,d));;  
+
+
+let constructor d1 d2 = match d1 with 
+     Hex_cardinal_direction_t.Down  -> low_eyed_claw d2
+    |Hex_cardinal_direction_t.Left  -> left_eyed_claw d2
+    |Hex_cardinal_direction_t.Right -> right_eyed_claw d2
+    |Hex_cardinal_direction_t.Up    -> high_eyed_claw d2;;
 
 end ;;
 
 
 
-
+let constructor = Private.constructor;;
 let compute_apex_coordinates = Private.compute_apex_coordinates;;
 

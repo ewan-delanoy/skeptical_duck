@@ -65,7 +65,6 @@ let southeast_bridge = reverse northwest_bridge ;;
 
 
 
-
 let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  
 and right = Hex_cardinal_direction_t.Right and up = Hex_cardinal_direction_t.Up ;;
 let high = up and low =down;;
@@ -256,6 +255,9 @@ let check_exit nc island = Hex_connector.check_exit island (Private.forget_name 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
 let inner_sea = Private.inner_sea ;;
+
+
+
 
 let middlers = Private.Precomputed.middlers ;;
 
