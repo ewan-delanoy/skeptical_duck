@@ -237,6 +237,11 @@ let inner_sea nc =
 
 end ;;
 
+module Constructor = struct 
+
+
+
+end ;;
 
 let check_compatiblity end_of_battle nc = 
    let inner_data = Hex_cell_set.forget_order (Private.inner_sea nc) in 
@@ -252,13 +257,10 @@ let check_exit nc island = Hex_connector.check_exit island (Private.forget_name 
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
-let forget_name = Private.forget_name ;; 
+let inner_sea = Private.inner_sea ;;
 
 let middlers = Private.Precomputed.middlers ;;
 
-let inner_sea = Private.inner_sea ;;
-
-let of_name = Private.of_name;;
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
@@ -273,5 +275,4 @@ let to_molecular_linker nc =
     |Some(mlclr) -> mlclr  ;; 
    
 
-let to_readable_string nc = 
-   Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name ;;
+let to_readable_string = Private.to_readable_string ;;
