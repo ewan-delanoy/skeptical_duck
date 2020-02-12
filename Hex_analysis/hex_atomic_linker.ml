@@ -158,12 +158,9 @@ let cmp = ((function
 
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
- | Eyed_claw (direction1,direction2,cell) -> 
-    (*
-    let ec_name = Hex_connector_name_t.Border(Hex_border_connector_name_t.Eyed_claw(direction1,direction2))
-    let ec = Hex_named_connector.of_name (Hex_connector_name.)
-    *)
-    Hex_planar_linker_data.support_for_eyed_claw direction1 direction2 cell ;;
+ | Eyed_claw (d1,d2,cell) -> 
+    Hex_planar_linker_data.support_for_eyed_claw d1 d2 cell ;;
+    
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
