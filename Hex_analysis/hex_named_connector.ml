@@ -237,11 +237,7 @@ let inner_sea nc =
 
 end ;;
 
-module Constructor = struct 
 
-
-
-end ;;
 
 let check_compatiblity end_of_battle nc = 
    let inner_data = Hex_cell_set.forget_order (Private.inner_sea nc) in 
@@ -254,6 +250,11 @@ let check_disjointness nc1 nc2 =
 let check_entry island nc = Hex_connector.check_entry island (Private.forget_name nc);;  
 
 let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
+
+let compute_support_in_eyed_claw d1 d2 apex =
+    let representative = Private.eyed_claw (d1,d2) in
+    let old_junction =  representative.Hex_connector_t.junction in 
+    Hex_border_connector_name.compute_support_in_eyed_claw d1 d2 apex old_junction;;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
