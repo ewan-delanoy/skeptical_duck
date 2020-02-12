@@ -251,10 +251,11 @@ let check_entry island nc = Hex_connector.check_entry island (Private.forget_nam
 
 let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
 
-let compute_support_in_eyed_claw d1 d2 apex =
+let compute_support_in_eyed_claw d1 d2 apex_cell =
     let representative = Private.eyed_claw (d1,d2) in
     let old_junction =  representative.Hex_connector_t.junction in 
-    Hex_border_connector_name.compute_support_in_eyed_claw d1 d2 apex old_junction;;
+    Hex_border_connector_name.compute_support_in_eyed_claw 
+          d1 d2 (Hex_cell.to_int_pair apex_cell) old_junction;;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
