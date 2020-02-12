@@ -51,14 +51,6 @@ let north_bridge = reverse south_bridge ;;
 let southeast_bridge = reverse northwest_bridge ;;
 
 
-
-
-(*)
-let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  
-and right = Hex_cardinal_direction_t.Right and up = Hex_cardinal_direction_t.Up ;;
-let high = up and low =down;;
-*)
-
 let bs_claw = function 
      Hex_cardinal_direction_t.Down  -> bs_downwards_claw arbitrary_dim
     |Hex_cardinal_direction_t.Left  -> bs_leftwards_claw

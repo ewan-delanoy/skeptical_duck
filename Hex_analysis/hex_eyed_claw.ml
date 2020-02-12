@@ -52,9 +52,11 @@ let compute_apex_coordinates d1 d2 junction = match d2 with
   |Hex_cardinal_direction_t.Right -> apex_for_rightwards_claw d1 junction
   |Hex_cardinal_direction_t.Up -> apex_for_upwards_claw d1 junction ;;
 
-let oppose = Hex_connector.oppose 
-and reflect = Hex_connector.reflect 
-and arbitrary_dim = Hex_dimension.eleven;;
+let arbitrary_dim = Hex_dimension.eleven;;
+
+
+let oppose = Hex_connector.oppose arbitrary_dim
+and reflect = Hex_connector.reflect ;;
 
 let left_eyed_upwards_claw = Hex_connector.Example.left_eyed_upwards_claw ;; 
 let right_eyed_upwards_claw = Hex_connector.Example.right_eyed_upwards_claw ;; 
