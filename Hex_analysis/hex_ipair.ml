@@ -33,8 +33,8 @@ let rec helper1_for_cc_computing
     else 
     let temp1 = neighbors_for_several dim 
             (Set_of_poly_pairs.forget_order news_from_whole) in 
-    (* let temp2 = Set_of_poly_pairs.intersect temp1 to_be_exhausted in     *)    
-    let new_ones = Set_of_poly_pairs.setminus temp1 old_whole in 
+    let temp2 = Set_of_poly_pairs.intersect temp1 to_be_exhausted in       
+    let new_ones = Set_of_poly_pairs.setminus temp2 old_whole in 
     if (Set_of_poly_pairs.length new_ones = 0)
     then (old_whole,to_be_exhausted)
     else let new_whole = Set_of_poly_pairs.merge old_whole new_ones in 
