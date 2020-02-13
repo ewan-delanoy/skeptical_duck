@@ -199,20 +199,20 @@ let bridges_in_pyramid d apex=
 
 
 let list_for_macros=[
-   ("ddd", Hex_planar_linker_data.bridges_in_pyramid down);
-   ("lll", Hex_planar_linker_data.bridges_in_pyramid left);
-   ("rrr", Hex_planar_linker_data.bridges_in_pyramid right);
-   ("uuu", Hex_planar_linker_data.bridges_in_pyramid up);
+   ("ddd", bridges_in_pyramid down);
+   ("lll", bridges_in_pyramid left);
+   ("rrr", bridges_in_pyramid right);
+   ("uuu", bridges_in_pyramid up);
    
-   ("bds", Hex_planar_linker_data.bridges_in_noneyed_claw bs down);
-   ("bls", Hex_planar_linker_data.bridges_in_noneyed_claw bs left);
-   ("brs", Hex_planar_linker_data.bridges_in_noneyed_claw bs right);
-   ("bus", Hex_planar_linker_data.bridges_in_noneyed_claw bs up); 
+   ("bds", bridges_in_noneyed_claw bs down);
+   ("bls", bridges_in_noneyed_claw bs left);
+   ("brs", bridges_in_noneyed_claw bs right);
+   ("bus", bridges_in_noneyed_claw bs up); 
 
-   ("sdb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
-   ("slb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
-   ("srb", Hex_planar_linker_data.bridges_in_noneyed_claw sb down);
-   ("sub", Hex_planar_linker_data.bridges_in_noneyed_claw sb down); 
+   ("sdb", bridges_in_noneyed_claw sb down);
+   ("slb", bridges_in_noneyed_claw sb down);
+   ("srb", bridges_in_noneyed_claw sb down);
+   ("sub", bridges_in_noneyed_claw sb down); 
 
 ];;
 
