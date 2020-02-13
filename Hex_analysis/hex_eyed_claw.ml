@@ -55,11 +55,23 @@ let compute_apex_coordinates d1 d2 junction = match d2 with
 let arbitrary_dim = Hex_dimension.eleven;;
 
 
-let oppose (apex,cnnctr)= (Hex_ipair.oppose arbitrary_dim apex,Hex_connector.oppose arbitrary_dim cnnctr);;
-let reflect (apex,cnnctr)= (Hex_ipair.reflect apex,Hex_connector.reflect cnnctr);;
+let oppose (apex,ipairs)= (Hex_ipair.oppose arbitrary_dim apex,
+   Image.image (Hex_ipair.oppose arbitrary_dim) ipairs);;
+let reflect (apex,ipairs)= (Hex_ipair.reflect apex,Image.image Hex_ipair.reflect ipairs);;
 
-let left_eyed_upwards_claw = ((4,2),Hex_connector.Example.left_eyed_upwards_claw);; 
-let right_eyed_upwards_claw = ((4,3),Hex_connector.Example.right_eyed_upwards_claw);; 
+let left_eyed_upwards_claw = ((4,2),
+    [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
+     (2, 1); (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); 
+     (3, 1); (3, 2); (3, 3); (3, 4); (3, 5); 
+                     (4, 3)]
+);; 
+let right_eyed_upwards_claw = ((4,3),
+   [ 
+        (1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
+        (2, 1); (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); 
+        (3, 1); (3, 2); (3, 3); (3, 4); (3, 5); 
+                (4, 2)
+    ]);; 
 
 let low_eyed_leftwards_claw = reflect right_eyed_upwards_claw;;
 let left_eyed_downwards_claw = oppose right_eyed_upwards_claw ;;
@@ -97,8 +109,8 @@ let default_constructor d1 d2 = match d1 with
     |Hex_cardinal_direction_t.Up    -> high_eyed_claw d2;;
 
 let advanced_constructor d1 d2 (i,j)=
-   let ((i0,j0),default_cnnctr) =  default_constructor d1 d2 in 
-   Hex_connector.translate (i-i0,j-j0) default_cnnctr;;
+   let ((i0,j0),default_ipairs) =  default_constructor d1 d2 in 
+   Image.image (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
 
 
 end ;;
