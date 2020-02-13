@@ -2,6 +2,8 @@
 
 #use"Hex_analysis/hex_bc_example.ml";;
 
+bc is short for Border connector
+
 *)
 
 module Private = struct 

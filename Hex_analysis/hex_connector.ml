@@ -93,13 +93,6 @@ let translate p cnnctr= Private.translate cnnctr p;;
 module Example = struct 
  
 
-let bs_upwards_claw = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,1)]);
-    junction = [(1, 1); (1, 2); (1, 3); (1, 4); (2, 1); (2, 3); (2, 2); (3, 2)];
-    exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Up),Set_of_poly_pairs.empty_set);
-} ;;   
-
-
 
 let northeast_bridge = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,1)]);
@@ -112,25 +105,6 @@ let northwest_bridge = {
     junction = [(1, 2); (2, 1)];
     exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,1)]);
 } ;;   
-
-
-
-
-let sb_upwards_claw = {Hex_connector_t.entry =
-    Hex_island_t.I (None, Set_of_poly_pairs_t.S [(3, 2)]);
-   junction = [(1, 1); (1, 2); (1, 3); (1, 4); (2, 1); (2, 3); (2, 2); (3, 1)];
-   exit =
-    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S [])} ;;
-
-let upwards_pyramid = 
-{Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [(4, 3)]);
-   junction =
-    [(1, 1); (1, 2);    (1, 3); (1, 4);   (1, 5); (1, 6);   (1, 7); (1, 8); 
-     (2, 1); (2, 3);    (2, 5); (2, 7);   (2, 2); (3, 1);   (2, 6); (3, 6); 
-     (3, 2); (3, 5);    (3, 3); (4, 2);   (3, 4); (4, 4);
-    ];
-   exit =
-    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S [])};;
 
 let upwards_small_pyramid = 
 {Hex_connector_t.entry =
