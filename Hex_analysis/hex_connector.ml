@@ -100,7 +100,7 @@ let bs_upwards_claw = {
 } ;;   
 
 
-
+(*
 let left_eyed_upwards_claw = {Hex_connector_t.entry =
     Hex_island_t.I (None, Set_of_poly_pairs_t.S [(4, 2)]);
    junction =
@@ -110,7 +110,7 @@ let left_eyed_upwards_claw = {Hex_connector_t.entry =
                      (4, 3)];
    exit =
     Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S [])};;
-
+*)
 
 
 
@@ -126,6 +126,7 @@ let northwest_bridge = {
     exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,1)]);
 } ;;   
 
+(*
 let right_eyed_upwards_claw = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,3)]);
     junction = [ 
@@ -136,7 +137,7 @@ let right_eyed_upwards_claw = {
     ];
     exit = Hex_island_t.I(Some(Hex_cardinal_direction_t.Up),Set_of_poly_pairs.empty_set);
 } ;;   
-
+*)
 
 
 let sb_upwards_claw = {Hex_connector_t.entry =
