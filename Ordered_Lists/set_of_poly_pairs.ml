@@ -11,6 +11,7 @@ let fold_merge l= Functor_for_sets.fold_merge tr l;;
 let forget_order z= Functor_for_sets.forget_order tr z;;
 let hd z= Functor_for_sets.hd tr z;;
 let image f l= Functor_for_sets.image tr f l;;
+let insert x y=Functor_for_sets.insert tr x y;;
 let intersect x y=Functor_for_sets.intersect tr x y;;
 let is_included_in x y= Functor_for_sets.is_included_in tr x y;;
 let length x= Functor_for_sets.length tr x;;

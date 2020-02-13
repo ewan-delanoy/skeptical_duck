@@ -56,6 +56,23 @@ let rec helper2_for_cc_computing
    helper2_for_cc_computing 
    (dim,component::already_treated,remaining_ones);;     
 
+let rec helper_for_cc_extraction (dim,already_treated,to_be_treated,bounding_set) =
+   if (Set_of_poly_pairs.length to_be_treated = 0)
+   then already_treated 
+   else 
+   let      p = Set_of_poly_pairs.hd  to_be_treated
+   and others = Set_of_poly_pairs.tl  to_be_treated in
+   let temp1 = neighbors_for_one dim p in 
+   let temp2 = Set_of_poly_pairs.intersect temp1 bounding_set in 
+   let new_ones = Set_of_poly_pairs.setminus temp2 already_treated in 
+   helper_for_cc_extraction(dim,Set_of_poly_pairs.insert p already_treated,
+        Set_of_poly_pairs.merge others new_ones,bounding_set);;
+
+let extract_connected_component dim bounding_set x =
+   helper_for_cc_extraction (dim,
+     Set_of_poly_pairs.empty_set,Set_of_poly_pairs.safe_set [x],bounding_set) ;;
+  
+
 end ;;
 
 
