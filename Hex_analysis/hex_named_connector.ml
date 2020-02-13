@@ -20,25 +20,10 @@ and reverse = Hex_connector.reverse
 and arbitrary_dim = Hex_dimension.eleven;;
 
 
-let bs_upwards_claw = Hex_connector.Example.bs_upwards_claw ;;    
+ 
 let northeast_bridge = Hex_connector.Example.northeast_bridge ;;  
 let northwest_bridge = Hex_connector.Example.northwest_bridge ;;   
-let upwards_pyramid = Hex_connector.Example.upwards_pyramid ;;  
 let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
-let sb_upwards_claw = Hex_connector.Example.sb_upwards_claw ;;   
-
-
-let sb_leftwards_claw = reflect bs_upwards_claw;;
-let sb_downwards_claw dim = oppose dim bs_upwards_claw;;
-let bs_rightwards_claw dim = oppose dim sb_leftwards_claw ;;
-
-let bs_leftwards_claw = reflect sb_upwards_claw;;
-let bs_downwards_claw dim = oppose dim sb_upwards_claw;;
-let sb_rightwards_claw dim = oppose dim bs_leftwards_claw ;;
-
-let leftwards_pyramid = reflect upwards_pyramid;;
-let downwards_pyramid dim = oppose dim upwards_pyramid ;;
-let rightwards_pyramid dim = oppose dim leftwards_pyramid;;
 
 let leftwards_small_pyramid = reflect upwards_small_pyramid;;
 let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
@@ -50,20 +35,6 @@ let north_bridge = reverse south_bridge ;;
 
 let southeast_bridge = reverse northwest_bridge ;;
 
-
-let bs_claw = function 
-     Hex_cardinal_direction_t.Down  -> bs_downwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> bs_leftwards_claw
-    |Hex_cardinal_direction_t.Right -> bs_rightwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> bs_upwards_claw;;    
-
-
-
-let sb_claw = function 
-     Hex_cardinal_direction_t.Down  -> sb_downwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> sb_leftwards_claw
-    |Hex_cardinal_direction_t.Right -> sb_rightwards_claw arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> sb_upwards_claw;;    
 
 
 
@@ -85,15 +56,19 @@ let eyed_claw (d1,d2) =
     exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
 } ;;   
 
-let noneyed_claw (dh,d) = match dh with 
-      Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d 
-     |Hex_double_hump_qualifier_t.Small_followed_by_big -> sb_claw d ;;
+let noneyed_claw (dh,d) = 
+    let (apex,ipairs)= Hex_bc_example.default_noneyed_claw (dh,d) in 
+  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
+   junction = ipairs;
+   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S [])};; 
 
-let pyramid = function 
-     Hex_cardinal_direction_t.Down  -> downwards_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_pyramid 
-    |Hex_cardinal_direction_t.Right -> rightwards_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_pyramid;;      
+let pyramid d = 
+  let (apex,ipairs)= Hex_bc_example.default_pyramid d in 
+  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
+   junction = ipairs;
+   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S [])};; 
+
+  
 
 let small_pyramid = function 
      Hex_cardinal_direction_t.Down  -> downwards_small_pyramid arbitrary_dim
