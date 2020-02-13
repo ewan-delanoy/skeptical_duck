@@ -227,6 +227,7 @@ let inner_sea = Private.inner_sea ;;
 
 let middlers = Private.Precomputed.middlers ;;
 
+let of_name = Private.of_name ;;
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
