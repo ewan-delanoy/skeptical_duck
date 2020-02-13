@@ -52,20 +52,30 @@ let sb_claw = function
     |Hex_cardinal_direction_t.Right -> sb_rightwards_claw 
     |Hex_cardinal_direction_t.Up    -> sb_upwards_claw;;    
 
-let noneyed_claw (dh,d) = match dh with 
+let default_noneyed_claw (dh,d) = match dh with 
       Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d 
      |Hex_double_hump_qualifier_t.Small_followed_by_big -> sb_claw d ;;
 
-let pyramid = function 
+let default_pyramid = function 
      Hex_cardinal_direction_t.Down  -> downwards_pyramid 
     |Hex_cardinal_direction_t.Left  -> leftwards_pyramid 
     |Hex_cardinal_direction_t.Right -> rightwards_pyramid 
     |Hex_cardinal_direction_t.Up    -> upwards_pyramid;;      
 
+let advanced_noneyed_claw (dh,d) (i,j)=
+   let ((i0,j0),default_ipairs) =  default_noneyed_claw (dh,d) in 
+   Image.image (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
 
+
+let advanced_pyramid d (i,j)=
+   let ((i0,j0),default_ipairs) =  default_pyramid d in 
+   Image.image (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
 
 end ;;
 
-let default_pyramid = Private.pyramid ;;
+let advanced_noneyed_claw = Private.advanced_noneyed_claw ;;
+let advanced_pyramid = Private.advanced_pyramid ;;
 
-let default_noneyed_claw = Private.noneyed_claw ;;
+let default_noneyed_claw = Private.default_noneyed_claw ;;
+let default_pyramid = Private.default_pyramid ;;
+
