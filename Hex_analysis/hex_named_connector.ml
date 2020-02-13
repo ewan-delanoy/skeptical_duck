@@ -75,7 +75,15 @@ let bridge = function
    |Hex_unit_side_t.South_east ->  southeast_bridge
    |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
-let eyed_claw (d1,d2) = snd(Hex_eyed_claw.default_constructor d1 d2);;
+let eyed_claw (d1,d2) =
+   (* this function is deliberately non-curried because we need it to be a 
+    univariate function, see below *) 
+    let (apex,ipairs) = Hex_eyed_claw.default_constructor d1 d2 in 
+   {
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
+    junction = ipairs;
+    exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
+} ;;   
 
 let noneyed_claw (dh,d) = match dh with 
       Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d 
