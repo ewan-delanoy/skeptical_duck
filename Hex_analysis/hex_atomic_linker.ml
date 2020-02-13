@@ -96,10 +96,11 @@ let opt_eyed dim (p,untrimmed_s) =
 let to_readable_string = function
   Hex_atomic_linker_t.Pair (cell1,cell2) -> 
     (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
- | Eyed_claw (direction1,direction2,cell) -> 
-     let l=Hex_planar_linker_data.support_for_eyed_claw direction1 direction2 cell in 
-     (Hex_cardinal_direction.short_name_for_pair (direction1,direction2))^
-     "("^(Hex_cell_set.to_string l)^")";;
+ | Eyed_claw (d1,d2,cell) -> 
+      let ipairs = Hex_eyed_claw.advanced_constructor d1 d2 (Hex_cell.to_int_pair cell) in 
+      let cells =Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) in
+     (Hex_cardinal_direction.short_name_for_pair (d1,d2))^
+     "("^(Hex_cell_set.to_string cells)^")";;
 
 (*
 
