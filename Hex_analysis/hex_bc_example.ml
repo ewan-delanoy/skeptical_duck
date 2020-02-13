@@ -62,7 +62,7 @@ let default_pyramid = function
     |Hex_cardinal_direction_t.Right -> rightwards_pyramid 
     |Hex_cardinal_direction_t.Up    -> upwards_pyramid;;      
 
-let advanced_noneyed_claw (dh,d) (i,j)=
+let advanced_noneyed_claw dh d (i,j)=
    let ((i0,j0),default_ipairs) =  default_noneyed_claw (dh,d) in 
    Image.image (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
 
