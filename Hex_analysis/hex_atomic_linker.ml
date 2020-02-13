@@ -159,6 +159,11 @@ let cmp = ((function
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (d1,d2,cell) -> 
+    (*
+    let cnnctr = Hex_eyed_claw.advanced_constructor d1 d2 (Hex_cell.to_int_pair cell) in 
+    let ipairs = cnnctr.Hex_connector_t.junction in 
+    Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) 
+    *)
     Hex_planar_linker_data.support_for_eyed_claw d1 d2 cell ;;
     
     
