@@ -90,25 +90,20 @@ let right_eyed_claw = function
     |Hex_cardinal_direction_t.Up    -> right_eyed_upwards_claw
     |d->raise(Bad_specification(right,d));;  
 
-let uncentered_constructor d1 d2 = match d1 with 
+let default_constructor d1 d2 = match d1 with 
      Hex_cardinal_direction_t.Down  -> low_eyed_claw d2
     |Hex_cardinal_direction_t.Left  -> left_eyed_claw d2
     |Hex_cardinal_direction_t.Right -> right_eyed_claw d2
     |Hex_cardinal_direction_t.Up    -> high_eyed_claw d2;;
 
-let constructor d1 d2 (i,j)=
-   let ((i0,j0),uncentered_cnnctr) =  uncentered_constructor d1 d2 in 
-   uncentered_cnnctr ;;
+let advanced_constructor d1 d2 (i,j)=
+   let ((i0,j0),default_cnnctr) =  default_constructor d1 d2 in 
+   Hex_connector.translate (i-i0,j-j0) default_cnnctr;;
 
-let constructor d1 d2 = match d1 with 
-     Hex_cardinal_direction_t.Down  -> low_eyed_claw d2
-    |Hex_cardinal_direction_t.Left  -> left_eyed_claw d2
-    |Hex_cardinal_direction_t.Right -> right_eyed_claw d2
-    |Hex_cardinal_direction_t.Up    -> high_eyed_claw d2;;
 
 end ;;
 
-
+let advanced_constructor = Private.advanced_constructor;;
 let compute_apex_coordinates = Private.compute_apex_coordinates;;
-let constructor = Private.constructor;;
+let default_constructor = Private.default_constructor;;
 
