@@ -4,10 +4,6 @@
 *)
 
 exception Degenerate_pair of Hex_cell_t.t;;
-exception Incorrect_abscissa of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
-exception Incorrect_ordinate of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
-exception Mismatch of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
-exception Support_mismatch of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
 exception Of_concrete_object_exn;;
 
 module Private = struct 
@@ -27,90 +23,10 @@ let pair (cell1,cell2) =
    |Total_ordering.Greater -> Hex_atomic_linker_t.Pair(cell2,cell1);;
 
 
-let left_eyed_downwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if x<>dim-3         then raise(Incorrect_abscissa(left,down)) else 
-    if (y<5)||(y>dim-2) then raise(Incorrect_ordinate(left,down)) else
-    Hex_atomic_linker_t.Eyed_claw(left,down,cell);;
 
-let right_eyed_downwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if x<>dim-3         then raise(Incorrect_abscissa(right,down)) else 
-    if (y<6)||(y>dim-1) then raise(Incorrect_ordinate(right,down)) else
-    Hex_atomic_linker_t.Eyed_claw(right,down,cell);;    
-
-
-let left_eyed_upwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if x<>4         then raise(Incorrect_abscissa(left,up)) else 
-    if (y<2)||(y>dim-5) then raise(Incorrect_ordinate(left,up)) else
-    Hex_atomic_linker_t.Eyed_claw(left,up,cell);;
-
-let right_eyed_upwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if x<>4         then raise(Incorrect_abscissa(right,up)) else 
-    if (y<3)||(y>dim-4) then raise(Incorrect_ordinate(right,up)) else
-    Hex_atomic_linker_t.Eyed_claw(right,up,cell);;    
-
-let high_eyed_leftwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if  y<>4            then raise(Incorrect_ordinate(high,left)) else
-    if (x<2)||(x>dim-5) then raise(Incorrect_abscissa(high,left)) else 
-    Hex_atomic_linker_t.Eyed_claw(high,left,cell);;
-
-let low_eyed_leftwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if  y<>4            then raise(Incorrect_ordinate(low,left)) else
-    if (x<3)||(x>dim-4) then raise(Incorrect_abscissa(low,left)) else 
-    Hex_atomic_linker_t.Eyed_claw(low,left,cell);;    
-
-
-let high_eyed_rightwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if  y<>dim-3        then raise(Incorrect_ordinate(high,left)) else
-    if (x<5)||(x>dim-2) then raise(Incorrect_abscissa(high,left)) else 
-    Hex_atomic_linker_t.Eyed_claw(high,right,cell);;
-
-let low_eyed_rightwards (Hex_dimension_t.D dim) cell=
-    let x=Hex_cell.abscissa cell 
-    and y=Hex_cell.ordinate cell in 
-    if  y<>dim-3        then raise(Incorrect_ordinate(low,left)) else
-    if (x<6)||(x>dim-1) then raise(Incorrect_abscissa(low,left)) else 
-    Hex_atomic_linker_t.Eyed_claw(low,right,cell);;    
-
-
-let left_eyed dim direction cell = match direction with 
-     Hex_cardinal_direction_t.Down -> left_eyed_downwards dim cell 
-    |Hex_cardinal_direction_t.Up   -> left_eyed_upwards dim cell    
-    |                           _  -> raise(Mismatch(left,direction));;
-
-let right_eyed dim direction cell = match direction with 
-     Hex_cardinal_direction_t.Down -> right_eyed_downwards dim cell 
-    |Hex_cardinal_direction_t.Up   -> right_eyed_upwards dim cell    
-    |                           _  -> raise(Mismatch(right,direction));;
-
-let high_eyed dim direction cell = match direction with 
-     Hex_cardinal_direction_t.Left  -> high_eyed_leftwards dim cell 
-    |Hex_cardinal_direction_t.Right -> high_eyed_rightwards dim cell    
-    |                           _   -> raise(Mismatch(high,direction));;
-
-let low_eyed dim direction cell = match direction with 
-     Hex_cardinal_direction_t.Left  -> low_eyed_leftwards dim cell 
-    |Hex_cardinal_direction_t.Right -> low_eyed_rightwards dim cell    
-    |                           _   -> raise(Mismatch(low,direction));;
-
-let eyed dim =function
-   Hex_cardinal_direction_t.Down  -> low_eyed dim 
-  |Hex_cardinal_direction_t.Left  -> left_eyed dim
-  |Hex_cardinal_direction_t.Right -> right_eyed dim
-  |Hex_cardinal_direction_t.Up    -> high_eyed dim ;;  
+let eyed dim d1 d2 cell=
+   let _= Hex_eyed_claw.check_parameters dim d1 d2 cell in 
+   Hex_atomic_linker_t.Eyed_claw (d1,d2,cell);;  
 
 
 let salt = "Hex_"^"atomic_linker_t.";;
@@ -159,13 +75,8 @@ let cmp = ((function
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (d1,d2,cell) -> 
-    (*
-    let cnnctr = Hex_eyed_claw.advanced_constructor d1 d2 (Hex_cell.to_int_pair cell) in 
-    let ipairs = cnnctr.Hex_connector_t.junction in 
-    Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) 
-    *)
-    Hex_planar_linker_data.support_for_eyed_claw d1 d2 cell ;;
-    
+    let ipairs = Hex_eyed_claw.advanced_constructor d1 d2 (Hex_cell.to_int_pair cell) in 
+    Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) ;;
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
