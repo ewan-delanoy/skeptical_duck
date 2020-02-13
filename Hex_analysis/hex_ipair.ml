@@ -25,36 +25,6 @@ let neighbors_for_several dim l=
     Set_of_poly_pairs.setminus 
      (Set_of_poly_pairs.fold_merge temp1) 
       (Set_of_poly_pairs.safe_set l) ;;
-    
-let rec helper1_for_cc_computing 
-   (dim,old_whole,news_from_whole,to_be_exhausted) =
-    if (Set_of_poly_pairs.length news_from_whole = 0)
-    then (old_whole,to_be_exhausted)
-    else 
-    let temp1 = neighbors_for_several dim 
-            (Set_of_poly_pairs.forget_order news_from_whole) in 
-    let temp2 = Set_of_poly_pairs.intersect temp1 to_be_exhausted in       
-    let new_ones = Set_of_poly_pairs.setminus temp2 old_whole in 
-    if (Set_of_poly_pairs.length new_ones = 0)
-    then (old_whole,to_be_exhausted)
-    else let new_whole = Set_of_poly_pairs.merge old_whole new_ones in 
-         let remaining_ones = Set_of_poly_pairs.setminus 
-                   to_be_exhausted new_whole in 
-         helper1_for_cc_computing 
-         (dim,new_whole,new_ones,remaining_ones);;
-
-let rec helper2_for_cc_computing 
-   (dim,already_treated,to_be_treated) =
-   if (Set_of_poly_pairs.length to_be_treated = 0)
-   then List.rev already_treated
-   else 
-   let      p = Set_of_poly_pairs.hd  to_be_treated
-   and others = Set_of_poly_pairs.tl  to_be_treated in
-   let (component,remaining_ones) = helper1_for_cc_computing 
-   (dim,Set_of_poly_pairs.empty_set,
-        Set_of_poly_pairs_t.S[p],others)  in   
-   helper2_for_cc_computing 
-   (dim,component::already_treated,remaining_ones);;     
 
 let rec helper_for_cc_extraction (dim,already_treated,to_be_treated,bounding_set) =
    if (Set_of_poly_pairs.length to_be_treated = 0)
@@ -72,14 +42,30 @@ let extract_connected_component dim bounding_set x =
    helper_for_cc_extraction (dim,
      Set_of_poly_pairs.empty_set,Set_of_poly_pairs.safe_set [x],bounding_set) ;;
   
+let rec helper_for_cc_enumeration
+   (dim,previous_results,previous_whole,to_be_treated,bounding_set) =
+   if (Set_of_poly_pairs.length to_be_treated = 0)
+   then List.rev previous_results
+   else 
+   let      p = Set_of_poly_pairs.hd  to_be_treated
+   and others = Set_of_poly_pairs.tl  to_be_treated in
+   let component = extract_connected_component dim bounding_set p in 
+   let l_component = Set_of_poly_pairs.forget_order component in 
+   let current_results = l_component :: previous_results in 
+   let current_whole = Set_of_poly_pairs.merge component previous_whole in 
+   let remaining_ones = Set_of_poly_pairs.setminus others current_whole in 
+   helper_for_cc_enumeration(dim,current_results,current_whole,
+        remaining_ones,bounding_set);;  
+
+let enumerate_components dim bounding_set = 
+   helper_for_cc_enumeration(dim,[],Set_of_poly_pairs.empty_set,
+        bounding_set,bounding_set);;  
 
 end ;;
 
 
 let compute_connected_components dim l=
-   let components = Private.helper2_for_cc_computing 
-   (dim,[],Set_of_poly_pairs.safe_set l) in 
-   Image.image Set_of_poly_pairs.forget_order components;; 
+   Private.enumerate_components dim (Set_of_poly_pairs.safe_set l);; 
 
   
 let is_valid  = Private.is_valid  ;;   
