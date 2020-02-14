@@ -14,7 +14,8 @@ let siders bw side =
 
 end ;;
 
-let enders_for_side = Private.siders Hex_borderwise_t.To_border;;
+let enders_for_side side = 
+   Private.siders Hex_borderwise_t.To_border (Hex_cardinal_direction.oppose side);;
 
 let middlers = Image.image (
   fun inner -> Hex_connector_name_t.Inner(inner)
