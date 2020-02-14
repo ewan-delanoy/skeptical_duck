@@ -14,11 +14,13 @@ let oppose (apex,ipairs)= (Hex_ipair.oppose arbitrary_dim apex,
 let reflect (apex,ipairs)= (Hex_ipair.reflect apex,Image.image Hex_ipair.reflect ipairs);;
 
 
-let bs_upwards_claw = ((3, 1),
-    [(1, 1); (1, 2); (1, 3); (1, 4); (2, 1); (2, 3); (2, 2); (3, 2)]) ;;   
 
-let sb_upwards_claw = ((3, 2),
+
+let bs_upwards_claw = ((3, 2),
    [(1, 1); (1, 2); (1, 3); (1, 4); (2, 1); (2, 3); (2, 2); (3, 1)]) ;;
+
+let sb_upwards_claw = ((3, 1),
+    [(1, 1); (1, 2); (1, 3); (1, 4); (2, 1); (2, 3); (2, 2); (3, 2)]) ;;   
 
 let upwards_pyramid = ((4, 3),
     [(1, 1); (1, 2);    (1, 3); (1, 4);   (1, 5); (1, 6);   (1, 7); (1, 8); 
