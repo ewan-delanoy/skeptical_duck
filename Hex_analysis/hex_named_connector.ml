@@ -106,7 +106,8 @@ let add_name nm cnnctr =
      Hex_named_connector_t.name     = nm ;
      entry    = cnnctr.Hex_connector_t.entry ;
      junction = cnnctr.Hex_connector_t.junction ;
-     exit     = cnnctr.Hex_connector_t.exit
+     exit     = cnnctr.Hex_connector_t.exit ;
+     apex     = cnnctr.Hex_connector_t.apex
    };;   
 
 let of_name nm = add_name nm (expand_name nm);; 
@@ -115,7 +116,8 @@ let forget_name nc =
    {
      Hex_connector_t.entry = nc.Hex_named_connector_t.entry ;
      junction = nc.Hex_named_connector_t.junction ;
-     exit     = nc.Hex_named_connector_t.exit
+     exit     = nc.Hex_named_connector_t.exit ;
+     apex     = nc.Hex_named_connector_t.apex ;
    };;   
 
 let all_translates dim nc =
@@ -128,7 +130,12 @@ let expand_all dim cnnctrs =
     let nc=of_name cnnctr in all_translates dim nc ) cnnctrs);; 
 
 
-let to_readable_string nc = Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name;;
+let to_readable_string nc = 
+  let apex_part = (match nc.Hex_named_connector_t.apex with 
+    None ->""
+    |Some(i,j)->"("^(Hex_cell.to_string(Hex_cell.of_int_pair (i,j)))^")"
+  ) in 
+  (Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name)^apex_part;;
 
 
 let starters_for_side (dim,side)=
