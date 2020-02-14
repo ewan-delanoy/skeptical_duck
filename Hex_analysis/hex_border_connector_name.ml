@@ -22,11 +22,10 @@ let for_side side =
       Hex_border_connector_name_t.Small_pyramid(side)  
     ] ;;
 
-let to_nondefault_molecular_linker nm junction = match nm with 
+let to_nondefault_molecular_linker nm apex junction = match nm with 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
-         let p= Hex_eyed_claw.compute_apex_coordinates d1 d2 junction in 
          Some(Hex_molecular_linker.constructor [
-              Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair p)])
+              Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair apex)])
    |Noneyed_claw(_,_) -> None
    |Pyramid(_) -> None 
    |Small_pyramid(_) -> None ;;
