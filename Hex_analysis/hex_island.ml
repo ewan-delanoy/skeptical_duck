@@ -8,6 +8,29 @@ exception Disconnected_cells of (int * int) list;;
 exception Lonely_side of Hex_cardinal_direction_t.t ;;
 exception Missing_side of Hex_cardinal_direction_t.t * (Hex_island_t.t list) ;;
 
+module Private = struct 
+
+let inner_to_readable_string z =
+       let l = Ordered.sort Hex_cell.cmp (Set_of_poly_pairs.image Hex_cell.of_int_pair z) in 
+       let n = List.length l in 
+       if n=0 then "" else 
+       let p1 = Hex_cell.to_string(List.hd l) in 
+       if n=1 then p1 else 
+       let p2 = Hex_cell.to_string(List.hd(List.rev l)) in 
+       let joiner = (if n>2 then ".." else ",") in 
+       p1^joiner^p2;;
+
+let to_readable_string (Hex_island_t.I(opt,z)) =
+   let border_part = (
+      match opt with 
+      Some(direction)->"<"^(Hex_cardinal_direction.for_ground_description direction)^">"
+     |None ->"" 
+   )
+   and inner_part = inner_to_readable_string z in 
+   border_part^inner_part;;
+
+end ;;
+
 let constructor dim opt_direction l=
   let z=Set_of_poly_pairs.safe_set l in 
   let ccs = Hex_ipair.compute_connected_components dim l in 
@@ -100,6 +123,10 @@ let oppose dim (Hex_island_t.I(old_opt,z)) =
 
 let outer_earth (Hex_island_t.I(opt,z))= opt ;;
 
+let print_out (fmt:Format.formatter) nc=
+   Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
+
+
 let reflect (Hex_island_t.I(old_opt,z)) =
    let new_opt = (match old_opt with 
       None -> None 
@@ -110,16 +137,6 @@ let reflect (Hex_island_t.I(old_opt,z)) =
    Hex_island_t.I(new_opt,new_z);;
 
 
-let to_readable_string (Hex_island_t.I(opt,z)) =
-   match opt with 
-    Some(direction)->"<"^(Hex_cardinal_direction.for_ground_description direction)^">"
-   |None -> 
-       let l = Ordered.sort Hex_cell.cmp (Set_of_poly_pairs.image Hex_cell.of_int_pair z) in 
-       let n = List.length l in 
-       let p1 = Hex_cell.to_string(List.hd l) in 
-       if n=1 then p1 else 
-       let p2 = Hex_cell.to_string(List.hd(List.rev l)) in 
-       let joiner = (if n>2 then ".." else ",") in 
-       p1^joiner^p2;;
+let to_readable_string = Private.to_readable_string ;;
 
    
