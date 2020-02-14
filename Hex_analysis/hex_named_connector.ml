@@ -94,7 +94,11 @@ let expand_border_name bw = function
 let expand_name = function 
    Hex_connector_name_t.Inner(inner)-> expand_inner_name inner 
    |Border(bw,border) -> expand_border_name bw border;;
-   
+
+let optional_apex = function 
+    Hex_connector_name_t.Inner(inner)-> None
+   |Border(bw,border) -> None;;
+
 let add_name nm cnnctr = 
    {
      Hex_named_connector_t.name     = nm ;
