@@ -11,7 +11,7 @@ module Private = struct
 let is_valid  (Hex_dimension_t.D dim) (i,j) = 
      (1<=i) && (i<=dim) && (1<=j) && (j<=dim)   ;;   
 
-let neighbors_for_one dim (i,j) =
+let neighbors_for_one dim (j,i) =
    let temp1 = List.filter (is_valid dim) 
    [
         j,(i-1);(j+1),(i-1);
