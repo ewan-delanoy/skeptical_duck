@@ -189,11 +189,11 @@ let bs = Hex_double_hump_qualifier_t.Big_followed_by_small;;
 let sb = Hex_double_hump_qualifier_t.Small_followed_by_big;;
 
 let bridges_in_noneyed_claw dh d apex=
-   let ipairs = Hex_bc_example.advanced_noneyed_claw dh d apex in 
+   let ipairs = Hex_connector_data.advanced_noneyed_claw dh d apex in 
    Listennou.extract_successive_pairs_from_even_list ipairs;;
 
 let bridges_in_pyramid d apex=
-   let ipairs = Hex_bc_example.advanced_pyramid d apex in 
+   let ipairs = Hex_connector_data.advanced_pyramid d apex in 
    Listennou.extract_successive_pairs_from_even_list ipairs;;
 
 

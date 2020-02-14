@@ -49,7 +49,7 @@ let bridge = function
 let eyed_claw (d1,d2) =
    (* this function is deliberately non-curried because we need it to be a 
     univariate function, see below *) 
-    let (apex,ipairs) = Hex_bc_example.default_eyed_claw d1 d2 in 
+    let (apex,ipairs) = Hex_connector_data.default_eyed_claw d1 d2 in 
    {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
     junction = ipairs;
@@ -58,7 +58,7 @@ let eyed_claw (d1,d2) =
 } ;;   
 
 let noneyed_claw (dh,d) = 
-    let (apex,ipairs)= Hex_bc_example.default_noneyed_claw (dh,d) in 
+    let (apex,ipairs)= Hex_connector_data.default_noneyed_claw (dh,d) in 
   {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
    junction = ipairs;
    exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
@@ -66,7 +66,7 @@ let noneyed_claw (dh,d) =
    };; 
 
 let pyramid d = 
-  let (apex,ipairs)= Hex_bc_example.default_pyramid d in 
+  let (apex,ipairs)= Hex_connector_data.default_pyramid d in 
   {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
    junction = ipairs;
    exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);

@@ -25,7 +25,7 @@ let pair (cell1,cell2) =
 
 
 let eyed dim d1 d2 cell=
-   let _= Hex_bc_example.check_eyed_claw_parameters dim d1 d2 cell in 
+   let _= Hex_connector_data.check_eyed_claw_parameters dim d1 d2 cell in 
    Hex_atomic_linker_t.Eyed_claw (d1,d2,cell);;  
 
 
@@ -75,7 +75,7 @@ let cmp = ((function
 let support = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (d1,d2,cell) -> 
-    let ipairs = Hex_bc_example.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
+    let ipairs = Hex_connector_data.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
     Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) ;;
     
 let ipair_support mlclr = 
@@ -98,7 +98,7 @@ let to_readable_string = function
   Hex_atomic_linker_t.Pair (cell1,cell2) -> 
     (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
  | Eyed_claw (d1,d2,cell) -> 
-      let ipairs = Hex_bc_example.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
+      let ipairs = Hex_connector_data.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
       let cells =Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) in
      (Hex_cardinal_direction.short_name_for_pair (d1,d2))^
      "("^(Hex_cell_set.to_string cells)^")";;
