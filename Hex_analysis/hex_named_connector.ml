@@ -225,6 +225,7 @@ let starters_for_side = Private.Precomputed.starters_for_side ;;
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
              nc.Hex_named_connector_t.name 
+              nc.Hex_named_connector_t.apex
               nc.Hex_named_connector_t.junction with 
      None -> Hex_connector.to_default_molecular_linker (Private.forget_name nc)           
     |Some(mlclr) -> mlclr  ;; 

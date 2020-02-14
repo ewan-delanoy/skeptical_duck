@@ -25,7 +25,7 @@ let for_side side =
 let to_nondefault_molecular_linker nm apex junction = match nm with 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
          Some(Hex_molecular_linker.constructor [
-              Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair apex)])
+              Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair (Option.unpack apex))])
    |Noneyed_claw(_,_) -> None
    |Pyramid(_) -> None 
    |Small_pyramid(_) -> None ;;
