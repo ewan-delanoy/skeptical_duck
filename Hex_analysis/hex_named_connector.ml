@@ -49,7 +49,7 @@ let bridge = function
 let eyed_claw (d1,d2) =
    (* this function is deliberately non-curried because we need it to be a 
     univariate function, see below *) 
-    let (apex,ipairs) = Hex_eyed_claw.default_constructor d1 d2 in 
+    let (apex,ipairs) = Hex_bc_example.default_eyed_claw d1 d2 in 
    {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
     junction = ipairs;
