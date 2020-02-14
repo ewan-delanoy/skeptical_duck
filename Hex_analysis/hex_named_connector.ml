@@ -54,19 +54,24 @@ let eyed_claw (d1,d2) =
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
     junction = ipairs;
     exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
+    apex = Some(apex);
 } ;;   
 
 let noneyed_claw (dh,d) = 
     let (apex,ipairs)= Hex_bc_example.default_noneyed_claw (dh,d) in 
   {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
    junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S [])};; 
+   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
+   apex = Some(apex);
+   };; 
 
 let pyramid d = 
   let (apex,ipairs)= Hex_bc_example.default_pyramid d in 
   {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
    junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S [])};; 
+   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
+   apex = Some(apex);
+  };; 
 
   
 
@@ -95,9 +100,6 @@ let expand_name = function
    Hex_connector_name_t.Inner(inner)-> expand_inner_name inner 
    |Border(bw,border) -> expand_border_name bw border;;
 
-let optional_apex = function 
-    Hex_connector_name_t.Inner(inner)-> None
-   |Border(bw,border) -> None;;
 
 let add_name nm cnnctr = 
    {
