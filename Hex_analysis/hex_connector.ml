@@ -16,6 +16,7 @@ let translate cnnctr (dx,dy)=
     Hex_connector_t.entry =Hex_island_t.I(opt1,trl elts1);
     junction = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island_t.I(opt2,trl elts2);
+    apex = Option.propagate (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.apex)
 };;
 
 end ;;
@@ -67,12 +68,14 @@ let oppose dim cnnctr =
     Hex_connector_t.entry =on_island (cnnctr.Hex_connector_t.entry);
     junction =  on_pairs (cnnctr.Hex_connector_t.junction) ;
     exit = on_island (cnnctr.Hex_connector_t.exit);
+    apex = Option.propagate (Hex_ipair.oppose dim) (cnnctr.Hex_connector_t.apex);
 };;
 
 let reflect cnnctr = {
     Hex_connector_t.entry = Hex_island.reflect (cnnctr.Hex_connector_t.entry);
     junction = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island.reflect (cnnctr.Hex_connector_t.exit);
+    apex = Option.propagate Hex_ipair.reflect (cnnctr.Hex_connector_t.apex)
 };;
 
 let reverse cnnctr = {
@@ -98,12 +101,14 @@ let northeast_bridge = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,1)]);
     junction = [(1, 2); (2, 2)];
     exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,3)]);
+    apex = None ;
 } ;;   
 
 let northwest_bridge = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,2)]);
     junction = [(1, 2); (2, 1)];
     exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,1)]);
+    apex = None ;
 } ;;   
 
 let upwards_small_pyramid = 
@@ -113,7 +118,8 @@ let upwards_small_pyramid =
     [(1, 1) ; (1, 2) ;   (1, 4); (1, 5); 
      (2, 1) ; (2, 4) ;   (2, 2); (3, 1); (2, 3); (3, 3)];
    exit =
-    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S [])};;
+    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S []);
+    apex = Some(3,2)};;
 
 
 end ;;
