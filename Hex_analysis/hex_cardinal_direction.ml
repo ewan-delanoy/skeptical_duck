@@ -124,8 +124,8 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
      (
         match direction with 
         Hex_cardinal_direction_t.Down 
-       |Hex_cardinal_direction_t.Up -> List.filter (fun (dx,dy)->dy=0) base
-       | _ -> List.filter (fun (dx,dy)->dx=0) base
+       |Hex_cardinal_direction_t.Up -> List.filter (fun (dx,dy)->dx=0) base
+       | _ -> List.filter (fun (dx,dy)->dy=0) base
      );;
 
 
