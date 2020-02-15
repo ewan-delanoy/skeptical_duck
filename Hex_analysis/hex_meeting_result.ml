@@ -24,7 +24,7 @@ let rec helper (moves_before,player,moves_after,fles)=
           []->Hex_meeting_result_t.Stalemate(a)
           |move::following_moves ->
              (match Hex_flattened_end_strategy.use_move_to_simplify_one (player,move) fles with
-               None -> Hex_meeting_result_t.Victory(player,move)
+               None -> Hex_meeting_result_t.Strategy_defeated(player,move)
                |Some(new_fles) ->
                helper
                  (move::moves_before,Hex_player.other_player player,following_moves,new_fles) 

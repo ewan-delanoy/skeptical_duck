@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_flattened_end_strategy_t.ml";;
+#use"Hex_analysis/hex_flattened_end_strategy.ml";;
 
 *)
 
