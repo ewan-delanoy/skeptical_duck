@@ -19,7 +19,7 @@ let ref_for_lnb_computations = ref [];;
 
 let largest_nonsurrendering_beginning_for_one fgame fles = 
     match Hex_meeting_result.meet fles fgame with 
-     Hex_meeting_result_t.Surrender(moves_before,_,_)->
+     Hex_meeting_result_t.Player_surrenders(moves_before,_,_)->
        let d=List.length(fgame.Hex_finished_game_t.sequence_of_moves)-List.length(moves_before) 
        and color = Hex_player.color(Hex_flattened_end_strategy_field.beneficiary fles) 
        and s_idx = string_of_int(Hex_flattened_end_strategy_field.index fles) in 
@@ -68,14 +68,14 @@ let cmp =
 let seek_companion_for_strategy fles fgames =
    Option.find_and_stop (
      fun fgame -> match Hex_meeting_result.meet fles fgame with
-       Hex_meeting_result_t.Attack_but_no_surrender(_,_,_)->Some(fgame)
+       Hex_meeting_result_t.Player_is_attacked_but_fights_back(_,_,_)->Some(fgame)
        |_->None
    ) fgames ;;
 
 let seek_companion_for_game fgame flesses =
   Option.find_and_stop (
      fun fles -> match Hex_meeting_result.meet fles fgame with
-       Hex_meeting_result_t.Attack_but_no_surrender(moves_before,_,nbr_of_moves_remaining)->
+       Hex_meeting_result_t.Player_is_attacked_but_fights_back(moves_before,_,nbr_of_moves_remaining)->
            if nbr_of_moves_remaining = 0 
            then Some(fles)
            else None
