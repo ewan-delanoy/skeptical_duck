@@ -61,6 +61,13 @@ let setminus = Functor_for_sets.setminus Private.tr ;;
 let support (Hex_molecular_linker_t.M(l))= 
    Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
 
+let test_for_passive_to_active_conversion cell (Hex_molecular_linker_t.M(l))= 
+   match Option.find_and_stop (Hex_atomic_linker.test_for_passive_to_active_conversion cell) l with 
+   None -> None 
+   |Some(other_cell,atm0) -> 
+        let new_l = List.filter (fun atm -> atm <> atm0 ) l in 
+        Some (other_cell,Hex_molecular_linker_t.M(new_l));;
+
 
 let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",
