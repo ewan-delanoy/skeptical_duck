@@ -118,6 +118,12 @@ let active_complement = function
    Hex_atomic_linker_t.Pair (_,_) -> Hex_cell_set_t.S [] 
    | Eyed_claw (_,_,cell) -> Hex_cell_set_t.S [cell]  ;;
 
+let test_for_passive_to_active_conversion cell atm = match atm with 
+    Hex_atomic_linker_t.Pair (cell1,cell2) ->
+        if cell = cell1  then Some(cell2,atm) else
+        if cell = cell2  then Some(cell1,atm) else None    
+   | Eyed_claw (_,_,cell) -> None  ;;  
+
 end;;
 
 let active_complement = Private.active_complement;;
@@ -129,5 +135,6 @@ let of_concrete_object = Private.of_concrete_object;;
 let opt_eyed = Private.opt_eyed;;
 let pair = Private.pair;;
 let support = Private.support;;
+let test_for_passive_to_active_conversion = Private.test_for_passive_to_active_conversion;;
 let to_concrete_object = Private.to_concrete_object;;
 let to_readable_string = Private.to_readable_string;;
