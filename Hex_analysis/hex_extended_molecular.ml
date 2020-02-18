@@ -19,12 +19,6 @@ let use_ally_move_to_simplify_one cell extmol =
       active_part = Hex_cell_set.outsert cell (extmol.Hex_extended_molecular_t.active_part);
    };;
    
-let withstands_enemy_move cell extmol = 
-    (Hex_molecular_linker.withstands_enemy_move cell extmol.Hex_extended_molecular_t.molecular_part)
-    &&
-    (not(Hex_cell_set.mem cell extmol.Hex_extended_molecular_t.nonmolecular_passive_part))
-    &&
-    (not(Hex_cell_set.mem cell extmol.Hex_extended_molecular_t.active_part));;    
 
 let of_molecular_and_active_ones (mlclr,active_ones) = 
    {
@@ -122,4 +116,4 @@ let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;
-let withstands_enemy_move = Private.withstands_enemy_move;;
+
