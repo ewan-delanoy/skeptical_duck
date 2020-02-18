@@ -6,5 +6,5 @@
 
 type t= 
    No_change
-  |Strengthening of Hex_flattened_end_strategy_t.t
+  |Strengthening
   |Fulfillment;;
