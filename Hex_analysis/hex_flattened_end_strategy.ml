@@ -20,11 +20,14 @@ let use_ally_move_to_simplify_several cell old_flesses =
     Image.image(use_ally_move_to_simplify_one cell) old_flesses;;
           
 let use_enemy_move_to_simplify_one cell old_fles=
-   let active_part = Hex_flattened_end_strategy_field.active_part old_fles
-   and passive_part = Hex_flattened_end_strategy_field.passive_part old_fles in 
-   if (Hex_cell_set.mem cell active_part)||(Hex_cell_set.mem cell passive_part)
-   then None
-   else Some(old_fles);;
+   let old_data =old_fles.Hex_flattened_end_strategy_t.data in 
+   match Hex_extended_molecular.use_enemy_move_to_simplify_one cell old_data with 
+   None -> None 
+   |Some(new_data) ->
+   Some({
+       old_fles with 
+       Hex_flattened_end_strategy_t.data = new_data
+    });;
      
 let use_enemy_move_to_simplify_several cell old_flesses =
     Option.filter_and_unpack (use_enemy_move_to_simplify_one cell) old_flesses;;
