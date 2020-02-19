@@ -12,13 +12,42 @@ let passive_part extmol =
          extmol.Hex_extended_molecular_t.nonmolecular_passive_part;;
 
 
-let use_ally_move_to_simplify_one cell extmol =
+let use_ally_move_to_simplify_one_in_usual_case cell extmol =
    {
       Hex_extended_molecular_t.molecular_part = Hex_molecular_linker.use_ally_move_to_simplify_one cell (extmol.Hex_extended_molecular_t.molecular_part);
       nonmolecular_passive_part = Hex_cell_set.outsert cell (extmol.Hex_extended_molecular_t.nonmolecular_passive_part);
       active_part = Hex_cell_set.outsert cell (extmol.Hex_extended_molecular_t.active_part);
    };;
    
+let use_ally_move_to_simplify_one cell extmol =
+   let old_mlclr = extmol.Hex_extended_molecular_t.molecular_part in 
+   match Hex_molecular_linker.test_for_passive_to_active_conversion cell old_mlclr with
+   None ->  use_ally_move_to_simplify_one_in_usual_case cell extmol
+   |Some(_,new_mlclr) -> 
+        {
+         extmol with 
+         Hex_extended_molecular_t.molecular_part = new_mlclr ;
+        };;
+
+let use_enemy_move_to_simplify_one_in_usual_case cell extmol =
+   if ( (Hex_cell_set.mem cell (passive_part extmol) )
+        ||
+        (Hex_cell_set.mem cell extmol.Hex_extended_molecular_t.active_part )
+   )  
+   then None 
+   else Some extmol ;;
+
+let use_enemy_move_to_simplify_one cell extmol =
+   let old_mlclr = extmol.Hex_extended_molecular_t.molecular_part in 
+   match Hex_molecular_linker.test_for_passive_to_active_conversion cell old_mlclr with
+   None ->  use_enemy_move_to_simplify_one_in_usual_case cell extmol
+   |Some(other_cell,new_mlclr) -> 
+      Some( 
+        {
+         extmol with 
+         Hex_extended_molecular_t.molecular_part = new_mlclr ;
+         active_part = Hex_cell_set.insert other_cell (extmol.Hex_extended_molecular_t.active_part)
+        });;   
 
 let of_molecular_and_active_ones (mlclr,active_ones) = 
    {
@@ -116,4 +145,4 @@ let of_molecular_and_active_ones = Private.of_molecular_and_active_ones;;
 let passive_part = Private.passive_part ;; 
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;
-
+let use_enemy_move_to_simplify_one = Private.use_enemy_move_to_simplify_one;;

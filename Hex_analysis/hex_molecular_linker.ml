@@ -79,7 +79,3 @@ let use_ally_move_to_simplify_one cell (Hex_molecular_linker_t.M(l))=
    let simplified_l=List.filter (Hex_atomic_linker.nonfulfilment_by_ally_move cell) l in 
    Hex_molecular_linker_t.M(simplified_l);;  
 
-let withstands_enemy_move cell mlclr= 
-  not(Hex_cell_set.mem cell (support mlclr)) ;; 
-
- 
