@@ -21,4 +21,4 @@ let to_nondefault_molecular_linker = function
 
 let to_readable_string = function 
      Hex_inner_connector_name_t.Bridge(us)-> Hex_unit_side.to_readable_string us 
-    |Haddock1 -> "hk1";;
+    |Haddock1(_) -> "hk1";;
