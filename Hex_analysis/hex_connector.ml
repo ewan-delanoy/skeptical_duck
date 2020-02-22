@@ -95,7 +95,13 @@ let translate p cnnctr= Private.translate cnnctr p;;
 
 module Example = struct 
  
-
+let leftwards_rising_haddock1 = {
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,2);(2,1)]);
+    junction = 
+    [ (1, 3) ; (2, 2) ;   (2, 3); (3, 1); (3, 2); (3, 3)];
+    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,1);(4,2)]);
+    apex = None ;
+} ;;   
 
 let northeast_bridge = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,1)]);
