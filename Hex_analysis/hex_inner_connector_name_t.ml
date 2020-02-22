@@ -6,4 +6,4 @@
 
 type t= 
      Bridge of Hex_unit_side_t.t  
-     |Haddock1 ;;
+     |Haddock1 of Hex_cardinal_direction_t.t ;;
