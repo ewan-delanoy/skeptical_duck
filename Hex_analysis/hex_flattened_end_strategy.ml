@@ -37,8 +37,6 @@ let use_move_to_simplify_one (player,cell) old_fles =
    then Some(use_ally_move_to_simplify_one cell old_fles)
    else use_enemy_move_to_simplify_one cell old_fles;;
 
-
-
 let immediate_opportunities flesses =
    let temp1 = Option.filter_and_unpack (
        fun fles->

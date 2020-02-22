@@ -5,4 +5,5 @@
 *)
 
 type t= 
-     Bridge of Hex_unit_side_t.t  ;;
+     Bridge of Hex_unit_side_t.t  
+     |Haddock1 of Hex_cell_t.t ;;
