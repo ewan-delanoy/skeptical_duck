@@ -4,12 +4,19 @@
 
 *)
 
+exception Bad_haddock1_specification of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
+
 module Private = struct 
 
 let oppose = Hex_connector.oppose 
 and reflect = Hex_connector.reflect 
 and reverse = Hex_connector.reverse  
 and arbitrary_dim = Hex_dimension.eleven;;
+
+let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  
+and right = Hex_cardinal_direction_t.Right and up = Hex_cardinal_direction_t.Up ;;
+let high = up and low =down;;
+
 
 module Inner = struct 
 
@@ -30,13 +37,31 @@ let bridge = function
    |Hex_unit_side_t.South_east ->  southeast_bridge
    |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
-(*
-let left_haddock1  
-*)
+let ul_haddock1 = Hex_connector.Example.upwards_left_situated_haddock1;;
+
+let left_situated_haddock1  = function 
+     Hex_cardinal_direction_t.Down  -> reverse ul_haddock1
+    |Hex_cardinal_direction_t.Up -> ul_haddock1
+    |bad_direction   -> raise(Bad_haddock1_specification(bad_direction,left));; 
+
+let uptown_haddock1 d = 
+    reflect (left_situated_haddock1 (Hex_cardinal_direction.reflect d));;
+
+let downtown_haddock1 dim d = 
+    oppose dim (uptown_haddock1 (Hex_cardinal_direction.oppose d));;
+
+let right_situated_haddock1 dim d= 
+  reflect (downtown_haddock1 dim (Hex_cardinal_direction.reflect d));;
+
+let haddock1 dim location = match location with 
+     Hex_cardinal_direction_t.Down  -> downtown_haddock1 dim
+    |Hex_cardinal_direction_t.Left  -> left_situated_haddock1
+    |Hex_cardinal_direction_t.Right -> right_situated_haddock1 dim
+    |Hex_cardinal_direction_t.Up    -> uptown_haddock1 ;; 
 
 let expand_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> bridge us ;;
-   (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
+   Hex_inner_connector_name_t.Bridge(us)-> bridge us 
+   |Haddock1(qualifier,location) -> haddock1 arbitrary_dim location qualifier ;; 
 
 
 end ;; 
