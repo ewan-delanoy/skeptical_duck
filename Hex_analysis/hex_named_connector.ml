@@ -12,78 +12,9 @@ exception Precomputed_ender_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.
 
 module Private = struct 
 
-
  
-let oppose = Hex_connector.oppose 
-and reflect = Hex_connector.reflect 
-and reverse = Hex_connector.reverse  
-and arbitrary_dim = Hex_dimension.eleven;;
 
-
- 
- 
-let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
-
-let leftwards_small_pyramid = reflect upwards_small_pyramid;;
-let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
-let rightwards_small_pyramid dim = oppose dim leftwards_small_pyramid;;
-
-
-
-let eyed_claw (d1,d2) =
-   (* this function is deliberately non-curried because we need it to be a 
-    univariate function, see below *) 
-    let (apex,ipairs) = Hex_connector_data.default_eyed_claw d1 d2 in 
-   {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
-    junction = ipairs;
-    exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
-    apex = Some(apex);
-} ;;   
-
-let noneyed_claw (dh,d) = 
-    let (apex,ipairs)= Hex_connector_data.default_noneyed_claw (dh,d) in 
-  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
-   junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
-   apex = Some(apex);
-   };; 
-
-let pyramid d = 
-  let (apex,ipairs)= Hex_connector_data.default_pyramid d in 
-  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
-   junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
-   apex = Some(apex);
-  };; 
-
-  
-
-let small_pyramid = function 
-     Hex_cardinal_direction_t.Down  -> downwards_small_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_small_pyramid 
-    |Hex_cardinal_direction_t.Right -> rightwards_small_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_small_pyramid;; 
-
-let standard_doubling f bw x =
-  let y = f x in 
-  match bw with 
-   Hex_borderwise_t.From_border -> reverse y
-  |Hex_borderwise_t.To_border -> y ;;
-
-let expand_inner_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> Hex_connector_constructor.bridge us ;;
-   (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
-
-let expand_border_name bw = function 
-   Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
-   |Noneyed_claw(dh,d) ->standard_doubling noneyed_claw bw (dh,d)
-   |Pyramid(d) -> standard_doubling pyramid bw d
-   |Small_pyramid(d) -> standard_doubling small_pyramid bw d ;;   
-
-let expand_name = function 
-   Hex_connector_name_t.Inner(inner)-> expand_inner_name inner 
-   |Border(bw,border) -> expand_border_name bw border;;
+let expand_name = Hex_connector_constructor.expand_name ;;  
 
 
 let add_name nm cnnctr = 
