@@ -95,7 +95,7 @@ let translate p cnnctr= Private.translate cnnctr p;;
 
 module Example = struct 
  
-let left_upwards_haddock1 = {
+let upwards_left_situated_haddock1 = {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,2);(2,1)]);
     junction = 
     [ (1, 3) ; (2, 2) ;   (2, 3); (3, 1); (3, 2); (3, 3)];
