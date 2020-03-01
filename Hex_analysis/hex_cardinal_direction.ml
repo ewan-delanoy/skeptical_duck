@@ -115,6 +115,11 @@ let all =
  Hex_cardinal_direction_t.Up;
 ];;
 
+let all_orthogonal_pairs = 
+   List.flatten(
+   Image.image (fun d->
+     Image.image (fun d2->(d,d2)) (Private.orthogonal_directions d)
+   ) all);;
 
 let authorized_translations (Hex_dimension_t.D dim) opt = 
    let base = Cartesian.square (Ennig.ennig (1-dim) (dim-1)) in 
