@@ -10,7 +10,7 @@ exception Precomputed_middler_exn of Hex_dimension_t.t  ;;
 exception Precomputed_ender_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
 
 
- module Private = struct 
+module Private = struct 
 
 
  
@@ -21,30 +21,12 @@ and arbitrary_dim = Hex_dimension.eleven;;
 
 
  
-let northeast_bridge = Hex_connector.Example.northeast_bridge ;;  
-let northwest_bridge = Hex_connector.Example.northwest_bridge ;;   
+ 
 let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
 
 let leftwards_small_pyramid = reflect upwards_small_pyramid;;
 let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
 let rightwards_small_pyramid dim = oppose dim leftwards_small_pyramid;;
-
-let southwest_bridge = reverse northeast_bridge ;;
-let south_bridge = reflect  northeast_bridge ;;
-let north_bridge = reverse south_bridge ;;
-
-let southeast_bridge = reverse northwest_bridge ;;
-
-
-
-
-let bridge = function 
-    Hex_unit_side_t.North      ->  north_bridge
-   |Hex_unit_side_t.North_east ->  northeast_bridge
-   |Hex_unit_side_t.North_west ->  northwest_bridge
-   |Hex_unit_side_t.South      ->  south_bridge
-   |Hex_unit_side_t.South_east ->  southeast_bridge
-   |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
 
 
@@ -90,7 +72,7 @@ let standard_doubling f bw x =
   |Hex_borderwise_t.To_border -> y ;;
 
 let expand_inner_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> bridge us ;;
+   Hex_inner_connector_name_t.Bridge(us)-> Hex_connector_constructor.bridge us ;;
    (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
 
 let expand_border_name bw = function 
