@@ -82,6 +82,13 @@ let seek_companion_for_game fgame flesses =
        |_->None
    ) flesses ;;
 
+let enumerate_companions_for_game fgame flesses =
+  List.filter (
+     fun fles -> match Hex_meeting_result.meet fles fgame with
+       Hex_meeting_result_t.Player_is_attacked_but_fights_back(moves_before,_,nbr_of_moves_remaining)->
+           nbr_of_moves_remaining = 0 
+       |_-> false
+   ) flesses ;;
 
 let salt = "Hex_"^"finished_game_t.";;
 
@@ -110,8 +117,9 @@ let to_concrete_object fgame =
 end;;
 
 let cmp = Private.cmp;;
-let extends = Private.extends;;
 let empty_one = Private.empty_one;;
+let enumerate_companions_for_game = Private.enumerate_companions_for_game ;;
+let extends = Private.extends;;
 let first_move = Private.first_move;;
 let largest_nonsurrendering_beginning = Private.largest_nonsurrendering_beginning_for_several;;
 let of_concrete_object = Private.of_concrete_object;;
