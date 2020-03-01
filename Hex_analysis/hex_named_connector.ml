@@ -46,6 +46,8 @@ let bridge = function
    |Hex_unit_side_t.South_east ->  southeast_bridge
    |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
+
+
 let eyed_claw (d1,d2) =
    (* this function is deliberately non-curried because we need it to be a 
     univariate function, see below *) 
@@ -89,6 +91,7 @@ let standard_doubling f bw x =
 
 let expand_inner_name = function 
    Hex_inner_connector_name_t.Bridge(us)-> bridge us ;;
+   (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
 
 let expand_border_name bw = function 
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
