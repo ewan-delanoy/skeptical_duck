@@ -72,6 +72,13 @@ let seek_companion_for_strategy fles fgames =
        |_->None
    ) fgames ;;
 
+let enumerate_companions_for_strategy fles fgames =
+   List.filter (
+     fun fgame -> match Hex_meeting_result.meet fles fgame with
+       Hex_meeting_result_t.Player_is_attacked_but_fights_back(_,_,_)->true
+       |_->false
+   ) fgames ;;
+
 let seek_companion_for_game fgame flesses =
   Option.find_and_stop (
      fun fles -> match Hex_meeting_result.meet fles fgame with
@@ -119,6 +126,7 @@ end;;
 let cmp = Private.cmp;;
 let empty_one = Private.empty_one;;
 let enumerate_companions_for_game = Private.enumerate_companions_for_game ;;
+let enumerate_companions_for_strategy = Private.enumerate_companions_for_strategy ;;
 let extends = Private.extends;;
 let first_move = Private.first_move;;
 let largest_nonsurrendering_beginning = Private.largest_nonsurrendering_beginning_for_several;;
