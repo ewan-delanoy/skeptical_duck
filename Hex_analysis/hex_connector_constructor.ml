@@ -11,23 +11,15 @@ and reflect = Hex_connector.reflect
 and reverse = Hex_connector.reverse  
 and arbitrary_dim = Hex_dimension.eleven;;
 
+module Inner = struct 
 
- 
 let northeast_bridge = Hex_connector.Example.northeast_bridge ;;  
-let northwest_bridge = Hex_connector.Example.northwest_bridge ;;   
-let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
-
-let leftwards_small_pyramid = reflect upwards_small_pyramid;;
-let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
-let rightwards_small_pyramid dim = oppose dim leftwards_small_pyramid;;
-
+let northwest_bridge = Hex_connector.Example.northwest_bridge ;;  
 let southwest_bridge = reverse northeast_bridge ;;
 let south_bridge = reflect  northeast_bridge ;;
 let north_bridge = reverse south_bridge ;;
 
 let southeast_bridge = reverse northwest_bridge ;;
-
-
 
 
 let bridge = function 
@@ -38,6 +30,23 @@ let bridge = function
    |Hex_unit_side_t.South_east ->  southeast_bridge
    |Hex_unit_side_t.South_west ->  southwest_bridge ;;
 
+(*
+let left_haddock1  
+*)
+
+let expand_name = function 
+   Hex_inner_connector_name_t.Bridge(us)-> bridge us ;;
+   (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
+
+
+end ;; 
+
+module Border = struct  
+ 
+let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
+let leftwards_small_pyramid = reflect upwards_small_pyramid;;
+let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
+let rightwards_small_pyramid dim = oppose dim leftwards_small_pyramid;;
 
 
 let eyed_claw (d1,d2) =
@@ -81,18 +90,16 @@ let standard_doubling f bw x =
    Hex_borderwise_t.From_border -> reverse y
   |Hex_borderwise_t.To_border -> y ;;
 
-let expand_inner_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> bridge us ;;
-   (* |Haddock1(d1,d2) -> haddock1 d1 d2 ;; *)
-
-let expand_border_name bw = function 
+let expand_name bw = function 
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
    |Noneyed_claw(dh,d) ->standard_doubling noneyed_claw bw (dh,d)
    |Pyramid(d) -> standard_doubling pyramid bw d
    |Small_pyramid(d) -> standard_doubling small_pyramid bw d ;;   
 
+end ;; 
+
 end ;;
 
 let expand_name = function 
-   Hex_connector_name_t.Inner(inner)-> Private.expand_inner_name inner 
-   |Border(bw,border) -> Private.expand_border_name bw border;;
+   Hex_connector_name_t.Inner(inner)-> Private.Inner.expand_name inner 
+   |Border(bw,border) -> Private.Border.expand_name bw border;;
