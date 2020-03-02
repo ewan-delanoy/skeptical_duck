@@ -60,7 +60,14 @@ let rec sub_f=
 |u::v->if u=x then j else sub_f(j+1,v)) in
 sub_f(1,ll);;
 
+exception Force_find_exn ;;
 
+let rec force_find f x=
+   match x with 
+   [] -> raise(Force_find_exn)
+   |a::others -> if f a 
+                 then a 
+                 else force_find f others ;; 
 
 let morzholan f x=
 let rec sub_f=(function (u,v)->if u=v then u else sub_f(v,f(v)))
