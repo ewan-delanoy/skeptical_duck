@@ -13,7 +13,7 @@ let list_with_indices l=
   then raise(Bad_set_of_indices)
   else
   Ennig.doyle (fun
-     i->snd(Option.force_find(fun p->fst(p)=i) l)
+     i->snd(Listennou.force_find(fun p->fst(p)=i) l)
   ) 1 n;;
 
 (*
