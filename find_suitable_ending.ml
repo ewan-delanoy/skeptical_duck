@@ -28,7 +28,7 @@ let find_file_location dir l_subdir old_x=
   	then Some(Absolute_path.of_string s1)
   	else None
   ) in
-  let opt=Option.force_find_and_stop tempf temp1 in
+  let opt=Option.find_and_stop tempf temp1 in
   if opt=None
   then raise(No_suitable_location(dir ,l_subdir,x))
   else  Option.unpack(opt);;           

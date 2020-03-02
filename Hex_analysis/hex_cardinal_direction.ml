@@ -153,7 +153,7 @@ let oppose = function
             
 
 let opt_of_char c =
-   Option.force_find_and_stop (
+   Option.find_and_stop (
        fun p->if fst(p)=c then Some(snd p) else None) 
        Private.correspondences ;;
    

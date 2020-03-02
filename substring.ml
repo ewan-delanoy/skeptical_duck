@@ -77,13 +77,13 @@ let leftmost_linedex_of_in_from x y i=
 let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
     let n=String.length(whole_string) in
     let temp1=Ennig.index_everything patterns in 
-    let tester =(fun idx->Option.force_find_and_stop (
+    let tester =(fun idx->Option.find_and_stop (
          fun (patt_nbr,patt)->
            if is_a_substring_located_at patt whole_string idx 
            then Some(patt_nbr,idx)
            else None
        ) temp1) in
-    Option.force_find_and_stop tester (Ennig.ennig start_idx n);;          
+    Option.find_and_stop tester (Ennig.ennig start_idx n);;          
       
 (*
 

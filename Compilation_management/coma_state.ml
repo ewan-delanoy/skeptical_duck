@@ -1477,7 +1477,7 @@ exception Absent_module of string;;
 let decipher_module cs capitalized_or_not_x=
   let x=String.uncapitalize_ascii capitalized_or_not_x in 
   let s=Cull_string.before_rightmost_possibly_all x '.' in
-  match (Option.force_find_and_stop(
+  match (Option.find_and_stop(
       fun edg->
       let t=s^(Dfa_ending.connectable_to_modulename edg) in 
       try(Some(decipher_path cs t)) with _->None

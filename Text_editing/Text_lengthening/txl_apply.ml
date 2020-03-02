@@ -55,7 +55,7 @@ let apply_decompressions_if_allowed txl word l=
    else None;;
 
 let apply_disjunction_of_expansions txl word=
-  let opt = Option.force_find_and_stop(apply_decompressions_if_allowed txl word) 
+  let opt = Option.find_and_stop(apply_decompressions_if_allowed txl word) 
     (Txl_field.expansions txl) in 
   match opt with 
   None->(opt,[],word)
