@@ -29,7 +29,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    (Cull_string.before_rightmost beheaded_name '.',Overwriter.to_string new_name) in
    let new_beheaded_name=Overwriter.of_string s_new_beheaded_name in
    let s_new_full_name=module_name^"."^s_new_beheaded_name in
-   let temp4_again=Option.find (fun itm->
+   let temp4_again=Option.force_find (fun itm->
      (itm.Ocaml_gsyntax_item.name)=s_new_full_name
    ) temp3_again in
    let k1=Listennou.find_index temp4_again temp3_again in

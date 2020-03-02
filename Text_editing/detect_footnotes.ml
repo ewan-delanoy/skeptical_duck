@@ -72,7 +72,7 @@ let extract_footnotes_from_main_text main_text =
        if idx_to_be_treated > n 
        then List.rev treated
        else 
-       let opt1=Option.find_and_stop 
+       let opt1=Option.force_find_and_stop 
          (check_for_footnote_at_idx main_text) 
            (Ennig.ennig idx_to_be_treated n) in 
        if opt1=None 

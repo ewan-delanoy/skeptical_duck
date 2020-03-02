@@ -85,7 +85,7 @@ let find_one_of_several_in_at_idx candidates s idx =
            then Some(idx,candidate)
            else None
    ) in 
-   Option.find_and_stop tester candidates;;
+   Option.force_find_and_stop tester candidates;;
   
 (*
 
@@ -95,7 +95,7 @@ find_one_of_several_in_at_idx ["ba";"ab"] "123ab67" 4;;
 
 let find_one_of_several_in_from_idx candidates s idx =
   let n=String.length s in 
-  Option.find_and_stop (
+  Option.force_find_and_stop (
     find_one_of_several_in_at_idx candidates s
   ) (Ennig.ennig idx n);;
 

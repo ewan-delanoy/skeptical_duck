@@ -66,7 +66,7 @@ let cmp =
 ) :> Hex_finished_game_t.t Total_ordering.t);;
 
 let seek_companion_for_strategy fles fgames =
-   Option.find_and_stop (
+   Option.force_find_and_stop (
      fun fgame -> match Hex_meeting_result.meet fles fgame with
        Hex_meeting_result_t.Player_is_attacked_but_fights_back(_,_,_)->Some(fgame)
        |_->None
@@ -80,7 +80,7 @@ let enumerate_companions_for_strategy fles fgames =
    ) fgames ;;
 
 let seek_companion_for_game fgame flesses =
-  Option.find_and_stop (
+  Option.force_find_and_stop (
      fun fles -> match Hex_meeting_result.meet fles fgame with
        Hex_meeting_result_t.Player_is_attacked_but_fights_back(moves_before,_,nbr_of_moves_remaining)->
            if nbr_of_moves_remaining = 0 

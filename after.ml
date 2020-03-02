@@ -268,7 +268,7 @@ after_interface "interface {u\nv}678" 1;;
 *)
 
 let after_classlike_block s i=
-   Option.find_and_stop(
+   Option.force_find_and_stop(
      fun f->f s i
    )[
        after_abstract_class;
@@ -341,7 +341,7 @@ let after_one pattern s idx=
   else None;;
 
 let after_one_among_several l_patterns s idx=
-   Option.find_and_stop (
+   Option.force_find_and_stop (
      fun pattern->after_one pattern s idx
    ) l_patterns;;
 
