@@ -109,9 +109,13 @@ end ;;
 
 
 let check_compatiblity end_of_battle nc = 
-   let inner_data = Hex_cell_set.forget_order (Private.inner_sea nc) in 
-   List.for_all (fun cell -> 
-    (Hex_end_of_battle.assess end_of_battle cell)=Hex_eob_result_t.Unoccupied ) inner_data ;;
+   let inner_sea = Hex_cell_set.forget_order (Private.inner_sea nc) 
+   and inner_earth = Hex_cell_set.forget_order (Hex_connector.inner_earth (Private.forget_name nc)) in 
+   (List.for_all (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell)=Hex_eob_result_t.Unoccupied ) inner_sea)
+   &&
+   (List.for_all (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell) <> Hex_eob_result_t.Enemy_territory ) inner_earth)  ;;
 
 let check_disjointness nc1 nc2 =
     Hex_cell_set.does_not_intersect (Private.inner_sea nc1) (Private.inner_sea nc2);; 
