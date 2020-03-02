@@ -172,6 +172,21 @@ let remove_last_finished_game () =
      persist_games()
    );;
 
+let current_state () = 
+  (
+    (!games_ref),
+    (!winning_end_strategies_for_first_player_ref),
+    (!winning_end_strategies_for_second_player_ref),
+    (!untamed_openings_ref)
+  );;
+
+let set_state (g,w1,w2,uops) = 
+   (
+     games_ref := g;
+     winning_end_strategies_for_first_player_ref := w1 ;
+     winning_end_strategies_for_second_player_ref := w2 ;
+     untamed_openings_ref := uops ;
+   );;
 
 
 end ;;
@@ -180,10 +195,12 @@ let add_end_strategy = Private.add_end_strategy;;
 let add_finished_game = Private.add_finished_game;;
 let cancel_last_game = Private.remove_last_finished_game;;
 let cog_at_idx = Private.cog_at_idx;;
+let current_state = Private.current_state ;;
 let dimension ()=(!(Private.dimension_ref));;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;
+let set_state = Private.set_state ;;
 let strategies_for_player = Private.strategies_for_player ;;
 let wes_pair = Private.wes_pair;;
 
