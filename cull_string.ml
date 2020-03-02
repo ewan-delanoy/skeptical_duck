@@ -95,7 +95,7 @@ let trim_spaces_on_the_right s=
    let opt1=Option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in
    if opt1=None then "" else
    let i1=Option.unpack opt1 in
-   let k1=Option.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in 
+   let k1=Listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
 
