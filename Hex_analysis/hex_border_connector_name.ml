@@ -21,7 +21,8 @@ let for_side side =
     @
     [
       Hex_border_connector_name_t.Pyramid(side);
-      Hex_border_connector_name_t.Small_pyramid(side)  
+      Hex_border_connector_name_t.Small_pyramid(side) ;
+      Hex_border_connector_name_t.Border_bridge(side) ; 
     ] ;;
 
 let to_nondefault_molecular_linker nm apex junction = match nm with 
@@ -31,7 +32,8 @@ let to_nondefault_molecular_linker nm apex junction = match nm with
               Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair (Option.unpack apex))])
    |Noneyed_claw(_,_) -> None
    |Pyramid(_) -> None 
-   |Small_pyramid(_) -> None ;;
+   |Small_pyramid(_) -> None 
+   |Border_bridge(_) -> None ;;
     
 
 let to_readable_string = function 
@@ -40,4 +42,5 @@ let to_readable_string = function
    |Noneyed_claw(dh,d) -> let s = (Hex_double_hump_qualifier.to_readable_string dh) in 
                           (String.sub s 0 1)^(Hex_cardinal_direction.for_ground_description d)^(String.sub s 1 1)
    |Pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"py" 
-   |Small_pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"sy" ;;
+   |Small_pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"sy" 
+   |Border_bridge(d) ->  (Hex_cardinal_direction.for_ground_description d)^"bb" ;;
