@@ -109,6 +109,19 @@ let small_pyramid = function
     |Hex_cardinal_direction_t.Right -> rightwards_small_pyramid arbitrary_dim
     |Hex_cardinal_direction_t.Up    -> upwards_small_pyramid;; 
 
+let upwards_border_bridge = Hex_connector.Example.upwards_border_bridge ;;  
+let leftwards_border_bridge = reflect upwards_border_bridge;;
+let downwards_border_bridge dim = oppose dim upwards_border_bridge ;;
+let rightwards_border_bridge dim = oppose dim leftwards_border_bridge;;
+
+let border_bridge = function 
+     Hex_cardinal_direction_t.Down  -> downwards_border_bridge arbitrary_dim
+    |Hex_cardinal_direction_t.Left  -> leftwards_border_bridge 
+    |Hex_cardinal_direction_t.Right -> rightwards_border_bridge arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> upwards_border_bridge;; 
+
+
+
 let standard_doubling f bw x =
   let y = f x in 
   match bw with 
@@ -119,7 +132,8 @@ let expand_name bw = function
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
    |Noneyed_claw(dh,d) ->standard_doubling noneyed_claw bw (dh,d)
    |Pyramid(d) -> standard_doubling pyramid bw d
-   |Small_pyramid(d) -> standard_doubling small_pyramid bw d ;;   
+   |Small_pyramid(d) -> standard_doubling small_pyramid bw d 
+   |Border_bridge(d) -> standard_doubling border_bridge bw d;;   
 
 end ;; 
 
