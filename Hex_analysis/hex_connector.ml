@@ -117,6 +117,16 @@ let northwest_bridge = {
     apex = None ;
 } ;;   
 
+let upwards_border_bridge = 
+{Hex_connector_t.entry =
+    Hex_island_t.I (None, Set_of_poly_pairs_t.S [(2, 1)]);
+   junction =
+    [(1, 1) ; (1, 2) ];
+   exit =
+    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S []);
+    apex = Some(2,1)};;
+
+
 let upwards_small_pyramid = 
 {Hex_connector_t.entry =
     Hex_island_t.I (None, Set_of_poly_pairs_t.S [(3, 2)]);
