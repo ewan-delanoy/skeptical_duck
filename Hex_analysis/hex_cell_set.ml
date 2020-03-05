@@ -34,6 +34,13 @@ let  apply_condition opt_condition cell_set=match opt_condition with
   |Some(condition_set) -> 
      fold_intersect [cell_set;condition_set];;
 
+let length_first_cmp =
+  let tf1 = (fun (Hex_cell_set_t.S(l1)) (Hex_cell_set_t.S(l2))->
+     Total_ordering.standard (List.length l1) (List.length l2) 
+  ) in
+   Total_ordering.combine 
+     ~tried_first:tf1
+     ~tried_second:Total_ordering.standard;; 
 
 
 let min (Hex_cell_set_t.S(l))=List.hd l;;     
