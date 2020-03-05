@@ -138,7 +138,7 @@ let middlers = Private.Precomputed.middlers ;;
 let missing_earth end_of_battle nc = 
    let inner_earth = Hex_cell_set.forget_order 
        (Hex_connector.inner_earth (Private.forget_name nc)) in 
-   (List.filter (fun cell -> 
+   Hex_cell_set.safe_set(List.filter (fun cell -> 
     (Hex_end_of_battle.assess end_of_battle cell) 
      = Hex_eob_result_t.Unoccupied ) inner_earth)  ;;
 
