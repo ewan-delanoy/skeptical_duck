@@ -135,6 +135,13 @@ let inner_sea = Private.inner_sea ;;
 
 let middlers = Private.Precomputed.middlers ;;
 
+let missing_earth end_of_battle nc = 
+   let inner_earth = Hex_cell_set.forget_order 
+       (Hex_connector.inner_earth (Private.forget_name nc)) in 
+   (List.filter (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell) 
+     = Hex_eob_result_t.Unoccupied ) inner_earth)  ;;
+
 let of_name = Private.of_name ;;
 
 let print_out (fmt:Format.formatter) nc=

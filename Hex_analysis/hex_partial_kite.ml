@@ -21,7 +21,8 @@ let starters_for_side end_of_battle side =
    let first_island = Hex_island.get_side side islands  in                    
    let constructor = (
       fun first_nc ->
-        let new_base=List.filter (Hex_named_connector.check_disjointness first_nc) base2 in
+        let new_base=List.filter 
+         (Hex_named_connector.check_disjointness first_nc) base2 in
         let elt1 = Hex_kite_element_t.Earth(first_island)
         and elt2 = Hex_kite_element_t.Sea(first_nc) in 
         {
@@ -29,6 +30,7 @@ let starters_for_side end_of_battle side =
             original_side = side ;
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = new_base ;
+            added_by_casing = Hex_cell_set.empty_set;
         }
 
    ) in 
