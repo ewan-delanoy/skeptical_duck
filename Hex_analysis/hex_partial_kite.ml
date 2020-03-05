@@ -8,24 +8,28 @@ exception Kite_is_not_started;;
 
 module Private = struct 
 
+let local_cmp = Total_ordering.product 
+    Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
 let starters_for_side end_of_battle side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
    let base1 = clean (Hex_named_connector.starters_for_side dim side)
-   and base2 = clean ((Hex_named_connector.middlers dim)@
+   and pre_base2 = clean ((Hex_named_connector.middlers dim)@
                        (Hex_named_connector.enders_for_side dim side)
                       ) in 
+   let unordered_base2 = Image.image (
+     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
+   )  pre_base2 in                  
+   let base2 = Ordered.sort local_cmp unordered_base2 in                    
    let islands = Hex_island.decompose end_of_battle in 
    let first_island = Hex_island.get_side side islands  in                    
    let constructor = (
       fun first_nc ->
-        let new_base=Option.filter_and_unpack ( 
-         fun other_nc -> 
-         if Hex_named_connector.check_disjointness first_nc other_nc 
-         then Some(Hex_named_connector.missing_earth end_of_battle other_nc,other_nc)
-         else None) base2 in
+        let new_base=List.filter ( 
+         fun (z,other_nc) -> 
+         Hex_named_connector.check_disjointness first_nc other_nc ) base2 in
         let elt1 = Hex_kite_element_t.Earth(first_island)
         and elt2 = Hex_kite_element_t.Sea(first_nc) in 
         {
