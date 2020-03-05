@@ -35,7 +35,6 @@ let starters_for_side end_of_battle side =
             unvisited_seas = new_base ;
             added_by_casing = Hex_cell_set.empty_set;
         }
-
    ) in 
    Image.image constructor base1 ;; 
 
@@ -64,15 +63,20 @@ let extend_with_sea pk new_nc =
          pk with 
           Hex_partial_kite_t.stops_so_far = new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
             unvisited_seas = List.filter 
-              (Hex_named_connector.check_disjointness new_nc) (pk.Hex_partial_kite_t.unvisited_seas);
+              (fun (z,nc)->
+                Hex_named_connector.check_disjointness new_nc nc) 
+                (pk.Hex_partial_kite_t.unvisited_seas);
     });;
 
 
 
 let extensions_after_island partial_kite last_island =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
-   let retained_ones  = List.filter (
-      Hex_named_connector.check_entry last_island    
+   let retained_ones  = Option.filter_and_unpack (
+      fun (z,nc)->
+        if Hex_named_connector.check_entry last_island nc 
+        then Some nc 
+        else None   
    )  candidates in 
    Image.image (extend_with_sea partial_kite) retained_ones ;;
 
