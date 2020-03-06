@@ -78,7 +78,7 @@ let extensions_after_island partial_kite last_island =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
    let retained_ones  = Option.filter_and_unpack (
       fun (z,nc)->
-        if Hex_named_connector.check_entry last_island nc 
+        if (Hex_named_connector.check_entry last_island nc)&&(Hex_cell_set.length z=0) 
         then Some nc 
         else None   
    )  candidates in 
