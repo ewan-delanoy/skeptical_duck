@@ -40,7 +40,13 @@ let starters_for_side end_of_battle side =
             added_by_casing = Hex_cell_set.empty_set;
         }
    ) in 
-   Image.image constructor base1 ;; 
+   let conditional_constructor = (fun 
+     first_nc -> 
+        if List.exists (Hex_named_connector.check_exit first_nc) islands
+        then Some(constructor first_nc)
+        else None 
+   ) in 
+   Option.filter_and_unpack conditional_constructor  base1 ;; 
 
 let to_molecular_linker  pk =
    (* The kite is assumed to be finished *)  
