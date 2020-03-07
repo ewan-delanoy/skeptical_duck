@@ -16,6 +16,7 @@ let forget_order x= Functor_for_sets.forget_order tr x;;
 let image f (Hex_cell_set_t.S x) = Image.image f x;;
 let insert a x= Functor_for_sets.insert tr a x;;
 let intersect l= Functor_for_sets.intersect tr l;;
+let is_included_in x y= Functor_for_sets.is_included_in tr x y;;
 let length x= Functor_for_sets.length tr x;;
 let mem a x= Functor_for_sets.mem tr a x;;
 let merge l= Functor_for_sets.merge tr l;;
