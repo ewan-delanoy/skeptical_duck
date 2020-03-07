@@ -77,10 +77,11 @@ let extend_with_sea pk new_nc =
 let extensions_after_island partial_kite last_island =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
+   let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
    let retained_ones  = Option.filter_and_unpack (
       fun (z,nc)->
         if (Hex_named_connector.check_entry last_island nc)
-           (* &&(Hex_cell_set.is z=0) *)
+            &&(Hex_cell_set.is_included_in z abc) 
            &&(List.exists (Hex_named_connector.check_exit nc) remaining_islands) 
         then Some nc 
         else None   
