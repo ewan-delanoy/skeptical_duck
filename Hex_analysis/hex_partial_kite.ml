@@ -143,6 +143,11 @@ let starters eob =
        [],[],
        starters eob);;
 
+let late_starter eob pk= 
+      (eob.Hex_end_of_battle_t.dimension,
+       eob.Hex_end_of_battle_t.winner,
+       eob,
+       [],[],[pk]);;
 
 let pusher (factory,_) = 
    let (d,wi,i,fi,fa,uf) = factory in 
@@ -169,7 +174,13 @@ let rec main walker =
 
 let compute eob = main (starters eob,false);;
 
+
+let finalize eob pk= fst(main (late_starter eob pk,false));;
+
+
 end ;;  
+
+
 
 end ;;
 
