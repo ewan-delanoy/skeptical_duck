@@ -7,6 +7,7 @@
 exception Disconnected_cells of (int * int) list;;
 exception Lonely_side of Hex_cardinal_direction_t.t ;;
 exception Missing_side of Hex_cardinal_direction_t.t * (Hex_island_t.t list) ;;
+exception Cell_in_corner of Hex_cell_t.t ;;
 
 module Private = struct 
 
@@ -29,7 +30,28 @@ let to_readable_string (Hex_island_t.I(opt,z)) =
    and inner_part = inner_to_readable_string z in 
    border_part^inner_part;;
 
+let side_for_cell dim cell =
+  let temp1 = List.filter (fun d->
+     Hex_cardinal_direction.Border.test dim d cell 
+  ) Hex_cardinal_direction.all in 
+  let h = List.length temp1 in 
+  if h=0 then None else 
+  if h>1 then raise(Cell_in_corner(cell)) else 
+  Some(List.hd temp1);;
+  
+  
 end ;;
+
+let add_cell_by_casing dim new_cell l =
+   let new_p = Hex_cell.to_int_pair new_cell in 
+   let (connected,unconnected) = List.partition (
+    fun (Hex_island_t.I(opt,z))->Set_of_poly_pairs.mem new_p z
+   )  l in 
+   let old_opts = Image.image (fun (Hex_island_t.I(opt,z))->opt) connected 
+   and opt_side = Private.side_for_cell dim new_cell in 
+   let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts)  
+   and new_z = in 
+   (Hex_island_t.I(new_opt,new_z))::unconnected ;;
 
 let constructor dim opt_direction l=
   let z=Set_of_poly_pairs.safe_set l in 

@@ -15,6 +15,7 @@ let insert x y=Functor_for_sets.insert tr x y;;
 let intersect x y=Functor_for_sets.intersect tr x y;;
 let is_included_in x y= Functor_for_sets.is_included_in tr x y;;
 let length x= Functor_for_sets.length tr x;;
+let mem x y= Functor_for_sets.mem tr x y;;
 let merge x y= Functor_for_sets.merge tr x y;;
 let safe_set l= Functor_for_sets.safe_set tr l;;
 let setminus x y= Functor_for_sets.setminus tr x y;;
