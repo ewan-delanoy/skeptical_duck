@@ -49,8 +49,9 @@ let add_cell_by_casing dim new_cell l =
    )  l in 
    let old_opts = Image.image (fun (Hex_island_t.I(opt,z))->opt) connected 
    and opt_side = Private.side_for_cell dim new_cell in 
-   let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts)  
-   and new_z = in 
+   let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts) in 
+   let old_pairs =  Image.image (fun (Hex_island_t.I(opt,z))->z) connected in 
+   let new_z = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_pairs) in 
    (Hex_island_t.I(new_opt,new_z))::unconnected ;;
 
 let constructor dim opt_direction l=
