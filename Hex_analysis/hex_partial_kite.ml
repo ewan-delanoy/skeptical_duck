@@ -112,28 +112,67 @@ let springless_extensions_after_sea partial_kite last_nc =
    )  candidates in 
    Image.image (extend_with_island partial_kite) retained_ones ;;
 
-let springless_extensions partial_kite = function 
+let springless_extensions_from_last_elt partial_kite = function 
     Hex_kite_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
    |Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
+
+let springless_extensions partial_kite =
+   match partial_kite.Hex_partial_kite_t.stops_so_far with 
+    []->raise(Kite_is_not_started)
+   |last_elt::_->
+      let base = springless_extensions_from_last_elt partial_kite last_elt 
+      and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
+      let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
+          Hex_kite_element.is_final orig_side last_elt) base in 
+      let finished2 = Image.image (fun (_,pk)->to_molecular_linker pk) finished1 
+      and unfinished2 = Image.image snd unfinished1 in 
+      (finished2,unfinished2);; 
+
+let starters end_of_battle = 
+   let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
+   List.flatten (Image.image (starters_for_side end_of_battle) sides);;
+
+
+module Springless_Search = struct 
+
+let starters eob = 
+    
+      (eob.Hex_end_of_battle_t.dimension,
+       eob.Hex_end_of_battle_t.winner,
+       eob,
+       [],[],
+       starters eob);;
+
+
+let pusher (factory,_) = 
+   let (d,wi,i,fi,fa,uf) = factory in 
+   let raw_result=Image.image (
+         fun pk->
+         (pk,springless_extensions pk) 
+   ) uf in  
+   let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
+   let new_failures = List.rev_append (Image.image fst failures1) fa in 
+   let new_moleculars = List.flatten (Image.image (fun (_,p)->fst p) nonfailures1)
+   and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
+   let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
+   let new_finished_ones = Ordered.merge Total_ordering.standard 
+          ordered_new_moleculars fi in   
+   let new_factory = (d,wi,i,new_finished_ones,new_failures,new_partial_kites) in           
+   (new_factory,new_partial_kites=[]);;
+
+let rec main walker =
+   let (factory,computation_has_finished) = walker in 
+   if computation_has_finished 
+   then let (d,wi,i,fi,fa,uf) = factory in 
+        (fi,fa)
+   else main (pusher walker) ;; 
+
+let compute eob = main (starters eob,false);;
+
+end ;;  
 
 end ;;
 
 
-let extensions partial_kite =
-   match partial_kite.Hex_partial_kite_t.stops_so_far with 
-    []->raise(Kite_is_not_started)
-   |last_elt::_->
-      let base = Private.springless_extensions partial_kite last_elt 
-      and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
-      let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
-          Hex_kite_element.is_final orig_side last_elt) base in 
-      let finished2 = Image.image (fun (_,pk)->Private.to_molecular_linker pk) finished1 
-      and unfinished2 = Image.image snd unfinished1 in 
-      (finished2,unfinished2);; 
-
-
-let starters end_of_battle = 
-   let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-   List.flatten (Image.image (Private.starters_for_side end_of_battle) sides);;
-
- 
+let extensions  = Private.springless_extensions ;; 
+let starters = Private.starters ;;
