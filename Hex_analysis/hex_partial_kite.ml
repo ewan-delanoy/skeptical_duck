@@ -8,6 +8,17 @@ exception Kite_is_not_started;;
 
 module Private = struct 
 
+let add_cell_by_casing dim new_cell pk=  
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_abc = pk.Hex_partial_kite_t.added_by_casing in 
+    let new_islands = Hex_island.add_cell_by_casing dim new_cell old_islands 
+    and new_abc = Hex_cell_set.insert new_cell old_abc in 
+   {
+      pk with
+      Hex_partial_kite_t.unvisited_islands = new_islands;
+      added_by_casing = new_abc;
+   };;
+
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
@@ -80,7 +91,7 @@ let extend_with_sea pk new_nc =
 
 
 
-let extensions_after_island partial_kite last_island =
+let springless_extensions_after_island partial_kite last_island =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
    let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
@@ -94,16 +105,16 @@ let extensions_after_island partial_kite last_island =
    )  candidates in 
    Image.image (extend_with_sea partial_kite) retained_ones ;;
 
-let extensions_after_sea partial_kite last_nc =
+let springless_extensions_after_sea partial_kite last_nc =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_islands in
    let retained_ones  = List.filter (
       Hex_named_connector.check_exit last_nc  
    )  candidates in 
    Image.image (extend_with_island partial_kite) retained_ones ;;
 
-let extensions partial_kite = function 
-    Hex_kite_element_t.Earth(last_island) ->  extensions_after_island partial_kite last_island 
-   |Hex_kite_element_t.Sea(last_nc) ->  extensions_after_sea partial_kite last_nc ;;
+let springless_extensions partial_kite = function 
+    Hex_kite_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
+   |Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
 end ;;
 
@@ -112,7 +123,7 @@ let extensions partial_kite =
    match partial_kite.Hex_partial_kite_t.stops_so_far with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
-      let base = Private.extensions partial_kite last_elt 
+      let base = Private.springless_extensions partial_kite last_elt 
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
           Hex_kite_element.is_final orig_side last_elt) base in 
