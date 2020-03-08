@@ -31,6 +31,11 @@ let is_final initial_side elt =
    |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
 ;;
 
+let join_to_cell_if_possible dim new_cell elt = 
+   match elt with  
+   Hex_kite_element_t.Sea(_)-> elt
+   |Earth(island)-> Earth(Hex_island.join_to_cell_if_possible dim new_cell island);;
+
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
 
