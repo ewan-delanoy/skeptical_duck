@@ -44,3 +44,4 @@ let to_readable_string = function
    |Pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"py" 
    |Small_pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"sy" 
    |Border_bridge(d) ->  (Hex_cardinal_direction.for_ground_description d)^"bb" ;;
+
