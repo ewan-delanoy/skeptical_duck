@@ -189,7 +189,24 @@ let finalize eob pk= fst(main (late_starter eob pk,false));;
 
 end ;;  
 
-
+let explore_minimal_casings eob pk =
+   let currently_added = pk.Hex_partial_kite_t.added_by_casing in 
+   let casings = pk.Hex_partial_kite_t.unvisited_seas in 
+   let minimal_casings = Option.filter_and_unpack (
+     fun (z,nc) -> 
+        let d = Hex_cell_set.setminus z currently_added in 
+        if Hex_cell_set.length d = 1 
+        then Some(Hex_cell_set.min d,nc)
+        else None 
+   ) casings in 
+   let explore = (fun (cell,nc)->
+      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
+      let pk2 = snd(extend_with_sea pk1 nc) in 
+      Springless_Search.finalize eob pk2
+   ) in 
+   let first_whole = Image.image (fun p->(p,explore p)) minimal_casings in 
+   let (temp1,temp2) = List.partition (fun (p,l)->l<>[]) first_whole in 
+   (temp1,Image.image fst temp2);;
 
 end ;;
 
