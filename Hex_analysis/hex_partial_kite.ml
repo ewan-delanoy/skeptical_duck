@@ -199,15 +199,22 @@ end ;;
 
 let explore_minimal_casings eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and casings = pk.Hex_partial_kite_t.unvisited_seas 
+   and casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
    and nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
    let minimal_casings = Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 
         if Hex_cell_set.length d = 1 
-        then Some(Hex_cell_set.min d,nc)
+        then Some(Hex_cell_set.min d)
         else None 
-   ) casings in 
+   ) casings_with_hooks in 
+   let minimal_casings_with_hooks = List.flatten (
+      Image.image (fun cell->
+        let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
+        let ext1 = springless_extensions pk1 in 
+        Image.image (fun (elt,new_pk)->(cell,elt)) ext1
+      ) minimal_casings
+   ) in 
    let explore = (fun (cell,nc)->
       let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
       let pk2 = snd(extend_with_sea pk1 nc) in 
@@ -216,7 +223,7 @@ let explore_minimal_casings eob pk =
         (Listennou.big_tail nbr_of_common_steps stops,mlclr)
       ) temp
    ) in 
-   let first_whole = Image.image (fun p->(p,explore p)) minimal_casings in 
+   let first_whole = Image.image (fun p->(p,explore p)) minimal_casings_with_hooks in 
    let (temp1,temp2) = List.partition (fun (p,l)->l<>[]) first_whole in 
    (temp1,Image.image fst temp2);;
 
