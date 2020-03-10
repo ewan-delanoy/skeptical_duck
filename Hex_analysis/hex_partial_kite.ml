@@ -122,19 +122,21 @@ let springless_extensions_after_sea partial_kite last_nc =
    Image.image (extend_with_island partial_kite) retained_ones ;;
 
 let extensions_from_springless_last_elt partial_kite = function 
-    Hex_kite_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
-   |Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
+    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
+   |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
 let springless_extensions partial_kite =
    match partial_kite.Hex_partial_kite_t.stops_so_far with 
     []->raise(Kite_is_not_started)
-   |last_elt::_-> extensions_from_springless_last_elt partial_kite last_elt ;;
+   |last_elt_in_vague_form::_-> 
+       let last_elt = Hex_kite_element.to_springless last_elt_in_vague_form in 
+       extensions_from_springless_last_elt partial_kite last_elt ;;
 
 let rinsed_springless_extensions partial_kite =
    match partial_kite.Hex_partial_kite_t.stops_so_far with 
     []->raise(Kite_is_not_started)
    |last_elt::_->
-      let base = extensions_from_springless_last_elt partial_kite last_elt 
+      let base = springless_extensions partial_kite 
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
           Hex_kite_element.is_final orig_side last_elt) base in 
