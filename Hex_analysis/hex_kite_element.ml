@@ -36,6 +36,10 @@ let join_to_cell_if_possible dim new_cell elt =
    Hex_kite_element_t.Sea(_)-> elt
    |Earth(island)-> Earth(Hex_island.join_to_cell_if_possible dim new_cell island);;
 
+let of_springless = function
+    Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
+   |Sea(nc)-> Hex_kite_element_t.Sea(nc);;
+
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
 
