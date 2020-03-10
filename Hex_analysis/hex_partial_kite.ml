@@ -76,22 +76,24 @@ let to_molecular_linker  pk =
 
 
 let extend_with_island pk new_island = 
-        let new_elt = Hex_kite_element_t.Earth(new_island) in 
+        let vague_new_elt = Hex_kite_element_t.Earth(new_island)
+        and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+          Hex_partial_kite_t.stops_so_far = vague_new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
           unvisited_islands = List.filter (fun x->x<>new_island ) 
              (pk.Hex_partial_kite_t.unvisited_islands);
     });;
     
 
 let extend_with_sea pk new_nc = 
-        let new_elt = Hex_kite_element_t.Sea(new_nc) in 
+        let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
+        and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+          Hex_partial_kite_t.stops_so_far = vague_new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
             unvisited_seas = List.filter 
               (fun (z,nc)->
                 Hex_named_connector.check_disjointness new_nc nc) 
@@ -139,7 +141,7 @@ let rinsed_springless_extensions partial_kite =
       let base = springless_extensions partial_kite 
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
-          Hex_kite_element.is_final orig_side last_elt) base in 
+          Hex_kite_element.is_final orig_side (Hex_kite_element.of_springless last_elt)) base in 
       let finished2 = Image.image (fun (_,pk)->
         (List.rev(pk.Hex_partial_kite_t.stops_so_far),to_molecular_linker pk)) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
