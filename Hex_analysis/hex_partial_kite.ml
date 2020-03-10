@@ -214,7 +214,7 @@ let explore_minimal_casings eob pk =
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
         let ext1 = springless_extensions pk1 in 
-        Image.image (fun (elt,new_pk)->(cell,elt)) ext1
+        Image.image (fun (elt,new_pk)->(cell,Hex_kite_element.claim_named_connector_on_springless elt)) ext1
       ) minimal_casings
    ) in 
    let explore = (fun (cell,nc)->
