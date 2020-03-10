@@ -133,7 +133,8 @@ let springless_extensions partial_kite =
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
           Hex_kite_element.is_final orig_side last_elt) base in 
-      let finished2 = Image.image (fun (_,pk)->to_molecular_linker pk) finished1 
+      let finished2 = Image.image (fun (_,pk)->
+        (List.rev(pk.Hex_partial_kite_t.stops_so_far),to_molecular_linker pk)) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
 
