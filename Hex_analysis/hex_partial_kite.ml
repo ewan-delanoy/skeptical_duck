@@ -169,8 +169,8 @@ let pusher (factory,_) =
    let new_failures = List.rev_append (Image.image fst failures1) fa in 
    let new_moleculars = List.flatten (Image.image (fun (_,p)->fst p) nonfailures1)
    and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
-   let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
-   let new_finished_ones = Ordered.merge Total_ordering.standard 
+   let ordered_new_moleculars = Ordered.sort Total_ordering.standard2 new_moleculars in 
+   let new_finished_ones = Ordered.merge Total_ordering.standard2 
           ordered_new_moleculars fi in   
    let new_factory = (d,wi,i,new_finished_ones,new_failures,new_partial_kites) in           
    (new_factory,new_partial_kites=[]);;
