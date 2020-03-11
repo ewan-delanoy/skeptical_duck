@@ -201,7 +201,7 @@ end ;;
 
 let casings_from_islands eob pk = 
     let dim = eob.Hex_end_of_battle_t.dimension 
-    and last_island = List.hd(pk.Hex_partial_kite_t.stops_so_far) 
+    and last_island = Hex_kite_element.claim_island(List.hd(pk.Hex_partial_kite_t.stops_so_far)) 
     and other_islands = pk.Hex_partial_kite_t.unvisited_islands in 
     Hex_cell_set.safe_set(Hex_island.short_connections dim last_island other_islands);; 
 
