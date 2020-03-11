@@ -199,17 +199,22 @@ let finalize eob pk= fst(main (late_starter eob pk,false));;
 
 end ;;  
 
-let explore_minimal_casings eob pk =
+
+let minimal_casings eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
-   and nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
-   let minimal_casings = Option.filter_and_unpack (
+   and casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas  in 
+   let unordered = Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 
         if Hex_cell_set.length d = 1 
         then Some(Hex_cell_set.min d)
         else None 
    ) casings_with_hooks in 
+   Ordered.sort Hex_cell.cmp unordered ;; 
+
+let explore_minimal_casings eob pk =
+   let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
+   let minimal_casings = minimal_casings eob pk in 
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 

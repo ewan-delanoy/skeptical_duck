@@ -39,7 +39,25 @@ let side_for_cell dim cell =
   if h>1 then raise(Cell_in_corner(cell)) else 
   Some(List.hd temp1);;
   
+let neighbors dim (Hex_island_t.I(opt_direction,z)) =
+   let part1 =(
+     match opt_direction with 
+      None -> Set_of_poly_pairs.empty_set
+     |Some(direction) -> 
+       let temp1=Hex_cardinal_direction.Border.enumerate_all dim direction in 
+       let temp2=Image.image Hex_cell.to_int_pair temp1 in 
+       Set_of_poly_pairs.safe_set temp2
+   ) 
+   and part2 = Hex_ipair.neighbors_for_several dim 
+       (Set_of_poly_pairs.forget_order z) in 
+   let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
+   Set_of_poly_pairs.setminus excessive_whole z;;  
   
+let short_connections dim island1 island2 =
+    let neighborhood1 = neighbors dim island1 
+    and neighborhood2 = neighbors dim island2 in
+    Set_of_poly_pairs.intersect neighborhood1 neighborhood2 ;;
+
 end ;;
 
 let add_cell_by_casing dim new_cell l =
@@ -129,19 +147,7 @@ let join_to_cell_if_possible dim new_cell island =
    else island;;
 
 
-let neighbors dim (Hex_island_t.I(opt_direction,z)) =
-   let part1 =(
-     match opt_direction with 
-      None -> Set_of_poly_pairs.empty_set
-     |Some(direction) -> 
-       let temp1=Hex_cardinal_direction.Border.enumerate_all dim direction in 
-       let temp2=Image.image Hex_cell.to_int_pair temp1 in 
-       Set_of_poly_pairs.safe_set temp2
-   ) 
-   and part2 = Hex_ipair.neighbors_for_several dim 
-       (Set_of_poly_pairs.forget_order z) in 
-   let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
-   Set_of_poly_pairs.setminus excessive_whole z;;
+let neighbors = Private.neighbors ;;
 
 
 
@@ -172,6 +178,11 @@ let reflect (Hex_island_t.I(old_opt,z)) =
       (Set_of_poly_pairs.image Hex_ipair.reflect z) in 
    Hex_island_t.I(new_opt,new_z);;
 
+let short_connections dim island1 islands= 
+   let temp1=Image.image (Private.short_connections dim island1) islands in 
+   let temp2=Set_of_poly_pairs.fold_merge temp1 in 
+   Set_of_poly_pairs.image Hex_cell.of_int_pair temp2
+;;
 
 let to_readable_string = Private.to_readable_string ;;
 
