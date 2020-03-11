@@ -6,6 +6,7 @@
 
 
 
+exception Claim_island_exn of Hex_kite_element_t.t ;;
 exception Claim_named_connector_exn of Hex_kite_springless_element_t.t ;;
 
 module Private = struct 
@@ -21,6 +22,10 @@ let inner_sea = function
    |Sea(nc)-> Hex_named_connector.inner_sea nc;;
 
 end ;;
+
+let claim_island x = match x with 
+    Hex_kite_element_t.Earth(island)-> island
+   |_-> raise(Claim_island_exn(x)) ;;
 
 let claim_named_connector_on_springless x = match x with 
     Hex_kite_springless_element_t.Earth(island)-> raise(Claim_named_connector_exn(x))

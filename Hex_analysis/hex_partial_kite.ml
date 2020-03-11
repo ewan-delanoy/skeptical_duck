@@ -199,8 +199,13 @@ let finalize eob pk= fst(main (late_starter eob pk,false));;
 
 end ;;  
 
+let casings_from_islands eob pk = 
+    let dim = eob.Hex_end_of_battle_t.dimension 
+    and last_island = List.hd(pk.Hex_partial_kite_t.stops_so_far) 
+    and other_islands = pk.Hex_partial_kite_t.unvisited_islands in 
+    Hex_cell_set.safe_set(Hex_island.short_connections dim last_island other_islands);; 
 
-let minimal_casings eob pk =
+let casings_from_seas eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
    and casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas  in 
    let unordered = Option.filter_and_unpack (
@@ -210,7 +215,13 @@ let minimal_casings eob pk =
         then Some(Hex_cell_set.min d)
         else None 
    ) casings_with_hooks in 
-   Ordered.sort Hex_cell.cmp unordered ;; 
+   Hex_cell_set.safe_set unordered ;; 
+
+let minimal_casings eob pk =
+   Hex_cell_set.forget_order (Hex_cell_set.merge
+      (casings_from_islands eob pk)
+      (casings_from_seas eob pk)
+   ) ;; 
 
 let explore_minimal_casings eob pk =
    let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
