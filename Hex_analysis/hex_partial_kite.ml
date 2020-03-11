@@ -201,7 +201,9 @@ let casings_from_islands eob pk =
     let dim = eob.Hex_end_of_battle_t.dimension 
     and last_island = Hex_kite_element.claim_island(List.hd(pk.Hex_partial_kite_t.stops_so_far)) 
     and other_islands = pk.Hex_partial_kite_t.unvisited_islands in 
-    Hex_cell_set.safe_set(Hex_island.short_connections dim last_island other_islands);; 
+    let temp1 = Hex_island.short_connections dim last_island other_islands in 
+    let temp2 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp1 in 
+    Hex_cell_set.safe_set temp2;; 
 
 let casings_from_seas eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
