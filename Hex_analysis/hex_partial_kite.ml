@@ -9,9 +9,7 @@ exception Kite_is_not_started;;
 module Private = struct 
 
 
-let add_cell_by_casing_in_contact_case dim new_cell pk (last_island,previous_stops)=  
-    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
-    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
+let add_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)=  
     let new_islands = Hex_island.add_cell_by_casing dim new_cell (last_island::old_islands) 
     and new_abc = Hex_cell_set.insert new_cell old_abc in 
     let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
@@ -22,10 +20,7 @@ let add_cell_by_casing_in_contact_case dim new_cell pk (last_island,previous_sto
       added_by_casing = new_abc;
    };;
 
-let add_cell_by_casing_in_no_contact_case dim new_cell pk=  
-    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
-    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
-    (* below we assume that last_island is connected to new_cell *)
+let add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc)=  
     let new_islands = Hex_island.add_cell_by_casing dim new_cell old_islands 
     and new_abc = Hex_cell_set.insert new_cell old_abc in 
    {
@@ -36,12 +31,14 @@ let add_cell_by_casing_in_no_contact_case dim new_cell pk=
 
 
 let add_cell_by_casing dim new_cell pk=  
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let (last_stop,previous_stops) = Listennou.ht old_stops in 
     let last_island = Hex_kite_element.claim_island last_stop in 
     if Hex_island.test_for_neighbor dim last_island new_cell 
-    then add_cell_by_casing_in_contact_case dim new_cell pk (last_island,previous_stops)
-    else add_cell_by_casing_in_no_contact_case dim new_cell pk;;
+    then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
+    else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
 
 
 let local_cmp = Total_ordering.product 
