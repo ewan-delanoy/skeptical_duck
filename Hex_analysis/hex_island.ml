@@ -173,6 +173,9 @@ let short_connections dim island1 islands=
    Set_of_poly_pairs.image Hex_cell.of_int_pair temp2
 ;;
 
+let test_for_neighbor dim island cell =
+   Set_of_poly_pairs.mem (Hex_cell.to_int_pair cell) (Private.neighbors dim island);;
+
 let to_readable_string = Private.to_readable_string ;;
 
    

@@ -9,6 +9,36 @@ exception Kite_is_not_started;;
 module Private = struct 
 
 
+let add_cell_by_casing_in_contact_case dim new_cell pk=  
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_abc = pk.Hex_partial_kite_t.added_by_casing 
+    and old_stops = pk.Hex_partial_kite_t.stops_so_far in 
+    let (last_stop,previous_stops) = Listennou.ht old_stops in 
+    let last_island = Hex_kite_element.claim_island last_stop in 
+    (* below we assume that last_island is connected to new_cell *)
+    let new_islands = Hex_island.add_cell_by_casing dim new_cell (last_island::old_islands) 
+    and new_abc = Hex_cell_set.insert new_cell old_abc in 
+    let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
+   {
+      pk with
+      Hex_partial_kite_t.stops_so_far = remade_last_stop :: previous_stops;
+      unvisited_islands = List.tl new_islands;
+      added_by_casing = new_abc;
+   };;
+
+let add_cell_by_casing_in_no_contact_case dim new_cell pk=  
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
+    (* below we assume that last_island is connected to new_cell *)
+    let new_islands = Hex_island.add_cell_by_casing dim new_cell old_islands 
+    and new_abc = Hex_cell_set.insert new_cell old_abc in 
+   {
+      pk with
+      Hex_partial_kite_t.unvisited_islands = new_islands;
+      added_by_casing = new_abc;
+   };;
+
+
 let add_cell_by_casing dim new_cell pk=  
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_abc = pk.Hex_partial_kite_t.added_by_casing 
@@ -25,6 +55,11 @@ let add_cell_by_casing dim new_cell pk=
       unvisited_islands = List.tl new_islands;
       added_by_casing = new_abc;
    };;
+
+let add_cell_by_casing dim new_cell pk=  
+     
+    add_cell_by_casing_in_contact_case dim new_cell pk;;
+
 
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
