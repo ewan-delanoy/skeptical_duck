@@ -135,17 +135,6 @@ let is_included_in
        None -> true 
        | _ -> (opt2 = opt1);;
  
-let join_to_cell_if_possible dim new_cell island =
-   let (Hex_island_t.I(opt,z))=island in 
-   let new_p = Hex_cell.to_int_pair new_cell in 
-   let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
-   if List.exists (fun q->Set_of_poly_pairs.mem q z) neighbors 
-   then let opt_side = Private.side_for_cell dim new_cell in 
-        let new_opt = Option.find_and_stop (fun upt->upt) [opt;opt_side] in 
-        let new_z = Set_of_poly_pairs.insert new_p z in 
-        (Hex_island_t.I(new_opt,new_z))
-   else island;;
-
 
 let neighbors = Private.neighbors ;;
 

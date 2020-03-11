@@ -41,12 +41,6 @@ let is_final initial_side elt =
    |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
 ;;
 
-let join_to_cell_if_possible dim new_cell elt = 
-   match elt with  
-   Hex_kite_element_t.Sea(_)-> elt
-   |Earth(island)-> Earth(Hex_island.join_to_cell_if_possible dim new_cell island);;
-
-
 let of_springless = function
     Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_element_t.Sea(nc);;
