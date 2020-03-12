@@ -209,6 +209,14 @@ let compute eob = main (starters eob,false);;
 
 let finalize eob pk= fst(main (late_starter eob pk,false));;
 
+let explore eob pk (cell,nc) = 
+      let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
+      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
+      let pk2 = snd(extend_with_sea pk1 nc) in 
+      let temp = finalize eob pk2 in 
+      Image.image (fun (stops,mlclr)->
+        (Listennou.big_tail nbr_of_common_steps stops,mlclr)
+      ) temp ;;
 
 end ;;  
 
@@ -239,7 +247,6 @@ let minimal_casings eob pk =
    ) ;; 
 
 let explore_minimal_casings eob pk =
-   let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
    let minimal_casings = minimal_casings eob pk in 
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
@@ -248,20 +255,13 @@ let explore_minimal_casings eob pk =
         Image.image (fun (elt,new_pk)->(cell,Hex_kite_element.claim_named_connector_on_springless elt)) ext1
       ) minimal_casings
    ) in 
-   let explore = (fun (cell,nc)->
-      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-      let pk2 = snd(extend_with_sea pk1 nc) in 
-      let temp = Springless_Search.finalize eob pk2 in 
-      Image.image (fun (stops,mlclr)->
-        (Listennou.big_tail nbr_of_common_steps stops,mlclr)
-      ) temp
-   ) in 
-   let first_whole = Image.image (fun p->(p,explore p)) minimal_casings_with_hooks in 
+   let first_whole = Image.image (fun p->(p,Springless_Search.explore eob pk p)) minimal_casings_with_hooks in 
    let (temp1,temp2) = List.partition (fun (p,l)->l<>[]) first_whole in 
    (temp1,Image.image fst temp2);;
 
 end ;;
 
-
-let extensions  = Private.rinsed_springless_extensions ;; 
+(* let extensions  = Private.rinsed_springless_extensions ;;  *)
+exception Shortlived_exn ;; 
+let extensions x = raise Shortlived_exn ;; 
 let starters = Private.starters ;;
