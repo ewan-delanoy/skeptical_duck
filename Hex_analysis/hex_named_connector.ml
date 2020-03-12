@@ -168,3 +168,11 @@ let wet_earth nc = Hex_cell_set.fold_merge
      (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction)) ;
   ] 
   ;;
+
+let wet_earth_with_entry_unchecked nc = Hex_cell_set.fold_merge
+
+  [
+     Hex_island.inner_earth nc.Hex_named_connector_t.exit ;
+     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction)) ;
+  ] 
+  ;;
