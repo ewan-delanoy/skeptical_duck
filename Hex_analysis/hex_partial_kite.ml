@@ -257,7 +257,7 @@ let explore_minimal_casings eob pk =
    let first_whole = Image.image (fun p->(p,Springless_Search.explore eob pk p)) minimal_casings_with_hooks in 
    let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
    let temp2 = List.flatten (Image.image (fun ((cell,nc),l)->
-      Image.image (fun (path,solution)->(cell,nc,path,solution) ) l
+      Image.image (fun (path,solution)->(cell,path,solution) ) l
    ) temp1) in 
    (temp2,Image.image fst first_whole);;
 
@@ -265,8 +265,8 @@ let compute_springboards eob pk =
   let (good_casings,all_casings) = explore_minimal_casings eob pk in 
   let temp1 = Cartesian.product good_casings all_casings in 
   let temp2 = Image.image (
-    fun ((cell,nc,path,solution),(cell2,nc2))->
-       (cell,nc,path,solution,cell2,nc2)
+    fun ((cell,path,solution),(cell2,nc2))->
+       (cell,path,solution,cell2,nc2)
   ) temp1  in 
   temp2;;
 
