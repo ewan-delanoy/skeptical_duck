@@ -148,9 +148,6 @@ let springless_extensions partial_kite =
        extensions_from_springless_last_elt partial_kite last_elt ;;
 
 let rinsed_springless_extensions partial_kite =
-   match partial_kite.Hex_partial_kite_t.stops_so_far with 
-    []->raise(Kite_is_not_started)
-   |last_elt::_->
       let base = springless_extensions partial_kite 
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
@@ -215,7 +212,8 @@ let explore eob pk (cell,nc) =
       let pk2 = snd(extend_with_sea pk1 nc) in 
       let temp = finalize eob pk2 in 
       Image.image (fun (stops,mlclr)->
-        (Listennou.big_tail nbr_of_common_steps stops,mlclr)
+        let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
+        (Image.image Hex_kite_element.to_springless ttemp2,mlclr)
       ) temp ;;
 
 end ;;  
@@ -252,12 +250,16 @@ let explore_minimal_casings eob pk =
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
         let ext1 = springless_extensions pk1 in 
-        Image.image (fun (elt,new_pk)->(cell,Hex_kite_element.claim_named_connector_on_springless elt)) ext1
+        Image.image (fun (elt,new_pk)->
+          (cell,Hex_kite_element.claim_named_connector_on_springless elt)) ext1
       ) minimal_casings
    ) in 
    let first_whole = Image.image (fun p->(p,Springless_Search.explore eob pk p)) minimal_casings_with_hooks in 
-   let (temp1,temp2) = List.partition (fun (p,l)->l<>[]) first_whole in 
-   (temp1,Image.image fst temp2);;
+   let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
+   let temp2 = List.flatten (Image.image (fun ((cell,nc),l)->
+      Image.image (fun (path,solution)->(cell,nc,path,solution) ) l
+   ) temp1) in 
+   (temp2,Image.image fst first_whole);;
 
 end ;;
 
