@@ -51,3 +51,7 @@ let to_molecular_linker = function
 let to_springless = function
     Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc);;
+
+let wet_earth = function
+  Hex_kite_springless_element_t.Earth(island)-> Hex_island.inner_earth island
+   |Sea(nc)-> Hex_named_connector.wet_earth nc;;   
