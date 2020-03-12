@@ -131,15 +131,6 @@ let compute eob = main (starters eob,false);;
 
 let finalize eob pk= fst(main (late_starter eob pk,false));;
 
-let explore eob pk (cell,nc) = 
-      let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
-      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-      let pk2 = snd(extend_with_sea pk1 nc) in 
-      let temp = finalize eob pk2 in 
-      Image.image (fun (stops,mlclr)->
-        let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
-        (Image.image Hex_kite_element.to_springless ttemp2,mlclr)
-      ) temp ;;
 
 end ;;  
 
@@ -174,6 +165,15 @@ let add_cell_by_casing dim new_cell pk=
     then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
     else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
 
+let explore eob pk (cell,nc) = 
+      let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
+      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
+      let pk2 = snd(extend_with_sea pk1 nc) in 
+      let temp = Springless_Search.finalize eob pk2 in 
+      Image.image (fun (stops,mlclr)->
+        let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
+        (Image.image Hex_kite_element.to_springless ttemp2,mlclr)
+      ) temp ;;
 
 
 let extend_with_springboard dim pk new_sb =
