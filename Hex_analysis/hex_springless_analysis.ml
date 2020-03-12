@@ -130,9 +130,10 @@ let compute eob = main (starters eob,false);;
 
 (* Old copy of H_ex_kite_factory ends here *)
 
-let finalize eob pk= fst(main (late_starter eob pk,false));;
+end ;; 
+
+let extend_with_sea = Private.extend_with_sea ;;
+let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
+let extensions = Private.springless_extensions;;
 
 
- 
-
-end ;;
