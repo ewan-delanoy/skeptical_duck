@@ -9,37 +9,6 @@ exception Kite_is_not_started;;
 module Private = struct 
 
 
-let add_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)=  
-    let new_islands = Hex_island.add_cell_by_casing dim new_cell (last_island::old_islands) 
-    and new_abc = Hex_cell_set.insert new_cell old_abc in 
-    let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
-   {
-      pk with
-      Hex_partial_kite_t.stops_so_far = remade_last_stop :: previous_stops;
-      unvisited_islands = List.tl new_islands;
-      added_by_casing = new_abc;
-   };;
-
-let add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc)=  
-    let new_islands = Hex_island.add_cell_by_casing dim new_cell old_islands 
-    and new_abc = Hex_cell_set.insert new_cell old_abc in 
-   {
-      pk with
-      Hex_partial_kite_t.unvisited_islands = new_islands;
-      added_by_casing = new_abc;
-   };;
-
-
-let add_cell_by_casing dim new_cell pk=  
-    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
-    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
-    let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
-    let (last_stop,previous_stops) = Listennou.ht old_stops in 
-    let last_island = Hex_kite_element.claim_island last_stop in 
-    if Hex_island.test_for_neighbor dim last_island new_cell 
-    then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
-    else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
-
 
 
 let to_molecular_linker  pk =
@@ -74,22 +43,6 @@ let extend_with_sea pk new_nc =
                 (pk.Hex_partial_kite_t.unvisited_seas);
     });;
 
-let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,solution,cell2,nc2)) = new_sb in 
-    let pk2 = add_cell_by_casing dim cell2 pk in  
-    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
-    and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
-    let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
-    and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in
-    let pk3 ={
-      pk2 with 
-        Hex_partial_kite_t.stops_so_far = 
-           (List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops) ;
-        unvisited_islands = restricted_islands ;
-        unvisited_seas = restricted_seas ;
-    } in 
-    extend_with_sea pk3 nc2 ;;
 
 
 let springless_extensions_after_island partial_kite last_island =
@@ -189,6 +142,56 @@ let explore eob pk (cell,nc) =
       ) temp ;;
 
 end ;;  
+
+let add_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)=  
+    let new_islands = Hex_island.add_cell_by_casing dim new_cell (last_island::old_islands) 
+    and new_abc = Hex_cell_set.insert new_cell old_abc in 
+    let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
+   {
+      pk with
+      Hex_partial_kite_t.stops_so_far = remade_last_stop :: previous_stops;
+      unvisited_islands = List.tl new_islands;
+      added_by_casing = new_abc;
+   };;
+
+let add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc)=  
+    let new_islands = Hex_island.add_cell_by_casing dim new_cell old_islands 
+    and new_abc = Hex_cell_set.insert new_cell old_abc in 
+   {
+      pk with
+      Hex_partial_kite_t.unvisited_islands = new_islands;
+      added_by_casing = new_abc;
+   };;
+
+
+let add_cell_by_casing dim new_cell pk=  
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
+    let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
+    let (last_stop,previous_stops) = Listennou.ht old_stops in 
+    let last_island = Hex_kite_element.claim_island last_stop in 
+    if Hex_island.test_for_neighbor dim last_island new_cell 
+    then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
+    else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
+
+
+
+let extend_with_springboard dim pk new_sb =
+    let (Hex_springboard_t.Sp(cell,path,solution,cell2,nc2)) = new_sb in 
+    let pk2 = add_cell_by_casing dim cell2 pk in  
+    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
+    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
+    and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
+    let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
+    and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in
+    let pk3 ={
+      pk2 with 
+        Hex_partial_kite_t.stops_so_far = 
+           (List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops) ;
+        unvisited_islands = restricted_islands ;
+        unvisited_seas = restricted_seas ;
+    } in 
+    extend_with_sea pk3 nc2 ;;
 
 let casings_from_islands eob pk = 
     let dim = eob.Hex_end_of_battle_t.dimension 
