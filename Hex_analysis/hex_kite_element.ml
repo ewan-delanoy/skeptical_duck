@@ -7,18 +7,17 @@
 
 
 exception Claim_island_exn of Hex_kite_element_t.t ;;
+exception To_springless_exn of Hex_kite_element_t.t ;;
 
 module Private = struct 
 
 
 let to_readable_string = function
   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
-   |Sea(nc)-> Hex_named_connector.to_readable_string nc;;
+   |Sea(nc)-> Hex_named_connector.to_readable_string nc
+   |Springboard(springboard)->"<abs>";;
 
   
-let inner_sea = function 
-    Hex_kite_element_t.Earth(island)-> Hex_cell_set.empty_set
-   |Sea(nc)-> Hex_named_connector.inner_sea nc;;
 
 end ;;
 
@@ -26,12 +25,12 @@ let claim_island x = match x with
     Hex_kite_element_t.Earth(island)-> island
    |_-> raise(Claim_island_exn(x)) ;;
 
-let inner_sea = Private.inner_sea ;;
 
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
    match elt with  
-   Hex_kite_element_t.Sea(_)-> false
+   Hex_kite_element_t.Sea(_)
+   |Springboard(_) -> false
    |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
 ;;
 
@@ -48,10 +47,9 @@ let to_molecular_linker = function
   Hex_kite_element_t.Earth(island)-> None
    |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
 
-let to_springless = function
+let to_springless elt= match elt with 
     Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
-   |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc);;
+   |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc)
+   |_->raise(To_springless_exn elt);;
 
-let wet_earth = function
-  Hex_kite_springless_element_t.Earth(island)-> Hex_island.inner_earth island
-   |Sea(nc)-> Hex_named_connector.wet_earth nc;;   
+ 

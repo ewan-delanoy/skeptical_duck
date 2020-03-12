@@ -53,6 +53,8 @@ let of_concrete_object crobj=
       Concrete_object_field.to_list Hex_atomic_linker.of_concrete_object arg1
    );;
 
+let pair cell1 cell2 = constructor [Hex_atomic_linker.pair (cell1,cell2)];;
+
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string ap);;    
 

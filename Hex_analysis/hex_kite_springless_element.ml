@@ -25,6 +25,11 @@ let claim_named_connector x = match x with
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
 
+let to_molecular_linker = function
+  Hex_kite_springless_element_t.Earth(island)-> None
+   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
+
+
 let wet_earth = function
   Hex_kite_springless_element_t.Earth(island)-> Hex_island.inner_earth island
    |Sea(nc)-> Hex_named_connector.wet_earth nc;;
