@@ -229,7 +229,7 @@ let explore_minimal_casings eob pk =
           (cell,Hex_kite_springless_element.claim_named_connector elt)) ext1
       ) minimal_casings
    ) in 
-   let first_whole = Image.image (fun p->(p,Springless_Search.explore eob pk p)) minimal_casings_with_hooks in 
+   let first_whole = Image.image (fun p->(p,explore eob pk p)) minimal_casings_with_hooks in 
    let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
    let temp2 = List.flatten (Image.image (fun ((cell,nc),l)->
       Image.image (fun (path,solution)->(cell,path,solution) ) l
