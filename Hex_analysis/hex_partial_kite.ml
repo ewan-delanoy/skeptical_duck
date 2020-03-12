@@ -274,5 +274,5 @@ end ;;
 
 (* let extensions  = Private.rinsed_springless_extensions ;;  *)
 exception Shortlived_exn ;; 
-let extensions x = raise Shortlived_exn ;; 
+let extensions eob x = raise Shortlived_exn ;; 
 let starters = Private.starters ;;
