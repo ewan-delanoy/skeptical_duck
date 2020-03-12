@@ -45,7 +45,8 @@ let print_out (fmt:Format.formatter) elt=
 
 let to_molecular_linker = function
   Hex_kite_element_t.Earth(island)-> None
-   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
+   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc)
+   |Springboard(sb) -> Some(Hex_springboard.to_molecular_linker sb)  ;;
 
 let to_springless elt= match elt with 
     Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
