@@ -38,6 +38,9 @@ let of_springless = function
     Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_element_t.Sea(nc);;
 
+let opt_claim_island x = match x with 
+    Hex_kite_element_t.Earth(island)-> Some island
+   |_-> None ;;
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
