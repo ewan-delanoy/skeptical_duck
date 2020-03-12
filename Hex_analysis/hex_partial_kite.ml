@@ -268,7 +268,7 @@ let compute_springboards eob pk =
     fun ((cell,path,solution),(cell2,nc2))->
        (cell,path,solution,cell2,nc2)
   ) temp1  in 
-  temp2;;
+  Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
 end ;;
 
