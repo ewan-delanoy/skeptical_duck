@@ -115,18 +115,19 @@ let extend_with_sea pk new_nc =
 
 let extend_with_springboard dim pk new_sb =
     let (Hex_springboard_t.Sp(cell,path,solution,cell2,nc2)) = new_sb in 
-    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk.Hex_partial_kite_t.unvisited_seas 
-    and old_stops = pk.Hex_partial_kite_t.stops_so_far in 
+    let pk2 = add_cell_by_casing dim cell2 pk in  
+    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
+    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
+    and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
     let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
-    and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in 
-    let pk2 ={
-      pk with 
-        Hex_partial_kite_t.stops_so_far = (Hex_kite_element_t.Springboard new_sb)::old_stops ;
+    and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in
+    let pk3 ={
+      pk2 with 
+        Hex_partial_kite_t.stops_so_far = 
+           (List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops) ;
         unvisited_islands = restricted_islands ;
         unvisited_seas = restricted_seas ;
     } in 
-    let pk3 = add_cell_by_casing dim cell2 pk2 in 
     extend_with_sea pk3 nc2 ;;
 
 
