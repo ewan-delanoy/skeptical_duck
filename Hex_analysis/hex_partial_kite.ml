@@ -68,7 +68,7 @@ let extend_with_springboard dim pk new_sb =
         unvisited_islands = restricted_islands ;
         unvisited_seas = restricted_seas ;
     } in 
-    Hex_springless_analysis.extend_with_sea pk3 nc2 ;;
+    snd(Hex_springless_analysis.extend_with_sea pk3 nc2);;
 
 let casings_from_islands eob pk = 
     let dim = eob.Hex_end_of_battle_t.dimension 
@@ -128,13 +128,18 @@ let springful_extensions eob pk =
       eob.Hex_end_of_battle_t.dimension pk sb
    ) springboards) ;;
 
+
 let extensions_finished_and_non_finished eob pk =
    let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished pk in 
-   if first_trial <> ([],[]) 
-   then first_trial 
+   if first_trial <> ([],[])
+   then first_trial
+        (* let (finished,unfinished)=first_trial  in 
+        (Image.image (fun (path,mlclr)->(Image.image path,mlclr)) finished,unfinished)
+        *)
    else springful_extensions eob pk;;
+
 
 end ;;
 
 
-let extensions  = Private.extensions_finished_and_non_finished ;; 
+let extensions  =  Private.extensions_finished_and_non_finished ;; 
