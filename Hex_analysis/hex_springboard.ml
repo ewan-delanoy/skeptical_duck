@@ -44,7 +44,13 @@ let opt_constr (cell,path,solution,cell2,nc2) =
    then Some(Hex_springboard_t.Sp(cell,path,solution,cell2,nc2)) 
    else None ;;
 
-let to_molecular_linker = function
-  Hex_kite_element_t.Earth(island)-> None
-   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
-   
+let to_molecular_linker (Hex_springboard_t.Sp(cell,path,solution,cell2,nc2))= 
+  (* strictly speaking, this is only a partial molecular linker *)
+  Hex_molecular_linker.fold_merge (
+     (Hex_molecular_linker.pair cell cell2)::
+     (Hex_named_connector.to_molecular_linker nc2)::
+     (Option.filter_and_unpack Hex_kite_springless_element.to_molecular_linker path)
+  );;
+
+
+  
