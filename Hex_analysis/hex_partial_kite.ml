@@ -251,7 +251,7 @@ let explore_minimal_casings eob pk =
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
         let ext1 = springless_extensions pk1 in 
         Image.image (fun (elt,new_pk)->
-          (cell,Hex_kite_element.claim_named_connector_on_springless elt)) ext1
+          (cell,Hex_kite_springless_element.claim_named_connector elt)) ext1
       ) minimal_casings
    ) in 
    let first_whole = Image.image (fun p->(p,Springless_Search.explore eob pk p)) minimal_casings_with_hooks in 
@@ -260,6 +260,15 @@ let explore_minimal_casings eob pk =
       Image.image (fun (path,solution)->(cell,nc,path,solution) ) l
    ) temp1) in 
    (temp2,Image.image fst first_whole);;
+
+let compute_springboards eob pk =
+  let (good_casings,all_casings) = explore_minimal_casings eob pk in 
+  let temp1 = Cartesian.product good_casings all_casings in 
+  let temp2 = Image.image (
+    fun ((cell,nc,path,solution),(cell2,nc2))->
+       (cell,nc,path,solution,cell2,nc2)
+  ) temp1  in 
+  temp2;;
 
 end ;;
 
