@@ -77,7 +77,7 @@ let springless_extensions partial_kite =
        let last_elt = Hex_kite_element.to_springless last_elt_in_vague_form in 
        extensions_from_springless_last_elt partial_kite last_elt ;;
 
-let rinsed_springless_extensions partial_kite =
+let extensions_finished_and_non_finished partial_kite =
       let base = springless_extensions partial_kite 
       and orig_side = partial_kite.Hex_partial_kite_t.original_side in 
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
@@ -107,7 +107,7 @@ let pusher (factory,_) =
    let (d,wi,i,fi,fa,uf) = factory in 
    let raw_result=Image.image (
          fun pk->
-         (pk,rinsed_springless_extensions pk) 
+         (pk,extensions_finished_and_non_finished pk) 
    ) uf in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
    let new_failures = List.rev_append (Image.image fst failures1) fa in 
@@ -135,5 +135,5 @@ end ;;
 let extend_with_sea = Private.extend_with_sea ;;
 let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
 let extensions = Private.springless_extensions;;
-
+let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 
