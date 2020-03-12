@@ -122,8 +122,19 @@ let compute_springboards eob pk =
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
+let springful_extensions eob pk =
+   let springboards = compute_springboards eob pk  in 
+   ([],Image.image (fun sb->extend_with_springboard 
+      eob.Hex_end_of_battle_t.dimension pk sb
+   ) springboards) ;;
+
+let extensions_finished_and_non_finished eob pk =
+   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished pk in 
+   if first_trial <> ([],[]) 
+   then first_trial 
+   else springful_extensions eob pk;;
+
 end ;;
 
-(* let extensions  = Private.rinsed_springless_extensions ;;  *)
-exception Shortlived_exn ;; 
-let extensions eob x = raise Shortlived_exn ;; 
+
+let extensions  = Private.extensions_finished_and_non_finished ;; 
