@@ -96,6 +96,13 @@ let minimal_casings eob pk =
       (casings_from_seas eob pk)
    ) ;; 
 
+(*
+let border_casings eob pk =   
+    let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
+    let last_stop = List.hd old_stops in 
+    let last_island = Hex_kite_element.claim_island last_stop in  
+*)    
+
 let explore_minimal_casings eob pk =
    let minimal_casings = minimal_casings eob pk in 
    let minimal_casings_with_hooks = List.flatten (
@@ -133,9 +140,6 @@ let extensions_finished_and_non_finished eob pk =
    let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished pk in 
    if first_trial <> ([],[])
    then first_trial
-        (* let (finished,unfinished)=first_trial  in 
-        (Image.image (fun (path,mlclr)->(Image.image path,mlclr)) finished,unfinished)
-        *)
    else springful_extensions eob pk;;
 
 

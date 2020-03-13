@@ -173,6 +173,11 @@ let short_connections dim island1 islands=
    Set_of_poly_pairs.image Hex_cell.of_int_pair temp2
 ;;
 
+let short_connections_to_border dim island direction= 
+   let temp1=Set_of_poly_pairs.image Hex_cell.of_int_pair (neighbors dim island) in 
+   List.filter (Hex_cardinal_direction.Border.test dim direction) temp1
+;;
+
 let test_for_neighbor dim island cell =
    Set_of_poly_pairs.mem (Hex_cell.to_int_pair cell) (Private.neighbors dim island);;
 
