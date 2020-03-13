@@ -17,6 +17,18 @@ let to_molecular_linker  pk =
      (Option.filter_and_unpack Hex_kite_element.to_molecular_linker pk.Hex_partial_kite_t.stops_so_far);;
 
 
+(*
+let active_part  pk =
+   (* The kite is assumed to be finished *)  
+    let l = pk.Hex_partial_kite_t.stops_so_far in 
+    let n = List.length l in 
+    let part_from_seas = Option.filter_and_unpack (
+
+    ) in 
+    let boarded_islands = Option.filter_and_unpack (
+
+    ) in 
+*)
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)

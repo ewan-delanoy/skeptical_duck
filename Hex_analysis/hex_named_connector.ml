@@ -144,6 +144,13 @@ let missing_earth end_of_battle nc =
 
 let of_name = Private.of_name ;;
 
+let outer_earth nc =
+   Hex_cell_set.merge 
+  ( Hex_island.inner_earth nc.Hex_named_connector_t.entry )
+  ( Hex_island.inner_earth nc.Hex_named_connector_t.exit ) ;;
+
+
+
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
