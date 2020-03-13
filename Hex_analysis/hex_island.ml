@@ -167,7 +167,7 @@ let reflect (Hex_island_t.I(old_opt,z)) =
       (Set_of_poly_pairs.image Hex_ipair.reflect z) in 
    Hex_island_t.I(new_opt,new_z);;
 
-let short_connections dim island1 islands= 
+let short_connections_to_other_islands dim island1 islands= 
    let temp1=Image.image (Private.short_connections dim island1) islands in 
    let temp2=Set_of_poly_pairs.fold_merge temp1 in 
    Set_of_poly_pairs.image Hex_cell.of_int_pair temp2
