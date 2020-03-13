@@ -48,7 +48,9 @@ let active_part  pk =
          and island2 = nc2.Hex_named_connector_t.entry in 
          Hex_island.minimal_connection (island1,island2) island
     ) boarded_islands) in 
-    Hex_cell_set.merge contribution_from_islands contribution_from_seas ;;
+    let possibly_too_large = Hex_cell_set.merge contribution_from_islands contribution_from_seas in 
+   let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
+   Hex_cell_set.setminus possibly_too_large molecular_part;;
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
