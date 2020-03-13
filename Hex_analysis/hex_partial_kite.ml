@@ -54,7 +54,7 @@ let explore eob pk (cell,nc) =
 
 
 let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,solution,cell2,nc2)) = new_sb in 
+    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,nc2)) = new_sb in 
     let pk2 = add_cell_by_casing dim cell2 pk in  
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
