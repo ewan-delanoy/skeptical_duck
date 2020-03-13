@@ -183,12 +183,11 @@ let get_activated_moleculars (Hex_end_strategy_factory_t.F(player,l)) =
    ) l;;
 
 let strat_with_index (Hex_end_strategy_factory_t.F(player,l)) idx=
-    Option.find_and_stop (
+    let (Hex_cog_in_machine_t.C(_,_,_,fles0)) =Listennou.force_find (
      fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-        if fles.Hex_flattened_end_strategy_t.index = idx 
-        then Some(fles)
-        else None 
-   ) l;;
+         fles.Hex_flattened_end_strategy_t.index = idx 
+   ) l in 
+   fles0;;
    
 
 end;;
