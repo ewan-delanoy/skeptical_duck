@@ -133,7 +133,7 @@ let compute eob = main (starters eob,false);;
 end ;; 
 
 let extend_with_sea = Private.extend_with_sea ;;
-let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
 let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
-
+let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
+let to_molecular_linker = Private.to_molecular_linker;;

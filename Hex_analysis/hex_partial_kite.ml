@@ -104,10 +104,15 @@ let border_casings dim pk =
     and goal_side = Hex_cardinal_direction.oppose pk.Hex_partial_kite_t.original_side in  
     Hex_island.short_connections_to_border dim  last_island goal_side ;; 
           
-         
+let cellset_setminus x y =
+   let sx = Hex_cell_set.safe_set x 
+   and sy = Hex_cell_set.safe_set y in 
+   Hex_cell_set.forget_order(Hex_cell_set.setminus sx sy);;         
 
 let explore_minimal_casings eob pk =
-   let minimal_casings = minimal_casings eob pk in 
+   let dim = eob.Hex_end_of_battle_t.dimension in 
+   let brdr_casings = border_casings dim pk in
+   let minimal_casings = cellset_setminus ( minimal_casings eob pk) brdr_casings in 
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
@@ -118,10 +123,14 @@ let explore_minimal_casings eob pk =
    ) in 
    let first_whole = Image.image (fun p->(p,explore eob pk p)) minimal_casings_with_hooks in 
    let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
-   let temp2 = List.flatten (Image.image (fun ((cell,nc),l)->
+   let temp2 = Image.image (
+     fun cell -> let new_pk = add_cell_by_casing dim cell pk in 
+       (cell,[],Hex_springless_analysis.to_molecular_linker new_pk)
+   ) brdr_casings
+   and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
       Image.image (fun (path,solution)->(cell,path,solution) ) l
    ) temp1) in 
-   (temp2,Image.image fst first_whole);;
+   (temp2@temp3,Image.image fst first_whole);;
 
 let compute_springboards eob pk =
   let (good_casings,all_casings) = explore_minimal_casings eob pk in 
