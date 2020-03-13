@@ -115,7 +115,7 @@ let extensions_finished_and_non_finished partial_kite =
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
           Hex_kite_element.is_final orig_side (Hex_kite_element.of_springless last_elt)) base in 
       let finished2 = Image.image (fun (_,pk)->
-        (List.rev(pk.Hex_partial_kite_t.stops_so_far),to_molecular_linker pk)) finished1 
+        (List.rev(pk.Hex_partial_kite_t.stops_so_far),to_molecular_linker pk,active_part pk)) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
 
@@ -145,8 +145,8 @@ let pusher (factory,_) =
    let new_failures = List.rev_append (Image.image fst failures1) fa in 
    let new_moleculars = List.flatten (Image.image (fun (_,p)->fst p) nonfailures1)
    and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
-   let ordered_new_moleculars = Ordered.sort Total_ordering.standard2 new_moleculars in 
-   let new_finished_ones = Ordered.merge Total_ordering.standard2 
+   let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
+   let new_finished_ones = Ordered.merge Total_ordering.standard
           ordered_new_moleculars fi in   
    let new_factory = (d,wi,i,new_finished_ones,new_failures,new_partial_kites) in           
    (new_factory,new_partial_kites=[]);;
