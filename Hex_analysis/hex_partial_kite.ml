@@ -96,12 +96,15 @@ let minimal_casings eob pk =
       (casings_from_seas eob pk)
    ) ;; 
 
-(*
-let border_casings eob pk =   
+
+let border_casings dim pk =   
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let last_stop = List.hd old_stops in 
-    let last_island = Hex_kite_element.claim_island last_stop in  
-*)    
+    let last_island = Hex_kite_element.claim_island last_stop 
+    and goal_side = Hex_cardinal_direction.oppose pk.Hex_partial_kite_t.original_side in  
+    Hex_island.short_connections_to_border dim  last_island goal_side ;; 
+          
+         
 
 let explore_minimal_casings eob pk =
    let minimal_casings = minimal_casings eob pk in 
