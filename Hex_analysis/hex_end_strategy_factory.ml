@@ -182,6 +182,15 @@ let get_activated_moleculars (Hex_end_strategy_factory_t.F(player,l)) =
         |Exhaustive_Disjunction (cells)->None 
    ) l;;
 
+let strat_with_index (Hex_end_strategy_factory_t.F(player,l)) idx=
+    Option.find_and_stop (
+     fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
+        if fles.Hex_flattened_end_strategy_t.index = idx 
+        then Some(fles)
+        else None 
+   ) l;;
+   
+
 end;;
 
 let compute_all_end_configs (raf1,raf2) = Private.compute_all_end_configs (!raf1,!raf2);;
@@ -194,6 +203,7 @@ let get_elt_at_idx_in_pair (raf1,raf2) = Private.get_elt_at_idx_in_pair (!raf1,!
 let get_activated_moleculars raf = Private.get_activated_moleculars (!raf);;
 let indices_used_in_exhaustive_disjunctions = Private.indices_used_in_exhaustive_disjunctions;;
 let remove_strats_with_indices raf indices= (raf:=Private.remove_strats_with_indices (!raf) indices);;
+let strat_with_index = Private.strat_with_index ;;
 let to_string raf = Private.to_string (!raf);;
 
 
