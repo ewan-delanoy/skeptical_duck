@@ -16,24 +16,39 @@ let to_molecular_linker  pk =
    Hex_molecular_linker.fold_merge 
      (Option.filter_and_unpack Hex_kite_element.to_molecular_linker pk.Hex_partial_kite_t.stops_so_far);;
 
+exception Deduce_boarded_islands_exn of Hex_kite_element_t.t list ;;
 
-(*
+let deduce_boarded_islands l =
+    let n = ((List.length l)-1)/2 
+    and naive_trier=(fun k ->
+         let nc1 = Hex_kite_element.claim_sea (List.nth l (2*k-1)) 
+         and island = Hex_kite_element.claim_island (List.nth l (2*k) )
+         and nc2 = Hex_kite_element.claim_sea (List.nth l (2*k+1))  in 
+         (nc1,island,nc2) ) in 
+    let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l))) in     
+    Ennig.doyle trier 1 (n-1);;
+
 let active_part  pk =
    (* The kite is assumed to be finished *)  
     let unfiltered_l = pk.Hex_partial_kite_t.stops_so_far in 
     let l = List.filter ( 
-       fun (Hex_kite_element_t.Earth(_))
+       function (Hex_kite_element_t.Earth(_))
            |(Hex_kite_element_t.Sea(_)) -> true
            |_->false
     )  unfiltered_l in 
-    let n = ((List.length l)-1)/2 in 
-    let contribution_from_seas = Option.filter_and_unpack (
-       (Hex_kite_element_t.Sea(nc)) -> Hex_named_connector.outer_earth nc
-    ) l in 
-    let boarded_islands = Option.filter_and_unpack (
-
-    )(Ennig.ennig 1 n) in 
-*)
+    let boarded_islands = deduce_boarded_islands l in 
+    let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
+       function (Hex_kite_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
+       |_->None
+    ) l) 
+    and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
+    (
+       function (nc1,island,nc2)-> 
+         let island1 = nc1.Hex_named_connector_t.exit 
+         and island2 = nc2.Hex_named_connector_t.entry in 
+         Hex_island.minimal_connection (island1,island2) island
+    ) boarded_islands) in 
+    Hex_cell_set.merge contribution_from_islands contribution_from_seas ;;
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
@@ -149,6 +164,7 @@ let compute eob = main (starters eob,false);;
 
 end ;; 
 
+let active_part = Private.active_part ;;
 let extend_with_sea = Private.extend_with_sea ;;
 let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
