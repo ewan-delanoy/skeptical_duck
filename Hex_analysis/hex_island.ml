@@ -136,6 +136,12 @@ let is_included_in
        | _ -> (opt2 = opt1);;
  
 
+let minimal_connection (Hex_island_t.I(_,z1),Hex_island_t.I(_,z2)) (Hex_island_t.I(_,z)) =
+  (* as a first approximation, we de not optimize at all and take 
+  everything *)  
+  let ipairs = Set_of_poly_pairs.setminus z (Set_of_poly_pairs.merge z1 z2) in 
+  Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair ipairs);;
+
 let neighbors = Private.neighbors ;;
 
 
