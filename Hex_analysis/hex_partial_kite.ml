@@ -47,9 +47,9 @@ let explore eob pk (cell,nc) =
       let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
       let pk2 = snd(Hex_springless_analysis.extend_with_sea pk1 nc) in 
       let temp = Hex_springless_analysis.finalize eob pk2 in 
-      Image.image (fun (stops,mlclr)->
+      Image.image (fun (stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
-        (Image.image Hex_kite_element.to_springless ttemp2,mlclr)
+        (Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
       ) temp ;;
 
 
@@ -129,10 +129,10 @@ let explore_minimal_casings eob pk =
    let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
    let temp2 = Image.image (
      fun cell -> let new_pk = add_cell_by_casing dim cell pk in 
-       (cell,[],Hex_springless_analysis.to_molecular_linker new_pk)
+       (cell,[],Hex_springless_analysis.to_molecular_linker new_pk,Hex_springless_analysis.active_part new_pk)
    ) brdr_casings
    and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
-      Image.image (fun (path,solution)->(cell,path,solution) ) l
+      Image.image (fun (path,sol1,sol2)->(cell,path,sol1,sol2) ) l
    ) temp1) in 
    (temp2@temp3,Image.image fst first_whole);;
 
@@ -140,8 +140,8 @@ let compute_springboards eob pk =
   let (good_casings,all_casings) = explore_minimal_casings eob pk in 
   let temp1 = Cartesian.product good_casings all_casings in 
   let temp2 = Image.image (
-    fun ((cell,path,solution),(cell2,nc2))->
-       (cell,path,solution,cell2,nc2)
+    fun ((cell,path,sol1,sol2),(cell2,nc2))->
+       (cell,path,sol1,sol2,cell2,nc2)
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
