@@ -20,14 +20,19 @@ let to_molecular_linker  pk =
 (*
 let active_part  pk =
    (* The kite is assumed to be finished *)  
-    let l = pk.Hex_partial_kite_t.stops_so_far in 
-    let n = List.length l in 
-    let part_from_seas = Option.filter_and_unpack (
-
-    ) in 
+    let unfiltered_l = pk.Hex_partial_kite_t.stops_so_far in 
+    let l = List.filter ( 
+       fun (Hex_kite_element_t.Earth(_))
+           |(Hex_kite_element_t.Sea(_)) -> true
+           |_->false
+    )  unfiltered_l in 
+    let n = ((List.length l)-1)/2 in 
+    let contribution_from_seas = Option.filter_and_unpack (
+       (Hex_kite_element_t.Sea(nc)) -> Hex_named_connector.outer_earth nc
+    ) l in 
     let boarded_islands = Option.filter_and_unpack (
 
-    ) in 
+    )(Ennig.ennig 1 n) in 
 *)
 
 let extend_with_island pk new_island = 
