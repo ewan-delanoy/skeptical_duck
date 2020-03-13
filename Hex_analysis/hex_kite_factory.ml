@@ -43,6 +43,10 @@ let rec main walker =
    else main (pusher walker) ;; 
 
 
+
+
 end ;;
 
 let compute eob = Private.main (Private.starters eob,false);;
+let solutions eob =
+   Ordered.sort Total_ordering.standard (Image.image snd (fst(compute eob)));;
