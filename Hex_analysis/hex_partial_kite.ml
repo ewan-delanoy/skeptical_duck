@@ -97,13 +97,17 @@ let minimal_casings eob pk =
    ) ;; 
 
 
-let border_casings dim pk =   
+let border_casings eob pk =   
+    let dim = eob.Hex_end_of_battle_t.dimension in 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let last_stop = List.hd old_stops in 
     let last_island = Hex_kite_element.claim_island last_stop 
     and goal_side = Hex_cardinal_direction.oppose pk.Hex_partial_kite_t.original_side in  
-    Hex_island.short_connections_to_border dim  last_island goal_side ;; 
-          
+    let temp1 = Hex_island.short_connections_to_border dim  last_island goal_side in
+    List.filter (
+      fun cell-> Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied
+    )  temp1 ;;    
+
 let cellset_setminus x y =
    let sx = Hex_cell_set.safe_set x 
    and sy = Hex_cell_set.safe_set y in 
@@ -111,7 +115,7 @@ let cellset_setminus x y =
 
 let explore_minimal_casings eob pk =
    let dim = eob.Hex_end_of_battle_t.dimension in 
-   let brdr_casings = border_casings dim pk in
+   let brdr_casings = border_casings eob pk in
    let minimal_casings = cellset_setminus ( minimal_casings eob pk) brdr_casings in 
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
