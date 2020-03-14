@@ -186,6 +186,8 @@ let set_state (g,w1,w2,uops) =
      winning_end_strategies_for_first_player_ref := w1 ;
      winning_end_strategies_for_second_player_ref := w2 ;
      untamed_openings_ref := uops ;
+     persist_strategies();
+     persist_games();
    );;
 
 
