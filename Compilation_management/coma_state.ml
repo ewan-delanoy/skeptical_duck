@@ -1577,14 +1577,12 @@ let list_values_from_module_in_modulesystem cs module_name=
     ) temp1 in
    let temp3=List.flatten temp2 in
    let temp4=Image.image fst temp3 in 
-   let temp5=Set_of_strings.sort temp4 in
-   let temp6=Set_of_strings.forget_order temp5 in
-   let temp7=Image.image (
+   let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
+   Image.image (
       fun x->(x,Option.filter_and_unpack(
         fun (y,ap)->if y=x then Some(ap) else None
       ) temp3)
-   ) temp6 in
-   temp7;;
+   ) temp5 ;;
  
 let list_value_occurrences_in_file t file=
    let s=Io.read_whole_file file in
