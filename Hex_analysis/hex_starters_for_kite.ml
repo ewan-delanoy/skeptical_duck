@@ -8,7 +8,6 @@
 
 module Private = struct 
 
-
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
@@ -34,7 +33,9 @@ let starters_for_side end_of_battle side =
         let elt1 = Hex_kite_element_t.Earth(first_island)
         and elt2 = Hex_kite_element_t.Sea(first_nc) in 
         {
-            Hex_partial_kite_t.stops_so_far =  ([],elt2,elt1);
+            Hex_partial_kite_t.place_of_birth = elt1;
+            first_step = elt2;
+            stops_so_far =  [];
             original_side = side ;
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = new_base ;
