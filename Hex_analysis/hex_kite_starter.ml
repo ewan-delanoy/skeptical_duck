@@ -4,6 +4,7 @@
 
 *)
 
+
 let claim_sea (Hex_kite_starter_t.St nc) = nc ;; 
 
 let print_out (fmt:Format.formatter) elt=
