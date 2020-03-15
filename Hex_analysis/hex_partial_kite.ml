@@ -11,13 +11,13 @@ module Private = struct
 
 
 
-let add_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)=  
+let add_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops,a2,a1)=  
     let new_islands = Hex_island.add_cell_by_casing dim new_cell (last_island::old_islands) 
     and new_abc = Hex_cell_set.insert new_cell old_abc in 
     let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
    {
       pk with
-      Hex_partial_kite_t.stops_so_far = remade_last_stop :: previous_stops;
+      Hex_partial_kite_t.stops_so_far = (remade_last_stop::previous_stops,a2,a1);
       unvisited_islands = List.tl new_islands;
       added_by_casing = new_abc;
    };;
@@ -36,18 +36,20 @@ let add_cell_by_casing dim new_cell pk=
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
-    let (last_stop,previous_stops) = Listennou.ht old_stops in 
+    let (rl,a2,a1) = old_stops in 
+    let (last_stop,previous_stops) = Listennou.ht rl in 
     let last_island = Hex_kite_element.claim_island last_stop in 
     if Hex_island.test_for_neighbor dim last_island new_cell 
-    then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
+    then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops,a2,a1)
     else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
 
 let explore eob pk (cell,nc) = 
-      let nbr_of_common_steps = List.length(pk.Hex_partial_kite_t.stops_so_far) in 
+      let (rl,_,_) = pk.Hex_partial_kite_t.stops_so_far in 
+      let nbr_of_common_steps = List.length rl in 
       let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
       let pk2 = snd(Hex_springless_analysis.extend_with_sea pk1 nc) in 
       let temp = Hex_springless_analysis.finalize eob pk2 in 
-      Image.image (fun (stops,mlclr,actv)->
+      Image.image (fun (a1,a2,stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
         (Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
       ) temp ;;
@@ -58,21 +60,22 @@ let extend_with_springboard dim pk new_sb =
     let pk2 = add_cell_by_casing dim cell2 pk in  
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
-    and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
+    and (rl,a2,a1) = pk2.Hex_partial_kite_t.stops_so_far in 
     let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
     and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in
     let pk3 ={
       pk2 with 
         Hex_partial_kite_t.stops_so_far = 
-           (List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops) ;
+           ((List.hd rl)::(Hex_kite_element_t.Springboard new_sb)::(List.tl rl),a2,a1) ;
         unvisited_islands = restricted_islands ;
         unvisited_seas = restricted_seas ;
     } in 
     snd(Hex_springless_analysis.extend_with_sea pk3 nc2);;
 
 let casings_from_islands eob pk = 
+    let (rl,_,_) = pk.Hex_partial_kite_t.stops_so_far in 
     let dim = eob.Hex_end_of_battle_t.dimension 
-    and last_island = Hex_kite_element.claim_island(List.hd(pk.Hex_partial_kite_t.stops_so_far)) 
+    and last_island = Hex_kite_element.claim_island(List.hd rl) 
     and other_islands = pk.Hex_partial_kite_t.unvisited_islands in 
     let temp1 = Hex_island.short_connections_to_other_islands dim last_island other_islands in 
     let temp2 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp1 in 
@@ -99,8 +102,8 @@ let minimal_casings eob pk =
 
 let border_casings eob pk =   
     let dim = eob.Hex_end_of_battle_t.dimension in 
-    let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
-    let last_stop = List.hd old_stops in 
+    let (rl,_,_) = pk.Hex_partial_kite_t.stops_so_far  in 
+    let last_stop = List.hd rl in 
     let last_island = Hex_kite_element.claim_island last_stop 
     and goal_side = Hex_cardinal_direction.oppose pk.Hex_partial_kite_t.original_side in  
     let temp1 = Hex_island.short_connections_to_border dim  last_island goal_side in

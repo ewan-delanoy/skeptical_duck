@@ -28,7 +28,7 @@ let duplicate_module old_t1 old_t2=
 let find_endingless modname= 
   Coma_state.endingless_from_mildly_capitalized_module_name (!(Private.main_ref)) modname;;
 
-let forget x=Modify_coma_state.Syntactic_sugar.forget Private.main_ref;;     
+let forget =Modify_coma_state.Syntactic_sugar.forget Private.main_ref;;     
 
 let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 

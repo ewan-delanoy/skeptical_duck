@@ -24,7 +24,7 @@ let pusher (factory,_) =
    ) factory.Hex_kite_factory_t.unfinished in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
    let new_failures = List.rev_append (Image.image fst failures1) factory.Hex_kite_factory_t.failures in 
-   let new_moleculars = List.flatten (Image.image (fun (_,p)->fst p) nonfailures1)
+   let new_moleculars = List.flatten (Image.image (fun (_,p)->(fst p)) nonfailures1)
    and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
    let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
    let new_finished_ones = Ordered.merge Total_ordering.standard 
@@ -49,4 +49,4 @@ end ;;
 
 let compute eob = Private.main (Private.starters eob,false);;
 let solutions eob =
-   Ordered.sort Total_ordering.standard (Image.image (fun (_,b,c)->(b,c)) (fst(compute eob)));;
+   Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c)) (fst(compute eob)));;

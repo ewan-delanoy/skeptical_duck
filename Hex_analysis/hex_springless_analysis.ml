@@ -12,40 +12,49 @@ module Private = struct
 
 
 let to_molecular_linker  pk =
-   (* The kite is assumed to be finished *)  
+   (* The kite is assumed to be finished *) 
+   let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
+   let l=List.rev rl in 
+   let temp1 = 
+   (Hex_kite_element.to_molecular_linker a1)::(Hex_kite_element.to_molecular_linker a2)::
+   (Image.image  Hex_kite_element.to_molecular_linker l) in 
    Hex_molecular_linker.fold_merge 
-     (Option.filter_and_unpack Hex_kite_element.to_molecular_linker pk.Hex_partial_kite_t.stops_so_far);;
+     (Option.filter_and_unpack (fun opt->opt) temp1);;
 
 exception Deduce_boarded_islands_exn of Hex_kite_element_t.t list ;;
 
-let deduce_boarded_islands l =
-    let n = ((List.length l)-1)/2 
-    and naive_trier=(fun k ->
-         let nc1 = Hex_kite_element.claim_sea (List.nth l (2*k-1)) 
-         and island = Hex_kite_element.claim_island (List.nth l (2*k) )
-         and nc2 = Hex_kite_element.claim_sea (List.nth l (2*k+1))  in 
-         (nc1,island,nc2) ) in 
+let deduce_boarded_islands a1 a2 l =
+    let n = ((List.length l)-1)/2  in 
+    let naive_trier=(fun k ->
+         let nc1 = (
+            if k=1 
+            then      Hex_kite_element.claim_sea a2
+            else      Hex_kite_element.claim_sea (List.nth l (2*k-3)) )
+         and island = Hex_kite_element.claim_island (List.nth l (2*k-2) )
+         and nc2 = Hex_kite_element.claim_sea (List.nth l (2*k-1))  in 
+         let island1 = nc1.Hex_named_connector_t.exit 
+         and island2 = nc2.Hex_named_connector_t.entry in 
+         (island1,island,island2) ) in 
     let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l))) in     
-    Ennig.doyle trier 1 (n-1);;
+    Ennig.doyle trier 1 n;;
 
 let active_part  pk =
    (* The kite is assumed to be finished *)  
-    let unfiltered_l = pk.Hex_partial_kite_t.stops_so_far in 
+    let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
+    let unfiltered_l=List.rev rl in  
     let l = List.filter ( 
        function (Hex_kite_element_t.Earth(_))
            |(Hex_kite_element_t.Sea(_)) -> true
            |_->false
     )  unfiltered_l in 
-    let boarded_islands = deduce_boarded_islands l in 
+    let boarded_islands = deduce_boarded_islands a1 a2 l in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_kite_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
        |_->None
     ) l) 
     and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
     (
-       function (nc1,island,nc2)-> 
-         let island1 = nc1.Hex_named_connector_t.exit 
-         and island2 = nc2.Hex_named_connector_t.entry in 
+       function (island1,island,island2)-> 
          Hex_island.minimal_connection (island1,island2) island
     ) boarded_islands) in 
     let possibly_too_large = Hex_cell_set.merge contribution_from_islands contribution_from_seas in 
@@ -55,10 +64,12 @@ let active_part  pk =
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
         and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
+        let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = vague_new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+          Hex_partial_kite_t.stops_so_far = 
+          (vague_new_elt::rl,a2,a1);
           unvisited_islands = List.filter (fun x->x<>new_island ) 
              (pk.Hex_partial_kite_t.unvisited_islands);
     });;
@@ -67,10 +78,11 @@ let extend_with_island pk new_island =
 let extend_with_sea pk new_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
         and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
+        let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = vague_new_elt :: (pk.Hex_partial_kite_t.stops_so_far);
+          Hex_partial_kite_t.stops_so_far = (vague_new_elt::rl,a2,a1) ;
             unvisited_seas = List.filter 
               (fun (z,nc)->
                 Hex_named_connector.check_disjointness new_nc nc) 
@@ -104,12 +116,11 @@ let extensions_from_springless_last_elt partial_kite = function
     Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
    |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
-let springless_extensions partial_kite =
-   match partial_kite.Hex_partial_kite_t.stops_so_far with 
-    []->raise(Kite_is_not_started)
-   |last_elt_in_vague_form::_-> 
-       let last_elt = Hex_kite_element.to_springless last_elt_in_vague_form in 
-       extensions_from_springless_last_elt partial_kite last_elt ;;
+let springless_extensions pk =
+   let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
+   let last_elt_in_vague_form = (match rl with []->a2 |x::_->x ) in 
+   let last_elt = Hex_kite_element.to_springless last_elt_in_vague_form in 
+   extensions_from_springless_last_elt pk last_elt ;;
 
 let extensions_finished_and_non_finished partial_kite =
       let base = springless_extensions partial_kite 
@@ -117,7 +128,9 @@ let extensions_finished_and_non_finished partial_kite =
       let (finished1,unfinished1) =List.partition (fun (last_elt,_)->
           Hex_kite_element.is_final orig_side (Hex_kite_element.of_springless last_elt)) base in 
       let finished2 = Image.image (fun (_,pk)->
-        (List.rev(pk.Hex_partial_kite_t.stops_so_far),to_molecular_linker pk,active_part pk)) finished1 
+        let (rl,a2,a1)=pk.Hex_partial_kite_t.stops_so_far in 
+        let l=List.rev rl in 
+        (a1,a2,l,to_molecular_linker pk,active_part pk)) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
 
