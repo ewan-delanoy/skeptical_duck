@@ -13,12 +13,11 @@ module Private = struct
 
 let to_molecular_linker  pk =
    (* The kite is assumed to be finished *) 
-   let a1 = pk.Hex_partial_kite_t.place_of_birth 
-   and a2 = pk.Hex_partial_kite_t.first_step 
+   let a2 = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let l=List.rev rl in 
    let temp1 = 
-   (Hex_kite_element.to_molecular_linker a1)::(Hex_kite_element.to_molecular_linker a2)::
+   (Hex_kite_element.to_molecular_linker a2)::
    (Image.image  Hex_kite_element.to_molecular_linker l) in 
    Hex_molecular_linker.fold_merge 
      (Option.filter_and_unpack (fun opt->opt) temp1);;
