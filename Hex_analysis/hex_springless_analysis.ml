@@ -4,11 +4,8 @@
 
 *)
 
-exception Kite_is_not_started;;
 
 module Private = struct 
-
-
 
 
 let to_molecular_linker  pk =
@@ -17,7 +14,7 @@ let to_molecular_linker  pk =
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let l=List.rev rl in 
    let temp1 = 
-   (Hex_kite_element.to_molecular_linker a2)::
+   (Some(Hex_kite_starter.to_molecular_linker a2))::
    (Image.image  Hex_kite_element.to_molecular_linker l) in 
    Hex_molecular_linker.fold_merge 
      (Option.filter_and_unpack (fun opt->opt) temp1);;
@@ -29,7 +26,7 @@ let deduce_boarded_islands a1 a2 l =
     let naive_trier=(fun k ->
          let nc1 = (
             if k=1 
-            then      Hex_kite_element.claim_sea a2
+            then      Hex_kite_starter.claim_sea a2
             else      Hex_kite_element.claim_sea (List.nth l (2*k-3)) )
          and island = Hex_kite_element.claim_island (List.nth l (2*k-2) )
          and nc2 = Hex_kite_element.claim_sea (List.nth l (2*k-1))  in 
@@ -121,8 +118,9 @@ let extensions_from_springless_last_elt partial_kite = function
 let springless_extensions pk =
    let a2 = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
-   let last_elt_in_vague_form = (match rl with []->a2 |x::_->x ) in 
-   let last_elt = Hex_kite_element.to_springless last_elt_in_vague_form in 
+   let last_elt = (match rl with 
+     []->Hex_kite_starter.to_springless (a2)  
+     |x::_-> Hex_kite_element.to_springless x ) in 
    extensions_from_springless_last_elt pk last_elt ;;
 
 let extensions_finished_and_non_finished partial_kite =
