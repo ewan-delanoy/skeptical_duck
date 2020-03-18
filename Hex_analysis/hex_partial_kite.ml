@@ -79,8 +79,8 @@ let explore_final eob pk (cell,bc) =
       ];;
 
 let explore eob pk (cell,pfc) = match pfc with 
-    Hex_possibly_final_kite_element_t.Final(bc) -> explore_final eob pk (cell,bc) 
-   |Hex_possibly_final_kite_element_t.Nonfinal(ic) -> explore_nonfinal eob pk (cell,ic) ;;
+    Hex_possibly_final_connector_t.Final(bc) -> explore_final eob pk (cell,bc) 
+   |Hex_possibly_final_connector_t.Nonfinal(ic) -> explore_nonfinal eob pk (cell,ic) ;;
 
 
 let extend_with_springboard dim pk new_sb =
@@ -102,8 +102,8 @@ let extend_with_springboard dim pk new_sb =
          ;
     } in 
     match ke with 
-     Hex_possibly_final_kite_element_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
-    |Hex_possibly_final_kite_element_t.Nonfinal(nc) -> snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
+     Hex_possibly_final_connector_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
+    |Hex_possibly_final_connector_t.Nonfinal(nc) -> snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
 
 let casings_from_islands eob pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
@@ -160,9 +160,9 @@ let explore_minimal_casings eob pk =
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
         let (ext1,ext2) = Hex_springless_analysis.extensions pk1 in 
         let part1 = Image.image (fun (elt,new_pk)->
-          (cell,Hex_possibly_final_kite_element_t.Final(Hex_kite_springless_element.claim_named_connector elt))) ext1 
+          (cell,Hex_possibly_final_connector_t.Final(Hex_kite_springless_element.claim_named_connector elt))) ext1 
         and part2 = Image.image (fun (elt,new_pk)->
-          (cell,Hex_possibly_final_kite_element_t.Nonfinal(Hex_kite_springless_element.claim_named_connector elt))) ext2 in   
+          (cell,Hex_possibly_final_connector_t.Nonfinal(Hex_kite_springless_element.claim_named_connector elt))) ext2 in   
         part1@part2
       ) minimal_casings
    ) in 
