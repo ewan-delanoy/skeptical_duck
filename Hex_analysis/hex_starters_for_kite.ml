@@ -38,7 +38,6 @@ let starters_for_side end_of_battle side =
             Hex_partial_kite_t.place_of_birth = first_island;
             first_step = Hex_kite_starter.sea first_nc;
             stops_so_far =  [];
-            original_side = side ;
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = (new_middle_base,new_end_base) ;
             added_by_casing = Hex_cell_set.empty_set;

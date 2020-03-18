@@ -13,7 +13,6 @@ type t={
    place_of_birth : Hex_island_t.t ;
    first_step : Hex_kite_starter_t.t ;
    stops_so_far : Hex_kite_element_t.t list ;
-   original_side : Hex_cardinal_direction_t.t;
    unvisited_islands : Hex_island_t.t list;
    unvisited_seas : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) *
                     (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;

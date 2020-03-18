@@ -134,7 +134,7 @@ let border_casings eob pk =
     let dim = eob.Hex_end_of_battle_t.dimension in 
     let last_stop = List.hd pk.Hex_partial_kite_t.stops_so_far in 
     let last_island = Hex_kite_element.claim_island last_stop 
-    and goal_side = Hex_cardinal_direction.oppose pk.Hex_partial_kite_t.original_side in  
+    and goal_side = Hex_cardinal_direction.oppose (Hex_springless_analysis.original_side pk) in  
     let temp1 = Hex_island.short_connections_to_border dim  last_island goal_side in
     List.filter (
       fun cell-> Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied

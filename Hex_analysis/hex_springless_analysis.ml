@@ -19,8 +19,11 @@ let to_molecular_linker  pk =
    Hex_molecular_linker.fold_merge 
      (Option.filter_and_unpack (fun opt->opt) temp1);;
 
+let original_side pk =
+   Option.unpack (Hex_island.outer_earth pk.Hex_partial_kite_t.place_of_birth);;
+
 let compute_place_of_death pk=
-   let final_side = Hex_cardinal_direction.oppose(pk.Hex_partial_kite_t.original_side) in 
+   let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
@@ -226,5 +229,6 @@ let extend_with_final_sea = Private.extend_with_final_sea ;;
 let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
+let original_side = Private.original_side ;;
 let solution_details = Private.solution_details ;;
 let to_molecular_linker = Private.to_molecular_linker;;
