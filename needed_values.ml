@@ -54,6 +54,8 @@ let ren = Usual_coma_state.rename_module;;
 
 let rendir = Usual_coma_state.rename_directory;;
 
+let ruco () = Other_coma_state.recompile None ;; 
+
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
 let ri () = Listennou.redundant_indices (Coma_state.ordered_list_of_modules (!Usual_coma_state.main_ref));;
