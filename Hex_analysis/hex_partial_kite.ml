@@ -32,7 +32,7 @@ let add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc)=
    };;
 
 
-let add_cell_by_casing dim new_cell pk=  
+let add_cell_by_casing_without_normalizing dim new_cell pk=  
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
     let rl=pk.Hex_partial_kite_t.stops_so_far in 
@@ -42,7 +42,23 @@ let add_cell_by_casing dim new_cell pk=
     then add_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)
     else add_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
 
-let explore eob pk (cell,nc) = 
+let normalize_after_adding_a_cell pk =
+    let old_stops = pk.Hex_partial_kite_t.stops_so_far in  
+    match List.hd old_stops with 
+    Hex_kite_element_t.Earth(island) ->
+          if Hex_island.outer_earth island = None then pk else
+          let old_islands = pk.Hex_partial_kite_t.unvisited_islands in 
+          {
+             pk with 
+             Hex_partial_kite_t.stops_so_far = List.tl old_stops ;
+             unvisited_islands = island :: old_islands ;
+          }
+    | _ -> pk ;;
+
+let add_cell_by_casing dim new_cell pk=  
+   normalize_after_adding_a_cell (add_cell_by_casing_without_normalizing dim new_cell pk);;
+
+let explore_nonfinal eob pk (cell,nc) = 
       let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
       let nbr_of_common_steps = List.length old_stops in 
       let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
@@ -53,23 +69,41 @@ let explore eob pk (cell,nc) =
         (Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
       ) temp ;;
 
+let explore_final eob pk (cell,bc) = 
+      let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
+      let pk2 = Hex_springless_analysis.extend_with_final_sea pk1 bc in 
+      let mlclr = Hex_springless_analysis.to_molecular_linker pk2 
+      and actv = Hex_springless_analysis.active_part pk2 in 
+      [
+         [],mlclr,actv
+      ];;
+
+let explore eob pk (cell,pfc) = match pfc with 
+    Hex_possibly_final_kite_element_t.Final(bc) -> explore_final eob pk (cell,bc) 
+   |Hex_possibly_final_kite_element_t.Nonfinal(ic) -> explore_nonfinal eob pk (cell,ic) ;;
+
 
 let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,nc2)) = new_sb in 
+    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,ke)) = new_sb in 
     let pk2 = add_cell_by_casing dim cell2 pk in  
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
     let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
-    and restricted_seas =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea) old_seas  in
+    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   in
     let pk3 ={
       pk2 with 
         Hex_partial_kite_t.stops_so_far = 
            ((List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops)) ;
         unvisited_islands = restricted_islands ;
-        unvisited_seas = restricted_seas ;
+        unvisited_seas = 
+          ( selector (fst old_seas),
+            selector (snd old_seas) )
+         ;
     } in 
-    snd(Hex_springless_analysis.extend_with_sea pk3 nc2);;
+    match ke with 
+     Hex_possibly_final_kite_element_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
+    |Hex_possibly_final_kite_element_t.Nonfinal(nc) -> snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
 
 let casings_from_islands eob pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
@@ -82,21 +116,18 @@ let casings_from_islands eob pk =
 
 let casings_from_seas eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas  in 
-   let unordered = Option.filter_and_unpack (
+   and (middle_casings_with_hooks,
+        end_casings_with_hooks) = pk.Hex_partial_kite_t.unvisited_seas  in 
+   let selector = (fun l->Hex_cell_set.safe_set(Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 
         if Hex_cell_set.length d = 1 
         then Some(Hex_cell_set.min d)
         else None 
-   ) casings_with_hooks in 
-   Hex_cell_set.safe_set unordered ;; 
-
-let minimal_casings eob pk =
-   Hex_cell_set.forget_order (Hex_cell_set.merge
-      (casings_from_islands eob pk)
-      (casings_from_seas eob pk)
-   ) ;; 
+   )l) ) in 
+   Hex_cell_set.merge
+   (selector middle_casings_with_hooks)
+   (selector end_casings_with_hooks) ;; 
 
 
 let border_casings eob pk =   
@@ -108,6 +139,12 @@ let border_casings eob pk =
     List.filter (
       fun cell-> Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied
     )  temp1 ;;    
+
+let minimal_casings eob pk =
+   Hex_cell_set.forget_order (Hex_cell_set.merge
+      (casings_from_islands eob pk)
+      (casings_from_seas eob pk)
+   ) ;; 
 
 let cellset_setminus x y =
    let sx = Hex_cell_set.safe_set x 
@@ -121,36 +158,43 @@ let explore_minimal_casings eob pk =
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-        let ext1 = Hex_springless_analysis.extensions pk1 in 
-        Image.image (fun (elt,new_pk)->
-          (cell,Hex_kite_springless_element.claim_named_connector elt)) ext1
+        let (ext1,ext2) = Hex_springless_analysis.extensions pk1 in 
+        let part1 = Image.image (fun (elt,new_pk)->
+          (cell,Hex_possibly_final_kite_element_t.Final(Hex_kite_springless_element.claim_named_connector elt))) ext1 
+        and part2 = Image.image (fun (elt,new_pk)->
+          (cell,Hex_possibly_final_kite_element_t.Nonfinal(Hex_kite_springless_element.claim_named_connector elt))) ext2 in   
+        part1@part2
       ) minimal_casings
    ) in 
    let first_whole = Image.image (fun p->(p,explore eob pk p)) minimal_casings_with_hooks in 
    let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
-   let temp2 = Image.image (
+   let short_to_border = Image.image (
      fun cell -> let new_pk = add_cell_by_casing dim cell pk in 
        (cell,[],Hex_springless_analysis.to_molecular_linker new_pk,Hex_springless_analysis.active_part new_pk)
    ) brdr_casings
    and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
       Image.image (fun (path,sol1,sol2)->(cell,path,sol1,sol2) ) l
    ) temp1) in 
-   (temp2@temp3,Image.image fst first_whole);;
+   (short_to_border@temp3,Image.image fst first_whole);;
 
 let compute_springboards eob pk =
   let (good_casings,all_casings) = explore_minimal_casings eob pk in 
   let temp1 = Cartesian.product good_casings all_casings in 
   let temp2 = Image.image (
-    fun ((cell,path,sol1,sol2),(cell2,nc2))->
-       (cell,path,sol1,sol2,cell2,nc2)
+    fun ((cell,path,sol1,sol2),(cell2,ke))->
+       (cell,path,sol1,sol2,cell2,ke)
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
 let springful_extensions eob pk =
    let springboards = compute_springboards eob pk  in 
-   ([],Image.image (fun sb->extend_with_springboard 
-      eob.Hex_end_of_battle_t.dimension pk sb
-   ) springboards) ;;
+   let temp1 = Image.image (fun sb->(Hex_springboard.is_final sb,extend_with_springboard 
+      eob.Hex_end_of_battle_t.dimension pk sb)
+   ) springboards in 
+   let (full_sols,partial_sols) = List.partition fst temp1 in 
+   let detailed_sols = Image.image 
+     (fun (_,pk)->Hex_springless_analysis.solution_details pk) full_sols in 
+   (detailed_sols,Image.image snd partial_sols) ;;
 
 
 let extensions_finished_and_non_finished eob pk =

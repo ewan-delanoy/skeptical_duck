@@ -4,8 +4,10 @@
 
 *)
 
-
 let claim_sea (Hex_kite_starter_t.St nc) = nc ;; 
+
+let entry (Hex_kite_starter_t.St nc) = nc.Hex_named_connector_t.entry ;;
+let exit (Hex_kite_starter_t.St nc) = nc.Hex_named_connector_t.exit ;;
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Hex_named_connector.to_readable_string elt);;     

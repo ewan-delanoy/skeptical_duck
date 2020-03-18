@@ -117,6 +117,8 @@ let decompose eob =
     )  sides in 
     pre_answer @ complements ;;
 
+let eviscerate (Hex_island_t.I(opt,z))= (Hex_island_t.I(opt,Set_of_poly_pairs.empty_set)) ;;
+
 let get_side side l=
    match Option.seek (fun (Hex_island_t.I(opt,_))->opt=Some side) l with 
    Some(island) -> island 

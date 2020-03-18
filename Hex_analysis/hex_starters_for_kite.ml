@@ -16,27 +16,31 @@ let starters_for_side end_of_battle side =
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
    let base1 = clean (Hex_named_connector.starters_for_side dim side)
-   and pre_base2 = clean ((Hex_named_connector.middlers dim)@
-                       (Hex_named_connector.enders_for_side dim side)
-                      ) in 
-   let unordered_base2 = Image.image (
+   and pre_middle_base = clean (Hex_named_connector.middlers dim)
+   and pre_end_base = clean (Hex_named_connector.enders_for_side dim side) in 
+   let middle_base = Ordered.sort local_cmp (Image.image (
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
-   )  pre_base2 in                  
-   let base2 = Ordered.sort local_cmp unordered_base2 in                    
+   )  pre_middle_base) 
+   and end_base = Ordered.sort local_cmp (Image.image (
+     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
+   )  pre_end_base) in                                
    let islands = Hex_island.decompose end_of_battle in 
    let first_island = Hex_island.get_side side islands  in                    
    let constructor = (
       fun first_nc ->
-        let new_base=List.filter ( 
+        let new_middle_base=List.filter ( 
          fun (z,other_nc) -> 
-         Hex_named_connector.check_disjointness first_nc other_nc ) base2 in
+         Hex_named_connector.check_disjointness first_nc other_nc ) middle_base
+        and new_end_base=List.filter ( 
+         fun (z,other_nc) -> 
+         Hex_named_connector.check_disjointness first_nc other_nc ) end_base  in
         {
             Hex_partial_kite_t.place_of_birth = first_island;
             first_step = Hex_kite_starter.sea first_nc;
             stops_so_far =  [];
             original_side = side ;
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
-            unvisited_seas = new_base ;
+            unvisited_seas = (new_middle_base,new_end_base) ;
             added_by_casing = Hex_cell_set.empty_set;
         }
    ) in 
