@@ -88,6 +88,7 @@ let extend_with_springboard dim pk new_sb =
     let pk2 = add_cell_by_casing dim cell2 pk in  
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
+    and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
     and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
     let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
     and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   in
@@ -96,10 +97,8 @@ let extend_with_springboard dim pk new_sb =
         Hex_partial_kite_t.stops_so_far = 
            ((List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops)) ;
         unvisited_islands = restricted_islands ;
-        unvisited_seas = 
-          ( selector (fst old_seas),
-            selector (snd old_seas) )
-         ;
+        unvisited_seas =  selector old_seas;
+        unvisited_enders =  selector old_enders ;
     } in 
     match ke with 
      Hex_possibly_final_connector_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
@@ -116,8 +115,8 @@ let casings_from_islands eob pk =
 
 let casings_from_seas eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and (middle_casings_with_hooks,
-        end_casings_with_hooks) = pk.Hex_partial_kite_t.unvisited_seas  in 
+   and middle_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
+   and end_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_enders       in 
    let selector = (fun l->Hex_cell_set.safe_set(Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 

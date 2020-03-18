@@ -105,7 +105,8 @@ let extend_with_sea pk new_nc =
         let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
         and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
         let old_stops=pk.Hex_partial_kite_t.stops_so_far in 
-        let (old_middle_seas,old_end_seas) = pk.Hex_partial_kite_t.unvisited_seas in 
+        let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
+        and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders in 
         let selector =  List.filter 
               (fun (z,nc)->
                 Hex_named_connector.check_disjointness new_nc nc) in 
@@ -113,13 +114,15 @@ let extend_with_sea pk new_nc =
      {
          pk with 
           Hex_partial_kite_t.stops_so_far = vague_new_elt::old_stops ;
-            unvisited_seas = (selector old_middle_seas,selector old_end_seas);
+            unvisited_seas = selector old_middle_seas ;
+            unvisited_enders = selector old_end_seas ;
     });;
 
 let extend_with_final_sea pk final_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(final_nc)  in 
         let old_stops=pk.Hex_partial_kite_t.stops_so_far in 
-        let (old_middle_seas,old_end_seas) = pk.Hex_partial_kite_t.unvisited_seas in 
+        let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
+        and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders in 
         let selector =  List.filter 
               (fun (z,nc)->
                 Hex_named_connector.check_disjointness final_nc nc) in 
@@ -127,12 +130,15 @@ let extend_with_final_sea pk final_nc =
      {
          pk with 
           Hex_partial_kite_t.stops_so_far = vague_new_elt::old_stops ;
-            unvisited_seas = (selector old_middle_seas,selector old_end_seas);
+          unvisited_seas = selector old_middle_seas ;
+            unvisited_enders = selector old_end_seas ;
     };;
 
 
 let springless_extensions_after_island partial_kite last_island =
-   let candidates = partial_kite.Hex_partial_kite_t.unvisited_seas in
+   let candidates = 
+   (partial_kite.Hex_partial_kite_t.unvisited_seas,
+    partial_kite.Hex_partial_kite_t.unvisited_enders) in
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
    let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
    let selector  = Option.filter_and_unpack (
