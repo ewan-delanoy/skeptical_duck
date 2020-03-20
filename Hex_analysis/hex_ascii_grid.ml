@@ -298,9 +298,47 @@ let recover_unprocessed_grid ()=
 
 let read_sheet ()=   read_ascii_drawing (Io.read_whole_file path_for_sheet);;
 
+
+let name_for_eyed_claw d1 d2 =
+   (Hex_cardinal_direction.for_eye_description d1)^"e"^
+     (Hex_cardinal_direction.for_ground_description d2) ;;
+
+let of_activated_molecular (dim,winner) (Hex_molecular_linker_t.M  l,actv)=
+   let cti = Hex_cell.to_int_pair in 
+   let pairs1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Pair(cell1,cell2)) -> Some(cti cell1,cti cell2)
+       |_->None
+   ) l in 
+   let pairs2 = Ennig.index_everything pairs1 in 
+   let pairs = List.flatten(Image.image (fun
+      (j,(ipair1,ipair2))->
+        let label = " "^(String.make 1 (char_of_int(96+j)))^" " in 
+        [ipair1,label;ipair2,label]
+   ) pairs2) in 
+   let eyes1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)) -> Some(d1,d2,cell)
+       |_->None
+   ) l in 
+   let eyes2 = Image.image (
+      fun (d1,d2,cell) -> 
+         let ipair = cti cell in 
+         (ipair,name_for_eyed_claw d1 d2)::
+         (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
+   ) eyes1 in 
+   let eyes = List.flatten eyes2 in 
+   let actives = Image.image (fun cell->(cti cell," A ")) actv in 
+   {
+      Hex_ascii_grid_t.beneficiary = winner ;
+      dimension = dim ;
+      data = pairs@eyes@actives;
+   };; 
+
+
+
 end ;;
 
 let clear_sheet = Private.clear_sheet;;
+let of_activated_molecular = Private.of_activated_molecular;;
 let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
 let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
