@@ -11,7 +11,7 @@ The third argument says on which side of the board the kite started.
 
 type t={
    place_of_birth : Hex_island_t.t ;
-   first_step : Hex_kite_starter_t.t ;
+   first_step : Hex_kite_element_t.t ;
    stops_so_far : Hex_kite_element_t.t list ;
    unvisited_islands : Hex_island_t.t list;
    unvisited_seas : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;

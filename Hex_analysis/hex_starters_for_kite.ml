@@ -36,7 +36,7 @@ let starters_for_side end_of_battle side =
          Hex_named_connector.check_disjointness first_nc other_nc ) end_base  in
         {
             Hex_partial_kite_t.place_of_birth = first_island;
-            first_step = Hex_kite_starter.sea first_nc;
+            first_step = Hex_kite_element_t.Sea(first_nc);
             stops_so_far =  [];
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = new_middle_base ;

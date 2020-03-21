@@ -10,14 +10,12 @@ module Private = struct
 
 let to_molecular_linker  pk =
    (* The kite is assumed to be finished *) 
-   let a2 = pk.Hex_partial_kite_t.first_step 
+   let fst_step = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
-   let l=List.rev rl in 
-   let temp1 = 
-   (Some(Hex_kite_starter.to_molecular_linker a2))::
-   (Image.image  Hex_kite_element.to_molecular_linker l) in 
    Hex_molecular_linker.fold_merge 
-     (Option.filter_and_unpack (fun opt->opt) temp1);;
+   (Option.filter_and_unpack 
+      Hex_kite_element.to_molecular_linker 
+        (fst_step::rl));;
 
 let original_side pk =
    Option.unpack (Hex_island.outer_earth pk.Hex_partial_kite_t.place_of_birth);;
@@ -34,9 +32,9 @@ let deduce_boarded_islands  l (birth,death) (fst_step,lst_step)=
     let n = (List.length l)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
     let sea_entry = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.entry )
-    and sea_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit ) 
-    and starter_entry = Hex_kite_starter.entry   
-    and starter_exit = Hex_kite_starter.exit   
+    and sea_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit ) in 
+    let starter_entry = sea_entry   
+    and starter_exit = sea_exit   
     and ender_entry = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.entry )  
     and ender_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit )   in 
     let exits_in_triple = (fun k->
@@ -164,10 +162,10 @@ let extensions_from_springless_last_elt partial_kite = function
    |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
 let springless_extensions pk =
-   let a2 = pk.Hex_partial_kite_t.first_step 
+   let fst_step = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let last_elt = (match rl with 
-     []->Hex_kite_starter.to_springless (a2)  
+     []->Hex_kite_element.to_springless fst_step 
      |x::_-> Hex_kite_element.to_springless x ) in 
    extensions_from_springless_last_elt pk last_elt ;;
 
