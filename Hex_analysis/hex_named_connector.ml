@@ -23,7 +23,8 @@ let add_name nm cnnctr =
      entry    = cnnctr.Hex_connector_t.entry ;
      junction = cnnctr.Hex_connector_t.junction ;
      exit     = cnnctr.Hex_connector_t.exit ;
-     apex     = cnnctr.Hex_connector_t.apex
+     apex     = cnnctr.Hex_connector_t.apex ;
+     extra_active_cells = cnnctr.Hex_connector_t.extra_active_cells ;
    };;   
 
 let of_name nm = add_name nm (expand_name nm);; 
@@ -34,6 +35,7 @@ let forget_name nc =
      junction = nc.Hex_named_connector_t.junction ;
      exit     = nc.Hex_named_connector_t.exit ;
      apex     = nc.Hex_named_connector_t.apex ;
+     extra_active_cells = nc.Hex_named_connector_t.extra_active_cells ;
    };;   
 
 let all_translates dim nc =
@@ -100,7 +102,8 @@ end ;;
 
 let inner_sea nc =
    Hex_cell_set.safe_set 
-     (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction) ;;
+     (Image.image Hex_cell.of_int_pair 
+       nc.Hex_named_connector_t.junction) ;;
 
 
 

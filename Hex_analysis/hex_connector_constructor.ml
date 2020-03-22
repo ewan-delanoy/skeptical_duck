@@ -83,6 +83,7 @@ let eyed_claw (d1,d2) =
     junction = ipairs;
     exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
     apex = Some(apex);
+    extra_active_cells = [];
 } ;;   
 
 let noneyed_claw (dh,d) = 
@@ -91,6 +92,7 @@ let noneyed_claw (dh,d) =
    junction = ipairs;
    exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
    apex = Some(apex);
+   extra_active_cells = [];
    };; 
 
 let pyramid d = 
@@ -99,6 +101,7 @@ let pyramid d =
    junction = ipairs;
    exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
    apex = Some(apex);
+   extra_active_cells = [];
   };; 
 
   
