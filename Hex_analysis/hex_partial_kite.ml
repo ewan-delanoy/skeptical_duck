@@ -69,18 +69,18 @@ let explore_nonfinal eob pk (cell,nc) =
         (Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
       ) temp ;;
 
-let explore_final eob pk (cell,bc) = 
+let explore_final eob pk (cell,nc) = 
       let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-      let pk2 = Hex_springless_analysis.extend_with_final_sea pk1 bc in 
+      let pk2 = Hex_springless_analysis.extend_with_final_sea pk1 nc in 
       let mlclr = Hex_springless_analysis.to_molecular_linker pk2 
       and actv = Hex_springless_analysis.active_part pk2 in 
       [
-         [],mlclr,actv
+         [Hex_kite_springless_element_t.Sea(nc)],mlclr,actv
       ];;
 
 let explore eob pk (cell,pfc) = match pfc with 
-    Hex_possibly_final_connector_t.Final(bc) -> explore_final eob pk (cell,bc) 
-   |Hex_possibly_final_connector_t.Nonfinal(ic) -> explore_nonfinal eob pk (cell,ic) ;;
+    Hex_possibly_final_connector_t.Final(nc) -> explore_final eob pk (cell,nc) 
+   |Hex_possibly_final_connector_t.Nonfinal(nc) -> explore_nonfinal eob pk (cell,nc) ;;
 
 
 let extend_with_springboard dim pk new_sb =
