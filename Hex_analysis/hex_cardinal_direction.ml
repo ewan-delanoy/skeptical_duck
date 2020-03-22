@@ -76,12 +76,11 @@ end ;;
 module Parallel_To_Border = struct 
 
 let enumerate d (Hex_dimension_t.D dim) side k= 
-    let transfo j = (String.make 1 (char_of_int(j+96))) in 
     match side with 
-     Hex_cardinal_direction_t.Down  -> Hex_cell_t.C(transfo k,dim+1-d)
-    |Hex_cardinal_direction_t.Left  -> Hex_cell_t.C(transfo d,k)
-    |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(transfo (dim+1-d),k)
-    |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(transfo k,d);;
+     Hex_cardinal_direction_t.Down  -> Hex_cell_t.C(dim+1-d,k)
+    |Hex_cardinal_direction_t.Left  -> Hex_cell_t.C(k,d)
+    |Hex_cardinal_direction_t.Right -> Hex_cell_t.C(k,dim+1-d)
+    |Hex_cardinal_direction_t.Up    -> Hex_cell_t.C(d,k);;
 
 let enumerate_all d (Hex_dimension_t.D dim) side =
    Ennig.doyle (

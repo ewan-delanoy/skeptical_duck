@@ -3,4 +3,4 @@
 First coordinate is column index, second is row index
 *)
 
-type t= C of string * int ;;
+type t= C of int * int ;;
