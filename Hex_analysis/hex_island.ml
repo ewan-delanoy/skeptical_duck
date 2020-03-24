@@ -77,7 +77,7 @@ let add_cell_by_casing dim new_cell l =
 
 let common_neighbors 
   dim island1 island2 =
-      Set_of_poly_pairs.merge 
+      Set_of_poly_pairs.intersect 
         (Private.neighbors dim island1)
            (Private.neighbors dim island2) ;;
 
