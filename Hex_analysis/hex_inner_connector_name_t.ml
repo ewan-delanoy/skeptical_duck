@@ -5,5 +5,6 @@
 *)
 
 type t= 
-     Bridge of Hex_unit_side_t.t  
-     |Haddock1 of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t;;
+      Bridge of Hex_unit_side_t.t  
+     |Haddock1 of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t
+     |Broken_bridge of Hex_island_t.t * Hex_cell_t.t * Hex_cell_t.t * Hex_island_t.t;;

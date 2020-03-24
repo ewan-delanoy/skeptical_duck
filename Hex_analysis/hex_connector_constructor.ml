@@ -59,9 +59,18 @@ let haddock1 dim location = match location with
     |Hex_cardinal_direction_t.Right -> right_situated_haddock1 dim
     |Hex_cardinal_direction_t.Up    -> uptown_haddock1 ;; 
 
+let broken_bridge (entry,p1,p2,exit) = {
+    Hex_connector_t.entry = entry;
+    junction = Image.image Hex_cell.to_int_pair [ p1 ; p2 ];
+    exit = exit;
+    apex = None ;
+    extra_active_cells = [] ;
+} ;;   
+
 let expand_name = function 
    Hex_inner_connector_name_t.Bridge(us)-> bridge us 
-   |Haddock1(qualifier,location) -> haddock1 arbitrary_dim location qualifier ;; 
+   |Haddock1(qualifier,location) -> haddock1 arbitrary_dim location qualifier 
+   |Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit);; 
 
 
 end ;; 

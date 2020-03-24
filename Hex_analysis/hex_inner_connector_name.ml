@@ -17,8 +17,11 @@ let all =
 
 let to_nondefault_molecular_linker = function 
     Hex_inner_connector_name_t.Bridge(_)
-    |Haddock1(_,_) -> None ;;
+    |Haddock1(_,_) 
+    |Broken_bridge(_,_,_,_) -> None ;;
 
 let to_readable_string = function 
      Hex_inner_connector_name_t.Bridge(us)-> Hex_unit_side.to_readable_string us 
-    |Haddock1(_,_) -> "hk1";;
+    |Haddock1(_,_) -> "hk1"
+    |Broken_bridge(_,cell1,cell2,_) -> 
+        (Hex_cell.to_string cell1)^"\126"^(Hex_cell.to_string cell2);;
