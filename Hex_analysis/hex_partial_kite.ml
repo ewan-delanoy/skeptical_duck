@@ -157,7 +157,7 @@ let explore_minimal_casings eob pk =
    let minimal_casings_with_hooks = List.flatten (
       Image.image (fun cell->
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-        let (ext1,ext2) = Hex_springless_analysis.extensions pk1 in 
+        let (ext1,ext2) = Hex_springless_analysis.extensions dim pk1 in 
         let part1 = Image.image (fun (elt,new_pk)->
           (cell,Hex_possibly_final_connector_t.Final(Hex_kite_springless_element.claim_named_connector elt))) ext1 
         and part2 = Image.image (fun (elt,new_pk)->
@@ -197,7 +197,8 @@ let springful_extensions eob pk =
 
 
 let extensions_finished_and_non_finished eob pk =
-   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished pk in 
+   let dim = eob.Hex_end_of_battle_t.dimension in 
+   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished dim pk in 
    if first_trial <> ([],[])
    then first_trial
    else springful_extensions eob pk;;
