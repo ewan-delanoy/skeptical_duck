@@ -75,6 +75,14 @@ let add_cell_by_casing dim new_cell l =
    let new_z = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_pairs) in 
    (Hex_island_t.I(new_opt,new_z))::unconnected ;;
 
+let common_neighbors 
+  dim island1 island2 =
+      Set_of_poly_pairs.merge 
+        (Private.neighbors dim island1)
+           (Private.neighbors dim island2) ;;
+
+
+
 let constructor dim opt_direction l=
   let z=Set_of_poly_pairs.safe_set l in 
   let ccs = Hex_ipair.compute_connected_components dim l in 
