@@ -26,7 +26,11 @@ let starters_for_side end_of_battle side =
    )  pre_end_base) in                                
    let islands = Hex_island.decompose end_of_battle in 
    let first_island = Hex_island.get_side side islands  in   
-   let base1 = clean (Hex_named_connector.starters_for_side dim side) in                  
+   let base1 = clean (
+      (Hex_named_connector.starters_for_side dim side)
+      @
+      (Hex_named_connector.islanders dim first_island islands)
+   ) in                  
    let constructor = (
       fun first_nc ->
         let new_middle_base=List.filter ( 
