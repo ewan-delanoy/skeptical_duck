@@ -65,6 +65,19 @@ let middlers dim=
 let enders_for_side (dim,side)=
     expand_all dim (Hex_connector_name.enders_for_side side);;    
  
+let islanders dim island1 other_islands =
+   let temp1 = Image.image ( 
+     fun island2 -> 
+       let ttemp2 =  Hex_island.common_neighbors dim island1 island2  in 
+       let ttemp3 = Set_of_poly_pairs.image Hex_cell.of_int_pair ttemp2 in 
+       let ttemp4 = Uple.list_of_pairs ttemp3 in 
+       Image.image (fun (p1,p2)->
+          of_name( Hex_connector_name_t.Inner(
+             Hex_inner_connector_name_t.Broken_bridge(island1,p1,p2,island2)))
+       ) ttemp4
+   ) other_islands in 
+   List.flatten temp1 ;; 
+
 module Precomputed = struct 
 
 let usual_range = Image.image (
@@ -133,7 +146,7 @@ let enders_for_side = Private.Precomputed.enders_for_side ;;
 
 let inner_sea = Private.inner_sea ;;
 
-
+let islanders = Private.islanders ;;
 
 
 let middlers = Private.Precomputed.middlers ;;

@@ -11,12 +11,12 @@ module Private = struct
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
+
 let starters_for_side end_of_battle side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
-   let base1 = clean (Hex_named_connector.starters_for_side dim side)
-   and pre_middle_base = clean (Hex_named_connector.middlers dim)
+   let pre_middle_base = clean (Hex_named_connector.middlers dim)
    and pre_end_base = clean (Hex_named_connector.enders_for_side dim side) in 
    let middle_base = Ordered.sort local_cmp (Image.image (
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
@@ -25,7 +25,8 @@ let starters_for_side end_of_battle side =
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
    )  pre_end_base) in                                
    let islands = Hex_island.decompose end_of_battle in 
-   let first_island = Hex_island.get_side side islands  in                    
+   let first_island = Hex_island.get_side side islands  in   
+   let base1 = clean (Hex_named_connector.starters_for_side dim side) in                  
    let constructor = (
       fun first_nc ->
         let new_middle_base=List.filter ( 
