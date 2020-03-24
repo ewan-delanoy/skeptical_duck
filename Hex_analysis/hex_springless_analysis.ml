@@ -26,7 +26,9 @@ let compute_place_of_death pk=
 
 let test_for_finality pk = 
    let place_of_death = compute_place_of_death pk in 
-   match List.hd(pk.Hex_partial_kite_t.stops_so_far) with 
+   match pk.Hex_partial_kite_t.stops_so_far with 
+   [] -> false 
+   |last_elt::_->match  last_elt with 
    Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
    | _ -> false;;
 
