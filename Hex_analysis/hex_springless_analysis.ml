@@ -24,6 +24,12 @@ let compute_place_of_death pk=
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
+let test_for_finality pk = 
+   let place_of_death = compute_place_of_death pk in 
+   match List.hd(pk.Hex_partial_kite_t.stops_so_far) with 
+   Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
+   | _ -> false;;
+
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
 
 let deduce_boarded_islands  l (birth,death) (fst_step,lst_step)=
@@ -53,7 +59,7 @@ let deduce_boarded_islands  l (birth,death) (fst_step,lst_step)=
     let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l,k))) in     
     Ennig.doyle trier 1 (n+2);;
 
-let naive_active_part  pk =
+let active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = compute_place_of_death pk
@@ -79,12 +85,6 @@ let naive_active_part  pk =
    let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
    Hex_cell_set.setminus possibly_too_large molecular_part;;
 
-let ref_for_bad_pk = ref None ;;
-
-let active_part pk =
-    try naive_active_part pk with 
-    Deduce_boarded_islands_exn(l,j)->
-       (ref_for_bad_pk:=Some(pk,l);raise(Deduce_boarded_islands_exn(l,j)));;
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
@@ -133,11 +133,10 @@ let extend_with_final_sea pk final_nc =
     };;
 
 
-let springless_extensions_after_island partial_kite last_island =
-   let candidates = 
-   (partial_kite.Hex_partial_kite_t.unvisited_seas,
-    partial_kite.Hex_partial_kite_t.unvisited_enders) in
+let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
+   let islanders = Image.image (fun nc->(Hex_cell_set.empty_set,nc)) 
+      (Hex_named_connector.islanders dim last_island remaining_islands) in 
    let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
    let selector  = Option.filter_and_unpack (
       fun (z,nc)->
@@ -147,8 +146,10 @@ let springless_extensions_after_island partial_kite last_island =
         then Some (extend_with_sea partial_kite nc) 
         else None   
    )   in 
-   (selector (snd candidates),
-    selector (fst candidates)) ;;
+   let clearly_final = selector partial_kite.Hex_partial_kite_t.unvisited_enders 
+   and unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
+   let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->test_for_finality pk2) unclear_items  in 
+   (clearly_final@subtly_final,nonfinal) ;;
 
 let springless_extensions_after_sea partial_kite last_nc =
    let candidates = partial_kite.Hex_partial_kite_t.unvisited_islands in
@@ -157,17 +158,17 @@ let springless_extensions_after_sea partial_kite last_nc =
    )  candidates in 
    ([],Image.image (extend_with_island partial_kite) retained_ones);;
 
-let extensions_from_springless_last_elt partial_kite = function 
-    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island partial_kite last_island 
+let extensions_from_springless_last_elt dim partial_kite = function 
+    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island dim partial_kite last_island 
    |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
-let springless_extensions pk =
+let springless_extensions dim pk =
    let fst_step = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let last_elt = (match rl with 
      []->Hex_kite_element.to_springless fst_step 
      |x::_-> Hex_kite_element.to_springless x ) in 
-   extensions_from_springless_last_elt pk last_elt ;;
+   extensions_from_springless_last_elt dim pk last_elt ;;
 
 let solution_details pk = 
         let a1 = pk.Hex_partial_kite_t.place_of_birth 
@@ -176,8 +177,8 @@ let solution_details pk =
         let l=List.rev rl in 
         (a1,a2,l,to_molecular_linker pk,active_part pk);;
 
-let extensions_finished_and_non_finished partial_kite =
-      let (finished1,unfinished1) = springless_extensions partial_kite in 
+let extensions_finished_and_non_finished dim partial_kite =
+      let (finished1,unfinished1) = springless_extensions dim partial_kite in 
       let finished2 = Image.image (fun (_,pk)->solution_details pk) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
@@ -202,7 +203,7 @@ let pusher (factory,_) =
    let (d,wi,i,fi,fa,uf) = factory in 
    let raw_result=Image.image (
          fun pk->
-         (pk,extensions_finished_and_non_finished pk) 
+         (pk,extensions_finished_and_non_finished d pk) 
    ) uf in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
    let new_failures = List.rev_append (Image.image fst failures1) fa in 
