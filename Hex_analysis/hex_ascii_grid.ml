@@ -303,7 +303,10 @@ let name_for_eyed_claw d1 d2 =
    (Hex_cardinal_direction.for_eye_description d1)^"e"^
      (Hex_cardinal_direction.for_ground_description d2) ;;
 
-let of_activated_molecular (dim,winner) (Hex_molecular_linker_t.M  l,actv)=
+let of_extended_molecular (dim,winner) extmol =
+   let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
+   and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
+   and (Hex_cell_set_t.S passv)=extmol.Hex_extended_molecular_t.nonmolecular_passive_part in 
    let cti = Hex_cell.to_int_pair in 
    let pairs1 = Option.filter_and_unpack ( function
         (Hex_atomic_linker_t.Pair(cell1,cell2)) -> Some(cti cell1,cti cell2)
@@ -326,24 +329,27 @@ let of_activated_molecular (dim,winner) (Hex_molecular_linker_t.M  l,actv)=
          (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
    ) eyes1 in 
    let eyes = List.flatten eyes2 in 
-   let actives = Image.image (fun cell->(cti cell," A ")) actv in 
+   let actives = Image.image (fun cell->(cti cell," A ")) actv 
+   and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
    {
       Hex_ascii_grid_t.beneficiary = winner ;
       dimension = dim ;
-      data = pairs@eyes@actives;
+      data = pairs@eyes@actives@passives;
    };; 
 
-
+let see_flesh (dim,winner) fles= 
+    visualize (of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data);;
 
 end ;;
 
 let clear_sheet = Private.clear_sheet;;
-let of_activated_molecular = Private.of_activated_molecular;;
+
 let of_finished_game = Private.of_finished_game;;
 let process_sheet = Private.process_sheet;;
 let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
 let read_ascii_drawing = Private.read_ascii_drawing ;;
 let read_sheet = Private.read_sheet;;
 let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
+let see_flesh = Private.see_flesh ;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 let visualize = Private.visualize;;
