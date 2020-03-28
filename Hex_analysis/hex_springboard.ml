@@ -25,12 +25,13 @@ let we_for_springboard (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,k
 
 end ;;
 
-(*
+
 let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))=
     let opening_pair = Hex_cell_set.safe_set [cell;cell2] in 
+    let possibly_too_large =
+       Hex_cell_set.merge actv_in_sol1 (Hex_possibly_final_connector.extra_active_part pfc) in 
+    Hex_cell_set.setminus possibly_too_large opening_pair ;;
 
-    Hex_cell_set.setminus actv_in_sol1 opening_pair ;;
-*)
 
 let check_island springboard island = 
    Hex_cell_set.does_not_intersect 
