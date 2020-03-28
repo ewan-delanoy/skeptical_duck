@@ -29,6 +29,7 @@ let to_molecular_linker = function
   Hex_kite_springless_element_t.Earth(island)-> None
    |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc);;
 
+let to_readable_string = Private.to_readable_string ;;
 
 let wet_earth = function
   Hex_kite_springless_element_t.Earth(island)-> Hex_island.inner_earth island
