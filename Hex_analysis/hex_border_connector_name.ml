@@ -4,7 +4,6 @@
 
 *)
 
-
 exception Bad_apex_for_eyed_claw of Hex_cardinal_direction_t.t * Hex_cardinal_direction_t.t ;;
 
 
