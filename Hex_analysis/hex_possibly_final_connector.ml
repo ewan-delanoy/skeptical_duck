@@ -4,11 +4,11 @@
 
 *)
 
-(*
+
 let extra_active_part = function 
-    Hex_possibly_final_connector_t.Final (nc) ->Hex_named_connector.to_molecular_linker nc 
-   |Hex_possibly_final_connector_t.Nonfinal (nc) ->Hex_named_connector.to_molecular_linker nc  ;;
-*)
+    Hex_possibly_final_connector_t.Final (nc) ->Hex_named_connector.extra_active_cells nc 
+   |Hex_possibly_final_connector_t.Nonfinal (nc) ->Hex_named_connector.extra_active_cells nc  ;;
+
 
 let is_final = function 
     Hex_possibly_final_connector_t.Final (_) ->true 
