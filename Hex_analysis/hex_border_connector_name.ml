@@ -23,6 +23,7 @@ let for_side side =
       Hex_border_connector_name_t.Pyramid(side);
       Hex_border_connector_name_t.Small_pyramid(side) ;
       Hex_border_connector_name_t.Border_bridge(side) ; 
+      Hex_border_connector_name_t.Walleye1(side) ; 
     ] ;;
 
 let to_nondefault_molecular_linker nm apex junction = match nm with 
@@ -33,7 +34,8 @@ let to_nondefault_molecular_linker nm apex junction = match nm with
    |Noneyed_claw(_,_) -> None
    |Pyramid(_) -> None 
    |Small_pyramid(_) -> None 
-   |Border_bridge(_) -> None ;;
+   |Border_bridge(_) -> None 
+   |Walleye1(_) -> None;;
     
 
 let to_readable_string = function 
@@ -43,5 +45,6 @@ let to_readable_string = function
                           (String.sub s 0 1)^(Hex_cardinal_direction.for_ground_description d)^(String.sub s 1 1)
    |Pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"py" 
    |Small_pyramid(d) ->  (Hex_cardinal_direction.for_ground_description d)^"sy" 
-   |Border_bridge(d) ->  (Hex_cardinal_direction.for_ground_description d)^"bb" ;;
+   |Border_bridge(d) ->  (Hex_cardinal_direction.for_ground_description d)^"bb"
+   |Walleye1(d) ->  (Hex_cardinal_direction.for_ground_description d)^"we1" ;;
 

@@ -132,6 +132,16 @@ let border_bridge = function
     |Hex_cardinal_direction_t.Right -> rightwards_border_bridge arbitrary_dim
     |Hex_cardinal_direction_t.Up    -> upwards_border_bridge;; 
 
+let upwards_walleye1 = Hex_connector.Example.upwards_walleye1 ;;  
+let leftwards_walleye1 = reflect upwards_walleye1;;
+let downwards_walleye1 dim = oppose dim upwards_walleye1 ;;
+let rightwards_walleye1 dim = oppose dim leftwards_walleye1;;
+
+let walleye1 = function 
+     Hex_cardinal_direction_t.Down  -> downwards_walleye1 arbitrary_dim
+    |Hex_cardinal_direction_t.Left  -> leftwards_walleye1 
+    |Hex_cardinal_direction_t.Right -> rightwards_walleye1 arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> upwards_walleye1;; 
 
 
 let standard_doubling f bw x =
@@ -145,7 +155,8 @@ let expand_name bw = function
    |Noneyed_claw(dh,d) ->standard_doubling noneyed_claw bw (dh,d)
    |Pyramid(d) -> standard_doubling pyramid bw d
    |Small_pyramid(d) -> standard_doubling small_pyramid bw d 
-   |Border_bridge(d) -> standard_doubling border_bridge bw d;;   
+   |Border_bridge(d) -> standard_doubling border_bridge bw d
+   |Walleye1(d) -> standard_doubling walleye1 bw d;;   
 
 end ;; 
 

@@ -9,4 +9,5 @@ type t=
     |Noneyed_claw of  Hex_double_hump_qualifier_t.t *  Hex_cardinal_direction_t.t 
     |Pyramid of       Hex_cardinal_direction_t.t
     |Small_pyramid of Hex_cardinal_direction_t.t  
-    |Border_bridge of Hex_cardinal_direction_t.t;;
+    |Border_bridge of Hex_cardinal_direction_t.t
+    |Walleye1 of Hex_cardinal_direction_t.t;;

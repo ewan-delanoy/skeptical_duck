@@ -155,5 +155,17 @@ let upwards_small_pyramid =
     extra_active_cells = [] ;
     };;
 
+let upwards_walleye1 = 
+{Hex_connector_t.entry =
+    Hex_island_t.I (None, Set_of_poly_pairs_t.S [(2, 4)]);
+   junction =
+    [(1, 1) ; (1, 2) ;   (1, 5); (2, 1); 
+     (2, 2) ; (3, 1) ;   (2, 3); (3, 3)];
+   exit =
+    Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S []);
+    apex = Some(2,4);
+    extra_active_cells = [] ;
+    };;
+
 
 end ;;
