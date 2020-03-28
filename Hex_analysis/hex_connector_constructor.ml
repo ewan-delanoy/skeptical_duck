@@ -176,28 +176,15 @@ let standard_doubling f bw x =
    Hex_borderwise_t.From_border -> reverse y
   |Hex_borderwise_t.To_border -> y ;;
 
-let bs = Hex_double_hump_qualifier_t.Big_followed_by_small
-and sb = Hex_double_hump_qualifier_t.Small_followed_by_big ;;
-
-let d = Hex_cardinal_direction_t.Down 
-and l = Hex_cardinal_direction_t.Left 
-and r = Hex_cardinal_direction_t.Right
-and u = Hex_cardinal_direction_t.Up ;;  
-
 let expand_name bw = function 
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
-   |Bs_D -> basic_doubling bw (sybil d)  
-   |Bs_L -> basic_doubling bw (sybil l)  
-   |Bs_R -> basic_doubling bw (byssus r)  
-   |Bs_U -> basic_doubling bw (byssus u) 
-   |Sb_D -> basic_doubling bw (byssus d) 
-   |Sb_L -> basic_doubling bw (byssus l)
-   |Sb_R -> basic_doubling bw (sybil r)
-   |Sb_U -> basic_doubling bw (sybil u)   
-   |Pyramid(d) -> standard_doubling pyramid bw d
-   |Small_pyramid(d) -> standard_doubling small_pyramid bw d 
-   |Border_bridge(d) -> standard_doubling border_bridge bw d
-   |Walleye1(d) -> standard_doubling walleye1 bw d;;   
+   |Typical(tbc,d) -> match tbc with
+    Hex_typical_border_connector_name_t.Border_bridge -> standard_doubling border_bridge bw d 
+   |Byssus -> standard_doubling byssus bw d  
+   |Pyramid -> standard_doubling pyramid bw d
+   |Small_pyramid -> standard_doubling small_pyramid bw d 
+   |Sybil -> standard_doubling sybil bw d
+   |Walleye1 -> standard_doubling walleye1 bw d;;   
 
 end ;; 
 
