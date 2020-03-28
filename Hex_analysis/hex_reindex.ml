@@ -23,6 +23,6 @@ let cog reindexer (Hex_cog_in_machine_t.C(statconstr,msg,indices,fles)) =
    flattened_end_strategy reindexer fles)
 
 
-let factory reindexer (Hex_end_strategy_factory_t.F(player,l))=
+let factory reindexer (Hex_end_strategy_factory_t.F(dim,player,l))=
  let new_l=Image.image (cog reindexer) l in 
- Hex_end_strategy_factory_t.F(player,new_l);;
+ Hex_end_strategy_factory_t.F(dim,player,new_l);;

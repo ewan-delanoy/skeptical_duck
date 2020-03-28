@@ -7,10 +7,10 @@
 let games_ref = ref (Hex_fg_double_list.empty_one);;
 
 let winning_end_strategies_for_first_player_ref 
-      = ref (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);;
+      = ref (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.First_player);;
 
 let winning_end_strategies_for_second_player_ref 
-      = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
+      = ref (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.Second_player);;
 
 let untamed_openings_ref = ref [];;
 exception Dimension_could_not_be_found;;      
@@ -62,19 +62,12 @@ let persist_games ()=
 let reset_all_to_empty ()=
    let _=(
     games_ref := (Hex_fg_double_list.empty_one);
-    fst(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);
-    snd(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);
+    fst(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.First_player);
+    snd(wes_pair) :=  (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.Second_player);
     untamed_openings_ref := []) in 
     (* (persist_games();persist_strategies()) *)
     ();;
 
-
-let dimension_ref = ref(Hex_dimension.eleven);;
-
-let compute_dim_the_first_time ()=
-   match Hex_fg_double_list.lookup_dimension (!games_ref) with 
-   None->(!dimension_ref) (* raise(Dimension_could_not_be_found) *)
-   |Some(dim)->dim;;
 
 
 
@@ -88,7 +81,6 @@ let initialize_all_data_if_necessary ()=
     Hex_end_strategy_factory.fill_with_string (snd(wes_pair)) (Io.read_whole_file path_for_sp_strats);
     games_ref:=new_games;
     untamed_openings_ref:=(Hex_uog_list.extract_untamed_openings new_games);
-    dimension_ref:=compute_dim_the_first_time();
     data_has_been_initialized_already:=true;
   );;
 
@@ -198,7 +190,6 @@ let add_finished_game = Private.add_finished_game;;
 let cancel_last_game = Private.remove_last_finished_game;;
 let cog_at_idx = Private.cog_at_idx;;
 let current_state = Private.current_state ;;
-let dimension ()=(!(Private.dimension_ref));;
 let initialize_all_data_if_necessary = Private.initialize_all_data_if_necessary;;
 let remove_strats_with_indices = Private.remove_strats_with_indices;;
 let reset_all_to_empty = Private.reset_all_to_empty;;

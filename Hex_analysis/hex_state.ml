@@ -25,13 +25,11 @@ let initial_state opt_participant=
 
 exception No_moves_to_choose_from;;
 
-let compute_chosen_move (strong_moves_data,fam_moves,condition,moves_before) =
-  
+let compute_chosen_move (dim,strong_moves_data,fam_moves,condition,moves_before) =
   let opt1=strong_moves_data in 
   if opt1<>None then (fun (_,move,_)->move)(Option.unpack opt1) else 
   let opt2=Hex_cell_set.optional_min(fam_moves) in 
   if opt2<>None then Option.unpack opt2 else 
-  let dim=Hex_persistent.dimension () in 
   let remaining_world = Hex_cell_set.apply_condition condition (Hex_common.all_cells dim) in
   let free_cells=Hex_cell_set.setminus remaining_world (Hex_cell_set.safe_set moves_before) in 
   let opt3=Hex_cell_set.optional_min(free_cells) in 
@@ -41,12 +39,13 @@ let compute_chosen_move (strong_moves_data,fam_moves,condition,moves_before) =
 
 
 let analize sta=
-  let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
+  let dim = Hex_fles_double_list.dimension sta.Hex_state_t.config_remains 
+  and player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
   let (cells,enemy_strats,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
   let condition = Hex_mandatory_compound.global_escape_set mand in 
   let strong_moves_data = Hex_uog_list.seek_interesting_move sta.Hex_state_t.openings_remains in
   let fam_moves = Hex_cell_set.apply_condition condition (Hex_fg_double_list.familiar_moves player sta.Hex_state_t.games_remains) in 
-  let u_move = compute_chosen_move (strong_moves_data,fam_moves,condition,sta.Hex_state_t.moves_before) in 
+  let u_move = compute_chosen_move (dim,strong_moves_data,fam_moves,condition,sta.Hex_state_t.moves_before) in 
   let n_enem = Hex_fles_double_list.number_of_enemy_strategies player sta.Hex_state_t.config_remains in 
   let info_requested =(
      match sta.Hex_state_t.declared_participant with 
@@ -76,7 +75,7 @@ let absorb_move sta cell=
    };;
 
 let finish_game sta={
-    Hex_finished_game_t.dimension = Hex_persistent.dimension();
+    Hex_finished_game_t.dimension = Hex_fles_double_list.dimension sta.Hex_state_t.config_remains;
     Hex_finished_game_t.winner = Hex_common.has_just_played(sta.Hex_state_t.moves_before) ;
     Hex_finished_game_t.sequence_of_moves = List.rev(sta.Hex_state_t.moves_before)
   } ;;

@@ -17,7 +17,8 @@ let get grid (i,j)=
    try List.assoc (i,j) grid.Hex_ascii_grid_t.data with 
    _->triple_blank;;
 
-let of_flattened_end_strategy formal_dim fles =
+let of_flattened_end_strategy fles =
+  let formal_dim=fles.Hex_flattened_end_strategy_t.dimension in 
   let (Hex_dimension_t.D dim)=formal_dim in 
   let square = Cartesian.square (Ennig.ennig 1 dim) in
   let tracer1 =  (fun (i,j)->
@@ -337,7 +338,9 @@ let of_extended_molecular (dim,winner) extmol =
       data = pairs@eyes@actives@passives;
    };; 
 
-let see_flesh (dim,winner) fles= 
+let see_flesh fles= 
+    let dim = fles.Hex_flattened_end_strategy_t.dimension 
+    and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
     visualize (of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data);;
 
 end ;;

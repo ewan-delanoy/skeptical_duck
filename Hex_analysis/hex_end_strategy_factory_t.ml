@@ -4,5 +4,5 @@
 
 *)
 
-type t= F of (Hex_player_t.t * Hex_cog_in_machine_t.t list);;
+type t= F of (Hex_dimension_t.t * Hex_player_t.t * Hex_cog_in_machine_t.t list);;
    

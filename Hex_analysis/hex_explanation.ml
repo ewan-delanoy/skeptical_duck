@@ -35,9 +35,9 @@ let molecular_with_actives  cells pairs =
 
 
 let for_Black =
-  ref(Hex_end_strategy_factory.empty_one Hex_player_t.First_player);;
+  ref(Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.First_player);;
 let for_White =
-  ref(Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;  
+  ref(Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.Second_player);;  
 let each_his_own = (for_Black,for_White);;
 let create1 = 
    Hex_end_strategy_factory.create_new_strategy 

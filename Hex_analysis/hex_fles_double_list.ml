@@ -4,6 +4,13 @@
 
 *)
 
+exception Dimension_exn ;;
+
+let dimension (Hex_fles_double_list_t.DL(l1,l2))=
+   if l1<>[] then (List.hd l1).Hex_flattened_end_strategy_t.dimension else 
+   if l2<>[] then (List.hd l1).Hex_flattened_end_strategy_t.dimension else 
+   raise(Dimension_exn);; 
+
 let empty_one = Hex_fles_double_list_t.DL([],[]);;
 
 let enemy_strategies player (Hex_fles_double_list_t.DL(l1,l2))=

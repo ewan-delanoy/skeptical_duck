@@ -15,10 +15,10 @@ module Private = struct
 let games_ref = ref (Hex_fg_double_list.empty_one);;
 
 let winning_end_strategies_for_first_player_ref 
-      = ref (Hex_end_strategy_factory.empty_one Hex_player_t.First_player);;
+      = ref (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.First_player);;
 
 let winning_end_strategies_for_second_player_ref 
-      = ref (Hex_end_strategy_factory.empty_one Hex_player_t.Second_player);;
+      = ref (Hex_end_strategy_factory.empty_one Hex_dimension.eleven Hex_player_t.Second_player);;
 
 let untamed_openings_ref = ref [];;
 
