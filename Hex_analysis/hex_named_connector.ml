@@ -143,7 +143,9 @@ let check_entry island nc = Hex_connector.check_entry island (Private.forget_nam
 
 let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
 
-
+let extra_active_cells nc =
+    Hex_cell_set.safe_set 
+    (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.extra_active_cells);;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
