@@ -82,8 +82,13 @@ let active_part  pk =
     and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
     (function (island1,island,island2)-> 
          Hex_island.minimal_connection (island1,island2) island
-    ) boarded_islands) in 
-    let possibly_too_large = Hex_cell_set.merge contribution_from_islands contribution_from_seas in 
+    ) boarded_islands) 
+    and contribution_from_springboards = Option.filter_and_unpack (
+       function (Hex_kite_element_t.Springboard(spr))-> Some(Hex_springboard.active_part spr)
+        | _ -> None 
+   ) unfiltered_l  in 
+   let possibly_too_large = Hex_cell_set.fold_merge 
+     (contribution_from_islands::contribution_from_seas::contribution_from_springboards) in 
    let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
    Hex_cell_set.setminus possibly_too_large molecular_part;;
 
