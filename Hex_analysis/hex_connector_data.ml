@@ -48,6 +48,7 @@ let leftwards_pyramid = reflect upwards_pyramid;;
 let downwards_pyramid = oppose upwards_pyramid ;;
 let rightwards_pyramid = oppose leftwards_pyramid;;
 
+
 let bs_claw = function 
      Hex_cardinal_direction_t.Down  -> bs_downwards_claw 
     |Hex_cardinal_direction_t.Left  -> bs_leftwards_claw
@@ -65,6 +66,7 @@ let sb_claw = function
 let default_noneyed_claw (dh,d) = match dh with 
       Hex_double_hump_qualifier_t.Big_followed_by_small -> bs_claw d 
      |Hex_double_hump_qualifier_t.Small_followed_by_big -> sb_claw d ;;
+
 
 let default_pyramid = function 
      Hex_cardinal_direction_t.Down  -> downwards_pyramid 

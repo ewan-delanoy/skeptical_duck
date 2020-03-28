@@ -131,6 +131,15 @@ let northwest_bridge = {
     extra_active_cells = [] ;
 } ;;   
 
+let upwards_byssus = {
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,2)]);
+    junction = [(1, 1); (1, 2);      (1, 3); (1, 4); 
+                (2, 1); (2, 3);      (2, 2); (3, 1)];
+    exit = Hex_island_t.I(Some Hex_cardinal_direction_t.Up,Set_of_poly_pairs_t.S []);
+    apex = Some(3,2) ;
+    extra_active_cells = [] ;
+} ;;   
+
 let upwards_border_bridge = 
 {Hex_connector_t.entry =
     Hex_island_t.I (None, Set_of_poly_pairs_t.S [(2, 1)]);
@@ -154,6 +163,15 @@ let upwards_small_pyramid =
     apex = Some(3,2);
     extra_active_cells = [] ;
     };;
+
+let upwards_sybil = {
+    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(3,1)]);
+    junction = [(1, 1); (1, 2);      (1, 3); (1, 4); 
+                (2, 1); (2, 3);      (2, 2); (3, 2)];
+    exit = Hex_island_t.I(Some Hex_cardinal_direction_t.Up,Set_of_poly_pairs_t.S []);
+    apex = Some(3,1) ;
+    extra_active_cells = [] ;
+} ;;   
 
 let upwards_walleye1 = 
 {Hex_connector_t.entry =

@@ -143,6 +143,32 @@ let walleye1 = function
     |Hex_cardinal_direction_t.Right -> rightwards_walleye1 arbitrary_dim
     |Hex_cardinal_direction_t.Up    -> upwards_walleye1;; 
 
+let upwards_byssus = Hex_connector.Example.upwards_byssus ;;  
+let leftwards_byssus = reflect upwards_byssus;;
+let downwards_byssus dim = oppose dim upwards_byssus ;;
+let rightwards_byssus dim = oppose dim leftwards_byssus;;
+
+let byssus = function 
+     Hex_cardinal_direction_t.Down  -> downwards_byssus arbitrary_dim
+    |Hex_cardinal_direction_t.Left  -> leftwards_byssus 
+    |Hex_cardinal_direction_t.Right -> rightwards_byssus arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> upwards_byssus;; 
+
+let upwards_sybil = Hex_connector.Example.upwards_sybil ;;  
+let leftwards_sybil = reflect upwards_sybil;;
+let downwards_sybil dim = oppose dim upwards_sybil ;;
+let rightwards_sybil dim = oppose dim leftwards_sybil;;
+
+let sybil = function 
+     Hex_cardinal_direction_t.Down  -> downwards_sybil arbitrary_dim
+    |Hex_cardinal_direction_t.Left  -> leftwards_sybil 
+    |Hex_cardinal_direction_t.Right -> rightwards_sybil arbitrary_dim
+    |Hex_cardinal_direction_t.Up    -> upwards_sybil;; 
+
+let basic_doubling bw y =
+  match bw with 
+   Hex_borderwise_t.From_border -> reverse y
+  |Hex_borderwise_t.To_border -> y ;;
 
 let standard_doubling f bw x =
   let y = f x in 
@@ -150,9 +176,24 @@ let standard_doubling f bw x =
    Hex_borderwise_t.From_border -> reverse y
   |Hex_borderwise_t.To_border -> y ;;
 
+let bs = Hex_double_hump_qualifier_t.Big_followed_by_small
+and sb = Hex_double_hump_qualifier_t.Small_followed_by_big ;;
+
+let d = Hex_cardinal_direction_t.Down 
+and l = Hex_cardinal_direction_t.Left 
+and r = Hex_cardinal_direction_t.Right
+and u = Hex_cardinal_direction_t.Up ;;  
+
 let expand_name bw = function 
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
-   |Noneyed_claw(dh,d) ->standard_doubling noneyed_claw bw (dh,d)
+   |Bs_D -> basic_doubling bw (sybil d)  
+   |Bs_L -> basic_doubling bw (sybil l)  
+   |Bs_R -> basic_doubling bw (byssus r)  
+   |Bs_U -> basic_doubling bw (byssus u) 
+   |Sb_D -> basic_doubling bw (byssus d) 
+   |Sb_L -> basic_doubling bw (byssus l)
+   |Sb_R -> basic_doubling bw (sybil r)
+   |Sb_U -> basic_doubling bw (sybil u)   
    |Pyramid(d) -> standard_doubling pyramid bw d
    |Small_pyramid(d) -> standard_doubling small_pyramid bw d 
    |Border_bridge(d) -> standard_doubling border_bridge bw d
