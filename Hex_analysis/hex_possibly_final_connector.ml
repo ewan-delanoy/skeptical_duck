@@ -21,4 +21,6 @@ let is_final = function
 
 let to_molecular_linker pfc = Hex_named_connector.to_molecular_linker (Private.content pfc) ;;
 
+let to_readable_string pfc = Hex_named_connector.to_readable_string (Private.content pfc) ;;
+
 let wet_earth  pfc = Hex_named_connector.wet_earth (Private.content pfc) ;;

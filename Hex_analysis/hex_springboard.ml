@@ -61,8 +61,10 @@ let to_molecular_linker (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,
      (Option.filter_and_unpack Hex_kite_springless_element.to_molecular_linker path)
   );;
 
-(*
+
 let to_readable_string (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))=
-  "S"^(Hex_cell.to_string cell)^" -> "^(Hex_cell.to_string cell2)^" -> "^"S" ;;
-*)
+  let path_description = String.concat "," (Image.image Hex_kite_springless_element.to_readable_string path) in 
+  "S"^(Hex_cell.to_string cell)^" -> "^path_description^
+      (Hex_cell.to_string cell2)^" -> "^"S" ;;
+
   
