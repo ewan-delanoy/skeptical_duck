@@ -77,15 +77,7 @@ end ;;
 
 module Border = struct  
  
-let upwards_small_pyramid = Hex_connector.Example.upwards_small_pyramid ;;  
-let leftwards_small_pyramid = reflect upwards_small_pyramid;;
-let downwards_small_pyramid dim = oppose dim upwards_small_pyramid ;;
-let rightwards_small_pyramid dim = oppose dim leftwards_small_pyramid;;
-
-
-let eyed_claw (d1,d2) =
-   (* this function is deliberately non-curried because we need it to be a 
-    univariate function, see below *) 
+let eyed_claw d1 d2  =
     let (apex,ipairs) = Hex_connector_data.default_eyed_claw d1 d2 in 
    {
     Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
@@ -95,96 +87,20 @@ let eyed_claw (d1,d2) =
     extra_active_cells = [];
 } ;;   
 
-let noneyed_claw (dh,d) = 
-    let (apex,ipairs)= Hex_connector_data.default_noneyed_claw (dh,d) in 
-  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
-   junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
-   apex = Some(apex);
-   extra_active_cells = [];
-   };; 
 
-let pyramid d = 
-  let (apex,ipairs)= Hex_connector_data.default_pyramid d in 
-  {Hex_connector_t.entry = Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
-   junction = ipairs;
-   exit = Hex_island_t.I (Some d, Set_of_poly_pairs_t.S []);
-   apex = Some(apex);
-   extra_active_cells = [];
-  };; 
 
-  
-
-let small_pyramid = function 
-     Hex_cardinal_direction_t.Down  -> downwards_small_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_small_pyramid 
-    |Hex_cardinal_direction_t.Right -> rightwards_small_pyramid arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_small_pyramid;; 
-
-let upwards_border_bridge = Hex_connector.Example.upwards_border_bridge ;;  
-let leftwards_border_bridge = reflect upwards_border_bridge;;
-let downwards_border_bridge dim = oppose dim upwards_border_bridge ;;
-let rightwards_border_bridge dim = oppose dim leftwards_border_bridge;;
-
-let border_bridge = function 
-     Hex_cardinal_direction_t.Down  -> downwards_border_bridge arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_border_bridge 
-    |Hex_cardinal_direction_t.Right -> rightwards_border_bridge arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_border_bridge;; 
-
-let upwards_walleye1 = Hex_connector.Example.upwards_walleye1 ;;  
-let leftwards_walleye1 = reflect upwards_walleye1;;
-let downwards_walleye1 dim = oppose dim upwards_walleye1 ;;
-let rightwards_walleye1 dim = oppose dim leftwards_walleye1;;
-
-let walleye1 = function 
-     Hex_cardinal_direction_t.Down  -> downwards_walleye1 arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_walleye1 
-    |Hex_cardinal_direction_t.Right -> rightwards_walleye1 arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_walleye1;; 
-
-let upwards_byssus = Hex_connector.Example.upwards_byssus ;;  
-let leftwards_byssus = reflect upwards_byssus;;
-let downwards_byssus dim = oppose dim upwards_byssus ;;
-let rightwards_byssus dim = oppose dim leftwards_byssus;;
-
-let byssus = function 
-     Hex_cardinal_direction_t.Down  -> downwards_byssus arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_byssus 
-    |Hex_cardinal_direction_t.Right -> rightwards_byssus arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_byssus;; 
-
-let upwards_sybil = Hex_connector.Example.upwards_sybil ;;  
-let leftwards_sybil = reflect upwards_sybil;;
-let downwards_sybil dim = oppose dim upwards_sybil ;;
-let rightwards_sybil dim = oppose dim leftwards_sybil;;
-
-let sybil = function 
-     Hex_cardinal_direction_t.Down  -> downwards_sybil arbitrary_dim
-    |Hex_cardinal_direction_t.Left  -> leftwards_sybil 
-    |Hex_cardinal_direction_t.Right -> rightwards_sybil arbitrary_dim
-    |Hex_cardinal_direction_t.Up    -> upwards_sybil;; 
+let typical_border = Hex_typical_border_connector_name.specify_side ;;
+    
 
 let basic_doubling bw y =
   match bw with 
    Hex_borderwise_t.From_border -> reverse y
   |Hex_borderwise_t.To_border -> y ;;
 
-let standard_doubling f bw x =
-  let y = f x in 
-  match bw with 
-   Hex_borderwise_t.From_border -> reverse y
-  |Hex_borderwise_t.To_border -> y ;;
 
 let expand_name bw = function 
-   Hex_border_connector_name_t.Eyed_claw(d1,d2) -> standard_doubling eyed_claw bw (d1,d2)
-   |Typical(tbc,d) -> match tbc with
-    Hex_typical_border_connector_name_t.Border_bridge -> standard_doubling border_bridge bw d 
-   |Byssus -> standard_doubling byssus bw d  
-   |Pyramid -> standard_doubling pyramid bw d
-   |Small_pyramid -> standard_doubling small_pyramid bw d 
-   |Sybil -> standard_doubling sybil bw d
-   |Walleye1 -> standard_doubling walleye1 bw d;;   
+   Hex_border_connector_name_t.Eyed_claw(d1,d2) -> basic_doubling bw (eyed_claw d1 d2)
+   |Typical(tbc,d) -> basic_doubling bw (typical_border tbc d);;
 
 end ;; 
 

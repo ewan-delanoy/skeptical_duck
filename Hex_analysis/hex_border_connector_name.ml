@@ -33,7 +33,7 @@ let to_readable_string = function
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
          (Hex_cardinal_direction.for_eye_description d1)^"e"^(Hex_cardinal_direction.for_ground_description d2)
    |Typical(tbc,side) -> 
-   let (opt_uniform,opt_diverse) = List.assoc tbc Hex_typical_border_connector_name.prepare_for_journey  in 
+   let (opt_uniform,opt_diverse,_,_,_) = List.assoc tbc Hex_typical_border_connector_name.prepare_for_journey  in 
    match opt_uniform with 
     Some(unf) -> (Hex_cardinal_direction.for_ground_description side)^unf
    |None ->

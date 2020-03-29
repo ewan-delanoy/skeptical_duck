@@ -192,35 +192,37 @@ let down = Hex_cardinal_direction_t.Down;;
 let left = Hex_cardinal_direction_t.Left;;
 let right = Hex_cardinal_direction_t.Right;;
 let up = Hex_cardinal_direction_t.Up;;
-let bs = Hex_double_hump_qualifier_t.Big_followed_by_small;;
-let sb = Hex_double_hump_qualifier_t.Small_followed_by_big;;
-
-let bridges_in_noneyed_claw dh d apex=
-   let ipairs = Hex_connector_data.advanced_noneyed_claw dh d apex in 
-   Listennou.extract_successive_pairs_from_even_list ipairs;;
-
-let bridges_in_pyramid d apex=
-   let ipairs = Hex_connector_data.advanced_pyramid d apex in 
-   Listennou.extract_successive_pairs_from_even_list ipairs;;
 
 
+let compute_translated_coordinates tbc side new_apex =
+   let nc = Hex_typical_border_connector_name.full_constructor
+       tbc side new_apex in 
+   let ju = nc.Hex_connector_t.junction in     
+   Listennou.extract_successive_pairs_from_even_list ju ;;  
 
-let list_for_macros=[
-   ("ddd", bridges_in_pyramid down);
-   ("lll", bridges_in_pyramid left);
-   ("rrr", bridges_in_pyramid right);
-   ("uuu", bridges_in_pyramid up);
+let pyramid = Hex_typical_border_connector_name_t.Pyramid ;;
+let byssus = Hex_typical_border_connector_name_t.Byssus ;;
+let sybil = Hex_typical_border_connector_name_t.Sybil ;;
+
+let list_for_macros=Image.image (fun (label,(tbc,side))->
+   (label,compute_translated_coordinates tbc side)
+) [
+   ("ddd", (pyramid,down));
+   ("lll", (pyramid,left));
+   ("rrr", (pyramid,right));
+   ("uuu", (pyramid,up));
    
-   ("bds", bridges_in_noneyed_claw bs down);
-   ("bls", bridges_in_noneyed_claw bs left);
-   ("brs", bridges_in_noneyed_claw bs right);
-   ("bus", bridges_in_noneyed_claw bs up); 
+   ("bds", (sybil,down));
+   ("bls", (sybil,left));
+   ("brs", (byssus,right));
+   ("bus", (byssus,up)); 
 
-   ("sdb", bridges_in_noneyed_claw sb down);
-   ("slb", bridges_in_noneyed_claw sb down);
-   ("srb", bridges_in_noneyed_claw sb down);
-   ("sub", bridges_in_noneyed_claw sb down); 
+   ("sdb", (byssus,down));
+   ("slb", (byssus,left));
+   ("srb", (sybil,right));
+   ("sub", (sybil,up)); 
 ];;
+
 
 let list_of_default_labels = Ennig.doyle (fun j->
   let c=char_of_int(123-j) in " "^(String.make 1 c)^" "
