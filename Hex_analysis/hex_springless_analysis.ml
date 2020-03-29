@@ -78,7 +78,7 @@ let active_part  pk =
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_kite_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
        |_->None
-    ) l) 
+    ) (fst_step::l)) 
     and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
     (function (island1,island,island2)-> 
          Hex_island.minimal_connection (island1,island2) island
