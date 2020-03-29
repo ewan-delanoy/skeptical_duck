@@ -26,8 +26,13 @@ let starters_for_side end_of_battle side =
    )  pre_end_base) in                                
    let islands = Hex_island.decompose end_of_battle in 
    let first_island = Hex_island.get_side side islands  in   
+   let unexpected_starters = List.filter (
+       Hex_named_connector.check_entry first_island
+   ) pre_middle_base in 
    let base1 = clean (
       (Hex_named_connector.starters_for_side dim side)
+      @
+      unexpected_starters
       @
       (Hex_named_connector.islanders dim first_island islands)
    ) in                  
