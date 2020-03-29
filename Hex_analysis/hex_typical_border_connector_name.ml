@@ -31,7 +31,7 @@ let prepare_for_journey =
                [(1, 1); (1, 2);  (1, 5); (2, 1); 
                 (2, 2); (3, 1);  (2, 3); (3, 3)],[3,2]) ;
      Hex_typical_border_connector_name_t.Walleye2, 
-        (Some "we1",None,(3,1),
+        (Some "we2",None,(3,1),
                [(1, 1); (1, 2);  (1, 3); (2, 4); 
                 (2, 1); (2, 2) ],[2,3]) ;           
   ];;
