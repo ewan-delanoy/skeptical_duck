@@ -10,6 +10,6 @@ type t=
     |Pyramid 
     |Small_pyramid  
     |Sybil 
-    |Walleye1 ;;
+    |Walleye1 
+    |Walleye2 ;;
 
-    
