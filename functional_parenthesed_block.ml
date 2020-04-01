@@ -29,26 +29,33 @@ let initial_data={
 
 
 let test_for_left_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=Substring.is_a_substring_located_at lparen s i;;
+   s i ((lparen,rparen):parenthesis_pair)=
+      if Substring.is_a_substring_located_at lparen s i
+      then Some (String.length lparen)
+      else None;;
  
 let test_for_right_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=Substring.is_a_substring_located_at rparen s i;;
+   s i ((lparen,rparen):parenthesis_pair)=
+      if Substring.is_a_substring_located_at rparen s i
+      then Some (String.length rparen)
+      else None;;
  
 let look_for_left_paren_at_index app s i=
    let rec finder=(fun
     possibilities->match possibilities with
     []->None
     |paren::other_parens->
-      if test_for_left_paren_at_index s i paren
-      then Some(paren)
-      else finder other_parens
+      (match test_for_left_paren_at_index s i paren with 
+        Some(paren_length) -> Some(paren,paren_length)
+       |None ->finder other_parens )
    ) in
    finder app;;
-  
+
+
 let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
-    |Some(paren)->
+    |Some(paren,lparen_length)->
                 let (lparen,rparen)=paren in
                let _=(
                if data.currently_open_pars=[]
@@ -63,26 +70,30 @@ let process_without_open_pars app  s data=
                let temp1=List.filter (fun par->fst(par)=lparen) app in
                (
                 data.currently_open_pars<-(temp1::data.currently_open_pars);
-                data.cursor_location<-data.cursor_location+String.length(lparen)
+                data.cursor_location<-data.cursor_location+lparen_length
                );;
                
 let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.seek (fun paren->test_for_right_paren_at_index s i paren) temp1 in
+  let opt1=Option.find_and_stop (fun paren->
+    match (test_for_right_paren_at_index s i paren) with 
+    Some(rparen_length)->Some(paren,rparen_length)
+    |None ->None ) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let best_paren=Option.unpack opt1 in
-       let (lparen,rparen)=best_paren 
-       and new_list=List.tl(data.currently_open_pars) in
+       let (best_paren,rparen_length)=Option.unpack opt1 in
+       let new_list=List.tl(data.currently_open_pars) in
        let _=(
           data.currently_open_pars<-new_list;
-        (data.cursor_location<-data.cursor_location+String.length(rparen))
+        (data.cursor_location<-data.cursor_location+rparen_length)
        ) in
        if new_list<>[]
        then ()
-       else let i_start=data.smallest_unprocessed_index+String.length(lparen)
+       else let old_start = data.smallest_unprocessed_index in 
+            let old_lparen_length = Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
+            let i_start=old_start + old_lparen_length
             and i_end=i-1 in
             let enclosed_substring=Cull_string.interval s i_start i_end in
             let new_result=(Some(best_paren),enclosed_substring) in
@@ -142,34 +153,36 @@ module With_associator=struct
                 data.smallest_unprocessed_index<-data.cursor_location
                 )
            )
-    |Some(paren)->
+    |Some(paren,lparen_length)->
                let (lparen,rparen)=paren in
                let temp1=List.filter (fun par->fst(par)=lparen) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
-               data.cursor_location<-data.cursor_location+String.length(lparen)
+               data.cursor_location<-data.cursor_location+lparen_length
                ;;
                
 let process_with_open_pars (asc:associator) app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.seek (fun paren->test_for_right_paren_at_index s i paren) temp1 in
+  let opt1=Option.find_and_stop (fun paren->
+    match (test_for_right_paren_at_index s i paren) with 
+    Some(rparen_length)->Some(paren,rparen_length)
+    |None ->None ) temp1 in
   if opt1=None
   then (
           match look_for_left_paren_at_index app s data.cursor_location with
      	  None->(data.cursor_location<-data.cursor_location+1)
-        |Some(paren)->
+        |Some(paren,lparen_length)->
                let (lparen,rparen)=paren in
                let temp1=List.filter (fun par->fst(par)=lparen) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
-               data.cursor_location<-data.cursor_location+String.length(lparen)
+               data.cursor_location<-data.cursor_location+lparen_length
               
         )
   else (
-       let best_paren=Option.unpack opt1 in
-       let (lparen,rparen)=best_paren 
-       and new_list=List.tl(data.currently_open_pars) in
+       let (best_paren,rparen_length)=Option.unpack opt1 in
+       let new_list=List.tl(data.currently_open_pars) in
        data.currently_open_pars<-new_list;
-       data.cursor_location<-data.cursor_location+String.length(rparen)
+       data.cursor_location<-data.cursor_location+rparen_length
        );;              
 
 let process asc app s data=
