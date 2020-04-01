@@ -8,7 +8,8 @@ More general version of Parenthesed_block module : now parentheses are not neces
 
 *)
 
-type parenthesis_triple=string*string*string;;
+type parenthesis_detector = (string -> int -> (int option)) ;;
+type parenthesis_triple=string* parenthesis_detector * parenthesis_detector;;
 type associator=string;;
 
 
@@ -28,17 +29,14 @@ let initial_data={
 
 
 
+
 let test_for_left_paren_at_index 
-   s i ((lbl,lparen,rparen):parenthesis_triple)=
-      if Substring.is_a_substring_located_at lparen s i
-      then Some (String.length lparen)
-      else None;;
+   s i ((lbl,lparen_f,rparen_f):parenthesis_triple)=
+       lparen_f s i;;
  
 let test_for_right_paren_at_index 
-   s i ((lbl,lparen,rparen):parenthesis_triple)=
-      if Substring.is_a_substring_located_at rparen s i
-      then Some (String.length rparen)
-      else None;;
+   s i ((lbl,lparen_f,rparen_f):parenthesis_triple)=
+      rparen_f s i;;
  
 let look_for_left_paren_at_index app s i=
    let rec finder=(fun
@@ -235,7 +233,12 @@ let decompose app s=
 
 Sample examples :
 
-let lc l= Image.image (fun (x,y)->(x,x,y)) l;;
+let basic_detection pattern s  i=
+  if Substring.is_a_substring_located_at pattern s i 
+  then Some(String.length pattern)
+  else None ;;
+
+let lc l= Image.image (fun (x,y)->(x,basic_detection x,basic_detection y)) l;;
 
 decompose (lc [ ("(",")");("{","}");("BEGIN","END") ])
 ("How (much (research effort) is {expected} when) BEGIN posting a"^
