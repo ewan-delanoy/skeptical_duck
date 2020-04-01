@@ -8,13 +8,13 @@ More general version of Parenthesed_block module : now parentheses are not neces
 
 *)
 
-type parenthesis_pair=string*string;;
+type parenthesis_triple=string*string*string;;
 type associator=string;;
 
 
 type data_for_decomposition={
-   mutable partial_result : ((parenthesis_pair option)*string) list;
-   mutable currently_open_pars : (parenthesis_pair list) list;
+   mutable partial_result : ((parenthesis_triple option)*string) list;
+   mutable currently_open_pars : (parenthesis_triple list) list;
    mutable smallest_unprocessed_index : int;
    mutable cursor_location : int; 
 };;
@@ -29,13 +29,13 @@ let initial_data={
 
 
 let test_for_left_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=
+   s i ((lbl,lparen,rparen):parenthesis_triple)=
       if Substring.is_a_substring_located_at lparen s i
       then Some (String.length lparen)
       else None;;
  
 let test_for_right_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=
+   s i ((lbl,lparen,rparen):parenthesis_triple)=
       if Substring.is_a_substring_located_at rparen s i
       then Some (String.length rparen)
       else None;;
@@ -56,7 +56,7 @@ let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
     |Some(paren,lparen_length)->
-                let (lparen,rparen)=paren in
+                let (lbl,lparen,rparen)=paren in
                let _=(
                if data.currently_open_pars=[]
                then let i_start=data.smallest_unprocessed_index
@@ -67,7 +67,7 @@ let process_without_open_pars app  s data=
                     	 let new_result=(None,enclosed_substring) in
                     	 data.partial_result<-new_result::(data.partial_result)
                ) in
-               let temp1=List.filter (fun par->fst(par)=lparen) app in
+               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
                (
                 data.currently_open_pars<-(temp1::data.currently_open_pars);
                 data.cursor_location<-data.cursor_location+lparen_length
@@ -154,8 +154,8 @@ module With_associator=struct
                 )
            )
     |Some(paren,lparen_length)->
-               let (lparen,rparen)=paren in
-               let temp1=List.filter (fun par->fst(par)=lparen) app in
+               let (lbl,lparen,rparen)=paren in
+               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
                ;;
@@ -172,8 +172,8 @@ let process_with_open_pars (asc:associator) app  s data=
           match look_for_left_paren_at_index app s data.cursor_location with
      	  None->(data.cursor_location<-data.cursor_location+1)
         |Some(paren,lparen_length)->
-               let (lparen,rparen)=paren in
-               let temp1=List.filter (fun par->fst(par)=lparen) app in
+               let (lbl,lparen,rparen)=paren in
+               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
               
@@ -216,7 +216,7 @@ end;;
 
 let decompose_with_associator=
   ((With_associator.decompose_without_taking_blanks_into_account):
-   associator -> parenthesis_pair list -> string -> string list
+   associator -> parenthesis_triple list -> string -> string list
   );;
 
 let decompose app s=
@@ -235,14 +235,16 @@ let decompose app s=
 
 Sample examples :
 
-decompose [ ("(",")");("{","}");("BEGIN","END") ]
+let lc l= Image.image (fun (x,y)->(x,x,y)) l;;
+
+decompose (lc [ ("(",")");("{","}");("BEGIN","END") ])
 ("How (much (research effort) is {expected} when) BEGIN posting a"^
 "Code Review ENDquestion? A "^
 "lot. {{(An absurd amount)}}. More BEGIN than  BEGIN you think END"^
 "you ENDare capable of.");;
 
 
-decompose [ ("[","]+");("[","]*");("BEGIN","END") ]
+decompose (lc[ ("[","]+");("[","]*");("BEGIN","END") ])
 ("ijk [abc [def]+ gh]* lm hhh [nop [qr]* stu]+ vw []+ ab  ");;
 
 decompose [ ("[","]") ] "[ab]cd[efg]";;
