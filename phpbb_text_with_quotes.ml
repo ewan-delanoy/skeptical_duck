@@ -50,7 +50,34 @@ let rewrite_element (opt,content) = match opt with
 let is_very_easy l =
    if List.length(l)<>1 then false else fst(List.hd l)=None ;; 
 
-let rec helper_for_parsing = function    
+let naive_try opt elt =
+     let temp = first_analysis elt  in 
+     if not(is_very_easy temp) then None else 
+     match opt with 
+      None -> Phpbb_text_with_quotes_t.Atom(elt) 
+     |Some(author) -> Phpbb_text_with_quotes_t.Quoted(author,elt) ;;
+
+let helper_for_parsing_in_short_case 
+   main_f treated_in_concat to_be_treated_in_concat = 
+    match to_be_treated_in_concat with 
+    [] -> Phpbb_text_with_quotes_t.Concatenated (List.rev treated_in_concat)
+    |(opt,new_elt)::others ->
+        let temp = first_analysis new_elt  in 
+        if is_very_easy temp 
+        then let new_phpbbquote =  Phpbb_text_with_quotes_t.Quoted(new_elt)
+        else
+   ;;
+
+
+let rec helper_for_parsing (later_decompositions,treated_in_concat,to_be_treated_in_concat)=
+   match later_decompositions with 
+   [] -> helper_for_parsing_in_short_case helper_for_parsing treated_in_concat to_be_treated_in_concat
+   |(treated_in_quote,to_be_treated_in_quote)::other_decs ->
+         helper_for_parsing_in_long_case helper_for_parsing 
+          treated_in_quote,to_be_treated_in_quote
+            treated_in_concat to_be_treated_in_concat ;;
+
+   function    
    [] -> raise(Empty_input_in_parser)
    |(treated,to_be_treated) ::others ->
       (
@@ -67,11 +94,15 @@ let rec helper_for_parsing = function
             (
               match opt with 
               None ->  let easy_phpbbtext = Phpbb_text_with_quotes_t.Atom(new_elt) in
-                 helper_for_parsing ((easy_phpbbtext::treated,to_be_treated) ::others)
+                 helper_for_parsing ((easy_phpbbtext::treated,other_elts) ::others)
               |Some(author) ->   
+                let temp = first_analysis new_elt  in 
+                if is_very_easy temp 
+                then let new_phpbbquote =  Phpbb_text_with_quotes_t.Quoted(new_elt)
+                else
             ) 
       ) ;;
-      
+     
 
 let example = "<r>First quote :<br/>
 
