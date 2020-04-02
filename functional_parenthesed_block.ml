@@ -4,18 +4,20 @@
 
 Decompose a string into parenthesed blocks.
 More general version of Parenthesed_block module : now parentheses are not necessarily constant strings.
-
+Also, parentheses detectors return the parentheses ranges among other things.
 
 *)
 
-type addendum = float ;;
-type parenthesis_detector = (string -> int -> ((int* addendum) option)) ;;
-type parenthesis_triple=string* parenthesis_detector * parenthesis_detector;;
+type label = string * string ;;
+type range = int * int ;;
+type addendum = range * range ;;
+type parenthesis_detector = (string -> int -> ((int* range) option)) ;;
+type parenthesis_triple= label* parenthesis_detector * parenthesis_detector;;
 type associator=string;;
 
 
 type data_for_decomposition={
-   mutable partial_result : ((parenthesis_triple option)*string) list;
+   mutable partial_result : (((string * addendum) option)*string) list;
    mutable currently_open_pars : (parenthesis_triple list) list;
    mutable smallest_unprocessed_index : int;
    mutable cursor_location : int; 
@@ -66,7 +68,7 @@ let process_without_open_pars app  s data=
                     	 let new_result=(None,enclosed_substring) in
                     	 data.partial_result<-new_result::(data.partial_result)
                ) in
-               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
+               let temp1=List.filter (fun (lbl2,_,_)->(fst lbl2)=(fst lbl)) app in
                (
                 data.currently_open_pars<-(temp1::data.currently_open_pars);
                 data.cursor_location<-data.cursor_location+lparen_length
@@ -77,12 +79,12 @@ let process_with_open_pars app  s data=
   and i=data.cursor_location in
   let opt1=Option.find_and_stop (fun paren->
     match (test_for_right_paren_at_index s i paren) with 
-    Some(rparen_length,addenda)->Some(paren,rparen_length,addenda)
+    Some(rparen_length,rparen_range)->Some(paren,rparen_length,rparen_range)
     |None ->None ) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let (best_paren,rparen_length,addenda)=Option.unpack opt1 in
+       let (best_paren,rparen_length,rparen_range)=Option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        let _=(
           data.currently_open_pars<-new_list;
@@ -91,11 +93,13 @@ let process_with_open_pars app  s data=
        if new_list<>[]
        then ()
        else let old_start = data.smallest_unprocessed_index in 
-            let (old_lparen_length,addenda) = Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
+            let (old_lparen_length,lparen_range) = 
+                Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
             let i_start=old_start + old_lparen_length
             and i_end=i-1 in
             let enclosed_substring=Cull_string.interval s i_start i_end in
-            let new_result=(Some(best_paren),enclosed_substring) in
+            let ((left_label,right_label),_,_) = best_paren in 
+            let new_result=(Some(left_label^right_label,(lparen_range,rparen_range)),enclosed_substring) in
             (
                 data.partial_result<-new_result::(data.partial_result);
                 data.smallest_unprocessed_index<-data.cursor_location
@@ -154,7 +158,7 @@ module With_associator=struct
            )
     |Some(paren,lparen_length,addenda)->
                let (lbl,lparen,rparen)=paren in
-               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
+               let temp1=List.filter (fun (lbl2,_,_)->(fst lbl2)=(fst lbl)) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
                ;;
@@ -172,7 +176,7 @@ let process_with_open_pars (asc:associator) app  s data=
      	  None->(data.cursor_location<-data.cursor_location+1)
         |Some(paren,lparen_length,addenda)->
                let (lbl,lparen,rparen)=paren in
-               let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
+               let temp1=List.filter (fun (lbl2,_,_)->(fst lbl2)=(fst lbl)) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
               
@@ -236,17 +240,16 @@ Sample examples :
 
 let basic_detection pattern s  i=
   if Substring.is_a_substring_located_at pattern s i 
-  then Some(String.length pattern)
+  then Some(String.length pattern,(i,i-1+String.length pattern))
   else None ;;
 
-let lc l= Image.image (fun (x,y)->(x,basic_detection x,basic_detection y)) l;;
+let lc l= Image.image (fun (x,y)->((x,y),basic_detection x,basic_detection y)) l;;
 
 decompose (lc [ ("(",")");("{","}");("BEGIN","END") ])
 ("How (much (research effort) is {expected} when) BEGIN posting a"^
 "Code Review ENDquestion? A "^
 "lot. {{(An absurd amount)}}. More BEGIN than  BEGIN you think END"^
 "you ENDare capable of.");;
-
 
 decompose (lc[ ("[","]+");("[","]*");("BEGIN","END") ])
 ("ijk [abc [def]+ gh]* lm hhh [nop [qr]* stu]+ vw []+ ab  ");;
