@@ -5,6 +5,7 @@
 
 *)
 
-type t = Text of element list 
-and element = Atom of string 
-            |Quote of (string option) * t ;;
+type t = 
+ Atom of string  
+|Concatenated of t list 
+|Quoted of (string option) * t ;;
