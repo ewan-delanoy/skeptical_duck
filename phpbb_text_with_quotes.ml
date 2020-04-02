@@ -5,7 +5,7 @@
 
 *)
 
-exception Empty_input_in_parser ;;
+module Private = struct 
 
 let quote_starter = "<QUOTE" ;;
 
@@ -50,59 +50,118 @@ let rewrite_element (opt,content) = match opt with
 let is_very_easy l =
    if List.length(l)<>1 then false else fst(List.hd l)=None ;; 
 
-let naive_try opt elt =
-     let temp = first_analysis elt  in 
-     if not(is_very_easy temp) then None else 
-     match opt with 
-      None -> Phpbb_text_with_quotes_t.Atom(elt) 
-     |Some(author) -> Phpbb_text_with_quotes_t.Quoted(author,elt) ;;
 
-let helper_for_parsing_in_short_case 
-   main_f treated_in_concat to_be_treated_in_concat = 
-    match to_be_treated_in_concat with 
-    [] -> Phpbb_text_with_quotes_t.Concatenated (List.rev treated_in_concat)
+let seed_state = 1 ;;
+let usual_state = 2 ;;
+
+type walker =
+  W of int * string * Phpbb_text_with_quotes_t.t list * (string option * string) list 
+  * ( string * Phpbb_text_with_quotes_t.t list * (string option * string) list ) list *
+  Phpbb_text_with_quotes_t.t list * (string option * string) list *
+  Phpbb_text_with_quotes_t.t option ;; 
+
+let the_end answer = 
+   W(0,"",[],[],[],[],[],Some answer);;
+   
+let seed_item (done_in_concat,todo_in_concat) = 
+    W(seed_state,"",[],[],[],done_in_concat,todo_in_concat,None);;  
+
+let push_seed_item (done_in_concat,todo_in_concat) = 
+  match todo_in_concat with 
+    [] -> the_end(Phpbb_text_with_quotes_t.Concatenated (List.rev done_in_concat))
     |(opt,new_elt)::others ->
-        let temp = first_analysis new_elt  in 
-        if is_very_easy temp 
-        then let new_phpbbquote =  Phpbb_text_with_quotes_t.Quoted(new_elt)
-        else
-   ;;
+        match opt with 
+        None -> (* if we get here the analysis has already been done *)
+                let quick_result = Phpbb_text_with_quotes_t.Atom(new_elt) in 
+                seed_item(quick_result::done_in_concat,others)
+       |Some(author) ->
+              let temp = first_analysis new_elt  in 
+              if is_very_easy temp 
+              then let quick_result = Phpbb_text_with_quotes_t.Quoted(author,
+                          Phpbb_text_with_quotes_t.Atom(new_elt)) in 
+                   seed_item(quick_result::done_in_concat,others) 
+              else W(usual_state,author,[],temp,[],done_in_concat,others,None);;   
+
+let push_usual_item_in_short_case 
+(current_author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat) = 
+  let new_result = Phpbb_text_with_quotes_t.Quoted(current_author,
+                          Phpbb_text_with_quotes_t.Concatenated(List.rev done_in_quote)) in
+  match pending_quotes with
+  [] -> seed_item(new_result::done_in_concat,todo_in_concat) 
+  |(author2,done_in_quote2,todo_in_quote2) :: later_quotes ->
+     W(usual_state,author2,new_result::done_in_quote2,todo_in_quote2,later_quotes,
+      done_in_concat,todo_in_concat,None) ;;
+
+let push_usual_item_in_long_case 
+(current_author,done_in_quote,others,pending_quotes,
+      done_in_concat,todo_in_concat) (opt,new_elt) =
+ match opt with 
+ None -> (* if we get here the analysis has already been done *)
+     let quick_result = Phpbb_text_with_quotes_t.Atom(new_elt) in 
+      W(usual_state,current_author,quick_result::done_in_quote,others,pending_quotes,
+                  done_in_concat,todo_in_concat,None)
+ |Some(author3) ->
+     let temp = first_analysis new_elt  in 
+      if is_very_easy temp 
+      then let quick_result = Phpbb_text_with_quotes_t.Quoted(author3,
+                          Phpbb_text_with_quotes_t.Atom(new_elt)) in 
+                   W(usual_state,current_author,quick_result::done_in_quote,others,pending_quotes,
+                  done_in_concat,todo_in_concat,None) 
+      else W(usual_state,author3,[],temp,(current_author,done_in_quote,others)::pending_quotes,done_in_concat,todo_in_concat,None);;  
 
 
-let rec helper_for_parsing (later_decompositions,treated_in_concat,to_be_treated_in_concat)=
-   match later_decompositions with 
-   [] -> helper_for_parsing_in_short_case helper_for_parsing treated_in_concat to_be_treated_in_concat
-   |(treated_in_quote,to_be_treated_in_quote)::other_decs ->
-         helper_for_parsing_in_long_case helper_for_parsing 
-          treated_in_quote,to_be_treated_in_quote
-            treated_in_concat to_be_treated_in_concat ;;
 
-   function    
-   [] -> raise(Empty_input_in_parser)
-   |(treated,to_be_treated) ::others ->
-      (
-         match to_be_treated with 
-         [] -> 
-             let new_phpbbtext = Phpbb_text_with_quotes_t.Concatenated(List.rev treated) in 
-             (
-               match others with 
-                [] -> new_phpbbtext
-               |(treated2,to_be_treated2)::later ->
-                 helper_for_parsing ((new_phpbbtext::treated2,to_be_treated2)::later)
-             )
-         |(opt,new_elt) :: other_elts ->
-            (
-              match opt with 
-              None ->  let easy_phpbbtext = Phpbb_text_with_quotes_t.Atom(new_elt) in
-                 helper_for_parsing ((easy_phpbbtext::treated,other_elts) ::others)
-              |Some(author) ->   
-                let temp = first_analysis new_elt  in 
-                if is_very_easy temp 
-                then let new_phpbbquote =  Phpbb_text_with_quotes_t.Quoted(new_elt)
-                else
-            ) 
-      ) ;;
-     
+let push_usual_item (current_author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat) = 
+       match todo_in_quote with 
+    [] -> push_usual_item_in_short_case 
+      (current_author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat)
+    | (opt,new_elt)::others -> push_usual_item_in_long_case 
+        (current_author,done_in_quote,others,pending_quotes,
+      done_in_concat,todo_in_concat) (opt,new_elt) ;;
+      
+         
+
+let push_item item =
+ let 
+  (W(state_idx,author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat,opt_final_result)) = item in 
+  if opt_final_result <> None then item else     
+  match state_idx with 
+   1 ->  push_seed_item (done_in_concat,todo_in_concat)
+  |_ ->  push_usual_item (author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat) ;;
+
+let rec iterate_on_item item =
+ let 
+  (W(state_idx,author,done_in_quote,todo_in_quote,pending_quotes,
+      done_in_concat,todo_in_concat,opt_final_result)) = item in 
+  match opt_final_result with 
+  Some(final_result) -> final_result 
+  |None -> iterate_on_item (push_item item);;
+
+end ;;
+
+let parse text =
+   let temp = Private.first_analysis text in 
+   if Private.is_very_easy temp 
+   then Phpbb_text_with_quotes_t.Atom(text)
+   else 
+   let seed = Private.seed_item ([],temp) in 
+   Private.iterate_on_item seed ;;
+
+let rec unparse = function 
+    Phpbb_text_with_quotes_t.Atom(text) -> text 
+   |Concatenated l -> String.concat "" (Image.image unparse l)
+   |Quoted(author,compound) ->
+      let content = unparse compound in 
+      if author="" 
+      then "<QUOTE>"^content^"</QUOTE>"
+       else "<QUOTE author=\""^author^"\">"^content^"</QUOTE>" ;; 
+
+(*
 
 let example = "<r>First quote :<br/>
 
@@ -110,7 +169,7 @@ let example = "<r>First quote :<br/>
 
 An anonymous quote : <QUOTE><s>[quote]</s> At the Savoy <e>[/quote]</e></QUOTE>
 
-And some nested quotes : <QUOTE author=\"John\"><s>[quote=\"John\"]</s> One 
+And some nested quotes : <QUOTE author=\"Jane\"><s>[quote=\"Jane\"]</s> One 
 
 <QUOTE><s>[quote]</s> Two <e>[/quote]</e></QUOTE> Three <QUOTE author=\"Four\"><s>
 
@@ -121,8 +180,11 @@ let g1 = first_analysis example ;;
 let g2 = Image.image rewrite_element g1 ;;
 let check1 = ((String.concat "" g2)=example);;
 
-(*
-let h1= Substring.leftmost_index_of_in_from quote_starter example 1 ;;
-let h2= Substring.leftmost_index_of_in_from ">" example h1 ;;
-let see1 = Cull_string.interval example h1 h2 ;;
+let g3 = seed_item ([],g1);;
+let g4 = parse example ;;
+let g5 = unparse g4 ;;
+let check2 = (g5 = example) ;; 
+
+let ff = Memoized.small push_item g3;;
+
 *)
