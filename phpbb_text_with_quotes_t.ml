@@ -8,4 +8,4 @@
 type t = 
  Atom of string  
 |Concatenated of t list 
-|Quoted of (string option) * t ;;
+|Quoted of string * t ;;

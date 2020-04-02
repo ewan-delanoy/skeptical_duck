@@ -46,24 +46,32 @@ let rewrite_element (opt,content) = match opt with
      if author="" 
      then "<QUOTE>"^content^"</QUOTE>"
      else "<QUOTE author=\""^author^"\">"^content^"</QUOTE>" ;;
-(*   
+ 
+let is_very_easy l =
+   if List.length(l)<>1 then false else fst(List.hd l)=None ;; 
+
 let rec helper_for_parsing = function    
    [] -> raise(Empty_input_in_parser)
    |(treated,to_be_treated) ::others ->
       (
          match to_be_treated with 
          [] -> 
-             let new_phpbbtext = Phpbb_text_with_quotes_t.Text(List.rev treated) in 
+             let new_phpbbtext = Phpbb_text_with_quotes_t.Concatenated(List.rev treated) in 
              (
                match others with 
-                [] -> new_phpbbtext 
+                [] -> new_phpbbtext
                |(treated2,to_be_treated2)::later ->
                  helper_for_parsing ((new_phpbbtext::treated2,to_be_treated2)::later)
              )
-         |new_elt :: other_elts -> 
-            
+         |(opt,new_elt) :: other_elts ->
+            (
+              match opt with 
+              None ->  let easy_phpbbtext = Phpbb_text_with_quotes_t.Atom(new_elt) in
+                 helper_for_parsing ((easy_phpbbtext::treated,to_be_treated) ::others)
+              |Some(author) ->   
+            ) 
       ) ;;
-*)      
+      
 
 let example = "<r>First quote :<br/>
 
