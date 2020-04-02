@@ -8,7 +8,8 @@ More general version of Parenthesed_block module : now parentheses are not neces
 
 *)
 
-type parenthesis_detector = (string -> int -> (int option)) ;;
+type addendum = float ;;
+type parenthesis_detector = (string -> int -> ((int* addendum) option)) ;;
 type parenthesis_triple=string* parenthesis_detector * parenthesis_detector;;
 type associator=string;;
 
@@ -44,7 +45,7 @@ let look_for_left_paren_at_index app s i=
     []->None
     |paren::other_parens->
       (match test_for_left_paren_at_index s i paren with 
-        Some(paren_length) -> Some(paren,paren_length)
+        Some(paren_length,addenda) -> Some(paren,paren_length,addenda)
        |None ->finder other_parens )
    ) in
    finder app;;
@@ -53,7 +54,7 @@ let look_for_left_paren_at_index app s i=
 let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
-    |Some(paren,lparen_length)->
+    |Some(paren,lparen_length,addenda)->
                 let (lbl,lparen,rparen)=paren in
                let _=(
                if data.currently_open_pars=[]
@@ -76,12 +77,12 @@ let process_with_open_pars app  s data=
   and i=data.cursor_location in
   let opt1=Option.find_and_stop (fun paren->
     match (test_for_right_paren_at_index s i paren) with 
-    Some(rparen_length)->Some(paren,rparen_length)
+    Some(rparen_length,addenda)->Some(paren,rparen_length,addenda)
     |None ->None ) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let (best_paren,rparen_length)=Option.unpack opt1 in
+       let (best_paren,rparen_length,addenda)=Option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        let _=(
           data.currently_open_pars<-new_list;
@@ -90,7 +91,7 @@ let process_with_open_pars app  s data=
        if new_list<>[]
        then ()
        else let old_start = data.smallest_unprocessed_index in 
-            let old_lparen_length = Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
+            let (old_lparen_length,addenda) = Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
             let i_start=old_start + old_lparen_length
             and i_end=i-1 in
             let enclosed_substring=Cull_string.interval s i_start i_end in
@@ -151,7 +152,7 @@ module With_associator=struct
                 data.smallest_unprocessed_index<-data.cursor_location
                 )
            )
-    |Some(paren,lparen_length)->
+    |Some(paren,lparen_length,addenda)->
                let (lbl,lparen,rparen)=paren in
                let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
@@ -169,7 +170,7 @@ let process_with_open_pars (asc:associator) app  s data=
   then (
           match look_for_left_paren_at_index app s data.cursor_location with
      	  None->(data.cursor_location<-data.cursor_location+1)
-        |Some(paren,lparen_length)->
+        |Some(paren,lparen_length,addenda)->
                let (lbl,lparen,rparen)=paren in
                let temp1=List.filter (fun (lbl2,_,_)->lbl2=lbl) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
@@ -177,7 +178,7 @@ let process_with_open_pars (asc:associator) app  s data=
               
         )
   else (
-       let (best_paren,rparen_length)=Option.unpack opt1 in
+       let (best_paren,(rparen_length,addenda))=Option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        data.currently_open_pars<-new_list;
        data.cursor_location<-data.cursor_location+rparen_length
