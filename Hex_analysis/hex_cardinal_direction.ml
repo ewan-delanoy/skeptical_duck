@@ -71,7 +71,6 @@ let compute_support_in_eyed_claw d1 d2 apex_cell =
 
 *)  
 
-end ;;
 
 module Parallel_To_Border = struct 
 
@@ -89,22 +88,35 @@ let enumerate_all d (Hex_dimension_t.D dim) side =
 
 let test d dim side p=
      match side with   
-     Hex_cardinal_direction_t.Down  -> Private.test_for_low_parallel dim p d
-    |Hex_cardinal_direction_t.Left  -> Private.test_for_left_parallel p d
-    |Hex_cardinal_direction_t.Right -> Private.test_for_right_parallel dim p d
-    |Hex_cardinal_direction_t.Up    -> Private.test_for_upper_parallel p d;;
+     Hex_cardinal_direction_t.Down  -> test_for_low_parallel dim p d
+    |Hex_cardinal_direction_t.Left  -> test_for_left_parallel p d
+    |Hex_cardinal_direction_t.Right -> test_for_right_parallel dim p d
+    |Hex_cardinal_direction_t.Up    -> test_for_upper_parallel p d;;
 
 
 
 end ;;
 
+end ;;
+
+
+
 module Border = struct 
 
-let enumerate = Parallel_To_Border.enumerate 1;;
-let enumerate_all = Parallel_To_Border.enumerate_all 1;;
-let test dim side cell = Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
+let enumerate = Private.Parallel_To_Border.enumerate 1;;
+let enumerate_all = Private.Parallel_To_Border.enumerate_all 1;;
+let test dim side cell = Private.Parallel_To_Border.test 1 dim side (Hex_cell.to_int_pair cell);;
 
 end ;;      
+
+module Immediately_Next_to_Border = struct 
+
+let enumerate = Private.Parallel_To_Border.enumerate 2;;
+let enumerate_all = Private.Parallel_To_Border.enumerate_all 2;;
+let test dim side cell = Private.Parallel_To_Border.test 2 dim side (Hex_cell.to_int_pair cell);;
+
+end ;;      
+
 
 let all =  
 [
