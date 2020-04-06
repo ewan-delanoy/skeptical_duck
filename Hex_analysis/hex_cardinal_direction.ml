@@ -111,9 +111,12 @@ end ;;
 
 module Immediately_Next_to_Border = struct 
 
-let enumerate = Private.Parallel_To_Border.enumerate 2;;
-let enumerate_all = Private.Parallel_To_Border.enumerate_all 2;;
-let test dim side cell = Private.Parallel_To_Border.test 2 dim side (Hex_cell.to_int_pair cell);;
+let enumerate1 =  Private.Parallel_To_Border.enumerate 1;;
+let enumerate2 =  Private.Parallel_To_Border.enumerate 2;;
+
+let enumerate dim side k= 
+  (enumerate2 dim side k,enumerate1 dim side k,enumerate1 dim side (k+1));;
+
 
 end ;;      
 
