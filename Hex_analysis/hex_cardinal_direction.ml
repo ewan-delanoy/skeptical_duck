@@ -112,11 +112,21 @@ end ;;
 module Immediately_Next_to_Border = struct 
 
 let enumerate1 =  Private.Parallel_To_Border.enumerate 1;;
-let enumerate2 =  Private.Parallel_To_Border.enumerate 2;;
+let enumerate2 dim side k=  
+    let offset = (match side with 
+      Hex_cardinal_direction_t.Down  
+     |Hex_cardinal_direction_t.Right -> 1
+     |Hex_cardinal_direction_t.Left  
+     |Hex_cardinal_direction_t.Up    -> 0
+    ) in  
+    Private.Parallel_To_Border.enumerate 2 dim side (k+offset);;
 
 let enumerate dim side k= 
   (enumerate2 dim side k,enumerate1 dim side k,enumerate1 dim side (k+1));;
 
+let enumerate_all formal_dim side = 
+   let (Hex_dimension_t.D dim) = formal_dim in 
+   Ennig.doyle (enumerate formal_dim side) 1 (dim-1);; 
 
 end ;;      
 
