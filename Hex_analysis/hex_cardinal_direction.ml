@@ -145,6 +145,16 @@ let all =
  Hex_cardinal_direction_t.Up;
 ];;
 
+let all_border_triangles dim =
+   List.flatten (
+     Image.image (fun side ->
+       Image.image (fun (cell1,cell2,cell3)->
+         (side,cell1,cell2,cell3)
+       ) (Private.Immediately_Next_to_Border.enumerate_triangles_for_side dim side)
+     )
+     all
+   ) ;;
+
 let all_orthogonal_pairs = 
    List.flatten(
    Image.image (fun d->
@@ -163,15 +173,7 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
        | _ -> List.filter (fun (dx,dy)->dy=0) base
      );;
 
-let enumerate_all_border_triangles dim =
-   List.flatten (
-     Image.image (fun side ->
-       Image.image (fun (cell1,cell2,cell3)->
-         (side,cell1,cell2,cell3)
-       ) (Private.Immediately_Next_to_Border.enumerate_triangles_for_side dim side)
-     )
-     all
-   ) ;;
+
 
 
 let for_eye_description    = Private.char_for_eye_description ;;
