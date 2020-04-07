@@ -97,6 +97,31 @@ let test d dim side p=
 
 end ;;
 
+module Immediately_Next_to_Border = struct 
+
+let enumerate1 =  Parallel_To_Border.enumerate 1;;
+let enumerate2 dim side k=  
+    let offset = (match side with 
+      Hex_cardinal_direction_t.Down  
+     |Hex_cardinal_direction_t.Right -> 1
+     |Hex_cardinal_direction_t.Left  
+     |Hex_cardinal_direction_t.Up    -> 0
+    ) in  
+    Parallel_To_Border.enumerate 2 dim side (k+offset);;
+
+let enumerate dim side k= 
+  (enumerate2 dim side k,enumerate1 dim side k,enumerate1 dim side (k+1));;
+
+let enumerate_triangles_for_side formal_dim side = 
+   let (Hex_dimension_t.D dim) = formal_dim in 
+   Ennig.doyle (enumerate formal_dim side) 1 (dim-1);; 
+
+
+  
+
+end ;;      
+
+
 end ;;
 
 
@@ -109,26 +134,7 @@ let test dim side cell = Private.Parallel_To_Border.test 1 dim side (Hex_cell.to
 
 end ;;      
 
-module Immediately_Next_to_Border = struct 
 
-let enumerate1 =  Private.Parallel_To_Border.enumerate 1;;
-let enumerate2 dim side k=  
-    let offset = (match side with 
-      Hex_cardinal_direction_t.Down  
-     |Hex_cardinal_direction_t.Right -> 1
-     |Hex_cardinal_direction_t.Left  
-     |Hex_cardinal_direction_t.Up    -> 0
-    ) in  
-    Private.Parallel_To_Border.enumerate 2 dim side (k+offset);;
-
-let enumerate dim side k= 
-  (enumerate2 dim side k,enumerate1 dim side k,enumerate1 dim side (k+1));;
-
-let enumerate_all formal_dim side = 
-   let (Hex_dimension_t.D dim) = formal_dim in 
-   Ennig.doyle (enumerate formal_dim side) 1 (dim-1);; 
-
-end ;;      
 
 
 let all =  
@@ -156,6 +162,16 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
        |Hex_cardinal_direction_t.Up -> List.filter (fun (dx,dy)->dx=0) base
        | _ -> List.filter (fun (dx,dy)->dy=0) base
      );;
+
+let enumerate_all_border_triangles dim =
+   List.flatten (
+     Image.image (fun side ->
+       Image.image (fun (cell1,cell2,cell3)->
+         (side,cell1,cell2,cell3)
+       ) (Private.Immediately_Next_to_Border.enumerate_triangles_for_side dim side)
+     )
+     all
+   ) ;;
 
 
 let for_eye_description    = Private.char_for_eye_description ;;
