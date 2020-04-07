@@ -64,7 +64,7 @@ let starters_for_side end_of_battle side =
 
 end ;; 
 
-let starters end_of_battle = 
+let nonsacrificial_starters end_of_battle = 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
    List.flatten (Image.image (Private.starters_for_side end_of_battle) sides);;
 

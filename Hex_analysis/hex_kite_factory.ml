@@ -14,7 +14,7 @@ let starters eob =
       initial_data   = eob ;
       finished       = [] ;
       failures       = [] ;
-      unfinished     = Hex_starters_for_kite.starters eob;
+      unfinished     = Hex_starters_for_kite.nonsacrificial_starters eob;
     };;    
 
 let pusher (factory,_) = 

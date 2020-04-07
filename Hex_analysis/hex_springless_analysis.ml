@@ -202,7 +202,7 @@ let starters eob =
        eob.Hex_end_of_battle_t.winner,
        eob,
        [],[],
-       Hex_starters_for_kite.starters eob);;
+       Hex_starters_for_kite.nonsacrificial_starters eob);;
 
 let late_starter eob pk= 
       (eob.Hex_end_of_battle_t.dimension,
