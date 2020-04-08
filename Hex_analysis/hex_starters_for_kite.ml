@@ -11,8 +11,7 @@ module Private = struct
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
-
-let starters_for_side end_of_battle side =
+let helper_for_starter_computation end_of_battle islands side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
@@ -24,7 +23,6 @@ let starters_for_side end_of_battle side =
    and end_base = Ordered.sort local_cmp (Image.image (
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
    )  pre_end_base) in                                
-   let islands = Hex_island.decompose end_of_battle in 
    let first_island = Hex_island.get_side side islands  in   
    let unexpected_starters = List.filter (
        Hex_named_connector.check_entry first_island
@@ -62,10 +60,26 @@ let starters_for_side end_of_battle side =
    ) in 
    Option.filter_and_unpack conditional_constructor  base1 ;; 
 
+let nonsacrificial_starters_for_side end_of_battle side =
+   let islands = Hex_island.decompose end_of_battle in  
+   helper_for_starter_computation end_of_battle islands side ;; 
+
+(*
+let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) = 
+  let artificial_eob = {
+      end_of_battle with 
+      Hex_end_of_battle_t.enemy_territory = 
+        (Hex_cell_set.merge (Hex_cell_set.safe_set [cell2;cell3]) end_of_battle.Hex_end_of_battle_t.enemy_territory)
+  } in ;;
+  let natural_islands = Hex_island.decompose end_of_battle in 
+  let artificial_islands = Hex_island.add_and_forget_the_adding cell2 natural_islands in 
+  helper_for_starter_computation artificial_end_of_battle artificial_islands side ;; 
+*)
+
 end ;; 
 
 let nonsacrificial_starters end_of_battle = 
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-   List.flatten (Image.image (Private.starters_for_side end_of_battle) sides);;
+   List.flatten (Image.image (Private.nonsacrificial_starters_for_side end_of_battle) sides);;
 
 

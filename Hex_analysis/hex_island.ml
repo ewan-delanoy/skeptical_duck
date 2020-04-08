@@ -58,8 +58,6 @@ let short_connections dim island1 island2 =
     and neighborhood2 = neighbors dim island2 in
     Set_of_poly_pairs.intersect neighborhood1 neighborhood2 ;;
 
-end ;;
-
 let add_cell_by_casing dim new_cell l =
    let new_p = Hex_cell.to_int_pair new_cell in 
    let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
@@ -69,11 +67,27 @@ let add_cell_by_casing dim new_cell l =
     ) neighbors 
    )  l in 
    let old_opts = Image.image (fun (Hex_island_t.I(opt,z))->opt) connected 
-   and opt_side = Private.side_for_cell dim new_cell in 
+   and opt_side = side_for_cell dim new_cell in 
    let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts) in 
    let old_pairs =  Image.image (fun (Hex_island_t.I(opt,z))->z) connected in 
    let new_z = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_pairs) in 
    (Hex_island_t.I(new_opt,new_z))::unconnected ;;
+
+end ;;
+
+(*
+let add_and_forget_the_adding dim new_cell old_islands =
+    let (new_island,islands1) =  Listennou.ht (Private.add_cell_by_casing dim new_cell old_islands) in 
+    let (Hex_island_t.I(opt,z)) =new_island in 
+    let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
+    if (opt=None)&&(new_z=Set_of_poly_pairs.empty_set) then islands1 else
+    (Hex_island_t.I(opt,new_z))::islands1 ;; 
+*)    
+
+let add_cell_by_casing = Private.add_cell_by_casing ;;
+
+
+
 
 let common_neighbors 
   dim island1 island2 =
