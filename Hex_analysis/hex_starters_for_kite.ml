@@ -64,17 +64,18 @@ let nonsacrificial_starters_for_side end_of_battle side =
    let islands = Hex_island.decompose end_of_battle in  
    helper_for_starter_computation end_of_battle islands side ;; 
 
-(*
+
 let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) = 
+  let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
   let artificial_eob = {
       end_of_battle with 
       Hex_end_of_battle_t.enemy_territory = 
         (Hex_cell_set.merge (Hex_cell_set.safe_set [cell2;cell3]) end_of_battle.Hex_end_of_battle_t.enemy_territory)
-  } in ;;
+  } in 
   let natural_islands = Hex_island.decompose end_of_battle in 
-  let artificial_islands = Hex_island.add_and_forget_the_adding cell2 natural_islands in 
-  helper_for_starter_computation artificial_end_of_battle artificial_islands side ;; 
-*)
+  let artificial_islands = Hex_island.add_and_forget_the_adding dim cell2 natural_islands in 
+  helper_for_starter_computation artificial_eob artificial_islands side ;; 
+
 
 end ;; 
 
@@ -82,4 +83,9 @@ let nonsacrificial_starters end_of_battle =
    let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
    List.flatten (Image.image (Private.nonsacrificial_starters_for_side end_of_battle) sides);;
 
+let sacrificial_starters end_of_battle = 
+    let triangles = Hex_end_of_battle.compatible_border_triangles end_of_battle in 
+    List.flatten (Image.image (fun triangle ->
+      Image.image (fun pk->(triangle,pk)) (Private.sacrificial_starter end_of_battle triangle)
+    ) triangles);;
 
