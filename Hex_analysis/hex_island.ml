@@ -75,14 +75,14 @@ let add_cell_by_casing dim new_cell l =
 
 end ;;
 
-(*
+
 let add_and_forget_the_adding dim new_cell old_islands =
     let (new_island,islands1) =  Listennou.ht (Private.add_cell_by_casing dim new_cell old_islands) in 
     let (Hex_island_t.I(opt,z)) =new_island in 
     let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
     if (opt=None)&&(new_z=Set_of_poly_pairs.empty_set) then islands1 else
     (Hex_island_t.I(opt,new_z))::islands1 ;; 
-*)    
+   
 
 let add_cell_by_casing = Private.add_cell_by_casing ;;
 
