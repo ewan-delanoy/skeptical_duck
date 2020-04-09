@@ -54,10 +54,13 @@ let rec main walker =
    else main (pusher walker) ;; 
 
 let extract_solutions l = Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c))  l);;
-  
+
+let solutions_from_factory factory =
+  extract_solutions (fst(main(factory,false)));;
 
 let nonsacrificial_compute eob = main (nonsacrificial_starters eob,false);;
-let nonsacrificial_solutions eob = extract_solutions (fst(nonsacrificial_compute eob));;
+
+let nonsacrificial_solutions eob = solutions_from_factory(nonsacrificial_starters eob);;
 
 (*
 let compute eob =
