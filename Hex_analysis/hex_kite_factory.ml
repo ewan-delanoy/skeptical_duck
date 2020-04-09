@@ -47,7 +47,7 @@ let extract_solutions l = Ordered.sort Total_ordering.standard (Image.image (fun
   
 
 let nonsacrificial_compute eob = main (nonsacrificial_starters eob,false);;
-let nonsacrificial_solutions eob = extract_solutions (fst(nonsacrificial_compute eob)));;
+let nonsacrificial_solutions eob = extract_solutions (fst(nonsacrificial_compute eob));;
 
 (*
 let compute eob =
