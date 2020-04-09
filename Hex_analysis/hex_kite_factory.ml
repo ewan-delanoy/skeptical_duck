@@ -7,7 +7,7 @@
 
 module Private = struct 
 
-let starters eob = 
+let nonsacrificial_starters eob = 
     {
       Hex_kite_factory_t.dimension  = eob.Hex_end_of_battle_t.dimension ;
       winner         = eob.Hex_end_of_battle_t.winner ;
@@ -16,6 +16,7 @@ let starters eob =
       failures       = [] ;
       unfinished     = Hex_starters_for_kite.nonsacrificial_starters eob;
     };;    
+   
 
 let pusher (factory,_) = 
    let raw_result=Image.image (
@@ -42,11 +43,22 @@ let rec main walker =
    then (factory.Hex_kite_factory_t.finished,factory.Hex_kite_factory_t.failures)
    else main (pusher walker) ;; 
 
+let extract_solutions l = Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c))  l);;
+  
 
+let nonsacrificial_compute eob = main (nonsacrificial_starters eob,false);;
+let nonsacrificial_solutions eob = extract_solutions (fst(nonsacrificial_compute eob)));;
 
+(*
+let compute eob =
+    let first_try = nonsacrificial_compute eob in 
+    if (fst first_try)<>[] 
+    then first_try
+    else 
+    let temp1 = Hex_starters_for_kite.sacrificial_starters eob in 
+*)        
 
 end ;;
 
-let compute eob = Private.main (Private.starters eob,false);;
-let solutions eob =
-   Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c)) (fst(compute eob)));;
+let nonsacrificial_compute = Private.nonsacrificial_compute;;
+let solutions = Private.nonsacrificial_solutions;;
