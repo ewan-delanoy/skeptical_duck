@@ -17,6 +17,16 @@ let nonsacrificial_starters eob =
       unfinished     = Hex_starters_for_kite.nonsacrificial_starters eob;
     };;    
    
+let sacrificial_starter eob pk= 
+    {
+      Hex_kite_factory_t.dimension  = eob.Hex_end_of_battle_t.dimension ;
+      winner         = eob.Hex_end_of_battle_t.winner ;
+      initial_data   = eob ;
+      finished       = [] ;
+      failures       = [] ;
+      unfinished     = [pk];
+    };;      
+
 
 let pusher (factory,_) = 
    let raw_result=Image.image (
