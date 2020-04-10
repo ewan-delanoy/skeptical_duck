@@ -79,8 +79,8 @@ end ;;
 
 (* it is assumed that new_cell touches the side *)
 let add_and_forget_the_adding dim (side,new_cell) old_islands =
-    let islands1 = Private.add_sided_cell_by_casing dim (side,new_cell) old_islands) in 
-    let (singleton,islands2) = List.partition (fun Hex_island_t.I(opt,z) -> opt=Some side) islands1 in 
+    let islands1 = Private.add_sided_cell_by_casing dim (Some side,new_cell) old_islands in 
+    let (singleton,islands2) = List.partition (fun (Hex_island_t.I(opt,z)) -> opt=Some side) islands1 in 
     let (Hex_island_t.I(opt,z)) = List.hd singleton in 
     let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
     islands2@[Hex_island_t.I(opt,new_z)] ;; 
