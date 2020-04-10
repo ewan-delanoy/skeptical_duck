@@ -28,7 +28,7 @@ let sacrificial_starter eob pk=
     };;      
 
 
-let pusher (factory,_) = 
+let pusher factory = 
    let raw_result=Image.image (
          fun pk->
          (pk,Hex_partial_kite.extensions factory.Hex_kite_factory_t.initial_data pk) 
@@ -40,25 +40,24 @@ let pusher (factory,_) =
    let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
    let new_finished_ones = Ordered.merge Total_ordering.standard 
           ordered_new_moleculars (factory.Hex_kite_factory_t.finished) in      
-   ({
+   {
       factory with 
       Hex_kite_factory_t.finished = new_finished_ones ;
       failures = new_failures ;
       unfinished     = new_partial_kites ;
-    },new_partial_kites=[]);;
+    };;
 
 let rec main walker =
-   let (factory,computation_has_finished) = walker in 
-   if computation_has_finished 
-   then (factory.Hex_kite_factory_t.finished,factory.Hex_kite_factory_t.failures)
+   if walker.Hex_kite_factory_t.unfinished = [] 
+   then (walker.Hex_kite_factory_t.finished,walker.Hex_kite_factory_t.failures)
    else main (pusher walker) ;; 
 
 let extract_solutions l = Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c))  l);;
 
 let solutions_from_factory factory =
-  extract_solutions (fst(main(factory,false)));;
+  extract_solutions (fst(main(factory)));;
 
-let nonsacrificial_compute eob = main (nonsacrificial_starters eob,false);;
+let nonsacrificial_compute eob = main (nonsacrificial_starters eob);;
 
 let nonsacrificial_solutions eob = solutions_from_factory(nonsacrificial_starters eob);;
 
