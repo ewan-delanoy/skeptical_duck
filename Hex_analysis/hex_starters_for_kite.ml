@@ -73,7 +73,7 @@ let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) =
         (Hex_cell_set.merge (Hex_cell_set.safe_set [cell2;cell3]) end_of_battle.Hex_end_of_battle_t.enemy_territory)
   } in 
   let natural_islands = Hex_island.decompose artificial_eob in 
-  let artificial_islands = Hex_island.add_and_forget_the_adding dim (Some side,cell2) natural_islands in 
+  let artificial_islands = Hex_island.add_and_forget_the_adding dim (side,cell2) natural_islands in 
   let opposite_side = Hex_cardinal_direction.oppose side in 
   (helper_for_starter_computation artificial_eob artificial_islands side)@
   (helper_for_starter_computation artificial_eob artificial_islands opposite_side)  ;; 
