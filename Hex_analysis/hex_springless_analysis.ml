@@ -34,51 +34,41 @@ let test_for_finality pk =
 
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
 
-let deduce_boarded_islands  l (birth,death) (fst_step,lst_step)=
-     let original_side = Hex_island.eviscerate birth
-     and final_side =  Hex_island.eviscerate death in  
-    let n = (List.length l)/2  in 
+let deduce_boarded_islands  l (birth,death) = 
+    let n = ((List.length l)-1)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
     let sea_entry = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.entry )
     and sea_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit ) in 
-    let starter_entry = sea_entry   
-    and starter_exit = sea_exit   
-    and ender_entry = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.entry )  
-    and ender_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit )   in 
-    let exits_in_triple = (fun k->
-       if k=1 then original_side else 
-       if k=2 then starter_exit(fst_step) else 
-       if k=n+2 then ender_exit(lst_step) else sea_exit(gl (2*k-4))  ) 
-    and middle_in_triple = (fun k->
+    let first_in_triple =(fun k->
+       if k=1 then Hex_island.eviscerate birth else sea_exit(gl(2*k-3))
+    ) 
+    and second_in_triple = (fun k->
        if k=1   then birth else 
-       if k=n+2 then death else Hex_kite_element.claim_island(gl (2*k-3))  )
-    and entries_in_triple = (fun k->
-       if k=1 then starter_entry(fst_step) else 
-       if k=n+1 then ender_entry(lst_step) else 
-       if k=n+2 then final_side else sea_entry(gl (2*k-2))  ) in     
+       if k=n+2 then death else Hex_kite_element.claim_island(gl (2*k-2))
+    )   
+    and third_in_triple = (fun k->
+       if k=n+2 then Hex_island.eviscerate death else sea_entry(gl(2*k-1))
+    ) in  
     let naive_trier=(fun k ->
-         (exits_in_triple k,middle_in_triple k,entries_in_triple k) ) in 
+         (first_in_triple k,second_in_triple k,third_in_triple k) ) in 
     let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l,k))) in     
     Ennig.doyle trier 1 (n+2);;
 
 let active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
-   and death = compute_place_of_death pk
-   and rl=pk.Hex_partial_kite_t.stops_so_far 
-   and fst_step = pk.Hex_partial_kite_t.first_step  in 
-   let lst_step = List.hd rl in 
-    let unfiltered_l=List.rev rl in  
+   and death = compute_place_of_death pk   in 
+    let unfiltered_l=(pk.Hex_partial_kite_t.first_step)::(List.rev pk.Hex_partial_kite_t.stops_so_far) in  
     let l = List.filter ( 
        function (Hex_kite_element_t.Earth(_))
            |(Hex_kite_element_t.Sea(_)) -> true
            |_->false
     )  unfiltered_l  in 
-    let boarded_islands = deduce_boarded_islands l (birth,death) (fst_step,lst_step) in 
+    let boarded_islands = deduce_boarded_islands l (birth,death)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_kite_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
        |_->None
-    ) (fst_step::l)) 
+    ) l) 
     and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
     (function (island1,island,island2)-> 
          Hex_island.minimal_connection (island1,island2) island
