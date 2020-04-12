@@ -90,7 +90,7 @@ let extend_with_springboard dim pk new_sb =
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
     and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
-    let restricted_islands = List.filter (Hex_springboard.check_island new_sb) old_islands 
+    let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
     and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   in
     let pk3 ={
       pk2 with 

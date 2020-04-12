@@ -33,7 +33,7 @@ let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))=
     Hex_cell_set.setminus possibly_too_large opening_pair ;;
 
 
-let check_island springboard island = 
+let check_island_after_springboard_insertion springboard island = 
    Hex_cell_set.does_not_intersect 
       (Private.we_for_springboard springboard)
          (Hex_island.inner_earth island);;
