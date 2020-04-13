@@ -20,16 +20,18 @@ let we_for_list = function
 let we_for_pair  (cell,path)=    
      Hex_cell_set.insert cell (we_for_list path) ;; 
 
-let we_for_springboard (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,ke)) =
+let we_for_springboard (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre)) =
     we_for_pair (cell,path) ;;
 
 end ;;
 
 
-let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))=
-    let opening_pair = Hex_cell_set.safe_set [cell;cell2] in 
+let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))=
+    let opening_pair = Hex_cell_set.safe_set 
+       [cell;Hex_springboard_end.alternative_move spre] in 
     let possibly_too_large =
-       Hex_cell_set.merge actv_in_sol1 (Hex_possibly_final_connector.extra_active_part pfc) in 
+       Hex_cell_set.merge actv_in_sol1 
+         (Hex_springboard_end.extra_active_part spre) in 
     Hex_cell_set.setminus possibly_too_large opening_pair ;;
 
 
@@ -44,29 +46,29 @@ let check_sea springboard nc =
       (Private.we_for_springboard springboard)
          (Hex_named_connector.wet_earth nc);;         
 
-let is_final (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))= 
-   Hex_possibly_final_connector.is_final pfc;;
+let is_final (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))= 
+   Hex_springboard_end.is_final spre;;
 
-let opt_constructor (cell,path,sol1,actv_in_sol1,cell2,ke) = 
+let opt_constructor (cell,path,sol1,actv_in_sol1,spre) = 
    let w1 = Private.we_for_pair (cell,path)
-   and w2 = Hex_cell_set.insert cell2 (Hex_possibly_final_connector.wet_earth ke) in 
+   and w2 = Hex_springboard_end.wet_earth spre in 
    if Hex_cell_set.does_not_intersect w1 w2 
-   then Some(Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,ke)) 
+   then Some(Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre)) 
    else None ;;
 
-let to_molecular_linker (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))= 
+let to_molecular_linker (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))= 
   (* strictly speaking, this is only a partial molecular linker *)
   Hex_molecular_linker.fold_merge (
-     (Hex_molecular_linker.pair cell cell2)::
-     (Hex_possibly_final_connector.to_molecular_linker pfc)::
+     (Hex_molecular_linker.pair cell (Hex_springboard_end.alternative_move spre))::
+     (Hex_springboard_end.extra_molecular_linker spre)::
      (Option.filter_and_unpack Hex_kite_springless_element.to_molecular_linker path)
   );;
 
 
-let to_readable_string (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,pfc))=
+let to_readable_string (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))=
   let path_description = String.concat "," (Image.image Hex_kite_springless_element.to_readable_string path) in 
   "\194\171 "^(Hex_cell.to_string cell)^" -> "^path_description^" \199\128 "^
-              (Hex_cell.to_string cell2)^" -> "^(Hex_possibly_final_connector.to_readable_string pfc)^
+              (Hex_springboard_end.to_readable_string spre)^
   " \194\187" ;;
 
   

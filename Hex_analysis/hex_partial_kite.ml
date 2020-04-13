@@ -84,7 +84,8 @@ let explore eob pk (cell,pfc) = match pfc with
 
 
 let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,ke)) = new_sb in 
+    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,spre)) = new_sb in
+    let cell2 = Hex_springboard_end.alternative_move spre in  
     let pk2 = add_cell_by_casing dim cell2 pk in  
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
@@ -100,7 +101,7 @@ let extend_with_springboard dim pk new_sb =
         unvisited_seas =  selector old_seas;
         unvisited_enders =  selector old_enders ;
     } in 
-    match ke with 
+    match Hex_springboard_end.extra_content spre with 
      Hex_possibly_final_connector_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
     |Hex_possibly_final_connector_t.Nonfinal(nc) -> snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
 
@@ -178,14 +179,16 @@ let explore_minimal_casings eob pk =
    and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
       Image.image (fun (path,sol1,sol2)->(cell,path,sol1,sol2) ) l
    ) temp1) in 
-   (short_to_border@temp3,Image.image fst first_whole);;
+   (short_to_border@temp3,Image.image (fun ((cell2,pfc),_)->
+      Hex_springboard_end.construct_usual cell2 pfc
+   ) first_whole);;
 
 let compute_springboards eob pk =
   let (good_casings,all_casings) = explore_minimal_casings eob pk in 
   let temp1 = Cartesian.product good_casings all_casings in 
   let temp2 = Image.image (
-    fun ((cell,path,sol1,sol2),(cell2,ke))->
-       (cell,path,sol1,sol2,cell2,ke)
+    fun ((cell,path,sol1,sol2),spre)->
+       (cell,path,sol1,sol2,spre)
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
