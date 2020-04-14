@@ -78,9 +78,10 @@ let explore_final eob pk (cell,nc) =
          [Hex_kite_springless_element_t.Sea(nc)],mlclr,actv
       ];;
 
-let explore eob pk (cell,pfc) = match pfc with 
-    Hex_possibly_final_connector_t.Final(nc) -> explore_final eob pk (cell,nc) 
-   |Hex_possibly_final_connector_t.Nonfinal(nc) -> explore_nonfinal eob pk (cell,nc) ;;
+let explore eob pk (cell,(is_final,nc)) = 
+   if is_final 
+   then explore_final eob pk (cell,nc)  
+   else explore_final eob pk (cell,nc)  ;;
 
 
 let extend_with_springboard dim pk new_sb =
@@ -101,9 +102,12 @@ let extend_with_springboard dim pk new_sb =
         unvisited_seas =  selector old_seas;
         unvisited_enders =  selector old_enders ;
     } in 
-    match Hex_springboard_end.extra_content spre with 
-     Hex_possibly_final_connector_t.Final(final_nc) -> Hex_springless_analysis.extend_with_final_sea pk3 final_nc 
-    |Hex_possibly_final_connector_t.Nonfinal(nc) -> snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
+    let nc = Hex_springboard_end.extra_content spre in 
+    if Hex_springboard_end.is_final spre 
+    then Hex_springless_analysis.extend_with_final_sea pk3 nc 
+    else snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
+
+
 
 let casings_from_islands eob pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
@@ -164,9 +168,9 @@ let explore_minimal_casings eob pk =
         let pk1 = add_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
         let (ext1,ext2) = Hex_springless_analysis.extensions dim eob pk1 in 
         let part1 = Image.image (fun (elt,new_pk)->
-          (cell,Hex_possibly_final_connector_t.Final(Hex_kite_springless_element.claim_named_connector elt))) ext1 
+          (cell,(true,Hex_kite_springless_element.claim_named_connector elt))) ext1 
         and part2 = Image.image (fun (elt,new_pk)->
-          (cell,Hex_possibly_final_connector_t.Nonfinal(Hex_kite_springless_element.claim_named_connector elt))) ext2 in   
+          (cell,(false,Hex_kite_springless_element.claim_named_connector elt))) ext2 in   
         part1@part2
       ) minimal_casings
    ) in 
@@ -179,8 +183,8 @@ let explore_minimal_casings eob pk =
    and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
       Image.image (fun (path,sol1,sol2)->(cell,path,sol1,sol2) ) l
    ) temp1) in 
-   (short_to_border@temp3,Image.image (fun ((cell2,pfc),_)->
-      Hex_springboard_end.construct_usual cell2 pfc
+   (short_to_border@temp3,Image.image (fun ((cell2,(is_final,nc)),_)->
+      Hex_springboard_end.construct_usual cell2 is_final nc
    ) first_whole);;
 
 let compute_springboards eob pk =

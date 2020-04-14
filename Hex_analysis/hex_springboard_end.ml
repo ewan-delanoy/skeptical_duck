@@ -4,26 +4,35 @@
 
 *)
 
-let alternative_move (Hex_springboard_end_t.End(cell2,pfc))= cell2 ;;
+let alternative_move spre= spre.Hex_springboard_end_t.alternative_move ;;
 
-let construct_usual cell2 pfc = (Hex_springboard_end_t.End(cell2,pfc));;
+let construct_usual 
+  cell2 final_or_not nc = {
+      Hex_springboard_end_t.alternative_move = cell2 ;
+      is_final = final_or_not ;
+      extra_content = nc;
+  };;
 
-let extra_active_part (Hex_springboard_end_t.End(cell2,pfc))=
-    Hex_possibly_final_connector.extra_active_part pfc ;;
+let extra_active_part spre=
+    Hex_named_connector.extra_active_cells 
+      spre.Hex_springboard_end_t.extra_content ;;
+    
 
-let extra_content (Hex_springboard_end_t.End(cell2,pfc))= pfc ;;
+let extra_content spre=
+      spre.Hex_springboard_end_t.extra_content ;;
 
-let extra_molecular_linker (Hex_springboard_end_t.End(cell2,pfc))=
-    Hex_possibly_final_connector.to_molecular_linker pfc ;;
+let extra_molecular_linker spre=
+    Hex_named_connector.to_molecular_linker spre.Hex_springboard_end_t.extra_content ;;
 
-let is_final (Hex_springboard_end_t.End(cell2,pfc))=
-   Hex_possibly_final_connector.is_final pfc;;
+let is_final spre=
+   spre.Hex_springboard_end_t.is_final;;
 
-let wet_earth (Hex_springboard_end_t.End(cell2,pfc)) = 
-   Hex_cell_set.insert cell2 (Hex_possibly_final_connector.wet_earth pfc) ;;
+let wet_earth spre = 
+   Hex_cell_set.insert spre.Hex_springboard_end_t.alternative_move
+    (Hex_named_connector.wet_earth spre.Hex_springboard_end_t.extra_content) ;;
 
-let to_readable_string (Hex_springboard_end_t.End(cell2,pfc))=
-  (Hex_cell.to_string cell2)^" -> "^
-  (Hex_possibly_final_connector.to_readable_string pfc);;
+let to_readable_string spre=
+  (Hex_cell.to_string spre.Hex_springboard_end_t.alternative_move)^" -> "^
+  (Hex_named_connector.to_readable_string spre.Hex_springboard_end_t.extra_content);;
 
      

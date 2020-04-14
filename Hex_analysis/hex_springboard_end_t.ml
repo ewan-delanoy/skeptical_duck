@@ -4,4 +4,8 @@
 
 *)
 
-type t = End of Hex_cell_t.t * Hex_possibly_final_connector_t.t ;;
+type t = {
+   alternative_move : Hex_cell_t.t ;
+   is_final : bool ;
+   extra_content : Hex_named_connector_t.t ;
+} ;;
