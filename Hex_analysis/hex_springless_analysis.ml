@@ -32,12 +32,31 @@ let test_for_finality pk =
    Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
    | _ -> false;;
 
-(*
+let helper2_for_removing_redundant_islands treated pending1 pending2  = 
+   if (Hex_kite_springless_element.is_an_island pending1)
+          &&
+          (Hex_kite_springless_element.is_an_island pending2)
+   then List.rev (pending2::treated)
+   else List.rev (pending1::pending2::treated) ;;
+
 let rec helper_for_removing_redundant_islands (treated,pending1,pending2,to_be_treated) = 
    match to_be_treated with 
     [] -> helper2_for_removing_redundant_islands treated pending1 pending2 
    |pending3::others ->
-*)      
+       if (Hex_kite_springless_element.is_an_island pending1)
+          &&
+          (Hex_kite_springless_element.is_an_island pending2)
+       then helper_for_removing_redundant_islands (treated,pending2,pending3,to_be_treated)
+       else helper_for_removing_redundant_islands (pending1::treated,pending2,pending3,to_be_treated) ;;
+      
+let remove_redundant_islands l=match l with 
+  [] -> []
+  |pending1::others1 ->
+    (
+      match others1 with 
+      [] -> [pending1]
+      |pending2::others2 -> helper_for_removing_redundant_islands ([],pending1,pending2,others2)
+    );; 
 
 
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
@@ -45,14 +64,14 @@ exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
 let deduce_boarded_islands  l (birth,death) = 
     let n = ((List.length l)-1)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
-    let sea_entry = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.entry )
-    and sea_exit = (fun x->(Hex_kite_element.claim_sea (x)).Hex_named_connector_t.exit ) in 
+    let sea_entry = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_named_connector_t.entry )
+    and sea_exit = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_named_connector_t.exit ) in 
     let first_in_triple =(fun k->
        if k=1 then Hex_island.eviscerate birth else sea_exit(gl(2*k-3))
     ) 
     and second_in_triple = (fun k->
        if k=1   then birth else 
-       if k=n+2 then death else Hex_kite_element.claim_island(gl (2*k-2))
+       if k=n+2 then death else Hex_kite_springless_element.claim_island(gl (2*k-2))
     )   
     and third_in_triple = (fun k->
        if k=n+2 then Hex_island.eviscerate death else sea_entry(gl(2*k-1))

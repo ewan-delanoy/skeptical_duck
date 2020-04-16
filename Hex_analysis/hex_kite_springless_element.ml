@@ -21,7 +21,7 @@ let claim_island x = match x with
     Hex_kite_springless_element_t.Sea(nc)-> raise(Claim_island_exn(x))
    |Earth(island)-> island ;;
 
-let claim_named_connector x = match x with 
+let claim_sea x = match x with 
     Hex_kite_springless_element_t.Earth(island)-> raise(Claim_named_connector_exn(x))
    |Sea(nc)-> nc ;;
 
