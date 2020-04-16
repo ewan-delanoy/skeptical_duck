@@ -45,9 +45,9 @@ let extract_island elt= match elt with
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
    match elt with  
-   Hex_kite_element_t.Sea(_)
-   |Springboard(_) -> false
-   |Earth(island)-> (Hex_island.outer_earth island = Some final_side);;
+   Hex_kite_element_t.Sea(_) -> false 
+   |_-> let the_island = extract_island elt in 
+   (Hex_island.outer_earth the_island = Some final_side);;
 ;;
 
 let of_springless = function
