@@ -59,7 +59,7 @@ let remove_redundant_islands l=match l with
     );; 
 
 
-exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
+exception Deduce_boarded_islands_exn of (Hex_kite_springless_element_t.t list) * int ;;
 
 let deduce_boarded_islands  l (birth,death) = 
     let n = ((List.length l)-1)/2  in 
