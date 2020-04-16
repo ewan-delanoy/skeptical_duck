@@ -27,6 +27,8 @@ let extra_molecular_linker spre=
 let is_final spre=
    spre.Hex_springboard_end_t.is_final;;
 
+let new_island (spre:Hex_springboard_end_t.t) = Hex_island_t.I(None,Set_of_poly_pairs.empty_set) ;;
+
 let wet_earth spre = 
    Hex_cell_set.insert spre.Hex_springboard_end_t.alternative_move
     (Hex_named_connector.wet_earth spre.Hex_springboard_end_t.extra_content) ;;
