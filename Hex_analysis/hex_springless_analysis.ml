@@ -32,6 +32,10 @@ let test_for_finality pk =
    Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
    | _ -> false;;
 
+(*
+let rec helper_for_removing_springboards (treated,pending,to_be_treated) = 
+*)
+
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
 
 let deduce_boarded_islands  l (birth,death) = 
