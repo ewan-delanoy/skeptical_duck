@@ -8,6 +8,7 @@
 
 exception Claim_island_exn of Hex_kite_element_t.t ;;
 exception Claim_sea_exn of Hex_kite_element_t.t ;;
+exception Extract_island_exn of Hex_kite_element_t.t ;;
 exception To_springless_exn of Hex_kite_element_t.t ;;
 
 module Private = struct 
@@ -34,6 +35,12 @@ let claim_island x = match x with
 let claim_sea x = match x with 
     Hex_kite_element_t.Sea(nc)-> nc
    |_-> raise(Claim_sea_exn(x)) ;;
+
+let extract_island elt= match elt with 
+    Hex_kite_element_t.Earth(island)-> island
+   |Sea(nc)-> raise(Extract_island_exn(x))
+   |Springboard(springboard)->Hex_springboard.new_island springboard;;
+
 
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
