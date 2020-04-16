@@ -13,67 +13,35 @@ let last_stop pk = match pk.Hex_partial_kite_t.stops_so_far with
     [] ->pk.Hex_partial_kite_t.first_step 
    |elt::_ -> elt ;;
 
-let explore_nonfinal eob pk (cell,nc) = 
-      let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
-      let nbr_of_common_steps = List.length old_stops in 
-      let pk1 = Hex_impose_active_cell.impose_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-      let pk2 = snd(Hex_springless_analysis.extend_with_sea pk1 nc) in 
-      let temp = Hex_springless_analysis.finalize eob pk2 in 
-      Image.image (fun (a1,a2,stops,mlclr,actv)->
-        let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
-        (Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
-      ) temp ;;
-
-let explore_final eob pk (cell,nc) = 
-      let pk1 = Hex_impose_active_cell.impose_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-      let pk2 = Hex_springless_analysis.extend_with_final_sea pk1 nc in 
-      let mlclr = Hex_springless_analysis.to_molecular_linker pk2 
-      and actv = Hex_springless_analysis.active_part pk2 in 
-      [
-         [Hex_kite_springless_element_t.Sea(nc)],mlclr,actv
-      ];;
-
-let explore eob pk (cell,(is_final,nc)) = 
-   if is_final 
-   then explore_final eob pk (cell,nc)  
-   else explore_final eob pk (cell,nc)  ;;
 
 
-let extend_with_springboard dim pk (cell,path,sol1,sol2,cell2) =
-    let last_island_before = Hex_kite_element.extract_island(last_stop pk) in 
-    let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in  
-    let last_island_after = Hex_kite_element.extract_island(last_stop pk2) 
-    and final_or_not = Hex_kite_element.is_final (Hex_partial_kite_t.place_of_birth in 
-    let spre = Hex_springboard_end.construct_unusual cell2 last_island_after in 
-    let new_sb = (Hex_springboard_t.Sp(cell,path,sol1,sol2,spre)) in
+
+let extend_with_springboard dim pk new_sb =
+    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,new_island)) = new_sb in  
+    let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
     and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
     let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
     and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   in
-    let pk3 ={
+    {
       pk2 with 
         Hex_partial_kite_t.stops_so_far = 
-           ((List.hd old_stops)::(Hex_kite_element_t.Springboard new_sb)::(List.tl old_stops)) ;
+           ((Hex_kite_element_t.Springboard new_sb)::old_stops) ;
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         unvisited_enders =  selector old_enders ;
-    } in 
-    let nc = Hex_springboard_end.extra_content spre in 
-    if Hex_springboard_end.is_final spre 
-    then Hex_springless_analysis.extend_with_final_sea pk3 nc 
-    else snd(Hex_springless_analysis.extend_with_sea pk3 nc) ;;
+    }  ;;
 
 
-
-let casings_from_islands eob pk = 
+let casings_from_one_step_advances eob pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let dim = eob.Hex_end_of_battle_t.dimension 
-    and last_island = Hex_kite_element.claim_island(List.hd old_stops) 
-    and other_islands = pk.Hex_partial_kite_t.unvisited_islands in 
-    let temp1 = Hex_island.short_connections_to_other_islands dim last_island other_islands in 
-    let temp2 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp1 in 
+    and last_island = Hex_kite_element.claim_island(List.hd old_stops)  in 
+    let temp1 = Hex_island.neighbors dim last_island  in
+    let temp2 = Set_of_poly_pairs.image Hex_cell.of_int_pair temp1 in  
+    let temp3 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp2 in 
     Hex_cell_set.safe_set temp2;; 
 
 let casings_from_seas eob pk =
@@ -89,68 +57,65 @@ let casings_from_seas eob pk =
    )l) ) in 
    Hex_cell_set.merge
    (selector middle_casings_with_hooks)
-   (selector end_casings_with_hooks) ;; 
+   (selector end_casings_with_hooks) ;;   
 
-
-let border_casings eob pk =   
-    let dim = eob.Hex_end_of_battle_t.dimension in 
-    let last_stop = (match pk.Hex_partial_kite_t.stops_so_far with 
-    [] -> pk.Hex_partial_kite_t.first_step 
-    |last_elt :: _-> last_elt
-     ) in 
-    let last_island = Hex_kite_element.claim_island last_stop 
-    and goal_side = Hex_cardinal_direction.oppose (Hex_springless_analysis.original_side pk) in  
-    let goal_island = Hex_island.get_side goal_side pk.Hex_partial_kite_t.unvisited_islands in
-    let temp1 = Hex_island.short_connections_to_other_islands dim  last_island [goal_island] in
-    List.filter (
-      fun cell-> Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied
-    )  temp1 ;;    
-
-let minimal_casings eob pk =
+let all_casings eob pk =
    Hex_cell_set.forget_order (Hex_cell_set.merge
-      (casings_from_islands eob pk)
+      (casings_from_one_step_advances eob pk)
       (casings_from_seas eob pk)
    ) ;; 
+
+let data_common_to_both_parts eob pk =
+   (* both means : both for the light & heavy part. See definition of compute_springboards *)
+   let dim = eob.Hex_end_of_battle_t.dimension in 
+   let temp1 = all_casings eob pk in 
+    Image.image (
+      fun cell -> 
+        let new_pk=Hex_impose_active_cell.impose_cell_by_casing dim cell pk in 
+        (cell,new_pk) 
+   ) temp1 ;;
+
+let light_part common_to_both = 
+   Image.image (fun (cell,new_pk)->
+      (cell,Hex_kite_element.extract_island (last_stop new_pk))
+   ) common_to_both;;
+
+let explore_yet_untried_path eob old_pk (cell,new_pk) =
+   let nbr_of_common_steps = List.length old_pk.Hex_partial_kite_t.stops_so_far in 
+   let temp = Hex_springless_analysis.finalize eob new_pk in 
+   Image.image (fun (_,_,stops,mlclr,actv)->
+        let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
+        (cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
+   ) temp ;;
+
+let explore_yet_untried_paths eob old_pk paths =
+   List.flatten(Image.image (explore_yet_untried_path eob old_pk) paths);;
+
+let heavy_part eob old_pk common_to_both =
+   let (final_ones,nonfinal_ones) = List.partition (
+       fun (cell,new_pk) -> Hex_springless_analysis.is_final new_pk 
+   ) common_to_both in 
+   let one_move_solutions= Image.image (fun (cell,new_pk)->
+      let mlclr = Hex_springless_analysis.to_molecular_linker new_pk 
+      and actv = Hex_springless_analysis.active_part new_pk in 
+      (cell,[],mlclr,actv)) final_ones in 
+   one_move_solutions@(explore_yet_untried_paths eob old_pk nonfinal_ones)  ;;
 
 let cellset_setminus x y =
    let sx = Hex_cell_set.safe_set x 
    and sy = Hex_cell_set.safe_set y in 
    Hex_cell_set.forget_order(Hex_cell_set.setminus sx sy);;         
 
-let explore_minimal_casings eob pk =
-   let dim = eob.Hex_end_of_battle_t.dimension in 
-   let brdr_casings = border_casings eob pk in
-   let minimal_casings = cellset_setminus ( minimal_casings eob pk) brdr_casings in 
-   let minimal_casings_with_hooks = List.flatten (
-      Image.image (fun cell->
-        let pk1 = Hex_impose_active_cell.impose_cell_by_casing eob.Hex_end_of_battle_t.dimension cell pk in 
-        let (ext1,ext2) = Hex_springless_analysis.extensions dim eob pk1 in 
-        let part1 = Image.image (fun (elt,new_pk)->
-          (cell,(true,Hex_kite_springless_element.claim_sea elt))) ext1 
-        and part2 = Image.image (fun (elt,new_pk)->
-          (cell,(false,Hex_kite_springless_element.claim_sea elt))) ext2 in   
-        part1@part2
-      ) minimal_casings
-   ) in 
-   let first_whole = Image.image (fun p->(p,explore eob pk p)) minimal_casings_with_hooks in 
-   let temp1 = List.filter (fun (p,l)->l<>[]) first_whole in 
-   let short_to_border = Image.image (
-     fun cell -> let new_pk = Hex_impose_active_cell.impose_cell_by_casing dim cell pk in 
-       (cell,[],Hex_springless_analysis.to_molecular_linker new_pk,Hex_springless_analysis.active_part new_pk)
-   ) brdr_casings
-   and temp3 = List.flatten (Image.image (fun ((cell,nc),l)->
-      Image.image (fun (path,sol1,sol2)->(cell,path,sol1,sol2) ) l
-   ) temp1) in 
-   (short_to_border@temp3,Image.image (fun ((cell2,(is_final,nc)),_)->
-      Hex_springboard_end.construct_usual cell2 is_final nc
-   ) first_whole);;
+
 
 let compute_springboards eob pk =
-  let (good_casings,all_casings) = explore_minimal_casings eob pk in 
-  let temp1 = Cartesian.product good_casings all_casings in 
+  let common_to_both =  data_common_to_both_parts eob pk in 
+  let heavy = heavy_part eob pk common_to_both 
+  and light = light_part        common_to_both in 
+  let temp1 = Cartesian.product heavy light in 
   let temp2 = Image.image (
-    fun ((cell,path,sol1,sol2),spre)->
-       (cell,path,sol1,sol2,spre)
+    fun ((cell,path,sol1,sol2),(cell2,new_island))->
+       (cell,path,sol1,sol2,cell2,new_island)
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
