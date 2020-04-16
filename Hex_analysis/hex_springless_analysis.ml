@@ -86,14 +86,10 @@ let active_part  pk =
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = compute_place_of_death pk   in 
     let unfiltered_l=(pk.Hex_partial_kite_t.first_step)::(List.rev pk.Hex_partial_kite_t.stops_so_far) in  
-    let l = List.filter ( 
-       function (Hex_kite_element_t.Earth(_))
-           |(Hex_kite_element_t.Sea(_)) -> true
-           |_->false
-    )  unfiltered_l  in 
+    let l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l)  in 
     let boarded_islands = deduce_boarded_islands l (birth,death)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
-       function (Hex_kite_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
+       function (Hex_kite_springless_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
        |_->None
     ) l) 
     and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
