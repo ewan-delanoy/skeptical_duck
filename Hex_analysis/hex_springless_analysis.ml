@@ -28,9 +28,12 @@ let test_for_finality pk =
    let place_of_death = compute_place_of_death pk in 
    match pk.Hex_partial_kite_t.stops_so_far with 
    [] -> false 
-   |last_elt::_->match  last_elt with 
+   |last_elt::_->
+   match  last_elt with 
    Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
-   | _ -> false;;
+   | _ -> 
+      let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
+      Hex_kite_element.is_final final_side last_elt;;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
@@ -250,6 +253,7 @@ let compute eob = main (starters eob,false);;
 
 (* Old copy of H_ex_kite_factory ends here *)
 
+
 end ;; 
 
 let active_part = Private.active_part ;;
@@ -258,6 +262,7 @@ let extend_with_final_sea = Private.extend_with_final_sea ;;
 let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize eob pk= fst(Private.main (Private.late_starter eob pk,false));;
+let is_final = Private.test_for_finality ;;
 let original_side = Private.original_side ;;
 let solution_details = Private.solution_details ;;
 let to_molecular_linker = Private.to_molecular_linker;;
