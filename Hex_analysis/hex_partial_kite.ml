@@ -9,7 +9,9 @@
 module Private = struct 
 
 
-
+let last_stop pk = match pk.Hex_partial_kite_t.stops_so_far with 
+    [] ->pk.Hex_partial_kite_t.first_step 
+   |elt::_ -> elt ;;
 
 let explore_nonfinal eob pk (cell,nc) = 
       let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
@@ -37,10 +39,12 @@ let explore eob pk (cell,(is_final,nc)) =
    else explore_final eob pk (cell,nc)  ;;
 
 
-let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,spre)) = new_sb in
-    let cell2 = Hex_springboard_end.alternative_move spre in  
+let extend_with_springboard dim pk (cell,path,sol1,sol2,cell2) =
+    let last_island_before = Hex_kite_element.extract_island(last_stop pk) in 
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in  
+    let last_island_after = Hex_kite_element.extract_island(last_stop pk2) in 
+    let spre = Hex_springboard_end.construct_unusual cell2 last_island_after in 
+    let new_sb = (Hex_springboard_t.Sp(cell,path,sol1,sol2,spre)) in
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
