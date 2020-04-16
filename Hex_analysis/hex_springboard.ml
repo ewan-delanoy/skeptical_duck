@@ -49,6 +49,9 @@ let check_sea springboard nc =
 let is_final (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))= 
    Hex_springboard_end.is_final spre;;
 
+let new_island (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,spre))=
+    Hex_springboard_end.new_island spre ;;
+
 let opt_constructor (cell,path,sol1,actv_in_sol1,spre) = 
    let w1 = Private.we_for_pair (cell,path)
    and w2 = Hex_springboard_end.wet_earth spre in 

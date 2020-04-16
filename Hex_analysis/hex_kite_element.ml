@@ -22,6 +22,11 @@ let to_readable_string = function
 
 end ;;
 
+let compress_to_springless elt= match elt with 
+    Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
+   |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc)
+   |Springboard(springboard)->Hex_kite_springless_element_t.Earth(Hex_springboard.new_island springboard);;
+
 let claim_island x = match x with 
     Hex_kite_element_t.Earth(island)-> island
    |_-> raise(Claim_island_exn(x)) ;;
