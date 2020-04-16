@@ -12,7 +12,7 @@ let we_for_homogeneous_list l =
 let we_for_list = function 
   [] -> Hex_cell_set.empty_set 
   |joiner ::others ->
-    let nc = Hex_kite_springless_element.claim_named_connector joiner in 
+    let nc = Hex_kite_springless_element.claim_sea joiner in 
     Hex_cell_set.merge 
       (Hex_named_connector.wet_earth_with_entry_unchecked nc) 
        (we_for_homogeneous_list others) ;; 
