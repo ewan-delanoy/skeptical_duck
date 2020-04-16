@@ -42,7 +42,7 @@ let casings_from_one_step_advances eob pk =
     let temp1 = Hex_island.neighbors dim last_island  in
     let temp2 = Set_of_poly_pairs.image Hex_cell.of_int_pair temp1 in  
     let temp3 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp2 in 
-    Hex_cell_set.safe_set temp2;; 
+    Hex_cell_set.safe_set temp3;; 
 
 let casings_from_seas eob pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
@@ -121,8 +121,10 @@ let compute_springboards eob pk =
 
 let springful_extensions eob pk =
    let springboards = compute_springboards eob pk  in 
-   let temp1 = Image.image (fun sb->(Hex_springboard.is_final sb,extend_with_springboard 
-      eob.Hex_end_of_battle_t.dimension pk sb)
+   let temp1 = Image.image (fun sb->
+     let new_pk = extend_with_springboard 
+      eob.Hex_end_of_battle_t.dimension pk sb in
+    (Hex_springless_analysis.is_final new_pk,new_pk)
    ) springboards in 
    let (full_sols,partial_sols) = List.partition fst temp1 in 
    let detailed_sols = Image.image 
