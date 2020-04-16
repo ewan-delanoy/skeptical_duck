@@ -38,7 +38,7 @@ let claim_sea x = match x with
 
 let extract_island elt= match elt with 
     Hex_kite_element_t.Earth(island)-> island
-   |Sea(nc)-> raise(Extract_island_exn(x))
+   |Sea(nc)-> raise(Extract_island_exn(elt))
    |Springboard(springboard)->Hex_springboard.new_island springboard;;
 
 
