@@ -25,6 +25,9 @@ let claim_named_connector x = match x with
     Hex_kite_springless_element_t.Earth(island)-> raise(Claim_named_connector_exn(x))
    |Sea(nc)-> nc ;;
 
+let is_an_island x = match x with 
+    Hex_kite_springless_element_t.Earth(_)-> true
+   |Sea(_)-> false ;;
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     

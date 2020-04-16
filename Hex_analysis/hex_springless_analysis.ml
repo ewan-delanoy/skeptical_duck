@@ -33,8 +33,12 @@ let test_for_finality pk =
    | _ -> false;;
 
 (*
-let rec helper_for_removing_springboards (treated,pending,to_be_treated) = 
-*)
+let rec helper_for_removing_redundant_islands (treated,pending1,pending2,to_be_treated) = 
+   match to_be_treated with 
+    [] -> helper2_for_removing_redundant_islands treated pending1 pending2 
+   |pending3::others ->
+*)      
+
 
 exception Deduce_boarded_islands_exn of (Hex_kite_element_t.t list) * int ;;
 
