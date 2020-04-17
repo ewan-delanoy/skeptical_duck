@@ -156,7 +156,8 @@ let extend_with_final_sea pk final_nc =
     };;
 
 
-let springless_extensions_after_island dim eob partial_kite last_island =
+let springless_extensions_after_island eob partial_kite last_island =
+   let dim = eob.Hex_end_of_battle_t.dimension in 
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
    let unchecked_islanders = Hex_named_connector.islanders dim last_island remaining_islands in 
    let islanders = Option.filter_and_unpack (
@@ -185,17 +186,17 @@ let springless_extensions_after_sea partial_kite last_nc =
    )  candidates in 
    ([],Image.image (extend_with_island partial_kite) retained_ones);;
 
-let extensions_from_springless_last_elt dim eob partial_kite = function 
-    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island dim eob partial_kite last_island 
+let extensions_from_springless_last_elt eob partial_kite = function 
+    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island eob partial_kite last_island 
    |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
 
-let springless_extensions dim eob pk =
+let springless_extensions eob pk =
    let fst_step = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let last_elt = (match rl with 
      []->Hex_kite_element.to_springless fst_step 
      |x::_-> Hex_kite_element.to_springless x ) in 
-   extensions_from_springless_last_elt dim eob pk last_elt ;;
+   extensions_from_springless_last_elt eob pk last_elt ;;
 
 let solution_details pk = 
         let a1 = pk.Hex_partial_kite_t.place_of_birth 
@@ -204,8 +205,8 @@ let solution_details pk =
         let l=List.rev rl in 
         (a1,a2,l,to_molecular_linker pk,active_part pk);;
 
-let extensions_finished_and_non_finished dim eob partial_kite =
-      let (finished1,unfinished1) = springless_extensions dim eob partial_kite in 
+let extensions_finished_and_non_finished eob partial_kite =
+      let (finished1,unfinished1) = springless_extensions eob partial_kite in 
       let finished2 = Image.image (fun (_,pk)->solution_details pk) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
@@ -230,7 +231,7 @@ let pusher (factory,_) =
    let (d,wi,i,fi,fa,uf) = factory in 
    let raw_result=Image.image (
          fun pk->
-         (pk,extensions_finished_and_non_finished d i pk) 
+         (pk,extensions_finished_and_non_finished i pk) 
    ) uf in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
    let new_failures = List.rev_append (Image.image fst failures1) fa in 
