@@ -40,7 +40,7 @@ let helper2_for_removing_redundant_islands treated pending1 pending2  =
           &&
           (Hex_kite_springless_element.is_an_island pending2)
    then List.rev (pending2::treated)
-   else List.rev (pending1::pending2::treated) ;;
+   else List.rev (pending2::pending1::treated) ;;
 
 let rec helper_for_removing_redundant_islands (treated,pending1,pending2,to_be_treated) = 
    match to_be_treated with 
