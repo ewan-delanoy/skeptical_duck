@@ -49,8 +49,8 @@ let rec helper_for_removing_redundant_islands (treated,pending1,pending2,to_be_t
        if (Hex_kite_springless_element.is_an_island pending1)
           &&
           (Hex_kite_springless_element.is_an_island pending2)
-       then helper_for_removing_redundant_islands (treated,pending2,pending3,to_be_treated)
-       else helper_for_removing_redundant_islands (pending1::treated,pending2,pending3,to_be_treated) ;;
+       then helper_for_removing_redundant_islands (treated,pending2,pending3,others)
+       else helper_for_removing_redundant_islands (pending1::treated,pending2,pending3,others) ;;
       
 let remove_redundant_islands l=match l with 
   [] -> []
