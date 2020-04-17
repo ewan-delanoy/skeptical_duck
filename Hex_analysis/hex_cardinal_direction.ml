@@ -174,7 +174,10 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
      );;
 
 
-
+let enhance dim side cell =
+   (* used to avoid ambiguities about which side the cell is on *)
+   let opt_side = (if Border.test dim side cell then Some side else None) in 
+   (opt_side,cell);; 
 
 let for_eye_description    = Private.char_for_eye_description ;;
 let for_ground_description = Private.char_for_ground_description ;;
