@@ -133,8 +133,7 @@ let springful_extensions eob pk =
 
 
 let extensions_finished_and_non_finished eob pk =
-   let dim = eob.Hex_end_of_battle_t.dimension in 
-   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished dim eob pk in 
+   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished eob pk in 
    if first_trial <> ([],[])
    then first_trial
    else springful_extensions eob pk;;
