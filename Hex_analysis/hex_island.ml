@@ -88,7 +88,7 @@ let add_and_forget_the_adding dim (side,new_cell) old_islands =
 
 let add_cell_by_casing = Private.add_cell_by_casing ;;
 
-
+let add_sided_cell_by_casing = Private.add_sided_cell_by_casing ;;
 
 
 let common_neighbors 
