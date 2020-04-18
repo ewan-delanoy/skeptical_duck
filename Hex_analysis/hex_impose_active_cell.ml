@@ -13,11 +13,11 @@ let enhance dim pk cell =
     let death = Hex_cardinal_direction.oppose birth in 
     Hex_cardinal_direction.enhance dim death cell ;; 
 
-let impose_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (last_island,previous_stops)=  
+let impose_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (old_last_island,previous_stops)=  
     let sided_cell =  enhance dim pk new_cell in 
-    let new_islands = Hex_island.add_sided_cell_by_casing dim sided_cell (last_island::old_islands) 
+    let (remade_last_island,new_islands) = Hex_island.add_sided_cell_by_casing dim sided_cell (old_last_island::old_islands) 
     and new_abc = Hex_cell_set.insert (snd sided_cell) old_abc in 
-    let remade_last_stop = Hex_kite_element_t.Earth(List.hd new_islands) in 
+    let remade_last_stop = Hex_kite_element_t.Earth(remade_last_island) in 
    {
       pk with
       Hex_partial_kite_t.stops_so_far = (remade_last_stop::previous_stops);
@@ -27,11 +27,11 @@ let impose_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) 
 
 let impose_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc)=  
     let sided_cell =  enhance dim pk new_cell in  
-    let new_islands = Hex_island.add_sided_cell_by_casing dim sided_cell old_islands 
+    let (current_island,new_islands) = Hex_island.add_sided_cell_by_casing dim sided_cell old_islands 
     and new_abc = Hex_cell_set.insert new_cell old_abc in 
    {
       pk with
-      Hex_partial_kite_t.unvisited_islands = new_islands;
+      Hex_partial_kite_t.unvisited_islands = new_islands@[current_island];
       added_by_casing = new_abc;
    };;
 

@@ -63,17 +63,19 @@ let add_sided_cell_by_casing dim (opt_side,new_cell) l =
    let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
    let (connected,unconnected) = List.partition (
     fun (Hex_island_t.I(opt,z))->List.exists (fun q->
-      Set_of_poly_pairs.mem q z
+      if Set_of_poly_pairs.mem q z then true else 
+      match opt with 
+      None -> false 
+      |Some(side) -> Hex_cardinal_direction.Border.test dim side new_cell
     ) neighbors 
    )  l in 
    let old_opts = Image.image (fun (Hex_island_t.I(opt,z))->opt) connected in
    let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts) in 
    let old_pairs =  Image.image (fun (Hex_island_t.I(opt,z))->z) connected in 
    let new_z = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_pairs) in 
-   (Hex_island_t.I(new_opt,new_z))::unconnected ;;
+   (Hex_island_t.I(new_opt,new_z),unconnected) ;;
 
-let add_cell_by_casing dim new_cell l =
-   add_sided_cell_by_casing dim (side_for_cell dim new_cell,new_cell) l ;;
+
 
 end ;;
 
@@ -85,8 +87,6 @@ let add_and_forget_the_adding dim (side,new_cell) old_islands =
     let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
     islands2@[Hex_island_t.I(opt,new_z)] ;; 
    
-
-let add_cell_by_casing = Private.add_cell_by_casing ;;
 
 let add_sided_cell_by_casing = Private.add_sided_cell_by_casing ;;
 
