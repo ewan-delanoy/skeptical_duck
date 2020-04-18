@@ -21,7 +21,7 @@ let impose_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) 
    {
       pk with
       Hex_partial_kite_t.stops_so_far = (remade_last_stop::previous_stops);
-      unvisited_islands = List.tl new_islands;
+      unvisited_islands = new_islands;
       added_by_casing = new_abc;
    };;
 
