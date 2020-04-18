@@ -186,17 +186,18 @@ let springless_extensions_after_sea partial_kite last_nc =
    )  candidates in 
    ([],Image.image (extend_with_island partial_kite) retained_ones);;
 
-let extensions_from_springless_last_elt eob partial_kite = function 
-    Hex_kite_springless_element_t.Earth(last_island) ->  springless_extensions_after_island eob partial_kite last_island 
-   |Hex_kite_springless_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc ;;
+let extensions_from_last_elt eob partial_kite last_elt = match last_elt with
+    Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
+   | _ -> let last_island = Hex_kite_element.extract_island last_elt in 
+          springless_extensions_after_island eob partial_kite last_island ;;
 
 let springless_extensions eob pk =
    let fst_step = pk.Hex_partial_kite_t.first_step 
    and rl=pk.Hex_partial_kite_t.stops_so_far in 
    let last_elt = (match rl with 
-     []->Hex_kite_element.to_springless fst_step 
-     |x::_-> Hex_kite_element.to_springless x ) in 
-   extensions_from_springless_last_elt eob pk last_elt ;;
+     []->fst_step 
+     |x::_-> x ) in 
+   extensions_from_last_elt eob pk last_elt ;;
 
 let solution_details pk = 
         let a1 = pk.Hex_partial_kite_t.place_of_birth 
