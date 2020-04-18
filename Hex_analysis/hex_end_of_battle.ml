@@ -47,3 +47,12 @@ let of_activated_molecular (dim,the_winner) (active_part,mlclr) =
          ally_territory  = active_part ; 
          enemy_territory = unneeded_cells ;
      } ;;
+
+let remaining_free_cells end_of_battle = 
+    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
+    let all_cells = Hex_common.all_cells dim in 
+    let already_used_cells =
+        Hex_cell_set.merge 
+           end_of_battle.Hex_end_of_battle_t.ally_territory 
+            end_of_battle.Hex_end_of_battle_t.enemy_territory in 
+    Hex_cell_set.setminus all_cells already_used_cells ;;          

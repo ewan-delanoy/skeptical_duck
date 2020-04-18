@@ -33,7 +33,8 @@ let helper_for_starter_computation end_of_battle islands side =
       unexpected_starters
       @
       (Hex_named_connector.islanders dim first_island islands)
-   ) in                  
+   ) in         
+   let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in         
    let constructor = (
       fun first_nc ->
         let new_middle_base=List.filter ( 
@@ -41,7 +42,9 @@ let helper_for_starter_computation end_of_battle islands side =
          Hex_named_connector.check_disjointness first_nc other_nc ) middle_base
         and new_end_base=List.filter ( 
          fun (z,other_nc) -> 
-         Hex_named_connector.check_disjointness first_nc other_nc ) end_base  in
+         Hex_named_connector.check_disjointness first_nc other_nc ) end_base  
+        and new_free_ones=Hex_cell_set.setminus  free_ones
+          (Hex_named_connector.inner_sea first_nc) in
         {
             Hex_partial_kite_t.place_of_birth = first_island;
             first_step = Hex_kite_element_t.Sea(first_nc);
@@ -50,6 +53,7 @@ let helper_for_starter_computation end_of_battle islands side =
             unvisited_seas = new_middle_base ;
             unvisited_enders = new_end_base ;
             added_by_casing = Hex_cell_set.empty_set;
+            remaining_free_cells = new_free_ones;
         }
    ) in 
    let conditional_constructor = (fun 

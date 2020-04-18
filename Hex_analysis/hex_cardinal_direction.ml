@@ -204,6 +204,11 @@ let opt_of_char c =
    
 let orthogonal_directions = Private.orthogonal_directions ;;
 
+let player_for_side = function 
+     Hex_cardinal_direction_t.Down  
+    |Hex_cardinal_direction_t.Up  -> Hex_player_t.First_player
+    |Hex_cardinal_direction_t.Left  
+    |Hex_cardinal_direction_t.Right -> Hex_player_t.Second_player;;
 
 let reflect = function 
      Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Right

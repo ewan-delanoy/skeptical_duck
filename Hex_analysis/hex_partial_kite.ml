@@ -22,9 +22,12 @@ let extend_with_springboard dim pk new_sb =
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
-    and old_stops = pk2.Hex_partial_kite_t.stops_so_far in 
+    and old_stops = pk2.Hex_partial_kite_t.stops_so_far 
+    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
+    and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
     let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
-    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   in
+    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   
+    and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitionned_territory in
     {
       pk2 with 
         Hex_partial_kite_t.stops_so_far = 
@@ -32,19 +35,19 @@ let extend_with_springboard dim pk new_sb =
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         unvisited_enders =  selector old_enders ;
+        remaining_free_cells = remaining_free_ones ;
     }  ;;
 
 
-let casings_from_one_step_advances eob pk = 
+let casings_from_one_step_advances dim pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
-    let dim = eob.Hex_end_of_battle_t.dimension 
-    and last_island = Hex_kite_element.extract_island(List.hd old_stops)  in 
+    let last_island = Hex_kite_element.extract_island(List.hd old_stops)  in 
     let temp1 = Hex_island.neighbors dim last_island  in
-    let temp2 = Set_of_poly_pairs.image Hex_cell.of_int_pair temp1 in  
-    let temp3 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp2 in 
-    Hex_cell_set.safe_set temp3;; 
+    let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
+    Hex_cell_set.intersect temp2 pk.Hex_partial_kite_t.remaining_free_cells ;;
 
-let casings_from_seas eob pk =
+
+let casings_from_seas pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
    and middle_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
    and end_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_enders       in 
@@ -59,16 +62,15 @@ let casings_from_seas eob pk =
    (selector middle_casings_with_hooks)
    (selector end_casings_with_hooks) ;;   
 
-let all_casings eob pk =
+let all_casings dim pk =
    Hex_cell_set.forget_order (Hex_cell_set.merge
-      (casings_from_one_step_advances eob pk)
-      (casings_from_seas eob pk)
+      (casings_from_one_step_advances dim pk)
+      (casings_from_seas pk)
    ) ;; 
 
-let data_common_to_both_parts eob pk =
+let data_common_to_both_parts dim pk =
    (* both means : both for the light & heavy part. See definition of compute_springboards *)
-   let dim = eob.Hex_end_of_battle_t.dimension in 
-   let temp1 = all_casings eob pk in 
+   let temp1 = all_casings dim pk in 
     Image.image (
       fun cell -> 
         let new_pk=Hex_impose_active_cell.impose_cell_by_casing dim cell pk in 
@@ -80,18 +82,18 @@ let light_part common_to_both =
       (cell,Hex_kite_element.extract_island (last_stop new_pk))
    ) common_to_both;;
 
-let explore_yet_untried_path eob old_pk (cell,new_pk) =
+let explore_yet_untried_path dim old_pk (cell,new_pk) =
    let nbr_of_common_steps = List.length old_pk.Hex_partial_kite_t.stops_so_far in 
-   let temp = Hex_springless_analysis.finalize eob new_pk in 
+   let temp = Hex_springless_analysis.finalize dim new_pk in 
    Image.image (fun (_,_,stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
         (cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
    ) temp ;;
 
-let explore_yet_untried_paths eob old_pk paths =
-   List.flatten(Image.image (explore_yet_untried_path eob old_pk) paths);;
+let explore_yet_untried_paths dim old_pk paths =
+   List.flatten(Image.image (explore_yet_untried_path dim old_pk) paths);;
 
-let heavy_part eob old_pk common_to_both =
+let heavy_part dim old_pk common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
        fun (cell,new_pk) -> Hex_springless_analysis.is_final new_pk 
    ) common_to_both in 
@@ -99,7 +101,7 @@ let heavy_part eob old_pk common_to_both =
       let mlclr = Hex_springless_analysis.to_molecular_linker new_pk 
       and actv = Hex_springless_analysis.active_part new_pk in 
       (cell,[],mlclr,actv)) final_ones in 
-   one_move_solutions@(explore_yet_untried_paths eob old_pk nonfinal_ones)  ;;
+   one_move_solutions@(explore_yet_untried_paths dim old_pk nonfinal_ones)  ;;
 
 let cellset_setminus x y =
    let sx = Hex_cell_set.safe_set x 
@@ -107,10 +109,9 @@ let cellset_setminus x y =
    Hex_cell_set.forget_order(Hex_cell_set.setminus sx sy);;         
 
 
-
-let compute_springboards eob pk =
-  let common_to_both =  data_common_to_both_parts eob pk in 
-  let heavy = heavy_part eob pk common_to_both 
+let compute_springboards dim pk =
+  let common_to_both =  data_common_to_both_parts dim pk in 
+  let heavy = heavy_part dim pk common_to_both 
   and light = light_part        common_to_both in 
   let temp1 = Cartesian.product heavy light in 
   let temp2 = Image.image (
@@ -119,11 +120,10 @@ let compute_springboards eob pk =
   ) temp1  in 
   Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
 
-let springful_extensions eob pk =
-   let springboards = compute_springboards eob pk  in 
+let springful_extensions dim pk =
+   let springboards = compute_springboards dim pk  in 
    let temp1 = Image.image (fun sb->
-     let new_pk = extend_with_springboard 
-      eob.Hex_end_of_battle_t.dimension pk sb in
+     let new_pk = extend_with_springboard dim pk sb in
     (Hex_springless_analysis.is_final new_pk,new_pk)
    ) springboards in 
    let (full_sols,partial_sols) = List.partition fst temp1 in 
@@ -132,11 +132,11 @@ let springful_extensions eob pk =
    (detailed_sols,Image.image snd partial_sols) ;;
 
 
-let extensions_finished_and_non_finished eob pk =
-   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished eob pk in 
+let extensions_finished_and_non_finished dim pk =
+   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished dim pk in 
    if first_trial <> ([],[])
    then first_trial
-   else springful_extensions eob pk;;
+   else springful_extensions dim pk;;
 
 
 end ;;
