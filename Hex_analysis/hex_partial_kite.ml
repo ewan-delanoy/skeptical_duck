@@ -38,7 +38,7 @@ let extend_with_springboard dim pk new_sb =
 let casings_from_one_step_advances eob pk = 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let dim = eob.Hex_end_of_battle_t.dimension 
-    and last_island = Hex_kite_element.claim_island(List.hd old_stops)  in 
+    and last_island = Hex_kite_element.extract_island(List.hd old_stops)  in 
     let temp1 = Hex_island.neighbors dim last_island  in
     let temp2 = Set_of_poly_pairs.image Hex_cell.of_int_pair temp1 in  
     let temp3 = List.filter (fun cell->Hex_end_of_battle.assess eob cell = Hex_eob_result_t.Unoccupied) temp2 in 
