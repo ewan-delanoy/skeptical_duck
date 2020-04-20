@@ -19,6 +19,10 @@ let to_readable_string = function
    |Sea(nc)-> Hex_named_connector.to_readable_string nc
    |Springboard(springboard)-> Hex_springboard.to_readable_string springboard;;
 
+let opt_island_component elt = match elt with 
+    Hex_kite_element_t.Earth(island)-> Some island
+   |Sea(nc)-> None
+   |Springboard(springboard)-> Some (Hex_springboard.new_island springboard) ;;
   
 
 end ;;
@@ -43,10 +47,9 @@ let claim_sea x = match x with
     Hex_kite_element_t.Sea(nc)-> nc
    |_-> raise(Claim_sea_exn(x)) ;;
 
-let extract_island elt= match elt with 
-    Hex_kite_element_t.Earth(island)-> island
-   |Sea(nc)-> raise(Extract_island_exn(elt))
-   |Springboard(springboard)->Hex_springboard.new_island springboard;;
+let extract_island elt= match Private.opt_island_component elt with 
+    Some island -> island 
+    |None -> raise(Extract_island_exn(elt)) ;;
 
 
 let is_final initial_side elt = 
@@ -60,6 +63,8 @@ let is_final initial_side elt =
 let of_springless = function
     Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_element_t.Sea(nc);;
+
+let opt_island_component = Private.opt_island_component ;;
 
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
