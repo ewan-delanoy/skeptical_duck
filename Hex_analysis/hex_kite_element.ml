@@ -23,6 +23,13 @@ let to_readable_string = function
 
 end ;;
 
+let change_island_component elt new_component= match elt with 
+    Hex_kite_element_t.Earth(island)-> Hex_kite_element_t.Earth(new_component)
+   |Sea(nc)-> elt
+   |Springboard(springboard)->
+      Hex_kite_element_t.Springboard(Hex_springboard.change_island_component springboard new_component);;
+
+
 let compress_to_springless elt= match elt with 
     Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc)
