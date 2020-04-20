@@ -34,7 +34,7 @@ let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_isla
 let change_island_component 
    (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island)) 
       new_component= 
-    Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island) ;;  
+    Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_component) ;;  
 
 let check_island_after_springboard_insertion springboard island = 
    if Hex_island.outer_earth island <> None then true else 
