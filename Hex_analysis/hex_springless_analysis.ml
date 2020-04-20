@@ -25,12 +25,14 @@ let compute_place_of_death pk=
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
 let test_for_finality pk = 
-   let place_of_death = compute_place_of_death pk in 
    match pk.Hex_partial_kite_t.stops_so_far with 
    [] -> false 
    |last_elt::_->
    match  last_elt with 
-   Hex_kite_element_t.Sea(nc) -> Hex_named_connector.check_exit nc place_of_death 
+   Hex_kite_element_t.Sea(nc) -> 
+      let place_of_death = compute_place_of_death pk in 
+      Hex_named_connector.check_exit nc place_of_death 
+   |Hex_kite_element_t.Earth(island) -> Hex_island.outer_earth island <> None   
    | _ -> 
       let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
       Hex_kite_element.is_final final_side last_elt;;
