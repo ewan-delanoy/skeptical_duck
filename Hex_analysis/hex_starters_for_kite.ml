@@ -79,9 +79,8 @@ let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) =
   let natural_islands = Hex_island.decompose artificial_eob in 
   let artificial_islands = Hex_island.add_and_forget_the_adding dim (side,cell2) natural_islands in 
   let opposite_side = Hex_cardinal_direction.oppose side in 
-  let base =(helper_for_starter_computation artificial_eob artificial_islands side)@
-  (helper_for_starter_computation artificial_eob artificial_islands opposite_side) in 
-  Image.image (fun pk->(artificial_eob,pk)) base ;; 
+  (helper_for_starter_computation artificial_eob artificial_islands side)@
+  (helper_for_starter_computation artificial_eob artificial_islands opposite_side);; 
 
 end ;; 
 
@@ -92,6 +91,7 @@ let nonsacrificial_starters end_of_battle =
 let sacrificial_starters end_of_battle = 
     let triangles = Hex_end_of_battle.compatible_border_triangles end_of_battle in 
     List.flatten (Image.image (fun triangle ->
-      Image.image (fun (artificial_eob,pk)->(triangle,artificial_eob,pk)) (Private.sacrificial_starter end_of_battle triangle)
+      Image.image (fun pk->(triangle,pk)) 
+          (Private.sacrificial_starter end_of_battle triangle)
     ) triangles);;
 
