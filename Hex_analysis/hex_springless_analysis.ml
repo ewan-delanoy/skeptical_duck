@@ -20,7 +20,22 @@ let to_molecular_linker  pk =
 let original_side pk =
    Option.unpack (Hex_island.outer_earth pk.Hex_partial_kite_t.place_of_birth);;
 
+let possible_final_death pk=
+   match pk.Hex_partial_kite_t.stops_so_far  with 
+   [] -> None 
+   |last_elt::_ ->
+     (
+        match last_elt with 
+         (Hex_kite_element_t.Earth island) -> if Hex_island.outer_earth island <> None 
+                                             then Some island 
+                                             else None   
+         |_ -> None
+     );;
+
 let compute_place_of_death pk=
+   match possible_final_death pk with 
+   Some(death_already_occurred)-> death_already_occurred 
+   |None ->
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
