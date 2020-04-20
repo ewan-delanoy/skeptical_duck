@@ -20,20 +20,18 @@ let to_molecular_linker  pk =
 let original_side pk =
    Option.unpack (Hex_island.outer_earth pk.Hex_partial_kite_t.place_of_birth);;
 
-let possible_final_death pk=
+let opt_final_death pk=
    match pk.Hex_partial_kite_t.stops_so_far  with 
    [] -> None 
-   |last_elt::_ ->
-     (
-        match last_elt with 
-         (Hex_kite_element_t.Earth island) -> if Hex_island.outer_earth island <> None 
-                                             then Some island 
-                                             else None   
-         |_ -> None
-     );;
+   |last_elt::_ -> match Hex_kite_element.opt_island_component last_elt with 
+     None -> None
+     |Some(island) ->  
+     if Hex_island.outer_earth island <> None 
+     then Some island 
+     else None ;;
 
 let compute_place_of_death pk=
-   match possible_final_death pk with 
+   match opt_final_death pk with 
    Some(death_already_occurred)-> death_already_occurred 
    |None ->
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
@@ -47,10 +45,8 @@ let test_for_finality pk =
    Hex_kite_element_t.Sea(nc) -> 
       let place_of_death = compute_place_of_death pk in 
       Hex_named_connector.check_exit nc place_of_death 
-   |Hex_kite_element_t.Earth(island) -> Hex_island.outer_earth island <> None   
-   | _ -> 
-      let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
-      Hex_kite_element.is_final final_side last_elt;;
+   |_ -> let island = Hex_kite_element.extract_island last_elt in  
+         Hex_island.outer_earth island <> None  ;;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
