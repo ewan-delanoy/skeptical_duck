@@ -67,15 +67,22 @@ let sacrificial_full_solutions eob =
 
 let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
 
-(*
+
 let sacrificial_solutions eob=
    let temp1 = Image.image (
       fun ((side,cell1,cell2,cell3),(_,_,_,mlclr,actv))->
          let pair = Hex_atomic_linker.pair (cell2,cell3) in 
-         (Hex_molecular_linker.fold_merge)
-   ) (sacrificial_full_solutions eob)
-*)
+         (Hex_molecular_linker.insert pair mlclr, actv)
+   ) (sacrificial_full_solutions eob) in 
+   Ordered.sort Total_ordering.standard  temp1;;
+
+let solutions eob =
+   let temp1 = nonsacrificial_solutions eob in 
+   if temp1<>[] then temp1 else 
+   sacrificial_solutions eob ;;   
+
 
 end ;;
 
 
+let solutions = Private.solutions ;;
