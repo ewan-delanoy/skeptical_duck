@@ -41,6 +41,7 @@ let fold_intersect = Functor_for_sets.fold_intersect Private.tr ;;
 let fold_merge = Functor_for_sets.fold_merge Private.tr ;;
 
 
+let insert = Functor_for_sets.insert Private.tr ;;
 
 let is_included_in = Functor_for_sets.is_included_in Private.tr ;;
 

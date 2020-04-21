@@ -50,25 +50,32 @@ let rec main walker =
    then (walker.Hex_kite_factory_t.finished,walker.Hex_kite_factory_t.failures)
    else main (pusher walker) ;; 
 
-let extract_solutions l = Ordered.sort Total_ordering.standard (Image.image (fun (_,_,_,b,c)->(b,c))  l);;
+let full_solutions_from_factory factory = fst(main(factory)) ;;
 
-let solutions_from_factory factory =
-  extract_solutions (fst(main(factory)));;
+let extract_solutions l = Ordered.sort Total_ordering.standard 
+   (Image.image (fun (_,_,_,mlclr,actv)->(mlclr,actv))  l);;
 
-let nonsacrificial_compute eob = main (nonsacrificial_starters eob);;
 
-let nonsacrificial_solutions eob = solutions_from_factory(nonsacrificial_starters eob);;
+let nonsacrificial_full_solutions eob = full_solutions_from_factory (nonsacrificial_starters eob);;
+
+let sacrificial_full_solutions eob = 
+   let temp1 = Hex_starters_for_kite.sacrificial_starters eob in 
+   List.flatten( Image.image (fun (seed,pk)->
+      let ttemp3 = full_solutions_from_factory (sacrificial_starter eob pk) in 
+      Image.image (fun sol->(seed,sol)) ttemp3
+   ) temp1);;  
+
+let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
 
 (*
-let compute eob =
-    let first_try = nonsacrificial_compute eob in 
-    if (fst first_try)<>[] 
-    then first_try
-    else 
-    let temp1 = Hex_starters_for_kite.sacrificial_starters eob in 
-*)        
+let sacrificial_solutions eob=
+   let temp1 = Image.image (
+      fun ((side,cell1,cell2,cell3),(_,_,_,mlclr,actv))->
+         let pair = Hex_atomic_linker.pair (cell2,cell3) in 
+         (Hex_molecular_linker.fold_merge)
+   ) (sacrificial_full_solutions eob)
+*)
 
 end ;;
 
-let nonsacrificial_compute = Private.nonsacrificial_compute;;
-let solutions = Private.nonsacrificial_solutions;;
+
