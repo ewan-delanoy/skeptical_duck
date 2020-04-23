@@ -85,7 +85,9 @@ let list_of_divisors=Memoized.make(fun n->
 
 end ;; 
 
+let divisors = Private.naive_list_of_divisors;;
 let factor = Private.multiset_factorization;;
-
+let is_prime = Private.is_prime ;;
+let smallest_prime_divisor = Private.mp ;;
 
 
