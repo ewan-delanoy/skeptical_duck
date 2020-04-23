@@ -1,4 +1,8 @@
+(*
 
+#use"Arithmetic/legendre_symbol.ml";;
+
+*)
 let currified_product x y=x*y;;
 
 let big_product=function
@@ -68,7 +72,7 @@ let find_many_prime_equivalents m l=
 Image.image(find_one_prime_equivalent(m))(l);;
 
 let good_moduli a=
-let aa=abs(a) and ea=Gcd.arouez(a) in
+let aa=abs(a) and ea=Basic.sign(a) in
 let temp1=Basics_on_small_primes.multiset_factorization(aa) in
 let temp2=Multiset.filter_odd_multiplicities(temp1) in
 let ka=ea*big_product(temp2) in

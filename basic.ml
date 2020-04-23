@@ -1,3 +1,9 @@
+(*
+
+#use"basic.ml";;
+
+*)
+
 let delta_list l=
 let rec sub_f=
 (function (accu,a,rl)->match rl with
@@ -74,6 +80,6 @@ let nonequal_ceiling a b=
 let ceiling_mod a b=
  match (a mod b) with 0->b |k->k;;
  
-
+let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
 
            
