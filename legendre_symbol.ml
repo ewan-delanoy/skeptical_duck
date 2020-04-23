@@ -3,11 +3,11 @@
 #use"Arithmetic/legendre_symbol.ml";;
 
 *)
-let currified_product x y=x*y;;
+let curried_product x y=x*y;;
 
-let big_product=function
+let fold_product=function
 []->1
-|a::b->List.fold_left(currified_product)(a)(b);;
+|a::b->List.fold_left(curried_product)(a)(b);;
 
 
 let square_free_part n=
@@ -75,7 +75,7 @@ let good_moduli a=
 let aa=abs(a) and ea=Basic.sign(a) in
 let temp1=Basics_on_small_primes.multiset_factorization(aa) in
 let temp2=Multiset.filter_odd_multiplicities(temp1) in
-let ka=ea*big_product(temp2) in
+let ka=ea*fold_product(temp2) in
 let big_a=4*abs(ka) in
 let temp3=Ennig.ennig(1)(big_a-1) in
 let temp4=List.filter(function x->List.filter(function p->(x mod p)=0)(2::temp2)=[])(temp3) in
@@ -83,12 +83,22 @@ let temp5=find_many_prime_equivalents(big_a)(temp4) in
 let temp6=List.filter(function (z,pz)->naive_legendre_symbol(a)(pz)=1)(temp5) in
 (big_a,temp6);;
 
-let gcd_for_three a b c=Arithmetic.gcd(a)(Arithmetic.gcd(b)(c));;
+let gcd_for_three a b c=Gcd.gcd(a)(Gcd.gcd(b)(c));;
+
+let isqrt n=
+if n<0 then failwith("negative integers not allowed") else
+if n<2 then n else 
+let rec tempf=
+(function
+(j2,j)->if (j2>n) then (j-1) else
+tempf(j2+2*j+1,j+1)
+) in
+tempf(1,1);;
 
 let enumerate_reduced_forms dd=
 let r=(dd mod 4) in
 if ((r=1)||(r=2)) then ([],[]) else
-let temp1=Ennig.ennig(0)(Arithmetic.isqrt(dd/3)) in
+let temp1=Ennig.ennig(0)(isqrt(dd/3)) in
 let temp2=List.filter(function x->(x mod 2)=r)(temp1) in
 let temp3=List.flatten(Image.image(function b->let m=(b*b+dd)/4 in
 Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Basics_on_small_primes.naive_list_of_divisors(m))) )(temp2)) in
