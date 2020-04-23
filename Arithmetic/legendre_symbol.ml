@@ -3,6 +3,9 @@
 #use"Arithmetic/legendre_symbol.ml";;
 
 *)
+
+module Private = struct
+
 let curried_product x y=x*y;;
 
 let fold_product=function
@@ -110,7 +113,7 @@ let number_of_reduced_forms dd=
 let temp=enumerate_reduced_forms(dd) in
 List.length(fst(temp))+List.length(snd(temp));;
 
+end ;;
 
-
-
+let legendre_symbol = Private.naive_legendre_symbol ;;
 
