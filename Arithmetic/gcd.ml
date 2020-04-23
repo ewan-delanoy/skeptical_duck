@@ -26,6 +26,7 @@ if aa<bb
 then Private.helper_for_complete_gcd(aa,Basic.sign(a),0,bb,0,Basic.sign(b))
 else Private.helper_for_complete_gcd(bb,0,Basic.sign(b),aa,Basic.sign(a),0);;
 
+
 let find_bezout_relation a b=(function (e1,e2,e3)->(e1,e2))(complete_gcd(a)(b));;
 
 let gcd a b=(function (e1,e2,e3)->e3)(complete_gcd(a)(b));;
