@@ -1,6 +1,5 @@
 let arouez x=if x<0 then -1 else if x=0 then 0 else 1;;
 
-
 let rec complete_gcd0 
 (aa,xa,ya,bb,xb,yb)=
 (* we suppose 0<aa<bb and aa=xa*a+ya*b, bb=xb*a+yb*b *)
