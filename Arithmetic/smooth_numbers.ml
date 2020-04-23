@@ -21,7 +21,7 @@ let decompose n bases =
 
 let ref_for_smoothness_params = ref [];;
 
-let hashtbl_for_smooth_numbers_enumeration = Hashtbl.create 200;;
+let hashtbl_for_smooth_numbers_enumeration = Hashtbl.create 1000;;
 
 let set_smoothness_params l=
    if l<>(!ref_for_smoothness_params) 
@@ -35,12 +35,12 @@ let rec next_smooth_number n=
     if core_of_n=1 then (n,exponents) else 
     next_smooth_number(n+1);;
 
-let first_smooth_number = (1,Image.image (fun j->0) (!ref_for_smoothness_params));;
+let first_smooth_number ()= (1,Image.image (fun j->0) (!ref_for_smoothness_params));;
 
 let rec enumerate n=
    match Hashtbl.find_opt hashtbl_for_smooth_numbers_enumeration n with 
    Some(v)->v
-   |None -> let new_v=(if n<2 then first_smooth_number else next_smooth_number(fst(enumerate(n-1))+1)) in 
+   |None -> let new_v=(if n<2 then first_smooth_number () else next_smooth_number(fst(enumerate(n-1))+1)) in 
             let _=(Hashtbl.add hashtbl_for_smooth_numbers_enumeration n new_v) in 
             new_v ;;
 
