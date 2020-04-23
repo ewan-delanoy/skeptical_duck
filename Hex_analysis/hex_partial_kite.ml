@@ -38,34 +38,37 @@ let extend_with_springboard dim pk new_sb =
         remaining_free_cells = remaining_free_ones ;
     }  ;;
 
+let close_seas pk =
+   let currently_added = pk.Hex_partial_kite_t.added_by_casing 
+   and middle_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
+   and end_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_enders       in 
+   let all_seas = middle_casings_with_hooks@end_casings_with_hooks in 
+   Option.filter_and_unpack (
+     fun (z,nc) -> 
+        let d = Hex_cell_set.setminus z currently_added in 
+        if Hex_cell_set.length d = 1
+        then Some(Hex_cell_set.min d,nc)
+        else None 
+   ) all_seas ;;   
 
-let casings_from_one_step_advances dim pk = 
+
+let casings_from_one_step_advances dim pk cl_seas= 
     let old_stops = pk.Hex_partial_kite_t.stops_so_far in 
     let last_island = Hex_kite_element.extract_island(List.hd old_stops)  in 
-    let temp1 = Hex_island.neighbors dim last_island  in
+    let close_islands = last_island :: 
+         (Image.image (fun (z,nc)->nc.Hex_named_connector_t.exit) (close_seas pk)) in
+    let temp1 = Set_of_poly_pairs.fold_merge (Image.image (Hex_island.neighbors dim) close_islands)  in
     let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
     Hex_cell_set.intersect temp2 pk.Hex_partial_kite_t.remaining_free_cells ;;
 
 
-let casings_from_seas pk =
-   let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and middle_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
-   and end_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_enders       in 
-   let selector = (fun l->Hex_cell_set.safe_set(Option.filter_and_unpack (
-     fun (z,nc) -> 
-        let d = Hex_cell_set.setminus z currently_added in 
-        if Hex_cell_set.length d = 1 
-        then Some(Hex_cell_set.min d)
-        else None 
-   )l) ) in 
-   Hex_cell_set.merge
-   (selector middle_casings_with_hooks)
-   (selector end_casings_with_hooks) ;;   
+let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.image fst cl_seas) ;;   
 
 let all_casings dim pk =
+   let cl_seas = close_seas pk in 
    Hex_cell_set.forget_order (Hex_cell_set.merge
-      (casings_from_one_step_advances dim pk)
-      (casings_from_seas pk)
+      (casings_from_one_step_advances dim pk cl_seas)
+      (casings_from_seas cl_seas)
    ) ;; 
 
 let data_common_to_both_parts dim pk =
