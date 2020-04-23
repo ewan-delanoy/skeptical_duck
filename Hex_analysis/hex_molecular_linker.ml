@@ -16,7 +16,6 @@ let to_readable_string (Hex_molecular_linker_t.M(l))=
    String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
 
 
-
 end;;
 
 let active_complement (Hex_molecular_linker_t.M(l))= 
