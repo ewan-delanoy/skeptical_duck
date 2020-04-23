@@ -1,7 +1,7 @@
 
 (*
 
-#use"basics_on_small_primes.ml";;
+#use"Arithmetic/primes.ml";;
 
 *)
 
