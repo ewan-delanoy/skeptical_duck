@@ -19,7 +19,7 @@ let rec tempf=(
 function 
 (m,accu)->
 if m=1 then accu else
-let q=Basics_on_small_primes.smallest_prime_divisor(m) in 
+let q=Primes.smallest_prime_divisor(m) in 
 let m2=(m/q) in
 if (m2 mod q)=0
 then tempf(m2/q,accu)
@@ -50,7 +50,7 @@ function
 if (a mod p)=0 then 0 else
 if a=1 then naive_legendre_symbol0(accu)(peurrest) else
 if (a mod 2)=0 then naive_legendre_symbol0(ls2(p)*accu)(((a/2),p)::peurrest) else
-let q=Basics_on_small_primes.smallest_prime_divisor(a) in
+let q=Primes.smallest_prime_divisor(a) in
 let epsilon=reciprocity_coefficient(p)(q) in
 naive_legendre_symbol0(epsilon*accu)(((p mod q),q)::(a/q,p)::peurrest);;
 
@@ -62,14 +62,14 @@ else naive_legendre_symbol0(1)([a mod p,p]);;
 
 let phi_set nn=
 let n=abs(nn) in
-let temp1=Basics_on_small_primes.factor(n) in
+let temp1=Primes.factor(n) in
 let temp2=Multiset.to_list(temp1) in
 let temp3=Ennig.ennig(1)(n-1) in
 List.filter(function x->List.filter(function p->(x mod p)=0)(temp2)=[])(temp3);;
 
 let find_one_prime_equivalent m a=
 let rec tempf=(function
-accu->if Basics_on_small_primes.is_prime(accu) then (a,accu) else tempf(accu+m))
+accu->if Primes.is_prime(accu) then (a,accu) else tempf(accu+m))
 in if a<3 then tempf(a+m) else tempf(a);;
 
 let find_many_prime_equivalents m l=
@@ -77,7 +77,7 @@ Image.image(find_one_prime_equivalent(m))(l);;
 
 let good_moduli a=
 let aa=abs(a) and ea=Basic.sign(a) in
-let temp1=Basics_on_small_primes.factor(aa) in
+let temp1=Primes.factor(aa) in
 let temp2=Multiset.filter_odd_multiplicities(temp1) in
 let ka=ea*fold_product(temp2) in
 let big_a=4*abs(ka) in
@@ -105,7 +105,7 @@ if ((r=1)||(r=2)) then ([],[]) else
 let temp1=Ennig.ennig(0)(isqrt(dd/3)) in
 let temp2=List.filter(function x->(x mod 2)=r)(temp1) in
 let temp3=List.flatten(Image.image(function b->let m=(b*b+dd)/4 in
-Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Basics_on_small_primes.divisors(m))) )(temp2)) in
+Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Primes.divisors(m))) )(temp2)) in
 let temp4=List.filter(function (a,b,c)->(b<=a)&&(a<=c)&&(gcd_for_three(a)(b)(c)=1 ) )(temp3) in
 let temp5=List.filter(function (a,b,c)->(0<b)&&(b<a)&&(a<c) )(temp4) in
 (temp4,Image.image(function (a,b,c)->(a,-b,c))(temp5));;
