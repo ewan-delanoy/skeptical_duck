@@ -1,3 +1,11 @@
+(*
+
+#use"prepared.ml";;
+
+*)
+
+module Private = struct
+
 let filter f=function
 []->[]
 |l->
@@ -23,17 +31,7 @@ let partition f=function
  ) in
  partition_easily0([],f(x),[x],y);;  
  
-let partition_in_two_parts f l=
-   let rec tempf=(fun
-    (graet,da_ober)->match da_ober with
-      []->(List.rev graet,[])
-      |a::peurrest->
-         if f(a)
-         then tempf(a::graet,peurrest)
-         else (List.rev graet,da_ober)
-   ) in
-   tempf([],l);; 
- 
+
  let write_interval (i,j)=match (j-i) with
   0->string_of_int(i)
   |1->(string_of_int i)^","^(string_of_int j)
@@ -64,4 +62,23 @@ let partition_in_two_parts f l=
                  else partition_easily0((xi,List.rev(ly))::graet,x,[y],peurrest)
  ) in
  partition_easily0([],x1,[y1],lost);;  
-             
+
+end ;; 
+
+let partition_in_two_parts f l=
+   let rec tempf=(fun
+    (graet,da_ober)->match da_ober with
+      []->(List.rev graet,[])
+      |a::peurrest->
+         if f(a)
+         then tempf(a::graet,peurrest)
+         else (List.rev graet,da_ober)
+   ) in
+   tempf([],l);; 
+ 
+
+
+let rec wait_and_take_the_rest f l =match l with 
+  [] -> []
+  |a :: b-> if f a then l else wait_and_take_the_rest f b;;
+                
