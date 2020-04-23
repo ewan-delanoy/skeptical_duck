@@ -5,6 +5,7 @@
 
 *)
 
+module Private = struct
 
 type int_multiset = int Multiset.t;;
 type ii= (int,int) Memoized.map;;
@@ -82,9 +83,9 @@ let list_of_divisors=Memoized.make(fun n->
   Set_of_integers.forget_order temp5
 );;
 
+end ;; 
 
-let nf=naive_factorization;;
-let mf=multiset_factorization;;
+let factor = Private.multiset_factorization;;
 
 
 
