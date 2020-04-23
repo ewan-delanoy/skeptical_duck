@@ -82,3 +82,4 @@ let rec wait_and_take_the_rest f l =match l with
   [] -> []
   |a :: b-> if f a then l else wait_and_take_the_rest f b;;
                 
+(* wait_and_take_the_rest (fun x->x>=7) (Ennig.ennig 1 20) ;; *)                
