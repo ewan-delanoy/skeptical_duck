@@ -167,5 +167,3 @@ let reconstructed_l1=set_from_its_half_delta_list 3 reconstructed_l2;;
 let list_of_small_primes=2::reconstructed_l1;;
 
 
-
-
