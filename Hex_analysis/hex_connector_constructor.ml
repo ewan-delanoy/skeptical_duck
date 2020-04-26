@@ -80,9 +80,9 @@ module Border = struct
 let eyed_claw d1 d2  =
     let (apex,ipairs) = Hex_connector_data.default_eyed_claw d1 d2 in 
    {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [apex]);
+    Hex_connector_t.entry = Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [apex]);
     junction = ipairs;
-    exit = Hex_island_t.I(Some(d2),Set_of_poly_pairs.empty_set);
+    exit = Hex_island_t.I(Hex_anchor_t.Single_anchor(d2),Set_of_poly_pairs.empty_set);
     apex = Some(apex);
     extra_active_cells = [];
 } ;;   

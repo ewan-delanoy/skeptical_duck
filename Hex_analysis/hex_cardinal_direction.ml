@@ -219,8 +219,8 @@ let reflect = function
 let short_name_for_pair = Private.short_name_for_pair;;
          
 let sides_for_player = function 
-    Hex_player_t.First_player  -> [Hex_cardinal_direction_t.Down;Hex_cardinal_direction_t.Up]
-   |Hex_player_t.Second_player -> [Hex_cardinal_direction_t.Left;Hex_cardinal_direction_t.Right];;
+    Hex_player_t.First_player  -> (Hex_cardinal_direction_t.Down,Hex_cardinal_direction_t.Up)
+   |Hex_player_t.Second_player -> (Hex_cardinal_direction_t.Left,Hex_cardinal_direction_t.Right);;
 
 
 

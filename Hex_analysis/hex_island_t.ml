@@ -4,5 +4,4 @@
 
 *)
 
-type t= I of (Hex_cardinal_direction_t.t option) 
-             * ( (int, int) Set_of_poly_pairs_t.t);;
+type t= I of Hex_anchor_t.t  * ( (int, int) Set_of_poly_pairs_t.t);;

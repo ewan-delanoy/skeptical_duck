@@ -18,7 +18,7 @@ let to_molecular_linker  pk =
         (fst_step::rl));;
 
 let original_side pk =
-   Option.unpack (Hex_island.outer_earth pk.Hex_partial_kite_t.place_of_birth);;
+   Hex_anchor.unique_side (Hex_island.anchor pk.Hex_partial_kite_t.place_of_birth);;
 
 let opt_final_death pk=
    match pk.Hex_partial_kite_t.stops_so_far  with 
@@ -26,7 +26,7 @@ let opt_final_death pk=
    |last_elt::_ -> match Hex_kite_element.opt_island_component last_elt with 
      None -> None
      |Some(island) ->  
-     if Hex_island.outer_earth island <> None 
+     if Hex_island.anchor island <> Hex_anchor_t.No_anchor
      then Some island 
      else None ;;
 
@@ -46,7 +46,7 @@ let test_for_finality pk =
       let place_of_death = compute_place_of_death pk in 
       Hex_named_connector.check_exit nc place_of_death 
    |_ -> let island = Hex_kite_element.extract_island last_elt in  
-         Hex_island.outer_earth island <> None  ;;
+         Hex_island.anchor island <> Hex_anchor_t.No_anchor  ;;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
@@ -237,7 +237,7 @@ let extensions_finished_and_non_finished dim partial_kite =
 
 let determine_winner pk =
    let place_of_birth = pk.Hex_partial_kite_t.place_of_birth in 
-   let birth = Option.unpack (Hex_island.outer_earth place_of_birth) in 
+   let birth = Hex_anchor.unique_side (Hex_island.anchor place_of_birth) in 
    Hex_cardinal_direction.player_for_side birth ;;
 
 (* Old copy of H_ex_kite_factory starts here *)

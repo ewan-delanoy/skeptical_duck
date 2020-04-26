@@ -51,13 +51,12 @@ let extract_island elt= match Private.opt_island_component elt with
     Some island -> island 
     |None -> raise(Extract_island_exn(elt)) ;;
 
-
 let is_final initial_side elt = 
    let final_side = Hex_cardinal_direction.oppose initial_side in 
    match elt with  
    Hex_kite_element_t.Sea(_) -> false 
    |_-> let the_island = extract_island elt in 
-   (Hex_island.outer_earth the_island = Some final_side);;
+   (Hex_anchor.touches_side (Hex_island.anchor the_island) final_side);;
 ;;
 
 let of_springless = function

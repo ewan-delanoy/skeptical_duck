@@ -4,10 +4,7 @@
 
 *)
 
-exception Disconnected_cells of (int * int) list;;
-exception Lonely_side of Hex_cardinal_direction_t.t ;;
 exception Missing_side of Hex_cardinal_direction_t.t * (Hex_island_t.t list) ;;
-exception Cell_in_corner of Hex_cell_t.t ;;
 
 module Private = struct 
 
@@ -21,76 +18,51 @@ let inner_to_readable_string z =
        let joiner = (if n>2 then ".." else ",") in 
        p1^joiner^p2;;
 
-let to_readable_string (Hex_island_t.I(opt,z)) =
-   let border_part = (
-      match opt with 
-      Some(direction)->"<"^(Hex_cardinal_direction.for_ground_description direction)^">"
-     |None ->"" 
-   )
+let to_readable_string (Hex_island_t.I(anchor,z)) =
+   let border_part = Hex_anchor.to_readable_string anchor 
    and inner_part = inner_to_readable_string z in 
    border_part^inner_part;;
 
-let side_for_cell dim cell =
-  let temp1 = List.filter (fun d->
-     Hex_cardinal_direction.Border.test dim d cell 
-  ) Hex_cardinal_direction.all in 
-  let h = List.length temp1 in 
-  if h=0 then None else 
-  if h>1 then raise(Cell_in_corner(cell)) else 
-  Some(List.hd temp1);;
-  
-let neighbors dim (Hex_island_t.I(opt_direction,z)) =
-   let part1 =(
-     match opt_direction with 
-      None -> Set_of_poly_pairs.empty_set
-     |Some(direction) -> 
-       let temp1=Hex_cardinal_direction.Border.enumerate_all dim direction in 
-       let temp2=Image.image Hex_cell.to_int_pair temp1 in 
-       Set_of_poly_pairs.safe_set temp2
-   ) 
+
+let neighbors dim (Hex_island_t.I(anchor,z)) =
+   let part1 = Hex_anchor.neighbors dim anchor 
    and part2 = Hex_ipair.neighbors_for_several dim 
        (Set_of_poly_pairs.forget_order z) in 
    let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
    Set_of_poly_pairs.setminus excessive_whole z;;  
-  
-let short_connections dim island1 island2 =
-    let neighborhood1 = neighbors dim island1 
-    and neighborhood2 = neighbors dim island2 in
-    Set_of_poly_pairs.intersect neighborhood1 neighborhood2 ;;
+
 
 let add_sided_cell_by_casing dim (opt_side,new_cell) l =
    let new_p = Hex_cell.to_int_pair new_cell in 
    let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
    let (connected,unconnected) = List.partition (
-    fun (Hex_island_t.I(opt,z))->List.exists (fun q->
+    fun (Hex_island_t.I(anchor,z))->List.exists (fun q->
       if Set_of_poly_pairs.mem q z then true else 
-      match opt with 
-      None -> false 
-      |Some(side) -> Hex_cardinal_direction.Border.test dim side new_cell
+      Hex_anchor.touches_cell dim anchor new_cell 
     ) neighbors 
    )  l in 
-   let old_opts = Image.image (fun (Hex_island_t.I(opt,z))->opt) connected in
-   let new_opt = Option.find_and_stop (fun opt->opt) (opt_side::old_opts) in 
-   let old_pairs =  Image.image (fun (Hex_island_t.I(opt,z))->z) connected in 
-   let new_z = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_pairs) in 
-   (Hex_island_t.I(new_opt,new_z),unconnected) ;;
+   let old_anchors = Image.image (fun (Hex_island_t.I(anchor,_))->anchor) connected in
+   let new_anchor = Hex_anchor.merge old_anchors in 
+   let old_earths =  Image.image (fun (Hex_island_t.I(_,z))->z) connected in 
+   let new_earth = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_earths) in 
+   (Hex_island_t.I(new_anchor,new_earth),unconnected) ;;
 
 
+end ;; 
 
-end ;;
-
-(* it is assumed that new_cell touches the side *)
+(* it is assumed that the new_cell touches the side *)
 let add_and_forget_the_adding dim (side,new_cell) old_islands =
     let (current_island,islands1) = Private.add_sided_cell_by_casing dim (Some side,new_cell) old_islands in 
-    let (singleton,islands2) = List.partition (fun (Hex_island_t.I(opt,z)) -> opt=Some side) 
+    let (singleton,islands2) = List.partition (fun (Hex_island_t.I(anchor,z)) -> 
+          Hex_anchor.touches_side anchor side) 
                                      (current_island::islands1) in 
-    let (Hex_island_t.I(opt,z)) = List.hd singleton in 
+    let (Hex_island_t.I(anchor1,z)) = List.hd singleton in 
     let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
-    islands2@[Hex_island_t.I(opt,new_z)] ;; 
-   
+    islands2@[Hex_island_t.I(anchor1,new_z)] ;; 
 
 let add_sided_cell_by_casing = Private.add_sided_cell_by_casing ;;
 
+let anchor (Hex_island_t.I(a,_)) = a;; 
 
 let common_neighbors 
   dim island1 island2 =
@@ -99,70 +71,47 @@ let common_neighbors
         (Private.neighbors dim island1)
            (Private.neighbors dim island2) ;;
 
-
-
-let constructor dim opt_direction l=
-  let z=Set_of_poly_pairs.safe_set l in 
-  let ccs = Hex_ipair.compute_connected_components dim l in 
-  if (List.length ccs) <> 1 
-  then  raise(Disconnected_cells (Image.image List.hd ccs)) 
-  else 
-  match opt_direction with 
-   None -> Hex_island_t.I(None,z)
-  |Some(direction) ->
-  if not(List.exists (fun 
-     p-> Hex_cardinal_direction.Border.test dim direction 
-         (Hex_cell.of_int_pair p)
-  ) l)
-  then raise(Lonely_side(direction))
-  else Hex_island_t.I(opt_direction,z) ;;
-
 let decompose eob =     
     let dim = eob.Hex_end_of_battle_t.dimension 
     and w = eob.Hex_end_of_battle_t.winner 
     and cells = eob.Hex_end_of_battle_t.ally_territory in 
     let ipairs = Hex_cell_set.image Hex_cell.to_int_pair cells in 
     let components = Hex_ipair.compute_connected_components dim ipairs in 
-    let sides = Hex_cardinal_direction.sides_for_player w in 
+    let (side1,side2) = Hex_cardinal_direction.sides_for_player w in 
     let pre_answer = Image.image (
        fun l->
-       let opt = Option.seek (fun side->
+       let touched_sides = List.filter (fun side->
           List.exists(fun 
           p-> Hex_cardinal_direction.Border.test dim side 
          (Hex_cell.of_int_pair p)) l
-       ) sides in 
-       Hex_island_t.I(opt,Set_of_poly_pairs.safe_set l)
+       ) [side1;side2] in 
+       Hex_island_t.I(Hex_anchor.of_list touched_sides,Set_of_poly_pairs.safe_set l)
     ) components in 
     let complements = Option.filter_and_unpack (
        fun side -> 
-        if List.exists (fun (Hex_island_t.I(opt,_)) ->
-           opt = Some side
+        if List.exists (fun (Hex_island_t.I(anchor,_)) ->
+           Hex_anchor.touches_side anchor side
          ) pre_answer   
         then None 
-        else Some(Hex_island_t.I(Some side,Set_of_poly_pairs.empty_set))   
-    )  sides in 
+        else Some(Hex_island_t.I(Hex_anchor_t.Single_anchor side,Set_of_poly_pairs.empty_set))   
+    )  [side1;side2] in 
     pre_answer @ complements ;;
 
-let eviscerate (Hex_island_t.I(opt,z))= (Hex_island_t.I(opt,Set_of_poly_pairs.empty_set)) ;;
+let eviscerate (Hex_island_t.I(anchor,z))= 
+(Hex_island_t.I(anchor,Set_of_poly_pairs.empty_set)) ;;
 
 let get_side side l=
-   match Option.seek (fun (Hex_island_t.I(opt,_))->opt=Some side) l with 
+   match Option.seek (fun (Hex_island_t.I(anchor,_))->Hex_anchor.touches_side anchor side) l with 
    Some(island) -> island 
    |None ->raise(Missing_side(side,l));;
 
-
-let inner_earth (Hex_island_t.I(opt,z))= 
+let inner_earth (Hex_island_t.I(_,z))= 
    Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair z) ;;
 
 let is_included_in 
-  (Hex_island_t.I(opt1,z1)) 
-    (Hex_island_t.I(opt2,z2)) = 
-  if (not (Set_of_poly_pairs.is_included_in z1 z2)) 
-  then false 
-  else match opt1 with 
-       None -> true 
-       | _ -> (opt2 = opt1);;
- 
+  (Hex_island_t.I(anchor1,z1)) 
+    (Hex_island_t.I(anchor2,z2)) = 
+     (Set_of_poly_pairs.is_included_in z1 z2) ;;
 
 let minimal_connection (Hex_island_t.I(_,z1),Hex_island_t.I(_,z2)) (Hex_island_t.I(_,z)) =
   (* as a first approximation, we de not optimize at all and take 
@@ -172,49 +121,23 @@ let minimal_connection (Hex_island_t.I(_,z1),Hex_island_t.I(_,z2)) (Hex_island_t
 
 let neighbors = Private.neighbors ;;
 
-
-
-
-
-
-let oppose dim (Hex_island_t.I(old_opt,z)) =
-   let new_opt = (match old_opt with 
-      None -> None 
-      |Some(direction)->Some(Hex_cardinal_direction.oppose direction)
-   ) 
+let oppose dim (Hex_island_t.I(old_anchor,z)) =
+   let new_anchor = Hex_anchor.oppose old_anchor 
    and new_z = Set_of_poly_pairs.safe_set 
       (Set_of_poly_pairs.image (Hex_ipair.oppose dim) z) in 
-   Hex_island_t.I(new_opt,new_z);;
-
-let outer_earth (Hex_island_t.I(opt,z))= opt ;;
+   Hex_island_t.I(new_anchor,new_z);;     
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
 
-let reflect (Hex_island_t.I(old_opt,z)) =
-   let new_opt = (match old_opt with 
-      None -> None 
-      |Some(direction)->Some(Hex_cardinal_direction.reflect direction)
-   ) 
+let reflect (Hex_island_t.I(old_anchor,z)) =
+   let new_anchor = Hex_anchor.reflect old_anchor 
    and new_z = Set_of_poly_pairs.safe_set 
       (Set_of_poly_pairs.image Hex_ipair.reflect z) in 
-   Hex_island_t.I(new_opt,new_z);;
-
-let short_connections_to_other_islands dim island1 islands= 
-   let temp1=Image.image (Private.short_connections dim island1) islands in 
-   let temp2=Set_of_poly_pairs.fold_merge temp1 in 
-   Set_of_poly_pairs.image Hex_cell.of_int_pair temp2
-;;
-
-let short_connections_to_border dim island direction= 
-   let temp1=Set_of_poly_pairs.image Hex_cell.of_int_pair (neighbors dim island) in 
-   List.filter (Hex_cardinal_direction.Border.test dim direction) temp1
-;;
+   Hex_island_t.I(new_anchor,new_z);;        
 
 let test_for_neighbor dim island cell =
    Set_of_poly_pairs.mem (Hex_cell.to_int_pair cell) (Private.neighbors dim island);;
 
 let to_readable_string = Private.to_readable_string ;;
-
-   

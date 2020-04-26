@@ -69,6 +69,7 @@ let nonsacrificial_starters_for_side end_of_battle side =
    helper_for_starter_computation end_of_battle islands side ;; 
 
 
+
 let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) = 
   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
   let artificial_eob = {
@@ -85,8 +86,8 @@ let sacrificial_starter end_of_battle (side,cell1,cell2,cell3) =
 end ;; 
 
 let nonsacrificial_starters end_of_battle = 
-   let sides = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-   List.flatten (Image.image (Private.nonsacrificial_starters_for_side end_of_battle) sides);;
+   let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
+   List.flatten (Image.image (Private.nonsacrificial_starters_for_side end_of_battle) [side1;side2]);;
 
 let sacrificial_starters end_of_battle = 
     let triangles = Hex_end_of_battle.compatible_border_triangles end_of_battle in 

@@ -10,12 +10,12 @@ let translate cnnctr (dx,dy)=
    let trl = (fun z->
       Set_of_poly_pairs.safe_set( Set_of_poly_pairs.image (fun (x,y)->(x+dx,y+dy)) z) 
    )  in 
-   let (Hex_island_t.I(opt1,elts1)) = cnnctr.Hex_connector_t.entry 
-   and (Hex_island_t.I(opt2,elts2)) = cnnctr.Hex_connector_t.exit in 
+   let (Hex_island_t.I(anchor1,elts1)) = cnnctr.Hex_connector_t.entry 
+   and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit in 
    {
-    Hex_connector_t.entry =Hex_island_t.I(opt1,trl elts1);
+    Hex_connector_t.entry =Hex_island_t.I(anchor1,trl elts1);
     junction = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.junction) ;
-    exit = Hex_island_t.I(opt2,trl elts2);
+    exit = Hex_island_t.I(anchor2,trl elts2);
     apex = Option.propagate (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.apex);
     extra_active_cells = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.extra_active_cells) ;
 
@@ -25,10 +25,11 @@ end ;;
 
 let all_translates formal_dim cnnctr = 
    let (Hex_dimension_t.D dim) = formal_dim in 
-   let (Hex_island_t.I(opt1,elts1)) = cnnctr.Hex_connector_t.entry 
-   and (Hex_island_t.I(opt2,elts2)) = cnnctr.Hex_connector_t.exit 
+   let (Hex_island_t.I(anchor1,elts1)) = cnnctr.Hex_connector_t.entry 
+   and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit 
    and elts3 = cnnctr.Hex_connector_t.junction 
    and elts4 = cnnctr.Hex_connector_t.extra_active_cells in 
+   let opt1 = Hex_anchor.any_side anchor1 and opt2 = Hex_anchor.any_side anchor2 in 
    let opt = (if opt1<>None then opt1 else opt2) in 
    let base = Hex_cardinal_direction.authorized_translations formal_dim opt in 
    let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3;Set_of_poly_pairs.sort elts4] in 
@@ -106,27 +107,29 @@ let translate p cnnctr= Private.translate cnnctr p;;
 
 module Example = struct 
  
+let no_anchor = Hex_anchor_t.No_anchor ;; 
+
 let upwards_left_situated_haddock1 = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,2);(2,1)]);
+    Hex_connector_t.entry = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,2);(2,1)]);
     junction = 
     [ (1, 3) ; (2, 2) ;   (2, 3); (3, 1); (3, 2); (3, 3)];
-    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(4,1);(4,2)]);
+    exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(4,1);(4,2)]);
     apex = None ;
     extra_active_cells = [] ;
 } ;;   
 
 let northeast_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,1)]);
+    Hex_connector_t.entry = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(2,1)]);
     junction = [(1, 2); (2, 2)];
-    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,3)]);
+    exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,3)]);
     apex = None ;
     extra_active_cells = [] ;
 } ;;   
 
 let northwest_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(2,2)]);
+    Hex_connector_t.entry = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(2,2)]);
     junction = [(1, 2); (2, 1)];
-    exit = Hex_island_t.I(None,Set_of_poly_pairs_t.S [(1,1)]);
+    exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,1)]);
     apex = None ;
     extra_active_cells = [] ;
 } ;;   

@@ -10,7 +10,6 @@ exception Claim_named_connector_exn of Hex_kite_springless_element_t.t ;;
 
 module Private = struct 
 
-
 let to_readable_string = function
   Hex_kite_springless_element_t.Earth(island)-> Hex_island.to_readable_string island
    |Sea(nc)-> Hex_named_connector.to_readable_string nc;;

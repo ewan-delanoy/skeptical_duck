@@ -39,9 +39,9 @@ let prepare_for_journey =
 let upwards_version tbc = 
     let (_,_,apex,ju,extra_actives) = List.assoc tbc prepare_for_journey in 
    {Hex_connector_t.entry =
-    Hex_island_t.I (None, Set_of_poly_pairs_t.S [apex]);
+    Hex_island_t.I (Hex_anchor_t.No_anchor, Set_of_poly_pairs_t.S [apex]);
     junction = ju;
-    exit = Hex_island_t.I (Some Hex_cardinal_direction_t.Up, Set_of_poly_pairs_t.S []);
+    exit = Hex_island_t.I (Hex_anchor_t.Single_anchor(Hex_cardinal_direction_t.Up), Set_of_poly_pairs_t.S []);
     apex = Some(apex);
     extra_active_cells = extra_actives ;
     };;

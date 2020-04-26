@@ -9,9 +9,10 @@
 module Private = struct 
 
 let enhance dim pk cell =
-    let birth = Option.unpack(Hex_island.outer_earth(pk.Hex_partial_kite_t.place_of_birth)) in 
+    let birth = Hex_anchor.unique_side(Hex_island.anchor(pk.Hex_partial_kite_t.place_of_birth)) in 
     let death = Hex_cardinal_direction.oppose birth in 
     Hex_cardinal_direction.enhance dim death cell ;; 
+
 
 let impose_cell_by_casing_in_contact_case dim new_cell pk (old_islands,old_abc) (old_last_island,old_last_stop,previous_stops)=  
     let sided_cell =  enhance dim pk new_cell 
@@ -49,6 +50,7 @@ let impose_cell_by_casing dim new_cell pk=
     if Hex_island.test_for_neighbor dim last_island new_cell 
     then impose_cell_by_casing_in_contact_case    dim new_cell pk (old_islands,old_abc) (last_island,last_stop,previous_stops)
     else impose_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) ;;
+
 
 
 end ;;
