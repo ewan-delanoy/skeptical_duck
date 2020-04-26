@@ -182,7 +182,6 @@ let enhance dim side cell =
 let for_eye_description    = Private.char_for_eye_description ;;
 let for_ground_description = Private.char_for_ground_description ;;
 
-
 let is_vertical = function 
     Hex_cardinal_direction_t.Down 
    |Hex_cardinal_direction_t.Up -> true 
