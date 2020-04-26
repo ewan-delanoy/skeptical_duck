@@ -20,6 +20,19 @@ let neighbors_for_side dim direction =
    let temp2=Image.image Hex_cell.to_int_pair temp1 in 
    Set_of_poly_pairs.safe_set temp2;;
 
+let of_list l= 
+    match l with 
+    []->raise(Of_list_exn)
+    |side::_->
+        if List.length(l)=1
+        then Hex_anchor_t.Single_anchor side 
+        else normalized_double_anchor side ;;
+     
+let to_list = function 
+     Hex_anchor_t.No_anchor -> []
+    |Single_anchor (d) -> [d]
+    |Double_anchor (d1,d2) -> [d1;d2] ;;
+
 end ;;
 
 let any_side = function 
@@ -28,20 +41,18 @@ let any_side = function
     |Double_anchor (d1,d2) -> Some d1 ;;
 
 
+let merge l=
+   let temp1 = List.flatten(Image.image Private.to_list l) in 
+   let temp2 = Ordered.sort Total_ordering.standard temp1 in 
+   Private.of_list temp2 ;;
+
 let neighbors dim  = function 
      Hex_anchor_t.No_anchor -> Set_of_poly_pairs.empty_set
     |Single_anchor (d) -> Private.neighbors_for_side dim d 
     |Double_anchor (d1,d2) -> Set_of_poly_pairs.merge 
                 (Private.neighbors_for_side dim d1) (Private.neighbors_for_side dim d2);;  
 
-let of_list l= 
-    match l with 
-    []->raise(Of_list_exn)
-    |side::_->
-        if List.length(l)=1
-        then Hex_anchor_t.Single_anchor side 
-        else Private.normalized_double_anchor side ;;
-     
+let of_list = Private.of_list ;;      
 
 
 let oppose = function 
