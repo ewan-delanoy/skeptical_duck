@@ -7,6 +7,7 @@
 *)
 
 exception Of_list_exn ;; 
+exception Unique_side_exn of Hex_anchor_t.t;; 
 
 module Private = struct 
 
@@ -86,3 +87,7 @@ let to_readable_string = function
        "<"^(Hex_cardinal_direction.for_ground_description d1)^
            (Hex_cardinal_direction.for_ground_description d2)^">"
      ;;
+
+let unique_side anchor = match anchor with 
+     Hex_anchor_t.Single_anchor (d) -> d 
+    |_ -> raise(Unique_side_exn(anchor)) ;;     
