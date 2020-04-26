@@ -13,12 +13,25 @@ let normalized_double_anchor = function
    |Hex_cardinal_direction_t.Up -> Hex_anchor_t.Double_anchor (Hex_cardinal_direction_t.Down,Hex_cardinal_direction_t.Up)
    | _ -> Hex_anchor_t.Double_anchor (Hex_cardinal_direction_t.Left,Hex_cardinal_direction_t.Right) ;;  
 
+let neighbors_for_side dim direction = 
+   let temp1=Hex_cardinal_direction.Border.enumerate_all dim direction in 
+   let temp2=Image.image Hex_cell.to_int_pair temp1 in 
+   Set_of_poly_pairs.safe_set temp2;;
+
 end ;;
 
 let any_side = function 
      Hex_anchor_t.No_anchor -> None
     |Single_anchor (d) -> Some d 
     |Double_anchor (d1,d2) -> Some d1 ;;
+
+
+let neighbors dim  = function 
+     Hex_anchor_t.No_anchor -> Set_of_poly_pairs.empty_set
+    |Single_anchor (d) -> Private.neighbors_for_side dim d 
+    |Double_anchor (d1,d2) -> Set_of_poly_pairs.merge 
+                (Private.neighbors_for_side dim d1) (Private.neighbors_for_side dim d2);;  
+
 
 let oppose = function 
      Hex_anchor_t.No_anchor -> Hex_anchor_t.No_anchor
@@ -29,6 +42,13 @@ let reflect = function
      Hex_anchor_t.No_anchor -> Hex_anchor_t.No_anchor
     |Single_anchor (d) -> Hex_anchor_t.Single_anchor (Hex_cardinal_direction.reflect d)
     |Double_anchor (d1,d2) -> Private.normalized_double_anchor (Hex_cardinal_direction.reflect d1) ;;
+
+let touches anchor side = match anchor with 
+   Hex_anchor_t.No_anchor -> false
+    |Single_anchor (d) -> d=side
+    |Double_anchor (d1,d2) -> (d1=side) || (d2=side) ;;
+    
+
 
 let to_readable_string = function 
      Hex_anchor_t.No_anchor -> ""
