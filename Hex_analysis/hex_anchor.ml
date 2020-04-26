@@ -11,6 +11,11 @@ let any_side = function
     |Single_anchor (d) -> Some d 
     |Double_anchor (d1,d2) -> Some d1 ;;
 
+let oppose = function 
+     Hex_anchor_t.No_anchor -> Hex_anchor_t.No_anchor
+    |Single_anchor (d) -> Hex_anchor_t.Single_anchor (d)
+    |Double_anchor (d1,d2) -> Hex_anchor_t.Double_anchor (d1,d2) ;;
+
 let to_readable_string = function 
      Hex_anchor_t.No_anchor -> ""
     |Single_anchor (d) -> "<"^(Hex_cardinal_direction.for_ground_description d)^">"
