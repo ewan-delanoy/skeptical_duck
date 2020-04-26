@@ -37,8 +37,17 @@ let compute_place_of_death pk=
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
+   
+
 let test_for_finality pk = 
-   match pk.Hex_partial_kite_t.stops_so_far with 
+   if Hex_anchor.is_two_edged (Hex_island.anchor(pk.Hex_partial_kite_t.place_of_birth)) 
+   then true 
+   else 
+   let stops = pk.Hex_partial_kite_t.stops_so_far in 
+   if List.exists Hex_kite_element.is_two_edged stops 
+   then true
+   else 
+   match stops with 
    [] -> false 
    |last_elt::_->
    match  last_elt with 
@@ -203,11 +212,13 @@ let springless_extensions_after_island dim partial_kite last_island =
    (clearly_final@subtly_final,nonfinal) ;;
 
 let springless_extensions_after_sea partial_kite last_nc =
-   let candidates = partial_kite.Hex_partial_kite_t.unvisited_islands in
-   let retained_ones  = List.filter (
+   (* if a two-edged is created, it will never be in the unvisited_islands field,
+      so the extensions created here are always non-final 
+    *)
+   let compatible_islands  = List.filter (
       Hex_named_connector.check_exit last_nc  
-   )  candidates in 
-   ([],Image.image (extend_with_island partial_kite) retained_ones);;
+   )  partial_kite.Hex_partial_kite_t.unvisited_islands in 
+   ([],Image.image (extend_with_island partial_kite) compatible_islands);;
 
 let extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
