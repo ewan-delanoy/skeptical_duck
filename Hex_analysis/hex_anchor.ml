@@ -54,11 +54,18 @@ let reflect = function
     |Single_anchor (d) -> Hex_anchor_t.Single_anchor (Hex_cardinal_direction.reflect d)
     |Double_anchor (d1,d2) -> Private.normalized_double_anchor (Hex_cardinal_direction.reflect d1) ;;
 
-let touches anchor side = match anchor with 
+let touches_side anchor side = match anchor with 
    Hex_anchor_t.No_anchor -> false
     |Single_anchor (d) -> d=side
     |Double_anchor (d1,d2) -> (d1=side) || (d2=side) ;;
     
+let touches_cell dim anchor cell = match anchor with 
+   Hex_anchor_t.No_anchor -> false
+    |Single_anchor (d) -> Hex_cardinal_direction.Border.test dim d cell 
+    |Double_anchor (d1,d2) -> 
+          ( Hex_cardinal_direction.Border.test dim d1 cell) ||
+          ( Hex_cardinal_direction.Border.test dim d2 cell)
+     ;;    
 
 
 let to_readable_string = function 
