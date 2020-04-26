@@ -6,7 +6,7 @@
 
 *)
 
-exception Of_list_exn ;; 
+
 exception Unique_side_exn of Hex_anchor_t.t;; 
 
 module Private = struct 
@@ -23,7 +23,7 @@ let neighbors_for_side dim direction =
 
 let of_list l= 
     match l with 
-    []->raise(Of_list_exn)
+    []->Hex_anchor_t.No_anchor
     |side::_->
         if List.length(l)=1
         then Hex_anchor_t.Single_anchor side 
