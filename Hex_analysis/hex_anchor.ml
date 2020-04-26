@@ -42,6 +42,11 @@ let any_side = function
     |Double_anchor (d1,d2) -> Some d1 ;;
 
 
+let is_two_edged = function 
+    Hex_anchor_t.Double_anchor (d1,d2) -> true 
+   | _ -> false ;;
+
+
 let merge l=
    let temp1 = List.flatten(Image.image Private.to_list l) in 
    let temp2 = Ordered.sort Total_ordering.standard temp1 in 
