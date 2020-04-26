@@ -6,6 +6,8 @@
 
 *)
 
+exception Of_list_exn ;; 
+
 module Private = struct 
 
 let normalized_double_anchor = function 
@@ -31,6 +33,15 @@ let neighbors dim  = function
     |Single_anchor (d) -> Private.neighbors_for_side dim d 
     |Double_anchor (d1,d2) -> Set_of_poly_pairs.merge 
                 (Private.neighbors_for_side dim d1) (Private.neighbors_for_side dim d2);;  
+
+let of_list l= 
+    match l with 
+    []->raise(Of_list_exn)
+    |side::_->
+        if List.length(l)=1
+        then Hex_anchor_t.Single_anchor side 
+        else Private.normalized_double_anchor side ;;
+     
 
 
 let oppose = function 
