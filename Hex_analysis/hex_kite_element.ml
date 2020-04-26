@@ -59,11 +59,11 @@ let is_final initial_side elt =
    (Hex_anchor.touches_side (Hex_island.anchor the_island) final_side);;
 ;;
 
-(*
-let is_two_edged elt = match match Private.opt_island_component elt with 
+
+let is_two_edged elt = match Private.opt_island_component elt with 
     None -> false
-    |Some island -> (Hex_island.anchor ) ;; 
-*)
+    |Some island -> Hex_anchor.is_two_edged (Hex_island.anchor island ) ;; 
+
 
 let of_springless = function
     Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
