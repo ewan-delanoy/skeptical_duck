@@ -61,14 +61,23 @@ let casings_from_one_step_advances dim pk cl_seas=
     let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
     Hex_cell_set.intersect temp2 pk.Hex_partial_kite_t.remaining_free_cells ;;
 
-
 let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.image fst cl_seas) ;;   
+
+let casings_from_very_short_flyovers dim pk =
+   let death = Hex_cardinal_direction.oppose (Hex_springless_analysis.original_side pk) in 
+   let death_island = Hex_island_t.I(Hex_anchor.of_list [death],Set_of_poly_pairs.empty_set) in 
+   let islands = Hex_springless_analysis.nonredundant_list_of_visited_islands pk in 
+   let temp1 = Image.image  (Hex_island.common_neighbors dim death_island) islands in 
+   let temp2 = Set_of_poly_pairs.fold_merge temp1 in 
+   Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair temp2) ;; 
 
 let all_casings dim pk =
    let cl_seas = close_seas pk in 
-   Hex_cell_set.forget_order (Hex_cell_set.merge
-      (casings_from_one_step_advances dim pk cl_seas)
-      (casings_from_seas cl_seas)
+   Hex_cell_set.forget_order (Hex_cell_set.fold_merge
+      [casings_from_very_short_flyovers dim pk;
+       casings_from_one_step_advances dim pk cl_seas;
+       casings_from_seas cl_seas
+      ] 
    ) ;; 
 
 let data_common_to_both_parts dim pk =
