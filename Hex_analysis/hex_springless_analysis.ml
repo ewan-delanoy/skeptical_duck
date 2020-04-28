@@ -251,6 +251,16 @@ let determine_winner pk =
    let birth = Hex_anchor.unique_side (Hex_island.anchor place_of_birth) in 
    Hex_cardinal_direction.player_for_side birth ;;
 
+let nonredundant_list_of_visited_islands pk =
+   let unfiltered_l=(pk.Hex_partial_kite_t.first_step)::(List.rev pk.Hex_partial_kite_t.stops_so_far) in  
+   let l=remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l) in  
+   Option.filter_and_unpack (
+        function 
+        Hex_kite_springless_element_t.Sea(_)->None 
+        |Earth(island)->Some island
+   ) l;;
+   
+
 (* Old copy of H_ex_kite_factory starts here *)
 
 
@@ -295,6 +305,7 @@ let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize dim pk= fst(Private.main (Private.late_starter dim pk,false));;
 let is_final = Private.test_for_finality ;;
+let nonredundant_list_of_visited_islands = Private.nonredundant_list_of_visited_islands ;;
 let original_side = Private.original_side ;;
 let solution_details = Private.solution_details ;;
 let to_molecular_linker = Private.to_molecular_linker;;
