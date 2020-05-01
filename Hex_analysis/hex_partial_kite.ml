@@ -69,7 +69,8 @@ let casings_from_very_short_flyovers dim pk =
    let islands = Hex_springless_analysis.nonredundant_list_of_visited_islands pk in 
    let temp1 = Image.image  (Hex_island.common_neighbors dim death_island) islands in 
    let temp2 = Set_of_poly_pairs.fold_merge temp1 in 
-   Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair temp2) ;; 
+   let temp3 =Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair temp2) in 
+   Hex_cell_set.intersect temp3 pk.Hex_partial_kite_t.remaining_free_cells;; 
 
 let all_casings dim pk =
    let cl_seas = close_seas pk in 
