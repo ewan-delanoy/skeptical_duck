@@ -66,7 +66,7 @@ let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.image fst cl_seas) 
 
 
 let all_casings dim pk =
-   let cl_seas = close_seas pk in 
+   let cl_seas = close_future_seas pk in 
    Hex_cell_set.forget_order (Hex_cell_set.fold_merge
       [
        casings_from_one_step_advances dim pk cl_seas;
