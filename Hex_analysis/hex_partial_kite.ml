@@ -9,12 +9,6 @@
 module Private = struct 
 
 
-let last_stop pk = 
-   match pk.Hex_partial_kite_t.steps_so_far with 
-    [] -> Hex_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
-   |elt::_ -> elt ;;
-
-
 
 
 let extend_with_springboard dim pk new_sb =
@@ -82,7 +76,7 @@ let data_common_to_both_parts dim pk =
 
 let light_part common_to_both = 
    Image.image (fun (cell,new_pk)->
-      (cell,Hex_kite_element.extract_island (last_stop new_pk))
+      (cell,Hex_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
 let explore_yet_untried_path dim old_pk (cell,new_pk) =
