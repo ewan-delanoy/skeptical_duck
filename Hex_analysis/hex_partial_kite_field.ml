@@ -57,9 +57,47 @@ let place_of_death pk=
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
- 
+let extend_with_island pk new_island = 
+        let vague_new_elt = Hex_kite_element_t.Earth(new_island)
+        and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
+     (new_elt,   
+     {
+         pk with 
+          Hex_partial_kite_t.steps_so_far = 
+               (vague_new_elt::pk.Hex_partial_kite_t.steps_so_far);
+          unvisited_islands = List.filter (fun x->x<>new_island ) 
+             (pk.Hex_partial_kite_t.unvisited_islands);
+    });;
+    
+
+let extend_with_sea pk new_nc = 
+        let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
+        and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
+        let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
+        let old_seas = pk.Hex_partial_kite_t.unvisited_seas 
+        and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
+        let selector =  List.filter 
+              (fun (z,nc)->
+                Hex_named_connector.check_disjointness new_nc nc) 
+        and remaining_free_ones = Hex_cell_set.setminus old_free_ones
+         (Hex_named_connector.inner_sea new_nc) in 
+     (new_elt,   
+     {
+         pk with 
+          Hex_partial_kite_t.steps_so_far = vague_new_elt::old_steps ;
+            unvisited_seas = selector old_seas ;
+            remaining_free_cells = remaining_free_ones ;
+    });;
+
+let winner pk =
+   let place_of_birth = pk.Hex_partial_kite_t.place_of_birth in 
+   let birth = Hex_anchor.unique_side (Hex_island.anchor place_of_birth) in 
+   Hex_cardinal_direction.player_for_side birth ;; 
 
 end ;; 
 
+let extend_with_island = Private.extend_with_island ;;
+let extend_with_sea = Private.extend_with_sea ;;
 let place_of_death = Private.place_of_death ;;
 let test_for_finality = Private.test_for_finality ;;
+let winner = Private.winner;;
