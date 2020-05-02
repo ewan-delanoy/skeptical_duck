@@ -37,26 +37,7 @@ let compute_place_of_death pk=
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
    Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
 
-   
-
-let test_for_finality pk = 
-   if Hex_anchor.is_two_edged 
-      (Hex_island.anchor(pk.Hex_partial_kite_t.place_of_birth)) 
-   then true 
-   else 
-   let steps = pk.Hex_partial_kite_t.steps_so_far in 
-   if List.exists Hex_kite_element.is_two_edged steps 
-   then true
-   else 
-   match steps with 
-   [] -> false 
-   |last_elt::_->
-   match  last_elt with 
-   Hex_kite_element_t.Sea(nc) -> 
-      let place_of_death = compute_place_of_death pk in 
-      Hex_named_connector.check_exit nc place_of_death 
-   |_ -> let island = Hex_kite_element.extract_island last_elt in  
-         Hex_island.anchor island <> Hex_anchor_t.No_anchor  ;;
+ 
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
@@ -186,7 +167,7 @@ let springless_extensions_after_island dim partial_kite last_island =
         else None   
    )   in 
    let unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
-   let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->test_for_finality pk2) unclear_items  in 
+   let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->Hex_partial_kite_field.test_for_finality pk2) unclear_items  in 
    (subtly_final,nonfinal) ;;
 
 let springless_extensions_after_sea partial_kite last_nc =
@@ -277,6 +258,5 @@ end ;;
 let active_part = Private.active_part ;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize dim pk= fst(Private.main (Private.late_starter dim pk,false));;
-let is_final = Private.test_for_finality ;;
 let solution_details = Private.solution_details ;;
 let to_molecular_linker = Private.to_molecular_linker;;

@@ -50,6 +50,16 @@ let test_for_finality pk =
    |_ -> let island = Hex_kite_element.extract_island last_elt in  
          Hex_island.anchor island <> Hex_anchor_t.No_anchor  ;;
 
+let place_of_death pk=
+   match opt_final_death pk with 
+   Some(death_already_occurred)-> death_already_occurred 
+   |None ->
+   let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
+   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
+
+ 
+
 end ;; 
 
+let place_of_death = Private.place_of_death ;;
 let test_for_finality = Private.test_for_finality ;;
