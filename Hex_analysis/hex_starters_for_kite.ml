@@ -36,7 +36,7 @@ let helper_for_starter_computation end_of_battle islands side =
    let conditional_constructor = (fun 
      first_nc -> 
         if List.exists (Hex_named_connector.check_exit first_nc) islands
-        then Some(Hex_partial_kite_field.extend_with_sea initial_seed first_nc)
+        then Some(snd(Hex_partial_kite_field.extend_with_sea initial_seed first_nc))
         else None 
    ) in 
    Option.filter_and_unpack conditional_constructor  base1 ;; 
