@@ -47,8 +47,7 @@ let helper_for_starter_computation end_of_battle islands side =
           (Hex_named_connector.inner_sea first_nc) in
         {
             Hex_partial_kite_t.place_of_birth = first_island;
-            first_step = Hex_kite_element_t.Sea(first_nc);
-            stops_so_far =  [];
+            steps_so_far =  ([],Hex_kite_element_t.Sea(first_nc));
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = new_middle_base ;
             unvisited_enders = new_end_base ;

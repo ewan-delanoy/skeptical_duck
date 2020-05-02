@@ -10,8 +10,7 @@ module Private = struct
 
 let to_molecular_linker  pk =
    (* The kite is assumed to be finished *) 
-   let fst_step = pk.Hex_partial_kite_t.first_step 
-   and rl=pk.Hex_partial_kite_t.stops_so_far in 
+   let (rl,fst_step) = pk.Hex_partial_kite_t.steps_so_far in 
    Hex_molecular_linker.fold_merge 
    (Option.filter_and_unpack 
       Hex_kite_element.to_molecular_linker 
@@ -21,7 +20,7 @@ let original_side pk =
    Hex_anchor.unique_side (Hex_island.anchor pk.Hex_partial_kite_t.place_of_birth);;
 
 let opt_final_death pk=
-   match pk.Hex_partial_kite_t.stops_so_far  with 
+   match fst pk.Hex_partial_kite_t.steps_so_far  with 
    [] -> None 
    |last_elt::_ -> match Hex_kite_element.opt_island_component last_elt with 
      None -> None
@@ -43,8 +42,8 @@ let test_for_finality pk =
    if Hex_anchor.is_two_edged (Hex_island.anchor(pk.Hex_partial_kite_t.place_of_birth)) 
    then true 
    else 
-   let stops = pk.Hex_partial_kite_t.stops_so_far in 
-   if List.exists Hex_kite_element.is_two_edged stops 
+   let (stops,fst_step) = pk.Hex_partial_kite_t.steps_so_far in 
+   if List.exists Hex_kite_element.is_two_edged (fst_step::stops) 
    then true
    else 
    match stops with 
@@ -110,7 +109,8 @@ let active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = compute_place_of_death pk   in 
-    let unfiltered_l=(pk.Hex_partial_kite_t.first_step)::(List.rev pk.Hex_partial_kite_t.stops_so_far) in  
+   let (other_steps,fst_step) = pk.Hex_partial_kite_t.steps_so_far in 
+    let unfiltered_l=fst_step::(List.rev other_steps) in  
     let l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l)  in 
     let boarded_islands = deduce_boarded_islands l (birth,death)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
@@ -134,11 +134,11 @@ let active_part  pk =
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
         and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
-        let old_stops=pk.Hex_partial_kite_t.stops_so_far in 
+        let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = vague_new_elt::old_stops;
+          Hex_partial_kite_t.steps_so_far = (vague_new_elt::other_steps,fst_step);
           unvisited_islands = List.filter (fun x->x<>new_island ) 
              (pk.Hex_partial_kite_t.unvisited_islands);
     });;
@@ -147,7 +147,7 @@ let extend_with_island pk new_island =
 let extend_with_sea pk new_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
         and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
-        let old_stops=pk.Hex_partial_kite_t.stops_so_far in 
+        let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
         let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
         and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders 
         and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
@@ -159,7 +159,7 @@ let extend_with_sea pk new_nc =
      (new_elt,   
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = vague_new_elt::old_stops ;
+          Hex_partial_kite_t.steps_so_far = (vague_new_elt::other_steps,fst_step) ;
             unvisited_seas = selector old_middle_seas ;
             unvisited_enders = selector old_end_seas ;
             remaining_free_cells = remaining_free_ones ;
@@ -167,7 +167,7 @@ let extend_with_sea pk new_nc =
 
 let extend_with_final_sea pk final_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(final_nc)  in 
-        let old_stops=pk.Hex_partial_kite_t.stops_so_far in 
+        let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
         let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
         and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders 
         and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in  
@@ -179,7 +179,7 @@ let extend_with_final_sea pk final_nc =
      
      {
          pk with 
-          Hex_partial_kite_t.stops_so_far = vague_new_elt::old_stops ;
+          Hex_partial_kite_t.steps_so_far = (vague_new_elt::other_steps,fst_step) ;
           unvisited_seas = selector old_middle_seas ;
           unvisited_enders = selector old_end_seas ;
           remaining_free_cells = remaining_free_ones ;
@@ -226,19 +226,17 @@ let extensions_from_last_elt dim partial_kite last_elt = match last_elt with
           springless_extensions_after_island dim partial_kite last_island ;;
 
 let springless_extensions dim pk =
-   let fst_step = pk.Hex_partial_kite_t.first_step 
-   and rl=pk.Hex_partial_kite_t.stops_so_far in 
-   let last_elt = (match rl with 
+   let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
+   let last_elt = (match other_steps with 
      []->fst_step 
      |x::_-> x ) in 
    extensions_from_last_elt dim pk last_elt ;;
 
 let solution_details pk = 
-        let a1 = pk.Hex_partial_kite_t.place_of_birth 
-        and a2 = pk.Hex_partial_kite_t.first_step 
-        and rl=pk.Hex_partial_kite_t.stops_so_far in 
-        let l=List.rev rl in 
-        (a1,a2,l,to_molecular_linker pk,active_part pk);;
+    let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in    
+    let a1 = pk.Hex_partial_kite_t.place_of_birth in 
+    let l=List.rev other_steps in 
+    (a1,fst_step,l,to_molecular_linker pk,active_part pk);;
 
 let extensions_finished_and_non_finished dim partial_kite =
       let (finished1,unfinished1) = springless_extensions dim partial_kite in 
@@ -252,8 +250,10 @@ let determine_winner pk =
    Hex_cardinal_direction.player_for_side birth ;;
 
 let nonredundant_list_of_visited_islands pk =
-   let unfiltered_l=(pk.Hex_partial_kite_t.first_step)::(List.rev pk.Hex_partial_kite_t.stops_so_far) in  
-   let l=remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l) in  
+   let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
+   let unfiltered_l=fst_step::(List.rev other_steps) in  
+   let l=remove_redundant_islands 
+    (Image.image Hex_kite_element.compress_to_springless  unfiltered_l) in  
    Option.filter_and_unpack (
         function 
         Hex_kite_springless_element_t.Sea(_)->None 
