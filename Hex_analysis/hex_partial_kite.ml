@@ -81,7 +81,7 @@ let light_part common_to_both =
 
 let explore_yet_untried_path dim old_pk (cell,new_pk) =
    let nbr_of_common_steps = List.length (new_pk.Hex_partial_kite_t.steps_so_far)-1 in 
-   let temp = Hex_springless_analysis.finalize dim new_pk in 
+   let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,_,stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
         (cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
@@ -130,7 +130,7 @@ let springful_extensions dim pk =
 
 
 let extensions_finished_and_non_finished dim pk =
-   let first_trial = Hex_springless_analysis.extensions_finished_and_non_finished dim pk in 
+   let first_trial = Hex_springless_extension.extensions_finished_and_non_finished dim pk in 
    if first_trial <> ([],[])
    then first_trial
    else springful_extensions dim pk;;
