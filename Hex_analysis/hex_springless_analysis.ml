@@ -30,14 +30,6 @@ let opt_final_death pk=
      then Some island 
      else None ;;
 
-let compute_place_of_death pk=
-   match opt_final_death pk with 
-   Some(death_already_occurred)-> death_already_occurred 
-   |None ->
-   let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
-   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
-
- 
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
@@ -91,7 +83,7 @@ let deduce_boarded_islands  l (birth,death) =
 let active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
-   and death = compute_place_of_death pk   in 
+   and death = Hex_partial_kite_field.place_of_death pk   in 
     let unfiltered_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
     let l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l)  in 
     let boarded_islands = deduce_boarded_islands l (birth,death)  in 
