@@ -10,12 +10,40 @@ let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple in 
   ref(Coma_state_field.empty_one root backup_dir githubbing);;
 
+let see_confidential_changes ()=
+   let temp1=Coma_state.all_mlx_files (!main_ref) in 
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let temp2=Explicit.filter (
+      fun full_path->
+         let rootless = Dfn_full.to_rootless full_path in 
+         if rootless = Coma_constant.rootless_path_for_parametersfile 
+         then false 
+         else 
+         let path = Dfn_rootless.to_line rootless in 
+         let ap1=Absolute_path.of_string(this_root^path) 
+         and ap2=Absolute_path.of_string(next_root^path) in 
+         Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
+   ) temp1 in 
+   Image.image (fun full_path->
+      Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
+   ) temp2;;    
+
 end;;
 
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;;
 
 
 let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
+
+let commands_for_change_officialization l=
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   Image.image (
+      fun path->
+         "cp "^next_root^path^" "^this_root^path 
+   ) l;;    
+
 
 let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
 let decipher_module modname= Coma_state.decipher_module (!(Private.main_ref)) modname;;
@@ -40,13 +68,13 @@ let list_values_from_module_in_modulesystem module_name=
 
 let main_ref=Private.main_ref;;
 
-let officialize_confidential_changes l=
-   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
-   Image.image (
-      fun path->
-         "cp "^next_root^path^" "^this_root^path 
-   ) l;;    
+
+
+let officialize_confidential_changes () =
+   let temp1 = Private.see_confidential_changes () in 
+   let cmds = commands_for_change_officialization temp1 in
+   Unix_command.conditional_multiple_uc cmds;;
+
 
 
 let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
@@ -75,24 +103,7 @@ let repopulate opt_limitation=
   (!Usual_coma_state.main_ref) opt_limitation  in 
   initialize();; 
 
-let see_confidential_changes ()=
-   let temp1=Coma_state.all_mlx_files (!main_ref) in 
-   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
-   let temp2=Explicit.filter (
-      fun full_path->
-         let rootless = Dfn_full.to_rootless full_path in 
-         if rootless = Coma_constant.rootless_path_for_parametersfile 
-         then false 
-         else 
-         let path = Dfn_rootless.to_line rootless in 
-         let ap1=Absolute_path.of_string(this_root^path) 
-         and ap2=Absolute_path.of_string(next_root^path) in 
-         Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
-   ) temp1 in 
-   Image.image (fun full_path->
-      Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
-   ) temp2;;    
+let see_confidential_changes = Private.see_confidential_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
