@@ -164,27 +164,6 @@ let extend_with_sea pk new_nc =
             remaining_free_cells = remaining_free_ones ;
     });;
 
-(*
-let extend_with_final_sea pk final_nc = 
-        let vague_new_elt = Hex_kite_element_t.Sea(final_nc)  in 
-        let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
-        let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
-        and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders 
-        and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in  
-        let selector =  List.filter 
-              (fun (z,nc)->
-                Hex_named_connector.check_disjointness final_nc nc) 
-        and remaining_free_ones = Hex_cell_set.setminus old_free_ones
-         (Hex_named_connector.inner_sea final_nc) in         
-     
-     {
-         pk with 
-          Hex_partial_kite_t.steps_so_far = vague_new_elt :: old_steps ;
-          unvisited_seas = selector old_middle_seas ;
-          unvisited_enders = selector old_end_seas ;
-          remaining_free_cells = remaining_free_ones ;
-    };;
-*)
 
 let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
@@ -296,12 +275,8 @@ let rec main walker =
 end ;; 
 
 let active_part = Private.active_part ;;
-let extend_with_sea = Private.extend_with_sea ;;
-let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize dim pk= fst(Private.main (Private.late_starter dim pk,false));;
 let is_final = Private.test_for_finality ;;
-let nonredundant_list_of_visited_islands = Private.nonredundant_list_of_visited_islands ;;
-let original_side = Private.original_side ;;
 let solution_details = Private.solution_details ;;
 let to_molecular_linker = Private.to_molecular_linker;;
