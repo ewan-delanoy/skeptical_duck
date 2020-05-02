@@ -101,8 +101,8 @@ let heavy_part dim old_pk common_to_both =
        fun (cell,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
    let one_move_solutions= Image.image (fun (cell,new_pk)->
-      let mlclr = Hex_springless_analysis.to_molecular_linker new_pk 
-      and actv = Hex_springless_analysis.active_part new_pk in 
+      let mlclr = Hex_finished_kite.to_molecular_linker new_pk 
+      and actv = Hex_finished_kite.active_part new_pk in 
       (cell,[],mlclr,actv)) final_ones in 
    one_move_solutions@(explore_yet_untried_paths dim old_pk nonfinal_ones)  ;;
 
@@ -131,7 +131,7 @@ let springful_extensions dim pk =
    ) springboards in 
    let (full_sols,partial_sols) = List.partition fst temp1 in 
    let detailed_sols = Image.image 
-     (fun (_,pk)->Hex_springless_analysis.solution_details pk) full_sols in 
+     (fun (_,pk)->Hex_finished_kite.solution_details pk) full_sols in 
    (detailed_sols,Image.image snd partial_sols) ;;
 
 
