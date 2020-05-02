@@ -10,9 +10,8 @@ module Private = struct
 
 
 let last_stop pk = 
-   let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far in 
-   match other_steps with 
-    [] -> fst_step
+   match pk.Hex_partial_kite_t.steps_so_far with 
+    [] -> Hex_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
    |elt::_ -> elt ;;
 
 
@@ -24,7 +23,7 @@ let extend_with_springboard dim pk new_sb =
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
     and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
-    and (other_steps,fst_step)=pk2.Hex_partial_kite_t.steps_so_far 
+    and old_steps = pk2.Hex_partial_kite_t.steps_so_far 
     and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
     and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
     let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
@@ -33,7 +32,7 @@ let extend_with_springboard dim pk new_sb =
     {
       pk2 with 
         Hex_partial_kite_t.steps_so_far = 
-           ((Hex_kite_element_t.Springboard new_sb)::other_steps,fst_step) ;
+           (Hex_kite_element_t.Springboard new_sb)::old_steps ;
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         unvisited_enders =  selector old_enders ;
@@ -55,8 +54,8 @@ let close_future_seas pk =
 
 
 let casings_from_one_step_advances dim pk cl_seas= 
-    let (other_steps,fst_step)=pk.Hex_partial_kite_t.steps_so_far  in 
-    let last_island = Hex_kite_element.extract_island(List.hd (other_steps@[fst_step]))  in 
+    let old_steps=pk.Hex_partial_kite_t.steps_so_far  in 
+    let last_island = Hex_kite_element.extract_island(List.hd old_steps)  in 
     let close_islands = last_island :: 
          (List.flatten(Image.image (fun (z,nc)->
            [nc.Hex_named_connector_t.entry;nc.Hex_named_connector_t.exit]) (close_future_seas pk))) in
@@ -91,8 +90,7 @@ let light_part common_to_both =
    ) common_to_both;;
 
 let explore_yet_untried_path dim old_pk (cell,new_pk) =
-   let (other_steps,fst_step)=new_pk.Hex_partial_kite_t.steps_so_far in 
-   let nbr_of_common_steps = List.length (other_steps@[fst_step])-1 in 
+   let nbr_of_common_steps = List.length (new_pk.Hex_partial_kite_t.steps_so_far)-1 in 
    let temp = Hex_springless_analysis.finalize dim new_pk in 
    Image.image (fun (_,_,stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps stops in 
