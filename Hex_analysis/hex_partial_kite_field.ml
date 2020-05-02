@@ -100,11 +100,21 @@ let last_stop pk =
     [] -> Hex_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
    |elt::_ -> elt ;;
 
-
+let constructor  first_island islands seas free_ones =
+        {
+            Hex_partial_kite_t.place_of_birth = first_island;
+            steps_so_far =  [];
+            unvisited_islands = List.filter (fun x->x<>first_island ) islands;
+            unvisited_seas = seas ;
+            added_by_casing = Hex_cell_set.empty_set;
+            remaining_free_cells = free_ones;
+        } ;;
+   
 
 
 end ;; 
 
+let constructor = Private.constructor ;; 
 let extend_with_island = Private.extend_with_island ;;
 let extend_with_sea = Private.extend_with_sea ;;
 let last_stop = Private.last_stop ;;
