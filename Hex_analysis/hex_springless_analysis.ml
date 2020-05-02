@@ -8,38 +8,6 @@
 module Private = struct 
 
 
-let extend_with_island pk new_island = 
-        let vague_new_elt = Hex_kite_element_t.Earth(new_island)
-        and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
-     (new_elt,   
-     {
-         pk with 
-          Hex_partial_kite_t.steps_so_far = 
-               (vague_new_elt::pk.Hex_partial_kite_t.steps_so_far);
-          unvisited_islands = List.filter (fun x->x<>new_island ) 
-             (pk.Hex_partial_kite_t.unvisited_islands);
-    });;
-    
-
-let extend_with_sea pk new_nc = 
-        let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
-        and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
-        let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
-        let old_seas = pk.Hex_partial_kite_t.unvisited_seas 
-        and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
-        let selector =  List.filter 
-              (fun (z,nc)->
-                Hex_named_connector.check_disjointness new_nc nc) 
-        and remaining_free_ones = Hex_cell_set.setminus old_free_ones
-         (Hex_named_connector.inner_sea new_nc) in 
-     (new_elt,   
-     {
-         pk with 
-          Hex_partial_kite_t.steps_so_far = vague_new_elt::old_steps ;
-            unvisited_seas = selector old_seas ;
-            remaining_free_cells = remaining_free_ones ;
-    });;
-
 
 let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
@@ -58,7 +26,7 @@ let springless_extensions_after_island dim partial_kite last_island =
         if (Hex_named_connector.check_entry last_island nc)
             &&(Hex_cell_set.is_included_in z abc) 
            &&(List.exists (Hex_named_connector.check_exit nc) remaining_islands) 
-        then Some (extend_with_sea partial_kite nc) 
+        then Some (Hex_partial_kite_field.extend_with_sea partial_kite nc) 
         else None   
    )   in 
    let unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
@@ -72,7 +40,7 @@ let springless_extensions_after_sea partial_kite last_nc =
    let compatible_islands  = List.filter (
       Hex_named_connector.check_exit last_nc  
    )  partial_kite.Hex_partial_kite_t.unvisited_islands in 
-   ([],Image.image (extend_with_island partial_kite) compatible_islands);;
+   ([],Image.image (Hex_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
 let extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
@@ -92,17 +60,14 @@ let extensions_finished_and_non_finished dim partial_kite =
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
 
-let determine_winner pk =
-   let place_of_birth = pk.Hex_partial_kite_t.place_of_birth in 
-   let birth = Hex_anchor.unique_side (Hex_island.anchor place_of_birth) in 
-   Hex_cardinal_direction.player_for_side birth ;;
+
 
 (* Old copy of H_ex_kite_factory starts here *)
 
 
 let late_starter dim pk= 
       (dim,
-       determine_winner pk,
+       Hex_partial_kite_field.winner pk,
        [],[],[pk]);;
 
 let pusher (factory,_) = 
