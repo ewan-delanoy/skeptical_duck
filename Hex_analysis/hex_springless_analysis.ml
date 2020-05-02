@@ -15,22 +15,6 @@ let to_molecular_linker  pk =
       Hex_kite_element.to_molecular_linker 
         (pk.Hex_partial_kite_t.steps_so_far));;
 
-let original_side pk =
-   Hex_anchor.unique_side (Hex_island.anchor pk.Hex_partial_kite_t.place_of_birth);;
-
-let opt_final_death pk=
-   let opt_last_island=(match pk.Hex_partial_kite_t.steps_so_far  with 
-    [] -> Some pk.Hex_partial_kite_t.place_of_birth 
-   |last_elt::_ -> Hex_kite_element.opt_island_component last_elt
-   ) in 
-     match opt_last_island with 
-     None -> None
-     |Some(island) ->  
-     if Hex_island.anchor island <> Hex_anchor_t.No_anchor
-     then Some island 
-     else None ;;
-
-
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_kite_springless_element.is_an_island pending1)
           &&
