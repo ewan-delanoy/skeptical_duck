@@ -98,7 +98,7 @@ let explore_yet_untried_paths dim old_pk paths =
 
 let heavy_part dim old_pk common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
-       fun (cell,new_pk) -> Hex_springless_analysis.is_final new_pk 
+       fun (cell,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
    let one_move_solutions= Image.image (fun (cell,new_pk)->
       let mlclr = Hex_springless_analysis.to_molecular_linker new_pk 
@@ -127,7 +127,7 @@ let springful_extensions dim pk =
    let springboards = compute_springboards dim pk  in 
    let temp1 = Image.image (fun sb->
      let new_pk = extend_with_springboard dim pk sb in
-    (Hex_springless_analysis.is_final new_pk,new_pk)
+    (Hex_partial_kite_field.test_for_finality new_pk,new_pk)
    ) springboards in 
    let (full_sols,partial_sols) = List.partition fst temp1 in 
    let detailed_sols = Image.image 
