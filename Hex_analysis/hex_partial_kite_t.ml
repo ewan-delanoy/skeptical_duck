@@ -14,7 +14,6 @@ type t={
    steps_so_far :  Hex_kite_element_t.t list ;
    unvisited_islands : Hex_island_t.t list;
    unvisited_seas : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;
-   unvisited_enders : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;
    added_by_casing : Hex_cell_set_t.t ;
    remaining_free_cells : Hex_cell_set_t.t ;
 };;

@@ -149,8 +149,7 @@ let extend_with_sea pk new_nc =
         let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
         and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
         let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
-        let old_middle_seas = pk.Hex_partial_kite_t.unvisited_seas 
-        and old_end_seas = pk.Hex_partial_kite_t.unvisited_enders 
+        let old_seas = pk.Hex_partial_kite_t.unvisited_seas 
         and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
         let selector =  List.filter 
               (fun (z,nc)->
@@ -161,11 +160,11 @@ let extend_with_sea pk new_nc =
      {
          pk with 
           Hex_partial_kite_t.steps_so_far = vague_new_elt::old_steps ;
-            unvisited_seas = selector old_middle_seas ;
-            unvisited_enders = selector old_end_seas ;
+            unvisited_seas = selector old_seas ;
             remaining_free_cells = remaining_free_ones ;
     });;
 
+(*
 let extend_with_final_sea pk final_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(final_nc)  in 
         let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
@@ -185,7 +184,7 @@ let extend_with_final_sea pk final_nc =
           unvisited_enders = selector old_end_seas ;
           remaining_free_cells = remaining_free_ones ;
     };;
-
+*)
 
 let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
@@ -207,10 +206,9 @@ let springless_extensions_after_island dim partial_kite last_island =
         then Some (extend_with_sea partial_kite nc) 
         else None   
    )   in 
-   let clearly_final = selector partial_kite.Hex_partial_kite_t.unvisited_enders 
-   and unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
+   let unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
    let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->test_for_finality pk2) unclear_items  in 
-   (clearly_final@subtly_final,nonfinal) ;;
+   (subtly_final,nonfinal) ;;
 
 let springless_extensions_after_sea partial_kite last_nc =
    (* if a two-edged is created, it will never be in the unvisited_islands field,
@@ -299,7 +297,6 @@ end ;;
 
 let active_part = Private.active_part ;;
 let extend_with_sea = Private.extend_with_sea ;;
-let extend_with_final_sea = Private.extend_with_final_sea ;;
 let extensions = Private.springless_extensions;;
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize dim pk= fst(Private.main (Private.late_starter dim pk,false));;

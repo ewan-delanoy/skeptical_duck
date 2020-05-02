@@ -16,17 +16,14 @@ let helper_for_starter_computation end_of_battle islands side =
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
    let pre_middle_base = clean (Hex_named_connector.middlers dim)
-   and pre_end_base = clean (Hex_named_connector.enders_for_side dim side) in 
-   let middle_base = Ordered.sort local_cmp (Image.image (
-     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
-   )  pre_middle_base) 
-   and end_base = Ordered.sort local_cmp (Image.image (
-     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
-   )  pre_end_base) in                                
+   and pre_end_base = clean (Hex_named_connector.enders_for_side dim side) in                             
    let first_island = Hex_island.get_side side islands  in   
    let unexpected_starters = List.filter (
        Hex_named_connector.check_entry first_island
    ) pre_middle_base in 
+   let mid_to_end_base = Ordered.sort local_cmp (Image.image (
+     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
+   )  (pre_middle_base@pre_end_base) ) in 
    let base1 = clean (
       (Hex_named_connector.starters_for_side dim side)
       @
@@ -37,20 +34,16 @@ let helper_for_starter_computation end_of_battle islands side =
    let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in         
    let constructor = (
       fun first_nc ->
-        let new_middle_base=List.filter ( 
+        let new_mid_to_end_base=List.filter ( 
          fun (z,other_nc) -> 
-         Hex_named_connector.check_disjointness first_nc other_nc ) middle_base
-        and new_end_base=List.filter ( 
-         fun (z,other_nc) -> 
-         Hex_named_connector.check_disjointness first_nc other_nc ) end_base  
+         Hex_named_connector.check_disjointness first_nc other_nc ) mid_to_end_base 
         and new_free_ones=Hex_cell_set.setminus  free_ones
           (Hex_named_connector.inner_sea first_nc) in
         {
             Hex_partial_kite_t.place_of_birth = first_island;
             steps_so_far =  [Hex_kite_element_t.Sea(first_nc)];
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
-            unvisited_seas = new_middle_base ;
-            unvisited_enders = new_end_base ;
+            unvisited_seas = new_mid_to_end_base ;
             added_by_casing = Hex_cell_set.empty_set;
             remaining_free_cells = new_free_ones;
         }

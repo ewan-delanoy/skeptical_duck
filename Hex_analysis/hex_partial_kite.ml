@@ -21,8 +21,7 @@ let extend_with_springboard dim pk new_sb =
     let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,new_island)) = new_sb in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas 
-    and old_enders = pk2.Hex_partial_kite_t.unvisited_enders
+    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas
     and old_steps = pk2.Hex_partial_kite_t.steps_so_far 
     and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
     and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
@@ -35,22 +34,19 @@ let extend_with_springboard dim pk new_sb =
            (Hex_kite_element_t.Springboard new_sb)::old_steps ;
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
-        unvisited_enders =  selector old_enders ;
         remaining_free_cells = remaining_free_ones ;
     }  ;;
 
 let close_future_seas pk =
    let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and middle_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_seas 
-   and end_casings_with_hooks = pk.Hex_partial_kite_t.unvisited_enders       in 
-   let all_seas = middle_casings_with_hooks@end_casings_with_hooks in 
+   and seas = pk.Hex_partial_kite_t.unvisited_seas  in 
    Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 
         if Hex_cell_set.length d = 1
         then Some(Hex_cell_set.min d,nc)
         else None 
-   ) all_seas ;;   
+   ) seas ;;   
 
 
 let casings_from_one_step_advances dim pk cl_seas= 
