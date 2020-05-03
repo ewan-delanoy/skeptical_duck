@@ -10,6 +10,7 @@ module Private = struct
 
 let original_side pk =
    Hex_anchor.unique_side (Hex_island.anchor pk.Hex_partial_kite_t.place_of_birth);;
+   
 
 let opt_final_death pk=
    let opt_last_island=(match pk.Hex_partial_kite_t.steps_so_far  with 
@@ -21,15 +22,14 @@ let opt_final_death pk=
      |Some(island) ->  
      if Hex_island.anchor island <> Hex_anchor_t.No_anchor
      then Some island 
-     else None ;;
+     else None ;;  
 
-let compute_place_of_death pk=
+let place_of_death pk=
    match opt_final_death pk with 
    Some(death_already_occurred)-> death_already_occurred 
    |None ->
    let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
-   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
-
+   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;   
 
 let test_for_finality pk = 
    if Hex_anchor.is_two_edged 
@@ -50,12 +50,7 @@ let test_for_finality pk =
    |_ -> let island = Hex_kite_element.extract_island last_elt in  
          Hex_island.anchor island <> Hex_anchor_t.No_anchor  ;;
 
-let place_of_death pk=
-   match opt_final_death pk with 
-   Some(death_already_occurred)-> death_already_occurred 
-   |None ->
-   let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
-   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;      
+   
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)

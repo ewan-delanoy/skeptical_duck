@@ -113,6 +113,8 @@ let is_included_in
     (Hex_island_t.I(anchor2,z2)) = 
      (Set_of_poly_pairs.is_included_in z1 z2) ;;
 
+let is_two_edged (Hex_island_t.I(anchor,z)) = Hex_anchor.is_two_edged anchor ;; 
+
 let minimal_connection (Hex_island_t.I(_,z1),Hex_island_t.I(_,z2)) (Hex_island_t.I(_,z)) =
   (* as a first approximation, we de not optimize at all and take 
   everything *)  
