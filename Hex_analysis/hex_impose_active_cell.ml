@@ -13,6 +13,19 @@ let enhance dim pk cell =
     let death = Hex_cardinal_direction.oppose birth in 
     Hex_cardinal_direction.enhance dim death cell ;; 
 
+let impose_cell_by_casing_in_no_contact_empty_case dim new_cell pk 
+                           (old_islands,old_abc)=  
+    let sided_cell =  enhance dim pk new_cell 
+    and old_free_cells = pk.Hex_partial_kite_t.remaining_free_cells in 
+    let (remade_island,new_islands) = 
+       Hex_island.add_sided_cell_by_casing dim sided_cell old_islands in 
+   {
+      pk with
+      Hex_partial_kite_t.unvisited_islands = remade_island::new_islands;
+      added_by_casing = Hex_cell_set.insert (snd sided_cell) old_abc;
+      remaining_free_cells = Hex_cell_set.outsert new_cell old_free_cells;
+   };;
+
 
 let impose_cell_by_casing_in_contact_empty_case dim new_cell pk 
                            (old_islands,old_abc,old_birth)=  
@@ -61,12 +74,15 @@ let impose_cell_by_casing dim new_cell pk=
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
     let all_steps_so_far = pk.Hex_partial_kite_t.steps_so_far in 
+    let last_island = Hex_partial_kite_field.last_island pk in 
+    let no_contact = not(Hex_island.test_for_neighbor dim last_island new_cell) in 
     match all_steps_so_far with 
-    [] ->  let old_birth = pk.Hex_partial_kite_t.place_of_birth in 
-           impose_cell_by_casing_in_contact_empty_case dim new_cell pk (old_islands,old_abc,old_birth)  
+    [] -> if no_contact 
+          then impose_cell_by_casing_in_no_contact_empty_case dim new_cell pk (old_islands,old_abc)  
+          else let old_birth = pk.Hex_partial_kite_t.place_of_birth in 
+               impose_cell_by_casing_in_contact_empty_case dim new_cell pk (old_islands,old_abc,old_birth)  
     | last_stop :: previous_stops -> 
-        let last_island = Hex_kite_element.extract_island last_stop in 
-        if not(Hex_island.test_for_neighbor dim last_island new_cell) 
+        if no_contact 
         then impose_cell_by_casing_in_no_contact_case dim new_cell pk (old_islands,old_abc) 
         else impose_cell_by_casing_in_contact_nonempty_case   dim new_cell pk (old_islands,old_abc) 
                        (last_island,last_stop,previous_stops) ;;
