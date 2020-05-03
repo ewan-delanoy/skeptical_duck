@@ -11,7 +11,7 @@ module Private = struct
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
-let helper_for_starter_computation end_of_battle islands side =
+let compute_initial_seeds end_of_battle islands side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let clean = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) in 
@@ -24,7 +24,7 @@ let helper_for_starter_computation end_of_battle islands side =
    let mid_to_end_base = Ordered.sort local_cmp (Image.image (
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
    )  (pre_middle_base@pre_end_base) ) in 
-   let base1 = clean (
+   let base = clean (
       (Hex_named_connector.starters_for_side dim side)
       @
       unexpected_starters
@@ -32,14 +32,17 @@ let helper_for_starter_computation end_of_battle islands side =
       (Hex_named_connector.islanders dim first_island islands)
    ) in         
    let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in    
-   let initial_seed  = Hex_partial_kite_field.constructor first_island islands mid_to_end_base free_ones in   
+   (Hex_partial_kite_field.constructor first_island islands mid_to_end_base free_ones,base) ;;
+
+let helper_for_starter_computation end_of_battle islands side =
+   let (seed,base) = compute_initial_seeds end_of_battle islands side in   
    let conditional_constructor = (fun 
      first_nc -> 
         if List.exists (Hex_named_connector.check_exit first_nc) islands
-        then Some(snd(Hex_partial_kite_field.extend_with_sea initial_seed first_nc))
+        then Some(snd(Hex_partial_kite_field.extend_with_sea seed first_nc))
         else None 
    ) in 
-   Option.filter_and_unpack conditional_constructor  base1 ;; 
+   Option.filter_and_unpack conditional_constructor  base ;; 
 
 let nonsacrificial_starters_for_side end_of_battle side =
    let islands = Hex_island.decompose end_of_battle in  
@@ -65,6 +68,12 @@ end ;;
 let nonsacrificial_starters end_of_battle = 
    let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
    List.flatten (Image.image (Private.nonsacrificial_starters_for_side end_of_battle) [side1;side2]);;
+
+let prudent_nonsacrificial_starters end_of_battle = 
+    let islands = Hex_island.decompose end_of_battle in  
+    let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
+    Image.image (Private.compute_initial_seeds end_of_battle islands) [side1;side2] ;;
+
 
 let sacrificial_starters end_of_battle = 
     let triangles = Hex_end_of_battle.compatible_border_triangles end_of_battle in 
