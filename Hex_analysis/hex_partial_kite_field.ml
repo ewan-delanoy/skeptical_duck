@@ -110,13 +110,17 @@ let constructor  first_island islands seas free_ones =
             remaining_free_cells = free_ones;
         } ;;
    
-
+let last_island pk =
+   match Option.find_and_stop Hex_kite_element.opt_island_component pk.Hex_partial_kite_t.steps_so_far with 
+   Some island -> island 
+   | None -> pk.Hex_partial_kite_t.place_of_birth ;;
 
 end ;; 
 
 let constructor = Private.constructor ;; 
 let extend_with_island = Private.extend_with_island ;;
 let extend_with_sea = Private.extend_with_sea ;;
+let last_island = Private.last_island ;;
 let last_stop = Private.last_stop ;;
 let place_of_death = Private.place_of_death ;;
 let test_for_finality = Private.test_for_finality ;;
