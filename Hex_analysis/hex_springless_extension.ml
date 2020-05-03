@@ -7,7 +7,28 @@
 
 module Private = struct 
 
+let remove_border_starters pk = 
+    let birth_side = Hex_anchor.unique_side (Hex_island.anchor (pk.Hex_partial_kite_t.place_of_birth)) in 
+    let test_for_border_starter = (
+        fun nc -> 
+          let entry = nc.Hex_named_connector_t.entry in 
+          let entry_anchor = Hex_island.anchor entry in 
+          Hex_anchor.touches_side entry_anchor birth_side  
+    ) in 
+    let old_seas = pk.Hex_partial_kite_t.unvisited_seas in 
+    let new_seas = List.filter (fun (_,nc)->not(test_for_border_starter nc)) old_seas in 
+    {
+       pk with Hex_partial_kite_t.unvisited_seas = new_seas ;
+    }
 
+
+let extend_with_sea_and_remove_border_starters_if_needed pk nc =
+    let (elt,pk2) = Hex_partial_kite_field.extend_with_sea pk nc in 
+    if pk.Hex_partial_kite_t.steps_so_far = []
+    then (elt,pk2) 
+    else (elt,remove_border_starters pk2) ;;
+
+   
 
 let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
@@ -26,7 +47,7 @@ let springless_extensions_after_island dim partial_kite last_island =
         if (Hex_named_connector.check_entry last_island nc)
             &&(Hex_cell_set.is_included_in z abc) 
            &&(List.exists (Hex_named_connector.check_exit nc) remaining_islands) 
-        then Some (Hex_partial_kite_field.extend_with_sea partial_kite nc) 
+        then Some (extend_with_sea_and_remove_border_starters_if_needed partial_kite nc) 
         else None   
    )   in 
    let unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
@@ -42,7 +63,7 @@ let springless_extensions_after_sea partial_kite last_nc =
    )  partial_kite.Hex_partial_kite_t.unvisited_islands in 
    ([],Image.image (Hex_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
-let extensions_from_last_elt dim partial_kite last_elt = match last_elt with
+let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
    | _ -> let last_island = Hex_kite_element.extract_island last_elt in 
           springless_extensions_after_island dim partial_kite last_island ;;
@@ -51,7 +72,7 @@ let springless_extensions dim pk =
    let last_elt = (match pk.Hex_partial_kite_t.steps_so_far with 
      []->Hex_kite_element_t.Earth(pk.Hex_partial_kite_t.place_of_birth)
      |x::_-> x ) in 
-   extensions_from_last_elt dim pk last_elt ;;
+   springless_extensions_from_last_elt dim pk last_elt ;;
 
 
 let extensions_finished_and_non_finished dim partial_kite =
