@@ -44,8 +44,7 @@ let close_future_seas pk =
 
 
 let casings_from_one_step_advances dim pk cl_seas= 
-    let old_steps=pk.Hex_partial_kite_t.steps_so_far  in 
-    let last_island = Hex_kite_element.extract_island(List.hd old_steps)  in 
+    let last_island = Hex_partial_kite_field.last_island pk  in 
     let close_islands = last_island :: 
          (List.flatten(Image.image (fun (z,nc)->
            [nc.Hex_named_connector_t.entry;nc.Hex_named_connector_t.exit]) (close_future_seas pk))) in
