@@ -21,18 +21,19 @@ let compute_initial_seeds end_of_battle islands side =
    let unexpected_starters = List.filter (
        Hex_named_connector.check_entry first_island
    ) pre_middle_base in 
-   let mid_to_end_base = Ordered.sort local_cmp (Image.image (
-     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
-   )  (pre_middle_base@pre_end_base) ) in 
-   let base = clean (
+   let start_base = clean (
       (Hex_named_connector.starters_for_side dim side)
       @
       unexpected_starters
       @
       (Hex_named_connector.islanders dim first_island islands)
-   ) in         
+   ) in 
+   let full_base = Ordered.sort local_cmp (Image.image (
+     fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
+   )  (start_base@pre_middle_base@pre_end_base) ) in            
    let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in    
-   (Hex_partial_kite_field.constructor first_island islands mid_to_end_base free_ones,base) ;;
+   (Hex_partial_kite_field.constructor first_island islands (full_base) free_ones,base) ;;
+
 
 let helper_for_starter_computation end_of_battle islands side =
    let (seed,base) = compute_initial_seeds end_of_battle islands side in   
