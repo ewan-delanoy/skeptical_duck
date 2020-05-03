@@ -22,39 +22,38 @@ let last_island pk =
 
 let opt_final_death pk=
    let birth =  pk.Hex_partial_kite_t.place_of_birth in 
-   if Hex_island.is_two_edged birth then birth else 
+   if Hex_island.is_two_edged birth then Some birth else 
    match Option.seek is_two_edged pk.Hex_partial_kite_t.steps_so_far with 
-   Some(elt) -> Hex_kite_element.extract_island elt 
+   Some(elt) -> Some (Hex_kite_element.extract_island elt) 
    |None ->
    let late_island = last_island pk 
    and death_side = Hex_cardinal_direction.oppose (original_side pk) in 
-   Hex_island.touches_side late_island death_side;;  
+   if Hex_island.touches_side late_island death_side
+   then Some late_island
+   else None;;  
+
 
 let place_of_death pk=
    match opt_final_death pk with 
    Some(death_already_occurred)-> death_already_occurred 
    |None ->
-   let final_side = Hex_cardinal_direction.oppose(original_side pk) in 
-   Hex_island.get_side final_side pk.Hex_partial_kite_t.unvisited_islands ;;   
+   let death_side = Hex_cardinal_direction.oppose(original_side pk) in 
+   Hex_island.get_side death_side pk.Hex_partial_kite_t.unvisited_islands ;;   
 
 let test_for_finality pk = 
-   if Hex_anchor.is_two_edged 
-      (Hex_island.anchor(pk.Hex_partial_kite_t.place_of_birth)) 
+   (* "Almost finished" ones just one island away from the end are also counted as finite *) 
+   if (opt_final_death pk)<>None 
    then true 
    else 
-   let steps = pk.Hex_partial_kite_t.steps_so_far in 
-   if List.exists Hex_kite_element.is_two_edged steps 
-   then true
-   else 
-   match steps with 
+   match pk.Hex_partial_kite_t.steps_so_far with 
    [] -> false 
    |last_elt::_->
    match  last_elt with 
    Hex_kite_element_t.Sea(nc) -> 
-      let place_of_death = compute_place_of_death pk in 
+      let place_of_death = place_of_death pk in 
       Hex_named_connector.check_exit nc place_of_death 
-   |_ -> let island = Hex_kite_element.extract_island last_elt in  
-         Hex_island.anchor island <> Hex_anchor_t.No_anchor  ;;
+   |_ -> (* A death would already have been detected in opt_final_death *)
+         false  ;;
 
    
 
