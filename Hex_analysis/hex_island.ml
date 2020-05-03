@@ -142,4 +142,6 @@ let reflect (Hex_island_t.I(old_anchor,z)) =
 let test_for_neighbor dim island cell =
    Set_of_poly_pairs.mem (Hex_cell.to_int_pair cell) (Private.neighbors dim island);;
 
+let touches_side (Hex_island_t.I(anchor,z)) = Hex_anchor.touches_side anchor side;; 
+
 let to_readable_string = Private.to_readable_string ;;

@@ -11,18 +11,24 @@ module Private = struct
 let original_side pk =
    Hex_anchor.unique_side (Hex_island.anchor pk.Hex_partial_kite_t.place_of_birth);;
    
+let is_two_edged elt = match Hex_kite_element.opt_island_component elt with 
+   None -> false 
+   |Some island -> Hex_island.is_two_edged island;;
+
+let last_island pk =
+   match Option.find_and_stop Hex_kite_element.opt_island_component pk.Hex_partial_kite_t.steps_so_far with 
+   Some island -> island 
+   | None -> pk.Hex_partial_kite_t.place_of_birth ;;
 
 let opt_final_death pk=
-   let opt_last_island=(match pk.Hex_partial_kite_t.steps_so_far  with 
-    [] -> Some pk.Hex_partial_kite_t.place_of_birth 
-   |last_elt::_ -> Hex_kite_element.opt_island_component last_elt
-   ) in 
-     match opt_last_island with 
-     None -> None
-     |Some(island) ->  
-     if Hex_island.anchor island <> Hex_anchor_t.No_anchor
-     then Some island 
-     else None ;;  
+   let birth =  pk.Hex_partial_kite_t.place_of_birth in 
+   if Hex_island.is_two_edged birth then birth else 
+   match Option.seek is_two_edged pk.Hex_partial_kite_t.steps_so_far with 
+   Some(elt) -> Hex_kite_element.extract_island elt 
+   |None ->
+   let late_island = last_island pk 
+   and death_side = Hex_cardinal_direction.oppose (original_side pk) in 
+   Hex_island.touches_side late_island death_side;;  
 
 let place_of_death pk=
    match opt_final_death pk with 
@@ -105,10 +111,7 @@ let constructor  first_island islands seas free_ones =
             remaining_free_cells = free_ones;
         } ;;
    
-let last_island pk =
-   match Option.find_and_stop Hex_kite_element.opt_island_component pk.Hex_partial_kite_t.steps_so_far with 
-   Some island -> island 
-   | None -> pk.Hex_partial_kite_t.place_of_birth ;;
+
 
 end ;; 
 
