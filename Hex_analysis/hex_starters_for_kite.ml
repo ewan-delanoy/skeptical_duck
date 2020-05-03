@@ -72,7 +72,7 @@ let nonsacrificial_starters end_of_battle =
 let prudent_nonsacrificial_starters end_of_battle = 
     let islands = Hex_island.decompose end_of_battle in  
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-    Image.image (Private.compute_initial_seeds end_of_battle islands) [side1;side2] ;;
+    Image.image (fun side ->fst(Private.compute_initial_seeds end_of_battle islands side)) [side1;side2] ;;
 
 
 let sacrificial_starters end_of_battle = 
