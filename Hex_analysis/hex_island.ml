@@ -121,6 +121,15 @@ let minimal_connection (Hex_island_t.I(_,z1),Hex_island_t.I(_,z2)) (Hex_island_t
   let ipairs = Set_of_poly_pairs.setminus z (Set_of_poly_pairs.merge z1 z2) in 
   Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair ipairs);;
 
+let minimal_version_for_two_edged (Hex_island_t.I(anchor,z)) =
+   (* as a first approximation, we de not optimize at all and take 
+  everything *)  
+  (*
+  let one_side = Hex_anchor.any_side anchor in 
+  let other_side = Hex_cardinal_direction.oppose one_side in 
+   *)
+  Hex_cell_set.safe_set (Set_of_poly_pairs.image Hex_cell.of_int_pair z);;
+
 let neighbors = Private.neighbors ;;
 
 let oppose dim (Hex_island_t.I(old_anchor,z)) =
