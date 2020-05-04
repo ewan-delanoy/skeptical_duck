@@ -41,10 +41,32 @@ let remove_redundant_islands l=match l with
       |pending2::others2 -> helper_for_removing_redundant_islands ([],pending1,pending2,others2)
     );; 
 
+let remove_first_island_if_present l = match l with 
+   []-> []
+   |elt::others -> 
+         match elt with 
+         Hex_kite_springless_element_t.Earth(_) -> others 
+         | _ -> l ;;
+
+
+let trim_for_island_boarding l =
+   (* if the first elt is an island, it comes from a springboard, and 
+      all the info it carries is already contained in the place_of_birth field.
+      We can (and in fact we must) delete it *)
+   let l1 = remove_first_island_if_present l in 
+   let n1 = List.length l1 in 
+   if (n1 mod 2)=0 
+   then (* if we get here the last elt is an island, and 
+           all the info it carries is already contained in the place_of_death value. 
+            We can (and in fact we must) delete it
+         *)
+        List.rev(List.tl(List.rev l1)) 
+   else l1;;
 
 exception Deduce_boarded_islands_exn of (Hex_kite_springless_element_t.t list) * int ;;
 
-let deduce_boarded_islands  l (birth,death) = 
+let deduce_boarded_islands  untrimmed_l (birth,death) =
+    let l =  trim_for_island_boarding untrimmed_l in 
     let n = ((List.length l)-1)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
     let sea_entry = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_named_connector_t.entry )
