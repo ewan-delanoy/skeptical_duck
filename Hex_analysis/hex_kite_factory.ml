@@ -13,7 +13,7 @@ let nonsacrificial_starters eob =
       winner         = eob.Hex_end_of_battle_t.winner ;
       finished       = [] ;
       failures       = [] ;
-      unfinished     = Hex_starters_for_kite.prudent_nonsacrificial_starters eob;
+      unfinished     = Hex_starters_for_kite.nonsacrificial_starters eob;
     };;    
    
 let sacrificial_starter eob pk= 
