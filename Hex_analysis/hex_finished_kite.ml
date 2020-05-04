@@ -68,6 +68,9 @@ let active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = Hex_partial_kite_field.place_of_death pk   in 
+   if birth = death 
+   then Hex_island.minimal_version_for_two_edged death
+   else 
     let unfiltered_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
     let l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l)  in 
     let boarded_islands = deduce_boarded_islands l (birth,death)  in 
