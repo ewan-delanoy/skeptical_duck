@@ -49,14 +49,15 @@ let trim_for_island_boarding l =
    [] -> (None,l) 
    |elt :: others -> 
         let opt_island = Hex_kite_springless_element.opt_island elt in 
-        let n1 = List.length others in 
-        if ((n1 mod 2)=0) && (others <> [])
+        let l1 = (match opt_island with None -> l |Some _ ->others) in
+        let n1 = List.length l1 in 
+        if ((n1 mod 2)=0) && (l1 <> [])
         then (* if we get here the last elt is an island, and 
                 all the info it carries is already contained in the place_of_death value. 
                We can (and in fact we must) delete it
              *)
-             (opt_island,List.rev(List.tl(List.rev others)) )
-        else (opt_island,others);; 
+             (opt_island,List.rev(List.tl(List.rev l1)) )
+        else (opt_island,l1);; 
 
 let unique_boarded_island island (birth,death)=
    [Hex_island.eviscerate birth,island,Hex_island.eviscerate death];;
