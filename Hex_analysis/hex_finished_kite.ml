@@ -86,7 +86,7 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
     let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l,k))) in     
     Ennig.doyle trier 1 (n+2);;
 
-let active_part  pk =
+let possibly_too_large_active_part  pk =
    (* The kite is assumed to be finished *)  
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = Hex_partial_kite_field.place_of_death pk   in 
@@ -108,12 +108,12 @@ let active_part  pk =
        function (Hex_kite_element_t.Springboard(spr))-> Some(Hex_springboard.active_part spr)
         | _ -> None 
    ) unfiltered_l  in 
-   let possibly_too_large = Hex_cell_set.fold_merge 
-     (contribution_from_islands::contribution_from_seas::contribution_from_springboards) in 
-   let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
-   Hex_cell_set.setminus possibly_too_large molecular_part;;
+   Hex_cell_set.fold_merge 
+     (contribution_from_islands::contribution_from_seas::contribution_from_springboards) ;;
 
-
+let active_part pk =
+    let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
+   Hex_cell_set.setminus (possibly_too_large_active_part pk) molecular_part;;
 
 let solution_details pk = 
     let steps_in_order=List.rev(pk.Hex_partial_kite_t.steps_so_far) in
