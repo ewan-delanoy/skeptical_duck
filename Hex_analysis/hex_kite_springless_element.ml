@@ -28,6 +28,10 @@ let is_an_island x = match x with
     Hex_kite_springless_element_t.Earth(_)-> true
    |Sea(_)-> false ;;
 
+let opt_island x = match x with 
+    Hex_kite_springless_element_t.Earth(island)-> Some island
+   |Sea(_)-> None ;;
+
 let print_out (fmt:Format.formatter) elt=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string elt);;     
 
