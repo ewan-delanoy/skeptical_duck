@@ -33,7 +33,11 @@ let prepare_for_journey =
      Hex_typical_border_connector_name_t.Walleye2, 
         (Some "we2",None,(3,1),
                [(1, 1); (1, 2);  (1, 3); (1, 4); 
-                (2, 1); (2, 2) ],[2,3]) ;           
+                (2, 1); (2, 2) ],[2,3]) ;  
+     Hex_typical_border_connector_name_t.Walleye3, 
+        (Some "we3",None,(3,1),
+               [(1, 1); (1, 2);  (1, 3); (2, 1); 
+                (2, 2); (2, 3) ],[3,2]) ;                      
   ];;
 
 let upwards_version tbc = 

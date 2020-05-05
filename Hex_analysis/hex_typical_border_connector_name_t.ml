@@ -11,5 +11,6 @@ type t=
     |Small_pyramid  
     |Sybil 
     |Walleye1 
-    |Walleye2 ;;
+    |Walleye2 
+    |Walleye3;;
 
