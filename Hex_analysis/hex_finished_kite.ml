@@ -86,28 +86,30 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
     let  trier=(fun k->try naive_trier k with _->raise(Deduce_boarded_islands_exn(l,k))) in     
     Ennig.doyle trier 1 (n+2);;
 
-let possibly_too_large_active_part  pk =
-   (* The kite is assumed to be finished *)  
+let contribution_from_island_in_active_part pk prepared_list = 
    let birth = pk.Hex_partial_kite_t.place_of_birth 
    and death = Hex_partial_kite_field.place_of_death pk   in 
    if birth = death 
    then Hex_island.minimal_version_for_two_edged death
    else 
-    let unfiltered_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
-    let l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unfiltered_l)  in 
-    let boarded_islands = deduce_boarded_islands l (birth,death)  in 
+    let boarded_islands = deduce_boarded_islands prepared_list (birth,death)  in 
+    Hex_cell_set.fold_merge(Image.image 
+    (function (island1,island,island2)-> 
+         Hex_island.minimal_connection (island1,island2) island
+    ) boarded_islands) ;;
+
+let possibly_too_large_active_part  pk =
+    let unprepared_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
+    let prepared_l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unprepared_l)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_kite_springless_element_t.Sea(nc)) -> Some(Hex_named_connector.outer_earth nc)
        |_->None
-    ) l) 
-    and contribution_from_islands = Hex_cell_set.fold_merge(Image.image 
-    (function (island1,island,island2)-> 
-         Hex_island.minimal_connection (island1,island2) island
-    ) boarded_islands) 
+    ) prepared_l) 
+    and contribution_from_islands = contribution_from_island_in_active_part pk prepared_l
     and contribution_from_springboards = Option.filter_and_unpack (
        function (Hex_kite_element_t.Springboard(spr))-> Some(Hex_springboard.active_part spr)
         | _ -> None 
-   ) unfiltered_l  in 
+   ) unprepared_l  in 
    Hex_cell_set.fold_merge 
      (contribution_from_islands::contribution_from_seas::contribution_from_springboards) ;;
 
