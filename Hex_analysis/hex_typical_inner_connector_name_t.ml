@@ -4,3 +4,7 @@
 
 *)
 
+type t =
+   Haddock1 ;;
+
+   
