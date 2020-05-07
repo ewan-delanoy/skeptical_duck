@@ -29,6 +29,7 @@ let north_bridge = reverse south_bridge ;;
 let southeast_bridge = reverse northwest_bridge ;;
 
 
+
 let bridge = function 
     Hex_unit_side_t.North      ->  north_bridge
    |Hex_unit_side_t.North_east ->  northeast_bridge
@@ -69,8 +70,8 @@ let broken_bridge (entry,p1,p2,exit) = {
 
 let expand_name = function 
    Hex_inner_connector_name_t.Bridge(us)-> bridge us 
-   |Haddock1(qualifier,location) -> haddock1 arbitrary_dim location qualifier 
-   |Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit);; 
+   |Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
+   |Typical(tic,side,is_direct) -> Hex_typical_inner_connector_name.full_constructor tic (side,is_direct) ;; 
 
 
 end ;; 
