@@ -5,6 +5,7 @@
 *)
 
 type t =
-   Haddock1 ;;
+    Haddock1
+   |Haddock2 ;;
 
    
