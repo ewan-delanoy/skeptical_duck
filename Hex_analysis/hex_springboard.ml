@@ -11,7 +11,6 @@ let wet_earth (Hex_springboard_t.Sp(fa,cell2,new_island)) =
 
 end ;;
 
-
 let active_part (Hex_springboard_t.Sp(fa,cell2,new_island)) =
    Hex_first_alternative_in_springboard.active_part_when_joined_to_another_cell
      fa cell2  ;;
