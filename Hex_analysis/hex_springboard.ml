@@ -6,69 +6,51 @@
 
 module Private = struct 
 
-let we_for_homogeneous_list l =
-   Hex_cell_set.fold_merge (Image.image Hex_kite_springless_element.wet_earth l);;
-
-let we_for_list = function 
-  [] -> Hex_cell_set.empty_set 
-  |joiner ::others ->
-    let nc = Hex_kite_springless_element.claim_sea joiner in 
-    Hex_cell_set.merge 
-      (Hex_named_connector.wet_earth_with_entry_unchecked nc) 
-       (we_for_homogeneous_list others) ;; 
-
-let we_for_pair  (cell,path)=    
-     Hex_cell_set.insert cell (we_for_list path) ;; 
-
-let we_for_springboard (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island)) =
-    we_for_pair (cell,path) ;;
+let wet_earth (Hex_springboard_t.Sp(fa,cell2,new_island)) =
+    Hex_first_alternative_in_springboard.wet_earth fa ;;
 
 end ;;
 
 
-let active_part (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island))=
-    let opening_pair = Hex_cell_set.safe_set 
-       [cell;cell2] in 
-    Hex_cell_set.setminus actv_in_sol1 opening_pair ;;
+let active_part (Hex_springboard_t.Sp(fa,cell2,new_island)) =
+   Hex_first_alternative_in_springboard.active_part_when_joined_to_another_cell
+     fa cell2  ;;
 
 let change_island_component 
-   (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island)) 
+   (Hex_springboard_t.Sp(fa,cell2,new_island)) 
       new_component= 
-    Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_component) ;;  
+    Hex_springboard_t.Sp(fa,cell2,new_component) ;;  
 
 let check_island_after_springboard_insertion springboard island = 
    if Hex_island.anchor island <> Hex_anchor_t.No_anchor then true else 
    Hex_cell_set.does_not_intersect 
-      (Private.we_for_springboard springboard)
+      (Private.wet_earth springboard)
          (Hex_island.inner_earth island);;
 
 let check_sea springboard nc = 
    Hex_cell_set.does_not_intersect 
-      (Private.we_for_springboard springboard)
+      (Private.wet_earth springboard)
          (Hex_named_connector.wet_earth nc);;         
 
 
-let new_island (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island))=
+let new_island (Hex_springboard_t.Sp(fa,cell2,new_island)) =
     new_island ;;
 
-let opt_constructor (cell,path,sol1,actv_in_sol1,cell2,new_island) = 
-   let w1 = Private.we_for_pair (cell,path)
+let opt_constructor (fa,cell2,new_island) = 
+   let w1 = Hex_first_alternative_in_springboard.wet_earth fa
    and w2 =  Hex_cell_set.safe_set [cell2] in 
    if Hex_cell_set.does_not_intersect w1 w2 
-   then Some(Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island)) 
+   then Some(Hex_springboard_t.Sp(fa,cell2,new_island)) 
    else None ;;
 
-let to_molecular_linker (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island))= 
-  (* strictly speaking, this is only a partial molecular linker *)
-  Hex_molecular_linker.fold_merge (
-     (Hex_molecular_linker.pair cell cell2)::
-     (Option.filter_and_unpack Hex_kite_springless_element.to_molecular_linker path)
-  );;
+let to_molecular_linker (Hex_springboard_t.Sp(fa,cell2,new_island)) =
+   (* strictly speaking, this is only a partial molecular linker *)
+   Hex_first_alternative_in_springboard.molecular_linker_when_joined_to_another_cell
+     fa cell2  ;;
 
 
-let to_readable_string (Hex_springboard_t.Sp(cell,path,sol1,actv_in_sol1,cell2,new_island))=
-  let path_description = String.concat "," (Image.image Hex_kite_springless_element.to_readable_string path) in 
-  "\194\171 "^(Hex_cell.to_string cell)^" -> "^path_description^" \199\128 "^
+let to_readable_string (Hex_springboard_t.Sp(fa,cell2,new_island))=
+  "\194\171 "^(Hex_first_alternative_in_springboard.to_readable_string fa)^" \199\128 "^
               (Hex_cell.to_string cell2)^" -> "^(Hex_island.to_readable_string new_island)^
   " \194\187" ;;
 

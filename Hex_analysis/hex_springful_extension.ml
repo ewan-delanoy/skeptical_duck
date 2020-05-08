@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_partial_kite.ml";;
+#use"Hex_analysis/hex_springful_extension.ml";;
 
 *)
 
@@ -12,7 +12,7 @@ module Private = struct
 
 
 let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(cell,path,sol1,sol2,cell2,new_island)) = new_sb in  
+    let (Hex_springboard_t.Sp(fa,cell2,new_island)) = new_sb in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk2.Hex_partial_kite_t.unvisited_seas
@@ -78,26 +78,26 @@ let light_part common_to_both =
       (cell,Hex_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
-let explore_yet_untried_path dim old_pk (cell,new_pk) =
+let explore_yet_untried_path dim (cell,new_pk) =
    let nbr_of_common_steps = List.length new_pk.Hex_partial_kite_t.steps_so_far in 
    let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
-        (cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
+        Hex_first_alternative_in_springboard_t.Fa(cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
    ) temp ;;
 
-let explore_yet_untried_paths dim old_pk paths =
-   List.flatten(Image.image (explore_yet_untried_path dim old_pk) paths);;
+let explore_yet_untried_paths dim paths =
+   List.flatten(Image.image (explore_yet_untried_path dim ) paths);;
 
-let heavy_part dim old_pk common_to_both =
+let heavy_part dim common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
        fun (cell,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
    let one_move_solutions= Image.image (fun (cell,new_pk)->
       let mlclr = Hex_finished_kite.to_molecular_linker new_pk 
       and actv = Hex_finished_kite.active_part new_pk in 
-      (cell,[],mlclr,actv)) final_ones in 
-   one_move_solutions@(explore_yet_untried_paths dim old_pk nonfinal_ones)  ;;
+      Hex_first_alternative_in_springboard_t.Fa(cell,[],mlclr,actv)) final_ones in 
+   one_move_solutions@(explore_yet_untried_paths dim nonfinal_ones)  ;;
 
 let cellset_setminus x y =
    let sx = Hex_cell_set.safe_set x 
@@ -107,14 +107,14 @@ let cellset_setminus x y =
 
 let compute_springboards dim pk =
   let common_to_both =  data_common_to_both_parts dim pk in 
-  let heavy = heavy_part dim pk common_to_both 
-  and light = light_part        common_to_both in 
+  let heavy = heavy_part dim common_to_both 
+  and light = light_part     common_to_both in 
   let temp1 = Cartesian.product heavy light in 
-  let temp2 = Image.image (
-    fun ((cell,path,sol1,sol2),(cell2,new_island))->
-       (cell,path,sol1,sol2,cell2,new_island)
-  ) temp1  in 
-  Option.filter_and_unpack Hex_springboard.opt_constructor temp2;;
+  Option.filter_and_unpack (
+    fun (fa,(cell2,new_island))->
+       Hex_springboard.opt_constructor(fa,cell2,new_island)
+  ) temp1  ;;
+
 
 let springful_extensions dim pk =
    let springboards = compute_springboards dim pk  in 
