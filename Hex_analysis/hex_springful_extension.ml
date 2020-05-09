@@ -29,6 +29,7 @@ let extend_with_springboard dim pk new_sb =
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         remaining_free_cells = remaining_free_ones ;
+        investment = Hex_partial_kite_field.update_investment (pk.Hex_partial_kite_t.investment);   
     }  ;;
 
 let close_future_seas pk =
