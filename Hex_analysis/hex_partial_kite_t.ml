@@ -15,6 +15,6 @@ type t={
    unvisited_islands : Hex_island_t.t list;
    unvisited_seas : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;
    added_by_casing : Hex_cell_set_t.t ;
-   investment : (Hex_first_alternative_in_springboard_t.t option);
+   investment : ((Hex_first_alternative_in_springboard_t.t * bool) option);
    remaining_free_cells : Hex_cell_set_t.t ;
 };;

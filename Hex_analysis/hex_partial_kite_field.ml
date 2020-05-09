@@ -55,7 +55,9 @@ let test_for_finality pk =
    |_ -> (* A death would already have been detected in opt_final_death *)
          false  ;;
 
-   
+let update_investment ivst = match ivst with 
+   None -> None 
+  |Some(fa,_) -> Some(fa,true);;   
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
@@ -67,6 +69,7 @@ let extend_with_island pk new_island =
                (vague_new_elt::pk.Hex_partial_kite_t.steps_so_far);
           unvisited_islands = List.filter (fun x->x<>new_island ) 
              (pk.Hex_partial_kite_t.unvisited_islands);
+          investment = update_investment (pk.Hex_partial_kite_t.investment);   
     });;
     
 
@@ -87,6 +90,7 @@ let extend_with_sea pk new_nc =
           Hex_partial_kite_t.steps_so_far = vague_new_elt::old_steps ;
             unvisited_seas = selector old_seas ;
             remaining_free_cells = remaining_free_ones ;
+            investment = update_investment (pk.Hex_partial_kite_t.investment);
     });;
 
 let winner pk =
@@ -122,4 +126,5 @@ let last_island = Private.last_island ;;
 let last_stop = Private.last_stop ;;
 let place_of_death = Private.place_of_death ;;
 let test_for_finality = Private.test_for_finality ;;
+let update_investment = Private.update_investment ;;
 let winner = Private.winner;;
