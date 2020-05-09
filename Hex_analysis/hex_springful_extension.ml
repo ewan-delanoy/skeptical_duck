@@ -83,7 +83,7 @@ let explore_yet_untried_path dim (cell,new_pk) =
    let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
-        Hex_first_alternative_in_springboard_t.Fa(cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
+        Hex_first_alternative_in_springboard_t.Fa(None,cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
    ) temp ;;
 
 let explore_yet_untried_paths dim paths =
@@ -96,7 +96,7 @@ let heavy_part dim common_to_both =
    let one_move_solutions= Image.image (fun (cell,new_pk)->
       let mlclr = Hex_finished_kite.to_molecular_linker new_pk 
       and actv = Hex_finished_kite.active_part new_pk in 
-      Hex_first_alternative_in_springboard_t.Fa(cell,[],mlclr,actv)) final_ones in 
+      Hex_first_alternative_in_springboard_t.Fa(None,cell,[],mlclr,actv)) final_ones in 
    one_move_solutions@(explore_yet_untried_paths dim nonfinal_ones)  ;;
 
 let cellset_setminus x y =
