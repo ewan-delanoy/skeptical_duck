@@ -107,6 +107,7 @@ let constructor  first_island islands seas free_ones =
             unvisited_islands = List.filter (fun x->x<>first_island ) islands;
             unvisited_seas = seas ;
             added_by_casing = Hex_cell_set.empty_set;
+            investment = None ;
             remaining_free_cells = free_ones;
         } ;;
    
