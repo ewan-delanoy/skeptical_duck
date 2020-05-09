@@ -115,13 +115,16 @@ let constructor  first_island islands seas free_ones =
             remaining_free_cells = free_ones;
         } ;;
    
-
+let investment_is_not_recent pk = match pk.Hex_partial_kite_t.investment with 
+   None -> true 
+   |Some (_,is_not_recent) ->is_not_recent;;
 
 end ;; 
 
 let constructor = Private.constructor ;; 
 let extend_with_island = Private.extend_with_island ;;
 let extend_with_sea = Private.extend_with_sea ;;
+let investment_is_not_recent = Private.investment_is_not_recent;;
 let last_island = Private.last_island ;;
 let last_stop = Private.last_stop ;;
 let place_of_death = Private.place_of_death ;;
