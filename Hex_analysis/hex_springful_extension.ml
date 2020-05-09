@@ -70,15 +70,15 @@ let data_common_to_both_parts dim pk =
     Image.image (
       fun cell -> 
         let new_pk=Hex_impose_active_cell.impose_cell_by_casing dim cell pk in 
-        (cell,new_pk) 
+        (cell,None,new_pk) 
    ) temp1 ;;
 
 let light_part common_to_both = 
-   Image.image (fun (cell,new_pk)->
+   Image.image (fun (cell,opt_start,new_pk)->
       (cell,Hex_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
-let explore_yet_untried_path dim (cell,new_pk) =
+let explore_yet_untried_path dim (cell,opt_start,new_pk) =
    let nbr_of_common_steps = List.length new_pk.Hex_partial_kite_t.steps_so_far in 
    let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
@@ -91,9 +91,9 @@ let explore_yet_untried_paths dim paths =
 
 let heavy_part dim common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
-       fun (cell,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
+       fun (cell,opt_start,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
-   let one_move_solutions= Image.image (fun (cell,new_pk)->
+   let one_move_solutions= Image.image (fun (cell,opt_start,new_pk)->
       let mlclr = Hex_finished_kite.to_molecular_linker new_pk 
       and actv = Hex_finished_kite.active_part new_pk in 
       Hex_first_alternative_in_springboard_t.Fa(None,cell,[],mlclr,actv)) final_ones in 
