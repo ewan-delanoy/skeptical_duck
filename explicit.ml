@@ -86,15 +86,15 @@ let unchronometered_image_computed_backwards f l=
 
 exception Force_find_exn ;;
 
-let rec helper_for_opt_finding f (j,x)=
+let rec helper_for_opt_finding (f,sn) (j,x)=
    match x with 
    [] -> None
    |a::others -> if f a 
                  then Some a
                  else let _=(
-                        print_string("Item number "^string_of_int(j)^" found wanting \n");
+                        print_string("Item number "^string_of_int(j)^" of "^sn^" found wanting \n");
                         flush stdout) in 
-                      helper_for_opt_finding f (j+1,others) ;; 
+                      helper_for_opt_finding (f,sn) (j+1,others) ;; 
 
 end ;; 
 
@@ -108,6 +108,6 @@ let image f l=Chronometer.it (Private.unchronometered_image f) l;;
 let image_computed_backwards f l=Chronometer.it 
    	(Private.unchronometered_image_computed_backwards f) l;;               
 
-let opt_find f x = Private.helper_for_opt_finding f (1,x) ;;
+let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
 
 (* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
