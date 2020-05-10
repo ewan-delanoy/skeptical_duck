@@ -80,6 +80,8 @@ let full_constructor tbc side new_apex=
      let dx=x2-x1 and dy=y2-y1 in 
      Hex_connector.translate (dx,dy) default_example;;    
  
+let specify_side = Private.specify_side ;;
+
 let to_readable_string tbc side = 
    let (opt_uniform,opt_diverse,_,_,_,_) = List.assoc tbc Private.prepare_for_journey  in 
    match opt_uniform with 
