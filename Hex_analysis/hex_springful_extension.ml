@@ -31,17 +31,12 @@ let extend_with_second_alternative dim pk (cell2,new_island) =
     let new_sb =(Hex_springboard_t.Sp(fa,cell2,new_island))  in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_steps = pk2.Hex_partial_kite_t.steps_so_far 
-    and old_seas = pk.Hex_partial_kite_t.unvisited_seas
     and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells in 
-    let select_seas  =  List.filter (fun (_,sea)->
-       not (Hex_cell_set.mem cell2 (Hex_named_connector.wet_earth sea))
-    )   
-    and remaining_free_ones = Hex_cell_set.outsert cell2 old_free_ones  in
+    let remaining_free_ones = Hex_cell_set.outsert cell2 old_free_ones  in
     {
       pk2 with 
         Hex_partial_kite_t.steps_so_far = 
            (Hex_kite_element_t.Springboard new_sb)::old_steps ;
-        unvisited_seas =  select_seas old_seas;
         remaining_free_cells = remaining_free_ones ;
         investment = None ;
     }  ;;
