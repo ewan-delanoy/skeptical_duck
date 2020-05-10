@@ -26,7 +26,7 @@ let persistent_data player =
 
 let elev = Hex_dimension.eleven ;;
 
-let factory_ref = ref (0);;
+let factory_ref = ref (Hex_kite_factory.dummy);;
 
 let generic_test player tester=
     let (factory,_,moleculars) = persistent_data player in 
@@ -40,6 +40,7 @@ let generic_test player tester=
       let bad_extmol = bad_fles.Hex_flattened_end_strategy_t.data in 
       let actv = bad_extmol.Hex_extended_molecular_t.active_part 
       and mlclr = bad_extmol.Hex_extended_molecular_t.molecular_part in
+      let _=(factory_ref:=unsac_start) in 
       Some(bad_fles,eob,mlclr,actv,unsac_start,unsac_end)
     ;;
 
@@ -55,7 +56,24 @@ let strong_test player =
       not(List.mem (mlclr,actv) (Hex_kite_factory.solutions(eob)))
    ) ;;    
 
+let push_factory k = 
+    let old_factory = (!factory_ref) in 
+    let new_factory = Memoized.small Hex_kite_factory.push old_factory k in 
+    let _=(factory_ref:=new_factory) in 
+    new_factory ;;
+
+let shorten_factory k = 
+    let old_factory = (!factory_ref) in 
+    let new_factory = {old_factory with 
+       Hex_kite_factory_t.unfinished = [List.nth old_factory.Hex_kite_factory_t.unfinished (k-1)]
+    } in 
+    let _=(factory_ref:=new_factory) in 
+    new_factory ;;
+
+
 end ;;
 
+let push_factory = Private.push_factory ;;
+let shorten_factory = Private.shorten_factory ;;
 let strong_test = Private.strong_test ;;
 let weak_test = Private.weak_test ;;

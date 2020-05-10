@@ -95,4 +95,5 @@ let dummy = {
       failures       = [] ;
       unfinished     = [];
     };; 
+let push = Private.pusher ;;    
 let solutions = Private.solutions ;;
