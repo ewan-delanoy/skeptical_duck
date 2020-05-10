@@ -26,6 +26,8 @@ let persistent_data player =
 
 let elev = Hex_dimension.eleven ;;
 
+let factory_ref = ref (0);;
+
 let generic_test player tester=
     let (factory,_,moleculars) = persistent_data player in 
     match Explicit.opt_find tester moleculars with 

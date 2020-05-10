@@ -88,4 +88,11 @@ let data_for_debugging eob =
 end ;;
 
 let data_for_debugging = Private.data_for_debugging ;;
+let dummy = {
+      Hex_kite_factory_t.dimension  = Hex_dimension.eleven ;
+      winner         = Hex_player_t.First_player ;
+      finished       = [] ;
+      failures       = [] ;
+      unfinished     = [];
+    };; 
 let solutions = Private.solutions ;;
