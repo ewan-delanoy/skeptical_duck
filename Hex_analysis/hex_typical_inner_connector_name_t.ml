@@ -7,7 +7,8 @@
 type t =
     Haddock1
    |Haddock2 
-   |Haddock3;;
+   |Haddock3
+   |Haddock4;;
 
    
    
