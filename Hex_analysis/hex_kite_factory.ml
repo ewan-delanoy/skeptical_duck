@@ -81,8 +81,11 @@ let solutions eob =
    if temp1<>[] then temp1 else 
    sacrificial_solutions eob ;;   
 
+let data_for_debugging eob =
+   let temp1 = nonsacrificial_starters eob in
+   (temp1,main temp1) ;;
 
 end ;;
 
-
+let data_for_debugging = Private.data_for_debugging ;;
 let solutions = Private.solutions ;;
