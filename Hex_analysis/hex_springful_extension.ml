@@ -10,13 +10,13 @@ module Private = struct
 
 
 
-let extend_with_first_alternative dim pk new_fa =
+let extend_with_first_alternative pk new_fa =
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk.Hex_partial_kite_t.unvisited_seas
     and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells
-    and requisitioned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
-    let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
-    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   
+    and requisitioned_territory = Hex_first_alternative_in_springboard.requisitioned_territory new_fa in 
+    let restricted_islands = List.filter (Hex_first_alternative_in_springboard.check_island_after_fa_insertion new_fa) old_islands 
+    and selector  =  List.filter (fun (_,sea)->Hex_first_alternative_in_springboard.check_sea_after_fa_insertion new_fa sea)   
     and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitioned_territory in
     {
       pk with 
@@ -26,24 +26,22 @@ let extend_with_first_alternative dim pk new_fa =
         investment = Some new_fa ;
     }  ;;
 
-
-let extend_with_springboard dim pk new_sb =
-    let (Hex_springboard_t.Sp(fa,cell2,new_island)) = new_sb in  
+let extend_with_second_alternative dim pk (cell2,new_island) =
+    let fa = Option.unpack pk.Hex_partial_kite_t.investment in 
+    let new_sb =(Hex_springboard_t.Sp(fa,cell2,new_island))  in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
-    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas
-    and old_steps = pk2.Hex_partial_kite_t.steps_so_far 
-    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
-    and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
-    let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
-    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   
-    and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitionned_territory in
+    let old_steps = pk2.Hex_partial_kite_t.steps_so_far 
+    and old_seas = pk.Hex_partial_kite_t.unvisited_seas
+    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells in 
+    let select_seas  =  List.filter (fun (_,sea)->
+       not (Hex_cell_set.mem cell2 (Hex_named_connector.wet_earth sea))
+    )   
+    and remaining_free_ones = Hex_cell_set.outsert cell2 old_free_ones  in
     {
       pk2 with 
         Hex_partial_kite_t.steps_so_far = 
            (Hex_kite_element_t.Springboard new_sb)::old_steps ;
-        unvisited_islands = restricted_islands ;
-        unvisited_seas =  selector old_seas;
+        unvisited_seas =  select_seas old_seas;
         remaining_free_cells = remaining_free_ones ;
         investment = None ;
     }  ;;
@@ -118,46 +116,43 @@ let heavy_part dim common_to_both =
       Hex_first_alternative_in_springboard_t.Fa(None,cell,[],mlclr,actv)) final_ones in 
    one_move_solutions@(explore_yet_untried_paths dim nonfinal_ones)  ;;
 
-let cellset_setminus x y =
-   let sx = Hex_cell_set.safe_set x 
-   and sy = Hex_cell_set.safe_set y in 
-   Hex_cell_set.forget_order(Hex_cell_set.setminus sx sy);;         
 
 
-let compute_springboards dim pk =
-  let common_to_both =  data_common_to_both_parts dim pk in 
-  let heavy = heavy_part dim common_to_both 
-  and light = light_part     common_to_both in 
-  let temp1 = Cartesian.product heavy light in 
-  Option.filter_and_unpack (
-    fun (fa,(cell2,new_island))->
-       Hex_springboard.opt_constructor(fa,cell2,new_island)
-  ) temp1  ;;
-
-
-let springful_extensions dim pk =
-   let springboards = compute_springboards dim pk  in 
-   let temp1 = Image.image (fun sb->
-     let new_pk = extend_with_springboard dim pk sb in
-    (Hex_partial_kite_field.test_for_finality new_pk,new_pk)
-   ) springboards in 
-   let (full_sols,partial_sols) = List.partition fst temp1 in 
-   let detailed_sols = Image.image 
-     (fun (_,pk)->Hex_finished_kite.solution_details pk) full_sols in 
-   (detailed_sols,Image.image snd partial_sols) ;;
-
-let extensions_by_springboard_first_halves pk common_to_both= 
+let extensions_by_springboard_first_halves dim pk common_to_both= 
   if pk.Hex_partial_kite_t.investment <> None then [] else 
   let first_halves = heavy_part dim common_to_both in 
-  Image.image (extend_with_first_alternative dim pk) first_halves ;;
+  Image.image (extend_with_first_alternative pk) first_halves ;;
+
+let extensions_by_springboard_second_halves dim pk common_to_both fa= 
+  if pk.Hex_partial_kite_t.investment = None then [] else 
+  let possible_second_halves = light_part common_to_both in 
+  let second_halves = List.filter (
+      fun (cell2,new_island) ->
+         Hex_springboard.opt_constructor(fa,cell2,new_island) <> None
+  ) possible_second_halves in 
+  Image.image (extend_with_second_alternative dim pk) second_halves ;;
+
+let extensions_by_springboard_halves dim pk =
+   let last_stop = Hex_partial_kite_field.last_stop pk in 
+   if Hex_kite_element.opt_island_component last_stop = None 
+   then []
+   else 
+   let common_to_both =  data_common_to_both_parts dim pk in 
+   match pk.Hex_partial_kite_t.investment with 
+   None -> extensions_by_springboard_first_halves dim pk common_to_both 
+   |Some(fa) -> extensions_by_springboard_second_halves dim pk common_to_both fa ;;
+
+let extract_solutions l=
+   let (final_ones,nonfinal_ones) = List.partition (
+    Hex_partial_kite_field.test_for_finality 
+   ) l in 
+   let detailed_sols = Image.image Hex_finished_kite.solution_details  final_ones in 
+   (detailed_sols,nonfinal_ones) ;;
 
 let extensions_finished_and_non_finished dim pk =
-   let common_to_both =  data_common_to_both_parts dim pk in 
-   (* (Hex_springless_extension.extensions_finished_and_non_finished dim pk)
-   @ *)
-   (extensions_by_springboard_first_halves pk common_to_both)
-   @ 
-   (extensions_by_springboard_second_halves pk);;
+   let (f1,u1) = Hex_springless_extension.extensions_finished_and_non_finished dim pk 
+   and (f2,u2) = extract_solutions (extensions_by_springboard_halves dim pk) in 
+   (f1@f2,u1@u2) ;;
 
 
 end ;;
