@@ -113,6 +113,7 @@ let possibly_too_large_active_part  pk =
    Hex_cell_set.fold_merge 
      (contribution_from_islands::contribution_from_seas::contribution_from_springboards) ;;
 
+
 let active_part pk =
     let molecular_part = Hex_molecular_linker.support(to_molecular_linker pk) in 
    Hex_cell_set.setminus (possibly_too_large_active_part pk) molecular_part;;
