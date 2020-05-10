@@ -45,7 +45,11 @@ let prepare_for_journey =
      Hex_typical_border_connector_name_t.Hat, 
         (Some "hat",None,(3,2),
                [(1, 2); (2, 3);  (1, 3); (1, 4); 
-                (2, 1); (2, 2) ],[],[3,1]) ;                             
+                (2, 1); (2, 2) ],[],[3,1]) ;  
+     Hex_typical_border_connector_name_t.Hat2, 
+        (Some "hat2",None,(3,3),
+               [(1, 1); (1, 2);  (1, 4); (1, 5); 
+                (2, 1); (2, 4);  (2, 2); (1, 3)],[],[3,2]) ;                                        
   ];;
 
 let upwards_version tbc = 
