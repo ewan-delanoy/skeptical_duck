@@ -26,8 +26,6 @@ let to_nondefault_molecular_linker nm apex junction = match nm with
          Some(Hex_molecular_linker.constructor [
               Hex_atomic_linker_t.Eyed_claw(d1,d2,Hex_cell.of_int_pair (Option.unpack apex))])
    |_ -> None;;
-    
-exception Excluded_middle_exn ;;     
 
 let to_readable_string = function 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 

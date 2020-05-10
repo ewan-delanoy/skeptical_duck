@@ -70,8 +70,10 @@ let specify_side tbc side =
 end ;;
 
 
-
-
+let for_side side =
+Image.image (
+       fun (tbc,data_for_tbc) -> Hex_border_connector_name_t.Typical(tbc,side)
+     )   Private.prepare_for_journey ;;
     
 let full_constructor tbc side new_apex=
      let default_example = Private.specify_side tbc side in 
