@@ -47,7 +47,7 @@ let weak_test player =
 let strong_test player =
    generic_test player (fun (idx,mlclr,actv)->
       let eob = Hex_end_of_battle.of_activated_molecular (elev,player) (actv,mlclr) in 
-      Hex_kite_factory.solutions(eob)=[]
+      not(List.mem (mlclr,actv) (Hex_kite_factory.solutions(eob)))
    ) ;;    
 
 end ;;
