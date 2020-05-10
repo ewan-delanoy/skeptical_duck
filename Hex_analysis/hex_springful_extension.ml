@@ -10,6 +10,26 @@ module Private = struct
 
 
 
+let extend_with_first_alternative dim pk new_fa =
+    let (Hex_springboard_t.Sp(fa,cell2,new_island)) = new_sb in  
+    let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
+    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
+    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas
+    and old_steps = pk2.Hex_partial_kite_t.steps_so_far 
+    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
+    and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
+    let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
+    and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   
+    and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitionned_territory in
+    {
+      pk2 with 
+        Hex_partial_kite_t.steps_so_far = 
+           (Hex_kite_element_t.Springboard new_sb)::old_steps ;
+        unvisited_islands = restricted_islands ;
+        unvisited_seas =  selector old_seas;
+        remaining_free_cells = remaining_free_ones ; 
+    }  ;;
+
 
 let extend_with_springboard dim pk new_sb =
     let (Hex_springboard_t.Sp(fa,cell2,new_island)) = new_sb in  
@@ -130,19 +150,19 @@ let springful_extensions dim pk =
      (fun (_,pk)->Hex_finished_kite.solution_details pk) full_sols in 
    (detailed_sols,Image.image snd partial_sols) ;;
 
+let extensions_by_springboard_first_halves pk common_to_both= 
+  if pk.Hex_partial_kite_t.investment <> None then [] else 
+  let first_halves = heavy_part dim common_to_both in 
+  Image.image (extend_with_first_alternative dim pk) first_halves ;;
 
 let extensions_finished_and_non_finished dim pk =
-   let first_trial = Hex_springless_extension.extensions_finished_and_non_finished dim pk in 
-   if first_trial <> ([],[])
-   then first_trial
-   else springful_extensions dim pk;;
+   let common_to_both =  data_common_to_both_parts dim pk in 
+   (* (Hex_springless_extension.extensions_finished_and_non_finished dim pk)
+   @ *)
+   (extensions_by_springboard_first_halves pk common_to_both)
+   @ 
+   (extensions_by_springboard_second_halves pk);;
 
-(*
-let extensions_finished_and_non_finished dim pk =
-   let temp1 = [
-       
-   ]
-*)
 
 end ;;
 
