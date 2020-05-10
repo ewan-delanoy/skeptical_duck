@@ -22,12 +22,12 @@ let persistent_data player =
       Some(idx,mlclr,actv)
     |_->None  
    ) cogs in 
-   (factory,moleculars);;
+   (factory,cogs,moleculars);;
 
 let elev = Hex_dimension.eleven ;;
 
 let generic_test player tester=
-    let (factory,moleculars) = persistent_data player in 
+    let (factory,_,moleculars) = persistent_data player in 
     match Explicit.opt_find tester moleculars with 
     None -> None 
     |Some(idx,mlclr,actv) -> 
