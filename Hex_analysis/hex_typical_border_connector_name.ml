@@ -4,6 +4,10 @@
 
 *)
 
+exception To_readable_string_exn ;;   
+
+module Private = struct
+
 let prepare_for_journey = 
   [
      Hex_typical_border_connector_name_t.Border_bridge , 
@@ -62,11 +66,31 @@ let specify_side tbc side =
     |Hex_cardinal_direction_t.Left  -> l
     |Hex_cardinal_direction_t.Right -> Hex_connector.oppose Hex_dimension.eleven l
     |Hex_cardinal_direction_t.Up    -> u;; 
+
+end ;;
+
+
+
+
     
 let full_constructor tbc side new_apex=
-     let default_example = specify_side tbc side in 
+     let default_example = Private.specify_side tbc side in 
      let (x1,y1) = Option.unpack(default_example.Hex_connector_t.apex) 
      and (x2,y2) = new_apex in 
      let dx=x2-x1 and dy=y2-y1 in 
      Hex_connector.translate (dx,dy) default_example;;    
  
+let to_readable_string tbc side = 
+   let (opt_uniform,opt_diverse,_,_,_,_) = List.assoc tbc Private.prepare_for_journey  in 
+   match opt_uniform with 
+    Some(unf) -> (Hex_cardinal_direction.for_ground_description side)^unf
+   |None ->
+   match opt_diverse with 
+   Some(ad,al,ar,au) -> (
+                           match side with 
+                           Hex_cardinal_direction_t.Down  -> ad
+                          |Hex_cardinal_direction_t.Left  -> al
+                          |Hex_cardinal_direction_t.Right -> ar
+                          |Hex_cardinal_direction_t.Up    -> au 
+                        )
+   |None ->  raise (To_readable_string_exn);;     
