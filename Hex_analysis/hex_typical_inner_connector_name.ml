@@ -11,7 +11,9 @@ let prepare_for_journey =
      Hex_typical_inner_connector_name_t.Haddock2 , 
        ([(3,4)],[ (2,3);(1,4);(3,3);(2,4)],[(1,3);(2,2);(3,1);(4,1);(4,2)],[],"hk2") ;
      Hex_typical_inner_connector_name_t.Haddock3 , 
-       ([(1,3)],[ (1,4);(2,3);(2,2);(2,4); (4,1);(3,2);(3,3);(3,4);],[(4,2);(4,3)],[3,1],"hk3") ;               
+       ([(1,3)],[ (1,4);(2,3);(2,2);(2,4); (4,1);(3,2);(3,3);(3,4);],[(4,2);(4,3)],[3,1],"hk3") ;   
+     Hex_typical_inner_connector_name_t.Haddock4 , 
+       ([(4,4)],[ (1,4);(2,3);(2,1);(2,2);(2,4);(3,3);(3,4);(4,3)],[(1,2);(1,3)],[(3,1);(4,1);(4,2)],"hk4");               
   ];;
 
 let all = Image.image fst prepare_for_journey ;;
