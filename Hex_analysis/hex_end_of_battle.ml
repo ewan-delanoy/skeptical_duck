@@ -10,13 +10,16 @@ let assess eob cell =
    Hex_eob_result_t.Unoccupied;;
 
 let compatible_border_triangles eob = 
-   let base = Hex_cardinal_direction.all_border_triangles (eob.Hex_end_of_battle_t.dimension) in 
+   let base = Hex_cardinal_direction.all_border_triangles (eob.Hex_end_of_battle_t.dimension) 
+   and (side1,side2) = Hex_cardinal_direction.sides_for_player (eob.Hex_end_of_battle_t.winner) in 
+   let sides = [side1;side2] in 
    let evl = assess eob in 
    List.filter (
       function (side,cell1,cell2,cell3) -> 
         (evl cell1 = Hex_eob_result_t.Ally_territory) &&
         (evl cell2 = Hex_eob_result_t.Unoccupied) &&
-        (evl cell3 = Hex_eob_result_t.Unoccupied)
+        (evl cell3 = Hex_eob_result_t.Unoccupied) && 
+        (List.mem side sides)
    ) base ;;
 
 let of_finished_game fgame =
