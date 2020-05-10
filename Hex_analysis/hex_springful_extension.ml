@@ -11,23 +11,19 @@ module Private = struct
 
 
 let extend_with_first_alternative dim pk new_fa =
-    let (Hex_springboard_t.Sp(fa,cell2,new_island)) = new_sb in  
-    let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
-    let old_islands = pk2.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk2.Hex_partial_kite_t.unvisited_seas
-    and old_steps = pk2.Hex_partial_kite_t.steps_so_far 
-    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells
-    and requisitionned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
+    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
+    and old_seas = pk.Hex_partial_kite_t.unvisited_seas
+    and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells
+    and requisitioned_territory = Hex_molecular_linker.support(Hex_springboard.to_molecular_linker new_sb) in 
     let restricted_islands = List.filter (Hex_springboard.check_island_after_springboard_insertion new_sb) old_islands 
     and selector  =  List.filter (fun (_,sea)->Hex_springboard.check_sea new_sb sea)   
-    and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitionned_territory in
+    and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitioned_territory in
     {
-      pk2 with 
-        Hex_partial_kite_t.steps_so_far = 
-           (Hex_kite_element_t.Springboard new_sb)::old_steps ;
-        unvisited_islands = restricted_islands ;
+      pk with 
+        Hex_partial_kite_t.unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         remaining_free_cells = remaining_free_ones ; 
+        investment = Some new_fa ;
     }  ;;
 
 
@@ -49,7 +45,7 @@ let extend_with_springboard dim pk new_sb =
         unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         remaining_free_cells = remaining_free_ones ;
-        investment = Hex_partial_kite_field.update_investment (pk.Hex_partial_kite_t.investment);   
+        investment = None ;
     }  ;;
 
 let close_future_seas pk =
