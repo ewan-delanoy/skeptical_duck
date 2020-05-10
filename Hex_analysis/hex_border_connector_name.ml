@@ -14,9 +14,7 @@ let for_side side =
     ) ortho)
     @
     (
-     Image.image (
-       fun (tbc,data_for_tbc) -> Hex_border_connector_name_t.Typical(tbc,side)
-     )   Hex_typical_border_connector_name.prepare_for_journey
+      Hex_typical_border_connector_name.for_side side
     )
     ;;
 
