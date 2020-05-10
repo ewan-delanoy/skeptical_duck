@@ -35,7 +35,10 @@ let generic_test player tester=
       let _= Hex_ascii_grid.see_flesh bad_fles in 
       let eob = Hex_end_of_battle.of_activated_molecular (elev,player) (actv,mlclr) in 
       let (unsac_start,unsac_end) = Hex_kite_factory.data_for_debugging eob in 
-      Some(bad_fles,eob,unsac_start,unsac_end)
+      let bad_extmol = bad_fles.Hex_flattened_end_strategy_t.data in 
+      let actv = bad_extmol.Hex_extended_molecular_t.active_part 
+      and mlclr = bad_extmol.Hex_extended_molecular_t.molecular_part in
+      Some(bad_fles,eob,mlclr,actv,unsac_start,unsac_end)
     ;;
 
 let weak_test player =
