@@ -20,17 +20,6 @@ let change_island_component
       new_component= 
     Hex_springboard_t.Sp(fa,cell2,new_component) ;;  
 
-let check_island_after_springboard_insertion springboard island = 
-   if Hex_island.anchor island <> Hex_anchor_t.No_anchor then true else 
-   Hex_cell_set.does_not_intersect 
-      (Private.wet_earth springboard)
-         (Hex_island.inner_earth island);;
-
-let check_sea springboard nc = 
-   Hex_cell_set.does_not_intersect 
-      (Private.wet_earth springboard)
-         (Hex_named_connector.wet_earth nc);;         
-
 
 let new_island (Hex_springboard_t.Sp(fa,cell2,new_island)) =
     new_island ;;
