@@ -125,6 +125,15 @@ let inner_sea nc =
 
 end ;;
 
+let active_part nc =
+   let inner_cells = (Image.image Hex_cell.of_int_pair 
+           nc.Hex_named_connector_t.extra_active_cells) in 
+   Hex_cell_set.fold_merge 
+  [ 
+    Hex_island.inner_earth nc.Hex_named_connector_t.entry ;
+    Hex_island.inner_earth nc.Hex_named_connector_t.exit  ;
+    Hex_cell_set.safe_set inner_cells ;
+  ];;
 
 
 let check_compatiblity end_of_battle nc = 
@@ -165,15 +174,6 @@ let missing_earth end_of_battle nc =
 
 let of_name = Private.of_name ;;
 
-let outer_earth nc =
-   let inner_cells = (Image.image Hex_cell.of_int_pair 
-           nc.Hex_named_connector_t.extra_active_cells) in 
-   Hex_cell_set.fold_merge 
-  [ 
-    Hex_island.inner_earth nc.Hex_named_connector_t.entry ;
-    Hex_island.inner_earth nc.Hex_named_connector_t.exit  ;
-    Hex_cell_set.safe_set inner_cells ;
-  ];;
 
 
 
