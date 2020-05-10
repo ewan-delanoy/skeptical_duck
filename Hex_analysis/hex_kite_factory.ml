@@ -83,7 +83,7 @@ let solutions eob =
 
 let data_for_debugging eob =
    let temp1 = nonsacrificial_starters eob in
-   (temp1,main temp1) ;;
+   (temp1,snd(main temp1)) ;;
 
 end ;;
 
