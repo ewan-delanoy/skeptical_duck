@@ -11,6 +11,7 @@ module Private = struct
 let local_cmp = Total_ordering.product 
     Hex_cell_set.length_first_cmp Total_ordering.standard;;
 
+
 let constructor end_of_battle islands side =
    let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
    let clean = List.filter (
