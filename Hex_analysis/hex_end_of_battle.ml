@@ -9,18 +9,6 @@ let assess eob cell =
    if Hex_cell_set.mem cell eob.Hex_end_of_battle_t.enemy_territory then Hex_eob_result_t.Enemy_territory else 
    Hex_eob_result_t.Unoccupied;;
 
-let compatible_border_triangles eob = 
-   let base = Hex_cardinal_direction.all_border_triangles (eob.Hex_end_of_battle_t.dimension) 
-   and (side1,side2) = Hex_cardinal_direction.sides_for_player (eob.Hex_end_of_battle_t.winner) in 
-   let sides = [side1;side2] in 
-   let evl = assess eob in 
-   List.filter (
-      function (side,cell1,cell2,cell3) -> 
-        (evl cell1 = Hex_eob_result_t.Ally_territory) &&
-        (evl cell2 = Hex_eob_result_t.Unoccupied) &&
-        (evl cell3 = Hex_eob_result_t.Unoccupied) && 
-        (List.mem side sides)
-   ) base ;;
 
 let of_finished_game fgame =
      let (black_moves,white_moves)=Listennou.split_list_in_half (fgame.Hex_finished_game_t.sequence_of_moves) in 

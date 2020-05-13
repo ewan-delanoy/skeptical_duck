@@ -70,9 +70,8 @@ let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_soluti
 
 let sacrificial_solutions eob=
    let temp1 = Image.image (
-      fun ((side,cell1,cell2,cell3),(_,_,_,mlclr,actv))->
-         let pair = Hex_atomic_linker.pair (cell2,cell3) in 
-         (Hex_molecular_linker.insert pair mlclr, actv)
+      fun (scr,(_,_,_,mlclr,actv))->
+         (Hex_sacrifice.reconstruct_sacrificial_solutions scr mlclr, actv)
    ) (sacrificial_full_solutions eob) in 
    Ordered.sort Total_ordering.standard  temp1;;
 

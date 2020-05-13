@@ -145,16 +145,6 @@ let all =
  Hex_cardinal_direction_t.Up;
 ];;
 
-let all_border_triangles dim =
-   List.flatten (
-     Image.image (fun side ->
-       Image.image (fun (cell1,cell2,cell3)->
-         (side,cell1,cell2,cell3)
-       ) (Private.Immediately_Next_to_Border.enumerate_triangles_for_side dim side)
-     )
-     all
-   ) ;;
-
 let all_orthogonal_pairs = 
    List.flatten(
    Image.image (fun d->
@@ -232,3 +222,5 @@ let to_int = function
     |Hex_cardinal_direction_t.Up    -> 2
     |Hex_cardinal_direction_t.Right -> 3
     |Hex_cardinal_direction_t.Down  -> 4 ;;
+
+let triangles_for_side = Private.Immediately_Next_to_Border.enumerate_triangles_for_side ;;

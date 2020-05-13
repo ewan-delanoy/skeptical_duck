@@ -36,16 +36,8 @@ let constructor end_of_battle islands side =
 
 
 
-let sacrificial_starter end_of_battle (sacrifice_side,cell1,cell2,cell3) side= 
-  let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
-  let artificial_eob = {
-      end_of_battle with 
-      Hex_end_of_battle_t.enemy_territory = 
-        (Hex_cell_set.merge (Hex_cell_set.safe_set [cell2;cell3]) 
-          end_of_battle.Hex_end_of_battle_t.enemy_territory)
-  } in 
-  let natural_islands = Hex_island.decompose artificial_eob in 
-  let artificial_islands = Hex_island.add_and_forget_the_adding dim (sacrifice_side,cell2) natural_islands in 
+let sacrificial_starter end_of_battle scr  side= 
+  let (artificial_eob,artificial_islands) = Hex_sacrifice.data_for_sacrificial_starter end_of_battle scr in 
   constructor artificial_eob artificial_islands side ;; 
 
  
@@ -59,10 +51,10 @@ let nonsacrificial_starters end_of_battle =
 
 
 let sacrificial_starters end_of_battle = 
-    let triangles = Hex_end_of_battle.compatible_border_triangles end_of_battle in 
+    let sacrifices = Hex_sacrifice.compatible_sacrifices end_of_battle in 
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-    let base = Cartesian.product triangles [side1;side2] in 
-    Image.image (fun (triangle,side) ->
-      (triangle, Private.sacrificial_starter end_of_battle triangle side)
+    let base = Cartesian.product sacrifices [side1;side2] in 
+    Image.image (fun (scr,side) ->
+      (scr, Private.sacrificial_starter end_of_battle scr side)
     ) base;;
 
