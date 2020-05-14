@@ -69,7 +69,7 @@ let compatible_sacrifices eob =
              if (List.for_all (fun cell->evl cell = Hex_eob_result_t.Ally_territory) actv) 
                 &&
                  (List.for_all (fun cell->evl cell = Hex_eob_result_t.Unoccupied) pairs)
-             then Some((tscr,side),pairs)
+             then Some(tscr,side,pairs)
              else None    
         ) base2        
    ) base1);;
