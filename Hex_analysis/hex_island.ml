@@ -47,6 +47,26 @@ let add_sided_cell_by_casing dim (opt_side,new_cell) l =
    let new_earth = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_earths) in 
    (Hex_island_t.I(new_anchor,new_earth),unconnected) ;;
 
+let add_nonsided_cell_by_casing dim new_cell l =
+   let new_p = Hex_cell.to_int_pair new_cell in 
+   let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
+   let (connected,unconnected) = List.partition (
+    fun (Hex_island_t.I(anchor,z))->List.exists (fun q->
+      if Set_of_poly_pairs.mem q z then true else 
+      Hex_anchor.touches_cell dim anchor new_cell 
+    ) neighbors 
+   )  l in 
+   let old_anchors = Image.image (fun (Hex_island_t.I(anchor,_))->anchor) connected in
+   let new_anchor = Hex_anchor.merge old_anchors in 
+   let old_earths =  Image.image (fun (Hex_island_t.I(_,z))->z) connected in 
+   let new_earth = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_earths) in 
+   (Hex_island_t.I(new_anchor,new_earth))::unconnected ;;
+
+let add_several dim added_ones initial_islands =
+   let adder_for_one = (
+     fun islands_before cell -> add_nonsided_cell_by_casing dim cell islands_before
+   ) in 
+   List.fold_left adder_for_one initial_islands added_ones ;;
 
 end ;; 
 
@@ -59,6 +79,15 @@ let add_and_forget_the_adding dim (side,new_cell) old_islands =
     let (Hex_island_t.I(anchor1,z)) = List.hd singleton in 
     let new_z = Set_of_poly_pairs.outsert (Hex_cell.to_int_pair new_cell) z in 
     islands2@[Hex_island_t.I(anchor1,new_z)] ;; 
+
+
+let add_several_and_forget_the_adding dim added_ones old_islands =
+    let ipairs = Set_of_poly_pairs.safe_set (Image.image Hex_cell.to_int_pair added_ones) in 
+    let islands2 = Private.add_several dim  added_ones old_islands in 
+    Image.image (
+      fun (Hex_island_t.I(anchor,z)) -> 
+        Hex_island_t.I(anchor,Set_of_poly_pairs.setminus z ipairs)
+    ) islands2 ;; 
 
 let add_sided_cell_by_casing = Private.add_sided_cell_by_casing ;;
 
