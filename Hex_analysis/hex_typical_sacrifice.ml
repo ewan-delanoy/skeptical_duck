@@ -8,7 +8,10 @@ module Private = struct
 
 let prepare_for_journey = 
    [
-      Hex_typical_sacrifice_t.Simple_triangle, ("\206\177",[(2,1)],[(1,1);(1,2)])
+      Hex_typical_sacrifice_t.Simple_triangle, 
+                ("\206\177",[(2,1)],[(1,1);(1,2)]);
+      Hex_typical_sacrifice_t.Two_successive_bridges, 
+                ("\206\178",[(4,2);(3,1);(2,2)],[(1,2);(1,3);(3,2);(4,1)]);
    ] ;;
 
 
