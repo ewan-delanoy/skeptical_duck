@@ -5,4 +5,5 @@
 *)
 
 type t = 
-   Simple_triangle ;;
+    Simple_triangle
+   |Two_successive_bridges ;;
