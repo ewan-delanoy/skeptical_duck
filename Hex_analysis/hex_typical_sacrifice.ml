@@ -69,23 +69,28 @@ let compatible_sacrifices eob =
              if (List.for_all (fun cell->evl cell = Hex_eob_result_t.Ally_territory) actv) 
                 &&
                  (List.for_all (fun cell->evl cell = Hex_eob_result_t.Unoccupied) pairs)
-             then Some((tscr,side),(actv,pairs))
+             then Some((tscr,side),pairs)
              else None    
         ) base2        
    ) base1);;
 
-let data_for_sacrificial_starter end_of_battle 
-  (Hex_sacrifice_t.Scr(sacrifice_side,cell1,cell2,cell3)) = 
+let data_for_sacrificial_starter end_of_battle pairs =
   let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
   let artificial_eob = {
       end_of_battle with 
       Hex_end_of_battle_t.enemy_territory = 
-        (Hex_cell_set.merge (Hex_cell_set.safe_set [cell2;cell3]) 
+        (Hex_cell_set.merge (Hex_cell_set.safe_set pairs) 
           end_of_battle.Hex_end_of_battle_t.enemy_territory)
   } in 
   let natural_islands = Hex_island.decompose artificial_eob in 
-  let artificial_islands = Hex_island.add_and_forget_the_adding dim (sacrifice_side,cell2) natural_islands in 
+  let artificial_islands = Hex_island.add_several_and_forget_the_adding dim pairs natural_islands in 
   (artificial_eob,artificial_islands);; 
+
+let reconstruct_sacrificial_solutions pairs mlclr=
+    let temp1 = Listennou.extract_successive_pairs_from_even_list pairs in 
+    let mlclr2 = Hex_molecular_linker.constructor(Image.image Hex_atomic_linker.pair temp1) in 
+    Hex_molecular_linker.fold_merge [mlclr;mlclr2] ;;
+
 
 let to_readable_string tscr side apex= 
    let (descr,_,_) = List.assoc tscr Private.prepare_for_journey  in 
