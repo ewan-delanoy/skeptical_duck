@@ -13,6 +13,7 @@ let send_report ()=
 let execute = function 
     Hex_shell_command_t.Add_molecular_linker_from_sheet(msg) -> Hex_analysis.add_molecular_linker msg
    |Absorb_moves(l)->let _=Hex_analysis.absorb_all_moves l in send_report()
+   |Analize -> Hex_analysis.analize
    |Cancel_last_game -> Hex_persistent.cancel_last_game()
    |Declare_winner(player)->Hex_analysis.declare_winner player
    |Make_usual_move ->let _=Hex_analysis.move_as_usual () in send_report()
@@ -31,6 +32,7 @@ let of_string untrimmed_text =
    then let msg = Cull_string.two_sided_cutting ("aml","") text in 
         Hex_shell_command_t.Add_molecular_linker_from_sheet msg 
    else 
+   if text = "a"   then  Hex_shell_command_t.Analize else
    if text = "clg" then  Hex_shell_command_t.Cancel_last_game else
    if text = "dwb" then  Hex_shell_command_t.Declare_winner(Hex_player_t.First_player) else 
    if text = "dww" then  Hex_shell_command_t.Declare_winner(Hex_player_t.Second_player) else    
