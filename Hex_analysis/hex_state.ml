@@ -38,10 +38,12 @@ let compute_chosen_move (dim,strong_moves_data,fam_moves,condition,moves_before)
 
 
 let default_dim = Hex_dimension_t.D 11 ;;
+let current_dim sta = try Hex_fles_double_list.dimension sta.Hex_state_t.config_remains with 
+  _ -> default_dim ;;
+
 
 let analize sta=
-  let dim = (try Hex_fles_double_list.dimension sta.Hex_state_t.config_remains with 
-  _ -> default_dim) 
+  let dim = current_dim sta
   and player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
   let (cells,enemy_strats,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
   let condition = Hex_mandatory_compound.global_escape_set mand in 
@@ -77,7 +79,7 @@ let absorb_move sta cell=
    };;
 
 let finish_game sta={
-    Hex_finished_game_t.dimension = Hex_fles_double_list.dimension sta.Hex_state_t.config_remains;
+    Hex_finished_game_t.dimension = current_dim sta;
     Hex_finished_game_t.winner = Hex_common.has_just_played(sta.Hex_state_t.moves_before) ;
     Hex_finished_game_t.sequence_of_moves = List.rev(sta.Hex_state_t.moves_before)
   } ;;
