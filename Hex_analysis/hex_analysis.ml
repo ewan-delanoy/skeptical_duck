@@ -115,14 +115,22 @@ let move_as_usual () =
 
 let analize () = 
    let hypothetical_fgame = Hex_state.finish_game (fst(!walker)) in 
-   let hypothetical_winner = hypothetical_fgame.Hex_finished_game_t.winner in
+   let dim = hypothetical_fgame.Hex_finished_game_t.dimension 
+   and hypothetical_winner = hypothetical_fgame.Hex_finished_game_t.winner in
+   let color = Hex_player.color (hypothetical_winner) in 
    let eob = Hex_end_of_battle.of_finished_game hypothetical_fgame in 
    let sols = Hex_kite_factory.solutions eob in 
    if sols = []
-   then let color = Hex_player.color (hypothetical_winner) in 
-        (print_string ("Sorry, no strategy found for "^color);flush stdout)
+   then (print_string ("Sorry, no strategy found for "^color);flush stdout)
    else 
    let (mlclr,actives) = List.hd sols in 
    let linker = Hex_strategy_static_constructor_t.Molecular(mlclr,actives) in
+   let _= (
+      print_string ("The following strategy has been found for "^color^" :\n\n"); 
+      flush stdout;
+      Hex_ascii_grid.see_linker dim hypothetical_winner mlclr actives 
+   ) in 
    Hex_persistent.add_end_strategy
    (hypothetical_winner,linker,"",[]);;     
+
+   
