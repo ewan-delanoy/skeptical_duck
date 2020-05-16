@@ -37,9 +37,11 @@ let compute_chosen_move (dim,strong_moves_data,fam_moves,condition,moves_before)
   raise(No_moves_to_choose_from);;  
 
 
+let default_dim = Hex_dimension_t.D 11 ;;
 
 let analize sta=
-  let dim = Hex_fles_double_list.dimension sta.Hex_state_t.config_remains 
+  let dim = (try Hex_fles_double_list.dimension sta.Hex_state_t.config_remains with 
+  _ -> default_dim) 
   and player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
   let (cells,enemy_strats,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in
   let condition = Hex_mandatory_compound.global_escape_set mand in 
