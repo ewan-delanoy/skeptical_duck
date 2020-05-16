@@ -13,7 +13,7 @@ let send_report ()=
 let execute = function 
     Hex_shell_command_t.Add_molecular_linker_from_sheet(msg) -> Hex_analysis.add_molecular_linker msg
    |Absorb_moves(l)->let _=Hex_analysis.absorb_all_moves l in send_report()
-   |Analize -> Hex_analysis.analize
+   |Analize -> Hex_analysis.analize ()
    |Cancel_last_game -> Hex_persistent.cancel_last_game()
    |Declare_winner(player)->Hex_analysis.declare_winner player
    |Make_usual_move ->let _=Hex_analysis.move_as_usual () in send_report()
