@@ -112,3 +112,17 @@ let replay_and_declare_winner ()=
 let move_as_usual () =
    let cell = (snd(!walker)).Hex_analysis_result_t.chosen_move in 
    absorb_move cell;; 
+
+let analize () = 
+   let hypothetical_fgame = Hex_state.finish_game (fst(!walker)) in 
+   let hypothetical_winner = hypothetical_fgame.Hex_finished_game_t.winner in
+   let eob = Hex_end_of_battle.of_finished_game hypothetical_fgame in 
+   let sols = Hex_kite_factory.solutions eob in 
+   if sols = []
+   then let color = Hex_player.color (hypothetical_winner) in 
+        (print_string ("Sorry, no strategy found for "^color);flush stdout)
+   else 
+   let (mlclr,actives) = List.hd sols in 
+   let linker = Hex_strategy_static_constructor_t.Molecular(mlclr,actives) in
+   Hex_persistent.add_end_strategy
+   (hypothetical_winner,linker,"",[]);;     

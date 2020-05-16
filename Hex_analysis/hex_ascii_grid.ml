@@ -339,10 +339,23 @@ let of_extended_molecular (dim,winner) extmol =
       data = pairs@eyes@actives@passives;
    };; 
 
+let of_linker dim winner mlclr actv =
+   let  extmol = {
+     Hex_extended_molecular_t.nonmolecular_passive_part = Hex_cell_set.empty_set ;
+     molecular_part = mlclr ;
+     active_part = actv
+   } in 
+   of_extended_molecular (dim,winner) extmol;;
+   
 let see_flesh fles= 
     let dim = fles.Hex_flattened_end_strategy_t.dimension 
     and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
     visualize (of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data);;
+
+let see_linker dim winner mlclr actv= 
+    visualize (of_linker dim winner mlclr actv);;
+
+
 
 end ;;
 
@@ -355,5 +368,6 @@ let read_ascii_drawing = Private.read_ascii_drawing ;;
 let read_sheet = Private.read_sheet;;
 let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
 let see_flesh = Private.see_flesh ;;
+let see_linker = Private.see_linker ;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 let visualize = Private.visualize;;
