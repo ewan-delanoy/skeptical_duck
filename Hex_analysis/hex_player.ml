@@ -28,7 +28,7 @@ let of_int i=of_string(string_of_int i);;
 
 module Private = struct
 
-let salt = "Hex_"^"player.";;
+let salt = "Hex_"^"player_t.";;
 
 let namings =
    [
