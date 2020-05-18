@@ -384,39 +384,6 @@ let complete_id_during_new_module_registration cs  mlx=
     and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
     
-exception Error_during_unix_physical_relocation;;          
-
-let relocate_module cs old_name new_subdir=
-  let root_dir = root cs in 
-  let mn=Dfn_endingless.to_module old_name in
-  let old_acolytes=acolytes_at_module cs mn in
-  let old_files=Image.image Dfn_full.to_rootless_line old_acolytes in 
-  let new_acolytes=Image.image 
-    (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
-  let old_and_new = List.combine old_acolytes new_acolytes in 
-  let removals = Image.image (fun (old_mlx,new_mlx)->
-    let s_old =  Dfn_full.to_line old_mlx 
-    and s_new =  Dfn_full.to_line new_mlx in 
-    "mv "^s_old^" "^s_new  
-  ) old_and_new in    
-  let removals_done = Unix_command.conditional_multiple_uc removals in 
-  if (not(removals_done)) then raise(Error_during_unix_physical_relocation) else 
-  let new_files=Image.image 
-     (fun mlx->Dfn_full.to_rootless_line mlx) new_acolytes in 
-  let new_name=Dfn_full.to_endingless
-   (List.hd new_acolytes) in
-  let s_root=Dfa_root.connectable_to_subpath root_dir in     
-  let old_middle = Dfn_endingless.to_middle old_name in
-    let _=Unix_command.uc
-     ("rm -f "^s_root^"_build/"^(Dfn_middle.to_line old_middle)^".cm* ") in
-  let principal_mt=md_compute_modification_time new_name (principal_ending_at_module cs mn)
-  and mli_mt=md_compute_modification_time new_name Dfa_ending.mli in
-  let cs2=set_subdir_at_module cs mn new_subdir in 
-  let cs3=set_principal_mt_at_module cs2 mn principal_mt in 
-  let cs4=set_mli_mt_at_module cs3 mn mli_mt in 
-  (cs4,(old_files,new_files));;
-
-
 
 let above cs eless=
   let nm=Dfn_endingless.to_module eless in
@@ -1664,17 +1631,6 @@ let local_directly_below cs capitalized_or_not_module_name=
     let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
     Dfn_middle.to_line middle )
   (directly_below cs endingless);;
-
-let local_relocate_module cs mn new_subdir=
-  let old_endingless = endingless_at_module cs mn in  
-  let old_rootless_paths = rootless_paths_at_module cs mn  in 
-  let (cs2,_)=relocate_module cs old_endingless new_subdir in
-  let  new_rootless_paths = rootless_paths_at_module cs2 mn  in 
-  let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_rootless_paths)
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_rootless_paths) in
-   (cs2,diff);;   
 
 let local_rename_directory cs old_subdir new_subdirname=
    let old_rootless_paths=short_paths_inside_subdirectory cs old_subdir in
