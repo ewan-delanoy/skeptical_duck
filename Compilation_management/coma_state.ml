@@ -985,7 +985,24 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
 
-let temp_ref = ref [];;
+let prepare_pretty_printers_for_ocamldebug cs deps = 
+  let temp1 = "load_printer str.cma"::(Image.image (fun mname->
+    let s= Dfa_module.to_line mname in 
+    "load_printer "^s^".cmo"
+  ) deps) 
+  and preq_types = cs.Coma_state_t.printer_equipped_types  in 
+  let printable_deps = List.filter (
+    fun mn -> let eless = endingless_at_module cs mn in 
+    List.mem (eless,true) preq_types
+  ) deps in 
+  let temp2 = Image.image (fun mname->
+    let s= Dfa_module.to_line mname in 
+    "install_printer "^(String.capitalize_ascii s)^".print_out"
+  ) printable_deps in 
+  let full_text = String.concat "\n" (temp1@temp2) in 
+  let ppodbg_path = Dfn_common.recompose_potential_absolute_path 
+    (root cs) Coma_constant.rootless_path_for_ocamldebug_printersfile in 
+  Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
 
 let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
    match cmod with 
@@ -995,9 +1012,10 @@ let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
        let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
-       let answer =List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs) in 
-       let _=(temp_ref:=answer) in 
-       answer;;
+       let deps =List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs) in 
+       let _=(if cmod = Compilation_mode_t.Debug 
+              then prepare_pretty_printers_for_ocamldebug cs deps) in 
+       deps;;
 
 
 
@@ -1384,12 +1402,18 @@ let clean_debug_dir cs=
 
 let start_debugging cs=
   let  _=clean_debug_dir cs in
+  let ppodbg_path = Dfn_common.recompose_potential_absolute_path 
+    (root cs) Coma_constant.rootless_path_for_ocamldebug_printersfile in 
+  let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
   let dbg_path=Dfn_short.to_line(Coma_constant.short_path_for_debugged_file) in
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs dbg_path in 
   let answer=Unix_command.conditional_multiple_uc cmds in 
 	let msg=(
 	  if answer
-	  then "\n\n Now, start \n\nocamldebug _debug_build/"^(Coma_constant.name_for_debugged_module)^".ocaml_debuggable\n\nin another terminal\n\n"
+	  then "\n\n Now, start \n\nocamldebug _debug_build/"^(Coma_constant.name_for_debugged_module)^
+         ".ocaml_debuggable\n\nin another terminal\n\n"^
+         "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
+         "source "^ppodbg_path^" \n\n"
 	  else "\n\n Something went wrong, see above. \n\n"
 	) in
 	let _=(
