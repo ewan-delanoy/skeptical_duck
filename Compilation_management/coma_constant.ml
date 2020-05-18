@@ -33,6 +33,7 @@ let name_for_debugged_module="debugged";;
 
 let short_path_for_debugged_file= Dfn_short.of_line(name_for_debugged_module^".ml");; 
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
+let short_path_for_ocamldebug_printersfile= Dfn_short.of_line"cmos_for_ocamldebug.ml";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
 let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
@@ -41,6 +42,8 @@ let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
 let rootless_path_for_debugged_file= Dfn_join.subdirectory_to (Dfa_subdirectory.of_line "") short_path_for_debugged_file;; 
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_loadingsfile;;
+let rootless_path_for_ocamldebug_printersfile=
+  Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_ocamldebug_printersfile;;  
 let rootless_path_for_painful_debugging_file=
   Dfn_join.subdirectory_to  temporary_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
