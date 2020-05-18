@@ -1411,7 +1411,7 @@ let start_debugging cs=
 	let msg=(
 	  if answer
 	  then "\n\n Now, start \n\nocamldebug _debug_build/"^(Coma_constant.name_for_debugged_module)^
-         ".ocaml_debuggable\n\nin another terminal\n\n"^
+         ".ocaml_debuggable\n\nin another terminal.\n\n"^
          "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
          "source "^ppodbg_path^" \n\n"
 	  else "\n\n Something went wrong, see above. \n\n"

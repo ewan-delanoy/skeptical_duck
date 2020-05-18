@@ -6,7 +6,7 @@
 
 let tr = ((fun x->Set_of_integers_t.S(x)),(fun (Set_of_integers_t.S(x))->x),Total_ordering.standard);;
 
-
+let fold_merge x = Functor_for_sets.fold_merge tr x;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
 let image f x= Functor_for_sets.image tr f x;;
 let mem a x= Functor_for_sets.mem tr a x;;
