@@ -17,10 +17,6 @@ let forget_rootless_path cs rootless_path=
    let new_fw=Fw_wrapper.remove_watched_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
 
-let relocate_module_to cs mod_name new_subdir=
-   let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
-
 
 let recompile cs =
    let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
@@ -39,6 +35,11 @@ let refresh (root,backup_dir,g_after_b) =
 let register_rootless_path cs rp=
    let new_fw=Fw_wrapper.register_rootless_path (cs.Coma_state_t.frontier_with_unix_world) rp in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
+let relocate_module_to cs mod_name new_subdir=
+   let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
 
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -213,6 +214,34 @@ let register_rootless_path cs rp_line=
   let cs2=Coma_state.register_mlx_file cs mlx in 
   (cs2,diff);;
 
+let relocate_module_to cs mn new_subdir=
+  let old_endingless = Coma_state.endingless_at_module cs mn in  
+  let old_rootless_paths = Coma_state.rootless_paths_at_module cs mn  in 
+  (* let (cs4,_)=relocate_module cs old_endingless new_subdir in *)
+  let root_dir = Coma_state.root cs in 
+  let mn=Dfn_endingless.to_module old_endingless in
+  let old_acolytes= Coma_state.acolytes_at_module cs mn in
+  let new_acolytes=Image.image 
+    (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
+  let new_name=Dfn_full.to_endingless
+   (List.hd new_acolytes) in
+  let s_root=Dfa_root.connectable_to_subpath root_dir in     
+  let old_middle = Dfn_endingless.to_middle old_endingless in
+    let _=Unix_command.uc
+     ("rm -f "^s_root^"_build/"^(Dfn_middle.to_line old_middle)^".cm* ") in
+  let principal_mt=Coma_state.md_compute_modification_time new_name 
+                         (Coma_state.principal_ending_at_module cs mn)
+  and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ending.mli in
+  let cs2=Coma_state.set_subdir_at_module cs mn new_subdir in 
+  let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
+  let cs4=Coma_state.set_mli_mt_at_module cs3 mn mli_mt in 
+  let  new_rootless_paths = Coma_state.rootless_paths_at_module cs4 mn  in 
+  let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_rootless_paths)
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list new_rootless_paths) in
+   (cs4,diff);;   
+
 
 let rename_module cs2 old_middle_name new_nonslashed_name=
   let root_dir=Coma_state.root cs2 in 
@@ -297,6 +326,11 @@ let register_rootless_path cs rp_line=
    let cs2=Physical.register_rootless_path cs (Dfn_rootless.of_line rp_line) in
    Internal.register_rootless_path cs2 rp_line;;
 
+let relocate_module_to cs mod_name new_subdir= 
+  let cs2=Physical.relocate_module_to cs mod_name  new_subdir  in
+  Internal.relocate_module_to cs2 mod_name  new_subdir;;
+
+
 let rename_module cs old_middle_name new_nonslashed_name=
    let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
    Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
@@ -329,7 +363,7 @@ module After_checking = struct
 
       let relocate_module_to cs old_module new_subdir=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.local_relocate_module cs old_module new_subdir;; 
+         Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
 
       let rename_directory  cs old_subdir new_subdirname=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
