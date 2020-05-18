@@ -4,6 +4,7 @@
 
 *)
 
+
 let tr = ((fun x->Set_of_polys_t.S(x)),(fun (Set_of_polys_t.S(x))->x),Total_ordering.standard);;
 
 let does_not_intersect x y= Functor_for_sets.does_not_intersect tr x y;;

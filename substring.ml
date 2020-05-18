@@ -4,9 +4,6 @@
 
 *)
 
-
-
-      
  let is_the_beginning_of y x=Supstring.begins_with x y;;     
 
    
