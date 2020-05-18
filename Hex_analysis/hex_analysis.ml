@@ -118,8 +118,11 @@ let analize () =
    let dim = hypothetical_fgame.Hex_finished_game_t.dimension 
    and hypothetical_winner = hypothetical_fgame.Hex_finished_game_t.winner in
    let color = Hex_player.color (hypothetical_winner) in 
+   (*
    let eob = Hex_end_of_battle.of_finished_game hypothetical_fgame in 
    let sols = Hex_kite_factory.solutions eob in 
+   *)
+   let sols = [] in 
    if sols = []
    then (print_string ("Sorry, no strategy found for "^color);flush stdout)
    else 
@@ -133,4 +136,3 @@ let analize () =
    Hex_persistent.add_end_strategy
    (hypothetical_winner,linker,"",[]);;     
 
-   
