@@ -1665,8 +1665,7 @@ let local_directly_below cs capitalized_or_not_module_name=
     Dfn_middle.to_line middle )
   (directly_below cs endingless);;
 
-let local_relocate_module cs capitalized_or_not_old_module_name new_subdir=
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_old_module_name) in
+let local_relocate_module cs mn new_subdir=
   let old_endingless = endingless_at_module cs mn in  
   let old_rootless_paths = rootless_paths_at_module cs mn  in 
   let (cs2,_)=relocate_module cs old_endingless new_subdir in

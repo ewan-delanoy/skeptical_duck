@@ -322,9 +322,9 @@ module After_checking = struct
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Physical_followed_by_internal.register_rootless_path cs rp;; 
 
-      let relocate_module_to cs old_hm_name new_subdir=
+      let relocate_module_to cs old_module new_subdir=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.local_relocate_module cs old_hm_name new_subdir;; 
+         Coma_state.Almost_concrete.local_relocate_module cs old_module new_subdir;; 
 
       let rename_directory  cs old_subdir new_subdirname=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
@@ -377,9 +377,9 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in 
          cs2;; 
 
-      let relocate_module_to cs old_hm_name new_subdir=
-         let (cs2,diff)=After_checking.relocate_module_to cs old_hm_name new_subdir  in
-         let msg="move "^old_hm_name^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+      let relocate_module_to cs old_module new_subdir=
+         let (cs2,diff)=After_checking.relocate_module_to cs old_module new_subdir  in
+         let msg="move "^(Dfa_module.to_line old_module)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
@@ -439,8 +439,8 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
-      let relocate_module_to cs old_hm_name new_subdir=
-      let cs2 = And_backup.relocate_module_to cs old_hm_name new_subdir in 
+      let relocate_module_to cs old_module new_subdir=
+      let cs2 = And_backup.relocate_module_to cs old_module new_subdir in 
       let _=Save_coma_state.save cs2 in 
       cs2;;   
 
@@ -499,8 +499,8 @@ module Reference = struct
          pcs:=new_cs;;
 
 
-      let relocate_module_to pcs old_hm_name new_subdir=
-         let new_cs = And_save.relocate_module_to (!pcs) old_hm_name new_subdir in 
+      let relocate_module_to pcs old_module new_subdir=
+         let new_cs = And_save.relocate_module_to (!pcs) old_module new_subdir in 
          pcs:=new_cs;;  
 
 
@@ -531,6 +531,9 @@ let rename_module cs_ref old_module_name new_name=
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
+let relocate_module_to cs_ref old_module_name new_subdir=
+    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
+    Reference.relocate_module_to cs_ref mn new_subdir ;;
 
 let forget cs text = 
       if String.contains text '.'
