@@ -59,8 +59,6 @@ let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
 
 let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
 
-
-
 let register_rootless_path x=Modify_coma_state.Reference.register_rootless_path Private.main_ref x;;
   
 let relocate_module_to old_module_name new_subdir=

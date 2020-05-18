@@ -17,6 +17,11 @@ let forget_rootless_path cs rootless_path=
    let new_fw=Fw_wrapper.remove_watched_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
 
+let relocate_module_to cs mod_name new_subdir=
+   let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
+
 let recompile cs =
    let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
@@ -539,7 +544,6 @@ let forget cs text =
       if String.contains text '.'
       then Reference.forget_rootless_path cs (Dfn_rootless.of_line text)
       else Reference.forget_module cs (Dfa_module.of_line text) ;;
-
 
 end;;
 
