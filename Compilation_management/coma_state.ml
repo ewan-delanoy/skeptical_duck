@@ -985,7 +985,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
 
 
-
+let temp_ref = ref [];;
 
 let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
    match cmod with 
@@ -995,7 +995,9 @@ let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
        let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
-       List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs);;
+       let answer =List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs) in 
+       let _=(temp_ref:=answer) in 
+       answer;;
 
 
 
