@@ -123,6 +123,17 @@ let find_subdir_from_suffix cs possibly_slashed_suffix =
   then raise(Find_subdir_from_suffix_exn(suffix,temp1))
   else List.hd temp1;;
   
+let compute_long_subdir_name cs old_subdir new_subdir_short_name =
+   let temp1 =  Cull_string.trim_slashes_on_the_right new_subdir_short_name in
+   let long_name = (
+   if String.contains temp1 '/'
+   then temp1 
+   else let old_subdir_name = Dfa_subdirectory.without_trailing_slash old_subdir in 
+        let father_name = Cull_string.before_rightmost_possibly_all old_subdir_name '/' in 
+        if father_name = ""
+        then temp1
+        else father_name^"/"^temp1 ) in 
+   Dfa_subdirectory.of_line long_name ;;       
 
 let modules_with_their_ancestors cs l=
    let temp1=List.filter (
