@@ -106,8 +106,8 @@ let heavy_part dim common_to_both =
        fun (cell,new_pk) -> Hex_expsv_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
    let one_move_solutions= Image.image (fun (cell,new_pk)->
-      let mlclr = Hex_finished_kite.to_molecular_linker new_pk 
-      and actv = Hex_finished_kite.active_part new_pk in 
+      let mlclr = Hex_expsv_finished_kite.to_molecular_linker new_pk 
+      and actv = Hex_expsv_finished_kite.active_part new_pk in 
       Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,[],mlclr,actv)) final_ones in 
    one_move_solutions@(explore_yet_untried_paths dim nonfinal_ones)  ;;
 
@@ -141,7 +141,7 @@ let extract_solutions l=
    let (final_ones,nonfinal_ones) = List.partition (
     Hex_expsv_partial_kite_field.test_for_finality 
    ) l in 
-   let detailed_sols = Image.image Hex_finished_kite.solution_details  final_ones in 
+   let detailed_sols = Image.image Hex_expsv_finished_kite.solution_details  final_ones in 
    (detailed_sols,nonfinal_ones) ;;
 
 let extensions_finished_and_non_finished dim pk =
