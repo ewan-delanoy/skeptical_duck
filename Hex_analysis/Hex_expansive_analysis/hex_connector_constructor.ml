@@ -31,12 +31,12 @@ let southeast_bridge = reverse northwest_bridge ;;
 
 
 let bridge = function 
-    Hex_unit_side_t.North      ->  north_bridge
-   |Hex_unit_side_t.North_east ->  northeast_bridge
-   |Hex_unit_side_t.North_west ->  northwest_bridge
-   |Hex_unit_side_t.South      ->  south_bridge
-   |Hex_unit_side_t.South_east ->  southeast_bridge
-   |Hex_unit_side_t.South_west ->  southwest_bridge ;;
+    Hex_expsv_unit_side_t.North      ->  north_bridge
+   |Hex_expsv_unit_side_t.North_east ->  northeast_bridge
+   |Hex_expsv_unit_side_t.North_west ->  northwest_bridge
+   |Hex_expsv_unit_side_t.South      ->  south_bridge
+   |Hex_expsv_unit_side_t.South_east ->  southeast_bridge
+   |Hex_expsv_unit_side_t.South_west ->  southwest_bridge ;;
 
 let ul_haddock1 = Hex_connector.Example.upwards_left_situated_haddock1;;
 
