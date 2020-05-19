@@ -16,9 +16,9 @@ let to_molecular_linker  pk =
         (pk.Hex_partial_kite_t.steps_so_far));;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
-   if (Hex_kite_springless_element.is_an_island pending1)
+   if (Hex_expsv_kite_springless_element.is_an_island pending1)
           &&
-          (Hex_kite_springless_element.is_an_island pending2)
+          (Hex_expsv_kite_springless_element.is_an_island pending2)
    then List.rev (pending2::treated)
    else List.rev (pending2::pending1::treated) ;;
 
@@ -26,9 +26,9 @@ let rec helper_for_removing_redundant_islands (treated,pending1,pending2,to_be_t
    match to_be_treated with 
     [] -> helper2_for_removing_redundant_islands treated pending1 pending2 
    |pending3::others ->
-       if (Hex_kite_springless_element.is_an_island pending1)
+       if (Hex_expsv_kite_springless_element.is_an_island pending1)
           &&
-          (Hex_kite_springless_element.is_an_island pending2)
+          (Hex_expsv_kite_springless_element.is_an_island pending2)
        then helper_for_removing_redundant_islands (treated,pending2,pending3,others)
        else helper_for_removing_redundant_islands (pending1::treated,pending2,pending3,others) ;;
       
@@ -48,7 +48,7 @@ let trim_for_island_boarding l =
    match l with 
    [] -> (None,l) 
    |elt :: others -> 
-        let opt_island = Hex_kite_springless_element.opt_island elt in 
+        let opt_island = Hex_expsv_kite_springless_element.opt_island elt in 
         let l1 = (match opt_island with None -> l |Some _ ->others) in
         let n1 = List.length l1 in 
         if ((n1 mod 2)=0) && (l1 <> [])
@@ -69,14 +69,14 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
     if l=[] then unique_boarded_island (Option.unpack opt_island) (birth,death) else  
     let n = ((List.length l)-1)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
-    let sea_entry = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.entry )
-    and sea_exit = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.exit ) in 
+    let sea_entry = (fun x->(Hex_expsv_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.entry )
+    and sea_exit = (fun x->(Hex_expsv_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.exit ) in 
     let first_in_triple =(fun k->
        if k=1 then Hex_island.eviscerate birth else sea_exit(gl(2*k-3))
     ) 
     and second_in_triple = (fun k->
        if k=1   then birth else 
-       if k=n+2 then death else Hex_kite_springless_element.claim_island(gl (2*k-2))
+       if k=n+2 then death else Hex_expsv_kite_springless_element.claim_island(gl (2*k-2))
     )   
     and third_in_triple = (fun k->
        if k=n+2 then Hex_island.eviscerate death else sea_entry(gl(2*k-1))
