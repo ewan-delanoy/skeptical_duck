@@ -29,7 +29,7 @@ let extend_with_first_alternative pk new_fa =
 let extend_with_second_alternative dim pk (cell2,new_island) =
     let fa = Option.unpack pk.Hex_expsv_partial_kite_t.investment in 
     let new_sb =(Hex_expsv_springboard_t.Sp(fa,cell2,new_island))  in  
-    let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
+    let pk2 = Hex_expsv_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_steps = pk2.Hex_expsv_partial_kite_t.steps_so_far 
     and old_free_ones = pk2.Hex_expsv_partial_kite_t.remaining_free_cells in 
     let remaining_free_ones = Hex_cell_set.outsert cell2 old_free_ones  in
@@ -79,7 +79,7 @@ let data_common_to_both_parts dim pk =
    let temp1 = all_casings dim pk in 
     Image.image (
       fun cell -> 
-        let new_pk=Hex_impose_active_cell.impose_cell_by_casing dim cell pk in 
+        let new_pk=Hex_expsv_impose_active_cell.impose_cell_by_casing dim cell pk in 
         (cell,new_pk) 
    ) temp1 ;;
 
