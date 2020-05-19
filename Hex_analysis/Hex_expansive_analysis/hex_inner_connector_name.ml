@@ -9,7 +9,7 @@ let all =
       Hex_expsv_typical_inner_connector_name.all  Hex_cardinal_direction.all [true;false] in 
     (Image.image (
       fun us -> Hex_expsv_inner_connector_name_t.Bridge(us)
-    ) Hex_unit_side.all)
+    ) Hex_expsv_unit_side.all)
     @
     (
       Image.image (
@@ -24,7 +24,7 @@ let to_nondefault_molecular_linker = function
     |Typical(_)-> None ;;
 
 let to_readable_string = function 
-     Hex_expsv_inner_connector_name_t.Bridge(us)-> Hex_unit_side.to_readable_string us 
+     Hex_expsv_inner_connector_name_t.Bridge(us)-> Hex_expsv_unit_side.to_readable_string us 
     |Broken_bridge(_,cell1,cell2,_) -> 
         (Hex_cell.to_string cell1)^"\126"^(Hex_cell.to_string cell2)
     |Typical(tic,_,_) -> Hex_expsv_typical_inner_connector_name.to_readable_string tic   ;;
