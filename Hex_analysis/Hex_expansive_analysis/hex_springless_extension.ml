@@ -23,7 +23,7 @@ let remove_border_starters pk =
 
 
 let extend_with_sea_and_remove_border_starters_if_needed pk nc =
-    let (elt,pk2) = Hex_partial_kite_field.extend_with_sea pk nc in 
+    let (elt,pk2) = Hex_expsv_partial_kite_field.extend_with_sea pk nc in 
     if pk.Hex_expsv_partial_kite_t.steps_so_far = []
     then (elt,pk2) 
     else (elt,remove_border_starters pk2) ;;
@@ -51,7 +51,7 @@ let springless_extensions_after_island dim partial_kite last_island =
         else None   
    )   in 
    let unclear_items = selector ((partial_kite.Hex_expsv_partial_kite_t.unvisited_seas)@islanders) in
-   let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->Hex_partial_kite_field.test_for_finality pk2) unclear_items  in 
+   let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->Hex_expsv_partial_kite_field.test_for_finality pk2) unclear_items  in 
    (subtly_final,nonfinal) ;;
 
 let springless_extensions_after_sea partial_kite last_nc =
@@ -61,7 +61,7 @@ let springless_extensions_after_sea partial_kite last_nc =
    let compatible_islands  = List.filter (
       Hex_expsv_named_connector.check_exit last_nc  
    )  partial_kite.Hex_expsv_partial_kite_t.unvisited_islands in 
-   ([],Image.image (Hex_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
+   ([],Image.image (Hex_expsv_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
 let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_expsv_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
@@ -88,7 +88,7 @@ let extensions_finished_and_non_finished dim partial_kite =
 
 let late_starter dim pk= 
       (dim,
-       Hex_partial_kite_field.winner pk,
+       Hex_expsv_partial_kite_field.winner pk,
        [],[],[pk]);;
 
 let pusher (factory,_) = 
