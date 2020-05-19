@@ -112,6 +112,18 @@ let up_to_date_elesses cs =
        else None
    )(ordered_list_of_modules cs);;
 
+exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
+
+let find_subdir_from_suffix cs possibly_slashed_suffix =
+  let suffix = Cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
+  let temp1 = List.filter (
+    fun subdir -> Supstring.ends_with (Dfa_subdirectory.without_trailing_slash subdir) suffix
+  ) (cs.Coma_state_t.directories) in 
+  if List.length(temp1)<>1
+  then raise(Find_subdir_from_suffix_exn(suffix,temp1))
+  else List.hd temp1;;
+  
+
 let modules_with_their_ancestors cs l=
    let temp1=List.filter (
      fun nm->List.mem nm l 

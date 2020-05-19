@@ -73,6 +73,15 @@ extract_intervals_in_wrt_separator "123a4ab56ab789ab" "ab" ;;
 
 *)
 
+let trim_slashes_on_the_right s=
+      let n=String.length s in
+      match Option.seek(fun j->
+          not(List.mem (String.get s (n-j)) ['/'])
+      )(Ennig.ennig 1 n) with
+      None->""
+      |Some(d)->coending (d-1) s;;
+              
+
 let trim_spaces_on_the_left s=
       let n=String.length s in
       match Option.seek(fun j->

@@ -308,6 +308,27 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
     (Recently_created.of_string_list new_files) in
    (cs9,diff);;
 
+let rename_subdirectory cs old_subdir new_subdir=
+   let new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
+   let old_rootless_paths=Coma_state.short_paths_inside_subdirectory cs old_subdir in
+   let _=Rename_endsubdirectory.in_unix_world 
+       (Coma_state.root cs) (old_subdir,new_subdirname) in
+   let pair=(old_subdir,new_subdirname) in
+   let cs2=Coma_state.rename_directory_on_data pair cs in
+   let new_dirs=Coma_state.Raneme_directory.on_subdirectories pair 
+        (Coma_state.directories cs2)
+   and new_peqt=Coma_state.Raneme_directory.on_printer_equipped_types pair 
+        (Coma_state.preq_types cs2) in
+   let cs3= Coma_state.set_directories cs2 new_dirs in 
+   let cs4= Coma_state.set_preq_types cs3 new_peqt in 
+   let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in
+   let diff=Dircopy_diff.veil
+    (Recently_deleted.of_string_list old_rootless_paths)
+    (Recently_changed.of_string_list [])
+    (Recently_created.of_string_list new_rootless_paths) in
+   (cs2,diff);; 
+
+
 let rename_string_or_value cs = recompile (cs,[]);; 
 
 end;;
@@ -345,6 +366,10 @@ let rename_module cs old_middle_name new_nonslashed_name=
    let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
    Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
 
+let rename_subdirectory cs old_subdir new_subdir=
+   let cs2=Physical.rename_subdirectory cs (old_subdir,new_subdir) in
+   Internal.rename_subdirectory cs2 old_subdir new_subdir;;
+
 let rename_string_or_value cs old_sov new_sov =
    let (cs2,_)=Physical.rename_string_or_value cs old_sov new_sov in
    Internal.rename_string_or_value cs2;;
@@ -375,9 +400,9 @@ module After_checking = struct
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
 
-      let rename_subdirectory  cs old_subdir new_subdirname=
+      let rename_subdirectory  cs old_subdir new_subdir=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname;; 
+         Physical_followed_by_internal.rename_subdirectory  cs old_subdir new_subdir;; 
 
       let rename_module cs old_middle_name new_nonslashed_name=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
@@ -432,9 +457,10 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
-      let rename_subdirectory  cs old_subdir new_subdirname=
-         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdirname  in 
-         let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^" as "^new_subdirname in 
+      let rename_subdirectory  cs old_subdir new_subdir=
+         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
+         let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
+                    " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
@@ -493,8 +519,8 @@ module And_save = struct
       let _=Save_coma_state.save cs2 in 
       cs2;;   
 
-      let rename_subdirectory cs old_subdir new_subdirname=
-         let cs2=And_backup.rename_subdirectory cs old_subdir new_subdirname in 
+      let rename_subdirectory cs old_subdir new_subdir=
+         let cs2=And_backup.rename_subdirectory cs old_subdir new_subdir in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -553,8 +579,8 @@ module Reference = struct
          pcs:=new_cs;;  
 
 
-      let rename_subdirectory pcs old_subdir new_subdirname=
-         let new_cs = And_save.rename_subdirectory (!pcs) old_subdir new_subdirname in 
+      let rename_subdirectory pcs old_subdir new_subdir=
+         let new_cs = And_save.rename_subdirectory (!pcs) old_subdir new_subdir in 
          pcs:=new_cs;;
          
 
@@ -588,6 +614,12 @@ let forget cs text =
       if String.contains text '.'
       then Reference.forget_rootless_path cs (Dfn_rootless.of_line text)
       else Reference.forget_module cs (Dfa_module.of_line text) ;;
+
+let rename_subdirectory cs_ref old_subdirname new_subdirname=
+    let old_subdir = Coma_state.find_subdir_from_suffix old_subdirname 
+    and new_subdir = Dfa_subdirectory.of_line new_subdirname in 
+    Reference.rename_subdirectory cs_ref old_subdir new_subdir ;;
+
 
 end;;
 
