@@ -40,6 +40,10 @@ let relocate_module_to cs mod_name new_subdir=
    let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
 
+let rename_subdirectory cs (old_subdir,new_subdir)=
+   let new_fw=Fw_wrapper.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
 
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -371,7 +375,7 @@ module After_checking = struct
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
 
-      let rename_directory  cs old_subdir new_subdirname=
+      let rename_subdirectory  cs old_subdir new_subdirname=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
          Coma_state.Almost_concrete.local_rename_directory  cs old_subdir new_subdirname;; 
 
@@ -428,8 +432,8 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
-      let rename_directory  cs old_subdir new_subdirname=
-         let (cs2,diff)=After_checking.rename_directory  cs old_subdir new_subdirname  in 
+      let rename_subdirectory  cs old_subdir new_subdirname=
+         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdirname  in 
          let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^" as "^new_subdirname in 
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
@@ -489,8 +493,8 @@ module And_save = struct
       let _=Save_coma_state.save cs2 in 
       cs2;;   
 
-      let rename_directory cs old_subdir new_subdirname=
-         let cs2=And_backup.rename_directory cs old_subdir new_subdirname in 
+      let rename_subdirectory cs old_subdir new_subdirname=
+         let cs2=And_backup.rename_subdirectory cs old_subdir new_subdirname in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -549,8 +553,8 @@ module Reference = struct
          pcs:=new_cs;;  
 
 
-      let rename_directory pcs old_subdir new_subdirname=
-         let new_cs = And_save.rename_directory (!pcs) old_subdir new_subdirname in 
+      let rename_subdirectory pcs old_subdir new_subdirname=
+         let new_cs = And_save.rename_subdirectory (!pcs) old_subdir new_subdirname in 
          pcs:=new_cs;;
          
 
