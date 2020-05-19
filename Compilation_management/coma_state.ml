@@ -1376,28 +1376,6 @@ let register_mlx_file cs mlx=
           Register_mlx_file.on_targets (cs,directories cs) mlx in   
            set_directories cs2 new_dirs;;            
 
-module Raneme_directory = struct 
-
-let on_subdirectory=Dfa_subdirectory.rename_endsubdirectory;;
-
-let on_printer_equipped_type pair (eless,is_compiled_correctly)=
-    (Dfn_endingless.rename_endsubdirectory pair eless,is_compiled_correctly);;
-
-
-let on_printer_equipped_types (old_subdir,new_subdirname) l=
-        Image.image (on_printer_equipped_type (old_subdir,new_subdirname)) l ;; 
-
- 
-let on_subdirectories (old_subdir,new_subdirname) l_subdir=
-   Image.image (on_subdirectory (old_subdir,new_subdirname)) l_subdir;; 
-
-end;;
-
-
-
-
-
-
 let clean_debug_dir cs=
   let s_root=Dfa_root.connectable_to_subpath(root cs) in
   let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir)) in 
