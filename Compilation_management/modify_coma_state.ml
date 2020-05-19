@@ -216,6 +216,7 @@ let register_rootless_path cs rp_line=
 
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  
+  let old_subdir = Dfn_endingless.to_subdirectory old_endingless in 
   let old_rootless_paths = Coma_state.rootless_paths_at_module cs mn  in 
   (* let (cs4,_)=relocate_module cs old_endingless new_subdir in *)
   let root_dir = Coma_state.root cs in 
@@ -232,15 +233,20 @@ let relocate_module_to cs mn new_subdir=
   let principal_mt=Coma_state.md_compute_modification_time new_name 
                          (Coma_state.principal_ending_at_module cs mn)
   and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ending.mli in
+  let s_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
   let cs2=Coma_state.set_subdir_at_module cs mn new_subdir in 
   let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
   let cs4=Coma_state.set_mli_mt_at_module cs3 mn mli_mt in 
-  let  new_rootless_paths = Coma_state.rootless_paths_at_module cs4 mn  in 
+  let old_preq_types = Coma_state.preq_types cs4 in 
+  let new_preq_types=Image.image (fun (h,bowl)->
+     (Dfn_endingless.rename_endsubdirectory (old_subdir,s_subdir) h,bowl)) old_preq_types in 
+  let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
+  let  new_rootless_paths = Coma_state.rootless_paths_at_module cs5 mn  in 
   let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_rootless_paths) in
-   (cs4,diff);;   
+   (cs5,diff);;   
 
 
 let rename_module cs2 old_middle_name new_nonslashed_name=
