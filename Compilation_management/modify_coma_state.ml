@@ -326,7 +326,7 @@ let rename_subdirectory cs old_subdir new_subdir=
     (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_rootless_paths) in
-   (cs2,diff);; 
+   (cs4,diff);; 
 
 
 let rename_string_or_value cs = recompile (cs,[]);; 
