@@ -11,39 +11,39 @@ module Private = struct
 
 
 let extend_with_first_alternative pk new_fa =
-    let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
-    and old_seas = pk.Hex_partial_kite_t.unvisited_seas
-    and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells
+    let old_islands = pk.Hex_expsv_partial_kite_t.unvisited_islands 
+    and old_seas = pk.Hex_expsv_partial_kite_t.unvisited_seas
+    and old_free_ones = pk.Hex_expsv_partial_kite_t.remaining_free_cells
     and requisitioned_territory = Hex_expsv_first_alternative_in_springboard.requisitioned_territory new_fa in 
     let restricted_islands = List.filter (Hex_expsv_first_alternative_in_springboard.check_island_after_fa_insertion new_fa) old_islands 
     and selector  =  List.filter (fun (_,sea)->Hex_expsv_first_alternative_in_springboard.check_sea_after_fa_insertion new_fa sea)   
     and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitioned_territory in
     {
       pk with 
-        Hex_partial_kite_t.unvisited_islands = restricted_islands ;
+        Hex_expsv_partial_kite_t.unvisited_islands = restricted_islands ;
         unvisited_seas =  selector old_seas;
         remaining_free_cells = remaining_free_ones ; 
         investment = Some new_fa ;
     }  ;;
 
 let extend_with_second_alternative dim pk (cell2,new_island) =
-    let fa = Option.unpack pk.Hex_partial_kite_t.investment in 
+    let fa = Option.unpack pk.Hex_expsv_partial_kite_t.investment in 
     let new_sb =(Hex_expsv_springboard_t.Sp(fa,cell2,new_island))  in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
-    let old_steps = pk2.Hex_partial_kite_t.steps_so_far 
-    and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells in 
+    let old_steps = pk2.Hex_expsv_partial_kite_t.steps_so_far 
+    and old_free_ones = pk2.Hex_expsv_partial_kite_t.remaining_free_cells in 
     let remaining_free_ones = Hex_cell_set.outsert cell2 old_free_ones  in
     {
       pk2 with 
-        Hex_partial_kite_t.steps_so_far = 
+        Hex_expsv_partial_kite_t.steps_so_far = 
            (Hex_expsv_kite_element_t.Springboard new_sb)::old_steps ;
         remaining_free_cells = remaining_free_ones ;
         investment = None ;
     }  ;;
 
 let close_future_seas pk =
-   let currently_added = pk.Hex_partial_kite_t.added_by_casing 
-   and seas = pk.Hex_partial_kite_t.unvisited_seas  in 
+   let currently_added = pk.Hex_expsv_partial_kite_t.added_by_casing 
+   and seas = pk.Hex_expsv_partial_kite_t.unvisited_seas  in 
    Option.filter_and_unpack (
      fun (z,nc) -> 
         let d = Hex_cell_set.setminus z currently_added in 
@@ -60,7 +60,7 @@ let casings_from_one_step_advances dim pk cl_seas=
            [nc.Hex_expsv_named_connector_t.entry;nc.Hex_expsv_named_connector_t.exit]) (close_future_seas pk))) in
     let temp1 = Set_of_poly_pairs.fold_merge (Image.image (Hex_island.neighbors dim) close_islands)  in
     let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
-    Hex_cell_set.intersect temp2 pk.Hex_partial_kite_t.remaining_free_cells ;;
+    Hex_cell_set.intersect temp2 pk.Hex_expsv_partial_kite_t.remaining_free_cells ;;
 
 let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.image fst cl_seas) ;;   
 
@@ -89,7 +89,7 @@ let light_part common_to_both =
    ) common_to_both;;
 
 let explore_yet_untried_path dim (cell,new_pk) =
-   let nbr_of_common_steps = List.length new_pk.Hex_partial_kite_t.steps_so_far in 
+   let nbr_of_common_steps = List.length new_pk.Hex_expsv_partial_kite_t.steps_so_far in 
    let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
@@ -114,12 +114,12 @@ let heavy_part dim common_to_both =
 
 
 let extensions_by_springboard_first_halves dim pk common_to_both= 
-  if pk.Hex_partial_kite_t.investment <> None then [] else 
+  if pk.Hex_expsv_partial_kite_t.investment <> None then [] else 
   let first_halves = heavy_part dim common_to_both in 
   Image.image (extend_with_first_alternative pk) first_halves ;;
 
 let extensions_by_springboard_second_halves dim pk common_to_both fa= 
-  if pk.Hex_partial_kite_t.investment = None then [] else 
+  if pk.Hex_expsv_partial_kite_t.investment = None then [] else 
   let possible_second_halves = light_part common_to_both in 
   let second_halves = List.filter (
       fun (cell2,new_island) ->
@@ -133,7 +133,7 @@ let extensions_by_springboard_halves dim pk =
    then []
    else 
    let common_to_both =  data_common_to_both_parts dim pk in 
-   match pk.Hex_partial_kite_t.investment with 
+   match pk.Hex_expsv_partial_kite_t.investment with 
    None -> extensions_by_springboard_first_halves dim pk common_to_both 
    |Some(fa) -> extensions_by_springboard_second_halves dim pk common_to_both fa ;;
 

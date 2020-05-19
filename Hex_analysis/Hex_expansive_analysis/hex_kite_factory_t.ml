@@ -9,7 +9,7 @@ type t= {
       winner        : Hex_player_t.t ;
       (* initial_data  : Hex_end_of_battle_t.t ; *)
       finished      : ( Hex_island_t.t * Hex_expsv_kite_element_t.t * (Hex_expsv_kite_element_t.t list) * Hex_molecular_linker_t.t * Hex_cell_set_t.t ) list ;
-      failures      : Hex_partial_kite_t.t list;
-      unfinished    : Hex_partial_kite_t.t list;
+      failures      : Hex_expsv_partial_kite_t.t list;
+      unfinished    : Hex_expsv_partial_kite_t.t list;
 };;
 

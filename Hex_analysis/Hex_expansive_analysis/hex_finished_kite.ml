@@ -13,7 +13,7 @@ let to_molecular_linker  pk =
    Hex_molecular_linker.fold_merge 
    (Option.filter_and_unpack 
       Hex_expsv_kite_element.to_molecular_linker 
-        (pk.Hex_partial_kite_t.steps_so_far));;
+        (pk.Hex_expsv_partial_kite_t.steps_so_far));;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
    if (Hex_expsv_kite_springless_element.is_an_island pending1)
@@ -87,7 +87,7 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
     Ennig.doyle trier 1 (n+2);;
 
 let contribution_from_island_in_active_part pk prepared_list = 
-   let birth = pk.Hex_partial_kite_t.place_of_birth 
+   let birth = pk.Hex_expsv_partial_kite_t.place_of_birth 
    and death = Hex_partial_kite_field.place_of_death pk   in 
    if birth = death 
    then Hex_island.minimal_version_for_two_edged death
@@ -99,7 +99,7 @@ let contribution_from_island_in_active_part pk prepared_list =
     ) boarded_islands) ;;
 
 let possibly_too_large_active_part  pk =
-    let unprepared_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
+    let unprepared_l= List.rev pk.Hex_expsv_partial_kite_t.steps_so_far in 
     let prepared_l = remove_redundant_islands (Image.image Hex_expsv_kite_element.compress_to_springless  unprepared_l)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_expsv_kite_springless_element_t.Sea(nc)) -> Some(Hex_expsv_named_connector.active_part nc)
@@ -119,9 +119,9 @@ let active_part pk =
    Hex_cell_set.setminus (possibly_too_large_active_part pk) molecular_part;;
 
 let solution_details pk = 
-    let steps_in_order=List.rev(pk.Hex_partial_kite_t.steps_so_far) in
+    let steps_in_order=List.rev(pk.Hex_expsv_partial_kite_t.steps_so_far) in
     let (fst_step,other_steps)=Listennou.ht steps_in_order in     
-    let birth = pk.Hex_partial_kite_t.place_of_birth in 
+    let birth = pk.Hex_expsv_partial_kite_t.place_of_birth in 
     (birth,fst_step,other_steps,to_molecular_linker pk,active_part pk);;
 
 
