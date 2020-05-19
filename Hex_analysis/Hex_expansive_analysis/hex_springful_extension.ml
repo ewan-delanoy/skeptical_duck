@@ -14,9 +14,9 @@ let extend_with_first_alternative pk new_fa =
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_seas = pk.Hex_partial_kite_t.unvisited_seas
     and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells
-    and requisitioned_territory = Hex_first_alternative_in_springboard.requisitioned_territory new_fa in 
-    let restricted_islands = List.filter (Hex_first_alternative_in_springboard.check_island_after_fa_insertion new_fa) old_islands 
-    and selector  =  List.filter (fun (_,sea)->Hex_first_alternative_in_springboard.check_sea_after_fa_insertion new_fa sea)   
+    and requisitioned_territory = Hex_expsv_first_alternative_in_springboard.requisitioned_territory new_fa in 
+    let restricted_islands = List.filter (Hex_expsv_first_alternative_in_springboard.check_island_after_fa_insertion new_fa) old_islands 
+    and selector  =  List.filter (fun (_,sea)->Hex_expsv_first_alternative_in_springboard.check_sea_after_fa_insertion new_fa sea)   
     and remaining_free_ones = Hex_cell_set.setminus old_free_ones requisitioned_territory in
     {
       pk with 
