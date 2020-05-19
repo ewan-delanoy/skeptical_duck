@@ -26,7 +26,7 @@ let persistent_data player =
 
 let elev = Hex_dimension.eleven ;;
 
-let factory_ref = ref (Hex_kite_factory.dummy);;
+let factory_ref = ref (Hex_expsv_kite_factory.dummy);;
 
 let generic_test player tester=
     let (factory,_,moleculars) = persistent_data player in 
@@ -36,7 +36,7 @@ let generic_test player tester=
       let bad_fles = Hex_end_strategy_factory.strat_with_index factory idx in 
       let _= Hex_ascii_grid.see_flesh bad_fles in 
       let eob = Hex_end_of_battle.of_activated_molecular (elev,player) (actv,mlclr) in 
-      let (unsac_start,unsac_end) = Hex_kite_factory.data_for_debugging eob in 
+      let (unsac_start,unsac_end) = Hex_expsv_kite_factory.data_for_debugging eob in 
       let bad_extmol = bad_fles.Hex_flattened_end_strategy_t.data in 
       let actv = bad_extmol.Hex_extended_molecular_t.active_part 
       and mlclr = bad_extmol.Hex_extended_molecular_t.molecular_part in
@@ -47,18 +47,18 @@ let generic_test player tester=
 let weak_test player =
    generic_test player (fun (idx,mlclr,actv)->
       let eob = Hex_end_of_battle.of_activated_molecular (elev,player) (actv,mlclr) in 
-      Hex_kite_factory.solutions(eob)=[]
+      Hex_expsv_kite_factory.solutions(eob)=[]
    ) ;;
     
 let strong_test player =
    generic_test player (fun (idx,mlclr,actv)->
       let eob = Hex_end_of_battle.of_activated_molecular (elev,player) (actv,mlclr) in 
-      not(List.mem (mlclr,actv) (Hex_kite_factory.solutions(eob)))
+      not(List.mem (mlclr,actv) (Hex_expsv_kite_factory.solutions(eob)))
    ) ;;    
 
 let push_factory k = 
     let old_factory = (!factory_ref) in 
-    let new_factory = Memoized.small Hex_kite_factory.push old_factory k in 
+    let new_factory = Memoized.small Hex_expsv_kite_factory.push old_factory k in 
     let _=(factory_ref:=new_factory) in 
     new_factory ;;
 
