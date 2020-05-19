@@ -28,7 +28,7 @@ let extend_with_first_alternative pk new_fa =
 
 let extend_with_second_alternative dim pk (cell2,new_island) =
     let fa = Option.unpack pk.Hex_partial_kite_t.investment in 
-    let new_sb =(Hex_springboard_t.Sp(fa,cell2,new_island))  in  
+    let new_sb =(Hex_expsv_springboard_t.Sp(fa,cell2,new_island))  in  
     let pk2 = Hex_impose_active_cell.impose_cell_by_casing dim cell2 pk in 
     let old_steps = pk2.Hex_partial_kite_t.steps_so_far 
     and old_free_ones = pk2.Hex_partial_kite_t.remaining_free_cells in 
