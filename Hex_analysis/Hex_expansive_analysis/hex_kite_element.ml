@@ -35,9 +35,9 @@ let change_island_component elt new_component= match elt with
 
 
 let compress_to_springless elt= match elt with 
-    Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
-   |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc)
-   |Springboard(springboard)->Hex_kite_springless_element_t.Earth(Hex_springboard.new_island springboard);;
+    Hex_kite_element_t.Earth(island)-> Hex_expsv_kite_springless_element_t.Earth(island)
+   |Sea(nc)-> Hex_expsv_kite_springless_element_t.Sea(nc)
+   |Springboard(springboard)->Hex_expsv_kite_springless_element_t.Earth(Hex_springboard.new_island springboard);;
 
 let claim_island x = match x with 
     Hex_kite_element_t.Earth(island)-> island
@@ -66,7 +66,7 @@ let is_two_edged elt = match Private.opt_island_component elt with
 
 
 let of_springless = function
-    Hex_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
+    Hex_expsv_kite_springless_element_t.Earth(island)-> Hex_kite_element_t.Earth(island)
    |Sea(nc)-> Hex_kite_element_t.Sea(nc);;
 
 let opt_island_component = Private.opt_island_component ;;
@@ -81,8 +81,8 @@ let to_molecular_linker = function
    |Springboard(sb) -> Some(Hex_springboard.to_molecular_linker sb)  ;;
 
 let to_springless elt= match elt with 
-    Hex_kite_element_t.Earth(island)-> Hex_kite_springless_element_t.Earth(island)
-   |Sea(nc)-> Hex_kite_springless_element_t.Sea(nc)
+    Hex_kite_element_t.Earth(island)-> Hex_expsv_kite_springless_element_t.Earth(island)
+   |Sea(nc)-> Hex_expsv_kite_springless_element_t.Sea(nc)
    |_->raise(To_springless_exn elt);;
 
  

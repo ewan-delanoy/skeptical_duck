@@ -62,7 +62,7 @@ let trim_for_island_boarding l =
 let unique_boarded_island island (birth,death)=
    [Hex_island.eviscerate birth,island,Hex_island.eviscerate death];;
 
-exception Deduce_boarded_islands_exn of (Hex_kite_springless_element_t.t list) * int ;;
+exception Deduce_boarded_islands_exn of (Hex_expsv_kite_springless_element_t.t list) * int ;;
 
 let deduce_boarded_islands  untrimmed_l (birth,death) =
     let (opt_island,l) =  trim_for_island_boarding untrimmed_l in
@@ -102,7 +102,7 @@ let possibly_too_large_active_part  pk =
     let unprepared_l= List.rev pk.Hex_partial_kite_t.steps_so_far in 
     let prepared_l = remove_redundant_islands (Image.image Hex_kite_element.compress_to_springless  unprepared_l)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
-       function (Hex_kite_springless_element_t.Sea(nc)) -> Some(Hex_named_connector.active_part nc)
+       function (Hex_expsv_kite_springless_element_t.Sea(nc)) -> Some(Hex_named_connector.active_part nc)
        |_->None
     ) prepared_l) 
     and contribution_from_islands = contribution_from_island_in_active_part pk prepared_l

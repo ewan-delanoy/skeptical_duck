@@ -58,7 +58,7 @@ let test_for_finality pk =
 
 let extend_with_island pk new_island = 
         let vague_new_elt = Hex_kite_element_t.Earth(new_island)
-        and new_elt = Hex_kite_springless_element_t.Earth(new_island) in 
+        and new_elt = Hex_expsv_kite_springless_element_t.Earth(new_island) in 
      (new_elt,   
      {
          pk with 
@@ -71,7 +71,7 @@ let extend_with_island pk new_island =
 
 let extend_with_sea pk new_nc = 
         let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
-        and new_elt = Hex_kite_springless_element_t.Sea(new_nc) in 
+        and new_elt = Hex_expsv_kite_springless_element_t.Sea(new_nc) in 
         let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
         let old_seas = pk.Hex_partial_kite_t.unvisited_seas 
         and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
