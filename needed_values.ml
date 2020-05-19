@@ -52,7 +52,7 @@ let relo = Usual_coma_state.relocate_module_to;;
 
 let ren = Usual_coma_state.rename_module;;
 
-let rendir = Usual_coma_state.rename_directory;;
+let rensub = Usual_coma_state.rename_subdirectory;;
 
 let ruco () = Other_coma_state.recompile None ;; 
 
