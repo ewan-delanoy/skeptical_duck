@@ -36,7 +36,7 @@ let extend_with_second_alternative dim pk (cell2,new_island) =
     {
       pk2 with 
         Hex_partial_kite_t.steps_so_far = 
-           (Hex_kite_element_t.Springboard new_sb)::old_steps ;
+           (Hex_expsv_kite_element_t.Springboard new_sb)::old_steps ;
         remaining_free_cells = remaining_free_ones ;
         investment = None ;
     }  ;;

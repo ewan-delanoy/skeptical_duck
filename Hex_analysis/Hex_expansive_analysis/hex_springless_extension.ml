@@ -64,13 +64,13 @@ let springless_extensions_after_sea partial_kite last_nc =
    ([],Image.image (Hex_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
 let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
-    Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
+    Hex_expsv_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
    | _ -> let last_island = Hex_kite_element.extract_island last_elt in 
           springless_extensions_after_island dim partial_kite last_island ;;
 
 let springless_extensions dim pk =
    let last_elt = (match pk.Hex_partial_kite_t.steps_so_far with 
-     []->Hex_kite_element_t.Earth(pk.Hex_partial_kite_t.place_of_birth)
+     []->Hex_expsv_kite_element_t.Earth(pk.Hex_partial_kite_t.place_of_birth)
      |x::_-> x ) in 
    springless_extensions_from_last_elt dim pk last_elt ;;
 

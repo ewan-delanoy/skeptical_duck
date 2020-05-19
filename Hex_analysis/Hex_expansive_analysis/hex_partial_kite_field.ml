@@ -49,7 +49,7 @@ let test_for_finality pk =
    [] -> false 
    |last_elt::_->
    match  last_elt with 
-   Hex_kite_element_t.Sea(nc) -> 
+   Hex_expsv_kite_element_t.Sea(nc) -> 
       let place_of_death = place_of_death pk in 
       Hex_expsv_named_connector.check_exit nc place_of_death 
    |_ -> (* A death would already have been detected in opt_final_death *)
@@ -57,7 +57,7 @@ let test_for_finality pk =
 
 
 let extend_with_island pk new_island = 
-        let vague_new_elt = Hex_kite_element_t.Earth(new_island)
+        let vague_new_elt = Hex_expsv_kite_element_t.Earth(new_island)
         and new_elt = Hex_expsv_kite_springless_element_t.Earth(new_island) in 
      (new_elt,   
      {
@@ -70,7 +70,7 @@ let extend_with_island pk new_island =
     
 
 let extend_with_sea pk new_nc = 
-        let vague_new_elt = Hex_kite_element_t.Sea(new_nc) 
+        let vague_new_elt = Hex_expsv_kite_element_t.Sea(new_nc) 
         and new_elt = Hex_expsv_kite_springless_element_t.Sea(new_nc) in 
         let old_steps=pk.Hex_partial_kite_t.steps_so_far in 
         let old_seas = pk.Hex_partial_kite_t.unvisited_seas 
@@ -96,7 +96,7 @@ let winner pk =
 
 let last_stop pk = 
    match pk.Hex_partial_kite_t.steps_so_far with 
-    [] -> Hex_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
+    [] -> Hex_expsv_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
    |elt::_ -> elt ;;
 
 let constructor  first_island islands seas free_ones =
