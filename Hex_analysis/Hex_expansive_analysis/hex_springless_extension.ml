@@ -32,10 +32,10 @@ let extend_with_sea_and_remove_border_starters_if_needed pk nc =
 
 let springless_extensions_after_island dim partial_kite last_island =
    let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
-   let unchecked_islanders = Hex_named_connector.islanders dim last_island remaining_islands in 
+   let unchecked_islanders = Hex_expsv_named_connector.islanders dim last_island remaining_islands in 
    let islanders = Option.filter_and_unpack (
       fun nc-> 
-      let impossibilities = Hex_cell_set.setminus (Hex_named_connector.inner_sea nc) 
+      let impossibilities = Hex_cell_set.setminus (Hex_expsv_named_connector.inner_sea nc) 
                            partial_kite.Hex_partial_kite_t.remaining_free_cells in 
       if impossibilities = Hex_cell_set.empty_set
       then Some(Hex_cell_set.empty_set,nc)
@@ -44,9 +44,9 @@ let springless_extensions_after_island dim partial_kite last_island =
    let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
    let selector  = Option.filter_and_unpack (
       fun (z,nc)->
-        if (Hex_named_connector.check_entry last_island nc)
+        if (Hex_expsv_named_connector.check_entry last_island nc)
             &&(Hex_cell_set.is_included_in z abc) 
-           &&(List.exists (Hex_named_connector.check_exit nc) remaining_islands) 
+           &&(List.exists (Hex_expsv_named_connector.check_exit nc) remaining_islands) 
         then Some (extend_with_sea_and_remove_border_starters_if_needed partial_kite nc) 
         else None   
    )   in 
@@ -59,7 +59,7 @@ let springless_extensions_after_sea partial_kite last_nc =
       so the extensions created here are always non-final 
     *)
    let compatible_islands  = List.filter (
-      Hex_named_connector.check_exit last_nc  
+      Hex_expsv_named_connector.check_exit last_nc  
    )  partial_kite.Hex_partial_kite_t.unvisited_islands in 
    ([],Image.image (Hex_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 

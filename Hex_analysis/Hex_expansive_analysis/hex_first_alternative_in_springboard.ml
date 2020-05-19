@@ -14,7 +14,7 @@ let we_for_list = function
   |joiner ::others ->
     let nc = Hex_kite_springless_element.claim_sea joiner in 
     Hex_cell_set.merge 
-      (Hex_named_connector.wet_earth_with_entry_unchecked nc) 
+      (Hex_expsv_named_connector.wet_earth_with_entry_unchecked nc) 
        (we_for_homogeneous_list others) ;; 
 
 let wet_earth  
@@ -38,7 +38,7 @@ let check_island_after_fa_insertion fa island =
 let check_sea_after_fa_insertion fa nc = 
    Hex_cell_set.does_not_intersect 
       (Private.wet_earth fa)
-         (Hex_named_connector.wet_earth nc);;      
+         (Hex_expsv_named_connector.wet_earth nc);;      
 
 let molecular_linker_when_joined_to_another_cell 
    (Hex_expsv_first_alternative_in_springboard_t.Fa(opt_start,cell,path,sol,actv)) cell2=

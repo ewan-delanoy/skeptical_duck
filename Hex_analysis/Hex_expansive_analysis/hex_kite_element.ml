@@ -16,7 +16,7 @@ module Private = struct
 
 let to_readable_string = function
   Hex_kite_element_t.Earth(island)-> Hex_island.to_readable_string island
-   |Sea(nc)-> Hex_named_connector.to_readable_string nc
+   |Sea(nc)-> Hex_expsv_named_connector.to_readable_string nc
    |Springboard(springboard)-> Hex_springboard.to_readable_string springboard;;
 
 let opt_island_component elt = match elt with 
@@ -77,7 +77,7 @@ let print_out (fmt:Format.formatter) elt=
 
 let to_molecular_linker = function
   Hex_kite_element_t.Earth(island)-> None
-   |Sea(nc)-> Some(Hex_named_connector.to_molecular_linker nc)
+   |Sea(nc)-> Some(Hex_expsv_named_connector.to_molecular_linker nc)
    |Springboard(sb) -> Some(Hex_springboard.to_molecular_linker sb)  ;;
 
 let to_springless elt= match elt with 
