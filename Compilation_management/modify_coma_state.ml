@@ -616,7 +616,7 @@ let forget cs text =
       else Reference.forget_module cs (Dfa_module.of_line text) ;;
 
 let rename_subdirectory cs_ref old_subdirname new_subdirname=
-    let old_subdir = Coma_state.find_subdir_from_suffix cs old_subdirname 
+    let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname 
     and new_subdir = Dfa_subdirectory.of_line new_subdirname in 
     Reference.rename_subdirectory cs_ref old_subdir new_subdir ;;
 
