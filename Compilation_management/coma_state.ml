@@ -1629,8 +1629,8 @@ let local_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
-    Dfn_middle.to_line middle )
+    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
+    Dfa_module.to_line mname )
   (above cs endingless);;
 
 
@@ -1638,24 +1638,24 @@ let local_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
-    Dfn_middle.to_line middle )
+    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
+    Dfa_module.to_line mname )
   (below cs endingless);;
 
 let local_directly_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
-    Dfn_middle.to_line middle )
+    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
+    Dfa_module.to_line mname )
   (directly_above cs endingless);;
 
 let local_directly_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
-    let middle = Dfn_endingless.to_middle (endingless_at_module cs nm) in 
-    Dfn_middle.to_line middle )
+    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
+    Dfa_module.to_line mname )
   (directly_below cs endingless);;
 
 let local_rename_directory cs old_subdir new_subdirname=
