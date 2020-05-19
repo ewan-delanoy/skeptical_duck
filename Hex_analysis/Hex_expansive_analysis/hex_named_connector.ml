@@ -76,7 +76,7 @@ let islanders dim island1 other_islands =
        ) ttemp4 in 
        Image.image (fun (p1,p2)->
           of_name( Hex_connector_name_t.Inner(
-             Hex_inner_connector_name_t.Broken_bridge(island1,p1,p2,island2)))
+             Hex_expsv_inner_connector_name_t.Broken_bridge(island1,p1,p2,island2)))
        ) ttemp5
    ) other_islands in 
    List.flatten temp1 ;; 
