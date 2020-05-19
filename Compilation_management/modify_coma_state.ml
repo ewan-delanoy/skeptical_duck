@@ -319,7 +319,7 @@ let rename_subdirectory cs old_subdir new_subdir=
    let new_dirs=Image.image replace_sd 
         (Coma_state.directories cs2)
    and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
-       (Dfn_endingless.replace_subdirectory eless,is_compiled_correctly)
+       (Dfn_endingless.replace_subdirectory (old_subdir,new_subdir) eless,is_compiled_correctly)
    )(Coma_state.preq_types cs2) in
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
