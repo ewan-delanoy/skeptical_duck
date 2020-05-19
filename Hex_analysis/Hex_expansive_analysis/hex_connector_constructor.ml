@@ -108,5 +108,5 @@ end ;;
 end ;;
 
 let expand_name = function 
-   Hex_connector_name_t.Inner(inner)-> Private.Inner.expand_name inner 
+   Hex_expsv_connector_name_t.Inner(inner)-> Private.Inner.expand_name inner 
    |Border(bw,border) -> Private.Border.expand_name bw border;;
