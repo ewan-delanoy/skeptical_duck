@@ -498,13 +498,6 @@ let reposition_module cs eless (l_before,l_after)=
     else 
     Coma_state_field.reposition_in_each cs pivot eless;;  
 
-let rename_directory_on_data (old_subdir,new_subdirname) cs= 
-  let ren_sub=Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) in 
-  let cs2=Coma_state_field.modify_all_subdirs cs ren_sub in 
-  Coma_state_field.modify_all_needed_dirs cs2 ren_sub;;
-
-
-
 let find_value_definition cs s= 
   if not(String.contains s '.')
   then None
@@ -1402,19 +1395,7 @@ end;;
 
 
 
-let rename_directory cs (old_subdir,new_subdirname)=
-      let _=Rename_endsubdirectory.in_unix_world 
-       (root cs) (old_subdir,new_subdirname) in
-      let pair=(old_subdir,new_subdirname) in
-      let cs2=rename_directory_on_data pair cs in
-      let new_dirs=Raneme_directory.on_subdirectories pair 
-        (directories cs2)
-      and new_peqt=Raneme_directory.on_printer_equipped_types pair 
-        (preq_types cs2)
-      in
-      let cs3=set_directories cs2 new_dirs in 
-      set_preq_types cs3 new_peqt;;
-         
+
 
 
 let clean_debug_dir cs=
@@ -1679,22 +1660,7 @@ let local_directly_below cs capitalized_or_not_module_name=
   Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
-  (directly_below cs endingless);;
-
-let local_rename_directory cs old_subdir new_subdirname=
-   let old_rootless_paths=short_paths_inside_subdirectory cs old_subdir in
-   let cs2=rename_directory cs (old_subdir,new_subdirname) in 
-   let s_old_subdir=Dfa_subdirectory.without_trailing_slash old_subdir in
-   let subdir_father = Cull_string.before_rightmost s_old_subdir '/' in 
-   let new_subdir=(if subdir_father="" 
-                   then new_subdirname 
-                   else subdir_father^"/"^new_subdirname) in 
-   let new_rootless_paths=short_paths_inside_subdirectory cs2 (Dfa_subdirectory.of_line new_subdir) in
-   let diff=Dircopy_diff.veil
-    (Recently_deleted.of_string_list old_rootless_paths)
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_rootless_paths) in
-   (cs2,diff);;   
+  (directly_below cs endingless);; 
 
 
 end;; 
