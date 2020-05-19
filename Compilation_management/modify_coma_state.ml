@@ -311,12 +311,16 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
 let rename_subdirectory cs old_subdir new_subdir=
    let old_subdirname = Dfa_subdirectory.without_trailing_slash old_subdir
    and new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
-   let pair=(old_subdir,new_subdirname) in
-   let cs2=Coma_state.rename_directory_on_data pair cs in
-   let new_dirs=Coma_state.Raneme_directory.on_subdirectories pair 
+  let replace_sd=(
+     fun sd -> if sd = old_subdir then new_subdir else sd
+  ) in 
+  let cs1=Coma_state_field.modify_all_subdirs cs replace_sd in 
+  let cs2=Coma_state_field.modify_all_needed_dirs cs1 replace_sd in 
+   let new_dirs=Image.image replace_sd 
         (Coma_state.directories cs2)
-   and new_peqt=Coma_state.Raneme_directory.on_printer_equipped_types pair 
-        (Coma_state.preq_types cs2) in
+   and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
+       (Dfn_endingless.replace_subdirectory eless,is_compiled_correctly)
+   )(Coma_state.preq_types cs2) in
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
    let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in

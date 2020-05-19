@@ -26,13 +26,24 @@ let rename_endsubdirectory
    		(Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
          m
 	    );;  
-   
+
 let rename_module
    (old_module,new_module) 
       (Dfn_endingless_t.J(r,s,m))=
         if m =old_module 
         then Dfn_endingless_t.J(r,s,new_module) 
         else Dfn_endingless_t.J(r,s,m) ;;     
+
+let replace_subdirectory (old_subdir,new_subdir) eless = 
+    match eless with  
+      (Dfn_endingless_t.J(r,s,m)) -> 
+       if s <> old_subdir 
+       then eless 
+       else 
+   Dfn_endingless_t.J(r,new_subdir,m);;  
+   
+
+
 
 let to_concrete_object (Dfn_endingless_t.J(r,s,m))=
    Concrete_object_t.Variant("Dfn_"^"endingless.J",
@@ -42,7 +53,7 @@ let to_concrete_object (Dfn_endingless_t.J(r,s,m))=
         Dfa_module.to_concrete_object m;
      ]
    ) ;;
-    
+
 let of_concrete_object crobj =
    let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Dfn_endingless_t.J(
