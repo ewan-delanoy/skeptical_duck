@@ -123,7 +123,7 @@ let extensions_by_springboard_second_halves dim pk common_to_both fa=
   let possible_second_halves = light_part common_to_both in 
   let second_halves = List.filter (
       fun (cell2,new_island) ->
-         Hex_springboard.opt_constructor(fa,cell2,new_island) <> None
+         Hex_expsv_springboard.opt_constructor(fa,cell2,new_island) <> None
   ) possible_second_halves in 
   Image.image (extend_with_second_alternative dim pk) second_halves ;;
 
