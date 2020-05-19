@@ -206,8 +206,6 @@ let helper1_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root pair=
    if Dfn_rootless.to_subdirectory rootless_path = old_subdir 
    then pair
    else let new_rootless_path=Dfn_rootless.rename_subdirectory_as (old_subdir,new_subdir) rootless_path in
-        let cmd=" mv "^s_root^(Dfn_rootless.to_line rootless_path)^" "^(Dfn_rootless.to_line new_rootless_path) in 
-        let _=Unix_command.hardcore_uc cmd in 
         recompute_all_info fw new_rootless_path;;
 
 let helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root l_pairs =
@@ -215,6 +213,12 @@ let helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root l_pai
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw)  in 
+    let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
+    and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
+    let old_full_path = s_root^s_old_subdir 
+    and new_full_path = s_root^s_new_subdir in 
+    let cmd=" mv "^old_full_path^" "^new_full_path in 
+        let _=Unix_command.hardcore_uc cmd in 
    {
       fw with
       Fw_wrapper_t.watched_files = helper2_during_subdirectory_renaming (old_subdir,new_subdir) fw s_root (fw.Fw_wrapper_t.watched_files)  ;
