@@ -11,12 +11,12 @@ module Private = struct
 let original_side pk =
    Hex_anchor.unique_side (Hex_island.anchor pk.Hex_expsv_partial_kite_t.place_of_birth);;
    
-let is_two_edged elt = match Hex_expsv_kate_element.opt_island_component elt with 
+let is_two_edged elt = match Hex_expsv_kite_element.opt_island_component elt with 
    None -> false 
    |Some island -> Hex_island.is_two_edged island;;
 
 let last_island pk =
-   match Option.find_and_stop Hex_expsv_kate_element.opt_island_component pk.Hex_expsv_partial_kite_t.steps_so_far with 
+   match Option.find_and_stop Hex_expsv_kite_element.opt_island_component pk.Hex_expsv_partial_kite_t.steps_so_far with 
    Some island -> island 
    | None -> pk.Hex_expsv_partial_kite_t.place_of_birth ;;
 
@@ -24,7 +24,7 @@ let opt_final_death pk=
    let birth =  pk.Hex_expsv_partial_kite_t.place_of_birth in 
    if Hex_island.is_two_edged birth then Some birth else 
    match Option.seek is_two_edged pk.Hex_expsv_partial_kite_t.steps_so_far with 
-   Some(elt) -> Some (Hex_expsv_kate_element.extract_island elt) 
+   Some(elt) -> Some (Hex_expsv_kite_element.extract_island elt) 
    |None ->
    let late_island = last_island pk 
    and death_side = Hex_cardinal_direction.oppose (original_side pk) in 

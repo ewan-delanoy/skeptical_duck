@@ -12,7 +12,7 @@ let to_molecular_linker  pk =
    (* The kite is assumed to be finished *) 
    Hex_molecular_linker.fold_merge 
    (Option.filter_and_unpack 
-      Hex_expsv_kate_element.to_molecular_linker 
+      Hex_expsv_kite_element.to_molecular_linker 
         (pk.Hex_expsv_partial_kite_t.steps_so_far));;
 
 let helper2_for_removing_redundant_islands treated pending1 pending2  = 
@@ -100,7 +100,7 @@ let contribution_from_island_in_active_part pk prepared_list =
 
 let possibly_too_large_active_part  pk =
     let unprepared_l= List.rev pk.Hex_expsv_partial_kite_t.steps_so_far in 
-    let prepared_l = remove_redundant_islands (Image.image Hex_expsv_kate_element.compress_to_springless  unprepared_l)  in 
+    let prepared_l = remove_redundant_islands (Image.image Hex_expsv_kite_element.compress_to_springless  unprepared_l)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_expsv_kite_springless_element_t.Sea(nc)) -> Some(Hex_expsv_named_connector.active_part nc)
        |_->None
