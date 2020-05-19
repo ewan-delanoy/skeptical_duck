@@ -311,8 +311,6 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
 let rename_subdirectory cs old_subdir new_subdir=
    let new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
    let old_rootless_paths=Coma_state.short_paths_inside_subdirectory cs old_subdir in
-   let _=Rename_endsubdirectory.in_unix_world 
-       (Coma_state.root cs) (old_subdir,new_subdirname) in
    let pair=(old_subdir,new_subdirname) in
    let cs2=Coma_state.rename_directory_on_data pair cs in
    let new_dirs=Coma_state.Raneme_directory.on_subdirectories pair 
