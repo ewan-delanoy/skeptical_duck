@@ -615,9 +615,9 @@ let forget cs text =
       then Reference.forget_rootless_path cs (Dfn_rootless.of_line text)
       else Reference.forget_module cs (Dfa_module.of_line text) ;;
 
-let rename_subdirectory cs_ref old_subdirname new_subdirname=
-    let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname 
-    and new_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) new_subdirname  in 
+let rename_subdirectory cs_ref old_subdirname new_subdir_short_name=
+    let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname  in
+    let new_subdir = Coma_state.compute_long_subdir_name (!cs_ref) old_subdir new_subdir_short_name  in 
     Reference.rename_subdirectory cs_ref old_subdir new_subdir ;;
 
 
