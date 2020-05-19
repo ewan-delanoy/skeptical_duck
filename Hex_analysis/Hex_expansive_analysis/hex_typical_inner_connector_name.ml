@@ -29,15 +29,15 @@
 
 let prepare_for_journey = 
   [
-     Hex_typical_inner_connector_name_t.Haddock1 , 
+     Hex_expsv_typical_inner_connector_name_t.Haddock1 , 
        ([(1,2);(2,1)],[ (1,3);(2,2);(2,3);(3,1);(3,2);(3,3)],[(4,1);(4,2)],[],"hk1"); 
-     Hex_typical_inner_connector_name_t.Haddock2 , 
+     Hex_expsv_typical_inner_connector_name_t.Haddock2 , 
        ([(3,4)],[ (2,3);(1,4);(3,3);(2,4)],[(1,3);(2,2);(3,1);(4,1);(4,2)],[],"hk2") ;
-     Hex_typical_inner_connector_name_t.Haddock3 , 
+     Hex_expsv_typical_inner_connector_name_t.Haddock3 , 
        ([(1,3)],[ (1,4);(2,3);(2,2);(2,4); (4,1);(3,2);(3,3);(3,4);],[(4,2);(4,3)],[3,1],"hk3") ;   
-     Hex_typical_inner_connector_name_t.Haddock4 , 
+     Hex_expsv_typical_inner_connector_name_t.Haddock4 , 
        ([(4,4)],[ (1,4);(2,3);(2,1);(2,2);(2,4);(3,3);(3,4);(4,3)],[(1,2);(1,3)],[(3,1);(4,1);(4,2)],"hk4");               
-     Hex_typical_inner_connector_name_t.Haddock5 , 
+     Hex_expsv_typical_inner_connector_name_t.Haddock5 , 
        ([(1,2);(2,1)],[ (1,3);(2,2);(3,1);(3,2)],[(4,1)],[(2,3)],"hk5");   
   ];;
 
