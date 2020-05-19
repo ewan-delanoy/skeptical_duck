@@ -64,8 +64,8 @@ let register_rootless_path x=Modify_coma_state.Reference.register_rootless_path 
 let relocate_module_to old_module_name new_subdir=
    Modify_coma_state.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
 
-let rename_subdirectory old_subdir new_subdirname=
-    Modify_coma_state.Reference.rename_subdirectory Private.main_ref old_subdir new_subdirname;;
+let rename_subdirectory old_subdirname new_subdirname=
+    Modify_coma_state.Reference.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
 
 let rename_module old_name new_name=
    Modify_coma_state.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
