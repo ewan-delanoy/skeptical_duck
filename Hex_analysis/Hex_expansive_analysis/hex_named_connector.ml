@@ -53,17 +53,17 @@ let to_readable_string nc =
     None ->""
     |Some(i,j)->"("^(Hex_cell.to_string(Hex_cell.of_int_pair (i,j)))^")"
   ) in 
-  (Hex_connector_name.to_readable_string nc.Hex_expsv_named_connector_t.name)^apex_part;;
+  (Hex_expsv_connector_name.to_readable_string nc.Hex_expsv_named_connector_t.name)^apex_part;;
 
 
 let starters_for_side (dim,side)=
-    expand_all dim (Hex_connector_name.starters_for_side side);;
+    expand_all dim (Hex_expsv_connector_name.starters_for_side side);;
     
 let middlers dim= 
-    expand_all dim  (Hex_connector_name.middlers);;   
+    expand_all dim  (Hex_expsv_connector_name.middlers);;   
 
 let enders_for_side (dim,side)=
-    expand_all dim (Hex_connector_name.enders_for_side side);;    
+    expand_all dim (Hex_expsv_connector_name.enders_for_side side);;    
  
 let islanders dim island1 other_islands =
    let temp1 = Image.image ( 
@@ -183,7 +183,7 @@ let print_out (fmt:Format.formatter) nc=
 let starters_for_side = Private.Precomputed.starters_for_side ;;
 
 let to_molecular_linker nc = 
-     match Hex_connector_name.to_nondefault_molecular_linker 
+     match Hex_expsv_connector_name.to_nondefault_molecular_linker 
              nc.Hex_expsv_named_connector_t.name 
               nc.Hex_expsv_named_connector_t.apex
               nc.Hex_expsv_named_connector_t.junction with 
