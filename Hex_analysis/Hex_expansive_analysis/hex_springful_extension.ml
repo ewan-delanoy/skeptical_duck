@@ -85,7 +85,7 @@ let data_common_to_both_parts dim pk =
 
 let light_part common_to_both = 
    Image.image (fun (cell,new_pk)->
-      (cell,Hex_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
+      (cell,Hex_expsv_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
 let explore_yet_untried_path dim (cell,new_pk) =
@@ -93,7 +93,7 @@ let explore_yet_untried_path dim (cell,new_pk) =
    let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
-        Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
+        Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,Image.image Hex_expsv_kite_element.to_springless ttemp2,mlclr,actv)
    ) temp ;;
 
 let explore_yet_untried_paths dim paths =
@@ -129,7 +129,7 @@ let extensions_by_springboard_second_halves dim pk common_to_both fa=
 
 let extensions_by_springboard_halves dim pk =
    let last_stop = Hex_partial_kite_field.last_stop pk in 
-   if Hex_kite_element.opt_island_component last_stop = None 
+   if Hex_expsv_kite_element.opt_island_component last_stop = None 
    then []
    else 
    let common_to_both =  data_common_to_both_parts dim pk in 

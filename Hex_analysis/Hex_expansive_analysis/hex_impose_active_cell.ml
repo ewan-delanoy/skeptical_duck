@@ -47,7 +47,7 @@ let impose_cell_by_casing_in_contact_nonempty_case dim new_cell pk
     and old_free_cells = pk.Hex_partial_kite_t.remaining_free_cells in 
     let (remade_last_island,new_islands) = 
          Hex_island.add_sided_cell_by_casing dim sided_cell (old_last_island::old_islands) in 
-    let remade_last_stop = Hex_kite_element.change_island_component old_last_stop remade_last_island in 
+    let remade_last_stop = Hex_expsv_kite_element.change_island_component old_last_stop remade_last_island in 
    {
       pk with
       Hex_partial_kite_t.steps_so_far = (remade_last_stop::previous_stops);
