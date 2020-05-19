@@ -27,6 +27,12 @@ let rename_endsubdirectory
          m
 	    );;  
    
+let rename_module
+   (old_module,new_module) 
+      (Dfn_endingless_t.J(r,s,m))=
+        if m =old_module 
+        then Dfn_endingless_t.J(r,s,new_module) 
+        else Dfn_endingless_t.J(r,s,m) ;;     
 
 let to_concrete_object (Dfn_endingless_t.J(r,s,m))=
    Concrete_object_t.Variant("Dfn_"^"endingless.J",
