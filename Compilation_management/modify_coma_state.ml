@@ -309,8 +309,8 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
    (cs9,diff);;
 
 let rename_subdirectory cs old_subdir new_subdir=
-   let new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
-   let old_rootless_paths=Coma_state.short_paths_inside_subdirectory cs old_subdir in
+   let old_subdirname = Dfa_subdirectory.without_trailing_slash old_subdir
+   and new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
    let pair=(old_subdir,new_subdirname) in
    let cs2=Coma_state.rename_directory_on_data pair cs in
    let new_dirs=Coma_state.Raneme_directory.on_subdirectories pair 
@@ -320,6 +320,9 @@ let rename_subdirectory cs old_subdir new_subdir=
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
    let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in
+   let old_rootless_paths=Image.image (
+        Replace_inside.replace_inside_string (new_subdirname,old_subdirname)
+   ) new_rootless_paths in 
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
