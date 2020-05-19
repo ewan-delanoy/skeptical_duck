@@ -5,4 +5,4 @@
 *)
 
 type t = 
-  Scr of Hex_typical_sacrifice_t.t * Hex_cardinal_direction_t.t * Hex_cell_t.t list ;;
+  Scr of Hex_expsv_typical_sacrifice_t.t * Hex_cardinal_direction_t.t * Hex_cell_t.t list ;;
