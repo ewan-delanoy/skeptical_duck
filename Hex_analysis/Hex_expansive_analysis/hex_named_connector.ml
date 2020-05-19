@@ -19,7 +19,7 @@ let expand_name = Hex_connector_constructor.expand_name ;;
 
 let add_name nm cnnctr = 
    {
-     Hex_named_connector_t.name     = nm ;
+     Hex_expsv_named_connector_t.name     = nm ;
      entry    = cnnctr.Hex_connector_t.entry ;
      junction = cnnctr.Hex_connector_t.junction ;
      exit     = cnnctr.Hex_connector_t.exit ;
@@ -31,15 +31,15 @@ let of_name nm = add_name nm (expand_name nm);;
 
 let forget_name nc = 
    {
-     Hex_connector_t.entry = nc.Hex_named_connector_t.entry ;
-     junction = nc.Hex_named_connector_t.junction ;
-     exit     = nc.Hex_named_connector_t.exit ;
-     apex     = nc.Hex_named_connector_t.apex ;
-     extra_active_cells = nc.Hex_named_connector_t.extra_active_cells ;
+     Hex_connector_t.entry = nc.Hex_expsv_named_connector_t.entry ;
+     junction = nc.Hex_expsv_named_connector_t.junction ;
+     exit     = nc.Hex_expsv_named_connector_t.exit ;
+     apex     = nc.Hex_expsv_named_connector_t.apex ;
+     extra_active_cells = nc.Hex_expsv_named_connector_t.extra_active_cells ;
    };;   
 
 let all_translates dim nc =
-   let nm =nc.Hex_named_connector_t.name 
+   let nm =nc.Hex_expsv_named_connector_t.name 
    and cnnctr = forget_name nc in 
    Image.image (add_name nm) (Hex_connector.all_translates dim cnnctr);;
 
@@ -49,11 +49,11 @@ let expand_all dim cnnctrs =
 
 
 let to_readable_string nc = 
-  let apex_part = (match nc.Hex_named_connector_t.apex with 
+  let apex_part = (match nc.Hex_expsv_named_connector_t.apex with 
     None ->""
     |Some(i,j)->"("^(Hex_cell.to_string(Hex_cell.of_int_pair (i,j)))^")"
   ) in 
-  (Hex_connector_name.to_readable_string nc.Hex_named_connector_t.name)^apex_part;;
+  (Hex_connector_name.to_readable_string nc.Hex_expsv_named_connector_t.name)^apex_part;;
 
 
 let starters_for_side (dim,side)=
@@ -119,7 +119,7 @@ end ;;
 let inner_sea nc =
    Hex_cell_set.safe_set 
      (Image.image Hex_cell.of_int_pair 
-       nc.Hex_named_connector_t.junction) ;;
+       nc.Hex_expsv_named_connector_t.junction) ;;
 
 
 
@@ -127,11 +127,11 @@ end ;;
 
 let active_part nc =
    let inner_cells = (Image.image Hex_cell.of_int_pair 
-           nc.Hex_named_connector_t.extra_active_cells) in 
+           nc.Hex_expsv_named_connector_t.extra_active_cells) in 
    Hex_cell_set.fold_merge 
   [ 
-    Hex_island.inner_earth nc.Hex_named_connector_t.entry ;
-    Hex_island.inner_earth nc.Hex_named_connector_t.exit  ;
+    Hex_island.inner_earth nc.Hex_expsv_named_connector_t.entry ;
+    Hex_island.inner_earth nc.Hex_expsv_named_connector_t.exit  ;
     Hex_cell_set.safe_set inner_cells ;
   ];;
 
@@ -154,7 +154,7 @@ let check_exit nc island = Hex_connector.check_exit island (Private.forget_name 
 
 let extra_active_cells nc =
     Hex_cell_set.safe_set 
-    (Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.extra_active_cells);;
+    (Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.extra_active_cells);;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
@@ -184,9 +184,9 @@ let starters_for_side = Private.Precomputed.starters_for_side ;;
 
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
-             nc.Hex_named_connector_t.name 
-              nc.Hex_named_connector_t.apex
-              nc.Hex_named_connector_t.junction with 
+             nc.Hex_expsv_named_connector_t.name 
+              nc.Hex_expsv_named_connector_t.apex
+              nc.Hex_expsv_named_connector_t.junction with 
      None -> Hex_connector.to_default_molecular_linker (Private.forget_name nc)           
     |Some(mlclr) -> mlclr  ;; 
    
@@ -196,16 +196,16 @@ let to_readable_string = Private.to_readable_string ;;
 let wet_earth nc = Hex_cell_set.fold_merge
 
   [
-     Hex_island.inner_earth nc.Hex_named_connector_t.entry ;
-     Hex_island.inner_earth nc.Hex_named_connector_t.exit ;
-     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction)) ;
+     Hex_island.inner_earth nc.Hex_expsv_named_connector_t.entry ;
+     Hex_island.inner_earth nc.Hex_expsv_named_connector_t.exit ;
+     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
   ] 
   ;;
 
 let wet_earth_with_entry_unchecked nc = Hex_cell_set.fold_merge
 
   [
-     Hex_island.inner_earth nc.Hex_named_connector_t.exit ;
-     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_named_connector_t.junction)) ;
+     Hex_island.inner_earth nc.Hex_expsv_named_connector_t.exit ;
+     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
   ] 
   ;;

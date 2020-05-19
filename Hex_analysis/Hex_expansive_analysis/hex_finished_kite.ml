@@ -69,8 +69,8 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
     if l=[] then unique_boarded_island (Option.unpack opt_island) (birth,death) else  
     let n = ((List.length l)-1)/2  in 
     let gl = (fun j->List.nth l (j-1)) in 
-    let sea_entry = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_named_connector_t.entry )
-    and sea_exit = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_named_connector_t.exit ) in 
+    let sea_entry = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.entry )
+    and sea_exit = (fun x->(Hex_kite_springless_element.claim_sea (x)).Hex_expsv_named_connector_t.exit ) in 
     let first_in_triple =(fun k->
        if k=1 then Hex_island.eviscerate birth else sea_exit(gl(2*k-3))
     ) 
