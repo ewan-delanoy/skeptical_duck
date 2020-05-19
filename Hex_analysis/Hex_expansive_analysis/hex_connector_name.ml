@@ -10,7 +10,7 @@ let siders bw side =
     Image.image (
         fun border -> 
            Hex_expsv_connector_name_t.Border(bw,border)
-    ) (Hex_border_connector_name.for_side side);;
+    ) (Hex_expsv_border_connector_name.for_side side);;
 
 end ;;
 
@@ -30,8 +30,8 @@ let is_inner = function
 
 let to_nondefault_molecular_linker cname apex junction= match cname with 
     Hex_expsv_connector_name_t.Inner(inner)-> Hex_inner_connector_name.to_nondefault_molecular_linker inner
-   |Border(_,border) -> Hex_border_connector_name.to_nondefault_molecular_linker border apex junction;;
+   |Border(_,border) -> Hex_expsv_border_connector_name.to_nondefault_molecular_linker border apex junction;;
 
 let to_readable_string = function 
     Hex_expsv_connector_name_t.Inner(inner)-> Hex_inner_connector_name.to_readable_string inner
-   |Border(_,border) -> Hex_border_connector_name.to_readable_string border;;
+   |Border(_,border) -> Hex_expsv_border_connector_name.to_readable_string border;;
