@@ -14,7 +14,7 @@ module Private = struct
 
  
 
-let expand_name = Hex_connector_constructor.expand_name ;;  
+let expand_name = Hex_expsv_connector_constructor.expand_name ;;  
 
 
 let add_name nm cnnctr = 
