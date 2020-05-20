@@ -203,10 +203,9 @@ let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_p
 
 let helper1_during_subdirectory_renaming fw (old_subdir,new_subdir) pair=
    let (rootless_path,_)=pair in 
-   if Dfn_rootless.to_subdirectory rootless_path = old_subdir 
-   then let new_rootless_path=Dfn_rootless.rename_subdirectory_as (old_subdir,new_subdir) rootless_path in
-        recompute_all_info fw new_rootless_path
-   else pair;;
+   match Dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
+   Some(new_rootless_path) -> recompute_all_info fw new_rootless_path
+   |None -> pair;;
 
 let helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) l_pairs =
      Image.image (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs;;
