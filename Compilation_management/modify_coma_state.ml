@@ -311,21 +311,29 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
 let rename_subdirectory cs old_subdir new_subdir=
    let old_subdirname = Dfa_subdirectory.without_trailing_slash old_subdir
    and new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
-  let replace_sd=(
-     fun sd -> if sd = old_subdir then new_subdir else sd
-  ) in 
-  let cs1=Coma_state_field.modify_all_subdirs cs replace_sd in 
-  let cs2=Coma_state_field.modify_all_needed_dirs cs1 replace_sd in 
-   let new_dirs=Image.image replace_sd 
-        (Coma_state.directories cs2)
+  let rename_in_sd=(fun sd -> 
+     match Dfa_subdirectory.soak (old_subdir,new_subdir) sd with 
+     Some(new_sd) -> new_sd 
+     |None -> sd
+   ) in 
+  let cs1=Coma_state_field.modify_all_subdirs cs rename_in_sd in 
+  let cs2=Coma_state_field.modify_all_needed_dirs cs1 rename_in_sd in 
+   let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2)
    and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
-       (Dfn_endingless.replace_subdirectory (old_subdir,new_subdir) eless,is_compiled_correctly)
+       let final_eless = (
+           match Dfn_endingless.soak (old_subdir,new_subdir) eless with 
+        Some(new_eless) -> new_eless
+        |None -> eless
+       ) in 
+       (final_eless,is_compiled_correctly)
    )(Coma_state.preq_types cs2) in
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
    let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in
    let old_rootless_paths=Image.image (
-        Replace_inside.replace_inside_string (new_subdirname,old_subdirname)
+        fun s-> match Strung.soak (new_subdirname,old_subdirname) s with 
+        Some(new_s) -> new_s 
+        |None -> s
    ) new_rootless_paths in 
    let diff=Dircopy_diff.veil
     (Recently_deleted.of_string_list old_rootless_paths)
