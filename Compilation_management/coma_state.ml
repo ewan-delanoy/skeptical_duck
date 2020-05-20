@@ -132,7 +132,7 @@ let compute_long_subdir_name cs old_subdir new_subdir_short_name =
    if String.contains temp1 '/'
    then temp1 
    else let old_subdir_name = Dfa_subdirectory.without_trailing_slash old_subdir in 
-        let father_name = Cull_string.before_rightmost_possibly_all old_subdir_name '/' in 
+        let father_name = Cull_string.before_rightmost old_subdir_name '/' in 
         if father_name = ""
         then temp1
         else father_name^"/"^temp1 ) in 
