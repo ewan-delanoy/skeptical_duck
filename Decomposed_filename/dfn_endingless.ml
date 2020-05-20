@@ -42,7 +42,11 @@ let replace_subdirectory (old_subdir,new_subdir) eless =
        else 
    Dfn_endingless_t.J(r,new_subdir,m);;  
    
-
+let soak (old_subdir,new_subdir) eless =
+   let (Dfn_endingless_t.J(r,s,m)) = eless in 
+   match Dfa_subdirectory.soak (old_subdir,new_subdir) s with 
+   Some(new_s)->Some(Dfn_endingless_t.J(r,new_s,m))
+   |None -> None ;;
 
 
 let to_concrete_object (Dfn_endingless_t.J(r,s,m))=
