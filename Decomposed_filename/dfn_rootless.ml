@@ -25,7 +25,7 @@ let rename_subdirectory_as  (old_subdir,new_subdir) old_path=
 
 let soak (old_subdir,new_subdir) (Dfn_rootless_t.J(s,m,e)) =
    match Dfa_subdirectory.soak (old_subdir,new_subdir) s with 
-   Some(new_s)->Some(Dfn_rootless_t.J(s,m,e))
+   Some(new_s)->Some(Dfn_rootless_t.J(new_s,m,e))
    |None -> None ;;
 
 let to_ending (Dfn_rootless_t.J(s,m,e))=e;;
