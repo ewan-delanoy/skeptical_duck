@@ -117,11 +117,14 @@ exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 let find_subdir_from_suffix cs possibly_slashed_suffix =
   let suffix = Cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
   let temp1 = List.filter (
-    fun subdir -> Supstring.ends_with (Dfa_subdirectory.without_trailing_slash subdir) suffix
+    fun subdir -> Supstring.contains (Dfa_subdirectory.without_trailing_slash subdir) suffix
   ) (cs.Coma_state_t.directories) in 
   if List.length(temp1)<>1
   then raise(Find_subdir_from_suffix_exn(suffix,temp1))
-  else List.hd temp1;;
+  else let (Dfa_subdirectory_t.SD container) = List.hd temp1 in 
+       let j1 = Substring.leftmost_index_of_in suffix container in 
+       let j2 = j1 + (String.length suffix) -1 in 
+       Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
   
 let compute_long_subdir_name cs old_subdir new_subdir_short_name =
    let temp1 =  Cull_string.trim_slashes_on_the_right new_subdir_short_name in
