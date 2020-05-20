@@ -46,6 +46,11 @@ rename_endsubdirectory (SD("Haag"),"Java") (SD "Haag/Huug/King/Jordan");;
 *)              
 
 
+let soak (Dfa_subdirectory_t.SD(s1),Dfa_subdirectory_t.SD(s2)) (Dfa_subdirectory_t.SD(s))=
+   match Strung.soak (s1,s2) s with 
+   Some(t)->Some(Dfa_subdirectory_t.SD(t))
+   |None -> None ;;
+
 let to_concrete_object (Dfa_subdirectory_t.SD(s))=
     Concrete_object_t.Variant("Dfa_"^"subdirectory_t.SD",[Concrete_object_field.wrap_string(s)]);;
 
