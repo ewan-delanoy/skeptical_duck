@@ -336,3 +336,15 @@ let check =(to_intlist(z2)=z1);;
 
 *)  
 
+let soak (replacee,replacer) s=
+   if Substring.is_the_beginning_of replacee s 
+   then Some(replacer^(Cull_string.two_sided_cutting (replacee,"") s))
+   else None ;;
+
+(*
+
+soak ("abc/def","DEF/GHI") "abc/def/klm/pqr" ;;
+soak ("abc/def","DEF/GHI") "azc/def/klm/pqr" ;;
+soak ("abc/def","DEF/GHI") "azc/def" ;;
+
+*)
