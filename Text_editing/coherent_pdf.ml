@@ -47,6 +47,13 @@ module Helper = struct
   let number_of_pages_in_pdf full_pdfname =
     int_of_string(Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname));;
 
+  let pagesize_in_pdf full_pdfname =
+    (  
+    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemPageWidth -raw  "^full_pdfname)),
+    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemPageHeight -raw  "^full_pdfname))
+    );;
+
+
   let wrap_list_inside_workspace  l=
     let old_dir=Sys.getcwd() in 
     [Unix_command.cd (!workspace_directory)]@l@[Unix_command.cd old_dir];;
@@ -423,6 +430,10 @@ let merge parts whole=
 
 let number_of_pages_in_pdf ap = 
    Helper.number_of_pages_in_pdf (Absolute_path.to_string ap);;
+
+let pagesize_in_pdf ap = 
+   Helper.pagesize_in_pdf (Absolute_path.to_string ap);;
+
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
