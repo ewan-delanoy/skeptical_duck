@@ -106,6 +106,8 @@ module Bare = struct
       let all_pages=String.concat " " (Image.image snd temp4) in 
       [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
 
+  let make_file_walk pdfname= 
+      ["cp "^pdfname^".pdf walker_wghartnjklmiopfwhhokuuu.pdf"];;
    
   let prepare_recto_verso pdfname (i,j)=
         let excerpt_name = Helper.usual_name_in_extract_page_range pdfname (i,j)  in 
@@ -360,6 +362,7 @@ module Command = struct
   let insert_in_just_after =qdi Bare.unlabeled_insert_in_just_after;;
   let intertwine =qti Bare.unlabeled_intertwine;;
   let lay_down =uni Bare.lay_down;; 
+  let make_file_walk =uni Bare.make_file_walk;;
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
   let remove_page_number_in_in_a_total_of = tri Bare.unlabeled_remove_page_number_in_in_a_total_of;;
@@ -439,6 +442,9 @@ let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.image
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
+
+let make_file_walk  pdfname=Image.image Unix_command.uc 
+  (Command.make_file_walk  pdfname);;
 
 let merge parts whole=
   Image.image Unix_command.uc 
