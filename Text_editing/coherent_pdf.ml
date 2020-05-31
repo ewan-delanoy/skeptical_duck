@@ -69,16 +69,6 @@ end;;
 
 module Bare = struct 
 
-  let walker_name = "walker_wghartnjklmiopfwhhokuuu";;
-  let blank_name = "blank";;
-
-  let append_blank_to_walker r =
-     List.flatten(Ennig.doyle (
-      fun _->[
-          Helper.cpdf^walker_name^".pdf "^blank_name^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
-          "mv wghartnjklmiopfwhhokuuu.pdf "^walker_name^".pdf" ;
-      ]
-     ) 1 r);;
 
   let extract_page_range pdfname (i,j)=
     let output_name = Helper.usual_name_in_extract_page_range pdfname (i,j) in 
@@ -117,8 +107,7 @@ module Bare = struct
       let all_pages=String.concat " " (Image.image snd temp4) in 
       [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
 
-  let make_file_walk pdfname= 
-      ["cp "^pdfname^".pdf walker_wghartnjklmiopfwhhokuuu.pdf"];;
+  
    
   let prepare_recto_verso pdfname (i,j)=
         let excerpt_name = Helper.usual_name_in_extract_page_range pdfname (i,j)  in 
@@ -346,7 +335,31 @@ module Bare = struct
            ~num_even:num_even 
              ~final_name:final_name;;
 
-  let delete_file pdfname=["rm "^pdfname^".pdf"];;           
+  let delete_file pdfname=["rm "^pdfname^".pdf"];;     
+
+  module Walker = struct 
+
+  let walker_name_start = "walker";; 
+  let walker_name_end = "_wghartnjklmiopfwhhokuuu";; 
+  let walker_name = walker_name_start ^ walker_name_end;;
+  let blank_name = "blank";;
+
+  let append_blank r =
+     List.flatten(Ennig.doyle (
+      fun _->[
+          Helper.cpdf^walker_name^".pdf "^blank_name^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
+          "mv wghartnjklmiopfwhhokuuu.pdf "^walker_name^".pdf" ;
+      ]
+     ) 1 r);;
+
+  let explode num_of_pages= 
+      explode (walker_name_start,walker_name_end) num_of_pages;; 
+  let finish final_name= ["mv "^walker_name^".pdf "^final_name^".pdf"];; 
+
+  let initialize_with_file pdfname= 
+      ["cp "^pdfname^".pdf "^walker_name^".pdf"];;
+  
+   end ;;
 end;;
 
 
@@ -359,7 +372,6 @@ module Command = struct
   let qti=Helper.wrap_quintivar_inside_workspace;;
 
   let append_on_the_right =bi Bare.append_on_the_right;;
-  let append_blank_to_walker =uni Bare.append_blank_to_walker ;;
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
   let cut_into_small_pieces =tri Bare.cut_into_small_pieces;;
   let delete_file =uni Bare.delete_file;;
@@ -374,7 +386,6 @@ module Command = struct
   let insert_in_just_after =qdi Bare.unlabeled_insert_in_just_after;;
   let intertwine =qti Bare.unlabeled_intertwine;;
   let lay_down =uni Bare.lay_down;; 
-  let make_file_walk =uni Bare.make_file_walk;;
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
   let remove_page_number_in_in_a_total_of = tri Bare.unlabeled_remove_page_number_in_in_a_total_of;;
@@ -382,6 +393,15 @@ module Command = struct
   let replace_page_number_in_by=qdi Bare.unlabeled_replace_page_number_in_by;;
   let upside_down =uni Bare.upside_down;; 
      
+
+  module Walker = struct 
+
+  let initialize_with_file =uni Bare.Walker.initialize_with_file;;  
+  let append_blank =uni Bare.Walker.append_blank ;; 
+  let explode = uni Bare.Walker.explode ;; 
+  let finish final_name= uni Bare.Walker.finish;; 
+
+  end ;;
 
 end;;
 
@@ -456,9 +476,6 @@ let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.image
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
-
-let make_file_walk  pdfname=Image.image Unix_command.uc 
-  (Command.make_file_walk  pdfname);;
 
 let merge parts whole=
   Image.image Unix_command.uc 
