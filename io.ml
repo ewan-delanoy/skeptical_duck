@@ -2,6 +2,8 @@
 exception Open_in_exn of string ;;
 exception Open_out_exn of string ;;
 
+let max_size_for_reasonable_in_channel = ref(1000000);;
+
 module Private = struct 
 
 let make_filename_complete s=
@@ -50,9 +52,18 @@ let append_string_to_file s ap=
   let new_content=(read_whole_file ap)^s in
   overwrite_with ap new_content;; 
    
+let read_reasonable_command cmd =
+   let chan = Unix.open_process_in cmd in 
+   let max_reasonable_size = (!max_size_for_reasonable_in_channel) in 
+   let buf = Bytes.create max_reasonable_size  in 
+   let final_size = input chan buf 0 max_reasonable_size  in 
+   let _ = Unix.close_process_in chan in 
+   Bytes.sub_string buf 0 final_size ;;
+
 end ;; 
 
 let overwrite_with = Private.overwrite_with ;;
+let read_reasonable_command = Private.read_reasonable_command ;;
 let read_whole_file = Private.read_whole_file ;;
    
   
