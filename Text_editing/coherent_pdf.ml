@@ -69,6 +69,17 @@ end;;
 
 module Bare = struct 
 
+  let walker_name = "walker_wghartnjklmiopfwhhokuuu";;
+  let blank_name = "blank";;
+
+  let append_blank_to_walker r =
+     List.flatten(Ennig.doyle (
+      fun _->[
+          Helper.cpdf^walker_name^".pdf "^blank_name^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
+          "mv wghartnjklmiopfwhhokuuu.pdf "^walker_name^".pdf" ;
+      ]
+     ) 1 r);;
+
   let extract_page_range pdfname (i,j)=
     let output_name = Helper.usual_name_in_extract_page_range pdfname (i,j) in 
     [Helper.generic_extract_page_range pdfname (i,j) output_name];;
@@ -348,6 +359,7 @@ module Command = struct
   let qti=Helper.wrap_quintivar_inside_workspace;;
 
   let append_on_the_right =bi Bare.append_on_the_right;;
+  let append_blank_to_walker =uni Bare.append_blank_to_walker ;;
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
   let cut_into_small_pieces =tri Bare.cut_into_small_pieces;;
   let delete_file =uni Bare.delete_file;;
