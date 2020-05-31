@@ -1,6 +1,7 @@
 
 exception Open_in_exn of string ;;
 exception Open_out_exn of string ;;
+exception Dangerous_command_reading of string ;;
 
 let max_size_for_reasonable_in_channel = ref(1000000);;
 
@@ -58,6 +59,9 @@ let read_reasonable_command cmd =
    let buf = Bytes.create max_reasonable_size  in 
    let final_size = input chan buf 0 max_reasonable_size  in 
    let _ = Unix.close_process_in chan in 
+   if final_size >= max_reasonable_size 
+   then raise(Dangerous_command_reading(cmd))
+   else 
    Bytes.sub_string buf 0 final_size ;;
 
 end ;; 
