@@ -387,7 +387,9 @@ end;;
 
 module Other_Tools = struct 
 
-   let create_blank_page_with_prescribed_size (width,height) = 
+   let create_blank_page_with_prescribed_size (exact_width,exact_height) =
+      let width = Cull_string.before_rightmost_possibly_all exact_width '.'
+      and height =  Cull_string.before_rightmost_possibly_all exact_height '.' in 
       let source_for_blank_page = String.concat "\n"
       ["%PDF-1.4"; "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj";
        "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj";
