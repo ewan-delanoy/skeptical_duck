@@ -45,7 +45,7 @@ module Helper = struct
     common_part@last_part;;
 
   let number_of_pages_in_pdf full_pdfname =
-    Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname);;
+    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname));;
 
   let wrap_list_inside_workspace  l=
     let old_dir=Sys.getcwd() in 
