@@ -107,6 +107,28 @@ module Bare = struct
       let all_pages=String.concat " " (Image.image snd temp4) in 
       [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
 
+  let implode_following_a_special_order (pdf_name_start,pdf_name_end) special_order=
+      let temp1=More_unix.quick_beheaded_complete_ls (!workspace_directory) 
+      and ending=pdf_name_end^".pdf" in 
+      let temp2=List.filter(
+          fun fn->
+            (Supstring.begins_with fn pdf_name_start)&&
+            (Supstring.ends_with fn ending)
+      ) temp1 in 
+      let temp3=Option.filter_and_unpack (
+         fun fn->
+           let temp3=Cull_string.two_sided_cutting (pdf_name_start,ending) fn in 
+           try (fun i->Some(i,fn))(int_of_string temp3) with 
+           _->None
+      ) temp2 in 
+      let temp4=Option.filter_and_unpack (
+         fun k->
+           match Option.seek (fun (j,_)->j=k) temp3 with 
+           Some(_,fn)->Some fn 
+           | None -> None
+      ) special_order in 
+      let all_pages=String.concat " " temp4 in 
+      [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
   
    
   let prepare_recto_verso pdfname (i,j)=
@@ -356,6 +378,10 @@ module Bare = struct
       explode (walker_name_start,walker_name_end) num_of_pages;; 
   let finish final_name= ["mv "^walker_name^".pdf "^final_name^".pdf"];; 
 
+  let implode special_order =
+      implode_following_a_special_order  
+         (walker_name_start,walker_name_end) special_order ;;
+
   let initialize_with_file pdfname= 
       ["cp "^pdfname^".pdf "^walker_name^".pdf"];;
   
@@ -400,6 +426,7 @@ module Command = struct
   let append_blank =uni Bare.Walker.append_blank ;; 
   let explode = uni Bare.Walker.explode ;; 
   let finish final_name= uni Bare.Walker.finish;; 
+  let implode = uni Bare.Walker.implode ;; 
 
   end ;;
 
