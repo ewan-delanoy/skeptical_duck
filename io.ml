@@ -2,6 +2,8 @@
 exception Open_in_exn of string ;;
 exception Open_out_exn of string ;;
 
+module Private = struct 
+
 let make_filename_complete s=
   let home=Sys.getenv("HOME") in
   if s="" then Absolute_path.of_string(home) else
@@ -48,7 +50,10 @@ let append_string_to_file s ap=
   let new_content=(read_whole_file ap)^s in
   overwrite_with ap new_content;; 
    
-   
+end ;; 
+
+let overwrite_with = Private.overwrite_with ;;
+let read_whole_file = Private.read_whole_file ;;
    
   
              
