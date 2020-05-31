@@ -44,6 +44,9 @@ module Helper = struct
     ) (min_num+1) max_num in 
     common_part@last_part;;
 
+  let number_of_pages_in_pdf full_pdfname =
+    Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname);;
+
   let wrap_list_inside_workspace  l=
     let old_dir=Sys.getcwd() in 
     [Unix_command.cd (!workspace_directory)]@l@[Unix_command.cd old_dir];;
@@ -417,6 +420,9 @@ let lay_down  pdfname=Image.image Unix_command.uc
 let merge parts whole=
   Image.image Unix_command.uc 
   (Command.merge parts whole);; 
+
+let number_of_pages_in_pdf ap = 
+   Helper.number_of_pages_in_pdf (Absolute_path.to_string ap);;
 
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
