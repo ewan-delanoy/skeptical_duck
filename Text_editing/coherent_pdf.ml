@@ -68,9 +68,6 @@ end;;
 
 
 module Bare = struct 
-  
-  
-
 
   let extract_page_range pdfname (i,j)=
     let output_name = Helper.usual_name_in_extract_page_range pdfname (i,j) in 
@@ -372,6 +369,25 @@ module Command = struct
      
 
 end;;
+
+module Other_Tools = struct 
+
+   let create_blank_page_with_prescribed_size (width,height) = 
+      let source_for_blank_page = String.concat "\n"
+      ["%PDF-1.4"; "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj";
+       "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj";
+       "3 0 obj<</Type/Page/MediaBox[0 0 "^width^" "^height^"]/Parent 2 0 R/Resources<<>>>>endobj";
+       "xref"; "0 4"; "0000000000 65535 f "; "0000000009 00000 n ";
+      "0000000052 00000 n "; "0000000101 00000 n ";
+      "trailer<</Size 4/Root 1 0 R>>"; "startxref"; "178"; "%%EOF"] in 
+    let full_path_for_blank_page = (!(workspace_directory))^"/blank.pdf" in 
+    let blank_page_ap = Absolute_path.create_file full_path_for_blank_page in 
+    let _ = Io.overwrite_with blank_page_ap source_for_blank_page in 
+    blank_page_ap ;;
+
+
+end ;;
+
 
 let append_on_the_right file1 file2 = Image.image Unix_command.uc 
   (Command.append_on_the_right file1 file2);;
