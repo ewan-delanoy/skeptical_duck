@@ -49,8 +49,8 @@ module Helper = struct
 
   let pagesize_in_pdf full_pdfname =
     (  
-    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemPageWidth -raw  "^full_pdfname)),
-    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemPageHeight -raw  "^full_pdfname))
+    (Io.read_reasonable_command ("mdls -name kMDItemPageWidth -raw  "^full_pdfname)),
+    (Io.read_reasonable_command ("mdls -name kMDItemPageHeight -raw  "^full_pdfname))
     );;
 
 
