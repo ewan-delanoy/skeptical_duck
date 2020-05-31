@@ -1,4 +1,7 @@
 
+exception Open_in_exn of string ;;
+exception Open_out_exn of string ;;
+
 let make_filename_complete s=
   let home=Sys.getenv("HOME") in
   if s="" then Absolute_path.of_string(home) else
@@ -8,10 +11,10 @@ let make_filename_complete s=
   Absolute_path.of_string((Sys.getcwd ())^"/"^s);;
 
 let open_in_locally x=try open_in(x) with 
-_->failwith("File "^x^" cannot be opened in");;
+_->raise(Open_in_exn(x));;
 
 let open_out_locally x=try open_out(x) with 
-_->failwith("File "^x^" cannot be opened out");;  
+_->raise(Open_out_exn(x));;  
 
 let put_whole_content_of_file_in_buffer s=
   let x=Absolute_path.to_string(make_filename_complete(s)) in
@@ -44,8 +47,7 @@ let read_whole_file ap=
 let append_string_to_file s ap=
   let new_content=(read_whole_file ap)^s in
   overwrite_with ap new_content;; 
-
-let gmx = 7;;     
+   
    
    
   
