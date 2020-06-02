@@ -396,6 +396,16 @@ module Bare = struct
      (initialize_with_file pdfname)@
      (append_blank r) @ 
      (explode num_of_pages) ;;
+  
+  let implode_and_finish special_order old_path =
+      (implode_following_a_special_order  
+         (walker_name_start,walker_name_end) special_order)@
+      (cleanup_after_special_order 
+         (walker_name_start,walker_name_end) special_order)@
+      [
+        "mv "^walker_name^".pdf "^old_path^"_adurzhiet.pdf";
+        "rm -rf "^gas_factory
+      ] ;;
 
    end ;;
 end;;
@@ -443,6 +453,7 @@ module Command = struct
   let initialize_with_file =uni Bare.Walker.initialize_with_file;;  
 
   let init_append_and_explode = tri  Bare.Walker.init_append_and_explode ;;
+  let implode_and_finish = bi Bare.Walker.implode_and_finish ;; 
 
   end ;;
 
