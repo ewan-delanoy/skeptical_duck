@@ -125,7 +125,8 @@ module Bare = struct
       Option.filter_and_unpack (
          fun k->
           let full_filename = pdf_name_start^(string_of_int k)^ending in 
-          if Sys.file_exists full_filename 
+          let full_path = (!workspace_directory)^"/"^full_filename in 
+          if Sys.file_exists full_path 
           then Some ("rm "^full_filename) 
           else None 
       ) special_order ;;
