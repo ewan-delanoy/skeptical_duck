@@ -430,7 +430,7 @@ module Command = struct
   let append_blank =uni Bare.Walker.append_blank ;; 
   let cleanup = uni Bare.Walker.cleanup ;; 
   let explode = uni Bare.Walker.explode ;; 
-  let finish final_name= uni Bare.Walker.finish;; 
+  let finish  = uni Bare.Walker.finish;; 
   let implode = uni Bare.Walker.implode ;; 
   let initialize_with_file =uni Bare.Walker.initialize_with_file;;  
 
