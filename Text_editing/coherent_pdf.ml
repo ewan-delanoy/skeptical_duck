@@ -361,10 +361,12 @@ module Bare = struct
 
   module Walker = struct 
 
+  let blank_name = "blank";;
+  let gas_factory = "/Users/ewandelanoy/Desktop/Gas_factory" ;;
   let walker_name_start = "walker";; 
   let walker_name_end = "_wghartnjklmiopfwhhokuuu";; 
   let walker_name = walker_name_start ^ walker_name_end;;
-  let blank_name = "blank";;
+  
 
   let append_blank r =
      List.flatten(Ennig.doyle (
