@@ -375,12 +375,13 @@ module Bare = struct
      ) 1 r);;
   
   let cleanup special_order =
-     cleanup_after_special_order 
-         (walker_name_start,walker_name_end) special_order ;;
+     (cleanup_after_special_order 
+         (walker_name_start,walker_name_end) special_order)  ;;
 
   let explode num_of_pages= 
       explode (walker_name_start,walker_name_end) num_of_pages;; 
-  let finish final_name= ["mv "^walker_name^".pdf "^final_name^".pdf"];; 
+  let finish final_name= [
+      "mv "^walker_name^".pdf "^final_name^".pdf"];; 
 
   let implode special_order =
       implode_following_a_special_order  
@@ -389,6 +390,11 @@ module Bare = struct
   let initialize_with_file pdfname= 
       ["cp "^pdfname^".pdf "^walker_name^".pdf"];;
   
+  let init_append_and_explode pdfname r num_of_pages=
+     (initialize_with_file pdfname)@
+     (append_blank r) @ 
+     (explode num_of_pages) ;;
+
    end ;;
 end;;
 
@@ -433,6 +439,8 @@ module Command = struct
   let finish  = uni Bare.Walker.finish;; 
   let implode = uni Bare.Walker.implode ;; 
   let initialize_with_file =uni Bare.Walker.initialize_with_file;;  
+
+  let init_append_and_explode = tri  Bare.Walker.init_append_and_explode ;;
 
   end ;;
 
