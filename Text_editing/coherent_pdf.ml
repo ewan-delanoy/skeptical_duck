@@ -454,6 +454,35 @@ module Other_Tools = struct
     let _ = Io.overwrite_with blank_page_ap source_for_blank_page in 
     blank_page_ap ;;
 
+let make_booklet first_arg =   
+  let _ = Unix_command.uc ("mkdir -p "^Bare.Walker.gas_factory) in 
+  let _=(workspace_directory:= Bare.Walker.gas_factory) in 
+  let old_ap = Absolute_path.of_string first_arg in 
+  let s_old_ap = Absolute_path.to_string old_ap in 
+  let old_path = Cull_string.before_rightmost s_old_ap '.' in 
+  let old_name = Cull_string.after_rightmost old_path '/' in 
+  let _ = Image.image Unix_command.uc (Command.import  old_path) in 
+  let initial_nbr_of_pages = Helper.number_of_pages_in_pdf s_old_ap in 
+  let (width,height) = Helper.pagesize_in_pdf s_old_ap in  
+  let rounded_offset = 
+   (let r = (initial_nbr_of_pages) mod 4 in 
+   if r=0 then 0 else 4-r ) in 
+  let rounded_nbr_of_pages =  initial_nbr_of_pages + rounded_offset in 
+  let _ = create_blank_page_with_prescribed_size (width,height) in 
+  let _ = Image.image Unix_command.uc 
+  (Command.Walker.init_append_and_explode  old_name rounded_offset rounded_nbr_of_pages) in 
+  let special_order = Ennig.doyle (
+    fun j->let k=(j/4)in  match (j mod 4) with 
+      0 -> rounded_nbr_of_pages-2*k+1 
+    |1 ->  rounded_nbr_of_pages-2*k
+    |2 -> 2*k+1 
+    |_ -> 2*k+2
+  ) 1 rounded_nbr_of_pages in 
+  let _ = Image.image Unix_command.uc 
+  (Command.Walker.implode_and_finish special_order old_path) in 
+   ();;
+ 
+
 
 end ;;
 
