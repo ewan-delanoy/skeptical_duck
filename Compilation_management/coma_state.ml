@@ -901,8 +901,9 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
+    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
     let libs=String.concat(" ")
-      (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
     Option.add_element_on_the_right   
     [ 
       (Compilation_mode.executioner cmod)^
@@ -946,8 +947,9 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
+    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
     let libs=String.concat(" ")
-      (Image.image(fun z->Ocaml_library.file_for_library(z)^".cma") pre_libs2) in 
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
     Option.add_element_on_the_right  
     [ 
       ((Compilation_mode.executioner cmod)^
