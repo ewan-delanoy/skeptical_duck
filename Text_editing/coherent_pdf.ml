@@ -454,10 +454,16 @@ module Other_Tools = struct
     let _ = Io.overwrite_with blank_page_ap source_for_blank_page in 
     blank_page_ap ;;
 
+    let registered_directories = 
+      Image.image Directory_name.of_string
+      [
+        "/Users/ewandelanoy/Desktop";
+      ] ;; 
+
 let make_booklet_naively first_arg =   
   let _ = Unix_command.uc ("mkdir -p "^Bare.Walker.gas_factory) in 
   let _=(workspace_directory:= Bare.Walker.gas_factory) in 
-  let old_ap = Absolute_path.of_string first_arg in 
+  let old_ap = Directory_name.find_file_with_directory_list first_arg registered_directories in 
   let s_old_ap = Absolute_path.to_string old_ap in 
   let old_path = Cull_string.before_rightmost s_old_ap '.' in 
   let old_name = Cull_string.after_rightmost old_path '/' in 
@@ -485,7 +491,7 @@ let make_booklet_naively first_arg =
        print_string msg;;
  
   let make_booklet first_arg = try make_booklet_naively first_arg  with 
-   Tools_for_absolute_path.Inexistent_file (_) ->
+   Directory_name.File_not_found (_,_) ->
     let msg="\nN'em eus kavet "^first_arg^" e neblec'h. Amprouit eo skrivet mat an anv.\n" in 
     print_string msg;;  
 
