@@ -49,7 +49,7 @@ let delete_left_blanks s=
   let j0=tempf 0 in
   String.sub s j0 (n-j0);;
 
-let absolute_path_of_string0 s0=
+let parse_unix_filename_shortcuts s0=
   let s1=delete_left_blanks(s0) in
   let dp1=number_of_double_points(s1) in
   if (dp1>0) 
@@ -74,15 +74,17 @@ let absolute_path_of_string0 s0=
   
  exception Inexistent_file of string;; 
   
- let absolute_path_of_string1 s=
-  let s0=absolute_path_of_string0(s) in
+ let opt_of_string s=
+  let s0=parse_unix_filename_shortcuts(s) in
   if Sys.file_exists(s0)
-  then if s0="/" then s0 else
+  then if s0="/" then Some s0 else
        let s1=remove_trailing_slash s0 in
        if Sys.is_directory s1
-       then s1^"/"
-       else s1
-  else raise(Inexistent_file(s));;
+       then Some(s1^"/")
+       else Some s1
+  else None;;
   
  let of_string s=
-   (* Capitalize_directory_names.cdn *)(absolute_path_of_string1 s);;           
+   match opt_of_string s with 
+   Some result -> result  
+   |None -> raise(Inexistent_file(s));; 
