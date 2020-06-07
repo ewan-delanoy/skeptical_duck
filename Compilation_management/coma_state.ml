@@ -931,18 +931,16 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let s_root=Dfa_root.connectable_to_subpath(root cs) in
     let workdir=
       (Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) 
-    and ending=Compilation_mode.ending_for_element_module cmod 
+    and ending=Compilation_mode.ending_for_nonlast_module cmod 
+    and last_ending=Compilation_mode.ending_for_last_module cmod 
     and product_ending=Compilation_mode.ending_for_final_product cmod  in
     let cm_elements_but_the_last = Image.image (
       fun (subdir,nm)->(Dfa_module.to_line nm)^ending
     ) nm_deps_with_subdirs in 
     let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
     let nm_name = (Cull_string.after_rightmost unpointed_short_path '/') in 
-    let last_cm_element=nm_name^ending in 
-    let all_cm_elements= (
-      if cmod = Compilation_mode_t.Executable 
-      then cm_elements_but_the_last
-      else (cm_elements_but_the_last) @ [last_cm_element]) in 
+    let last_cm_element=nm_name^last_ending in 
+    let all_cm_elements= cm_elements_but_the_last) @ [last_cm_element] in 
     let libs_for_prow = 
       Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list

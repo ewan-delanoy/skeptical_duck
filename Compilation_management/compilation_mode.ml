@@ -5,16 +5,23 @@
 
 *)
 
+exception Ending_for_last_module_exn ;; 
+exception Ending_for_nonlast_module_exn ;; 
 
 let workspace = function 
    Compilation_mode_t.Usual->Coma_constant.build_subdir
                      |Debug->Coma_constant.debug_build_subdir
                      |Executable->Coma_constant.exec_build_subdir;;
 
-let ending_for_element_module = function 
-   Compilation_mode_t.Usual->".cmo"
+let ending_for_last_module = function 
+   Compilation_mode_t.Usual-> raise(Ending_for_last_module_exn)
                      |Debug->".cmo"
-                     |Executable->".cmx";;
+                     |Executable->".ml";;
+
+let ending_for_nonlast_module = function 
+   Compilation_mode_t.Usual-> raise(Ending_for_nonlast_module_exn)
+                     |Debug->".cmo"
+                     |Executable->".cmx";;                     
 
 let executioner = function 
    Compilation_mode_t.Usual->"ocamlc -bin-annot "
