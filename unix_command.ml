@@ -8,6 +8,7 @@ Wrapper on the Sys dot command function.
 
 
 exception Command_failed of string;;
+exception Command_failed_just_now ;;
 
 module Private = struct
 
@@ -47,6 +48,20 @@ let uc s=
    then hardcore_uc s
    else mild_uc s;;
 
+let debug_individual_uc (j,s) =
+    let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
+    let _=(print_string msg;flush stdout) in
+    let i = command s in 
+    if i<>0 
+    then raise(Command_failed_just_now)
+    else (print_string "Successful.\n";flush stdout);;
+
+let rec helper_for_debug_multiple_uc (j,l)=
+   match l with 
+   [] -> () 
+   |cmd :: other_cmds ->
+     let _ = debug_individual_uc (j,cmd) in 
+     helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
 
 
 end;;
@@ -60,6 +75,7 @@ let rec conditional_multiple_uc commands=match commands with
     then conditional_multiple_uc other_commands 
     else false;;
            
+let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           
 
 let hardcore_uc = Private.hardcore_uc ;;
 
