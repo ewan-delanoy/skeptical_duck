@@ -1070,10 +1070,11 @@ let list_of_commands_for_end_part_of_feydeau cmod cs (_,opt_rootless_path)=
    cmds;;   
 
 let list_of_commands_for_ternary_feydeau cmod cs short_path=
-   let pre_cmds1=list_of_commands_for_shaft_part_of_feydeau cmod cs (None,Some(short_path)) in 
+   let pair = (None,Some(short_path)) in 
+   let pre_cmds1=list_of_commands_for_shaft_part_of_feydeau cmod cs pair in 
    let cmds1=Image.image (fun (_,_,cmd)->cmd) pre_cmds1
-   and cmds2=list_of_commands_for_connecting_part_of_feydeau cmod cs (None,Some(short_path))
-   and cmds3=list_of_commands_for_end_part_of_feydeau cmod cs (None,Some(short_path)) in 
+   and cmds2=list_of_commands_for_connecting_part_of_feydeau cmod cs pair
+   and cmds3=list_of_commands_for_end_part_of_feydeau cmod cs pair in 
    cmds1@cmds2@cmds3;;
 
 
