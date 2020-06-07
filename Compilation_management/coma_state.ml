@@ -939,7 +939,10 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
     let nm_name = (Cull_string.after_rightmost unpointed_short_path '/') in 
     let last_cm_element=nm_name^ending in 
-    let all_cm_elements= (cm_elements_but_the_last) @ [last_cm_element] in 
+    let all_cm_elements= (
+      if cmod = Compilation_mode_t.Executable 
+      then cm_elements_but_the_last
+      else (cm_elements_but_the_last) @ [last_cm_element]) in 
     let libs_for_prow = 
       Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
