@@ -793,7 +793,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in
     let ending=(if mli_reg then ".mli" else ".ml") in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
-    let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
+    let opt_exec_move=(if (cmod=Compilation_mode_t.Executable)&&(not(mli_reg)) 
                        then Some("mv "^s_fhm^".o "^s_root^workdir) 
                        else None) in 
     let central_cmd=
