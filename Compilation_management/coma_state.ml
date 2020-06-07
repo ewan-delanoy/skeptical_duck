@@ -879,8 +879,8 @@ let command_for_module_separate_compilation cmod cs eless=
 
 exception  Command_for_predebuggable_or_preexecutable_exn;;
 
-let command_for_predebuggable_or_preexecutable cmod cs short_path=
-    if cmod=Compilation_mode_t.Usual then raise(Command_for_predebuggable_or_preexecutable_exn) else 
+let command_for_predebuggable  cs short_path=
+    let cmod = Compilation_mode_t.Debug in 
     let full_path=Absolute_path.of_string(
         (Dfa_root.connectable_to_subpath(root cs))^short_path) in 
     let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
@@ -901,7 +901,7 @@ let command_for_predebuggable_or_preexecutable cmod cs short_path=
     let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
+    let extension=".cma" in
     let libs=String.concat(" ")
       (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
     Option.add_element_on_the_right   
@@ -1060,7 +1060,7 @@ let list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootless_path
    |Compilation_mode_t.Executable ->[] 
    |_->
       let rootless_path=Option.unpack opt_rootless_path in 
-      Modern.command_for_predebuggable_or_preexecutable cmod cs rootless_path) in 
+      Modern.command_for_predebuggable cs rootless_path) in 
    cmds;;
 
 
