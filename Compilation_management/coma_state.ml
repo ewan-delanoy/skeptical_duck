@@ -1053,7 +1053,8 @@ let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modulenames,opt_root
 let list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootless_path)=
    let cmds=(
    match cmod with 
-   Compilation_mode_t.Usual->[] 
+    Compilation_mode_t.Usual
+   |Compilation_mode_t.Debug ->[] 
    |_->
       let rootless_path=Option.unpack opt_rootless_path in 
       Modern.command_for_predebuggable_or_preexecutable cmod cs rootless_path) in 
