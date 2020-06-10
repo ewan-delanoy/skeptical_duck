@@ -57,6 +57,16 @@ let extension x=try (naive_extension x) with
  let cleaned_ls x=
    List.filter test_for_cleaniness (ls x);;
    
+let ls_with_directories_only dir=
+   let temp1 = cleaned_ls dir in 
+   Option.filter_and_unpack (
+     fun ap -> 
+       if is_a_directory ap 
+       then let s_ap = Absolute_path.to_string ap in 
+            Some(Directory_name.of_string s_ap)
+       else None
+   )  temp1 ;;
+
  let dirty_ones_in_ls x=
    List.filter (function u->not(test_for_cleaniness u) )(ls x);; 
  
@@ -75,6 +85,9 @@ let complete_ls dir=
    let x=Absolute_path.of_string s_dir in
    Explicit.explore_tree adhoc_ls [x];;   
 
+let complete_ls_with_directories_only x=
+  Explicit.explore_tree ls_with_directories_only [x];;
+  
 
  let complete_ls_with_nondirectories_only x=
   List.filter(is_a_nondirectory_or_a_nib)(complete_ls x);;
@@ -116,28 +129,7 @@ let beheaded_simple_ls dir=
   let temp1=ls dir in
   Image.image (fun ap->
    Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
-(*  
-let create_conventional_context dir subdirs files_with_content =
-   (* we assume that each file in files_with_content has its subir in the subdirs list *)
-   let s_dir = Directory_name.connectable_to_subpath dir in 
-   let commands_for_subdirs = Image.image (
-      fun subdir->
-         "mkdir -p "^s_dir^(Dfa_subdirectory.without_trailing_slash subdir)
-   ) subdirs in 
-   let _=Unix_command.conditional_multiple_uc commands_for_subdirs in 
-   let temp1 = Option.filter_and_unpack (
-      fun (rootless,content)->
-          let fn = s_dir^(Dfn_rootless.to_line rootless) in 
-          if Sys.file_exists fn 
-          then None
-         else let ap = Absolute_path.of_string fn in 
-              Some("touch "^fn,ap,content)
-   ) files_with_content in 
-   List.iter (fun (cmd,ap,content)->
-        let i=Unix_command.hardcore_uc cmd in 
-        if i=0 then Io.overwrite_with ap content
-    ) temp1 ;;
-*)    
+
 
 let clear_directory_contents root =
     let s_root = Dfa_root.connectable_to_subpath root in 
@@ -195,6 +187,7 @@ let all_files_with_endings dir l_endings=
    temp2;;  
 let beheaded_simple_ls=Private.beheaded_simple_ls;;
 let complete_ls=Private.complete_ls;;
+let complete_ls_with_directories_only=Private.complete_ls_with_directories_only;;
 let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
 let clear_directory_contents = Private.clear_directory_contents;;
 let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
