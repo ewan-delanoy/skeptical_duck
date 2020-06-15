@@ -22,7 +22,7 @@ let instance ={
      ] ;
     ignored_special_files =  ["README";"makefile";"debugged.ml"];
     name_of_clone_directroy = "/Users/ewandelanoy/Downloads/Clone" ; 
-    clone_command = "git clone https://github.com/ewan-delanoy/skeptical_duck" ;
+    clone_command = "git clone https://github.com/ewan-delanoy/skeptical_duck " ;
 
 };;
   
