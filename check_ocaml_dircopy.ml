@@ -6,64 +6,25 @@ Usable on a github clone of the remote master version.
 
 *)
 
-
-let is_admissible s=
-  (List.for_all (
-     fun edg->not(Supstring.ends_with s ("."^edg))
-  ) ["depend";"ocamlinit";"cmi";"cmo";"DS_Store";"txt";"php";"js";
-     "ocaml_made";"ocaml_debuggable"])
-  &&
-   (List.for_all (
-     fun beg->not(Supstring.begins_with s beg)
-  ) (
-    (Image.image Dfa_subdirectory.connectable_to_subpath
-     [
+let instance ={
+    Dircopy_checker_t.ignored_endings = 
+     ["depend";"ocamlinit";"cmi";"cmo";"DS_Store";"txt";"php";"js";
+      "ocaml_made";"ocaml_debuggable"] ;
+    ignored_subdirs =  [
        Coma_constant.abandoned_ideas_subdir;
        Coma_constant.automatically_generated_subdir;
+       Coma_constant.build_subdir;
        Coma_constant.githubbed_archive_subdir;
        Coma_constant.persistent_compilation_data_subdir;
        Coma_constant.temporary_subdir;
-     ])
-    @
-    ["_build/";".vscode/";".merlin"]
-    )
-   )  
-  &&
-  (
-    not(
-    List.mem s
-    ["makefile"]
-    )
-  )
-  ;;
+       Dfa_subdirectory.of_line ".vscode/";
+       Dfa_subdirectory.of_line ".merlin/";
+     ] ;
+    ignored_special_files =  ["README";"makefile";"debugged.ml"];
+    name_of_clone_directroy = "/Users/ewandelanoy/Downloads/Clone" ; 
+    clone_command = "git clone https://github.com/ewan-delanoy/skeptical_duck" ;
+
+};;
   
-let name_of_clone_directory="/Users/ewandelanoy/Downloads/Clone";;  
-let github_clone_command=
-"git clone https://github.com/ewan-delanoy/skeptical_duck "^
-name_of_clone_directory;;  
+let check = Dircopy_checker.check instance ;;
 
-exception Failure_in_clone_directory_creation;;
-exception Failure_during_github_cloning;;
-
-let check root_dir=
-  let i=(
-    if Sys.file_exists(name_of_clone_directory)
-    then Unix_command.uc("rm -rf "^name_of_clone_directory) 
-    else 0
-  ) in
-  if i<>0
-  then raise(Failure_in_clone_directory_creation)
-  else 
-  let _=Unix_command.uc("mkdir -p "^name_of_clone_directory) in
-  let remotedir=Dfa_root.of_line name_of_clone_directory in
-  let j=Unix_command.uc github_clone_command in
-  if j<>0
-  then raise(Failure_during_github_cloning)
-  else 
-  let diff=Prepare_dircopy_update.compute_restricted_diff
-     root_dir remotedir (Coma_constant.git_ignored_subdirectories,["README";"makefile";"debugged.ml"]) in
-  let rc1=List.filter is_admissible (Dircopy_diff.recently_deleted diff)
-  and rc2=List.filter is_admissible (Dircopy_diff.recently_changed diff)
-  and rc3=List.filter is_admissible (Dircopy_diff.recently_created diff) in
-  (rc1,rc2,rc3);;
-           
