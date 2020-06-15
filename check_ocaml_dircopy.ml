@@ -18,9 +18,8 @@ let instance ={
        Coma_constant.persistent_compilation_data_subdir;
        Coma_constant.temporary_subdir;
        Dfa_subdirectory.of_line ".vscode/";
-       Dfa_subdirectory.of_line ".merlin/";
      ] ;
-    ignored_special_files =  ["README";"makefile";"debugged.ml"];
+    ignored_special_files =  ["README";"makefile";"debugged.ml";".merlin"];
     name_of_clone_directroy = "/Users/ewandelanoy/Downloads/Clone" ; 
     clone_command = "git clone https://github.com/ewan-delanoy/skeptical_duck " ;
 
