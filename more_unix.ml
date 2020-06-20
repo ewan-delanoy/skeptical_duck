@@ -57,21 +57,51 @@ let extension x=try (naive_extension x) with
  let cleaned_ls x=
    List.filter test_for_cleaniness (ls x);;
    
-let ls_with_ignored_subdirs (ignored_subdirs,s_dir)= 
-   let temp1 = Array.to_list (Sys.readdir s_dir) in 
-   let ls_content = List.filter
-   (fun fname->List.for_all (fun sd_name ->
-      not(Substring.is_the_beginning_of sd_name fname)) 
-    ignored_subdirs
-   ) 
-   temp1 and 
-   remaining_subdirs = Option.filter_and_unpack (
-      fun subdir -> 
-        if Supstring.begins_with subdir s_dir 
-        then Some (Cull_string.two_sided_cutting (s_dir,"") subdir)
+let select_by_prefix subdir forbidden_subdirs =
+  Option.filter_and_unpack (
+     fun forb_subdir -> 
+        if Supstring.begins_with forb_subdir subdir 
+        then Some(Cull_string.two_sided_cutting (subdir,"") forb_subdir)
         else None
-   ) ignored_subdirs in 
-   (remaining_subdirs,ls_content);;
+  ) forbidden_subdirs ;; 
+
+let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
+   let temp1 = Array.to_list (Sys.readdir dir) in
+   let temp2 = Option.filter_and_unpack (
+      fun fname -> if List.for_all (
+          fun forb_subdir -> 
+           not(Supstring.begins_with fname forb_subdir)
+        )  forbidden_subdirs
+           then Some(dir^fname)
+           else None
+   ) temp1 in 
+   let is_a_dir  = (fun s->is_a_directory(Absolute_path.AP(s))) in 
+   let (found_dirs,found_nondirs) = List.partition is_a_dir temp2 in 
+   let new_constraints = Image.image (
+     fun full_subdir_path ->
+        let subdir = Cull_string.two_sided_cutting (dir,"") full_subdir_path in 
+       (full_subdir_path^"/",select_by_prefix subdir forbidden_subdirs)
+   ) found_dirs in 
+   (found_nondirs,found_dirs,new_constraints);;
+
+let rec helper_for_complete_ls_with_ignored_subdirs 
+  (treated_nondirs,treated_dirs,to_be_treated) = match to_be_treated with 
+  [] -> (treated_nondirs,treated_dirs)
+  |(dir,forbidden_subdirs) :: others -> 
+    let (found_nondirs,found_dirs,new_constraints) = 
+        ls_with_ignored_subdirs (dir,forbidden_subdirs) in 
+    let new_treated_nondirs = List.rev_append found_nondirs treated_nondirs 
+    and new_treated_dirs =  List.rev_append found_dirs treated_dirs 
+    and new_to_be_treated = List.rev_append new_constraints others in 
+    let n = string_of_int(List.length new_to_be_treated) in 
+    let msg = " "^n^" remaining ...\n" in 
+    let _= (print_string msg;flush stdout) in 
+    helper_for_complete_ls_with_ignored_subdirs 
+    (new_treated_nondirs,new_treated_dirs,new_to_be_treated) ;;
+
+let complete_ls_with_ignored_subdirs (dir,forbidden_subdirs) = 
+   helper_for_complete_ls_with_ignored_subdirs 
+  ([],[],[dir,forbidden_subdirs]);;
 
 let ls_with_directories_only dir=
    let temp1 = cleaned_ls dir in 
@@ -212,6 +242,7 @@ let all_files_with_endings dir l_endings=
 let beheaded_simple_ls=Private.beheaded_simple_ls;;
 let complete_ls=Private.complete_ls;;
 let complete_ls_with_directories_only=Private.complete_ls_with_directories_only;;
+let complete_ls_with_ignored_subdirs=Private.complete_ls_with_ignored_subdirs;;
 let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
 let clear_directory_contents = Private.clear_directory_contents;;
 let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
