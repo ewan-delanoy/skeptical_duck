@@ -57,6 +57,22 @@ let extension x=try (naive_extension x) with
  let cleaned_ls x=
    List.filter test_for_cleaniness (ls x);;
    
+let ls_with_ignored_subdirs (ignored_subdirs,s_dir)= 
+   let temp1 = Array.to_list (Sys.readdir s_dir) in 
+   let ls_content = List.filter
+   (fun fname->List.for_all (fun sd_name ->
+      not(Substring.is_the_beginning_of sd_name fname)) 
+    ignored_subdirs
+   ) 
+   temp1 and 
+   remaining_subdirs = Option.filter_and_unpack (
+      fun subdir -> 
+        if Supstring.begins_with subdir s_dir 
+        then Some (Cull_string.two_sided_cutting (s_dir,"") subdir)
+        else None
+   ) ignored_subdirs in 
+   (remaining_subdirs,ls_content);;
+
 let ls_with_directories_only dir=
    let temp1 = cleaned_ls dir in 
    Option.filter_and_unpack (
@@ -84,6 +100,14 @@ let complete_ls dir=
    let s_dir=Directory_name.connectable_to_subpath dir in
    let x=Absolute_path.of_string s_dir in
    Explicit.explore_tree adhoc_ls [x];;   
+
+let adhoc_ls_with_ignored_subdirs ap=
+   let s=Absolute_path.to_string ap in
+   if not(is_a_directory ap) 
+   then []
+   else 
+   let dir=Directory_name.of_string s in
+   ls dir;;
 
 let complete_ls_with_directories_only x=
   Explicit.explore_tree ls_with_directories_only [x];;
