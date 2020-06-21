@@ -86,7 +86,7 @@ let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
 
 let rec helper_for_complete_ls_with_ignored_subdirs 
   (treated_nondirs,treated_dirs,to_be_treated) = match to_be_treated with 
-  [] -> (treated_nondirs,treated_dirs)
+  [] -> (Image.image Absolute_path.of_string treated_nondirs,treated_dirs)
   |(dir,forbidden_subdirs) :: others -> 
     let (found_nondirs,found_dirs,new_constraints) = 
         ls_with_ignored_subdirs (dir,forbidden_subdirs) in 
@@ -94,14 +94,20 @@ let rec helper_for_complete_ls_with_ignored_subdirs
     and new_treated_dirs =  List.rev_append found_dirs treated_dirs 
     and new_to_be_treated = List.rev_append new_constraints others in 
     let n = string_of_int(List.length new_to_be_treated) in 
-    let msg = " "^n^" remaining ...\n" in 
+    let msg = " "^n^" to go ...\n" in 
     let _= (print_string msg;flush stdout) in 
     helper_for_complete_ls_with_ignored_subdirs 
     (new_treated_nondirs,new_treated_dirs,new_to_be_treated) ;;
 
 let complete_ls_with_ignored_subdirs (dir,forbidden_subdirs) = 
+   let s_dir = Directory_name.connectable_to_subpath dir in 
+   let (treated_nondirs,treated_dirs) = 
    helper_for_complete_ls_with_ignored_subdirs 
-  ([],[],[dir,forbidden_subdirs]);;
+  ([],[],[s_dir,
+         Image.image Dfa_subdirectory.without_trailing_slash forbidden_subdirs]) in 
+   (treated_nondirs,Image.image 
+     (fun x->Dfa_subdirectory.of_line(Cull_string.two_sided_cutting (s_dir,"") x)) 
+   treated_dirs);;
 
 let ls_with_directories_only dir=
    let temp1 = cleaned_ls dir in 
