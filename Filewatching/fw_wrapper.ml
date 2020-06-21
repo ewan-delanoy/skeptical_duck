@@ -365,39 +365,6 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     (fw3,(rootless::changed_w_files,changed_sw_files));;
 
 
-let refresh fw =
-   let config = fw.Fw_wrapper_t.configuration in 
-   let the_root = config.Fw_configuration_t.root in 
-   let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-   let list1 = More_unix.complete_ls_with_nondirectories_only the_dir in 
-   let list2 = Option.filter_and_unpack(
-     fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
-              _->None 
-   ) list1 in
-   let (specials,nonspecials) = List.partition (
-      fun rootless -> List.mem rootless config.Fw_configuration_t.special_git_saved_files 
-   ) list2 in  
-   let nonspecials_to_be_watched1 = List.filter (
-      fun rootless ->  (List.mem (Dfn_rootless.to_ending rootless)
-         config.Fw_configuration_t.allowed_endings )
-         &&
-         (
-            not(List.mem (Dfn_rootless.to_subdirectory rootless)
-             config.Fw_configuration_t.git_ignored_subdirectories
-            )
-         )
-   ) nonspecials in 
-   let the_cleaner = (fw.Fw_wrapper_t.configuration).Fw_configuration_t.final_cleaner in 
-   let nonspecials_to_be_watched = Fw_final_cleaner.clean the_cleaner  nonspecials_to_be_watched1 in 
-   let w_files = Image.image (recompute_all_info fw) nonspecials_to_be_watched 
-   and sw_files = Image.image (recompute_all_info fw) specials in 
-   {
-      fw with 
-      Fw_wrapper_t.watched_files = w_files;
-       special_watched_files = sw_files;
-   }
-   ;;
-
 let nonspecial_absolute_paths fw= 
    let root = Fw_wrapper_field.root fw in 
    Image.image (
@@ -437,8 +404,6 @@ let inspect_and_update = Private.inspect_and_update;;
 let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
 
 let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_if_it_exists;;
-
-let refresh = Private.refresh ;;
 
 let register_rootless_path = Private.register_rootless_path;;
 
