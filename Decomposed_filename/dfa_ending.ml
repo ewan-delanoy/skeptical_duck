@@ -35,7 +35,22 @@ and mli =  Dfa_ending_t.E "mli" ;;
 
 let all_ocaml_endings= [mll;mly;ml;mli];;
 
+let all_cee_endings = Image.image (fun s->Dfa_ending_t.E s) ["h";"c"];;
+
+
+
 let compute_on_all_ocaml_endings f=(f ml,f mli,f mll,f mly);;
+
+let endings_for_compilable_files = 
+   (all_ocaml_endings) @ all_cee_endings ;;
+
+let endings_for_noncompilable_readable_files = 
+     Image.image (fun s->Dfa_ending_t.E s) ["txt";"html";"php";"js";"ejs"];; 
+
+let endings_for_readable_files = 
+     endings_for_compilable_files @ endings_for_noncompilable_readable_files ;;
+
+
 
 let to_concrete_object (Dfa_ending_t.E(e)) =
     Concrete_object_t.Variant ("Dfa_"^"ending_t.E",[Concrete_object_field.wrap_string(e)]);;
