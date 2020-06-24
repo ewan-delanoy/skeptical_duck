@@ -50,31 +50,6 @@ let constructor (l1,l2,l3)= {
   git_ignored_files = l3;    
 };;
 
-
-
-let clean cleaner l_to_be_cleaned=
-    let pairs = cleaner.Fw_final_cleaner_t.linked_dependencies in 
-    let l_to_be_excluded = Option.filter_and_unpack (fun 
-       (Dfn_rootless_t.J(s,m,e))->
-        match Option.seek (fun (has_priority,_)->has_priority=e) pairs with 
-         None -> None 
-        |Some(_,does_not_have_priority)-> 
-           Some(Dfn_rootless_t.J(s,m,does_not_have_priority))
-    ) l_to_be_cleaned in
-    let to_be_excluded = Set_of_polys.sort(l_to_be_excluded) in 
-    let test_for_admissible_termination = (
-        fun (Dfn_rootless_t.J(_,m,_))->
-           List.for_all (fun tmn ->
-             not(Supstring.ends_with (Dfa_module.to_line m) tmn)) cleaner.Fw_final_cleaner_t.reserved_terminations
-    ) in 
-    List.filter (fun x->
-       (Set_of_polys.nmem x to_be_excluded)
-       && 
-        (test_for_admissible_termination x)
-       &&
-         (not(List.mem x cleaner.Fw_final_cleaner_t.git_ignored_files)) 
-       ) l_to_be_cleaned  ;; 
-
 let default = 
   constructor(Coma_constant.endings_for_cleaning,
                Coma_constant.reserved_terminations,
