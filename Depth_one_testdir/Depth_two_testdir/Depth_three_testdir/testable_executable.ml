@@ -5,6 +5,8 @@
 
 *)
 
+(*
+
 let unique_argument = (
   fun arr->
     if Array.length(arr)<2
@@ -17,3 +19,6 @@ let filler = Total_ordering.standard;;
 let message = "Hello World ! \n You just wrote : "^unique_argument^"\n\n";;
 
 print_string message;;
+
+
+*)
