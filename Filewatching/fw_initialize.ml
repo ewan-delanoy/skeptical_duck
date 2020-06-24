@@ -26,8 +26,10 @@ let first_init config =
             )
          )
    ) nonspecials in 
-   let the_cleaner =config.Fw_configuration_t.final_cleaner in 
-   let nonspecials_to_be_watched = Fw_final_cleaner.clean the_cleaner  nonspecials_to_be_watched1 in 
+   let nonspecials_to_be_watched = 
+   List.filter (fun x->
+         (not(List.mem x config.Fw_configuration_t.ignored_files)) 
+       ) nonspecials_to_be_watched1 in 
    (nonspecials_to_be_watched,specials);;
 
 let second_init config (nonspecials_to_be_watched,specials) =
