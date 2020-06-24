@@ -21,6 +21,7 @@ let allowed_endings_label            = salt ^ "allowed_endings";;
 let git_ignored_subdirectories_label = salt ^ "git_ignored_subdirectories";;
 let special_git_saved_files_label    = salt ^ "special_git_saved_files";;
 let final_cleaner_label              = salt ^ "final_cleaner";;
+let ignored_files_label              = salt ^ "ignored_files";;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
@@ -30,6 +31,7 @@ let of_concrete_object ccrt_obj =
       git_ignored_subdirectories = Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object(g git_ignored_subdirectories_label);
       special_git_saved_files = Concrete_object_field.to_list Dfn_rootless.of_concrete_object (g special_git_saved_files_label);
       final_cleaner = Fw_final_cleaner.of_concrete_object (g final_cleaner_label); 
+      ignored_files = Concrete_object_field.to_list Dfn_rootless.of_concrete_object (g ignored_files_label);
    };; 
 
 let to_concrete_object config=
@@ -40,6 +42,7 @@ let to_concrete_object config=
     git_ignored_subdirectories_label, Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object config.Fw_configuration_t.git_ignored_subdirectories;
     special_git_saved_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object config.Fw_configuration_t.special_git_saved_files;
     final_cleaner_label, Fw_final_cleaner.to_concrete_object config.Fw_configuration_t.final_cleaner;
+    ignored_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object config.Fw_configuration_t.ignored_files;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -56,6 +59,7 @@ let constructor (root_dir,edgs,ign_subdirs,spc_files,deps,tmns,ign_files)=
       git_ignored_subdirectories = ign_subdirs;
       special_git_saved_files = spc_files;
       final_cleaner = Fw_final_cleaner.constructor(deps,tmns,ign_files);
+      ignored_files = ign_files;
     };; 
 
 let default root_dir = 
@@ -65,6 +69,7 @@ let default root_dir =
       git_ignored_subdirectories = Coma_constant.git_ignored_subdirectories;
       special_git_saved_files = Coma_constant.special_git_saved_files;
       final_cleaner = Fw_final_cleaner.default;
+      ignored_files = Coma_constant.git_ignored_files;
     };; 
 
 
