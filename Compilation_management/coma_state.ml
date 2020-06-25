@@ -1720,4 +1720,24 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
 
 end ;;
 
+let test_for_foreign root ap =
+   match (
+     try Some(Dfn_common.decompose_absolute_path_using_root ap root) with 
+              _->None 
+   ) with 
+   None -> true 
+   |Some(rootless) ->
+      (
+       not(List.mem
+          (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_readable_files)   
+      )
+      ;;
+
+let census_of_foreigners cs=
+   let config = (cs.Coma_state_t.frontier_with_unix_world).Fw_wrapper_t.configuration in 
+   let  the_root = config.Fw_configuration_t.root in 
+   let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
+   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.git_ignored_subdirectories in 
+   List.filter (test_for_foreign the_root) list1;;
+
 
