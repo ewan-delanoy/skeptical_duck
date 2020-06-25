@@ -62,8 +62,8 @@ let text_for_big_constants_file_in_next_world =
      None -> let sr = Image.image (fun (rootless,_)->rootless) in 
              ( 
                Coma_state.ordered_list_of_modules cs,
-               sr (fw.Fw_wrapper_t.watched_files),
-               sr (fw.Fw_wrapper_t.special_watched_files) )
+               sr (fw.Fw_wrapper_t.compilable_files),
+               sr (fw.Fw_wrapper_t.noncompilable_files) )
     |Some(needed_modules,imposed_subdirs)-> 
           let selector = Option.filter_and_unpack(
              fun (rootless,_)->
@@ -71,11 +71,12 @@ let text_for_big_constants_file_in_next_world =
                then Some(rootless)
                else None
           ) in   
-          let nonspecials= selector (fw.Fw_wrapper_t.watched_files)
-          and specials= selector (fw.Fw_wrapper_t.special_watched_files) in 
-          let all_needed_modules= (Image.image Dfn_rootless.to_module nonspecials) @ needed_modules in 
+          let compilables= selector (fw.Fw_wrapper_t.compilable_files)
+          and noncompilables= selector (fw.Fw_wrapper_t.noncompilable_files) in 
+          let all_needed_modules= (Image.image Dfn_rootless.to_module compilables) 
+                           @ needed_modules in 
           let (modules_in_good_order,all_nonspecials)=rootlesses_coming_from_modules cs all_needed_modules in 
-          (modules_in_good_order,all_nonspecials,specials);;
+          (modules_in_good_order,all_nonspecials,noncompilables);;
 
   let commands_for_copying cs rootlesses=
      let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_field.root cs) 

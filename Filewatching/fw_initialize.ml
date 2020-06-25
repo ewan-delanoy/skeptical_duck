@@ -7,7 +7,7 @@
 let first_init config =
    let the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.git_ignored_subdirectories in 
+   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 
    let list2 = Option.filter_and_unpack(
      fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
               _->None 
@@ -24,7 +24,7 @@ let first_init config =
           (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_compilable_files
    ) list3;;
 
-let second_init config (nonspecials_to_be_watched,specials) =
+let second_init config (compilables_to_be_watched,noncompilables) =
     let the_root = config.Fw_configuration_t.root in  
     let compute_info=( fun path->
       let s_root = Dfa_root.connectable_to_subpath the_root
@@ -35,8 +35,8 @@ let second_init config (nonspecials_to_be_watched,specials) =
    ) in 
      {
        Fw_wrapper_t.configuration = config;
-       Fw_wrapper_t.watched_files = Image.image compute_info nonspecials_to_be_watched;
-       special_watched_files = Image.image compute_info specials;
+       Fw_wrapper_t.compilable_files = Image.image compute_info compilables_to_be_watched;
+       noncompilable_files = Image.image compute_info noncompilables;
      };;
 
 let init config = 

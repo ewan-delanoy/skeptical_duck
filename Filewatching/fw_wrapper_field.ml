@@ -31,23 +31,23 @@ let pair_to_crobj (watched_file,modif_date)=
 let salt = "Fw_"^"wrapper_t.";;
 
 let configuration_label         = salt ^ "configuration";;
-let watched_files_label         = salt ^ "watched_files";;
-let special_watched_files_label = salt ^ "special_watched_files";;
+let compilable_files_label      = salt ^ "compilable_files";;
+let noncompilable_files_label = salt ^ "noncompilable_files";;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
    {
       Fw_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
-      watched_files = Concrete_object_field.to_list pair_of_crobj (g watched_files_label);
-      special_watched_files = Concrete_object_field.to_list pair_of_crobj (g special_watched_files_label);
+      compilable_files = Concrete_object_field.to_list pair_of_crobj (g compilable_files_label);
+      noncompilable_files = Concrete_object_field.to_list pair_of_crobj (g noncompilable_files_label);
    };; 
 
 let to_concrete_object fw=
    let items= 
    [
     configuration_label, Fw_configuration.to_concrete_object fw.Fw_wrapper_t.configuration;
-    watched_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.watched_files;
-    special_watched_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.special_watched_files;
+    compilable_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.compilable_files;
+    noncompilable_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.noncompilable_files;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -62,13 +62,13 @@ let get_content fw rootless =
         
 let get_mtime_or_zero_if_file_is_nonregistered fw rootless =
    match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-    ((fw.Fw_wrapper_t.watched_files)@(fw.Fw_wrapper_t.special_watched_files)) with 
+    ((fw.Fw_wrapper_t.compilable_files)@(fw.Fw_wrapper_t.noncompilable_files)) with 
    None -> "0."
   |Some(_,mtime)-> mtime  ;; 
 
 let get_mtime fw rootless  =
   match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-    ((fw.Fw_wrapper_t.watched_files)@(fw.Fw_wrapper_t.special_watched_files)) with 
+    ((fw.Fw_wrapper_t.compilable_files)@(fw.Fw_wrapper_t.noncompilable_files)) with 
    None -> raise (Rootless_not_found(rootless))
   |Some(_,mtime)-> mtime  ;; 
 

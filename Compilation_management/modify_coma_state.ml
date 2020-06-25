@@ -14,7 +14,7 @@ let forget_module cs mod_name=
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
 
 let forget_rootless_path cs rootless_path=
-   let new_fw=Fw_wrapper.remove_watched_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
+   let new_fw=Fw_wrapper.remove_compilable_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
 
 

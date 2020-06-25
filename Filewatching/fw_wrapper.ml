@@ -34,11 +34,11 @@ let update_in_list_of_pairs fw  to_be_updated pairs  =
 
 let update_some_files fw (w_files,sw_files) = {
     fw with 
-      Fw_wrapper_t.watched_files = update_in_list_of_pairs fw w_files (fw.Fw_wrapper_t.watched_files) ;
-      special_watched_files = update_in_list_of_pairs fw sw_files (fw.Fw_wrapper_t.special_watched_files) ;
+      Fw_wrapper_t.compilable_files = update_in_list_of_pairs fw w_files (fw.Fw_wrapper_t.compilable_files) ;
+      noncompilable_files = update_in_list_of_pairs fw sw_files (fw.Fw_wrapper_t.noncompilable_files) ;
 } ;;
 
-let remove_nonspecial_watched_files fw rootless_paths =
+let remove_nonnoncompilable_files fw rootless_paths =
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
@@ -46,12 +46,12 @@ let remove_nonspecial_watched_files fw rootless_paths =
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
    {
       fw with 
-      Fw_wrapper_t.watched_files = List.filter (fun (path,_)->
+      Fw_wrapper_t.compilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
-      ) (fw.Fw_wrapper_t.watched_files)  
+      ) (fw.Fw_wrapper_t.compilable_files)  
    };;
 
-let remove_special_watched_files fw rootless_paths=
+let remove_noncompilable_files fw rootless_paths=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
@@ -59,12 +59,12 @@ let remove_special_watched_files fw rootless_paths=
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
    {
       fw with 
-      Fw_wrapper_t.special_watched_files = List.filter (fun (path,_)->
+      Fw_wrapper_t.noncompilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
-      ) (fw.Fw_wrapper_t.special_watched_files)  
+      ) (fw.Fw_wrapper_t.noncompilable_files)  
    };;
 
-let remove_watched_files fw rootless_paths=
+let remove_compilable_files fw rootless_paths=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
@@ -72,12 +72,12 @@ let remove_watched_files fw rootless_paths=
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
    {
       fw with 
-      Fw_wrapper_t.watched_files = List.filter (fun (path,_)->
+      Fw_wrapper_t.compilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
-      ) (fw.Fw_wrapper_t.watched_files)  ;
-      Fw_wrapper_t.special_watched_files = List.filter (fun (path,_)->
+      ) (fw.Fw_wrapper_t.compilable_files)  ;
+      Fw_wrapper_t.noncompilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
-      ) (fw.Fw_wrapper_t.special_watched_files)  
+      ) (fw.Fw_wrapper_t.noncompilable_files)  
    };;
 
 
@@ -88,12 +88,12 @@ let forget_module fw mod_name =
         if (Dfn_rootless.to_module path)=mod_name 
         then Some path
         else None
-   ) fw.Fw_wrapper_t.watched_files in 
-   remove_watched_files fw the_files;;
+   ) fw.Fw_wrapper_t.compilable_files in 
+   remove_compilable_files fw the_files;;
 
 let forget fw x=
       if String.contains x '.'
-      then remove_watched_files fw [Dfn_rootless.of_line x]
+      then remove_compilable_files fw [Dfn_rootless.of_line x]
       else forget_module fw (Dfa_module.of_line(x));;
 
 
@@ -105,8 +105,8 @@ let register_rootless_path fw rootless_path=
    else
     {
       fw with 
-      Fw_wrapper_t.watched_files =  
-        (fw.Fw_wrapper_t.watched_files)@[recompute_all_info fw rootless_path]  
+      Fw_wrapper_t.compilable_files =  
+        (fw.Fw_wrapper_t.compilable_files)@[recompute_all_info fw rootless_path]  
     };;
 
 let register_special_rootless_path fw rootless_path= 
@@ -117,13 +117,13 @@ let register_special_rootless_path fw rootless_path=
    else
     {
       fw with 
-      Fw_wrapper_t.special_watched_files =  
-        (fw.Fw_wrapper_t.special_watched_files)@[recompute_all_info fw rootless_path]  
+      Fw_wrapper_t.noncompilable_files =  
+        (fw.Fw_wrapper_t.noncompilable_files)@[recompute_all_info fw rootless_path]  
     };;
 
 
 
-let relocate_watched_files_to fw rootless_paths new_subdir=
+let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
     and s_subdir = Dfa_subdirectory.connectable_to_subpath new_subdir in 
     let displacements_to_be_made = Image.image (
@@ -133,13 +133,13 @@ let relocate_watched_files_to fw rootless_paths new_subdir=
     let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
    {
       fw with 
-      Fw_wrapper_t.watched_files = Image.image (fun pair->
+      Fw_wrapper_t.compilable_files = Image.image (fun pair->
          let (path,_)=pair in 
          if(List.mem path rootless_paths) 
          then let new_path = Dfn_rootless.relocate_to path new_subdir in 
               (new_path,recompute_mtime fw new_path)
          else pair
-      ) (fw.Fw_wrapper_t.watched_files)  
+      ) (fw.Fw_wrapper_t.compilable_files)  
    };;
 
 let relocate_module_to fw mod_name new_subdir=
@@ -148,8 +148,8 @@ let relocate_module_to fw mod_name new_subdir=
         if (Dfn_rootless.to_module path)=mod_name 
         then Some path
         else None
-   ) fw.Fw_wrapper_t.watched_files in 
-   relocate_watched_files_to fw the_files new_subdir;;
+   ) fw.Fw_wrapper_t.compilable_files in 
+   relocate_compilable_files_to fw the_files new_subdir;;
 
 let helper_during_string_replacement fw (old_string,new_string) accu old_list=
     let new_list =Image.image (
@@ -172,14 +172,14 @@ let replace_string fw (old_string,new_string)=
     and ref_for_special_ones=ref[] in 
     let (new_usual_files,changed_usual_files)=
         helper_during_string_replacement 
-           fw (old_string,new_string) ref_for_usual_ones fw.Fw_wrapper_t.watched_files 
+           fw (old_string,new_string) ref_for_usual_ones fw.Fw_wrapper_t.compilable_files 
     and  (new_special_files,changed_special_files)=
         helper_during_string_replacement 
-           fw (old_string,new_string) ref_for_special_ones fw.Fw_wrapper_t.special_watched_files   in 
+           fw (old_string,new_string) ref_for_special_ones fw.Fw_wrapper_t.noncompilable_files   in 
     let new_fw ={
        fw with
-       Fw_wrapper_t.watched_files         = new_usual_files ;
-       Fw_wrapper_t.special_watched_files = new_special_files ;
+       Fw_wrapper_t.compilable_files         = new_usual_files ;
+       Fw_wrapper_t.noncompilable_files = new_special_files ;
     }  in 
     (new_fw,(changed_usual_files,changed_special_files));;         
        
@@ -188,16 +188,16 @@ let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_p
    let absolute_path=Dfn_full.to_absolute_path  full_path in 
    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files old_name new_name absolute_path in 
-   let new_watched_files =Image.image (
+   let new_compilable_files =Image.image (
        fun pair->
          let (path,_)=pair in 
          if path = rootless_path 
          then recompute_all_info fw path
          else pair 
-   ) (fw.Fw_wrapper_t.watched_files) in 
+   ) (fw.Fw_wrapper_t.compilable_files) in 
    {
       fw with 
-       Fw_wrapper_t.watched_files = new_watched_files
+       Fw_wrapper_t.compilable_files = new_compilable_files
    };;  
 
 
@@ -220,8 +220,8 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
         let _=Unix_command.hardcore_uc cmd in 
    {
       fw with
-      Fw_wrapper_t.watched_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.watched_files)  ;
-      Fw_wrapper_t.special_watched_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.special_watched_files)  ;
+      Fw_wrapper_t.compilable_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.compilable_files)  ;
+      Fw_wrapper_t.noncompilable_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.noncompilable_files)  ;
    };;   
 
 let helper1_during_inspection fw accu pair=
@@ -240,13 +240,13 @@ let inspect_and_update fw =
     let ref_for_usual_ones=ref[] 
     and ref_for_special_ones=ref[] in 
     let (new_usual_files,changed_usual_files)=
-        helper2_during_inspection fw ref_for_usual_ones fw.Fw_wrapper_t.watched_files 
+        helper2_during_inspection fw ref_for_usual_ones fw.Fw_wrapper_t.compilable_files 
     and  (new_special_files,changed_special_files)=
-        helper2_during_inspection fw ref_for_special_ones fw.Fw_wrapper_t.special_watched_files   in 
+        helper2_during_inspection fw ref_for_special_ones fw.Fw_wrapper_t.noncompilable_files   in 
     let new_fw ={
        fw with
-       Fw_wrapper_t.watched_files         = new_usual_files ;
-       Fw_wrapper_t.special_watched_files = new_special_files ;
+       Fw_wrapper_t.compilable_files         = new_usual_files ;
+       Fw_wrapper_t.noncompilable_files = new_special_files ;
     }  in 
     (new_fw,(changed_usual_files,changed_special_files));;         
 
@@ -268,17 +268,17 @@ let rename_module_in_filename_only fw rootlesses_to_be_renamed new_module =
    let l_cmds = Image.image (helper1_inside_module_renaming_in_filename fw s_new_module) rootlesses_to_be_renamed in 
    let replacements = Image.image (helper2_inside_module_renaming_in_filename fw new_module) rootlesses_to_be_renamed  in            
    let _ =Unix_command.conditional_multiple_uc l_cmds in  
-   let old_watched_files = fw.Fw_wrapper_t.watched_files  in    
-   let new_watched_files = Image.image (
+   let old_compilable_files = fw.Fw_wrapper_t.compilable_files  in    
+   let new_compilable_files = Image.image (
      fun pair->
        let (rootless,_)=pair in 
        match Option.seek (fun (old_one,_)->old_one=rootless) replacements with  
        Some(_,new_rootless_path)-> recompute_all_info fw new_rootless_path  
        |None -> pair 
-   )  old_watched_files in 
+   )  old_compilable_files in 
    {
       fw with 
-      Fw_wrapper_t.watched_files = new_watched_files
+      Fw_wrapper_t.compilable_files = new_compilable_files
    }     ;;
     
 let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
@@ -288,22 +288,22 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
       let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless_path)) in 
       Look_for_module_names.change_module_name_in_ml_file old_module new_module ap 
   ) files_to_be_rewritten in 
-  let old_watched_files = fw.Fw_wrapper_t.watched_files  in    
-  let new_watched_files = Image.image (
+  let old_compilable_files = fw.Fw_wrapper_t.compilable_files  in    
+  let new_compilable_files = Image.image (
      fun pair->
        let (rootless,_)=pair in 
        if List.mem rootless files_to_be_rewritten
        then recompute_all_info fw rootless 
        else pair 
-   )  old_watched_files in 
+   )  old_compilable_files in 
    {
       fw with 
-      Fw_wrapper_t.watched_files = new_watched_files
+      Fw_wrapper_t.compilable_files = new_compilable_files
    }     ;;
       
 let rename_module_in_special_files fw (old_module,new_module) =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-  let old_special_files = fw.Fw_wrapper_t.special_watched_files   in    
+  let old_special_files = fw.Fw_wrapper_t.noncompilable_files   in    
   let new_special_files = Image.image (
      fun pair->
        let (rootless,mtime)=pair in 
@@ -316,7 +316,7 @@ let rename_module_in_special_files fw (old_module,new_module) =
    )  old_special_files in 
    {
       fw with 
-      Fw_wrapper_t.special_watched_files = new_special_files
+      Fw_wrapper_t.noncompilable_files = new_special_files
    }     ;;   
 
 let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_rewritten=
@@ -346,12 +346,12 @@ let replace_string_in_list_of_pairs fw (replacee,replacer) l=
 
 let replace_string fw (replacee,replacer) =
    let rep = replace_string_in_list_of_pairs fw (replacee,replacer)  in 
-   let (new_w_files,changed_w_files) =  rep fw.Fw_wrapper_t.watched_files 
-   and (new_sw_files,changed_sw_files) =  rep fw.Fw_wrapper_t.special_watched_files in 
+   let (new_w_files,changed_w_files) =  rep fw.Fw_wrapper_t.compilable_files 
+   and (new_sw_files,changed_sw_files) =  rep fw.Fw_wrapper_t.noncompilable_files in 
    let new_fw ={
        fw with
-       Fw_wrapper_t.watched_files = new_w_files;
-       special_watched_files = new_sw_files;
+       Fw_wrapper_t.compilable_files = new_w_files;
+       noncompilable_files = new_sw_files;
    } in 
    (new_fw,(changed_w_files,changed_sw_files));;
 
@@ -372,16 +372,16 @@ let nonspecial_absolute_paths fw=
         Absolute_path.of_string (
            Dfn_common.recompose_potential_absolute_path root rootless
         )
-   ) fw.Fw_wrapper_t.watched_files;;
+   ) fw.Fw_wrapper_t.compilable_files;;
    
 let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
    let root = Fw_wrapper_field.root fw in 
-   if List.exists ( fun (r,_)->r=rootless ) fw.Fw_wrapper_t.watched_files 
+   if List.exists ( fun (r,_)->r=rootless ) fw.Fw_wrapper_t.compilable_files 
    then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
         let _=Io.overwrite_with ap new_content in 
         {
            fw with 
-           Fw_wrapper_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.Fw_wrapper_t.watched_files);
+           Fw_wrapper_t.compilable_files = update_in_list_of_pairs fw [rootless] (fw.Fw_wrapper_t.compilable_files);
         }
    else fw;;
 
@@ -391,8 +391,8 @@ end;;
 
 let default root_dir= {
    Fw_wrapper_t.configuration = Fw_configuration.default(root_dir);
-   watched_files = [];
-   special_watched_files = [];
+   compilable_files = [];
+   noncompilable_files = [];
 };; 
 
 let forget = Private.forget;;
@@ -409,7 +409,7 @@ let register_rootless_path = Private.register_rootless_path;;
 
 let relocate_module_to = Private.relocate_module_to;;
 
-let remove_watched_files = Private.remove_watched_files;;
+let remove_compilable_files = Private.remove_compilable_files;;
 
 let rename_module = Private.rename_module_everywhere;;
 

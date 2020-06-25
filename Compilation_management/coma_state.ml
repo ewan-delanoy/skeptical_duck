@@ -1737,7 +1737,7 @@ let census_of_foreigners cs=
    let config = (cs.Coma_state_t.frontier_with_unix_world).Fw_wrapper_t.configuration in 
    let  the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.git_ignored_subdirectories in 
+   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 
    List.filter (test_for_foreign the_root) list1;;
 
 

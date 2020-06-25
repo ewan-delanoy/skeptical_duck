@@ -128,5 +128,4 @@ let reserved_terminations = ["executable"];;
 
 let git_ignored_files = [rootless_path_for_debugged_file];;
 
-let special_git_saved_files = [];;
     
