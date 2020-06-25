@@ -99,7 +99,7 @@ let rec helper_for_complete_ls_with_ignored_subdirs
     helper_for_complete_ls_with_ignored_subdirs 
     (new_treated_nondirs,new_treated_dirs,new_to_be_treated) ;;
 
-let complete_ls_with_ignored_subdirs (dir,forbidden_subdirs) = 
+let complete_ls_with_ignored_subdirs dir forbidden_subdirs = 
    let s_dir = Directory_name.connectable_to_subpath dir in 
    let (treated_nondirs,treated_dirs) = 
    helper_for_complete_ls_with_ignored_subdirs 
