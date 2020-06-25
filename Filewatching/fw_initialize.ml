@@ -12,19 +12,17 @@ let first_init config =
      fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
               _->None 
    ) list1 in
-   let (specials,nonspecials) = List.partition (
-      fun rootless -> (List.mem rootless config.Fw_configuration_t.special_git_saved_files)
-          || ((Dfn_rootless.to_ending rootless)=Dfa_ending.of_line "txt") 
-   ) list2 in  
-   let nonspecials_to_be_watched1 = List.filter (
-      fun rootless ->  (List.mem (Dfn_rootless.to_ending rootless)
-         config.Fw_configuration_t.allowed_endings )
-   ) nonspecials in 
-   let nonspecials_to_be_watched = 
-   List.filter (fun x->
-         (not(List.mem x config.Fw_configuration_t.ignored_files)) 
-       ) nonspecials_to_be_watched1 in 
-   (nonspecials_to_be_watched,specials);;
+   let list3 = 
+   List.filter (fun rootless->
+         (not(List.mem rootless config.Fw_configuration_t.ignored_files)) 
+         &&
+         (List.mem
+          (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_readable_files)
+       ) list2 in 
+   List.partition (
+      fun rootless -> List.mem
+          (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_compilable_files
+   ) list3;;
 
 let second_init config (nonspecials_to_be_watched,specials) =
     let the_root = config.Fw_configuration_t.root in  
