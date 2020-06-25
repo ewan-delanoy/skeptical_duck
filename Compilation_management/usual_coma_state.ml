@@ -19,6 +19,8 @@ let all_modules ()=Coma_state.all_modules (!(Private.main_ref)) ;;
 
 let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
 
+let census_of_foreigners = Coma_state.census_of_foreigners (!(Private.main_ref));;
+
 let clean_debug_dir ()=Coma_state.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
 
