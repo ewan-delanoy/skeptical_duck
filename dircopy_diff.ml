@@ -61,6 +61,13 @@ let to_concrete_object dirdiff=
 
 end;;
 
+let empty_one  = 
+   {
+      Dircopy_diff_t.recently_deleted = [];
+      recently_changed = [];
+      recently_created = [];
+   };; 
+
 let explain x=
    let tempf=(fun (msg,l)->
      if l=[]
