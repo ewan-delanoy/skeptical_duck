@@ -433,7 +433,7 @@ module And_backup = struct
 
             let backup cs diff opt= 
             if not(Dircopy_diff.is_empty diff) 
-            then Backup_coma_state.backup
+            then Reflect_change_in_github.backup
                   (Coma_state.root cs,Coma_state.backup_dir cs,Coma_state.gitpush_after_backup cs) 
                   diff opt
             else (print_string "No recent changes to commit ...";flush stdout);;
