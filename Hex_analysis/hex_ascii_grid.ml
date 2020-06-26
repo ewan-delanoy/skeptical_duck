@@ -94,7 +94,7 @@ let to_ascii_drawing grid =
 
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
-let path_for_sheet = Absolute_path.of_string "Hex_analysis/hex_config_sheet.txt";;
+let path_for_sheet = Absolute_path.of_string "Hex_analysis/Hex_gitignored_text_files/hex_config_sheet.txt";;
 
 let print_on_sheet_for_editing grid =
     let drawing = to_ascii_drawing grid in 
