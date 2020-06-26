@@ -40,6 +40,30 @@ let summarize_short_path_list l=
     let temp1=Image.image summarize_short_path l in
     Ordered.sort Total_ordering.silex_for_strings temp1;;
 
+
+let salt = "Dircopy_"^"diff.";;
+
+let recently_deleted_label = salt ^ "recently_deleted";;
+let recently_changed_label = salt ^ "recently_changed";;
+let recently_created_label = salt ^ "recently_created";;
+
+let of_concrete_object ccrt_obj = 
+   let g=Concrete_object_field.get_record ccrt_obj in
+   {
+      recently_deleted = Concrete_object_field.to_string_list (g recently_deleted_label);
+      recently_changed = Concrete_object_field.to_string_list (g recently_changed_label);
+      recently_created = Concrete_object_field.to_string_list (g recently_created_label);
+   };; 
+
+let to_concrete_object dirdiff=
+   let items= 
+   [
+    recently_deleted_label, Concrete_object_field.of_string_list dirdiff.recently_deleted;
+    recently_changed_label, Concrete_object_field.of_string_list dirdiff.recently_changed;
+    recently_created_label, Concrete_object_field.of_string_list dirdiff.recently_created;
+   ]  in
+   Concrete_object_t.Record items;;
+
 end;;
 
 let explain x=
@@ -63,7 +87,8 @@ let is_empty x=
   (x.recently_deleted,x.recently_created,x.recently_changed)=
    ([],[],[]);;   
    
-   
+let of_concrete_object = Private.of_concrete_object ;;
+let to_concrete_object = Private.to_concrete_object ;;   
    
    
    
