@@ -4,6 +4,10 @@
 
 *)
 
+module Private = struct 
+
+let indicator_for_git_ignoring = "_gitignored_"
+
 let first_init config =
    let the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
@@ -18,11 +22,15 @@ let first_init config =
          &&
          (List.mem
           (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_readable_files)
+         &&
+         (not(Supstring.contains (Dfn_rootless.to_line rootless) indicator_for_git_ignoring)) 
        ) list2 in 
    List.partition (
       fun rootless -> List.mem
           (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_compilable_files
    ) list3;;
+
+end ;;
 
 let second_init config (compilables_to_be_watched,noncompilables) =
     let the_root = config.Fw_configuration_t.root in  
@@ -40,7 +48,6 @@ let second_init config (compilables_to_be_watched,noncompilables) =
      };;
 
 let init config = 
-   let (nonspecials_to_be_watched,specials) = first_init config in 
+   let (nonspecials_to_be_watched,specials) = Private.first_init config in 
    second_init config (nonspecials_to_be_watched,specials);;
 
-   
