@@ -40,7 +40,7 @@ let compute_nondeleted_in_diff (sourcedir,l) destdir=
   
 let compute_diff (sourcedir,l) destdir=
    let (created,changed)=compute_nondeleted_in_diff (sourcedir,l) destdir in
-   Dircopy_diff.veil
+   Dircopy_diff.constructor
    
    	(Recently_deleted.of_string_list(compute_deleted_in_diff sourcedir destdir))
    	changed

@@ -112,7 +112,7 @@ let forget_module cs mn=
   let cs3=Coma_state.set_directories cs2 new_dirs in 
   let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
   let diff=
-      Dircopy_diff.veil
+      Dircopy_diff.constructor
       (Recently_deleted.of_string_list ordered_paths)
       (Recently_changed.of_string_list [])
       (Recently_created.of_string_list []) in
@@ -123,7 +123,7 @@ let forget_rootless_path cs rootless_path=
    let full_path = Dfn_join.root_to_rootless the_root rootless_path in  
    let cut_ap=Dfn_rootless.to_line rootless_path in
    let diff=
-    Dircopy_diff.veil
+    Dircopy_diff.constructor
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in 
@@ -156,7 +156,7 @@ let recompile (cs,changed_rootlesses) =
 )(Coma_state.ordered_list_of_modules cs) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
 let diff_veiler =(fun paths->
-       Dircopy_diff.veil
+       Dircopy_diff.constructor
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list paths)
     (Recently_created.of_string_list [])
@@ -211,7 +211,7 @@ let register_rootless_path cs rp_line=
   let rootless_path = Dfn_rootless.of_line rp_line in 
   let mlx=Dfn_join.root_to_rootless (Coma_state.root cs) rootless_path in
   let diff=
-    Dircopy_diff.veil
+    Dircopy_diff.constructor
     (Recently_deleted.of_string_list [])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list [rp_line]) in
@@ -246,7 +246,7 @@ let relocate_module_to cs mn new_subdir=
      (Dfn_endingless.rename_endsubdirectory (old_subdir,s_subdir) h,bowl)) old_preq_types in 
   let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
   let  new_rootless_paths = Coma_state.rootless_paths_at_module cs5 mn  in 
-  let diff=Dircopy_diff.veil
+  let diff=Dircopy_diff.constructor
     (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_rootless_paths) in
@@ -302,7 +302,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
   let (cs9,_)=recompile (cs8,[]) in 
-   let diff=Dircopy_diff.veil
+   let diff=Dircopy_diff.constructor
     (Recently_deleted.of_string_list old_files)
     (Recently_changed.of_string_list modified_files)
     (Recently_created.of_string_list new_files) in
@@ -335,7 +335,7 @@ let rename_subdirectory cs old_subdir new_subdir=
         Some(new_s) -> new_s 
         |None -> s
    ) new_rootless_paths in 
-   let diff=Dircopy_diff.veil
+   let diff=Dircopy_diff.constructor
     (Recently_deleted.of_string_list old_rootless_paths)
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list new_rootless_paths) in
