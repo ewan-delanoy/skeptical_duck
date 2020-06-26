@@ -8,8 +8,6 @@
 
 type t={
      frontier_with_unix_world : Fw_wrapper_t.t;
-     dir_for_backup : Dfa_root_t.t;
-     gitpush_after_backup : bool;
      modules : Dfa_module_t.t list ;
      subdir_for_module : (Dfa_module_t.t * Dfa_subdirectory_t.t ) list;
      principal_ending_for_module : (Dfa_module_t.t * Dfa_ending_t.t ) list;

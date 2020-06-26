@@ -389,8 +389,8 @@ let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
 end;;
 
 
-let default root_dir= {
-   Fw_wrapper_t.configuration = Fw_configuration.default(root_dir);
+let default (root_dir,backup_dir,g_after_b)= {
+   Fw_wrapper_t.configuration = Fw_configuration.default(root_dir,backup_dir,g_after_b);
    compilable_files = [];
    noncompilable_files = [];
 };; 

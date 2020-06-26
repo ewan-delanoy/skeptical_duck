@@ -104,7 +104,7 @@ end ;;
 
 
 let cwc cs opt_selection=
-    let destdir=Coma_big_constant.Next_World.root in 
+    let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple in 
     let conv_files = (
       match opt_selection with 
       None -> Coma_constant.conventional_files_with_usual_content
@@ -115,12 +115,12 @@ let cwc cs opt_selection=
        destdir
       Coma_constant.git_ignored_subdirectories 
         conv_files) in 
-    let (modules_in_good_order,nonspecials,specials) = 
+    let (modules_in_good_order,compilables,noncompoilables) = 
         Private.rootlesses_to_be_copied cs opt_selection in 
     let _=Image.image Unix_command.uc 
-     (Private.commands_for_copying cs (nonspecials@specials)) in
-    let faraway_config = Fw_configuration.default destdir in 
-    let faraway_fw1 = Fw_initialize.second_init faraway_config (nonspecials,specials) in  
+     (Private.commands_for_copying cs (compilables@noncompoilables)) in
+    let faraway_config = Fw_configuration.default (destdir,destbackupdir,destgab) in 
+    let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompoilables) in  
     let faraway_fw = Fw_wrapper.overwrite_nonspecial_file_if_it_exists faraway_fw1 
                    Coma_constant.rootless_path_for_parametersfile 
                      Private.text_for_big_constants_file_in_next_world in 
@@ -129,7 +129,7 @@ let cwc cs opt_selection=
         |Some(_)->Coma_state_field.restrict cs modules_in_good_order
     ) in 
     let faraway_cs1 = Coma_state_field.transplant 
-       restricted_cs (faraway_fw,Coma_big_constant.Next_World.backup_dir,Coma_big_constant.Next_World.githubbing) in 
+       restricted_cs faraway_fw in 
     let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
     let (faraway_cs2,_) = Modify_coma_state.Internal.recompile (faraway_cs,[]) in 
     let _=Save_coma_state.save faraway_cs2 in   

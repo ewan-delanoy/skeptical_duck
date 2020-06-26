@@ -22,8 +22,8 @@ let to_t x=(Coma_state_t.CS x);;
 let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
 let configuration cs=(frontier_with_unix_world cs).Fw_wrapper_t.configuration;;
 let root cs= Fw_configuration.root (configuration cs);;
-let backup_dir cs=(of_t cs).Coma_state_t.dir_for_backup;;
-let gitpush_after_backup cs=(of_t cs).Coma_state_t.gitpush_after_backup;;   
+let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
+let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
 
 
 let subdir_at_module cs mn=
@@ -87,7 +87,11 @@ let set_frontier_with_unix_world cs v=
 
 
 let set_push_after_backup cs bowl = let ccs=of_t cs in 
-                            to_t({ccs with Coma_state_t.gitpush_after_backup=bowl });;
+     let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
+     let old_config = old_frontier.Fw_wrapper_t.configuration in 
+     let new_config = {old_config with Fw_configuration_t.gitpush_after_backup=bowl } in 
+     let new_frontier = {old_frontier with Fw_wrapper_t.configuration = new_config} in 
+     to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
 
 
 
@@ -190,9 +194,7 @@ let modify_all_needed_dirs cs f =
 
 let empty_one x y b=
     to_t({
-     Coma_state_t.frontier_with_unix_world= Fw_wrapper.default x;
-     dir_for_backup =y;
-     gitpush_after_backup=b;
+     Coma_state_t.frontier_with_unix_world= Fw_wrapper.default (x,y,b);
      modules = [];
      subdir_for_module = [] ;
      principal_ending_for_module = [] ;
@@ -490,7 +492,7 @@ to_t({ cs with
       Coma_state_t.printer_equipped_types = new_preq_types;
 });;  
 
-let transplant wrapped_cs (new_frontier,new_backup_dir,new_g_after_b) = 
+let transplant wrapped_cs new_frontier = 
      let cs=of_t wrapped_cs in 
      let new_principal_mts=Image.image (fun (mn,_)->
           let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
@@ -510,8 +512,6 @@ let transplant wrapped_cs (new_frontier,new_backup_dir,new_g_after_b) =
      to_t({
            cs with    
             Coma_state_t.frontier_with_unix_world= new_frontier;
-            dir_for_backup =new_backup_dir;
-            gitpush_after_backup= new_g_after_b;
             principal_mt_for_module = new_principal_mts;
             mli_mt_for_module = new_mli_mts;
             product_up_to_date_for_module = new_products_up_to_date;
@@ -546,8 +546,6 @@ let of_concrete_object ccrt_obj =
    let g=Concrete_object_field.get_record ccrt_obj in
    {
       Coma_state_t.frontier_with_unix_world = Fw_wrapper_field.of_concrete_object (g frontier_with_unix_world_label);
-      dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
-      gitpush_after_backup = Concrete_object_field.to_bool (g gitpush_after_backup_label);
       modules = Concrete_object_field.to_list Dfa_module.of_concrete_object (g modules_label);
       subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
       principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
@@ -569,8 +567,6 @@ let to_concrete_object cs=
    let items= 
    [
     frontier_with_unix_world_label, Fw_wrapper_field.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
-    dir_for_backup_label, Dfa_root.to_concrete_object cs.Coma_state_t.dir_for_backup;
-    gitpush_after_backup_label, Concrete_object_field.of_bool cs.Coma_state_t.gitpush_after_backup;
     modules_label, Concrete_object_field.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
     subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
