@@ -1740,4 +1740,7 @@ let census_of_foreigners cs=
    let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 
    List.filter (test_for_foreign the_root) list1;;
 
-
+let reflect_latest_changes_in_github cs =
+  let old_fw = cs.Coma_state_t.frontier_with_unix_world in 
+  let new_fw = Fw_wrapper.reflect_latest_changes_in_github old_fw in 
+  {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
