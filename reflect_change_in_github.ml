@@ -70,6 +70,9 @@ let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
   ();;
 
 let backup (source_dir,destination_dir,p_after_b) diff opt=
+  if Dircopy_diff.is_empty diff
+  then (print_string "No recent changes to commit ...";flush stdout) 
+  else 
   let msg=(
    match opt with
     None->Dircopy_diff.explain diff
