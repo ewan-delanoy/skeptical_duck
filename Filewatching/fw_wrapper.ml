@@ -390,7 +390,7 @@ end;;
 
 
 let default (root_dir,backup_dir,g_after_b)= {
-   Fw_wrapper_t.configuration = Fw_configuration.default(root_dir,backup_dir,g_after_b);
+   Fw_wrapper_t.configuration = Fw_configuration.constructor(root_dir,backup_dir,g_after_b);
    compilable_files = [];
    noncompilable_files = [];
 };; 

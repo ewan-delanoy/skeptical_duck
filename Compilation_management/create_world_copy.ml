@@ -119,7 +119,7 @@ let cwc cs opt_selection=
         Private.rootlesses_to_be_copied cs opt_selection in 
     let _=Image.image Unix_command.uc 
      (Private.commands_for_copying cs (compilables@noncompoilables)) in
-    let faraway_config = Fw_configuration.default (destdir,destbackupdir,destgab) in 
+    let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab) in 
     let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompoilables) in  
     let faraway_fw = Fw_wrapper.overwrite_nonspecial_file_if_it_exists faraway_fw1 
                    Coma_constant.rootless_path_for_parametersfile 

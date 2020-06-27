@@ -42,7 +42,7 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let default (root_dir,backup_dir,g_after_b) = 
+let constructor (root_dir,backup_dir,g_after_b) = 
     {
       Fw_configuration_t.root = root_dir;
       dir_for_backup = backup_dir ;

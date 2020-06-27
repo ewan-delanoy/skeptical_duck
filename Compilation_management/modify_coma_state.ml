@@ -27,7 +27,7 @@ let refresh (root,backup_dir,g_after_b) =
     let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
       Coma_constant.git_ignored_subdirectories 
         Coma_constant.conventional_files_with_usual_content) in 
-   let config = Fw_configuration.default (root,backup_dir,g_after_b) in 
+   let config = Fw_configuration.constructor (root,backup_dir,g_after_b) in 
    let fw = Fw_initialize.init config in
    let cs0 = Coma_state_field.empty_one root backup_dir g_after_b in  
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
