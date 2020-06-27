@@ -42,15 +42,6 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let constructor (root_dir,backup_dir,g_after_b,edgs,ign_subdirs,ign_files)= 
-    {
-      Fw_configuration_t.root = root_dir;
-      dir_for_backup = backup_dir ;
-      gitpush_after_backup = g_after_b ;
-      ignored_subdirectories = ign_subdirs;
-      ignored_files = ign_files;
-    };; 
-
 let default (root_dir,backup_dir,g_after_b) = 
     {
       Fw_configuration_t.root = root_dir;
