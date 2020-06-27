@@ -194,7 +194,7 @@ let modify_all_needed_dirs cs f =
 
 let empty_one x y b=
     to_t({
-     Coma_state_t.frontier_with_unix_world= Fw_wrapper.default (x,y,b);
+     Coma_state_t.frontier_with_unix_world= Fw_wrapper.constructor (x,y,b);
      modules = [];
      subdir_for_module = [] ;
      principal_ending_for_module = [] ;
