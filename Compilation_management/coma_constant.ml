@@ -97,9 +97,10 @@ let minimalist_text_for_ocamlinit =
       "\ninitialize_toplevel()"^Double_semicolon.ds
        ) ;; 
 
-let conventional_files_other_than_ocamlinit =
-  let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" 
-  and text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugging.ml\";;\n\n*)\n\n" in    
+let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" ;;
+let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugging.ml\";;\n\n*)\n\n" ;;
+
+let conventional_files_other_than_ocamlinit = 
    [
     rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
