@@ -352,12 +352,14 @@ let replace_string fw (replacee,replacer) =
    let rep = replace_string_in_list_of_pairs fw (replacee,replacer)  in 
    let (new_c_files,changed_c_files,changed_c_lines) =  rep fw.Fw_wrapper_t.compilable_files 
    and (new_nc_files,changed_nc_files,changed_nc_lines) =  rep fw.Fw_wrapper_t.noncompilable_files in 
+   let diff = Dircopy_diff.change_with_no_creations_or_deletions (changed_c_lines @ changed_nc_lines) in 
    let new_fw ={
        fw with
        Fw_wrapper_t.compilable_files = new_c_files;
        noncompilable_files = new_nc_files;
+       last_noticed_changes = diff ;
    } in 
-   (new_fw,(changed_c_files,changed_nc_files));;
+   (new_fw,(changed_c_files,changed_nc_files),changed_c_lines @ changed_nc_lines);;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
@@ -365,8 +367,21 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
       preceding_files replacee (Overwriter.of_string pre_replacer) path in 
     let rootless = Dfn_common.decompose_absolute_path_using_root path (Fw_wrapper_field.root fw)  in 
     let fw2= update_some_files fw ([rootless],[]) in 
-    let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
-    (fw3,(rootless::changed_w_files,changed_sw_files));;
+    let (fw3,(changed_w_files,changed_sw_files),older_lines)=replace_string fw2 (replacee,replacer) in 
+    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
+    let new_lines =Image.image (
+       fun rl-> 
+         let s_path=Dfn_rootless.to_line rootless in 
+         let ap = Absolute_path.of_string (s_root^s_path) in  
+         Cull_string.cobeginning
+                 (String.length s_root) (Absolute_path.to_string ap)
+    ) (rootless::(changed_w_files@changed_sw_files)) in 
+    let diff = Dircopy_diff.change_with_no_creations_or_deletions (older_lines @ new_lines) in 
+    let fw4 ={
+       fw3 with
+       Fw_wrapper_t.last_noticed_changes = diff ;
+     } in          
+    (fw4,(rootless::changed_w_files,changed_sw_files));;
 
 
 let nonspecial_absolute_paths fw= 
