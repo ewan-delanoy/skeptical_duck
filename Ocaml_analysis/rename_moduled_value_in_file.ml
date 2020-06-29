@@ -41,7 +41,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
            beheaded_name txt in
         if ttemp7<>[]
         then  let isoc=Isolated_occurrences.of_in beheaded_name txt in
-              let replacings=Image.imagination (fun p->(p,new_beheaded_name)) isoc in
+              let replacings=Image.image (fun p->(p,new_beheaded_name)) isoc in
               let new_txt=Overwrite_at_intervals.inside_string
                    replacings txt in
              Some(itm.Ocaml_gsyntax_item.interval_for_content,

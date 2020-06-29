@@ -10,7 +10,7 @@ let s = French_order.cmp;;
 
 let for_adjustments=Total_ordering.triple_product s s s;;
 let for_decompressions l=
-   let temp1=Image.imagination (fun (x,y,z)->
+   let temp1=Image.image (fun (x,y,z)->
     (x,y,Ordered.sort for_adjustments z) ) l in 
    let t = Total_ordering.triple_product s s Total_ordering.standard in 
    Ordered.sort t temp1;;

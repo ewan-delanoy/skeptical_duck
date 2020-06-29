@@ -9,7 +9,7 @@
 type t=NumLib |StrLib |UnixLib;;
 
 let correspondances=[NumLib,"num";StrLib,"str";UnixLib,"unix"];;
-let capitalized_correspondances =Image.imagination (
+let capitalized_correspondances =Image.image (
    fun (x,y)->(x,"Ocaml"^"_library."^y)
 ) correspondances;;
 

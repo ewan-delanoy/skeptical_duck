@@ -83,7 +83,7 @@ let acolytes_at_module cs mn=
 
 
 let rootless_paths_at_module cs mn=
-   Image.imagination Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
+   Image.image Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
   
 
   
@@ -142,7 +142,7 @@ let modules_with_their_ancestors cs l=
    let temp1=List.filter (
      fun nm->List.mem nm l 
      ) (ordered_list_of_modules cs )   in 
-   let temp2=Image.imagination (
+   let temp2=Image.image (
      fun nm->
        (ancestors_at_module cs nm)@[nm] 
    ) temp1 in 
@@ -167,12 +167,12 @@ let needed_dirs_and_libs_in_command cmod cs mn=
    let dirs=
    "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
   and libs=String.concat(" ")
-    (Image.imagination(fun z->Ocaml_library.file_for_library(z)^extension)
+    (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
     (needed_libs_at_module cs mn)) in
     String.concat " " ["";dirs;libs;""];;
 
 let all_modules cs=
-  Image.imagination (endingless_at_module cs) (ordered_list_of_modules cs);; 
+  Image.image (endingless_at_module cs) (ordered_list_of_modules cs);; 
 
 let get_modification_time cs mn edg=
   if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
@@ -221,7 +221,7 @@ let unregister_module_on_monitored_modules cs eless=
      then Coma_state_field.set_preq_types cs2 new_preqtypes
      else cs2
    ) in 
-   let rootless_paths=Image.imagination Dfn_full.to_rootless_line acolytes in
+   let rootless_paths=Image.image Dfn_full.to_rootless_line acolytes in
    (cs3,rootless_paths);;     
                     
 
@@ -269,10 +269,10 @@ let unregister_mlx_file_on_monitored_modules cs mlxfile=
 
 
 let compute_subdirectories_list cs=
-  let temp1=Image.imagination Dfa_subdirectory.without_trailing_slash (all_used_subdirs cs) in
+  let temp1=Image.image Dfa_subdirectory.without_trailing_slash (all_used_subdirs cs) in
     let temp2=Set_of_strings.sort temp1 in
     let temp3=Set_of_strings.forget_order temp2 in
-    Image.imagination Dfa_subdirectory.of_line temp3;;
+    Image.image Dfa_subdirectory.of_line temp3;;
 
 let  check_registrations cs eless=
    let mn=Dfn_endingless.to_module eless in 
@@ -302,7 +302,7 @@ let find_needed_libraries cs mlx ordered_ancestors=
 
 
 let find_needed_directories cs mlx ordered_ancestors=
-  let temp1=Image.imagination (fun mn->
+  let temp1=Image.image (fun mn->
     Set_of_polys.sort(needed_dirs_at_module cs mn)) ordered_ancestors in
   let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
   let temp2=(
@@ -348,7 +348,7 @@ let complete_info cs  mlx=
   and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times hm in
   let pr_end=compute_principal_ending (mlr,mlir,mllr,mlyr) in
   let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
-  let temp1=Image.imagination 
+  let temp1=Image.image 
           (fun mn->
            Set_of_polys.sort(ancestors_at_module cs mn)) 
           modules_written_in_file in
@@ -396,7 +396,7 @@ let complete_id_during_new_module_registration cs  mlx=
     and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times eless in
     let pr_end=edg in
     let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
-    let temp1=Image.imagination 
+    let temp1=Image.image 
           (fun mn->
            Set_of_polys.sort(ancestors_at_module cs mn)) 
           modules_written_in_file in
@@ -438,21 +438,21 @@ let ordered_as_in_coma_state cs l=
    List.filter (fun x->List.mem x l) (ordered_list_of_modules cs);;
 
 let above_one_in_several_or_inside cs l=
-  let temp1=Image.imagination (ancestors_at_module cs) l in
+  let temp1=Image.image (ancestors_at_module cs) l in
   let temp2=List.flatten (l::temp1) in
   ordered_as_in_coma_state cs  temp2;;
 
 
 let all_mlx_files cs=
   let mods=ordered_list_of_modules cs in
-  List.flatten(Image.imagination(acolytes_at_module cs) mods);;                
+  List.flatten(Image.image(acolytes_at_module cs) mods);;                
       
-let all_mlx_paths cs=Image.imagination Dfn_full.to_absolute_path 
+let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path 
         (all_mlx_files cs);;  
 
 let all_rootless_paths cs=
     let mods=ordered_list_of_modules cs in
-    List.flatten(Image.imagination(rootless_paths_at_module cs) mods);;  
+    List.flatten(Image.image(rootless_paths_at_module cs) mods);;  
      
 
 let short_paths_inside_subdirectory cs subdir =
@@ -461,7 +461,7 @@ let short_paths_inside_subdirectory cs subdir =
    let the_subdir=Directory_name.of_string s_subdir_full_name in 
    let temp1=More_unix.complete_ls_with_nondirectories_only the_subdir in 
    let n=String.length s_root in 
-   Image.imagination (
+   Image.image (
     fun ap->let s_ap=Absolute_path.to_string ap in 
     Cull_string.cobeginning n s_ap
    ) temp1;;
@@ -487,8 +487,8 @@ let reposition_module cs eless (l_before,l_after)=
     let n=List.length(l_mods) in 
     let find_idx=(fun mn->Listennou.find_index mn l_mods) 
     and get=(fun j->List.nth l_mods (j-1)) in
-    let indices_before=Image.imagination find_idx l_before
-    and indices_after=Image.imagination find_idx l_after in
+    let indices_before=Image.image find_idx l_before
+    and indices_after=Image.image find_idx l_after in
     let max_before=(if indices_before=[] then 1 else Max.list indices_before)
     and min_after=(if indices_after=[] then n else Min.list indices_after)
     in
@@ -547,7 +547,7 @@ let update_ancs_libs_and_dirs_at_module cs mn=
   and pr_end=principal_ending_at_module cs mn in
   let mlx=Dfn_join.to_ending eless pr_end in 
   let fathers=direct_fathers_at_module cs mn in
-  let separated_ancestors=Image.imagination 
+  let separated_ancestors=Image.image 
   (fun nm2->
     Set_of_polys.safe_set(ancestors_at_module cs nm2)
   ) fathers in
@@ -574,8 +574,8 @@ module PrivateThree=struct
       if cycles=[]
       then ""
       else
-      let temp1=Image.imagination(fun cycle->
-        let ttemp1=Image.imagination printer cycle in
+      let temp1=Image.image(fun cycle->
+        let ttemp1=Image.image printer cycle in
          String.concat " -> " ttemp1 
       ) cycles in
       let temp2=String.concat "\n\n" temp1 in
@@ -592,7 +592,7 @@ module PrivateThree=struct
            else raise(Circular_dependencies(msg));; 
            
     let message_about_changed_modules changed_modules=
-      let temp1=Image.imagination Dfa_module.to_line changed_modules in
+      let temp1=Image.image Dfa_module.to_line changed_modules in
       "\n\n\n"^
       "The following modules have been directly changed :\n"^
       (String.concat "\n" temp1)^
@@ -616,7 +616,7 @@ module PrivateThree=struct
            let middle = Dfn_endingless.to_middle ( endingless_at_module cs nm) in 
            Dfn_middle.to_line middle )
       ) cycles in     
-      let cs2=Coma_state_field.reorder cs (Image.imagination fst reordered_list) in    
+      let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
       let cs3=update_ancs_libs_and_dirs cs2 in 
       let active_descendants=Option.filter_and_unpack (
           fun nm->
@@ -885,7 +885,7 @@ let command_for_predebuggable  cs short_path=
         (Dfa_root.connectable_to_subpath(root cs))^short_path) in 
     let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_subdirs = Image.imagination (
+    let nm_deps_with_subdirs = Image.image (
        fun nm->
                let subdir=subdir_at_module cs nm in 
         (subdir,nm)
@@ -897,13 +897,13 @@ let command_for_predebuggable  cs short_path=
     let libs_for_prow = 
       Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
-        (Image.imagination Dfa_module.to_line nm_direct_deps)) in 
-    let pre_libs1=Image.imagination 
+        (Image.image Dfa_module.to_line nm_direct_deps)) in 
+    let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let extension=".cma" in
     let libs=String.concat(" ")
-      (Image.imagination(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
     Option.add_element_on_the_right   
     [ 
       (Compilation_mode.executioner cmod)^
@@ -924,7 +924,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
     let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_subdirs = Image.imagination (
+    let nm_deps_with_subdirs = Image.image (
        fun nm->let subdir=subdir_at_module cs nm in 
         (subdir,nm)
     ) nm_deps in 
@@ -934,7 +934,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     and ending=Compilation_mode.ending_for_nonlast_module cmod 
     and last_ending=Compilation_mode.ending_for_last_module cmod 
     and product_ending=Compilation_mode.ending_for_final_product cmod  in
-    let cm_elements_but_the_last = Image.imagination (
+    let cm_elements_but_the_last = Image.image (
       fun (subdir,nm)->(Dfa_module.to_line nm)^ending
     ) nm_deps_with_subdirs in 
     let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
@@ -944,13 +944,13 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let libs_for_prow = 
       Set_of_polys.sort(
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
-        (Image.imagination Dfa_module.to_line nm_direct_deps)) in 
-    let pre_libs1=Image.imagination 
+        (Image.image Dfa_module.to_line nm_direct_deps)) in 
+    let pre_libs1=Image.image 
      (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
     let libs=String.concat(" ")
-      (Image.imagination(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
+      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
     Option.add_element_on_the_right  
     [ 
       ((Compilation_mode.executioner cmod)^
@@ -996,7 +996,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
                 List.mem nm (ancestors_at_module cs nm2)
            ) triples_after in 
            let rejected_siblings_with_redundancies =  
-              Image.imagination (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
+              Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
            let rejected_siblings = Listennou.nonredundant_version rejected_siblings_with_redundancies in    
            let newly_rejected = (nm,eless)::rejected_siblings in 
            let cs_walker=ref(cs) in 
@@ -1008,7 +1008,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
 
 
 let prepare_pretty_printers_for_ocamldebug cs deps = 
-  let temp1 = "load_printer str.cma"::(Image.imagination (fun mname->
+  let temp1 = "load_printer str.cma"::(Image.image (fun mname->
     let s= Dfa_module.to_line mname in 
     "load_printer "^s^".cmo"
   ) deps) 
@@ -1017,7 +1017,7 @@ let prepare_pretty_printers_for_ocamldebug cs deps =
     fun mn -> let eless = endingless_at_module cs mn in 
     List.mem (eless,true) preq_types
   ) deps in 
-  let temp2 = Image.imagination (fun mname->
+  let temp2 = Image.image (fun mname->
     let s= Dfa_module.to_line mname in 
     "install_printer "^(String.capitalize_ascii s)^".print_out"
   ) printable_deps in 
@@ -1043,10 +1043,10 @@ let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
 
 let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modulenames,opt_rootless_path)=
    let l=dependencies_inside_shaft cmod cs (opt_modulenames,opt_rootless_path) in 
-   let temp1=Image.imagination (fun mn->
+   let temp1=Image.image (fun mn->
      let eless=endingless_at_module cs mn in 
      let cmds=Modern.command_for_module_separate_compilation cmod cs eless in 
-    Image.imagination (fun cmd->(mn,endingless_at_module cs mn,cmd) ) cmds ) l in 
+    Image.image (fun cmd->(mn,endingless_at_module cs mn,cmd) ) cmds ) l in 
     List.flatten temp1;;
 
 
@@ -1074,7 +1074,7 @@ let list_of_commands_for_end_part_of_feydeau cmod cs (_,opt_rootless_path)=
 let list_of_commands_for_ternary_feydeau cmod cs short_path=
    let pair = (None,Some(short_path)) in 
    let pre_cmds1=list_of_commands_for_shaft_part_of_feydeau cmod cs pair in 
-   let cmds1=Image.imagination (fun (_,_,cmd)->cmd) pre_cmds1
+   let cmds1=Image.image (fun (_,_,cmd)->cmd) pre_cmds1
    and cmds2=list_of_commands_for_connecting_part_of_feydeau cmod cs pair
    and cmds3=list_of_commands_for_end_part_of_feydeau cmod cs pair in 
    cmds1@cmds2@cmds3;;
@@ -1094,7 +1094,7 @@ let end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)=
      let all_cmds=
        (list_of_commands_for_connecting_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path))@
        (list_of_commands_for_end_part_of_feydeau cmod cs (opt_modnames,opt_rootless_path)) in 
-     let _=Image.imagination  Unix_command.hardcore_uc all_cmds in 
+     let _=Image.image  Unix_command.hardcore_uc all_cmds in 
      ()
 
 
@@ -1154,7 +1154,7 @@ let forget_file_on_targets root_dir pair ap=
    let bel=below cs eless in
     if bel=[]
     then let fn=Dfn_endingless.to_line eless  in
-         let _=Image.imagination
+         let _=Image.image
          (fun edg->Unix_command.uc("rm -f "^fn^edg^"*"))
          [".cm";".d.cm";".caml_debuggable"] in
          unregister_mlx_file_on_targets root_dir cs mlx
@@ -1220,8 +1220,8 @@ module Target_system_creation=struct
       if cycles=[]
       then ()
       else
-      let temp1=Image.imagination(fun cycle->
-        let ttemp1=Image.imagination (fun j->printer (List.nth l (j-1))) cycle in
+      let temp1=Image.image(fun cycle->
+        let ttemp1=Image.image (fun j->printer (List.nth l (j-1))) cycle in
          String.concat " -> " ttemp1 
       ) cycles in
       let temp2="\n\n The following cycles have been detected : "^
@@ -1242,7 +1242,7 @@ let select_good_files main_root=
          (List.exists (fun edg->Supstring.ends_with s edg) [".ml";".mli";".mll";".mly"])
          &&
          (List.for_all (fun beg->not(Supstring.begins_with t beg)) 
-         (Image.imagination Dfa_subdirectory.connectable_to_subpath 
+         (Image.image Dfa_subdirectory.connectable_to_subpath 
           [
             Coma_constant.automatically_generated_subdir;
             Coma_constant.abandoned_ideas_subdir;
@@ -1294,7 +1294,7 @@ exception Identical_names of (((string*string) list) list);;
       let temp1=List.filter (fun ap->
         Supstring.begins_with (Absolute_path.to_string ap) s_dir
       ) l in
-      let temp2=Image.imagination (fun ap->
+      let temp2=Image.image (fun ap->
         let s=Absolute_path.to_string ap in
         (ap,Cull_string.after_rightmost s '/')
       ) temp1 in
@@ -1304,7 +1304,7 @@ exception Identical_names of (((string*string) list) list);;
            let tempf1=(fun (x,y)->
                (Cull_string.cobeginning n1 (Absolute_path.to_string x),y)
             ) in
-           let tempf2=Image.imagination (Image.imagination tempf1) in
+           let tempf2=Image.image (Image.image tempf1) in
            let temp4=tempf2 temp3 in
            raise(Identical_names(temp4))
       else temp2;;
@@ -1314,7 +1314,7 @@ exception Identical_names of (((string*string) list) list);;
       and n=List.length l in
       let rec tempf=(fun (j1,(ap1,s1))->
         let ttemp1=Look_for_module_names.names_in_ml_file ap1 in
-        let ttemp2=Image.imagination Dfa_module.to_line ttemp1 in
+        let ttemp2=Image.image Dfa_module.to_line ttemp1 in
         let ttempf=(fun s_nm->
           Option.filter_and_unpack (fun 
           (k,(_,s))->
@@ -1322,7 +1322,7 @@ exception Identical_names of (((string*string) list) list);;
           then Some(k)
           else None ) temp1
         ) in
-        let ttemp3=Image.imagination ttempf ttemp2 in
+        let ttemp3=Image.image ttempf ttemp2 in
         List.flatten  ttemp3
       )  in
       let tempg=(fun x-> let (_,(_,s))=x in
@@ -1333,14 +1333,14 @@ exception Identical_names of (((string*string) list) list);;
               |Some(y)->tempf y 
          else tempf x
       ) in
-      let table_for_coatoms=Image.imagination tempg temp1 in
+      let table_for_coatoms=Image.image tempg temp1 in
       let coat=Memoized.make(fun j->List.nth table_for_coatoms (j-1)) in
       let (cycles,good_list)=
         Reconstruct_linear_poset.reconstruct_linear_poset coat 
         (Ennig.ennig 1 n) in
       let _=Private.display_circular_dependencies
       (fun (j1,(ap1,s1))->s1) temp1 cycles in
-      Image.imagination (fun (j,_)->snd(List.nth temp1 (j-1)) ) good_list;;
+      Image.image (fun (j,_)->snd(List.nth temp1 (j-1)) ) good_list;;
       
     let from_prepared_list cs l=
        let dir = Coma_state_field.root cs in 
@@ -1353,7 +1353,7 @@ exception Identical_names of (((string*string) list) list);;
 let delchacre_from_scratch (source_dir,dir_for_backup) cs=
   let temp1=all_mlx_paths cs in
   let temp3=temp1 in
-  let temp4=Image.imagination (fun ap->
+  let temp4=Image.image (fun ap->
      let rootless_path = Dfn_common.decompose_absolute_path_using_root ap source_dir in 
      Dfn_rootless.to_line rootless_path) temp3 in
  Prepare_dircopy_update.compute_diff
@@ -1493,8 +1493,8 @@ let rename_value_inside_module cs old_name new_name=
    and path=decipher_path cs  module_name in 
    let nm=Dfn_endingless.to_module endingless in
    let pre_temp2=(ancestors_at_module cs nm)@[nm] in
-   let temp2=Image.imagination (endingless_at_module cs) pre_temp2 in
-   let preceding_files=Image.imagination  (fun eless2->
+   let temp2=Image.image (endingless_at_module cs) pre_temp2 in
+   let preceding_files=Image.image  (fun eless2->
    	 Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
    ) temp2 in
    Rename_moduled_value_in_file.rename_moduled_value_in_file 
@@ -1510,7 +1510,7 @@ module Values_in_modules = struct
 let replace_string cs old_string new_string=
   let temp1=files_containing_string cs old_string in
   let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
-  let temp2=Image.imagination (fun ap->
+  let temp2=Image.image (fun ap->
     Cull_string.cobeginning m (Absolute_path.to_string ap)) temp1 in
   let temp3=temp2@["";""] in 
   let message="\n\n The following files will be rewritten : \n\n"^
@@ -1543,7 +1543,7 @@ let list_values_from_module_in_file module_name file=
      (t=Alternative_str_example.index_for_pointed_case)&&
      (Cull_string.interval s i j=(String.capitalize_ascii module_name))
    ) temp1 in
-   let temp3=Image.imagination(fun (t,(i,j))->
+   let temp3=Image.image(fun (t,(i,j))->
     let opt=After.after_star 
      Charset.ocaml_modulename_nonfirst_letters
      s (j+2) in
@@ -1554,14 +1554,14 @@ let list_values_from_module_in_file module_name file=
 
 let list_values_from_module_in_modulesystem cs module_name=
    let temp1=all_mlx_paths cs in
-   let temp2=Image.imagination (fun ap->
+   let temp2=Image.image (fun ap->
     let ttemp1=list_values_from_module_in_file module_name ap in
     Set_of_strings.image (fun x->(x,ap) ) ttemp1
     ) temp1 in
    let temp3=List.flatten temp2 in
-   let temp4=Image.imagination fst temp3 in 
+   let temp4=Image.image fst temp3 in 
    let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
-   Image.imagination (
+   Image.image (
       fun x->(x,Option.filter_and_unpack(
         fun (y,ap)->if y=x then Some(ap) else None
       ) temp3)
@@ -1570,7 +1570,7 @@ let list_values_from_module_in_modulesystem cs module_name=
 let list_value_occurrences_in_file t file=
    let s=Io.read_whole_file file in
    let temp1=Substring.occurrences_of_in t s in
-   Image.imagination (fun j->Cull_string.closeup_around_index 
+   Image.image (fun j->Cull_string.closeup_around_index 
       s j
    ) temp1;; 
  
@@ -1578,10 +1578,10 @@ let list_value_occurrences_in_file t file=
 let show_value_occurrences_in_modulesystem cs t=
    let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
    let temp1=all_mlx_paths cs in
-   let temp2=Image.imagination (fun ap->
+   let temp2=Image.image (fun ap->
     let ttemp1=list_value_occurrences_in_file t ap in
     let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
-    Image.imagination (fun x->mname^":\n"^x ) ttemp1
+    Image.image (fun x->mname^":\n"^x ) ttemp1
     ) temp1 in
    let temp3=List.flatten temp2 in
    let temp4=String.concat "\n\n\n" (""::temp3@[""]) in 
@@ -1618,7 +1618,7 @@ module Almost_concrete = struct
 let local_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
-  Image.imagination (fun nm-> 
+  Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (above cs endingless);;
@@ -1627,7 +1627,7 @@ let local_above cs capitalized_or_not_module_name=
 let local_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
-  Image.imagination (fun nm-> 
+  Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (below cs endingless);;
@@ -1635,7 +1635,7 @@ let local_below cs capitalized_or_not_module_name=
 let local_directly_above cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
-  Image.imagination (fun nm-> 
+  Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (directly_above cs endingless);;
@@ -1643,7 +1643,7 @@ let local_directly_above cs capitalized_or_not_module_name=
 let local_directly_below cs capitalized_or_not_module_name=
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
-  Image.imagination (fun nm-> 
+  Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (directly_below cs endingless);; 

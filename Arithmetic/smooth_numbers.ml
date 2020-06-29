@@ -9,14 +9,14 @@ module Private = struct
 
 let rec helper_for_decomposition (exponents,bases,to_be_treated) =
      match Option.seek (fun (j,p)->to_be_treated mod p=0) bases with 
-      None -> (Image.imagination snd exponents,to_be_treated)
+      None -> (Image.image snd exponents,to_be_treated)
      |Some(j0,p0) ->  
-       let new_exponents =Image.imagination (fun (j,e)->if j=j0 then (j,e+1) else (j,e)) exponents in 
+       let new_exponents =Image.image (fun (j,e)->if j=j0 then (j,e+1) else (j,e)) exponents in 
        helper_for_decomposition (new_exponents,bases,to_be_treated/p0);;
 
 let decompose n bases =
    let temp1 = Ennig.index_everything  bases in 
-   let zeroes = Image.imagination (fun (j,_)->(j,0)) temp1 in 
+   let zeroes = Image.image (fun (j,_)->(j,0)) temp1 in 
    helper_for_decomposition (zeroes,temp1,n);;
 
 let ref_for_smoothness_params = ref [];;
@@ -35,7 +35,7 @@ let rec next_smooth_number n=
     if core_of_n=1 then (n,exponents) else 
     next_smooth_number(n+1);;
 
-let first_smooth_number ()= (1,Image.imagination (fun j->0) (!ref_for_smoothness_params));;
+let first_smooth_number ()= (1,Image.image (fun j->0) (!ref_for_smoothness_params));;
 
 let rec enumerate n=
    match Hashtbl.find_opt hashtbl_for_smooth_numbers_enumeration n with 

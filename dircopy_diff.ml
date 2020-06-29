@@ -17,7 +17,7 @@ let constructor a b c={
 
 let display x=
    let tempf=(fun msg l->
-   "\n"::msg::(Image.imagination(fun w->"\t\t"^w) l)
+   "\n"::msg::(Image.image(fun w->"\t\t"^w) l)
    ) in
    let temp1=tempf "Deleted : " (x.Dircopy_diff_t.recently_deleted)
    and temp2=tempf "Created : " (x.Dircopy_diff_t.recently_created)
@@ -32,7 +32,7 @@ let summarize_short_path s=
    String.capitalize_ascii(Cull_string.after_rightmost (Cull_string.before_rightmost_possibly_all s '.') '/');;
  
 let summarize_short_path_list l=
-    let temp1=Image.imagination summarize_short_path l in
+    let temp1=Image.image summarize_short_path l in
     Ordered.sort Total_ordering.silex_for_strings temp1;;
 
 

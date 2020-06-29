@@ -127,7 +127,7 @@ let decompose s=
    let n=String.length(s) in
    let temp1=Ennig.doyle (fun j->Char.code(String.get s j)) 0 (n-1) in
    let temp2=decode temp1 in
-   Image.imagination encode_as_string temp2;;           
+   Image.image encode_as_string temp2;;           
             
             
             

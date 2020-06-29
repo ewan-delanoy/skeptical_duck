@@ -43,8 +43,8 @@ let second_init config (compilables_to_be_watched,noncompilables) =
    ) in 
      {
        Fw_wrapper_t.configuration = config;
-       Fw_wrapper_t.compilable_files = Image.imagination compute_info compilables_to_be_watched;
-       noncompilable_files = Image.imagination compute_info noncompilables;
+       Fw_wrapper_t.compilable_files = Image.image compute_info compilables_to_be_watched;
+       noncompilable_files = Image.image compute_info noncompilables;
        last_noticed_changes = Dircopy_diff.empty_one;
      };;
 

@@ -343,14 +343,14 @@ let rec apply=function
     |Gparser.Race(s1,s2)->race(s1,s2)
     |Gparser.Comment(s1,s2,s3,s4)->Gparser_ocaml_comment.main_prsr(s1,s2)(s3,s4)
     |Gparser.House_with_doors(s1,s2,l)->house_with_doors (s1,s2) l
-    |Gparser.Chain(l)->chain(Image.imagination apply l)
-    |Gparser.Disjunction(l)->disjunction(Image.imagination apply l)
+    |Gparser.Chain(l)->chain(Image.image apply l)
+    |Gparser.Disjunction(l)->disjunction(Image.image apply l)
     |Gparser.Star(x)->star(apply x)
     |Gparser.Detailed_star(x)->detailed_star(apply x)
     |Gparser.One_or_more(x)->one_or_more(apply x)
     |Gparser.Optional(x)->optional(apply x)
     |Gparser.Recoiling_ending(x,y)->recoiling_ending (apply x) (apply y)
-    |Gparser.Detailed_chain(l)->detailed_chain(Image.imagination apply l);;
+    |Gparser.Detailed_chain(l)->detailed_chain(Image.image apply l);;
    
 end;;   
    

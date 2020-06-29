@@ -73,7 +73,7 @@ let empty_one =
 
 let common_molecular_part l =
      if l=[] then Hex_molecular_linker_t.M[] else 
-    let mols = Image.imagination (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
+    let mols = Image.image (fun extmol->extmol.Hex_extended_molecular_t.molecular_part) l in 
     let whole = Hex_molecular_linker.fold_merge mols in 
     let tester1_for_commonality =(fun atm extmol ->
         (Hex_molecular_linker.mem atm extmol.Hex_extended_molecular_t.molecular_part)
@@ -86,7 +86,7 @@ let common_molecular_part l =
 exception Leaky_disjunction of Hex_cell_t.t * Hex_extended_molecular_t.t ;;
 
 let check_active_part_in_disjunction l_pairs=
-   let local_active_parts=Image.imagination (fun (cell,extmol)->
+   let local_active_parts=Image.image (fun (cell,extmol)->
       Hex_cell_set.outsert cell (extmol.Hex_extended_molecular_t.active_part)
    ) l_pairs  in 
    let global_active_part = Hex_cell_set.fold_merge local_active_parts in 
@@ -99,7 +99,7 @@ let disjunction cells older_extmols =
     let common_part = common_molecular_part older_extmols in 
     let final_active_part = check_active_part_in_disjunction (List.combine cells older_extmols) in 
     let total_passive_part = Hex_cell_set.fold_merge((Hex_cell_set.safe_set cells)
-                           ::(Image.imagination passive_part older_extmols)) in 
+                           ::(Image.image passive_part older_extmols)) in 
     let removable_passive_part = Hex_cell_set.setminus final_active_part 
                                    (Hex_molecular_linker.support common_part) in                     
     let final_passive_part = Hex_cell_set.setminus total_passive_part removable_passive_part in  

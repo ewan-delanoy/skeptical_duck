@@ -19,13 +19,13 @@ let upwards_version tscr =
     let (descr,actv,pairs) =List.assoc tscr prepare_for_journey in 
     (actv,pairs);;
 
-let oppose dim (actv,pairs) = let tempf = Image.imagination (Hex_ipair.oppose dim) in 
+let oppose dim (actv,pairs) = let tempf = Image.image (Hex_ipair.oppose dim) in 
    (tempf actv,tempf pairs);;
 
-let translate (dx,dy) (actv,pairs) = let tempf = Image.imagination (fun (x,y)->(x+dx,y+dy)) in 
+let translate (dx,dy) (actv,pairs) = let tempf = Image.image (fun (x,y)->(x+dx,y+dy)) in 
    (tempf actv,tempf pairs);;   
 
-let reflect (actv,pairs) = let tempf = Image.imagination Hex_ipair.reflect  in 
+let reflect (actv,pairs) = let tempf = Image.image Hex_ipair.reflect  in 
    (tempf actv,tempf pairs);;   
 
 let specify_side tscr side = 
@@ -39,8 +39,8 @@ let specify_side tscr side =
 
 
 let bounds (actv,pairs) = 
-     let abscissas = Image.imagination fst actv 
-     and ordinates = Image.imagination snd pairs in 
+     let abscissas = Image.image fst actv 
+     and ordinates = Image.image snd pairs in 
      let xmin = Min.list abscissas and xmax = Max.list abscissas 
      and ymin = Min.list ordinates and ymax = Max.list ordinates in   
      (xmin,ymin,xmax,ymax)
@@ -60,15 +60,15 @@ let compatible_sacrifices eob =
    let (side1,side2) = Hex_cardinal_direction.sides_for_player (eob.Hex_end_of_battle_t.winner) 
    and evl = Hex_end_of_battle.assess eob in   
    let base1 = Cartesian.product Private.prepare_for_journey [side1;side2] in  
-   List.flatten(Image.imagination (
+   List.flatten(Image.image (
       function ((tscr,_),side) ->
         let default_example = Private.specify_side tscr side in 
         let base2 = Private.admissible_translations (eob.Hex_end_of_battle_t.dimension) default_example side in  
         Option.filter_and_unpack (
            fun (dx,dy) -> 
              let (i_actv,i_pairs) = Private.translate (dx,dy) default_example in 
-             let actv = Image.imagination Hex_cell.of_int_pair i_actv 
-             and pairs = Image.imagination Hex_cell.of_int_pair i_pairs  in 
+             let actv = Image.image Hex_cell.of_int_pair i_actv 
+             and pairs = Image.image Hex_cell.of_int_pair i_pairs  in 
              if (List.for_all (fun cell->evl cell = Hex_eob_result_t.Ally_territory) actv) 
                 &&
                  (List.for_all (fun cell->evl cell = Hex_eob_result_t.Unoccupied) pairs)
@@ -91,7 +91,7 @@ let data_for_sacrificial_starter end_of_battle pairs =
 
 let reconstruct_sacrificial_solutions pairs mlclr=
     let temp1 = Listennou.extract_successive_pairs_from_even_list pairs in 
-    let mlclr2 = Hex_molecular_linker.constructor(Image.imagination Hex_atomic_linker.pair temp1) in 
+    let mlclr2 = Hex_molecular_linker.constructor(Image.image Hex_atomic_linker.pair temp1) in 
     Hex_molecular_linker.fold_merge [mlclr;mlclr2] ;;
 
 

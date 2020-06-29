@@ -5,7 +5,7 @@
 *)
 
 let list_for_unix_usual=
-   Image.imagination (fun c->let s=String.make 1 c in (s,s) ) 
+   Image.image (fun c->let s=String.make 1 c in (s,s) ) 
   Charset.unix_filename_admissible_characters;;
 
 let list_for_unix_rewriting=
@@ -43,7 +43,7 @@ exception Unix_unknown of string;;
   
 let make_unix_compliant s=
    try String.concat "" 
-   (Image.imagination unix_rewrite_char (Utf_eight.decompose s)) with
+   (Image.image unix_rewrite_char (Utf_eight.decompose s)) with
    _->raise(Unix_unknown(s));;  
   
 

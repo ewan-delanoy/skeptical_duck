@@ -29,7 +29,7 @@ let constructor end_of_battle islands side =
       @
       (Hex_expsv_named_connector.islanders dim first_island islands)
    ) in 
-   let full_base = Ordered.sort local_cmp (Image.imagination (
+   let full_base = Ordered.sort local_cmp (Image.image (
      fun nc -> (Hex_expsv_named_connector.missing_earth end_of_battle nc,nc)
    )  (start_base@pre_middle_base@pre_end_base) ) in            
    let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in    
@@ -48,14 +48,14 @@ end ;;
 let nonsacrificial_starters end_of_battle = 
     let islands = Hex_island.decompose end_of_battle in  
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-    Image.imagination (Private.constructor end_of_battle islands) [side1;side2] ;;
+    Image.image (Private.constructor end_of_battle islands) [side1;side2] ;;
 
 
 let sacrificial_starters end_of_battle = 
     let sacrifices = Hex_expsv_sacrifice.compatible_sacrifices end_of_battle in 
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
     let base = Cartesian.product sacrifices [side1;side2] in 
-    Image.imagination (fun (scr,side) ->
+    Image.image (fun (scr,side) ->
       (scr, Private.sacrificial_starter end_of_battle scr side)
     ) base;;
 

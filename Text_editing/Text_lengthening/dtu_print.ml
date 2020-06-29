@@ -13,7 +13,7 @@ let pair horizontal_offset_length  (a,b)=
 let list_of_pairs horizontal_offset_length l=  
    let horizontal_offset=String.make horizontal_offset_length ' ' in 
    if l=[] then horizontal_offset^"[]" else 
-   let temp1=Image.imagination (fun t->(pair (horizontal_offset_length+2) t)^";") l in 
+   let temp1=Image.image (fun t->(pair (horizontal_offset_length+2) t)^";") l in 
    let temp2=("[")::temp1@["]"] in                            
    String.concat "\n" temp2;;
 

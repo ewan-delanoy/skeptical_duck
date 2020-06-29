@@ -28,7 +28,7 @@ let is_admissible data s=
    (List.for_all (
      fun beg->not(Supstring.begins_with s beg)
   ) (
-    (Image.imagination Dfa_subdirectory.connectable_to_subpath
+    (Image.image Dfa_subdirectory.connectable_to_subpath
       data.Dircopy_checker_t.ignored_subdirs
     )
     )

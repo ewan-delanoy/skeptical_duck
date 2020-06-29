@@ -36,7 +36,7 @@ let iterator coat
     let coatoms_of_a=Set_of_polys.safe_set(coat_a) in
     let temp1=Set_of_polys.setminus coatoms_of_a checked_union in
     if Set_of_polys.length(temp1)=0
-    then let temp3=coatoms_of_a::(Image.imagination (fun z->snd(List.assoc z checked)) 
+    then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in
          let ordered_set_version=Set_of_polys.fold_merge(temp3) in
          let temp4=Option.filter_and_unpack (
@@ -63,7 +63,7 @@ let iterator coat
      		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->
         let (before,_,after)=Three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
-        let temp2=Image.imagination fst before in
+        let temp2=Image.image fst before in
         let new_cycle=(fst p)::(temp2@[a]) in
         let ordered_cycle=Set_of_polys.sort new_cycle in
         let not_yet_checked3=List.filter (fun z->Set_of_polys.nmem z ordered_cycle) not_yet_checked in

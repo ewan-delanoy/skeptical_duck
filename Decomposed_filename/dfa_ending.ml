@@ -35,7 +35,7 @@ and mli =  Dfa_ending_t.E "mli" ;;
 
 let all_ocaml_endings= [mll;mly;ml;mli];;
 
-let all_cee_endings = Image.imagination (fun s->Dfa_ending_t.E s) ["h";"c"];;
+let all_cee_endings = Image.image (fun s->Dfa_ending_t.E s) ["h";"c"];;
 
 
 
@@ -45,7 +45,7 @@ let endings_for_compilable_files =
    (all_ocaml_endings) @ all_cee_endings ;;
 
 let endings_for_noncompilable_readable_files = 
-     Image.imagination (fun s->Dfa_ending_t.E s) ["txt";"html";"php";"js";"ejs"];; 
+     Image.image (fun s->Dfa_ending_t.E s) ["txt";"html";"php";"js";"ejs"];; 
 
 let endings_for_readable_files = 
      endings_for_compilable_files @ endings_for_noncompilable_readable_files ;;

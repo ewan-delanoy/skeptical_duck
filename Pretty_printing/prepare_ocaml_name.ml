@@ -9,7 +9,7 @@ let for_list f l=
     []->Disaggregated_ocaml_name.D["[]"]
     |a::peurrest->
       let uf=(fun x->Disaggregated_ocaml_name.unveil(f x)) in
-      let temp1=(uf a)::(Image.imagination (fun x-> ";"::(uf x)) peurrest) in
+      let temp1=(uf a)::(Image.image (fun x-> ";"::(uf x)) peurrest) in
       let temp2=List.flatten temp1 in
       let temp3="["::(temp2@["]"]) in
       Disaggregated_ocaml_name.D(temp3);;

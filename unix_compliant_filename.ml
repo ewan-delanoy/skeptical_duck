@@ -108,7 +108,7 @@ let unix_rewrite_char c=
 exception Unix_unknown of char*string;;  
   
 let make_unix_compliant s=
-   try String.concat "" (Image.imagination (fun j->
+   try String.concat "" (Image.image (fun j->
      unix_rewrite_char(String.get s j)
    ) (Ennig.ennig 0 (String.length(s)-1))) with
    Unix_rewrite_exn(c)->raise(Unix_unknown(c,s));;  

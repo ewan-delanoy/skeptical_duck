@@ -117,10 +117,10 @@ let of_finished_game fgame =
        then (fp_cells,sp_cells)
        else (sp_cells,fp_cells)
    ) in  
-   let winner_ipairs = Image.imagination Hex_cell.to_int_pair l_winner_cells
-   and loser_ipairs = Image.imagination Hex_cell.to_int_pair l_loser_cells in
-   let associations1=Image.imagination (fun (i,j)->((i,j)," A ")) winner_ipairs
-   and associations2=Image.imagination (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
+   let winner_ipairs = Image.image Hex_cell.to_int_pair l_winner_cells
+   and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
+   let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
+   and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
    {
     Hex_ascii_grid_t.beneficiary = winner;
     dimension = fgame.Hex_finished_game_t.dimension;
@@ -135,23 +135,23 @@ exception Unbalanced_label of string * (Hex_cell_t.t list);;
 
 let to_molecular_linker_with_active_points grid =
     let temp6=List.filter (fun (p,s)->not(List.mem s ["eee";"EEE"])) grid.Hex_ascii_grid_t.data in
-    let temp7=Image.imagination (fun (p,s) -> 
+    let temp7=Image.image (fun (p,s) -> 
        (Hex_atomic_linker.opt_eyed grid.Hex_ascii_grid_t.dimension (p,s),(p,s)) ) temp6 in 
     let (temp8,temp9) = List.partition (fun (opt,_)->opt=None) temp7 in 
-    let eyed_claws = Image.imagination (fun (opt,_)->Option.unpack opt) temp9 in 
-    let temp2=Image.imagination (fun (_,((i,j),content))->
+    let eyed_claws = Image.image (fun (opt,_)->Option.unpack opt) temp9 in 
+    let temp2=Image.image (fun (_,((i,j),content))->
         (Hex_cell.of_int_pair (i,j),Cull_string.trim_spaces content)) temp8 in 
-    let all_used_labels=Listennou.nonredundant_version(Image.imagination snd temp2) in 
-    let temp3=Image.imagination (fun c0->
+    let all_used_labels=Listennou.nonredundant_version(Image.image snd temp2) in 
+    let temp3=Image.image (fun c0->
       (c0,Option.filter_and_unpack (fun (cell,c)->if c=c0 then Some(cell) else None) temp2) 
     ) all_used_labels in 
     let (temp4,temp5)=List.partition (fun (c,l)->c="A") temp3 in 
-    let active_ones_from_eyed_claws = Image.imagination (
+    let active_ones_from_eyed_claws = Image.image (
         fun (_,(p,_))->Hex_cell.of_int_pair p
     ) temp9 
     and mainstream_active_ones = snd (List.hd temp4) in 
     let active_ones = Hex_cell_set.safe_set ( mainstream_active_ones @ active_ones_from_eyed_claws) in 
-    let pairs = Image.imagination (fun (c,l)->
+    let pairs = Image.image (fun (c,l)->
      if List.length(l)<>2
      then raise(Unbalanced_label(c,l))
      else let tf=(fun j->List.nth l j) in
@@ -175,11 +175,11 @@ let read_row_in_drawing row =
 
 let read_ascii_drawing s=
   let temp1= Lines_in_string.core s in 
-  let temp2=Image.imagination (fun (_,line)->Cull_string.trim_spaces line) temp1 in 
+  let temp2=Image.image (fun (_,line)->Cull_string.trim_spaces line) temp1 in 
   let temp3=List.filter (fun line->
     if line="" then false else (String.get line 0)<>'-'
   ) temp2 in 
-  let temp4=Image.imagination read_row_in_drawing (Listennou.big_tail 2 temp3) in 
+  let temp4=Image.image read_row_in_drawing (Listennou.big_tail 2 temp3) in 
   let associations=List.flatten temp4 in 
   let diagonal_names=Cull_string.extract_intervals_in_wrt_separator (List.nth temp3 1) " " in 
   {
@@ -204,7 +204,7 @@ let pyramid = Hex_typical_border_connector_name_t.Pyramid ;;
 let byssus = Hex_typical_border_connector_name_t.Byssus ;;
 let sybil = Hex_typical_border_connector_name_t.Sybil ;;
 
-let list_for_macros=Image.imagination (fun (label,(tbc,side))->
+let list_for_macros=Image.image (fun (label,(tbc,side))->
    (label,compute_translated_coordinates tbc side)
 ) [
    ("ddd", (pyramid,down));
@@ -248,25 +248,25 @@ let detect_eyed_claws dim l=
 
 let preprocess grid =
    let data1 = grid.Hex_ascii_grid_t.data in
-   let data2 = Image.imagination (fun (p,s)->(p,force_length_three s) ) data1 in 
+   let data2 = Image.image (fun (p,s)->(p,force_length_three s) ) data1 in 
    let data3 = List.filter (fun (p,s)-> (s<>"EEE") ) data2 in 
    let claws = detect_eyed_claws grid.Hex_ascii_grid_t.dimension data3 in 
-   let temp1=Image.imagination (fun p->let ((i,j),s)=p in 
+   let temp1=Image.image (fun p->let ((i,j),s)=p in 
      (p,List.assoc_opt (trim s) list_for_macros)
    ) data3 in 
    let (non_macros1,macros1)=List.partition (fun (_,opt)->opt=None) temp1 in 
    if (macros1=[])&&(claws=[]) then {grid with Hex_ascii_grid_t.data=data3} else 
-   let non_macros2=Image.imagination fst non_macros1 in 
-   let macros2=Image.imagination (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
+   let non_macros2=Image.image fst non_macros1 in 
+   let macros2=Image.image (fun (q,opt)->let p=fst q in (p,(Option.unpack opt) p) ) macros1 in 
    let labels_used_by_nonmacros = Set_of_polys.safe_set(Option.filter_and_unpack
      (fun (_,s)->if Cull_string.trim_spaces s="" then None else Some(s)) non_macros2) in 
-   let powder_from_claws =List.flatten (Image.imagination (fun (claw,p)->Hex_atomic_linker.ipair_support claw) claws) in   
+   let powder_from_claws =List.flatten (Image.image (fun (claw,p)->Hex_atomic_linker.ipair_support claw) claws) in   
    let unused_labels = List.filter (fun x->Set_of_polys.nmem x labels_used_by_nonmacros) list_of_default_labels in 
-   let fourtuples = List.flatten(Image.imagination snd macros2) in
+   let fourtuples = List.flatten(Image.image snd macros2) in
    let labeled_fourtuples = Listennou.unequal_combine_where_fst_is_smallest fourtuples unused_labels in 
-   let overrider1=List.flatten(Image.imagination (fun (((i1,j1),(i2,j2)),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
-   and overrider2=Image.imagination (fun (p,_)->(fst p," A ")) (macros1) 
-   and overrider3=Image.imagination (fun p->(p,"eee")) powder_from_claws in 
+   let overrider1=List.flatten(Image.image (fun (((i1,j1),(i2,j2)),s)->[((i1,j1),s);((i2,j2),s)]) labeled_fourtuples)
+   and overrider2=Image.image (fun (p,_)->(fst p," A ")) (macros1) 
+   and overrider3=Image.image (fun p->(p,"eee")) powder_from_claws in 
    let overrider=overrider1@overrider2@overrider3 in 
    let final_map=Associative_list.override_with non_macros2 overrider in 
    {
@@ -315,7 +315,7 @@ let of_extended_molecular (dim,winner) extmol =
        |_->None
    ) l in 
    let pairs2 = Ennig.index_everything pairs1 in 
-   let pairs = List.flatten(Image.imagination (fun
+   let pairs = List.flatten(Image.image (fun
       (j,(ipair1,ipair2))->
         let label = " "^(String.make 1 (char_of_int(96+j)))^" " in 
         [ipair1,label;ipair2,label]
@@ -324,15 +324,15 @@ let of_extended_molecular (dim,winner) extmol =
         (Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)) -> Some(d1,d2,cell)
        |_->None
    ) l in 
-   let eyes2 = Image.imagination (
+   let eyes2 = Image.image (
       fun (d1,d2,cell) -> 
          let ipair = cti cell in 
          (ipair,name_for_eyed_claw d1 d2)::
-         (Image.imagination (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
+         (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
    ) eyes1 in 
    let eyes = List.flatten eyes2 in 
-   let actives = Image.imagination (fun cell->(cti cell," A ")) actv 
-   and passives = Image.imagination (fun cell->(cti cell,"ppp")) passv in 
+   let actives = Image.image (fun cell->(cti cell," A ")) actv 
+   and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
    {
       Hex_ascii_grid_t.beneficiary = winner ;
       dimension = dim ;

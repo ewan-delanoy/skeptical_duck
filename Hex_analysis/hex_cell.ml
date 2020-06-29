@@ -42,7 +42,7 @@ let neighbors (Hex_dimension_t.D dim) (Hex_cell_t.C(i1,j1)) =
    let checked =List.filter (
       fun (i,j) -> (1<=i) && (i<=dim) && (1<=j) && (j<=dim)
    ) unchecked in 
-   Image.imagination (fun (i,j)-> Hex_cell_t.C(i,j) ) checked;;
+   Image.image (fun (i,j)-> Hex_cell_t.C(i,j) ) checked;;
 
 
 let of_concrete_object crobj = 

@@ -75,7 +75,7 @@ let follows_it_but_does_not_necessarily_depend_on_it cs mn=
 
 let all_used_subdirs cs =
    let current_assoc = (of_t cs).Coma_state_t.subdir_for_module in 
-   Image.imagination snd current_assoc ;;
+   Image.image snd current_assoc ;;
 
 
 
@@ -179,13 +179,13 @@ let set_preq_types cs v = let ccs=of_t cs in
 let modify_all_subdirs cs f =
    let ccs=of_t cs in 
    let old_subdirs = ((of_t cs).Coma_state_t.subdir_for_module) in 
-   let new_subdirs = Image.imagination (fun (key,vaal)->(key,f vaal)) old_subdirs in 
+   let new_subdirs = Image.image (fun (key,vaal)->(key,f vaal)) old_subdirs in 
    to_t({ccs with Coma_state_t.subdir_for_module= new_subdirs });;
 
 let modify_all_needed_dirs cs f =
    let ccs=of_t cs in 
    let old_needed_dirs = ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
-   let new_needed_dirs = Image.imagination (fun (key,vaal)->(key,Image.imagination f vaal)) old_needed_dirs in 
+   let new_needed_dirs = Image.image (fun (key,vaal)->(key,Image.image f vaal)) old_needed_dirs in 
    to_t({ccs with Coma_state_t.needed_dirs_for_module= new_needed_dirs });;
 
 (* End of adhoc setters *)
@@ -214,7 +214,7 @@ let empty_one x y b=
 let change_one_module_name wrapped_cs old_mn new_mn=
     (* note that preq_types are not dealt with here *)
     let cs=of_t wrapped_cs in
-    let new_modules = Image.imagination (fun x->if x=old_mn then new_mn else x)(ordered_list_of_modules cs) in  
+    let new_modules = Image.image (fun x->if x=old_mn then new_mn else x)(ordered_list_of_modules cs) in  
     let rep_pair = (old_mn,new_mn) in 
     let new_subdirs = Associative_list.change_name_for_key (cs.Coma_state_t.subdir_for_module) rep_pair
     and new_principal_endings = Associative_list.change_name_for_key (cs.Coma_state_t.principal_ending_for_module) rep_pair
@@ -458,7 +458,7 @@ let restrict wrapped_cs smaller_list_of_modules =
     let restr =(fun l->Associative_list.restrict l smaller_list_of_modules) in    
     let temp_direct_fathers = restr (cs.Coma_state_t.direct_fathers_for_module) 
     and temp_ancestors = restr (cs.Coma_state_t.ancestors_for_module) in 
-    let among_fathers =Image.imagination (fun (key,fathers)->
+    let among_fathers =Image.image (fun (key,fathers)->
        (key,List.filter (fun father -> List.mem father smaller_list_of_modules) fathers) ) in 
     let new_subdirs = restr (cs.Coma_state_t.subdir_for_module) 
     and new_principal_endings = restr (cs.Coma_state_t.principal_ending_for_module) 
@@ -475,7 +475,7 @@ let restrict wrapped_cs smaller_list_of_modules =
           let middle = Dfn_endingless.to_middle eless in 
         List.exists (fun (mn,subdir)->middle = Dfn_middle_t.J(subdir,mn) ) new_subdirs 
         )  cs.Coma_state_t.printer_equipped_types   in 
-    let new_directories = Ordered.sort Total_ordering.standard (Image.imagination snd new_subdirs) in 
+    let new_directories = Ordered.sort Total_ordering.standard (Image.image snd new_subdirs) in 
 to_t({ cs with 
       Coma_state_t.modules = smaller_list_of_modules;
       Coma_state_t.subdir_for_module=  new_subdirs;
@@ -494,20 +494,20 @@ to_t({ cs with
 
 let transplant wrapped_cs new_frontier = 
      let cs=of_t wrapped_cs in 
-     let new_principal_mts=Image.imagination (fun (mn,_)->
+     let new_principal_mts=Image.image (fun (mn,_)->
           let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
           and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
           let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
           (mn,Fw_wrapper_field.get_mtime new_frontier rootless)
      ) cs.Coma_state_t.principal_ending_for_module
-     and new_mli_mts=Image.imagination (fun (mn,subdir)->
+     and new_mli_mts=Image.image (fun (mn,subdir)->
           let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
           (mn,Fw_wrapper_field.get_mtime_or_zero_if_file_is_nonregistered 
            new_frontier rootless)
      ) cs.Coma_state_t.subdir_for_module 
-     and new_products_up_to_date=Image.imagination (fun (mn,_)->(mn,false)
+     and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
      ) cs.Coma_state_t.product_up_to_date_for_module
-     and new_preq_types=Image.imagination (fun (eless,_)->(eless,false)
+     and new_preq_types=Image.image (fun (eless,_)->(eless,false)
      ) cs.Coma_state_t.printer_equipped_types in 
      to_t({
            cs with    

@@ -60,7 +60,7 @@ let force_apex_in_eyed_claw apex d1 d2 old_junction =
    let (old_i,old_j) = compute_apex_coordinates_in_eyed_claw d1 d2 old_junction 
    and (new_i,new_j) = apex in 
    let di=new_i-old_i and dj=new_j-old_j in 
-   Image.imagination (fun (i,j)->(i+di,j+dj)) old_junction;;
+   Image.image (fun (i,j)->(i+di,j+dj)) old_junction;;
    
 
 let compute_support_in_eyed_claw d1 d2 apex_cell =
@@ -147,8 +147,8 @@ let all =
 
 let all_orthogonal_pairs = 
    List.flatten(
-   Image.imagination (fun d->
-     Image.imagination (fun d2->(d,d2)) (Private.orthogonal_directions d)
+   Image.image (fun d->
+     Image.image (fun d2->(d,d2)) (Private.orthogonal_directions d)
    ) all);;
 
 let authorized_translations (Hex_dimension_t.D dim) opt = 
