@@ -68,7 +68,8 @@ let rename_string_or_value cs old_sov new_sov =
    let old_fw = Coma_state.frontier_with_unix_world cs in 
    let (new_fw,(changed_compilable_files,changed_noncompilable_files))=(
       if not(String.contains old_sov '.')
-      then Fw_wrapper.replace_string old_fw (old_sov,new_sov)
+      then let ((fw,(changed_c_files,changed_nc_files),_))= Fw_wrapper.replace_string old_fw (old_sov,new_sov) in 
+           (fw,(changed_c_files,changed_nc_files))
       else 
            let j=Substring.leftmost_index_of_in "." old_sov in
            if j<0 
