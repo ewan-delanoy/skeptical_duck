@@ -66,7 +66,7 @@ exception Rename_string_or_value_exn of string ;;
 
 let rename_string_or_value cs old_sov new_sov =
    let old_fw = Coma_state.frontier_with_unix_world cs in 
-   let (new_fw,(changed_w_files,changed_sw_files))=(
+   let (new_fw,(changed_compilable_files,changed_noncompilable_files))=(
       if not(String.contains old_sov '.')
       then Fw_wrapper.replace_string old_fw (old_sov,new_sov)
       else 
@@ -84,7 +84,7 @@ let rename_string_or_value cs old_sov new_sov =
                 ) temp2 in
                 Fw_wrapper.replace_value old_fw (preceding_files,path) (old_sov,new_sov)
    ) in 
-   (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_w_files,changed_sw_files));;       
+   (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_compilable_files,changed_noncompilable_files));;       
 
 
 

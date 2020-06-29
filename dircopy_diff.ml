@@ -61,6 +61,13 @@ let to_concrete_object dirdiff=
 
 end;;
 
+let change_with_no_creations_or_deletions l=
+  {
+      Dircopy_diff_t.recently_deleted = [];
+      recently_changed = l;
+      recently_created = [];
+   };; 
+
 let empty_one  = 
    {
       Dircopy_diff_t.recently_deleted = [];

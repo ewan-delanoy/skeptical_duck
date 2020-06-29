@@ -327,7 +327,8 @@ let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_
    fw3;;
 
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
-   let changed_ones=ref[] in 
+   let changed_ones=ref[] 
+   and changed_lines=ref[] in 
    let new_l=Image.image (
       fun pair ->
         let (rootless,mtime)=pair in 
@@ -338,22 +339,25 @@ let replace_string_in_list_of_pairs fw (replacee,replacer) l=
              and s_path=Dfn_rootless.to_line rootless in 
              let file = s_root^s_path in  
              let ap=Absolute_path.of_string file in 
-             let _=Replace_inside.replace_inside_file (replacee,replacer) ap in 
+             let rootless_line = Cull_string.cobeginning
+                 (String.length s_root) (Absolute_path.to_string ap) in 
+             let _=(Replace_inside.replace_inside_file (replacee,replacer) ap;
+                   changed_lines:= rootless_line ::(!changed_lines) ) in 
              recompute_all_info fw rootless 
         else pair     
    ) l in 
-   (new_l,List.rev(!changed_ones));;
+   (new_l,List.rev(!changed_ones),List.rev(!changed_lines));;
 
 let replace_string fw (replacee,replacer) =
    let rep = replace_string_in_list_of_pairs fw (replacee,replacer)  in 
-   let (new_w_files,changed_w_files) =  rep fw.Fw_wrapper_t.compilable_files 
-   and (new_sw_files,changed_sw_files) =  rep fw.Fw_wrapper_t.noncompilable_files in 
+   let (new_c_files,changed_c_files,changed_c_lines) =  rep fw.Fw_wrapper_t.compilable_files 
+   and (new_nc_files,changed_nc_files,changed_nc_lines) =  rep fw.Fw_wrapper_t.noncompilable_files in 
    let new_fw ={
        fw with
-       Fw_wrapper_t.compilable_files = new_w_files;
-       noncompilable_files = new_sw_files;
+       Fw_wrapper_t.compilable_files = new_c_files;
+       noncompilable_files = new_nc_files;
    } in 
-   (new_fw,(changed_w_files,changed_sw_files));;
+   (new_fw,(changed_c_files,changed_nc_files));;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
