@@ -489,8 +489,7 @@ module And_backup = struct
       let rename_string_or_value cs old_sov new_sov=
          let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
          let msg="rename "^old_sov^" as "^new_sov in 
-         let _=Private.backup cs2 diff (Some msg) in 
-         cs2;; 
+         Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
 end;;
 
