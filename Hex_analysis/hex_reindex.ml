@@ -19,10 +19,10 @@ let flattened_end_strategy reindexer fles =
 
 let cog reindexer (Hex_cog_in_machine_t.C(statconstr,msg,indices,fles)) = 
   Hex_cog_in_machine_t.C(statconstr,msg,
-   Image.image (local_list_assoc reindexer) indices,
+   Image.imagination (local_list_assoc reindexer) indices,
    flattened_end_strategy reindexer fles)
 
 
 let factory reindexer (Hex_end_strategy_factory_t.F(dim,player,l))=
- let new_l=Image.image (cog reindexer) l in 
+ let new_l=Image.imagination (cog reindexer) l in 
  Hex_end_strategy_factory_t.F(dim,player,new_l);;

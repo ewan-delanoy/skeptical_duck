@@ -10,9 +10,9 @@ let in_paragraph paragraph=
     if Substring.is_a_substring_of "\n\n" paragraph 
     then raise(Disconnected_paragraph)
     else let temp1=Str.split (Str.regexp_string "\n") paragraph  in
-         let temp2=Image.image Cull_string.trim_spaces temp1 in
+         let temp2=Image.imagination Cull_string.trim_spaces temp1 in
          let (first_line,temp3)=Listennou.ht temp2 in
-         let temp4=Image.image(
+         let temp4=Image.imagination(
              fun line->if Has_suspicious_beginning.hsb line 
                        then " "^line
                        else "\n"^line
@@ -21,7 +21,7 @@ let in_paragraph paragraph=
   
 let in_string s=
      let temp1=Decompose_into_paragraphs.dec s in
-     let temp2=Image.image(
+     let temp2=Image.imagination(
         fun (is_paragraph,(range,text))->
           if is_paragraph
           then in_paragraph text

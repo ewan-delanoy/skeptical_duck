@@ -7,12 +7,12 @@
 let all =
     let base = Cartesian.tproduct 
       Hex_expsv_typical_inner_connector_name.all  Hex_cardinal_direction.all [true;false] in 
-    (Image.image (
+    (Image.imagination (
       fun us -> Hex_expsv_inner_connector_name_t.Bridge(us)
     ) Hex_expsv_unit_side.all)
     @
     (
-      Image.image (
+      Image.imagination (
         fun (tic,direction,orientation) -> Hex_expsv_inner_connector_name_t.Typical (tic,direction,orientation)
       ) base
     );;

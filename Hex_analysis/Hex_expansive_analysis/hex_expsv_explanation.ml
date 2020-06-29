@@ -29,8 +29,8 @@ tau(low-eyed leftwards) = low-eyed rightwards
 let molecular_with_actives  cells pairs =
    let ceos = Hex_cell.of_string in 
    (Hex_molecular_linker.constructor 
-      (Image.image (fun (x,y)->Hex_atomic_linker.pair(ceos x,ceos y)) pairs),
-    Hex_cell_set.safe_set (Image.image ceos cells) );; 
+      (Image.imagination (fun (x,y)->Hex_atomic_linker.pair(ceos x,ceos y)) pairs),
+    Hex_cell_set.safe_set (Image.imagination ceos cells) );; 
    
 
 
@@ -73,7 +73,7 @@ let lonely_c4=Hex_cell_set.safe_set [Hex_cell.of_string "c4"];;
 
 let list_for_right_eyed_claw = [1;2;3];;
 let helper_for_right_eyed_claw = 
- Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.image Hex_cell.of_string 
+ Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.imagination Hex_cell.of_string 
  ["d3";"c3";"b3"]);;
 
 
@@ -84,7 +84,7 @@ let fles_for_right_eyed_claw=
 let ipairs_in_right_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      Hex_flattened_end_strategy_field.passive_part fles_for_right_eyed_claw in 
-   Ordered.sort Total_ordering.standard2 (Image.image Hex_cell.to_int_pair pp);;
+   Ordered.sort Total_ordering.standard2 (Image.imagination Hex_cell.to_int_pair pp);;
 
 (* Explaining a left-eyed upper upwards claw *)   
 
@@ -115,7 +115,7 @@ let lonely_b4=Hex_cell_set.safe_set [Hex_cell.of_string "b4"];;
 
 let list_for_left_eyed_claw = [5;6;7];;
 let helper_for_left_eyed_claw = 
- Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.image Hex_cell.of_string 
+ Hex_strategy_static_constructor_t.Exhaustive_Disjunction(Image.imagination Hex_cell.of_string 
  ["b3";"c3";"d3"]);;
 
 let fles_for_left_eyed_claw=
@@ -124,7 +124,7 @@ let fles_for_left_eyed_claw=
 let ipairs_in_left_eyed_upwards_claw =
    let (Hex_cell_set_t.S pp )=
      Hex_flattened_end_strategy_field.passive_part fles_for_left_eyed_claw in 
-   Ordered.sort Total_ordering.standard2 (Image.image Hex_cell.to_int_pair pp);;
+   Ordered.sort Total_ordering.standard2 (Image.imagination Hex_cell.to_int_pair pp);;
 
 (*
 

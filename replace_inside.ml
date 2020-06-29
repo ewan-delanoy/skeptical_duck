@@ -107,7 +107,7 @@ let at_char_intervals_inside_string s l=
   let temp1=Listennou.universal_delta_list l 
   and ((i_first,_),_)=List.hd(l)
   and ((i_last,j_last),rep_last)=List.hd(List.rev l) in
-  let temp2=Image.image (fun (((i1,j1),rep1),((i2,j2),rep2))->
+  let temp2=Image.imagination (fun (((i1,j1),rep1),((i2,j2),rep2))->
       rep1^(String.sub s j1 (i2-j1-1))
   ) temp1 in
   let first_part=(String.sub s 0 (i_first-1))

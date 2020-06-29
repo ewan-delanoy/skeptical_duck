@@ -58,12 +58,12 @@ let before_and_after w x=
 let complement_union_of_ranges ranges s=
    let n=String.length s in 
    let temp1=Listennou.complement_union_of_ranges ranges n in 
-   Image.image (fun (u,v)->interval s u v) temp1;;
+   Image.imagination (fun (u,v)->interval s u v) temp1;;
 
 let extract_intervals_in_wrt_separator s sep =
   let d=String.length(sep)-1 in 
   let occurrences = Substring.occurrences_of_in sep s in 
-  let ranges = Image.image ( fun start ->(start,start + d)) occurrences in 
+  let ranges = Image.imagination ( fun start ->(start,start + d)) occurrences in 
   complement_union_of_ranges ranges s;;    
 
 (*

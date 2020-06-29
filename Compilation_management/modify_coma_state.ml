@@ -52,11 +52,11 @@ let rename_module cs old_middle_name new_nonslashed_name=
   let separated_acolytes_below=Option.filter_and_unpack(
     fun mn->
      if List.mem old_nm (Coma_state.ancestors_at_module cs mn)
-    then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs mn))
+    then Some(Image.imagination (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs mn))
     else None
 ) (Coma_state.ordered_list_of_modules cs) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
-  let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
+  let old_acolyte_paths=Image.imagination Dfn_full.to_rootless old_acolytes in 
   let old_fw = Coma_state.frontier_with_unix_world cs in 
   let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
   Coma_state.set_frontier_with_unix_world cs new_fw ;;
@@ -79,8 +79,8 @@ let rename_string_or_value cs old_sov new_sov =
                 and path=Coma_state.decipher_path cs  module_name in 
                 let nm=Dfn_endingless.to_module endingless in
                 let pre_temp2=(Coma_state.ancestors_at_module cs nm)@[nm] in
-                let temp2=Image.image (Coma_state.endingless_at_module cs) pre_temp2 in
-                let preceding_files=Image.image  (fun eless2->
+                let temp2=Image.imagination (Coma_state.endingless_at_module cs) pre_temp2 in
+                let preceding_files=Image.imagination  (fun eless2->
    	               Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
                 ) temp2 in
                 Fw_wrapper.replace_value old_fw (preceding_files,path) (old_sov,new_sov)
@@ -105,7 +105,7 @@ let forget_module cs mn=
   let (cs2,rootless_paths)=Coma_state.unregister_module_on_monitored_modules  cs old_endingless in
   let new_dirs=Coma_state.compute_subdirectories_list cs2  in
   let sfn=Dfa_module.to_line mn in
-  let _=Image.image
+  let _=Image.imagination
                (fun edg->
                 let cmd="rm -f _build/"^sfn^edg in
                 Unix_command.uc(cmd))
@@ -173,8 +173,8 @@ let ((cs2,nms_to_be_updated),rootless_paths)=
    let new_dirs=Coma_state.compute_subdirectories_list cs2  in
    let (cs3,rejected_pairs,accepted_pairs)=
        Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-   let rejected_mns=Image.image snd rejected_pairs in  
-   let new_preqt=Image.image(
+   let rejected_mns=Image.imagination snd rejected_pairs in  
+   let new_preqt=Image.imagination(
         fun (mn,_)->(mn,not(List.mem mn rejected_mns))
       )  (Coma_state_field.preq_types cs3) in   
    let cs4=Coma_state_field.set_directories cs3 new_dirs in 
@@ -199,8 +199,8 @@ let refresh cs =
         let (cs2,rejected_pairs,_)=
           Coma_state.Ocaml_target_making.usual_feydeau 
           cs1 l_mod in
-        let rejected_endinglesses=Image.image snd rejected_pairs in 
-        let new_ptypes=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
+        let rejected_endinglesses=Image.imagination snd rejected_pairs in 
+        let new_ptypes=Image.imagination (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
         let new_dirs=Coma_state.compute_subdirectories_list cs2 in
         let new_diff=Coma_state.Target_system_creation.delchacre_from_scratch (dir,backup_dir) cs2 in
         let cs3=Coma_state_field.set_directories cs2 new_dirs in 
@@ -227,7 +227,7 @@ let relocate_module_to cs mn new_subdir=
   let root_dir = Coma_state.root cs in 
   let mn=Dfn_endingless.to_module old_endingless in
   let old_acolytes= Coma_state.acolytes_at_module cs mn in
-  let new_acolytes=Image.image 
+  let new_acolytes=Image.imagination 
     (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
   let new_name=Dfn_full.to_endingless
    (List.hd new_acolytes) in
@@ -243,7 +243,7 @@ let relocate_module_to cs mn new_subdir=
   let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
   let cs4=Coma_state.set_mli_mt_at_module cs3 mn mli_mt in 
   let old_preq_types = Coma_state.preq_types cs4 in 
-  let new_preq_types=Image.image (fun (h,bowl)->
+  let new_preq_types=Image.imagination (fun (h,bowl)->
      (Dfn_endingless.rename_endsubdirectory (old_subdir,s_subdir) h,bowl)) old_preq_types in 
   let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
   let  new_rootless_paths = Coma_state.rootless_paths_at_module cs5 mn  in 
@@ -261,21 +261,21 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in  
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in
   let old_acolytes=Coma_state.acolytes_at_module cs2 old_nm in
-  let new_acolytes=Image.image (
+  let new_acolytes=Image.imagination (
     fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
   ) old_acolytes in 
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
-  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
+  let old_files=Image.imagination (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
+  let new_files=Image.imagination (fun mlx->Dfn_full.to_rootless_line mlx) 
      new_acolytes in 
   let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
   let separated_acolytes_below=Option.filter_and_unpack(
     fun mn->
      if List.mem old_nm (Coma_state.ancestors_at_module cs2 mn)
-    then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs2 mn))
+    then Some(Image.imagination (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs2 mn))
     else None
 ) (Coma_state.ordered_list_of_modules cs2) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
-  let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
+  let modified_files=Image.imagination Dfn_rootless.to_line all_acolytes_below in 
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
@@ -286,11 +286,11 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   let cs4=Coma_state.set_principal_mt_at_module cs3 new_nm principal_mt in 
   let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
   let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
-  let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
+  let replacer=Image.imagination(function x->if x=old_nm then new_nm else x) in
   let old_eless = Dfn_join.root_to_middle root_dir old_middle_name in
   let eless_replacer=(fun x->if x=old_eless then new_eless else x) in 
   let old_preq_types=Coma_state.preq_types cs6 in 
-  let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
+  let new_preq_types=Image.imagination (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
   let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
   let cs_walker=ref(cs7) in 
   let _=List.iter(fun mn->
@@ -319,8 +319,8 @@ let rename_subdirectory cs old_subdir new_subdir=
    ) in 
   let cs1=Coma_state_field.modify_all_subdirs cs rename_in_sd in 
   let cs2=Coma_state_field.modify_all_needed_dirs cs1 rename_in_sd in 
-   let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2)
-   and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
+   let new_dirs=Image.imagination rename_in_sd (Coma_state.directories cs2)
+   and new_peqt=Image.imagination (fun (eless,is_compiled_correctly)->
        let final_eless = (
            match Dfn_endingless.soak (old_subdir,new_subdir) eless with 
         Some(new_eless) -> new_eless
@@ -331,7 +331,7 @@ let rename_subdirectory cs old_subdir new_subdir=
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
    let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in
-   let old_rootless_paths=Image.image (
+   let old_rootless_paths=Image.imagination (
         fun s-> match Strung.soak (new_subdirname,old_subdirname) s with 
         Some(new_s) -> new_s 
         |None -> s

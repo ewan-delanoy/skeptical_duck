@@ -16,16 +16,16 @@ let does_not_intersect ((co,deco,cmpr):('a,'b) parameter)
 let empty_set ((co,deco,cmpr):('a,'b) parameter) = co [];;
 
 let fold_merge ((co,deco,cmpr):('a,'b) parameter) 
-     l=co (Ordered.fold_merge cmpr (Image.image deco l));;
+     l=co (Ordered.fold_merge cmpr (Image.imagination deco l));;
 
 let fold_intersect ((co,deco,cmpr):('a,'b) parameter) 
-     l=co (Ordered.fold_intersect cmpr (Image.image deco l));;
+     l=co (Ordered.fold_intersect cmpr (Image.imagination deco l));;
     
 let forget_order ((co,deco,cmpr):('a,'b) parameter) =deco;;
 
 let hd ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(deco ox);;
 
-let image ((co,deco,cmpr):('a,'b) parameter) f ox= Image.image f (deco ox);;
+let image ((co,deco,cmpr):('a,'b) parameter) f ox= Image.imagination f (deco ox);;
 
 let insert ((co,deco,cmpr):('a,'b) parameter) 
      x oy= co(Ordered.insert cmpr x (deco oy));;

@@ -1,13 +1,13 @@
 
 type 'a t=M of ('a*int) list;; 
 
-let to_list (M l)=Image.image(fst)(l);;
+let to_list (M l)=Image.imagination(fst)(l);;
 
 let filter_odd_multiplicities (M l)=
    let temp1=List.filter(function (x,j)->(j mod 2)=1)(l) in
-   Image.image(fst)(temp1);;
+   Image.imagination(fst)(temp1);;
             
-let length (M l)=Basic.fold_sum(Image.image snd l);;            
+let length (M l)=Basic.fold_sum(Image.imagination snd l);;            
             
 let teuzin (M x) (M y)=
 let rec teuzin0=
@@ -34,7 +34,7 @@ else let t1=Listennou.didrochan(x) in
      teuzin(ddiforchan(fst(t1)))(ddiforchan(snd(t1)));;
 
 let diforchan x=
-ddiforchan(Image.image(function u->(u,1))(x));;
+ddiforchan(Image.imagination(function u->(u,1))(x));;
 
 let big_teuzin x=List.fold_left(teuzin)(M[])(x);;
 

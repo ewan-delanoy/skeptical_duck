@@ -20,20 +20,20 @@ let commands_for_backup (source_dir,destination_dir) diff=
     ) created_ones in
    let temp3=Ordered.sort Total_ordering.silex_for_strings temp2 in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
-   let temp4=Image.image(
+   let temp4=Image.imagination(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
    ) created_ones in
    let changed_ones=Dircopy_diff.recently_changed diff in
-   let temp5=Image.image(
+   let temp5=Image.imagination(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^fn
    ) changed_ones in
-   let temp6=Image.image(
+   let temp6=Image.imagination(
       fun fn->
       "git add "^fn
    ) (created_ones@changed_ones) in
-   let temp7=Image.image(
+   let temp7=Image.imagination(
       fun fn->
       "git rm "^fn
    ) (Dircopy_diff.recently_deleted diff) in
@@ -42,11 +42,11 @@ let commands_for_backup (source_dir,destination_dir) diff=
 let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
   let (nongit_cmds,git_cmds)=commands_for_backup (source_dir,destination_dir)  diff in
   let s_destination=Dfa_root.connectable_to_subpath destination_dir in
-  let _=Image.image Unix_command.uc nongit_cmds in
+  let _=Image.imagination Unix_command.uc nongit_cmds in
   let _=(
   if p_after_b
   then let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
+       Image.imagination Unix_command.uc
        (
        [Unix_command.cd s_destination]@   
        git_cmds@   
@@ -57,7 +57,7 @@ let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
        [Unix_command.cd cwd]
        ) 
   else let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
+       Image.imagination Unix_command.uc
        (
        [Unix_command.cd s_destination]@   
        git_cmds@   

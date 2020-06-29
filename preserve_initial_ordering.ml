@@ -34,7 +34,7 @@ let and_mark_endings l=
         let temp1=Set_of_polys.merge(Set_of_polys.sort x) ordered_treated_part in
         let temp2=List.rev(better_x) in
         let temp3=(List.hd temp2,Is_an_ending_or_not.Yes)::
-        (Image.image (fun t->(t,Is_an_ending_or_not.No)) (List.tl temp2)) in
+        (Image.imagination (fun t->(t,Is_an_ending_or_not.No)) (List.tl temp2)) in
         tempf((List.rev temp3)::treated_part,temp1,remains)
     ) in
    tempf([],Set_of_polys.empty_set,l);;

@@ -25,7 +25,7 @@ module Private=struct
     then accuse_final_excerpt s p
     else 
     let temp1=Gparser_result.important_ranges res in
-    Image.image (fun (i,j)->
+    Image.imagination (fun (i,j)->
       let opt=Gparser_apply.apply Gparser_for_ocaml_language.elt_prsr s i in
       let res=Option.unpack opt in
       ((i,j),Option.unpack(Gparser_result.disjunction_index res))

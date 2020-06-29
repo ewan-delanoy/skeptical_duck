@@ -26,7 +26,7 @@ let find_number_range_before_index s idx =
 
 let clean_number_ranges s =
    let temp1=Substring.occurrences_of_in "." s in 
-   let temp2=Image.image (fun idx->(find_number_range_before_index s idx,"")) temp1 in 
+   let temp2=Image.imagination (fun idx->(find_number_range_before_index s idx,"")) temp1 in 
    Strung.replace_ranges_in temp2 s;;
 
 let parse ()=
@@ -38,7 +38,7 @@ let parse ()=
      let report1 = Replace_inside.replace_several_inside_string ["\n"," ";"*"," "] game_report in 
      let report2 = clean_number_ranges report1  in 
      let moves = Cull_string.extract_intervals_in_wrt_separator report2 " " in 
-     let cells = Image.image Hex_cell.of_string moves in 
+     let cells = Image.imagination Hex_cell.of_string moves in 
      (role_played,cells);;
 
 end ;;

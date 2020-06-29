@@ -7,9 +7,9 @@
 
 let indices_in_ml_ocamlcode s=
   let temp1=Outside_comments_and_strings.good_substrings s in
-  let temp2=Image.image (fun (a,b,t)->
+  let temp2=Image.imagination (fun (a,b,t)->
      let ttemp3=Alternative_str.find_all_occurrences Alternative_str_example.moodle_cases t 1 in
-     Image.image (fun (case_index,(u,v))->
+     Image.imagination (fun (case_index,(u,v))->
         (case_index,(u+a-1,v+a-1))
      ) ttemp3
   ) temp1 in
@@ -18,10 +18,10 @@ let indices_in_ml_ocamlcode s=
 
 let names_in_ml_ocamlcode z=
   let temp1=indices_in_ml_ocamlcode z in
-  let temp2=Image.image (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
+  let temp2=Image.imagination (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
   let temp3=Three_parts.generic temp2 in
   let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
-  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_line 
+  let temp5=Image.imagination (fun (x,y,z)->Dfa_module.of_line 
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 

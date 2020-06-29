@@ -22,8 +22,8 @@ let modularize prefix ap=
      new_content;;
      
 let modularize_several prefix l_ap=     
-    let temp1=Image.image module_name_from_path l_ap in
-    let replacements = Image.image (
+    let temp1=Image.imagination module_name_from_path l_ap in
+    let replacements = Image.imagination (
         fun x->
         (x,Dfa_module.add_prefix_and_capitalize prefix x)
     ) temp1 in

@@ -36,7 +36,7 @@ let text_for_big_constants_file_in_next_world =
    ];;
 
   let rootlesses_coming_from_modules cs needed_modules = 
-          let modules_above=Image.image (fun nm->
+          let modules_above=Image.imagination (fun nm->
              Coma_state.above cs 
              (Coma_state.endingless_at_module cs nm)
           ) needed_modules  in 
@@ -50,16 +50,16 @@ let text_for_big_constants_file_in_next_world =
               else None)
           all_elesses in 
           let collected_acolytes=List.flatten 
-            (Image.image (Coma_state.acolytes_at_module cs) 
+            (Image.imagination (Coma_state.acolytes_at_module cs) 
               modules_in_good_order) in 
-          (modules_in_good_order,Image.image Dfn_full.to_rootless collected_acolytes);;
+          (modules_in_good_order,Image.imagination Dfn_full.to_rootless collected_acolytes);;
   
      
 
   let rootlesses_to_be_copied cs opt_selection =
      let fw = cs.Coma_state_t.frontier_with_unix_world in 
      match opt_selection with 
-     None -> let sr = Image.image (fun (rootless,_)->rootless) in 
+     None -> let sr = Image.imagination (fun (rootless,_)->rootless) in 
              ( 
                Coma_state.ordered_list_of_modules cs,
                sr (fw.Fw_wrapper_t.compilable_files),
@@ -73,7 +73,7 @@ let text_for_big_constants_file_in_next_world =
           ) in   
           let compilables= selector (fw.Fw_wrapper_t.compilable_files)
           and noncompilables= selector (fw.Fw_wrapper_t.noncompilable_files) in 
-          let all_needed_modules= (Image.image Dfn_rootless.to_module compilables) 
+          let all_needed_modules= (Image.imagination Dfn_rootless.to_module compilables) 
                            @ needed_modules in 
           let (modules_in_good_order,all_nonspecials)=rootlesses_coming_from_modules cs all_needed_modules in 
           (modules_in_good_order,all_nonspecials,noncompilables);;
@@ -81,12 +81,12 @@ let text_for_big_constants_file_in_next_world =
   let commands_for_copying cs rootlesses=
      let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_field.root cs) 
      and s_new_root=Dfa_root.connectable_to_subpath(Coma_big_constant.Next_World.root) in 
-     let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
+     let unordered_subdirs = Image.imagination Dfn_rootless.to_subdirectory rootlesses in  
      let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
-     let dir_commands = Image.image (
+     let dir_commands = Image.imagination (
        fun subdir ->"mkdir -p "^s_new_root^(Dfa_subdirectory.without_trailing_slash subdir)
      ) needed_subdirs 
-     and file_commands = Image.image (fun rootless->
+     and file_commands = Image.imagination (fun rootless->
          let line = Dfn_rootless.to_line rootless in 
          "cp "^s_old_root^line^" "^s_new_root^(Cull_string.before_rightmost line '/')
     ) rootlesses in 
@@ -117,7 +117,7 @@ let cwc cs opt_selection=
         conv_files) in 
     let (modules_in_good_order,compilables,noncompoilables) = 
         Private.rootlesses_to_be_copied cs opt_selection in 
-    let _=Image.image Unix_command.uc 
+    let _=Image.imagination Unix_command.uc 
      (Private.commands_for_copying cs (compilables@noncompoilables)) in
     let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab) in 
     let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompoilables) in  

@@ -11,10 +11,10 @@ exception Reposition_second_key_not_found;;
 
 
 let change_name_for_key l (key1,key2)=
-   Image.image (fun pair->if fst(pair)=key1 then (key2,snd pair) else pair) l;; 
+   Image.imagination (fun pair->if fst(pair)=key1 then (key2,snd pair) else pair) l;; 
 
 let change_value_for_key l (key1,vaal1)=
-   Image.image (fun pair->if fst(pair)=key1 then (key1,vaal1) else pair) l;; 
+   Image.imagination (fun pair->if fst(pair)=key1 then (key1,vaal1) else pair) l;; 
 
 let remove_key l key1=List.filter (fun (key,_)->key<>key1) l;;
 
@@ -56,16 +56,16 @@ let reposition_by_putting_snd_immediately_after_fst l key_i key_j=
   
 (* reposition_by_putting_snd_immediately_after_fst [(1,"u");(2,"v");(3,"w");(4,"x");(5,"y");(6,"z")] 2 5;; *)  
 
-let reorder l key_ordering =Image.image (fun key->(key,List.assoc key l)) key_ordering;;
+let reorder l key_ordering =Image.imagination (fun key->(key,List.assoc key l)) key_ordering;;
 
 (* reorder [(1,"u");(2,"v");(3,"w");(4,"x");(5,"y");(6,"z")] [2;5;1;3;4;6];; *) 
  
 let restrict l fewer_keys =List.filter (fun (key,_)->List.mem key fewer_keys) l;;
 
 let override_with overriden_one overrider =
-  let unchecked_keys = Image.image fst (overrider@overriden_one) in 
+  let unchecked_keys = Image.imagination fst (overrider@overriden_one) in 
   let keys = Listennou.nonredundant_version unchecked_keys in 
-  Image.image (
+  Image.imagination (
      fun key->match List.assoc_opt key overrider with 
      None -> (key,List.assoc key overriden_one)
      |Some(vaal)->(key,vaal)
