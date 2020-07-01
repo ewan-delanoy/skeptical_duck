@@ -296,10 +296,12 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
        then recompute_all_info fw rootless 
        else pair 
    )  old_compilable_files in 
-   {
+   let fw2 ={
       fw with 
       Fw_wrapper_t.compilable_files = new_compilable_files
-   }     ;;
+   }    in 
+   Fw_wrapper_field.add_changes_in_diff fw2 (Image.image Dfn_rootless.to_line files_to_be_rewritten)
+    ;;
       
 let rename_module_in_special_files fw (old_module,new_module) =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
