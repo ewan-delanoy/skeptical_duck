@@ -356,7 +356,6 @@ let replace_string fw (replacee,replacer) =
        fw with
        Fw_wrapper_t.compilable_files = new_c_files;
        noncompilable_files = new_nc_files;
-       last_noticed_changes = diff ;
    } in 
    let fw3 = Fw_wrapper_field.add_changes_in_diff fw2 (changed_c_lines @ changed_nc_lines) in 
    (fw3,(changed_c_files,changed_nc_files));;
