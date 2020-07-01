@@ -200,15 +200,25 @@ let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_p
        Fw_wrapper_t.compilable_files = new_compilable_files
    };;  
 
+let ref_for_subdirectory_renaming = ref [];;
+
+let remember_during_subdirectory_renaming pair =
+   (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
 
 let helper1_during_subdirectory_renaming fw (old_subdir,new_subdir) pair=
    let (rootless_path,_)=pair in 
    match Dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
-   Some(new_rootless_path) -> recompute_all_info fw new_rootless_path
+   Some(new_rootless_path) -> 
+        let _=(
+           remember_during_subdirectory_renaming (rootless_path,new_rootless_path)
+        ) in 
+        recompute_all_info fw new_rootless_path
    |None -> pair;;
 
 let helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) l_pairs =
-     Image.image (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs;;
+     let _=(ref_for_subdirectory_renaming := []) in 
+     let comp=Image.image (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs in 
+     (comp,List.rev(!ref_for_subdirectory_renaming));;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw)  in 
@@ -218,11 +228,15 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
     and new_full_path = s_root^s_new_subdir in 
     let cmd=" mv "^old_full_path^" "^new_full_path in 
         let _=Unix_command.hardcore_uc cmd in 
-   {
+    let (c_files,c_reps)   =  helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.compilable_files) 
+    and (nc_files,nc_reps) =  helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.noncompilable_files) in    
+    let lines = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) (c_reps@nc_reps) in 
+   let fw2 = {
       fw with
-      Fw_wrapper_t.compilable_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.compilable_files)  ;
-      Fw_wrapper_t.noncompilable_files = helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.noncompilable_files)  ;
-   };;   
+      Fw_wrapper_t.compilable_files = c_files  ;
+      Fw_wrapper_t.noncompilable_files = nc_files  ;
+   } in 
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 lines;;   
 
 let helper1_during_inspection fw accu pair=
    let (rootless_path,old_mtime)=pair in 
