@@ -40,11 +40,6 @@ let relocate_module_to cs mod_name new_subdir=
    let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
 
-let rename_subdirectory cs (old_subdir,new_subdir)=
-   let new_fw=Fw_wrapper.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
-
-
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
   let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
@@ -60,6 +55,11 @@ let rename_module cs old_middle_name new_nonslashed_name=
   let old_fw = Coma_state.frontier_with_unix_world cs in 
   let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
   Coma_state.set_frontier_with_unix_world cs new_fw ;;
+
+let rename_subdirectory cs (old_subdir,new_subdir)=
+   let new_fw=Fw_wrapper.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
+   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+
 
 exception Rename_string_or_value_exn of string ;;
 
@@ -456,19 +456,19 @@ module And_backup = struct
          let _=Private.backup cs2 diff (Some msg) in  
          cs2;; 
 
-      let rename_subdirectory  cs old_subdir new_subdir=
-         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
-         let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
-                    " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-         let _=Private.backup cs2 diff (Some msg) in  
-         cs2;; 
-
 
       let rename_module cs old_middle_name new_nonslashed_name=
          let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
          let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
                  " as "^(No_slashes.to_string new_nonslashed_name) in       
          Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
+
+      let rename_subdirectory  cs old_subdir new_subdir=
+         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
+         let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
+                    " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+         let _=Private.backup cs2 diff (Some msg) in  
+         cs2;; 
 
       let rename_string_or_value cs old_sov new_sov=
          let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 

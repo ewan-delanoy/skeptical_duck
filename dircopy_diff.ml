@@ -112,6 +112,17 @@ let is_empty x=
    ([],[],[]);;   
    
 let of_concrete_object = Private.of_concrete_object ;;
+
+let replace diff replacements= 
+   let l_deleted = Image.image fst replacements 
+   and l_created = Image.image snd replacements  in
+  {
+      diff with 
+      Dircopy_diff_t.recently_created = (diff.Dircopy_diff_t.recently_created)@ l_created;
+      Dircopy_diff_t.recently_deleted = (diff.Dircopy_diff_t.recently_deleted)@ l_deleted;
+   };; 
+
+
 let to_concrete_object = Private.to_concrete_object ;;   
    
    
