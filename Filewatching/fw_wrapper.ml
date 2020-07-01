@@ -280,9 +280,8 @@ let rename_module_in_filename_only fw rootlesses_to_be_renamed new_module =
       fw with 
       Fw_wrapper_t.compilable_files = new_compilable_files
    }   in 
-   let l_destroyed = Image.image (fun (a,b)->Dfn_rootless.to_line a) replacements 
-   and l_created = Image.image (fun (a,b)->Dfn_rootless.to_line b) replacements  in 
-   Fw_wrapper_field.reflect_creation_and_destruction_in_diff fw2 (l_created,l_destroyed);;
+   let reps = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) replacements  in 
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 reps;;
     
 let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
