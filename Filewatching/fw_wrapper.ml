@@ -24,7 +24,7 @@ let recompute_all_info fw path =
      (path,mtime file);;
 
 let update_in_list_of_pairs fw  to_be_updated pairs  =
-   Image.image (
+   Image.vorstellung (
       fun pair -> 
         let (rootless,mtime)=pair in 
         if List.mem rootless to_be_updated 
@@ -40,7 +40,7 @@ let update_some_files fw (w_files,sw_files) = {
 
 let remove_nonnoncompilable_files fw rootless_paths =
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-    let removals_to_be_made = Image.image (
+    let removals_to_be_made = Image.vorstellung (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
@@ -53,7 +53,7 @@ let remove_nonnoncompilable_files fw rootless_paths =
 
 let remove_noncompilable_files fw rootless_paths=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-    let removals_to_be_made = Image.image (
+    let removals_to_be_made = Image.vorstellung (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
@@ -66,7 +66,7 @@ let remove_noncompilable_files fw rootless_paths=
 
 let remove_compilable_files fw rootless_paths=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-    let removals_to_be_made = Image.image (
+    let removals_to_be_made = Image.vorstellung (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
@@ -126,14 +126,14 @@ let register_special_rootless_path fw rootless_path=
 let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
     and s_subdir = Dfa_subdirectory.connectable_to_subpath new_subdir in 
-    let displacements_to_be_made = Image.image (
+    let displacements_to_be_made = Image.vorstellung (
       fun path->" mv "^s_root^(Dfn_rootless.to_line path)^" "^
       s_root^s_subdir 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
    {
       fw with 
-      Fw_wrapper_t.compilable_files = Image.image (fun pair->
+      Fw_wrapper_t.compilable_files = Image.vorstellung (fun pair->
          let (path,_)=pair in 
          if(List.mem path rootless_paths) 
          then let new_path = Dfn_rootless.relocate_to path new_subdir in 
@@ -152,7 +152,7 @@ let relocate_module_to fw mod_name new_subdir=
    relocate_compilable_files_to fw the_files new_subdir;;
 
 let helper_during_string_replacement fw (old_string,new_string) accu old_list=
-    let new_list =Image.image (
+    let new_list =Image.vorstellung (
        fun pair->
          let (old_path,_)=pair in 
          if not(Supstring.contains (Fw_wrapper_field.get_content fw old_path) old_string)
@@ -188,7 +188,7 @@ let rename_value_inside_module fw (old_name,new_name) preceding_files rootless_p
    let absolute_path=Dfn_full.to_absolute_path  full_path in 
    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files old_name new_name absolute_path in 
-   let new_compilable_files =Image.image (
+   let new_compilable_files =Image.vorstellung (
        fun pair->
          let (path,_)=pair in 
          if path = rootless_path 
@@ -208,7 +208,7 @@ let helper1_during_subdirectory_renaming fw (old_subdir,new_subdir) pair=
    |None -> pair;;
 
 let helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) l_pairs =
-     Image.image (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs;;
+     Image.vorstellung (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs;;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw)  in 
@@ -233,7 +233,7 @@ let helper1_during_inspection fw accu pair=
    else pair;;
 
 let helper2_during_inspection fw accu l_pairs =
-   let new_l_pairs = Image.image (helper1_during_inspection fw accu) l_pairs in 
+   let new_l_pairs = Image.vorstellung (helper1_during_inspection fw accu) l_pairs in 
    (new_l_pairs,List.rev(!accu));;
 
 let inspect_and_update fw = 
@@ -265,11 +265,11 @@ let helper2_inside_module_renaming_in_filename fw new_module rootless_to_be_rena
 
 let rename_module_in_filename_only fw rootlesses_to_be_renamed new_module =
    let s_new_module = Dfa_module.to_line new_module in 
-   let l_cmds = Image.image (helper1_inside_module_renaming_in_filename fw s_new_module) rootlesses_to_be_renamed in 
-   let replacements = Image.image (helper2_inside_module_renaming_in_filename fw new_module) rootlesses_to_be_renamed  in            
+   let l_cmds = Image.vorstellung (helper1_inside_module_renaming_in_filename fw s_new_module) rootlesses_to_be_renamed in 
+   let replacements = Image.vorstellung (helper2_inside_module_renaming_in_filename fw new_module) rootlesses_to_be_renamed  in            
    let _ =Unix_command.conditional_multiple_uc l_cmds in  
    let old_compilable_files = fw.Fw_wrapper_t.compilable_files  in    
-   let new_compilable_files = Image.image (
+   let new_compilable_files = Image.vorstellung (
      fun pair->
        let (rootless,_)=pair in 
        match Option.seek (fun (old_one,_)->old_one=rootless) replacements with  
@@ -289,7 +289,7 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
       Look_for_module_names.change_module_name_in_ml_file old_module new_module ap 
   ) files_to_be_rewritten in 
   let old_compilable_files = fw.Fw_wrapper_t.compilable_files  in    
-  let new_compilable_files = Image.image (
+  let new_compilable_files = Image.vorstellung (
      fun pair->
        let (rootless,_)=pair in 
        if List.mem rootless files_to_be_rewritten
@@ -304,7 +304,7 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
 let rename_module_in_special_files fw (old_module,new_module) =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
   let old_special_files = fw.Fw_wrapper_t.noncompilable_files   in    
-  let new_special_files = Image.image (
+  let new_special_files = Image.vorstellung (
      fun pair->
        let (rootless,mtime)=pair in 
        let content = Fw_wrapper_field.get_content fw rootless in 
@@ -329,7 +329,7 @@ let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
    let changed_ones=ref[] 
    and changed_lines=ref[] in 
-   let new_l=Image.image (
+   let new_l=Image.vorstellung (
       fun pair ->
         let (rootless,mtime)=pair in 
         let content = Fw_wrapper_field.get_content fw rootless in 
@@ -368,7 +368,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let fw2= update_some_files fw ([rootless],[]) in 
     let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-    let new_lines =Image.image (
+    let new_lines =Image.vorstellung (
        fun rl-> 
          let s_path=Dfn_rootless.to_line rootless in 
          let ap = Absolute_path.of_string (s_root^s_path) in  
@@ -381,7 +381,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
 
 let nonspecial_absolute_paths fw= 
    let root = Fw_wrapper_field.root fw in 
-   Image.image (
+   Image.vorstellung (
      fun (rootless,_)-> 
         Absolute_path.of_string (
            Dfn_common.recompose_potential_absolute_path root rootless

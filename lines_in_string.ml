@@ -19,12 +19,12 @@ core "a\nb\n";;
 
 *)
 
-let lines s= Image.image snd (core s);;
+let lines s= Image.vorstellung snd (core s);;
 
 let interval s i j=
     let temp1=core s in
     let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
-    let temp3=Image.image snd temp2 in
+    let temp3=Image.vorstellung snd temp2 in
     String.concat "\n" temp3;; 
 
 
@@ -44,7 +44,7 @@ let line_index_from_char_index s char_idx=
 let remove_interval s i j=
   let temp1=core s in
   let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
-  let temp3=Image.image snd temp2 in
+  let temp3=Image.vorstellung snd temp2 in
   String.concat "\n" temp3;; 
 
 let remove_interval_in_file fn i j=

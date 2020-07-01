@@ -8,7 +8,7 @@
 
 let compatible_sacrifices eob = 
    let temp1 = Hex_expsv_typical_sacrifice.compatible_sacrifices eob in 
-   Image.image ( fun
+   Image.vorstellung ( fun
      (tscr,side,pairs) -> Hex_expsv_sacrifice_t.Scr (tscr,side,pairs)
    )   temp1 ;; 
 

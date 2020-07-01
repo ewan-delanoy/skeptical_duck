@@ -18,7 +18,7 @@ let normalized_double_anchor = function
 
 let neighbors_for_side dim direction = 
    let temp1=Hex_cardinal_direction.Border.enumerate_all dim direction in 
-   let temp2=Image.image Hex_cell.to_int_pair temp1 in 
+   let temp2=Image.vorstellung Hex_cell.to_int_pair temp1 in 
    Set_of_poly_pairs.safe_set temp2;;
 
 let of_list l= 
@@ -48,7 +48,7 @@ let is_two_edged = function
 
 
 let merge l=
-   let temp1 = List.flatten(Image.image Private.to_list l) in 
+   let temp1 = List.flatten(Image.vorstellung Private.to_list l) in 
    let temp2 = Ordered.sort Total_ordering.standard temp1 in 
    Private.of_list temp2 ;;
 

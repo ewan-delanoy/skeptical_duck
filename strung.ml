@@ -144,9 +144,9 @@ find_successively_in [["ba";"ab"];["cde";"edc"]] "12\n\n\n\n\n8ab123\n\n67cde12"
 let replace_ranges_in l s=
     if l=[] then s else
     let n=String.length s in
-    let ranges=Image.image fst l in
+    let ranges=Image.vorstellung fst l in
     let partition=Listennou.partition_from_set_of_ranges ranges n in 
-    let temp1=Image.image (
+    let temp1=Image.vorstellung (
       fun (i,j,will_be_replaced)->
         if will_be_replaced 
         then List.assoc (i,j) l
@@ -166,11 +166,11 @@ replace_ranges_in [((3,5),"A");((8,12),"B")] "12345678901234567890";;
 let insert_prefixes_at_indices l s=
     if l=[] then s else
     let n=String.length s in
-    let temp1=Image.image (fun (pref,idx)->(idx,pref)) l in
-    let temp2=Image.image fst temp1 in
+    let temp1=Image.vorstellung (fun (pref,idx)->(idx,pref)) l in
+    let temp2=Image.vorstellung fst temp1 in
     let temp3=Ordered.sort Total_ordering.standard ((n+1)::temp2) in
     let temp4=Listennou.universal_delta_list temp3 in
-    let temp5=Image.image(fun (i,j)->
+    let temp5=Image.vorstellung(fun (i,j)->
        (List.assoc i temp1)^(String.sub s (i-1) (j-i)) ) temp4 in
     let i1=List.hd temp3 in
     let temp6=(
@@ -188,10 +188,10 @@ exception Largest_common_prefix_exn;;
 
 let largest_common_prefix l=
    if l=[] then raise(Largest_common_prefix_exn) else
-   let lengths=Image.image String.length l in
+   let lengths=Image.vorstellung String.length l in
    let m=Min.list lengths in
    let tester=(fun k->
-     let temp1=Image.image (fun s->String.get s k) l in
+     let temp1=Image.vorstellung (fun s->String.get s k) l in
      let v=List.hd temp1 in
      List.for_all (fun x->x=v) temp1
    ) in
@@ -321,10 +321,10 @@ let to_intlist enclosed_s =
    let n=String.length enclosed_s in 
    let s=Cull_string.interval enclosed_s 2 (n-1) in 
    let temp1=Cull_string.extract_intervals_in_wrt_separator s ";" in 
-   Image.image int_of_string temp1;;
+   Image.vorstellung int_of_string temp1;;
 
 let of_intlist l=
-  let temp1=Image.image string_of_int l in 
+  let temp1=Image.vorstellung string_of_int l in 
   "["^(String.concat ";" temp1)^"]";;
 
 (*

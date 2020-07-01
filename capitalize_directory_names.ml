@@ -12,7 +12,7 @@ let cdn s=
   )(Ennig.ennig 0 (n-1)) in
   if temp1=[] then s else
   let temp4=List.rev(List.tl(List.rev temp1)) in
-  let temp2=0::(Image.image (fun j->j+1) temp4) in
+  let temp2=0::(Image.vorstellung (fun j->j+1) temp4) in
   let tempf=(fun j->
     let t=String.make 1 (String.get s j) in
     if List.mem j temp2

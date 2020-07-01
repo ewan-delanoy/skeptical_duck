@@ -142,7 +142,7 @@ let power_set l=
 let rec tempf=
 (function (da_ober,graet)->match da_ober with
 []->graet
-|a::peurrest->tempf(peurrest,graet@(Image.image(function y->a::y)(graet)))
+|a::peurrest->tempf(peurrest,graet@(Image.vorstellung(function y->a::y)(graet)))
 ) in
 tempf(List.rev(l),[[]]);;
 
@@ -247,7 +247,7 @@ let partition_from_set_of_ranges l n=
     let (last_i,last_j)=List.hd(List.rev l) 
     and (first_i,_)=List.hd l in
     let temp2=universal_delta_list l in  
-    let temp3=Image.image (fun ((i1,j1),(i2,j2))->
+    let temp3=Image.vorstellung (fun ((i1,j1),(i2,j2))->
       [(i1,j1,true);(j1+1,i2-1,false)]
     ) temp2 in 
     let middle_part=List.flatten temp3 in
@@ -265,7 +265,7 @@ partition_from_set_of_ranges [(1,7);(41,52)] 100;;
 let extract_intervals_in_complement l n =
    let enhanced_l = 0::(l@[n+1]) in 
    let temp1=universal_delta_list enhanced_l in
-   let temp2= Image.image (fun (x,y)->(x+1,y-1)) temp1 in 
+   let temp2= Image.vorstellung (fun (x,y)->(x+1,y-1)) temp1 in 
    List.filter (fun (a,b)->a<=b) temp2;;
 
 (*
@@ -301,7 +301,7 @@ complement_union_of_ranges [1,7;8,30] 30;;
 let split_list_in_half l=
    let temp1=Ennig.index_everything(l) in 
    let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
-   (Image.image snd temp2,Image.image snd temp3);;
+   (Image.vorstellung snd temp2,Image.vorstellung snd temp3);;
 
 (*
 

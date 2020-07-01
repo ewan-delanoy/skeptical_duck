@@ -34,7 +34,7 @@ let paired_data =
     "0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"];;
 
  let chars_in_order=
-   (Image.image fst paired_data)@(Image.image snd paired_data)@single_data;;  
+   (Image.vorstellung fst paired_data)@(Image.vorstellung snd paired_data)@single_data;;  
 
 
 

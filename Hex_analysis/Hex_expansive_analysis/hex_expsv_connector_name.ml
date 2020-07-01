@@ -7,7 +7,7 @@
 module Private = struct 
 
 let siders bw side =
-    Image.image (
+    Image.vorstellung (
         fun border -> 
            Hex_expsv_connector_name_t.Border(bw,border)
     ) (Hex_expsv_border_connector_name.for_side side);;
@@ -17,7 +17,7 @@ end ;;
 let enders_for_side side = 
    Private.siders Hex_expsv_borderwise_t.To_border (Hex_cardinal_direction.oppose side);;
 
-let middlers = Image.image (
+let middlers = Image.vorstellung (
   fun inner -> Hex_expsv_connector_name_t.Inner(inner)
 ) Hex_expsv_inner_connector_name.all;;
 

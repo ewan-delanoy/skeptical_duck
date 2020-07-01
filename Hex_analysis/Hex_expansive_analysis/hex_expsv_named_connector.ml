@@ -41,10 +41,10 @@ let forget_name nc =
 let all_translates dim nc =
    let nm =nc.Hex_expsv_named_connector_t.name 
    and cnnctr = forget_name nc in 
-   Image.image (add_name nm) (Hex_connector.all_translates dim cnnctr);;
+   Image.vorstellung (add_name nm) (Hex_connector.all_translates dim cnnctr);;
 
 let expand_all dim cnnctrs = 
-    List.flatten( Image.image (fun cnnctr ->
+    List.flatten( Image.vorstellung (fun cnnctr ->
     let nc=of_name cnnctr in all_translates dim nc ) cnnctrs);; 
 
 
@@ -66,7 +66,7 @@ let enders_for_side (dim,side)=
     expand_all dim (Hex_expsv_connector_name.enders_for_side side);;    
  
 let islanders dim island1 other_islands =
-   let temp1 = Image.image ( 
+   let temp1 = Image.vorstellung ( 
      fun island2 -> 
        let ttemp2 =  Hex_island.common_neighbors dim island1 island2  in 
        let ttemp3 = Set_of_poly_pairs.image Hex_cell.of_int_pair ttemp2 in 
@@ -74,7 +74,7 @@ let islanders dim island1 other_islands =
        let ttemp5 = List.filter (
            fun (cell1,cell2) -> not(List.mem cell2 (Hex_cell.neighbors dim cell1))
        ) ttemp4 in 
-       Image.image (fun (p1,p2)->
+       Image.vorstellung (fun (p1,p2)->
           of_name( Hex_expsv_connector_name_t.Inner(
              Hex_expsv_inner_connector_name_t.Broken_bridge(island1,p1,p2,island2)))
        ) ttemp5
@@ -83,19 +83,19 @@ let islanders dim island1 other_islands =
 
 module Precomputed = struct 
 
-let usual_range = Image.image (
+let usual_range = Image.vorstellung (
    fun d -> (Hex_dimension.eleven,d)
 ) Hex_cardinal_direction.all;; 
 
 let data_for_starters = 
-   Image.image (fun (dim,d)->((dim,d),starters_for_side (dim,d)) ) usual_range;;
+   Image.vorstellung (fun (dim,d)->((dim,d),starters_for_side (dim,d)) ) usual_range;;
 
 let data_for_middlers = 
-   Image.image (fun dim->(dim,middlers dim) ) [Hex_dimension.eleven];;
+   Image.vorstellung (fun dim->(dim,middlers dim) ) [Hex_dimension.eleven];;
 
 
 let data_for_enders = 
-   Image.image (fun (dim,d)->((dim,d),enders_for_side (dim,d)) ) usual_range;;
+   Image.vorstellung (fun (dim,d)->((dim,d),enders_for_side (dim,d)) ) usual_range;;
 
 let starters_for_side dim side=
      match Option.seek (fun p->fst(p)=(dim,side)) data_for_starters with 
@@ -118,7 +118,7 @@ end ;;
 
 let inner_sea nc =
    Hex_cell_set.safe_set 
-     (Image.image Hex_cell.of_int_pair 
+     (Image.vorstellung Hex_cell.of_int_pair 
        nc.Hex_expsv_named_connector_t.junction) ;;
 
 
@@ -126,7 +126,7 @@ let inner_sea nc =
 end ;;
 
 let active_part nc =
-   let inner_cells = (Image.image Hex_cell.of_int_pair 
+   let inner_cells = (Image.vorstellung Hex_cell.of_int_pair 
            nc.Hex_expsv_named_connector_t.extra_active_cells) in 
    Hex_cell_set.fold_merge 
   [ 
@@ -154,7 +154,7 @@ let check_exit nc island = Hex_connector.check_exit island (Private.forget_name 
 
 let extra_active_cells nc =
     Hex_cell_set.safe_set 
-    (Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.extra_active_cells);;
+    (Image.vorstellung Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.extra_active_cells);;
 
 let enders_for_side = Private.Precomputed.enders_for_side ;;
 
@@ -198,7 +198,7 @@ let wet_earth nc = Hex_cell_set.fold_merge
   [
      Hex_island.inner_earth nc.Hex_expsv_named_connector_t.entry ;
      Hex_island.inner_earth nc.Hex_expsv_named_connector_t.exit ;
-     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
+     (Hex_cell_set.safe_set(Image.vorstellung Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
   ] 
   ;;
 
@@ -206,6 +206,6 @@ let wet_earth_with_entry_unchecked nc = Hex_cell_set.fold_merge
 
   [
      Hex_island.inner_earth nc.Hex_expsv_named_connector_t.exit ;
-     (Hex_cell_set.safe_set(Image.image Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
+     (Hex_cell_set.safe_set(Image.vorstellung Hex_cell.of_int_pair nc.Hex_expsv_named_connector_t.junction)) ;
   ] 
   ;;

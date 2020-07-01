@@ -61,7 +61,7 @@ let springless_extensions_after_sea partial_kite last_nc =
    let compatible_islands  = List.filter (
       Hex_expsv_named_connector.check_exit last_nc  
    )  partial_kite.Hex_expsv_partial_kite_t.unvisited_islands in 
-   ([],Image.image (Hex_expsv_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
+   ([],Image.vorstellung (Hex_expsv_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
 let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_expsv_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
@@ -77,8 +77,8 @@ let springless_extensions dim pk =
 
 let extensions_finished_and_non_finished dim partial_kite =
       let (finished1,unfinished1) = springless_extensions dim partial_kite in 
-      let finished2 = Image.image (fun (_,pk)->Hex_expsv_finished_kite.solution_details pk) finished1 
-      and unfinished2 = Image.image snd unfinished1 in 
+      let finished2 = Image.vorstellung (fun (_,pk)->Hex_expsv_finished_kite.solution_details pk) finished1 
+      and unfinished2 = Image.vorstellung snd unfinished1 in 
       (finished2,unfinished2);; 
 
 
@@ -93,14 +93,14 @@ let late_starter dim pk=
 
 let pusher (factory,_) = 
    let (d,wi,fi,fa,uf) = factory in 
-   let raw_result=Image.image (
+   let raw_result=Image.vorstellung (
          fun pk->
          (pk,extensions_finished_and_non_finished d pk) 
    ) uf in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
-   let new_failures = List.rev_append (Image.image fst failures1) fa in 
-   let new_moleculars = List.flatten (Image.image (fun (_,p)->fst p) nonfailures1)
-   and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
+   let new_failures = List.rev_append (Image.vorstellung fst failures1) fa in 
+   let new_moleculars = List.flatten (Image.vorstellung (fun (_,p)->fst p) nonfailures1)
+   and new_partial_kites = List.flatten (Image.vorstellung (fun (_,p)->snd p) nonfailures1) in 
    let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
    let new_finished_ones = Ordered.merge Total_ordering.standard
           ordered_new_moleculars fi in   

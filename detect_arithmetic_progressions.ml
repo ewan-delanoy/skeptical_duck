@@ -73,12 +73,12 @@
       then s^"(by "^(string_of_int step)^")"
       else s
    |Nothing_Special(l)->
-    "["^(String.concat(";")(Image.image string_of_int l))^"]";;      
+    "["^(String.concat(";")(Image.vorstellung string_of_int l))^"]";;      
                 
  
  let pretty_print l=
    let temp1=decompose(l) in
-   let temp2=Image.image string_of_specified_set temp1 in
+   let temp2=Image.vorstellung string_of_specified_set temp1 in
    String.concat "" temp2;;
    
    

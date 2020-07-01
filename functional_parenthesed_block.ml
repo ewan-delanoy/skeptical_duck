@@ -230,7 +230,7 @@ let decompose app s=
        if lab<>None then Some[lab,u] else
        if u="" then None else
        let ttemp1=Str.split(Str.regexp"[ \n\t]+") u in
-       Some(Image.image (fun v->(None,v)) ttemp1)
+       Some(Image.vorstellung (fun v->(None,v)) ttemp1)
   ) temp1 in
   List.flatten temp2;;
 
@@ -243,7 +243,7 @@ let basic_detection pattern s  i=
   then Some(String.length pattern,(i,i-1+String.length pattern))
   else None ;;
 
-let lc l= Image.image (fun (x,y)->((x,y),basic_detection x,basic_detection y)) l;;
+let lc l= Image.vorstellung (fun (x,y)->((x,y),basic_detection x,basic_detection y)) l;;
 
 decompose (lc [ ("(",")");("{","}");("BEGIN","END") ])
 ("How (much (research effort) is {expected} when) BEGIN posting a"^

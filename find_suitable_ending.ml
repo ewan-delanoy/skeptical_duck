@@ -15,7 +15,7 @@ exception No_suitable_location of Dfa_root_t.t*(Dfa_subdirectory_t.t list)*strin
 let find_file_location dir l_subdir old_x=
   let x=String.uncapitalize_ascii old_x in
   let s_dir=Dfa_root.connectable_to_subpath(dir) in
-  let original_endings=Image.image Dfa_ending.connectable_to_modulename Dfa_ending.all_ocaml_endings in
+  let original_endings=Image.vorstellung Dfa_ending.connectable_to_modulename Dfa_ending.all_ocaml_endings in
   let endings=(
      if List.exists (fun edg->Supstring.ends_with x edg) original_endings
      then [""]

@@ -8,7 +8,7 @@
 let apply line= 
    let cmd = Parse_sabbrex_command.parse line in 
    let (Unexpected_change_after_update_t.Ucau changes) = Sabbrex_apply_on_standard.apply cmd in 
-   let temp1=Image.image (fun (x,old_y,new_y)-> x^" : "^old_y^" ->"^new_y ) changes in 
+   let temp1=Image.vorstellung (fun (x,old_y,new_y)-> x^" : "^old_y^" ->"^new_y ) changes in 
    let answer=(
       if changes=[] then "" else 
       "\n\n"^(String.concat "\n" temp1)^"\n\n"

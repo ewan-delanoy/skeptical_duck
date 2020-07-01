@@ -14,10 +14,10 @@ let translate cnnctr (dx,dy)=
    and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit in 
    {
     Hex_connector_t.entry =Hex_island_t.I(anchor1,trl elts1);
-    junction = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.junction) ;
+    junction = Image.vorstellung (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island_t.I(anchor2,trl elts2);
     apex = Option.propagate (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.apex);
-    extra_active_cells = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.extra_active_cells) ;
+    extra_active_cells = Image.vorstellung (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.extra_active_cells) ;
 
 };;
 
@@ -41,7 +41,7 @@ let all_translates formal_dim cnnctr =
        fun (dx,dy) ->  (1-xmin <= dx) && (dx <= dim-xmax) 
                     && (1-ymin <= dy) && (dy <= dim-ymax) 
     )  base in 
-   Image.image (Private.translate cnnctr) cleaned_base ;; 
+   Image.vorstellung (Private.translate cnnctr) cleaned_base ;; 
 
 let bring_to_left_upper_corner cnnctr = 
    let (Hex_island_t.I(_,elts1)) = cnnctr.Hex_connector_t.entry 
@@ -66,14 +66,14 @@ let inner_earth cnnctr =
      [ 
         (Hex_island.inner_earth cnnctr.Hex_connector_t.entry);
         (Hex_island.inner_earth cnnctr.Hex_connector_t.exit);
-        (Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair
+        (Hex_cell_set.safe_set (Image.vorstellung Hex_cell.of_int_pair
            cnnctr.Hex_connector_t.extra_active_cells));
 
     ];;
 
 let oppose dim cnnctr = 
   let on_island = Hex_island.oppose dim
-  and on_pairs =  Image.image (Hex_ipair.oppose dim) in 
+  and on_pairs =  Image.vorstellung (Hex_ipair.oppose dim) in 
 {
     Hex_connector_t.entry =on_island (cnnctr.Hex_connector_t.entry);
     junction =  on_pairs (cnnctr.Hex_connector_t.junction) ;
@@ -84,10 +84,10 @@ let oppose dim cnnctr =
 
 let reflect cnnctr = {
     Hex_connector_t.entry = Hex_island.reflect (cnnctr.Hex_connector_t.entry);
-    junction = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.junction) ;
+    junction = Image.vorstellung Hex_ipair.reflect (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island.reflect (cnnctr.Hex_connector_t.exit);
     apex = Option.propagate Hex_ipair.reflect (cnnctr.Hex_connector_t.apex);
-    extra_active_cells = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.extra_active_cells) ;
+    extra_active_cells = Image.vorstellung Hex_ipair.reflect (cnnctr.Hex_connector_t.extra_active_cells) ;
 };;
 
 let reverse cnnctr = {
@@ -98,9 +98,9 @@ let reverse cnnctr = {
 
 
 let to_default_molecular_linker cnnctr = 
-    let temp1=Image.image Hex_cell.of_int_pair cnnctr.Hex_connector_t.junction in 
+    let temp1=Image.vorstellung Hex_cell.of_int_pair cnnctr.Hex_connector_t.junction in 
     let temp2=Listennou.extract_successive_pairs_from_even_list temp1 in 
-    Hex_molecular_linker.constructor (Image.image Hex_atomic_linker.pair temp2);;    
+    Hex_molecular_linker.constructor (Image.vorstellung Hex_atomic_linker.pair temp2);;    
 
 
 let translate p cnnctr= Private.translate cnnctr p;;

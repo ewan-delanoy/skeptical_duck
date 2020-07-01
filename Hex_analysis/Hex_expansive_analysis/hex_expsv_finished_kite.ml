@@ -93,14 +93,14 @@ let contribution_from_island_in_active_part pk prepared_list =
    then Hex_island.minimal_version_for_two_edged death
    else 
     let boarded_islands = deduce_boarded_islands prepared_list (birth,death)  in 
-    Hex_cell_set.fold_merge(Image.image 
+    Hex_cell_set.fold_merge(Image.vorstellung 
     (function (island1,island,island2)-> 
          Hex_island.minimal_connection (island1,island2) island
     ) boarded_islands) ;;
 
 let possibly_too_large_active_part  pk =
     let unprepared_l= List.rev pk.Hex_expsv_partial_kite_t.steps_so_far in 
-    let prepared_l = remove_redundant_islands (Image.image Hex_expsv_kite_element.compress_to_springless  unprepared_l)  in 
+    let prepared_l = remove_redundant_islands (Image.vorstellung Hex_expsv_kite_element.compress_to_springless  unprepared_l)  in 
     let contribution_from_seas = Hex_cell_set.fold_merge(Option.filter_and_unpack (
        function (Hex_expsv_kite_springless_element_t.Sea(nc)) -> Some(Hex_expsv_named_connector.active_part nc)
        |_->None

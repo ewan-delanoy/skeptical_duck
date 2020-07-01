@@ -13,18 +13,18 @@ let tr = ((fun x->Hex_molecular_linker_t.M(x)),
           (fun (Hex_molecular_linker_t.M(x))->x),Hex_atomic_linker.cmp);;
 
 let to_readable_string (Hex_molecular_linker_t.M(l))=
-   String.concat "|" (Image.image Hex_atomic_linker.to_readable_string l);;
+   String.concat "|" (Image.vorstellung Hex_atomic_linker.to_readable_string l);;
 
 
 end;;
 
 let active_complement (Hex_molecular_linker_t.M(l))= 
-   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.active_complement l);;
+   Hex_cell_set.fold_merge (Image.vorstellung Hex_atomic_linker.active_complement l);;
 
 
 let constructor unordered_l= 
   let l= Ordered.sort Hex_atomic_linker.cmp unordered_l in 
-  let temp1=Image.image (fun atl->(atl,Hex_atomic_linker.support atl)) l in 
+  let temp1=Image.vorstellung (fun atl->(atl,Hex_atomic_linker.support atl)) l in 
   let temp2=Uple.list_of_pairs temp1 in 
   match Option.seek(fun ((atl1,supp1),(atl2,supp2))->
     not(Hex_cell_set.does_not_intersect supp1 supp2)
@@ -61,7 +61,7 @@ let print_out (fmt:Format.formatter) ap=
 let setminus = Functor_for_sets.setminus Private.tr ;;
 
 let support (Hex_molecular_linker_t.M(l))= 
-   Hex_cell_set.fold_merge (Image.image Hex_atomic_linker.support l);;
+   Hex_cell_set.fold_merge (Image.vorstellung Hex_atomic_linker.support l);;
 
 let test_for_passive_to_active_conversion cell (Hex_molecular_linker_t.M(l))= 
    match Option.find_and_stop (Hex_atomic_linker.test_for_passive_to_active_conversion cell) l with 

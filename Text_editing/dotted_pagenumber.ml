@@ -86,7 +86,7 @@ extract_dotted_pagenumbers "-12--34-\226\128\147567-";;
 
 let standardize_dotted_pagenumbers_in_string main_text =
    let temp1=extract_dotted_pagenumbers main_text in 
-   let temp2=Image.image (
+   let temp2=Image.vorstellung (
       fun (opt,snippet)->match opt with 
       None->snippet
       |Some(pg_nbr,_)->

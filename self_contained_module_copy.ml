@@ -23,7 +23,7 @@ let self_contained_module_copy prefix hm=
    let cs=(!(Usual_coma_state.main_ref)) in 
    let nm=Dfn_endingless.to_module hm in
    let those_above=(Coma_state.above cs  hm)@[nm] in
-   let temp1=Image.image (
+   let temp1=Image.vorstellung (
        fun nm2->
          let hm2=Coma_state.endingless_at_module cs nm2 in
          let mlx=Dfn_join.to_ending hm2 Dfa_ending.ml in
@@ -35,15 +35,15 @@ let self_contained_module_copy prefix hm=
          let content=unsharped_content hm2 in
          ((mname,new_mname),content)
    ) those_above in
-   let replacements=Image.image (
+   let replacements=Image.vorstellung (
        fun ((a,b),_)->(Dfa_module.of_line a,Dfa_module.of_line b)
    ) temp1 in
-   let contents=Image.image snd temp1 in
-   let new_contents=Image.image 
+   let contents=Image.vorstellung snd temp1 in
+   let new_contents=Image.vorstellung 
         (Look_for_module_names.change_several_module_names_in_ml_ocamlcode replacements  ) 
          contents in
    let temp2=List.combine replacements new_contents in
-   let temp3=Image.image (
+   let temp3=Image.vorstellung (
      fun ((_,new_mname),txt)->
       let name=String.capitalize_ascii(Dfa_module.to_line new_mname) in
       "module "^name^"=struct "^txt^" end"^Double_semicolon.ds

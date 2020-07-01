@@ -42,7 +42,7 @@ let compute_maximal_jockeyed_opening = Private.compute_maximal_jockeyed_opening;
 
 let extract_untamed_openings dfgl =
    let (Hex_fg_double_list_t.DL(l1,l2)) = dfgl in 
-   let temp1 = Image.image (fun fg->
+   let temp1 = Image.vorstellung (fun fg->
       Private.helper_during_extraction 
        ([],Hex_player_t.First_player,fg.Hex_finished_game_t.sequence_of_moves,dfgl)
     ) (l1@l2) in 

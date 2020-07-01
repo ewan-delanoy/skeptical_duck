@@ -28,7 +28,7 @@ let optional_for_false_three (s1,s2,s3)=
 let generalize_for_one l=l@(Option.filter_and_unpack optional_for_one l);;
 let generalize_for_two l=l@(Option.filter_and_unpack optional_for_two l);;
 let generalize_for_false_three l=
-   Image.image(
+   Image.vorstellung(
       fun (x,y,li)->
          let new_li=li@(Option.filter_and_unpack optional_for_false_three li) in 
          (x,y,new_li)

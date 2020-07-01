@@ -9,7 +9,7 @@ exception Bad_apex_for_eyed_claw of Hex_cardinal_direction_t.t * Hex_cardinal_di
 
 let for_side side =
     let ortho = Hex_cardinal_direction.orthogonal_directions side in 
-    (Image.image (fun specifier->
+    (Image.vorstellung (fun specifier->
         Hex_border_connector_name_t.Eyed_claw(specifier,side)
     ) ortho)
     @

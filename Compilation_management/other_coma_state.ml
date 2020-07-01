@@ -25,7 +25,7 @@ let see_confidential_changes ()=
          and ap2=Absolute_path.of_string(next_root^path) in 
          Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
    ) temp1 in 
-   Image.image (fun full_path->
+   Image.vorstellung (fun full_path->
       Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
    ) temp2;;    
 
@@ -39,7 +39,7 @@ let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) m
 let commands_for_change_officialization l=
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
-   Image.image (
+   Image.vorstellung (
       fun path->
          "cp "^next_root^path^" "^this_root^path 
    ) l;;    

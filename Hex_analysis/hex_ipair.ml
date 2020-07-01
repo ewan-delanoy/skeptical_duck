@@ -21,7 +21,7 @@ let neighbors_for_one dim (j,i) =
    Set_of_poly_pairs.safe_set temp1;;
 
 let neighbors_for_several dim l=
-    let temp1 = Image.image (neighbors_for_one dim) l in 
+    let temp1 = Image.vorstellung (neighbors_for_one dim) l in 
     Set_of_poly_pairs.setminus 
      (Set_of_poly_pairs.fold_merge temp1) 
       (Set_of_poly_pairs.safe_set l) ;;

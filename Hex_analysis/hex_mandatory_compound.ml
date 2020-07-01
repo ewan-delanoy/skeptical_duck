@@ -23,7 +23,7 @@ let escape_compound_in_disjunction cells older_extmols =
    let common_molecular = Hex_extended_molecular.common_molecular_part older_extmols in 
    let common_passive = Hex_molecular_linker.support common_molecular in 
    let temp1 = List.combine cells older_extmols in 
-   let local_escape_sets = Image.image (fun (cell,extmol)-> 
+   let local_escape_sets = Image.vorstellung (fun (cell,extmol)-> 
       Hex_cell_set.insert cell (Hex_extended_molecular.passive_part extmol)
    ) temp1 in 
    let global_escape_set = Hex_cell_set.fold_intersect local_escape_sets in 

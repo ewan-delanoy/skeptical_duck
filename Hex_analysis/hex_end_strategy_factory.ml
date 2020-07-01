@@ -32,7 +32,7 @@ let get_extmol_at_idx factory k=
 
 let compute_extmol_for_allegedly_exhaustive_disjunction factory cells indices=
    let Hex_end_strategy_factory_t.F(dim,player,l)=factory in 
-   let older_extmols=Image.image (get_extmol_at_idx factory) indices in 
+   let older_extmols=Image.vorstellung (get_extmol_at_idx factory) indices in 
    let global_extmol = Hex_extended_molecular.disjunction cells older_extmols (* active part checked here *)
    and mand = Hex_mandatory_compound.escape_compound_in_disjunction cells older_extmols in 
    let _= Hex_mandatory_compound.assert_exhaustibility mand in 
@@ -96,7 +96,7 @@ let create_new_strategy_in_ref show_msg factory_ref static_constructor comment i
 
 let create_new_strategies show_msg old_factory entries =
    let walker=ref(old_factory) in 
-   let _=Image.image (fun (constr,comment,indices)->
+   let _=Image.vorstellung (fun (constr,comment,indices)->
      create_new_strategy_in_ref show_msg walker constr comment indices) entries in 
    !walker;;
 
@@ -112,8 +112,8 @@ let compute_all_end_configs
   (Hex_end_strategy_factory_t.F(_,_,l1),
    Hex_end_strategy_factory_t.F(_,_,l2))=
   Hex_fles_double_list_t.DL(
-      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l1,
-      Image.image (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
+      Image.vorstellung (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l1,
+      Image.vorstellung (fun (Hex_cog_in_machine_t.C(_,_,_,fles))->fles) l2
   );;
 
 
@@ -144,15 +144,15 @@ let restrict_to_strats_with_indices
         List.mem (Hex_flattened_end_strategy_field.index fles) indices
    ) l in 
    let pre_reindexer = Ennig.index_everything indices in 
-   let reindexer=Image.image (fun (x,y)->(y,x)) pre_reindexer in
-   let new_l=Image.image (Hex_reindex.cog reindexer) partial_l in 
+   let reindexer=Image.vorstellung (fun (x,y)->(y,x)) pre_reindexer in
+   let new_l=Image.vorstellung (Hex_reindex.cog reindexer) partial_l in 
    Hex_end_strategy_factory_t.F(dim,player,new_l);; 
 
 
 let remove_strats_with_indices factory  unordered_removed_indices =
    let removed_indices = Set_of_integers.sort unordered_removed_indices in 
    let (Hex_end_strategy_factory_t.F(dim,player,l)) = factory in 
-   let old_indices=Image.image (
+   let old_indices=Image.vorstellung (
       fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
          (Hex_flattened_end_strategy_field.index fles) 
    ) l in 
@@ -163,7 +163,7 @@ let remove_strats_with_indices factory  unordered_removed_indices =
 
 let indices_used_in_exhaustive_disjunctions 
     (Hex_end_strategy_factory_t.F(dim,player,l))=
-    let temp1 = Image.image (fun (Hex_cog_in_machine_t.C(constr,_,indices,_))->indices) l in 
+    let temp1 = Image.vorstellung (fun (Hex_cog_in_machine_t.C(constr,_,indices,_))->indices) l in 
     Ordered.fold_merge Total_ordering.standard temp1;;
 
 let compute_isolated_end_configs_in_one_factory factory =

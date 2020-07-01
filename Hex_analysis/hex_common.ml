@@ -11,7 +11,7 @@ module Private = struct
 let joiner = " - ";;
 
 let cell_list_to_string l=
-  String.concat joiner (Image.image Hex_cell.to_string l);;
+  String.concat joiner (Image.vorstellung Hex_cell.to_string l);;
 
 
 let cell_pair_to_string (cell1,cell2)=cell_list_to_string [cell1;cell2];;
@@ -24,18 +24,18 @@ let all_cells (Hex_dimension_t.D dimension)=
    let temp1=Ennig.doyle (fun j->String.make 1 (char_of_int(j+96))) 1 dimension 
    and temp2=Ennig.doyle (fun i->string_of_int i) 1 dimension in 
    let temp3=Cartesian.product temp1 temp2 in 
-   let temp4=Image.image (fun (sj,si)->Hex_cell.of_string(sj^si)) temp3 in 
+   let temp4=Image.vorstellung (fun (sj,si)->Hex_cell.of_string(sj^si)) temp3 in 
    Hex_cell_set.safe_set temp4;;
 
 
 
 let cell_list_of_string s =
   let temp1=Str.split (Str.regexp_string Private.joiner) s in 
-    Image.image Hex_cell.of_string temp1;;
+    Image.vorstellung Hex_cell.of_string temp1;;
 
 let cell_list_to_pretty_string l=
   let (pairs,optional_last)=Listennou.divide_by_two l in 
-  let part1= String.concat " | " (Image.image Private.cell_pair_to_string pairs) in 
+  let part1= String.concat " | " (Image.vorstellung Private.cell_pair_to_string pairs) in 
   let part2=(match optional_last with 
      None->""
      |Some(cell)->Hex_cell.to_string cell
@@ -67,5 +67,5 @@ let next_one_to_play preceding_moves=
 
 let parse_list_of_moves s=
    let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
-   Image.image Hex_cell.of_string temp1;;
+   Image.vorstellung Hex_cell.of_string temp1;;
 

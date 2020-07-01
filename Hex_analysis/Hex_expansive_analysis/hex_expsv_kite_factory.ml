@@ -27,14 +27,14 @@ let sacrificial_starter eob pk=
 
 
 let pusher factory = 
-   let raw_result=Image.image (
+   let raw_result=Image.vorstellung (
          fun pk->
          (pk,Hex_expsv_springful_extension.extensions factory.Hex_expsv_kite_factory_t.dimension pk) 
    ) factory.Hex_expsv_kite_factory_t.unfinished in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
-   let new_failures = List.rev_append (Image.image fst failures1) factory.Hex_expsv_kite_factory_t.failures in 
-   let new_moleculars = List.flatten (Image.image (fun (_,p)->(fst p)) nonfailures1)
-   and new_partial_kites = List.flatten (Image.image (fun (_,p)->snd p) nonfailures1) in 
+   let new_failures = List.rev_append (Image.vorstellung fst failures1) factory.Hex_expsv_kite_factory_t.failures in 
+   let new_moleculars = List.flatten (Image.vorstellung (fun (_,p)->(fst p)) nonfailures1)
+   and new_partial_kites = List.flatten (Image.vorstellung (fun (_,p)->snd p) nonfailures1) in 
    let ordered_new_moleculars = Ordered.sort Total_ordering.standard new_moleculars in 
    let new_finished_ones = Ordered.merge Total_ordering.standard 
           ordered_new_moleculars (factory.Hex_expsv_kite_factory_t.finished) in      
@@ -53,23 +53,23 @@ let rec main walker =
 let full_solutions_from_factory factory = fst(main(factory)) ;;
 
 let extract_solutions l = Ordered.sort Total_ordering.standard 
-   (Image.image (fun (_,_,_,mlclr,actv)->(mlclr,actv))  l);;
+   (Image.vorstellung (fun (_,_,_,mlclr,actv)->(mlclr,actv))  l);;
 
 
 let nonsacrificial_full_solutions eob = full_solutions_from_factory (nonsacrificial_starters eob);;
 
 let sacrificial_full_solutions eob = 
    let temp1 = Hex_expsv_starters_for_kite.sacrificial_starters eob in 
-   List.flatten( Image.image (fun (seed,pk)->
+   List.flatten( Image.vorstellung (fun (seed,pk)->
       let ttemp3 = full_solutions_from_factory (sacrificial_starter eob pk) in 
-      Image.image (fun sol->(seed,sol)) ttemp3
+      Image.vorstellung (fun sol->(seed,sol)) ttemp3
    ) temp1);;  
 
 let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
 
 
 let sacrificial_solutions eob=
-   let temp1 = Image.image (
+   let temp1 = Image.vorstellung (
       fun (scr,(_,_,_,mlclr,actv))->
          (Hex_expsv_sacrifice.reconstruct_sacrificial_solutions scr mlclr, actv)
    ) (sacrificial_full_solutions eob) in 

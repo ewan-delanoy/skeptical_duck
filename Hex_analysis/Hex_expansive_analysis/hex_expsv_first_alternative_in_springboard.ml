@@ -7,7 +7,7 @@
 module Private = struct 
 
 let we_for_homogeneous_list l =
-   Hex_cell_set.fold_merge (Image.image Hex_expsv_kite_springless_element.wet_earth l);;
+   Hex_cell_set.fold_merge (Image.vorstellung Hex_expsv_kite_springless_element.wet_earth l);;
 
 let we_for_list = function 
   [] -> Hex_cell_set.empty_set 
@@ -57,7 +57,7 @@ let requisitioned_territory
 
 
 let to_readable_string  (Hex_expsv_first_alternative_in_springboard_t.Fa(opt_start,cell,path,sol,actv))=
-  let path_description = String.concat "," (Image.image Hex_expsv_kite_springless_element.to_readable_string path) in 
+  let path_description = String.concat "," (Image.vorstellung Hex_expsv_kite_springless_element.to_readable_string path) in 
   (Hex_cell.to_string cell)^" -> "^path_description ;;
 
 let wet_earth  = Private.wet_earth ;;

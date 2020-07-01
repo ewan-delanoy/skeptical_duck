@@ -73,7 +73,7 @@ accu->if Primes.is_prime(accu) then (a,accu) else tempf(accu+m))
 in if a<3 then tempf(a+m) else tempf(a);;
 
 let find_many_prime_equivalents m l=
-Image.image(find_one_prime_equivalent(m))(l);;
+Image.vorstellung(find_one_prime_equivalent(m))(l);;
 
 let good_moduli a=
 let aa=abs(a) and ea=Basic.sign(a) in
@@ -104,11 +104,11 @@ let r=(dd mod 4) in
 if ((r=1)||(r=2)) then ([],[]) else
 let temp1=Ennig.ennig(0)(isqrt(dd/3)) in
 let temp2=List.filter(function x->(x mod 2)=r)(temp1) in
-let temp3=List.flatten(Image.image(function b->let m=(b*b+dd)/4 in
-Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Primes.divisors(m))) )(temp2)) in
+let temp3=List.flatten(Image.vorstellung(function b->let m=(b*b+dd)/4 in
+Image.vorstellung(function a->(a,b,m/a) )(Set_of_integers.forget_order(Primes.divisors(m))) )(temp2)) in
 let temp4=List.filter(function (a,b,c)->(b<=a)&&(a<=c)&&(gcd_for_three(a)(b)(c)=1 ) )(temp3) in
 let temp5=List.filter(function (a,b,c)->(0<b)&&(b<a)&&(a<c) )(temp4) in
-(temp4,Image.image(function (a,b,c)->(a,-b,c))(temp5));;
+(temp4,Image.vorstellung(function (a,b,c)->(a,-b,c))(temp5));;
 
 let number_of_reduced_forms dd=
 let temp=enumerate_reduced_forms(dd) in

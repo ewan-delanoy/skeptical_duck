@@ -41,7 +41,7 @@ let prepare_for_journey =
        ([(1,2);(2,1)],[ (1,3);(2,2);(3,1);(3,2)],[(4,1)],[(2,3)],"hk5");   
   ];;
 
-let all = Image.image fst prepare_for_journey ;;
+let all = Image.vorstellung fst prepare_for_journey ;;
 let to_readable_string tic = 
     let (_,_,_,_,name) = List.assoc tic prepare_for_journey in 
     name ;;
