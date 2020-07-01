@@ -77,7 +77,7 @@ let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
    ) temp1 in 
    let is_a_dir  = (fun s->is_a_directory(Absolute_path.AP(s))) in 
    let (found_dirs,found_nondirs) = List.partition is_a_dir temp2 in 
-   let new_constraints = Image.vorstellung (
+   let new_constraints = Image.image (
      fun full_subdir_path ->
         let subdir = Cull_string.two_sided_cutting (dir,"") full_subdir_path in 
        (full_subdir_path^"/",select_by_prefix subdir forbidden_subdirs)
@@ -86,7 +86,7 @@ let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
 
 let rec helper_for_complete_ls_with_ignored_subdirs 
   (treated_nondirs,treated_dirs,to_be_treated) = match to_be_treated with 
-  [] -> (Image.vorstellung Absolute_path.of_string treated_nondirs,treated_dirs)
+  [] -> (Image.image Absolute_path.of_string treated_nondirs,treated_dirs)
   |(dir,forbidden_subdirs) :: others -> 
     let (found_nondirs,found_dirs,new_constraints) = 
         ls_with_ignored_subdirs (dir,forbidden_subdirs) in 
@@ -104,8 +104,8 @@ let complete_ls_with_ignored_subdirs dir forbidden_subdirs =
    let (treated_nondirs,treated_dirs) = 
    helper_for_complete_ls_with_ignored_subdirs 
   ([],[],[s_dir,
-         Image.vorstellung Dfa_subdirectory.without_trailing_slash forbidden_subdirs]) in 
-   (treated_nondirs,Image.vorstellung 
+         Image.image Dfa_subdirectory.without_trailing_slash forbidden_subdirs]) in 
+   (treated_nondirs,Image.image 
      (fun x->Dfa_subdirectory.of_line(Cull_string.two_sided_cutting (s_dir,"") x)) 
    treated_dirs);;
 
@@ -156,7 +156,7 @@ let complete_ls_with_directories_only x=
  let beheaded_ls_with_nondirectories_only x=
   let n0=String.length(Absolute_path.to_string x) in
   let temp1=List.filter(is_a_nondirectory_or_a_nib)(adhoc_ls x) in
-  let temp2=Image.vorstellung (fun ap->Cull_string.cobeginning n0 (Absolute_path.to_string ap)) temp1 in
+  let temp2=Image.image (fun ap->Cull_string.cobeginning n0 (Absolute_path.to_string ap)) temp1 in
   temp2;; 
  
  let dir_substructure x=
@@ -174,7 +174,7 @@ let complete_ls_with_directories_only x=
 let quick_complete_ls s=
   let x=Directory_name.of_string s in
   let temp1=complete_ls x in
-  Image.vorstellung Absolute_path.to_string temp1;;  
+  Image.image Absolute_path.to_string temp1;;  
   
  
 
@@ -182,12 +182,12 @@ let quick_beheaded_complete_ls s=
   let x=Directory_name.of_string s in
   let n=String.length(Directory_name.connectable_to_subpath x) in
   let temp1=complete_ls x in
-  Image.vorstellung (fun ap->Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
+  Image.image (fun ap->Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
   
 let beheaded_simple_ls dir=
   let n=String.length(Directory_name.connectable_to_subpath dir) in
   let temp1=ls dir in
-  Image.vorstellung (fun ap->
+  Image.image (fun ap->
    Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
 
 
@@ -199,11 +199,11 @@ let clear_directory_contents root =
 
 let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
    let s_root = Dfa_root.connectable_to_subpath root in 
-   let cmds1=Image.vorstellung (
+   let cmds1=Image.image (
       fun subdir -> 
          "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
    ) subdirs in 
-   let _=Image.vorstellung Sys.command cmds1 in 
+   let _=Image.image Sys.command cmds1 in 
    let temp1=Option.filter_and_unpack (
      fun (rootless,content)->
         let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
@@ -211,7 +211,7 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
         then None 
         else Some(full_path,content)
    ) files_with_content in 
-   Image.vorstellung (
+   Image.image (
       fun (full_path,content) ->
          let _=Sys.command("touch "^full_path) in 
          Io.overwrite_with (Absolute_path.of_string full_path) content
@@ -220,12 +220,12 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
 
 let create_subdirs_and_fill_files root subdirs files_with_content =
    let s_root = Dfa_root.connectable_to_subpath root in 
-   let cmds1=Image.vorstellung (
+   let cmds1=Image.image (
       fun subdir -> 
          "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
    ) subdirs in 
-   let _=Image.vorstellung Sys.command cmds1 in 
-   Image.vorstellung (
+   let _=Image.image Sys.command cmds1 in 
+   Image.image (
      fun (rootless,content)->
         let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
          let _=Sys.command("touch "^full_path) in 

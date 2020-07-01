@@ -13,7 +13,7 @@ let empty_set = Functor_for_sets.empty_set tr ;;
 let fold_intersect l= Functor_for_sets.fold_intersect tr l;;
 let fold_merge l= Functor_for_sets.fold_merge tr l;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
-let image f (Hex_cell_set_t.S x) = Image.vorstellung f x;;
+let image f (Hex_cell_set_t.S x) = Image.image f x;;
 let insert a x= Functor_for_sets.insert tr a x;;
 let intersect l= Functor_for_sets.intersect tr l;;
 let is_included_in x y= Functor_for_sets.is_included_in tr x y;;
@@ -56,10 +56,10 @@ let of_string enclosed_s =
    let n=String.length enclosed_s in 
    let s=Cull_string.interval enclosed_s 2 (n-1) in 
    let temp1=Cull_string.extract_intervals_in_wrt_separator s "," in 
-   safe_set(Image.vorstellung Hex_cell.of_string temp1);;
+   safe_set(Image.image Hex_cell.of_string temp1);;
 
 let to_string (Hex_cell_set_t.S(l))=
-  let temp1=Image.vorstellung Hex_cell.to_string l in 
+  let temp1=Image.image Hex_cell.to_string l in 
   "{"^(String.concat "," temp1)^"}";;
 
 (*

@@ -108,7 +108,7 @@ let of_bool bowl=if bowl then truth else falsity;;
 let to_bool =unwrap_lonely_variant [true,"True";false,"False"] ;; 
 
 let of_string_pair (s1,s2) = 
-   Concrete_object_t.Uple (Image.vorstellung wrap_string [s1;s2]);;
+   Concrete_object_t.Uple (Image.image wrap_string [s1;s2]);;
 
 let to_string_pair crobj=
   let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj 
@@ -116,7 +116,7 @@ let to_string_pair crobj=
   (us arg1,us arg2);;
 
 let of_string_triple (s1,s2,s3)=
-   Concrete_object_t.Uple (Image.vorstellung wrap_string [s1;s2;s3]);;
+   Concrete_object_t.Uple (Image.image wrap_string [s1;s2;s3]);;
 
 let to_string_triple crobj=
   let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
@@ -125,33 +125,33 @@ let to_string_triple crobj=
 
 
 
-let of_int_list l=Concrete_object_t.List (Image.vorstellung (fun i->Concrete_object_t.Int(i)) l);;
-let to_int_list crobj = Image.vorstellung unwrap_int (unwrap_list crobj);;
+let of_int_list l=Concrete_object_t.List (Image.image (fun i->Concrete_object_t.Int(i)) l);;
+let to_int_list crobj = Image.image unwrap_int (unwrap_list crobj);;
 
-let of_int_pair (i,j)=Concrete_object_t.Uple (Image.vorstellung (fun k->Concrete_object_t.Int(k)) [i;j]);;
+let of_int_pair (i,j)=Concrete_object_t.Uple (Image.image (fun k->Concrete_object_t.Int(k)) [i;j]);;
 let to_int_pair crobj = 
      let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
     (unwrap_int arg1,unwrap_int arg2);;
 
-let of_string_list l=Concrete_object_t.List (Image.vorstellung wrap_string l);;
-let to_string_list crobj = Image.vorstellung unwrap_string (unwrap_list crobj);;
+let of_string_list l=Concrete_object_t.List (Image.image wrap_string l);;
+let to_string_list crobj = Image.image unwrap_string (unwrap_list crobj);;
 
-let of_string_pair_list l= Concrete_object_t.List (Image.vorstellung of_string_pair l);;
-let to_string_pair_list crobj = Image.vorstellung to_string_pair (unwrap_list crobj);;
+let of_string_pair_list l= Concrete_object_t.List (Image.image of_string_pair l);;
+let to_string_pair_list crobj = Image.image to_string_pair (unwrap_list crobj);;
 
-let of_string_triple_list l= Concrete_object_t.List (Image.vorstellung of_string_triple l);;
-let to_string_triple_list crobj = Image.vorstellung to_string_triple (unwrap_list crobj);;
+let of_string_triple_list l= Concrete_object_t.List (Image.image of_string_triple l);;
+let to_string_triple_list crobj = Image.image to_string_triple (unwrap_list crobj);;
 
-let of_string_list_list l=Concrete_object_t.List (Image.vorstellung of_string_list l);;
-let to_string_list_list crobj = Image.vorstellung to_string_list (unwrap_list crobj);;
+let of_string_list_list l=Concrete_object_t.List (Image.image of_string_list l);;
+let to_string_list_list crobj = Image.image to_string_list (unwrap_list crobj);;
 
 let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
 let to_pair to_a to_b crobj=
     let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
     (to_a arg1,to_b arg2);;
 
-let of_list of_a l= Concrete_object_t.List(Image.vorstellung of_a l);;
-let to_list to_a crobj= Image.vorstellung to_a (unwrap_list crobj);;
+let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
+let to_list to_a crobj= Image.image to_a (unwrap_list crobj);;
 
 let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
 let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;

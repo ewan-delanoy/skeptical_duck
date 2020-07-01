@@ -74,10 +74,10 @@ let decompression_to_concrete_object (s1,s2,l)=
     Concrete_object_field.of_string_triple_list l];;
 
 let declist_of_concrete_object crobj =
-  Image.vorstellung decompression_of_concrete_object (Concrete_object_field.unwrap_list crobj);;
+  Image.image decompression_of_concrete_object (Concrete_object_field.unwrap_list crobj);;
 
 let declist_to_concrete_object l = 
-  Concrete_object_t.List(Image.vorstellung decompression_to_concrete_object l);; 
+  Concrete_object_t.List(Image.image decompression_to_concrete_object l);; 
 
 let salt = "Text_"^"lengthener_t.";;
 

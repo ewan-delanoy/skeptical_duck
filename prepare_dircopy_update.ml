@@ -20,7 +20,7 @@ let compute_nondeleted_in_diff (sourcedir,l) destdir=
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
    let created_accu=ref[]
    and changed_accu=ref[] in
-   let _=Image.vorstellung(
+   let _=Image.image(
    	  fun s->
    	    if (not(Sys.file_exists(s_destdir^s)))
    	    then created_accu:=s::(!created_accu)
@@ -52,7 +52,7 @@ let greedy_list sourcedir=
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
    let source_paths=More_unix.complete_ls_with_nondirectories_only converted_to_dir in
-   Image.vorstellung (fun ap->
+   Image.image (fun ap->
      let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
      Dfn_rootless.to_line rootless_path ) 
    source_paths;;
@@ -65,7 +65,7 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
    let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
-   let ignored_subdirs1=Image.vorstellung Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
+   let ignored_subdirs1=Image.image Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
    Option.filter_and_unpack (fun ap->
      let s_ap = Absolute_path.to_string ap in 
      let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
@@ -101,16 +101,16 @@ let commands_for_update (source_dir,destination_dir) diff=
    created_ones in
    let temp3=Ordered.sort Total_ordering.silex_for_strings temp2 in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
-   let temp4=Image.vorstellung(
+   let temp4=Image.image(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
    ) created_ones in
    let changed_ones=Dircopy_diff.recently_changed diff in
-   let temp5=Image.vorstellung(
+   let temp5=Image.image(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^fn
    ) changed_ones in
-   let temp7=Image.vorstellung(
+   let temp7=Image.image(
       fun fn->
       "rm "^s_destination^fn
    ) (Dircopy_diff.recently_deleted diff) in

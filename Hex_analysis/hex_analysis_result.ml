@@ -19,7 +19,7 @@ let report_on_danger res=
 let explanation_for_familiar_move other_possible_moves =
    if other_possible_moves = []
    then "familiar move"
-   else let temp1 = Image.vorstellung Hex_cell.to_string other_possible_moves in 
+   else let temp1 = Image.image Hex_cell.to_string other_possible_moves in 
         "or "^(String.concat "," temp1)^" : familiar moves" ;;
 
 let explanation_for_move res =
@@ -30,7 +30,7 @@ let explanation_for_move res =
         else 
         if expected_seq = []
         then (false,"forcing move")
-        else let temp1 = Image.vorstellung Hex_cell.to_string expected_seq in 
+        else let temp1 = Image.image Hex_cell.to_string expected_seq in 
              let s_remaining = String.concat "," temp1 in 
              (false,"expecting "^s_remaining)
     |None -> let (Hex_cell_set_t.S l)=res.Hex_analysis_result_t.familiar_moves in 

@@ -218,7 +218,7 @@ let decompose app s=
        if lab<>None then Some[lab,u] else
        if u="" then None else
        let ttemp1=Str.split(Str.regexp"[ \n\t]+") u in
-       Some(Image.vorstellung (fun v->(None,v)) ttemp1)
+       Some(Image.image (fun v->(None,v)) ttemp1)
   ) temp1 in
   List.flatten temp2;;
 

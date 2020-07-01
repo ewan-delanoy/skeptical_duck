@@ -34,7 +34,7 @@ let hod = Printf.sprintf "0x%08x";;
 
 let ia = Usual_coma_state.internet_access;;
 
-let image = Image.vorstellung ;;
+let image = Image.image ;;
 
 let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
 

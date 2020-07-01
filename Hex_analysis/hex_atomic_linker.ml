@@ -35,10 +35,10 @@ let eyed_label = salt ^ "Eyed_claw";;
 
 let to_concrete_object = function 
    Hex_atomic_linker_t.Pair (cell1,cell2) ->
-       Concrete_object_t.Variant (pair_label,Image.vorstellung Hex_cell.to_concrete_object [cell1;cell2])
+       Concrete_object_t.Variant (pair_label,Image.image Hex_cell.to_concrete_object [cell1;cell2])
  | Eyed_claw (dir1,dir2,cell) -> 
        Concrete_object_t.Variant (eyed_label,
-          (Image.vorstellung Hex_cardinal_direction.to_concrete_object [dir1;dir2])@[Hex_cell.to_concrete_object cell])
+          (Image.image Hex_cardinal_direction.to_concrete_object [dir1;dir2])@[Hex_cell.to_concrete_object cell])
  ;;
 
 let of_concrete_object crobj=
@@ -76,11 +76,11 @@ let support = function
    Hex_atomic_linker_t.Pair (cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
  | Eyed_claw (d1,d2,cell) -> 
     let ipairs = Hex_connector_data.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
-    Hex_cell_set.safe_set (Image.vorstellung Hex_cell.of_int_pair ipairs) ;;
+    Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) ;;
     
 let ipair_support mlclr = 
    let (Hex_cell_set_t.S l)=support mlclr in 
-   Image.vorstellung Hex_cell.to_int_pair l;;
+   Image.image Hex_cell.to_int_pair l;;
 
 
 
@@ -99,7 +99,7 @@ let to_readable_string = function
     (Hex_cell.to_string cell1)^"-"^(Hex_cell.to_string cell2) 
  | Eyed_claw (d1,d2,cell) -> 
       let ipairs = Hex_connector_data.advanced_eyed_claw d1 d2 (Hex_cell.to_int_pair cell) in 
-      let cells =Hex_cell_set.safe_set (Image.vorstellung Hex_cell.of_int_pair ipairs) in
+      let cells =Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair ipairs) in
      (Hex_cardinal_direction.short_name_for_pair (d1,d2))^
      "("^(Hex_cell_set.to_string cells)^")";;
 

@@ -45,13 +45,13 @@ check_for_whitened_footnote "(56)abc ...\n" 1;;
 
 let extract_footnote_zone_from_page page=
   let temp1=Lines_in_string.core page in 
-  let temp2=Image.vorstellung ( fun (_,line)->
+  let temp2=Image.image ( fun (_,line)->
     (line,check_for_whitened_footnote_at_idx line 1)
   ) temp1 in 
   let (first_one,usual_ones)=Three_parts.decompose_according_to_beginning_markers 
     (fun (line,opt)->opt<>None) temp2 in 
-  let tempf1=(fun l->String.concat "\n" (Image.vorstellung fst l)) in    
-  (tempf1 first_one, Image.vorstellung (fun ((first_line,_),l)->first_line^"\n"^(tempf1 l)) usual_ones);;  
+  let tempf1=(fun l->String.concat "\n" (Image.image fst l)) in    
+  (tempf1 first_one, Image.image (fun ((first_line,_),l)->first_line^"\n"^(tempf1 l)) usual_ones);;  
 
 (*
 
@@ -98,10 +98,10 @@ extract_footnotes_from_main_text
 let colorize_footnotes_in_page page =
   let (main_text,footnote_zone)=extract_footnote_zone_from_page page in 
   let decomposed_main_text = extract_footnotes_from_main_text main_text in
-  let colorized_zone = String.concat "\n" (Image.vorstellung (
+  let colorized_zone = String.concat "\n" (Image.image (
      fun footnote->"[color=green]"^(Cull_string.trim_spaces_on_the_right footnote)^"[/color]"
   ) footnote_zone) in 
-  let colorized_main_text = String.concat "" (Image.vorstellung (
+  let colorized_main_text = String.concat "" (Image.image (
    fun (is_a_reference,part)->
      if is_a_reference then "[color=green]"^part^"[/color]" else part 
   ) decomposed_main_text) in 
@@ -118,7 +118,7 @@ colorize_footnotes_in_page
 let colorize_footnotes_in_string s=
    let (prologue,pages)=Decompose_into_pages.dip s in 
    let colorized_prologue=colorize_footnotes_in_page prologue in 
-   let colorized_pages = Image.vorstellung (
+   let colorized_pages = Image.image (
      fun (pg_nbr,pg_line,pg_content)->
        "\n"^pg_line^"\n"^
        (colorize_footnotes_in_page pg_content)

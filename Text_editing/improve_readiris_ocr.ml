@@ -14,7 +14,7 @@ let replace_fixed_length_pattern_with_constant_in_string
     if cases=[] then argument_string else
     let temp1=(1-pattern_length)::(cases@[n+1]) in 
     let temp2=Listennou.universal_delta_list temp1 in 
-    let temp3=Image.vorstellung (fun (a,b)->
+    let temp3=Image.image (fun (a,b)->
         let unchanged_part=(
             let i= a+pattern_length
             and j= b-1 in 
@@ -40,7 +40,7 @@ let decompose_into_words =
 
 let modify_words_in_string f s=
   let temp1=decompose_into_words s in 
-  let temp2=Image.vorstellung (function
+  let temp2=Image.image (function
      Str.Delim(delim)->delim
      |Str.Text(text)->f text
   ) temp1 in 
@@ -80,7 +80,7 @@ let naive_paren_decomposer (left_paren,right_paren) s=
 let compress_parenthesed_text_in_string 
   old_parens (new_lparen,new_rparen) s=
   let temp1=naive_paren_decomposer old_parens s in 
-  let temp2=Image.vorstellung(
+  let temp2=Image.image(
     fun (_,content,is_parenthesized)->
       if is_parenthesized 
       then new_lparen^(Cull_string.trim_spaces content)^new_rparen

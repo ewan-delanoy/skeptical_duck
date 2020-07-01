@@ -34,12 +34,12 @@ let local_delchacre (Followed_ocaml_values.F l1) (Followed_ocaml_values.F l2)=
   let (common,in_l1_only,in_l2_only)=Ordered.diff  Total_ordering.lex_for_strings 
     ([],[],[],l1,l2) in
   (
-    Image.vorstellung fst in_l1_only, 
+    Image.image fst in_l1_only, 
    Option.filter_and_unpack (fun
     (name,content1,content2)->
      if content1=content2 then None else Some(name)
     ) common,
-    Image.vorstellung fst in_l2_only
+    Image.image fst in_l2_only
   );;
   
 let follow_values hm=Private.followed_values_from_items(

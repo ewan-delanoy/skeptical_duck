@@ -62,7 +62,7 @@ let haddock1 dim location = match location with
 
 let broken_bridge (entry,p1,p2,exit) = {
     Hex_connector_t.entry = entry;
-    junction = Image.vorstellung Hex_cell.to_int_pair [ p1 ; p2 ];
+    junction = Image.image Hex_cell.to_int_pair [ p1 ; p2 ];
     exit = exit;
     apex = None ;
     extra_active_cells = [] ;

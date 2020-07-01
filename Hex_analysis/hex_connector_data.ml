@@ -19,8 +19,8 @@ let high = up and low =down;;
 let arbitrary_dim = Hex_dimension.eleven;;
 
 let oppose (apex,ipairs)= (Hex_ipair.oppose arbitrary_dim apex,
-   Image.vorstellung (Hex_ipair.oppose arbitrary_dim) ipairs);;
-let reflect (apex,ipairs)= (Hex_ipair.reflect apex,Image.vorstellung Hex_ipair.reflect ipairs);;
+   Image.image (Hex_ipair.oppose arbitrary_dim) ipairs);;
+let reflect (apex,ipairs)= (Hex_ipair.reflect apex,Image.image Hex_ipair.reflect ipairs);;
 
 let left_eyed_upwards_claw = ((4,2),
     [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); 
@@ -73,7 +73,7 @@ let default_eyed_claw d1 d2 = match d1 with
 
 let advanced_eyed_claw d1 d2 (i,j)=
    let ((i0,j0),default_ipairs) =  default_eyed_claw d1 d2 in 
-   Image.vorstellung (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
+   Image.image (fun (x,y)-> (i-i0+x,j-j0+y)) default_ipairs;;
 
 module Check = struct 
 

@@ -56,13 +56,13 @@ let close_future_seas pk =
 let casings_from_one_step_advances dim pk cl_seas= 
     let last_island = Hex_expsv_partial_kite_field.last_island pk  in 
     let close_islands = last_island :: 
-         (List.flatten(Image.vorstellung (fun (z,nc)->
+         (List.flatten(Image.image (fun (z,nc)->
            [nc.Hex_expsv_named_connector_t.entry;nc.Hex_expsv_named_connector_t.exit]) (close_future_seas pk))) in
-    let temp1 = Set_of_poly_pairs.fold_merge (Image.vorstellung (Hex_island.neighbors dim) close_islands)  in
+    let temp1 = Set_of_poly_pairs.fold_merge (Image.image (Hex_island.neighbors dim) close_islands)  in
     let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
     Hex_cell_set.intersect temp2 pk.Hex_expsv_partial_kite_t.remaining_free_cells ;;
 
-let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.vorstellung fst cl_seas) ;;   
+let casings_from_seas cl_seas = Hex_cell_set.safe_set (Image.image fst cl_seas) ;;   
 
 
 let all_casings dim pk =
@@ -77,27 +77,27 @@ let all_casings dim pk =
 let data_common_to_both_parts dim pk =
    (* both means : both for the light & heavy part. See definition of compute_springboards *)
    let temp1 = all_casings dim pk in 
-    Image.vorstellung (
+    Image.image (
       fun cell -> 
         let new_pk=Hex_expsv_impose_active_cell.impose_cell_by_casing dim cell pk in 
         (cell,new_pk) 
    ) temp1 ;;
 
 let light_part common_to_both = 
-   Image.vorstellung (fun (cell,new_pk)->
+   Image.image (fun (cell,new_pk)->
       (cell,Hex_expsv_kite_element.extract_island (Hex_expsv_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
 let explore_yet_untried_path dim (cell,new_pk) =
    let nbr_of_common_steps = List.length new_pk.Hex_expsv_partial_kite_t.steps_so_far in 
    let temp = Hex_expsv_springless_extension.finalize dim new_pk in 
-   Image.vorstellung (fun (_,fst_stop,other_stops,mlclr,actv)->
+   Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
-        Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,Image.vorstellung Hex_expsv_kite_element.to_springless ttemp2,mlclr,actv)
+        Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,Image.image Hex_expsv_kite_element.to_springless ttemp2,mlclr,actv)
    ) temp ;;
 
 let explore_yet_untried_paths dim paths =
-   List.flatten(Image.vorstellung (explore_yet_untried_path dim ) paths);;
+   List.flatten(Image.image (explore_yet_untried_path dim ) paths);;
 
 
 
@@ -105,7 +105,7 @@ let heavy_part dim common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
        fun (cell,new_pk) -> Hex_expsv_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
-   let one_move_solutions= Image.vorstellung (fun (cell,new_pk)->
+   let one_move_solutions= Image.image (fun (cell,new_pk)->
       let mlclr = Hex_expsv_finished_kite.to_molecular_linker new_pk 
       and actv = Hex_expsv_finished_kite.active_part new_pk in 
       Hex_expsv_first_alternative_in_springboard_t.Fa(None,cell,[],mlclr,actv)) final_ones in 
@@ -116,7 +116,7 @@ let heavy_part dim common_to_both =
 let extensions_by_springboard_first_halves dim pk common_to_both= 
   if pk.Hex_expsv_partial_kite_t.investment <> None then [] else 
   let first_halves = heavy_part dim common_to_both in 
-  Image.vorstellung (extend_with_first_alternative pk) first_halves ;;
+  Image.image (extend_with_first_alternative pk) first_halves ;;
 
 let extensions_by_springboard_second_halves dim pk common_to_both fa= 
   if pk.Hex_expsv_partial_kite_t.investment = None then [] else 
@@ -125,7 +125,7 @@ let extensions_by_springboard_second_halves dim pk common_to_both fa=
       fun (cell2,new_island) ->
          Hex_expsv_springboard.opt_constructor(fa,cell2,new_island) <> None
   ) possible_second_halves in 
-  Image.vorstellung (extend_with_second_alternative dim pk) second_halves ;;
+  Image.image (extend_with_second_alternative dim pk) second_halves ;;
 
 let extensions_by_springboard_halves dim pk =
    let last_stop = Hex_expsv_partial_kite_field.last_stop pk in 
@@ -141,7 +141,7 @@ let extract_solutions l=
    let (final_ones,nonfinal_ones) = List.partition (
     Hex_expsv_partial_kite_field.test_for_finality 
    ) l in 
-   let detailed_sols = Image.vorstellung Hex_expsv_finished_kite.solution_details  final_ones in 
+   let detailed_sols = Image.image Hex_expsv_finished_kite.solution_details  final_ones in 
    (detailed_sols,nonfinal_ones) ;;
 
 let extensions_finished_and_non_finished dim pk =

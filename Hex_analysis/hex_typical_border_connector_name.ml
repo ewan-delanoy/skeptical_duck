@@ -75,7 +75,7 @@ end ;;
 
 
 let for_side side =
-Image.vorstellung (
+Image.image (
        fun (tbc,data_for_tbc) -> Hex_border_connector_name_t.Typical(tbc,side)
      )   Private.prepare_for_journey ;;
     

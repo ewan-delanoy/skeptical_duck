@@ -28,7 +28,7 @@ let print (Sl l)=String.concat "\n" l;;
  let itemize (shower:'a->string) l=
   let n=List.length(l) in
   let d=String.length(string_of_int(n)) in
-  let temp1=Image.vorstellung(shower)(l) in
+  let temp1=Image.image(shower)(l) in
   let temp2=Ennig.index_everything(temp1) in
   let tempf=(function (j,v)->
      let s1=string_of_int(j) in
@@ -36,7 +36,7 @@ let print (Sl l)=String.concat "\n" l;;
      let s2=(function ()->if dd>0 then String.make(dd)(' ') else "")() in
      s2^s1^"/  "^v
   ) in
-  let temp3=Image.vorstellung tempf temp2 in
+  let temp3=Image.image tempf temp2 in
   of_string_list temp3;;
  
 let max_line_length_ref=ref(70);;
@@ -56,5 +56,5 @@ let max_line_length_ref=ref(70);;
    ) in
    let temp1=tempf([],[a],String.length a,b) in
    let string_sep=Separator.to_string(sep) in
-   Sl(Image.vorstellung (String.concat string_sep) temp1);;
+   Sl(Image.image (String.concat string_sep) temp1);;
                       

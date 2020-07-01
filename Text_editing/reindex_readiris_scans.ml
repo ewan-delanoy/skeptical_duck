@@ -64,7 +64,7 @@ let append_pages_at_the_end ()=
   let i1=List.hd l1
   and i2=List.hd l2 in 
   let d=i2-i1 in 
-  Image.vorstellung (fun k->(k,k+d)) l1;;
+  Image.image (fun k->(k,k+d)) l1;;
   
 let add_pages_in_between ()=
   let l1=indices_of_nonrenamed_files()
@@ -84,7 +84,7 @@ let  put_index_on_nonrenamed_file (i,j)=
   "mv "^(!main_dir_path)^prefix_for_readiris_scan^si^suffix_for_readiris_scan^" "^
         (!main_dir_path)^prefix_for_renamed_scan^sj^suffix_for_renamed_scan;;
 
-let from_list=Image.vorstellung put_index_on_nonrenamed_file ;;
+let from_list=Image.image put_index_on_nonrenamed_file ;;
 
 let append_pages_at_the_end ()= from_list (IndexPairList.append_pages_at_the_end());;
 
@@ -92,9 +92,9 @@ let add_pages_in_between ()= from_list (IndexPairList.add_pages_in_between());;
 
 end;;
 
-let append_pages_at_the_end()=Image.vorstellung Sys.command (Command.append_pages_at_the_end());;
+let append_pages_at_the_end()=Image.image Sys.command (Command.append_pages_at_the_end());;
 
-let add_pages_in_between()=Image.vorstellung Sys.command (Command.add_pages_in_between());;
+let add_pages_in_between()=Image.image Sys.command (Command.add_pages_in_between());;
 
 let command_for_rm i=
    let si=Strung.left_completed_string_of_int 4 i in
@@ -133,7 +133,7 @@ let g3= List.rev_map (fun x->
   "mv "^(!main_dir_path)^"(!main_dir_path)_"^si^".pdf "^
         (!main_dir_path)^"(!main_dir_path)_"^sj^".pdf"
 ) g2;;
-let g4=Image.vorstellung Sys.command g3;;
+let g4=Image.image Sys.command g3;;
 
 
 *)

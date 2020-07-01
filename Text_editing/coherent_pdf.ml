@@ -104,7 +104,7 @@ module Bare = struct
            _->None
       ) temp2 in 
       let temp4=Ordered.sort  Total_ordering.standard2 temp3 in 
-      let all_pages=String.concat " " (Image.vorstellung snd temp4) in 
+      let all_pages=String.concat " " (Image.image snd temp4) in 
       [Helper.cpdf^all_pages^" -o "^pdf_name_start^ending];;
 
   let implode_following_a_special_order (pdf_name_start,pdf_name_end) special_order=
@@ -172,7 +172,7 @@ module Bare = struct
          ~total_length:total_length;;
 
   let merge parts whole=
-      let parts=Image.vorstellung (fun name->name^".pdf") parts in 
+      let parts=Image.image (fun name->name^".pdf") parts in 
       let joined_parts=String.concat " " parts in 
       [Helper.cpdf^joined_parts^" -o "^whole^".pdf"];;
 
@@ -298,13 +298,13 @@ module Bare = struct
 
   let cut_into_small_pieces pdfname (i,j) max_piece_size=
          let ranges = Helper.small_pieces (i,j) max_piece_size in 
-         let base  = Image.vorstellung (
+         let base  = Image.image (
             fun (k,pair)->(k,pair,Helper.usual_name_in_extract_page_range pdfname pair)
          )(Ennig.index_everything ranges) in  
-         let part1=Image.vorstellung (fun (idx,pair,name)->
+         let part1=Image.image (fun (idx,pair,name)->
             Helper.generic_extract_page_range pdfname pair name
          ) base
-         and part2=Image.vorstellung(
+         and part2=Image.image(
             fun (idx,pair,name)->
             "mv "^name^" part"^(string_of_int idx)^".pdf"
          ) base in  
@@ -336,14 +336,14 @@ module Bare = struct
 
   let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=
     let temp1=Helper.intertwining_decomposition num_odd num_even in 
-    let pages=Image.vorstellung (
+    let pages=Image.image (
       fun (is_odd,idx)->
         let s_idx=string_of_int idx in 
         if is_odd 
         then odd_pages^s_idx
         else even_pages^s_idx
     ) temp1 in 
-    let removals=Image.vorstellung (fun page->"rm "^page^".pdf") pages in  
+    let removals=Image.image (fun page->"rm "^page^".pdf") pages in  
     (explode (odd_pages,"") num_odd)@
     (explode (even_pages,"") num_even)@
     (merge pages final_name)@
@@ -455,7 +455,7 @@ module Other_Tools = struct
     blank_page_ap ;;
 
     let registered_directories = 
-      Image.vorstellung Directory_name.of_string
+      Image.image Directory_name.of_string
       [
         "/Users/ewandelanoy/Desktop";
       ] ;; 
@@ -467,7 +467,7 @@ let make_booklet_naively first_arg =
   let s_old_ap = Absolute_path.to_string old_ap in 
   let old_path = Cull_string.before_rightmost s_old_ap '.' in 
   let old_name = Cull_string.after_rightmost old_path '/' in 
-  let acts1 = Image.vorstellung Unix_command.uc (Command.import  old_path) in 
+  let acts1 = Image.image Unix_command.uc (Command.import  old_path) in 
   let initial_nbr_of_pages = Helper.number_of_pages_in_pdf s_old_ap in 
   let (width,height) = Helper.pagesize_in_pdf s_old_ap in  
   let rounded_offset = 
@@ -475,7 +475,7 @@ let make_booklet_naively first_arg =
    if r=0 then 0 else 4-r ) in 
   let rounded_nbr_of_pages =  initial_nbr_of_pages + rounded_offset in 
   let _ = create_blank_page_with_prescribed_size (width,height) in 
-  let acts2 = Image.vorstellung Unix_command.uc 
+  let acts2 = Image.image Unix_command.uc 
   (Command.Walker.init_append_and_explode  old_name rounded_offset rounded_nbr_of_pages) in 
   let special_order = Ennig.doyle (
     fun j->let k=(j/4)in  match (j mod 4) with 
@@ -484,7 +484,7 @@ let make_booklet_naively first_arg =
     |2 -> 2*k+1 
     |_ -> 2*k+2
   ) 1 rounded_nbr_of_pages in 
-  let acts3 = Image.vorstellung Unix_command.uc 
+  let acts3 = Image.image Unix_command.uc 
   (Command.Walker.implode_and_finish special_order old_path) in 
   if List.for_all (fun t->t=0) (acts1@acts2@acts3)
   then let msg="\n Setu. Prest eo an teul "^old_path^"_adurzhiet.pdf\n" in 
@@ -499,59 +499,59 @@ let make_booklet_naively first_arg =
 end ;;
 
 
-let append_on_the_right file1 file2 = Image.vorstellung Unix_command.uc 
+let append_on_the_right file1 file2 = Image.image Unix_command.uc 
   (Command.append_on_the_right file1 file2);;
  
 let cut_into_small_pieces pdfname (i,j) max_piece_size=
-  Image.vorstellung Unix_command.uc 
+  Image.image Unix_command.uc 
   (Command.cut_into_small_pieces pdfname (i,j) max_piece_size);; 
 
 let cut_in_two ~pdfname ~first_half_length ~total_length =
-  Image.vorstellung Unix_command.uc 
+  Image.image Unix_command.uc 
   (Command.cut_in_two pdfname first_half_length total_length);;
 
-let delete_file  pdfname=Image.vorstellung Unix_command.uc 
+let delete_file  pdfname=Image.image Unix_command.uc 
   (Command.delete_file  pdfname);;
 
-let extract_page_range pdfname (i,j)=Image.vorstellung Unix_command.uc 
+let extract_page_range pdfname (i,j)=Image.image Unix_command.uc 
   (Command.extract_page_range pdfname (i,j));;
 
-let extract_even_pages  pdfname=Image.vorstellung Unix_command.uc 
+let extract_even_pages  pdfname=Image.image Unix_command.uc 
   (Command.extract_even_pages  pdfname);;
 
-let extract_odd_pages  pdfname=Image.vorstellung Unix_command.uc 
+let extract_odd_pages  pdfname=Image.image Unix_command.uc 
   (Command.extract_odd_pages  pdfname);;
 
 let explode (pdf_name_start,pdf_name_end) num_of_pages=
    Explicit.image Unix_command.uc 
   (Command.explode  (pdf_name_start,pdf_name_end) num_of_pages);; 
 
-let export ~pdfname ~new_location=Image.vorstellung Unix_command.uc 
+let export ~pdfname ~new_location=Image.image Unix_command.uc 
   (Command.export pdfname new_location);; 
 
-let finish_recto_verso pdfname =Image.vorstellung Unix_command.uc 
+let finish_recto_verso pdfname =Image.image Unix_command.uc 
   (Command.finish_recto_verso pdfname );;
 
 let implode (pdf_name_start,pdf_name_end)=
-   Image.vorstellung Unix_command.uc 
+   Image.image Unix_command.uc 
   (Command.implode  (pdf_name_start,pdf_name_end));; 
 
-let import pdfname=Image.vorstellung Unix_command.uc 
+let import pdfname=Image.image Unix_command.uc 
   (Command.import  pdfname);;
 
 
-let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.vorstellung Unix_command.uc 
+let insert_in_just_after ~inserted_one ~receiving_one ~page_number ~initial_total_length=Image.image Unix_command.uc 
  (Command.insert_in_just_after inserted_one receiving_one page_number initial_total_length);;
 
-let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.vorstellung Unix_command.uc 
+let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.image Unix_command.uc 
  (Command.intertwine odd_pages even_pages num_odd num_even final_name);;
   
 
-let lay_down  pdfname=Image.vorstellung Unix_command.uc 
+let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
 
 let merge parts whole=
-  Image.vorstellung Unix_command.uc 
+  Image.image Unix_command.uc 
   (Command.merge parts whole);; 
 
 let number_of_pages_in_pdf ap = 
@@ -561,20 +561,20 @@ let pagesize_in_pdf ap =
    Helper.pagesize_in_pdf (Absolute_path.to_string ap);;
 
 
-let prepare_recto_verso pdfname (i,j)=Image.vorstellung Unix_command.uc 
+let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
 
 
-let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.vorstellung Unix_command.uc 
+let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
    (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
 
 let remove_page_number_in_in_a_total_of ~page_number ~receiving_one  ~total_length=
-    Image.vorstellung Unix_command.uc 
+    Image.image Unix_command.uc 
     (Command.remove_page_number_in_in_a_total_of page_number receiving_one  total_length);;
 
 let rename  old_pdfname new_pdfname=
-   Image.vorstellung Unix_command.uc 
+   Image.image Unix_command.uc 
   (Command.rename  old_pdfname new_pdfname);; 
 
-let upside_down  pdfname=Image.vorstellung Unix_command.uc 
+let upside_down  pdfname=Image.image Unix_command.uc 
   (Command.upside_down  pdfname);;

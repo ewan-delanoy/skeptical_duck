@@ -303,7 +303,7 @@ let expand_boolean_algebra cmpr l=
   tempf([],x1,[],r1);;
 
 let length ox=List.length(forget_order ox);;
-let image f ox=Image.vorstellung(f)(forget_order ox);;
+let image f ox=Image.image(f)(forget_order ox);;
 let insert cmpr x oy=merge cmpr (unsafe_set [x])(oy);;
 let exists f ox=List.exists f (forget_order ox);;
 let safe_set cmpr ox=if is_nondecreasing(cmpr)(ox) 

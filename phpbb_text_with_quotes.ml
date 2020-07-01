@@ -24,7 +24,7 @@ let detect_phpbb_quote_end_at_index s idx =
         Some(e,(idx,idx+e-1))
    else None ;;
 
-let first_analysis text= Image.vorstellung (fun (opt,content)->
+let first_analysis text= Image.image (fun (opt,content)->
   (opt=None,content)
 ) (Functional_parenthesed_block.decompose_without_taking_blanks_into_account 
 [("php","bb"),detect_phpbb_quote_start_at_index,detect_phpbb_quote_end_at_index] text);;   
@@ -36,7 +36,7 @@ let rewrite_first_result text (opt,content) = match opt with
                        if j=i+6 then (Some"",content) else 
                        (Some(Cull_string.interval text (i+15) (j-2)),content);;
 
-let first_analysis text= Image.vorstellung (rewrite_first_result text)
+let first_analysis text= Image.image (rewrite_first_result text)
 (Functional_parenthesed_block.decompose_without_taking_blanks_into_account 
 [("php","bb"),detect_phpbb_quote_start_at_index,detect_phpbb_quote_end_at_index] text);;   
 
@@ -154,7 +154,7 @@ let parse text =
 
 let rec unparse = function 
     Phpbb_text_with_quotes_t.Atom(text) -> text 
-   |Concatenated l -> String.concat "" (Image.vorstellung unparse l)
+   |Concatenated l -> String.concat "" (Image.image unparse l)
    |Quoted(author,compound) ->
       let content = unparse compound in 
       if author="" 
@@ -177,7 +177,7 @@ And some nested quotes : <QUOTE author=\"Jane\"><s>[quote=\"Jane\"]</s> One
 
 
 let g1 = first_analysis example ;;
-let g2 = Image.vorstellung rewrite_element g1 ;;
+let g2 = Image.image rewrite_element g1 ;;
 let check1 = ((String.concat "" g2)=example);;
 
 let g3 = seed_item ([],g1);;

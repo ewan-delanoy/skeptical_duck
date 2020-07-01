@@ -11,13 +11,13 @@ module Private=struct
       let path_for_loadingsfile = Dfn_rootless.to_line rootless_path_for_loadingsfile in 
       let s_root=Dfa_root.connectable_to_subpath main_root in
       let part1="\n(*\n #use\""^s_root^(path_for_loadingsfile)^"\";"^";\n*)\n\n" in
-      let temp5=Image.vorstellung (
+      let temp5=Image.image (
         fun sd->
         "#directory\""^s_root^(Dfa_subdirectory.connectable_to_subpath sd)^"\";"^";"
       ) ((Dfa_subdirectory.of_line "_build")::dirs) in
       let part2=String.concat "\n" temp5 
       and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
-      let temp2=Image.vorstellung (
+      let temp2=Image.image (
         function hm->
           let nm = Dfn_endingless.to_module hm in  
           let s=Cull_string.after_rightmost (Dfa_module.to_line nm) '/' in
@@ -31,7 +31,7 @@ module Private=struct
     
     let instructions_for_merlinfile main_root dirs=
       let s_root=Dfa_root.connectable_to_subpath main_root in
-      let temp1=Image.vorstellung 
+      let temp1=Image.image 
         (fun sdir->"S "^s_root^(Dfa_subdirectory.connectable_to_subpath sdir) )
       (Coma_constant.automatically_generated_subdir::dirs) in
       let temp2=("B "^s_root^"_build/")::temp1 in

@@ -29,7 +29,7 @@ module Private=struct
            let included_items=List.filter(
              fun y->y.Ocaml_gsyntax_item.name=chosen_scope
            ) maybe_included_items in
-           let renamed_included_items=Image.vorstellung 
+           let renamed_included_items=Image.image 
            (Ocaml_gsyntax_item.include_in_new_scope full_scope )
            included_items in
            (List.rev_append renamed_included_items graet,current_full_scope,current_names);;
@@ -80,7 +80,7 @@ module Private=struct
   exception Reading_error of Absolute_path.t * string;;
   
   let read_ocaml_files l_ap=
-     let temp1=Image.vorstellung( fun ap->
+     let temp1=Image.image( fun ap->
      let s_ap=Absolute_path.to_string ap
      and text=Io.read_whole_file ap in
      let unpointed=Cull_string.before_rightmost s_ap '.' in

@@ -189,15 +189,15 @@ let parse s =
 let rec unparse = function 
    Concrete_object_t.Int(i)->string_of_int i 
    |String(t)->string_opener^(Encoded_string.store t)^string_closer
-   |Uple(l)->let temp1=Image.vorstellung unparse l in 
+   |Uple(l)->let temp1=Image.image unparse l in 
              uple_opener^(String.concat uple_separator temp1)^uple_closer
-   |List(l)->let temp1=Image.vorstellung unparse l in 
+   |List(l)->let temp1=Image.image unparse l in 
              list_opener^(String.concat list_separator temp1)^list_closer 
-   |Array(l)->let temp1=Image.vorstellung unparse l in 
+   |Array(l)->let temp1=Image.image unparse l in 
              array_opener^(String.concat array_separator temp1)^array_closer
-   |Record(l)->let temp1=Image.vorstellung (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
+   |Record(l)->let temp1=Image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
              record_opener^(String.concat record_separator temp1)^record_closer          
-   |Variant(constructor,l)->let temp1=Image.vorstellung unparse l in 
+   |Variant(constructor,l)->let temp1=Image.image unparse l in 
              constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
 
 end;;
