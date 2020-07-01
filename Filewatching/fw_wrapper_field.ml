@@ -84,12 +84,14 @@ let get_mtime fw rootless  =
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
+(*
 let reflect_creation_and_destruction_in_diff fw (l_created,l_destroyed)= {
    fw with 
    Fw_wrapper_t.last_noticed_changes = 
      Dircopy_diff.create_and_destroy  
        (fw.Fw_wrapper_t.last_noticed_changes) (l_created,l_destroyed)
 } ;;
+*)
 
 let reflect_replacements_in_diff fw reps= {
    fw with 
