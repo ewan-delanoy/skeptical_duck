@@ -264,18 +264,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   let new_acolytes=Image.image (
     fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
   ) old_acolytes in 
-  let old_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) old_acolytes in   
-  let new_files=Image.image (fun mlx->Dfn_full.to_rootless_line mlx) 
-     new_acolytes in 
   let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
-  let separated_acolytes_below=Option.filter_and_unpack(
-    fun mn->
-     if List.mem old_nm (Coma_state.ancestors_at_module cs2 mn)
-    then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs2 mn))
-    else None
-) (Coma_state.ordered_list_of_modules cs2) in
-  let all_acolytes_below=List.flatten separated_acolytes_below in
-  let modified_files=Image.image Dfn_rootless.to_line all_acolytes_below in 
   let _=Unix_command.uc
       ("rm -f "^s_root^s_build_dir^
       (Dfa_module.to_line old_nm)^
@@ -303,11 +292,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
   let (cs9,_)=recompile (cs8,[]) in 
-   let diff=Dircopy_diff.constructor
-    (Recently_deleted.of_string_list old_files)
-    (Recently_changed.of_string_list modified_files)
-    (Recently_created.of_string_list new_files) in
-   (cs9,diff);;
+  cs9;;
 
 let rename_subdirectory cs old_subdir new_subdir=
    let old_subdirname = Dfa_subdirectory.without_trailing_slash old_subdir
@@ -480,11 +465,10 @@ module And_backup = struct
 
 
       let rename_module cs old_middle_name new_nonslashed_name=
-         let (cs2,diff)=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
+         let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
          let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
                  " as "^(No_slashes.to_string new_nonslashed_name) in       
-         let _=Private.backup cs2 diff (Some msg) in 
-         cs2;; 
+         Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let rename_string_or_value cs old_sov new_sov=
          let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
