@@ -37,7 +37,7 @@ let to_concrete_object (Hex_untamed_opening_t.O(l))=
      [Concrete_object_field.of_list Hex_cell.to_concrete_object l
      ]);;
 
-let to_readable_string (Hex_untamed_opening_t.O(l))=Hax_common.cell_list_to_pretty_string l;;
+let to_readable_string (Hex_untamed_opening_t.O(l))=Hex_common.cell_list_to_pretty_string l;;
 
 
 

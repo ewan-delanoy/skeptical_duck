@@ -44,7 +44,7 @@ let declare_winner player =
 
 let deal_with_critical_accumulation ()=
     let (sta,res)=(!walker) in 
-    let player = Hax_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
+    let player = Hex_common.next_one_to_play (sta.Hex_state_t.moves_before) in 
     let other_player = Hex_player.other_player player in 
     let (cells,enemy_indices,mand)=Hex_fles_double_list.immediate_dangers player sta.Hex_state_t.config_remains in 
     if not(Hex_mandatory_compound.test_for_unrealizable_constraint mand) 
@@ -104,7 +104,7 @@ let add_molecular_linker comment=
 
 let replay_and_declare_winner ()=
   let (_,cells) = Hex_parse_playok_format.parse () in 
-  let winner = Hax_common.has_just_played cells in 
+  let winner = Hex_common.has_just_played cells in 
   let _=restart None in 
   let _=absorb_all_moves cells in 
   declare_winner winner;;

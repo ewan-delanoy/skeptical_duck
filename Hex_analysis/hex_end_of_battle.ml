@@ -29,7 +29,7 @@ let of_finished_game fgame =
 let of_activated_molecular (dim,the_winner) (active_part,mlclr) = 
     let passive_part = Hex_molecular_linker.support mlclr in 
     let needed_cells = Hex_cell_set.merge active_part passive_part in 
-    let all_cells = Hax_common.all_cells dim in 
+    let all_cells = Hex_common.all_cells dim in 
     let unneeded_cells = Hex_cell_set.setminus all_cells needed_cells in 
     {
     Hex_end_of_battle_t.dimension       
@@ -41,7 +41,7 @@ let of_activated_molecular (dim,the_winner) (active_part,mlclr) =
 
 let remaining_free_cells end_of_battle = 
     let dim = end_of_battle.Hex_end_of_battle_t.dimension in 
-    let all_cells = Hax_common.all_cells dim in 
+    let all_cells = Hex_common.all_cells dim in 
     let already_used_cells =
         Hex_cell_set.merge 
            end_of_battle.Hex_end_of_battle_t.ally_territory 
