@@ -67,12 +67,14 @@ let add_changes diff l=
       Dircopy_diff_t.recently_changed = (diff.Dircopy_diff_t.recently_changed)@ l;
    };; 
 
+(*
 let change_with_no_creations_or_deletions l=
   {
       Dircopy_diff_t.recently_deleted = [];
       recently_changed = l;
       recently_created = [];
    };; 
+*)   
 
 let empty_one  = 
    {
