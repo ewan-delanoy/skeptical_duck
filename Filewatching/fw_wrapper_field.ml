@@ -91,5 +91,12 @@ let reflect_creation_and_destruction_in_diff fw (l_created,l_destroyed)= {
        (fw.Fw_wrapper_t.last_noticed_changes) (l_created,l_destroyed)
 } ;;
 
+let reflect_replacements_in_diff fw reps= {
+   fw with 
+   Fw_wrapper_t.last_noticed_changes = 
+     Dircopy_diff.replace 
+       (fw.Fw_wrapper_t.last_noticed_changes) reps
+} ;;
+
 let root fw = Fw_configuration.root (fw.Fw_wrapper_t.configuration);;
 
