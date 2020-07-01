@@ -300,7 +300,7 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
       fw with 
       Fw_wrapper_t.compilable_files = new_compilable_files
    }    in 
-   Fw_wrapper_field.add_changes_in_diff fw2 (Image.image Dfn_rootless.to_line files_to_be_rewritten)
+   Fw_wrapper_field.reflect_changes_in_diff fw2 (Image.image Dfn_rootless.to_line files_to_be_rewritten)
     ;;
       
 let rename_module_in_special_files fw (old_module,new_module) =
@@ -359,7 +359,7 @@ let replace_string fw (replacee,replacer) =
        Fw_wrapper_t.compilable_files = new_c_files;
        noncompilable_files = new_nc_files;
    } in 
-   let fw3 = Fw_wrapper_field.add_changes_in_diff fw2 (changed_c_lines @ changed_nc_lines) in 
+   let fw3 = Fw_wrapper_field.reflect_changes_in_diff fw2 (changed_c_lines @ changed_nc_lines) in 
    (fw3,(changed_c_files,changed_nc_files));;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
@@ -377,7 +377,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          Cull_string.cobeginning
                  (String.length s_root) (Absolute_path.to_string ap)
     ) (rootless::(changed_w_files@changed_sw_files)) in 
-    let fw4 =  Fw_wrapper_field.add_changes_in_diff fw3 new_lines in         
+    let fw4 =  Fw_wrapper_field.reflect_changes_in_diff fw3 new_lines in         
     (fw4,(rootless::changed_w_files,changed_sw_files));;
 
 

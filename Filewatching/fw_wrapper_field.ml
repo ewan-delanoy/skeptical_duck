@@ -57,7 +57,7 @@ let to_concrete_object fw=
 
 end ;;
 
-let add_changes_in_diff fw l= {
+let reflect_changes_in_diff fw l= {
    fw with 
    Fw_wrapper_t.last_noticed_changes = 
      Dircopy_diff.add_changes 
