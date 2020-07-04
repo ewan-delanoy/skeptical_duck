@@ -222,8 +222,6 @@ let register_rootless_path cs rp_line=
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  
   let old_subdir = Dfn_endingless.to_subdirectory old_endingless in 
-  let old_rootless_paths = Coma_state.rootless_paths_at_module cs mn  in 
-  (* let (cs4,_)=relocate_module cs old_endingless new_subdir in *)
   let root_dir = Coma_state.root cs in 
   let mn=Dfn_endingless.to_module old_endingless in
   let old_acolytes= Coma_state.acolytes_at_module cs mn in
@@ -246,12 +244,7 @@ let relocate_module_to cs mn new_subdir=
   let new_preq_types=Image.image (fun (h,bowl)->
      (Dfn_endingless.rename_endsubdirectory (old_subdir,s_subdir) h,bowl)) old_preq_types in 
   let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
-  let  new_rootless_paths = Coma_state.rootless_paths_at_module cs5 mn  in 
-  let diff=Dircopy_diff.constructor
-    (Recently_deleted.of_string_list old_rootless_paths)
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_rootless_paths) in
-   (cs5,diff);;   
+  cs5;;   
 
 
 let rename_module cs2 old_middle_name new_nonslashed_name=
@@ -439,10 +432,9 @@ module And_backup = struct
          cs2;; 
 
       let relocate_module_to cs old_module new_subdir=
-         let (cs2,diff)=After_checking.relocate_module_to cs old_module new_subdir  in
+         let cs2=After_checking.relocate_module_to cs old_module new_subdir  in
          let msg="move "^(Dfa_module.to_line old_module)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-         let _=Private.backup cs2 diff (Some msg) in  
-         cs2;; 
+         Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
 
       let rename_module cs old_middle_name new_nonslashed_name=
