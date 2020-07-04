@@ -131,7 +131,11 @@ let relocate_compilable_files_to fw rootless_paths new_subdir=
       s_root^s_subdir 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
-   {
+    let reps = Image.image (fun path->
+      (path,Dfn_rootless.relocate_to path new_subdir)
+    ) rootless_paths in 
+    let lines = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) reps in 
+    let fw2 = {
       fw with 
       Fw_wrapper_t.compilable_files = Image.image (fun pair->
          let (path,_)=pair in 
@@ -140,7 +144,8 @@ let relocate_compilable_files_to fw rootless_paths new_subdir=
               (new_path,recompute_mtime fw new_path)
          else pair
       ) (fw.Fw_wrapper_t.compilable_files)  
-   };;
+   } in 
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 lines ;;
 
 let relocate_module_to fw mod_name new_subdir=
    let the_files = Option.filter_and_unpack (
