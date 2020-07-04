@@ -295,8 +295,6 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
   cs9;;
 
 let rename_subdirectory cs old_subdir new_subdir=
-   let old_subdirname = Dfa_subdirectory.without_trailing_slash old_subdir
-   and new_subdirname = Dfa_subdirectory.without_trailing_slash new_subdir in 
   let rename_in_sd=(fun sd -> 
      match Dfa_subdirectory.soak (old_subdir,new_subdir) sd with 
      Some(new_sd) -> new_sd 
@@ -315,17 +313,7 @@ let rename_subdirectory cs old_subdir new_subdir=
    )(Coma_state.preq_types cs2) in
    let cs3= Coma_state.set_directories cs2 new_dirs in 
    let cs4= Coma_state.set_preq_types cs3 new_peqt in 
-   let new_rootless_paths=Coma_state.short_paths_inside_subdirectory cs4 new_subdir in
-   let old_rootless_paths=Image.image (
-        fun s-> match Strung.soak (new_subdirname,old_subdirname) s with 
-        Some(new_s) -> new_s 
-        |None -> s
-   ) new_rootless_paths in 
-   let diff=Dircopy_diff.constructor
-    (Recently_deleted.of_string_list old_rootless_paths)
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list new_rootless_paths) in
-   (cs4,diff);; 
+   cs4;; 
 
 
 let rename_string_or_value cs = recompile (cs,[]);; 
@@ -464,11 +452,10 @@ module And_backup = struct
          Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let rename_subdirectory  cs old_subdir new_subdir=
-         let (cs2,diff)=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
+         let cs2=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
          let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
                     " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-         let _=Private.backup cs2 diff (Some msg) in  
-         cs2;; 
+         Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let rename_string_or_value cs old_sov new_sov=
          let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
