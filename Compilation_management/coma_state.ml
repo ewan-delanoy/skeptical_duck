@@ -119,9 +119,16 @@ let find_subdir_from_suffix cs possibly_slashed_suffix =
   let temp1 = List.filter (
     fun subdir -> Supstring.contains (Dfa_subdirectory.without_trailing_slash subdir) suffix
   ) (cs.Coma_state_t.directories) in 
-  if List.length(temp1)<>1
-  then raise(Find_subdir_from_suffix_exn(suffix,temp1))
-  else let (Dfa_subdirectory_t.SD container) = List.hd temp1 in 
+  let test_for_minimality = (fun subdir1->
+     List.for_all (fun subdir2 ->
+        if subdir2 = subdir1 then true else 
+        not(Dfa_subdirectory.begins_with subdir1 subdir2) 
+     ) temp1
+  ) in 
+  let temp2 = List.filter test_for_minimality temp1 in 
+  if List.length(temp2)<>1
+  then raise(Find_subdir_from_suffix_exn(suffix,temp2))
+  else let (Dfa_subdirectory_t.SD container) = List.hd temp2 in 
        let j1 = Substring.leftmost_index_of_in suffix container in 
        let j2 = j1 + (String.length suffix) -1 in 
        Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
