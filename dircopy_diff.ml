@@ -67,16 +67,16 @@ let add_changes diff l=
       Dircopy_diff_t.recently_changed = (diff.Dircopy_diff_t.recently_changed)@ l;
    };; 
 
-let create diff created_one= 
+let create diff created_ones= 
   {
       diff with 
-      Dircopy_diff_t.recently_created = (diff.Dircopy_diff_t.recently_created)@ [created_one];
+      Dircopy_diff_t.recently_created = (diff.Dircopy_diff_t.recently_created)@ created_ones;
    };; 
 
-let destroy diff destroyed_one= 
+let destroy diff destroyed_ones= 
   {
       diff with 
-      Dircopy_diff_t.recently_deleted = (diff.Dircopy_diff_t.recently_deleted)@ [destroyed_one];
+      Dircopy_diff_t.recently_deleted = (diff.Dircopy_diff_t.recently_deleted)@ destroyed_ones;
    };; 
 
 
