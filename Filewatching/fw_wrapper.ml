@@ -103,16 +103,19 @@ let register_rootless_path fw rootless_path=
    if not(Sys.file_exists s_full_path)
    then raise(Register_rootless_path_exn(s_full_path))
    else
-   (*
-   let ending = Dfn_rootless.to_ending rootless_path in 
-   Dfa_ending.ml
-   let is_compilable 
-   *)
-    {
+   let is_compilable = Dfa_ending.is_compilable (Dfn_rootless.to_ending rootless_path) in 
+   let fw2= (if is_compilable 
+   then {
       fw with 
       Fw_wrapper_t.compilable_files =  
         (fw.Fw_wrapper_t.compilable_files)@[recompute_all_info fw rootless_path]  
-    };;
+    } else {
+      fw with 
+      Fw_wrapper_t.noncompilable_files =  
+        (fw.Fw_wrapper_t.noncompilable_files)@[recompute_all_info fw rootless_path]  
+    } ) in 
+    let line = Dfn_rootless.to_line rootless_path in  
+    (Fw_wrapper_field.reflect_creation_in_diff fw2 line,is_compilable);;
 
 let register_special_rootless_path fw rootless_path= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
