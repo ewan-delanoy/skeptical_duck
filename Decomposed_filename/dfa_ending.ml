@@ -1,6 +1,6 @@
 (*
 
-#use"Decomposed_filename/dfa_ending_t.ml";;
+#use"Decomposed_filename/dfa_ending.ml";;
 
 *)
 
@@ -8,6 +8,7 @@
 
 exception Dot_inside_ending of string;;
 exception Not_an_ocaml_ending of string;;
+exception Unknown_ending of Dfa_ending_t.t ;;
 
 let of_line e =
   if String.contains e '.'
@@ -49,6 +50,14 @@ let endings_for_noncompilable_readable_files =
 
 let endings_for_readable_files = 
      endings_for_compilable_files @ endings_for_noncompilable_readable_files ;;
+
+let is_compilable edg =
+   if List.mem edg endings_for_compilable_files 
+   then true 
+   else 
+   if List.mem edg endings_for_noncompilable_readable_files 
+   then false 
+   else raise(Unknown_ending(edg));;
 
 
 

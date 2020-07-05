@@ -103,6 +103,11 @@ let register_rootless_path fw rootless_path=
    if not(Sys.file_exists s_full_path)
    then raise(Register_rootless_path_exn(s_full_path))
    else
+   (*
+   let ending = Dfn_rootless.to_ending rootless_path in 
+   Dfa_ending.ml
+   let is_compilable 
+   *)
     {
       fw with 
       Fw_wrapper_t.compilable_files =  
