@@ -33,8 +33,8 @@ let refresh (root,backup_dir,g_after_b) =
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
 
 let register_rootless_path cs rp=
-   let new_fw=Fw_wrapper.register_rootless_path (cs.Coma_state_t.frontier_with_unix_world) rp in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+   let (new_fw,is_compilable)=Fw_wrapper.register_rootless_path (cs.Coma_state_t.frontier_with_unix_world) rp in   
+   (Coma_state_field.set_frontier_with_unix_world cs new_fw,is_compilable) ;;
 
 let relocate_module_to cs mod_name new_subdir=
    let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
@@ -208,16 +208,13 @@ let refresh cs =
         (cs4,new_diff)    ;;
 
 
-let register_rootless_path cs rp_line=
+let register_rootless_path cs rp_line is_compilable=
+  if not is_compilable 
+  then cs 
+  else 
   let rootless_path = Dfn_rootless.of_line rp_line in 
   let mlx=Dfn_join.root_to_rootless (Coma_state.root cs) rootless_path in
-  let diff=
-    Dircopy_diff.constructor
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list [rp_line]) in
-  let cs2=Coma_state.register_mlx_file cs mlx in 
-  (cs2,diff);;
+  Coma_state.register_mlx_file cs mlx ;;
 
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  
@@ -329,8 +326,8 @@ let refresh cs =
    Internal.refresh cs2;;
 
 let register_rootless_path cs rp_line= 
-   let cs2=Physical.register_rootless_path cs (Dfn_rootless.of_line rp_line) in
-   Internal.register_rootless_path cs2 rp_line;;
+   let (cs2,is_compilable)=Physical.register_rootless_path cs (Dfn_rootless.of_line rp_line) in
+   Internal.register_rootless_path cs2 rp_line is_compilable;;
 
 let relocate_module_to cs mod_name new_subdir= 
   let cs2=Physical.relocate_module_to cs mod_name  new_subdir  in
@@ -421,10 +418,9 @@ module And_backup = struct
       (* No backup during refresh *)   
 
       let register_rootless_path cs x=
-         let (cs2,diff)=After_checking.register_rootless_path cs x  in 
+         let cs2=After_checking.register_rootless_path cs x  in 
          let msg="register "^x in 
-         let _=Private.backup cs2 diff (Some msg) in 
-         cs2;; 
+         Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let relocate_module_to cs old_module new_subdir=
          let cs2=After_checking.relocate_module_to cs old_module new_subdir  in
