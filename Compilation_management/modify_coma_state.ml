@@ -202,10 +202,9 @@ let refresh cs =
         let rejected_endinglesses=Image.image snd rejected_pairs in 
         let new_ptypes=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
         let new_dirs=Coma_state.compute_subdirectories_list cs2 in
-        let new_diff=Coma_state.Target_system_creation.delchacre_from_scratch (dir,backup_dir) cs2 in
         let cs3=Coma_state_field.set_directories cs2 new_dirs in 
         let cs4=Coma_state_field.set_preq_types cs3 new_ptypes in
-        (cs4,new_diff)    ;;
+        cs4    ;;
 
 
 let register_rootless_path cs rp_line is_compilable=
@@ -472,7 +471,7 @@ module And_save = struct
       
 
       let refresh cs =
-         let (cs2,_)=Physical_followed_by_internal.refresh cs  in 
+         let cs2=Physical_followed_by_internal.refresh cs  in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
