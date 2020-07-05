@@ -5,6 +5,8 @@
 
 *)
 
+let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
+
 let of_concrete_object crobj =
    let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Dfn_rootless_t.J(

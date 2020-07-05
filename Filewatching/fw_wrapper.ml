@@ -4,7 +4,7 @@
 
 *)
 
-exception Register_rootless_path_exn of string;;
+exception Register_rootless_path_exn of string list;;
 
 module Private = struct
 
@@ -91,25 +91,29 @@ let forget_module fw mod_name =
    ) fw.Fw_wrapper_t.compilable_files in 
    remove_compilable_files fw the_files;;
 
-let register_rootless_path fw rootless_path= 
-   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-   let s_full_path = s_root^(Dfn_rootless.to_line rootless_path)  in 
-   if not(Sys.file_exists s_full_path)
-   then raise(Register_rootless_path_exn(s_full_path))
+let register_rootless_paths fw rootless_paths= 
+   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in
+   let bad_paths = Option.filter_and_unpack (
+     fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
+     if not(Sys.file_exists s_full_path)
+     then Some(s_full_path)
+     else None
+   ) rootless_paths in 
+   if bad_paths<>[]
+   then raise(Register_rootless_path_exn(bad_paths))
    else
-   let is_compilable = Dfa_ending.is_compilable (Dfn_rootless.to_ending rootless_path) in 
-   let fw2= (if is_compilable 
-   then {
+   let (c_paths,nc_paths) = List.partition Dfn_rootless.is_compilable rootless_paths in 
+   let fw2=  {
       fw with 
       Fw_wrapper_t.compilable_files =  
-        (fw.Fw_wrapper_t.compilable_files)@[recompute_all_info fw rootless_path]  
-    } else {
-      fw with 
+        (fw.Fw_wrapper_t.compilable_files)@
+          (Image.image (recompute_all_info fw) c_paths])  ;
       Fw_wrapper_t.noncompilable_files =  
-        (fw.Fw_wrapper_t.noncompilable_files)@[recompute_all_info fw rootless_path]  
+        (fw.Fw_wrapper_t.noncompilable_files)@
+         (Image.image (recompute_all_info fw) nc_paths])  
     } ) in 
-    let line = Dfn_rootless.to_line rootless_path in  
-    (Fw_wrapper_field.reflect_creation_in_diff fw2 line,is_compilable);;
+    let line = Image.image Dfn_rootless.to_line rootless_path in  
+    (Fw_wrapper_field.reflect_creations_in_diff fw2 lines,(c_paths,nc_paths));;
 
 let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 

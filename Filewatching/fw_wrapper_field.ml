@@ -85,19 +85,19 @@ let get_mtime fw rootless  =
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let reflect_creation_in_diff fw created_one= {
+let reflect_creations_in_diff fw created_ones= {
    fw with 
    Fw_wrapper_t.last_noticed_changes = 
      Dircopy_diff.create 
-       (fw.Fw_wrapper_t.last_noticed_changes) created_one
+       (fw.Fw_wrapper_t.last_noticed_changes) created_ones
 } ;;
 
 
-let reflect_destruction_in_diff fw destroyed_one = {
+let reflect_destructions_in_diff fw destroyed_ones = {
    fw with 
    Fw_wrapper_t.last_noticed_changes = 
      Dircopy_diff.destroy  
-       (fw.Fw_wrapper_t.last_noticed_changes) destroyed_one 
+       (fw.Fw_wrapper_t.last_noticed_changes) destroyed_ones 
 } ;;
 
 
