@@ -187,8 +187,7 @@ let ((cs2,nms_to_be_updated),rootless_paths)=
 
 
 let refresh cs = 
-        let dir =Coma_state_field.root cs 
-        and backup_dir = Coma_state_field.backup_dir cs in 
+        let dir =Coma_state_field.root cs  in 
         let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
         let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
         let temp2=Coma_state.Target_system_creation.clean_list_of_files dir temp1 in
