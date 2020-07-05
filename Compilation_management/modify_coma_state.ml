@@ -222,17 +222,12 @@ let register_rootless_path cs rp_line=
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  
   let old_subdir = Dfn_endingless.to_subdirectory old_endingless in 
-  let root_dir = Coma_state.root cs in 
   let mn=Dfn_endingless.to_module old_endingless in
   let old_acolytes= Coma_state.acolytes_at_module cs mn in
   let new_acolytes=Image.image 
     (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
   let new_name=Dfn_full.to_endingless
    (List.hd new_acolytes) in
-  let s_root=Dfa_root.connectable_to_subpath root_dir in     
-  let old_middle = Dfn_endingless.to_middle old_endingless in
-    let _=Unix_command.uc
-     ("rm -f "^s_root^"_build/"^(Dfn_middle.to_line old_middle)^".cm* ") in
   let principal_mt=Coma_state.md_compute_modification_time new_name 
                          (Coma_state.principal_ending_at_module cs mn)
   and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ending.mli in
