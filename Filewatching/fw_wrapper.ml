@@ -91,12 +91,6 @@ let forget_module fw mod_name =
    ) fw.Fw_wrapper_t.compilable_files in 
    remove_compilable_files fw the_files;;
 
-let forget fw x=
-      if String.contains x '.'
-      then remove_compilable_files fw [Dfn_rootless.of_line x]
-      else forget_module fw (Dfa_module.of_line(x));;
-
-
 let register_rootless_path fw rootless_path= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
    let s_full_path = s_root^(Dfn_rootless.to_line rootless_path)  in 
@@ -116,20 +110,6 @@ let register_rootless_path fw rootless_path=
     } ) in 
     let line = Dfn_rootless.to_line rootless_path in  
     (Fw_wrapper_field.reflect_creation_in_diff fw2 line,is_compilable);;
-
-let register_special_rootless_path fw rootless_path= 
-   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-   let s_full_path = s_root^(Dfn_rootless.to_line rootless_path)  in 
-   if not(Sys.file_exists s_full_path)
-   then raise(Register_rootless_path_exn(s_full_path))
-   else
-    {
-      fw with 
-      Fw_wrapper_t.noncompilable_files =  
-        (fw.Fw_wrapper_t.noncompilable_files)@[recompute_all_info fw rootless_path]  
-    };;
-
-
 
 let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
@@ -440,8 +420,6 @@ let constructor (root_dir,backup_dir,g_after_b)= {
    noncompilable_files = [];
    last_noticed_changes = Dircopy_diff.empty_one;
 };; 
-
-let forget = Private.forget;;
 
 let forget_module = Private.forget_module;;
 
