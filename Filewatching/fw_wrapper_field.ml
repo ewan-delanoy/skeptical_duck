@@ -1,8 +1,8 @@
 (*
 
-#use"Filewatching/fw_wrapper.ml";;
+#use"Filewatching/fw_wrapper_field.ml";;
 
-Acts on the physical Unix world around, within the limits
+Acts on the surrounding physical Unix world, within the limits
 defined in  the configuration parameter
 
 *)
@@ -85,14 +85,21 @@ let get_mtime fw rootless  =
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-(*
-let reflect_creation_and_destruction_in_diff fw (l_created,l_destroyed)= {
+let reflect_creation_in_diff fw created_one= {
    fw with 
    Fw_wrapper_t.last_noticed_changes = 
-     Dircopy_diff.create_and_destroy  
-       (fw.Fw_wrapper_t.last_noticed_changes) (l_created,l_destroyed)
+     Dircopy_diff.create 
+       (fw.Fw_wrapper_t.last_noticed_changes) created_one
 } ;;
-*)
+
+
+let reflect_destruction_in_diff fw destroyed_one = {
+   fw with 
+   Fw_wrapper_t.last_noticed_changes = 
+     Dircopy_diff.destroy  
+       (fw.Fw_wrapper_t.last_noticed_changes) destroyed_one 
+} ;;
+
 
 let reflect_replacements_in_diff fw reps= {
    fw with 
