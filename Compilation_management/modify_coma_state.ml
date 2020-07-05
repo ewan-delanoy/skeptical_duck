@@ -33,7 +33,8 @@ let refresh (root,backup_dir,g_after_b) =
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
 
 let register_rootless_path cs rp=
-   let (new_fw,is_compilable)=Fw_wrapper.register_rootless_path (cs.Coma_state_t.frontier_with_unix_world) rp in   
+   let (new_fw,(c_paths,nc_paths))=Fw_wrapper.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) [rp] in   
+   let is_compilable = (nc_paths=[]) in 
    (Coma_state_field.set_frontier_with_unix_world cs new_fw,is_compilable) ;;
 
 let relocate_module_to cs mod_name new_subdir=
