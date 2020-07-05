@@ -107,12 +107,12 @@ let register_rootless_paths fw rootless_paths=
       fw with 
       Fw_wrapper_t.compilable_files =  
         (fw.Fw_wrapper_t.compilable_files)@
-          (Image.image (recompute_all_info fw) c_paths])  ;
+          (Image.image (recompute_all_info fw) c_paths)  ;
       Fw_wrapper_t.noncompilable_files =  
         (fw.Fw_wrapper_t.noncompilable_files)@
-         (Image.image (recompute_all_info fw) nc_paths])  
-    } ) in 
-    let line = Image.image Dfn_rootless.to_line rootless_path in  
+         (Image.image (recompute_all_info fw) nc_paths)  
+    }  in 
+    let lines = Image.image Dfn_rootless.to_line rootless_paths in  
     (Fw_wrapper_field.reflect_creations_in_diff fw2 lines,(c_paths,nc_paths));;
 
 let relocate_compilable_files_to fw rootless_paths new_subdir=
@@ -443,7 +443,7 @@ let reflect_latest_changes_in_github fw opt_msg=
    {fw with Fw_wrapper_t.last_noticed_changes = Dircopy_diff.empty_one} ;; 
 
 
-let register_rootless_path = Private.register_rootless_path;;
+let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_module_to = Private.relocate_module_to;;
 
