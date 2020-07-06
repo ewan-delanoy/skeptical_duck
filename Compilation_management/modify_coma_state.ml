@@ -32,10 +32,9 @@ let refresh (root,backup_dir,g_after_b) =
    let cs0 = Coma_state_field.empty_one root backup_dir g_after_b in  
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
 
-let register_rootless_path cs rp=
-   let (new_fw,(c_paths,nc_paths))=Fw_wrapper.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) [rp] in   
-   let is_compilable = (nc_paths=[]) in 
-   (Coma_state_field.set_frontier_with_unix_world cs new_fw,is_compilable) ;;
+let register_rootless_paths cs rps=
+   let (new_fw,(c_paths,nc_paths))=Fw_wrapper.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
+   (Coma_state_field.set_frontier_with_unix_world cs new_fw,c_paths) ;;
 
 let relocate_module_to cs mod_name new_subdir=
    let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
@@ -207,13 +206,11 @@ let refresh cs =
         cs4    ;;
 
 
-let register_rootless_path cs rp_line is_compilable=
-  if not is_compilable 
-  then cs 
-  else 
-  let rootless_path = Dfn_rootless.of_line rp_line in 
-  let mlx=Dfn_join.root_to_rootless (Coma_state.root cs) rootless_path in
-  Coma_state.register_mlx_file cs mlx ;;
+let register_rootless_paths cs rootless_paths=
+  let mlxs = Image.image (
+    Dfn_join.root_to_rootless (Coma_state.root cs)
+  ) rootless_paths in 
+  Coma_state.register_mlx_files cs mlxs ;;
 
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  
@@ -324,9 +321,9 @@ let refresh cs =
      (Coma_state.root cs,Coma_state.backup_dir cs,Coma_state.gitpush_after_backup cs)  in
    Internal.refresh cs2;;
 
-let register_rootless_path cs rp_line= 
-   let (cs2,is_compilable)=Physical.register_rootless_path cs (Dfn_rootless.of_line rp_line) in
-   Internal.register_rootless_path cs2 rp_line is_compilable;;
+let register_rootless_paths cs rootless_paths= 
+   let (cs2,c_paths)=Physical.register_rootless_paths cs rootless_paths in
+   Internal.register_rootless_paths cs2 c_paths;;
 
 let relocate_module_to cs mod_name new_subdir= 
   let cs2=Physical.relocate_module_to cs mod_name  new_subdir  in
@@ -363,9 +360,9 @@ module After_checking = struct
 
       (* No check needed before refreshing *)
 
-      let register_rootless_path cs rp=
+      let register_rootless_paths cs rootless_paths=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Physical_followed_by_internal.register_rootless_path cs rp;; 
+         Physical_followed_by_internal.register_rootless_paths cs rootless_paths;; 
 
       let relocate_module_to cs old_module new_subdir=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
@@ -416,9 +413,10 @@ module And_backup = struct
 
       (* No backup during refresh *)   
 
-      let register_rootless_path cs x=
-         let cs2=After_checking.register_rootless_path cs x  in 
-         let msg="register "^x in 
+      let register_rootless_paths cs rootless_paths=
+         let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+         let cs2=After_checking.register_rootless_paths cs rootless_paths  in 
+         let msg="register "^descr in 
          Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let relocate_module_to cs old_module new_subdir=
@@ -475,8 +473,8 @@ module And_save = struct
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
-      let register_rootless_path cs rootless_path=
-         let cs2=And_backup.register_rootless_path cs rootless_path in 
+      let register_rootless_paths cs rootless_path=
+         let cs2=And_backup.register_rootless_paths cs rootless_path in 
          let _=Save_coma_state.save cs2 in 
          cs2;;  
 
@@ -535,8 +533,8 @@ module Reference = struct
          let new_cs = And_save.refresh (!pcs)  in 
          pcs:=new_cs;;
 
-      let register_rootless_path pcs rootless_path=
-         let new_cs = And_save.register_rootless_path (!pcs) rootless_path in 
+      let register_rootless_paths pcs rootless_paths=
+         let new_cs = And_save.register_rootless_paths (!pcs) rootless_paths in 
          pcs:=new_cs;;
 
 
@@ -565,6 +563,22 @@ end ;;
 
 module Syntactic_sugar = struct 
 
+let forget cs_ref text = 
+      if String.contains text '.'
+      then Reference.forget_rootless_path cs_ref (Dfn_rootless.of_line text)
+      else Reference.forget_module cs_ref (Dfa_module.of_line text) ;;
+
+
+let register_several cs_ref lines =
+   let rootless_paths = Image.image Dfn_rootless.of_line lines in 
+   Reference.register_rootless_paths cs_ref  rootless_paths ;;
+
+let register_one cs_ref line = register_several cs_ref [line];;
+
+let relocate_module_to cs_ref old_module_name new_subdir=
+    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
+    Reference.relocate_module_to cs_ref mn new_subdir ;;
+
 let rename_module cs_ref old_module_name new_name=
    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
    let old_eless = Coma_state.endingless_at_module (!cs_ref) mn in
@@ -572,14 +586,6 @@ let rename_module cs_ref old_module_name new_name=
    let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
    Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
 
-let relocate_module_to cs_ref old_module_name new_subdir=
-    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-    Reference.relocate_module_to cs_ref mn new_subdir ;;
-
-let forget cs text = 
-      if String.contains text '.'
-      then Reference.forget_rootless_path cs (Dfn_rootless.of_line text)
-      else Reference.forget_module cs (Dfa_module.of_line text) ;;
 
 let rename_subdirectory cs_ref old_subdirname new_subdir_short_name=
     let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname  in
