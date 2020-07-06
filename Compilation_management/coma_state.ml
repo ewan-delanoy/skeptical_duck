@@ -1443,11 +1443,12 @@ let unregister_module_on_targets root_dir cs mn=
     let new_dirs=compute_subdirectories_list cs2  in
      ((cs2,new_dirs),rootless_paths);;   
                
-
+(*
 let unregister_module cs endingless=
         let ((cs2,new_dirs),short_paths)= 
          unregister_module_on_targets (root cs) cs  endingless in 
           set_directories cs2 new_dirs;;        
+*)
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
    (root cs) (directories cs) x;;
