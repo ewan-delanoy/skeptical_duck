@@ -219,7 +219,6 @@ let unregister_module cs eless=
    if pre_desc<>[]
    then raise(Derelict_children(nm,pre_desc))
    else
-   let acolytes=acolytes_at_module cs nm  in
    let cs2=Coma_state_field.remove_in_each_at_module cs nm in
    let old_preqtypes = Coma_state_field.preq_types cs2 in 
    let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
@@ -228,8 +227,7 @@ let unregister_module cs eless=
      then Coma_state_field.set_preq_types cs2 new_preqtypes
      else cs2
    ) in 
-   let rootless_paths=Image.image Dfn_full.to_rootless_line acolytes in
-   (cs3,rootless_paths);;     
+   cs3;;     
                     
 
 exception Non_registered_file of Dfn_full_t.t;;  

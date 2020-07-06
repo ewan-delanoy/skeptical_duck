@@ -103,7 +103,7 @@ let forget_module cs mn deleted_rootless_paths=
   if bel<>[]
   then raise(ModuleWithDependenciesDuringForgetting(old_endingless,bel))
   else 
-  let (cs2,_)=Coma_state.unregister_module  cs old_endingless in
+  let cs2=Coma_state.unregister_module  cs old_endingless in
   let new_dirs=Coma_state.compute_subdirectories_list cs2  in
   let sfn=Dfa_module.to_line mn in
   let _=Image.image
