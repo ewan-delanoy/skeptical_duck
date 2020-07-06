@@ -210,7 +210,7 @@ exception Non_registered_module of Dfn_endingless_t.t;;
 exception Derelict_children of Dfa_module_t.t*(Dfa_module_t.t list);;  
            
             
-let unregister_module_on_monitored_modules cs eless=
+let unregister_module cs eless=
   let nm=Dfn_endingless.to_module eless in
   let pre_desc=List.filter(
       fun mn7->

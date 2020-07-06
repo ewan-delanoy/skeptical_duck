@@ -338,7 +338,6 @@ let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_
    let (Dfn_rootless_t.J(_,old_module,_))=List.hd rootlesses_to_be_renamed in
    let fw2=rename_module_in_filename_only fw rootlesses_to_be_renamed new_module in 
    let fw3=rename_module_in_files fw2 (old_module,new_module) files_to_be_rewritten in 
-   (* rename_module_in_special_files fw3 (old_module,new_module);; *) 
    fw3;;
 
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
