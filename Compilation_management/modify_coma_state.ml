@@ -121,6 +121,7 @@ let forget_module cs mn deleted_rootless_paths=
       (Recently_created.of_string_list []) in
    (cs3,diff);;    
 
+
 let forget_rootless_path cs rootless_path=
    let the_root = Coma_state.root cs in 
    let full_path = Dfn_join.root_to_rootless the_root rootless_path in  

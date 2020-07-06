@@ -1719,3 +1719,22 @@ let check_module_sequence_for_forgettability cs l=
        then None 
        else Some(mn,temp2)
    ) temp1 ;;
+
+(*
+let check_rootless_path_sequence_for_forgettability cs old_l =
+  let l = List.filter Dfn_rootless.is_compilable old_l in 
+  let temp1 = List.rev (Three_parts.generic l) in 
+  Option.filter_and_unpack (
+     fun (to_be_deleted_before_rp,rp,_)->
+       let eless = endingless_at_module cs mn in   
+       rootless_paths_at_module
+       let temp2 = List.filter (fun mn2->
+          not(List.mem mn2 to_be_deleted_before_mn) 
+       ) (below cs eless) in 
+       if temp2 = []
+       then None 
+       else Some(mn,temp2)
+   ) temp1 ;;
+
+*)
+
