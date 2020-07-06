@@ -10,8 +10,9 @@
 module Physical = struct 
 
 let forget_module cs mod_name=
-   let new_fw=Fw_wrapper.forget_module (cs.Coma_state_t.frontier_with_unix_world) mod_name in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+   let (new_fw,deleted_rootless_paths)=
+      Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) [mod_name] in   
+   (Coma_state_field.set_frontier_with_unix_world cs new_fw,deleted_rootless_paths);;
 
 let forget_rootless_path cs rootless_path=
    let new_fw=Fw_wrapper.remove_compilable_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
@@ -96,13 +97,13 @@ module Internal = struct
 exception ModuleWithDependenciesDuringForgetting of Dfn_endingless_t.t *
             Dfa_module_t.t list;;
 
-let forget_module cs mn=
+let forget_module cs mn deleted_rootless_paths=
   let old_endingless = Coma_state.endingless_at_module cs mn in   
   let bel=Coma_state.below cs old_endingless in 
   if bel<>[]
   then raise(ModuleWithDependenciesDuringForgetting(old_endingless,bel))
   else 
-  let (cs2,rootless_paths)=Coma_state.unregister_module  cs old_endingless in
+  let (cs2,_)=Coma_state.unregister_module  cs old_endingless in
   let new_dirs=Coma_state.compute_subdirectories_list cs2  in
   let sfn=Dfa_module.to_line mn in
   let _=Image.image
@@ -111,7 +112,8 @@ let forget_module cs mn=
                 Unix_command.uc(cmd))
                [".cm*";".d.cm*";".caml_debuggable"] in
   let cs3=Coma_state.set_directories cs2 new_dirs in 
-  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(rootless_paths)) in
+  let deleted_paths = Image.image Dfn_rootless.to_line deleted_rootless_paths in 
+  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(deleted_paths)) in
   let diff=
       Dircopy_diff.constructor
       (Recently_deleted.of_string_list ordered_paths)
@@ -303,8 +305,8 @@ end;;
 module Physical_followed_by_internal = struct
 
 let forget_module cs mod_name= 
-  let cs2=Physical.forget_module cs mod_name  in
-  Internal.forget_module cs2 mod_name;;
+  let (cs2,deleted_rootless_paths)=Physical.forget_module cs mod_name  in
+  Internal.forget_module cs2 mod_name deleted_rootless_paths;;
 
 let forget_rootless_path cs rootless_path= 
   let cs2=Physical.forget_rootless_path cs rootless_path  in
