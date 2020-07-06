@@ -142,7 +142,7 @@ let recompile (cs,changed_rootlesses) =
   let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (Coma_state.rootless_paths_at_module cs nm))
+                        (Coma_state.rootless_lines_at_module cs nm))
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->

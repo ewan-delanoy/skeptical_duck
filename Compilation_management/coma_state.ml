@@ -82,7 +82,7 @@ let acolytes_at_module cs mn=
 
 
 
-let rootless_paths_at_module cs mn=
+let rootless_lines_at_module cs mn=
    Image.image Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
   
 
@@ -457,7 +457,7 @@ let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path
 
 let all_rootless_paths cs=
     let mods=ordered_list_of_modules cs in
-    List.flatten(Image.image(rootless_paths_at_module cs) mods);;  
+    List.flatten(Image.image(rootless_lines_at_module cs) mods);;  
      
 
 let short_paths_inside_subdirectory cs subdir =
@@ -678,7 +678,7 @@ let latest_changes cs =
   let declare_changed=(fun nm->
     ref_for_changed_modules:=nm::(!ref_for_changed_modules);
     ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (rootless_paths_at_module cs nm))
+                        (rootless_lines_at_module cs nm))
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
