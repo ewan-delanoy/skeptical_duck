@@ -236,7 +236,7 @@ exception Non_registered_file of Dfn_full_t.t;;
 exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
                       
                      
-let unregister_mlx_file_on_monitored_modules cs mlxfile=
+let partially_remove_mlx_file cs mlxfile=
     let eless=Dfn_full.to_endingless mlxfile
     and nm=Dfn_full.to_module mlxfile in
     let pre_desc=List.filter(
@@ -1136,7 +1136,7 @@ let unregister_mlx_file_on_targets root_dir cs mlx=
     let was_lonely=
       (List.length(registered_endings_at_module cs mn)=1) in 
     let _=set_product_up_to_date_at_module cs mn false in 
-    let cs2=unregister_mlx_file_on_monitored_modules cs mlx in
+    let cs2=partially_remove_mlx_file cs mlx in
     let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
            then cs2
