@@ -128,9 +128,8 @@ let forget_rootless_path cs rootless_path=
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in 
-   let (cs2,new_dirs)=Coma_state.unregister_mlx_file the_root cs full_path in   
-   let cs3=Coma_state.set_directories cs2 new_dirs in 
-   (cs3,diff);; 
+   let cs2=Coma_state.unregister_mlx_file the_root cs full_path in   
+   (cs2,diff);; 
 
 
 let recompile (cs,changed_rootlesses) = 

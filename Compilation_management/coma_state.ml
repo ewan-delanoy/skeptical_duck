@@ -1143,7 +1143,7 @@ let unregister_mlx_file root_dir cs mlx=
            else ( fun (cs4,_,_)->cs4)
            (Ocaml_target_making.usual_feydeau 
              cs2 following) ) in 
-    (cs3,new_dirs);;   
+    set_directories cs3 new_dirs;;   
 
 exception FileWithDependencies of 
 Dfn_full_t.t*(Dfa_module_t.t list);;
