@@ -1130,7 +1130,7 @@ let uple_form cs=
    );;
 
 
-let unregister_mlx_file root_dir cs mlx=
+let unregister_mlx_file cs mlx=
     let mn=Dfn_full.to_module mlx in 
     let following = mn::(follows_it cs mn) in  
     let was_lonely=

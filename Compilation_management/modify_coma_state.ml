@@ -128,7 +128,7 @@ let forget_rootless_path cs rootless_path=
     (Recently_deleted.of_string_list [cut_ap])
     (Recently_changed.of_string_list [])
     (Recently_created.of_string_list []) in 
-   let cs2=Coma_state.unregister_mlx_file the_root cs full_path in   
+   let cs2=Coma_state.unregister_mlx_file cs full_path in   
    (cs2,diff);; 
 
 
