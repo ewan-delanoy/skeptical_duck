@@ -1148,35 +1148,6 @@ let unregister_mlx_file_on_targets root_dir cs mlx=
 exception FileWithDependencies of 
 Dfn_full_t.t*(Dfa_module_t.t list);;
 
-
-let forget_file_on_targets root_dir pair ap=
-  let (cs,dirs)=pair in
-  let rootless_path = Dfn_common.decompose_absolute_path_using_root ap root_dir in 
-  let mlx = Dfn_join.root_to_rootless root_dir rootless_path in 
-  let eless=Dfn_full.to_endingless mlx  in
-  let nm=Dfn_endingless.to_module eless in
-  if not(Coma_state_field.test_module_for_registration cs nm)
-  then pair  
-  else 
-   let bel=below cs eless in
-    if bel=[]
-    then let fn=Dfn_endingless.to_line eless  in
-         let _=Image.image
-         (fun edg->Unix_command.uc("rm -f "^fn^edg^"*"))
-         [".cm";".d.cm";".caml_debuggable"] in
-         unregister_mlx_file_on_targets root_dir cs mlx
-    else raise(FileWithDependencies(mlx,bel));;
-
-
-(*
-let forget_file cs ap=
-    let (cs2,new_dirs)= 
-     forget_file_on_targets (root cs) (cs,directories cs) ap in  
-     set_directories cs2 new_dirs;;
-*)
-
-
-
 let read_persistent_version x=
         let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
         let ap= Dfn_full.to_absolute_path full_path in
