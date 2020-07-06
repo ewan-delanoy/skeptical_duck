@@ -1708,3 +1708,16 @@ let reflect_latest_changes_in_github cs opt_msg=
   let old_fw = cs.Coma_state_t.frontier_with_unix_world in 
   let new_fw = Fw_wrapper.reflect_latest_changes_in_github old_fw opt_msg in 
   {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
+
+let check_module_sequence_for_forgettability cs l=
+   let temp1 = List.rev (Three_parts.generic l) in 
+    Option.filter_and_unpack (
+     fun (to_be_deleted_before_mn,mn,_)->
+       let eless = endingless_at_module cs mn in   
+       let temp2 = List.filter (fun mn2->
+          not(List.mem mn2 to_be_deleted_before_mn) 
+       ) (below cs eless) in 
+       if temp2 = []
+       then None 
+       else Some(mn,temp2)
+   ) temp1 ;;
