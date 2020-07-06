@@ -1168,12 +1168,12 @@ let forget_file_on_targets root_dir pair ap=
     else raise(FileWithDependencies(mlx,bel));;
 
 
-
+(*
 let forget_file cs ap=
     let (cs2,new_dirs)= 
      forget_file_on_targets (root cs) (cs,directories cs) ap in  
      set_directories cs2 new_dirs;;
-
+*)
 
 
 
@@ -1432,12 +1432,6 @@ let start_executing cs short_path=
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau 
     Compilation_mode_t.Executable cs short_path in 
   Unix_command.conditional_multiple_uc cmds;;   
-
-(*
-let unregister_mlx_file cs mlx=
-    let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
-    set_directories cs2 new_dirs;;           
-*)
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
    (root cs) (directories cs) x;;
