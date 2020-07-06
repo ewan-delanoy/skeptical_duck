@@ -1433,21 +1433,10 @@ let start_executing cs short_path=
     Compilation_mode_t.Executable cs short_path in 
   Unix_command.conditional_multiple_uc cmds;;   
 
-
+(*
 let unregister_mlx_file cs mlx=
     let (cs2,new_dirs)=unregister_mlx_file_on_targets (root cs) cs  mlx in 
-    set_directories cs2 new_dirs;;
-
-let unregister_module_on_targets root_dir cs mn=
-    let (cs2,rootless_paths)=unregister_module_on_monitored_modules  cs mn in
-    let new_dirs=compute_subdirectories_list cs2  in
-     ((cs2,new_dirs),rootless_paths);;   
-               
-(*
-let unregister_module cs endingless=
-        let ((cs2,new_dirs),short_paths)= 
-         unregister_module_on_targets (root cs) cs  endingless in 
-          set_directories cs2 new_dirs;;        
+    set_directories cs2 new_dirs;;           
 *)
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
