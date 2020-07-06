@@ -1391,6 +1391,8 @@ let register_mlx_file cs mlx=
           Register_mlx_file.on_targets (cs,directories cs) mlx in   
            set_directories cs2 new_dirs;;            
 
+let register_mlx_files cs mlxs = List.fold_left register_mlx_file cs mlxs;;
+
 let clean_debug_dir cs=
   let s_root=Dfa_root.connectable_to_subpath(root cs) in
   let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir)) in 
