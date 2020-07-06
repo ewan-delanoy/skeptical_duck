@@ -82,14 +82,14 @@ let remove_compilable_files fw rootless_paths=
 
 
 
-let forget_module fw mod_name =
+let forget_modules fw mod_names =
    let the_files = Option.filter_and_unpack (
       fun (path,_)-> 
-        if (Dfn_rootless.to_module path)=mod_name 
+        if List.mem (Dfn_rootless.to_module path) mod_names 
         then Some path
         else None
    ) fw.Fw_wrapper_t.compilable_files in 
-   remove_compilable_files fw the_files;;
+   (remove_compilable_files fw the_files,the_files);;
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in
@@ -424,7 +424,7 @@ let constructor (root_dir,backup_dir,g_after_b)= {
    last_noticed_changes = Dircopy_diff.empty_one;
 };; 
 
-let forget_module = Private.forget_module;;
+let forget_modules = Private.forget_modules;;
 
 let inspect_and_update = Private.inspect_and_update;;
 
