@@ -64,13 +64,13 @@ let remove_noncompilable_files fw rootless_paths=
       ) (fw.Fw_wrapper_t.noncompilable_files)  
    };;
 
-let remove_compilable_files fw rootless_paths=
+let remove_files fw rootless_paths=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
     ) rootless_paths in 
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
-   {
+    let fw2 ={
       fw with 
       Fw_wrapper_t.compilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
@@ -78,7 +78,9 @@ let remove_compilable_files fw rootless_paths=
       Fw_wrapper_t.noncompilable_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
       ) (fw.Fw_wrapper_t.noncompilable_files)  
-   };;
+   } in 
+   let lines = Image.image Dfn_rootless.to_line rootless_paths in 
+   Fw_wrapper_field.reflect_destructions_in_diff fw2 lines ;;
 
 
 
@@ -89,7 +91,7 @@ let forget_modules fw mod_names =
         then Some path
         else None
    ) fw.Fw_wrapper_t.compilable_files in 
-   (remove_compilable_files fw the_files,the_files);;
+   (remove_files fw the_files,the_files);;
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in
@@ -446,7 +448,7 @@ let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_module_to = Private.relocate_module_to;;
 
-let remove_files = Private.remove_compilable_files;;
+let remove_files = Private.remove_files;;
 
 let rename_module = Private.rename_module_everywhere;;
 
