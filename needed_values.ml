@@ -24,7 +24,9 @@ let dbel = Usual_coma_state.directly_below;;
 
 let dm = Usual_coma_state.duplicate_module;;
 
-let fg = Usual_coma_state.forget;;
+let fg = Usual_coma_state.forget_one;;
+
+let fgs = Usual_coma_state.forget_several;;
 
 let hi = List.length ;; 
 
