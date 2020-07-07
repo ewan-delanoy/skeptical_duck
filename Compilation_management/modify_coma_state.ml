@@ -10,7 +10,7 @@
 module Physical = struct 
 
 let forget_modules cs mod_names=
-   let (new_fw,deleted_rootless_paths)=
+   let new_fw=
       Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw;;
 

@@ -91,7 +91,7 @@ let forget_modules fw mod_names =
         then Some path
         else None
    ) fw.Fw_wrapper_t.compilable_files in 
-   (remove_files fw the_files,the_files);;
+   remove_files fw the_files;;
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in
