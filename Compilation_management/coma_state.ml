@@ -86,7 +86,11 @@ let rootless_lines_at_module cs mn=
    Image.image Dfn_full.to_rootless_line (acolytes_at_module cs mn);;
   
 
+let rootless_paths_at_module cs mn=
+   Image.image Dfn_full.to_rootless (acolytes_at_module cs mn);;
   
+
+
 let registered_endings_at_module cs mn=
   List.filter (fun edg->
   check_ending_in_at_module edg cs mn 
@@ -447,6 +451,12 @@ let above_one_in_several_or_inside cs l=
   let temp2=List.flatten (l::temp1) in
   ordered_as_in_coma_state cs  temp2;;
 
+let acolytes_below_module cs mn =
+   let temp1 = List.filter(fun mn2->
+        List.mem mn (ancestors_at_module cs mn2)) 
+    (ordered_list_of_modules cs) in 
+   let temp2 = Image.image (rootless_paths_at_module cs) temp1 in 
+   List.flatten temp2 ;; 
 
 let all_mlx_files cs=
   let mods=ordered_list_of_modules cs in
@@ -1720,21 +1730,27 @@ let check_module_sequence_for_forgettability cs l=
        else Some(mn,temp2)
    ) temp1 ;;
 
-(*
+
 let check_rootless_path_sequence_for_forgettability cs old_l =
   let l = List.filter Dfn_rootless.is_compilable old_l in 
   let temp1 = List.rev (Three_parts.generic l) in 
   Option.filter_and_unpack (
      fun (to_be_deleted_before_rp,rp,_)->
-       let eless = endingless_at_module cs mn in   
-       rootless_paths_at_module
-       let temp2 = List.filter (fun mn2->
-          not(List.mem mn2 to_be_deleted_before_mn) 
-       ) (below cs eless) in 
+       let mn = Dfn_rootless.to_module rp in 
+       let acolytes = rootless_paths_at_module cs mn in  
+       let remaining_acolytes = List.filter (
+         fun rp2 -> not (List.mem rp2 (rp::to_be_deleted_before_rp))
+       ) acolytes in 
+       if remaining_acolytes<>[]
+       then None
+       else 
+       let temp2 = List.filter (fun rp2->
+          not(List.mem rp2 to_be_deleted_before_rp) 
+       ) (acolytes_below_module cs mn) in 
        if temp2 = []
        then None 
        else Some(mn,temp2)
    ) temp1 ;;
 
-*)
+
 
