@@ -446,7 +446,7 @@ let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_module_to = Private.relocate_module_to;;
 
-let remove_compilable_files = Private.remove_compilable_files;;
+let remove_files = Private.remove_compilable_files;;
 
 let rename_module = Private.rename_module_everywhere;;
 
