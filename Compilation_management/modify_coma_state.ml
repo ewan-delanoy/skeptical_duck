@@ -9,13 +9,13 @@
 
 module Physical = struct 
 
-let forget_module cs mod_name=
+let forget_modules cs mod_names=
    let (new_fw,deleted_rootless_paths)=
-      Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) [mod_name] in   
+      Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
    (Coma_state_field.set_frontier_with_unix_world cs new_fw,deleted_rootless_paths);;
 
-let forget_rootless_path cs rootless_path=
-   let new_fw=Fw_wrapper.remove_files (cs.Coma_state_t.frontier_with_unix_world) [rootless_path] in   
+let forget_rootless_paths cs rootless_paths=
+   let new_fw=Fw_wrapper.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
    Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
 
 
@@ -94,45 +94,25 @@ end;;
 
 module Internal = struct
 
-exception ModuleWithDependenciesDuringForgetting of Dfn_endingless_t.t *
-            Dfa_module_t.t list;;
-
-let forget_module cs mn deleted_rootless_paths=
-  let old_endingless = Coma_state.endingless_at_module cs mn in   
-  let bel=Coma_state.below cs old_endingless in 
-  if bel<>[]
-  then raise(ModuleWithDependenciesDuringForgetting(old_endingless,bel))
-  else 
-  let cs2=Coma_state.unregister_module  cs old_endingless in
-  let new_dirs=Coma_state.compute_subdirectories_list cs2  in
-  let sfn=Dfa_module.to_line mn in
+let forget_modules cs mns =
+  let old_endinglesses = Image.image (Coma_state.endingless_at_module cs) mns in   
+  let cs2=Coma_state.unregister_modules  cs old_endinglesses in
+  let new_dirs=Coma_state.compute_subdirectories_list cs2  in 
+  let temp1 = Image.image Dfa_module.to_line mns in 
+  let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
   let _=Image.image
-               (fun edg->
-                let cmd="rm -f _build/"^sfn^edg in
+               (fun (mname,edg)->
+                let cmd="rm -f _build/"^mname^edg in
                 Unix_command.uc(cmd))
-               [".cm*";".d.cm*";".caml_debuggable"] in
+               temp2 in
   let cs3=Coma_state.set_directories cs2 new_dirs in 
-  let deleted_paths = Image.image Dfn_rootless.to_line deleted_rootless_paths in 
-  let ordered_paths=Set_of_strings.forget_order(Set_of_strings.safe_set(deleted_paths)) in
-  let diff=
-      Dircopy_diff.constructor
-      (Recently_deleted.of_string_list ordered_paths)
-      (Recently_changed.of_string_list [])
-      (Recently_created.of_string_list []) in
-   (cs3,diff);;    
+  cs3;;    
 
 
-let forget_rootless_path cs rootless_path=
+let forget_rootless_paths cs rootless_paths=
    let the_root = Coma_state.root cs in 
-   let full_path = Dfn_join.root_to_rootless the_root rootless_path in  
-   let cut_ap=Dfn_rootless.to_line rootless_path in
-   let diff=
-    Dircopy_diff.constructor
-    (Recently_deleted.of_string_list [cut_ap])
-    (Recently_changed.of_string_list [])
-    (Recently_created.of_string_list []) in 
-   let cs2=Coma_state.unregister_mlx_file cs full_path in   
-   (cs2,diff);; 
+   let full_paths = Image.image (Dfn_join.root_to_rootless the_root) rootless_path in  
+   Coma_state.unregister_mlx_files cs full_paths ;; 
 
 
 let recompile (cs,changed_rootlesses) = 
@@ -305,9 +285,15 @@ end;;
 
 module Physical_followed_by_internal = struct
 
-let forget_module cs mod_name= 
-  let (cs2,deleted_rootless_paths)=Physical.forget_module cs mod_name  in
-  Internal.forget_module cs2 mod_name deleted_rootless_paths;;
+exception Forget_module_exn of int ;;
+
+let forget_modules cs mod_names= 
+  let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
+  if check <> []
+  then raise(Forget_module_exn(check))
+  else 
+  let cs2=Physical.forget_modules cs mod_names  in
+  Internal.forget_modules cs2 mod_names ;;
 
 let forget_rootless_path cs rootless_path= 
   let cs2=Physical.forget_rootless_path cs rootless_path  in
