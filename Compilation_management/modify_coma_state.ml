@@ -110,8 +110,9 @@ let forget_modules cs mns =
 
 
 let forget_rootless_paths cs rootless_paths=
+   let compilable_paths = List.filter Dfn_rootless.is_compilable rootless_paths in 
    let the_root = Coma_state.root cs in 
-   let full_paths = Image.image (Dfn_join.root_to_rootless the_root) rootless_paths in  
+   let full_paths = Image.image (Dfn_join.root_to_rootless the_root) compilable_paths in  
    Coma_state.unregister_mlx_files cs full_paths ;; 
 
 
