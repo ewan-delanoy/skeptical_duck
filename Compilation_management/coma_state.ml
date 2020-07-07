@@ -233,6 +233,8 @@ let unregister_module cs eless=
    ) in 
    cs3;;     
                     
+let unregister_modules cs elesses = List.fold_left unregister_module cs elesses ;; 
+
 
 exception Non_registered_file of Dfn_full_t.t;;  
 exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
@@ -1152,6 +1154,10 @@ let unregister_mlx_file cs mlx=
            (Ocaml_target_making.usual_feydeau 
              cs2 following) ) in 
     set_directories cs3 new_dirs;;   
+
+let unregister_mlx_files cs mlxs = 
+  List.fold_left unregister_mlx_file cs mlxs ;; 
+
 
 exception FileWithDependencies of 
 Dfn_full_t.t*(Dfa_module_t.t list);;
