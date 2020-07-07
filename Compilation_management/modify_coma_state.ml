@@ -12,7 +12,7 @@ module Physical = struct
 let forget_modules cs mod_names=
    let (new_fw,deleted_rootless_paths)=
       Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
-   (Coma_state_field.set_frontier_with_unix_world cs new_fw,deleted_rootless_paths);;
+   Coma_state_field.set_frontier_with_unix_world cs new_fw;;
 
 let forget_rootless_paths cs rootless_paths=
    let new_fw=Fw_wrapper.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
@@ -111,7 +111,7 @@ let forget_modules cs mns =
 
 let forget_rootless_paths cs rootless_paths=
    let the_root = Coma_state.root cs in 
-   let full_paths = Image.image (Dfn_join.root_to_rootless the_root) rootless_path in  
+   let full_paths = Image.image (Dfn_join.root_to_rootless the_root) rootless_paths in  
    Coma_state.unregister_mlx_files cs full_paths ;; 
 
 
@@ -285,19 +285,25 @@ end;;
 
 module Physical_followed_by_internal = struct
 
-exception Forget_module_exn of int ;;
+exception Forget_modules_exn of (Dfa_module_t.t * Dfa_module_t.t list) list ;;
 
 let forget_modules cs mod_names= 
   let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
   if check <> []
-  then raise(Forget_module_exn(check))
+  then raise(Forget_modules_exn(check))
   else 
   let cs2=Physical.forget_modules cs mod_names  in
   Internal.forget_modules cs2 mod_names ;;
 
-let forget_rootless_path cs rootless_path= 
-  let cs2=Physical.forget_rootless_path cs rootless_path  in
-  Internal.forget_rootless_path cs2 rootless_path;;
+exception Forget_rootless_paths_exn of (Dfa_module_t.t * Dfn_rootless_t.t list) list ;;
+
+let forget_rootless_paths cs rootless_paths= 
+  let check = Coma_state.check_rootless_path_sequence_for_forgettability cs rootless_paths in 
+  if check <> []
+  then raise(Forget_rootless_paths_exn(check))
+  else 
+  let cs2=Physical.forget_rootless_paths cs rootless_paths  in
+  Internal.forget_rootless_paths cs2 rootless_paths;;
 
 
 let recompile cs = 
@@ -336,13 +342,13 @@ end;;
 
 module After_checking = struct
 
-      let forget_module cs mod_name=
+      let forget_modules cs mod_names=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Physical_followed_by_internal.forget_module cs mod_name;; 
+         Physical_followed_by_internal.forget_modules cs mod_names;; 
 
-      let forget_rootless_path cs rootless_path=
+      let forget_rootless_paths cs rootless_paths=
          let _=Coma_state.Recent_changes.check_for_changes cs in 
-         Physical_followed_by_internal.forget_rootless_path cs rootless_path;;    
+         Physical_followed_by_internal.forget_rootless_paths cs rootless_paths;;    
 
       (* No check needed before recompiling *)
 
@@ -383,15 +389,13 @@ module And_backup = struct
 
       end;;    
 
-      let forget_module cs mod_name=
-         let (cs2,diff)=After_checking.forget_module cs mod_name in 
-         let _=Private.backup cs2 diff None in 
-         cs2;; 
+      let forget_modules cs mod_names=
+         let  cs2=After_checking.forget_modules cs mod_names in 
+         Coma_state.reflect_latest_changes_in_github cs2 None;; 
 
-      let forget_rootless_path cs rootless_path=
-         let (cs2,diff)=After_checking.forget_rootless_path cs rootless_path in 
-         let _=Private.backup cs2 diff None in 
-         cs2;; 
+      let forget_rootless_paths cs rootless_paths=
+         let cs2=After_checking.forget_rootless_paths cs rootless_paths in 
+         Coma_state.reflect_latest_changes_in_github cs2 None ;; 
 
 
       let recompile cs opt_comment=
@@ -435,13 +439,13 @@ end;;
 
 module And_save = struct 
 
-      let forget_module cs mod_name=
-         let cs2=And_backup.forget_module cs mod_name in 
+      let forget_modules cs mod_names=
+         let cs2=And_backup.forget_modules cs mod_names in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
 
-      let forget_rootless_path cs rootless_path=
-         let cs2=And_backup.forget_rootless_path cs rootless_path in 
+      let forget_rootless_paths cs rootless_paths=
+         let cs2=And_backup.forget_rootless_paths cs rootless_paths in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
 
@@ -492,12 +496,12 @@ end ;;
 
 module Reference = struct 
 
-      let forget_module pcs mod_name=
-         let new_cs = And_save.forget_module (!pcs) mod_name in 
+      let forget_modules pcs mod_names=
+         let new_cs = And_save.forget_modules (!pcs) mod_names in 
          pcs:=new_cs;;
 
-      let forget_rootless_path pcs rootless_path=
-         let new_cs = And_save.forget_rootless_path (!pcs) rootless_path in 
+      let forget_rootless_paths pcs rootless_paths=
+         let new_cs = And_save.forget_rootless_paths (!pcs) rootless_paths in 
          pcs:=new_cs;; 
 
       let initialize pcs =
@@ -551,10 +555,20 @@ end ;;
 
 module Syntactic_sugar = struct 
 
-let forget cs_ref text = 
-      if String.contains text '.'
-      then Reference.forget_rootless_path cs_ref (Dfn_rootless.of_line text)
-      else Reference.forget_module cs_ref (Dfa_module.of_line text) ;;
+let forget cs_ref data = 
+   let ref_for_modules = ref []
+   and ref_for_paths = ref [] in 
+   let _=List.iter (
+      fun descr ->
+        if String.contains descr '.'
+        then ref_for_paths:= (Dfn_rootless.of_line descr)::(!ref_for_paths)
+        else ref_for_modules:= (Dfa_module.of_line descr) ::(!ref_for_modules)
+   ) data in
+   let all_paths = List.rev(!ref_for_paths) 
+   and all_modules =  List.rev(!ref_for_modules) in 
+   let _=(if all_paths=[] then () else Reference.forget_rootless_paths cs_ref all_paths) in 
+   let _=(if all_modules=[] then () else Reference.forget_modules cs_ref all_modules) in 
+   ();;
 
 
 let register_several cs_ref lines =
