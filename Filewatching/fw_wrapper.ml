@@ -250,18 +250,20 @@ let helper2_during_inspection fw accu l_pairs =
    (new_l_pairs,List.rev(!accu));;
 
 let inspect_and_update fw = 
-    let ref_for_usual_ones=ref[] 
-    and ref_for_special_ones=ref[] in 
-    let (new_usual_files,changed_usual_files)=
-        helper2_during_inspection fw ref_for_usual_ones fw.Fw_wrapper_t.compilable_files 
-    and  (new_special_files,changed_special_files)=
-        helper2_during_inspection fw ref_for_special_ones fw.Fw_wrapper_t.noncompilable_files   in 
-    let new_fw ={
+    let ref_for_compilable_ones=ref[] 
+    and ref_for_noncompilable_ones=ref[] in 
+    let (new_c_files,changed_c_files)=
+        helper2_during_inspection fw ref_for_compilable_ones fw.Fw_wrapper_t.compilable_files 
+    and  (new_nc_files,changed_nc_files)=
+        helper2_during_inspection fw ref_for_noncompilable_ones fw.Fw_wrapper_t.noncompilable_files   in 
+    let fw2 ={
        fw with
-       Fw_wrapper_t.compilable_files         = new_usual_files ;
-       Fw_wrapper_t.noncompilable_files = new_special_files ;
+       Fw_wrapper_t.compilable_files         = new_c_files ;
+       Fw_wrapper_t.noncompilable_files = new_nc_files ;
     }  in 
-    (new_fw,(changed_usual_files,changed_special_files));;         
+    let lines = Image.image Dfn_rootless.to_line (changed_c_files@changed_nc_files) in 
+    let new_fw = Fw_wrapper_field.reflect_changes_in_diff fw2 lines in 
+    (new_fw,(changed_c_files,changed_nc_files));;         
 
 
 let helper1_inside_module_renaming_in_filename fw s_new_module rootless_to_be_renamed =
