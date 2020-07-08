@@ -20,9 +20,9 @@ let forget_rootless_paths cs rootless_paths=
 
 
 let recompile cs =
-   let (new_fw,(changed_rootlesses,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
+   let (new_fw,(changed_compilables,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
-   (new_cs,changed_rootlesses);;
+   (new_cs,changed_compilables);;
 
 let refresh (root,backup_dir,g_after_b) =
     let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
@@ -138,35 +138,24 @@ let recompile (cs,changed_rootlesses) =
     cs_walker:=Coma_state.set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Coma_state.ordered_list_of_modules cs) in
-let changed_modules=List.rev(!ref_for_changed_modules) in
-let diff_veiler =(fun paths->
-       Dircopy_diff.constructor
-    (Recently_deleted.of_string_list [])
-    (Recently_changed.of_string_list paths)
-    (Recently_created.of_string_list [])
-   ) in    
-if changed_modules=[] then (!cs_walker,diff_veiler []) else
+let changed_modules=List.rev(!ref_for_changed_modules) in 
+if changed_modules=[] then (!cs_walker) else
 let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in
 let ((cs2,nms_to_be_updated),rootless_paths)= 
  (Coma_state.PrivateThree.put_md_list_back_in_order false 
   (!cs_walker) changed_modules,
 (!ref_for_changed_shortpaths))  in   
-   if nms_to_be_updated=[] then (cs2,diff_veiler []) else
-   (
-   let new_dirs=Coma_state.compute_subdirectories_list cs2  in
-   let (cs3,rejected_pairs,accepted_pairs)=
+   if nms_to_be_updated=[] then cs2 else
+let new_dirs=Coma_state.compute_subdirectories_list cs2  in
+let (cs3,rejected_pairs,accepted_pairs)=
        Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-   let rejected_mns=Image.image snd rejected_pairs in  
-   let new_preqt=Image.image(
+let rejected_mns=Image.image snd rejected_pairs in  
+let new_preqt=Image.image(
         fun (mn,_)->(mn,not(List.mem mn rejected_mns))
       )  (Coma_state_field.preq_types cs3) in   
-   let cs4=Coma_state_field.set_directories cs3 new_dirs in 
-   let cs5=Coma_state_field.set_preq_types cs4 new_preqt in 
-   let changed_paths=Ordered.sort 
-      Total_ordering.silex_for_strings rootless_paths in 
-   let the_diff = diff_veiler changed_paths in    
-     (cs5,the_diff) 
-   );;
+let cs4=Coma_state_field.set_directories cs3 new_dirs in 
+let cs5=Coma_state_field.set_preq_types cs4 new_preqt in 
+cs5 ;;
 
 
 let refresh cs = 
@@ -255,7 +244,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
       )
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
-  let (cs9,_)=recompile (cs8,[]) in 
+  let cs9=recompile (cs8,[]) in 
   cs9;;
 
 let rename_subdirectory cs old_subdir new_subdir=
@@ -400,9 +389,8 @@ module And_backup = struct
 
 
       let recompile cs opt_comment=
-         let (cs2,diff)=Physical_followed_by_internal.recompile cs  in 
-         let _=Private.backup cs2 diff opt_comment in 
-         cs2;; 
+         let cs2=Physical_followed_by_internal.recompile cs  in 
+         Coma_state.reflect_latest_changes_in_github cs2 opt_comment ;; 
 
       (* No backup during refresh *)   
 
@@ -431,7 +419,7 @@ module And_backup = struct
          Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
       let rename_string_or_value cs old_sov new_sov=
-         let (cs2,diff)=After_checking.rename_string_or_value cs old_sov new_sov  in 
+         let cs2=After_checking.rename_string_or_value cs old_sov new_sov  in 
          let msg="rename "^old_sov^" as "^new_sov in 
          Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
 
