@@ -79,8 +79,7 @@ let remove_files fw rootless_paths=
          not(List.mem path rootless_paths)
       ) (fw.Fw_wrapper_t.noncompilable_files)  
    } in 
-   let lines = Image.image Dfn_rootless.to_line rootless_paths in 
-   Fw_wrapper_field.reflect_destructions_in_diff fw2 lines ;;
+   Fw_wrapper_field.reflect_destructions_in_diff fw2 rootless_paths ;;
 
 
 
@@ -114,8 +113,7 @@ let register_rootless_paths fw rootless_paths=
         (fw.Fw_wrapper_t.noncompilable_files)@
          (Image.image (recompute_all_info fw) nc_paths)  
     }  in 
-    let lines = Image.image Dfn_rootless.to_line rootless_paths in  
-    (Fw_wrapper_field.reflect_creations_in_diff fw2 lines,(c_paths,nc_paths));;
+    (Fw_wrapper_field.reflect_creations_in_diff fw2 rootless_paths,(c_paths,nc_paths));;
 
 let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
@@ -128,7 +126,6 @@ let relocate_compilable_files_to fw rootless_paths new_subdir=
     let reps = Image.image (fun path->
       (path,Dfn_rootless.relocate_to path new_subdir)
     ) rootless_paths in 
-    let lines = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) reps in 
     let fw2 = {
       fw with 
       Fw_wrapper_t.compilable_files = Image.image (fun pair->
@@ -139,7 +136,7 @@ let relocate_compilable_files_to fw rootless_paths new_subdir=
          else pair
       ) (fw.Fw_wrapper_t.compilable_files)  
    } in 
-   Fw_wrapper_field.reflect_replacements_in_diff fw2 lines ;;
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 reps ;;
 
 let relocate_module_to fw mod_name new_subdir=
    let the_files = Option.filter_and_unpack (
@@ -229,13 +226,12 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
         let _=Unix_command.hardcore_uc cmd in 
     let (c_files,c_reps)   =  helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.compilable_files) 
     and (nc_files,nc_reps) =  helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_wrapper_t.noncompilable_files) in    
-    let lines = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) (c_reps@nc_reps) in 
    let fw2 = {
       fw with
       Fw_wrapper_t.compilable_files = c_files  ;
       Fw_wrapper_t.noncompilable_files = nc_files  ;
    } in 
-   Fw_wrapper_field.reflect_replacements_in_diff fw2 lines;;   
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 (c_reps@nc_reps);;   
 
 let helper1_during_inspection fw accu pair=
    let (rootless_path,old_mtime)=pair in 
@@ -261,8 +257,7 @@ let inspect_and_update fw =
        Fw_wrapper_t.compilable_files         = new_c_files ;
        Fw_wrapper_t.noncompilable_files = new_nc_files ;
     }  in 
-    let lines = Image.image Dfn_rootless.to_line (changed_c_files@changed_nc_files) in 
-    let new_fw = Fw_wrapper_field.reflect_changes_in_diff fw2 lines in 
+    let new_fw = Fw_wrapper_field.reflect_changes_in_diff fw2 (changed_c_files@changed_nc_files) in 
     (new_fw,(changed_c_files,changed_nc_files));;         
 
 
@@ -295,8 +290,7 @@ let rename_module_in_filename_only fw rootlesses_to_be_renamed new_module =
       fw with 
       Fw_wrapper_t.compilable_files = new_compilable_files
    }   in 
-   let reps = Image.image (fun (a,b)->(Dfn_rootless.to_line a,Dfn_rootless.to_line b)) replacements  in 
-   Fw_wrapper_field.reflect_replacements_in_diff fw2 reps;;
+   Fw_wrapper_field.reflect_replacements_in_diff fw2 replacements;;
     
 let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
   let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
@@ -317,7 +311,7 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
       fw with 
       Fw_wrapper_t.compilable_files = new_compilable_files
    }    in 
-   Fw_wrapper_field.reflect_changes_in_diff fw2 (Image.image Dfn_rootless.to_line files_to_be_rewritten)
+   Fw_wrapper_field.reflect_changes_in_diff fw2 files_to_be_rewritten
     ;;
       
 let rename_module_in_special_files fw (old_module,new_module) =
@@ -345,8 +339,7 @@ let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_
    fw3;;
 
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
-   let changed_ones=ref[] 
-   and changed_lines=ref[] in 
+   let changed_ones=ref[]  in 
    let new_l=Image.image (
       fun pair ->
         let (rootless,mtime)=pair in 
@@ -357,25 +350,23 @@ let replace_string_in_list_of_pairs fw (replacee,replacer) l=
              and s_path=Dfn_rootless.to_line rootless in 
              let file = s_root^s_path in  
              let ap=Absolute_path.of_string file in 
-             let rootless_line = Cull_string.cobeginning
-                 (String.length s_root) (Absolute_path.to_string ap) in 
              let _=(Replace_inside.replace_inside_file (replacee,replacer) ap;
-                   changed_lines:= rootless_line ::(!changed_lines) ) in 
+                   ) in 
              recompute_all_info fw rootless 
         else pair     
    ) l in 
-   (new_l,List.rev(!changed_ones),List.rev(!changed_lines));;
+   (new_l,List.rev(!changed_ones));;
 
 let replace_string fw (replacee,replacer) =
    let rep = replace_string_in_list_of_pairs fw (replacee,replacer)  in 
-   let (new_c_files,changed_c_files,changed_c_lines) =  rep fw.Fw_wrapper_t.compilable_files 
-   and (new_nc_files,changed_nc_files,changed_nc_lines) =  rep fw.Fw_wrapper_t.noncompilable_files in 
+   let (new_c_files,changed_c_files) =  rep fw.Fw_wrapper_t.compilable_files 
+   and (new_nc_files,changed_nc_files) =  rep fw.Fw_wrapper_t.noncompilable_files in 
    let fw2 ={
        fw with
        Fw_wrapper_t.compilable_files = new_c_files;
        noncompilable_files = new_nc_files;
    } in 
-   let fw3 = Fw_wrapper_field.reflect_changes_in_diff fw2 (changed_c_lines @ changed_nc_lines) in 
+   let fw3 = Fw_wrapper_field.reflect_changes_in_diff fw2 (changed_c_files @ changed_nc_files) in 
    (fw3,(changed_c_files,changed_nc_files));;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
@@ -384,17 +375,9 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
       preceding_files replacee (Overwriter.of_string pre_replacer) path in 
     let rootless = Dfn_common.decompose_absolute_path_using_root path (Fw_wrapper_field.root fw)  in 
     let fw2= update_some_files fw ([rootless],[]) in 
-    let (fw3,(changed_w_files,changed_sw_files))=replace_string fw2 (replacee,replacer) in 
-    let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) in 
-    let new_lines =Image.image (
-       fun rl-> 
-         let s_path=Dfn_rootless.to_line rootless in 
-         let ap = Absolute_path.of_string (s_root^s_path) in  
-         Cull_string.cobeginning
-                 (String.length s_root) (Absolute_path.to_string ap)
-    ) (rootless::(changed_w_files@changed_sw_files)) in 
-    let fw4 =  Fw_wrapper_field.reflect_changes_in_diff fw3 new_lines in         
-    (fw4,(rootless::changed_w_files,changed_sw_files));;
+    let (fw3,(changed_c_files,changed_nc_files))=replace_string fw2 (replacee,replacer) in 
+    let fw4 =  Fw_wrapper_field.reflect_changes_in_diff fw3 (rootless::(changed_c_files@changed_nc_files)) in         
+    (fw4,(rootless::changed_c_files,changed_nc_files));;
 
 
 let nonspecial_absolute_paths fw= 

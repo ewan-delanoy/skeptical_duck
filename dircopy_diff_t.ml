@@ -5,9 +5,8 @@
 *)
 
 type t={
-   recently_deleted : string list;
-   recently_changed : string list;
-   recently_created : string list;
+   recently_deleted : Dfn_rootless_t.t list;
+   recently_changed : Dfn_rootless_t.t list;
+   recently_created : Dfn_rootless_t.t list;
 };;
-
 

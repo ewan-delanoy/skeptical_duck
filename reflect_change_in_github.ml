@@ -10,7 +10,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
    then ([],[])
    else 
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
-   let created_ones=Dircopy_diff.recently_created diff in
+   let created_ones=Image.image Dfn_rootless.to_line (Dircopy_diff.recently_created diff) in
    let temp2=Option.filter_and_unpack
    (fun fn->
      if String.contains fn '/'
@@ -24,7 +24,7 @@ let commands_for_backup (source_dir,destination_dir) diff=
       fun fn->
       "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
    ) created_ones in
-   let changed_ones=Dircopy_diff.recently_changed diff in
+   let changed_ones=Image.image Dfn_rootless.to_line (Dircopy_diff.recently_changed diff) in
    let temp5=Image.image(
       fun fn->
       "cp "^s_source^fn^" "^s_destination^fn
@@ -34,7 +34,8 @@ let commands_for_backup (source_dir,destination_dir) diff=
       "git add "^fn
    ) (created_ones@changed_ones) in
    let temp7=Image.image(
-      fun fn->
+      fun rl->
+      let fn = Dfn_rootless.to_line rl in 
       "git rm "^fn
    ) (Dircopy_diff.recently_deleted diff) in
    (temp3@temp4@temp5,temp6@temp7);;

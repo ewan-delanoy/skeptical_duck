@@ -9,10 +9,12 @@ let compute_deleted_in_diff sourcedir destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
    let temp1=More_unix.quick_beheaded_complete_ls s_destdir in
-   List.filter(
-       fun s->(s<>"README")
+   Option.filter_and_unpack(
+       fun s->if (s<>"README")
               &&(not(Supstring.begins_with s ".git/")) 
               &&(not(Sys.file_exists(s_sourcedir^s)))
+              then Some(Dfn_rootless.of_line s)
+              else None
    ) temp1;;
    
 let compute_nondeleted_in_diff (sourcedir,l) destdir=
@@ -34,15 +36,15 @@ let compute_nondeleted_in_diff (sourcedir,l) destdir=
    	    then changed_accu:=s::(!changed_accu)
    	    )
    ) l in
-   (Recently_created.of_string_list (!created_accu),
-    Recently_changed.of_string_list (!changed_accu));;   
+   (Image.image Dfn_rootless.of_line (!created_accu),
+    Image.image Dfn_rootless.of_line (!changed_accu));;   
    
   
 let compute_diff (sourcedir,l) destdir=
    let (created,changed)=compute_nondeleted_in_diff (sourcedir,l) destdir in
    Dircopy_diff.constructor
    
-   	(Recently_deleted.of_string_list(compute_deleted_in_diff sourcedir destdir))
+   	(compute_deleted_in_diff sourcedir destdir)
    	changed
    	created
    ;;
@@ -92,7 +94,8 @@ let commands_for_update (source_dir,destination_dir) diff=
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Dircopy_diff.recently_created diff  in
    let temp2=Option.filter_and_unpack
-   (fun fn->
+   (fun rl->
+     let fn = Dfn_rootless.to_line rl in 
      if String.contains fn '/'
      then let dn=Cull_string.before_rightmost fn '/' in
           Some("mkdir -p "^s_destination^dn)
@@ -102,16 +105,19 @@ let commands_for_update (source_dir,destination_dir) diff=
    let temp3=Ordered.sort Total_ordering.silex_for_strings temp2 in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
    let temp4=Image.image(
-      fun fn->
+      fun rl->
+     let fn = Dfn_rootless.to_line rl in 
       "cp "^s_source^fn^" "^s_destination^(Cull_string.before_rightmost fn '/')
    ) created_ones in
    let changed_ones=Dircopy_diff.recently_changed diff in
    let temp5=Image.image(
-      fun fn->
+      fun rl->
+     let fn = Dfn_rootless.to_line rl in 
       "cp "^s_source^fn^" "^s_destination^fn
    ) changed_ones in
    let temp7=Image.image(
-      fun fn->
+      fun rl->
+     let fn = Dfn_rootless.to_line rl in 
       "rm "^s_destination^fn
    ) (Dircopy_diff.recently_deleted diff) in
    (temp3@temp4@temp5@temp7);;  

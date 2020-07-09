@@ -42,6 +42,16 @@ let is_admissible data s=
   )
   ;;
 
+let filter_according_to_admissibility data l_rl=
+   Option.filter_and_unpack (
+    fun rl -> 
+    let s = Dfn_rootless.to_line rl in 
+    if is_admissible data s 
+    then Some s 
+    else None
+   ) l_rl;; 
+  
+
 let check data root_dir=
   let name_of_clone_directory = data.Dircopy_checker_t.name_of_clone_directroy in 
   let i=(
@@ -63,8 +73,8 @@ let check data root_dir=
   let diff=Prepare_dircopy_update.compute_restricted_diff
      root_dir remotedir (Coma_constant.git_ignored_subdirectories,
         data.Dircopy_checker_t.ignored_special_files ) in
-  let rc1=List.filter (is_admissible data) (Dircopy_diff.recently_deleted diff)
-  and rc2=List.filter (is_admissible data) (Dircopy_diff.recently_changed diff)
-  and rc3=List.filter (is_admissible data) (Dircopy_diff.recently_created diff) in
+  let rc1=filter_according_to_admissibility  data (Dircopy_diff.recently_deleted diff)
+  and rc2=filter_according_to_admissibility  data (Dircopy_diff.recently_changed diff)
+  and rc3=filter_according_to_admissibility  data (Dircopy_diff.recently_created diff) in
   (rc1,rc2,rc3);;
           
