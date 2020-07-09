@@ -5,8 +5,7 @@
 
 *)
 
-
-let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
+module Private = struct 
 
 let of_concrete_object crobj =
    let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
@@ -15,6 +14,31 @@ let of_concrete_object crobj =
       Dfa_module.of_concrete_object arg2,
       Dfa_ending.of_concrete_object arg3
    );;
+
+let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
+   Concrete_object_t.Variant("Dfn_"^"rootless.J",
+     [
+        
+        Dfa_subdirectory.to_concrete_object s;
+        Dfa_module.to_concrete_object m;
+        Dfa_ending.to_concrete_object e;
+     ]
+   ) ;;
+
+end ;; 
+
+
+let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
+
+let list_of_concrete_object crobj=
+   Concrete_object_field.to_list Private.of_concrete_object crobj
+;;
+
+let list_to_concrete_object l=
+   Concrete_object_field.of_list Private.to_concrete_object l;;
+
+
+let of_concrete_object = Private.of_concrete_object ;;
 
 let of_line line = Dfn_common.string_to_rootless line;;
 
@@ -31,6 +55,8 @@ let soak (old_subdir,new_subdir) (Dfn_rootless_t.J(s,m,e)) =
    Some(new_s)->Some(Dfn_rootless_t.J(new_s,m,e))
    |None -> None ;;
 
+let to_concrete_object = Private.to_concrete_object ;;
+
 let to_ending (Dfn_rootless_t.J(s,m,e))=e;;
 
 let to_line (Dfn_rootless_t.J(s,m,e))=
@@ -46,13 +72,5 @@ let to_subdirectory (Dfn_rootless_t.J(s,m,e))=s;;
 
 
 
-let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
-   Concrete_object_t.Variant("Dfn_"^"rootless.J",
-     [
-        
-        Dfa_subdirectory.to_concrete_object s;
-        Dfa_module.to_concrete_object m;
-        Dfa_ending.to_concrete_object e;
-     ]
-   ) ;;
+
     
