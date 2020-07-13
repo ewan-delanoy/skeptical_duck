@@ -25,6 +25,7 @@ let build_subdir=      Dfa_subdirectory.of_line "_build";;
 let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
 let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
+let hex_gitign_subdir= Dfa_subdirectory.of_line "Compilation_management";;
 
 
 let bare_name_for_makefile="makefile";;
@@ -32,6 +33,8 @@ let bare_name_for_merlinfile=".merlin";;
 let name_for_debugged_module="debugged";;  
 
 let short_path_for_debugged_file= Dfn_short.of_line(name_for_debugged_module^".ml");; 
+let short_path_for_hex_config_sheet= Dfn_short.of_line("hex_config_sheet.txt");; 
+let short_path_for_hex_latest_game= Dfn_short.of_line("hex_latest_game.txt");; 
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_ocamldebug_printersfile= Dfn_short.of_line"cmos_for_ocamldebug.txt";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
@@ -40,6 +43,10 @@ let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
 
 let rootless_path_for_debugged_file= Dfn_join.subdirectory_to (Dfa_subdirectory.of_line "") short_path_for_debugged_file;; 
+let rootless_path_for_hex_config_sheet=
+  Dfn_join.subdirectory_to  hex_gitign_subdir short_path_for_hex_config_sheet;;
+let rootless_path_for_hex_latest_game=
+  Dfn_join.subdirectory_to  hex_gitign_subdir short_path_for_hex_latest_game;;  
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_loadingsfile;;
 let rootless_path_for_ocamldebug_printersfile=
@@ -102,9 +109,11 @@ let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugg
 
 let conventional_files_other_than_ocamlinit = 
    [
-    rootless_path_for_printersfile, text_for_printersfile ; 
+     rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
+     rootless_path_for_hex_config_sheet, "";
+     rootless_path_for_hex_latest_game, "";
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
    ] ;;     
 
