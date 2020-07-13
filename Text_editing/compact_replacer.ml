@@ -20,8 +20,10 @@ let parse descr =
 let replace_inside_string (Compact_replacer_t.CR(l)) old_text =
    Replace_inside.replace_several_inside_string l old_text ;;
 
-let replace_inside_file (Compact_replacer_t.CR(l)) fn =
-   Replace_inside.replace_several_inside_file l fn ;;
+let replace_inside_file cr fn =
+    let s1=Io.read_whole_file fn in
+    let s2=replace_inside_string cr s1  in
+    Io.overwrite_with fn s2;; 
    
 let execute s=
    let temp1 = Str.split (Str.regexp "[ \t]+") s in 
