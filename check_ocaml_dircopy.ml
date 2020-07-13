@@ -27,7 +27,7 @@ let instance ={
   
 let check = Dircopy_checker.check instance ;;
 
-(*
+
 exception Failure_in_clone_directory_creation;;
 exception Failure_during_github_cloning;;
 
@@ -37,20 +37,12 @@ let is_admissible data rl=
   ) Dfa_ending.endings_for_readable_files)
   &&
    (List.for_all (
-     fun beg->not(Supstring.begins_with s beg)
-  ) (
-    (Image.image Dfa_subdirectory.connectable_to_subpath
-      data.Fw_configuration_t.ignored_subdirectories
-    )
-    )
-   )  
+     fun sd->not(Dfn_rootless.is_in rl sd)
+  ) data.Fw_configuration_t.ignored_subdirectories
+  )  
   &&
   (
-    not(
-    List.mem s
-    (Image.image Dfn_rootless.to_line 
-      data.Fw_configuration_t.ignored_files)
-    )
+    not(List.mem rl data.Fw_configuration_t.ignored_files)
   )
   ;;
 
@@ -58,16 +50,16 @@ let filter_according_to_admissibility data l_rl=
    Option.filter_and_unpack (
     fun rl -> 
     let s = Dfn_rootless.to_line rl in 
-    if is_admissible data s 
+    if is_admissible data rl
     then Some s 
     else None
    ) l_rl;; 
   
 
-
+(*
 
 let check data root_dir=
-  let name_of_clone_directory = data.Dircopy_checker_t.name_of_clone_directroy in 
+  let name_of_clone_directory = Fw_constant.clone_download_location in 
   let i=(
     if Sys.file_exists(name_of_clone_directory)
     then Unix_command.uc("rm -rf "^name_of_clone_directory) 
