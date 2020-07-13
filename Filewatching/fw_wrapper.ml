@@ -404,8 +404,8 @@ let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
 end;;
 
 
-let constructor (root_dir,backup_dir,g_after_b)= {
-   Fw_wrapper_t.configuration = Fw_configuration.constructor(root_dir,backup_dir,g_after_b);
+let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files)= {
+   Fw_wrapper_t.configuration = Fw_configuration.constructor(root_dir,backup_dir,g_after_b,git_url,secret_files);
    compilable_files = [];
    noncompilable_files = [];
    last_noticed_changes = Dircopy_diff.empty_one;

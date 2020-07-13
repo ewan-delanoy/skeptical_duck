@@ -24,6 +24,8 @@ let configuration cs=(frontier_with_unix_world cs).Fw_wrapper_t.configuration;;
 let root cs= Fw_configuration.root (configuration cs);;
 let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
 let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
+let github_url cs=(configuration cs).Fw_configuration_t.github_url;;
+let confidential_files cs=(configuration cs).Fw_configuration_t.confidential_files;;
 
 
 let subdir_at_module cs mn=
@@ -192,9 +194,9 @@ let modify_all_needed_dirs cs f =
 
 
 
-let empty_one x y b=
+let empty_one root_dir backup_dir g_after_b git_url secret_files=
     to_t({
-     Coma_state_t.frontier_with_unix_world= Fw_wrapper.constructor (x,y,b);
+     Coma_state_t.frontier_with_unix_world= Fw_wrapper.constructor (root_dir,backup_dir,g_after_b,git_url,secret_files);
      modules = [];
      subdir_for_module = [] ;
      principal_ending_for_module = [] ;

@@ -3,6 +3,8 @@
 #use"Makefile_makers/coma_big_constant.ml";;
 *)
 
+let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
+
 module This_World=struct
 
 let root=Dfa_root.of_line "/Users/ewandelanoy/Teuliou/OCaml/Ordinary";;

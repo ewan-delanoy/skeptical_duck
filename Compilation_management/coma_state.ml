@@ -4,10 +4,13 @@
 
 (* Inherited values *)
 
+
 let frontier_with_unix_world = Coma_state_field.frontier_with_unix_world;;
 let root =Coma_state_field.root;;
 let backup_dir =Coma_state_field.backup_dir;;
 let gitpush_after_backup =Coma_state_field.gitpush_after_backup;;
+let github_url =Coma_state_field.github_url;;
+let confidential_files =Coma_state_field.confidential_files;;
 
 
 let subdir_at_module = Coma_state_field.subdir_at_module ;;

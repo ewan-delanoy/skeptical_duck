@@ -14,6 +14,7 @@ let text_for_big_constants_file_in_next_world =
     "\n(* "; 
     "#use\"Compilation_management/coma_big_constant.ml\""^ds;
    "*)\n"; 
+   "let github_url = \""^(Coma_big_constant.github_url)^"\""^ds;
    "module This_World=struct\n";
    "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.root)^"\""^ds;
    "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\""^ds;
@@ -104,7 +105,8 @@ end ;;
 
 
 let cwc cs opt_selection=
-    let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple in 
+    let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple 
+    and url=Coma_big_constant.github_url in 
     let conv_files = (
       match opt_selection with 
       None -> Coma_constant.conventional_files_with_usual_content
@@ -119,7 +121,7 @@ let cwc cs opt_selection=
         Private.rootlesses_to_be_copied cs opt_selection in 
     let _=Image.image Unix_command.uc 
      (Private.commands_for_copying cs (compilables@noncompilables)) in
-    let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab) in 
+    let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab,url,[]) in 
     let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompilables) in  
     let faraway_fw = Fw_wrapper.overwrite_nonspecial_file_if_it_exists faraway_fw1 
                    Coma_constant.rootless_path_for_parametersfile 
