@@ -135,8 +135,6 @@ let endings_for_cleaning  = [
     Dfa_ending.mly, Dfa_ending.ml
 ];;
 
-let reserved_terminations = ["executable"];;
-
 let git_ignored_files = [rootless_path_for_debugged_file];;
 
     
