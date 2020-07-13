@@ -57,7 +57,7 @@ let filter_according_to_admissibility data l_rl=
    ) l_rl;; 
   
 
-let check data root_dir=
+let check data =
   let name_of_clone_directory = Fw_constant.clone_download_location in 
   let i=(
     if Sys.file_exists(name_of_clone_directory)
@@ -77,6 +77,7 @@ let check data root_dir=
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
+  let root_dir = data.Fw_configuration_t.root in 
   let diff=Prepare_dircopy_update.compute_restricted_diff
      root_dir remotedir (data.Fw_configuration_t.ignored_subdirectories,
         (Image.image Dfn_rootless.to_line data.Fw_configuration_t.ignored_files) ) in
