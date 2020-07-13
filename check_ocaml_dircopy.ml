@@ -78,7 +78,7 @@ let check data root_dir=
   then raise(Failure_during_github_cloning)
   else 
   let diff=Prepare_dircopy_update.compute_restricted_diff
-     root_dir remotedir (Coma_constant.git_ignored_subdirectories,
+     root_dir remotedir (data.Fw_configuration_t.ignored_subdirectories,
         (Image.image Dfn_rootless.to_line data.Fw_configuration_t.ignored_files) ) in
   let rc1=filter_according_to_admissibility  data (Dircopy_diff.recently_deleted diff)
   and rc2=filter_according_to_admissibility  data (Dircopy_diff.recently_changed diff)
