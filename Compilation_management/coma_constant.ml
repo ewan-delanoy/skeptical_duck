@@ -79,12 +79,13 @@ let git_ignored_subdirectories =
   [
      automatically_generated_subdir;
      abandoned_ideas_subdir;
-     temporary_subdir;
-     githubbed_archive_subdir;
-     persistent_compilation_data_subdir;
      build_subdir;
      debug_build_subdir;
-     exec_build_subdir
+     exec_build_subdir;
+     githubbed_archive_subdir;
+     hex_gitign_subdir;
+     persistent_compilation_data_subdir;
+     temporary_subdir;
   ];;
 
 let conventional_subdirs =
