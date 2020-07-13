@@ -25,7 +25,7 @@ let build_subdir=      Dfa_subdirectory.of_line "_build";;
 let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
 let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
-let hex_gitign_subdir= Dfa_subdirectory.of_line "Hex_analysis/Hex_Hex_gitignored_text_files";;
+let hex_gitign_subdir= Dfa_subdirectory.of_line "Hex_analysis/Hex_gitignored_text_files";;
 
 
 let bare_name_for_makefile="makefile";;
