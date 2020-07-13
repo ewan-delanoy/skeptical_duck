@@ -30,6 +30,8 @@ end ;;
 
 let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
 
+let is_in (Dfn_rootless_t.J(s,m,e)) sd = Dfa_subdirectory.begins_with s sd;;
+
 let list_of_concrete_object crobj=
    Concrete_object_field.to_list Private.of_concrete_object crobj
 ;;
