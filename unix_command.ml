@@ -26,7 +26,8 @@ let command cmd=
    then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
    else 
    if Supstring.begins_with cmd rp_prefix 
-   then let  _=Sys.chdir(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0
+   then (* let  _= Compact_replacer.execute(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0 *)
+       0
    else 
    Sys.command cmd;;
 
