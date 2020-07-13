@@ -23,6 +23,14 @@ let replace_inside_string (Compact_replacer_t.CR(l)) old_text =
 let replace_inside_file (Compact_replacer_t.CR(l)) fn =
    Replace_inside.replace_several_inside_file l fn ;;
    
+let execute s=
+   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
+   let temp2 = Image.image Absolute_path.of_string  temp1 in 
+   let replacements = Io.read_whole_file (List.nth temp2 0) 
+   and recipient = (List.nth temp2 1) in 
+   replace_inside_file 
+     (parse replacements) recipient ;;
+
 (*
 
 let z1 =  Compact_replacer_t.CR(["abc","def";"12","34"]) ;;  

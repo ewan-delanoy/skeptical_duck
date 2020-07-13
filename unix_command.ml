@@ -13,16 +13,22 @@ exception Command_failed_just_now ;;
 module Private = struct
 
 let prefix_for_changing_directories = "cd ";;
+let prefix_for_replacing_patterns   = "rp ";;
 
 let accu=ref([]:string list);;
 let remember_commands_mode=ref(false);;
 let hardcore_mode=ref(false);;
 
 let command cmd=
-   let cd_prefix =prefix_for_changing_directories in 
+   let cd_prefix =prefix_for_changing_directories 
+   and rp_prefix =prefix_for_replacing_patterns in 
    if Supstring.begins_with cmd cd_prefix 
    then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
-   else Sys.command cmd;;
+   else 
+   if Supstring.begins_with cmd rp_prefix 
+   then let  _=Sys.chdir(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0
+   else 
+   Sys.command cmd;;
 
 
 let mild_uc s=
