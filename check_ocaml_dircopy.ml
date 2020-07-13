@@ -6,6 +6,7 @@ Usable on a github clone of the remote master version.
 
 *)
 
+(*
 let instance ={
     Dircopy_checker_t.ignored_endings = 
      ["depend";"ocamlinit";"cmi";"cmo";"DS_Store";"txt";"php";"js";
@@ -26,7 +27,7 @@ let instance ={
 };;
   
 let check = Dircopy_checker.check instance ;;
-
+*)
 
 exception Failure_in_clone_directory_creation;;
 exception Failure_during_github_cloning;;
@@ -56,8 +57,6 @@ let filter_according_to_admissibility data l_rl=
    ) l_rl;; 
   
 
-(*
-
 let check data root_dir=
   let name_of_clone_directory = Fw_constant.clone_download_location in 
   let i=(
@@ -71,17 +70,18 @@ let check data root_dir=
   let _=Unix_command.uc("mkdir -p "^name_of_clone_directory) in
   let remotedir=Dfa_root.of_line name_of_clone_directory in
   let full_clone_command=
-   (data.Dircopy_checker_t.clone_command)^name_of_clone_directory in 
+    "git clone "^
+    (data.Fw_configuration_t.github_url)^" "^
+    name_of_clone_directory in 
   let j=Unix_command.uc full_clone_command in
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
   let diff=Prepare_dircopy_update.compute_restricted_diff
      root_dir remotedir (Coma_constant.git_ignored_subdirectories,
-        data.Dircopy_checker_t.ignored_special_files ) in
+        (Image.image Dfn_rootless.to_line data.Fw_configuration_t.ignored_files) ) in
   let rc1=filter_according_to_admissibility  data (Dircopy_diff.recently_deleted diff)
   and rc2=filter_according_to_admissibility  data (Dircopy_diff.recently_changed diff)
   and rc3=filter_according_to_admissibility  data (Dircopy_diff.recently_created diff) in
   (rc1,rc2,rc3);;
           
-*)
