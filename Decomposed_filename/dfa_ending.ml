@@ -46,7 +46,7 @@ let endings_for_compilable_files =
    (all_ocaml_endings) @ all_cee_endings ;;
 
 let endings_for_noncompilable_readable_files = 
-     Image.image (fun s->Dfa_ending_t.E s) ["txt";"html";"php";"js";"ejs"];; 
+     Image.image (fun s->Dfa_ending_t.E s) ["txt";"html";"php";"js";"ejs";"json"];; 
 
 let endings_for_readable_files = 
      endings_for_compilable_files @ endings_for_noncompilable_readable_files ;;
