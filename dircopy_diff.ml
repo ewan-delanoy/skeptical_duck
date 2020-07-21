@@ -4,28 +4,6 @@
 
 *)
 
-
-let recently_deleted x=x.Dircopy_diff_t.recently_deleted;;
-let recently_created x=x.Dircopy_diff_t.recently_created;;
-let recently_changed x=x.Dircopy_diff_t.recently_changed;;
-
-let constructor a b c={
-   Dircopy_diff_t.recently_deleted =a;
-   Dircopy_diff_t.recently_changed =b;
-   Dircopy_diff_t.recently_created =c;
-};;
-
-let display x=
-   let tempf=(fun msg l->
-   "\n"::msg::(Image.image(fun w->"\t\t"^(Dfn_rootless.to_line w)) l)
-   ) in
-   let temp1=tempf "Deleted : " (x.Dircopy_diff_t.recently_deleted)
-   and temp2=tempf "Created : " (x.Dircopy_diff_t.recently_created)
-   and temp3=tempf "Changed : " (x.Dircopy_diff_t.recently_changed) in
-   let temp4=String.concat "\n" (temp1@temp2@temp3) in
-   (print_string temp4;
-    flush stdout);;
-
 module Private=struct
 
 let summarize_rootless_path rl=
@@ -61,13 +39,36 @@ let to_concrete_object dirdiff=
    ]  in
    Concrete_object_t.Record items;;
 
+let is_empty x=
+  (x.Dircopy_diff_t.recently_deleted,x.Dircopy_diff_t.recently_created,x.Dircopy_diff_t.recently_changed)=
+   ([],[],[]);; 
+
+let to_string x=
+   if is_empty x then "{}" else 
+   let tempf=(fun msg l->
+   "\n"::msg::(Image.image(fun w->"\t\t"^(Dfn_rootless.to_line w)) l)
+   ) in
+   let temp1=tempf "Deleted : " (x.Dircopy_diff_t.recently_deleted)
+   and temp2=tempf "Created : " (x.Dircopy_diff_t.recently_created)
+   and temp3=tempf "Changed : " (x.Dircopy_diff_t.recently_changed) in
+   String.concat "\n" (temp1@temp2@temp3) ;;
+
 end;;
+
+
 
 let add_changes diff l= 
   {
       diff with 
       Dircopy_diff_t.recently_changed = (diff.Dircopy_diff_t.recently_changed)@ l;
    };; 
+
+let constructor a b c={
+   Dircopy_diff_t.recently_deleted =a;
+   Dircopy_diff_t.recently_changed =b;
+   Dircopy_diff_t.recently_created =c;
+};;
+
 
 let create diff created_ones= 
   {
@@ -89,6 +90,7 @@ let empty_one  =
       recently_created = [];
    };; 
 
+
 let explain x=
    let tempf=(fun (msg,l)->
      if l=[]
@@ -106,11 +108,21 @@ let explain x=
    let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
    String.concat " " temp2;; 
    
-let is_empty x=
-  (x.Dircopy_diff_t.recently_deleted,x.Dircopy_diff_t.recently_created,x.Dircopy_diff_t.recently_changed)=
-   ([],[],[]);;   
-   
+
+
+let is_empty = Private.is_empty ;;
+
 let of_concrete_object = Private.of_concrete_object ;;
+
+let print_out (fmt:Format.formatter) x=
+   Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
+
+
+let recently_deleted x=x.Dircopy_diff_t.recently_deleted;;
+let recently_created x=x.Dircopy_diff_t.recently_created;;
+let recently_changed x=x.Dircopy_diff_t.recently_changed;;
+
+
 
 let replace diff replacements= 
    let l_deleted = Image.image fst replacements 
