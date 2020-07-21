@@ -17,14 +17,7 @@ let first_init config =
               _->None 
    ) list1 in
    let list3 = 
-   List.filter (fun rootless->
-         (not(List.mem rootless config.Fw_configuration_t.ignored_files)) 
-         &&
-         (List.mem
-          (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_readable_files)
-         &&
-         (not(Supstring.contains (Dfn_rootless.to_line rootless) indicator_for_git_ignoring)) 
-       ) list2 in 
+   List.filter (Fw_configuration.test_for_admissibility config) list2 in 
    List.partition (
       fun rootless -> List.mem
           (Dfn_rootless.to_ending rootless) Dfa_ending.endings_for_compilable_files
