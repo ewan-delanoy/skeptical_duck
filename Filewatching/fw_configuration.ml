@@ -59,4 +59,18 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) =
       confidential_files = secret_files;
     };; 
 
+let test_for_admissibility data rl=
+  (List.mem (
+    (Dfn_rootless.to_ending rl)
+  ) Dfa_ending.endings_for_readable_files)
+  &&
+   (List.for_all (
+     fun sd->not(Dfn_rootless.is_in rl sd)
+  ) data.Fw_configuration_t.ignored_subdirectories
+  )  
+  &&
+  (
+    not(List.mem rl data.Fw_configuration_t.ignored_files)
+  )
+  ;;
 
