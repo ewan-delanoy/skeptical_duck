@@ -380,7 +380,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     (fw4,(rootless::changed_c_files,changed_nc_files));;
 
 
-let nonspecial_absolute_paths fw= 
+let compilable_absolute_paths fw= 
    let root = Fw_wrapper_field.root fw in 
    Image.image (
      fun (rootless,_)-> 
@@ -389,7 +389,7 @@ let nonspecial_absolute_paths fw=
         )
    ) fw.Fw_wrapper_t.compilable_files;;
    
-let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
+let overwrite_compilable_file_if_it_exists fw rootless new_content =
    let root = Fw_wrapper_field.root fw in 
    if List.exists ( fun (r,_)->r=rootless ) fw.Fw_wrapper_t.compilable_files 
    then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
@@ -404,8 +404,8 @@ let overwrite_nonspecial_file_if_it_exists fw rootless new_content =
 end;;
 
 
-let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files)= {
-   Fw_wrapper_t.configuration = Fw_configuration.constructor(root_dir,backup_dir,g_after_b,git_url,secret_files);
+let constructor config= {
+   Fw_wrapper_t.configuration = config;
    compilable_files = [];
    noncompilable_files = [];
    last_noticed_changes = Dircopy_diff.empty_one;
@@ -415,9 +415,9 @@ let forget_modules = Private.forget_modules;;
 
 let inspect_and_update = Private.inspect_and_update;;
 
-let compilable_absolute_paths = Private.nonspecial_absolute_paths;;
+let compilable_absolute_paths = Private.compilable_absolute_paths;;
 
-let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_if_it_exists;;
+let overwrite_nonspecial_file_if_it_exists = Private.overwrite_compilable_file_if_it_exists;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_wrapper_t.configuration in 
