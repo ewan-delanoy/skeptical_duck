@@ -421,11 +421,7 @@ let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_i
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_wrapper_t.configuration in 
-   let _= Reflect_change_in_github.backup 
-     (config.Fw_configuration_t.root,
-      config.Fw_configuration_t.dir_for_backup,
-      config.Fw_configuration_t.gitpush_after_backup) 
-       fw.Fw_wrapper_t.last_noticed_changes opt_msg in 
+   let _= Reflect_change_in_github.backup config fw.Fw_wrapper_t.last_noticed_changes opt_msg in 
    {fw with Fw_wrapper_t.last_noticed_changes = Dircopy_diff.empty_one} ;; 
 
 
