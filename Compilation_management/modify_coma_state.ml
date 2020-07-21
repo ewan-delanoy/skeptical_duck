@@ -161,7 +161,7 @@ cs5 ;;
 let refresh cs = 
         let dir =Coma_state_field.root cs  in 
         let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
-        let temp1=Fw_wrapper.nonspecial_absolute_paths fw1 in
+        let temp1=Fw_wrapper.compilable_absolute_paths fw1 in
         let temp2=Coma_state.Target_system_creation.clean_list_of_files dir temp1 in
         let temp3=Coma_state.Target_system_creation.compute_dependencies temp2 in
         let (failures,cs1)=Coma_state.Target_system_creation.from_prepared_list cs temp3 in

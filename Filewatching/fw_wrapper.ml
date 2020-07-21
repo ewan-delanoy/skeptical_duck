@@ -415,7 +415,7 @@ let forget_modules = Private.forget_modules;;
 
 let inspect_and_update = Private.inspect_and_update;;
 
-let nonspecial_absolute_paths = Private.nonspecial_absolute_paths;;
+let compilable_absolute_paths = Private.nonspecial_absolute_paths;;
 
 let overwrite_nonspecial_file_if_it_exists = Private.overwrite_nonspecial_file_if_it_exists;;
 
