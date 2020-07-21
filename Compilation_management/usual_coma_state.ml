@@ -19,7 +19,8 @@ let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) m
 let add_printer_equipped_type mn=
    let old_cs=(!(Private.main_ref)) in 
    let new_cs=Coma_state.add_printer_equipped_type old_cs (mn,true) in 
-   Private.main_ref := new_cs ;;
+   (Private.main_ref := new_cs ;
+    Save_coma_state.save new_cs);;
 
 let all_modules ()=Coma_state.all_modules (!(Private.main_ref)) ;; 
 
