@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-let indicator_for_git_ignoring = "_gitignored_"
+let indicator_for_git_ignoring = "_gitignored_" ;;
 
 let first_init config =
    let the_root = config.Fw_configuration_t.root in 
