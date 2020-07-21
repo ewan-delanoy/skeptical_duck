@@ -417,7 +417,7 @@ let inspect_and_update = Private.inspect_and_update;;
 
 let compilable_absolute_paths = Private.compilable_absolute_paths;;
 
-let overwrite_nonspecial_file_if_it_exists = Private.overwrite_compilable_file_if_it_exists;;
+let overwrite_compilable_file_if_it_exists = Private.overwrite_compilable_file_if_it_exists;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_wrapper_t.configuration in 

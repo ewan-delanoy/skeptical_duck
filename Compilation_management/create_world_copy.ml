@@ -123,7 +123,7 @@ let cwc cs opt_selection=
      (Private.commands_for_copying cs (compilables@noncompilables)) in
     let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab,url,[]) in 
     let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompilables) in  
-    let faraway_fw = Fw_wrapper.overwrite_nonspecial_file_if_it_exists faraway_fw1 
+    let faraway_fw = Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
                    Coma_constant.rootless_path_for_parametersfile 
                      Private.text_for_big_constants_file_in_next_world in 
     let restricted_cs=(match opt_selection with 
