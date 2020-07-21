@@ -10,33 +10,15 @@ Usable on a github clone of the remote master version.
 exception Failure_in_clone_directory_creation;;
 exception Failure_during_github_cloning;;
 
-let is_admissible data rl=
-  (List.mem (
-    (Dfn_rootless.to_ending rl)
-  ) Dfa_ending.endings_for_readable_files)
-  &&
-   (List.for_all (
-     fun sd->not(Dfn_rootless.is_in rl sd)
-  ) data.Fw_configuration_t.ignored_subdirectories
-  )  
-  &&
-  (
-    not(List.mem rl data.Fw_configuration_t.ignored_files)
-  )
-  ;;
-
 
 let filter_diff_according_to_admissibility data diff=
-   let filter_list = List.filter (is_admissible data) in 
+   let filter_list = List.filter (Fw_configuration.test_for_admissibility data) in 
    {
     Dircopy_diff_t.recently_deleted = filter_list diff.Dircopy_diff_t.recently_deleted;
     Dircopy_diff_t.recently_changed = filter_list diff.Dircopy_diff_t.recently_changed;
     Dircopy_diff_t.recently_created = filter_list diff.Dircopy_diff_t.recently_created;
   };;
 
-   
-   
-  
 
 let check data =
   let name_of_clone_directory = Fw_constant.clone_download_location in 
