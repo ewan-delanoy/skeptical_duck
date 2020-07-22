@@ -16,6 +16,7 @@ let ignored_subdirectories_label  = salt ^ "ignored_subdirectories";;
 let ignored_files_label           = salt ^ "ignored_files";;
 let github_url_label              = salt ^ "github_url";;
 let confidential_files_label      = salt ^ "confidential_files";;
+let is_modularized_label          = salt ^ "is_modularized";;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
@@ -27,6 +28,7 @@ let of_concrete_object ccrt_obj =
       ignored_files = Concrete_object_field.to_list Dfn_rootless.of_concrete_object (g ignored_files_label);
       github_url = Concrete_object_field.unwrap_string (g github_url_label);
       confidential_files = Dfn_rootless.pair_list_of_concrete_object (g confidential_files_label);
+      is_modularized = Concrete_object_field.to_bool (g is_modularized_label);
    };; 
 
 let to_concrete_object config=
@@ -39,6 +41,7 @@ let to_concrete_object config=
     ignored_files_label, Concrete_object_field.of_list Dfn_rootless.to_concrete_object config.Fw_configuration_t.ignored_files;
     github_url_label, Concrete_object_field.wrap_string config.Fw_configuration_t.github_url;
     confidential_files_label, Dfn_rootless.pair_list_to_concrete_object config.Fw_configuration_t.confidential_files;
+    is_modularized_label, Concrete_object_field.of_bool  config.Fw_configuration_t.is_modularized;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -48,7 +51,7 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) = 
+let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files,is_mdized) = 
     {
       Fw_configuration_t.root = root_dir;
       dir_for_backup = backup_dir ;
@@ -57,6 +60,7 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) =
       ignored_files = Coma_constant.git_ignored_files;
       github_url = git_url;
       confidential_files = secret_files;
+      is_modularized = is_mdized;
     };; 
 
 let test_for_admissibility data rl=

@@ -11,7 +11,8 @@ module Private = struct
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple 
   and url=Coma_big_constant.github_url in 
-  ref(Coma_state_field.empty_one root backup_dir githubbing url []);;
+  let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[],true) in 
+  ref(Coma_state_field.empty_one  config);;
 end;;
 
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;; 

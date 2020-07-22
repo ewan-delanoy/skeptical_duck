@@ -9,7 +9,8 @@ module Private = struct
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple 
   and url=Coma_big_constant.github_url in  
-  ref(Coma_state_field.empty_one root backup_dir githubbing url []);;
+  let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[],true) in 
+  ref(Coma_state_field.empty_one  config);;
 
 let see_confidential_changes ()=
    let temp1=Coma_state.all_mlx_files (!main_ref) in 

@@ -12,4 +12,5 @@ type t ={
   ignored_files : Dfn_rootless_t.t list;
   github_url : string;
   confidential_files : ( Dfn_rootless_t.t * Dfn_rootless_t.t) list;
+  is_modularized : bool;
 };;

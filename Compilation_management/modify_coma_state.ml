@@ -24,13 +24,13 @@ let recompile cs =
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
    (new_cs,changed_compilables);;
 
-let refresh (root,backup_dir,g_after_b,git_url,secret_files) =
-    let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
+let refresh config =
+   let root = config.Fw_configuration_t.root in 
+   let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
       Coma_constant.git_ignored_subdirectories 
         Coma_constant.conventional_files_with_usual_content) in 
-   let config = Fw_configuration.constructor (root,backup_dir,g_after_b,git_url,secret_files) in 
    let fw = Fw_initialize.init config in
-   let cs0 = Coma_state_field.empty_one root backup_dir g_after_b git_url secret_files in  
+   let cs0 = Coma_state_field.empty_one config in  
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
 
 let register_rootless_paths cs rps=
@@ -301,8 +301,7 @@ let recompile cs =
   Internal.recompile (cs2,changed_rootlesses);;
   
 let refresh cs =
-   let cs2=Physical.refresh 
-     (Coma_state.root cs,Coma_state.backup_dir cs,Coma_state.gitpush_after_backup cs,Coma_state.github_url cs,Coma_state.confidential_files cs)  in
+   let cs2=Physical.refresh (Coma_state_field.configuration cs)  in
    Internal.refresh cs2;;
 
 let register_rootless_paths cs rootless_paths= 
