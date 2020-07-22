@@ -197,7 +197,7 @@ let modify_all_needed_dirs cs f =
 let empty_one root_dir backup_dir g_after_b git_url secret_files=
     let config = Fw_configuration.constructor(root_dir,backup_dir,g_after_b,git_url,secret_files) in 
     to_t({
-     Coma_state_t.frontier_with_unix_world= Fw_wrapper.constructor config;
+     Coma_state_t.frontier_with_unix_world= Fw_wrapper.empty_one config;
      modules = [];
      subdir_for_module = [] ;
      principal_ending_for_module = [] ;

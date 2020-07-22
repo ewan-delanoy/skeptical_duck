@@ -404,7 +404,7 @@ let overwrite_compilable_file_if_it_exists fw rootless new_content =
 end;;
 
 
-let constructor config= {
+let empty_one config= {
    Fw_wrapper_t.configuration = config;
    compilable_files = [];
    noncompilable_files = [];
