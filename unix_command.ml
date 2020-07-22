@@ -12,8 +12,9 @@ exception Command_failed_just_now ;;
 
 module Private = struct
 
-let prefix_for_changing_directories = "cd ";;
-let prefix_for_replacing_patterns   = "rp ";;
+let prefix_for_changing_directories         = "cd ";;
+let prefix_for_replacing_patterns           = "rp ";;
+let prefix_for_reverse_replacing_patterns   = "rvp ";;
 
 let accu=ref([]:string list);;
 let remember_commands_mode=ref(false);;
@@ -21,12 +22,16 @@ let hardcore_mode=ref(false);;
 
 let command cmd=
    let cd_prefix =prefix_for_changing_directories 
-   and rp_prefix =prefix_for_replacing_patterns in 
+   and rp_prefix =prefix_for_replacing_patterns 
+   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
    if Supstring.begins_with cmd cd_prefix 
    then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
    else 
    if Supstring.begins_with cmd rp_prefix 
    then let  _= Compact_replacer.execute(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
+   else 
+   if Supstring.begins_with cmd rvp_prefix 
+   then let  _= Compact_replacer.reverse_execute(Cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
    else 
    Sys.command cmd;;
 
