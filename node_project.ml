@@ -22,3 +22,5 @@ let config =
       Dfa_ending_t.E "txt")];
    github_url = "https://github.com/ewan-delanoy/node_app";
    confidential_files = []} ;;
+
+let watcher_ref = ref (Fw_wrapper.empty_one config);;
