@@ -100,6 +100,8 @@ let mv full_path new_location =
    then None 
    else Some("mv "^full_path^" "^new_location);;
 
+let prefix_for_replacing_patterns           = Private.prefix_for_replacing_patterns;;
+let prefix_for_reverse_replacing_patterns   = Private.prefix_for_reverse_replacing_patterns;;
 
 
 let uc = Private.uc;;
