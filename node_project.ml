@@ -4,6 +4,8 @@
 
 *)
 
+let compact_replacer = Dfn_rootless.of_line "Confidential/compact_replacer.txt";;
+
 let config = 
  {Fw_configuration_t.root =
     Dfa_root_t.R "/Users/ewandelanoy/Teuliou/Sites/Gwerzher_Leoriou";
@@ -21,7 +23,10 @@ let config =
      Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "deizlevr",
       Dfa_ending_t.E "txt")];
    github_url = "https://github.com/ewan-delanoy/node_app";
-   confidential_files = [];
+   confidential_files = [
+     compact_replacer,
+   Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "app",
+       Dfa_ending_t.E "js")];
    is_modularized = false; } ;;
 
 let watcher_ref = ref (Fw_wrapper.empty_one config);;
