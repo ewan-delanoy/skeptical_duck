@@ -19,15 +19,15 @@ let filter_diff_according_to_admissibility data diff=
     Dircopy_diff_t.recently_created = filter_list diff.Dircopy_diff_t.recently_created;
   };;
 
-(*
-let commands_for_confidentiality config confidential_files =
+
+let commands_for_confidentiality confidential_files =
    Image.image (
      fun (replacer,replacee) ->
        let s_replacer = Dfn_rootless.to_line  replacer in 
        let s_full_path = Fw_constant.clone_download_location^"/"^(Dfn_rootless.to_line replacee) in 
        Unix_command.prefix_for_reverse_replacing_patterns^s_replacer^" "^s_full_path
    ) confidential_files ;;
-*)
+
 
 let check data =
   let name_of_clone_directory = Fw_constant.clone_download_location in 
