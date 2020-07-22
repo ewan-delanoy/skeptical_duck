@@ -49,6 +49,8 @@ let check data =
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
+  let cmds = commands_for_confidentiality data.Fw_configuration_t.confidential_files in 
+  let _= Unix_command.conditional_multiple_uc cmds in 
   let root_dir = data.Fw_configuration_t.root in 
   let diff1=Prepare_dircopy_update.compute_restricted_diff
      root_dir remotedir (data.Fw_configuration_t.ignored_subdirectories,
