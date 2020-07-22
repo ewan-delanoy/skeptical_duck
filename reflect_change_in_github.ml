@@ -72,20 +72,19 @@ let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
   ) in
   ();;
 
-let backup (source_dir,destination_dir,p_after_b) diff opt_msg=
+let backup config diff opt_msg=
   if Dircopy_diff.is_empty diff
   then (print_string "No recent changes to commit ...";flush stdout) 
   else 
   let msg=(
    match opt_msg with
-    None->Dircopy_diff.explain diff
+    None->Dircopy_diff.explain config.Fw_configuration_t.is_modularized diff
    |Some(msg0)->msg0) in
-  backup_with_message (source_dir,destination_dir,p_after_b) diff msg;;
+  backup_with_message (config.Fw_configuration_t.root,
+    config.Fw_configuration_t.dir_for_backup,
+    config.Fw_configuration_t.gitpush_after_backup) diff msg;;
   
 end ;; 
 
 let backup config diff opt_msg=
-  Private.backup 
-   (config.Fw_configuration_t.root,
-    config.Fw_configuration_t.dir_for_backup,
-    config.Fw_configuration_t.gitpush_after_backup) diff opt_msg;;
+  Private.backup config diff opt_msg;;
