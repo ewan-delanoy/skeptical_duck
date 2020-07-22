@@ -6,12 +6,14 @@
 
 module Private=struct
 
-let summarize_rootless_path rl=
-   String.capitalize_ascii(Cull_string.after_rightmost 
-   (Cull_string.before_rightmost_possibly_all (Dfn_rootless.to_line rl) '.') '/');;
+let summarize_rootless_path is_modularized rl=
+   if is_modularized
+   then String.capitalize_ascii(Cull_string.after_rightmost 
+   (Cull_string.before_rightmost_possibly_all (Dfn_rootless.to_line rl) '.') '/')
+   else Dfn_rootless.to_line rl;;
  
-let summarize_rootless_path_list l=
-    let temp1=Image.image summarize_rootless_path l in
+let summarize_rootless_path_list is_modularized l=
+    let temp1=Image.image (summarize_rootless_path is_modularized) l in
     Ordered.sort Total_ordering.silex_for_strings temp1;;
 
     
@@ -91,7 +93,7 @@ let empty_one  =
    };; 
 
 
-let explain x=
+let explain is_modularized x=
    let tempf=(fun (msg,l)->
      if l=[]
      then None
@@ -100,9 +102,9 @@ let explain x=
    let temp1=Option.filter_and_unpack tempf
    (* we use infinitives for github format *)
    [
-     "Delete",Private.summarize_rootless_path_list(x.Dircopy_diff_t.recently_deleted);
-     "Create",Private.summarize_rootless_path_list(x.Dircopy_diff_t.recently_created);
-     "Modify",Private.summarize_rootless_path_list(x.Dircopy_diff_t.recently_changed);
+     "Delete",Private.summarize_rootless_path_list is_modularized (x.Dircopy_diff_t.recently_deleted);
+     "Create",Private.summarize_rootless_path_list is_modularized (x.Dircopy_diff_t.recently_created);
+     "Modify",Private.summarize_rootless_path_list is_modularized (x.Dircopy_diff_t.recently_changed);
    ] in
    if temp1=[] then "" else
    let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
