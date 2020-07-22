@@ -21,6 +21,9 @@ let githubbed_archive_subdir=
 let persistent_compilation_data_subdir = 
    Dfa_subdirectory.of_line "Persistent_compilation_data";;
 
+let confidential_subdir =
+  Dfa_subdirectory.of_line "Confidential";;
+
 let build_subdir=      Dfa_subdirectory.of_line "_build";;
 let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
 let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
@@ -80,6 +83,7 @@ let git_ignored_subdirectories =
      automatically_generated_subdir;
      abandoned_ideas_subdir;
      build_subdir;
+     confidential_subdir;
      debug_build_subdir;
      exec_build_subdir;
      githubbed_archive_subdir;
