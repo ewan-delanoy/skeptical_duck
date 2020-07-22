@@ -7,10 +7,12 @@
 
 module Private = struct
 
-let commands_for_backup (source_dir,destination_dir) diff=
+let commands_for_backup config diff=
    if Dircopy_diff.is_empty diff
    then ([],[])
    else 
+   let source_dir = config.Fw_configuration_t.root 
+  and destination_dir = config.Fw_configuration_t.dir_for_backup in 
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Image.image Dfn_rootless.to_line (Dircopy_diff.recently_created diff) in
    let temp2=Option.filter_and_unpack
@@ -40,14 +42,22 @@ let commands_for_backup (source_dir,destination_dir) diff=
       let fn = Dfn_rootless.to_line rl in 
       "git rm "^fn
    ) (Dircopy_diff.recently_deleted diff) in
-   (temp3@temp4@temp5,temp6@temp7);;
+   let temp8= Image.image (
+     fun (replacer,replacee) ->
+       let s_replacer = Dfn_rootless.to_line  replacer 
+       and s_backup_dir = Dfa_root.connectable_to_subpath destination_dir in 
+       let s_full_path = s_backup_dir^(Dfn_rootless.to_line replacee) in 
+       Unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
+   ) config.Fw_configuration_t.confidential_files in 
+   (temp3@temp4@temp5@temp8,temp6@temp7);;
 
-let backup_with_message (source_dir,destination_dir,p_after_b) diff msg=
-  let (nongit_cmds,git_cmds)=commands_for_backup (source_dir,destination_dir)  diff in
+let backup_with_message config  diff msg=
+  let destination_dir = config.Fw_configuration_t.dir_for_backup in 
+  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
   let s_destination=Dfa_root.connectable_to_subpath destination_dir in
   let _=Image.image Unix_command.uc nongit_cmds in
   let _=(
-  if p_after_b
+  if config.Fw_configuration_t.gitpush_after_backup
   then let cwd=Sys.getcwd() in
        Image.image Unix_command.uc
        (
@@ -80,9 +90,7 @@ let backup config diff opt_msg=
    match opt_msg with
     None->Dircopy_diff.explain config.Fw_configuration_t.is_modularized diff
    |Some(msg0)->msg0) in
-  backup_with_message (config.Fw_configuration_t.root,
-    config.Fw_configuration_t.dir_for_backup,
-    config.Fw_configuration_t.gitpush_after_backup) diff msg;;
+  backup_with_message config diff msg;;
   
 end ;; 
 
