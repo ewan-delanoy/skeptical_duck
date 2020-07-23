@@ -27,7 +27,7 @@ let config =
      compact_replacer,
    Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "app",
        Dfa_ending_t.E "js")];
-   is_modularized = false; } ;;
+   } ;;
 
 let watcher_ref = ref (Fw_wrapper.empty_one config);;
 
