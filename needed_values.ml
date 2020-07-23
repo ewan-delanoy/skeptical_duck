@@ -28,6 +28,8 @@ let fg = Usual_coma_state.forget_one;;
 
 let fgs = Usual_coma_state.forget_several;;
 
+let fl = Usual_coma_state.fix_lag;;
+
 let hi = List.length ;; 
 
 let hmx = Usual_coma_state.find_endingless;;
