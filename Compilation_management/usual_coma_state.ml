@@ -44,6 +44,14 @@ let duplicate_module old_t1 old_t2=
 let find_endingless modname= 
   Coma_state.endingless_from_mildly_capitalized_module_name (!(Private.main_ref)) modname;;
 
+(*
+let fix_lag () =
+   let config = Coma_state_field.configuration (!(Private.main_ref)) in 
+   let diff = Check_ocaml_dircopy.check config in 
+   let new_cs = Coma_state.reflect_latest_changes_in_github (!(Private.main_ref)) (Some"Fix lag") in 
+   (Private.main_ref:=new_cs;Save_coma_state.save new_cs);;
+*)
+
 let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
 
 let forget_several modnames=Modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;

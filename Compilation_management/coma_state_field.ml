@@ -178,6 +178,14 @@ let set_preq_types cs v = let ccs=of_t cs in
 
 (* Adhoc setters *)
 
+let impose_last_changes cs diff =
+   let old_fw = frontier_with_unix_world cs in 
+   let new_fw = {
+       old_fw with 
+       Fw_wrapper_t.last_noticed_changes = diff 
+   } in 
+   set_frontier_with_unix_world cs new_fw ;;
+
 let modify_all_subdirs cs f =
    let ccs=of_t cs in 
    let old_subdirs = ((of_t cs).Coma_state_t.subdir_for_module) in 
