@@ -10,7 +10,7 @@ The bad scans need to be redone. Hence the reindexing.
 *)
 
 let main_dir_path =ref(
-  "/Users/ewandelanoy/Teuliou/html_files/PDF_files/"^
+  (Sys.getenv "HOME") ^"/Teuliou/html_files/PDF_files/"^
 "Captured/From_IRIS/"
 );;
 
