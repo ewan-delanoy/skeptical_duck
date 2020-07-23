@@ -138,6 +138,7 @@ let recompile (cs,changed_compilables,changed_noncompilables) =
     cs_walker:=Coma_state.set_product_up_to_date_at_module (!cs_walker) mname false;
     )
 )(Coma_state.ordered_list_of_modules cs) in
+let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
 let changed_modules=List.rev(!ref_for_changed_modules) in 
 if changed_modules=[] then (!cs_walker) else
 let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in
