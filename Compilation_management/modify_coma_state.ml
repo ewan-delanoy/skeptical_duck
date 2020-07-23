@@ -20,9 +20,9 @@ let forget_rootless_paths cs rootless_paths=
 
 
 let recompile cs =
-   let (new_fw,(changed_compilables,_))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
+   let (new_fw,(changed_compilables,changed_noncompilables))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
    let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
-   (new_cs,changed_compilables);;
+   (new_cs,changed_compilables,changed_noncompilables);;
 
 let refresh config =
    let root = config.Fw_configuration_t.root in 
@@ -116,7 +116,7 @@ let forget_rootless_paths cs rootless_paths=
    Coma_state.unregister_mlx_files cs full_paths ;; 
 
 
-let recompile (cs,changed_rootlesses) = 
+let recompile (cs,changed_compilables,changed_noncompilables) = 
    let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
    let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
@@ -127,7 +127,7 @@ let recompile (cs,changed_rootlesses) =
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
-    match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_rootlesses) mname with
+    match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_compilables) mname with
     None->()
     |Some(pr_modif_time,mli_modif_time,direct_fathers)->
     (
@@ -244,7 +244,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
       )
   )(Coma_state.follows_it cs2 old_nm) in
   let cs8=(!cs_walker) in    
-  let cs9=recompile (cs8,[]) in 
+  let cs9=recompile (cs8,[],[]) in 
   cs9;;
 
 let rename_subdirectory cs old_subdir new_subdir=
@@ -269,7 +269,7 @@ let rename_subdirectory cs old_subdir new_subdir=
    cs4;; 
 
 
-let rename_string_or_value cs = recompile (cs,[]);; 
+let rename_string_or_value cs = recompile (cs,[],[]);; 
 
 end;;
 
@@ -297,8 +297,8 @@ let forget_rootless_paths cs rootless_paths=
 
 
 let recompile cs = 
-  let (cs2,changed_rootlesses)=Physical.recompile cs  in
-  Internal.recompile (cs2,changed_rootlesses);;
+  let (cs2,changed_compilables,changed_noncompilables)=Physical.recompile cs  in
+  Internal.recompile (cs2,changed_compilables,changed_noncompilables);;
   
 let refresh cs =
    let cs2=Physical.refresh (Coma_state_field.configuration cs)  in
