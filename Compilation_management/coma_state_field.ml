@@ -178,8 +178,14 @@ let set_preq_types cs v = let ccs=of_t cs in
 
 (* Adhoc setters *)
 
+exception Impose_last_change_exn of Dircopy_diff_t.t ;;
+
 let impose_last_changes cs diff =
    let old_fw = frontier_with_unix_world cs in 
+   let old_diff = old_fw.Fw_wrapper_t.last_noticed_changes in 
+   if not(Dircopy_diff.is_empty old_diff)
+   then raise(Impose_last_change_exn(old_diff))
+   else 
    let new_fw = {
        old_fw with 
        Fw_wrapper_t.last_noticed_changes = diff 
