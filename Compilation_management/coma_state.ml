@@ -618,13 +618,25 @@ module PrivateThree=struct
       (String.concat "\n" temp1)^
       "\n\n\n"
     ;;       
-           
+
+    let message_about_changed_noncompilables changed_noncompilables=
+      let temp1=Image.image Dfn_rootless.to_line changed_noncompilables in
+      "\n\n\n"^
+      "The following noncompilables have been directly changed :\n"^
+      (String.concat "\n" temp1)^
+      "\n\n\n"
+    ;;    
+
     let announce_changed_modules changed_modules=
       if changed_modules=[]
       then ()
       else (print_string(message_about_changed_modules changed_modules);flush stdout);;
              
-    
+    let announce_changed_noncompilables changed_noncompilables=
+      if changed_noncompilables=[]
+      then ()
+      else (print_string(message_about_changed_noncompilables changed_noncompilables);flush stdout);;
+
     let put_md_list_back_in_order tolerate_cycles 
       cs initially_active_nms=
       let md_list=ordered_list_of_modules cs in
