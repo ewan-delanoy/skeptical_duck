@@ -88,7 +88,7 @@ let backup config diff opt_msg=
   else 
   let msg=(
    match opt_msg with
-    None->Dircopy_diff.explain config.Fw_configuration_t.is_modularized diff
+    None->Dircopy_diff.explain diff
    |Some(msg0)->msg0) in
   backup_with_message config diff msg;;
   
