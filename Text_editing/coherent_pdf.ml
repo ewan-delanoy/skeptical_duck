@@ -362,7 +362,7 @@ module Bare = struct
   module Walker = struct 
 
   let blank_name = "blank";;
-  let gas_factory = "/Users/ewandelanoy/Desktop/Gas_factory" ;;
+  let gas_factory = (Sys.getenv "HOME")^ "/Desktop/Gas_factory" ;;
   let walker_name_start = "walker";; 
   let walker_name_end = "_wghartnjklmiopfwhhokuuu";; 
   let walker_name = walker_name_start ^ walker_name_end;;
@@ -457,7 +457,7 @@ module Other_Tools = struct
     let registered_directories = 
       Image.image Directory_name.of_string
       [
-        "/Users/ewandelanoy/Desktop";
+        (Sys.getenv "HOME")^"/Desktop";
       ] ;; 
 
 let make_booklet_naively first_arg =   
