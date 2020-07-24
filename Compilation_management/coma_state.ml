@@ -699,7 +699,7 @@ let quick_update cs mn=
    )   
   ;;
     
-let latest_changes cs = 
+let latest_changes_in_compilables cs = 
   let ref_for_changed_modules=ref[] 
   and ref_for_changed_shortpaths=ref[] in
   let declare_changed=(fun nm->
@@ -721,7 +721,13 @@ if changed_modules=[] then [] else
 let _=PrivateThree.announce_changed_modules changed_modules in
 (!ref_for_changed_shortpaths);; 
 
+let latest_changes_in_noncompilables cs =
+   let fw = frontier_with_unix_world cs in 
+   let (_,(_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
+   Image.image Dfn_rootless.to_line changed_noncompilables;;
 
+let latest_changes cs = 
+  (latest_changes_in_compilables cs,latest_changes_in_noncompilables cs);;
 
 let printer_equipped_types_from_data cs=
   Option.filter_and_unpack (
