@@ -65,7 +65,7 @@ let springless_extensions_after_sea partial_kite last_nc =
 
 let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
     Hex_kite_element_t.Sea(last_nc) ->  springless_extensions_after_sea partial_kite last_nc 
-   | _ -> let last_island = Hex_expsv_kite_element.extract_island last_elt in 
+   | _ -> let last_island = Hex_kite_element.extract_island last_elt in 
           springless_extensions_after_island dim partial_kite last_island ;;
 
 let springless_extensions dim pk =
