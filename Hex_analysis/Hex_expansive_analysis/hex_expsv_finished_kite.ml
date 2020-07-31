@@ -107,7 +107,7 @@ let possibly_too_large_active_part  pk =
     ) prepared_l) 
     and contribution_from_islands = contribution_from_island_in_active_part pk prepared_l
     and contribution_from_springboards = Option.filter_and_unpack (
-       function (Hex_expsv_kite_element_t.Springboard(spr))-> Some(Hex_expsv_springboard.active_part spr)
+       function (Hex_kite_element_t.Springboard(spr))-> Some(Hex_expsv_springboard.active_part spr)
         | _ -> None 
    ) unprepared_l  in 
    Hex_cell_set.fold_merge 
