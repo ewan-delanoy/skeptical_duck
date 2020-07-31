@@ -51,7 +51,7 @@ let test_for_finality pk =
    match  last_elt with 
    Hex_kite_element_t.Sea(nc) -> 
       let place_of_death = place_of_death pk in 
-      Hex_expsv_named_connector.check_exit nc place_of_death 
+      Hex_named_connector.check_exit nc place_of_death 
    |_ -> (* A death would already have been detected in opt_final_death *)
          false  ;;
 
@@ -77,9 +77,9 @@ let extend_with_sea pk new_nc =
         and old_free_ones = pk.Hex_partial_kite_t.remaining_free_cells in 
         let selector =  List.filter 
               (fun (z,nc)->
-                Hex_expsv_named_connector.check_disjointness new_nc nc) 
+                Hex_named_connector.check_disjointness new_nc nc) 
         and remaining_free_ones = Hex_cell_set.setminus old_free_ones
-         (Hex_expsv_named_connector.inner_sea new_nc) in 
+         (Hex_named_connector.inner_sea new_nc) in 
      (new_elt,   
      {
          pk with 
