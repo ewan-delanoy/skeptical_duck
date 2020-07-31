@@ -57,7 +57,7 @@ let casings_from_one_step_advances dim pk cl_seas=
     let last_island = Hex_expsv_partial_kite_field.last_island pk  in 
     let close_islands = last_island :: 
          (List.flatten(Image.image (fun (z,nc)->
-           [nc.Hex_expsv_named_connector_t.entry;nc.Hex_expsv_named_connector_t.exit]) (close_future_seas pk))) in
+           [nc.Hex_named_connector_t.entry;nc.Hex_named_connector_t.exit]) (close_future_seas pk))) in
     let temp1 = Set_of_poly_pairs.fold_merge (Image.image (Hex_island.neighbors dim) close_islands)  in
     let temp2 = Hex_cell_set.safe_set(Set_of_poly_pairs.image Hex_cell.of_int_pair temp1) in  
     Hex_cell_set.intersect temp2 pk.Hex_expsv_partial_kite_t.remaining_free_cells ;;

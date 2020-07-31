@@ -13,7 +13,7 @@ type t={
    place_of_birth : Hex_island_t.t ;
    steps_so_far :  Hex_expsv_kite_element_t.t list ;
    unvisited_islands : Hex_island_t.t list;
-   unvisited_seas : (( Hex_cell_set_t.t * Hex_expsv_named_connector_t.t) list) ;
+   unvisited_seas : (( Hex_cell_set_t.t * Hex_named_connector_t.t) list) ;
    added_by_casing : Hex_cell_set_t.t ;
    investment : Hex_expsv_first_alternative_in_springboard_t.t  option;
    remaining_free_cells : Hex_cell_set_t.t ;

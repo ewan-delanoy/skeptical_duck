@@ -11,7 +11,7 @@ let remove_border_starters pk =
     let birth_side = Hex_anchor.unique_side (Hex_island.anchor (pk.Hex_expsv_partial_kite_t.place_of_birth)) in 
     let test_for_border_starter = (
         fun nc -> 
-          let entry = nc.Hex_expsv_named_connector_t.entry in 
+          let entry = nc.Hex_named_connector_t.entry in 
           let entry_anchor = Hex_island.anchor entry in 
           Hex_anchor.touches_side entry_anchor birth_side  
     ) in 

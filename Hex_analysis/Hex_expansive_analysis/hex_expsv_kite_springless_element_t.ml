@@ -6,4 +6,4 @@
 
 type t =
     Earth of Hex_island_t.t 
-   |Sea   of Hex_expsv_named_connector_t.t ;; 
+   |Sea   of Hex_named_connector_t.t ;; 
