@@ -5,5 +5,5 @@
 *)
 
 type t= 
-      Inner of  Hex_expsv_inner_connector_name_t.t 
+      Inner of  Hex_inner_connector_name_t.t 
      |Border of Hex_expsv_borderwise_t.t * Hex_border_connector_name_t.t ;;
