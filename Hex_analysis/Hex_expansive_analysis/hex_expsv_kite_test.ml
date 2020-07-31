@@ -65,7 +65,7 @@ let push_factory k =
 let shorten_factory k = 
     let old_factory = (!factory_ref) in 
     let new_factory = {old_factory with 
-       Hex_expsv_kite_factory_t.unfinished = [List.nth old_factory.Hex_expsv_kite_factory_t.unfinished (k-1)]
+       Hex_kite_factory_t.unfinished = [List.nth old_factory.Hex_kite_factory_t.unfinished (k-1)]
     } in 
     let _=(factory_ref:=new_factory) in 
     new_factory ;;
