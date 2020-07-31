@@ -77,7 +77,7 @@ let springless_extensions dim pk =
 
 let extensions_finished_and_non_finished dim partial_kite =
       let (finished1,unfinished1) = springless_extensions dim partial_kite in 
-      let finished2 = Image.image (fun (_,pk)->Hex_expsv_finished_kite.solution_details pk) finished1 
+      let finished2 = Image.image (fun (_,pk)->Hex_finished_kite.solution_details pk) finished1 
       and unfinished2 = Image.image snd unfinished1 in 
       (finished2,unfinished2);; 
 
