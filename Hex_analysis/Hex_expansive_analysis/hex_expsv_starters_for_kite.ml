@@ -38,7 +38,7 @@ let constructor end_of_battle islands side =
 
 
 let sacrificial_starter end_of_battle scr  side= 
-  let (artificial_eob,artificial_islands) = Hex_expsv_sacrifice.data_for_sacrificial_starter end_of_battle scr in 
+  let (artificial_eob,artificial_islands) = Hex_sacrifice.data_for_sacrificial_starter end_of_battle scr in 
   constructor artificial_eob artificial_islands side ;; 
 
  
@@ -52,7 +52,7 @@ let nonsacrificial_starters end_of_battle =
 
 
 let sacrificial_starters end_of_battle = 
-    let sacrifices = Hex_expsv_sacrifice.compatible_sacrifices end_of_battle in 
+    let sacrifices = Hex_sacrifice.compatible_sacrifices end_of_battle in 
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
     let base = Cartesian.product sacrifices [side1;side2] in 
     Image.image (fun (scr,side) ->

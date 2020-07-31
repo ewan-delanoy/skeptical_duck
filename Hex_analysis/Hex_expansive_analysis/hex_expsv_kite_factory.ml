@@ -71,7 +71,7 @@ let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_soluti
 let sacrificial_solutions eob=
    let temp1 = Image.image (
       fun (scr,(_,_,_,mlclr,actv))->
-         (Hex_expsv_sacrifice.reconstruct_sacrificial_solutions scr mlclr, actv)
+         (Hex_sacrifice.reconstruct_sacrificial_solutions scr mlclr, actv)
    ) (sacrificial_full_solutions eob) in 
    Ordered.sort Total_ordering.standard  temp1;;
 
