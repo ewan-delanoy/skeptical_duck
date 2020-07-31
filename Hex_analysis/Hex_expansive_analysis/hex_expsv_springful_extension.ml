@@ -54,7 +54,7 @@ let close_future_seas pk =
 
 
 let casings_from_one_step_advances dim pk cl_seas= 
-    let last_island = Hex_expsv_partial_kite_field.last_island pk  in 
+    let last_island = Hex_partial_kite_field.last_island pk  in 
     let close_islands = last_island :: 
          (List.flatten(Image.image (fun (z,nc)->
            [nc.Hex_named_connector_t.entry;nc.Hex_named_connector_t.exit]) (close_future_seas pk))) in
@@ -85,7 +85,7 @@ let data_common_to_both_parts dim pk =
 
 let light_part common_to_both = 
    Image.image (fun (cell,new_pk)->
-      (cell,Hex_kite_element.extract_island (Hex_expsv_partial_kite_field.last_stop new_pk))
+      (cell,Hex_kite_element.extract_island (Hex_partial_kite_field.last_stop new_pk))
    ) common_to_both;;
 
 let explore_yet_untried_path dim (cell,new_pk) =
@@ -103,7 +103,7 @@ let explore_yet_untried_paths dim paths =
 
 let heavy_part dim common_to_both =
    let (final_ones,nonfinal_ones) = List.partition (
-       fun (cell,new_pk) -> Hex_expsv_partial_kite_field.test_for_finality new_pk 
+       fun (cell,new_pk) -> Hex_partial_kite_field.test_for_finality new_pk 
    ) common_to_both in 
    let one_move_solutions= Image.image (fun (cell,new_pk)->
       let mlclr = Hex_expsv_finished_kite.to_molecular_linker new_pk 
@@ -128,7 +128,7 @@ let extensions_by_springboard_second_halves dim pk common_to_both fa=
   Image.image (extend_with_second_alternative dim pk) second_halves ;;
 
 let extensions_by_springboard_halves dim pk =
-   let last_stop = Hex_expsv_partial_kite_field.last_stop pk in 
+   let last_stop = Hex_partial_kite_field.last_stop pk in 
    if Hex_kite_element.opt_island_component last_stop = None 
    then []
    else 
@@ -139,7 +139,7 @@ let extensions_by_springboard_halves dim pk =
 
 let extract_solutions l=
    let (final_ones,nonfinal_ones) = List.partition (
-    Hex_expsv_partial_kite_field.test_for_finality 
+    Hex_partial_kite_field.test_for_finality 
    ) l in 
    let detailed_sols = Image.image Hex_expsv_finished_kite.solution_details  final_ones in 
    (detailed_sols,nonfinal_ones) ;;

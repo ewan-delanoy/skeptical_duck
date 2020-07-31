@@ -88,7 +88,7 @@ let deduce_boarded_islands  untrimmed_l (birth,death) =
 
 let contribution_from_island_in_active_part pk prepared_list = 
    let birth = pk.Hex_partial_kite_t.place_of_birth 
-   and death = Hex_expsv_partial_kite_field.place_of_death pk   in 
+   and death = Hex_partial_kite_field.place_of_death pk   in 
    if birth = death 
    then Hex_island.minimal_version_for_two_edged death
    else 

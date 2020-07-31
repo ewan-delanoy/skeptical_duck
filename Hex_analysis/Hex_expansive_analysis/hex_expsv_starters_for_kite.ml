@@ -33,7 +33,7 @@ let constructor end_of_battle islands side =
      fun nc -> (Hex_named_connector.missing_earth end_of_battle nc,nc)
    )  (start_base@pre_middle_base@pre_end_base) ) in            
    let free_ones = Hex_end_of_battle.remaining_free_cells end_of_battle in    
-   Hex_expsv_partial_kite_field.constructor first_island islands (full_base) free_ones ;;
+   Hex_partial_kite_field.constructor first_island islands (full_base) free_ones ;;
 
 
 

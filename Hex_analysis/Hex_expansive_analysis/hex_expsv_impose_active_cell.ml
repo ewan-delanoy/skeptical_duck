@@ -74,7 +74,7 @@ let impose_cell_by_casing dim new_cell pk=
     let old_islands = pk.Hex_partial_kite_t.unvisited_islands 
     and old_abc = pk.Hex_partial_kite_t.added_by_casing  in 
     let all_steps_so_far = pk.Hex_partial_kite_t.steps_so_far in 
-    let last_island = Hex_expsv_partial_kite_field.last_island pk in 
+    let last_island = Hex_partial_kite_field.last_island pk in 
     let no_contact = not(Hex_island.test_for_neighbor dim last_island new_cell) in 
     match all_steps_so_far with 
     [] -> if no_contact 
