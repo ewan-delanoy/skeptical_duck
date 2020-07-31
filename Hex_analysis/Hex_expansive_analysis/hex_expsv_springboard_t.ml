@@ -9,7 +9,7 @@ The last two arguments represent a (yet untried) casing.
 *)
 
 type t = Sp of   
-   Hex_expsv_first_alternative_in_springboard_t. t *  
+   Hex_first_alternative_in_springboard_t. t *  
    Hex_cell_t.t * Hex_island_t.t 
   ;; 
   
