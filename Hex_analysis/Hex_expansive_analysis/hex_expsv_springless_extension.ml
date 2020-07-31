@@ -8,40 +8,40 @@
 module Private = struct 
 
 let remove_border_starters pk = 
-    let birth_side = Hex_anchor.unique_side (Hex_island.anchor (pk.Hex_expsv_partial_kite_t.place_of_birth)) in 
+    let birth_side = Hex_anchor.unique_side (Hex_island.anchor (pk.Hex_partial_kite_t.place_of_birth)) in 
     let test_for_border_starter = (
         fun nc -> 
           let entry = nc.Hex_named_connector_t.entry in 
           let entry_anchor = Hex_island.anchor entry in 
           Hex_anchor.touches_side entry_anchor birth_side  
     ) in 
-    let old_seas = pk.Hex_expsv_partial_kite_t.unvisited_seas in 
+    let old_seas = pk.Hex_partial_kite_t.unvisited_seas in 
     let new_seas = List.filter (fun (_,nc)->not(test_for_border_starter nc)) old_seas in 
     {
-       pk with Hex_expsv_partial_kite_t.unvisited_seas = new_seas ;
+       pk with Hex_partial_kite_t.unvisited_seas = new_seas ;
     }
 
 
 let extend_with_sea_and_remove_border_starters_if_needed pk nc =
     let (elt,pk2) = Hex_expsv_partial_kite_field.extend_with_sea pk nc in 
-    if pk.Hex_expsv_partial_kite_t.steps_so_far = []
+    if pk.Hex_partial_kite_t.steps_so_far = []
     then (elt,pk2) 
     else (elt,remove_border_starters pk2) ;;
 
    
 
 let springless_extensions_after_island dim partial_kite last_island =
-   let remaining_islands = partial_kite.Hex_expsv_partial_kite_t.unvisited_islands in
+   let remaining_islands = partial_kite.Hex_partial_kite_t.unvisited_islands in
    let unchecked_islanders = Hex_expsv_named_connector.islanders dim last_island remaining_islands in 
    let islanders = Option.filter_and_unpack (
       fun nc-> 
       let impossibilities = Hex_cell_set.setminus (Hex_expsv_named_connector.inner_sea nc) 
-                           partial_kite.Hex_expsv_partial_kite_t.remaining_free_cells in 
+                           partial_kite.Hex_partial_kite_t.remaining_free_cells in 
       if impossibilities = Hex_cell_set.empty_set
       then Some(Hex_cell_set.empty_set,nc)
       else None 
    )  unchecked_islanders in  
-   let abc = partial_kite.Hex_expsv_partial_kite_t.added_by_casing in 
+   let abc = partial_kite.Hex_partial_kite_t.added_by_casing in 
    let selector  = Option.filter_and_unpack (
       fun (z,nc)->
         if (Hex_expsv_named_connector.check_entry last_island nc)
@@ -50,7 +50,7 @@ let springless_extensions_after_island dim partial_kite last_island =
         then Some (extend_with_sea_and_remove_border_starters_if_needed partial_kite nc) 
         else None   
    )   in 
-   let unclear_items = selector ((partial_kite.Hex_expsv_partial_kite_t.unvisited_seas)@islanders) in
+   let unclear_items = selector ((partial_kite.Hex_partial_kite_t.unvisited_seas)@islanders) in
    let (subtly_final,nonfinal) = List.partition (fun (_,pk2)->Hex_expsv_partial_kite_field.test_for_finality pk2) unclear_items  in 
    (subtly_final,nonfinal) ;;
 
@@ -60,7 +60,7 @@ let springless_extensions_after_sea partial_kite last_nc =
     *)
    let compatible_islands  = List.filter (
       Hex_expsv_named_connector.check_exit last_nc  
-   )  partial_kite.Hex_expsv_partial_kite_t.unvisited_islands in 
+   )  partial_kite.Hex_partial_kite_t.unvisited_islands in 
    ([],Image.image (Hex_expsv_partial_kite_field.extend_with_island partial_kite) compatible_islands);;
 
 let springless_extensions_from_last_elt dim partial_kite last_elt = match last_elt with
@@ -69,8 +69,8 @@ let springless_extensions_from_last_elt dim partial_kite last_elt = match last_e
           springless_extensions_after_island dim partial_kite last_island ;;
 
 let springless_extensions dim pk =
-   let last_elt = (match pk.Hex_expsv_partial_kite_t.steps_so_far with 
-     []->Hex_kite_element_t.Earth(pk.Hex_expsv_partial_kite_t.place_of_birth)
+   let last_elt = (match pk.Hex_partial_kite_t.steps_so_far with 
+     []->Hex_kite_element_t.Earth(pk.Hex_partial_kite_t.place_of_birth)
      |x::_-> x ) in 
    springless_extensions_from_last_elt dim pk last_elt ;;
 
