@@ -95,8 +95,8 @@ let typical_border = Hex_typical_border_connector_name.specify_side ;;
 
 let basic_doubling bw y =
   match bw with 
-   Hex_expsv_borderwise_t.From_border -> reverse y
-  |Hex_expsv_borderwise_t.To_border -> y ;;
+   Hex_borderwise_t.From_border -> reverse y
+  |Hex_borderwise_t.To_border -> y ;;
 
 
 let expand_name bw = function 

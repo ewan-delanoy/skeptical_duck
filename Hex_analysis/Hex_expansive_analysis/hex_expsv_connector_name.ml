@@ -15,13 +15,13 @@ let siders bw side =
 end ;;
 
 let enders_for_side side = 
-   Private.siders Hex_expsv_borderwise_t.To_border (Hex_cardinal_direction.oppose side);;
+   Private.siders Hex_borderwise_t.To_border (Hex_cardinal_direction.oppose side);;
 
 let middlers = Image.image (
   fun inner -> Hex_expsv_connector_name_t.Inner(inner)
 ) Hex_expsv_inner_connector_name.all;;
 
-let starters_for_side = Private.siders Hex_expsv_borderwise_t.From_border;;
+let starters_for_side = Private.siders Hex_borderwise_t.From_border;;
    
 
 let is_inner = function
