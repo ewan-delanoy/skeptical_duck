@@ -90,7 +90,7 @@ let light_part common_to_both =
 
 let explore_yet_untried_path dim (cell,new_pk) =
    let nbr_of_common_steps = List.length new_pk.Hex_partial_kite_t.steps_so_far in 
-   let temp = Hex_expsv_springless_extension.finalize dim new_pk in 
+   let temp = Hex_springless_extension.finalize dim new_pk in 
    Image.image (fun (_,fst_stop,other_stops,mlclr,actv)->
         let ttemp2 = Listennou.big_tail nbr_of_common_steps (fst_stop::other_stops) in 
         Hex_first_alternative_in_springboard_t.Fa(None,cell,Image.image Hex_kite_element.to_springless ttemp2,mlclr,actv)
@@ -145,7 +145,7 @@ let extract_solutions l=
    (detailed_sols,nonfinal_ones) ;;
 
 let extensions_finished_and_non_finished dim pk =
-   let (f1,u1) = Hex_expsv_springless_extension.extensions_finished_and_non_finished dim pk 
+   let (f1,u1) = Hex_springless_extension.extensions_finished_and_non_finished dim pk 
    and (f2,u2) = extract_solutions (extensions_by_springboard_halves dim pk) in 
    (f1@f2,u1@u2) ;;
 
