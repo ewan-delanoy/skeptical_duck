@@ -40,7 +40,7 @@ let constructor end_of_battle islands side =
 end ;; 
 
 
-let nonsacrificial_starters end_of_battle = 
+let starters end_of_battle = 
     let islands = Hex_island.decompose end_of_battle in  
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
     Image.image (Private.constructor end_of_battle islands) [side1;side2] ;;
