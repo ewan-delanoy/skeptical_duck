@@ -57,7 +57,6 @@ let is_final initial_side elt =
    None -> false 
    |Some(the_island)-> 
    (Hex_anchor.touches_side (Hex_island.anchor the_island) final_side);;
-;;
 
 
 let is_two_edged elt = match Private.opt_island_component elt with 
