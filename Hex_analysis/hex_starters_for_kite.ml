@@ -36,11 +36,6 @@ let constructor end_of_battle islands side =
    Hex_partial_kite_field.constructor first_island islands (full_base) free_ones ;;
 
 
-
-let sacrificial_starter end_of_battle scr  side= 
-  let (artificial_eob,artificial_islands) = Hex_sacrifice.data_for_sacrificial_starter end_of_battle scr in 
-  constructor artificial_eob artificial_islands side ;; 
-
  
 end ;; 
 
@@ -49,13 +44,3 @@ let nonsacrificial_starters end_of_battle =
     let islands = Hex_island.decompose end_of_battle in  
     let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
     Image.image (Private.constructor end_of_battle islands) [side1;side2] ;;
-
-
-let sacrificial_starters end_of_battle = 
-    let sacrifices = Hex_sacrifice.compatible_sacrifices end_of_battle in 
-    let (side1,side2) = Hex_cardinal_direction.sides_for_player end_of_battle.Hex_end_of_battle_t.winner in 
-    let base = Cartesian.product sacrifices [side1;side2] in 
-    Image.image (fun (scr,side) ->
-      (scr, Private.sacrificial_starter end_of_battle scr side)
-    ) base;;
-

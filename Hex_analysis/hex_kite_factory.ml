@@ -16,15 +16,6 @@ let nonsacrificial_starters eob =
       unfinished     = Hex_starters_for_kite.nonsacrificial_starters eob;
     };;    
    
-let sacrificial_starter eob pk= 
-    {
-      Hex_kite_factory_t.dimension  = eob.Hex_end_of_battle_t.dimension ;
-      winner         = eob.Hex_end_of_battle_t.winner ;
-      finished       = [] ;
-      failures       = [] ;
-      unfinished     = [pk];
-    };;      
-
 
 let pusher factory = 
    let raw_result=Image.image (
@@ -68,17 +59,7 @@ let sacrificial_full_solutions eob =
 let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
 
 
-let sacrificial_solutions eob=
-   let temp1 = Image.image (
-      fun (scr,(_,_,_,mlclr,actv))->
-         (Hex_sacrifice.reconstruct_sacrificial_solutions scr mlclr, actv)
-   ) (sacrificial_full_solutions eob) in 
-   Ordered.sort Total_ordering.standard  temp1;;
-
-let solutions eob =
-   let temp1 = nonsacrificial_solutions eob in 
-   if temp1<>[] then temp1 else 
-   sacrificial_solutions eob ;;   
+let solutions eob =nonsacrificial_solutions eob  ;;   
 
 let data_for_debugging eob =
    let temp1 = nonsacrificial_starters eob in
