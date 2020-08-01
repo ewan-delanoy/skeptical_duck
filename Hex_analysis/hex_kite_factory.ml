@@ -49,12 +49,6 @@ let extract_solutions l = Ordered.sort Total_ordering.standard
 
 let nonsacrificial_full_solutions eob = full_solutions_from_factory (nonsacrificial_starters eob);;
 
-let sacrificial_full_solutions eob = 
-   let temp1 = Hex_starters_for_kite.sacrificial_starters eob in 
-   List.flatten( Image.image (fun (seed,pk)->
-      let ttemp3 = full_solutions_from_factory (sacrificial_starter eob pk) in 
-      Image.image (fun sol->(seed,sol)) ttemp3
-   ) temp1);;  
 
 let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
 
