@@ -144,13 +144,11 @@ let extract_solutions l=
    let detailed_sols = Image.image Hex_finished_kite.solution_details  final_ones in 
    (detailed_sols,nonfinal_ones) ;;
 
-let extensions_finished_and_non_finished dim pk =
-   let (f1,u1) = Hex_springless_extension.extensions_finished_and_non_finished dim pk 
-   and (f2,u2) = extract_solutions (extensions_by_springboard_halves dim pk) in 
-   (f1@f2,u1@u2) ;;
-
 
 end ;;
 
+let extensions dim pk =
+   let (f1,u1) = Hex_springless_extension.extensions_finished_and_non_finished dim pk 
+   and (f2,u2) = Private.extract_solutions (Private.extensions_by_springboard_halves dim pk) in 
+   (f1@f2,u1@u2) ;;
 
-let extensions  =  Private.extensions_finished_and_non_finished ;; 
