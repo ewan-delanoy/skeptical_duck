@@ -6,5 +6,4 @@
 
 type t =
     Earth of Hex_island_t.t 
-   |Sea   of Hex_named_connector_t.t 
-   |Springboard of Hex_springboard_t.t ;; 
+   |Sea   of Hex_named_connector_t.t  ;; 
