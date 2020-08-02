@@ -20,7 +20,7 @@ let starters eob =
 let pusher factory = 
    let raw_result=Image.image (
          fun pk->
-         (pk,Hex_springful_extension.extensions factory.Hex_kite_factory_t.dimension pk) 
+         (pk,Hex_springless_extension.extensions_finished_and_non_finished factory.Hex_kite_factory_t.dimension pk) 
    ) factory.Hex_kite_factory_t.unfinished in  
    let (failures1,nonfailures1) = List.partition (fun (_,p)->p=([],[]) ) raw_result in 
    let new_failures = List.rev_append (Image.image fst failures1) factory.Hex_kite_factory_t.failures in 
