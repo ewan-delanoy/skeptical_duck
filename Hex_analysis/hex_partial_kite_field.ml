@@ -94,11 +94,6 @@ let winner pk =
    Hex_cardinal_direction.player_for_side birth ;; 
 
 
-let last_stop pk = 
-   match pk.Hex_partial_kite_t.steps_so_far with 
-    [] -> Hex_kite_element_t.Earth pk.Hex_partial_kite_t.place_of_birth
-   |elt::_ -> elt ;;
-
 let constructor  first_island islands seas free_ones =
         {
             Hex_partial_kite_t.place_of_birth = first_island;
@@ -115,8 +110,6 @@ end ;;
 let constructor = Private.constructor ;; 
 let extend_with_island = Private.extend_with_island ;;
 let extend_with_sea = Private.extend_with_sea ;;
-let last_island = Private.last_island ;;
-let last_stop = Private.last_stop ;;
 let place_of_death = Private.place_of_death ;;
 let test_for_finality = Private.test_for_finality ;;
 let winner = Private.winner;;
