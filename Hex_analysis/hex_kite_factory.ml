@@ -7,7 +7,7 @@
 
 module Private = struct 
 
-let nonsacrificial_starters eob = 
+let starters eob = 
     {
       Hex_kite_factory_t.dimension  = eob.Hex_end_of_battle_t.dimension ;
       winner         = eob.Hex_end_of_battle_t.winner ;
@@ -47,16 +47,14 @@ let extract_solutions l = Ordered.sort Total_ordering.standard
    (Image.image (fun (_,_,_,mlclr,actv)->(mlclr,actv))  l);;
 
 
-let nonsacrificial_full_solutions eob = full_solutions_from_factory (nonsacrificial_starters eob);;
+let full_solutions eob = full_solutions_from_factory (starters eob);;
 
 
-let nonsacrificial_solutions eob = extract_solutions (nonsacrificial_full_solutions eob);;
+let solutions eob = extract_solutions (full_solutions eob);;
 
-
-let solutions eob =nonsacrificial_solutions eob  ;;   
 
 let data_for_debugging eob =
-   let temp1 = nonsacrificial_starters eob in
+   let temp1 = starters eob in
    (temp1,snd(main temp1)) ;;
 
 end ;;
