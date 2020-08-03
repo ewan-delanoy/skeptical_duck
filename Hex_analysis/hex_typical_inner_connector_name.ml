@@ -37,7 +37,7 @@ let prepare_for_journey =
 
 let all = Image.image fst prepare_for_journey ;;
 let to_readable_string tic = 
-    let (_,_,_,_,name) = List.assoc tic prepare_for_journey in 
+    let (_,_,_,name) = List.assoc tic prepare_for_journey in 
     name ;;
 
 let upwards_version tic = 
