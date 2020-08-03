@@ -4,6 +4,8 @@
 
 *)
 
+(*
+
 module Private = struct 
 
 let persistent_data player = 
@@ -77,3 +79,5 @@ let push_factory = Private.push_factory ;;
 let shorten_factory = Private.shorten_factory ;;
 let strong_test = Private.strong_test ;;
 let weak_test = Private.weak_test ;;
+
+*)
