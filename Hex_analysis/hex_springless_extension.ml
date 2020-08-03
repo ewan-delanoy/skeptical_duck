@@ -4,7 +4,7 @@
 
 *)
 
-
+(*
 module Private = struct 
 
 let remove_border_starters pk = 
@@ -123,3 +123,4 @@ end ;;
 
 let extensions_finished_and_non_finished = Private.extensions_finished_and_non_finished ;; 
 let finalize dim pk= fst(Private.main (Private.late_starter dim pk,false));;
+*)
