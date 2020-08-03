@@ -65,7 +65,6 @@ let broken_bridge (entry,p1,p2,exit) = {
     junction = Image.image Hex_cell.to_int_pair [ p1 ; p2 ];
     exit = exit;
     apex = None ;
-    extra_active_cells = [] ;
 } ;;   
 
 let expand_name = function 
@@ -85,7 +84,6 @@ let eyed_claw d1 d2  =
     junction = ipairs;
     exit = Hex_island_t.I(Hex_anchor_t.Single_anchor(d2),Set_of_poly_pairs.empty_set);
     apex = Some(apex);
-    extra_active_cells = [];
 } ;;   
 
 
