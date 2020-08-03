@@ -31,43 +31,7 @@ let neighbors dim (Hex_island_t.I(anchor,z)) =
    let excessive_whole = Set_of_poly_pairs.merge part1 part2 in 
    Set_of_poly_pairs.setminus excessive_whole z;;  
 
-(*
-let add_sided_cell_by_casing dim (opt_side,new_cell) l =
-   let new_p = Hex_cell.to_int_pair new_cell in 
-   let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
-   let (connected,unconnected) = List.partition (
-    fun (Hex_island_t.I(anchor,z))->List.exists (fun q->
-      if Set_of_poly_pairs.mem q z then true else 
-      Hex_anchor.touches_cell dim anchor new_cell 
-    ) neighbors 
-   )  l in 
-   let old_anchors = Image.image (fun (Hex_island_t.I(anchor,_))->anchor) connected in
-   let new_anchor = Hex_anchor.merge old_anchors in 
-   let old_earths =  Image.image (fun (Hex_island_t.I(_,z))->z) connected in 
-   let new_earth = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_earths) in 
-   (Hex_island_t.I(new_anchor,new_earth),unconnected) ;;
 
-let add_nonsided_cell_by_casing dim new_cell l =
-   let new_p = Hex_cell.to_int_pair new_cell in 
-   let neighbors = Image.image Hex_cell.to_int_pair (Hex_cell.neighbors dim new_cell) in 
-   let (connected,unconnected) = List.partition (
-    fun (Hex_island_t.I(anchor,z))->List.exists (fun q->
-      if Set_of_poly_pairs.mem q z then true else 
-      Hex_anchor.touches_cell dim anchor new_cell 
-    ) neighbors 
-   )  l in 
-   let old_anchors = Image.image (fun (Hex_island_t.I(anchor,_))->anchor) connected in
-   let new_anchor = Hex_anchor.merge old_anchors in 
-   let old_earths =  Image.image (fun (Hex_island_t.I(_,z))->z) connected in 
-   let new_earth = Set_of_poly_pairs.insert new_p (Set_of_poly_pairs.fold_merge old_earths) in 
-   (Hex_island_t.I(new_anchor,new_earth))::unconnected ;;
-
-let add_several dim added_ones initial_islands =
-   let adder_for_one = (
-     fun islands_before cell -> add_nonsided_cell_by_casing dim cell islands_before
-   ) in 
-   List.fold_left adder_for_one initial_islands added_ones ;;
-*)
 end ;; 
 
 
