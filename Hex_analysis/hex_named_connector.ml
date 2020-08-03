@@ -24,7 +24,6 @@ let add_name nm cnnctr =
      junction = cnnctr.Hex_connector_t.junction ;
      exit     = cnnctr.Hex_connector_t.exit ;
      apex     = cnnctr.Hex_connector_t.apex ;
-     extra_active_cells = cnnctr.Hex_connector_t.extra_active_cells ;
    };;   
 
 let of_name nm = add_name nm (expand_name nm);; 
@@ -35,7 +34,6 @@ let forget_name nc =
      junction = nc.Hex_named_connector_t.junction ;
      exit     = nc.Hex_named_connector_t.exit ;
      apex     = nc.Hex_named_connector_t.apex ;
-     extra_active_cells = nc.Hex_named_connector_t.extra_active_cells ;
    };;   
 
 let all_translates dim nc =
