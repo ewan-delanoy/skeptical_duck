@@ -71,6 +71,7 @@ let add_several dim added_ones initial_islands =
 end ;; 
 
 (* it is assumed that the new_cell touches the side *)
+(*
 let add_and_forget_the_adding dim (side,new_cell) old_islands =
     let (current_island,islands1) = Private.add_sided_cell_by_casing dim (Some side,new_cell) old_islands in 
     let (singleton,islands2) = List.partition (fun (Hex_island_t.I(anchor,z)) -> 
@@ -90,7 +91,7 @@ let add_several_and_forget_the_adding dim added_ones old_islands =
     ) islands2 ;; 
 
 let add_sided_cell_by_casing = Private.add_sided_cell_by_casing ;;
-
+*)
 let anchor (Hex_island_t.I(a,_)) = a;; 
 
 let common_neighbors 
