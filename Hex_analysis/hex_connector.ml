@@ -17,7 +17,6 @@ let translate cnnctr (dx,dy)=
     junction = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island_t.I(anchor2,trl elts2);
     apex = Option.propagate (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.apex);
-    extra_active_cells = Image.image (fun (x,y)->(x+dx,y+dy)) (cnnctr.Hex_connector_t.extra_active_cells) ;
 
 };;
 
@@ -27,12 +26,11 @@ let all_translates formal_dim cnnctr =
    let (Hex_dimension_t.D dim) = formal_dim in 
    let (Hex_island_t.I(anchor1,elts1)) = cnnctr.Hex_connector_t.entry 
    and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit 
-   and elts3 = cnnctr.Hex_connector_t.junction 
-   and elts4 = cnnctr.Hex_connector_t.extra_active_cells in 
+   and elts3 = cnnctr.Hex_connector_t.junction  in 
    let opt1 = Hex_anchor.any_side anchor1 and opt2 = Hex_anchor.any_side anchor2 in 
    let opt = (if opt1<>None then opt1 else opt2) in 
    let base = Hex_cardinal_direction.authorized_translations formal_dim opt in 
-   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3;Set_of_poly_pairs.sort elts4] in 
+   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3] in 
    let abscissas = Set_of_poly_pairs.image fst elts 
    and ordinates = Set_of_poly_pairs.image snd elts in 
    let xmin = Min.list abscissas and xmax = Max.list abscissas 
@@ -46,9 +44,8 @@ let all_translates formal_dim cnnctr =
 let bring_to_left_upper_corner cnnctr = 
    let (Hex_island_t.I(_,elts1)) = cnnctr.Hex_connector_t.entry 
    and (Hex_island_t.I(_,elts2)) = cnnctr.Hex_connector_t.exit 
-   and elts3 = cnnctr.Hex_connector_t.junction 
-   and elts4 = cnnctr.Hex_connector_t.extra_active_cells in 
-   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3;Set_of_poly_pairs.sort elts4] in 
+   and elts3 = cnnctr.Hex_connector_t.junction in 
+   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3] in 
    let abscissas = Set_of_poly_pairs.image fst elts 
    and ordinates = Set_of_poly_pairs.image snd elts in 
    let xmin = Min.list abscissas 
@@ -66,8 +63,6 @@ let inner_earth cnnctr =
      [ 
         (Hex_island.inner_earth cnnctr.Hex_connector_t.entry);
         (Hex_island.inner_earth cnnctr.Hex_connector_t.exit);
-        (Hex_cell_set.safe_set (Image.image Hex_cell.of_int_pair
-           cnnctr.Hex_connector_t.extra_active_cells));
 
     ];;
 
@@ -79,7 +74,6 @@ let oppose dim cnnctr =
     junction =  on_pairs (cnnctr.Hex_connector_t.junction) ;
     exit = on_island (cnnctr.Hex_connector_t.exit);
     apex = Option.propagate (Hex_ipair.oppose dim) (cnnctr.Hex_connector_t.apex);
-    extra_active_cells =  on_pairs (cnnctr.Hex_connector_t.extra_active_cells) ;
 };;
 
 let reflect cnnctr = {
@@ -87,7 +81,6 @@ let reflect cnnctr = {
     junction = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.junction) ;
     exit = Hex_island.reflect (cnnctr.Hex_connector_t.exit);
     apex = Option.propagate Hex_ipair.reflect (cnnctr.Hex_connector_t.apex);
-    extra_active_cells = Image.image Hex_ipair.reflect (cnnctr.Hex_connector_t.extra_active_cells) ;
 };;
 
 let reverse cnnctr = {
@@ -115,7 +108,6 @@ let upwards_left_situated_haddock1 = {
     [ (1, 3) ; (2, 2) ;   (2, 3); (3, 1); (3, 2); (3, 3)];
     exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(4,1);(4,2)]);
     apex = None ;
-    extra_active_cells = [] ;
 } ;;   
 
 let northeast_bridge = {
@@ -123,7 +115,6 @@ let northeast_bridge = {
     junction = [(1, 2); (2, 2)];
     exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,3)]);
     apex = None ;
-    extra_active_cells = [] ;
 } ;;   
 
 let northwest_bridge = {
@@ -131,7 +122,6 @@ let northwest_bridge = {
     junction = [(1, 2); (2, 1)];
     exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,1)]);
     apex = None ;
-    extra_active_cells = [] ;
 } ;;   
 
 
