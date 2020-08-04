@@ -33,6 +33,9 @@ let insert ((co,deco,cmpr):('a,'b) parameter)
 let intersect ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Ordered.intersect cmpr (deco ox) (deco oy));;
 
+let intersects ((co,deco,cmpr):('a,'b) parameter) 
+     ox oy= Ordered.intersects cmpr (deco ox) (deco oy);;
+
 let is_included_in ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= Ordered.is_included_in cmpr (deco ox) (deco oy);;
 
