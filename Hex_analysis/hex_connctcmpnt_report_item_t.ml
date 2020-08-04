@@ -7,6 +7,5 @@
 type t= {
     opt_side : Hex_cardinal_direction_t.t option ;  
     members : Hex_cell_set_t.t ;
-    active_neighbors : Hex_cell_set_t.t ;
     passive_neighbors : Hex_cell_set_t.t ;
 };;
