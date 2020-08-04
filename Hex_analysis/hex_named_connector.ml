@@ -164,6 +164,18 @@ let missing_earth end_of_battle nc =
     (Hex_end_of_battle.assess end_of_battle cell) 
      = Hex_eob_result_t.Unoccupied ) inner_earth)  ;;
 
+let missing_pods end_of_battle nc = 
+   let selector = (fun island->
+     let inner_earth = Hex_cell_set.forget_order (Hex_island.inner_earth island) in 
+     Hex_cell_set.safe_set(List.filter (fun cell -> 
+    (Hex_end_of_battle.assess end_of_battle cell) 
+     = Hex_eob_result_t.Unoccupied ) inner_earth) 
+   ) in 
+   (
+      selector nc.Hex_named_connector_t.entry,
+      selector nc.Hex_named_connector_t.exit
+   )  ;;
+
 let of_name = Private.of_name ;;
 
 
