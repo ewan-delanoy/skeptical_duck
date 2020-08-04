@@ -91,7 +91,14 @@ let pusher (l,search_result)=
    
 let rec iterator walker =
   if snd walker = None 
-  then fst walker
+  then Hex_connctcmpnt_report_t.R( Image.image (
+          fun (opt_side,active_dwellers,_,passive_neighbors)->
+            {
+               Hex_connctcmpnt_report_item_t.opt_side =opt_side ;  
+               members = active_dwellers ;
+               passive_neighbors = passive_neighbors ;
+           }
+       ) (fst walker))
   else iterator(pusher walker);;
 
 
