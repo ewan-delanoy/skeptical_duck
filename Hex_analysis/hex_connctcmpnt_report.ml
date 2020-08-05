@@ -91,7 +91,7 @@ let pusher (l,search_result)=
    
 let rec iterator walker =
   if snd walker = None 
-  then Hex_connctcmpnt_report_t.R( Image.image (
+  then Hex_ctct_report_t.R( Image.image (
           fun (opt_side,active_dwellers,_,passive_neighbors)->
             {
                Hex_ctct_report_item_t.opt_side =opt_side ;  
