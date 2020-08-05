@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_connctcmpnt_report.ml";;
+#use"Hex_analysis/hex_ctct_report.ml";;
 
 *)
 
@@ -60,7 +60,16 @@ let join_two_opts opt1 opt2 =
    if opt2 = None then opt1 else
    raise(Short_circuit);; 
 
-let pusher (l,search_result)=
+type elt_type = 
+  (Hex_cardinal_direction_t.t option * Hex_cell_set_t.t * Hex_cell_set_t.t *
+   Hex_cell_set_t.t);;
+
+type walker_type = 
+  elt_type list *
+  (elt_type list * elt_type * elt_type list)
+  option ;;
+
+let pusher ((l,search_result):walker_type)=
   let (before,item,after) = Option.unpack search_result  in 
   let (_,_,active_neighbors0,_) = item in 
   let (touched_before,untouched_before) = List.partition (
@@ -86,7 +95,7 @@ let pusher (l,search_result)=
   let new_item = (new_opt_side,new_active_dwellers,new_active_neighbors,new_passive_neighbors) in 
   let new_l = untouched_before @ (new_item::after) in 
   let new_search_result = find_untreated_item ([],List.rev new_l) in 
-  (new_l,new_search_result);;
+  ((new_l,new_search_result):walker_type);;
 
    
 let rec iterator walker =
