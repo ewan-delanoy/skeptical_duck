@@ -24,7 +24,7 @@ let from_end_of_battle end_of_battle =
         (nc,entry_part,exit_part)
    ) base );;
  
-(*
+
 
 let select_coconnectors 
    (Hex_base_of_connectors_t.B l) item1 item2 =
@@ -45,4 +45,3 @@ let select_coconnectors
         else None   
    ) l;;
 
-*)   
