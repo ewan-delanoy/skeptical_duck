@@ -24,3 +24,25 @@ let from_end_of_battle end_of_battle =
         (nc,entry_part,exit_part)
    ) base );;
  
+(*
+
+let select_coconnectors 
+   (Hex_base_of_connectors_t.B l) item1 item2 =
+   let island1 = Hex_ctct_report_item.to_island item1 
+   and island2 = Hex_ctct_report_item.to_island item2 in  
+   Option.filter_and_unpack (
+      fun (nc,needed_in_entry,needed_in_exit) -> 
+        if (
+            ((Hex_cell_set.length needed_in_entry)=0)
+            &&
+            ((Hex_cell_set.length needed_in_exit)=0)
+            && 
+            (Hex_named_connector.check_entry island1 nc)
+            && 
+            (Hex_named_connector.check_exit nc island2) 
+           )
+        then Some nc
+        else None   
+   ) l;;
+
+*)   
