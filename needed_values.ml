@@ -80,3 +80,6 @@ let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;
 let ucs=Usual_coma_state.main_ref;;   
 
 let vfm modname =Usual_coma_state.list_values_from_module_in_modulesystem modname ;;
+
+
+let vg fgame = Hex_ascii_grid.visualize(Hex_ascii_grid.of_finished_game fgame);;
