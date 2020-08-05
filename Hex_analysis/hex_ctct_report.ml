@@ -73,8 +73,9 @@ let pusher ((l,search_result):walker_type)=
   let (before,item,after) = Option.unpack search_result  in 
   let (_,_,active_neighbors0,_) = item in 
   let (touched_before,untouched_before) = List.partition (
-      fun (_,active_cells,_,_) ->  
-        Hex_cell_set.intersects active_cells active_neighbors0 
+      fun (_,active_dwellers1,active_neighbors1,_) ->  
+        (Hex_cell_set.intersects active_neighbors0 active_dwellers1)||
+        (Hex_cell_set.intersects active_neighbors0 active_neighbors1) 
   ) before in 
   let all_touched_ones = item::touched_before in 
   let ref_for_opt_side = ref None
