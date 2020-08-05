@@ -4,4 +4,4 @@
 
 *)
 
-type t= R of Hex_connctcmpnt_report_item_t.t list;;
+type t= R of Hex_ctct_report_item_t.t list;;
