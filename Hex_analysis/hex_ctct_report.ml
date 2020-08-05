@@ -95,7 +95,7 @@ let rec iterator walker =
           fun (opt_side,active_dwellers,_,passive_neighbors)->
             {
                Hex_ctct_report_item_t.opt_side =opt_side ;  
-               members = active_dwellers ;
+               active_dwellers = active_dwellers ;
                passive_neighbors = passive_neighbors ;
            }
        ) (fst walker))
