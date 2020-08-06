@@ -95,7 +95,7 @@ let pusher ((l,search_result):walker_type)=
   and new_passive_neighbors = (!ref_for_passive_neighbors) in 
   let new_item = (new_opt_side,new_active_dwellers,new_active_neighbors,new_passive_neighbors) in 
   let new_l = before @ (new_item::untouched_after) in 
-  let new_search_result = find_untreated_item ([],List.rev new_l) in 
+  let new_search_result = find_untreated_item ([],new_l) in 
   ((new_l,new_search_result):walker_type);;
 
    
@@ -114,7 +114,7 @@ let rec iterator walker =
 
 let main eob =
    let l=initialize eob in 
-   let search_result = find_untreated_item ([],List.rev l) in 
+   let search_result = find_untreated_item ([],l) in 
    iterator (l,search_result);;
 
 end ;; 
