@@ -53,7 +53,7 @@ let rec find_untreated_item (already_looked_up,to_be_looked_up) =
      let (opt_side,active_dwellers,active_neighbors,passive_neighbors) = item in 
       if Hex_cell_set.length active_neighbors = 0
       then find_untreated_item (item::already_looked_up,other_items) 
-      else Some(List.rev other_items,item,already_looked_up);;
+      else Some(List.rev already_looked_up,item,other_items);;
  
 let join_two_opts opt1 opt2 =
    if opt1 = None then opt2 else 
@@ -72,12 +72,12 @@ type walker_type =
 let pusher ((l,search_result):walker_type)=
   let (before,item,after) = Option.unpack search_result  in 
   let (_,_,active_neighbors0,_) = item in 
-  let (touched_before,untouched_before) = List.partition (
+  let (touched_after,untouched_after) = List.partition (
       fun (_,active_dwellers1,active_neighbors1,_) ->  
         (Hex_cell_set.intersects active_neighbors0 active_dwellers1)||
         (Hex_cell_set.intersects active_neighbors0 active_neighbors1) 
-  ) before in 
-  let all_touched_ones = item::touched_before in 
+  ) after in 
+  let all_touched_ones = item::touched_after in 
   let ref_for_opt_side = ref None
   and ref_for_active_dwellers = ref (Hex_cell_set.empty_set)
   and ref_for_active_neighbors = ref (Hex_cell_set.empty_set)
@@ -94,7 +94,7 @@ let pusher ((l,search_result):walker_type)=
   let new_active_neighbors = Hex_cell_set.setminus (!ref_for_active_neighbors) new_active_dwellers 
   and new_passive_neighbors = (!ref_for_passive_neighbors) in 
   let new_item = (new_opt_side,new_active_dwellers,new_active_neighbors,new_passive_neighbors) in 
-  let new_l = untouched_before @ (new_item::after) in 
+  let new_l = before @ (new_item::untouched_after) in 
   let new_search_result = find_untreated_item ([],List.rev new_l) in 
   ((new_l,new_search_result):walker_type);;
 
