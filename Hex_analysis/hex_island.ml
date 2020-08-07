@@ -84,6 +84,7 @@ let inner_earth (Hex_island_t.I(_,z))=
 let is_included_in 
   (Hex_island_t.I(anchor1,z1)) 
     (Hex_island_t.I(anchor2,z2)) = 
+     (Hex_anchor.is_included_in anchor1 anchor2) &&
      (Set_of_poly_pairs.is_included_in z1 z2) ;;
 
 let is_two_edged (Hex_island_t.I(anchor,z)) = Hex_anchor.is_two_edged anchor ;; 
