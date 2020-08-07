@@ -34,12 +34,23 @@ let to_list = function
     |Single_anchor (d) -> [d]
     |Double_anchor (d1,d2) -> [d1;d2] ;;
 
+let contains_side anchor side = match anchor with 
+     Hex_anchor_t.No_anchor -> false
+    |Single_anchor (d) -> d=side
+    |Double_anchor (d1,d2) -> (d1=side) || (d2=side) ;;
+
 end ;;
 
 let any_side = function 
      Hex_anchor_t.No_anchor -> None
     |Single_anchor (d) -> Some d 
     |Double_anchor (d1,d2) -> Some d1 ;;
+
+let is_included_in anchor1 anchor2 = match anchor1 with 
+     Hex_anchor_t.No_anchor -> true
+    |Single_anchor (d) ->  Private.contains_side anchor2 d
+    |Double_anchor (d1,d2) -> (Private.contains_side anchor2 d1)&&
+                              (Private.contains_side anchor2 d2) ;;
 
 
 let is_two_edged = function 
