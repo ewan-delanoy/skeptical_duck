@@ -17,9 +17,14 @@ let first_draft fgame =
    let temp1 = Uple.list_of_pairs indexed_l in 
    (Image.image (
      fun ((i,item1),(j,item2))->
+        let common = Hex_ctct_report_item.adjusted_common_neighbors formal_dim item1 item2 
+        and connectors1 = Hex_base_of_connectors.select_coconnectors base item1 item2 in 
+        let connectors = List.filter (
+            fun nc->(Hex_named_connector.inner_sea nc)<> common 
+        ) connectors1 in  
        ((i,j),
-        (Hex_ctct_report_item.adjusted_common_neighbors formal_dim item1 item2,
-         Hex_base_of_connectors.select_coconnectors base item1 item2))
+        (common,
+         connectors))
    ) temp1);;
 
 let verify_item_in_draft item = 
