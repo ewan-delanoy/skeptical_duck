@@ -34,7 +34,6 @@ let verify_item_in_draft item =
     if (n1 > 0) && (n2 > 0)
               then Some("Both neighbors and connectors",item) else
     if n1 > 2 then Some("More than two neighbors",item) else 
-    if n2 > 1 then Some("More than one connector",item) else 
     None ;;
 
 let verify_indexed_game (game_idx,fgame) = 
@@ -47,3 +46,27 @@ let verify_indexed_game (game_idx,fgame) =
 let verify_games fgames=
    let indexed_games = Ennig.index_everything fgames in 
    List.flatten(Option.filter_and_unpack verify_indexed_game indexed_games);;
+
+let support (pair,(b,ncs)) =
+   if (Hex_cell_set.length b) >0 then b else 
+   Hex_named_connector.inner_sea (List.hd ncs);;
+
+let check_disjointness_on_draft l=
+   let temp1 = Image.image (fun triple->
+      (triple,support triple)
+   ) l in 
+   let temp2 = Uple.list_of_pairs temp1 in 
+   List.filter (fun ((triple1,z1),(triple2,z2))->Hex_cell_set.intersects z1 z2) temp2;; 
+
+let check_disjointness_on_indexed_game (game_idx,fgame) = 
+   let draft = first_draft fgame in 
+   let problems = check_disjointness_on_draft draft in 
+   if problems = []
+   then None 
+   else Some (Image.image (fun (a,b)->(game_idx,a,b)) problems) ;;
+
+let check_disjointness_on_games fgames=
+   let indexed_games = Ennig.index_everything fgames in 
+   List.flatten(Option.filter_and_unpack check_disjointness_on_indexed_game indexed_games);;   
+
+
