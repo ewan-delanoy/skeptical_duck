@@ -47,14 +47,14 @@ let verify_games fgames=
    let indexed_games = Ennig.index_everything fgames in 
    List.flatten(Option.filter_and_unpack verify_indexed_game indexed_games);;
 
-let support (pair,(b,ncs)) =
-   if (Hex_cell_set.length b) >0 then b else 
-   Hex_named_connector.inner_sea (List.hd ncs);;
+let expand triple = 
+   let (pair,(b,ncs)) = triple in 
+   if (Hex_cell_set.length b) >0 then Some(triple,b) else 
+   if ncs = [] then None else
+   Some(triple,Hex_named_connector.inner_sea (List.hd ncs));;
 
 let check_disjointness_on_draft l=
-   let temp1 = Image.image (fun triple->
-      (triple,support triple)
-   ) l in 
+   let temp1 = Option.filter_and_unpack expand l in 
    let temp2 = Uple.list_of_pairs temp1 in 
    List.filter (fun ((triple1,z1),(triple2,z2))->Hex_cell_set.intersects z1 z2) temp2;; 
 
