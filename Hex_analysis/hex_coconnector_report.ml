@@ -49,6 +49,8 @@ let analize_game fgame =
     ref_for_drafts := draft :: (!ref_for_drafts);
    );;
 
+let analize_games games = List.iter analize_game (List.rev games);;
+
 let verify_item_in_draft item = 
     let ((i,j),(neighbors,connectors)) = item in 
     let n1 = Hex_cell_set.length neighbors 
