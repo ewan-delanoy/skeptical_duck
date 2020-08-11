@@ -1,7 +1,5 @@
 (* 
-
 #use"Hex_analysis/hex_coconnector_report.ml";;
-
 *) 
 
 module Private = struct
@@ -74,7 +72,7 @@ let verify_all_drafts ()=
 
 let expand triple = 
    let (pair,(b,ncs)) = triple in 
-   if (Hex_cell_set.length b) >0 then Some(triple,b) else 
+   if (Hex_cell_set.length b) >1 then Some(triple,b) else 
    if ncs = [] then None else
    Some(triple,Hex_named_connector.inner_sea (List.hd ncs));;
 
@@ -100,4 +98,3 @@ let analize_games = Private.analize_games;;
 let check_disjointness_on_all_drafts = Private.check_disjointness_on_all_drafts ;; 
 let reset_all = Private.reset_all ;; 
 let verify_all_drafts = Private.verify_all_drafts;;
-
