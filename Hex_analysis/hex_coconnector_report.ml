@@ -4,6 +4,7 @@
 
 *) 
 
+module Private = struct
 
 let draft_from_previous_items eob base report = 
    let formal_dim = eob.Hex_end_of_battle_t.dimension  
@@ -92,4 +93,11 @@ let check_disjointness_on_all_drafts ()=
    let indexed_drafts = Ennig.index_everything (!ref_for_drafts) in 
    List.flatten(Option.filter_and_unpack check_disjointness_on_indexed_draft indexed_drafts);;
 
+end ;;
+
+
+let analize_games = Private.analize_games;;
+let check_disjointness_on_all_drafts = Private.check_disjointness_on_all_drafts ;; 
+let reset_all = Private.reset_all ;; 
+let verify_all_drafts = Private.verify_all_drafts;;
 
