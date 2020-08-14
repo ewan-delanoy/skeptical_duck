@@ -29,7 +29,13 @@ let setminus x y= Functor_for_sets.setminus tr x y;;
 
 (* End of directly set-related methods *)
 
-
+let allowed_range_for_translation formal_dim (Hex_cell_set_t.S(l)) =
+  let temp1 = Image.image (Hex_cell.allowed_range_for_translation formal_dim) l in 
+  let global_xmin = Max.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->xmin) temp1)
+  and global_xmax = Min.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->xmax) temp1)
+  and global_ymin = Max.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->ymin) temp1)
+  and global_ymax = Min.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->ymax) temp1) in 
+  ((global_xmin,global_xmax),(global_ymin,global_ymax));;
 
 let  apply_condition opt_condition cell_set=match opt_condition with 
    None -> cell_set 
