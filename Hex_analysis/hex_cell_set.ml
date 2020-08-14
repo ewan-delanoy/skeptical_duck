@@ -52,6 +52,10 @@ let length_first_cmp =
 
 
 let min (Hex_cell_set_t.S(l))=List.hd l;;     
+
+let of_int_pair_list l=
+   safe_set (Image.image Hex_cell.of_int_pair l);;
+
 let optional_min (Hex_cell_set_t.S(l))=match l with []->None |a::b->Some(a);;
 
 let seek_nondisjoint_parts l=
