@@ -26,6 +26,9 @@ end;;
 
 let abscissa (Hex_cell_t.C(i,j))=i;;
 
+let allowed_range_for_translation (Hex_dimension_t.D dim)  (Hex_cell_t.C(i,j))=
+   ((1-i,dim-i),(1-j,dim-j));;
+
 let cmp=((fun (Hex_cell_t.C(i1,j1)) (Hex_cell_t.C(i2,j2)) ->
    (Total_ordering.product 
      Total_ordering.standard Total_ordering.standard)
