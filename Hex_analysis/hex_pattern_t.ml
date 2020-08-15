@@ -4,7 +4,4 @@
 
 *)
 
-type t= {
-    passive : Hex_cell_set_t.t ; 
-    active  : Hex_cell_set_t.t ;
-};;
+type t= Pat of ((int*int)*bool) list;;
