@@ -26,8 +26,16 @@ end;;
 
 let abscissa (Hex_cell_t.C(i,j))=i;;
 
-let allowed_range_for_translation (Hex_dimension_t.D dim)  (Hex_cell_t.C(i,j))=
+let allowed_range_for_translation_of_cell (Hex_dimension_t.D dim)  (Hex_cell_t.C(i,j))=
    ((1-i,dim-i),(1-j,dim-j));;
+
+let allowed_range_for_translation_of_list formal_dim l =
+  let temp1 = Image.image (allowed_range_for_translation_of_cell formal_dim) l in 
+  let global_xmin = Max.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->xmin) temp1)
+  and global_xmax = Min.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->xmax) temp1)
+  and global_ymin = Max.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->ymin) temp1)
+  and global_ymax = Min.list (Image.image (fun ((xmin,xmax),(ymin,ymax))->ymax) temp1) in 
+  ((global_xmin,global_xmax),(global_ymin,global_ymax));;
 
 let cmp=((fun (Hex_cell_t.C(i1,j1)) (Hex_cell_t.C(i2,j2)) ->
    (Total_ordering.product 
