@@ -1,25 +1,11 @@
 (* 
-#use"Hex_analysis/hex_coconnector_report.ml";;
+
+#use"Hex_analysis/hex_check_report.ml";;
+
 *) 
 
 module Private = struct
 
-let draft_from_previous_items eob base report = 
-   let formal_dim = eob.Hex_end_of_battle_t.dimension  
-   and (Hex_ctct_report_t.R(l)) = report in 
-   let indexed_l = Ennig.index_everything l in 
-   let temp1 = Uple.list_of_pairs indexed_l in 
-   (Image.image (
-     fun ((i,item1),(j,item2))->
-        let common = Hex_ctct_report_item.adjusted_common_neighbors formal_dim item1 item2 
-        and connectors1 = Hex_base_of_connectors.select_coconnectors base item1 item2 in 
-        let connectors = List.filter (
-            fun nc->(Hex_named_connector.inner_sea nc)<> common 
-        ) connectors1 in  
-       ((i,j),
-        (common,
-         connectors))
-   ) temp1);;
 
 let ref_for_games = ref [];;
 let ref_for_eobs = ref [];;
@@ -39,7 +25,7 @@ let analize_game fgame =
    let eob = Hex_end_of_battle.of_finished_game fgame in 
    let report = Hex_ctct_report.about_end_of_battle eob 
    and base = Hex_base_of_connectors.from_end_of_battle eob in 
-   let draft = draft_from_previous_items eob base report in 
+   let (Hex_coconnector_report_t.R draft) = Hex_coconnector_report.draft_from_previous_items eob base report in 
    (
     ref_for_games :=fgame::(!ref_for_games);
     ref_for_eobs :=eob::(!ref_for_eobs);
