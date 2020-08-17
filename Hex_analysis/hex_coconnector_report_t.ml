@@ -4,4 +4,4 @@
 
 *)
 
-type t= R of ( (int*int) * Hex_cell_set_t.t * Hex_named_connector_t.t ) list;;
+type t= R of ( (int*int) * (Hex_cell_set_t.t * Hex_named_connector_t.t) ) list;;
