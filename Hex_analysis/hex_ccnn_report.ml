@@ -20,8 +20,7 @@ let first_draft_from_previous_items eob base ctct_report =
             fun nc->(Hex_named_connector.inner_sea nc)<> common 
         ) connectors1 in  
        ((i,j),
-        (common,
-         connectors))
+        Hex_generalized_connector.constructor common connectors)
    ) temp1);;
 
 let deduce_removabilities_from_pattern
@@ -39,7 +38,7 @@ let deduce_removabilities_from_pattern
    ) (Ennig.index_everything l_report) in  
    let relevant_coconnectors = Option.filter_and_unpack (
      fun ((i,j),result)->
-      if (result <> (Hex_cell_set.empty_set,[])) && 
+      if (Hex_generalized_connector.is_not_empty result) && 
       (List.mem pr_idx [i;j]) 
       then Some(i,j)
       else None
@@ -67,7 +66,7 @@ let second_draft_from_previous_items eob base ctct_report =
    let (Hex_ccnn_report_t.R l_draft1) = draft1 in 
    let l_draft2 = List.filter (
       fun (key,answer) ->
-         (not (List.mem key removabilities)) && (answer<>(Hex_cell_set.empty_set,[])) 
+         (not (List.mem key removabilities)) && (Hex_generalized_connector.is_not_empty answer) 
    ) l_draft1 in 
    Hex_ccnn_report_t.R l_draft2;;
 
