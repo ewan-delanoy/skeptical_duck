@@ -12,8 +12,7 @@ let neighbors (Hex_ccnn_report_t.R l) i =
    ) l ;;
   
 let initializer_for_connected_region_computation ccnn origin =
-
-   let germ = [origin,Image.image (fun (k,data)->(k,[data])) (neighbors ccnn origin)] in 
+   let germ = [origin,Image.image (fun (k,data)->(k,[[data]])) (neighbors ccnn origin)] in 
   (Set_of_integers.singleton origin,
    germ,
    germ
