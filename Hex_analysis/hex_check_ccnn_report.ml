@@ -38,13 +38,8 @@ let analize_games games = List.iter analize_game (List.rev games);;
 
 let verify_item_in_draft item = 
     let ((i,j),gc) = item in 
-    let (Hex_generalized_connector_t.G(neighbors,connectors))=gc in 
-    let n1 = Hex_cell_set.length neighbors 
-    and n2 = List.length connectors in 
-    if (n1 > 0) && (n2 > 0)
-              then Some("Both neighbors and connectors",item) else
-    if n1 > 2 then Some("More than two neighbors",item) else 
-    None ;;
+    Hex_generalized_connector.verify gc item ;;
+   
 
 let verify_indexed_draft (draft_idx,draft) = 
    
@@ -58,7 +53,7 @@ let verify_all_drafts ()=
    List.flatten(Option.filter_and_unpack verify_indexed_draft indexed_drafts);;
 
 let expand triple = 
-   let (pair,(b,ncs)) = triple in 
+   let (pair,Hex_generalized_connector_t.G(b,ncs)) = triple in 
    if (Hex_cell_set.length b) >1 then Some(triple,b) else 
    if ncs = [] then None else
    Some(triple,Hex_named_connector.inner_sea (List.hd ncs));;
