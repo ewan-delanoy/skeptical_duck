@@ -12,10 +12,10 @@ let neighbors (Hex_ccnn_report_t.R l) i =
    ) l ;;
   
 let initializer_for_connected_region_computation ccnn origin =
-   let germ = (origin,neighbors ccnn origin) in 
+   let germ = [origin,neighbors ccnn origin] in 
   (Set_of_integers.singleton origin,
-   [origin,germ],
-   [origin,germ]
+   germ,
+   germ
   );;
 
 let pusher_for_connected_region_computation ccnn
