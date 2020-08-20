@@ -37,7 +37,8 @@ let analize_game fgame =
 let analize_games games = List.iter analize_game (List.rev games);;
 
 let verify_item_in_draft item = 
-    let ((i,j),(neighbors,connectors)) = item in 
+    let ((i,j),gc) = item in 
+    let (Hex_generalized_connector_t.G(neighbors,connectors))=gc in 
     let n1 = Hex_cell_set.length neighbors 
     and n2 = List.length connectors in 
     if (n1 > 0) && (n2 > 0)
