@@ -66,7 +66,7 @@ let second_draft_from_previous_items eob base ctct_report =
    let (Hex_ccnn_report_t.R l_draft1) = draft1 in 
    let l_draft2 = List.filter (
       fun (key,answer) ->
-         (not (List.mem key removabilities)) && (Hex_generalized_connector.is_not_empty answer) 
+         (not (List.mem key removabilities)) && (Hex_generalized_connector.is_strong answer) 
    ) l_draft1 in 
    Hex_ccnn_report_t.R l_draft2;;
 
