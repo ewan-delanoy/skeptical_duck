@@ -61,18 +61,25 @@ let deduce_removabilities
     List.flatten (Image.image (deduce_removabilities_from_pattern ctct_report l_draft) occurrences);; 
 
 
-let second_draft_from_previous_items eob base ctct_report = 
+let second_predraft_from_previous_items eob base ctct_report = 
    let l_draft1 = first_draft_from_previous_items eob base ctct_report in 
    let removabilities = deduce_removabilities eob ctct_report l_draft1 in 
-   let l_draft2 = Option.filter_and_unpack (
+   List.filter (
       fun (key,answer) ->
-         if List.mem key removabilities then None else 
-         match Hex_generalized_connector.opt_constructor_in_half_checked_case answer with
-         None -> None 
-         |Some(gc) ->  Some(key,gc)
-   ) l_draft1 in 
-   Hex_ccnn_report_t.R l_draft2;;
+         (not(List.mem key removabilities)) &&
+         (Hex_generalized_connector.opt_constructor_in_half_checked_case answer <> None) 
+   ) l_draft1 ;;
+
+let second_draft_from_previous_items eob base ctct_report = 
+   let l_draft2 = second_predraft_from_previous_items eob base ctct_report  in 
+   Hex_ccnn_report_t.R (Option.filter_and_unpack(
+      fun (key,(common,connectors)) -> 
+        match Hex_generalized_connector.opt_constructor_in_half_checked_case (common,connectors) with 
+        None -> None 
+        |Some(gc)-> Some(key,gc)
+   )l_draft2);;
 
 end ;; 
 
+let predraft_from_previous_items = Private.second_predraft_from_previous_items ;; 
 let draft_from_previous_items = Private.second_draft_from_previous_items ;; 
