@@ -60,12 +60,6 @@ let deduce_removabilities
     let occurrences = Hex_pattern.occurrences_of_in pattern1 end_of_battle in 
     List.flatten (Image.image (deduce_removabilities_from_pattern ctct_report l_draft) occurrences);; 
 
-let opt_constructor (common,connectors) =
-    if   ((Hex_cell_set.length common)>1) || (connectors <> []) 
-    then Some(Hex_generalized_connector_t.G(common,connectors))
-    else None;;
-
-  
 
 let second_draft_from_previous_items eob base ctct_report = 
    let l_draft1 = first_draft_from_previous_items eob base ctct_report in 
@@ -73,7 +67,7 @@ let second_draft_from_previous_items eob base ctct_report =
    let l_draft2 = Option.filter_and_unpack (
       fun (key,answer) ->
          if List.mem key removabilities then None else 
-         match (* Hex_generalized_connector. *) opt_constructor answer with
+         match Hex_generalized_connector.opt_constructor_in_half_checked_case answer with
          None -> None 
          |Some(gc) ->  Some(key,gc)
    ) l_draft1 in 
