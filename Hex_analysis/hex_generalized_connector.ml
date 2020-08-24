@@ -7,13 +7,11 @@
 let constructor common connectors = 
    Hex_generalized_connector_t.G(common,connectors);;
 
-(*
-let is_not_empty (Hex_generalized_connector_t.G(common,connectors)) =
-      ((common,connectors) <> (Hex_cell_set.empty_set,[])) ;;
-*)
 
-let is_strong (Hex_generalized_connector_t.G(common,connectors)) =
-      ((Hex_cell_set.length common)>1) || (connectors <> []) ;;
+let opt_constructor_in_half_checked_case (common,connectors) =
+    if   ((Hex_cell_set.length common)>1) || (connectors <> []) 
+    then Some(Hex_generalized_connector_t.G(common,connectors))
+    else None;;
 
 let verify (Hex_generalized_connector_t.G(neighbors,connectors)) item= 
     let n1 = Hex_cell_set.length neighbors 
