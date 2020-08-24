@@ -12,7 +12,7 @@ let first_draft_from_previous_items eob base ctct_report =
    and (Hex_ctct_report_t.R(l)) = ctct_report in 
    let indexed_l = Ennig.index_everything l in 
    let temp1 = Uple.list_of_pairs indexed_l in 
-   Hex_ccnn_report_t.R(Image.image (
+   Image.image (
      fun ((i,item1),(j,item2))->
         let common = Hex_ctct_report_item.adjusted_common_neighbors formal_dim item1 item2 
         and connectors1 = Hex_base_of_connectors.select_coconnectors base item1 item2 in 
@@ -20,12 +20,12 @@ let first_draft_from_previous_items eob base ctct_report =
             fun nc->(Hex_named_connector.inner_sea nc)<> common 
         ) connectors1 in  
        ((i,j),
-        Hex_generalized_connector.constructor common connectors)
-   ) temp1);;
+        (common,connectors))
+   ) temp1;;
 
 let deduce_removabilities_from_pattern
    (Hex_ctct_report_t.R(l_report)) 
-    (Hex_ccnn_report_t.R draft) (Hex_pattern_t.Pat l_pat) = 
+    l_draft (Hex_pattern_t.Pat l_pat) = 
    let points = Option.filter_and_unpack (
      fun (p,is_active) -> 
       if is_active 
@@ -38,11 +38,11 @@ let deduce_removabilities_from_pattern
    ) (Ennig.index_everything l_report) in  
    let relevant_coconnectors = Option.filter_and_unpack (
      fun ((i,j),result)->
-      if (Hex_generalized_connector.is_not_empty result) && 
+      if (result <> (Hex_cell_set.empty_set,[])) && 
       (List.mem pr_idx [i;j]) 
       then Some(i,j)
       else None
-   ) draft in
+   ) l_draft in
    if (List.length relevant_coconnectors) < 3 
    then relevant_coconnectors 
    else [] ;; 
@@ -56,17 +56,26 @@ let pattern1 = Hex_pattern_t.Pat (
 );;
 
 let deduce_removabilities
-    end_of_battle ctct_report draft =
+    end_of_battle ctct_report l_draft =
     let occurrences = Hex_pattern.occurrences_of_in pattern1 end_of_battle in 
-    List.flatten (Image.image (deduce_removabilities_from_pattern ctct_report draft) occurrences);; 
+    List.flatten (Image.image (deduce_removabilities_from_pattern ctct_report l_draft) occurrences);; 
+
+let opt_constructor (common,connectors) =
+    if   ((Hex_cell_set.length common)>1) || (connectors <> []) 
+    then Some(Hex_generalized_connector_t.G(common,connectors))
+    else None;;
+
+  
 
 let second_draft_from_previous_items eob base ctct_report = 
-   let draft1 = first_draft_from_previous_items eob base ctct_report in 
-   let removabilities = deduce_removabilities eob ctct_report draft1 in 
-   let (Hex_ccnn_report_t.R l_draft1) = draft1 in 
-   let l_draft2 = List.filter (
+   let l_draft1 = first_draft_from_previous_items eob base ctct_report in 
+   let removabilities = deduce_removabilities eob ctct_report l_draft1 in 
+   let l_draft2 = Option.filter_and_unpack (
       fun (key,answer) ->
-         (not (List.mem key removabilities)) && (Hex_generalized_connector.is_strong answer) 
+         if List.mem key removabilities then None else 
+         match (* Hex_generalized_connector. *) opt_constructor answer with
+         None -> None 
+         |Some(gc) ->  Some(key,gc)
    ) l_draft1 in 
    Hex_ccnn_report_t.R l_draft2;;
 
