@@ -5,6 +5,17 @@
 
 *)
 
+(*
+let add_mergeing pochro new_action =
+    let (husband,gc,wife) = new_action in 
+     {
+      Hex_polychrome_t.classes    = the_classes ;
+      labels     = the_labels ;
+      free_cells = all_free_cells ;
+      history    = new_action :: (pochro.Hex_polychrome_t.history);
+    };;
+*)   
+
 let of_ctct_report (Hex_ctct_report_t.R(l))=
     let all_free_cells = Hex_cell_set.fold_merge 
       (Image.image (fun item->item.Hex_ctct_report_item_t.passive_neighbors) l) 
@@ -29,6 +40,8 @@ let of_ctct_report (Hex_ctct_report_t.R(l))=
       free_cells = all_free_cells ;
       history    = [];
     };;
+
+
 
 (*
 

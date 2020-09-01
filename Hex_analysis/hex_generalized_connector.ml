@@ -18,3 +18,7 @@ let opt_constructor_in_half_checked_case (common,connectors) =
     if   (connectors <> []) 
     then Some(Hex_generalized_connector_t.Named(List.hd connectors))
     else None;;
+
+let support = function 
+   Hex_generalized_connector_t.Bridge(cell1,cell2) -> Hex_cell_set.safe_set [cell1;cell2]
+  |Named(nc) -> Hex_named_connector.inner_sea nc;; 
