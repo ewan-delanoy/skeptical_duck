@@ -60,6 +60,14 @@ let deduce_removabilities
     let occurrences = Hex_pattern.occurrences_of_in pattern1 end_of_battle in 
     List.flatten (Image.image (deduce_removabilities_from_pattern ctct_report l_draft) occurrences);; 
 
+let constructor l = 
+   Hex_ccnn_report_t.R (Option.filter_and_unpack(
+      fun (key,(common,connectors)) -> 
+        match Hex_generalized_connector.opt_constructor_in_half_checked_case (common,connectors) with 
+        None -> None 
+        |Some(gc)-> Some(key,gc)
+   )l );;
+
 
 let second_predraft_from_previous_items eob base ctct_report = 
    let l_draft1 = first_draft_from_previous_items eob base ctct_report in 
@@ -72,14 +80,14 @@ let second_predraft_from_previous_items eob base ctct_report =
 
 let second_draft_from_previous_items eob base ctct_report = 
    let l_draft2 = second_predraft_from_previous_items eob base ctct_report  in 
-   Hex_ccnn_report_t.R (Option.filter_and_unpack(
-      fun (key,(common,connectors)) -> 
-        match Hex_generalized_connector.opt_constructor_in_half_checked_case (common,connectors) with 
-        None -> None 
-        |Some(gc)-> Some(key,gc)
-   )l_draft2);;
+   constructor l_draft2;;
+
+
 
 end ;; 
 
-let predraft_from_previous_items = Private.second_predraft_from_previous_items ;; 
+
+let constructor = Private.constructor ;;
 let draft_from_previous_items = Private.second_draft_from_previous_items ;; 
+let predraft_from_previous_items = Private.second_predraft_from_previous_items ;; 
+
