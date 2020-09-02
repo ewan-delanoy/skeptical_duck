@@ -12,6 +12,7 @@ type t= {
     classes    : (Hex_polychrome_label_t.t * Hex_cell_set_t.t) list ;
     labels     : (Hex_cell_t.t * Hex_polychrome_label_t.t) list ;
     free_cells : Hex_cell_set_t.t ;
+    neighbors_for_free_cells : (Hex_cell_t.t *Hex_cell_set_t.t) list ; 
     history    : (Hex_polychrome_label_t.t * Hex_generalized_connector_t.t * Hex_polychrome_label_t.t) list;
 };;
 
