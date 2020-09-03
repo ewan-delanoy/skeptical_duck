@@ -22,15 +22,14 @@ let add_new_mergeing pochro new_action =
          else Some(cell,lbl)
     ) pochro.Hex_polychrome_t.labels in 
     let old_classes = pochro.Hex_polychrome_t.classes in 
-    let new_merged_class = Hex_cell_set.fold_merge 
-      [
-          List.assoc husband old_classes ; absorbed_ones ;
-          List.assoc wife old_classes
-      ]
-    in 
+    let (husband_site,husband_neighbors) = List.assoc husband old_classes 
+    and (wife_site,wife_neighbors) = List.assoc wife old_classes in
+    let merged_site = Hex_cell_set.fold_merge [husband_site ; absorbed_ones ; wife_site] in
+    let merged_neighbors = Hex_cell_set.setminus 
+       (Hex_cell_set.merge husband_neighbors wife_neighbors) absorbed_ones in 
     let new_classes = (List.filter (fun (lbl,_)->
          not(List.mem lbl [husband;wife])
-    ) old_classes) @ [new_lbl,new_merged_class] in 
+    ) old_classes) @ [new_lbl,(merged_site,merged_neighbors)] in 
      {
       Hex_polychrome_t.classes    = new_classes ;
       labels     = new_labels ;
@@ -46,7 +45,8 @@ let of_ctct_report (Hex_ctct_report_t.R(l))=
     let temp1 = Ennig.index_everything l in 
     let the_classes =   Image.image (
        fun (idx,item) ->
-         (Hex_polychrome_label_t.L(idx),item.Hex_ctct_report_item_t.active_dwellers)
+         (Hex_polychrome_label_t.L(idx),
+          (item.Hex_ctct_report_item_t.active_dwellers,item.Hex_ctct_report_item_t.passive_neighbors))
     ) temp1 
     and temp2 = List.flatten(Image.image (
        fun (idx,item) ->
