@@ -4,7 +4,33 @@
 
 *)
 
-module Private = struct 
+
+let initialize_with_ctct_report (Hex_ctct_report_t.R(l))=
+    let all_free_cells = Hex_cell_set.fold_merge 
+      (Image.image (fun item->item.Hex_ctct_report_item_t.passive_neighbors) l) 
+     in 
+    let temp1 = Ennig.index_everything l in 
+    let the_classes =   Image.image (
+       fun (idx,item) ->
+         (Hex_polychrome_label_t.L(idx),
+          (item.Hex_ctct_report_item_t.active_dwellers,item.Hex_ctct_report_item_t.passive_neighbors))
+    ) temp1 
+    and temp2 = List.flatten(Image.image (
+       fun (idx,item) ->
+         Hex_cell_set.image (fun cell->(cell,Hex_polychrome_label_t.L(idx))) 
+          item.Hex_ctct_report_item_t.active_dwellers
+    ) temp1) in 
+    let all_active_cells = Hex_cell_set.safe_set (Image.image fst temp2) in 
+    let the_labels = Hex_cell_set.image (
+      fun cell ->  (cell,List.assoc cell temp2)
+    ) all_active_cells in 
+    {
+      Hex_polychrome_t.classes    = the_classes ;
+      labels     = the_labels ;
+      free_cells = all_free_cells ;
+      history    = [];
+    };;
+
 
 let add_new_mergeing pochro new_action =
     let (husband,gc,wife) = new_action in 
@@ -36,35 +62,20 @@ let add_new_mergeing pochro new_action =
       free_cells = Hex_cell_set.setminus (pochro.Hex_polychrome_t.free_cells) absorbed_ones ;
       history    = new_action :: (pochro.Hex_polychrome_t.history);
     };;
- 
 
-let of_ctct_report (Hex_ctct_report_t.R(l))=
-    let all_free_cells = Hex_cell_set.fold_merge 
-      (Image.image (fun item->item.Hex_ctct_report_item_t.passive_neighbors) l) 
-     in 
-    let temp1 = Ennig.index_everything l in 
-    let the_classes =   Image.image (
-       fun (idx,item) ->
-         (Hex_polychrome_label_t.L(idx),
-          (item.Hex_ctct_report_item_t.active_dwellers,item.Hex_ctct_report_item_t.passive_neighbors))
-    ) temp1 
-    and temp2 = List.flatten(Image.image (
-       fun (idx,item) ->
-         Hex_cell_set.image (fun cell->(cell,Hex_polychrome_label_t.L(idx))) 
-          item.Hex_ctct_report_item_t.active_dwellers
-    ) temp1) in 
-    let all_active_cells = Hex_cell_set.safe_set (Image.image fst temp2) in 
-    let the_labels = Hex_cell_set.image (
-      fun cell ->  (cell,List.assoc cell temp2)
-    ) all_active_cells in 
-    {
-      Hex_polychrome_t.classes    = the_classes ;
-      labels     = the_labels ;
-      free_cells = all_free_cells ;
-      history    = [];
-    };;
+let seek_mergeable_pair pochro =
+   let temp1 = Uple.list_of_pairs pochro.Hex_polychrome_t.classes in 
+   Option.find_and_stop (
+      fun ((lbl1,(_,neighbors1)),(lbl2,(_,neighbors2))) -> 
+         let common_neighbors = Hex_cell_set.intersect neighbors1 neighbors2 in 
+         if Hex_cell_set.length(common_neighbors) <2 
+         then None 
+         else let l = Hex_cell_set.forget_order common_neighbors in 
+              let gc = Hex_generalized_connector_t.Bridge(List.nth l 0,List.nth l 1) in 
+              Some(lbl1,gc,lbl2) 
+   ) temp1 ;;
 
-end ;; 
+
 
 (*
 
