@@ -4,6 +4,7 @@
 
 *)
 
+module Private = struct 
 
 let add_new_mergeing pochro new_action =
     let (husband,gc,wife) = new_action in 
@@ -63,7 +64,7 @@ let of_ctct_report (Hex_ctct_report_t.R(l))=
       history    = [];
     };;
 
-
+end ;; 
 
 (*
 
