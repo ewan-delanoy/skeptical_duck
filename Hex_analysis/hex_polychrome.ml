@@ -75,15 +75,21 @@ let seek_mergeable_pair pochro =
               Some(lbl1,gc,lbl2) 
    ) temp1 ;;
 
+let pusher walker =
+  let (pochro,opt_action) = walker in 
+  match opt_action with 
+  None -> walker
+  |Some(action) -> let new_pochro = add_new_mergeing pochro action in 
+                   (new_pochro,seek_mergeable_pair new_pochro);;
+   
+let rec iterator walker =
+    let (pochro,opt_action) = walker in   
+    if opt_action = None 
+    then pochro 
+    else iterator(pusher walker) ;;  
 
+let of_ctct_report ctct_report = 
+   let pochro1 = initialize_with_ctct_report ctct_report in 
+   let opener=(pochro1,seek_mergeable_pair pochro1) in 
+   iterator opener;;
 
-(*
-
-type t= {
-    classes    : (Hex_polychrome_label_t.t * Hex_cell_set_t.t) list ;
-    labels     : (Hex_cell_t.t * Hex_polychrome_label_t.t) list ;
-    free_cells : Hex_cell_set_t.t ;
-    history    : (Hex_polychrome_label_t.t * Hex_generalized_connector_t.t * Hex_polychrome_label_t.t) list;
-};;
-
-*)
