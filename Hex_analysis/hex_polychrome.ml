@@ -32,8 +32,8 @@ let initialize_with_ctct_report (Hex_ctct_report_t.R(l))=
     };;
 
 
-let add_new_mergeing pochro new_action =
-    let (husband,gc,wife) = new_action in 
+let add_new_mergeing pochro unlabeled_action =
+    let (husband,gc,wife) = unlabeled_action in 
     let absorbed_ones = Hex_generalized_connector.support gc in 
     let new_index = (Max.list(Image.image (fun (_,Hex_polychrome_label_t.L(i))->i) 
         pochro.Hex_polychrome_t.labels))+1 in 
@@ -60,7 +60,7 @@ let add_new_mergeing pochro new_action =
       Hex_polychrome_t.classes    = new_classes ;
       labels     = new_labels ;
       free_cells = Hex_cell_set.setminus (pochro.Hex_polychrome_t.free_cells) absorbed_ones ;
-      history    = new_action :: (pochro.Hex_polychrome_t.history);
+      history    = (new_lbl,unlabeled_action) :: (pochro.Hex_polychrome_t.history);
     };;
 
 let seek_mergeable_pair pochro =
