@@ -15,10 +15,10 @@ let make_filename_complete s=
   if c='~' then Absolute_path.of_string(home^(String.sub s 1 (String.length(s)-1))) else
   Absolute_path.of_string((Sys.getcwd ())^"/"^s);;
 
-let open_in_locally x=try open_in(x) with 
+let open_in_locally x=try open_in_bin(x) with 
 _->raise(Open_in_exn(x));;
 
-let open_out_locally x=try open_out(x) with 
+let open_out_locally x=try open_out_bin(x) with 
 _->raise(Open_out_exn(x));;  
 
 let put_whole_content_of_file_in_buffer s=
