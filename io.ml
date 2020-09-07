@@ -30,6 +30,7 @@ let put_whole_content_of_file_in_buffer s=
   let _=close_in janet in
   b;;
   
+  
 type filename=string;;
   
 let erase_file_and_fill_it_with_contents_of_buffer (fn:filename) b=
