@@ -45,3 +45,25 @@ let select_coconnectors
         else None   
    ) l;;
 
+let select_usual_connectors 
+   (Hex_base_of_connectors_t.B l) (island1,free_between,island2) =
+   Option.filter_and_unpack (
+      fun (nc,needed_in_entry,needed_in_exit) -> 
+        if (
+            ((Hex_cell_set.length needed_in_entry)=0)
+            &&
+            ((Hex_cell_set.length needed_in_exit)=0)
+            && 
+            (Hex_named_connector.check_entry island1 nc)
+            && 
+            (Hex_named_connector.check_exit nc island2) 
+            &&
+            (Hex_cell_set.is_included_in (Hex_named_connector.inner_sea nc) free_between )
+           )
+        then Some nc
+        else None   
+   ) l;;
+
+
+
+
