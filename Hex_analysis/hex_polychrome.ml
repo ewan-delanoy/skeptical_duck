@@ -88,8 +88,10 @@ let rec iterator walker =
     then pochro 
     else iterator(pusher walker) ;;  
 
-let of_ctct_report ctct_report = 
+let add_all_possible_pair_mergeings ctct_report = 
    let pochro1 = initialize_with_ctct_report ctct_report in 
    let opener=(pochro1,seek_mergeable_pair pochro1) in 
    iterator opener;;
 
+let seek_usual_connector_for_individual_pair base pochro i j=
+   let island1 = 

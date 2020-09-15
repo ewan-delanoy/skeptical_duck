@@ -37,6 +37,12 @@ end ;;
 
 let anchor (Hex_island_t.I(a,_)) = a;; 
 
+
+let bare_side side =
+ let anchor = Hex_anchor_t.Single_anchor(side) in 
+ Hex_island_t.I(anchor,Set_of_poly_pairs.empty_set);;
+
+
 let common_neighbors 
   dim island1 island2 =
       if island1 = island2 then Set_of_poly_pairs.empty_set else 
