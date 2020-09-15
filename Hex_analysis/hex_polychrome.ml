@@ -93,5 +93,21 @@ let add_all_possible_pair_mergeings ctct_report =
    let opener=(pochro1,seek_mergeable_pair pochro1) in 
    iterator opener;;
 
-let seek_usual_connector_for_individual_pair base pochro i j=
-   let island1 = 
+
+let seek_usual_connector_for_individual_pair player base pochro (i,j)=
+   let the_classes = pochro.Hex_polychrome_t.classes in 
+   let (component,_) = List.assoc (Hex_polychrome_label_t.L(j)) the_classes in 
+   let side1 = Hex_order_for_player_sides.select player i in 
+   let island1 = Hex_island.bare_side side1 
+   and island2 = Hex_island_t.I(Hex_anchor_t.No_anchor,
+   Set_of_poly_pairs.safe_set(Hex_cell_set.image Hex_cell.to_int_pair component )) 
+   and ether = pochro.Hex_polychrome_t.free_cells in 
+   match Hex_base_of_connectors.select_usual_connectors base (island1,ether,island2) with 
+   [] -> None 
+   |sol::other_sols -> Some sol ;;      
+
+
+
+
+
+
