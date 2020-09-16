@@ -103,8 +103,12 @@ let seek_usual_connector_for_individual_pair player base pochro (i,j)=
    Set_of_poly_pairs.safe_set(Hex_cell_set.image Hex_cell.to_int_pair component )) 
    and ether = pochro.Hex_polychrome_t.free_cells in 
    match Hex_base_of_connectors.select_usual_connectors base (island1,ether,island2) with 
-   [] -> None 
-   |sol::other_sols -> Some sol ;;      
+   [] -> (
+           match Hex_base_of_connectors.select_usual_connectors base (island2,ether,island1) with 
+           [] -> None 
+           |sol::_ -> Some sol   
+         )
+   |sol2::_ -> Some sol2 ;;      
 
 
 
