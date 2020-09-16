@@ -73,30 +73,28 @@ extract_intervals_in_wrt_separator "123a4ab56ab789ab" "ab" ;;
 
 *)
 
-let trim_slashes_on_the_right s=
+let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
       match Option.seek(fun j->
-          not(List.mem (String.get s (n-j)) ['/'])
-      )(Ennig.ennig 1 n) with
-      None->""
-      |Some(d)->coending (d-1) s;;
-              
-
-let trim_spaces_on_the_left s=
-      let n=String.length s in
-      match Option.seek(fun j->
-          not(List.mem (String.get s (j-1)) [' ';'\t';'\r';'\n'])
+          not(List.mem (String.get s (j-1)) l)
       )(Ennig.ennig 1 n) with
       None->""
       |Some(d)->cobeginning (d-1) s;;
 
-let trim_spaces_on_the_right s=
+let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
       match Option.seek(fun j->
-          not(List.mem (String.get s (n-j)) [' ';'\t';'\r';'\n'])
+          not(List.mem (String.get s (n-j)) l)
       )(Ennig.ennig 1 n) with
       None->""
       |Some(d)->coending (d-1) s;;
+
+let trim_spaces_on_the_left s=remove_chars_in_set_on_the_left [' ';'\t';'\r';'\n'];;
+
+let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'\n'] ;;
+
+let trim_slashes_on_the_right s=remove_chars_in_set_on_the_right ['/'];;
+   
               
 
  let trim_spaces s=
