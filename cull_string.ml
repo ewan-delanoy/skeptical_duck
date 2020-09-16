@@ -89,11 +89,11 @@ let remove_chars_in_set_on_the_right l s=
       None->""
       |Some(d)->coending (d-1) s;;
 
-let trim_spaces_on_the_left s=remove_chars_in_set_on_the_left [' ';'\t';'\r';'\n'];;
+let trim_spaces_on_the_left =remove_chars_in_set_on_the_left [' ';'\t';'\r';'\n'];;
 
 let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'\n'] ;;
 
-let trim_slashes_on_the_right s=remove_chars_in_set_on_the_right ['/'];;
+let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
    
               
 
