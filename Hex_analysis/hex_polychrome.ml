@@ -5,10 +5,8 @@
 *)
 
 
-let initialize_with_ctct_report (Hex_ctct_report_t.R(l))=
-    let all_free_cells = Hex_cell_set.fold_merge 
-      (Image.image (fun item->item.Hex_ctct_report_item_t.passive_neighbors) l) 
-     in 
+let initialize_with_previous_data eob (Hex_ctct_report_t.R(l))=
+    let all_free_cells = Hex_end_of_battle.remaining_free_cells eob in 
     let temp1 = Ennig.index_everything l in 
     let the_classes =   Image.image (
        fun (idx,item) ->
@@ -88,8 +86,8 @@ let rec iterator walker =
     then pochro 
     else iterator(pusher walker) ;;  
 
-let add_all_possible_pair_mergeings ctct_report = 
-   let pochro1 = initialize_with_ctct_report ctct_report in 
+let add_all_possible_pair_mergeings eob ctct_report = 
+   let pochro1 = initialize_with_previous_data eob ctct_report in 
    let opener=(pochro1,seek_mergeable_pair pochro1) in 
    iterator opener;;
 
