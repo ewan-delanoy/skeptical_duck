@@ -11,18 +11,7 @@ let set s i c=Bytes.set s (i-1) c;;
 
 let enclose s=
   let encloser="\"" in
-  let n=String.length s in 
-  let accu=ref[] in
-  let _=(for k=n downto 1 do
-     let c=String.get s (k-1) in 
-     let element=(
-        if c='"'
-        then "\\\""
-        else String.make 1 c
-     ) in 
-     accu:=element::(!accu)
-  done) in 
-  encloser^(String.concat "" (!accu))^encloser;;
+  encloser^(String.escaped s)^encloser;;
 
 
 let implode l=
@@ -346,5 +335,24 @@ let soak (replacee,replacer) s=
 soak ("abc/def","DEF/GHI") "abc/def/klm/pqr" ;;
 soak ("abc/def","DEF/GHI") "azc/def/klm/pqr" ;;
 soak ("abc/def","DEF/GHI") "azc/def" ;;
+
+*)
+
+
+let escaped_and_quoted text =
+   match Str.split (Str.regexp_string "\n") text with 
+   [] -> "\"\""
+   |first_line :: other_lines ->
+    let quoted_lines = (enclose first_line)::
+     (Image.image (fun line->enclose("\n"^line)) other_lines) in 
+    String.concat "^\n" quoted_lines;;
+
+
+(*
+
+let z1 = "abc\nde\nfghi\njkl";;
+print_string(escaped_and_quoted z1);;
+
+
 
 *)
