@@ -26,7 +26,7 @@ let uc cmd =
    if i<>0 then raise(Error_during_unix_command) else ();;
 
 
-let create_file w=
+let create_file_if_absent w=
     let cr=(fun w->
       let ld=Unix.openfile w [Unix.O_RDWR;Unix.O_CREAT;Unix.O_EXCL] 0o666 in
        Unix.close ld

@@ -450,7 +450,7 @@ module Other_Tools = struct
       "0000000052 00000 n "; "0000000101 00000 n ";
       "trailer<</Size 4/Root 1 0 R>>"; "startxref"; "178"; "%%EOF"] in 
     let full_path_for_blank_page = (!(workspace_directory))^"/blank.pdf" in 
-    let blank_page_ap = Absolute_path.create_file full_path_for_blank_page in 
+    let blank_page_ap = Absolute_path.create_file_if_absent full_path_for_blank_page in 
     let _ = Io.overwrite_with blank_page_ap source_for_blank_page in 
     blank_page_ap ;;
 

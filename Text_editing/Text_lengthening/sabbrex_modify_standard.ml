@@ -7,7 +7,7 @@
 
 
 let screen_location=ref(
-   Absolute_path.create_file "Text_editing/Text_lengthening/screen.txt"
+   Absolute_path.create_file_if_absent "Text_editing/Text_lengthening/screen.txt"
 );;
 
 module Private=struct
