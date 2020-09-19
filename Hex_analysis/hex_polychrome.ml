@@ -73,23 +73,23 @@ let seek_mergeable_pair pochro =
               Some(lbl1,gc,lbl2) 
    ) temp1 ;;
 
-let pusher walker =
+let pusher_for_pair_mergeings walker =
   let (pochro,opt_action) = walker in 
   match opt_action with 
   None -> walker
   |Some(action) -> let new_pochro = add_new_mergeing pochro action in 
                    (new_pochro,seek_mergeable_pair new_pochro);;
    
-let rec iterator walker =
+let rec iterator_for_pair_mergeings walker =
     let (pochro,opt_action) = walker in   
     if opt_action = None 
     then pochro 
-    else iterator(pusher walker) ;;  
+    else iterator_for_pair_mergeings(pusher_for_pair_mergeings walker) ;;  
 
 let add_all_possible_pair_mergeings eob ctct_report = 
    let pochro1 = initialize_with_previous_data eob ctct_report in 
    let opener=(pochro1,seek_mergeable_pair pochro1) in 
-   iterator opener;;
+   iterator_for_pair_mergeings opener;;
 
 
 let seek_usual_connector_for_individual_pair player base pochro (i,j)=
@@ -100,14 +100,39 @@ let seek_usual_connector_for_individual_pair player base pochro (i,j)=
    and island2 = Hex_island_t.I(Hex_anchor_t.No_anchor,
    Set_of_poly_pairs.safe_set(Hex_cell_set.image Hex_cell.to_int_pair component )) 
    and ether = pochro.Hex_polychrome_t.free_cells in 
+   let li = Hex_polychrome_label_t.L(i)
+   and lj = Hex_polychrome_label_t.L(j) in 
    match Hex_base_of_connectors.select_usual_connectors base (island1,ether,island2) with 
    [] -> (
            match Hex_base_of_connectors.select_usual_connectors base (island2,ether,island1) with 
            [] -> None 
-           |sol::_ -> Some sol   
+           |sol::_ -> Some (li,Hex_generalized_connector_t.Named sol,lj)   
          )
-   |sol2::_ -> Some sol2 ;;      
+   |sol2::_ -> Some (lj,Hex_generalized_connector_t.Named sol2,li) ;;      
 
+let seek_usual_connector player base pochro =
+   let the_classes = pochro.Hex_polychrome_t.classes in 
+   let class_indices = Image.image (fun (Hex_polychrome_label_t.L(k),_)->k) the_classes in 
+   let ipairs = Uple.list_of_pairs class_indices in 
+   Option.find_and_stop (seek_usual_connector_for_individual_pair player base pochro) ipairs;;
+  
+
+let pusher_for_usual_mergeings walker =
+  let (player,base,pochro,opt_action) = walker in 
+  match opt_action with 
+  None -> walker
+  |Some(action) -> let new_pochro = add_new_mergeing pochro action in 
+                   (player,base,new_pochro,seek_usual_connector player base new_pochro);;
+   
+let rec iterator_for_usual_mergeings walker =
+    let (player,base,pochro,opt_action) = walker in   
+    if opt_action = None 
+    then pochro 
+    else iterator_for_usual_mergeings(pusher_for_usual_mergeings walker) ;;  
+
+let add_all_possible_usual_mergeings player base pochro = 
+   let opener=(player,base,pochro,seek_usual_connector player base pochro) in 
+   iterator_for_usual_mergeings opener;;
 
 
 
