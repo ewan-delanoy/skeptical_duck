@@ -110,29 +110,38 @@ let seek_usual_connector_for_individual_pair player base pochro (i,j)=
          )
    |sol2::_ -> Some (lj,Hex_generalized_connector_t.Named sol2,li) ;;      
 
-let seek_usual_connector player base pochro =
+let all_usual_connectors player base pochro =
    let the_classes = pochro.Hex_polychrome_t.classes in 
    let class_indices = Image.image (fun (Hex_polychrome_label_t.L(k),_)->k) the_classes in 
    let ipairs = Uple.list_of_pairs class_indices in 
-   Option.find_and_stop (seek_usual_connector_for_individual_pair player base pochro) ipairs;;
+   Option.filter_and_unpack (seek_usual_connector_for_individual_pair player base pochro) ipairs;;
   
 
 let pusher_for_usual_mergeings walker =
-  let (player,base,pochro,opt_action) = walker in 
-  match opt_action with 
-  None -> walker
-  |Some(action) -> let new_pochro = add_new_mergeing pochro action in 
-                   (player,base,new_pochro,seek_usual_connector player base new_pochro);;
+  let (player,base,pochro,remaining_untreated_actions) = walker in 
+  match remaining_untreated_actions with 
+   [] -> walker
+  |action::other_actions -> let new_pochro = add_new_mergeing pochro action in 
+                   (player,base,new_pochro,other_actions);;
    
 let rec iterator_for_usual_mergeings walker =
-    let (player,base,pochro,opt_action) = walker in   
-    if opt_action = None 
+    let (player,base,pochro,remaining_untreated_actions) = walker in   
+    if remaining_untreated_actions = [] 
     then pochro 
     else iterator_for_usual_mergeings(pusher_for_usual_mergeings walker) ;;  
 
 let add_all_possible_usual_mergeings player base pochro = 
-   let opener=(player,base,pochro,seek_usual_connector player base pochro) in 
+   let opener=(player,base,pochro,all_usual_connectors player base pochro) in 
    iterator_for_usual_mergeings opener;;
+
+let from_previous_data eob base ctct_report=
+   let pochro1 = add_all_possible_pair_mergeings eob ctct_report 
+   and player = eob.Hex_end_of_battle_t.winner in 
+   add_all_possible_usual_mergeings player base pochro1;;    
+
+
+
+
 
 
 
