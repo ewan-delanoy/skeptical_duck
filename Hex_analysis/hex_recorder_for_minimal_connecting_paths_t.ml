@@ -4,7 +4,7 @@
 
 *)
 
-type t= R of 
-   ( (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * 
-      ((Hex_generalized_connector_t.t list) option) list)
- ;;
+type elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * 
+      ((Hex_generalized_connector_t.t list) option) ;;
+
+type t= R of elt list ;;
