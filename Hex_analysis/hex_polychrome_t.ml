@@ -15,6 +15,6 @@ type t= {
     classes    : (Hex_polychrome_label_t.t * (Hex_cell_set_t.t * Hex_cell_set_t.t)) list ;
     labels     : (Hex_cell_t.t * Hex_polychrome_label_t.t) list ;
     free_cells : Hex_cell_set_t.t ;
-    history    : (Hex_polychrome_label_t.t * (Hex_polychrome_label_t.t * Hex_generalized_connector_t.t * Hex_polychrome_label_t.t)) list;
+    recorder   : Hex_recorder_for_minimal_connecting_paths_t.t ;
 };;
 
