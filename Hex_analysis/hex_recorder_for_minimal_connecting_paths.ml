@@ -70,8 +70,7 @@ let add_merger recorder (li,gc,lj)=
   Hex_recorder_for_minimal_connecting_paths_t.R(l1 @ new_records);;
 
    
-let empty_one (Hex_ctct_report_t.R l_ctct_report)=
-   let n = List.length l_ctct_report in 
+let empty_one n=
    let temp1 = Ennig.doyle (
          fun j ->
             let lj =  Hex_polychrome_label_t.L j in 

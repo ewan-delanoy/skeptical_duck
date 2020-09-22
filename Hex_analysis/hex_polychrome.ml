@@ -26,7 +26,7 @@ let initialize_with_previous_data eob (Hex_ctct_report_t.R(l))=
       Hex_polychrome_t.classes    = the_classes ;
       labels     = the_labels ;
       free_cells = all_free_cells ;
-      history    = [];
+      recorder    = (Hex_recorder_for_minimal_connecting_paths.empty_one (List.length l));
     };;
 
 
@@ -58,7 +58,8 @@ let add_new_mergeing pochro unlabeled_action =
       Hex_polychrome_t.classes    = new_classes ;
       labels     = new_labels ;
       free_cells = Hex_cell_set.setminus (pochro.Hex_polychrome_t.free_cells) absorbed_ones ;
-      history    = (new_lbl,unlabeled_action) :: (pochro.Hex_polychrome_t.history);
+      recorder    =  Hex_recorder_for_minimal_connecting_paths.add_merger 
+                  (pochro.Hex_polychrome_t.recorder) unlabeled_action;
     };;
 
 let seek_mergeable_pair pochro =
