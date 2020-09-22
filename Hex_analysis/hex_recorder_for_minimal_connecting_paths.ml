@@ -4,6 +4,7 @@
 
 *)
 
+module Private = struct 
 
 let size (Hex_recorder_for_minimal_connecting_paths_t.R(l)) =
   let ((_,Hex_polychrome_label_t.L(m)),_) = List.hd (List.rev l) in 
@@ -69,5 +70,20 @@ let add_merger recorder (li,gc,lj)=
   Hex_recorder_for_minimal_connecting_paths_t.R(l1 @ new_records);;
 
    
+let empty_one (Hex_ctct_report_t.R l_ctct_report)=
+   let n = List.length l_ctct_report in 
+   let temp1 = Ennig.doyle (
+         fun j ->
+            let lj =  Hex_polychrome_label_t.L j in 
+              Ennig.doyle (
+                  fun i -> 
+                  let li =  Hex_polychrome_label_t.L i in 
+                    ((li,lj),None)
+              ) 1 (j-1)
+      ) 2 n  in 
+   Hex_recorder_for_minimal_connecting_paths_t.R(List.flatten temp1);;
 
-   
+end ;;    
+
+let add_merger = Private.add_merger ;;
+let empty_one = Private.empty_one ;;
