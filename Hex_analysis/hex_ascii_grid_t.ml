@@ -9,3 +9,4 @@ type t = {
    dimension : Hex_dimension_t.t ;
    data : ( (int * int) * string) list;
 };;
+
