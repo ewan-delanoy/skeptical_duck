@@ -38,7 +38,7 @@ let declare_winner_without_writing_on_the_grid player =
 
 let declare_winner player =
   let new_fgame = declare_winner_without_writing_on_the_grid player in 
-  let new_grid = Hex_ascii_grid.of_finished_game new_fgame in 
+  let new_grid = Hex_visualize_grid.of_finished_game new_fgame in 
   Hex_ascii_grid.print_on_sheet_for_editing new_grid;;
 
 
