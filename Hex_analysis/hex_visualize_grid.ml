@@ -95,4 +95,3 @@ let triple_blank = Private.triple_blank ;;
 
 let visualize = Private.visualize;;
 
-let vg fgame = Hex_ascii_grid.visualize(Hex_ascii_grid.of_finished_game fgame);;
