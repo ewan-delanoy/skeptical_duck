@@ -91,6 +91,8 @@ let of_finished_game = Private.of_finished_game;;
 
 let to_ascii_drawing = Private.to_ascii_drawing ;;
 
+let triple_blank = Private.triple_blank ;;
+
 let visualize = Private.visualize;;
 
 let vg fgame = Hex_ascii_grid.visualize(Hex_ascii_grid.of_finished_game fgame);;
