@@ -39,8 +39,15 @@ let of_flattened_end_strategy fles =
 
 let path_for_sheet = Absolute_path.of_string "Hex_analysis/Hex_gitignored_text_files/hex_config_sheet.txt";;
 
+let uple_form grid = 
+   (
+      grid.Hex_ascii_grid_t.dimension,
+      grid.Hex_ascii_grid_t.beneficiary,
+      grid.Hex_ascii_grid_t.data
+   );; 
+
 let print_on_sheet_for_editing grid =
-    let drawing = Hex_visualize_grid.to_ascii_drawing grid in 
+    let drawing = Hex_visualize_grid.to_ascii_drawing (uple_form grid) in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
     Io.overwrite_with path_for_sheet assignment;;
 
@@ -270,10 +277,12 @@ let of_linker dim winner mlclr actv =
 let see_flesh fles= 
     let dim = fles.Hex_flattened_end_strategy_t.dimension 
     and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
-    Hex_visualize_grid.visualize (of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data);;
+    Hex_visualize_grid.visualize 
+    (uple_form(of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data));;
 
 let see_linker dim winner mlclr actv= 
-    Hex_visualize_grid.visualize (of_linker dim winner mlclr actv);;
+    Hex_visualize_grid.visualize 
+    (uple_form(of_linker dim winner mlclr actv));;
 
 
 
