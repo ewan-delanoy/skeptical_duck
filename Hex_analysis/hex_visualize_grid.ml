@@ -10,8 +10,8 @@ module Private = struct
 
 let triple_blank = String.make 3 ' ';;
 
-let get grid (i,j)=
-   try List.assoc (i,j) grid.Hex_ascii_grid_t.data with 
+let get data (i,j)=
+   try List.assoc (i,j) data with 
    _->triple_blank;;
 
 let constant_left_margin = String.make 3 ' ';;
@@ -36,8 +36,7 @@ let first_row (Hex_dimension_t.D dimension)=
   ) 1 dimension in 
   String.concat "" (" "::temp1)
 
-let main_content_of_line grid line_idx =
-  let formal_dim = grid.Hex_ascii_grid_t.dimension in 
+let main_content_of_line (formal_dim,data) line_idx =
   let (Hex_dimension_t.D dim)=formal_dim in 
   if line_idx=1
   then first_row formal_dim 
@@ -47,7 +46,7 @@ let main_content_of_line grid line_idx =
   else 
   let i=(line_idx-1)/2 in 
   let temp1=Ennig.doyle (fun j->
-     (get grid (i,j))^"|"
+     (get data (i,j))^"|"
   ) 1 dim in 
   String.concat "" ("|"::temp1);; 
 
@@ -57,11 +56,10 @@ let full_line grid line_idx =
    (coordinate_mention line_idx)^ 
    (main_content_of_line grid line_idx);;
 
-let to_ascii_drawing grid =
-   let (Hex_dimension_t.D dim) = grid.Hex_ascii_grid_t.dimension in 
-   let player = grid.Hex_ascii_grid_t.beneficiary in
-   "Config benefitting Player "^(Hex_player.to_string player)^"\n\n\n"^
-   (String.concat "\n" (Ennig.doyle (full_line grid) 1 (2*dim+2)));;
+let to_ascii_drawing (formal_dim,beneficiary,data) =
+   let (Hex_dimension_t.D dim) = formal_dim in 
+   "Config benefitting Player "^(Hex_player.to_string beneficiary)^"\n\n\n"^
+   (String.concat "\n" (Ennig.doyle (full_line (formal_dim,data)) 1 (2*dim+2)));;
 
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
@@ -78,11 +76,7 @@ let of_finished_game fgame =
    and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
    and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
-   {
-    Hex_ascii_grid_t.beneficiary = winner;
-    dimension = fgame.Hex_finished_game_t.dimension;
-    data = associations1 @ associations2;
-  };;
+   (fgame.Hex_finished_game_t.dimension,winner,associations1 @ associations2) ;;
 
 
 end ;;
