@@ -37,8 +37,6 @@ let of_flattened_end_strategy fles =
   };;
 
 
-let path_for_sheet = Absolute_path.of_string "Hex_analysis/Hex_gitignored_text_files/hex_config_sheet.txt";;
-
 let uple_form grid = 
    (
       grid.Hex_ascii_grid_t.dimension,
@@ -49,7 +47,7 @@ let uple_form grid =
 let print_on_sheet_for_editing grid =
     let drawing = Hex_visualize_grid.to_ascii_drawing (uple_form grid) in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
-    Io.overwrite_with path_for_sheet assignment;;
+    Hex_readable_and_writable_sheet.write  assignment;;
 
 let read_player s=
   if Substring.is_a_substring_of "Player 1" s 
@@ -213,7 +211,7 @@ let clear_sheet ()=
   print_on_sheet_for_editing (empty_one);;
 
 let process_sheet ()=
-   let old_drawing = Io.read_whole_file path_for_sheet in 
+   let old_drawing = Hex_readable_and_writable_sheet.read ()  in 
    let old_grid = read_ascii_drawing old_drawing in 
    let _=(ref_for_sheet_processing_error:=old_grid) in 
    let new_grid = preprocess old_grid in 
@@ -225,7 +223,7 @@ let recover_unprocessed_grid ()=
    let _ = print_on_sheet_for_editing old_grid in 
    old_grid;;
 
-let read_sheet ()=   read_ascii_drawing (Io.read_whole_file path_for_sheet);;
+let read_sheet ()=   read_ascii_drawing (Hex_readable_and_writable_sheet.read ());;
 
 
 let name_for_eyed_claw d1 d2 =
