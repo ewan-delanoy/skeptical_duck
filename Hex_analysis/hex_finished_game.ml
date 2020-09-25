@@ -97,6 +97,25 @@ let enumerate_companions_for_game fgame flesses =
        |_-> false
    ) flesses ;;
 
+let visualization fgame =
+   let winner = fgame.Hex_finished_game_t.winner in 
+   let (fp_cells,sp_cells)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
+   let (l_winner_cells,l_loser_cells)=(
+       if winner=Hex_player_t.First_player
+       then (fp_cells,sp_cells)
+       else (sp_cells,fp_cells)
+   ) in  
+   let winner_ipairs = Image.image Hex_cell.to_int_pair l_winner_cells
+   and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
+   let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
+   and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
+   "\n\n\n"^
+   (Hex_visualize_grid.to_ascii_drawing
+      (fgame.Hex_finished_game_t.dimension,winner,associations1 @ associations2)) ^
+   "\n\n\n";;
+
+
+
 let salt = "Hex_"^"finished_game_t.";;
 
 let dimension_label          = salt ^ "dimension";;
@@ -135,5 +154,5 @@ let seek_companion_for_game = Private.seek_companion_for_game;;
 let seek_companion_for_strategy = Private.seek_companion_for_strategy;;
 let simplify_by_move = Private.simplify_by_move;;
 let to_concrete_object = Private.to_concrete_object;;
-
+let visualization = Private.visualization ;;
 
