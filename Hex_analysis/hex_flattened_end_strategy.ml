@@ -59,6 +59,13 @@ let support fles =
    [Hex_flattened_end_strategy_field.active_part fles;
     Hex_flattened_end_strategy_field.passive_part fles];;
 
+let visualize fles= 
+    let dim = fles.Hex_flattened_end_strategy_t.dimension 
+    and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
+    Hex_visualize_grid.visualize 
+     (dim,winner,Hex_visualize_grid.data_for_extended_molecular fles.Hex_flattened_end_strategy_t.data);;
+
+
 end;;
 
 
@@ -67,5 +74,5 @@ let support = Private.support;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
 let use_move_to_simplify_one = Private.use_move_to_simplify_one;;
-
+let visualize = Private.visualize ;;
 
