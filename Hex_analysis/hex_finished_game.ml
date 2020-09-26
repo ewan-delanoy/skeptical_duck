@@ -155,4 +155,5 @@ let seek_companion_for_strategy = Private.seek_companion_for_strategy;;
 let simplify_by_move = Private.simplify_by_move;;
 let to_concrete_object = Private.to_concrete_object;;
 let visualization = Private.visualization ;;
+let visualize fgame = print_string (Private.visualization fgame);;
 
