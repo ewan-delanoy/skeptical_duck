@@ -44,6 +44,7 @@ let uple_form grid =
       grid.Hex_ascii_grid_t.data
    );; 
 
+
 let print_on_sheet_for_editing grid =
     let drawing = Hex_visualize_grid.to_ascii_drawing (uple_form grid) in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
@@ -207,8 +208,6 @@ let empty_one = {
 
 let ref_for_sheet_processing_error=ref(empty_one);;
 
-let clear_sheet ()=
-  print_on_sheet_for_editing (empty_one);;
 
 let process_sheet ()=
    let old_drawing = Hex_readable_and_writable_sheet.read ()  in 
@@ -286,14 +285,8 @@ let see_linker dim winner mlclr actv=
 
 end ;;
 
-let clear_sheet = Private.clear_sheet;;
-
 
 let process_sheet = Private.process_sheet;;
-let print_on_sheet_for_editing = Private.print_on_sheet_for_editing;;
-let read_ascii_drawing = Private.read_ascii_drawing ;;
-let read_sheet = Private.read_sheet;;
-let recover_unprocessed_grid = Private.recover_unprocessed_grid;;
 let see_flesh = Private.see_flesh ;;
 let see_linker = Private.see_linker ;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;

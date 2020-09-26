@@ -64,24 +64,44 @@ let to_ascii_drawing (formal_dim,beneficiary,data) =
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
 
-let of_finished_game fgame =
-   let winner = fgame.Hex_finished_game_t.winner in 
-   let (fp_cells,sp_cells)=Listennou.split_list_in_half fgame.Hex_finished_game_t.sequence_of_moves in
-   let (l_winner_cells,l_loser_cells)=(
-       if winner=Hex_player_t.First_player
-       then (fp_cells,sp_cells)
-       else (sp_cells,fp_cells)
-   ) in  
-   let winner_ipairs = Image.image Hex_cell.to_int_pair l_winner_cells
-   and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
-   let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
-   and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
-   (fgame.Hex_finished_game_t.dimension,winner,associations1 @ associations2) ;;
+let name_for_eyed_claw d1 d2 =
+   (Hex_cardinal_direction.for_eye_description d1)^"e"^
+     (Hex_cardinal_direction.for_ground_description d2) ;;
 
+let data_for_extended_molecular extmol =
+   let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
+   and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
+   and (Hex_cell_set_t.S passv)=extmol.Hex_extended_molecular_t.nonmolecular_passive_part in 
+   let cti = Hex_cell.to_int_pair in 
+   let pairs1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Pair(cell1,cell2)) -> Some(cti cell1,cti cell2)
+       |_->None
+   ) l in 
+   let pairs2 = Ennig.index_everything pairs1 in 
+   let pairs = List.flatten(Image.image (fun
+      (j,(ipair1,ipair2))->
+        let label = " "^(String.make 1 (char_of_int(96+j)))^" " in 
+        [ipair1,label;ipair2,label]
+   ) pairs2) in 
+   let eyes1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)) -> Some(d1,d2,cell)
+       |_->None
+   ) l in 
+   let eyes2 = Image.image (
+      fun (d1,d2,cell) -> 
+         let ipair = cti cell in 
+         (ipair,name_for_eyed_claw d1 d2)::
+         (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
+   ) eyes1 in 
+   let eyes = List.flatten eyes2 in 
+   let actives = Image.image (fun cell->(cti cell," A ")) actv 
+   and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
+      pairs@eyes@actives@passives
+   ;; 
 
 end ;;
 
-let of_finished_game = Private.of_finished_game;;
+let data_for_extended_molecular = Private.data_for_extended_molecular ;;
 
 let to_ascii_drawing = Private.to_ascii_drawing ;;
 
