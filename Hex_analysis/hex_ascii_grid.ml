@@ -129,7 +129,7 @@ let trim = Cull_string.trim_spaces;;
 let force_length_three s =
    let t=trim s in 
    match String.length(t) with 
-   0->Hex_visualize_grid.triple_blank
+   0->Particular_string.triple_blank
    |1->" "^t^" " 
    |2->t^" "
    |3->t

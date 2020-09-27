@@ -8,11 +8,9 @@
 module Private = struct 
 
 
-let triple_blank = String.make 3 ' ';;
-
 let get data (i,j)=
    try List.assoc (i,j) data with 
-   _->triple_blank;;
+   _->Particular_string.triple_blank;;
 
 let constant_left_margin = String.make 3 ' ';;
 
@@ -75,7 +73,6 @@ end ;;
 
 let to_ascii_drawing = Private.to_ascii_drawing ;;
 
-let triple_blank = Private.triple_blank ;;
 
 
 
