@@ -271,11 +271,6 @@ let of_linker dim winner mlclr actv =
    } in 
    of_extended_molecular (dim,winner) extmol;;
    
-let see_flesh fles= 
-    let dim = fles.Hex_flattened_end_strategy_t.dimension 
-    and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
-    Hex_visualize_grid.visualize 
-    (uple_form(of_extended_molecular (dim,winner) fles.Hex_flattened_end_strategy_t.data));;
 
 let see_linker dim winner mlclr actv= 
     Hex_visualize_grid.visualize 
@@ -287,7 +282,6 @@ end ;;
 
 
 let process_sheet = Private.process_sheet;;
-let see_flesh = Private.see_flesh ;;
 let see_linker = Private.see_linker ;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 

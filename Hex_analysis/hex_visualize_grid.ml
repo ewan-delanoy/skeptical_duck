@@ -68,7 +68,7 @@ let name_for_eyed_claw d1 d2 =
    (Hex_cardinal_direction.for_eye_description d1)^"e"^
      (Hex_cardinal_direction.for_ground_description d2) ;;
 
-let data_for_extended_molecular extmol =
+let data_for_extended_molecular (dim,winner) extmol =
    let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
    and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
    and (Hex_cell_set_t.S passv)=extmol.Hex_extended_molecular_t.nonmolecular_passive_part in 
@@ -96,8 +96,13 @@ let data_for_extended_molecular extmol =
    let eyes = List.flatten eyes2 in 
    let actives = Image.image (fun cell->(cti cell," A ")) actv 
    and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
-      pairs@eyes@actives@passives
-   ;; 
+   {
+      Hex_ascii_grid_t.beneficiary = winner ;
+      dimension = dim ;
+      data = pairs@eyes@actives@passives;
+   };; 
+
+      
 
 end ;;
 
