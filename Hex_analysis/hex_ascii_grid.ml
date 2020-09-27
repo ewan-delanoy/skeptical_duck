@@ -12,7 +12,7 @@ module Private = struct
 
 
 let print_on_sheet_for_editing grid =
-    let drawing = Hex_visualize_grid.to_ascii_drawing grid in 
+    let drawing = Hex_visualize_grid.visualization grid in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
     Hex_readable_and_writable_sheet.write  assignment;;
 

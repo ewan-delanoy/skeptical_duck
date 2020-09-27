@@ -71,7 +71,7 @@ end ;;
 
 
 
-let to_ascii_drawing = Private.to_ascii_drawing ;;
+let visualization = Private.to_ascii_drawing ;;
 
 
 

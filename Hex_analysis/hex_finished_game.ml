@@ -115,7 +115,7 @@ let visualization fgame =
       data = associations1 @ associations2;
    } in 
    "\n\n\n"^
-   (Hex_visualize_grid.to_ascii_drawing grid) ^
+   (Hex_visualize_grid.visualization grid) ^
    "\n\n\n";;
 
 

@@ -142,7 +142,7 @@ let visualization (dim,winner) extmol =
       dimension = dim ;
       data = pairs@eyes@actives@passives;
    } in 
-   Hex_visualize_grid.to_ascii_drawing grid;; 
+   Hex_visualize_grid.visualization grid;; 
 
 
 
