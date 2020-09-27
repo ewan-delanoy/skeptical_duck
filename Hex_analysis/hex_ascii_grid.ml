@@ -37,16 +37,8 @@ let of_flattened_end_strategy fles =
   };;
 
 
-let uple_form grid = 
-   (
-      grid.Hex_ascii_grid_t.dimension,
-      grid.Hex_ascii_grid_t.beneficiary,
-      grid.Hex_ascii_grid_t.data
-   );; 
-
-
 let print_on_sheet_for_editing grid =
-    let drawing = Hex_visualize_grid.to_ascii_drawing (uple_form grid) in 
+    let drawing = Hex_visualize_grid.to_ascii_drawing grid in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
     Hex_readable_and_writable_sheet.write  assignment;;
 
@@ -274,7 +266,7 @@ let of_linker dim winner mlclr actv =
 
 let see_linker dim winner mlclr actv= 
     Hex_visualize_grid.visualize 
-    (uple_form(of_linker dim winner mlclr actv));;
+    (of_linker dim winner mlclr actv);;
 
 
 

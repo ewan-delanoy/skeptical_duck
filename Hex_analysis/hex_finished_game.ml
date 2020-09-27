@@ -109,9 +109,13 @@ let visualization fgame =
    and loser_ipairs = Image.image Hex_cell.to_int_pair l_loser_cells in
    let associations1=Image.image (fun (i,j)->((i,j)," A ")) winner_ipairs
    and associations2=Image.image (fun (i,j)->((i,j),"EEE")) loser_ipairs in 
+   let grid = {
+      Hex_ascii_grid_t.beneficiary = winner ;
+      dimension = fgame.Hex_finished_game_t.dimension ;
+      data = associations1 @ associations2;
+   } in 
    "\n\n\n"^
-   (Hex_visualize_grid.to_ascii_drawing
-      (fgame.Hex_finished_game_t.dimension,winner,associations1 @ associations2)) ^
+   (Hex_visualize_grid.to_ascii_drawing grid) ^
    "\n\n\n";;
 
 
