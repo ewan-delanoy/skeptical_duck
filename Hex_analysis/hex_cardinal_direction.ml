@@ -163,6 +163,11 @@ let is_vertical = function
    |Hex_cardinal_direction_t.Up -> true 
    | _ -> false ;;  
 
+let name_for_eyed_claw d1 d2 =
+   (Private.char_for_eye_description d1)^"e"^
+     (Private.char_for_ground_description d2) ;;
+
+
 let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
 
 let oppose = function  

@@ -12,29 +12,7 @@ module Private = struct
 
 
 
-let of_flattened_end_strategy fles =
-  let formal_dim=fles.Hex_flattened_end_strategy_t.dimension in 
-  let (Hex_dimension_t.D dim)=formal_dim in 
-  let square = Cartesian.square (Ennig.ennig 1 dim) in
-  let tracer1 =  (fun (i,j)->
-     let cell=Hex_cell.of_int_pair (i,j) in 
-     if Hex_cell_set.mem cell (Hex_flattened_end_strategy_field.active_part fles)
-     then " A "
-     else 
-     if Hex_cell_set.mem cell (Hex_flattened_end_strategy_field.passive_part fles)
-     then " P "
-     else "   "
-  ) in 
-  let tracer2=(fun pair->
-     let t=tracer1 pair in 
-     if Cull_string.trim_spaces(t)=""
-     then None
-     else Some(pair,tracer1 pair)) in 
-  {
-    Hex_ascii_grid_t.beneficiary = (Hex_flattened_end_strategy_field.beneficiary fles);
-    dimension = formal_dim;
-    data = Option.filter_and_unpack tracer2 square;
-  };;
+
 
 
 let print_on_sheet_for_editing grid =
@@ -217,63 +195,10 @@ let recover_unprocessed_grid ()=
 let read_sheet ()=   read_ascii_drawing (Hex_readable_and_writable_sheet.read ());;
 
 
-let name_for_eyed_claw d1 d2 =
-   (Hex_cardinal_direction.for_eye_description d1)^"e"^
-     (Hex_cardinal_direction.for_ground_description d2) ;;
-
-let of_extended_molecular (dim,winner) extmol =
-   let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
-   and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
-   and (Hex_cell_set_t.S passv)=extmol.Hex_extended_molecular_t.nonmolecular_passive_part in 
-   let cti = Hex_cell.to_int_pair in 
-   let pairs1 = Option.filter_and_unpack ( function
-        (Hex_atomic_linker_t.Pair(cell1,cell2)) -> Some(cti cell1,cti cell2)
-       |_->None
-   ) l in 
-   let pairs2 = Ennig.index_everything pairs1 in 
-   let pairs = List.flatten(Image.image (fun
-      (j,(ipair1,ipair2))->
-        let label = " "^(String.make 1 (char_of_int(96+j)))^" " in 
-        [ipair1,label;ipair2,label]
-   ) pairs2) in 
-   let eyes1 = Option.filter_and_unpack ( function
-        (Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)) -> Some(d1,d2,cell)
-       |_->None
-   ) l in 
-   let eyes2 = Image.image (
-      fun (d1,d2,cell) -> 
-         let ipair = cti cell in 
-         (ipair,name_for_eyed_claw d1 d2)::
-         (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
-   ) eyes1 in 
-   let eyes = List.flatten eyes2 in 
-   let actives = Image.image (fun cell->(cti cell," A ")) actv 
-   and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
-   {
-      Hex_ascii_grid_t.beneficiary = winner ;
-      dimension = dim ;
-      data = pairs@eyes@actives@passives;
-   };; 
-
-let of_linker dim winner mlclr actv =
-   let  extmol = {
-     Hex_extended_molecular_t.nonmolecular_passive_part = Hex_cell_set.empty_set ;
-     molecular_part = mlclr ;
-     active_part = actv
-   } in 
-   of_extended_molecular (dim,winner) extmol;;
-   
-
-let see_linker dim winner mlclr actv= 
-    Hex_visualize_grid.visualize 
-    (of_linker dim winner mlclr actv);;
-
-
 
 end ;;
 
 
 let process_sheet = Private.process_sheet;;
-let see_linker = Private.see_linker ;;
 let to_molecular_linker_with_active_points = Private.to_molecular_linker_with_active_points;;
 
