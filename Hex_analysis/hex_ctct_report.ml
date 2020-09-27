@@ -120,6 +120,7 @@ let compute_all_items eob =
 let about_end_of_battle eob = {
    Hex_ctct_report_t.dimension = eob.Hex_end_of_battle_t.dimension ;
       winner = eob.Hex_end_of_battle_t.winner ;
+      enemy_territory = eob.Hex_end_of_battle_t.enemy_territory ;
       items  = compute_all_items eob;
 } ;; 
 
