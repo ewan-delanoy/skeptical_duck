@@ -134,17 +134,12 @@ let visualize ctct_report =
          ) item.Hex_ctct_report_item_t.active_dwellers
         
    ) indexed_items) in 
-   let formal_dim = ctct_report.Hex_ctct_report_t.dimension in 
-   let (Hex_dimension_t.D dim) = formal_dim in 
-   let full_base = Cartesian.square (Ennig.ennig 1 dim) in 
-   let data2 = Option.filter_and_unpack (
-      fun p-> match Option.seek (fun (q,_)->q=p) data1 with
-      Some(_,_)->None 
-      |None -> Some(p,"EEE") 
-   ) full_base in
+   let data2 = Hex_cell_set.image (
+       fun cell ->(cti cell,"EEE") 
+   ) ctct_report.Hex_ctct_report_t.enemy_territory in 
    let grid = {
       Hex_ascii_grid_t.beneficiary = ctct_report.Hex_ctct_report_t.winner ;
-      dimension = formal_dim ;
+      dimension = ctct_report.Hex_ctct_report_t.dimension ;
       data = data1 @ data2;
    } in 
    print_string(Hex_visualize_grid.visualization grid);; 
