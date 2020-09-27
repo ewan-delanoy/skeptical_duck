@@ -11,10 +11,6 @@ exception Cell_too_wide of string;;
 module Private = struct 
 
 
-
-
-
-
 let print_on_sheet_for_editing grid =
     let drawing = Hex_visualize_grid.to_ascii_drawing grid in 
     let assignment = "\n\n\n"^drawing^"\n\n\n" in 
