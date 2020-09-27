@@ -110,7 +110,7 @@ let data_for_extended_molecular (dim,winner) extmol =
 
 end ;;
 
-let data_for_extended_molecular = Private.data_for_extended_molecular ;;
+let grid_of_extended_molecular = Private.data_for_extended_molecular ;;
 
 let to_ascii_drawing = Private.to_ascii_drawing ;;
 
