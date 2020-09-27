@@ -109,6 +109,40 @@ let disjunction cells older_extmols =
       active_part = final_active_part;
    };;
 
+let visualization (dim,winner) extmol =
+   let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
+   and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
+   and (Hex_cell_set_t.S passv)=extmol.Hex_extended_molecular_t.nonmolecular_passive_part in 
+   let cti = Hex_cell.to_int_pair in 
+   let pairs1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Pair(cell1,cell2)) -> Some(cti cell1,cti cell2)
+       |_->None
+   ) l in 
+   let pairs2 = Ennig.index_everything pairs1 in 
+   let pairs = List.flatten(Image.image (fun
+      (j,(ipair1,ipair2))->
+        let label = " "^(String.make 1 (char_of_int(96+j)))^" " in 
+        [ipair1,label;ipair2,label]
+   ) pairs2) in 
+   let eyes1 = Option.filter_and_unpack ( function
+        (Hex_atomic_linker_t.Eyed_claw(d1,d2,cell)) -> Some(d1,d2,cell)
+       |_->None
+   ) l in 
+   let eyes2 = Image.image (
+      fun (d1,d2,cell) -> 
+         let ipair = cti cell in 
+         (ipair,Hex_cardinal_direction.name_for_eyed_claw d1 d2)::
+         (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
+   ) eyes1 in 
+   let eyes = List.flatten eyes2 in 
+   let actives = Image.image (fun cell->(cti cell," A ")) actv 
+   and passives = Image.image (fun cell->(cti cell,"ppp")) passv in 
+   let grid = {
+      Hex_ascii_grid_t.beneficiary = winner ;
+      dimension = dim ;
+      data = pairs@eyes@actives@passives;
+   } in 
+   Hex_visualize_grid.to_ascii_drawing grid;; 
 
 
 
@@ -146,3 +180,4 @@ let passive_part = Private.passive_part ;;
 let to_concrete_object = Private.to_concrete_object;;
 let use_ally_move_to_simplify_one = Private.use_ally_move_to_simplify_one;;
 let use_enemy_move_to_simplify_one = Private.use_enemy_move_to_simplify_one;;
+let visualization = Private.visualization;;
