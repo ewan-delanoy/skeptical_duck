@@ -127,10 +127,15 @@ let analize () =
    else 
    let (mlclr,actives) = List.hd sols in 
    let linker = Hex_strategy_static_constructor_t.Molecular(mlclr,actives) in
+   let  extmol = {
+     Hex_extended_molecular_t.nonmolecular_passive_part = Hex_cell_set.empty_set ;
+     molecular_part = mlclr ;
+     active_part = actives
+   } in 
    let _= (
       print_string ("The following strategy has been found for "^color^" :\n\n"); 
       flush stdout;
-      Hex_ascii_grid.see_linker dim hypothetical_winner mlclr actives 
+      Hex_visualize_grid.visualize (Hex_visualize_grid.grid_of_extended_molecular (dim,hypothetical_winner) extmol)
    ) in 
    Hex_persistent.add_end_strategy
    (hypothetical_winner,linker,"",[]);;     
