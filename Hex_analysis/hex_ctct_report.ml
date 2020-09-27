@@ -128,10 +128,8 @@ let visualize ctct_report =
    let indexed_items= Ennig.index_everything ctct_report.Hex_ctct_report_t.items in 
    let data1 = List.flatten (Image.image (
       fun (j,item) ->
-         let sj = string_of_int j in 
-         let completed_sj = (String.make (3-(String.length sj)) ' ')^sj in 
          Hex_cell_set.image (
-            fun cell->(cti cell,completed_sj)
+            fun cell->(cti cell,Hex_visualize_grid.int_in_cell j)
          ) item.Hex_ctct_report_item_t.active_dwellers
         
    ) indexed_items) in 
