@@ -55,7 +55,7 @@ let full_line grid line_idx =
    (main_content_of_line grid line_idx);;
 
 
-let to_ascii_drawing grid =
+let visualization grid =
    let formal_dim = grid.Hex_ascii_grid_t.dimension 
    and data = grid.Hex_ascii_grid_t.data in 
    let (Hex_dimension_t.D dim) = formal_dim in 
@@ -71,7 +71,7 @@ end ;;
 
 
 
-let visualization = Private.to_ascii_drawing ;;
+let visualization = Private.visualization ;;
 
 
 
