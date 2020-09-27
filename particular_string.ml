@@ -1,11 +1,13 @@
 (*
 
-#use"double_semicolon.ml";;
+#use"particular_string.ml";;
 
-To make life easier for the OCaml mini-parser.
 
 *)
 
-let ds=String.make 2 (char_of_int 59);;
 
+
+let ds=String.make 2 (char_of_int 59);; (* to make life easier for the OCaml mini-parser *)
+
+let triple_blank = String.make 3 ' ';;
            
