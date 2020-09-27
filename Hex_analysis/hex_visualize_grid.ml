@@ -56,9 +56,13 @@ let full_line grid line_idx =
    (coordinate_mention line_idx)^ 
    (main_content_of_line grid line_idx);;
 
-let to_ascii_drawing (formal_dim,beneficiary,data) =
+
+let to_ascii_drawing grid =
+   let formal_dim = grid.Hex_ascii_grid_t.dimension 
+   and data = grid.Hex_ascii_grid_t.data in 
    let (Hex_dimension_t.D dim) = formal_dim in 
-   "Config benefitting Player "^(Hex_player.to_string beneficiary)^"\n\n\n"^
+   let player = grid.Hex_ascii_grid_t.beneficiary in
+   "Config benefitting Player "^(Hex_player.to_string player)^"\n\n\n"^
    (String.concat "\n" (Ennig.doyle (full_line (formal_dim,data)) 1 (2*dim+2)));;
 
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;

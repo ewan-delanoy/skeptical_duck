@@ -63,7 +63,8 @@ let visualize fles=
     let dim = fles.Hex_flattened_end_strategy_t.dimension 
     and winner = fles.Hex_flattened_end_strategy_t.beneficiary in 
     Hex_visualize_grid.visualize 
-     (dim,winner,Hex_visualize_grid.data_for_extended_molecular fles.Hex_flattened_end_strategy_t.data);;
+     (Hex_visualize_grid.data_for_extended_molecular 
+      (dim,winner) fles.Hex_flattened_end_strategy_t.data);;
 
 
 end;;
