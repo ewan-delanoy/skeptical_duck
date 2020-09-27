@@ -68,10 +68,6 @@ let to_ascii_drawing grid =
 let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
 
 
-let name_for_eyed_claw d1 d2 =
-   (Hex_cardinal_direction.for_eye_description d1)^"e"^
-     (Hex_cardinal_direction.for_ground_description d2) ;;
-
 let data_for_extended_molecular (dim,winner) extmol =
    let (Hex_molecular_linker_t.M  l)=extmol.Hex_extended_molecular_t.molecular_part 
    and (Hex_cell_set_t.S actv)=extmol.Hex_extended_molecular_t.active_part 
@@ -94,7 +90,7 @@ let data_for_extended_molecular (dim,winner) extmol =
    let eyes2 = Image.image (
       fun (d1,d2,cell) -> 
          let ipair = cti cell in 
-         (ipair,name_for_eyed_claw d1 d2)::
+         (ipair,Hex_cardinal_direction.name_for_eyed_claw d1 d2)::
          (Image.image (fun p->(p,"eee")) (Hex_connector_data.advanced_eyed_claw d1 d2 ipair ))
    ) eyes1 in 
    let eyes = List.flatten eyes2 in 
