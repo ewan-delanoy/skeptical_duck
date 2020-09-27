@@ -65,12 +65,17 @@ let visualization grid =
    (String.concat "\n" (Ennig.doyle (full_line (formal_dim,data)) 1 (2*dim+2)))^
    "\n\n\n";;
 
-
+let int_in_cell j=
+  let sj = string_of_int j in 
+  match String.length sj with
+  1 -> " "^sj^" "
+  |2 -> "  "^sj
+  |_ -> sj ;;
 
 end ;;
 
 
-
+let int_in_cell = Private.int_in_cell ;;
 let visualization = Private.visualization ;;
 
 
