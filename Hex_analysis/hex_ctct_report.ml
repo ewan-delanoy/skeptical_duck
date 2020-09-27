@@ -123,7 +123,27 @@ let about_end_of_battle eob = {
       items  = compute_all_items eob;
 } ;; 
 
+let visualize ctct_report =
+   let cti = Hex_cell.to_int_pair in 
+   let indexed_items= Ennig.index_everything ctct_report.Hex_ctct_report_t.items in 
+   let data1 = List.flatten (Image.image (
+      fun (j,item) ->
+         let sj = string_of_int j in 
+         let completed_sj = (String.make (3-(String.length sj)) ' ')^sj in 
+         Hex_cell_set.image (
+            fun cell->(cti cell,completed_sj)
+         ) item.Hex_ctct_report_item_t.active_dwellers
+        
+   ) indexed_items) in 
+   let grid = {
+      Hex_ascii_grid_t.beneficiary = ctct_report.Hex_ctct_report_t.winner ;
+      dimension = ctct_report.Hex_ctct_report_t.dimension ;
+      data = data1;
+   } in 
+   print_string(Hex_visualize_grid.visualization grid);; 
+
 
 end ;; 
 
 let about_end_of_battle = Private.about_end_of_battle ;;
+let visualize = Private.visualize ;;
