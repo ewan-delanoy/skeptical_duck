@@ -9,7 +9,7 @@ module Private = struct
 
 let first_draft_from_previous_items eob base ctct_report = 
    let formal_dim = eob.Hex_end_of_battle_t.dimension  
-   and (Hex_ctct_report_t.R(l)) = ctct_report in 
+   and l = ctct_report.Hex_ctct_report_t.items in 
    let indexed_l = Ennig.index_everything l in 
    let temp1 = Uple.list_of_pairs indexed_l in 
    Image.image (
@@ -24,8 +24,9 @@ let first_draft_from_previous_items eob base ctct_report =
    ) temp1;;
 
 let deduce_removabilities_from_pattern
-   (Hex_ctct_report_t.R(l_report)) 
+   ctct_report
     l_draft (Hex_pattern_t.Pat l_pat) = 
+   let l_report = ctct_report.Hex_ctct_report_t.items in  
    let points = Option.filter_and_unpack (
      fun (p,is_active) -> 
       if is_active 

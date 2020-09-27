@@ -101,22 +101,29 @@ let pusher ((l,search_result):walker_type)=
    
 let rec iterator walker =
   if snd walker = None 
-  then Hex_ctct_report_t.R( Image.image (
+  then  Image.image (
           fun (opt_side,active_dwellers,_,passive_neighbors)->
             {
                Hex_ctct_report_item_t.opt_side =opt_side ;  
                active_dwellers = active_dwellers ;
                passive_neighbors = passive_neighbors ;
            }
-       ) (fst walker))
+       ) (fst walker)
   else iterator(pusher walker);;
 
 
-let main eob =
+let compute_all_items eob =
    let l=initialize eob in 
    let search_result = find_untreated_item ([],l) in 
    iterator (l,search_result);;
 
+let about_end_of_battle eob = {
+   Hex_ctct_report_t.dimension = eob.Hex_end_of_battle_t.dimension ;
+      winner = eob.Hex_end_of_battle_t.winner ;
+      items  = compute_all_items eob;
+} ;; 
+
+
 end ;; 
 
-let about_end_of_battle = Private.main ;;
+let about_end_of_battle = Private.about_end_of_battle ;;

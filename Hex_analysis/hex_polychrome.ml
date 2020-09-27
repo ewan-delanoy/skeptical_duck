@@ -5,9 +5,10 @@
 *)
 
 
-let initialize_with_previous_data eob (Hex_ctct_report_t.R(l))=
+let initialize_with_previous_data eob ctct_report=
+    let l_report = ctct_report.Hex_ctct_report_t.items in  
     let all_free_cells = Hex_end_of_battle.remaining_free_cells eob in 
-    let temp1 = Ennig.index_everything l in 
+    let temp1 = Ennig.index_everything l_report in 
     let the_classes =   Image.image (
        fun (idx,item) ->
          (Hex_polychrome_label_t.L(idx),
@@ -26,7 +27,7 @@ let initialize_with_previous_data eob (Hex_ctct_report_t.R(l))=
       Hex_polychrome_t.classes    = the_classes ;
       labels     = the_labels ;
       free_cells = all_free_cells ;
-      recorder    = (Hex_recorder_for_minimal_connecting_paths.empty_one (List.length l));
+      recorder    = (Hex_recorder_for_minimal_connecting_paths.empty_one (List.length l_report));
     };;
 
 
