@@ -100,17 +100,17 @@ let conventional_subdirs =
    ];;
 
 let minimalist_text_for_ocamlinit =
-   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.ds^
-  "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Particular_string.ds;;
+   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.double_semicolon^
+  "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Particular_string.double_semicolon;;
 
  let usual_text_for_ocamlinit = (
       minimalist_text_for_ocamlinit^
-      "\nopen Needed_values"^Particular_string.ds^
-      "\ninitialize_toplevel()"^Particular_string.ds
+      "\nopen Needed_values"^Particular_string.double_semicolon^
+      "\ninitialize_toplevel()"^Particular_string.double_semicolon
        ) ;; 
 
 let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" ;;
-let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugging.ml\""^Particular_string.ds^"\n\n*)\n\n" ;;
+let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugging.ml\""^Particular_string.double_semicolon^"\n\n*)\n\n" ;;
 
 let conventional_files_other_than_ocamlinit = 
    [

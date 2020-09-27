@@ -9,7 +9,7 @@
 module Private = struct
 
 let text_for_big_constants_file_in_next_world =
-  let ds = Particular_string.ds in 
+  let ds = Particular_string.double_semicolon in 
   String.concat "\n" [
     "\n(* "; 
     "#use\"Compilation_management/coma_big_constant.ml\""^ds;

@@ -4,7 +4,7 @@
 
 *)
 
-let double_semicolon=Particular_string.ds;;
+let double_semicolon=Particular_string.double_semicolon;;
 
 let prsr_for_comment=
   Gparser.Comment ("(*","*)","\"","\"");;
