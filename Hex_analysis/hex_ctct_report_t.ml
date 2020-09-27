@@ -5,7 +5,8 @@
 *)
 
 type t= {
-   dimension : Hex_dimension_t.t;
-      winner : Hex_player_t.t;
-      items  : Hex_ctct_report_item_t.t list;
+      dimension : Hex_dimension_t.t;
+         winner : Hex_player_t.t;
+enemy_territory : Hex_cell_set_t.t;
+         items  : Hex_ctct_report_item_t.t list;
 } ;;
