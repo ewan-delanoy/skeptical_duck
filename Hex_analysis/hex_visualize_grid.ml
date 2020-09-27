@@ -62,10 +62,12 @@ let to_ascii_drawing grid =
    and data = grid.Hex_ascii_grid_t.data in 
    let (Hex_dimension_t.D dim) = formal_dim in 
    let player = grid.Hex_ascii_grid_t.beneficiary in
+   "\n\n\n"^
    "Config benefitting Player "^(Hex_player.to_string player)^"\n\n\n"^
-   (String.concat "\n" (Ennig.doyle (full_line (formal_dim,data)) 1 (2*dim+2)));;
+   (String.concat "\n" (Ennig.doyle (full_line (formal_dim,data)) 1 (2*dim+2)))^
+   "\n\n\n";;
 
-let visualize grid = print_string("\n\n\n"^(to_ascii_drawing grid)^"\n\n\n");;
+let visualize grid = print_string(to_ascii_drawing grid);;
 
 
 let data_for_extended_molecular (dim,winner) extmol =

@@ -135,7 +135,7 @@ let analize () =
    let _= (
       print_string ("The following strategy has been found for "^color^" :\n\n"); 
       flush stdout;
-      Hex_visualize_grid.visualize (Hex_visualize_grid.grid_of_extended_molecular (dim,hypothetical_winner) extmol)
+      print_string( Hex_extended_molecular.visualization (dim,hypothetical_winner) extmol)
    ) in 
    Hex_persistent.add_end_strategy
    (hypothetical_winner,linker,"",[]);;     
