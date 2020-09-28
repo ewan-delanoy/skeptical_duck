@@ -24,7 +24,9 @@ let initialize_with_previous_data eob ctct_report=
       fun cell ->  (cell,List.assoc cell temp2)
     ) all_active_cells in 
     {
-      Hex_polychrome_t.classes    = the_classes ;
+      Hex_polychrome_t.dimension = eob.Hex_end_of_battle_t.dimension ;
+      winner     = eob.Hex_end_of_battle_t.winner;
+      classes    = the_classes ;
       labels     = the_labels ;
       free_cells = all_free_cells ;
       recorder    = (Hex_recorder_for_minimal_connecting_paths.empty_one (List.length l_report));
@@ -56,6 +58,7 @@ let add_new_mergeing pochro unlabeled_action =
          not(List.mem lbl [husband;wife])
     ) old_classes) @ [new_lbl,(merged_site,merged_neighbors)] in 
      {
+      pochro with 
       Hex_polychrome_t.classes    = new_classes ;
       labels     = new_labels ;
       free_cells = Hex_cell_set.setminus (pochro.Hex_polychrome_t.free_cells) absorbed_ones ;
