@@ -4,6 +4,7 @@
 
 *)
 
+exception Label_out_of_range of int ;;
 
 module Private = struct 
 
@@ -72,10 +73,23 @@ let int_in_cell j=
   |2 -> "  "^sj
   |_ -> sj ;;
 
+let label_in_cell k=
+  if (k<1)||(k>260) then raise(Label_out_of_range(k)) else 
+  let r0=(k mod 26) in 
+  let q0=(k-r0)/26 in 
+  let (q1,r1) = (if r0=0 then (q0-1,26) else (q0,r0)) in 
+  let main_char = String.make 1 (char_of_int (96+r1)) in 
+  if q1=0 
+  then " "^main_char^" "
+  else " "^main_char^(string_of_int(q1));; 
+
+(* let z1=Ennig.doyle label_in_cell 1 260;; *)
+
 end ;;
 
 
 let int_in_cell = Private.int_in_cell ;;
+let label_in_cell = Private.label_in_cell ;;
 let visualization = Private.visualization ;;
 
 
