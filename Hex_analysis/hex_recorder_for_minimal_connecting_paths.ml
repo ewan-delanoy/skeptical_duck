@@ -6,11 +6,12 @@
 
 module Private = struct 
 
-let size (Hex_recorder_for_minimal_connecting_paths_t.R(l)) =
+let size recorder =
+  let l = recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
   let ((_,Hex_polychrome_label_t.L(m)),_) = List.hd (List.rev l) in 
   m;;
 
-let neighbors_below (Hex_recorder_for_minimal_connecting_paths_t.R(l)) lx =
+let neighbors_below recorder lx =
   Option.filter_and_unpack (
     fun ((a,b),opt_link) -> 
       match opt_link with 
@@ -18,9 +19,9 @@ let neighbors_below (Hex_recorder_for_minimal_connecting_paths_t.R(l)) lx =
       |Some(link) -> 
         if b=lx then Some(a,link) else 
         None
-  ) l;;
+  ) recorder.Hex_recorder_for_minimal_connecting_paths_t.paths;;
 
-let neighbors_above (Hex_recorder_for_minimal_connecting_paths_t.R(l)) lx =
+let neighbors_above recorder lx =
   Option.filter_and_unpack (
     fun ((a,b),opt_link) -> 
       match opt_link with 
@@ -28,7 +29,7 @@ let neighbors_above (Hex_recorder_for_minimal_connecting_paths_t.R(l)) lx =
       |Some(link) -> 
         if a=lx then Some(b,link) else 
         None
-  ) l;;
+  ) recorder.Hex_recorder_for_minimal_connecting_paths_t.paths;;
 
 let all_neighbors recorder lx =
   (neighbors_below recorder lx)@[lx,[]]@(neighbors_above recorder lx);;
@@ -40,7 +41,7 @@ let minmax (Hex_polychrome_label_t.L i1) (Hex_polychrome_label_t.L i2)=
 let add_merger recorder (li,gc,lj)=
   let (Hex_polychrome_label_t.L i)=li 
   and (Hex_polychrome_label_t.L j)=lj   
-  and (Hex_recorder_for_minimal_connecting_paths_t.R(l)) = recorder in 
+  and paths=recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
   let m = size recorder in 
   let new_label = Hex_polychrome_label_t.L(m+1) in 
   let vi = all_neighbors recorder li 
@@ -48,26 +49,29 @@ let add_merger recorder (li,gc,lj)=
   let vij = Image.image (fun ((lab1,path1),(lab2,path2))->
        (minmax lab1 lab2,path1@path2)
   ) (Cartesian.product vi vj) in 
-  let l1 = Image.image (
+  let paths1 = Image.image (
     fun pair ->
      let (key,opt_link) = pair in 
      if opt_link<>None then pair else 
      match Option.seek (fun (key2,vaal)->key2=key) vij with 
      None -> pair 
      |Some(_,link) -> (key,Some link)
-  ) l in 
+  ) paths in 
   let new_records = Ennig.doyle (
      fun k-> 
        let lk = (Hex_polychrome_label_t.L k) in 
        let answer = (
        if (k=i)||(k=j) then Some [gc] else 
-       match List.assoc (minmax li lk) l1 with 
+       match List.assoc (minmax li lk) paths1 with 
         Some(path) -> Some(path)
-        |None -> List.assoc (minmax lj lk) l1 
+        |None -> List.assoc (minmax lj lk) paths1 
        ) in 
        ((lk,new_label),answer)
   ) 1 m in 
-  Hex_recorder_for_minimal_connecting_paths_t.R(l1 @ new_records);;
+  {
+    Hex_recorder_for_minimal_connecting_paths_t.paths = paths1 @ new_records ; 
+    connections = gc :: (recorder.Hex_recorder_for_minimal_connecting_paths_t.connections);  
+  };; 
 
    
 let empty_one n=
@@ -80,8 +84,11 @@ let empty_one n=
                     ((li,lj),None)
               ) 1 (j-1)
       ) 2 n  in 
-   Hex_recorder_for_minimal_connecting_paths_t.R(List.flatten temp1);;
-
+    {
+    Hex_recorder_for_minimal_connecting_paths_t.paths = List.flatten temp1 ; 
+    connections = [];  
+  };;    
+   
 end ;;    
 
 let add_merger = Private.add_merger ;;
