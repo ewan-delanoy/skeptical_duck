@@ -88,7 +88,8 @@ let empty_one n=
     Hex_recorder_for_minimal_connecting_paths_t.paths = List.flatten temp1 ; 
     connections = [];  
   };;    
-   
+
+
 end ;;    
 
 let add_merger = Private.add_merger ;;
