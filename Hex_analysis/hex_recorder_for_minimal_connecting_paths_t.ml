@@ -7,4 +7,7 @@
 type elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * 
       ((Hex_generalized_connector_t.t list) option) ;;
 
-type t= R of elt list ;;
+type t= { 
+   paths : elt list ;
+   connections : Hex_generalized_connector_t.t list;
+};;
