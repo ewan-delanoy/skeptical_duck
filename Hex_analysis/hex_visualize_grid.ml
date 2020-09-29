@@ -70,7 +70,7 @@ let int_in_cell j=
   let sj = string_of_int j in 
   match String.length sj with
   1 -> " "^sj^" "
-  |2 -> "  "^sj
+  |2 -> " "^sj
   |_ -> sj ;;
 
 let label_in_cell k=
