@@ -175,6 +175,9 @@ let visualization pochro =
 let  visualize pochro =  
    print_string(visualization pochro);; 
 
+let print_out (fmt:Format.formatter) pochro=
+   Format.fprintf fmt "@[%s@]" (visualization pochro);;     
+
 
 
 
