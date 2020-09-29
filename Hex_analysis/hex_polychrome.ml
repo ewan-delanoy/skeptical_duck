@@ -145,28 +145,36 @@ let from_previous_data eob base ctct_report=
    and player = eob.Hex_end_of_battle_t.winner in 
    add_all_possible_usual_mergeings player base pochro1;;    
 
-(*
+
+let connections pochro = (pochro.Hex_polychrome_t.recorder).Hex_recorder_for_minimal_connecting_paths_t.connections ;;
+  
+
 let visualization pochro =
    let cti = Hex_cell.to_int_pair in 
    let data1 = Image.image (
       fun (cell,Hex_polychrome_label_t.L(i)) ->
         (cti cell,Hex_visualize_grid.int_in_cell i)
    ) pochro.Hex_polychrome_t.labels in
-   (* 
    let data2 = Hex_cell_set.image (
        fun cell ->(cti cell,"EEE") 
-   ) ctct_report.Hex_ctct_report_t.enemy_territory in 
-   *)
+   ) pochro.Hex_polychrome_t.enemy_territory in 
+   let temp1 =Ennig.index_everything(List.rev(connections pochro)) in 
+   let data3 = List.flatten(Image.image (
+      fun (idx,gc)->
+        let label = Hex_visualize_grid.label_in_cell idx in 
+        Hex_cell_set.image (fun cell->(cti cell,label))
+        (Hex_generalized_connector.support gc)
+   ) temp1) in 
    let grid = {
       Hex_ascii_grid_t.beneficiary = pochro.Hex_polychrome_t.winner ;
       dimension = pochro.Hex_polychrome_t.dimension ;
-      data = data1 ;
+      data = data1 @ data2 @ data3 ;
    } in 
    Hex_visualize_grid.visualization grid ;;
 
 let  visualize pochro =  
    print_string(visualization pochro);; 
-*)
+
 
 
 
