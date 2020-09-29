@@ -12,12 +12,13 @@ and the third  is the set of all cells in the neighborhood.
 *)
 
 type t= {
-     dimension : Hex_dimension_t.t;
-        winner : Hex_player_t.t;
-    classes    : (Hex_polychrome_label_t.t * (Hex_cell_set_t.t * Hex_cell_set_t.t)) list ;
-    labels     : (Hex_cell_t.t * Hex_polychrome_label_t.t) list ;
-    free_cells : Hex_cell_set_t.t ;
-    recorder   : Hex_recorder_for_minimal_connecting_paths_t.t ;
+          dimension : Hex_dimension_t.t;
+             winner : Hex_player_t.t;
+    enemy_territory : Hex_cell_set_t.t;    
+         classes    : (Hex_polychrome_label_t.t * (Hex_cell_set_t.t * Hex_cell_set_t.t)) list ;
+         labels     : (Hex_cell_t.t * Hex_polychrome_label_t.t) list ;
+         free_cells : Hex_cell_set_t.t ;
+         recorder   : Hex_recorder_for_minimal_connecting_paths_t.t ;
 };;
 
 
