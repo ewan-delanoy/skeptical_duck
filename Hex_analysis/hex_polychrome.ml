@@ -26,6 +26,7 @@ let initialize_with_previous_data eob ctct_report=
     {
       Hex_polychrome_t.dimension = eob.Hex_end_of_battle_t.dimension ;
       winner     = eob.Hex_end_of_battle_t.winner;
+      enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory ;
       classes    = the_classes ;
       labels     = the_labels ;
       free_cells = all_free_cells ;
