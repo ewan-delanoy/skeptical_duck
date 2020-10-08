@@ -4,13 +4,9 @@
 
 *)
 
-(*
 
-module Patience = struct 
 
-type mapper_elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * (Hex_generalized_connector_t.t list)  ;;
-
-type mapper = mapper_elt list ;;
+module Mapper = struct 
 
 let order_for_pochro_labels = 
    ((fun (Hex_polychrome_label_t.L(a)) (Hex_polychrome_label_t.L(b))->
@@ -30,10 +26,10 @@ let rec helper (pivot,already_seen,to_be_seen) =
         |Equal -> (already_seen,Some vaal,other_items)
         |Greater ->  (already_seen,None,to_be_seen) ;;
 
-let evaluate (m:mapper) key=
+let evaluate (m:Hex_recorder_for_minimal_connecting_paths_t.mapper) key=
     let (_,opt,_) = helper (key,[],m) in opt ;;
 
-let add (m:mapper) key vaal =
+let add (m:Hex_recorder_for_minimal_connecting_paths_t.mapper) key vaal =
      let (before,opt,after) = helper (key,[],m) in 
      match opt with 
      None -> List.rev_append before ((key,vaal)::after)
@@ -41,7 +37,6 @@ let add (m:mapper) key vaal =
 
 end ;;
 
-*)
 
 
 module Private = struct 
