@@ -4,6 +4,46 @@
 
 *)
 
+(*
+
+module Patience = struct 
+
+type mapper_elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * (Hex_generalized_connector_t.t list)  ;;
+
+type mapper = mapper_elt list ;;
+
+let order_for_pochro_labels = 
+   ((fun (Hex_polychrome_label_t.L(a)) (Hex_polychrome_label_t.L(b))->
+        Total_ordering.standard a b
+    ) : Hex_polychrome_label_t.t Total_ordering.t);;
+
+let order_for_pochro_label_pairs = 
+    Total_ordering.product order_for_pochro_labels order_for_pochro_labels;;
+
+let rec helper (pivot,already_seen,to_be_seen) =
+    match to_be_seen with 
+    [] -> (already_seen,None,[])
+    | item :: other_items ->
+        let (key,vaal) = item in 
+        match  order_for_pochro_label_pairs pivot key with 
+        Total_ordering.Lower ->   helper (pivot,item::already_seen,other_items) 
+        |Equal -> (already_seen,Some vaal,other_items)
+        |Greater ->  (already_seen,None,to_be_seen) ;;
+
+let evaluate (m:mapper) key=
+    let (_,opt,_) = helper (key,[],m) in opt ;;
+
+let add (m:mapper) key vaal =
+     let (before,opt,after) = helper (key,[],m) in 
+     match opt with 
+     None -> List.rev_append before ((key,vaal)::after)
+     |Some (_) -> m;;
+
+end ;;
+
+*)
+
+
 module Private = struct 
 
 let size recorder =
