@@ -9,10 +9,9 @@ type mapper_elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * (Hex_g
 
 type mapper = mapper_elt list ;;
 
-type elt = (Hex_polychrome_label_t.t * Hex_polychrome_label_t.t) * 
-      ((Hex_generalized_connector_t.t list) option) ;;
-
 type t= { 
-   paths : elt list ;
-   connections : Hex_generalized_connector_t.t list;
+   mapper : mapper ;
+   contents_for_new_labels : (Hex_polychrome_label_t.t * (Hex_polychrome_label_t.t list)) list;
+   definitions_for_new_labels : (Hex_polychrome_label_t.t * (Hex_polychrome_label_t.t * Hex_generalized_connector_t.t *
+      Hex_polychrome_label_t.t)) list;
 };;
