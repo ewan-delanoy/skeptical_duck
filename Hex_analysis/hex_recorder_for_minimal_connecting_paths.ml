@@ -73,9 +73,16 @@ let all_neighbors recorder lx =
 let minmax (Hex_polychrome_label_t.L i1) (Hex_polychrome_label_t.L i2)=
   (Hex_polychrome_label_t.L(min(i1)(i2)),Hex_polychrome_label_t.L(max(i1)(i2)));;   
 
+(**** New code starts here ****)
+
+
+
 let add_merger recorder (li,gc,lj)=
   let (Hex_polychrome_label_t.L i)=li 
-  and (Hex_polychrome_label_t.L j)=lj   
+  and (Hex_polychrome_label_t.L j)=lj   in 
+  
+
+
   and paths=recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
   let m = size recorder in 
   let new_label = Hex_polychrome_label_t.L(m+1) in 
@@ -109,19 +116,11 @@ let add_merger recorder (li,gc,lj)=
   };; 
 
    
-let empty_one n=
-   let temp1 = Ennig.doyle (
-         fun j ->
-            let lj =  Hex_polychrome_label_t.L j in 
-              Ennig.doyle (
-                  fun i -> 
-                  let li =  Hex_polychrome_label_t.L i in 
-                    ((li,lj),None)
-              ) 1 (j-1)
-      ) 2 n  in 
+let empty_one =
     {
-    Hex_recorder_for_minimal_connecting_paths_t.paths = List.flatten temp1 ; 
-    connections = [];  
+    Hex_recorder_for_minimal_connecting_paths_t.mapper = [] ; 
+    contents_for_new_labels = [];  
+    definitions_for_new_labels = [];  
   };;    
 
 
