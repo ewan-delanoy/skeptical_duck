@@ -25,7 +25,7 @@ let analize_game fgame =
    let eob = Hex_end_of_battle.of_finished_game fgame in 
    let report = Hex_ctct_report.about_end_of_battle eob 
    and base = Hex_base_of_connectors.from_end_of_battle eob in 
-   let draft = Hex_ccnn_report.predraft_from_previous_items eob base report in 
+   (* let draft = Hex_ccnn_report.predraft_from_previous_items eob base report in *)
    (
     ref_for_games :=fgame::(!ref_for_games);
     ref_for_eobs :=eob::(!ref_for_eobs);
