@@ -75,12 +75,19 @@ let minmax (Hex_polychrome_label_t.L i1) (Hex_polychrome_label_t.L i2)=
 
 (**** New code starts here ****)
 
-
+let content recorder li =
+   let (Hex_polychrome_label_t.L i)=li  in 
+   if i > recorder.Hex_recorder_for_minimal_connecting_paths_t.number_of_old_labels 
+   then List.assoc li recorder.Hex_recorder_for_minimal_connecting_paths_t.contents_for_new_labels
+   else [li];;
 
 let add_merger recorder (li,gc,lj)=
   let (Hex_polychrome_label_t.L i)=li 
   and (Hex_polychrome_label_t.L j)=lj   in 
-  
+  let vi = content recorder li 
+  and vj = content recorder lj in 
+  let vij = Cartesian.product vi vj in 
+    
 
 
   and paths=recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
@@ -116,9 +123,10 @@ let add_merger recorder (li,gc,lj)=
   };; 
 
    
-let empty_one =
+let empty_one n=
     {
-    Hex_recorder_for_minimal_connecting_paths_t.mapper = [] ; 
+    Hex_recorder_for_minimal_connecting_paths_t.number_of_old_labels = n;
+    mapper = [] ; 
     contents_for_new_labels = [];  
     definitions_for_new_labels = [];  
   };;    
