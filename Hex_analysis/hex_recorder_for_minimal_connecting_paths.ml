@@ -62,11 +62,6 @@ end ;;
 module Private = struct 
 
 
-let minmax (Hex_polychrome_label_t.L i1) (Hex_polychrome_label_t.L i2)=
-  (Hex_polychrome_label_t.L(min(i1)(i2)),Hex_polychrome_label_t.L(max(i1)(i2)));;   
-
-(**** New code starts here ****)
-
 let content recorder li =
    let (Hex_polychrome_label_t.L i)=li  in 
    if i > recorder.Hex_recorder_for_minimal_connecting_paths_t.number_of_old_labels 
@@ -80,8 +75,11 @@ let add_merger recorder triple=
   let vij = Cartesian.product vi vj in 
   let old_mapper = recorder.Hex_recorder_for_minimal_connecting_paths_t.mapper in 
   let cleaned_vij = Mapper.select_nonregistered_pairs old_mapper vij in 
+  let old_bridges = recorder.Hex_recorder_for_minimal_connecting_paths_t.bridges_for_new_labels  in 
   let new_mappings = Image.image (fun (xi,xj)->
-    
+     let bxi = List.assoc xi old_bridges
+     and bxj = List.assoc xj old_bridges in 
+     ((xi,xj),gc::(bxi@bxj))  
   ) cleaned_vij in 
   let new_mapper = Ordered.merge Mapper.order_for_mappings new_mappings old_mapper in 
   let old_contents = recorder.Hex_recorder_for_minimal_connecting_paths_t.contents_for_new_labels in 
@@ -89,9 +87,12 @@ let add_merger recorder triple=
   let new_label = Hex_polychrome_label_t.L(m+1) in 
   let uij = Ordered.merge Mapper.order_for_pochro_labels vi vj in 
   let old_defs = recorder.Hex_recorder_for_minimal_connecting_paths_t.definitions_for_new_labels in 
+  let bi = List.assoc li old_bridges 
+  and bj = List.assoc lj old_bridges  in 
   {
      recorder with 
      Hex_recorder_for_minimal_connecting_paths_t.mapper = new_mapper ;
+     bridges_for_new_labels = (new_label,gc::(bi@bj)) :: old_bridges ;
      contents_for_new_labels = (new_label,uij) :: old_contents  ;
      definitions_for_new_labels = (new_label,triple) :: old_defs ;
    } ;;
@@ -103,6 +104,7 @@ let empty_one n=
     {
     Hex_recorder_for_minimal_connecting_paths_t.number_of_old_labels = n;
     mapper = [] ; 
+    bridges_for_new_labels = [];
     contents_for_new_labels = [];  
     definitions_for_new_labels = [];  
   };;    
