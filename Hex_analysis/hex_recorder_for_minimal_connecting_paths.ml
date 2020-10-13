@@ -16,58 +16,50 @@ let order_for_pochro_labels =
 let order_for_pochro_label_pairs = 
     Total_ordering.product order_for_pochro_labels order_for_pochro_labels;;
 
-let rec helper (pivot,already_seen,to_be_seen) =
+let order_for_mappings =
+   Total_ordering.product order_for_pochro_label_pairs Total_ordering.standard;;
+
+let rec helper_for_evaluation (pivot,already_seen,to_be_seen) =
     match to_be_seen with 
     [] -> (already_seen,None,[])
     | item :: other_items ->
         let (key,vaal) = item in 
         match  order_for_pochro_label_pairs pivot key with 
-        Total_ordering.Lower ->   helper (pivot,item::already_seen,other_items) 
+        Total_ordering.Lower ->   helper_for_evaluation (pivot,item::already_seen,other_items) 
         |Equal -> (already_seen,Some vaal,other_items)
         |Greater ->  (already_seen,None,to_be_seen) ;;
 
 let evaluate (m:Hex_recorder_for_minimal_connecting_paths_t.mapper) key=
-    let (_,opt,_) = helper (key,[],m) in opt ;;
+    let (_,opt,_) = helper_for_evaluation (key,[],m) in opt ;;
 
 let add (m:Hex_recorder_for_minimal_connecting_paths_t.mapper) key vaal =
-     let (before,opt,after) = helper (key,[],m) in 
+     let (before,opt,after) = helper_for_evaluation (key,[],m) in 
      match opt with 
      None -> List.rev_append before ((key,vaal)::after)
      |Some (_) -> m;;
+
+let rec helper_for_selection (already_selected,to_be_compared,to_be_seen) =
+      match to_be_seen with 
+       [] -> List.rev already_selected 
+       |pair :: other_pairs->
+    (
+      match to_be_compared with 
+      [] -> List.rev_append already_selected to_be_seen 
+      | (key,vaal) :: other_associations ->
+        match  order_for_pochro_label_pairs pair key with 
+        Total_ordering.Lower ->   helper_for_selection (pair::already_selected,to_be_compared,other_pairs) 
+        |Equal -> helper_for_selection (already_selected,other_associations,other_pairs)
+        |Greater ->  helper_for_selection (already_selected,other_associations,to_be_seen)
+    );;
+
+let select_nonregistered_pairs (m:Hex_recorder_for_minimal_connecting_paths_t.mapper) to_be_tested =
+   helper_for_selection ([],m,Ordered.safe_set order_for_pochro_label_pairs to_be_tested);;
 
 end ;;
 
 
 
 module Private = struct 
-
-let size recorder =
-  let l = recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
-  let ((_,Hex_polychrome_label_t.L(m)),_) = List.hd (List.rev l) in 
-  m;;
-
-let neighbors_below recorder lx =
-  Option.filter_and_unpack (
-    fun ((a,b),opt_link) -> 
-      match opt_link with 
-      None -> None 
-      |Some(link) -> 
-        if b=lx then Some(a,link) else 
-        None
-  ) recorder.Hex_recorder_for_minimal_connecting_paths_t.paths;;
-
-let neighbors_above recorder lx =
-  Option.filter_and_unpack (
-    fun ((a,b),opt_link) -> 
-      match opt_link with 
-      None -> None 
-      |Some(link) -> 
-        if a=lx then Some(b,link) else 
-        None
-  ) recorder.Hex_recorder_for_minimal_connecting_paths_t.paths;;
-
-let all_neighbors recorder lx =
-  (neighbors_below recorder lx)@[lx,[]]@(neighbors_above recorder lx);;
 
 
 let minmax (Hex_polychrome_label_t.L i1) (Hex_polychrome_label_t.L i2)=
@@ -81,46 +73,30 @@ let content recorder li =
    then List.assoc li recorder.Hex_recorder_for_minimal_connecting_paths_t.contents_for_new_labels
    else [li];;
 
-let add_merger recorder (li,gc,lj)=
-  let (Hex_polychrome_label_t.L i)=li 
-  and (Hex_polychrome_label_t.L j)=lj   in 
+let add_merger recorder triple=
+  let (li,gc,lj)=triple in 
   let vi = content recorder li 
   and vj = content recorder lj in 
   let vij = Cartesian.product vi vj in 
+  let old_mapper = recorder.Hex_recorder_for_minimal_connecting_paths_t.mapper in 
+  let cleaned_vij = Mapper.select_nonregistered_pairs old_mapper vij in 
+  let new_mappings = Image.image (fun (xi,xj)->
     
-
-
-  and paths=recorder.Hex_recorder_for_minimal_connecting_paths_t.paths in 
-  let m = size recorder in 
+  ) cleaned_vij in 
+  let new_mapper = Ordered.merge Mapper.order_for_mappings new_mappings old_mapper in 
+  let old_contents = recorder.Hex_recorder_for_minimal_connecting_paths_t.contents_for_new_labels in 
+  let (Hex_polychrome_label_t.L m,_)= List.hd(List.rev(old_contents)) in 
   let new_label = Hex_polychrome_label_t.L(m+1) in 
-  let vi = all_neighbors recorder li 
-  and vj = all_neighbors recorder lj in 
-  let vij = Image.image (fun ((lab1,path1),(lab2,path2))->
-       (minmax lab1 lab2,path1@path2)
-  ) (Cartesian.product vi vj) in 
-  let paths1 = Image.image (
-    fun pair ->
-     let (key,opt_link) = pair in 
-     if opt_link<>None then pair else 
-     match Option.seek (fun (key2,vaal)->key2=key) vij with 
-     None -> pair 
-     |Some(_,link) -> (key,Some link)
-  ) paths in 
-  let new_records = Ennig.doyle (
-     fun k-> 
-       let lk = (Hex_polychrome_label_t.L k) in 
-       let answer = (
-       if (k=i)||(k=j) then Some [gc] else 
-       match List.assoc (minmax li lk) paths1 with 
-        Some(path) -> Some(path)
-        |None -> List.assoc (minmax lj lk) paths1 
-       ) in 
-       ((lk,new_label),answer)
-  ) 1 m in 
+  let uij = Ordered.merge Mapper.order_for_pochro_labels vi vj in 
+  let old_defs = recorder.Hex_recorder_for_minimal_connecting_paths_t.definitions_for_new_labels in 
   {
-    Hex_recorder_for_minimal_connecting_paths_t.paths = paths1 @ new_records ; 
-    connections = gc :: (recorder.Hex_recorder_for_minimal_connecting_paths_t.connections);  
-  };; 
+     recorder with 
+     Hex_recorder_for_minimal_connecting_paths_t.mapper = new_mapper ;
+     contents_for_new_labels = (new_label,uij) :: old_contents  ;
+     definitions_for_new_labels = (new_label,triple) :: old_defs ;
+   } ;;
+
+
 
    
 let empty_one n=
