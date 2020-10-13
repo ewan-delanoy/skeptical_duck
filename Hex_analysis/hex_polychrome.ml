@@ -146,7 +146,9 @@ let from_previous_data eob base ctct_report=
    add_all_possible_usual_mergeings player base pochro1;;    
 
 
-let connections pochro = (pochro.Hex_polychrome_t.recorder).Hex_recorder_for_minimal_connecting_paths_t.connections ;;
+let connections pochro = 
+  let defs =(pochro.Hex_polychrome_t.recorder).Hex_recorder_for_minimal_connecting_paths_t.definitions_for_new_labels in 
+  Image.image (fun (_,(_,gc,_))->gc) defs ;;
   
 
 let visualization pochro =
