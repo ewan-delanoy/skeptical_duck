@@ -3,8 +3,6 @@
 *)
 
 
-
 type t= 
-   Bridge of Hex_simple_bridge_t.t
-  |Named of  Hex_named_connector_t.t ;;
-
+    Bridge of Hex_cell_t.t * Hex_cell_t.t 
+   |Named of  Hex_named_connector_t.t ;;
