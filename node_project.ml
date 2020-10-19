@@ -13,7 +13,7 @@ let config =
     Dfa_root_t.R "/Users/ewandelanoy/Teuliou/Sites/Githubbed_gwl";
    gitpush_after_backup = true;
    ignored_subdirectories =
-    [Dfa_subdirectory_t.SD "Traou_all";
+    [
      Dfa_subdirectory_t.SD "images"; 
      Dfa_subdirectory_t.SD "node_modules"
     ];
@@ -25,7 +25,7 @@ let config =
    github_url = "https://github.com/ewan-delanoy/node_app";
    confidential_files = [
      compact_replacer,
-   Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "app",
+   Dfn_rootless_t.J (Dfa_subdirectory_t.SD "models", Dfa_module_t.M "mysql_connection",
        Dfa_ending_t.E "js")];
    } ;;
 
