@@ -25,13 +25,13 @@ let analize_game fgame =
    let eob = Hex_end_of_battle.of_finished_game fgame in 
    let report = Hex_ctct_report.about_end_of_battle eob 
    and base = Hex_base_of_connectors.from_end_of_battle eob in 
-   (* let draft = Hex_ccnn_report.predraft_from_previous_items eob base report in *)
+   let draft = Hex_ccnn_report.predraft_from_previous_items eob base report in 
    (
     ref_for_games :=fgame::(!ref_for_games);
     ref_for_eobs :=eob::(!ref_for_eobs);
     ref_for_ctct_reports := report::(!ref_for_ctct_reports);
     ref_for_bases := base :: (!ref_for_bases);
-    ref_for_drafts := 0 :: (!ref_for_drafts);
+    ref_for_drafts := draft :: (!ref_for_drafts);
    );;
 
 let analize_games games = List.iter analize_game (List.rev games);;
