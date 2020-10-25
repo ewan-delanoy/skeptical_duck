@@ -4,6 +4,8 @@
 
 *)
 
+exception Lowercase_label_exn of int ;;
+
 module Private = struct 
 
 let constructor ctct_report l_connectors = {
@@ -45,6 +47,27 @@ let compute_connectors eob base ctct_report =
      | Some(nc)->Some((i,j),nc)
    ) temp1 ;;
 
+let lowercase_label k = 
+   if (k<1)||(k>26) 
+   then raise(Lowercase_label_exn(k)) 
+   else " "^(String.make 1 (char_of_int(k+26)))^" ";;
+
+let colouring_for_connectors ucr = 
+    let temp1 = Image.image (fun (_,uc)->Hex_unified_connector.support uc) ucr.Hex_uc_report_t.connectors in 
+    let temp2 = Ennig.index_everything temp1 in 
+    let temp3 = Image.image (fun (k,domain)->(lowercase_label k,domain) ) temp2 in 
+    let whole = Hex_cell_set.fold_merge temp1 in 
+    let temp4 = Hex_cell_set.image (
+      fun cell ->
+        let ttemp5 = List.filter (fun (k,domain)->Hex_cell_set.mem cell domain) temp3 in
+        let label =(
+            if List.length(ttemp5)=1
+            then fst(List.hd ttemp5)
+            else "***") in 
+        (Hex_cell.to_int_pair cell,label)         
+    ) whole in 
+    temp4 ;;
+
 end ;;   
 
 let from_previous_items eob base =
@@ -64,10 +87,11 @@ let visualize uc_report =
       ) indexed_items) in 
       let data2 = Hex_cell_set.image (
           fun cell ->(cti cell,"EEE") 
-      ) uc_report.Hex_uc_report_t.enemy_territory in 
+      ) uc_report.Hex_uc_report_t.enemy_territory 
+      and data3 = Private.colouring_for_connectors uc_report in 
       let grid = {
          Hex_ascii_grid_t.beneficiary = uc_report.Hex_uc_report_t.winner ;
          dimension = uc_report.Hex_uc_report_t.dimension ;
-         data = data1 @ data2;
+         data = data1 @ data2 @ data3;
       } in 
       print_string(Hex_visualize_grid.visualization grid);;
