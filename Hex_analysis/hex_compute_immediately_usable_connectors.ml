@@ -10,8 +10,8 @@ let choose_unique_connector common connectors =
       if Hex_cell_set.length (common) >= 2 
       then let temp1 = Hex_cell_set.forget_order common in 
            let tempf = (fun k->List.nth temp1 (k-1)) in 
-           Hex_generalized_connector_t.Bridge(tempf 1,tempf 2)   
-      else Hex_generalized_connector_t.Named(List.hd connectors)     
+           Hex_unified_connector_t.Bridge(tempf 1,tempf 2)   
+      else Hex_unified_connector_t.Named(List.hd connectors)     
 
 end ;;   
 
