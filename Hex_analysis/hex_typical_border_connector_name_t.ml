@@ -5,7 +5,8 @@
 *)
 
 type t= 
-     Border_bridge 
+     Armchair
+    |Border_bridge 
     |Byssus 
     |Pyramid 
     |Small_pyramid  

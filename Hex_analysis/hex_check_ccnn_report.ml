@@ -47,13 +47,13 @@ let verify_item_in_draft item =
     None ;;  
    
 
-let verify_indexed_draft (draft_idx,draft) = None ;;
-   (*
+let verify_indexed_draft (draft_idx,draft) = 
+
    let problems = Option.filter_and_unpack verify_item_in_draft draft in 
    if problems = []
    then None 
    else Some (Image.image (fun (msg,item)->(draft_idx,msg,item)) problems) ;;
-   *)
+
 
 let verify_all_drafts ()=
    let indexed_drafts = Ennig.index_everything (!ref_for_drafts) in 
@@ -70,13 +70,12 @@ let check_disjointness_on_draft l=
    let temp2 = Uple.list_of_pairs temp1 in 
    List.filter (fun ((triple1,z1),(triple2,z2))->Hex_cell_set.intersects z1 z2) temp2;; 
 
-let check_disjointness_on_indexed_draft (draft_idx,draft) = None ;;
-   (*
+let check_disjointness_on_indexed_draft (draft_idx,draft) = 
    let problems = check_disjointness_on_draft draft in 
    if problems = []
    then None 
    else Some (Image.image (fun (a,b)->(draft_idx,a,b)) problems) ;;
-   *)
+
 
 let check_disjointness_on_all_drafts ()=
    let indexed_drafts = Ennig.index_everything (!ref_for_drafts) in 
