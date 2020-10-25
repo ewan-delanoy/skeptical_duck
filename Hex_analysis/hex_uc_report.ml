@@ -50,7 +50,7 @@ let compute_connectors eob base ctct_report =
 let lowercase_label k = 
    if (k<1)||(k>26) 
    then raise(Lowercase_label_exn(k)) 
-   else " "^(String.make 1 (char_of_int(k+26)))^" ";;
+   else " "^(String.make 1 (char_of_int(k+96)))^" ";;
 
 let colouring_for_connectors ucr = 
     let temp1 = Image.image (fun (_,uc)->Hex_unified_connector.support uc) ucr.Hex_uc_report_t.connectors in 
