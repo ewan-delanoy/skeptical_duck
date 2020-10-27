@@ -2,6 +2,8 @@
 
 #use"Hex_analysis/hex_uc_report_t.ml";;
 
+uc is for "unified connector"
+
 *)
 
 type t= {
