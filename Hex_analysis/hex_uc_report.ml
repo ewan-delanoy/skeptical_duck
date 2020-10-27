@@ -74,7 +74,7 @@ end ;;
 let from_previous_items eob =
     let ctct_report = Hex_ctct_report.about_end_of_battle eob in 
     let l_base = Hex_base_of_connectors.from_end_of_battle eob in 
-    let l_connectors = Private.compute_connectors eob base ctct_report in 
+    let l_connectors = Private.compute_connectors eob l_base ctct_report in 
     Private.constructor ctct_report l_base l_connectors ;;  
 
 let visualize uc_report =
