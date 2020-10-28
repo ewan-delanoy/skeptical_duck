@@ -13,13 +13,13 @@ let all =
       ) base
     );;
 
-(*
-    let reverse = function 
+
+let reverse = function 
      Hex_inner_connector_name_t.Broken_bridge(island1,cell1,cell2,island2) -> 
       Hex_inner_connector_name_t.Broken_bridge(island2,cell1,cell2,island1)
     |Typical(tic,direction,orientation)-> 
         Hex_inner_connector_name_t.Typical(tic,direction,not(orientation)) ;;
-*)
+
 
 let to_nondefault_molecular_linker = function 
      Hex_inner_connector_name_t.Broken_bridge(_,_,_,_) 
