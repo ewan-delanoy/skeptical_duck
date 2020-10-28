@@ -27,6 +27,8 @@
 
 *)
 
+module Private = struct 
+
 let prepare_for_journey = 
   [
      Hex_typical_inner_connector_name_t.Haddock1 , 
@@ -35,12 +37,7 @@ let prepare_for_journey =
        ([(3,4)],[ (2,3);(1,4);(3,3);(2,4)],[(1,3);(2,2);(3,1);(4,1);(4,2)],"hk2") ; 
   ];;
 
-let all = Image.image fst prepare_for_journey ;;
-let to_readable_string tic = 
-    let (_,_,_,name) = List.assoc tic prepare_for_journey in 
-    name ;;
-
-let upwards_version tic = 
+  let upwards_version tic = 
     let (entry1,ju,exit1,_) = List.assoc tic prepare_for_journey in 
    {Hex_connector_t.entry = Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs.safe_set entry1);
     junction = ju;
@@ -62,14 +59,15 @@ let specify_orientation undirected_tic is_direct =
    then undirected_tic 
    else Hex_connector.reverse  undirected_tic ;;
 
-let full_constructor tic (side,is_direct) =
-      specify_orientation (specify_side tic side) is_direct ;;
 
-(*
-let full_constructor tic (side,is_direct) new_apex=
-     let default_example = specify_orientation (specify_side tic side) is_direct in 
-     let (x1,y1) = List.hd(default_example.Hex_connector_t.junction) 
-     and (x2,y2) = new_apex in 
-     let dx=x2-x1 and dy=y2-y1 in 
-     Hex_connector.translate (dx,dy) default_example;;    
-*) 
+end ;; 
+
+let all = Image.image fst Private.prepare_for_journey ;;
+let to_readable_string tic = 
+    let (_,_,_,name) = List.assoc tic Private.prepare_for_journey in 
+    name ;;
+
+
+let full_constructor tic (side,is_direct) =
+      Private.specify_orientation (Private.specify_side tic side) is_direct ;;
+
