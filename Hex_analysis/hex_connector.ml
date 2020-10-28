@@ -110,21 +110,5 @@ let upwards_left_situated_haddock1 = {
     apex = None ;
 } ;;   
 
-(*
-let northeast_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(2,1)]);
-    junction = [(1, 2); (2, 2)];
-    exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,3)]);
-    apex = None ;
-} ;;   
-
-let northwest_bridge = {
-    Hex_connector_t.entry = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(2,2)]);
-    junction = [(1, 2); (2, 1)];
-    exit = Hex_island_t.I(no_anchor,Set_of_poly_pairs_t.S [(1,1)]);
-    apex = None ;
-} ;;   
-
-*)
 
 end ;;
