@@ -51,8 +51,7 @@ let broken_bridge (entry,p1,p2,exit) = {
 } ;;   
 
 let expand_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> failwith("bbb") 
-   |Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
+   Hex_inner_connector_name_t.Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
    |Typical(tic,side,is_direct) -> Hex_typical_inner_connector_name.full_constructor tic (side,is_direct) ;; 
 
 
