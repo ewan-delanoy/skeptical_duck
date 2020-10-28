@@ -7,10 +7,6 @@
 let all =
     let base = Cartesian.tproduct 
       Hex_typical_inner_connector_name.all  Hex_cardinal_direction.all [true;false] in 
-    (Image.image (
-      fun us -> Hex_inner_connector_name_t.Bridge(us)
-    ) Hex_unit_side.all)
-    @
     (
       Image.image (
         fun (tic,direction,orientation) -> Hex_inner_connector_name_t.Typical (tic,direction,orientation)
