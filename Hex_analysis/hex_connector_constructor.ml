@@ -20,6 +20,7 @@ let high = up and low =down;;
 
 module Inner = struct 
 
+    (*
     let northeast_bridge = Hex_connector.Example.northeast_bridge ;;  
     let northwest_bridge = Hex_connector.Example.northwest_bridge ;;  
     let southwest_bridge = reverse northeast_bridge ;;
@@ -38,7 +39,7 @@ module Inner = struct
        |Hex_unit_side_t.South_east ->  southeast_bridge
        |Hex_unit_side_t.South_west ->  southwest_bridge ;;
    
-
+*)
 let ul_haddock1 = Hex_connector.Example.upwards_left_situated_haddock1;;
 
 let left_situated_haddock1  = function 
@@ -69,7 +70,7 @@ let broken_bridge (entry,p1,p2,exit) = {
 } ;;   
 
 let expand_name = function 
-   Hex_inner_connector_name_t.Bridge(us)-> bridge us
+   Hex_inner_connector_name_t.Bridge(us)-> failwith("bbb") (* bridge us *)
    |Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
    |Typical(tic,side,is_direct) -> Hex_typical_inner_connector_name.full_constructor tic (side,is_direct) ;; 
 
