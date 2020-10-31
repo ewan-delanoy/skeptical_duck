@@ -6,68 +6,61 @@ The most used function in all those modules !
 
 *)
 
-(*
 
-type color = C of string ;;
 
-module Edge = struct 
+module Private = struct 
 
-type t = E of  (int*int) * color ;; 
-let cross_edge v (E((x,y),lbl)) =
+let cross_edge v ((x,y),lbl) =
     if v=x then Some(lbl,y) else 
     if v=y then Some(lbl,x) else 
     None ;;        
-end ;;  
 
-exception Cycle of int * ((color*int) list) * color;;
 
-module Path = struct 
+exception Cycle of int list;;
 
-type t = P of int * ((color*int) list)  ;;
 
-let extend_path (P(start,wedges)) (lbl,x) =
+
+let extend_path (start,wedges) (lbl,x) =
      let (before,opt,after) = 
         Three_parts.select_center_element_and_reverse_left (fun (c,y)->y=x) (List.rev wedges) in 
      match opt with 
-     Some(pair)-> raise(Cycle(x,before,lbl)) 
+     Some(pair)-> raise(Cycle(x::(Image.image snd before))) 
       |None -> if x=start 
-               then raise(Cycle(x,wedges,lbl))
-               else P(start,wedges@[lbl,x]);;   
+               then raise(Cycle(x::(Image.image snd wedges)))
+               else (start,wedges@[lbl,x]);;   
 
-let end_vertex_in_path (P(start,wedges)) = match List.rev wedges with 
+let final_vertex_in_path (start,wedges) = match List.rev wedges with 
   [] -> start 
   |(_,x) :: _-> x ;;
 
-end ;;  
+
 
 (*
-Path.extend_path
-(Path.P (1,[(C"a",2);(C"b",3);(C"c",4);(C"d",5)])) (C"e",6);;
+extend_path
+ (1,[("a",2);("b",3);("",4);("d",5)]) ("e",6);;
 
-Path.extend_path
-(Path.P (1,[(C"a",2);(C"b",3);(C"c",4);(C"d",5)])) (C"e",5);;
+extend_path
+(1,[("a",2);("b",3);("",4);("d",5)]) ("e",5);;
 
-Path.extend_path
-(Path.P (1,[(C"a",2);(C"b",3);(C"c",4);(C"d",5)])) (C"e",3);;
+extend_path
+ (1,[("a",2);("b",3);("",4);("d",5)]) ("e",3);;
 
-Path.extend_path
-(Path.P (1,[(C"a",2);(C"b",3);(C"c",4);(C"d",5)])) (C"e",1);;
+extend_path
+(1,[("a",2);("b",3);("",4);("d",5)]) ("e",1);;
 *)
 
 
 
-module Node = struct 
 
-type t =  Path.t * (Edge.t list);; 
 
 let node_extensions (path,edges) =
     let temp1 = Three_parts.complemented_points edges in 
-    let y = Path.end_vertex_in_path path in 
+    let y = final_vertex_in_path path in 
     Option.filter_and_unpack (
       fun (edge,other_edges) -> 
-          match Edge.cross_edge y edge with 
+          match cross_edge y edge with 
           None -> None 
-          |Some(lbl,z) -> Some(Path.extend_path path (lbl,z),other_edges)
+          |Some(lbl,z) -> Some(extend_path path (lbl,z),other_edges)
     ) temp1 ;;
 
 let rec helper_for_maximal_paths (complete,incomplete) =
@@ -80,23 +73,24 @@ let rec helper_for_maximal_paths (complete,incomplete) =
              helper_for_maximal_paths (path::complete,other_nodes)
         else helper_for_maximal_paths (complete,temp1@other_nodes) ;; 
 
+end ;;
 
 let maximal_paths start edges =
-  helper_for_maximal_paths ([],[(Path.P(start,[]),edges)]);;
-
-end ;;  
+  Private.helper_for_maximal_paths ([],[((start,[]),edges)]);;
 
 
-Node.maximal_paths 1 
-(Image.image (fun ((i,j),c)->Edge.E((i,j),C(c)) )
+(*
+
+maximal_paths 1 
+(
   [
     ((1,2),"a");((4,2),"b");((4,6),"c");((5,2),"d");((5,7),"e");
     ((3,1),"f");((3,8),"g");((9,8),"h");((8,10),"i");((11,10),"j");
   ]
 );;
 
-Node.maximal_paths 1 
-(Image.image (fun ((i,j),c)->Edge.E((i,j),C(c)) )
+maximal_paths 1 
+(
   [
     ((1,2),"a");((4,2),"b");((4,6),"c");((5,2),"d");((5,7),"e");
     ((3,1),"f");((3,8),"g");((9,8),"h");((8,10),"i");((11,10),"j");
