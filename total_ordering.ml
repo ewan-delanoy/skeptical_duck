@@ -227,6 +227,8 @@ let for_characters=let tempf=(fun x y->
         (reindexer_for_dictionary_order(int_of_char y))
   ) in (tempf:>char t);;
 
+let for_integers=let tempf=(fun (x:int) (y:int)-> standard x y 
+    ) in (tempf:>int t);;  
 
 let lex_for_strings=
     ((fun s1 s2->
