@@ -6,6 +6,7 @@ The most used function in all those modules !
 
 *)
 
+(*
 
 type color = C of string ;;
 
@@ -57,16 +58,16 @@ Path.extend_path
 
 module Node = struct 
 
-type t = N of Path.t * (Edge.t list);; 
+type t =  Path.t * (Edge.t list);; 
 
-let node_extensions (N(path,edges)) =
+let node_extensions (path,edges) =
     let temp1 = Three_parts.complemented_points edges in 
     let y = Path.end_vertex_in_path path in 
     Option.filter_and_unpack (
       fun (edge,other_edges) -> 
           match Edge.cross_edge y edge with 
           None -> None 
-          |Some(lbl,z) -> Some(N(Path.extend_path path (lbl,z),other_edges))
+          |Some(lbl,z) -> Some(Path.extend_path path (lbl,z),other_edges)
     ) temp1 ;;
 
 let rec helper_for_maximal_paths (complete,incomplete) =
@@ -75,13 +76,13 @@ let rec helper_for_maximal_paths (complete,incomplete) =
     |node :: other_nodes ->
         let temp1 = node_extensions node in 
         if temp1=[]
-        then let (N(path,_)) = node in 
+        then let (path,_) = node in 
              helper_for_maximal_paths (path::complete,other_nodes)
         else helper_for_maximal_paths (complete,temp1@other_nodes) ;; 
 
 
 let maximal_paths start edges =
-  helper_for_maximal_paths ([],[N(Path.P(start,[]),edges)]);;
+  helper_for_maximal_paths ([],[(Path.P(start,[]),edges)]);;
 
 end ;;  
 
@@ -102,4 +103,6 @@ Node.maximal_paths 1
     ((9,2),"k")
   ]
 );;
+
+*)
 
