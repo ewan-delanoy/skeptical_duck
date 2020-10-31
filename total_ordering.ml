@@ -1,8 +1,12 @@
+(*
+
+#use"total_ordering.ml";;
+
+*)
 
 type result=Lower |Equal |Greater;;
 
 type 'a t=('a->'a->result);;
-
 let leq (computer:'a t) x y=
    let v=computer(x)(y) in
    (v=Lower)||(v=Equal);;
