@@ -67,23 +67,23 @@ let one_step_constructor ctct_report =
       let eob = Hex_ctct_report.to_end_of_battle ctct_report in 
       let l_base = Hex_base_of_connectors.from_end_of_battle eob in 
      let l_connectors = compute_connectors eob l_base ctct_report in 
-   l_base l_connectors = {
+     {
     Hex_uc_report_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
                         winner = ctct_report.Hex_ctct_report_t.winner ;
-                        ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
-                        enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
+                ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
+               enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
                         items  = ctct_report.Hex_ctct_report_t.items;
                         base   = l_base ;
                     connectors = l_connectors 
- } ;;
+    } ;;
 
 end ;;   
 
-let from_previous_items eob =
-    let ctct_report = Hex_ctct_report.about_end_of_battle eob in 
-    let l_base = Hex_base_of_connectors.from_end_of_battle eob in 
-    let l_connectors = Private.compute_connectors eob l_base ctct_report in 
-    Private.constructor ctct_report l_base l_connectors ;;  
+let cumulative_constructor fg =
+    let ctct_report = Hex_ctct_report.constructor fg in 
+    Private.one_step_constructor ctct_report  ;;  
+
+let one_step_constructor = Private.one_step_constructor ;;
 
 let visualize uc_report =
       let cti = Hex_cell.to_int_pair in 
