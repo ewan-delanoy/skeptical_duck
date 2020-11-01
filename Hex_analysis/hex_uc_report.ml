@@ -8,14 +8,16 @@ exception Lowercase_label_exn of int ;;
 
 module Private = struct 
 
-let constructor ctct_report l_base l_connectors = {
+let one_step_constructor ctct_report l_base l_connectors = {
    Hex_uc_report_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
                        winner = ctct_report.Hex_ctct_report_t.winner ;
-              enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
+                       ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
+                       enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
                        items  = ctct_report.Hex_ctct_report_t.items;
                        base   = l_base ;
                    connectors = l_connectors 
 } ;;
+
 
 
 
@@ -70,7 +72,7 @@ let colouring_for_connectors ucr =
     temp4 ;;
 
 
-    
+
 end ;;   
 
 let from_previous_items eob =
