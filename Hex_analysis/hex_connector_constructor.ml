@@ -50,16 +50,11 @@ let eyed_claw d1 d2  =
 let typical_border = Hex_typical_border_connector_name.specify_side ;;
     
 
-let basic_doubling bw y =
-  match bw with 
-   Hex_borderwise_t.From_border -> reverse y
-  |Hex_borderwise_t.To_border -> y ;;
 
-  
 
-let expand_name bw = function 
-   Hex_border_connector_name_t.Eyed_claw(d1,d2) -> basic_doubling bw (eyed_claw d1 d2)
-   |Typical(tbc,d) -> basic_doubling bw (typical_border tbc d);;
+let expand_name = function 
+   Hex_border_connector_name_t.Eyed_claw(d1,d2) -> (eyed_claw d1 d2)
+   |Typical(tbc,d) -> (typical_border tbc d);;
 
 end ;; 
 
@@ -67,4 +62,4 @@ end ;;
 
 let expand_name = function 
    Hex_connector_name_t.Inner(inner)-> Private.Inner.expand_name inner 
-   |Border(bw,border) -> Private.Border.expand_name bw border;;
+   |Border(border) -> Private.Border.expand_name border;;
