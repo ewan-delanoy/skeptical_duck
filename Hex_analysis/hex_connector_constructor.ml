@@ -20,28 +20,6 @@ let high = up and low =down;;
 
 module Inner = struct 
 
- 
-let ul_haddock1 = Hex_connector.Example.upwards_left_situated_haddock1;;
-
-let left_situated_haddock1  = function 
-     Hex_cardinal_direction_t.Down  -> reverse ul_haddock1
-    |Hex_cardinal_direction_t.Up -> ul_haddock1
-    |bad_direction   -> raise(Bad_haddock1_specification(bad_direction,left));; 
-
-let uptown_haddock1 d = 
-    reflect (left_situated_haddock1 (Hex_cardinal_direction.reflect d));;
-
-let downtown_haddock1 dim d = 
-    oppose dim (uptown_haddock1 (Hex_cardinal_direction.oppose d));;
-
-let right_situated_haddock1 dim d= 
-  reflect (downtown_haddock1 dim (Hex_cardinal_direction.reflect d));;
-
-let haddock1 dim location = match location with 
-     Hex_cardinal_direction_t.Down  -> downtown_haddock1 dim
-    |Hex_cardinal_direction_t.Left  -> left_situated_haddock1
-    |Hex_cardinal_direction_t.Right -> right_situated_haddock1 dim
-    |Hex_cardinal_direction_t.Up    -> uptown_haddock1 ;; 
 
 let broken_bridge (entry,p1,p2,exit) = {
     Hex_connector_t.entry = entry;
@@ -52,8 +30,7 @@ let broken_bridge (entry,p1,p2,exit) = {
 
 let expand_name = function 
    Hex_inner_connector_name_t.Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
-   |Typical(tic,side,is_direct) -> Hex_typical_inner_connector_name.full_constructor tic (side,is_direct) ;; 
-
+   |Typical(tic,side) -> Hex_typical_inner_connector_name.full_constructor tic side ;; 
 
 end ;; 
 

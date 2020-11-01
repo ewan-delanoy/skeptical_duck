@@ -59,11 +59,6 @@ let specify_side tic side =
     |Hex_cardinal_direction_t.Right -> Hex_connector.oppose Hex_dimension.eleven l
     |Hex_cardinal_direction_t.Up    -> u;; 
     
-let specify_orientation undirected_tic is_direct = 
-   if is_direct 
-   then undirected_tic 
-   else Hex_connector.reverse  undirected_tic ;;
-
 
 end ;; 
 
@@ -73,6 +68,5 @@ let to_readable_string tic =
     name ;;
 
 
-let full_constructor tic (side,is_direct) =
-      Private.specify_orientation (Private.specify_side tic side) is_direct ;;
+let full_constructor tic side = Private.specify_side tic side ;;
 
