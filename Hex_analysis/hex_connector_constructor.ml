@@ -10,7 +10,7 @@ module Private = struct
 
 let oppose = Hex_connector.oppose 
 and reflect = Hex_connector.reflect 
-and reverse = Hex_connector.reverse  
+
 and arbitrary_dim = Hex_dimension.eleven;;
 
 let down = Hex_cardinal_direction_t.Down and left = Hex_cardinal_direction_t.Left  

@@ -6,4 +6,4 @@
 
 type t= 
       Inner of  Hex_inner_connector_name_t.t 
-     |Border of Hex_borderwise_t.t * Hex_border_connector_name_t.t ;;
+     |Border of Hex_border_connector_name_t.t ;;
