@@ -55,6 +55,7 @@ let basic_doubling bw y =
    Hex_borderwise_t.From_border -> reverse y
   |Hex_borderwise_t.To_border -> y ;;
 
+  
 
 let expand_name bw = function 
    Hex_border_connector_name_t.Eyed_claw(d1,d2) -> basic_doubling bw (eyed_claw d1 d2)
