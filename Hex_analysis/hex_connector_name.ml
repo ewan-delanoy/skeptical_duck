@@ -21,16 +21,6 @@ let middlers = Image.image (
   fun inner -> Hex_connector_name_t.Inner(inner)
 ) Hex_inner_connector_name.all;;
 
-let reverse = function 
-Hex_connector_name_t.Inner(inner)-> 
-    Hex_connector_name_t.Inner(Hex_inner_connector_name.reverse inner)
-|Border(bw,border) -> 
-    let other_bw = (function 
-      Hex_borderwise_t.From_border -> Hex_borderwise_t.To_border
-     |Hex_borderwise_t.To_border -> Hex_borderwise_t.From_border
-    ) bw in 
-    Hex_connector_name_t.Border(other_bw,border);;
-
 
 let starters_for_side = Private.siders Hex_borderwise_t.From_border;;
    
