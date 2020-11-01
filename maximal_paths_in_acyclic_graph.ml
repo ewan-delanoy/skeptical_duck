@@ -75,28 +75,28 @@ let rec helper_for_maximal_paths (complete,incomplete) =
 
 end ;;
 
-let maximal_paths start edges =
+let maximal_paths edges start =
   Private.helper_for_maximal_paths ([],[((start,[]),edges)]);;
 
 
 (*
 
-maximal_paths 1 
+maximal_paths 
 (
   [
     ((1,2),"a");((4,2),"b");((4,6),"c");((5,2),"d");((5,7),"e");
     ((3,1),"f");((3,8),"g");((9,8),"h");((8,10),"i");((11,10),"j");
   ]
-);;
+) 1;;
 
-maximal_paths 1 
+maximal_paths 
 (
   [
     ((1,2),"a");((4,2),"b");((4,6),"c");((5,2),"d");((5,7),"e");
     ((3,1),"f");((3,8),"g");((9,8),"h");((8,10),"i");((11,10),"j");
     ((9,2),"k")
   ]
-);;
+) 1;;
 
 *)
 
