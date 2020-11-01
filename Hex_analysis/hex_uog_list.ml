@@ -6,6 +6,8 @@
 
 
 exception Extract_untamed_exn of Hex_cell_t.t list;;
+exception Compute_maximal_jockeyed_opening_exn  of (Hex_cell_t.t list)* Hex_finished_game_t.t;;
+
 module Private = struct 
 
 let select_openings_with_next_player_as_recipient l =
@@ -21,9 +23,11 @@ let insert_in new_uog l=
        (fun uog->not(Hex_untamed_opening.extends new_uog uog)) l in 
      Ordered.insert Hex_untamed_opening.cmp new_uog cleaned_l;;  
 
+exception Helper_during_extraction_exn of Hex_cell_t.t list;;
+
 let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
   match moves_after with 
-   []->raise(Extract_untamed_exn(List.rev moves_before)) 
+   []->raise(Helper_during_extraction_exn(List.rev moves_before)) 
   |move::others->
      let (Hex_cell_set_t.S next_pushes)=Hex_fg_double_list.first_moves next_to_move dfgl in 
      if next_pushes = []
@@ -33,8 +37,13 @@ let rec helper_during_extraction (moves_before,next_to_move,moves_after,dfgl)=
            (move::moves_before,Hex_player.other_player next_to_move,others,new_dfgl);;
 
 let compute_maximal_jockeyed_opening fgame dfgl= 
-   helper_during_extraction 
-       ([],Hex_player_t.First_player,fgame.Hex_finished_game_t.sequence_of_moves,dfgl);;
+   try helper_during_extraction 
+       ([],Hex_player_t.First_player,fgame.Hex_finished_game_t.sequence_of_moves,dfgl) with 
+    Helper_during_extraction_exn(l) -> raise(
+      Compute_maximal_jockeyed_opening_exn(l,fgame)
+    );;
+
+
 
 end ;; 
 
