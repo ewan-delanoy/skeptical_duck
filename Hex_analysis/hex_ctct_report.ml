@@ -143,7 +143,7 @@ let about_end_of_battle = Private.about_end_of_battle ;;
 
 let constructor = Private.constructor ;;
 
-let to_end_of_battle ctct_report l_base l_connectors = {
+let to_end_of_battle ctct_report = {
    Hex_end_of_battle_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
                        winner = ctct_report.Hex_ctct_report_t.winner ;
                        ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
