@@ -124,9 +124,19 @@ let about_end_of_battle eob = {
       items  = compute_all_items eob;
 } ;; 
 
-
+let constructor fg =
+     let eob = Hex_end_of_battle.of_finished_game fg in 
+     {
+      Hex_ctct_report_t.dimension = eob.Hex_end_of_battle_t.dimension ;
+         winner = eob.Hex_end_of_battle_t.winner ;
+         enemy_territory = eob.Hex_end_of_battle_t.enemy_territory ;
+         items  = compute_all_items eob;
+   } ;; 
+   
 
 
 end ;; 
 
 let about_end_of_battle = Private.about_end_of_battle ;;
+
+let constructor = Private.constructor ;;
