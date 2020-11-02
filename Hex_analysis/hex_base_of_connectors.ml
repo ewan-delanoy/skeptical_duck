@@ -32,14 +32,22 @@ let select_coconnectors
    and island2 = Hex_ctct_report_item.to_island item2 in  
    Option.filter_and_unpack (
       fun (nc,needed_in_entry,needed_in_exit) -> 
+        let orientation1 = 
+         (Hex_named_connector.check_entry island1 nc)
+         && 
+         (Hex_named_connector.check_exit nc island2) 
+        and  orientation2 = 
+        (Hex_named_connector.check_entry island2 nc)
+        && 
+        (Hex_named_connector.check_exit nc island1) 
+        in 
+        let orientation_independent = orientation1 || orientation2 in 
         if (
             ((Hex_cell_set.length needed_in_entry)=0)
             &&
             ((Hex_cell_set.length needed_in_exit)=0)
             && 
-            (Hex_named_connector.check_entry island1 nc)
-            && 
-            (Hex_named_connector.check_exit nc island2) 
+            orientation_independent
            )
         then Some nc
         else None   
