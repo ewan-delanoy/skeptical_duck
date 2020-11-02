@@ -12,5 +12,6 @@ type t=
     |Small_pyramid  
     |Sybil 
     |Hat
-    |Hat2;;
+    |Hat2
+    |Broken_aleph;;
 
