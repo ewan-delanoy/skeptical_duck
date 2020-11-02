@@ -77,6 +77,16 @@ let one_step_constructor ctct_report =
                     connectors = l_connectors 
     } ;;
 
+let one_step_forgetter uc_report =
+     {
+       Hex_ctct_report_t. dimension = uc_report.Hex_uc_report_t.dimension ;
+                             winner = uc_report.Hex_uc_report_t.winner ;
+                     ally_territory = uc_report.Hex_uc_report_t.ally_territory;
+                    enemy_territory = uc_report.Hex_uc_report_t.enemy_territory;
+                             items  = uc_report.Hex_uc_report_t.items;                 
+    } ;;
+
+
 end ;;   
 
 let cumulative_constructor fg =
@@ -84,6 +94,8 @@ let cumulative_constructor fg =
     Private.one_step_constructor ctct_report  ;;  
 
 let one_step_constructor = Private.one_step_constructor ;;
+
+let one_step_forgetter = Private.one_step_forgetter ;;
 
 let visualize uc_report =
       let cti = Hex_cell.to_int_pair in 
