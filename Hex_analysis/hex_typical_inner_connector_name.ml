@@ -40,6 +40,9 @@ let prepare_for_journey =
      Hex_typical_inner_connector_name_t.Haddock3 , 
        ([(5,4)],[ (2,5);(3,4); (3,5);(5,3); (4,3);(5,2); (4,4);(4,5) ],
           [(1,5);(2,4);(3,3);(4,2);(5,1)],"hk3") ; 
+     Hex_typical_inner_connector_name_t.Haddock4 , 
+          ([(4,3)],[ (1,3);(2,2); (2,3);(3,2); (3,3);(4,2) ],
+             [(1,2);(2,1);(4,1)],"hk4") ;      
   ];;
 
   let upwards_version tic = 
