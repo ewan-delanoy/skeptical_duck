@@ -20,11 +20,7 @@ let one_step_constructor uc_report  =
 
 } ;;
 
-let irregularities l= 
-   let temp1 = List.flatten (Image.image snd l) in 
-   let temp2 = Image.image fst temp1 in 
-   let temp3 = Ordered.sort Total_ordering.standard temp2 in 
-   let temp4 = Uple.list_of_pairs temp3 in 
+let irregularities_from_pairs ll= 
    Option.filter_and_unpack (
      fun (uc1,uc2) ->
         let z = Hex_cell_set.intersect 
@@ -33,7 +29,23 @@ let irregularities l=
         if Hex_cell_set.length(z)>0 
         then Some(uc1,uc2,z)
         else None   
-   ) temp4 ;;
+   ) ll ;;
+
+let simplify_paths_presentation l= 
+   let temp1 = List.flatten (Image.image snd l) in 
+   let temp2 = Image.image fst temp1 in 
+   Ordered.sort Total_ordering.standard temp2 ;;   
+
+let irregularities_for_two paths1 paths2= 
+   let l1 = simplify_paths_presentation paths1 
+   and l2 = simplify_paths_presentation paths2 in 
+   (
+      irregularities_from_pairs(Uple.list_of_pairs l1),
+      irregularities_from_pairs(Cartesian.product l1 l2),
+      irregularities_from_pairs(Uple.list_of_pairs l2)
+   )
+;;
+
 
 
 end ;; 
@@ -45,10 +57,9 @@ let cumulative_constructor fg =
    Private.one_step_constructor uc_report  ;;  
 
 let irregularities mp_report =
-    (
-      Private.irregularities mp_report.Hex_mp_report_t.paths_from_1,
-      Private.irregularities mp_report.Hex_mp_report_t.paths_from_2
-    );;
+   Private.irregularities_for_two 
+    mp_report.Hex_mp_report_t.paths_from_1
+    mp_report.Hex_mp_report_t.paths_from_2 ;;
 
 let one_step_constructor = Private.one_step_constructor ;;
 
