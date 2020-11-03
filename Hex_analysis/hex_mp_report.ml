@@ -36,12 +36,21 @@ let simplify_paths_presentation l=
    let temp2 = Image.image fst temp1 in 
    Ordered.sort Total_ordering.standard temp2 ;;   
 
-let irregularities_for_two paths1 paths2= 
-   let l1 = simplify_paths_presentation paths1 
-   and l2 = simplify_paths_presentation paths2 in 
+let first_touches_second mp =
+     List.exists 
+     (fun (_,l)->List.exists (fun (_,y)->y=2) l)
+      mp.Hex_mp_report_t.paths_from_1 ;; 
+
+
+let irregularities mp =
+   let l1 = simplify_paths_presentation mp.Hex_mp_report_t.paths_from_1 
+   and l2 = simplify_paths_presentation mp.Hex_mp_report_t.paths_from_2 in 
+   let middle_part = (if 
+        first_touches_second mp then [] else Cartesian.product l1 l2
+      ) in 
    (
       irregularities_from_pairs(Uple.list_of_pairs l1),
-      irregularities_from_pairs(Cartesian.product l1 l2),
+      irregularities_from_pairs middle_part,
       irregularities_from_pairs(Uple.list_of_pairs l2)
    )
 ;;
@@ -56,10 +65,7 @@ let cumulative_constructor fg =
    let uc_report = Hex_uc_report.one_step_constructor ctct_report in 
    Private.one_step_constructor uc_report  ;;  
 
-let irregularities mp_report =
-   Private.irregularities_for_two 
-    mp_report.Hex_mp_report_t.paths_from_1
-    mp_report.Hex_mp_report_t.paths_from_2 ;;
+let irregularities = Private.irregularities ;; 
 
 let one_step_constructor = Private.one_step_constructor ;;
 
