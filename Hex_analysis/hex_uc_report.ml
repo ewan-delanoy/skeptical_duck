@@ -9,9 +9,18 @@ exception Lowercase_label_exn of int ;;
 module Private = struct 
 
 
+let is_a_corner_cell formal_dim cell =
+     let (Hex_dimension_t.D dim) = formal_dim 
+     and (i,j) = Hex_cell.to_int_pair cell in 
+     (List.mem i [1;dim]) &&  (List.mem j [1;dim]) ;;
 
+let has_a_corner_cell formal_dim nc =
+    let (Hex_cell_set_t.S l) = Hex_named_connector.inner_sea nc in 
+     List.exists (is_a_corner_cell formal_dim) l;;
 
-
+let prefer_corner_cells formal_dim l_uc =
+     let l2_uc = List.filter (has_a_corner_cell formal_dim) l_uc in 
+     if l2_uc <> [] then l2_uc else l_uc ;;
 
 
 let choose_unique_connector common connectors =
@@ -34,10 +43,11 @@ let compute_connectors eob base ctct_report =
       fun ((i,item1),(j,item2))->
       let common = Hex_ctct_report_item.adjusted_common_neighbors formal_dim item1 item2 
       and connectors1 = Hex_base_of_connectors.select_coconnectors base item1 item2 in
-      let connectors = List.filter (
+      let connectors2 = List.filter (
          fun nc->(Hex_named_connector.inner_sea nc)<> common 
      ) connectors1 in  
-     match choose_unique_connector common connectors with 
+      let connectors3 = prefer_corner_cells formal_dim connectors2 in 
+     match choose_unique_connector common connectors3 with 
      None -> None 
      | Some(nc)->Some((i,j),nc)
    ) temp1 ;;
