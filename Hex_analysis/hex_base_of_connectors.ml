@@ -10,11 +10,9 @@ let from_end_of_battle end_of_battle =
    let (side1,side2) =  Hex_cardinal_direction.sides_for_player winner in 
    let pre_base = List.concat 
       [   
-      (Hex_named_connector.starters_for_side dim side1);
-      (Hex_named_connector.starters_for_side dim side2);
-      (Hex_named_connector.middlers dim);
-      (Hex_named_connector.enders_for_side dim side1);
-      (Hex_named_connector.enders_for_side dim side2);
+      (Hex_named_connector.all_border_connections_for_side dim side1);
+      (Hex_named_connector.all_inner_connections dim);
+      (Hex_named_connector.all_border_connections_for_side dim side2);
       ] in 
    let base = List.filter (
       Hex_named_connector.check_compatiblity end_of_battle ) pre_base in 

@@ -5,9 +5,9 @@
 *)
 
 
-exception Precomputed_starter_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
-exception Precomputed_middler_exn of Hex_dimension_t.t  ;;
-exception Precomputed_ender_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
+exception Precomputed_border_connections_exn of Hex_dimension_t.t * Hex_cardinal_direction_t.t ;;
+exception Precomputed_inner_connections_exn of Hex_dimension_t.t  ;;
+
 
 
 module Private = struct 
@@ -60,9 +60,6 @@ let starters_for_side (dim,side)=
 let middlers dim= 
     expand_all dim  (Hex_connector_name.middlers);;   
 
-let enders_for_side (dim,side)=
-    expand_all dim (Hex_connector_name.enders_for_side side);;    
- 
 let islanders dim island1 other_islands =
    let temp1 = Image.image ( 
      fun island2 -> 
@@ -92,23 +89,17 @@ let data_for_middlers =
    Image.image (fun dim->(dim,middlers dim) ) [Hex_dimension.eleven];;
 
 
-let data_for_enders = 
-   Image.image (fun (dim,d)->((dim,d),enders_for_side (dim,d)) ) usual_range;;
-
-let starters_for_side dim side=
+let all_border_connections_for_side dim side=
      match Option.seek (fun p->fst(p)=(dim,side)) data_for_starters with 
      Some(_,vaal)->vaal
-    |None -> raise (Precomputed_starter_exn(dim,side));;
+    |None -> raise (Precomputed_border_connections_exn(dim,side));;
     
-let middlers dim=
+let all_inner_connections dim=
      match Option.seek (fun p->fst(p)=dim) data_for_middlers with 
      Some(_,vaal)->vaal
-    |None -> raise (Precomputed_middler_exn(dim));;
+    |None -> raise (Precomputed_inner_connections_exn(dim));;
 
-let enders_for_side dim side=
-     match Option.seek (fun p->fst(p)=(dim,side)) data_for_enders with 
-     Some(_,vaal)->vaal
-    |None -> raise (Precomputed_ender_exn(dim,side));;
+
     
 
 
@@ -130,6 +121,10 @@ let active_part nc =
     Hex_island.inner_earth nc.Hex_named_connector_t.exit  ;
   ];;
 
+let all_border_connections_for_side = Private.Precomputed.all_border_connections_for_side ;;
+
+let all_inner_connections = Private.Precomputed.all_inner_connections ;;
+  
 
 let check_compatiblity end_of_battle nc = 
    let inner_sea = Hex_cell_set.forget_order (Private.inner_sea nc) 
@@ -148,14 +143,10 @@ let check_entry island nc = Hex_connector.check_entry island (Private.forget_nam
 let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
 
 
-let enders_for_side = Private.Precomputed.enders_for_side ;;
-
 let inner_sea = Private.inner_sea ;;
 
 let islanders = Private.islanders ;;
 
-
-let middlers = Private.Precomputed.middlers ;;
 
 let missing_earth end_of_battle nc = 
    let inner_earth = Hex_cell_set.forget_order 
@@ -184,7 +175,6 @@ let of_name = Private.of_name ;;
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
-let starters_for_side = Private.Precomputed.starters_for_side ;;
 
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
