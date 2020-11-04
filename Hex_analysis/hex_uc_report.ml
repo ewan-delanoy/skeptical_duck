@@ -22,6 +22,12 @@ let prefer_corner_cells formal_dim l_uc =
      let l2_uc = List.filter (has_a_corner_cell formal_dim) l_uc in 
      if l2_uc <> [] then l2_uc else l_uc ;;
 
+let minimize_wrt_inner_area l =
+    match l with
+    [] -> []
+    | _ -> snd(Min.minimize_it_with_care Hex_named_connector.inner_area l);;
+
+   
 
 let choose_unique_connector common connectors =
    if Hex_cell_set.length (common) >= 2 
@@ -47,7 +53,7 @@ let compute_connectors eob base ctct_report =
          fun nc->(Hex_named_connector.inner_sea nc)<> common 
      ) connectors1 in  
       let connectors3 = prefer_corner_cells formal_dim connectors2 in 
-      let connectors4 = snd(Min.minimize_it_with_care Hex_named_connector.inner_area connectors3) in 
+      let connectors4 = minimize_wrt_inner_area connectors3 in 
      match choose_unique_connector common connectors4 with 
      None -> None 
      | Some(nc)->Some((i,j),nc)
