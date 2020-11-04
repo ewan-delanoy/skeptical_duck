@@ -142,6 +142,12 @@ let check_entry island nc = Hex_connector.check_entry island (Private.forget_nam
 
 let check_exit nc island = Hex_connector.check_exit island (Private.forget_name nc);;  
 
+let inner_area nc =
+      let ju = nc.Hex_named_connector_t.junction in 
+      let x_list = Image.image fst ju and y_list = Image.image snd ju in 
+      let xmin = Min.list x_list and xmax = Max.list x_list 
+      and ymin = Min.list y_list and ymax = Max.list y_list in 
+      (xmax-xmin+1)*(ymax-ymin+1);;
 
 let inner_sea = Private.inner_sea ;;
 
