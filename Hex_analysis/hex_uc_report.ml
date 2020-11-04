@@ -47,7 +47,8 @@ let compute_connectors eob base ctct_report =
          fun nc->(Hex_named_connector.inner_sea nc)<> common 
      ) connectors1 in  
       let connectors3 = prefer_corner_cells formal_dim connectors2 in 
-     match choose_unique_connector common connectors3 with 
+      let connectors4 = snd(Min.minimize_it_with_care Hex_named_connector.inner_area connectors3) in 
+     match choose_unique_connector common connectors4 with 
      None -> None 
      | Some(nc)->Some((i,j),nc)
    ) temp1 ;;
