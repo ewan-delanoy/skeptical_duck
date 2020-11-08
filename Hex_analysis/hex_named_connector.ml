@@ -46,6 +46,7 @@ let expand_all dim cnnctrs =
     let nc=of_name cnnctr in all_translates dim nc ) cnnctrs);; 
 
 
+
 let to_readable_string nc = 
   let apex_part = (match nc.Hex_named_connector_t.apex with 
     None ->""
@@ -76,6 +77,18 @@ let islanders dim island1 other_islands =
    ) other_islands in 
    List.flatten temp1 ;; 
 
+let namify f nc =
+      let nm =nc.Hex_named_connector_t.name 
+      and cnnctr = forget_name nc in 
+      add_name nm (f cnnctr);;
+
+      let inner_sea nc =
+         Hex_cell_set.safe_set 
+           (Image.image Hex_cell.of_int_pair 
+             nc.Hex_named_connector_t.junction) ;;
+      
+      
+
 module Precomputed = struct 
 
 let usual_range = Image.image (
@@ -104,12 +117,6 @@ let all_inner_connections dim=
 
 
 end ;;
-
-let inner_sea nc =
-   Hex_cell_set.safe_set 
-     (Image.image Hex_cell.of_int_pair 
-       nc.Hex_named_connector_t.junction) ;;
-
 
 
 end ;;
@@ -175,12 +182,13 @@ let missing_pods end_of_battle nc =
 
 let of_name = Private.of_name ;;
 
-
+let oppose dim = Private.namify (Hex_connector.oppose dim) ;;
 
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
+let reflect = Private.namify Hex_connector.reflect ;;
 
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
@@ -191,7 +199,10 @@ let to_molecular_linker nc =
     |Some(mlclr) -> mlclr  ;; 
    
 
+
 let to_readable_string = Private.to_readable_string ;;
+
+let translate p = Private.namify (Hex_connector.translate p) ;;
 
 let wet_earth nc = Hex_cell_set.fold_merge
 
