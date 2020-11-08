@@ -1,8 +1,8 @@
 (* 
-#use"Hex_analysis/hex_generalized_connector_t.ml";;
+#use"Hex_analysis/hex_unified_connector_t.ml";;
 *)
 
 
 type t= 
-    Bridge of Hex_cell_t.t * Hex_cell_t.t 
+    Bridge of Hex_player_t.t * (Hex_cell_t.t * Hex_cell_t.t) 
    |Named of  Hex_named_connector_t.t ;;
