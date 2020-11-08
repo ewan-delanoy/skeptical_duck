@@ -83,13 +83,6 @@ let reflect cnnctr = {
     apex = Option.propagate Hex_ipair.reflect (cnnctr.Hex_connector_t.apex);
 };;
 
-let reverse cnnctr = {
-    cnnctr with  
-    Hex_connector_t.entry = (cnnctr.Hex_connector_t.exit);
-                    exit  = (cnnctr.Hex_connector_t.entry);
-};;
-
-
 let to_default_molecular_linker cnnctr = 
     let temp1=Image.image Hex_cell.of_int_pair cnnctr.Hex_connector_t.junction in 
     let temp2=Listennou.extract_successive_pairs_from_even_list temp1 in 
