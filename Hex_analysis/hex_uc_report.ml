@@ -29,11 +29,11 @@ let minimize_wrt_inner_area l =
 
    
 
-let choose_unique_connector common connectors =
+let choose_unique_connector plyr common connectors =
    if Hex_cell_set.length (common) >= 2 
    then let temp1 = Hex_cell_set.forget_order common in 
         let tempf = (fun k->List.nth temp1 (k-1)) in 
-        Some(Hex_unified_connector_t.Bridge(tempf 1,tempf 2))   
+        Some(Hex_unified_connector_t.Bridge(plyr,(tempf 1,tempf 2)))   
    else match connectors with 
         []->None 
         |connector :: _ ->Some(Hex_unified_connector_t.Named(connector));;     
@@ -41,7 +41,8 @@ let choose_unique_connector common connectors =
  
 
 let compute_connectors eob base ctct_report = 
-   let formal_dim = eob.Hex_end_of_battle_t.dimension  
+   let formal_dim = eob.Hex_end_of_battle_t.dimension 
+   and plyr = eob.Hex_end_of_battle_t.winner 
    and l = ctct_report.Hex_ctct_report_t.items in 
    let indexed_l = Ennig.index_everything l in 
    let temp1 = Uple.list_of_pairs indexed_l in 
@@ -54,7 +55,7 @@ let compute_connectors eob base ctct_report =
      ) connectors1 in  
       let connectors3 = prefer_corner_cells formal_dim connectors2 in 
       let connectors4 = minimize_wrt_inner_area connectors3 in 
-     match choose_unique_connector common connectors4 with 
+     match choose_unique_connector plyr common connectors4 with 
      None -> None 
      | Some(nc)->Some((i,j),nc)
    ) temp1 ;;
