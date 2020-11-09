@@ -18,3 +18,12 @@ let extract_pattern eob cells =
     Hex_pattern_t.Pat temp1 ;;
 
 
+let oppose dim (Hex_pattern_t.Pat l) = 
+   Hex_pattern_t.Pat (Image.image (fun (pair,lbl)->(Hex_ipair.oppose dim pair,lbl)) l) ;;
+
+let reflect (Hex_pattern_t.Pat l) = 
+    Hex_pattern_t.Pat (Image.image (fun (pair,lbl)->(Hex_ipair.reflect pair,lbl)) l) ;;
+
+let translate (dx,dy) (Hex_pattern_t.Pat l) =  
+  Hex_pattern_t.Pat (Image.image (fun ((x,y),lbl)->((x+dx,y+dy),lbl)) l) ;;
+
