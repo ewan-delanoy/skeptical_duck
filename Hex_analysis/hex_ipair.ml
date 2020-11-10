@@ -64,6 +64,16 @@ let enumerate_components dim bounding_set =
 end ;;
 
 
+let bounds_for_authorized_translations formal_dim l = 
+   let (Hex_dimension_t.D dim) = formal_dim in 
+   let elts = Set_of_poly_pairs.sort l in 
+   let abscissas = Set_of_poly_pairs.image fst elts 
+   and ordinates = Set_of_poly_pairs.image snd elts in 
+   let xmin = Min.list abscissas and xmax = Max.list abscissas 
+   and ymin = Min.list ordinates and ymax = Max.list ordinates in    
+   (1-xmin,dim-xmax,1-ymin,dim-ymax) ;;
+
+
 let compute_connected_components dim l=
    Private.enumerate_components dim (Set_of_poly_pairs.safe_set l);; 
 

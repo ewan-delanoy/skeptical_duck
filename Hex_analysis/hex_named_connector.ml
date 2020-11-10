@@ -82,7 +82,7 @@ let namify f nc =
       and cnnctr = forget_name nc in 
       add_name nm (f cnnctr);;
 
-      let inner_sea nc =
+let inner_sea nc =
          Hex_cell_set.safe_set 
            (Image.image Hex_cell.of_int_pair 
              nc.Hex_named_connector_t.junction) ;;
