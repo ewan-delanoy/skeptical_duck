@@ -70,7 +70,7 @@ let bounds_for_authorized_translations formal_dim elts =
    and ordinates = Image.image snd elts in 
    let xmin = Min.list abscissas and xmax = Max.list abscissas 
    and ymin = Min.list ordinates and ymax = Max.list ordinates in    
-   (1-xmin,dim-xmax,1-ymin,dim-ymax) ;;
+   Rectangle_bounds_t.B(1-xmin,dim-xmax,1-ymin,dim-ymax) ;;
 
 
 let compute_connected_components dim l=
