@@ -149,6 +149,16 @@ let authorized_translations (Hex_dimension_t.D dim) opt =
        | _ -> List.filter (fun (dx,dy)->dy=0) base
      );;
 
+let bounds_for_authorized_translations (Hex_dimension_t.D dim) opt = 
+        match opt with 
+        None -> Rectangle_bounds_t.B(1-dim,dim-1,1-dim,dim-1)
+        |Some(direction) ->
+          (
+             match direction with 
+             Hex_cardinal_direction_t.Down 
+            |Hex_cardinal_direction_t.Up -> Rectangle_bounds_t.B(0,0,1-dim,dim-1)
+            | _ -> Rectangle_bounds_t.B(1-dim,dim-1,0,0)
+          );;
 
 let enhance dim side cell =
    (* used to avoid ambiguities about which side the cell is on *)
