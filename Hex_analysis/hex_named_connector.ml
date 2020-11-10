@@ -184,6 +184,7 @@ let of_name = Private.of_name ;;
 
 let oppose dim = Private.namify (Hex_connector.oppose dim) ;;
 
+let opt_side nc = Hex_connector_name.opt_side nc.Hex_named_connector_t.name ;;
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
