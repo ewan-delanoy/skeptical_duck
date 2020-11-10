@@ -18,6 +18,12 @@ let for_side side =
     )
     ;;
 
+let side = function 
+    Hex_border_connector_name_t.Eyed_claw(_,side_of_arg) -> side_of_arg
+   |Typical(tbc,side_of_arg) -> side_of_arg ;;                    
+
+
+
 let to_nondefault_molecular_linker nm apex junction = match nm with 
     Hex_border_connector_name_t.Eyed_claw(d1,d2) -> 
          if apex=None then raise (Bad_apex_for_eyed_claw(d1,d2)) else
