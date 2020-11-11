@@ -20,26 +20,26 @@ let translate cnnctr (dx,dy)=
 
 };;
 
+let bounds_for_authorized_translations formal_dim cnnctr = 
+    let (Hex_dimension_t.D dim) = formal_dim in 
+    let (Hex_island_t.I(anchor1,elts1)) = cnnctr.Hex_connector_t.entry 
+    and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit 
+    and elts3 = cnnctr.Hex_connector_t.junction  in 
+    let opt1 = Hex_anchor.any_side anchor1 and opt2 = Hex_anchor.any_side anchor2 in 
+    let opt = (if opt1<>None then opt1 else opt2) in 
+    let bounds1 = Hex_cardinal_direction.bounds_for_authorized_translations formal_dim opt in 
+    let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3] in 
+    let bounds2 = Hex_ipair.bounds_for_authorized_translations formal_dim (Set_of_poly_pairs.forget_order elts) in 
+    Rectangle_bounds.combine bounds1 bounds2 ;;
+    
 end ;;
 
 let all_translates formal_dim cnnctr = 
-   let (Hex_dimension_t.D dim) = formal_dim in 
-   let (Hex_island_t.I(anchor1,elts1)) = cnnctr.Hex_connector_t.entry 
-   and (Hex_island_t.I(anchor2,elts2)) = cnnctr.Hex_connector_t.exit 
-   and elts3 = cnnctr.Hex_connector_t.junction  in 
-   let opt1 = Hex_anchor.any_side anchor1 and opt2 = Hex_anchor.any_side anchor2 in 
-   let opt = (if opt1<>None then opt1 else opt2) in 
-   let base = Hex_cardinal_direction.authorized_translations formal_dim opt in 
-   let elts = Set_of_poly_pairs.fold_merge [elts1;elts2;Set_of_poly_pairs.sort elts3] in 
-   let abscissas = Set_of_poly_pairs.image fst elts 
-   and ordinates = Set_of_poly_pairs.image snd elts in 
-   let xmin = Min.list abscissas and xmax = Max.list abscissas 
-   and ymin = Min.list ordinates and ymax = Max.list ordinates in    
-   let cleaned_base =  List.filter ( 
-       fun (dx,dy) ->  (1-xmin <= dx) && (dx <= dim-xmax) 
-                    && (1-ymin <= dy) && (dy <= dim-ymax) 
-    )  base in 
+   let cleaned_base =  Rectangle_bounds.enumerate 
+      (Private.bounds_for_authorized_translations formal_dim cnnctr) in 
    Image.image (Private.translate cnnctr) cleaned_base ;; 
+
+let bounds_for_authorized_translations = Private.bounds_for_authorized_translations;;
 
 let bring_to_left_upper_corner cnnctr = 
    let (Hex_island_t.I(_,elts1)) = cnnctr.Hex_connector_t.entry 
