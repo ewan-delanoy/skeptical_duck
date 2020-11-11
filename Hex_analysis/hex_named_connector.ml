@@ -132,6 +132,8 @@ let all_border_connections_for_side = Private.Precomputed.all_border_connections
 
 let all_inner_connections = Private.Precomputed.all_inner_connections ;;
   
+let bounds_for_authorized_translations dim nc=
+      Hex_connector.bounds_for_authorized_translations dim (Private.forget_name nc);;
 
 let check_compatiblity end_of_battle nc = 
    let inner_sea = Hex_cell_set.forget_order (Private.inner_sea nc) 
