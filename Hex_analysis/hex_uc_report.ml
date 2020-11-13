@@ -111,6 +111,22 @@ let cumulative_constructor fg =
     let ctct_report = Hex_ctct_report.constructor fg in 
     Private.one_step_constructor ctct_report  ;;  
 
+let forbidden_composite_patterns = [
+   Hex_composite_pattern_t.C (Hex_pattern_t.Pat [((5, 4), true); ((6, 2), true)],
+   Hex_unified_connector_t.Named
+    {Hex_named_connector_t.name =
+      Hex_connector_name_t.Border
+       (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Up,
+         Hex_cardinal_direction_t.Right));
+     entry = (Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [(4, 3)]));
+     junction =
+      [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); (2, 1); 
+       (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); (3, 1); (3, 2); (3, 3); 
+       (3, 4); (3, 5); (4, 2)];
+     exit = (Hex_island_t.I(Hex_anchor_t.Single_anchor Hex_cardinal_direction_t.Up,
+     Set_of_poly_pairs_t.S [])); apex = Some (4, 3)})
+] ;;
+
 let one_step_constructor = Private.one_step_constructor ;;
 
 let one_step_forgetter = Private.one_step_forgetter ;;
