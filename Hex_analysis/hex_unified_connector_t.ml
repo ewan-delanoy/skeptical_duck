@@ -4,5 +4,5 @@
 
 
 type t= 
-    Bridge of Hex_player_t.t * (Hex_cell_t.t * Hex_cell_t.t) 
+    Bridge of (Hex_dimension_t.t * Hex_player_t.t) * (Hex_cell_t.t * Hex_cell_t.t) 
    |Named of  Hex_named_connector_t.t ;;
