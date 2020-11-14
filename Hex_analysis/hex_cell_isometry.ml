@@ -10,7 +10,7 @@ end ;;
 
 
 
-let oppflect_cell dim cell = Private.oppose dim (Private.reflect cell);;
+let oppflect dim cell = Private.oppose dim (Private.reflect cell);;
 let oppose = Private.oppose;;
 let reflect = Private.reflect ;;
 
