@@ -4,7 +4,7 @@
 
 *)
 
-
+(*
 let bounds_for_uc dim uc = match uc with 
   (Hex_unified_connector_t.Bridge(plyr,(cell1,cell2)))-> 
      Hex_ipair.bounds_for_authorized_translations dim (Image.image Hex_cell.to_int_pair [cell1;cell2])   
@@ -32,15 +32,16 @@ let translate_uc dv = function
    Hex_unified_connector_t.Bridge(plyr,(Hex_cell_isometry.translate dv cell1,Hex_cell_isometry.translate dv cell2))    
  |Named(nc) ->Named (Hex_named_connector.translate dv nc);;
  
+*) 
 
 let reflect (Hex_composite_pattern_t.C(patt,uc)) = 
-  Hex_composite_pattern_t.C(Hex_pattern.reflect patt,reflect_uc uc) ;;
+  Hex_composite_pattern_t.C(Hex_pattern.reflect patt,Hex_unified_connector.reflect uc) ;;
 
 let oppose dim (Hex_composite_pattern_t.C(patt,uc)) = 
-    Hex_composite_pattern_t.C(Hex_pattern.oppose dim patt,oppose_uc dim uc) ;;
+    Hex_composite_pattern_t.C(Hex_pattern.oppose dim patt,Hex_unified_connector.oppose dim uc) ;;
     
 let oppflect dim (Hex_composite_pattern_t.C(patt,uc)) = 
-      Hex_composite_pattern_t.C(Hex_pattern.oppose dim (Hex_pattern.reflect patt),oppflect_uc dim uc) ;;    
+      Hex_composite_pattern_t.C(Hex_pattern.oppose dim (Hex_pattern.reflect patt),Hex_unified_connector.oppflect dim uc) ;;    
 
 
 let rotate_before_standardizing dim comp_patt =
@@ -69,12 +70,12 @@ let rotate_before_standardizing dim comp_patt =
 let bounds_for_authorized_translations dim (Hex_composite_pattern_t.C(patt,uc))= 
     let (Hex_pattern_t.Pat l)= patt in 
     let bounds1 = Hex_ipair.bounds_for_authorized_translations dim (Image.image fst l) in 
-    let bounds2 = bounds_for_uc dim uc in 
+    let bounds2 = Hex_unified_connector.bounds_for_authorized_translations dim uc in 
     Rectangle_bounds.combine bounds1 bounds2 ;;
 
 
 let translate dv (Hex_composite_pattern_t.C(patt,uc)) = 
-  Hex_composite_pattern_t.C(Hex_pattern.translate dv patt,translate_uc dv uc) ;;    
+  Hex_composite_pattern_t.C(Hex_pattern.translate dv patt,Hex_unified_connector.translate dv uc) ;;    
 
 let bring_to_left_upper_corner dim comp_patt =
      let (Rectangle_bounds_t.B(xmin,_,ymin,_)) = bounds_for_authorized_translations dim comp_patt in 
