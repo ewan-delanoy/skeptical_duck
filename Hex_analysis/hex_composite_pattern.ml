@@ -47,11 +47,11 @@ let oppflect dim (Hex_composite_pattern_t.C(patt,uc)) =
 let rotate_before_standardizing dim comp_patt =
     let (Hex_composite_pattern_t.C(patt,uc)) = comp_patt in 
     match uc with 
-      Hex_unified_connector_t.Bridge(plyr,(cell1,cell2))->
+      Hex_unified_connector_t.Bridge((dime,plyr),(cell1,cell2))->
          (
            if plyr = Hex_player_t.Second_player 
            then Hex_composite_pattern_t.C(Hex_pattern.reflect patt,
-                Hex_unified_connector_t.Bridge(Hex_player_t.First_player,
+                Hex_unified_connector_t.Bridge((dime,Hex_player_t.First_player),
                   (Hex_cell_isometry.reflect cell1,Hex_cell_isometry.reflect cell2)) )
           else comp_patt
          )
@@ -65,6 +65,7 @@ let rotate_before_standardizing dim comp_patt =
          | Up -> comp_patt  
       ))
 ;;
+
 
   
 let bounds_for_authorized_translations dim (Hex_composite_pattern_t.C(patt,uc))= 
