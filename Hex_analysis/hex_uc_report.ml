@@ -55,7 +55,7 @@ let compute_connectors eob base ctct_report =
      ) connectors1 in  
       let connectors3 = prefer_corner_cells formal_dim connectors2 in 
       let connectors4 = minimize_wrt_inner_area connectors3 in 
-     match choose_unique_connector plyr common connectors4 with 
+     match choose_unique_connector (formal_dim,plyr) common connectors4 with 
      None -> None 
      | Some(nc)->Some((i,j),nc)
    ) temp1 ;;
@@ -106,6 +106,7 @@ let one_step_forgetter uc_report =
 
 
 end ;;   
+
 
 let cumulative_constructor fg =
     let ctct_report = Hex_ctct_report.constructor fg in 
