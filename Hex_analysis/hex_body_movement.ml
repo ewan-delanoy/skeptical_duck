@@ -6,6 +6,8 @@
 
 exception Between_ucs_exn of Hex_unified_connector_t.t * Hex_unified_connector_t.t ;; 
 
+module Private = struct
+
 let side_of_inner_connector = function 
   Hex_inner_connector_name_t.Broken_bridge(_,_,_,_) -> Hex_cardinal_direction_t.Up
  |Typical(_,side)-> side ;;  
@@ -139,4 +141,6 @@ let between_composite_patterns dim
        and ol1 = Set_of_polys.sort l1 in 
        Option.seek (test_between_patterns ol1 patt2) temp1 ;;
      
-     
+end ;;
+
+let between_composite_patterns = Private.between_composite_patterns ;;
