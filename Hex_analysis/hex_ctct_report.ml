@@ -140,6 +140,11 @@ let pattern_is_included_in_report (Hex_pattern_t.Pat l) ctct_report =
          )
      );;
 
+(*     
+let detect_composite_pattern_in_report ctct_report uc (Hex_composite_pattern_t.C(patt,uc2)) =
+     let temp1 = Hex_body_movement.
+*)
+
 end ;; 
 
 

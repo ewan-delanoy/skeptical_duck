@@ -129,18 +129,8 @@ let between_ucs dim uc1 uc2= match uc1 with
           |Named(nc2) -> between_named_connectors dim nc1 nc2  
        );;
 
-let test_between_patterns  ol1 (Hex_pattern_t.Pat l2) mv= 
-      let temp1 = Image.image (fun (pair,lbl)->(apply_on_ipair mv pair,lbl)) l2 in 
-      (Set_of_polys.sort temp1) = ol1 ;; 
-
-
-let between_composite_patterns dim 
-   (Hex_composite_pattern_t.C((Hex_pattern_t.Pat l1),uc1)) 
-     (Hex_composite_pattern_t.C(patt2,uc2)) = 
-       let temp1 = between_ucs dim uc1 uc2 
-       and ol1 = Set_of_polys.sort l1 in 
-       Option.seek (test_between_patterns ol1 patt2) temp1 ;;
      
 end ;;
 
-let between_composite_patterns = Private.between_composite_patterns ;;
+let apply_on_ipair = Private.apply_on_ipair ;;
+let between_unified_connectors = Private.between_ucs ;;
