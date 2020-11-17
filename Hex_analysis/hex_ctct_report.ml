@@ -117,14 +117,6 @@ let compute_all_items eob =
    let search_result = find_untreated_item ([],l) in 
    iterator (l,search_result);;
 
-let about_end_of_battle eob = {
-   Hex_ctct_report_t.dimension = eob.Hex_end_of_battle_t.dimension ;
-      winner = eob.Hex_end_of_battle_t.winner ;
-      ally_territory = eob.Hex_end_of_battle_t.ally_territory ;
-      enemy_territory = eob.Hex_end_of_battle_t.enemy_territory ;
-      items  = compute_all_items eob;
-} ;; 
-
 let constructor fg =
      let eob = Hex_end_of_battle.of_finished_game fg in 
      {
@@ -135,13 +127,25 @@ let constructor fg =
          items  = compute_all_items eob;
    } ;; 
    
-
+let pattern_is_included_in_report (Hex_pattern_t.Pat l) ctct_report =
+     List.for_all (
+       fun ((i,j),lbl) ->
+         let cell = Hex_cell.of_int_pair (i,j) in 
+         if lbl 
+         then  Hex_cell_set.mem cell (ctct_report.Hex_ctct_report_t.enemy_territory)
+         else not(
+              (Hex_cell_set.mem cell (ctct_report.Hex_ctct_report_t.enemy_territory))
+              ||
+              (Hex_cell_set.mem cell (ctct_report.Hex_ctct_report_t.ally_territory))
+         )
+     );;
 
 end ;; 
 
-let about_end_of_battle = Private.about_end_of_battle ;;
 
 let constructor = Private.constructor ;;
+
+let pattern_is_included_in_report = Private.pattern_is_included_in_report;; 
 
 let to_end_of_battle ctct_report = {
    Hex_end_of_battle_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
