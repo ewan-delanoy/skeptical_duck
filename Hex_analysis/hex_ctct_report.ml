@@ -138,19 +138,25 @@ let pattern_is_included_in_report (Hex_pattern_t.Pat l) ctct_report =
               ||
               (Hex_cell_set.mem cell (ctct_report.Hex_ctct_report_t.ally_territory))
          )
-     );;
+     ) l;;
 
-(*     
+
 let detect_composite_pattern_in_report ctct_report uc (Hex_composite_pattern_t.C(patt,uc2)) =
-     let temp1 = Hex_body_movement.
-*)
+   let dim = ctct_report.Hex_ctct_report_t.dimension in   
+   let temp1 = Hex_body_movement.between_unified_connectors dim uc2 uc in 
+   Option.seek (
+      fun mv ->
+          let patt2 = Hex_body_movement.apply_on_pattern mv patt in 
+          pattern_is_included_in_report patt2 ctct_report
+   ) temp1;;
+
 
 end ;; 
 
 
 let constructor = Private.constructor ;;
 
-let pattern_is_included_in_report = Private.pattern_is_included_in_report;; 
+let detect_composite_pattern_in_report = Private.detect_composite_pattern_in_report;; 
 
 let to_end_of_battle ctct_report = {
    Hex_end_of_battle_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
