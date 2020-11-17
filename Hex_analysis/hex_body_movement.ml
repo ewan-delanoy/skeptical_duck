@@ -64,6 +64,9 @@ let apply_on_side mv side=
     then Hex_cardinal_direction.oppose side2 
     else side2 ;;              
 
+let apply_on_pattern mv (Hex_pattern_t.Pat l) =
+     Hex_pattern_t.Pat (Image.image (fun (pair,lbl)->(apply_on_ipair mv pair,lbl)) l);;       
+
 let nontranslated (dim,refl,opp) = 
      {Hex_body_movement_t.dimension = dim;
       reflect = refl;
@@ -132,5 +135,5 @@ let between_ucs dim uc1 uc2= match uc1 with
      
 end ;;
 
-let apply_on_ipair = Private.apply_on_ipair ;;
+let apply_on_pattern = Private.apply_on_pattern ;;
 let between_unified_connectors = Private.between_ucs ;;
