@@ -18,6 +18,20 @@ let for_side side =
     )
     ;;
 
+let oppose = function 
+    Hex_border_connector_name_t.Eyed_claw(specifier,side) -> 
+      Hex_border_connector_name_t.Eyed_claw(Hex_cardinal_direction.oppose specifier,
+      Hex_cardinal_direction.oppose side)
+   |Typical(tic,side) -> 
+      Hex_border_connector_name_t.Typical(tic,Hex_cardinal_direction.oppose side)  ;;
+   
+let reflect = function 
+      Hex_border_connector_name_t.Eyed_claw(specifier,side) -> 
+        Hex_border_connector_name_t.Eyed_claw(Hex_cardinal_direction.reflect specifier,
+        Hex_cardinal_direction.reflect side)
+     |Typical(tic,side) -> 
+        Hex_border_connector_name_t.Typical(tic,Hex_cardinal_direction.reflect side)  ;;
+
 let side = function 
     Hex_border_connector_name_t.Eyed_claw(_,side_of_arg) -> side_of_arg
    |Typical(tbc,side_of_arg) -> side_of_arg ;;                    
