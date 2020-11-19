@@ -117,8 +117,8 @@ let forbidden_composite_patterns = [
    Hex_unified_connector_t.Named
     {Hex_named_connector_t.name =
       Hex_connector_name_t.Border
-       (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Up,
-         Hex_cardinal_direction_t.Right));
+       (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Right,
+         Hex_cardinal_direction_t.Up));
      entry = (Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [(4, 3)]));
      junction =
       [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); (2, 1); 
