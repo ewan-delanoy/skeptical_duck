@@ -8,6 +8,8 @@
 let workspace_directory=ref("");;
 exception Incorrect_page_range of string*int*int;;
 exception Number_of_pages_in_pdf_exn of string*string ;;
+exception Bad_range_in_transfer of int * int ;;
+exception Pdf_file_cannot_be_emptied of string ;;
 
 module Helper = struct
 
@@ -361,6 +363,51 @@ module Bare = struct
 
   let delete_file pdfname=["rm "^pdfname^".pdf"];;     
 
+  let transfer_range_to_rightmost_in_usual_case deflated_one receiving_one range_start range_end initial_total_length=
+     let range_length = range_end - range_start + 1 in 
+     if (range_length < 0) || (range_start < 1) || (range_end > initial_total_length)
+     then raise(Bad_range_in_transfer(range_start,range_end)) 
+     else
+     let h1 =  deflated_one^"_half1" and h2 =  deflated_one^"_half2" in 
+     (cut_in_two ~pdfname:deflated_one ~first_half_length:(range_start-1) ~total_length:initial_total_length)
+     @
+     (cut_in_two ~pdfname:h2 ~first_half_length:range_length ~total_length:(initial_total_length-range_start+1))
+     @
+     (merge [h1;h2^"_half2"] deflated_one )
+     @
+     (append_on_the_right receiving_one (h2^"_half1"))
+     @
+     [
+        "rm "^h2^"_half1.pdf";
+        "rm "^h2^"_half2.pdf"; 
+        "rm "^h2;
+        "rm "^h1
+     ];;
+
+  let transfer_range_to_rightmost_in_limit_case deflated_one receiving_one range_end initial_total_length=
+     let range_length = range_end  in 
+     if (range_length < 0)  || (range_end > initial_total_length)
+     then raise(Bad_range_in_transfer(1,range_end)) 
+     else
+     let h1 =  deflated_one^"_half1" and h2 =  deflated_one^"_half2" in 
+     (cut_in_two ~pdfname:deflated_one ~first_half_length:range_length ~total_length:initial_total_length)
+     @
+     (rename h2 deflated_one )
+     @
+     (append_on_the_right receiving_one h1)
+     @
+     [
+        "rm "^h2;
+        "rm "^h1
+     ];;
+
+     let transfer_range_to_rightmost deflated_one receiving_one range_start range_end initial_total_length=
+       if range_start = 1 
+       then if range_end = initial_total_length 
+            then raise(Pdf_file_cannot_be_emptied(deflated_one))
+            else transfer_range_to_rightmost_in_limit_case deflated_one receiving_one range_end initial_total_length  
+       else transfer_range_to_rightmost_in_usual_case deflated_one receiving_one range_start range_end initial_total_length;; 
+
   module Walker = struct 
 
   let blank_name = "blank";;
@@ -425,6 +472,7 @@ module Command = struct
   let remove_page_number_in_in_a_total_of = tri Bare.unlabeled_remove_page_number_in_in_a_total_of;;
   let rename =bi Bare.rename;;
   let replace_page_number_in_by=qdi Bare.unlabeled_replace_page_number_in_by;;
+  let transfer_range_to_rightmost =qti Bare.transfer_range_to_rightmost ;;
   let upside_down =uni Bare.upside_down;; 
      
 
@@ -577,6 +625,10 @@ let remove_page_number_in_in_a_total_of ~page_number ~receiving_one  ~total_leng
 let rename  old_pdfname new_pdfname=
    Image.image Unix_command.uc 
   (Command.rename  old_pdfname new_pdfname);; 
+
+let transfer_range_to_rightmost ~deflated_one ~receiving_one ~range_start ~range_end ~total_length=Image.image Unix_command.uc 
+  (Command.transfer_range_to_rightmost deflated_one receiving_one range_start range_end total_length);;
+   
 
 let upside_down  pdfname=Image.image Unix_command.uc 
   (Command.upside_down  pdfname);;
