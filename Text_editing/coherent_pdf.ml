@@ -7,7 +7,7 @@
 
 let workspace_directory=ref("");;
 exception Incorrect_page_range of string*int*int;;
-
+exception Number_of_pages_in_pdf_exn of string*string ;;
 
 module Helper = struct
 
@@ -45,7 +45,9 @@ module Helper = struct
     common_part@last_part;;
 
   let number_of_pages_in_pdf full_pdfname =
-    int_of_string(Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname));;
+    let temp = Io.read_reasonable_command ("mdls -name kMDItemNumberOfPages -raw  "^full_pdfname) in 
+    try int_of_string(temp) with 
+    _ -> raise(Number_of_pages_in_pdf_exn(temp,full_pdfname));;
 
   let pagesize_in_pdf full_pdfname =
     (  
