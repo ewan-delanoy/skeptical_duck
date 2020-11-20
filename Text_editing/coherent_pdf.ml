@@ -380,8 +380,8 @@ module Bare = struct
      [
         "rm "^h2^"_half1.pdf";
         "rm "^h2^"_half2.pdf"; 
-        "rm "^h2;
-        "rm "^h1
+        "rm "^h2^".pdf";
+        "rm "^h1^".pdf"
      ];;
 
   let transfer_range_to_rightmost_in_limit_case deflated_one receiving_one range_end initial_total_length=
@@ -397,8 +397,7 @@ module Bare = struct
      (append_on_the_right receiving_one h1)
      @
      [
-        "rm "^h2;
-        "rm "^h1
+        "rm "^h1^".pdf"
      ];;
 
      let transfer_range_to_rightmost deflated_one receiving_one range_start range_end initial_total_length=
