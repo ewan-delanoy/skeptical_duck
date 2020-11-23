@@ -9,6 +9,7 @@ let workspace_directory=ref("");;
 exception Incorrect_page_range of string*int*int;;
 exception Number_of_pages_in_pdf_exn of string*string ;;
 exception Bad_range_in_transfer of int * int ;;
+exception Bad_range_in_removal of int * int ;;
 exception Pdf_file_cannot_be_emptied of string ;;
 
 module Helper = struct
@@ -251,57 +252,50 @@ module Bare = struct
       ~inserted_one:inserted_one  
        ~total_length:total_length;;
 
-  (* New code starts here *)
-
-  let remove_first_page_in_a_total_of  ~receiving_one  ~total_length=
-        (cut_in_two ~pdfname:receiving_one ~first_half_length:1 ~total_length:total_length)
+  let remove_initial_range_in_a_total_of range_length deflated_one old_total_length = 
+       (cut_in_two ~pdfname:deflated_one ~first_half_length:range_length ~total_length:old_total_length)
         @
-        (["mv "^receiving_one^"_half2"^".pdf "^receiving_one^".pdf"]  )
+        (["mv "^deflated_one^"_half2"^".pdf "^deflated_one^".pdf"]  )
         @
         [
-           "rm "^receiving_one^"_half1.pdf";
+           "rm "^deflated_one^"_half1.pdf";
         ];;
 
-  let remove_nonborder_page_number_in_a_total_of ~page_number ~receiving_one  ~total_length=
-        let temp=receiving_one^"_half2" in 
-        (cut_in_two ~pdfname:receiving_one ~first_half_length:(page_number-1) ~total_length:total_length)
+  let remove_nonborder_range_in_a_total_of (range_start,range_end) deflated_one old_total_length=
+        let range_length=range_end-range_start+1
+        and h2=deflated_one^"_half2" in 
+        (cut_in_two ~pdfname:deflated_one ~first_half_length:(range_start-1) ~total_length:old_total_length)
         @
-        (cut_in_two ~pdfname:temp ~first_half_length:1 ~total_length:(total_length-page_number+1))
+        (cut_in_two ~pdfname:h2 ~first_half_length:range_length ~total_length:(old_total_length-range_start+1))
         @
-        (merge [receiving_one^"_half1";temp^"_half2"] receiving_one )
+        (merge [deflated_one^"_half1";h2^"_half2"] deflated_one )
         @
         [
-           "rm "^receiving_one^"_half1.pdf";
-           "rm "^receiving_one^"_half2.pdf"; 
-           "rm "^receiving_one^"_half2_half1.pdf"; 
-           "rm "^receiving_one^"_half2_half2.pdf"; 
+           "rm "^deflated_one^"_half1.pdf";
+           "rm "^deflated_one^"_half2.pdf"; 
+           "rm "^deflated_one^"_half2_half1.pdf"; 
+           "rm "^deflated_one^"_half2_half2.pdf"; 
         ];;
 
-  let remove_last_page_in_a_total_of  ~receiving_one  ~total_length=
-        (cut_in_two ~pdfname:receiving_one ~first_half_length:(total_length-1) ~total_length:total_length)
+  let remove_final_range_in_a_total_of range_length deflated_one  old_total_length=
+        (cut_in_two ~pdfname:deflated_one ~first_half_length:(old_total_length-range_length) ~total_length:old_total_length)
         @
-        ["mv "^receiving_one^"_half1"^".pdf "^receiving_one^".pdf"]  
+        ["mv "^deflated_one^"_half1"^".pdf "^deflated_one^".pdf"]  
         @
         [
-           "rm "^receiving_one^"_half2.pdf";
-        ];;    
+           "rm "^deflated_one^"_half2.pdf";
+        ];;          
 
-  let remove_page_number_in_in_a_total_of ~page_number ~receiving_one ~total_length=
-    if page_number=1
-    then remove_first_page_in_a_total_of  receiving_one  total_length
-    else 
-    if page_number=total_length
-    then remove_first_page_in_a_total_of  receiving_one  total_length
-    else 
-    remove_nonborder_page_number_in_a_total_of page_number receiving_one total_length;;
+  let remove_page_range_in_a_total_of (range_start,range_end) deflated_one old_total_length =
+      let range_length = range_end - range_start +1 in 
+      if (range_length < 1) || (range_start < 1) || (range_end > old_total_length) 
+      then raise(Bad_range_in_removal(range_start,range_end))  
+      else if range_start = 1
+      then remove_initial_range_in_a_total_of range_length deflated_one old_total_length  
+      else if range_end = old_total_length 
+      then remove_final_range_in_a_total_of range_length deflated_one  old_total_length
+      else remove_nonborder_range_in_a_total_of (range_start,range_end) deflated_one old_total_length ;;     
 
-  let unlabeled_remove_page_number_in_in_a_total_of page_number receiving_one total_length=
-     remove_page_number_in_in_a_total_of
-    ~page_number:page_number 
-     ~receiving_one:receiving_one 
-       ~total_length:total_length;;
-        
-  (* New code ends here *)
 
   let cut_into_small_pieces pdfname (i,j) max_piece_size=
          let ranges = Helper.small_pieces (i,j) max_piece_size in 
@@ -471,7 +465,7 @@ module Command = struct
   let lay_down =uni Bare.lay_down;; 
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
-  let remove_page_number_in_in_a_total_of = tri Bare.unlabeled_remove_page_number_in_in_a_total_of;;
+  let remove_page_range_in_in_a_total_of = tri Bare.remove_page_range_in_a_total_of;;
   let rename =bi Bare.rename;;
   let replace_page_number_in_by=qdi Bare.unlabeled_replace_page_number_in_by;;
   let transfer_range_to_rightmost =qti Bare.transfer_range_to_rightmost ;;
@@ -620,9 +614,13 @@ let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc
 let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
    (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
 
-let remove_page_number_in_in_a_total_of ~page_number ~receiving_one  ~total_length=
+let remove_page_number_in_in_a_total_of ~page_number ~deflated_one  ~total_length=
     Image.image Unix_command.uc 
-    (Command.remove_page_number_in_in_a_total_of page_number receiving_one  total_length);;
+    (Command.remove_page_range_in_in_a_total_of (page_number,page_number) deflated_one  total_length);;
+
+let remove_page_range_in_in_a_total_of ~range_start ~range_end ~deflated_one  ~total_length=
+    Image.image Unix_command.uc 
+    (Command.remove_page_range_in_in_a_total_of (range_start,range_end) deflated_one  total_length);;
 
 let rename  old_pdfname new_pdfname=
    Image.image Unix_command.uc 
