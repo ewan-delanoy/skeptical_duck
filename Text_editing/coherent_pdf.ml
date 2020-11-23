@@ -156,10 +156,13 @@ module Bare = struct
       ];;
 
   let append_on_the_right file1 file2 =
-      [
+     let fulle_filename1 =  (!workspace_directory)^"/"^file1^".pdf" in 
+     if Sys.file_exists fulle_filename1 
+     then [
           Helper.cpdf^file1^".pdf "^file2^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
           "mv wghartnjklmiopfwhhokuuu.pdf "^file1^".pdf" ;
-      ];;
+         ]
+     else ["cp "^file2^".pdf "^file1^".pdf"]  ;;
 
   let cut_in_two ~pdfname ~first_half_length ~total_length =
         let half1=pdfname^"_half1.pdf"
