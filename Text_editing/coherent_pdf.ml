@@ -358,7 +358,12 @@ module Bare = struct
            ~num_even:num_even 
              ~final_name:final_name;;
 
-  let delete_file pdfname=["rm "^pdfname^".pdf"];;     
+  let delete_file pdfname=["rm "^pdfname^".pdf"];;   
+  
+  let delete_file_if_exists pdfname=
+     if Sys.file_exists (pdfname^".pdf") 
+     then ["rm "^pdfname^".pdf"]
+     else [];;   
 
   let transfer_range_to_rightmost_in_usual_case deflated_one receiving_one range_start range_end initial_total_length=
      let range_length = range_end - range_start + 1 in 
@@ -452,6 +457,7 @@ module Command = struct
   let cut_in_two =tri Bare.unlabeled_cut_in_two;;
   let cut_into_small_pieces =tri Bare.cut_into_small_pieces;;
   let delete_file =uni Bare.delete_file;;
+  let delete_file_if_exists =uni Bare.delete_file_if_exists;;
   let explode =bi Bare.explode;;
   let export =bi Bare.unlabeled_export;;
   let extract_page_range =bi Bare.extract_page_range;;
@@ -558,6 +564,9 @@ let cut_in_two ~pdfname ~first_half_length ~total_length =
 
 let delete_file  pdfname=Image.image Unix_command.uc 
   (Command.delete_file  pdfname);;
+
+let delete_file_if_exists  pdfname=Image.image Unix_command.uc 
+  (Command.delete_file_if_exists  pdfname);;  
 
 let extract_page_range pdfname (i,j)=Image.image Unix_command.uc 
   (Command.extract_page_range pdfname (i,j));;
