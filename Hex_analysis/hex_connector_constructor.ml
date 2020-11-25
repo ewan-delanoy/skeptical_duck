@@ -21,16 +21,8 @@ let high = up and low =down;;
 module Inner = struct 
 
 
-let broken_bridge (entry,p1,p2,exit) = {
-    Hex_connector_t.entry = entry;
-    junction = Image.image Hex_cell.to_int_pair [ p1 ; p2 ];
-    exit = exit;
-    apex = None ;
-} ;;   
-
 let expand_name = function 
-   Hex_inner_connector_name_t.Broken_bridge(entry,p1,p2,exit) -> broken_bridge (entry,p1,p2,exit)
-   |Typical(tic,side) -> Hex_typical_inner_connector_name.full_constructor tic side ;; 
+   Hex_inner_connector_name_t.Typical(tic,side) -> Hex_typical_inner_connector_name.full_constructor tic side ;; 
 
 end ;; 
 
