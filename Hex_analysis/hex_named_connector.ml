@@ -167,14 +167,14 @@ let missing_pods end_of_battle nc =
 
 let of_name = Private.of_name ;;
 
-let oppose dim = Private.namify ((fun x-> x),Hex_connector.oppose dim) ;;
+let oppose dim = Private.namify (Hex_connector_name.oppose,Hex_connector.oppose dim) ;;
 
 let opt_side nc = Hex_connector_name.opt_side nc.Hex_named_connector_t.name ;;
 
 let print_out (fmt:Format.formatter) nc=
    Format.fprintf fmt "@[%s@]" (Private.to_readable_string nc);;     
 
-let reflect = Private.namify ((fun x-> x),Hex_connector.reflect) ;;
+let reflect = Private.namify (Hex_connector_name.reflect,Hex_connector.reflect) ;;
 
 let to_molecular_linker nc = 
      match Hex_connector_name.to_nondefault_molecular_linker 
@@ -188,7 +188,7 @@ let to_molecular_linker nc =
 
 let to_readable_string = Private.to_readable_string ;;
 
-let translate p = Private.namify (Hex_connector.translate p) ;;
+let translate p = Private.namify ((fun name->name),Hex_connector.translate p) ;;
 
 let wet_earth nc = Hex_cell_set.fold_merge
 
