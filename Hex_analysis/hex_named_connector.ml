@@ -61,7 +61,8 @@ let starters_for_side (dim,side)=
 let middlers dim= 
     expand_all dim  (Hex_connector_name.middlers);;   
 
-let islanders dim island1 other_islands =
+let islanders dim island1 other_islands = [];;
+(*
    let temp1 = Image.image ( 
      fun island2 -> 
        let ttemp2 =  Hex_island.common_neighbors dim island1 island2  in 
@@ -76,6 +77,7 @@ let islanders dim island1 other_islands =
        ) ttemp5
    ) other_islands in 
    List.flatten temp1 ;; 
+*)
 
 let namify f nc =
       let nm =nc.Hex_named_connector_t.name 
