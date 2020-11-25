@@ -61,23 +61,6 @@ let starters_for_side (dim,side)=
 let middlers dim= 
     expand_all dim  (Hex_connector_name.middlers);;   
 
-let islanders dim island1 other_islands = [];;
-(*
-   let temp1 = Image.image ( 
-     fun island2 -> 
-       let ttemp2 =  Hex_island.common_neighbors dim island1 island2  in 
-       let ttemp3 = Set_of_poly_pairs.image Hex_cell.of_int_pair ttemp2 in 
-       let ttemp4 = Uple.list_of_pairs ttemp3 in 
-       let ttemp5 = List.filter (
-           fun (cell1,cell2) -> not(List.mem cell2 (Hex_cell.neighbors dim cell1))
-       ) ttemp4 in 
-       Image.image (fun (p1,p2)->
-          of_name( Hex_connector_name_t.Inner(
-             Hex_inner_connector_name_t.Broken_bridge(island1,p1,p2,island2)))
-       ) ttemp5
-   ) other_islands in 
-   List.flatten temp1 ;; 
-*)
 
 let namify f nc =
       let nm =nc.Hex_named_connector_t.name 
