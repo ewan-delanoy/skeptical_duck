@@ -13,6 +13,14 @@ let all =
       ) base
     );;
 
+let oppose = fun
+(Hex_inner_connector_name_t.Typical(tic,side))->  
+  Hex_inner_connector_name_t.Typical(tic,Hex_cardinal_direction.oppose side) ;;
+
+let reflect = fun
+  (Hex_inner_connector_name_t.Typical(tic,side))->  
+    Hex_inner_connector_name_t.Typical(tic,Hex_cardinal_direction.reflect side) ;;
+  
 
 let to_nondefault_molecular_linker = fun
      (Hex_inner_connector_name_t.Typical(_,_))-> None ;;
