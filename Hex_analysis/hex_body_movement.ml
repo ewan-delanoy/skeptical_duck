@@ -9,8 +9,7 @@ exception Between_ucs_exn of Hex_unified_connector_t.t * Hex_unified_connector_t
 module Private = struct
 
 let side_of_inner_connector = function 
-  Hex_inner_connector_name_t.Broken_bridge(_,_,_,_) -> Hex_cardinal_direction_t.Up
- |Typical(_,side)-> side ;;  
+  Hex_inner_connector_name_t.Typical(_,side)-> side ;;  
 
 let side_of_border_connector = function 
    Hex_border_connector_name_t.Eyed_claw(specifier,side) -> side
