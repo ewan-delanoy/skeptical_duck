@@ -145,8 +145,6 @@ let inner_area nc =
 
 let inner_sea = Private.inner_sea ;;
 
-let islanders = Private.islanders ;;
-
 
 let missing_earth end_of_battle nc = 
    let inner_earth = Hex_cell_set.forget_order 
