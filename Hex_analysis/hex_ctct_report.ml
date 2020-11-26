@@ -141,7 +141,7 @@ let pattern_is_included_in_report (Hex_pattern_t.Pat l) ctct_report =
      ) l;;
 
 
-let detect_composite_pattern_in_report ctct_report uc (Hex_composite_pattern_t.C(patt,uc2)) =
+let test_composite_pattern ctct_report uc (Hex_composite_pattern_t.C(patt,uc2)) =
    let dim = ctct_report.Hex_ctct_report_t.dimension in   
    let temp1 = Hex_body_movement.between_unified_connectors dim uc2 uc in 
    Option.seek (
@@ -150,13 +150,14 @@ let detect_composite_pattern_in_report ctct_report uc (Hex_composite_pattern_t.C
           pattern_is_included_in_report patt2 ctct_report
    ) temp1;;
 
+let approach_composite_pattern_set ctct_report l uc=
+   Option.find_and_stop (test_composite_pattern ctct_report uc) l;;
 
 end ;; 
 
+let approach_composite_pattern_set = Private.approach_composite_pattern_set;; 
 
 let constructor = Private.constructor ;;
-
-let detect_composite_pattern_in_report = Private.detect_composite_pattern_in_report;; 
 
 let to_end_of_battle ctct_report = {
    Hex_end_of_battle_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
