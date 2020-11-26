@@ -4,7 +4,6 @@
 
 *)
 
-exception Between_ucs_exn of Hex_unified_connector_t.t * Hex_unified_connector_t.t ;; 
 
 module Private = struct
 
@@ -120,13 +119,12 @@ let between_ucs dim uc1 uc2= match uc1 with
            match uc2 with 
            Hex_unified_connector_t.Bridge((_,plyr2),(cell3,cell4)) -> 
                    between_owned_bridges dim (plyr1,cell1,cell2) (plyr2,cell3,cell4) 
-           |Named(nc2) -> raise(Between_ucs_exn(uc1,uc2))        
+           |Named(nc2) -> []      
        )
    |Named(nc1) ->    
        (
           match uc2 with 
-          Hex_unified_connector_t.Bridge(plyr2,(cell3,cell4)) -> 
-               raise(Between_ucs_exn(uc1,uc2))
+          Hex_unified_connector_t.Bridge(plyr2,(cell3,cell4)) -> []
                   
           |Named(nc2) -> between_named_connectors dim nc1 nc2  
        );;
