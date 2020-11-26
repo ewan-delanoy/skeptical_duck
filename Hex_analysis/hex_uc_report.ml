@@ -8,6 +8,21 @@ exception Lowercase_label_exn of int ;;
 
 module Private = struct 
 
+let forbidden_composite_patterns = [
+      Hex_composite_pattern_t.C (Hex_pattern_t.Pat [((5, 4), true); ((6, 2), true)],
+      Hex_unified_connector_t.Named
+       {Hex_named_connector_t.name =
+         Hex_connector_name_t.Border
+          (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Right,
+            Hex_cardinal_direction_t.Up));
+        entry = (Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [(4, 3)]));
+        junction =
+         [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); (2, 1); 
+          (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); (3, 1); (3, 2); (3, 3); 
+          (3, 4); (3, 5); (4, 2)];
+        exit = (Hex_island_t.I(Hex_anchor_t.Single_anchor Hex_cardinal_direction_t.Up,
+        Set_of_poly_pairs_t.S [])); apex = Some (4, 3)})
+   ] ;;   
 
 let is_a_corner_cell formal_dim cell =
      let (Hex_dimension_t.D dim) = formal_dim 
@@ -40,7 +55,7 @@ let choose_unique_connector plyr common connectors =
 
  
 
-let compute_connectors eob base ctct_report = 
+let compute_apriori_connectors eob base ctct_report = 
    let formal_dim = eob.Hex_end_of_battle_t.dimension 
    and plyr = eob.Hex_end_of_battle_t.winner 
    and l = ctct_report.Hex_ctct_report_t.items in 
@@ -57,8 +72,18 @@ let compute_connectors eob base ctct_report =
       let connectors4 = minimize_wrt_inner_area connectors3 in 
      match choose_unique_connector (formal_dim,plyr) common connectors4 with 
      None -> None 
-     | Some(nc)->Some((i,j),nc)
+     | Some(uc)->Some((i,j),uc)
    ) temp1 ;;
+
+
+
+let compute_connectors eob base ctct_report =
+     let temp1 = compute_apriori_connectors eob base ctct_report in 
+     List.filter (
+     fun ((i,j),uc) -> (Hex_ctct_report.approach_composite_pattern_set ctct_report
+       forbidden_composite_patterns uc            
+     )  = None
+     ) temp1 ;;
 
 let lowercase_label k = 
    if (k<1)||(k>26) 
@@ -112,21 +137,7 @@ let cumulative_constructor fg =
     let ctct_report = Hex_ctct_report.constructor fg in 
     Private.one_step_constructor ctct_report  ;;  
 
-let forbidden_composite_patterns = [
-   Hex_composite_pattern_t.C (Hex_pattern_t.Pat [((5, 4), true); ((6, 2), true)],
-   Hex_unified_connector_t.Named
-    {Hex_named_connector_t.name =
-      Hex_connector_name_t.Border
-       (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Right,
-         Hex_cardinal_direction_t.Up));
-     entry = (Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [(4, 3)]));
-     junction =
-      [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); (2, 1); 
-       (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); (3, 1); (3, 2); (3, 3); 
-       (3, 4); (3, 5); (4, 2)];
-     exit = (Hex_island_t.I(Hex_anchor_t.Single_anchor Hex_cardinal_direction_t.Up,
-     Set_of_poly_pairs_t.S [])); apex = Some (4, 3)})
-] ;;
+
 
 let one_step_constructor = Private.one_step_constructor ;;
 
