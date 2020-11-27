@@ -124,6 +124,7 @@ let constructor fg =
          winner = eob.Hex_end_of_battle_t.winner ;
          ally_territory = eob.Hex_end_of_battle_t.ally_territory ;
          enemy_territory = eob.Hex_end_of_battle_t.enemy_territory ;
+         free_territory = eob.Hex_end_of_battle_t.free_territory ;
          items  = compute_all_items eob;
    } ;; 
    
@@ -163,5 +164,6 @@ let to_end_of_battle ctct_report = {
    Hex_end_of_battle_t. dimension = ctct_report.Hex_ctct_report_t.dimension ;
                        winner = ctct_report.Hex_ctct_report_t.winner ;
                        ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
-                       enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory
+                       enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
+                       free_territory = ctct_report.Hex_ctct_report_t.free_territory
 } ;;
