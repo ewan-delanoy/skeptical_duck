@@ -16,3 +16,4 @@ free_territory  : Hex_cell_set_t.t;
          base   : Hex_base_of_connectors_t.t ;
      connectors : ((int * int) * Hex_unified_connector_t.t) list  
 } ;;
+
