@@ -11,7 +11,9 @@ let one_step_constructor uc_report  =
 {
    Hex_mp_report_t. dimension = uc_report.Hex_uc_report_t.dimension ;
                        winner = uc_report.Hex_uc_report_t.winner ;
+               ally_territory = uc_report.Hex_uc_report_t.ally_territory;   
               enemy_territory = uc_report.Hex_uc_report_t.enemy_territory;
+               free_territory = uc_report.Hex_uc_report_t.free_territory;
                        items  = uc_report.Hex_uc_report_t.items;
                        base   = uc_report.Hex_uc_report_t.base ;
                    connectors = l_connectors ;
