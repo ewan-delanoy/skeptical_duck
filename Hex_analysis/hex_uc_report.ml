@@ -115,6 +115,7 @@ let one_step_constructor ctct_report =
                         winner = ctct_report.Hex_ctct_report_t.winner ;
                 ally_territory = ctct_report.Hex_ctct_report_t.ally_territory;
                enemy_territory = ctct_report.Hex_ctct_report_t.enemy_territory;
+                free_territory = ctct_report.Hex_ctct_report_t.free_territory;
                         items  = ctct_report.Hex_ctct_report_t.items;
                         base   = l_base ;
                     connectors = l_connectors 
@@ -126,6 +127,7 @@ let one_step_forgetter uc_report =
                              winner = uc_report.Hex_uc_report_t.winner ;
                      ally_territory = uc_report.Hex_uc_report_t.ally_territory;
                     enemy_territory = uc_report.Hex_uc_report_t.enemy_territory;
+                     free_territory = uc_report.Hex_uc_report_t.free_territory;
                              items  = uc_report.Hex_uc_report_t.items;                 
     } ;;
 
