@@ -32,17 +32,3 @@ let of_finished_game fgame =
          free_territory = Hex_cell_set.setminus all_cells occupied_terr;
      } ;;
 
-(*     
-let of_activated_molecular (dim,the_winner) (active_part,mlclr) = 
-    let passive_part = Hex_molecular_linker.support mlclr in 
-    let needed_cells = Hex_cell_set.merge active_part passive_part in 
-    let all_cells = Hex_common.all_cells dim in 
-    let unneeded_cells = Hex_cell_set.setminus all_cells needed_cells in 
-    {
-    Hex_end_of_battle_t.dimension       
-                         = dim ;
-         winner          = the_winner ; 
-         ally_territory  = active_part ; 
-         enemy_territory = unneeded_cells ;
-     } ;;
-*)
