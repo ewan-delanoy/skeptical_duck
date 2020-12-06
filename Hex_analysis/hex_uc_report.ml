@@ -72,7 +72,7 @@ let compute_apriori_connectors eob base ctct_report =
       let connectors4 = minimize_wrt_inner_area connectors3 in 
      match choose_unique_connector (formal_dim,plyr) common connectors4 with 
      None -> None 
-     | Some(uc)->Some((i,j),uc)
+     | Some(uc)->Some((Hex_ctct_index_t.I i,Hex_ctct_index_t.I j),uc)
    ) temp1 ;;
 
 
