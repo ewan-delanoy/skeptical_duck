@@ -5,9 +5,18 @@
 *)
 
 module Private = struct 
+
+let maximal_paths_in_ag arg =
+   let rewritten_arg = Image.image (
+     fun ((Hex_ctct_index_t.I i,Hex_ctct_index_t.I j),x)->
+      ((i,j),x)
+   ) arg in 
+   Maximal_paths_in_acyclic_graph.maximal_paths rewritten_arg ;; 
+
+
 let one_step_constructor uc_report  = 
    let l_connectors = uc_report.Hex_uc_report_t.connectors in 
-   let mp = Maximal_paths_in_acyclic_graph.maximal_paths l_connectors in 
+   let mp = maximal_paths_in_ag l_connectors in 
 {
    Hex_mp_report_t. dimension = uc_report.Hex_uc_report_t.dimension ;
                        winner = uc_report.Hex_uc_report_t.winner ;
