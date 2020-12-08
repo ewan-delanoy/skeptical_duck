@@ -1,7 +1,5 @@
 (*
 
-The most used function in all those modules !
-
 #use"maximal_paths_in_acyclic_graph.ml";;
 
 *)
@@ -76,7 +74,8 @@ let rec helper_for_maximal_paths (complete,incomplete) =
 end ;;
 
 let maximal_paths edges start =
-  Private.helper_for_maximal_paths ([],[((start,[]),edges)]);;
+  Image.image snd
+  (Private.helper_for_maximal_paths ([],[((start,[]),edges)]));;
 
 
 (*
