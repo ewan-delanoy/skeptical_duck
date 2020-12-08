@@ -6,12 +6,13 @@
 
 module Private = struct 
 
-let maximal_paths_in_ag arg =
+let maximal_paths_in_ag arg idx=
    let rewritten_arg = Image.image (
      fun ((Hex_ctct_index_t.I i,Hex_ctct_index_t.I j),x)->
       ((i,j),x)
    ) arg in 
-   Maximal_paths_in_acyclic_graph.maximal_paths rewritten_arg ;; 
+   let pre_res = Maximal_paths_in_acyclic_graph.maximal_paths rewritten_arg idx in 
+   Image.image (Image.image (fun (uc,k)->(uc,Hex_ctct_index_t.I k) )) pre_res;; 
 
 
 let one_step_constructor uc_report  = 
@@ -49,7 +50,7 @@ let simplify_paths_presentation l=
 
 let first_touches_second mp =
      List.exists 
-     (fun l->List.exists (fun (_,y)->y=2) l)
+     (fun l->List.exists (fun (_,y)->y=Hex_ctct_index_t.I 2) l)
       mp.Hex_mp_report_t.paths_from_1 ;; 
 
 
