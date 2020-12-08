@@ -43,13 +43,13 @@ let irregularities_from_pairs ll=
    ) ll ;;
 
 let simplify_paths_presentation l= 
-   let temp1 = List.flatten (Image.image snd l) in 
+   let temp1 = List.flatten l in 
    let temp2 = Image.image fst temp1 in 
    Ordered.sort Total_ordering.standard temp2 ;;   
 
 let first_touches_second mp =
      List.exists 
-     (fun (_,l)->List.exists (fun (_,y)->y=2) l)
+     (fun l->List.exists (fun (_,y)->y=2) l)
       mp.Hex_mp_report_t.paths_from_1 ;; 
 
 
