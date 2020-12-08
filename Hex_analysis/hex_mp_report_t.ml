@@ -15,6 +15,6 @@ enemy_territory   : Hex_cell_set_t.t;
          items    : Hex_ctct_report_item_t.t list;
          base     : Hex_base_of_connectors_t.t ;
        connectors : ((Hex_ctct_index_t.t * Hex_ctct_index_t.t) * Hex_unified_connector_t.t) list ; 
-     paths_from_1 : ((Hex_unified_connector_t.t * int) list) list ;
-     paths_from_2 : ((Hex_unified_connector_t.t * int) list) list ;  
+     paths_from_1 : ((Hex_unified_connector_t.t * Hex_ctct_index_t.t) list) list ;
+     paths_from_2 : ((Hex_unified_connector_t.t * Hex_ctct_index_t.t) list) list ;  
 } ;;
