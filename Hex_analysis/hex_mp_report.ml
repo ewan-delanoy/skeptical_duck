@@ -18,17 +18,23 @@ let maximal_paths_in_ag arg idx=
 let one_step_constructor uc_report  = 
    let l_connectors = uc_report.Hex_uc_report_t.connectors in 
    let mp = maximal_paths_in_ag l_connectors in 
+   let paths_for_1 = mp 1 and paths_for_2 = mp 2 in 
+   let old_ft = uc_report.Hex_uc_report_t.free_territory in 
+   let used_cells = Hex_cell_set.fold_merge (Image.image 
+      ( fun (uc,_)->Hex_unified_connector.support uc )
+   (List.flatten (paths_for_1 @ paths_for_2))) in
+
 {
    Hex_mp_report_t. dimension = uc_report.Hex_uc_report_t.dimension ;
                        winner = uc_report.Hex_uc_report_t.winner ;
                ally_territory = uc_report.Hex_uc_report_t.ally_territory;   
               enemy_territory = uc_report.Hex_uc_report_t.enemy_territory;
-               free_territory = uc_report.Hex_uc_report_t.free_territory;
+               free_territory = Hex_cell_set.setminus old_ft used_cells ;
                        items  = uc_report.Hex_uc_report_t.items;
                        base   = uc_report.Hex_uc_report_t.base ;
                    connectors = l_connectors ;
-                 paths_from_1 = mp 1 ;   
-                 paths_from_2 = mp 2 ;   
+                 paths_from_1 = paths_for_1 ;   
+                 paths_from_2 = paths_for_2 ;   
 
 } ;;
 
