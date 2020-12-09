@@ -12,7 +12,8 @@ let maximal_paths_in_ag arg idx=
       ((i,j),x)
    ) arg in 
    let pre_res = Maximal_paths_in_acyclic_graph.maximal_paths rewritten_arg idx in 
-   Image.image (Image.image (fun (uc,k)->(uc,Hex_ctct_index_t.I k) )) pre_res;; 
+   Hex_mp_t.MP(
+   Image.image (Image.image (fun (uc,k)->(uc,Hex_ctct_index_t.I k) )) pre_res);; 
 
 
 let one_step_constructor uc_report  = 
@@ -20,10 +21,9 @@ let one_step_constructor uc_report  =
    let mp = maximal_paths_in_ag l_connectors in 
    let paths_for_1 = mp 1 and paths_for_2 = mp 2 in 
    let old_ft = uc_report.Hex_uc_report_t.free_territory in 
-   let used_cells = Hex_cell_set.fold_merge (Image.image 
-      ( fun (uc,_)->Hex_unified_connector.support uc )
-   (List.flatten (paths_for_1 @ paths_for_2))) in
-
+   let used_cells = Hex_cell_set.merge 
+      (Hex_mp.cells_from_junctions paths_for_1)
+      (Hex_mp.cells_from_junctions paths_for_2) in 
 {
    Hex_mp_report_t. dimension = uc_report.Hex_uc_report_t.dimension ;
                        winner = uc_report.Hex_uc_report_t.winner ;
@@ -49,15 +49,16 @@ let irregularities_from_pairs ll=
         else None   
    ) ll ;;
 
-let simplify_paths_presentation l= 
+let simplify_paths_presentation (Hex_mp_t.MP l)= 
    let temp1 = List.flatten l in 
    let temp2 = Image.image fst temp1 in 
    Ordered.sort Total_ordering.standard temp2 ;;   
 
 let first_touches_second mp =
+   let (Hex_mp_t.MP ll) = mp.Hex_mp_report_t.paths_from_1 in   
      List.exists 
      (fun l->List.exists (fun (_,y)->y=Hex_ctct_index_t.I 2) l)
-      mp.Hex_mp_report_t.paths_from_1 ;; 
+     ll ;; 
 
 
 let irregularities mp =
