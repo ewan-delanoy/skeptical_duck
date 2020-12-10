@@ -20,3 +20,7 @@ Hex_cell_set.fold_merge (Image.image
       ( fun (uc,_)->Hex_unified_connector.support uc )
    (List.flatten l));;
 
+let shortest_path_to_component (Hex_mp_t.MP ll) idx= 
+    let path1 = Listennou.force_find (fun l->List.exists (fun (_,idx2)->idx2=idx) l ) ll in 
+    let (path2,_,_) = Three_parts.select_center_element (fun (_,idx2)->idx2=idx) path1 in 
+    Image.image fst path2 ;;   
