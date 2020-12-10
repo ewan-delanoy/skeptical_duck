@@ -102,12 +102,28 @@ let first_pill_graph mp=
          fun cell -> try Some(cell,List.assoc cell classified_allies) with 
          _ -> None
        ) ttemp2 in 
-       if ttemp3 = []
+       if List.length (ttemp3) < 2
        then None 
       else Some(free_cell,ttemp3)  
    ) free_cells in 
    temp1;; 
 
+let solidarity_check lbl1 lbl2 = 
+    (lbl1 = lbl2) && (List.mem lbl1 [1;2]) ;;
+
+let all_pills mp = 
+    let gr1 = first_pill_graph mp in   
+    Option.filter_and_unpack (fun 
+       (free_cell,nebs) ->
+          let ttemp2 = Uple.list_of_pairs nebs in 
+          let ttemp3 = List.filter (
+            fun ((_,lbl1),(_,lbl2)) -> 
+                 not(solidarity_check lbl1 lbl2)
+          ) ttemp2 in 
+          if ttemp3 = [] 
+          then None 
+         else Some(free_cell,ttemp3)  
+    ) gr1 ;;
 
 end ;; 
 
