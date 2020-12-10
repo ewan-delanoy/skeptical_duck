@@ -74,6 +74,37 @@ let irregularities mp =
    )
 ;;
 
+(* to an allied cell, associate : 1 if it is joined to 1,
+   2 if it is joined to 2, and 3 otherwise 
+   *)
+let classify_allied_cells mp =
+     let joined_to_1 = Hex_mp.cells_from_components 
+     mp.Hex_mp_report_t.items mp.Hex_mp_report_t.paths_from_1 
+     and joined_to_2 = Hex_mp.cells_from_components 
+     mp.Hex_mp_report_t.items mp.Hex_mp_report_t.paths_from_2 in 
+     Hex_cell_set.image (
+       fun cell ->
+           let lbl=(
+              if Hex_cell_set.mem cell joined_to_1 then 1 else 
+              if Hex_cell_set.mem cell joined_to_2 then 2 else 3  
+           ) in 
+           (cell,lbl)    
+     ) mp.Hex_mp_report_t.ally_territory;;
+
+let first_pill_graph mp=
+   let dim = mp.Hex_mp_report_t.dimension in 
+   let classified_allies = classify_allied_cells mp in 
+   let (Hex_cell_set_t.S free_cells) = mp.Hex_mp_report_t.free_territory in 
+   let temp1 = Image.image  (
+     fun free_cell ->
+       let ttemp2 = Hex_cell.neighbors dim free_cell in 
+       let ttemp3 = Option.filter_and_unpack (
+         fun cell -> try Some(cell,List.assoc cell classified_allies) with 
+         _ -> None
+       ) ttemp2 in 
+       ttemp3
+   ) free_cells in 
+   temp1;; 
 
 
 end ;; 
