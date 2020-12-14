@@ -4,12 +4,38 @@
 
 *)
 
+module Private = struct 
+
 let core old_s=
    let left_offset=(if Supstring.begins_with old_s "\n" then "\n" else "")
    and right_offset=(if Supstring.ends_with old_s "\n" then "\n" else "") in
    let s=left_offset^old_s^right_offset in
    let temp1=Str.split (Str.regexp_string "\n") s in
    Ennig.index_everything temp1;;
+
+let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
+     match lines with 
+     [] -> List.rev treated_lines 
+     |(line_idx,line) :: other_lines ->
+      iterator_for_enchancement 
+      (num_of_treated_chars+(String.length line)+1,
+       (num_of_treated_chars,line_idx,line)::treated_lines,other_lines)   ;;
+      
+let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
+
+end ;;   
+
+let enhanced_core s= Private.enhance (Private.core s);;
+
+(*
+
+enhanced_core "a\nb";;
+enhanced_core "\na\nb";;
+enhanced_core "a\nb\n";;
+
+*)
+
+let core = Private.core ;;
 
 (*
 
