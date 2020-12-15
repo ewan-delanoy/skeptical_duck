@@ -49,15 +49,14 @@ let show_indices s=
    
 let number_of_lines_before = Substring.Friend.number_of_lines_before;;
 
-exception Integer_too_big_for_string_of_int;; 
+exception Negative_offset_for_string;; 
 
-let left_completed_string_of_int l_max m=
-   let s1=string_of_int(m) in
-   let d=l_max-(String.length s1) in
+let insert_repetitive_offset_on_the_left c l_max str=
+   let d=l_max-(String.length str) in
    if d<0
-   then raise(Integer_too_big_for_string_of_int)
+   then raise(Negative_offset_for_string)
    else
-   (String.make d '0')^s1;;
+   (String.make d c)^str;;
 
 
      
