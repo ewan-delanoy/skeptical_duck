@@ -3,12 +3,20 @@
 #use"tools_for_absolute_path.ml";;
 
 Standardize filename path. Non-directories never 
-end with /, directories always do.
+end with /, directories always do (exceptions : the iterated_container 
+functions below, note that 
+Sys.getcwd() does not follow this convention ).
 
 
 *)
 
-exception Bad_filename;;
+let remove_trailing_slash s=
+    let n=String.length(s) in
+    if ((String.get s (n-1))='/')
+    then String.sub s 0 (n-1)
+    else s;;
+
+exception Number_of_double_points_exn;;
 
 let number_of_double_points s=
   let n=String.length(s) in
@@ -19,13 +27,13 @@ let number_of_double_points s=
      then if n=(k+2) then j+1 else
           if (String.get s (k+2)='/') 
           then tempf(j+1)
-          else raise(Bad_filename)
+          else raise(Number_of_double_points_exn)
      else j
   ) in
   tempf(0);;
   
   
-let iterated_string_father0 j0 s=
+let helper_for_iterated_container j0 s=
    let rec tempf=(fun (j,k)->
      if j<1 then (String.sub s 0 k) else
      let i=String.rindex_from(s)(k-1)('/') in
@@ -33,10 +41,10 @@ let iterated_string_father0 j0 s=
      ) in
     tempf (j0,String.length s);;
  
-exception Too_much_double_points;;  
+exception Too_many_double_points;;  
  
- let iterated_string_father j0 s=try iterated_string_father0 j0 s with
-   forzh_petra->raise(Too_much_double_points);;
+ let iterated_container j0 s=try helper_for_iterated_container j0 s with
+   any_exn->raise(Too_many_double_points);;
 
 exception Blank_filename;;
 
@@ -52,10 +60,11 @@ let delete_left_blanks s=
   String.sub s j0 (n-j0);;
 
 let parse_unix_filename_shortcuts_from_dir dir s0=
+  let dir_without_the_slash = remove_trailing_slash dir in  
   let s1=delete_left_blanks(s0) in
   let dp1=number_of_double_points(s1) in
   if (dp1>0) 
-  then  let smaller_pwd=iterated_string_father dp1 dir in
+  then  let smaller_pwd=iterated_container dp1 dir_without_the_slash in
         let j1=(3*dp1)-1 in 
          smaller_pwd^(String.sub s1 j1 ((String.length s1)-j1) )    
   else
@@ -64,18 +73,14 @@ let parse_unix_filename_shortcuts_from_dir dir s0=
   '/'->s1
   |'~'->(Sys.getenv "HOME")^(String.sub s1 1 (String.length(s1)-1))
   |'.'->if s1="." 
-        then dir
-        else dir^"/"^(String.sub s1 2 (String.length(s1)-2))
-  |arall->dir^"/"^s1;;
+        then dir_without_the_slash
+        else dir^(String.sub s1 2 (String.length(s1)-2))
+  |arall->dir^s1;;
 
 let parse_unix_filename_shortcuts =
-  parse_unix_filename_shortcuts_from_dir (Sys.getcwd());;
+  parse_unix_filename_shortcuts_from_dir ((Sys.getcwd())^"/");;
   
- let remove_trailing_slash s=
-    let n=String.length(s) in
-    if ((String.get s (n-1))='/')
-    then String.sub s 0 (n-1)
-    else s;;
+ 
   
  exception Inexistent_file of string;; 
   
