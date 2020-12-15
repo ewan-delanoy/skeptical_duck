@@ -1,5 +1,7 @@
 (*
 
+#use"tools_for_absolute_path.ml";;
+
 Standardize filename path. Non-directories never 
 end with /, directories always do.
 
@@ -49,11 +51,11 @@ let delete_left_blanks s=
   let j0=tempf 0 in
   String.sub s j0 (n-j0);;
 
-let parse_unix_filename_shortcuts s0=
+let parse_unix_filename_shortcuts_from_dir dir s0=
   let s1=delete_left_blanks(s0) in
   let dp1=number_of_double_points(s1) in
   if (dp1>0) 
-  then  let smaller_pwd=iterated_string_father dp1 (Sys.getcwd()) in
+  then  let smaller_pwd=iterated_string_father dp1 dir in
         let j1=(3*dp1)-1 in 
          smaller_pwd^(String.sub s1 j1 ((String.length s1)-j1) )    
   else
@@ -62,9 +64,12 @@ let parse_unix_filename_shortcuts s0=
   '/'->s1
   |'~'->(Sys.getenv "HOME")^(String.sub s1 1 (String.length(s1)-1))
   |'.'->if s1="." 
-        then (Sys.getcwd()) 
-        else (Sys.getcwd())^"/"^(String.sub s1 2 (String.length(s1)-2))
-  |arall->(Sys.getcwd())^"/"^s1;;
+        then dir
+        else dir^"/"^(String.sub s1 2 (String.length(s1)-2))
+  |arall->dir^"/"^s1;;
+
+let parse_unix_filename_shortcuts =
+  parse_unix_filename_shortcuts_from_dir (Sys.getcwd());;
   
  let remove_trailing_slash s=
     let n=String.length(s) in
