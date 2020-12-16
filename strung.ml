@@ -35,13 +35,13 @@ let char_finder f s w0=
    ) in
    tempf(w0-1);;
 
-let backwards_char_finder f s w0=
+let backwards_char_finder f s =
     let rec tempf=(fun j->
       if j<0 then 0 else
       if f(String.get s  j) then j+1 else
       tempf(j-1)
     ) in
-    tempf(w0-1);;   
+    tempf((String.length s)-1);;   
  
 let show_indices s=
   let n=String.length s in
