@@ -10,11 +10,19 @@ module Private = struct
 
 let main_ref = ref None ;;
 
-end ;;  
-
-let get_ref () = match (!(Private.main_ref)) with 
+let get_ref () = match (!(main_ref)) with 
   None -> raise Uninitialized_system
   |Some(main_name,num_of_pages) -> (main_name,num_of_pages) ;;
+
+end ;;  
+
+let append_on_the_right (new_elt,new_elt_size) = 
+  let (main_name,num_of_pages) = Private.get_ref () in  
+  let answer=Coherent_pdf.append_on_the_right main_name new_elt   in 
+  let _=(Private.main_ref:=Some(main_name,num_of_pages+new_elt_size)) in 
+  answer ;;
+
+let get_ref = Private.get_ref ;;
 
 let insert_just_after inserted_arg page_idx = 
     let (main_name,num_of_pages) = get_ref () in  
