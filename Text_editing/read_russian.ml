@@ -129,15 +129,43 @@ let rec seek_russian_chars walker =
             (List.rev already_treated)
     |Some(next_walker)->seek_russian_chars next_walker;;
 
+let rec helper_for_linking (treated,a0,others) =
+    match others with 
+     [] -> List.rev treated 
+    |a1::others1 -> (
+         if a1<>"-"
+         then helper_for_linking(a0::treated,a1,others1)
+         else let treated2 = (a0^a1)::treated in   
+          (match others1 with 
+         [] -> List.rev treated2 
+         |a2::others2 -> helper_for_linking (treated2,a2,others2)
+         ) );;
+let link = function [] -> [] |a::others ->   helper_for_linking ([],a,others);;  
+
+let read txt= 
+  let temp1 = seek_russian_chars ([],txt,1) in 
+  let temp2 = Listennou.separate_according_to temp1 ["\n";" "] in 
+  let temp3 = Image.image (String.concat "") temp2 in 
+  temp3 ;; 
+
+let prepare_dictation txt = 
+  let temp1 = link (read txt) in 
+  let temp2 = Image.image(fun x->x^"\\\\newline") temp1 in 
+  String.concat "\n" temp2 ;;  
+
+
 end ;;
 
-let read txt= Private.seek_russian_chars ([],txt,1);; 
+let prepare_dictation = Private.prepare_dictation;;
+let read = Private.read;; 
 
 (*    
 let home = Sys.getenv "HOME";;
 let txt1 = rf (home^"/Downloads/temp.txt");;
 
 let z1 = seek_russian_chars ([],txt1,1);;
+let z2=prepare_dictation txt1;;
+
 
 *)
 
