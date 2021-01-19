@@ -150,7 +150,7 @@ let read txt=
 
 let prepare_dictation txt = 
   let temp1 = link (read txt) in 
-  let temp2 = Image.image(fun x->x^"\\\\newline") temp1 in 
+  let temp2 = Image.image(fun x->x^"\\newline") temp1 in 
   "\n\n\n"^(String.concat "\n" temp2)^"\n\n\n";;  
 
 
