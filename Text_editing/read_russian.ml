@@ -135,7 +135,7 @@ let rec helper_for_linking (treated,a0,others) =
     |a1::others1 -> (
          if a1<>"-"
          then helper_for_linking(a0::treated,a1,others1)
-         else let treated2 = (a0^a1)::treated in   
+         else let treated2 = (a0^" - ")::treated in   
           (match others1 with 
          [] -> List.rev treated2 
          |a2::others2 -> helper_for_linking (treated2,a2,others2)
