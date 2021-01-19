@@ -343,3 +343,49 @@ let extract_successive_pairs_from_even_list l=
    Ennig.doyle (fun j->
       (List.nth l (2*j-2),List.nth l (2*j-1)) 
    ) 1 m2;;
+
+let remove_initial_contaminated_elements contamination_test all_elts =
+      let rec tempf =(
+         fun (beginning,l)-> match l with 
+         [] -> (beginning,[])
+         |a :: b -> if  contamination_test a 
+                    then tempf (a::beginning,b) 
+                    else (beginning,l)
+      ) in 
+      tempf ([],all_elts) ;;
+
+(*
+
+remove_initial_contaminated_elements (fun x->x<=100) [2;3;507;1;4;30];;
+
+*)
+
+let start_separating is_sep is_not_sep elts =
+     let (_,temp1) = remove_initial_contaminated_elements is_sep elts in 
+     remove_initial_contaminated_elements is_not_sep temp1;; 
+      
+let separate_according_to elts separators =      
+   let is_sep  = (fun x->List.mem x separators) 
+   and is_not_sep = (fun x->not(List.mem x separators))  in 
+   let rec tempf = (fun (treated,to_be_treated)-> 
+       if to_be_treated=[]
+       then List.rev treated 
+      else let (half1,half2)= start_separating is_sep is_not_sep to_be_treated in 
+           let treated2 =(
+                if half1=[] 
+                then treated 
+                else (List.rev half1)::treated 
+           ) in 
+           tempf(treated2,half2)          
+   ) in 
+   tempf([],elts);;
+
+(*
+
+separate_according_to  [1;2;3;0;4;0;0;5;6;0;0;0;7;0;8;0] [0];;
+separate_according_to  [0;0;1;2;3;0;4;0;0;5;6;0;0;0;7;0;8;0] [0];;
+*)
+
+
+
+
