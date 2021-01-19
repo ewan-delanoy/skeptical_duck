@@ -131,7 +131,7 @@ let rec seek_russian_chars walker =
 
 end ;;
 
-let read = Private.seek_russian_chars ;; 
+let read txt= Private.seek_russian_chars ([],txt,1);; 
 
 (*    
 let home = Sys.getenv "HOME";;
