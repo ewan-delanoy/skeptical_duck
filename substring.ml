@@ -60,15 +60,6 @@ let leftmost_linedex_of_in_from x y i=
         if j<0 then (-1) else
         Friend.number_of_lines_before y j;;    
 
- let occurrences_of_in x y=
-   let n=String.length y in
-   let rec tempf=(fun (j,accu)->
-      if j>n then List.rev(accu) else
-      let k=leftmost_index_of_in_from x y j in
-      if k<0 then List.rev(accu) else
-      tempf(k+1,k::accu)
-   )  in
-   tempf (1,[]);;
 
 
 let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
@@ -88,3 +79,17 @@ leftmost_index_of_pattern_among_in_from ["uv";"abc";"abcde"] "123abcde90" 1;;
 
 *)
 
+let occurrences_of_in x y=
+   let n=String.length y in
+   let rec tempf=(fun (j,accu)->
+      if j>n then List.rev(accu) else
+      let k=leftmost_index_of_in_from x y j in
+      if k<0 then List.rev(accu) else
+      tempf(k+1,k::accu)
+   )  in
+   tempf (1,[]);;
+
+let ranges_for_occurrences_of_in x y=
+   let m=String.length x in
+   let temp1 = occurrences_of_in x y in 
+   Image.image (fun i->(i,i+m-1)) temp1;;   

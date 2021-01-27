@@ -13,11 +13,41 @@ a new paragraph iff it contains at least two line breaks.
 
 *)
 
+exception Overlapping_occurrences of string ;;
 exception Unwrap_text_exn of string;;
 exception Unwrap_delim_exn of string;;
 
 
 module Private = struct 
+  
+  module Constant = struct 
+    
+    let check_for_overlapping_occurrences pattern txt indices=
+      let p = String.length pattern in 
+      let temp1 = Listennou.universal_delta_list indices in 
+      match Option.seek (fun (i,j)->j-i<p) temp1 with 
+      None -> ()
+      |Some(i0,j0) -> raise(Overlapping_occurrences(Cull_string.interval txt i0 (j0+p-1)));;
+
+    let main pattern txt =
+        let indices = Substring.occurrences_of_in pattern txt in 
+        if indices = [] then None else 
+        let _= check_for_overlapping_occurrences pattern txt indices in 
+        let p = String.length pattern and n = String.length txt 
+        and imax=List.hd(List.rev indices) in 
+        let temp1 = Listennou.universal_delta_list ((1-p)::indices) in 
+        let itv =(fun (i,j)->Cull_string.interval txt (i+p) (j-1)) in 
+        Some(Image.image itv temp1,itv (imax,n+1)) ;;
+
+    (*    
+      main "abc" "12abc3456abcabc7abc8abc9012345abc";;    
+      main "abc" "12abc3456abcabc7abc8abc9012345abc6";;
+      main "abc" "abc12abc3456abcabc7abc8abc9012345abc";;    
+      main "abc" "abc12abc3456abcabc7abc8abc9012345abc6";;
+      main "abcab" "123abcababcab456";; 
+      main "abcab" "123abcabcab456";;    
+    *)
+  end ;;   
 
   module Whitespace = struct
 
@@ -117,5 +147,6 @@ module Private = struct
 
 end ;;  
 
+let wrt_constant = Private.Constant.main ;;
 let wrt_paragraphs = Private.Paragraphs.main ;;
 let wrt_whitespace = Private.Whitespace.main ;;
