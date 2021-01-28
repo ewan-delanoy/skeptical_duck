@@ -41,7 +41,8 @@ module Private = struct
       and right = "<div id=\""^"n"^sk^"\"><a href=\"#ln"^sk^"\">("^sk^")</a> " in
       let msg = left^right in
         ((i,j),msg) ) temp1 in 
-    (Strung.replace_ranges_in temp2 page)^"\n</div>\n";;     
+    let far_right = (if ranges=[] then "" else "\n</div>\n") in     
+    (Strung.replace_ranges_in temp2 page)^far_right;;     
 
 let error_handling_ref = ref None ;;
 
