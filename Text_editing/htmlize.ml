@@ -43,6 +43,8 @@ module Private = struct
         ((i,j),msg) ) temp1 in 
     (Strung.replace_ranges_in temp2 page)^"\n</div>\n";;     
 
+let error_handling_ref = ref None ;;
+
   let treat_all_in_page footnote_count page_number page=
     let page1 = paragraphs page in 
     let lfm = (!link_to_footnote_marker) 
@@ -53,7 +55,8 @@ module Private = struct
     let n_lfm = List.length ranges_for_lfm 
     and n_fm = List.length ranges_for_fm in 
     if n_lfm <> n_fm 
-    then raise (Missing_link_or_footnote(page_number,n_lfm,n_fm) ) 
+    then let _=(error_handling_ref:=Some(page1,page2,ranges_for_lfm,ranges_for_fm)) in 
+         raise (Missing_link_or_footnote(page_number,n_lfm,n_fm) ) 
     else  
     let page3 = deal_with_footnotes_in_page footnote_count page2 ranges_for_fm in   
     let sp = string_of_int page_number in 
