@@ -6,8 +6,8 @@
 
 exception Missing_link_or_footnote of int * int * int ;;
 
-let footnote_marker         = ref " nowfeetneto ";;
-let link_to_footnote_marker = ref " lonktifiitnite ";;
+let footnote_marker         = ref "nowfeetneto";;
+let link_to_footnote_marker = ref "lonktifiitnite";;
 
 module Private = struct 
 
