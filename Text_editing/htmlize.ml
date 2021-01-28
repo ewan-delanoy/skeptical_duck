@@ -38,7 +38,7 @@ module Private = struct
     let temp2 = Image.image (fun (k,(i,j))->
       let sk = string_of_int(k+preceding_count) in 
       let left = (if k=1 then "" else "\n</div>\n")
-      and right = "<div id=\""^"n"^sk^"\"><a href=\"#ln"^sk^"\">("^sk^")</a> </div>" in
+      and right = "<div id=\""^"n"^sk^"\"><a href=\"#ln"^sk^"\">("^sk^")</a> " in
       let msg = left^right in
         ((i,j),msg) ) temp1 in 
     (Strung.replace_ranges_in temp2 page)^"\n</div>\n";;     
