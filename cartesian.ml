@@ -18,9 +18,14 @@ let tproduct a b c=List.rev_map(function ((x,y),z)->(x,y,z))
 let pproduct a b c d=List.rev_map(function ((x,y,z),t)->(x,y,z,t))
 (List.rev(product(tproduct a b c)(d)));;
 
+let qproduct a b c d e=List.rev_map(function ((x,y,z,t),u)->(x,y,z,t,u))
+(List.rev(product(pproduct a b c d)(e)));;
+
 let cube x=tproduct x x x;;
 
 let fourth_power x=pproduct x x x x;;
+
+let fifth_power x=qproduct x x x x x;;
 
 let general_product x=
 let rec sub_f=(function
