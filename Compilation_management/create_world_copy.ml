@@ -1,7 +1,7 @@
 
 (* 
 
-#use"Compilation_management/create_compiler_copy.ml";;
+#use"Compilation_management/create_world_copy.ml";;
 
 *)
 
@@ -104,6 +104,31 @@ end ;;
   
 
 
+let partial cs (needed_modules,imposed_subdirs)=
+    let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple 
+    and url=Coma_big_constant.github_url in 
+    let conv_files = Coma_constant.conventional_files_with_minimal_content in 
+    let _=More_unix.clear_directory_contents destdir in 
+    let _=(More_unix.create_subdirs_and_fill_files
+       destdir Coma_constant.git_ignored_subdirectories conv_files) in 
+    let (modules_in_good_order,compilables,noncompilables) = 
+        Private.rootlesses_to_be_copied cs (Some(needed_modules,imposed_subdirs)) in 
+    let _=Image.image Unix_command.uc 
+     (Private.commands_for_copying cs (compilables@noncompilables)) in
+    let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab,url,[]) in 
+    let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompilables) in  
+    let faraway_fw = Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
+                   Coma_constant.rootless_path_for_parametersfile 
+                     Private.text_for_big_constants_file_in_next_world in 
+    let restricted_cs=Coma_state_field.restrict cs modules_in_good_order in 
+    let faraway_cs1 = Coma_state_field.transplant 
+       restricted_cs faraway_fw in 
+    let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
+    let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
+    let _=Save_coma_state.save faraway_cs2 in   
+    faraway_cs2;;
+
+
 let cwc cs opt_selection=
     let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple 
     and url=Coma_big_constant.github_url in 
@@ -136,5 +161,6 @@ let cwc cs opt_selection=
     let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
     let _=Save_coma_state.save faraway_cs2 in   
     faraway_cs2;;
+
 
 
