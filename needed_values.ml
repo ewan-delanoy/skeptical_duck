@@ -18,8 +18,6 @@ let cod ()=Check_ocaml_dircopy.check (Coma_state_field.configuration (!(Usual_co
 
 let cof = Usual_coma_state.census_of_foreigners;;
 
-let cwc = Create_world_copy.cwc (!(Usual_coma_state.main_ref));;
-
 let dabo = Usual_coma_state.directly_above;;
 
 let dbel = Usual_coma_state.directly_below;;
