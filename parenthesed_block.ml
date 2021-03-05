@@ -13,7 +13,7 @@ parentheses. This is why the currently_open_pars field has type
 *)
 
 type parenthesis_pair=string*string;;
-type associator=string;;
+type associator=A of string;;
 
 
 type data_for_decomposition={
@@ -124,8 +124,10 @@ let decompose_without_taking_blanks_into_account app s=
 
 module With_associator=struct
 
-   let test_for_associator_at_index  (asc:associator) s i=
-     Substring.is_a_substring_located_at asc s i;;
+   let test_for_associator_at_index  (A s_asc) s i=
+     Substring.is_a_substring_located_at s_asc s i;;
+
+   let associator_length (A s_asc) = String.length s_asc ;;  
 
    let process_without_open_pars (asc:associator) app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
@@ -142,7 +144,7 @@ module With_associator=struct
                     	 let new_result=(None,enclosed_substring) in
                     	 data.partial_result<-new_result::(data.partial_result)  
                 );
-                data.cursor_location<-data.cursor_location+String.length(asc);
+                data.cursor_location<-data.cursor_location+associator_length(asc);
                 data.smallest_unprocessed_index<-data.cursor_location
                 )
            )
@@ -153,7 +155,7 @@ module With_associator=struct
                data.cursor_location<-data.cursor_location+String.length(lparen)
                ;;
                
-let process_with_open_pars (asc:associator) app  s data=
+let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
   let opt1=Option.seek (fun paren->test_for_right_paren_at_index s i paren) temp1 in
@@ -179,7 +181,7 @@ let process_with_open_pars (asc:associator) app  s data=
 let process asc app s data=
   if data.currently_open_pars=[]
   then process_without_open_pars asc app s data
-  else process_with_open_pars asc app s data;;
+  else process_with_open_pars app s data;;
 
 let final_touch s data=
   let a=data.smallest_unprocessed_index
