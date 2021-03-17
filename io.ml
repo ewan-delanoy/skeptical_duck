@@ -1,3 +1,9 @@
+(*
+
+#use"io.ml";;
+
+*)
+
 
 exception Open_in_exn of string ;;
 exception Open_out_exn of string ;;
