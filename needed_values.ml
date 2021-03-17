@@ -32,6 +32,8 @@ let fl = Usual_coma_state.fix_lag;;
 
 let hi = List.length ;; 
 
+let home = Sys.getenv "HOME" ;;
+
 let hmx = Usual_coma_state.find_endingless;;
 
 let hod = Printf.sprintf "0x%08x";;
