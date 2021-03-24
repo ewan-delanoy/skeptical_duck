@@ -60,10 +60,10 @@ let main = Private.enumerate_html_link_to_footnotes ;;
 (*
 
 let text1=
- "123<div id=\"n1\"><a href=\"#ln1\">(1)</a>   <i>The Nature of the Early "^
+ "123<span id=\"ln3\"><a href=\"#n3\">(3)</a></span>   <i>The Nature of the Early "^
  "Church</i> (New York: Charles Scribner’s Sons,\n1941), p. 208.\n\n </div>456"^
  "<div id=\"n2\"><a href=\"#ln2\">(2)</a>   Cf. <i>Orpheus. A History of "^
- "Religions.</i> Translated by Florence Simmonds (New York: The Liveright "^
+ "Religions.</i> <span id=\"ln7\"><a href=\"#n7\">(7)</a></span> (New York: The Liveright "^
  "Publishing Co., 1941), pp. 249 f.\n\n \n</div>789";;
 
 let test1 = Private.seek_html_footnote_at_index text1 4 ;;
@@ -72,12 +72,5 @@ let (aggr,data) = main text1 ;;
 
 print_string aggr;;
 
-let footnote_indices = 
-   Image.image (fun 
-    (txt_idx,footnote_idx,footnote_body,next_idx)->footnote_idx) data ;;
-
-let n1 = List.length footnote_indices ;;    
-
-let test2 = (footnote_indices = Ennig.ennig 1 n1) ;;
 
 *)
