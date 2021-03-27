@@ -6,7 +6,8 @@
 
 module Exn = struct
 
-exception Get_record_exn of Concrete_object_t.t;;
+exception Get_record_absent_key_exn of string;;
+exception Get_record_bad_type_exn of Concrete_object_t.t;;
 exception Get_pair_exn of Concrete_object_t.t;;
 exception Unwrap_array_exn of Concrete_object_t.t;;
 exception Unwrap_int_exn of Concrete_object_t.t;;
@@ -50,8 +51,10 @@ let unwrap_array ccrt_obj=
 
 let get_record ccrt_obj field =
    match ccrt_obj with 
-   Concrete_object_t.Record(l)->List.assoc field l 
-   |_->raise(Exn.Get_record_exn(ccrt_obj));;
+   Concrete_object_t.Record(l)->
+        (try List.assoc field l with 
+        _ ->raise(Exn.Get_record_absent_key_exn(field)))
+   |_->raise(Exn.Get_record_bad_type_exn(ccrt_obj));;
 
 let unwrap_bounded_uple ccrt_obj=
   match ccrt_obj with 
