@@ -1,6 +1,6 @@
 (*
 
-#use "Text_editing/enumerate_calls_to_resources.ml";;
+#use "Text_editing/copy_and_staticize_calls_for_resources.ml";;
 
 This module deals with copying data from a remote website to a local version. 
 
@@ -39,7 +39,7 @@ let check_several_for_admissibility l =
     (Image.image (fun (_,opt)->Option.unpack opt) temp2,Image.image fst temp3) ;;  
 
 
-let enumerate_all_calls starter text =
+let enumerate_calls_for_one_starter text starter =
   let temp1 = Substring.occurrences_of_in starter text in 
   let temp2 =  Image.image (fun idx->
     let idx2 = idx + (String.length starter) in 
@@ -51,6 +51,13 @@ let enumerate_all_calls starter text =
   let (temp6,temp7)=check_several_for_admissibility temp4 in 
   (temp6,temp5,temp7);;
 
+let enumerate_calls_for_several_starters starters text =
+     let temp1 = Image.image (enumerate_calls_for_one_starter text) starters in 
+     let temp2 = List.flatten (Image.image (fun (a,b,c)->a) temp1) 
+     and temp3 = List.flatten (Image.image (fun (a,b,c)->b) temp1) 
+     and temp4 = List.flatten (Image.image (fun (a,b,c)->c) temp1) in 
+     (temp2,temp3,temp4) ;;
+
   end ;;
 
-let enumerate_all_calls = Private.enumerate_all_calls ;;
+let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
