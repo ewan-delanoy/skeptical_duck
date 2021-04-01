@@ -11,8 +11,11 @@ Modify the list_of_allowed_endings value to suit your purposes.
 *)
 
 let list_of_allowed_endings = [".php";".png";".jpg";".css";".js";".woff2"] ;;
+let proxies = ["proxy.php"] ;;
 
 exception Remove_question_mark_exn of string ;;
+exception No_http_in_url of string ;;
+
 
 module Private = struct 
 
@@ -30,7 +33,7 @@ let check_one_for_admissibility s=
     and qualified_name = Cull_string.cobeginning k s in 
     let name =remove_question_mark qualified_name in
     if  List.exists(Supstring.ends_with name) list_of_allowed_endings 
-    then Some(subdir,(name,qualified_name))
+    then Some(subdir,name,qualified_name)
     else None ;;
 
 let check_several_for_admissibility l =
@@ -57,6 +60,37 @@ let enumerate_calls_for_several_starters starters text =
      and temp3 = List.flatten (Image.image (fun (a,b,c)->b) temp1) 
      and temp4 = List.flatten (Image.image (fun (a,b,c)->c) temp1) in 
      (temp2,temp3,temp4) ;;
+ 
+ let decode_url =     
+  Replace_inside.replace_several_inside_string 
+  ["%3A",":";"%2C",",";"&amp;","&";"%2F","/";"%3F","?";"%3D","="] ;;
+
+ let extract_url line =
+      let i1 = Substring.leftmost_index_of_in "http" line in 
+      if i1 < 0 then raise(No_http_in_url(line)) else
+      let pre_i2 = Substring.leftmost_index_of_in_from "&amp;" line i1 in 
+      let i2 = (if pre_i2<1 then (String.length line)+1 else pre_i2) in 
+      let pre_i3 = Substring.leftmost_index_of_in_from "%3F" line i1 in 
+      let i3 = (if pre_i3<1 then (String.length line)+1 else pre_i3) in 
+      let i4 = min i2 i3 in 
+      let part = Cull_string.interval line i1 (i4-1) in 
+      decode_url part ;;
+
+ let command_for_proxy static_subdir_name (a,b,c) = 
+     let url = extract_url c in 
+     let j1 = Substring.rightmost_index_of_in "/" url in 
+     let fn = Cull_string.cobeginning j1 url in 
+     "curl -L \""^url^"\" > "^static_subdir_name^"/"^fn ;;  
+     
+ let command_with_prescribed_ending (website,static_subdir_name) (k,ending) (a,b,c) = 
+     let sk = string_of_int k in 
+     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^"."^ending ;; 
+
+ (*   
+ let script_for_triples (list_of_proxies,prescribed_endings,website,static_subdir_name) triples =
+      let (temp1,temp2) = List.partition (fun ) triples in  
+  *)    
+ 
 
   end ;;
 
