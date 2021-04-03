@@ -89,3 +89,15 @@ let tripartition_associated_to_interval s i j=
    (part1^"\n",part2,"\n"^part3);;
 
 (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
+let suppress_linebreaks_in_interval s i j=
+  let (part1,old_part2,part3) = tripartition_associated_to_interval s i j in 
+  let new_part2 = String.concat "" (lines old_part2) in 
+  part1^new_part2^part3 ;; 
+
+(* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
+let suppress_linebreaks_in_interval_in_file fn i j=
+  let s1=Io.read_whole_file fn in
+  let s2=suppress_linebreaks_in_interval s1 i j  in
+  Io.overwrite_with fn s2;;     
