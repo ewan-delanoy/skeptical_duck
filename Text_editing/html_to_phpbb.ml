@@ -11,7 +11,8 @@ exception Nondisjoint_ranges of (int * int) * (int * int) ;;
 module Private = struct
 
 let translate_usual_tags = Replace_inside.replace_several_inside_string 
-["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]"] ;;
+["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]";
+"<center>","[center]";"</center>","[/center]";"<p>","";"</p>",""] ;;
 
 let merge_two_lists_indexed_by_disjoint_ranges l1 l2 =
     let rec tempf = (fun (already_treated,part1,part2)->
