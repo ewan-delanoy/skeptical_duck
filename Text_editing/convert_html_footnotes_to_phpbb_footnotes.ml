@@ -9,14 +9,28 @@ in phpbb rather than html form.
 *)
 
 
-(*
+exception Nondisjoint_ranges of (int * int) * (int * int) ;;
+
 module Private = struct
 
+let translate_usual_tags = Replace_inside.replace_several_inside_string 
+["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]"] ;;
 
 let merge_two_lists_indexed_by_disjoint_ranges l1 l2 =
     let rec tempf = (fun (already_treated,part1,part2)->
-      
-      
+      match part1 with 
+      [] -> List.rev_append already_treated part2 
+      |elt1 :: rest_of_part1 -> 
+          (
+            match part2 with 
+            [] -> List.rev_append already_treated part1 
+           |elt2 :: rest_of_part2 -> 
+               let ((i1,j1),data1) = elt1 
+               and ((i2,j2),data2) = elt2 in 
+               if i1=i2 then raise(Nondisjoint_ranges((i1,j1),(i2,j2))) else 
+               if i1<i2 then tempf(elt1::already_treated,rest_of_part1,part2)
+                        else tempf(elt2::already_treated,part1,rest_of_part2)       
+          )
     ) in 
     tempf([],l1,l2);;
 
@@ -25,22 +39,32 @@ let write_phpbb_link_to_footnote idx =
     let s_idx = string_of_int idx in 
     "[color=blue]("^s_idx^")[/color][/b]" ;;
 
-let write_phpbb_footnote footnote_idx html_content =
+let write_phpbb_footnote footnote_idx content =
   let s_idx = string_of_int footnote_idx in 
-  let phpbb_content = Replace_inside.replace_several_inside_string 
-    ["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]"] html_content in 
-  "[size=90][b][color=blue]("^s_idx^")[/color][/b]"^phpbb_content^"[/size]"  ;;
+  "[size=90][b][color=blue]("^s_idx^")[/color][/b]"^content^"[/size]"  ;;
 
 let main text =   
-    let temp1 = Enumerate_html_footnotes.main text in 
-    let temp2 = Image.image write_phpbb_footnote temp1 in 
-    let aggregated_footnotes = "\n\n\n" ^ (String.concat "\n\n\n" temp2) ^ "\n\n\n" in
-    (aggregated_footnotes,temp1) ;; 
+    let temp1 = Enumerate_html_links_to_footnotes.main text 
+    and temp2 = Enumerate_html_footnotes.main text in 
+    let temp3 = Image.image (fun (range,i)->(range,(i,None)) ) temp1 
+    and temp4 = Image.image (fun (range,(i,content))->(range,(i,Some content)) ) temp2 in 
+    let temp5 = merge_two_lists_indexed_by_disjoint_ranges temp3 temp4 in 
+    let temp6 = Image.image (
+      fun (range,(idx,opt))->let phpbbized_content =(match opt with
+          None -> write_phpbb_link_to_footnote idx 
+         |Some(content)-> write_phpbb_footnote idx content 
+      ) in 
+      (range,phpbbized_content)
+
+    ) temp5 in 
+    let temp7 = Strung.replace_ranges_in temp6 text in 
+    translate_usual_tags temp7;; 
+
 
 end ;;
 
 let main = Private.main ;;
-*)
+
 
 (*
 
