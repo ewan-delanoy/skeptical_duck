@@ -5,7 +5,7 @@
 *)
  
 
-let transfer_first_lines_of_to num_of_lines beg_ap end_ap = 
+let transfer_first_lines_of_to num_of_lines end_ap beg_ap= 
     let old_beginning = Io.read_whole_file beg_ap in 
     let old_ending = Io.read_whole_file end_ap in 
     let to_be_transferred = Lines_in_string.interval old_ending 1 num_of_lines in 
