@@ -1,9 +1,6 @@
 (*
 
-#use"Text_editing/convert_html_footnotes_to_phpbb_footnotes.ml";;
-
-The main function takes an HTML source text and returns the list of all its footnotes,
-in phpbb rather than html form.
+#use"Text_editing/html_to_phpbb.ml";;
 
 
 *)
