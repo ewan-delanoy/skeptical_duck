@@ -60,7 +60,7 @@ let main text =
 
 end ;;
 
-let main = Private.main ;;
+let translate = Private.main ;;
 
 
 (*
