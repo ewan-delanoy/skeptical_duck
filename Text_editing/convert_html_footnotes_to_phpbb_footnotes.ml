@@ -9,13 +9,23 @@ in phpbb rather than html form.
 *)
 
 
-
+(*
 module Private = struct
 
 
+let merge_two_lists_indexed_by_disjoint_ranges l1 l2 =
+    let rec tempf = (fun (already_treated,part1,part2)->
+      
+      
+    ) in 
+    tempf([],l1,l2);;
 
-let write_phpbb_footnote 
-  ((footnote_idx,html_content),_) =
+
+let write_phpbb_link_to_footnote idx =
+    let s_idx = string_of_int idx in 
+    "[color=blue]("^s_idx^")[/color][/b]" ;;
+
+let write_phpbb_footnote footnote_idx html_content =
   let s_idx = string_of_int footnote_idx in 
   let phpbb_content = Replace_inside.replace_several_inside_string 
     ["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]"] html_content in 
@@ -30,6 +40,7 @@ let main text =
 end ;;
 
 let main = Private.main ;;
+*)
 
 (*
 

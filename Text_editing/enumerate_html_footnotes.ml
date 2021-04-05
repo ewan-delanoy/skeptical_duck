@@ -50,15 +50,15 @@ let seek_html_footnote_at_index text i0=
   if i6 < 0 
   then raise(Unterminated_big_div(i0,i5))  
   else 
-  Some((footnote_idx,Cull_string.interval text i5 (i6-1)),(i0,i6+(String.length part5)-1)) ;;
+  Some((i0,i6+(String.length part5)-1),(footnote_idx,Cull_string.interval text i5 (i6-1))) ;;
    
 let main text =
    let n = String.length text in   
    let rec tempf =(fun (already_treated,cursor)->
       if cursor > n then List.rev already_treated else 
       match seek_html_footnote_at_index text cursor with 
-       (Some((footnote_idx,footnote_body),(i_start,i_end))) ->
-         tempf (((footnote_idx,footnote_body),(i_start,i_end))::already_treated,i_end+1) 
+       (Some((i_start,i_end),(footnote_idx,footnote_body))) ->
+         tempf (((i_start,i_end),(footnote_idx,footnote_body))::already_treated,i_end+1) 
       |None ->  tempf(already_treated,cursor+1)  
       ) in 
    tempf([],1) ;;   
