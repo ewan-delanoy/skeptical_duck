@@ -114,7 +114,7 @@ let enumerate_calls_for_several_starters starters text =
   end ;;
 
 let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
-let script_for_triples 
+let script_to_wget_remote_data 
    ~list_of_proxies ~endings_for_special_files ~website ~static_subdir_name=
      Private.script_for_triples (list_of_proxies,endings_for_special_files,website,static_subdir_name) ;;
 
