@@ -99,14 +99,15 @@ let enumerate_calls_for_several_starters starters text =
      let sk = string_of_int k in 
      "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^"."^ending ;; 
 
-  let script_for_triples (list_of_proxies,endings_for_special_files,website,static_subdir_name) triples =
+  let script_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
         (a,b,c) -> List.mem b list_of_proxies
       ) triples in 
       let temp3 = Image.image (command_for_proxy static_subdir_name) temp1 in 
       let temp4 = Image.image (command_for_nonproxy 
         (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp2) in 
-      String.concat "\n" (temp3@temp4) ;;   
+      let create_static_subdir="mkdir -p "^building_site^"/"^static_subdir_name in      
+      String.concat "\nn" (create_static_subdir :: (temp3@temp4)) ;;   
 
     
  
@@ -115,6 +116,6 @@ let enumerate_calls_for_several_starters starters text =
 
 let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
 let script_to_wget_remote_data 
-   ~list_of_proxies ~endings_for_special_files ~website ~static_subdir_name=
-     Private.script_for_triples (list_of_proxies,endings_for_special_files,website,static_subdir_name) ;;
+   ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name=
+     Private.script_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) ;;
 
