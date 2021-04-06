@@ -107,7 +107,7 @@ let enumerate_calls_for_several_starters starters text =
       let temp4 = Image.image (command_for_nonproxy 
         (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp2) in 
       let create_static_subdir="mkdir -p "^building_site^"/"^static_subdir_name in      
-      String.concat "\nn" (create_static_subdir :: (temp3@temp4)) ;;   
+      String.concat "\n\n" (create_static_subdir :: (temp3@temp4)) ;;   
 
     
  
