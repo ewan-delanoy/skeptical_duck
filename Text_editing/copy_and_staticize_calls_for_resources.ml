@@ -15,7 +15,8 @@ let proxies = ["proxy.php"] ;;
 
 exception Remove_question_mark_exn of string ;;
 exception No_http_in_url of string ;;
-
+exception Compute_ending_exn of string ;;
+exception Forgotten_php_file of string ;;
 
 module Private = struct 
 
@@ -74,7 +75,16 @@ let enumerate_calls_for_several_starters starters text =
       let i3 = (if pre_i3<1 then (String.length line)+1 else pre_i3) in 
       let i4 = min i2 i3 in 
       let part = Cull_string.interval line i1 (i4-1) in 
-      decode_url part ;;
+      decode_url  part ;;
+
+  let compute_ending endings_for_special_files fn =
+        match List.assoc_opt fn  endings_for_special_files with 
+         Some(ending)-> ending 
+         | None -> (
+           match Option.seek (fun edg->Supstring.ends_with fn edg) list_of_allowed_endings with 
+            Some(ending2) -> if ending2 =".php" then raise(Forgotten_php_file(fn)) else ending2 
+            | None -> raise(Compute_ending_exn(fn))
+         ) ;;
 
  let command_for_proxy static_subdir_name (a,b,c) = 
      let url = extract_url c in 
@@ -82,18 +92,29 @@ let enumerate_calls_for_several_starters starters text =
      let fn = Cull_string.cobeginning j1 url in 
      "curl -L \""^url^"\" > "^static_subdir_name^"/"^fn ;;  
      
- let command_with_prescribed_ending (website,static_subdir_name) (k,ending) (a,b,c) = 
+
+ let command_for_nonproxy  
+    (website,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
+     let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
      "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^"."^ending ;; 
 
-  
+  let script_for_triples (list_of_proxies,endings_for_special_files,website,static_subdir_name) triples =
+      let (temp1,temp2) = List.partition (fun 
+        (a,b,c) -> List.mem b list_of_proxies
+      ) triples in 
+      let temp3 = Image.image (command_for_proxy static_subdir_name) temp1 in 
+      let temp4 = Image.image (command_for_nonproxy 
+        (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp2) in 
+      String.concat "\n" (temp3@temp4) ;;   
 
- (*   
- let script_for_triples (list_of_proxies,prescribed_endings,website,static_subdir_name) triples =
-      let (temp1,temp2) = List.partition (fun ) triples in  
-  *)    
+    
  
 
   end ;;
 
 let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
+let script_for_triples 
+   ~list_of_proxies ~endings_for_special_files ~website ~static_subdir_name=
+     Private.script_for_triples (list_of_proxies,endings_for_special_files,website,static_subdir_name) ;;
+
