@@ -97,7 +97,7 @@ let enumerate_calls_for_several_starters starters text =
     (website,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
      let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
-     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^"."^ending ;; 
+     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^ending ;; 
 
   let script_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
