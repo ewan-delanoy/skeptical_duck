@@ -93,8 +93,8 @@ let enumerate_calls_for_several_starters starters text =
      
  let command_and_replacement_for_static_homemade 
      (website,building_site)  (a,b,c) = 
-     let rep_file = a^b in 
-     ("curl -L \""^website^"/"^c^"\" > "^building_site^rep_file,(c,rep_file)) ;;
+     let rep_file = (Cull_string.cobeginning 1 a)^b (* remove the slash *) in 
+     ("curl -L \""^website^"/"^c^"\" > "^building_site^"/"^rep_file,(c,rep_file)) ;;
 
  let command_and_replacement_for_dynamically_produced_homemade 
     (website,building_site,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
