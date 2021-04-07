@@ -83,21 +83,22 @@ let enumerate_calls_for_several_starters starters text =
             | None -> raise(Compute_ending_exn(fn))
          ) ;;
 
- let command_for_proxy static_subdir_name (a,b,c) = 
+ let command_for_proxy static_subdir_name (k,(a,b,c)) = 
      let url = extract_url c in 
      let j1 = Substring.rightmost_index_of_in "/" url in 
      let fn = Cull_string.cobeginning j1 url in 
-     "curl -L \""^url^"\" > "^static_subdir_name^"/"^fn ;;  
+     let sk = string_of_int k in 
+     "curl -L \""^url^"\" > "^static_subdir_name^"/asset"^sk^"_"^fn ;;  
      
  let command_for_static_homemade 
      (website,building_site)  (a,b,c) = 
-      "curl -L \""^website^"/"^c^"\" > "^building_site^a^"/"^b ;;
+      "curl -L \""^website^"/"^c^"\" > "^building_site^a^b ;;
 
  let command_for_dynamically_produced_homemade 
     (website,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
      let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
-     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^ending ;; 
+     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/dynamic"^sk^ending ;; 
 
   let commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
@@ -106,7 +107,7 @@ let enumerate_calls_for_several_starters starters text =
       let (temp3,temp4) = List.partition (fun 
         (a,b,c) -> List.exists (fun (x,_)->x=b) endings_for_special_files
       ) temp2 in 
-      let for_proxies = Image.image (command_for_proxy static_subdir_name) temp1  
+      let for_proxies = Image.image (command_for_proxy static_subdir_name) (Ennig.index_everything temp1)  
       and for_dynamics = Image.image (command_for_dynamically_produced_homemade 
         (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp3) 
       and for_statics = Image.image (command_for_static_homemade (website,building_site)) temp4 in 
