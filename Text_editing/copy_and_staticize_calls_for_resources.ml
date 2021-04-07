@@ -102,28 +102,29 @@ let enumerate_calls_for_several_starters starters text =
      let sk = string_of_int k in 
      "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/asset"^sk^ending ;; 
 
-  let script_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
+  let commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
         (a,b,c) -> List.mem b list_of_proxies
       ) triples in 
       let (temp3,temp4) = List.partition (fun 
         (a,b,c) -> List.exists (fun (x,_)->x=b) endings_for_special_files
       ) temp2 in 
-      let temp5 = Image.image (command_for_proxy static_subdir_name) temp1  
-      and temp6 = Image.image (command_for_foreign 
+      let for_proxies = Image.image (command_for_proxy static_subdir_name) temp1  
+      and for_foreigners = Image.image (command_for_foreign 
         (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp3) 
-      and temp7 = Image.image (command_for_national website) temp1 in 
-      let create_static_subdir="mkdir -p "^building_site^"/"^static_subdir_name in      
-      String.concat "\n\n" 
-         (create_static_subdir :: (temp5@["\n\n"]@temp6@["\n\n"]@temp7)) ;;   
-
+      and for_nationals = Image.image (command_for_national website) temp4 in 
+      let national_subdirs = Ordered.sort Total_ordering.lex_for_strings 
+             (Image.image (fun (a,b,c)->Cull_string.cobeginning 1 a (* remove the slash *)) temp4) in 
+      let for_subdirs = Image.image (fun sdir->"mkdir -p "^building_site^"/"^sdir)
+         (static_subdir_name :: national_subdirs) in 
+      (for_subdirs,for_proxies,for_foreigners,for_nationals) ;;  
     
  
 
   end ;;
 
 let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
-let script_to_wget_remote_data 
+let commands_to_wget_remote_data 
    ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name=
-     Private.script_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) ;;
+     Private.commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) ;;
 
