@@ -122,6 +122,7 @@ let enumerate_calls_for_several_starters starters text =
 
 let enumerate_all_calls_in_source = Private.enumerate_calls_for_several_starters ;;
 let commands 
-   ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name=
-     Private.commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) ;;
+   ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name ~calls_in_source=
+     Private.commands_for_triples 
+      (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) calls_in_source;;
 
