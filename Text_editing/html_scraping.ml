@@ -83,47 +83,59 @@ let enumerate_calls_for_several_starters starters text =
             | None -> raise(Compute_ending_exn(fn))
          ) ;;
 
- let command_for_proxy static_subdir_name (k,(a,b,c)) = 
+ let command_and_replacement_for_proxy (building_site,static_subdir_name) (k,(a,b,c)) = 
      let url = extract_url c in 
      let j1 = Substring.rightmost_index_of_in "/" url in 
      let fn = Cull_string.cobeginning j1 url in 
      let sk = string_of_int k in 
-     "curl -L \""^url^"\" > "^static_subdir_name^"/asset"^sk^"_"^fn ;;  
+     let rep_file = static_subdir_name^"asset"^sk^"_"^fn in 
+     ("curl -L \""^url^"\" > "^building_site^"/"^rep_file,(c,rep_file)) ;;  
      
- let command_for_static_homemade 
+ let command_and_replacement_for_static_homemade 
      (website,building_site)  (a,b,c) = 
-      "curl -L \""^website^"/"^c^"\" > "^building_site^a^b ;;
+     let rep_file = a^b in 
+     ("curl -L \""^website^"/"^c^"\" > "^building_site^rep_file,(c,rep_file)) ;;
 
- let command_for_dynamically_produced_homemade 
-    (website,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
+ let command_and_replacement_for_dynamically_produced_homemade 
+    (website,building_site,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
      let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
-     "curl -L \""^website^"/"^(decode_url c)^"\" > "^static_subdir_name^"/dynamic"^sk^ending ;; 
+     let rep_file = static_subdir_name^"/dynamic"^sk^ending in 
+     ("curl -L \""^website^"/"^(decode_url c)^"\" > "^building_site^rep_file,(c,rep_file)) ;; 
 
-  let commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
+  let commands_and_replacements_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
         (a,b,c) -> List.mem b list_of_proxies
       ) triples in 
       let (temp3,temp4) = List.partition (fun 
         (a,b,c) -> List.exists (fun (x,_)->x=b) endings_for_special_files
       ) temp2 in 
-      let for_proxies = Image.image (command_for_proxy static_subdir_name) (Ennig.index_everything temp1)  
-      and for_dynamics = Image.image (command_for_dynamically_produced_homemade 
-        (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp3) 
-      and for_statics = Image.image (command_for_static_homemade (website,building_site)) temp4 in 
-      let national_subdirs = Ordered.sort Total_ordering.lex_for_strings 
+      let for_proxies = Image.image (command_and_replacement_for_proxy (building_site,static_subdir_name)) 
+                                     (Ennig.index_everything temp1)  
+      and for_dynamics = Image.image (command_and_replacement_for_dynamically_produced_homemade 
+        (website,building_site,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp3) 
+      and for_statics = Image.image (command_and_replacement_for_static_homemade (website,building_site)) temp4 in 
+      let cmds_for_proxies = Image.image fst for_proxies 
+      and cmds_for_dynamics = Image.image fst for_dynamics 
+      and cmds_for_statics = Image.image fst for_statics in 
+      let reps_for_proxies = Image.image snd for_proxies 
+      and reps_for_dynamics = Image.image snd for_dynamics 
+      and reps_for_statics = Image.image snd for_statics in   
+      let static_subdirs = Ordered.sort Total_ordering.lex_for_strings 
              (Image.image (fun (a,b,c)->Cull_string.cobeginning 1 a (* remove the slash *)) temp4) in 
-      let for_subdirs = Image.image (fun sdir->"mkdir -p "^building_site^"/"^sdir)
-         (static_subdir_name :: national_subdirs) in 
-      (for_subdirs,for_proxies,for_dynamics,for_statics) ;;  
+      let cmds_for_subdirs = Image.image (fun sdir->"mkdir -p "^building_site^"/"^sdir)
+         (static_subdir_name :: static_subdirs) in 
+      ((cmds_for_subdirs,cmds_for_proxies,cmds_for_dynamics,cmds_for_statics),
+       (reps_for_proxies,reps_for_dynamics,reps_for_statics))
+        ;;  
     
  
 
   end ;;
 
 let enumerate_all_calls_in_source = Private.enumerate_calls_for_several_starters ;;
-let commands 
+let commands_and_replacements 
    ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name ~calls_in_source=
-     Private.commands_for_triples 
+     Private.commands_and_replacements_for_triples 
       (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) calls_in_source;;
 
