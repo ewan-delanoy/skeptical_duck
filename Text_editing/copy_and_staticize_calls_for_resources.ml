@@ -1,9 +1,6 @@
 (*
 
-#use "Text_editing/copy_and_staticize_calls_for_resources.ml";;
-
-This module deals with copying data from a remote website to a local version. 
-
+#use "Text_editing/html_scraping.ml";;
 
 
 Modify the list_of_allowed_endings value to suit your purposes.
@@ -92,11 +89,11 @@ let enumerate_calls_for_several_starters starters text =
      let fn = Cull_string.cobeginning j1 url in 
      "curl -L \""^url^"\" > "^static_subdir_name^"/"^fn ;;  
      
- let command_for_national 
-     website  (a,b,c) = 
-      "curl -L \""^website^"/"^c^"\" > "^a^"/"^b ;;
+ let command_for_static_homemade 
+     (website,building_site)  (a,b,c) = 
+      "curl -L \""^website^"/"^c^"\" > "^building_site^a^"/"^b ;;
 
- let command_for_foreign  
+ let command_for_dynamically_produced_homemade 
     (website,static_subdir_name,endings_for_special_files)  (k,(a,b,c)) = 
      let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
@@ -110,20 +107,20 @@ let enumerate_calls_for_several_starters starters text =
         (a,b,c) -> List.exists (fun (x,_)->x=b) endings_for_special_files
       ) temp2 in 
       let for_proxies = Image.image (command_for_proxy static_subdir_name) temp1  
-      and for_foreigners = Image.image (command_for_foreign 
+      and for_dynamics = Image.image (command_for_dynamically_produced_homemade 
         (website,static_subdir_name,endings_for_special_files))(Ennig.index_everything temp3) 
-      and for_nationals = Image.image (command_for_national website) temp4 in 
+      and for_statics = Image.image (command_for_static_homemade (website,building_site)) temp4 in 
       let national_subdirs = Ordered.sort Total_ordering.lex_for_strings 
              (Image.image (fun (a,b,c)->Cull_string.cobeginning 1 a (* remove the slash *)) temp4) in 
       let for_subdirs = Image.image (fun sdir->"mkdir -p "^building_site^"/"^sdir)
          (static_subdir_name :: national_subdirs) in 
-      (for_subdirs,for_proxies,for_foreigners,for_nationals) ;;  
+      (for_subdirs,for_proxies,for_dynamics,for_statics) ;;  
     
  
 
   end ;;
 
-let enumerate_all_calls = Private.enumerate_calls_for_several_starters ;;
+let enumerate_all_calls_in_source = Private.enumerate_calls_for_several_starters ;;
 let commands_to_wget_remote_data 
    ~list_of_proxies ~endings_for_special_files ~website ~building_site ~static_subdir_name=
      Private.commands_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) ;;
