@@ -89,7 +89,7 @@ let enumerate_calls_for_several_starters starters text =
      let fn = Cull_string.cobeginning j1 url in 
      let sk = string_of_int k in 
      let rep_file = static_subdir_name^"/asset"^sk^"_"^fn in 
-     ("curl -L \""^url^"\" > "^building_site^"/"^rep_file,(c,rep_file)) ;;  
+     ("curl -L \""^url^"\" > "^building_site^"/"^rep_file,(a^c,rep_file)) ;;  
      
  let command_and_replacement_for_static_homemade 
      (website,building_site)  (a,b,c) = 
@@ -101,7 +101,7 @@ let enumerate_calls_for_several_starters starters text =
      let ending = compute_ending endings_for_special_files b in 
      let sk = string_of_int k in 
      let rep_file = static_subdir_name^"/dynamic"^sk^ending in 
-     ("curl -L \""^website^"/"^(decode_url c)^"\" > "^building_site^"/"^rep_file,(c,rep_file)) ;; 
+     ("curl -L \""^website^"/"^(decode_url c)^"\" > "^building_site^"/"^rep_file,(a^c,rep_file)) ;; 
 
   let commands_and_replacements_for_triples (list_of_proxies,endings_for_special_files,website,building_site,static_subdir_name) triples =
       let (temp1,temp2) = List.partition (fun 
