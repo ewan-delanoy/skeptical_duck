@@ -167,7 +167,26 @@ let before_rightmost_possibly_all s c=
    then s
    else String.sub s 0 i;;
 
+let shorten_blanks s=
+   let blanks = [' ';'\n';'\r';'\t'] in 
+   let n = String.length s in 
+   let test_idx = (fun j->
+       if j=1 then true else 
+       let c = String.get s (j-1)  in 
+       if not(List.mem c blanks) then true else 
+       let d = String.get s (j-2)  in  
+       not(List.mem d blanks) 
+      ) in 
+   let temp1 = List.filter test_idx (Ennig.ennig 1 n) in 
+   let temp2 = Image.image (fun j->String.make 1 (String.get s (j-1))) temp1 in 
+   let temp3 = String.concat "" temp2 in 
+   trim_spaces temp3 ;;
 
+(*
+
+shorten_blanks " \n 123\r \n45 \n\n6\n  7\t 89\n";;
+
+*)    
 
   
              
