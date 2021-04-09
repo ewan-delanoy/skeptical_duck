@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-  let salt = "Html_"^"scraping_item_category_t.";;
+  let salt = "Htscr_"^"item_category_t.";;
 
   let crobj_correspondences = 
       [
