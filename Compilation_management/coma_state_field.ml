@@ -8,6 +8,7 @@ the Coma_state_t.t datatype should be done here.
 
 *)
 
+exception Module_not_found of Dfa_module_t.t ;;
 
 (* Converters *)
 let of_t x=x;;
@@ -29,35 +30,44 @@ let confidential_files cs=(configuration cs).Fw_configuration_t.confidential_fil
 
 
 let subdir_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.subdir_for_module);;
+   try List.assoc mn ( (of_t cs).Coma_state_t.subdir_for_module) with 
+   _ -> raise(Module_not_found(mn));;
 
 let principal_ending_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.principal_ending_for_module);;
+   try List.assoc mn ( (of_t cs).Coma_state_t.principal_ending_for_module) with 
+   _ -> raise(Module_not_found(mn));;
 
 let mli_presence_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.mli_presence_for_module);;
+   try List.assoc mn ( (of_t cs).Coma_state_t.mli_presence_for_module) with 
+   _ -> raise(Module_not_found(mn));;
 
 let principal_mt_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.principal_mt_for_module);;
+   try List.assoc mn ( (of_t cs).Coma_state_t.principal_mt_for_module) with 
+   _ -> raise(Module_not_found(mn));;
 
 let mli_mt_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.mli_mt_for_module);;
+    try List.assoc mn ( (of_t cs).Coma_state_t.mli_mt_for_module) with 
+    _ -> raise(Module_not_found(mn));;
 
 let needed_libs_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.needed_libs_for_module);;
+    try List.assoc mn ( (of_t cs).Coma_state_t.needed_libs_for_module) with 
+    _ -> raise(Module_not_found(mn));;
 
 let direct_fathers_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.direct_fathers_for_module);;
+    try  List.assoc mn ( (of_t cs).Coma_state_t.direct_fathers_for_module) with 
+    _ -> raise(Module_not_found(mn));;
 
 let ancestors_at_module cs mn=
-   List.assoc mn ( (of_t cs).Coma_state_t.ancestors_for_module);;
-
+    try  List.assoc mn ( (of_t cs).Coma_state_t.ancestors_for_module) with 
+    _ -> raise(Module_not_found(mn));;
 
 let needed_dirs_at_module cs mn=
-   List.assoc mn  ((of_t cs).Coma_state_t.needed_dirs_for_module);;
+    try  List.assoc mn  ((of_t cs).Coma_state_t.needed_dirs_for_module) with 
+    _ -> raise(Module_not_found(mn));;
 
 let product_up_to_date_at_module cs mn=
-    List.assoc mn ((of_t cs).Coma_state_t.product_up_to_date_for_module);;    
+   try  List.assoc mn ((of_t cs).Coma_state_t.product_up_to_date_for_module) with     
+   _ -> raise(Module_not_found(mn));;
 
 let directories cs=(of_t cs).Coma_state_t.directories;;
 let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
