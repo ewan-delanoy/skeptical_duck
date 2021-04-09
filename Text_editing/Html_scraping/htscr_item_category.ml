@@ -10,9 +10,9 @@ module Private = struct
 
   let crobj_correspondences = 
       [
-         Html_scraping_item_category_t.Proxy            , salt ^ "Proxy" ;
-         Html_scraping_item_category_t.Static_homemade  , salt ^ "Static_homemade"  ;
-         Html_scraping_item_category_t.Dynamic_homemade , salt ^ "Dynamic_homemade" ;
+         Htscr_item_category_t.Proxy            , salt ^ "Proxy" ;
+         Htscr_item_category_t.Static_homemade  , salt ^ "Static_homemade"  ;
+         Htscr_item_category_t.Dynamic_homemade , salt ^ "Dynamic_homemade" ;
       ];;  
 
 end ;;   

@@ -6,7 +6,7 @@
 
 type t= 
   {
-    category : Html_scraping_item_category_t.t ;
+    category : Htscr_item_category_t.t ;
     original_request : string ;
     location : Dfa_subdirectory_t.t ;
     filename : string ;
