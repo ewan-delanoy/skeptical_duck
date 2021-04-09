@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/Html_scraping/html_scraping_item_t.ml";;
+#use"Text_editing/Html_scraping/htscr_item_t.ml";;
 
 *)
 
