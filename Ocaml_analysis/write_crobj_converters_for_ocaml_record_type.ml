@@ -47,25 +47,26 @@ module Private = struct
     "let "^ field_name ^ "_label = " ^ 
     "salt ^ \"" ^ field_name ^ "\"" ^ ds ;;
   
-    
-(*
+  let index_for_modulename_cutting modulename =
+      let  temp1 = Substring.occurrences_of_in "_" modulename in 
+      if List.length(temp1)<2 then 1 else 
+      List.hd temp1 ;;
+
+  let cut_modulename old_modulename = 
+      let modulename = String.capitalize_ascii old_modulename in 
+      let j = index_for_modulename_cutting modulename in 
+      let left = Cull_string.beginning j modulename 
+      and right = Cull_string.cobeginning j modulename in 
+      "\""^left^"\" ^ \""^right^"\"" ;; 
+
   let write_labels modulename data=
-    let synarchy1 = Image.image labels data in 
-    let synarchy2 = Strung.reposition_whole_according_to_separator "=" synarchy1 in
-    let oligarch1 = tab2 ^ (String.capitalize_ascii modulename)^"."^synarch1 in
-    let temp1 = oligarch1 :: rest_of_synarchy in 
-    let oligarchy = Strung.reposition_whole_according_to_separator "=" temp1 in
-    let temp2 = [
-     "let g = Concrete_object_field.get_record crobj in ";
-     "{"
-     ]@oligarchy@
-     [ 
-     "}"^ds
-     ] in 
-    let nonfirst_lines = Image.image (fun line->tab3^line) temp2 in 
-    let lines = "let of_concrete_object  crobj= ":: nonfirst_lines in 
+    let synarchy1 = Image.image write_label_element data in 
+    let synarchy2 = Strung.reposition_left_hand_side_according_to_separator "=" synarchy1 in
+    let first_line = "let salt= " ^ (cut_modulename modulename) ^ ds in 
+    let nonfirst_lines = Image.image (fun line->tab3^line) synarchy2 in 
+    let lines = first_line :: nonfirst_lines in 
     String.concat "\n" lines;;    
-*)
+
 
   let write_ofconverter_element (field_name,field_type) = 
     field_name ^ " = " ^ (ofconverter field_type) 
@@ -108,7 +109,8 @@ module Private = struct
   
   
   let print_converters modulename data = 
-      let msg = "\n\n\n"^(write_ofconverter modulename data)^
+      let msg = "\n\n\n"^(write_labels modulename data)^
+                "\n\n\n"^(write_ofconverter modulename data)^
                 "\n\n\n"^(write_toconverter modulename data)^"\n\n\n" in 
       print_string msg;;
   
