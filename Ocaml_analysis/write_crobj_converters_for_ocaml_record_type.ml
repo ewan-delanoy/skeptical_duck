@@ -61,9 +61,8 @@ module Private = struct
 
   let write_labels modulename data=
     let synarchy1 = Image.image write_label_element data in 
-    let synarchy2 = Strung.reposition_left_hand_side_according_to_separator "=" synarchy1 in
+    let nonfirst_lines = Strung.reposition_left_hand_side_according_to_separator "=" synarchy1 in
     let first_line = "let salt= " ^ (cut_modulename modulename) ^ ds in 
-    let nonfirst_lines = Image.image (fun line->tab3^line) synarchy2 in 
     let lines = first_line :: nonfirst_lines in 
     String.concat "\n" lines;;    
 
