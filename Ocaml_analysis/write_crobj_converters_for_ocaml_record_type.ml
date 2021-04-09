@@ -15,27 +15,27 @@ module Private = struct
       ("(string * string) list",cof^"of_string_pair_list",cof^"to_string_pair_list"); 
     ] ;;
   
-  let list_for_ofconverters = Image.image (fun (x,y,z)->(x,y)) list_for_converters ;;
-  let list_for_toconverters = Image.image (fun (x,y,z)->(x,z)) list_for_converters ;;  
+  let list_for_ofcrobj_converters = Image.image (fun (x,y,z)->(x,z)) list_for_converters ;;
+  let list_for_tocrobj_converters = Image.image (fun (x,y,z)->(x,y)) list_for_converters ;;  
   
   let default_converter typename =
       if Supstring.ends_with typename "_t.t"
       then let tn = Cull_string.coending 4 typename in 
-           (tn^".to_concrete_object",tn^".of_concrete_object")
-      else ("to_concrete_object","of_concrete_object") ;;                
+           (tn^".of_concrete_object",tn^".to_concrete_object")
+      else ("of_concrete_object","to_concrete_object") ;;                
   
-  let default_ofconverter typename = fst(default_converter typename);;
-  let default_toconverter typename = snd(default_converter typename);;
+  let default_ofcrobj_converter typename = fst(default_converter typename);;
+  let default_tocrobj_converter typename = snd(default_converter typename);;
   
-  let ofconverter typename =
-      match List.assoc_opt typename list_for_ofconverters with 
+  let ofcrobj_converter typename =
+      match List.assoc_opt typename list_for_ofcrobj_converters with 
       Some(converter) -> converter 
-      | None -> default_ofconverter typename;;
+      | None -> default_ofcrobj_converter typename;;
   
-  let toconverter typename =
-      match List.assoc_opt typename list_for_toconverters with 
+  let tocrobj_converter typename =
+      match List.assoc_opt typename list_for_tocrobj_converters with 
       Some(converter) -> converter 
-      | None -> default_toconverter typename;;    
+      | None -> default_tocrobj_converter typename;;    
       
   let ds = String.make 2 (char_of_int 59) ;;
   
@@ -57,22 +57,22 @@ module Private = struct
       let j = index_for_modulename_cutting modulename in 
       let left = Cull_string.beginning j modulename 
       and right = Cull_string.cobeginning j modulename in 
-      "\""^left^"\" ^ \""^right^"\"" ;; 
+      "\""^left^"\" ^ \""^right^".\"" ;; 
 
   let write_labels modulename data=
     let synarchy1 = Image.image write_label_element data in 
     let nonfirst_lines = Strung.reposition_left_hand_side_according_to_separator "=" synarchy1 in
-    let first_line = "let salt= " ^ (cut_modulename modulename) ^ ds in 
+    let first_line = "let salt= " ^ (cut_modulename modulename) ^ ds ^ "\n" in 
     let lines = first_line :: nonfirst_lines in 
     String.concat "\n" lines;;    
 
 
-  let write_ofconverter_element (field_name,field_type) = 
-    field_name ^ " = " ^ (ofconverter field_type) 
+  let write_ofcrobj_converter_element (field_name,field_type) = 
+    field_name ^ " = " ^ (ofcrobj_converter field_type) 
     ^ "(g " ^ field_name ^ "_label);";;
   
-  let write_ofconverter modulename data=
-     let old_synarch = Image.image write_ofconverter_element data in 
+  let write_ofcrobj_converter modulename data=
+     let old_synarch = Image.image write_ofcrobj_converter_element data in 
      let synarch1 = List.hd old_synarch 
      and rest_of_synarchy = Image.image (fun line->tab5^line) (List.tl old_synarch) in
      let oligarch1 = tab2 ^ (String.capitalize_ascii modulename)^"."^synarch1 in
@@ -89,10 +89,10 @@ module Private = struct
      let lines = "let of_concrete_object  crobj= ":: nonfirst_lines in 
      String.concat "\n" lines;;    
   
-  let write_toconverter modulename data=
+  let write_tocrobj_converter modulename data=
       let synarchy = (
        Image.image (fun (field_name,field_type)->
-         " " ^ field_name ^ "_label , " ^ (toconverter field_type) 
+         " " ^ field_name ^ "_label , " ^ (tocrobj_converter field_type) 
          ^ "(item." ^ (String.capitalize_ascii modulename) ^ "." ^field_name ^ ");"
         ) data
       ) in 
@@ -103,14 +103,14 @@ module Private = struct
        "Concrete_object_t.Record([ ";
        ]@(Strung.reposition_whole_according_to_separator "," synarchy)@
        [ 
-       "]"^ds
+       "])"^ds
        ])));;  
   
   
   let print_converters modulename data = 
       let msg = "\n\n\n"^(write_labels modulename data)^
-                "\n\n\n"^(write_ofconverter modulename data)^
-                "\n\n\n"^(write_toconverter modulename data)^"\n\n\n" in 
+                "\n\n\n"^(write_ofcrobj_converter modulename data)^
+                "\n\n\n"^(write_tocrobj_converter modulename data)^"\n\n\n" in 
       print_string msg;;
   
   let print ~module_vaguename = 
