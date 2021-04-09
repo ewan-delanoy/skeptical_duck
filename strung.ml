@@ -355,3 +355,11 @@ print_string(escaped_and_quoted z1);;
 
 
 *)
+
+let reposition_according_to_separator lines separator=
+      let temp1 = Image.image (fun line->(line,Substring.leftmost_index_of_in separator line)) lines in 
+      let max_idx = snd(Max.maximize_it snd temp1) in 
+      Image.image (fun (line,idx)->
+          let offset = max_idx-idx in 
+          (String.make offset ' ')^line
+      ) temp1;;
