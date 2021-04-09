@@ -51,10 +51,10 @@ module Private = struct
 (*
   let write_labels modulename data=
     let synarchy1 = Image.image labels data in 
-    let synarchy2 = Strung.reposition_according_to_separator "=" synarchy1 in
+    let synarchy2 = Strung.reposition_all_according_to_separator "=" synarchy1 in
     let oligarch1 = tab2 ^ (String.capitalize_ascii modulename)^"."^synarch1 in
     let temp1 = oligarch1 :: rest_of_synarchy in 
-    let oligarchy = Strung.reposition_according_to_separator "=" temp1 in
+    let oligarchy = Strung.reposition_all_according_to_separator "=" temp1 in
     let temp2 = [
      "let g = Concrete_object_field.get_record crobj in ";
      "{"
@@ -77,7 +77,7 @@ module Private = struct
      and rest_of_synarchy = Image.image (fun line->tab5^line) (List.tl old_synarch) in
      let oligarch1 = tab2 ^ (String.capitalize_ascii modulename)^"."^synarch1 in
      let temp1 = oligarch1 :: rest_of_synarchy in 
-     let oligarchy = Strung.reposition_according_to_separator "=" temp1 in
+     let oligarchy = Strung.reposition_all_according_to_separator "=" temp1 in
      let temp2 = [
       "let g = Concrete_object_field.get_record crobj in ";
       "{"
@@ -101,7 +101,7 @@ module Private = struct
        (Image.image (fun line->tab3^line)
        ([
        "Concrete_object_t.Record([ ";
-       ]@(Strung.reposition_according_to_separator "," synarchy)@
+       ]@(Strung.reposition_all_according_to_separator "," synarchy)@
        [ 
        "]"^ds
        ])));;  
