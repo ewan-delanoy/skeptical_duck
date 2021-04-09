@@ -43,6 +43,30 @@ module Private = struct
   let tab3 = String.make 3 ' ' ;;
   let tab5 = String.make 5 ' ' ;;
   
+  let write_label_element (field_name,field_type) = 
+    "let "^ field_name ^ "_label = " ^ 
+    "salt ^ \"" ^ field_name ^ "\"" ^ ds ;;
+  
+    
+(*
+  let write_labels modulename data=
+    let synarchy1 = Image.image labels data in 
+    let synarchy2 = Strung.reposition_according_to_separator "=" synarchy1 in
+    let oligarch1 = tab2 ^ (String.capitalize_ascii modulename)^"."^synarch1 in
+    let temp1 = oligarch1 :: rest_of_synarchy in 
+    let oligarchy = Strung.reposition_according_to_separator "=" temp1 in
+    let temp2 = [
+     "let g = Concrete_object_field.get_record crobj in ";
+     "{"
+     ]@oligarchy@
+     [ 
+     "}"^ds
+     ] in 
+    let nonfirst_lines = Image.image (fun line->tab3^line) temp2 in 
+    let lines = "let of_concrete_object  crobj= ":: nonfirst_lines in 
+    String.concat "\n" lines;;    
+*)
+
   let write_ofconverter_element (field_name,field_type) = 
     field_name ^ " = " ^ (ofconverter field_type) 
     ^ "(g " ^ field_name ^ "_label);";;
