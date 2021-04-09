@@ -363,3 +363,14 @@ let reposition_all_according_to_separator separator lines =
           let offset = max_idx-idx in 
           (String.make offset ' ')^line
       ) temp1;;
+
+let reposition_right_hand_side_according_to_separator separator lines =
+         let temp1 = Image.image (fun line->
+              let j = Substring.leftmost_index_of_in separator line in 
+              ((Cull_string.coending j line,Cull_string.ending j line),j)) lines in 
+         let max_idx = snd(Max.maximize_it snd temp1) in 
+         Image.image (fun ((left,right),idx)->
+             let offset = max_idx-idx in 
+             left^(String.make offset ' ')^right
+         ) temp1;;      
+
