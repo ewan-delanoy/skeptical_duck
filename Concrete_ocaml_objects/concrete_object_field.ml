@@ -27,6 +27,7 @@ exception Unwrap_bounded_variant_exn of Concrete_object_t.t;;
 end;;
 
 let wrap_encoded_string encoded_s=Concrete_object_t.String(encoded_s);;
+let wrap_int i = (Concrete_object_t.Int i);;
 let wrap_string s = Concrete_object_t.String(Encoded_string.encode s);;
 
 let unwrap_int ccrt_obj=

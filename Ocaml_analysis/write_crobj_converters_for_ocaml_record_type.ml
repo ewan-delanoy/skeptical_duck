@@ -10,6 +10,7 @@ module Private = struct
   
   let list_for_converters = 
     [
+      ("int"                   ,cof^"wrap_int"           ,cof^"unwrap_int"); 
       ("string"                ,cof^"wrap_string"        ,cof^"unwrap_string"); 
       ("string list"           ,cof^"of_string_list"     ,cof^"to_string_list"); 
       ("(string * string) list",cof^"of_string_pair_list",cof^"to_string_pair_list"); 
