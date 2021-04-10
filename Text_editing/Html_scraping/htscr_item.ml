@@ -157,8 +157,11 @@ let command_and_replacement config item =
    ^building_site^"/"^new_path,
    (item.Htscr_item_t.polished_request,new_path)) ;;
 
+(*   
+let commands_and_replacements config items =
+    let static_dir = config.Htscr_config_t. 
+*)  
 
-  
 end ;;
 
 
