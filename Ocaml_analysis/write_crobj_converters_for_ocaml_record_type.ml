@@ -98,7 +98,7 @@ module Private = struct
         ) data
       ) in 
       String.concat "\n"
-      ("let to_concrete_object  item= "::
+      ("let to_concrete_object  item = "::
        (Image.image (fun line->tab3^line)
        ([
        "Concrete_object_t.Record([ ";

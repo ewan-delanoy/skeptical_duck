@@ -26,17 +26,22 @@ let of_concrete_object  crobj=
    };;
 
 
-let to_concrete_object  item= 
+let to_concrete_object  st = 
    Concrete_object_t.Record([ 
-              stored_proxies_label , Htscr_item.list_to_concrete_object(item.Htscr_state_t.stored_proxies);
-     stored_static_homemades_label , Htscr_item.list_to_concrete_object(item.Htscr_state_t.stored_static_homemades);
-    stored_dynamic_homemades_label , Htscr_item.list_to_concrete_object(item.Htscr_state_t.stored_dynamic_homemades);
-                 proxy_count_label , Concrete_object_field.wrap_int(item.Htscr_state_t.proxy_count);
-               dynamic_count_label , Concrete_object_field.wrap_int(item.Htscr_state_t.dynamic_count);
+              stored_proxies_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_proxies);
+     stored_static_homemades_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_static_homemades);
+    stored_dynamic_homemades_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_dynamic_homemades);
+                 proxy_count_label , Concrete_object_field.wrap_int(st.Htscr_state_t.proxy_count);
+               dynamic_count_label , Concrete_object_field.wrap_int(st.Htscr_state_t.dynamic_count);
    ]);;
+
+let check_for_already_registered_request st req= 
+    let stored_ones = st.Htscr_state_t.stored_proxies @ st.Htscr_state_t.stored_static_homemades @ st.Htscr_state_t.stored_dynamic_homemades in 
+    Option.seek (fun item->item.Htscr_item_t.original_request = req) stored_ones ;;
 
 end ;;
 
+let check_for_already_registered_request = Private.check_for_already_registered_request ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let to_concrete_object = Private.to_concrete_object ;;
 
