@@ -174,21 +174,8 @@ let command_and_replacement config item =
    ^building_site^"/"^new_path,
    (item.Htscr_item_t.polished_request,new_path)) ;;
 
-let enumerate_requests_for_one_source_tag text source_tag =
-    let temp1 = Substring.occurrences_of_in source_tag text in 
-    Image.image (fun idx->
-      let idx2 = idx + (String.length source_tag) in 
-      let idx3 = Substring.leftmost_index_of_in_from "\"" text idx2 in 
-      Cull_string.interval text idx2 (idx3-1)
-    ) temp1 ;;
-
-let enumerate_requests_for_several_source_tags  text ~source_tags =   
-      let temp1 = Image.image (enumerate_requests_for_one_source_tag text) source_tags in 
-      List.flatten  temp1 ;;
-
 let extract_items_from_text config ~old_proxy_count ~old_dynamic_count text = 
-  let source_tags = config.Htscr_config_t.source_tags in
-  let requests = enumerate_requests_for_several_source_tags  text ~source_tags in 
+  let requests = Htscr_extract_requests_from_text.main config  ~text  in 
   let temp1 = Image.image (fun request->(request,compute_item config ~asset_idx:1 request)) requests in 
   let (temp2,temp3) =List.partition (fun (_,opt)->opt<>None)  temp1 in 
   let temp4 = Image.image (fun (_,opt)->Option.unpack opt) temp2 in 
