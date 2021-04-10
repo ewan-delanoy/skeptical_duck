@@ -39,9 +39,11 @@ let check_for_already_registered_request st req=
     let stored_ones = st.Htscr_state_t.stored_proxies @ st.Htscr_state_t.stored_static_homemades @ st.Htscr_state_t.stored_dynamic_homemades in 
     Option.seek (fun item->item.Htscr_item_t.original_request = req) stored_ones ;;
 
+
+    
 end ;;
 
-let check_for_already_registered_request = Private.check_for_already_registered_request ;;
+
 let of_concrete_object = Private.of_concrete_object ;;
 let to_concrete_object = Private.to_concrete_object ;;
 

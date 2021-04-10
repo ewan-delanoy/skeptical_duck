@@ -137,23 +137,17 @@ let compute_dynamic_homemade_candidate config  old_dynamic_count request (a,b,c)
     } ;;  
 
 
-let compute_candidate config old_state request =
+let compute_candidate config ~old_proxy_count ~old_dynamic_count ~request =
    let opt = compute_triple config request in 
    if opt = None then None else 
    let (a,b,c) = Option.unpack opt in  
    match (decide_category config (a,b,c)) with 
     Htscr_item_category_t.Proxy -> 
-          let old_proxy_count = old_state.Htscr_state_t.proxy_count in    
           Some(compute_proxy_candidate config old_proxy_count request (a,b,c))
    |Static_homemade -> 
           Some(compute_static_homemade_candidate config request (a,b,c))
    |Dynamic_homemade -> 
-          let old_dynamic_count = old_state.Htscr_state_t.dynamic_count in   
           Some(compute_dynamic_homemade_candidate config old_dynamic_count request (a,b,c));;
-
-(*         
-let move_one_step config old_state request =
-*)    
 
 
 let command_and_replacement config item = 
@@ -169,6 +163,7 @@ end ;;
 
 
 let command_and_replacement = Private.command_and_replacement ;;
+let compute_candidate = Private.compute_candidate ;;
 let list_of_concrete_object = Private.list_of_concrete_object ;;
 let list_to_concrete_object = Private.list_to_concrete_object ;;
 
