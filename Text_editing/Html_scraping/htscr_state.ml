@@ -81,9 +81,18 @@ let read_text config st ~text =
     let requests = Htscr_extract_requests_from_text.main config ~text in 
     treat_several_requests config ([],st,requests) ;;     
 
+let empty_one =     
+    {
+      Htscr_state_t.stored_proxies = [];
+           stored_static_homemades = [];
+          stored_dynamic_homemades = [];
+                       proxy_count = 0;
+                     dynamic_count = 0;
+    };;
+
 end ;;
 
-
+let empty_one = Private.empty_one ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let read_text = Private.read_text ;;
 let to_concrete_object = Private.to_concrete_object ;;
