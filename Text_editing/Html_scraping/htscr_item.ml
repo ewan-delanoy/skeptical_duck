@@ -155,7 +155,7 @@ let command_and_replacement config item =
    let new_path = (Dfa_subdirectory.connectable_to_subpath item.Htscr_item_t.location)^(item.Htscr_item_t.filename) in 
   ("curl -L \""^(item.Htscr_item_t.polished_request)^"\" > "
    ^building_site^"/"^new_path,
-   (item.Htscr_item_t.polished_request,new_path)) ;;
+   (item.Htscr_item_t.original_request,new_path)) ;;
 
 let directory_for_one_item config item =
     if item.Htscr_item_t.category <> Htscr_item_category_t.Static_homemade 
