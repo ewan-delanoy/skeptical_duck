@@ -8,7 +8,6 @@ type t=
   {
     building_site:string;
     endings_for_dynamic_homemades:(string * string) list;
-    endings_for_special_files:(string * string) list;
     list_of_allowed_endings:string list ;
     list_of_proxies:string list;
     source_tags:string list ;
