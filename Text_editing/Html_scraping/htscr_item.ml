@@ -157,15 +157,31 @@ let command_and_replacement config item =
    ^building_site^"/"^new_path,
    (item.Htscr_item_t.polished_request,new_path)) ;;
 
-(*   
+let directory_for_one_item config item =
+    if item.Htscr_item_t.category <> Htscr_item_category_t.Static_homemade 
+    then None 
+    else let dir = (config.Htscr_config_t.building_site)^"/"^
+    (Dfa_subdirectory.without_trailing_slash item.Htscr_item_t.location) in 
+    Some dir ;;
+
+let directories_for_several_items config items =
+    let unsorted = Option.filter_and_unpack (directory_for_one_item config) items in 
+    Ordered.sort Total_ordering.lex_for_strings  unsorted ;;
+ 
 let commands_and_replacements config items =
-    let static_dir = config.Htscr_config_t. 
-*)  
+    let static_dir = Htscr_config.full_static_subdir_path config
+    and other_dirs = directories_for_several_items config items 
+    and temp1 = Image.image (command_and_replacement config) items in 
+    let mkdir_commands = Image.image (fun dir->"mkdir -p "^dir) 
+       (static_dir :: other_dirs) 
+    and other_commands = Image.image fst temp1 in 
+    (mkdir_commands@other_commands,Image.image snd temp1) ;;
+    
 
 end ;;
 
 
-let command_and_replacement = Private.command_and_replacement ;;
+let commands_and_replacements = Private.commands_and_replacements ;;
 let compute_candidate = Private.compute_candidate ;;
 let list_of_concrete_object = Private.list_of_concrete_object ;;
 let list_to_concrete_object = Private.list_to_concrete_object ;;
