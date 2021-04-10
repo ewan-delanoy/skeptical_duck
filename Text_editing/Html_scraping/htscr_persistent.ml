@@ -32,7 +32,7 @@ module Private = struct
          let (new_items,new_state)= Htscr_state.read_text config (!main_ref) text in  
          let (commands,reps) = Htscr_item.commands_and_replacements config new_items in 
          let _ = Unix_command.conditional_multiple_uc commands in 
-         let _ = (main_ref:=new_state) in 
+         let _ = (main_ref:=new_state; save_to_disk ()) in 
       reps;;   
 
 end ;;      
