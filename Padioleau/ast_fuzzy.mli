@@ -4,7 +4,7 @@ type 'a wrap = 'a * tok
 
 type tree =
   | Braces of tok * trees * tok
-  | Parens of tok * (trees, tok (* comma*)) Common.either list * tok
+  | Parens of tok * (trees, tok (* comma*)) Padioleau_common.either list * tok
   | Angle  of tok * trees * tok
 
   (* note that gcc allows $ in identifiers, so using $ for metavariables

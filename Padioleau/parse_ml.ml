@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * file license.txt for more details.
  *)
-open Common 
+open Padioleau_common 
 
 let (+>) x f= f x;;
 
@@ -47,13 +47,13 @@ let error_msg_tok tok =
 
 let tokens2 file = 
   let table     = Parse_info.full_charpos_to_pos_large file in
-  Common.with_open_infile file (fun chan -> 
+  Padioleau_common.with_open_infile file (fun chan -> 
     let lexbuf = Lexing.from_channel chan in
     try 
       let rec tokens_aux acc = 
         let tok = Lexer_ml.token lexbuf in
         if !Flag.debug_lexer 
-        then Common.pr2_gen tok;
+        then Padioleau_common.pr2_gen tok;
 
         let tok = tok +> TH.visitor_info_of_tok (fun ii -> 
         { ii with PI.token=
@@ -76,7 +76,7 @@ let tokens2 file =
  )
           
 let tokens a = 
-  Common.profile_code "Parse_ml.tokens" (fun () -> tokens2 a)
+  Padioleau_common.profile_code "Parse_ml.tokens" (fun () -> tokens2 a)
 
 (*****************************************************************************)
 (* Helper for main entry point *)
@@ -117,13 +117,13 @@ let parse2 filename =
     (* Call parser *)
     (* -------------------------------------------------- *)
     let xs =
-      Common.profile_code "Parser_ml.main" (fun () ->
+      Padioleau_common.profile_code "Parser_ml.main" (fun () ->
         if filename =~ ".*\\.mli"
         then Parser_ml.interface      (lexer_function tr) lexbuf_fake
         else Parser_ml.implementation (lexer_function tr) lexbuf_fake
       )
     in
-    stat.PI.correct <- (Common.cat filename +> List.length);
+    stat.PI.correct <- (Padioleau_common.cat filename +> List.length);
     (Some xs, toks), stat
       
   (*| Semantic_c.Semantic _  *)
@@ -148,16 +148,16 @@ let parse2 filename =
       );
 
       let filelines = Common2.cat_array filename in
-      let checkpoint2 = Common.cat filename +> List.length in
+      let checkpoint2 = Padioleau_common.cat filename +> List.length in
       let line_error = TH.line_of_tok cur in
       Parse_info.print_bad line_error (0, checkpoint2) filelines;
     end;
 
-    stat.PI.bad     <- Common.cat filename +> List.length;
+    stat.PI.bad     <- Padioleau_common.cat filename +> List.length;
     (None, toks), stat
 
 let parse a = 
-  Common.profile_code "Parse_ml.parse" (fun () -> parse2 a)
+  Padioleau_common.profile_code "Parse_ml.parse" (fun () -> parse2 a)
 
 let parse_program file = 
   let ((astopt, _toks), _stat) = parse file in

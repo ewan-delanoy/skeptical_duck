@@ -13,7 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
  * license.txt for more details.
  *)
-open Common 
+open Padioleau_common 
 
 
 module Ast = Ast_ml
@@ -53,7 +53,7 @@ let error s =
 (* Keywords *)
 (* ---------------------------------------------------------------------- *)
 (* src: http://caml.inria.fr/pub/docs/manual-ocaml/lex.html *)
-let keyword_table = Common.hash_of_list [
+let keyword_table = Padioleau_common.hash_of_list [
 
   "fun", (fun ii -> Tfun ii);
   "function", (fun ii -> Tfunction ii);

@@ -47,7 +47,7 @@ type 'tok hooks = {
 let mk_trees h xs =
 
  (* filter comment tokens *)
-  let xs = xs |> Common.exclude (fun t ->
+  let xs = xs |> Padioleau_common.exclude (fun t ->
       let kind = h.kind t in
       match kind with
       | PI.Esthet _ | PI.Eof -> true
@@ -83,7 +83,7 @@ let mk_trees h xs =
   and look_close_brace tok_start accbody xs =
     match xs with
     | [] -> 
-        failwith (Common.spf "PB look_close_brace (started at %d)" 
+        failwith (Padioleau_common.spf "PB look_close_brace (started at %d)" 
                     (PI.line_of_info (h.tokf tok_start)))
     | x::xs -> 
         (match x with
@@ -97,7 +97,7 @@ let mk_trees h xs =
   and look_close_paren tok_start accbody xs =
     match xs with
     | [] -> 
-        failwith (Common.spf "PB look_close_paren (started at %d)" 
+        failwith (Padioleau_common.spf "PB look_close_paren (started at %d)" 
                      (PI.line_of_info (h.tokf tok_start)))
     | x::xs -> 
         (match x with
@@ -112,16 +112,16 @@ let mk_trees h xs =
      let rec aux acc xs =
        match xs with
        | [] ->
-         if Common.null acc
+         if Padioleau_common.null acc
          then []
-         else [Common.Left (acc |> List.rev)]
+         else [Padioleau_common.Left (acc |> List.rev)]
        | x::xs ->
          (match x with
          | Ast_fuzzy.Tok (",", info) ->
            let before = acc |> List.rev in
-           if Common.null before
+           if Padioleau_common.null before
            then aux [] xs
-           else (Common.Left before)::(Common.Right (info))::aux [] xs
+           else (Padioleau_common.Left before)::(Padioleau_common.Right (info))::aux [] xs
          | _ ->
            aux (x::acc) xs
          )

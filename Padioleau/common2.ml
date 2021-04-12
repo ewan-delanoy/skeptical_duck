@@ -81,7 +81,7 @@ let cat_array file =
 
 
 let unix_stat file =
-  Common.profile_code "Unix.stat" (fun () ->
+  Padioleau_common.profile_code "Unix.stat" (fun () ->
     Unix.stat file
   )
 

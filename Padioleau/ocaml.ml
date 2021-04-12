@@ -273,14 +273,14 @@ let vof_ref ofa x =
   | {contents = x } -> VRef (ofa x)
 let vof_either _of_a _of_b =
   function
-  | Common.Left v1 -> let v1 = _of_a v1 in VSum (("Left", [ v1 ]))
-  | Common.Right v1 -> let v1 = _of_b v1 in VSum (("Right", [ v1 ]))
+  | Padioleau_common.Left v1 -> let v1 = _of_a v1 in VSum (("Left", [ v1 ]))
+  | Padioleau_common.Right v1 -> let v1 = _of_b v1 in VSum (("Right", [ v1 ]))
 
 let vof_either3 _of_a _of_b _of_c =
   function
-  | Common.Left3 v1 -> let v1 = _of_a v1 in VSum (("Left3", [ v1 ]))
-  | Common.Middle3 v1 -> let v1 = _of_b v1 in VSum (("Middle3", [ v1 ]))
-  | Common.Right3 v1 -> let v1 = _of_c v1 in VSum (("Right3", [ v1 ]))
+  | Padioleau_common.Left3 v1 -> let v1 = _of_a v1 in VSum (("Left3", [ v1 ]))
+  | Padioleau_common.Middle3 v1 -> let v1 = _of_b v1 in VSum (("Middle3", [ v1 ]))
+  | Padioleau_common.Right3 v1 -> let v1 = _of_c v1 in VSum (("Right3", [ v1 ]))
 
 
 
@@ -312,7 +312,7 @@ let option_ofv a__of_sexp sexp = match sexp with
 (* Format pretty printers *)
 (*****************************************************************************)
 let add_sep xs = 
-  xs |> List.map (fun x -> Common.Right x) |> Common2.join_gen (Common.Left ())
+  xs |> List.map (fun x -> Padioleau_common.Right x) |> Common2.join_gen (Padioleau_common.Left ())
 
 (* 
  * OCaml value pretty printer. A similar functionnality is provided by
@@ -352,8 +352,8 @@ let string_of_v v =
       | VTuple xs ->
           ppf "(@[";
               xs |> add_sep |> List.iter (function
-              | Common.Left _ -> ppf ",@ ";
-              | Common.Right v -> aux v
+              | Padioleau_common.Left _ -> ppf ",@ ";
+              | Padioleau_common.Right v -> aux v
               );
           ppf "@])";
       | VDict xs ->
@@ -372,8 +372,8 @@ let string_of_v v =
           | y::ys ->
               ppf "@[<hov 2>%s(@," s;
               xs |> add_sep |> List.iter (function
-              | Common.Left _ -> ppf ",@ ";
-              | Common.Right v -> aux v
+              | Padioleau_common.Left _ -> ppf ",@ ";
+              | Padioleau_common.Right v -> aux v
               );
               ppf "@])";
           )
@@ -386,8 +386,8 @@ let string_of_v v =
       | VList xs ->
           ppf "[@[<hov>";
           xs |> add_sep |> List.iter (function
-          | Common.Left _ -> ppf ";@ ";
-          | Common.Right v -> aux v
+          | Padioleau_common.Left _ -> ppf ";@ ";
+          | Padioleau_common.Right v -> aux v
           );
           ppf "@]]";
       | VTODO v1 -> ppf "VTODO"
@@ -417,14 +417,14 @@ let map_of_int64 x = x
 
 let map_of_either _of_a _of_b =
   function
-  | Common.Left v1 -> let v1 = _of_a v1 in Common.Left ((v1))
-  | Common.Right v1 -> let v1 = _of_b v1 in Common.Right ((v1))
+  | Padioleau_common.Left v1 -> let v1 = _of_a v1 in Padioleau_common.Left ((v1))
+  | Padioleau_common.Right v1 -> let v1 = _of_b v1 in Padioleau_common.Right ((v1))
 
 let map_of_either3 _of_a _of_b _of_c =
   function
-  | Common.Left3 v1 -> let v1 = _of_a v1 in Common.Left3 ((v1))
-  | Common.Middle3 v1 -> let v1 = _of_b v1 in Common.Middle3 ((v1))
-  | Common.Right3 v1 -> let v1 = _of_c v1 in Common.Right3 ((v1))
+  | Padioleau_common.Left3 v1 -> let v1 = _of_a v1 in Padioleau_common.Left3 ((v1))
+  | Padioleau_common.Middle3 v1 -> let v1 = _of_b v1 in Padioleau_common.Middle3 ((v1))
+  | Padioleau_common.Right3 v1 -> let v1 = _of_c v1 in Padioleau_common.Right3 ((v1))
 
 
 (* this is subtle ... *)
@@ -488,11 +488,11 @@ let v_list of_a xs =
 
 let v_either of_a of_b x = 
   match x with
-  | Common.Left a -> of_a a
-  | Common.Right b -> of_b b
+  | Padioleau_common.Left a -> of_a a
+  | Padioleau_common.Right b -> of_b b
 
 let v_either3 of_a of_b of_c x = 
   match x with
-  | Common.Left3 a -> of_a a
-  | Common.Middle3 b -> of_b b
-  | Common.Right3 c -> of_c c
+  | Padioleau_common.Left3 a -> of_a a
+  | Padioleau_common.Middle3 b -> of_b b
+  | Padioleau_common.Right3 c -> of_c c

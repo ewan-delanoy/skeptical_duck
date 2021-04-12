@@ -40,13 +40,13 @@ and 'a paren   = tok * 'a * tok
 and 'a brace   = tok * 'a * tok
 and 'a bracket = tok * 'a * tok 
 
-and 'a comma_list = ('a, tok (* ',' *)) Common.either list
-and 'a and_list = ('a, tok (* 'and' *)) Common.either list
-and 'a star_list = ('a, tok (* '*' *)) Common.either list
+and 'a comma_list = ('a, tok (* ',' *)) Padioleau_common.either list
+and 'a and_list = ('a, tok (* 'and' *)) Padioleau_common.either list
+and 'a star_list = ('a, tok (* '*' *)) Padioleau_common.either list
 (* optional first | *)
-and 'a pipe_list = ('a, tok (* '|' *)) Common.either list
+and 'a pipe_list = ('a, tok (* '|' *)) Padioleau_common.either list
 (* optional final ; *)
-and 'a semicolon_list = ('a, tok (* ';' *)) Common.either list
+and 'a semicolon_list = ('a, tok (* ';' *)) Padioleau_common.either list
 
  (* with tarzan *)
 
@@ -372,15 +372,15 @@ type any =
 let str_of_name (Name (s,_)) = s
 let info_of_name (Name (_,info)) = info
 
-let uncomma xs = Common.map_filter (function
-  | Common.Left e -> Some e
-  | Common.Right _info -> None
+let uncomma xs = Padioleau_common.map_filter (function
+  | Padioleau_common.Left e -> Some e
+  | Padioleau_common.Right _info -> None
   ) xs
 let unpipe xs = uncomma xs
 
 let name_of_long_name (_, name) = name
 let module_of_long_name (qu, _) = 
-  qu |> List.map fst |> List.map str_of_name |> Common.join "."
+  qu |> List.map fst |> List.map str_of_name |> Padioleau_common.join "."
 let module_infos_of_long_name (qu, _) = 
   qu |> List.map fst |> List.map info_of_name
 

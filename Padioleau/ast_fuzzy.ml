@@ -114,7 +114,7 @@ type 'a wrap = 'a * tok
 type tree =
   | Braces of tok * trees * tok
   (* todo: comma *)
-  | Parens of tok * (trees, tok (* comma*)) Common.either list * tok
+  | Parens of tok * (trees, tok (* comma*)) Padioleau_common.either list * tok
   | Angle  of tok * trees * tok
 
   (* note that gcc allows $ in identifiers, so using $ for metavariables
@@ -132,7 +132,7 @@ and trees = tree list
  (* with tarzan *)
 
 let is_metavar s =
-  Common.(=~) s  "^\\$.*"
+  Padioleau_common.(=~) s  "^\\$.*"
 
 (*****************************************************************************)
 (* Visitor *)
@@ -234,7 +234,7 @@ let (mk_mapper: map_visitor -> (trees -> trees)) = fun hook ->
 let (toks_of_trees: trees -> Parse_info.info list) = fun trees ->
   let globals = ref [] in
   let hooks = { default_visitor with
-    ktok = (fun (_k, _) i -> Common.push i globals)
+    ktok = (fun (_k, _) i -> Padioleau_common.push i globals)
   } in
   begin
     let vout = mk_visitor hooks in

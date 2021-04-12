@@ -46,7 +46,7 @@ type token_location = {
     line: int;
     column: int;
 
-    file: Common.filename;
+    file: Padioleau_common.filename;
   }
   (* with tarzan *)
 
@@ -158,7 +158,7 @@ type info = token_mutable
 
 
 type parsing_stat = {
-  filename: Common.filename;
+  filename: Padioleau_common.filename;
   mutable correct: int;
   mutable bad: int;
   (* used only for cpp for now *)
@@ -261,7 +261,7 @@ let string_of_token_location x =
   spf "%s at %s:%d:%d" x.str x.file x.line x.column
 *)
 let string_of_token_location x =
-  Common.spf "%s:%d:%d" x.file x.line x.column
+  Padioleau_common.spf "%s:%d:%d" x.file x.line x.column
 
 let string_of_info x =
   string_of_token_location (token_location_of_info x)
@@ -379,11 +379,11 @@ let compare_pos ii1 ii2 =
   | (Real p1, Real p2) ->
       compare p1.charpos p2.charpos
   | (Virt (p1,_), Real p2) ->
-      if Common.(=|=) (compare p1.charpos p2.charpos) (-1)
+      if Padioleau_common.(=|=) (compare p1.charpos p2.charpos) (-1)
       then (-1)
       else 1
   | (Real p1, Virt (p2,_)) ->
-      if Common.(=|=) (compare p1.charpos p2.charpos)  1
+      if Padioleau_common.(=|=) (compare p1.charpos p2.charpos)  1
       then 1
       else (-1)
   | (Virt (p1,o1), Virt (p2,o2)) ->
@@ -393,7 +393,7 @@ let compare_pos ii1 ii2 =
       |	-1 -> -1
       |	0 -> compare o1 o2
       |	1 -> 1
-      | _ -> raise Common.Impossible
+      | _ -> raise Padioleau_common.Impossible
 
 
 let min_max_ii_by_pos xs =
@@ -401,7 +401,7 @@ let min_max_ii_by_pos xs =
   | [] -> failwith "empty list, max_min_ii_by_pos"
   | [x] -> (x, x)
   | x::xs ->
-      let pos_leq p1 p2 = Common.(=|=) (compare_pos p1 p2) (-1) in
+      let pos_leq p1 p2 = Padioleau_common.(=|=) (compare_pos p1 p2) (-1) in
       xs |> List.fold_left (fun (minii,maxii) e ->
         let maxii' = if pos_leq maxii e then e else maxii in
         let minii' = if pos_leq e minii then e else minii in
@@ -512,14 +512,14 @@ let vof_info
  * size and source for underlying data.  This allows us to wrap a string
  * in a channel, or pass a file, depending on our needs. 
  *)
-type changen = unit -> (in_channel * int * Common.filename)
+type changen = unit -> (in_channel * int * Padioleau_common.filename)
 
 (* Many functions in parse_php were implemented in terms of files and
  * are now adapted to work in terms of changens.  However, we wish to
  * provide the original API to users.  This wraps changen-based functions
  * and makes them operate on filenames again. 
  *)
-let file_wrap_changen : (changen -> 'a) -> (Common.filename -> 'a) = fun f ->
+let file_wrap_changen : (changen -> 'a) -> (Padioleau_common.filename -> 'a) = fun f ->
   (fun file ->
     f (fun () -> (open_in file, Common2.filesize file, file)))
 
@@ -575,7 +575,7 @@ let full_charpos_to_pos_large2 =
   file_wrap_changen full_charpos_to_pos_large_from_changen
 
 let full_charpos_to_pos_large a =
-  Common.profile_code "Common.full_charpos_to_pos_large"
+  Padioleau_common.profile_code "Common.full_charpos_to_pos_large"
     (fun () -> full_charpos_to_pos_large2 a)
 
 let complete_token_location_large filename table x =
@@ -590,7 +590,7 @@ let complete_token_location_large filename table x =
  * expensive so don't use it to get the line x col from every token in
  * a file. Instead use full_charpos_to_pos.
  *)
-let (info_from_charpos2: int -> Common.filename -> (int * int * string)) =
+let (info_from_charpos2: int -> Padioleau_common.filename -> (int * int * string)) =
   fun charpos filename ->
 
   (* Currently lexing.ml does not handle the line number position.
@@ -607,7 +607,7 @@ let (info_from_charpos2: int -> Common.filename -> (int * int * string)) =
   let rec charpos_to_pos_aux last_valid =
     let s =
       try Some (input_line chan)
-      with End_of_file when Common.(=|=) charpos  last_valid -> None in
+      with End_of_file when Padioleau_common.(=|=) charpos  last_valid -> None in
     incr linen;
     match s with
       Some s ->
@@ -628,19 +628,19 @@ let (info_from_charpos2: int -> Common.filename -> (int * int * string)) =
   res
 
 let info_from_charpos a b =
-  Common.profile_code "Common.info_from_charpos" (fun () -> info_from_charpos2 a b)
+  Padioleau_common.profile_code "Common.info_from_charpos" (fun () -> info_from_charpos2 a b)
 
 
 (* Decalage is here to handle stuff such as cpp which include file and who
  * can make shift.
  *)
-let (error_messagebis: Common.filename -> (string * int) -> int -> string)=
+let (error_messagebis: Padioleau_common.filename -> (string * int) -> int -> string)=
  fun filename (lexeme, lexstart) decalage ->
 
   let charpos = lexstart      + decalage in
   let tok = lexeme in
   let (line, pos, linecontent) =  info_from_charpos charpos filename in
-  Common.spf "File \"%s\", line %d, column %d,  charpos = %d
+  Padioleau_common.spf "File \"%s\", line %d, column %d,  charpos = %d
     around = '%s', whole content = %s"
     filename line pos charpos tok (Common2.chop linecontent)
 
@@ -648,7 +648,7 @@ let error_message = fun filename (lexeme, lexstart) ->
   try error_messagebis filename (lexeme, lexstart) 0
   with
     End_of_file ->
-      ("PB in Common.error_message, position " ^ Common.i_to_s lexstart ^
+      ("PB in Common.error_message, position " ^ Padioleau_common.i_to_s lexstart ^
        " given out of file:" ^ filename)
 
 let error_message_token_location = fun info ->
@@ -658,7 +658,7 @@ let error_message_token_location = fun info ->
   try error_messagebis filename (lexeme, lexstart) 0
   with
     End_of_file ->
-      ("PB in Common.error_message, position " ^ Common.i_to_s lexstart ^
+      ("PB in Common.error_message, position " ^ Padioleau_common.i_to_s lexstart ^
        " given out of file:" ^ filename)
 
 let error_message_info info =
@@ -668,14 +668,14 @@ let error_message_info info =
 
 let print_bad line_error (start_line, end_line) filelines  =
   begin
-    Common.pr2 ("badcount: " ^ Common.i_to_s (end_line - start_line));
+    Padioleau_common.pr2 ("badcount: " ^ Padioleau_common.i_to_s (end_line - start_line));
 
     for i = start_line to end_line do
       let line = filelines.(i) in
 
-      if Common.(=|=) i line_error
-      then  Common.pr2 ("BAD:!!!!!" ^ " " ^ line)
-      else  Common.pr2 ("bad:" ^ " " ^      line)
+      if Padioleau_common.(=|=) i line_error
+      then  Padioleau_common.pr2 ("BAD:!!!!!" ^ " " ^ line)
+      else  Padioleau_common.pr2 ("bad:" ^ " " ^      line)
     done
   end
 
@@ -704,8 +704,8 @@ let print_parsing_stat_list ?(verbose=false)statxs =
   in
 
   if verbose then begin 
-  Common.pr "\n\n\n---------------------------------------------------------------";
-  Common.pr "pbs with files:";
+  Padioleau_common.pr "\n\n\n---------------------------------------------------------------";
+  Padioleau_common.pr "pbs with files:";
   statxs 
     |> List.filter (function 
       | {have_timeout = true; _} -> true 
@@ -713,11 +713,11 @@ let print_parsing_stat_list ?(verbose=false)statxs =
       | _ -> false)
     |> List.iter (function 
         {filename = file; have_timeout = timeout; bad = n; _} -> 
-        Common.pr (file ^ "  " ^ (if timeout then "TIMEOUT" else Common.i_to_s n));
+        Padioleau_common.pr (file ^ "  " ^ (if timeout then "TIMEOUT" else Padioleau_common.i_to_s n));
         );
 
-  Common.pr "\n\n\n";
-  Common.pr "files with lots of tokens passed/commentized:";
+  Padioleau_common.pr "\n\n\n";
+  Padioleau_common.pr "files with lots of tokens passed/commentized:";
   let threshold_passed = 100 in
   statxs 
     |> List.filter (function 
@@ -725,10 +725,10 @@ let print_parsing_stat_list ?(verbose=false)statxs =
       | _ -> false)
     |> List.iter (function 
         {filename = file; commentized = n; _} -> 
-        Common.pr (file ^ "  " ^ (Common.i_to_s n));
+        Padioleau_common.pr (file ^ "  " ^ (Padioleau_common.i_to_s n));
         );
 
-        Common.pr "\n\n\n";
+        Padioleau_common.pr "\n\n\n";
   end;
 
   let good = statxs |> List.fold_left (fun acc {correct = x; _} -> acc+x) 0 in
@@ -737,29 +737,29 @@ let print_parsing_stat_list ?(verbose=false)statxs =
   in
   let total_lines = good + bad in
 
-  Common.pr "---------------------------------------------------------------";
-  Common.pr (
-  (Common.spf "NB total files = %d; " total) ^
-  (Common.spf "NB total lines = %d; " total_lines) ^
-  (Common.spf "perfect = %d; " perfect) ^
-  (Common.spf "pbs = %d; "     (statxs |> List.filter (function 
+  Padioleau_common.pr "---------------------------------------------------------------";
+  Padioleau_common.pr (
+  (Padioleau_common.spf "NB total files = %d; " total) ^
+  (Padioleau_common.spf "NB total lines = %d; " total_lines) ^
+  (Padioleau_common.spf "perfect = %d; " perfect) ^
+  (Padioleau_common.spf "pbs = %d; "     (statxs |> List.filter (function 
       {bad = n; _} when n > 0 -> true | _ -> false) 
                                |> List.length)) ^
-  (Common.spf "timeout = %d; " (statxs |> List.filter (function 
+  (Padioleau_common.spf "timeout = %d; " (statxs |> List.filter (function 
       {have_timeout = true; _} -> true | _ -> false) 
                                |> List.length)) ^
-  (Common.spf "=========> %d" ((100 * perfect) / total)) ^ "%"
+  (Padioleau_common.spf "=========> %d" ((100 * perfect) / total)) ^ "%"
                                                           
  );
   let gf, badf = float_of_int good, float_of_int bad in
   let passedf = float_of_int passed in
-  Common.pr (
-  (Common.spf "nb good = %d,  nb passed = %d " good passed) ^
-  (Common.spf "=========> %f"  (100.0 *. (passedf /. gf)) ^ "%")
+  Padioleau_common.pr (
+  (Padioleau_common.spf "nb good = %d,  nb passed = %d " good passed) ^
+  (Padioleau_common.spf "=========> %f"  (100.0 *. (passedf /. gf)) ^ "%")
    );
-   Common.pr (
-  (Common.spf "nb good = %d,  nb bad = %d " good bad) ^
-  (Common.spf "=========> %f"  (100.0 *. (gf /. (gf +. badf))) ^ "%"
+   Padioleau_common.pr (
+  (Padioleau_common.spf "nb good = %d,  nb bad = %d " good bad) ^
+  (Padioleau_common.spf "=========> %f"  (100.0 *. (gf /. (gf +. badf))) ^ "%"
    )
   )
 
@@ -776,7 +776,7 @@ let lines_around_error_line ~context (file, line) =
   let res = ref [] in
 
   for i = startl to endl -1 do
-    Common.push arr.(i) res
+    Padioleau_common.push arr.(i) res
   done;
   List.rev !res
 
@@ -791,16 +791,16 @@ let print_recurring_problematic_tokens xs =
           (fun() -> 0, (file, line_error)) h;
       )));
   Common2.pr2_xxxxxxxxxxxxxxxxx();
-  Common.pr2 ("maybe 10 most problematic tokens");
+  Padioleau_common.pr2 ("maybe 10 most problematic tokens");
   Common2.pr2_xxxxxxxxxxxxxxxxx();
-  Common.hash_to_list h
+  Padioleau_common.hash_to_list h
   |> List.sort (fun (_k1,(v1,_)) (_k2,(v2,_)) -> compare v2 v1)
-  |> Common.take_safe 10
+  |> Padioleau_common.take_safe 10
   |> List.iter (fun (k,(i, (file_ex, line_ex))) ->
-    Common.pr2 (Common.spf "%s: present in %d parsing errors" k i);
-    Common.pr2 ("example: ");
+    Padioleau_common.pr2 (Padioleau_common.spf "%s: present in %d parsing errors" k i);
+    Padioleau_common.pr2 ("example: ");
     let lines = lines_around_error_line ~context:2 (file_ex, line_ex) in
-    lines |> List.iter (fun s -> Common.pr2 ("       " ^ s));
+    lines |> List.iter (fun s -> Padioleau_common.pr2 ("       " ^ s));
   );
   Common2.pr2_xxxxxxxxxxxxxxxxx();
   ()
