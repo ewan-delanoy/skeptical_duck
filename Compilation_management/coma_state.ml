@@ -1666,12 +1666,14 @@ module Recent_changes = struct
                <>(get_modification_time cs mn edg);;
 
             let check_for_change_at_module  cs mn=
-            List.exists
-               (check_for_change_at_module_and_ending cs mn) 
-            [
-               Dfa_ending.mli ;
-               (principal_ending_at_module cs mn)
-            ] ;;
+               let pr_ending = principal_ending_at_module cs mn in 
+               let endings = (
+                   if mli_presence_at_module cs mn 
+                   then  [Dfa_ending.mli;pr_ending]
+                   else [pr_ending]
+               ) in 
+            List.exists (check_for_change_at_module_and_ending cs mn) endings ;;
+          
 
             let detect_changes cs =
             Option.filter_and_unpack (
