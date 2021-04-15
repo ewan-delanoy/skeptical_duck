@@ -672,7 +672,7 @@ let md_recompute_modification_time eless edg=
   string_of_float(st.Unix.st_mtime);;
   
 
-let quick_update cs mn=
+let check_for_possible_change cs mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
   let middle = Dfn_endingless.to_middle eless in 
@@ -684,10 +684,13 @@ let quick_update cs mn=
   and old_mli_modif_time=mli_mt_at_module cs mn
   and old_pr_modif_time=principal_mt_at_module cs mn 
   in
-  let new_values=(mli_modif_time,pr_modif_time)
-  and old_values=(old_mli_modif_time,old_pr_modif_time) in
   let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)
+  let no_change_for_mlis =(
+     if not(mli_presence_at_module cs mn)
+     then true 
+    else   mli_modif_time = old_mli_modif_time
+  ) in 
+  if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_at_module cs mn)
   then None
   else
   let mlx=Dfn_join.to_ending eless pr_ending in
@@ -709,7 +712,7 @@ let latest_changes_in_compilables cs =
     ) in
   let cs_walker=ref(cs) in   
   let _=List.iter (fun mname->
-    match quick_update (!cs_walker) mname with
+    match check_for_possible_change (!cs_walker) mname with
     None->()
     |_->
     (
