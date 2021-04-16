@@ -122,7 +122,7 @@
         mutable attributes   : (string * string) list} ;;
    end ;;
    
-   let sequence_to_lowercase = List.map (fun (l, c) -> l, to_lowercase c) ;;
+   let sequence_to_lowercase ll = List.map (fun (l, c) -> l, to_lowercase c) ll;;
    
   
    
