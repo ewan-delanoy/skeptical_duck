@@ -297,3 +297,16 @@ let load s =
 let tree ?text ?element ?comment ?pi ?xml ?doctype s =
   Aantron_utility.tree ?text ?element ?comment ?pi ?xml ?doctype s |> IO.of_cps ;;
  
+  let content = Aantron_utility.content ;;
+  let elements = Aantron_utility.elements ;;
+  let from_tree = Aantron_utility.from_tree ;;
+  let html5 = Aantron_utility.html5 ;;
+  let normalize_text = Aantron_utility.normalize_text ;;
+  let pretty_print = Aantron_utility.pretty_print ;;
+  let strings_to_bytes = Aantron_utility.strings_to_bytes ;;
+  let text = Aantron_utility.text ;;
+  let trees = Aantron_utility.trees ;;
+  let trim = Aantron_utility.trim ;;
+  let xhtml = Aantron_utility.xhtml ;;
+  let xhtml_entity = Aantron_utility.xhtml_entity ;;
+  
