@@ -780,17 +780,6 @@ end
 
 (**/**)
 
-module type IO =
-sig
-  type 'a t
-
-  val return : 'a -> 'a t
-  val of_cps : ((exn -> unit) -> ('a -> unit) -> unit) -> 'a t
-  val to_cps : (unit -> 'a t) -> ((exn -> unit) -> ('a -> unit) -> unit)
-end
-
-
-
 
 val kstream : ('a, _) stream -> 'a  Aantron_kstream.t
 val of_kstream : 'a  Aantron_kstream.t -> ('a, _) stream
