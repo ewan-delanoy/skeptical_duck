@@ -310,3 +310,10 @@ let tree ?text ?element ?comment ?pi ?xml ?doctype s =
   let xhtml = Aantron_utility.xhtml ;;
   let xhtml_entity = Aantron_utility.xhtml_entity ;;
   
+  type 'a node =
+  [ `Element of name * (name * string) list * 'a list
+  | `Text of string
+  | `Doctype of doctype
+  | `Xml of xml_declaration
+  | `PI of string * string
+  | `Comment of string ] ;;
