@@ -234,12 +234,7 @@ type xml_declaration
 (** Representation of an XML declaration, i.e.
     [<?xml version="1.0" encoding="utf-8"?>]. *)
 
-type doctype =
-  {doctype_name      : string option;
-   public_identifier : string option;
-   system_identifier : string option;
-   raw_text          : string option;
-   force_quirks      : bool}
+type doctype 
 (** Representation of a document type declaration. The HTML parser fills in all
     fields besides [raw_text]. The XML parser reads declarations roughly, and
     fills only the [raw_text] field with the text found in the declaration. *)
