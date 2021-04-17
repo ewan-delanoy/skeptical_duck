@@ -192,7 +192,7 @@
      | None -> []
      | Some classes -> split_attribute classes ;;
    
-   let id = attribute "id" ;;
+   let id node = attribute "id" node;;
    
    type 'a nodes = {eliminate : 'b. ('b -> 'a node -> 'b) -> 'b -> 'b} ;;
    
