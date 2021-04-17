@@ -167,9 +167,7 @@
      Aantron_input.preprocess (fun _ -> true) Aantron_markup_error.ignore_errors source ;;
    
    
-   
-   (* include Aantron_utility *)
-   
+  
    
    
    module Ns =
@@ -180,8 +178,15 @@
      let xml = Aantron_markup_common.xml_ns
      let xmlns = Aantron_markup_common.xmlns_ns
      let xlink = Aantron_markup_common.xlink_ns
-   end
+   end ;;
    
+   module Error =
+   struct
+   type t = Aantron_markup_error.t ;;
+   
+   let to_string = Aantron_markup_error.to_string ;;
+   end ;;
+    
 
 module IO =struct
      type 'a t = 'a Synchronous.t ;;
