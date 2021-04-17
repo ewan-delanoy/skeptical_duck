@@ -87,8 +87,8 @@
      |> Aantron_markup.to_list
      |> create_document !doctype ;;
    
-   let from_signals =
-     from_signals' ~map_attributes:(fun _n a -> a) ;;
+   let from_signals signals =
+     from_signals' ~map_attributes:(fun _n a -> a) signals ;;
    
    let parse text =
      let body_attributes = ref [] in
