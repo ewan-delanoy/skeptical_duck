@@ -230,10 +230,7 @@ end
 type name = string * string
 (** Expanded name: a namespace URI followed by a local name. *)
 
-type xml_declaration =
-  {version    : string;
-   encoding   : string option;
-   standalone : bool option}
+type xml_declaration 
 (** Representation of an XML declaration, i.e.
     [<?xml version="1.0" encoding="utf-8"?>]. *)
 
