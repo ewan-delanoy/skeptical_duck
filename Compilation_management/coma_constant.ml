@@ -28,7 +28,6 @@ let build_subdir=      Dfa_subdirectory.of_line "_build";;
 let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
 let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
-let hex_gitign_subdir= Dfa_subdirectory.of_line "Hex_analysis/Hex_gitignored_text_files";;
 
 
 let bare_name_for_makefile="makefile";;
@@ -46,10 +45,7 @@ let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
 
 let rootless_path_for_debugged_file= Dfn_join.subdirectory_to (Dfa_subdirectory.of_line "") short_path_for_debugged_file;; 
-let rootless_path_for_hex_config_sheet=
-  Dfn_join.subdirectory_to  hex_gitign_subdir short_path_for_hex_config_sheet;;
-let rootless_path_for_hex_latest_game=
-  Dfn_join.subdirectory_to  hex_gitign_subdir short_path_for_hex_latest_game;;  
+ 
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_loadingsfile;;
 let rootless_path_for_ocamldebug_printersfile=
@@ -87,7 +83,6 @@ let git_ignored_subdirectories =
      debug_build_subdir;
      exec_build_subdir;
      githubbed_archive_subdir;
-     hex_gitign_subdir;
      persistent_compilation_data_subdir;
      temporary_subdir;
   ];;
@@ -117,8 +112,6 @@ let conventional_files_other_than_ocamlinit =
      rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
-     rootless_path_for_hex_config_sheet, "";
-     rootless_path_for_hex_latest_game, "";
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
    ] ;;     
 
