@@ -5,7 +5,8 @@
 
 *)
 
-
+let begins_with (Dfn_endingless_t.J(r,s,m)) subdir=
+   Dfa_subdirectory.begins_with s subdir;;
 
 let to_root (Dfn_endingless_t.J(r,s,m))=r;;
 let to_subdirectory  (Dfn_endingless_t.J(r,s,m))=s;;

@@ -13,6 +13,7 @@ let to_line (Dfa_module_t.M s)=s;;
 let add_prefix_and_capitalize prefix (Dfa_module_t.M name)=
   Dfa_module_t.M(String.capitalize_ascii(prefix^name));;
 
+  
 let capitalized_form (Dfa_module_t.M name)= String.capitalize_ascii name;;
 
 let to_concrete_object (Dfa_module_t.M(s))=
