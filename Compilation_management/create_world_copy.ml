@@ -103,13 +103,14 @@ let text_for_big_constants_file_in_next_world =
 end ;;   
 
 
-let cwc cs opt_selection=
+
+let cwc cs summary=
     let (destdir,destbackupdir,destgab)=Coma_big_constant.Next_World.triple 
     and url=Coma_big_constant.github_url in 
     let conv_files = (
-      match opt_selection with 
-      None -> Coma_constant.conventional_files_with_usual_content
-      |Some(_)-> Coma_constant.conventional_files_with_minimal_content
+      if Needed_data_summary.is_everything summary
+      then Coma_constant.conventional_files_with_usual_content
+      else Coma_constant.conventional_files_with_minimal_content
     ) in 
     let _=More_unix.clear_directory_contents destdir in 
     let _=(More_unix.create_subdirs_and_fill_files
@@ -117,7 +118,7 @@ let cwc cs opt_selection=
       Coma_constant.git_ignored_subdirectories 
         conv_files) in 
     let (modules_in_good_order,compilables,noncompilables) = 
-        Private.rootlesses_to_be_copied cs opt_selection in 
+        Needed_data_summary.expand cs summary in 
     let _=Image.image Unix_command.uc 
      (Private.commands_for_copying cs (compilables@noncompilables)) in
     let faraway_config = Fw_configuration.constructor (destdir,destbackupdir,destgab,url,[]) in 
@@ -125,16 +126,15 @@ let cwc cs opt_selection=
     let faraway_fw = Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
                    Coma_constant.rootless_path_for_parametersfile 
                      Private.text_for_big_constants_file_in_next_world in 
-    let restricted_cs=(match opt_selection with 
-        None -> cs 
-        |Some(_)->Coma_state_field.restrict cs modules_in_good_order
+    let restricted_cs=(if Needed_data_summary.is_everything summary
+        then cs 
+        else Coma_state_field.restrict cs modules_in_good_order
     ) in 
     let faraway_cs1 = Coma_state_field.transplant 
        restricted_cs faraway_fw in 
     let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
     let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
     let _=Save_coma_state.save faraway_cs2 in   
-    faraway_cs2;;
-
+    faraway_cs2;;    
 
 
