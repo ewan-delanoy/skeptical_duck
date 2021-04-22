@@ -5,9 +5,10 @@
 
 *)
 
+(*
 module Private = struct 
 
-let rootlesses_coming_from_modules_or_subdirs cs needed_modules needed_subdirs =
+let modules_coming_from_modules_or_subdirs cs needed_modules needed_subdirs =
     let modules_above=Image.image (fun nm->
        Coma_state.above cs 
        (Coma_state.endingless_at_module cs nm)
@@ -23,7 +24,20 @@ let rootlesses_coming_from_modules_or_subdirs cs needed_modules needed_subdirs =
         else None)
     all_elesses ;;
     
-
+let rootlesses_to_be_copied cs summary =
+        let fw = cs.Coma_state_t.frontier_with_unix_world in 
+        let all_needed_modules =
+        (match summary with 
+        Needed_data_summary_t.Everything -> Coma_state.ordered_list_of_modules cs
+       |Selection(needed_modules,needed_subdirs)-> 
+        modules_coming_from_modules_or_subdirs cs needed_modules needed_subdirs
+             ) in   
+             let compilables= selector (fw.Fw_wrapper_t.compilable_files)
+             and noncompilables= selector (fw.Fw_wrapper_t.noncompilable_files) in 
+             let all_needed_modules= (Image.image Dfn_rootless.to_module compilables) 
+                              @ needed_modules in 
+             let (modules_in_good_order,all_nonspecials)=rootlesses_coming_from_modules cs all_needed_modules in 
+             (modules_in_good_order,all_nonspecials,noncompilables);;
 
 
 end ;;
@@ -40,4 +54,4 @@ let expand cs summary=
   (modules,Image.image Dfn_full.to_rootless collected_acolytes);;
 
 let is_everything = function Needed_data_summary_t.Everything -> true | _ -> false ;;
-
+*)
