@@ -12,11 +12,11 @@ module Private = struct
     let nth_line = (fun k->List.assoc k indexed_lines) in 
     let line_is_empty = (fun j->(nth_line j)="")
     and line_starts_with_percent = (fun j->Supstring.begins_with (nth_line (j-1)) "%") in 
-    let is_bad1 = (fun j-> (line_starts_with_percent(j+1)) && (line_is_empty j))
-    and is_bad2 =  (fun j-> (line_starts_with_percent(j-1)) && (line_is_empty j)) in 
+    let is_bad1 = (fun j-> if j>=m then false else (line_starts_with_percent(j+1)) && (line_is_empty j))
+    and is_bad2 =  (fun j->if j<=1 then false else (line_starts_with_percent(j-1)) && (line_is_empty j)) in 
     let bad_linedices = List.filter (fun j->
         (is_bad1 j)||(is_bad2 j)
-      ) (Ennig.ennig 2 m) in 
+      ) (Ennig.ennig 1 m) in 
    let good_lines = Option.filter_and_unpack (fun (linedex,line)->
      if List.mem linedex bad_linedices then None else Some line
     ) indexed_lines  in 
