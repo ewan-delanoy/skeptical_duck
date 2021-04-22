@@ -11,7 +11,7 @@ module Private = struct
     let m = List.length indexed_lines in 
     let nth_line = (fun k->List.assoc k indexed_lines) in 
     let line_is_empty = (fun j->(nth_line j)="")
-    and line_starts_with_percent = (fun j->Supstring.begins_with (nth_line (j-1)) "%") in 
+    and line_starts_with_percent = (fun j->Supstring.begins_with (nth_line j) "%") in 
     let is_bad1 = (fun j-> if j>=m then false else (line_starts_with_percent(j+1)) && (line_is_empty j))
     and is_bad2 =  (fun j->if j<=1 then false else (line_starts_with_percent(j-1)) && (line_is_empty j)) in 
     let bad_linedices = List.filter (fun j->
