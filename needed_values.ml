@@ -6,7 +6,7 @@
 
 let abo = Usual_coma_state.above;; 
 
-let am = Usual_coma_state.all_endinglesses;;
+let ae = Usual_coma_state.all_endinglesses;;
 
 let bel = Usual_coma_state.below;;
 
