@@ -6,7 +6,7 @@
 
 module Private =struct 
 
-let path_for_sheet = Absolute_path.of_string "Hex_analysis/Hex_gitignored_text_files/hex_config_sheet.txt";;
+let path_for_sheet = Absolute_path.create_file_if_absent "Hex_analysis/Hex_gitignored_text_files/hex_config_sheet.txt";;
 
 end ;; 
 
