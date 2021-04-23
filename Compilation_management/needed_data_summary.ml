@@ -40,7 +40,8 @@ let expand cs summary =
              ) in 
         (*     
         let all_needed_subdirs = 
-                Ordered.sort Total_ordering.standard (Image.image Dfa_ all_needed_module) in      
+                Ordered.sort Total_ordering.standard (Image.image Dfa_ all_needed_module) in  
+        *)            
         let original_noncompilables = fw.Fw_wrapper_t.noncompilable_files in      
         let noncompilables =
             (match summary with 
