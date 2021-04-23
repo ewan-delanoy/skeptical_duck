@@ -79,9 +79,9 @@ module Private = struct
             let (modules_in_good_order,all_nonspecials)=rootlesses_coming_from_modules cs all_needed_modules in 
             (modules_in_good_order,all_nonspecials,noncompilables);;
   
-    let commands_for_copying cs rootlesses=
+    let commands_for_copying cs rootlesses destination=
        let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_field.root cs) 
-       and s_new_root=Dfa_root.connectable_to_subpath(Coma_big_constant.Next_World.root) in 
+       and s_new_root=Dfa_root.connectable_to_subpath destination in 
        let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
        let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
        let dir_commands = Image.image (
@@ -122,7 +122,7 @@ module Private = struct
       let (modules_in_good_order,compilables,noncompilables) = 
           Needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
-       (Private.commands_for_copying cs (compilables@noncompilables)) in
+       (Private.commands_for_copying cs (compilables@noncompilables) destination) in
       let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[]) in 
       let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompilables) in  
       let faraway_fw = Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
