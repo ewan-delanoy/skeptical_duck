@@ -36,49 +36,6 @@ module Private = struct
      "\n\n\n"
      ];;
   
-    let rootlesses_coming_from_modules cs needed_modules = 
-            let modules_above=Image.image (fun nm->
-               Coma_state.above cs 
-               (Coma_state.endingless_at_module cs nm)
-            ) needed_modules  in 
-            let all_elesses = Coma_state.all_endinglesses cs in 
-            let modules_in_good_order = Option.filter_and_unpack 
-                (fun eless->
-                  if List.exists(
-                    fun l->List.mem (Dfn_endingless.to_module eless) l
-                )(needed_modules::modules_above) 
-                then Some(Dfn_endingless.to_module eless)
-                else None)
-            all_elesses in 
-            let collected_acolytes=List.flatten 
-              (Image.image (Coma_state.acolytes_at_module cs) 
-                modules_in_good_order) in 
-            (modules_in_good_order,Image.image Dfn_full.to_rootless collected_acolytes);;
-    
-       
-  
-    let rootlesses_to_be_copied cs opt_selection =
-       let fw = cs.Coma_state_t.frontier_with_unix_world in 
-       match opt_selection with 
-       None -> let sr = Image.image (fun (rootless,_)->rootless) in 
-               ( 
-                 Coma_state.ordered_list_of_modules cs,
-                 sr (fw.Fw_wrapper_t.compilable_files),
-                 sr (fw.Fw_wrapper_t.noncompilable_files) )
-      |Some(needed_modules,imposed_subdirs)-> 
-            let selector = Option.filter_and_unpack(
-               fun (rootless,_)->
-                 if List.mem( Dfn_rootless.to_subdirectory(rootless) ) imposed_subdirs 
-                 then Some(rootless)
-                 else None
-            ) in   
-            let compilables= selector (fw.Fw_wrapper_t.compilable_files)
-            and noncompilables= selector (fw.Fw_wrapper_t.noncompilable_files) in 
-            let all_needed_modules= (Image.image Dfn_rootless.to_module compilables) 
-                             @ needed_modules in 
-            let (modules_in_good_order,all_nonspecials)=rootlesses_coming_from_modules cs all_needed_modules in 
-            (modules_in_good_order,all_nonspecials,noncompilables);;
-  
     let commands_for_copying cs rootlesses destination=
        let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_field.root cs) 
        and s_new_root=Dfa_root.connectable_to_subpath destination in 
@@ -93,11 +50,6 @@ module Private = struct
       ) rootlesses in 
       dir_commands @ file_commands;;
   
-    
-    let path_for_big_constants_in_next_world =
-      Dfn_join.root_to_rootless 
-        Coma_big_constant.Next_World.root 
-          Coma_constant.rootless_path_for_parametersfile;;
     
   
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
