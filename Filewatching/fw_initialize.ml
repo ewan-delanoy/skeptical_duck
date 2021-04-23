@@ -25,7 +25,7 @@ let first_init config =
 
 end ;;
 
-let second_init config (compilables_to_be_watched,noncompilables) =
+let compute_and_store_modification_times config (compilables_to_be_watched,noncompilables) =
     let the_root = config.Fw_configuration_t.root in  
     let compute_info=( fun path->
       let s_root = Dfa_root.connectable_to_subpath the_root
@@ -43,5 +43,5 @@ let second_init config (compilables_to_be_watched,noncompilables) =
 
 let init config = 
    let (nonspecials_to_be_watched,specials) = Private.first_init config in 
-   second_init config (nonspecials_to_be_watched,specials);;
+   compute_and_store_modification_times config (nonspecials_to_be_watched,specials);;
 
