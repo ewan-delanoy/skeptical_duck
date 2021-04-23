@@ -185,7 +185,7 @@ let needed_dirs_and_libs_in_command cmod cs mn=
     (needed_libs_at_module cs mn)) in
     String.concat " " ["";dirs;libs;""];;
 
-let all_modules cs=
+let all_endinglesses cs=
   Image.image (endingless_at_module cs) (ordered_list_of_modules cs);; 
 
 let get_modification_time cs mn edg=

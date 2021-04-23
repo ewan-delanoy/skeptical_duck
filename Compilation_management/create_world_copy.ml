@@ -41,7 +41,7 @@ module Private = struct
                Coma_state.above cs 
                (Coma_state.endingless_at_module cs nm)
             ) needed_modules  in 
-            let all_elesses = Coma_state.all_modules cs in 
+            let all_elesses = Coma_state.all_endinglesses cs in 
             let modules_in_good_order = Option.filter_and_unpack 
                 (fun eless->
                   if List.exists(

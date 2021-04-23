@@ -9,7 +9,7 @@
 module Private = struct 
 
 let compute_all_needed_modules cs needed_modules needed_subdirs =
-    let all_elesses = Coma_state.all_modules cs in 
+    let all_elesses = Coma_state.all_endinglesses cs in 
     let step1_modules = Option.filter_and_unpack 
     (fun eless->
       if List.mem (Dfn_endingless.to_subdirectory eless) needed_subdirs
@@ -22,7 +22,7 @@ let compute_all_needed_modules cs needed_modules needed_subdirs =
     ) step2_modules)  in 
     let list_of_modules_with_nonstandard_ordering = 
           Ordered.sort Total_ordering.standard (modules_above@step2_modules) in 
-    let all_elesses = Coma_state.all_modules cs in 
+    let all_elesses = Coma_state.all_endinglesses cs in 
     Option.filter_and_unpack 
         (fun eless->
           if List.mem (Dfn_endingless.to_module eless) list_of_modules_with_nonstandard_ordering
