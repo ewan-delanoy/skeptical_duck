@@ -8,7 +8,7 @@
 
 module Private = struct
 
-  let text_for_big_constants_file_in_next_world =
+  let text_for_big_constants_file_in_other_world destination destbackupdir destgab =
     let ds = Particular_string.double_semicolon in 
     String.concat "\n" [
       "\n(* "; 
@@ -16,9 +16,9 @@ module Private = struct
      "*)\n"; 
      "let github_url = \""^(Coma_big_constant.github_url)^"\""^ds;
      "module This_World=struct\n";
-     "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.root)^"\""^ds;
-     "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Next_World.backup_dir)^"\""^ds;
-     "let githubbing="^(string_of_bool Coma_big_constant.Next_World.githubbing)^ds;
+     "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash destination)^"\""^ds;
+     "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash destbackupdir)^"\""^ds;
+     "let githubbing="^(string_of_bool destgab)^ds;
      "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
      "end"^ds;
      "module Next_World=struct\n";
@@ -79,7 +79,7 @@ module Private = struct
       let faraway_fw1 = Fw_initialize.second_init faraway_config (compilables,noncompilables) in  
       let faraway_fw = Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
                      Coma_constant.rootless_path_for_parametersfile 
-                       Private.text_for_big_constants_file_in_next_world in 
+                       (Private.text_for_big_constants_file_in_other_world destination destbackupdir destgab) in 
       let restricted_cs=(if Needed_data_summary.is_everything summary
           then cs 
           else Coma_state_field.restrict cs modules_in_good_order
