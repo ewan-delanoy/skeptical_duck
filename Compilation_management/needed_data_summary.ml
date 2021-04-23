@@ -8,18 +8,24 @@
 
 module Private = struct 
 
-let modules_coming_from_modules_or_subdirs cs needed_modules needed_subdirs =
-    let modules_above=Image.image (fun nm->
+let compute_all_needed_modules cs needed_modules needed_subdirs =
+    let all_elesses = Coma_state.all_modules cs in 
+    let step1_modules = Option.filter_and_unpack 
+    (fun eless->
+      if List.mem (Dfn_endingless.to_subdirectory eless) needed_subdirs
+    then Some(Dfn_endingless.to_module eless)
+    else None) all_elesses in
+    let step2_modules = needed_modules@step1_modules in 
+    let modules_above=List.flatten (Image.image (fun nm->
        Coma_state.above cs 
        (Coma_state.endingless_at_module cs nm)
-    ) needed_modules  in 
+    ) step2_modules)  in 
+    let list_of_modules_with_nonstandard_ordering = 
+          Ordered.sort Total_ordering.standard (modules_above@step2_modules) in 
     let all_elesses = Coma_state.all_modules cs in 
     Option.filter_and_unpack 
         (fun eless->
-          if (List.exists(
-            fun l->List.mem (Dfn_endingless.to_module eless) l
-        )(needed_modules::modules_above)) ||
-        (List.exists (Dfn_endingless.begins_with eless ) needed_subdirs) 
+          if List.mem (Dfn_endingless.to_module eless) list_of_modules_with_nonstandard_ordering
         then Some(Dfn_endingless.to_module eless)
         else None)
     all_elesses ;;
@@ -30,8 +36,11 @@ let expand cs summary =
         (match summary with 
         Needed_data_summary_t.Everything -> Coma_state.ordered_list_of_modules cs
        |Selection(needed_modules,needed_subdirs)-> 
-        modules_coming_from_modules_or_subdirs cs needed_modules needed_subdirs
+        compute_all_needed_modules cs needed_modules needed_subdirs
              ) in 
+        (*     
+        let all_needed_subdirs = 
+                Ordered.sort Total_ordering.standard (Image.image Dfa_ all_needed_module) in      
         let original_noncompilables = fw.Fw_wrapper_t.noncompilable_files in      
         let noncompilables =
             (match summary with 
