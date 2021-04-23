@@ -101,9 +101,12 @@ let replace_string old_string new_string=
    Coma_state.Values_in_modules.replace_string 
    (!(Private.main_ref)) old_string new_string ;;
 
-let repopulate opt_limitation=
+let repopulate summary=
+  let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
   let _=Create_world_copy.cwc
-  (!Usual_coma_state.main_ref) opt_limitation  in 
+  (!Usual_coma_state.main_ref) summary
+  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
+  in 
   initialize();; 
 
 let see_confidential_changes = Private.see_confidential_changes ;;    
