@@ -4,13 +4,16 @@
 
 *)
 
+
+
 let compact_replacer = Dfn_rootless.of_line "Confidential/compact_replacer.txt";;
 
 let config = 
+  let home = Sys.getenv "HOME" in 
  {Fw_configuration_t.root =
-    Dfa_root_t.R "/Users/ewandelanoy/Teuliou/Sites/Gwerzher_Leoriou";
+    Dfa_root_t.R (home^"/Teuliou/Sites/Gwerzher_Leoriou");
    dir_for_backup =
-    Dfa_root_t.R "/Users/ewandelanoy/Teuliou/Sites/Githubbed_gwl";
+    Dfa_root_t.R (home^"/Teuliou/Sites/Githubbed_gwl");
    gitpush_after_backup = true;
    ignored_subdirectories =
     [
