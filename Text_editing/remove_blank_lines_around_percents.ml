@@ -23,7 +23,7 @@ module Private = struct
     let indexed_lines = Lines_in_string.core text in 
     let m = List.length indexed_lines in 
     let nth_line = (fun k->List.assoc k indexed_lines) in 
-    let line_is_empty = (fun j->(nth_line j)="")
+    let line_is_empty = (fun j->Cull_string.trim_spaces(nth_line j)="")
     and line_starts_with_percent = (fun j->Supstring.begins_with (nth_line j) "%") 
     and line_is_boink = (fun j->has_no_letter(nth_line j)) in 
     let is_bad1 = (fun j-> if j>=m then false else (line_starts_with_percent(j+1)) && (line_is_empty j))
