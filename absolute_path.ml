@@ -19,11 +19,11 @@ let test_equal_paths s1 s2=
 ((of_string s1)=(of_string s2));;
 
 exception Error_during_file_creation;;
-exception Error_during_unix_command ;;
+exception Error_during_unix_command of string;;
 
 let uc cmd = 
    let i= Sys.command cmd in 
-   if i<>0 then raise(Error_during_unix_command) else ();;
+   if i<>0 then raise(Error_during_unix_command cmd) else ();;
 
 
 let create_file_if_absent w=
@@ -36,9 +36,11 @@ let create_file_if_absent w=
     then (cr w;of_string w)
     else 
     let i=String.rindex w '/' in
-    let filename=String.sub w (i+1) ((String.length w)-(i+1)) in
+    let basedir=String.sub w 0 i
+    and filename=String.sub w (i+1) ((String.length w)-(i+1)) in
     let g1="jnoxgghg_"^filename in
-    let _=(uc ("touch "^g1); 
+    let _=(uc ("mkdir -p "^basedir);
+           uc ("touch "^g1); 
            uc ("mv "^g1^" "^w);
            uc ("rm -f "^g1)) in 
     of_string w;;
