@@ -1416,7 +1416,7 @@ let start_debugging cs=
   let ppodbg_path = Dfn_common.recompose_potential_absolute_path 
     (root cs) Coma_constant.rootless_path_for_ocamldebug_printersfile in 
   let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
-  let dbg_path=Dfn_short.to_line(Coma_constant.short_path_for_debugged_file) in
+  let dbg_path=Dfn_rootless.to_line(Coma_constant.rootless_path_for_debugged_file) in
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs dbg_path in 
   let answer=Unix_command.conditional_multiple_uc cmds in 
 	let msg=(
