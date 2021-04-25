@@ -44,7 +44,7 @@ let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
 
-let rootless_path_for_debugged_file= Dfn_join.subdirectory_to (Dfa_subdirectory.of_line "") short_path_for_debugged_file;; 
+let rootless_path_for_debugged_file= Dfn_join.subdirectory_to automatically_generated_subdir short_path_for_debugged_file;; 
  
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_loadingsfile;;
