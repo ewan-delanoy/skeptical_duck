@@ -8,7 +8,7 @@ exception No_winner_found of string;;
 
 module Private = struct 
 
-let path_for_latest_game = Absolute_path.of_string "Hex_analysis/Hex_gitignored_text_files/hex_latest_game.txt";;
+let path_for_latest_game = Absolute_path.create_file_if_absent "Hex_analysis/Hex_gitignored_text_files/hex_latest_game.txt";;
 
 let read_role text =
    if Substring.is_a_substring_of  "[Black \"dtn4143g\"]" text then Hex_player_t.First_player else 
