@@ -1259,6 +1259,8 @@ let select_good_files main_root=
          &&
          (List.for_all (fun beg->not(Supstring.begins_with t beg)) 
          (Image.image Dfa_subdirectory.connectable_to_subpath 
+           Coma_constant.git_ignored_subdirectories 
+          (* 
           [
             Coma_constant.automatically_generated_subdir;
             Coma_constant.abandoned_ideas_subdir;
@@ -1268,6 +1270,7 @@ let select_good_files main_root=
             Coma_constant.debug_build_subdir;
             Coma_constant.exec_build_subdir; 
           ]
+          *)
          ))
          &&
          (* When a mll or mly is present, do not register the ml *)
