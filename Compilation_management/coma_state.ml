@@ -675,10 +675,6 @@ let md_recompute_modification_time eless edg=
 let check_for_possible_change cs mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
-  let middle = Dfn_endingless.to_middle eless in 
-  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
-  then None
-  else
   let mli_modif_time=md_recompute_modification_time eless Dfa_ending.mli 
   and pr_modif_time=md_recompute_modification_time eless pr_ending 
   and old_mli_modif_time=mli_mt_at_module cs mn
@@ -1250,7 +1246,6 @@ let select_good_files main_root=
        let temp1=More_unix.complete_ls (Directory_name.of_string s_main_dir) in
        let s_ap1=Absolute_path.to_string ap1 in
        let n1=String.length(s_ap1) in
-       let dname=Coma_constant.name_for_debugged_module in
        let selector=(
        fun ap->
          let s=Absolute_path.to_string ap in
@@ -1260,17 +1255,6 @@ let select_good_files main_root=
          (List.for_all (fun beg->not(Supstring.begins_with t beg)) 
          (Image.image Dfa_subdirectory.connectable_to_subpath 
            Coma_constant.git_ignored_subdirectories 
-          (* 
-          [
-            Coma_constant.automatically_generated_subdir;
-            Coma_constant.abandoned_ideas_subdir;
-            Coma_constant.temporary_subdir;
-            Coma_constant.githubbed_archive_subdir;
-            Coma_constant.build_subdir;
-            Coma_constant.debug_build_subdir;
-            Coma_constant.exec_build_subdir; 
-          ]
-          *)
          ))
          &&
          (* When a mll or mly is present, do not register the ml *)
@@ -1283,8 +1267,6 @@ let select_good_files main_root=
          (List.for_all (fun edg->not(Supstring.ends_with s edg) ) 
          [".ocamlinit";"executable.ml"]
          )
-         &&
-         (t<>(dname^".ml"))
        ) in
        List.filter selector temp1;;
        
@@ -1410,18 +1392,23 @@ let clean_debug_dir cs=
   let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir)) in 
   Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
    
+let name_element_for_debugged_file = "debugged" ;;
+let debugged_file_path = (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir))
+             ^ name_element_for_debugged_file ^ ".ml" ;;  
+let ocamldebug_printersfile_path root= 
+ (Dfa_root.connectable_to_subpath root)^
+ (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir)) ^
+   "cmos_for_ocamldebug.txt";;
 
 let start_debugging cs=
   let  _=clean_debug_dir cs in
-  let ppodbg_path = Dfn_common.recompose_potential_absolute_path 
-    (root cs) Coma_constant.rootless_path_for_ocamldebug_printersfile in 
+  let ppodbg_path = ocamldebug_printersfile_path (root cs) in 
   let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
-  let dbg_path=Dfn_rootless.to_line(Coma_constant.rootless_path_for_debugged_file) in
-  let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs dbg_path in 
+  let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs debugged_file_path in 
   let answer=Unix_command.conditional_multiple_uc cmds in 
 	let msg=(
 	  if answer
-	  then "\n\n Now, start \n\nocamldebug _debug_build/"^(Coma_constant.name_for_debugged_module)^
+	  then "\n\n Now, start \n\nocamldebug _debug_build/"^name_element_for_debugged_file^
          ".ocaml_debuggable\n\nin another terminal.\n\n"^
          "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
          "source "^ppodbg_path^" \n\n"
@@ -1700,9 +1687,6 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
   let middle = Dfn_endingless.to_middle eless in 
-  if (Dfn_middle.to_line middle)=Coma_constant.name_for_debugged_module
-  then None
-  else
   let mli_modif_time=Fw_wrapper_field.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
   and pr_modif_time=Fw_wrapper_field.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
   and old_mli_modif_time=mli_mt_at_module cs mn
