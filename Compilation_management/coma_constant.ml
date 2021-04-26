@@ -9,8 +9,6 @@
 let automatically_generated_subdir=
   Dfa_subdirectory.of_line "Automatically_generated";;
 
-let abandoned_ideas_subdir=
-    Dfa_subdirectory.of_line "Abandoned_ideas";;  
 
 let temporary_subdir=
   Dfa_subdirectory.of_line "Temporary";;
@@ -77,7 +75,6 @@ let rootless_paths_needed_for_compiler_copy=
 let git_ignored_subdirectories =
   [
      automatically_generated_subdir;
-     abandoned_ideas_subdir;
      build_subdir;
      confidential_subdir;
      debug_build_subdir;
