@@ -10,7 +10,7 @@ let utility_files_subdir=
   Dfa_subdirectory.of_line "Automatically_generated";;
 
 
-let temporary_subdir=
+let fads_subdir=
   Dfa_subdirectory.of_line "Temporary";;
 
 let githubbed_archive_subdir=
@@ -43,7 +43,7 @@ let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to  utility_files_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
-  Dfn_join.subdirectory_to  temporary_subdir short_path_for_painful_debugging_file;;
+  Dfn_join.subdirectory_to  fads_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
   Dfn_join.subdirectory_to  parameters_subdir short_path_for_parametersfile;;
 let rootless_path_for_printersfile=
@@ -75,7 +75,7 @@ let git_ignored_subdirectories =
      exec_build_subdir;
      githubbed_archive_subdir;
      persistent_compilation_data_subdir;
-     temporary_subdir;
+     fads_subdir;
   ];;
 
 let conventional_subdirs =
