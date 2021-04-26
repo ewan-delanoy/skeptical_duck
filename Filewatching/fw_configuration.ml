@@ -54,7 +54,7 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) =
       dir_for_backup = backup_dir ;
       gitpush_after_backup = g_after_b ;
       ignored_subdirectories = Coma_constant.git_ignored_subdirectories;
-      ignored_files = Coma_constant.git_ignored_files;
+      ignored_files = [];
       github_url = git_url;
       confidential_files = secret_files;
     };; 
