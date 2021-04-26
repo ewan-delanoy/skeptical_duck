@@ -83,10 +83,6 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
 
 let compute_restricted_diff sourcedir destdir restrictions=
    compute_diff (sourcedir,restricted_list sourcedir restrictions) destdir;;
-   
-
-   
-
 
 let commands_for_update (source_dir,destination_dir) diff=
    if Dircopy_diff.is_empty diff
