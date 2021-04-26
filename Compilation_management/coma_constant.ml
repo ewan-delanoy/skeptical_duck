@@ -7,11 +7,11 @@
 
 
 let utility_files_subdir=
-  Dfa_subdirectory.of_line "Automatically_generated";;
+  Dfa_subdirectory.of_line "Utility_files";;
 
 
 let fads_subdir=
-  Dfa_subdirectory.of_line "Temporary";;
+  Dfa_subdirectory.of_line "Fads";;
 
 let githubbed_archive_subdir=
   Dfa_subdirectory.of_line "Githubbed_archive";;
