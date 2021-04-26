@@ -6,7 +6,7 @@
 *)
 
 
-let automatically_generated_subdir=
+let utility_files_subdir=
   Dfa_subdirectory.of_line "Automatically_generated";;
 
 
@@ -41,13 +41,13 @@ let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
 let rootless_path_for_loadingsfile=
-  Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_loadingsfile;;
+  Dfn_join.subdirectory_to  utility_files_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
   Dfn_join.subdirectory_to  temporary_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
   Dfn_join.subdirectory_to  parameters_subdir short_path_for_parametersfile;;
 let rootless_path_for_printersfile=
-  Dfn_join.subdirectory_to  automatically_generated_subdir short_path_for_printersfile;;
+  Dfn_join.subdirectory_to  utility_files_subdir short_path_for_printersfile;;
 let rootless_path_for_targetfile=
   Dfn_join.subdirectory_to  persistent_compilation_data_subdir short_path_for_targetfile;;     
 
@@ -68,7 +68,7 @@ let rootless_paths_needed_for_compiler_copy=
 
 let git_ignored_subdirectories =
   [
-     automatically_generated_subdir;
+     utility_files_subdir;
      build_subdir;
      confidential_subdir;
      debug_build_subdir;

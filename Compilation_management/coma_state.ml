@@ -1007,7 +1007,7 @@ end;;
 
 let ocamldebug_printersfile_path root= 
            (Dfa_root.connectable_to_subpath root)^
-           (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir)) ^
+           (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir)) ^
              "cmos_for_ocamldebug.txt";;
 
 
@@ -1396,7 +1396,7 @@ let clean_debug_dir cs=
   Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
    
 let name_element_for_debugged_file = "debugged" ;;
-let debugged_file_path = (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir))
+let debugged_file_path = (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir))
              ^ name_element_for_debugged_file ^ ".ml" ;;  
 
 let start_debugging cs=
