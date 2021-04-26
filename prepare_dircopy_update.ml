@@ -13,7 +13,9 @@ let compute_deleted_in_diff sourcedir destdir=
        fun s->if (s<>"README")
               &&(not(Supstring.begins_with s ".git/")) 
               &&(not(Sys.file_exists(s_sourcedir^s)))
-              then Some(Dfn_rootless.of_line s)
+              then (if Sys.is_directory(s_destdir^s) 
+                   then None
+                   else Some(Dfn_rootless.of_line s))
               else None
    ) temp1;;
    
