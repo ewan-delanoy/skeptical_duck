@@ -1005,6 +1005,10 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
 
 end;;
 
+let ocamldebug_printersfile_path root= 
+           (Dfa_root.connectable_to_subpath root)^
+           (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir)) ^
+             "cmos_for_ocamldebug.txt";;
 
 
 module Ocaml_target_making=struct
@@ -1042,7 +1046,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
                 cs_walker:=set_product_up_to_date_at_module (!cs_walker) nm3 false
            ) newly_rejected in 
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
-
+         
 
 let prepare_pretty_printers_for_ocamldebug cs deps = 
   let temp1 = "load_printer str.cma"::(Image.image (fun mname->
@@ -1059,8 +1063,7 @@ let prepare_pretty_printers_for_ocamldebug cs deps =
     "install_printer "^(String.capitalize_ascii s)^".print_out"
   ) printable_deps in 
   let full_text = String.concat "\n" (temp1@temp2) in 
-  let ppodbg_path = Dfn_common.recompose_potential_absolute_path 
-    (root cs) Coma_constant.rootless_path_for_ocamldebug_printersfile in 
+  let ppodbg_path = ocamldebug_printersfile_path (root cs) in 
   Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
 
 let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
@@ -1395,10 +1398,6 @@ let clean_debug_dir cs=
 let name_element_for_debugged_file = "debugged" ;;
 let debugged_file_path = (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir))
              ^ name_element_for_debugged_file ^ ".ml" ;;  
-let ocamldebug_printersfile_path root= 
- (Dfa_root.connectable_to_subpath root)^
- (Dfa_subdirectory.connectable_to_subpath(Coma_constant.automatically_generated_subdir)) ^
-   "cmos_for_ocamldebug.txt";;
 
 let start_debugging cs=
   let  _=clean_debug_dir cs in
