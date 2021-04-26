@@ -725,6 +725,7 @@ let latest_changes_in_noncompilables cs =
    let (_,(_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
+   
 let latest_changes cs = 
   (latest_changes_in_compilables cs,latest_changes_in_noncompilables cs);;
 
