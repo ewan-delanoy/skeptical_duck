@@ -4,7 +4,6 @@
 
 *)
 
-
 let compute_deleted_in_diff sourcedir destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
