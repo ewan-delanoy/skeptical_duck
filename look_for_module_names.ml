@@ -34,25 +34,17 @@ let names_in_ml_file file=names_in_ml_ocamlcode(Io.read_whole_file file);;
 
 let change_module_name_in_ml_ocamlcode
    old_naked_name
-   new_naked_name s=
+   new_naked_name old_code=
    let old_name=String.capitalize_ascii(Dfa_module.to_line(old_naked_name))
    and new_name=String.capitalize_ascii(Dfa_module.to_line(new_naked_name)) in
-   let itv=(fun a b->String.sub s (a-1) (b-a+1)) in
-   let temp1=indices_in_ml_ocamlcode s in
+   let itv=(fun a b->String.sub old_code (a-1) (b-a+1)) in
+   let temp1=indices_in_ml_ocamlcode old_code in
    let temp2=List.filter (fun (j,(a,b))->(itv a b)=old_name ) temp1 in
    if temp2=[]
-   then s
+   then old_code
    else
-   let (_,(a1,b1))=List.hd(temp2) in
-   let rec sub_f=(fun (graet,ax,bx,da_ober)->
-     match da_ober with
-      []->List.rev((itv (bx+1) (String.length s))::graet)
-     |(_,(ay,by))::peurrest->
-       let s1=itv (bx+1) (ay-1) in
-       sub_f(new_name::s1::graet,ay,by,peurrest)
-   ) in
-   let temp3=sub_f([new_name;itv 1 (a1-1)],a1,b1,List.tl(temp2)) in
-   String.concat "" temp3;;
+   let temp3 = Image.image (fun (j,(a,b))->((a,b),new_name) ) temp2 in  
+   Strung.replace_ranges_in temp3 old_code;;
    
  let change_module_name_in_ml_file old_name new_name file=
    let s=Io.read_whole_file file in
