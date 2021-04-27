@@ -297,7 +297,7 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
   let _=List.iter (
     fun rootless_path->
       let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless_path)) in 
-      Look_for_module_names.change_module_name_in_ml_file old_module new_module ap 
+      Look_for_module_names.change_module_name_in_mlx_file old_module new_module ap 
   ) files_to_be_rewritten in 
   let old_compilable_files = fw.Fw_wrapper_t.compilable_files  in    
   let new_compilable_files = Image.image (
@@ -323,7 +323,7 @@ let rename_module_in_special_files fw (old_module,new_module) =
        let content = Fw_wrapper_field.get_content fw rootless in 
        if List.mem old_module (Look_for_module_names.names_in_ml_ocamlcode content)
        then let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless)) in 
-            let _=Look_for_module_names.change_module_name_in_ml_file old_module new_module ap in 
+            let _=Look_for_module_names.change_module_name_in_mlx_file old_module new_module ap in 
             recompute_all_info fw rootless 
        else pair 
    )  old_special_files in 
