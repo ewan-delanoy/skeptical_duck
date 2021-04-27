@@ -4,14 +4,17 @@
 
 *)
 
-exception Unknown_ending of string ;;
+exception Unknown_ending_during_modulename_changing of string ;;
 exception Change_not_implemented of string ;;
+
+exception Unknown_ending_during_modulename_reading of string ;;
+exception Reading_not_implemented of string ;;
 
 module Private = struct 
 
 
-let indices_in_ml_ocamlcode s=
-  let temp1=Outside_comments_and_strings.good_substrings s in
+let indices_in_ml_ocamlcode code=
+  let temp1=Outside_comments_and_strings.good_substrings code in
   let temp2=Image.image (fun (a,b,t)->
      let ttemp3=Alternative_str.find_all_occurrences Alternative_str_example.moodle_cases t 1 in
      Image.image (fun (case_index,(u,v))->
@@ -19,7 +22,17 @@ let indices_in_ml_ocamlcode s=
      ) ttemp3
   ) temp1 in
   List.flatten temp2;;
+
+let indices_in_mli_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
   
+let indices_in_mlx_file ap=  
+    let s_ap = Absolute_path.to_string ap in 
+    let ending = Cull_string.after_rightmost s_ap '.' in 
+    if ending = "ml"  then indices_in_ml_ocamlcode (Io.read_whole_file ap) else 
+    if ending = "mli" then indices_in_mli_ocamlcode (Io.read_whole_file ap) else   
+    if ending = "mll" then raise(Change_not_implemented s_ap) else 
+    if ending = "mly" then raise(Change_not_implemented s_ap) else   
+    raise(Unknown_ending_during_modulename_reading s_ap);;  
 
 let names_in_ml_ocamlcode z=
   let temp1=indices_in_ml_ocamlcode z in
@@ -66,7 +79,7 @@ let change_module_name_in_ml_ocamlcode
     if ending = "mli" then change_module_name_in_mli_file old_name new_name ap else   
     if ending = "mll" then raise(Change_not_implemented s_ap) else 
     if ending = "mly" then raise(Change_not_implemented s_ap) else   
-    raise(Unknown_ending s_ap);;
+    raise(Unknown_ending_during_modulename_changing s_ap);;
 
 let change_several_module_names_in_ml_ocamlcode l_changes s=
     List.fold_left(fun t (u,v)->change_module_name_in_ml_ocamlcode u v t) s l_changes;;
@@ -81,7 +94,7 @@ end ;;
 let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
  let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
- let indices_in_ml_file = Private.indices_in_ml_file ;;
+ let indices_in_ml_file = Private.indices_in_mlx_file ;;
  let names_in_ml_file = Private.names_in_ml_file ;;
  let names_in_ml_ocamlcode = Private.names_in_ml_ocamlcode ;;
 
