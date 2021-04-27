@@ -62,8 +62,8 @@ let change_module_name_in_ml_ocamlcode
   let change_module_name_in_mlx_file old_name new_name ap=  
     let s_ap = Absolute_path.to_string ap in 
     let ending = Cull_string.after_rightmost s_ap '.' in 
-    if ending = "ml"  then change_module_name_in_ml_file else 
-    if ending = "mli" then change_module_name_in_mli_file else   
+    if ending = "ml"  then change_module_name_in_ml_file old_name new_name ap else 
+    if ending = "mli" then change_module_name_in_mli_file old_name new_name ap else   
     if ending = "mll" then raise(Change_not_implemented s_ap) else 
     if ending = "mly" then raise(Change_not_implemented s_ap) else   
     raise(Unknown_ending s_ap);;
