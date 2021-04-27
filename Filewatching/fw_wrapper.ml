@@ -320,8 +320,8 @@ let rename_module_in_special_files fw (old_module,new_module) =
   let new_special_files = Image.image (
      fun pair->
        let (rootless,mtime)=pair in 
-       let content = Fw_wrapper_field.get_content fw rootless in 
-       if List.mem old_module (Look_for_module_names.names_in_ml_ocamlcode content)
+       let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless)) in 
+       if List.mem old_module (Look_for_module_names.names_in_mlx_file ap)
        then let ap=Absolute_path.of_string (s_root^(Dfn_rootless.to_line rootless)) in 
             let _=Look_for_module_names.change_module_name_in_mlx_file old_module new_module ap in 
             recompute_all_info fw rootless 

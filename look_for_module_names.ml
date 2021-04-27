@@ -114,6 +114,16 @@ indices_in_string "123 Haag.012 open Garfield;8";;
 
 indices_in_string "(* Haag. *)234 Dog.\"open Garfield;\"67 Corn.4";;
 
+let example = String.concat "\n" [
+""; "open Aantron_markup_common"; ""; "module Aantron_peggy = Aantron_kstream";""; "include Aantron_kstream.Foo";"";"val parse :";
+"  [< `Document | `Fragment of string ] option ->";
+"   Aantron_markup_error.parse_handler ->";
+"  (location *  Aantron_html_tokenizer.token)  Aantron_kstream.t *";
+"  ( Aantron_html_tokenizer.state -> unit) *";
+"  ((unit -> bool) -> unit) ->";
+"    (location * signal)  Aantron_kstream.t"; ""] ;;
 
+let see_example = change_module_name_in_ml_ocamlcode
+   (Dfa_module_t.M "aantron_kstream") (Dfa_module_t.M "other_kstream") z1 ;;
    
 *)              
