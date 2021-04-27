@@ -164,7 +164,7 @@ let modules_with_their_ancestors cs l=
    Listennou.nonredundant_version temp3;;
 
 let find_needed_data_for_file cs fn=
-      let temp1=Look_for_module_names.names_in_ml_file fn in
+      let temp1=Look_for_module_names.names_in_mlx_file fn in
       List.filter (
          fun mn->List.mem mn temp1  
       )(ordered_list_of_modules cs);;
@@ -299,7 +299,7 @@ module PrivateTwo=struct
 
 let find_needed_libraries cs mlx ordered_ancestors=
   let fn=Dfn_full.to_absolute_path mlx in
-  let temp1=Look_for_module_names.names_in_ml_file fn in
+  let temp1=Look_for_module_names.names_in_mlx_file fn in
   List.filter
   (
     fun lib->
@@ -921,7 +921,7 @@ let command_for_predebuggable  cs short_path=
     let cmod = Compilation_mode_t.Debug in 
     let full_path=Absolute_path.of_string(
         (Dfa_root.connectable_to_subpath(root cs))^short_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
+    let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_subdirs = Image.image (
        fun nm->
@@ -960,7 +960,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
     let full_path=Absolute_path.of_string(
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
+    let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_subdirs = Image.image (
        fun nm->let subdir=subdir_at_module cs nm in 
@@ -1073,7 +1073,7 @@ let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
    |_->let rootless_path=Option.unpack opt_rootless_path in 
        let full_path=Absolute_path.of_string(
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
-       let nm_direct_deps = Look_for_module_names.names_in_ml_file full_path in 
+       let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
        let deps =List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs) in 
        let _=(if cmod = Compilation_mode_t.Debug 
@@ -1318,7 +1318,7 @@ exception Identical_names of (((string*string) list) list);;
       let temp1=Ennig.index_everything l 
       and n=List.length l in
       let rec tempf=(fun (j1,(ap1,s1))->
-        let ttemp1=Look_for_module_names.names_in_ml_file ap1 in
+        let ttemp1=Look_for_module_names.names_in_mlx_file ap1 in
         let ttemp2=Image.image Dfa_module.to_line ttemp1 in
         let ttempf=(fun s_nm->
           Option.filter_and_unpack (fun 
