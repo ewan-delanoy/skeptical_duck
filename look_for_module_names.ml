@@ -4,6 +4,9 @@
 
 *)
 
+exception Unknown_ending of string ;;
+exception Change_not_implemented of string ;;
+
 module Private = struct 
 
 
@@ -45,11 +48,25 @@ let change_module_name_in_ml_ocamlcode
    else
    let temp3 = Image.image (fun (j,(a,b))->((a,b),new_name) ) temp2 in  
    Strung.replace_ranges_in temp3 old_code;;
-   
+ 
+  
+
  let change_module_name_in_ml_file old_name new_name file=
    let s=Io.read_whole_file file in
    let new_s=change_module_name_in_ml_ocamlcode old_name new_name s in
    Io.overwrite_with file new_s;;  
+
+ let change_module_name_in_mli_file old_name new_name file=
+ change_module_name_in_ml_file old_name new_name file ;;
+
+  let change_module_name_in_mlx_file old_name new_name ap=  
+    let s_ap = Absolute_path.to_string ap in 
+    let ending = Cull_string.after_rightmost s_ap '.' in 
+    if ending = "ml"  then change_module_name_in_ml_file else 
+    if ending = "mli" then change_module_name_in_mli_file else   
+    if ending = "mll" then raise(Change_not_implemented s_ap) else 
+    if ending = "mly" then raise(Change_not_implemented s_ap) else   
+    raise(Unknown_ending s_ap);;
 
 let change_several_module_names_in_ml_ocamlcode l_changes s=
     List.fold_left(fun t (u,v)->change_module_name_in_ml_ocamlcode u v t) s l_changes;;
@@ -61,7 +78,7 @@ let change_several_module_names_in_ml_file l_changes file=
 
 end ;;
 
-let change_module_name_in_ml_file = Private.change_module_name_in_ml_file ;;
+let change_module_name_in_ml_file = Private.change_module_name_in_mlx_file ;;
  let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
  let indices_in_ml_file = Private.indices_in_ml_file ;;
