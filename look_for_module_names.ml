@@ -44,8 +44,18 @@ let names_in_ml_ocamlcode z=
   temp5;;
 
 let indices_in_ml_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
-let names_in_ml_file file=names_in_ml_ocamlcode(Io.read_whole_file file);;
 
+(* let names_in_ml_file file=names_in_ml_ocamlcode(Io.read_whole_file file);; *)
+
+let names_in_mlx_file ap=
+  let temp1=indices_in_mlx_file ap in
+  let text = Io.read_whole_file ap in 
+  let temp2=Image.image (fun (_,(a,b))->String.sub text (a-1) (b-a+1) ) temp1 in
+  let temp3=Three_parts.generic temp2 in
+  let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
+  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_line 
+      (String.uncapitalize_ascii  y)) temp4 in
+  temp5;;
 
 
 let change_module_name_in_ml_ocamlcode
@@ -95,7 +105,7 @@ let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
  let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
  let indices_in_mlx_file = Private.indices_in_mlx_file ;;
- let names_in_ml_file = Private.names_in_ml_file ;;
+ let names_in_ml_file = Private.names_in_mlx_file ;;
  let names_in_ml_ocamlcode = Private.names_in_ml_ocamlcode ;;
 
 (*   
