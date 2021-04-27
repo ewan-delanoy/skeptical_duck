@@ -34,18 +34,8 @@ let indices_in_mlx_file ap=
     if ending = "mly" then raise(Change_not_implemented s_ap) else   
     raise(Unknown_ending_during_modulename_reading s_ap);;  
 
-let names_in_ml_ocamlcode z=
-  let temp1=indices_in_ml_ocamlcode z in
-  let temp2=Image.image (fun (_,(a,b))->String.sub z (a-1) (b-a+1) ) temp1 in
-  let temp3=Three_parts.generic temp2 in
-  let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
-  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_line 
-      (String.uncapitalize_ascii  y)) temp4 in
-  temp5;;
 
 let indices_in_ml_file file=indices_in_ml_ocamlcode(Io.read_whole_file file);;  
-
-(* let names_in_ml_file file=names_in_ml_ocamlcode(Io.read_whole_file file);; *)
 
 let names_in_mlx_file ap=
   let temp1=indices_in_mlx_file ap in
@@ -106,7 +96,7 @@ let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
  let indices_in_mlx_file = Private.indices_in_mlx_file ;;
  let names_in_mlx_file = Private.names_in_mlx_file ;;
- let names_in_ml_ocamlcode = Private.names_in_ml_ocamlcode ;;
+ 
 
 (*   
    
