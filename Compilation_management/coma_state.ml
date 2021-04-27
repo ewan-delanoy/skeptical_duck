@@ -1530,7 +1530,7 @@ let rename_string_or_value cs old_name new_name=
 
 let list_values_from_module_in_file module_name file=
    let s=Io.read_whole_file file in
-   let temp1=Look_for_module_names.indices_in_ml_file file in
+   let temp1=Look_for_module_names.indices_in_mlx_file file in
    let temp2=List.filter (fun (t,(i,j))->
      (t=Alternative_str_example.index_for_pointed_case)&&
      (Cull_string.interval s i j=(String.capitalize_ascii module_name))

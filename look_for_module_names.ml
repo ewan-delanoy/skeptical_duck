@@ -94,7 +94,7 @@ end ;;
 let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
  let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
- let indices_in_ml_file = Private.indices_in_mlx_file ;;
+ let indices_in_mlx_file = Private.indices_in_mlx_file ;;
  let names_in_ml_file = Private.names_in_ml_file ;;
  let names_in_ml_ocamlcode = Private.names_in_ml_ocamlcode ;;
 
