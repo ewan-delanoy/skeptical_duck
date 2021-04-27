@@ -4,6 +4,8 @@
 
 *)
 
+module Private = struct 
+
 
 let indices_in_ml_ocamlcode s=
   let temp1=Outside_comments_and_strings.good_substrings s in
@@ -65,6 +67,14 @@ let change_several_module_names_in_ml_file l_changes file=
    let new_s=change_several_module_names_in_ml_ocamlcode l_changes s in
    Io.overwrite_with file new_s;;  
 
+end ;;
+
+let change_module_name_in_ml_file = Private.change_module_name_in_ml_file ;;
+ let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
+ let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
+ let indices_in_ml_file = Private.indices_in_ml_file ;;
+ let names_in_ml_file = Private.names_in_ml_file ;;
+ let names_in_ml_ocamlcode = Private.names_in_ml_ocamlcode ;;
 
 (*   
    

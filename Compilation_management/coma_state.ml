@@ -725,7 +725,7 @@ let latest_changes_in_noncompilables cs =
    let (_,(_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
-   
+
 let latest_changes cs = 
   (latest_changes_in_compilables cs,latest_changes_in_noncompilables cs);;
 
@@ -1772,4 +1772,7 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
    ) temp1 ;;
 
 
+module Simplified_Target_system_creation = struct 
 
+
+end ;;   
