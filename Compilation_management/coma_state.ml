@@ -1772,13 +1772,87 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
    ) temp1 ;;
 
 
-module Simplified_Target_system_creation = struct 
+exception Empty_acolytes_list ;; 
+exception Too_many_acolytes of Dfn_rootless_t.t list ;;
+exception Unknown_first_acolyte_ending  of Dfn_rootless_t.t ;;
+exception Unknown_second_acolyte_ending of Dfn_rootless_t.t ;;
+exception Missing_mli of Dfn_rootless_t.t * Dfn_rootless_t.t ;;
+exception Incompatible_locations of Dfn_rootless_t.t * Dfn_rootless_t.t ;;
+exception Circular_dependencies_detected ;;
 
-(*  
-let classify_according_to_module compilable_files =
-    let tump1 = Image.image (fun (rless,_)->
-       ()  
+module Simplified_ts_creation = struct 
+
+let find_the_mli_among_the_two rless1 rless2 = 
+    if (Dfn_rootless.to_ending rless1) = Dfa_ending.mli 
+    then Some(rless1,rless2) 
+    else   
+    if (Dfn_rootless.to_ending rless1) = Dfa_ending.mli 
+    then Some(rless1,rless2) 
+    else None ;;
+    
+let check_admissiblity_of_single_acolyte rless =
+    if List.mem (Dfn_rootless.to_ending rless) 
+       [Dfa_ending.mli;Dfa_ending.ml;Dfa_ending.mll;Dfa_ending.mly]
+    then (None,rless)
+    else raise(Unknown_first_acolyte_ending(rless)) ;; 
+
+let check_admissibility_of_acolytes_list l=
+   let n = List.length(l) in 
+   if n > 2 then raise(Too_many_acolytes l) else 
+   if n = 0 then raise  Empty_acolytes_list else 
+   if n = 1 then check_admissiblity_of_single_acolyte(List.hd l) else 
+   (* if we get here n=2 *)
+   match  find_the_mli_among_the_two (List.nth l 0) (List.nth l 1) with 
+   None -> raise(Missing_mli(List.nth l 0,List.nth l 1))
+   |Some(rless1,rless2) ->
+      let subdir1 =  Dfn_rootless.to_subdirectory rless1 
+      and subdir2 =  Dfn_rootless.to_subdirectory rless2 in 
+      if subdir1 <> subdir2 
+      then raise(Incompatible_locations(rless1,rless2))
+      else 
+      if not(List.mem (Dfn_rootless.to_ending rless2) 
+          [Dfa_ending.ml;Dfa_ending.mll;Dfa_ending.mly])
+      then raise(Unknown_second_acolyte_ending(rless2))  
+      else (Some rless1,rless2) ;;
+
+let classify_according_to_module root compilable_files =
+    let temp1 = Image.image (fun (rless,_)->
+       (Dfn_rootless.to_module rless,rless)  
     ) compilable_files in 
-*)
+    let temp2 = Listennou.partition_according_to_fst temp1 in 
+    let ap_from_rootless = (fun rless->
+       let full = Dfn_join.root_to_rootless root rless in 
+       Dfn_full.to_absolute_path full
+      ) in 
+    Image.image (fun (mn,l)->
+      let (opt_mli,principal)=check_admissibility_of_acolytes_list l in 
+      let opt_mli_ap = Option.propagate ap_from_rootless opt_mli 
+      and principal_ap = ap_from_rootless principal in
+      (Dfa_module.to_line mn,(opt_mli,opt_mli_ap,principal,principal_ap))
+      ) temp2 ;;
+
+let treat_circular_dependencies cycles= 
+      if cycles=[]
+      then ()
+      else
+      let temp1=Image.image(String.concat " -> ") cycles in
+      let temp2="\n\n The following cycles have been detected : "^
+        (String.concat "\n\n" temp1) in
+      let _ = (print_string temp2;flush stdout) in 
+      raise Circular_dependencies_detected ;;
+
+let compute_dependencies  prepared_list_of_modules =
+  let lex_order = Total_ordering.lex_for_strings in 
+  let modules_in_lex_order = Ordered.sort lex_order (Image.image fst  prepared_list_of_modules) in 
+  let coatoms = Memoized.make (fun mname ->
+     let (opt,opt_ap,pr_rless,pr_ap) = List.assoc mname  prepared_list_of_modules in 
+     let mli_part = (match opt_ap with None->[] |(Some ap)->Look_for_module_names.names_in_mlx_file ap)
+     and pr_part =  Look_for_module_names.names_in_mlx_file pr_ap in 
+     let temp1 = Image.image Dfa_module.to_line (mli_part@pr_part) in 
+     List.filter (fun mname -> Ordered.mem lex_order mname modules_in_lex_order) temp1
+  )     in 
+  let (cycles,good_list) = Reconstruct_linear_poset.reconstruct_linear_poset coatoms  modules_in_lex_order in 
+  let _ = treat_circular_dependencies cycles in
+  Image.image (fun mname->mname) good_list ;; 
 
 end ;;   
