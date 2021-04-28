@@ -387,5 +387,15 @@ separate_according_to  [0;0;1;2;3;0;4;0;0;5;6;0;0;0;7;0;8;0] [0];;
 *)
 
 
+let partition_according_to_fst pairs=
+  let rec tempf = (fun (already_treated,to_be_treated)->
+       match to_be_treated with 
+        [] -> List.rev already_treated 
+       |(a0,_) :: _ ->
+         let (part1,part2) = List.partition (fun (a,b)->a=a0) to_be_treated in 
+         tempf ((a0,Image.image snd part1)::already_treated,part2)     
+   ) in 
+   tempf ([],pairs) ;;
+  
 
 

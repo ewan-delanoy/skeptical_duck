@@ -1774,5 +1774,11 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
 
 module Simplified_Target_system_creation = struct 
 
+(*  
+let classify_according_to_module compilable_files =
+    let tump1 = Image.image (fun (rless,_)->
+       ()  
+    ) compilable_files in 
+*)
 
 end ;;   
