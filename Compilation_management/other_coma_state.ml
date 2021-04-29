@@ -77,7 +77,7 @@ let main_ref=Private.main_ref;;
 
 
 
-let officialize_confidential_changes () =
+let officialize_changes () =
    let temp1 = Private.see_confidential_changes () in 
    let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
