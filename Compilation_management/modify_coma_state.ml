@@ -180,10 +180,7 @@ let refresh cs =
 
 
 let register_rootless_paths cs rootless_paths=
-  let mlxs = Image.image (
-    Dfn_join.root_to_rootless (Coma_state.root cs)
-  ) rootless_paths in 
-  Coma_state.register_mlx_files cs mlxs ;;
+  Coma_state.register_mlx_files cs rootless_paths ;;
 
 let relocate_module_to cs mn new_subdir=
   let old_endingless = Coma_state.endingless_at_module cs mn in  

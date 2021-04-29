@@ -169,8 +169,9 @@ let find_needed_data_for_file cs fn=
          fun mn->List.mem mn temp1  
       )(ordered_list_of_modules cs);;
 
-let  find_needed_data cs mlx=
-      let fn=Dfn_full.to_absolute_path mlx in
+let  find_needed_data cs rless=
+   let full_version = Dfn_join.root_to_rootless (root cs) rless in 
+   let fn=Dfn_full.to_absolute_path full_version in
       find_needed_data_for_file cs fn;;    
 
  
@@ -297,8 +298,9 @@ let  check_registrations cs eless=
 module PrivateTwo=struct
 
 
-let find_needed_libraries cs mlx ordered_ancestors=
-  let fn=Dfn_full.to_absolute_path mlx in
+let find_needed_libraries cs rless ordered_ancestors=
+  let full_version=Dfn_join.root_to_rootless (root cs) rless in
+  let fn=Dfn_full.to_absolute_path full_version in
   let temp1=Look_for_module_names.names_in_mlx_file fn in
   List.filter
   (
@@ -315,10 +317,10 @@ let find_needed_libraries cs mlx ordered_ancestors=
   Ocaml_library.all_libraries;;
 
 
-let find_needed_directories cs mlx ordered_ancestors=
+let find_needed_directories cs rless ordered_ancestors=
   let temp1=Image.image (fun mn->
     Set_of_polys.sort(needed_dirs_at_module cs mn)) ordered_ancestors in
-  let subdir_in_mlx=Dfn_full.to_subdirectory mlx in
+  let subdir_in_mlx=Dfn_rootless.to_subdirectory rless in
   let temp2=(
       if subdir_in_mlx<>Dfa_subdirectory.main 
       then Set_of_polys.singleton(subdir_in_mlx)::temp1
@@ -355,9 +357,10 @@ let md_associated_modification_time  (ml_mt,mli_mt,mll_mt,mly_mt) edg=
     |Mll->mll_mt
     |Mly->mly_mt;;  
 
-let complete_info cs  mlx=
-  let hm=Dfn_full.to_endingless mlx  in
-  let modules_written_in_file=find_needed_data cs mlx in
+let complete_info cs  rless=
+  let middle = Dfn_rootless.to_middle rless in 
+  let hm=Dfn_join.root_to_middle (root cs) middle in
+  let modules_written_in_file=find_needed_data cs rless in
   let (mlr,mlir,mllr,mlyr)=check_registrations cs hm
   and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times hm in
   let pr_end=compute_principal_ending (mlr,mlir,mllr,mlyr) in
@@ -372,16 +375,15 @@ let complete_info cs  mlx=
               then Some(mn)
               else None) in
   let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
-  let libned=PrivateTwo.find_needed_libraries cs mlx modules_written_in_file
-  and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
+  let libned=PrivateTwo.find_needed_libraries cs rless modules_written_in_file
+  and dirned=PrivateTwo.find_needed_directories cs rless modules_written_in_file in
   (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
 let update_just_one_module cs rootless =
     let mn = Dfn_rootless.to_module rootless in 
     if not(List.mem mn (ordered_list_of_modules cs))
     then cs 
-    else let mlx=Dfn_join.root_to_rootless (root cs) rootless in 
-         let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=complete_info cs  mlx in 
+    else let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=complete_info cs rootless in 
          Coma_state_field.set_in_each cs mn (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated);;
 
 
@@ -402,10 +404,11 @@ let registrations_for_lonely_ending old_edg =
      );;
 
      
-let complete_id_during_new_module_registration cs  mlx=
-    let eless=Dfn_full.to_endingless mlx 
-    and edg=Dfn_full.to_ending mlx in
-    let modules_written_in_file=find_needed_data cs mlx in
+let complete_id_during_new_module_registration cs rless=
+    let middle = Dfn_rootless.to_middle rless in 
+    let eless=Dfn_join.root_to_middle (root cs) middle 
+    and edg=Dfn_rootless.to_ending rless in
+    let modules_written_in_file=find_needed_data cs rless in
     let (mlp,mlir,mllr,mlyr)=registrations_for_lonely_ending edg
     and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times eless in
     let pr_end=edg in
@@ -420,8 +423,8 @@ let complete_id_during_new_module_registration cs  mlx=
               then Some(mn)
               else None) in
     let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
-    let libned=PrivateTwo.find_needed_libraries cs mlx modules_written_in_file
-    and dirned=PrivateTwo.find_needed_directories cs mlx modules_written_in_file in
+    let libned=PrivateTwo.find_needed_libraries cs rless modules_written_in_file
+    and dirned=PrivateTwo.find_needed_directories cs rless modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
     
 
@@ -565,7 +568,7 @@ let modules_using_value cs value_name =
 let update_ancs_libs_and_dirs_at_module cs mn=
   let eless=endingless_at_module cs mn  
   and pr_end=principal_ending_at_module cs mn in
-  let mlx=Dfn_join.to_ending eless pr_end in 
+  let rless=Dfn_full.to_rootless (Dfn_join.to_ending eless pr_end) in 
   let fathers=direct_fathers_at_module cs mn in
   let separated_ancestors=Image.image 
   (fun nm2->
@@ -575,8 +578,8 @@ let update_ancs_libs_and_dirs_at_module cs mn=
   let ordered_ancestors=List.filter (
     fun mn->Set_of_polys.mem mn ancestors_with_wrong_order
   ) (ordered_list_of_modules cs) in
-  let new_libs=PrivateTwo.find_needed_libraries cs mlx ordered_ancestors
-  and new_dirs=PrivateTwo.find_needed_directories cs mlx ordered_ancestors in
+  let new_libs=PrivateTwo.find_needed_libraries cs rless ordered_ancestors
+  and new_dirs=PrivateTwo.find_needed_directories cs rless ordered_ancestors in
   let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
   let cs3=set_needed_libs_at_module cs2 mn new_libs in
   set_needed_dirs_at_module cs3 mn new_dirs;;
@@ -689,8 +692,8 @@ let check_for_possible_change cs mn=
   if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_at_module cs mn)
   then None
   else
-  let mlx=Dfn_join.to_ending eless pr_ending in
-  let direct_fathers=find_needed_data cs mlx in
+  let rless=Dfn_full.to_rootless(Dfn_join.to_ending eless pr_ending) in
+  let direct_fathers=find_needed_data cs rless in
   Some(
     pr_modif_time,
     mli_modif_time,
@@ -745,47 +748,47 @@ let printer_equipped_types_from_data cs=
 
 
 
-exception Already_registered_file of Dfn_full_t.t;;  
-exception Overcrowding of Dfn_full_t.t*(Dfa_ending_t.t list);;
-exception Bad_pair of Dfn_full_t.t*Dfa_ending_t.t;; 
+exception Already_registered_file of Dfn_rootless_t.t;;  
+exception Overcrowding of Dfn_rootless_t.t*(Dfa_ending_t.t list);;
+exception Bad_pair of Dfn_rootless_t.t*Dfa_ending_t.t;; 
 
 
-let register_mlx_file_on_monitored_modules cs mlx_file =
-          let eless=Dfn_full.to_endingless mlx_file
-          and ending=Dfn_full.to_ending mlx_file in 
-          let nm=Dfn_full.to_module mlx_file in
+let register_mlx_file_on_monitored_modules cs rless =
+          let middle = Dfn_rootless.to_middle rless
+          and ending=Dfn_rootless.to_ending rless in 
+          let nm=Dfn_rootless.to_module rless in
           if not(Coma_state_field.test_module_for_registration cs nm)
-          then  let info=complete_id_during_new_module_registration cs mlx_file in
+          then  let info=complete_id_during_new_module_registration cs rless in
                 Coma_state_field.push_right_in_each cs info 
           else
           let edgs=registered_endings_at_module cs nm in
           if List.length(edgs)>1
-          then  raise(Overcrowding(mlx_file,edgs))
+          then  raise(Overcrowding(rless,edgs))
           else  
           if List.mem ending edgs
-          then raise(Already_registered_file(mlx_file))
+          then raise(Already_registered_file(rless))
           else
           if (not(List.mem Dfa_ending.mli (ending::edgs)))
-          then raise(Bad_pair(mlx_file,List.hd edgs))
+          then raise(Bad_pair(rless,List.hd edgs))
           else 
           if ending = Dfa_ending.mli
           then let old_pr_end = List.hd edgs in
-               let old_mlx_file =
-                Dfn_join.to_ending eless old_pr_end in
+               let old_rless =
+                Dfn_join.middle_to_ending middle old_pr_end in
               let (eless,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
-                 complete_info cs old_mlx_file in
+                 complete_info cs old_rless in
                let new_mlimt = md_compute_modification_time eless ending in
                let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
                Coma_state_field.set_in_each cs nm new_dt
           else
-          let new_dt=complete_id_during_new_module_registration cs mlx_file in 
+          let new_dt=complete_id_during_new_module_registration cs rless in 
           let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=new_dt in
           let temp3=List.rev(dirfath) in
           if temp3=[]
           then Coma_state_field.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
           else  
           let last_father=List.hd(temp3) in
-          let nm=Dfn_endingless.to_module eless in 
+          let nm=Dfn_rootless.to_module rless in 
           let cs_walker=ref(cs) in 
           let _=List.iter(
                  fun current_module ->
@@ -1350,7 +1353,7 @@ exception Identical_names of (((string*string) list) list);;
     let from_prepared_list cs l=
        let dir = Coma_state_field.root cs in 
        let temp1=Option.filter_and_unpack (fun (ap,s)->
-          try (Some(Dfn_full.from_absolute_path_with_root ap dir)) with 
+          try (Some(Dfn_common.decompose_absolute_path_using_root ap dir)) with 
           _->None
        ) l in
        Try_to_register.mlx_files cs temp1;;
@@ -1370,13 +1373,13 @@ end;;
 
 module Register_mlx_file=struct
 
-let on_targets (cs,old_dirs) mlx=
-    let new_dir=Dfn_full.to_subdirectory mlx in
-   let cs2=register_mlx_file_on_monitored_modules cs mlx in
+let on_targets (cs,old_dirs) rless=
+    let new_dir=Dfn_rootless.to_subdirectory rless in
+   let cs2=register_mlx_file_on_monitored_modules cs rless in
    let new_dirs=
    (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
     in
-    let nm=Dfn_full.to_module mlx in 
+    let nm=Dfn_rootless.to_module rless in 
     let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [nm] in 
     (cs3,new_dirs);; 
   
@@ -1699,7 +1702,7 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
      (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
   then None
   else
-  let mlx=Dfn_join.to_ending eless pr_ending in
+  let mlx=Dfn_join.middle_to_ending middle pr_ending in
   let direct_fathers=find_needed_data cs mlx in
   Some(
     pr_modif_time,
