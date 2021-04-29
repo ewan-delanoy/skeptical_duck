@@ -12,7 +12,7 @@ let main_ref=
   let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[]) in 
   ref(Coma_state_field.empty_one  config);;
 
-let see_confidential_changes ()=
+let see_yet_unofficial_changes ()=
    let temp1=Coma_state.all_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
@@ -78,7 +78,7 @@ let main_ref=Private.main_ref;;
 
 
 let officialize_changes () =
-   let temp1 = Private.see_confidential_changes () in 
+   let temp1 = Private.see_yet_unofficial_changes () in 
    let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
 
@@ -111,7 +111,7 @@ let repopulate summary=
   in 
   initialize();; 
 
-let see_yet_unofficial_changes = Private.see_confidential_changes ;;    
+let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
