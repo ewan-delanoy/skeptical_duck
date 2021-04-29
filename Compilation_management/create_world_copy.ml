@@ -109,7 +109,7 @@ module Private = struct
      let _ = Private.frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
      () ;;
   
-  let cwc = Private.fully_developed_copy ;; 
+  let fully_developed_copy = Private.fully_developed_copy ;; 
   
   let unfreeze_copy = Private.unfreeze_copy ;;
   

@@ -103,7 +103,7 @@ let replace_string old_string new_string=
 
 let repopulate summary=
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
-  let _=Create_world_copy.cwc
+  let _=Create_world_copy.fully_developed_copy
   (!Usual_coma_state.main_ref) summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
   in 
