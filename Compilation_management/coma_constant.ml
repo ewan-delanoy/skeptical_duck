@@ -115,6 +115,20 @@ let conventional_files_with_minimal_content =
    ] @ conventional_files_other_than_ocamlinit ;;      
 
 
+let minimal_set_of_needed_dirs = 
+  [
+    persistent_data_subdir ; 
+    usual_build_subdir ;
+    utility_files_subdir
+  ] ;;  
+
+let usual_set_of_needed_dirs = 
+  minimal_set_of_needed_dirs @
+    [
+      fads_subdir 
+    ] ;;  
+
+
 let endings_for_cleaning  = [
     Dfa_ending.mll, Dfa_ending.ml;
     Dfa_ending.mly, Dfa_ending.ml
