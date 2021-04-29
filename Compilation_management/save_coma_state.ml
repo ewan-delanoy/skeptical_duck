@@ -6,15 +6,17 @@
 *)
 
 module Private=struct
-  
-    let loadings (main_root,rootless_path_for_loadingsfile) (dirs,hms)=
+
+  let building_site =  Coma_constant.usual_build_subdir ;;
+
+  let loadings (main_root,rootless_path_for_loadingsfile) (dirs,hms)=
       let path_for_loadingsfile = Dfn_rootless.to_line rootless_path_for_loadingsfile in 
       let s_root=Dfa_root.connectable_to_subpath main_root in
       let part1="\n(*\n #use\""^s_root^(path_for_loadingsfile)^"\";"^";\n*)\n\n" in
       let temp5=Image.image (
         fun sd->
         "#directory\""^s_root^(Dfa_subdirectory.connectable_to_subpath sd)^"\";"^";"
-      ) ((Dfa_subdirectory.of_line "_build")::dirs) in
+      ) (building_site::dirs) in
       let part2=String.concat "\n" temp5 
       and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
       let temp2=Image.image (
@@ -34,7 +36,7 @@ module Private=struct
       let temp1=Image.image 
         (fun sdir->"S "^s_root^(Dfa_subdirectory.connectable_to_subpath sdir) )
       (Coma_constant.utility_files_subdir::dirs) in
-      let temp2=("B "^s_root^"_build/")::temp1 in
+      let temp2=("B "^s_root^(Dfa_subdirectory.connectable_to_subpath building_site))::temp1 in
       "\n\n\n"^(String.concat "\n" temp2)^"\n\n\n";; 
 
     let instructions_for_printersfile printer_equipped_types=
@@ -109,3 +111,4 @@ module Private=struct
 end;;  
 
 let save = Private.save_all;;
+
