@@ -56,19 +56,17 @@ module Private = struct
 
   let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary =
       let url=Coma_big_constant.github_url in 
-      let conv_files = (
+      let (conv_files,needed_dirs) = (
         if Needed_data_summary.is_everything summary
-        then Coma_constant.conventional_files_with_usual_content
-        else Coma_constant.conventional_files_with_minimal_content
+        then (Coma_constant.conventional_files_with_usual_content,
+              Coma_constant.usual_set_of_needed_dirs)
+        else (Coma_constant.conventional_files_with_minimal_content,
+              Coma_constant.minimal_set_of_needed_dirs)
       ) in 
       let _=More_unix.clear_directory_contents destination in 
+
       let _=(More_unix.create_subdirs_and_fill_files
-      destination
-        [
-          Coma_constant.persistent_data_subdir ; 
-          Coma_constant.usual_build_subdir ;
-          Coma_constant.utility_files_subdir]
-          conv_files) in 
+      destination needed_dirs conv_files) in 
       let (modules_in_good_order,compilables,noncompilables) = 
           Needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
