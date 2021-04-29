@@ -9,7 +9,7 @@ exception Ending_for_last_module_exn ;;
 exception Ending_for_nonlast_module_exn ;; 
 
 let workspace = function 
-   Compilation_mode_t.Usual->Coma_constant.build_subdir
+   Compilation_mode_t.Usual->Coma_constant.usual_build_subdir
                      |Debug->Coma_constant.debug_build_subdir
                      |Executable->Coma_constant.exec_build_subdir;;
 

@@ -22,7 +22,7 @@ let persistent_compilation_data_subdir =
 let confidential_subdir =
   Dfa_subdirectory.of_line "Confidential";;
 
-let build_subdir=      Dfa_subdirectory.of_line "_build";;
+let usual_build_subdir=      Dfa_subdirectory.of_line "_build";;
 let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
 let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
@@ -69,7 +69,7 @@ let rootless_paths_needed_for_compiler_copy=
 let git_ignored_subdirectories =
   [
      utility_files_subdir;
-     build_subdir;
+     usual_build_subdir;
      confidential_subdir;
      debug_build_subdir;
      exec_build_subdir;
@@ -80,7 +80,7 @@ let git_ignored_subdirectories =
 
 let conventional_subdirs =
    [
-     build_subdir;
+     usual_build_subdir;
      debug_build_subdir;
      exec_build_subdir
    ];;

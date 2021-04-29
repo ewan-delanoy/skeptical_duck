@@ -1437,7 +1437,7 @@ let decipher_path cs x=Find_suitable_ending.find_file_location
 
 let forgotten_files_in_build_subdir cs= 
    let s_root=Dfa_root.connectable_to_subpath (root cs) 
-   and s_build=Dfa_subdirectory.connectable_to_subpath (Coma_constant.build_subdir) in 
+   and s_build=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in 
    let dir=Directory_name.of_string (s_root^s_build) in 
    let temp1=More_unix.beheaded_simple_ls dir in 
    List.filter (
