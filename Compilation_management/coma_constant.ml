@@ -9,7 +9,6 @@
 let utility_files_subdir=
   Dfa_subdirectory.of_line "Utility_files";;
 
-
 let fads_subdir=
   Dfa_subdirectory.of_line "Fads";;
 
@@ -17,14 +16,15 @@ let githubbed_archive_subdir=
   Dfa_subdirectory.of_line "Githubbed_archive";;
 
 let persistent_compilation_data_subdir = 
-   Dfa_subdirectory.of_line "Persistent_compilation_data";;
+   Dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
 
 let confidential_subdir =
   Dfa_subdirectory.of_line "Confidential";;
 
-let usual_build_subdir=      Dfa_subdirectory.of_line "_build";;
-let debug_build_subdir=Dfa_subdirectory.of_line "_debug_build";;  
-let exec_build_subdir= Dfa_subdirectory.of_line "_exec_build";;  
+let build_subdir =   Dfa_subdirectory.of_line "_build";;
+let usual_build_subdir= Dfa_subdirectory.extend build_subdir "_usual_build";;
+let debug_build_subdir= Dfa_subdirectory.extend build_subdir "_debug_build";;  
+let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
 
 
@@ -69,12 +69,9 @@ let rootless_paths_needed_for_compiler_copy=
 let git_ignored_subdirectories =
   [
      utility_files_subdir;
-     usual_build_subdir;
+     build_subdir;
      confidential_subdir;
-     debug_build_subdir;
-     exec_build_subdir;
      githubbed_archive_subdir;
-     persistent_compilation_data_subdir;
      fads_subdir;
   ];;
 
@@ -122,3 +119,5 @@ let endings_for_cleaning  = [
     Dfa_ending.mll, Dfa_ending.ml;
     Dfa_ending.mly, Dfa_ending.ml
 ];;
+
+
