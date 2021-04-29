@@ -162,10 +162,17 @@ cs5 ;;
 let refresh cs = 
         let dir =Coma_state_field.root cs  in 
         let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
-        let temp1=Fw_wrapper.compilable_absolute_paths fw1 in
-        let temp2=Coma_state.Target_system_creation.clean_list_of_files dir temp1 in
-        let temp3=Coma_state.Target_system_creation.compute_dependencies temp2 in
-        let (failures,cs1)=Coma_state.Target_system_creation.from_prepared_list cs temp3 in
+        let temp1=fw1.Fw_wrapper_t.compilable_files in
+        let temp2=Coma_state.Simplified_ts_creation.classify_according_to_module dir temp1 in
+        let temp3=Coma_state.Simplified_ts_creation.compute_dependencies temp2 in
+        let temp4=Image.image (fun (mname,_)->
+           let (opt,opt_ap,pr_rless,pr_ap) = List.assoc mname temp2 in 
+            match opt with 
+             None -> [pr_rless]
+            |Some(mli_rless) -> [mli_rless;pr_rless]
+         ) temp3 in 
+        let rlesses_in_good_order=List.flatten temp4 in 
+        let (failures,cs1)=Coma_state.Try_to_register.mlx_files cs rlesses_in_good_order in  
         let pre_preqt=Coma_state.printer_equipped_types_from_data cs1 in
         let l_mod=Coma_state_field.ordered_list_of_modules cs1 in 
         let (cs2,rejected_pairs,_)=
