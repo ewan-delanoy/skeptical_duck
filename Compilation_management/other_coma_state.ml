@@ -31,6 +31,15 @@ let see_confidential_changes ()=
       Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
    ) temp2;;    
 
+   let commands_for_change_officialization l=
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   Image.image (
+      fun path->
+         "cp "^next_root^path^" "^this_root^path 
+   ) l;;    
+   
+
 end;;
 
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;;
@@ -38,13 +47,6 @@ let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) m
 
 let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
 
-let commands_for_change_officialization l=
-   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
-   Image.image (
-      fun path->
-         "cp "^next_root^path^" "^this_root^path 
-   ) l;;    
 
 
 let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
@@ -77,7 +79,7 @@ let main_ref=Private.main_ref;;
 
 let officialize_confidential_changes () =
    let temp1 = Private.see_confidential_changes () in 
-   let cmds = commands_for_change_officialization temp1 in
+   let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
 
 
