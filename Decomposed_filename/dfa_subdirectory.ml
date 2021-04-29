@@ -17,6 +17,7 @@ let connectable_to_subpath (Dfa_subdirectory_t.SD s)=
 let begins_with (Dfa_subdirectory_t.SD s1) (Dfa_subdirectory_t.SD s2)=
    Supstring.begins_with s1 s2;;
     
+let extend (Dfa_subdirectory_t.SD s) subsub = Dfa_subdirectory_t.SD (s^"/"^subsub);;
 
 let main = Dfa_subdirectory_t.SD "";;
 
