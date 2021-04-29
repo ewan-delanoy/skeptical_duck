@@ -89,6 +89,18 @@ module Private = struct
       let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
       let _=Save_coma_state.save faraway_cs2 in   
       faraway_cs2;;                      
+  
+    let unfreeze_copy cs destroot =
+        let old_config = Coma_state_field.configuration cs in 
+        let remote_config = {
+           old_config with 
+           Fw_configuration_t.root = destroot ;
+           dir_for_backup =  default_backup_dir ;
+           gitpush_after_backup = false ;
+        } in 
+        let remote_cs = Coma_state_field.empty_one remote_config in 
+        Modify_coma_state.Physical_followed_by_internal.refresh remote_cs ;;    
+        
 
 
   end ;;   
@@ -98,7 +110,8 @@ module Private = struct
      () ;;
   
   let cwc = Private.fully_developed_copy ;; 
-
+  
+  let unfreeze_copy = Private.unfreeze_copy ;;
   
   
   
