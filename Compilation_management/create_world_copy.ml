@@ -64,7 +64,10 @@ module Private = struct
       let _=More_unix.clear_directory_contents destination in 
       let _=(More_unix.create_subdirs_and_fill_files
       destination
-        [Coma_constant.usual_build_subdir ;Coma_constant.utility_files_subdir]
+        [
+          Coma_constant.persistent_data_subdir ; 
+          Coma_constant.usual_build_subdir ;
+          Coma_constant.utility_files_subdir]
           conv_files) in 
       let (modules_in_good_order,compilables,noncompilables) = 
           Needed_data_summary.expand cs summary in 
