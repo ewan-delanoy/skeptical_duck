@@ -15,7 +15,7 @@ let fads_subdir=
 let githubbed_archive_subdir=
   Dfa_subdirectory.of_line "Githubbed_archive";;
 
-let persistent_compilation_data_subdir = 
+let persistent_data_subdir = 
    Dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
 
 let confidential_subdir =
@@ -49,7 +49,7 @@ let rootless_path_for_parametersfile=
 let rootless_path_for_printersfile=
   Dfn_join.subdirectory_to  utility_files_subdir short_path_for_printersfile;;
 let rootless_path_for_targetfile=
-  Dfn_join.subdirectory_to  persistent_compilation_data_subdir short_path_for_targetfile;;     
+  Dfn_join.subdirectory_to  persistent_data_subdir short_path_for_targetfile;;     
 
 let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 
