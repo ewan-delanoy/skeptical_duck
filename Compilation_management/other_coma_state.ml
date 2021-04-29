@@ -111,7 +111,7 @@ let repopulate summary=
   in 
   initialize();; 
 
-let see_confidential_changes = Private.see_confidential_changes ;;    
+let see_yet_unofficial_changes = Private.see_confidential_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
