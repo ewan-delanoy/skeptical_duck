@@ -73,7 +73,7 @@ let minimalist_text_for_ocamlinit =
    "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.double_semicolon^
   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Particular_string.double_semicolon;;
 
- let usual_text_for_ocamlinit = (
+ let full_text_for_ocamlinit = (
       minimalist_text_for_ocamlinit^
       "\nopen Needed_values"^Particular_string.double_semicolon^
       "\ninitialize_toplevel()"^Particular_string.double_semicolon
@@ -93,7 +93,7 @@ let common_part_in_conventional_files =
 
 let conventional_files_with_usual_content =  
    [
-     rootless_path_for_ocamlinit, usual_text_for_ocamlinit ;
+     rootless_path_for_ocamlinit, full_text_for_ocamlinit ;
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
    ] @ common_part_in_conventional_files ;;      
 
