@@ -91,7 +91,7 @@ let common_part_in_conventional_files =
    ] ;;     
 
 
-let conventional_files_with_usual_content =  
+let conventional_files_with_full_content =  
    [
      rootless_path_for_ocamlinit, full_text_for_ocamlinit ;
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
