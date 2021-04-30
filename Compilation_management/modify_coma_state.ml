@@ -27,8 +27,8 @@ let recompile cs =
 let refresh config =
    let root = config.Fw_configuration_t.root in 
    let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
-      Coma_constant.git_ignored_subdirectories 
-        Coma_constant.conventional_files_with_usual_content) in 
+    Coma_constant.minimal_set_of_needed_dirs 
+        Coma_constant.conventional_files_with_minimal_content) in 
    let fw = Fw_initialize.init config in
    let cs0 = Coma_state_field.empty_one config in  
    Coma_state_field.set_frontier_with_unix_world cs0 fw;;
