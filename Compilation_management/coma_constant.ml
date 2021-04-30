@@ -51,15 +51,12 @@ let rootless_path_for_targetfile=
 
 let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 
-let updated_not_compiled_files=
-    [
-       rootless_path_for_loadingsfile;
-       rootless_path_for_printersfile;
-    ];;
+
 
 let rootless_paths_needed_for_compiler_copy=
-    updated_not_compiled_files@
     [
+      rootless_path_for_loadingsfile;
+      rootless_path_for_printersfile;
       rootless_path_for_targetfile;
       rootless_path_for_ocamlinit
     ];;
@@ -92,24 +89,25 @@ let minimalist_text_for_ocamlinit =
 let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" ;;
 let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Temporary/painful_debugging.ml\""^Particular_string.double_semicolon^"\n\n*)\n\n" ;;
 
-let conventional_files_other_than_ocamlinit = 
+let common_part_in_conventional_files = 
    [
      rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
-     rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
+     
    ] ;;     
 
 
 let conventional_files_with_usual_content =  
    [
      rootless_path_for_ocamlinit, usual_text_for_ocamlinit ;
-   ] @ conventional_files_other_than_ocamlinit ;;      
+     rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
+   ] @ common_part_in_conventional_files ;;      
 
 let conventional_files_with_minimal_content =    
    [
      rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit ;
-   ] @ conventional_files_other_than_ocamlinit ;;      
+   ] @ common_part_in_conventional_files ;;      
 
 
 let minimal_set_of_needed_dirs = 
