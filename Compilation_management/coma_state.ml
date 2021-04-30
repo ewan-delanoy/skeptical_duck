@@ -1650,8 +1650,8 @@ let find_the_mli_among_the_two rless1 rless2 =
     if (Dfn_rootless.to_ending rless1) = Dfa_ending.mli 
     then Some(rless1,rless2) 
     else   
-    if (Dfn_rootless.to_ending rless1) = Dfa_ending.mli 
-    then Some(rless1,rless2) 
+    if (Dfn_rootless.to_ending rless2) = Dfa_ending.mli 
+    then Some(rless2,rless1) 
     else None ;;
     
 let check_admissiblity_of_single_acolyte rless =
