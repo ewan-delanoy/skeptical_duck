@@ -110,7 +110,7 @@ let minimal_set_of_needed_dirs =
     utility_files_subdir
   ] ;;  
 
-let usual_set_of_needed_dirs = 
+let full_set_of_needed_dirs = 
   minimal_set_of_needed_dirs @
     [
       fads_subdir 

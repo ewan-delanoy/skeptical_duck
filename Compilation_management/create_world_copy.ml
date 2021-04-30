@@ -59,7 +59,7 @@ module Private = struct
       let (conv_files,needed_dirs) = (
         if Needed_data_summary.is_everything summary
         then (Coma_constant.conventional_files_with_full_content,
-              Coma_constant.usual_set_of_needed_dirs)
+              Coma_constant.full_set_of_needed_dirs)
         else (Coma_constant.conventional_files_with_minimal_content,
               Coma_constant.minimal_set_of_needed_dirs)
       ) in 
