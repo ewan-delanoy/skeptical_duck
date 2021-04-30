@@ -5,6 +5,7 @@
 
 *)
 
+module Private = struct
 
 let utility_files_subdir=
   Dfa_subdirectory.of_line "Utility_files";;
@@ -116,10 +117,20 @@ let full_set_of_needed_dirs =
       fads_subdir 
     ] ;;  
 
+end ;;
 
-let endings_for_cleaning  = [
-    Dfa_ending.mll, Dfa_ending.ml;
-    Dfa_ending.mly, Dfa_ending.ml
-];;
+ let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
+ let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
+ let debug_build_subdir = Private.debug_build_subdir ;;
+ let exec_build_subdir = Private.exec_build_subdir ;;
+ let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
+ let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
+ let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
+ let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
+ let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
+ let rootless_path_for_targetfile = Private.rootless_path_for_targetfile ;;
+ let usual_build_subdir = Private.usual_build_subdir ;;
+ let utility_files_subdir = Private.utility_files_subdir ;;
 
 
