@@ -18,8 +18,6 @@ let githubbed_archive_subdir=
 let persistent_data_subdir = 
    Dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
 
-let confidential_subdir =
-  Dfa_subdirectory.of_line "Confidential";;
 
 let build_subdir =   Dfa_subdirectory.of_line "_build";;
 let usual_build_subdir= Dfa_subdirectory.extend build_subdir "_usual_build";;
@@ -70,7 +68,6 @@ let git_ignored_subdirectories =
   [
      utility_files_subdir;
      build_subdir;
-     confidential_subdir;
      githubbed_archive_subdir;
      fads_subdir;
   ];;
