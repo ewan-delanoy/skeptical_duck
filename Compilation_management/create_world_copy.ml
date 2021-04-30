@@ -100,7 +100,9 @@ module Private = struct
            gitpush_after_backup = false ;
         } in 
         let remote_cs = Coma_state_field.empty_one remote_config in 
-        Modify_coma_state.Physical_followed_by_internal.refresh remote_cs ;;    
+        let remote_cs2 =Modify_coma_state.Physical_followed_by_internal.refresh remote_cs in 
+        let _ = Save_coma_state.save remote_cs2 in 
+        remote_cs2;;    
         
 
 
