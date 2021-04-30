@@ -29,8 +29,7 @@ let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
 let bare_name_for_makefile="makefile";;
 let bare_name_for_merlinfile=".merlin";;
 
-let short_path_for_hex_config_sheet= Dfn_short.of_line("hex_config_sheet.txt");; 
-let short_path_for_hex_latest_game= Dfn_short.of_line("hex_latest_game.txt");; 
+
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_ocamldebug_printersfile= Dfn_short.of_line"cmos_for_ocamldebug.txt";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
@@ -69,12 +68,6 @@ let git_ignored_subdirectories =
      fads_subdir;
   ];;
 
-let conventional_subdirs =
-   [
-     usual_build_subdir;
-     debug_build_subdir;
-     exec_build_subdir
-   ];;
 
 let minimalist_text_for_ocamlinit =
    "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.double_semicolon^
