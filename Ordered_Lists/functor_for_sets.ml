@@ -65,6 +65,9 @@ let setminus ((co,deco,cmpr):('a,'b) parameter)
 
 let singleton ((co,deco,cmpr):('a,'b) parameter)  x=co[x];;
 
+let size_of_intersection ((co,deco,cmpr):('a,'b) parameter) 
+     ox oy= List.length(Ordered.intersect cmpr (deco ox) (deco oy));;
+
 let sort ((co,deco,cmpr):('a,'b) parameter) 
      l= co(Ordered.sort cmpr l);;
 
