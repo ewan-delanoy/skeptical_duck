@@ -4,6 +4,41 @@
 
 *)
 
+module Private = struct 
+
+  let frac_ceiling_for_positive_denominator a b=
+  (*we assume that b is positive *)
+  if (a mod b)=0 
+  then (a/b) 
+  else if (a>=0) 
+       then (a/b)+1
+       else -(( abs a)/b);;
+    
+let rec helper_for_power (a,b,accu) =
+    if b<1 then accu else 
+    if b=1 then a*accu else 
+    let multiplier = (if b mod 2=0 then 1 else a) in 
+    helper_for_power (a*a,b/2,multiplier * accu) ;;  
+
+end ;;  
+
+
+let fold_sum=function
+[]->0
+|a::b->List.fold_left(+)(a)(b);;
+
+let frac_ceiling a b=
+ if (b=0) 
+ then failwith("division by zero in frac_ceiling")
+ else if (b>0)
+      then Private.frac_ceiling_for_positive_denominator a b
+      else Private.frac_ceiling_for_positive_denominator (-a) (-b);;
+  
+let power a b = Private.helper_for_power (a,b,1) ;;
+
+let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
+
+(*
 let delta_list l=
 let rec sub_f=
 (function (accu,a,rl)->match rl with
@@ -13,72 +48,4 @@ let rec sub_f=
 match l with
 []->[]
 |u::v->sub_f([],u,v);;
-
-let fold_sum=function
-[]->0
-|a::b->List.fold_left(+)(a)(b);;
-
-let cumsum l=
-  if l=[] then [] else
-  let rec cumsum0=(fun
-    (da_ober,s,graet)->
-      match da_ober with
-      []->List.rev(s::graet)
-      |a::peurrest->cumsum0(peurrest,a+s,s::graet)
-  ) in
-  cumsum0(List.tl(l),List.hd(l),[]);;
-  
-let functional_if(bowl,x,y)=if bowl then x else y;; 
-
-let nearest_int_of_float x=
-  let i=int_of_float x in
-  let fi=float i in
-  if fi<x
-  then if x<fi+.0.5 then i else i+1
-  else if fi-.0.5<x then i else i-1;;
- 
-
-let careful_if bowl f1 arg1 f2 arg2=if bowl then f1 arg1 else f2 arg2;;
-
-let frac_floor0 a b=
- (*we assume that b is positive *)
-      if (a>=0)||((a mod b)=0) 
-      then (a/b)
-      else -(((-a)/b)+1);;
- 
-let frac_floor a b=
- if (b=0) 
- then failwith("division by zero in frac_floor")
- else if (b>0)
-      then frac_floor0 a b
-      else frac_floor0 (-a) (-b);;
-
-let frac_ceiling0 a b=
- (*we assume that b is positive *)
- if (a mod b)=0 
- then (a/b) 
- else if (a>=0) 
-      then (a/b)+1
-      else -(( abs a)/b);;
- 
-let frac_ceiling a b=
- if (b=0) 
- then failwith("division by zero in frac_ceiling")
- else if (b>0)
-      then frac_ceiling0 a b
-      else frac_ceiling0 (-a) (-b);;
- 
-let nonequal_floor a b=
-   let q=frac_floor a b in
-   if (a mod b)=0 then q-1 else q;;
-   
-let nonequal_ceiling a b=
-   let q=frac_ceiling a b in
-   if (a mod b)=0 then q+1 else q;;   
-
-let ceiling_mod a b=
- match (a mod b) with 0->b |k->k;;
- 
-let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
-
-           
+*)           
