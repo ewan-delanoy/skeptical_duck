@@ -1,6 +1,6 @@
 (* 
 
-#use"Ordered_Lists/set_of_integers.ml";;s
+#use"Ordered_Lists/set_of_integers.ml";;
 
 *)
 
@@ -15,6 +15,7 @@ let max x= Functor_for_sets.max tr x;;
 let mem a x= Functor_for_sets.mem tr a x;;
 let merge l= Functor_for_sets.merge tr l;;
 let min x= Functor_for_sets.min tr x;;
+let outsert x oy= Functor_for_sets.outsert tr x oy;;
 let safe_set l= Functor_for_sets.safe_set tr l;;
 let setminus x y= Functor_for_sets.setminus tr x y;;
 let singleton a= Functor_for_sets.singleton tr a;;
