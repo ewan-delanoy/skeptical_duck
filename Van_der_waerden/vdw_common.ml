@@ -19,7 +19,7 @@ let look_for_arithmetic_progressions_in_with_width_equal_to
 let look_for_arithmetic_progressions_in_with_width_up_to
   width soi=
     let max_width = (if width<1 then ((diameter soi)-1)/2 else width) in 
-    List.flatten(Ennig.doyle (look_for_arithmetic_progressions_in_with_width_equal_to soi) 1 max_width);;
+    List.rev(List.flatten(Ennig.doyle (look_for_arithmetic_progressions_in_with_width_equal_to soi) 1 max_width));;
 
 let test_for_admissibility constraints soi = match constraints with 
   Vdw_list_of_constraints_t.Defined_by_max_width(max_width) ->
