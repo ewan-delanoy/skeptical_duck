@@ -10,6 +10,7 @@ let fold_merge x = Functor_for_sets.fold_merge tr x;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
 let image f x= Functor_for_sets.image tr f x;;
 let is_included_in x y= Functor_for_sets.is_included_in tr x y;;
+let length x= Functor_for_sets.length tr x;;
 let mem a x= Functor_for_sets.mem tr a x;;
 let merge l= Functor_for_sets.merge tr l;;
 let safe_set l= Functor_for_sets.safe_set tr l;;
