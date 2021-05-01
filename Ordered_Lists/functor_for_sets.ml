@@ -41,11 +41,15 @@ let is_included_in ((co,deco,cmpr):('a,'b) parameter)
 
 let length ((co,deco,cmpr):('a,'b) parameter) ox= List.length(deco ox);;
 
+let max ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(List.rev ox);;
+
 let mem ((co,deco,cmpr):('a,'b) parameter) 
      x oy= Ordered.mem cmpr x (deco oy);;
 
 let merge ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Ordered.merge cmpr (deco ox) (deco oy));;
+
+let min ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(ox);;
 
 let nmem ((co,deco,cmpr):('a,'b) parameter) 
      x oy= not(Ordered.mem cmpr x (deco oy));;
