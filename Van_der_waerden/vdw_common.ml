@@ -16,8 +16,7 @@ let look_for_arithmetic_progressions_in_with_width_equal_to
   let temp1 = Set_of_integers.image (fun x->Set_of_integers.safe_set [x;x+width;x+2*width]) soi in 
   List.filter (fun obstruction ->Set_of_integers.is_included_in obstruction soi) temp1 ;;  
 
-let look_for_arithmetic_progressions_in_with_width_up_to
-  width soi=
+let look_for_arithmetic_progressions_in_with_width_up_to width soi=
     let max_width = (if width<1 then ((diameter soi)-1)/2 else width) in 
     List.rev(List.flatten(Ennig.doyle (look_for_arithmetic_progressions_in_with_width_equal_to soi) 1 max_width));;
 
@@ -209,7 +208,7 @@ let force_insert inserted_elt (soi,obstructions) =
       new_obstructions (Set_of_integers.outsert inserted_elt soi,untouched) ;;
 
 
-(*      
+    
 let rec iterator_for_smallest_solution (treated,(soi,obstructions,opt_size)) =
     if obstructions = [] 
     then let sol = Set_of_integers.merge treated soi in 
@@ -225,4 +224,9 @@ let rec iterator_for_smallest_solution (treated,(soi,obstructions,opt_size)) =
          let (soi2,obstructions2) = force_remove
             (Set_of_integers.singleton a)  (soi,obstructions) in  
           iterator_for_smallest_solution (treated,(soi2,obstructions2,opt_size))  ;;
-*)          
+         
+let optimistic_silex_smallest_solution width soi =
+   let obstructions = look_for_arithmetic_progressions_in_with_width_up_to width soi in 
+   let formal = Vdw_list_of_constraints_t.General_case obstructions in 
+   let (opt_size,_) = optimistic_solver formal soi in 
+   iterator_for_smallest_solution (Set_of_integers.safe_set [],(soi,obstructions,opt_size)) ;; 
