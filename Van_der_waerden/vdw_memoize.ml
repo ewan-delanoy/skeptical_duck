@@ -127,7 +127,8 @@ let next_missing_link width soi=
       let (temp2,temp3) = List.partition (fun (x,opt)->opt=None) temp1 in 
       let temp4 = Image.image fst temp2 
       and temp5 = Image.image (fun (x,opt)->(Set_of_integers.forget_order x,Option.unpack opt)) temp3 in 
-      (Total_ordering.min Vdw_common.silex_order temp4,temp5)   
+      let m = (if temp4=[] then Set_of_integers.safe_set [] else Total_ordering.min Vdw_common.silex_order temp4) in 
+      (m,temp5)   
    ;;
 
   
