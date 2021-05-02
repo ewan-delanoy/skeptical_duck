@@ -187,3 +187,42 @@ let helper_for_computing_cartesian_handle width cases=
 
 let compute_cartesian_handle width case = 
   helper_for_computing_cartesian_handle width [[],case] ;;   
+
+let force_remove removed_elts (soi,obstructions) =
+    let new_soi = Set_of_integers.setminus soi removed_elts in 
+    let new_obstructions = List.filter (
+      fun obs -> (Set_of_integers.size_of_intersection obs removed_elts) = 0
+    ) obstructions in 
+    (new_soi,new_obstructions) ;;
+   
+let add_possibly_singleton_obstructions new_obstructions (soi,obstructions) =
+    let (singles,nonsingles) = List.partition 
+      (fun obs -> Set_of_integers.length obs =1) 
+     new_obstructions in 
+     let removed_elts = Set_of_integers.safe_set (Image.image Set_of_integers.min singles) in 
+     force_remove removed_elts (soi,nonsingles@obstructions) ;;
+        
+let force_insert inserted_elt (soi,obstructions) =
+   let (touched,untouched) = List.partition (Set_of_integers.mem inserted_elt) obstructions in 
+   let new_obstructions = Image.image (Set_of_integers.outsert inserted_elt) touched in 
+   add_possibly_singleton_obstructions 
+      new_obstructions (Set_of_integers.outsert inserted_elt soi,untouched) ;;
+
+
+(*      
+let rec iterator_for_smallest_solution (treated,(soi,obstructions,opt_size)) =
+    if obstructions = [] 
+    then let sol = Set_of_integers.merge treated soi in 
+         (Set_of_integers.length sol,sol)
+    else let a = Set_of_integers.min soi in
+         let (new_soi,new_obstructions) = force_insert a (soi,obstructions) in 
+         let (n1,_) = optimistic_solver 
+              (Vdw_list_of_constraints_t.General_case(new_obstructions)) new_soi in 
+         if n1 = opt_size -1
+         then  iterator_for_smallest_solution 
+             (Set_of_integers.insert a treated,(new_soi,new_obstructions,n1))     
+         else     
+         let (soi2,obstructions2) = force_remove
+            (Set_of_integers.singleton a)  (soi,obstructions) in  
+          iterator_for_smallest_solution (treated,(soi2,obstructions2,opt_size))  ;;
+*)          

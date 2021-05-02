@@ -31,7 +31,12 @@ let level1 soi =
      ) intervals) in 
      (List.length temp1,Set_of_integers.safe_set temp1) ;;
     
-let partial_level3 n = List.filter (fun x->List.mem(x mod 8)[1;2;4;5]) (Ennig.ennig 1 n);;     
+let partial_level3 n = 
+   match n with 
+      9 -> [1; 2; 4; 8; 9] 
+    | 10 -> [1; 2; 4; 5; 10]
+    | 11 -> [1; 2; 4; 5; 10; 11]
+   | _ ->List.filter (fun x->List.mem(x mod 8)[1;2;4;5]) (Ennig.ennig 1 n);;     
 
 let check_for_precomputed_value (width,soi) =
    let (d,relocated_soi) = set_start_to_one soi in 
