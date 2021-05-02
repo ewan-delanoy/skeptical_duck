@@ -34,7 +34,6 @@ let level1 soi =
 let partial_level3 n = 
    match n with 
       9 -> [1; 2; 4; 8; 9] 
-    | 10 -> [1; 2; 4; 5; 10]
     | 11 -> [1; 2; 4; 5; 10; 11]
    | _ ->List.filter (fun x->List.mem(x mod 8)[1;2;4;5]) (Ennig.ennig 1 n);;     
 
