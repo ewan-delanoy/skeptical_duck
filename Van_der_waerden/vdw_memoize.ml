@@ -4,7 +4,6 @@
 
 *)
 
-
 let hashtbl_for_vdw_computation = ((Hashtbl.create 100): (int * Set_of_integers_t.t, int * Set_of_integers_t.t) Hashtbl.t) ;;
 
 let ii x y =  (Ennig.ennig x y);;
@@ -114,37 +113,23 @@ let register_fork width (a,b,c) l_soi=
    let best_sol = Total_ordering.min Vdw_common.silex_order sols in 
    Hashtbl.add hashtbl_for_vdw_computation (width,soi) (optimal_size,best_sol) ;;
 
-extend 2 (ii 1 3) ;;
-extend 2 (iii [1,3;5,7]);;
-extend 3 (ii 1 3) ;;
-extend 3 (iii [1,3;5,7]);;
-register_decomposition 3 (ii 1 3) [4]      (partial_level3 4);;
-register_decomposition 3 (ii 1 3) (ii 4 5) (partial_level3 5);;
-register_decomposition 3 (ii 1 3) (ii 4 6) (partial_level3 6);;
-register_fork 3 (1,4,7) (ii 1 7) ;;
+exception No_missing_link ;;
 
-(*
-let comp width l_soi = check_for_precomputed_value(width,Set_of_integers.safe_set l_soi) ;;
+let next_missing_link width soi=
+   match check_for_precomputed_value (width,soi) with 
+   Some(_,_) -> raise No_missing_link
+   |None ->
+      let w = Vdw_list_of_constraints_t.Defined_by_max_width width in 
+      let (_,_,head_constraint) = Vdw_common.first_cut w soi in
+      let dog_eared_ones =Set_of_integers.image (fun cell->Set_of_integers.outsert cell soi) 
+        head_constraint in 
+      let temp1 = Image.image (fun x->(x,check_for_precomputed_value (width,x))) dog_eared_ones in 
+      let (temp2,temp3) = List.partition (fun (x,opt)->opt=None) temp1 in 
+      let temp4 = Image.image fst temp2 
+      and temp5 = Image.image (fun (x,opt)->(Set_of_integers.forget_order x,Option.unpack opt)) temp3 in 
+      (Total_ordering.min Vdw_common.silex_order temp4,temp5)   
+   ;;
 
-comp  3 (ii 1 3) ;;
-let ff n = comp 3 (ii 1 n);;
-let ns w l= Vdw_common.naive_solver 
-    (Vdw_list_of_constraints_t.Defined_by_max_width w) 
-      (Set_of_integers.safe_set l) ;;
-
-let w1 = Vdw_list_of_constraints_t.Defined_by_max_width 3 ;;
-let x1 = Set_of_integers.safe_set (ii 1 8) ;;
-
-let res1 = Vdw_common.naive_solver w1 x1 ;;
-let res2 = Vdw_common.naively_compute_decomposers w1 x1 ;;
-let res3 = Vdw_common.first_cut w1 x1;;
-     
-let x1 = Set_of_integers.safe_set (iii [1,4;6,8]) ;;
-
-let res1 = Vdw_common.naive_solver w1 x1 ;;
-let res2 = Vdw_common.naively_compute_decomposers w1 x1 ;;
-let res3 = Vdw_common.first_cut w1 x1;;
+  
 
 
-let g1 = iii [1,3;5,7];;
-*)
