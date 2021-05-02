@@ -153,3 +153,37 @@ let z1 = Set_of_integers.safe_set(Ennig.ennig 1 11) ;;
 let z2 = naively_compute_decomposers (Vdw_list_of_constraints_t.Defined_by_max_width(0)) z1 ;;
 
 *)        
+
+let test_for_handle_passage width soi=
+   let w1 = Vdw_list_of_constraints_t.Defined_by_max_width width 
+   and w2 = Vdw_list_of_constraints_t.Defined_by_max_width (width-1) in 
+   let (n1,_) = optimistic_solver w1 soi 
+   and (n2,_) = optimistic_solver w2 soi in 
+   n1 = n2 ;;  
+
+let write_fork head_constraint (past,soi) =
+    Set_of_integers.image (
+      fun cell-> 
+        let remains = Set_of_integers.outsert cell head_constraint in 
+        ((cell,Set_of_integers.forget_order remains)::past,Set_of_integers.outsert cell soi)
+        
+    ) head_constraint  ;;
+
+
+let helper_for_computing_cartesian_handle width cases=
+   let rec tempf = (fun (treated,to_be_treated) ->
+   match to_be_treated with 
+   [] -> treated
+   | (past,soi) :: others ->
+       if test_for_handle_passage width soi 
+       then  tempf((past,soi)::treated,others)
+       else  
+       let w = Vdw_list_of_constraints_t.Defined_by_max_width width in 
+       let (_,_,head_constraint) = first_cut w soi in
+       let new_cases = write_fork head_constraint (past,soi) in
+       tempf((past,soi)::treated,List.rev_append new_cases others)
+   ) in 
+   tempf([],cases);;         
+
+let compute_cartesian_handle width case = 
+  helper_for_computing_cartesian_handle width [[],case] ;;   
