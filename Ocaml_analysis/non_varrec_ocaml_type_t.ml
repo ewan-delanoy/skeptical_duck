@@ -11,6 +11,7 @@ ADT's, uples do not appear alone but only inside variants.
 type t= 
     Int 
    |String 
+   |Bool
    |List of t 
    |Array of t 
    |Modular of string;;
