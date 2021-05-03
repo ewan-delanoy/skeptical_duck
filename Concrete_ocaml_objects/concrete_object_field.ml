@@ -119,14 +119,21 @@ let to_string_pair crobj=
   and us=unwrap_string in 
   (us arg1,us arg2);;
 
-let of_string_triple (s1,s2,s3)=
-   Concrete_object_t.Uple (Image.image wrap_string [s1;s2;s3]);;
+let of_int_triple (s1,s2,s3)=
+   Concrete_object_t.Uple (Image.image wrap_int [s1;s2;s3]);;
 
-let to_string_triple crobj=
+let to_int_triple crobj=
   let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
-  and us=unwrap_string in 
+  and us=unwrap_int in 
   (us arg1,us arg2,us arg3);;
 
+let of_string_triple (s1,s2,s3)=
+  Concrete_object_t.Uple (Image.image wrap_string [s1;s2;s3]);;
+
+let to_string_triple crobj=
+ let (arg1,arg2,arg3,_,_,_,_)=unwrap_bounded_uple crobj 
+ and us=unwrap_string in 
+ (us arg1,us arg2,us arg3);;  
 
 
 let of_int_list l=Concrete_object_t.List (Image.image (fun i->Concrete_object_t.Int(i)) l);;
