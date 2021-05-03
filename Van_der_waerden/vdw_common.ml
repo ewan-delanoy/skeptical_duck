@@ -230,3 +230,46 @@ let optimistic_silex_smallest_solution width soi =
    let formal = Vdw_list_of_constraints_t.General_case obstructions in 
    let (opt_size,_) = optimistic_solver formal soi in 
    iterator_for_smallest_solution (Set_of_integers.safe_set [],(soi,obstructions,opt_size)) ;; 
+
+let translate d soi = Set_of_integers.safe_set (Set_of_integers.image (fun x->x+d) soi);;
+
+let test_for_disjointness ll=
+      let temp1 = Uple.list_of_pairs ll in 
+      List.for_all (fun (x,y)->(Set_of_integers.size_of_intersection x y) = 0) temp1 ;; 
+   
+let solution_in_disjoint_case obstructions soi = 
+      let temp1 = Image.image Set_of_integers.max obstructions in
+      Set_of_integers.setminus soi (Set_of_integers.safe_set temp1) ;;
+   
+let set_start_to_one soi =
+        let d = (Set_of_integers.min soi)-1 in 
+        (d,translate (-d) soi);;
+   
+let level1 soi = 
+        let l = Set_of_integers.forget_order soi in 
+        let intervals = Listennou.decompose_into_connected_components l in 
+        let temp1 = List.flatten(Image.image (
+          fun (a,b)-> List.filter (fun x->List.mem ((x-a) mod 3)[0;1] ) (Ennig.ennig a b)
+        ) intervals) in 
+        (List.length temp1,Set_of_integers.safe_set temp1) ;;
+       
+let partial_level3 n = 
+      match n with 
+         9 -> [1; 2; 4; 8; 9] 
+       | 11 -> [1; 2; 4; 5; 10; 11]
+      | _ ->List.filter (fun x->List.mem(x mod 8)[1;2;4;5]) (Ennig.ennig 1 n);;     
+   
+   let check_for_precomputed_value hashtbl (width,soi) =
+      let (d,relocated_soi) = set_start_to_one soi in 
+      match Hashtbl.find_opt hashtbl (width,relocated_soi) with 
+      (Some(optimal_size,sol)) -> Some(optimal_size,translate d sol)
+      |None ->
+         let obstructions = look_for_arithmetic_progressions_in_with_width_up_to width soi in 
+         if test_for_disjointness obstructions
+         then let sol = solution_in_disjoint_case obstructions soi in 
+               Some(Set_of_integers.length sol,sol)
+         else      
+         if width=1 
+         then Some(level1 soi) 
+         else None;;
+       
