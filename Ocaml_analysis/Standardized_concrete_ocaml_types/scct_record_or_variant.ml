@@ -31,7 +31,7 @@ module Private = struct
      ) data) in
      let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
      let first_line_in_body = "let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
-     let function_body =  
+     let old_function_body =  
      first_line_in_body
       ::(
        List.flatten(Image.image (
@@ -39,13 +39,15 @@ module Private = struct
            ~module_name:rov.Scct_record_or_variant_t.modulename 
        ) data) 
      ) in 
+     let addition_to_last_line = " raise(Of_concrete_object_exn(crobj)) "^ds in 
+     let (temp1,temp2) = Listennou.ht (List.rev old_function_body) in 
+     let function_body = List.rev ((temp1^addition_to_last_line)::temp2) in 
     [
       "exception Of_concrete_object_exn of string "^ds;
       "\n";
        "let of_concrete_object crobj = ";
     ] @ ( Image.image (fun line->second_tab^line)  function_body) 
-      @
-    [ "     raise(Of_concrete_object_exn(crobj)) "^ds ] ;;
+       ;;
   
   
   let write_converters_for_variant ~tab_width rov= 
@@ -55,8 +57,8 @@ module Private = struct
      and hooks = Image.image ( fun
       (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
        let c_variant = String.capitalize_ascii vague_variant_name 
-       and uc_variant =  String.uncapitalize_ascii vague_variant_name  in 
-       "let hook_for_"^uc_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
+       and l_variant =  String.lowercase_ascii vague_variant_name  in 
+       "let hook_for_"^l_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
      ) data in
      let lines =[
       "let salt = "^broken_mod^" "^ds ;
