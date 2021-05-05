@@ -44,7 +44,7 @@ module Private = struct
      Image.image (
        fun (k,(varname,is_a_list,atm)) ->
           let comma_or_not = (if (k=n)||(n=1) then "" else ",") in
-          (String.make  third_tab_width ' ')^(Scct_atomic_type.converter_from_crobj is_a_list atm)
+          (String.make  third_tab_width ' ')^(Scct_atomic_type.old_converter_from_crobj is_a_list atm)
           ^" "^argname^(string_of_int k)^comma_or_not
      ) temp1 ;;
 
@@ -90,7 +90,7 @@ module Private = struct
       else let (_,atm_is_listy,atm) = List.hd l in  
            [
               (full_variant_name  module_name item_name)^"(Image.image (  ";
-              "       "^(Scct_atomic_type.converter_from_crobj atm_is_listy atm);
+              "       "^(Scct_atomic_type.old_converter_from_crobj atm_is_listy atm);
               ") temp)"
            ]) in 
       Image.image (fun line->local_tab^line) not_indented_yet;;   
