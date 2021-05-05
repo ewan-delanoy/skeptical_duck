@@ -29,10 +29,13 @@ module Private = struct
           ^" "^argname^(string_of_int k)^comma_or_not
      ) temp1 ;;
 
-
+  let first_component (IU l) = List.hd l;;
+  let dimension (IU l) = List.length l ;;
   
 
 end ;;
 
+let dimension = Private.dimension ;;
+let first_component = Private.first_component ;;
 let vertical_homogeneous_from_crobj = Private.vertical_homogeneous_from_crobj ;;
 let write_type = Private.write_type ;;

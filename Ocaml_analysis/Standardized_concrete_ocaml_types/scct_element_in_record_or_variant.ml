@@ -31,15 +31,6 @@ module Private = struct
       ;;
   
 
-  let arguments_in_variant_output third_tab_width argname l=
-     let temp1 = Ennig.index_everything l in  
-     let n = List.length(l) in 
-     Image.image (
-       fun (k,pl_atm) ->
-          let comma_or_not = (if (k=n)||(n=1) then "" else ",") in
-          (String.make  third_tab_width ' ')^(Scct_possibly_listy_atom.converter_from_crobj pl_atm)
-          ^" "^argname^(string_of_int k)^comma_or_not
-     ) temp1 ;;
 
   let hook_name variant_name =
         "hook_for_"^(String.lowercase_ascii variant_name) ;;
@@ -60,7 +51,7 @@ module Private = struct
       "if hook = "^(hook_name item_name);
       "then "^(full_variant_name  module_name item_name)^"(";
     ]@
-      ( arguments_in_variant_output 8 "arg" l)@
+      (Scct_inner_uple.vertical_homogeneous_from_crobj ~tab_width:8 ~separator:"," "arg" l)@
     [  "     )";   
       "else"
     ] ;;
