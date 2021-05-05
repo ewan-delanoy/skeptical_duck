@@ -8,6 +8,7 @@
 module Private = struct
 
     let c= "Concrete_"^"object_field.";;
+    let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
     
     let table_for_names_inside_converters = 
         [
@@ -22,7 +23,7 @@ module Private = struct
           Scct_atomic_type_t.String_List_List,"string_list_list"
         ];;
     
-    let converters atm = match atm with 
+    let nonlisty_converters atm = match atm with 
         Scct_atomic_type_t.Modular(modulename) -> let prefix = (String.capitalize_ascii modulename)^"." in 
                               (prefix^"of_concrete_object",prefix^"to_concrete_object") 
        |Int    -> (c^"unwrap_int",c^"wrap_int")
@@ -30,6 +31,12 @@ module Private = struct
        | _ -> let name = List.assoc atm table_for_names_inside_converters in 
               (c^"to_"^name,c^"of_"^name) ;;
     
+    let converters is_listy atm =
+          let (cv_of_crobj,cv_to_crobj) =  nonlisty_converters atm in 
+          if is_listy 
+          then ("( "^c^"to_list"^" "^cv_of_crobj^" )","( "^c^"of_list"^" "^cv_to_crobj^" )")  
+          else (cv_of_crobj,cv_to_crobj) ;;
+
     let table_for_typenames = 
         [
           Scct_atomic_type_t.Bool,"bool";
@@ -45,13 +52,20 @@ module Private = struct
           Scct_atomic_type_t.String_List_List,"string list list"
          ];;
     
-    let write_in_ocaml atm = match atm with 
+    let write_nonlisty_in_ocaml atm = match atm with 
          Scct_atomic_type_t.Modular(modulename) -> 
                (String.capitalize_ascii modulename)^"_t.t" 
         | _ -> List.assoc atm table_for_typenames ;;
     
-    end ;;
+    let write_in_ocaml is_listy atm =     
+       let default = write_nonlisty_in_ocaml atm in 
+       if is_listy 
+       then (wrap default)^" list" 
+       else default ;;     
+
+
+end ;;
     
-let converter_from_crobj atm = fst (Private.converters atm) ;;
-let converter_to_crobj atm   = snd (Private.converters atm) ;;
+let converter_from_crobj is_listy atm = fst (Private.converters is_listy atm) ;;
+let converter_to_crobj is_listy  atm  = snd (Private.converters is_listy atm) ;;
 let write_in_ocaml = Private.write_in_ocaml ;;    
