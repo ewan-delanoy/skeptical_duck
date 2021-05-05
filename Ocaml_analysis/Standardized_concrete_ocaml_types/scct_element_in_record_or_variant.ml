@@ -40,13 +40,13 @@ module Private = struct
         ;;
     
 
-    let arguments_in_output second_tab_width argname l=
+    let arguments_in_output third_tab_width argname l=
        let temp1 = Ennig.index_everything l in  
        let n = List.length(l) in 
        Image.image (
          fun (k,(varname,is_a_list,atm)) ->
             let comma_or_not = (if k=n then "," else "") in
-            (String.make  second_tab_width ' ')^(Scct_atomic_type.converter_from_crobj atm)
+            (String.make  third_tab_width ' ')^(Scct_atomic_type.converter_from_crobj atm)
             ^" "^argname^(string_of_int k)^comma_or_not
        ) temp1 ;;
 
@@ -63,11 +63,11 @@ module Private = struct
     ;;       
 
     let converter_from_crobj_in_nonlisty_variant 
-          ~module_name ~variant_name 
-          (Scct_element_in_record_or_variant_t.U(_,_, l))=
+          ~module_name 
+          (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
       [
-        "if hook = "^(hook_name variant_name);
-        "then "^(full_variant_name  module_name variant_name)^"(";
+        "if hook = "^(hook_name item_name);
+        "then "^(full_variant_name  module_name item_name)^"(";
       ]@
         ( arguments_in_output 5 "arg" l)@
       [  "      )";   
@@ -75,27 +75,27 @@ module Private = struct
       ] ;;
 
       let converter_from_crobj_in_listy_variant 
-         ~module_name ~variant_name 
-        (Scct_element_in_record_or_variant_t.U(_,_, l))=
+         ~module_name 
+        (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
         [
-          "if hook = "^(hook_name variant_name);
+          "if hook = "^(hook_name item_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
           "     Image.image ( fun uple_obj -> ";
           "       let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
-          "        (";
+          "        "^(full_variant_name  module_name item_name)^"(";
         ]@
-          ( arguments_in_output 10 "urg" l)@
-        [  "       ))";   
+          ( arguments_in_output 4 "urg" l)@
+        [  "       )) temp";   
            "else"
         ] ;;  
 
       let converter_from_crobj_in_variant 
-        ~module_name ~variant_name elt = 
+        ~module_name  elt = 
         match elt with
           (Scct_element_in_record_or_variant_t.U(item_name,is_a_list, l))->
          if is_a_list 
-         then converter_from_crobj_in_listy_variant ~module_name ~variant_name elt 
-         else  converter_from_crobj_in_nonlisty_variant ~module_name ~variant_name elt ;;   
+         then converter_from_crobj_in_listy_variant ~module_name  elt 
+         else  converter_from_crobj_in_nonlisty_variant ~module_name elt ;;   
 
 end ;;
 

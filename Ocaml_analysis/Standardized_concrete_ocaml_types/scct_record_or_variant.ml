@@ -58,10 +58,13 @@ module Private = struct
      ) data in
      let lines =[
       "let salt = "^broken_mod^" "^Particular_string.double_semicolon ;
+      "\n";
     ] @ 
      (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
     [
+      "\n";
       "exception Of_concrete_object_exn of string "^Particular_string.double_semicolon;
+      "\n";
     ] @ 
       (write_converter_from_crobj_for_variant rov)@
     [] in 
