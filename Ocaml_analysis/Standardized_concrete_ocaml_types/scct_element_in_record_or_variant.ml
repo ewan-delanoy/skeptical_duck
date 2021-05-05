@@ -97,18 +97,15 @@ module Private = struct
 
 
     let converter_from_crobj_in_listy_variant 
-       ~module_name 
-      (Scct_element_in_record_or_variant_t.U(item_name,_,l))=
+       ~module_name elt =
+      let (Scct_element_in_record_or_variant_t.U(item_name,_,l))=elt in 
       [
         "if hook = "^(hook_name item_name);
         "then let temp = Concrete_object_field.unwrap_list arg1 in ";
-        "     "^(full_variant_name  module_name item_name)^"(Image.image ( fun uple_obj -> ";
-        "       let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
-        "        "^"(";
       ]@
-        ( arguments_in_variant_output 4 "urg" l)@
-      [  "       )) temp)";   
-         "else"
+       (inner_converter_from_crobj_in_listy_variant  ~module_name elt)@
+      [    
+        "else"
       ] ;;  
 
     let converter_from_crobj_in_variant 
