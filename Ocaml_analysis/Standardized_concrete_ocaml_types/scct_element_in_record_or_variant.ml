@@ -30,15 +30,12 @@ module Private = struct
         item_name ^" of "^(listify is_a_list1 first_draft) 
       ;;
   
+  let write_type ~separator
+      (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) = 
+       let first_draft = Scct_inner_uple.write_type l in   
+       item_name ^separator^(listify is_a_list1 first_draft) 
+     ;;
 
-
-  let hook_name variant_name =
-        "hook_for_"^(String.lowercase_ascii variant_name) ;;
-  
-  let full_variant_name  module_name variant_name =
-  (String.capitalize_ascii module_name)^"."^(String.capitalize_ascii variant_name) ;;     
-
-  
   let converter_from_crobj_in_nonlisty_variant 
         ~constructor ~question
         (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
@@ -100,3 +97,4 @@ end ;;
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
 let write_record_in_ocaml = Private.write_record_in_ocaml ;; 
 let write_variant_in_ocaml = Private.write_variant_in_ocaml ;; 
+let write_type = Private.write_type ;; 
