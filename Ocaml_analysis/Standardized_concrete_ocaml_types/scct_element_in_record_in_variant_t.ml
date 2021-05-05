@@ -1,6 +1,6 @@
 (* 
 
-#use"Ocaml_analysis/Standardized_concrete_ocaml_types/scct_uple_level_t.ml";;
+#use"Ocaml_analysis/Standardized_concrete_ocaml_types/scct_element_in_record_or_variant_t.ml";;
 
 An element in the uple is represented by a string * bool * Scct_atomic_type_t.t object.
 

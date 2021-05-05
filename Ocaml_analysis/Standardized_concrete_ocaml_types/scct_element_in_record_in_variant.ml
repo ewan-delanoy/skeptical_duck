@@ -1,6 +1,6 @@
 (* 
 
-#use"Ocaml_analysis/Standardized_concrete_ocaml_types/scct_uple_level.ml";;
+#use"Ocaml_analysis/Standardized_concrete_ocaml_types/scct_element_in_record_or_variant.ml";;
 
 
 *)
@@ -16,7 +16,18 @@ module Private = struct
           then name 
           else (Scct_common.wrap_in_parentheses_if_needed name)^" list" ;; 
 
-    let write_in_ocaml 
+    let write_record_in_ocaml 
+          (Scct_element_in_record_in_variant_t.U(item_name,is_a_list1, l)) =
+           let temp1 = Image.image (
+             fun  (varname,is_a_list2,atm) ->
+                Scct_common.wrap_in_parentheses_if_needed(
+                    listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
+          ) l in 
+           let first_draft = String.concat " * " temp1 in     
+           item_name ^" : "^(listify is_a_list1 first_draft) 
+         ;;
+
+    let write_variant_in_ocaml 
          (Scct_element_in_record_in_variant_t.U(item_name,is_a_list1, l)) =
           let temp1 = Image.image (
             fun  (varname,is_a_list2,atm) ->
@@ -24,7 +35,7 @@ module Private = struct
                    listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
          ) l in 
           let first_draft = String.concat " * " temp1 in     
-          listify is_a_list1 first_draft 
+          item_name ^" of "^(listify is_a_list1 first_draft) 
         ;;
     
 
@@ -89,4 +100,5 @@ end ;;
 
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
 let preliminary_in_variant = Private.preliminary_in_variant ;; 
-let write_in_ocaml = Private.write_in_ocaml ;; 
+let write_record_in_ocaml = Private.write_record_in_ocaml ;; 
+let write_variant_in_ocaml = Private.write_variant_in_ocaml ;; 
