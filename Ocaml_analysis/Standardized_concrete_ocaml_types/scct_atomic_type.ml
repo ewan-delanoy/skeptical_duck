@@ -31,11 +31,6 @@ module Private = struct
        | _ -> let name = List.assoc atm table_for_names_inside_converters in 
               (c^"to_"^name,c^"of_"^name) ;;
     
-    let converters is_listy atm =
-          let (cv_of_crobj,cv_to_crobj) =  nonlisty_converters atm in 
-          if is_listy 
-          then ("( "^c^"to_list"^" "^cv_of_crobj^" )","( "^c^"of_list"^" "^cv_to_crobj^" )")  
-          else (cv_of_crobj,cv_to_crobj) ;;
 
     let table_for_typenames = 
         [
@@ -52,24 +47,16 @@ module Private = struct
           Scct_atomic_type_t.String_List_List,"string list list"
          ];;
     
-    let write_nonlisty_in_ocaml atm = match atm with 
+    let write_in_ocaml atm = match atm with 
          Scct_atomic_type_t.Modular(modulename) -> 
                (String.capitalize_ascii modulename)^"_t.t" 
         | _ -> List.assoc atm table_for_typenames ;;
     
-    let write_in_ocaml is_listy atm =     
-       let default = write_nonlisty_in_ocaml atm in 
-       if is_listy 
-       then (wrap default)^" list" 
-       else default ;;     
+    
 
 
 end ;;
 
 let converter_from_crobj atm  = fst (Private.nonlisty_converters atm) ;;
 let converter_to_crobj   atm  = snd (Private.nonlisty_converters atm) ;;
-let write_in_ocaml = Private.write_nonlisty_in_ocaml ;; 
-
-let old_converter_from_crobj is_listy atm = fst (Private.converters is_listy atm) ;;
-let old_converter_to_crobj is_listy  atm  = snd (Private.converters is_listy atm) ;;
-let old_write_in_ocaml = Private.write_in_ocaml ;;    
+let write_in_ocaml = Private.write_in_ocaml ;; 
