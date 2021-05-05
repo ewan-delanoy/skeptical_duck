@@ -9,6 +9,6 @@
 type t= {
    modulename : string ;
    is_variant : bool ;
-   data : (string*Scct_element_in_record_in_variant_t.t) list ;
+   data : Scct_element_in_record_in_variant_t.t list ;
 } ;;
 
