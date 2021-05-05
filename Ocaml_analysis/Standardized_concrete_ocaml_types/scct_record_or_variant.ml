@@ -22,6 +22,28 @@ module Private = struct
 
   let write_converters_for_record ~tab_width rov= failwith("undefined1");;
   
+  let write_converter_from_crobj_for_variant rov= 
+     let data = rov.Scct_record_or_variant_t.data in 
+     let max_arity = snd(Max.maximize_it (fun 
+     (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
+        List.length prod
+     ) data) in
+     let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
+     let first_line_in_body = "let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
+     let function_body =  
+     first_line_in_body
+      ::(
+       List.flatten(Image.image (
+         Scct_element_in_record_or_variant.converter_from_crobj_in_variant
+           ~module_name:rov.Scct_record_or_variant_t.modulename 
+           ~variant_name:"zorglub" 
+       ) data) 
+     ) in 
+    [
+      "let of_concrete_object crobj = ";
+    ] @ ( Image.image (fun line->second_tab^line)  function_body) 
+      @
+    [] ;;
   
   
   let write_converters_for_variant ~tab_width rov= 
@@ -33,12 +55,7 @@ module Private = struct
        let c_variant = String.capitalize_ascii vague_variant_name 
        and uc_variant =  String.uncapitalize_ascii vague_variant_name  in 
        "let hook_for_"^uc_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
-     ) data 
-     and max_arity = snd(Max.maximize_it (fun 
-     (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
-        List.length prod
-     ) data) in
-     let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
+     ) data in
      let lines =[
       "let salt = "^broken_mod^" "^Particular_string.double_semicolon ;
     ] @ 
@@ -46,6 +63,7 @@ module Private = struct
     [
       "exception Of_concrete_object_exn of string "^Particular_string.double_semicolon;
     ] @ 
+      (write_converter_from_crobj_for_variant rov)@
     [] in 
      String.concat "\n" (Image.image (fun line->first_tab^line) lines);;
      
