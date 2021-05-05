@@ -11,10 +11,11 @@ type t = IU of (string * bool * Scct_atomic_type_t.t ) list
 
 module Private = struct
 
-  
+  let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
+
   let write_type (IU(l)) = 
         String.concat " * "  (Image.image (
-           fun  pl_atm ->Scct_possibly_listy_atom.write_in_ocaml pl_atm
+           fun  pl_atm ->wrap(Scct_possibly_listy_atom.write_in_ocaml pl_atm)
         ) l) 
        ;;
   

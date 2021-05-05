@@ -18,22 +18,15 @@ module Private = struct
         else (wrap name)^" list" ;; 
 
   let write_record_in_ocaml 
-        (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) =
-         let temp1 = Image.image (
-           fun  pl_atm ->Scct_possibly_listy_atom.write_in_ocaml pl_atm
-        ) l in 
-         let first_draft = String.concat " * " temp1 in     
+        (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) = 
+         let first_draft = Scct_inner_uple.write_type l in   
          item_name ^" : "^(listify is_a_list1 first_draft) 
        ;;
 
   let write_variant_in_ocaml 
        (Scct_element_in_record_or_variant_t.U(vague_item_name,is_a_list1, l)) =
-        let temp1 = Image.image (
-          fun  pl_atm ->
-             wrap(Scct_possibly_listy_atom.write_in_ocaml pl_atm)
-       ) l in 
-        let first_draft = String.concat " * " temp1 in   
         let item_name = String.capitalize_ascii  vague_item_name in 
+        let first_draft = Scct_inner_uple.write_type l in  
         item_name ^" of "^(listify is_a_list1 first_draft) 
       ;;
   
