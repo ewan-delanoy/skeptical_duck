@@ -101,14 +101,32 @@ module Private = struct
   
   (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
   
-  let suppress_linebreaks_in_interval s i j=
+let suppress_linebreaks_in_interval s i j=
     let (part1,old_part2,part3) = tripartition_associated_to_interval s i j in 
     let new_part2 = String.concat "" (lines old_part2) in 
     part1^new_part2^part3 ;; 
   
   (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
   
-  let suppress_linebreaks_in_interval_in_file fn i j=
+let suppress_linebreaks_in_interval_in_file fn i j=
     let s1=Io.read_whole_file fn in
     let s2=suppress_linebreaks_in_interval s1 i j  in
     Io.overwrite_with fn s2;;     
+
+let indent_interval_in_string_with (i,j) ~text ~tab_width =
+     let old_lines = core text 
+     and tab = String.make tab_width ' ' in 
+     let new_lines = Image.image (
+         fun (k,line) -> 
+           if (k<i)||(k>j)
+           then line
+          else tab^line
+     ) old_lines in 
+     String.concat "\n" new_lines ;;
+
+(* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
+
+let indent_interval_in_file_with (i,j) fn ~tab_width=
+    let old_text=Io.read_whole_file fn in
+    let new_text=indent_interval_in_string_with (i,j) ~text:old_text ~tab_width  in
+    Io.overwrite_with fn new_text;;   

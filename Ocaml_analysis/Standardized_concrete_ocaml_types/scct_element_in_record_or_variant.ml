@@ -10,18 +10,18 @@
 module Private = struct
 
     let c= "Concrete_"^"object_field.";;
-    let wr = Scct_common.wrap_in_parentheses_if_needed ;;
+    let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
     
     let listify is_a_list name =
           if not(is_a_list) 
           then name 
-          else (wr name)^" list" ;; 
+          else (wrap name)^" list" ;; 
 
     let write_record_in_ocaml 
           (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) =
            let temp1 = Image.image (
              fun  (varname,is_a_list2,atm) ->
-                wr(listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
+                wrap(listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
           ) l in 
            let first_draft = String.concat " * " temp1 in     
            item_name ^" : "^(listify is_a_list1 first_draft) 
@@ -69,8 +69,8 @@ module Private = struct
         "if hook = "^(hook_name item_name);
         "then "^(full_variant_name  module_name item_name)^"(";
       ]@
-        ( arguments_in_variant_output 5 "arg" l)@
-      [  "      )";   
+        ( arguments_in_variant_output 8 "arg" l)@
+      [  "     )";   
         "else"
       ] ;;
 
@@ -80,12 +80,12 @@ module Private = struct
         [
           "if hook = "^(hook_name item_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
-          "     Image.image ( fun uple_obj -> ";
+          "     "^(full_variant_name  module_name item_name)^"(Image.image ( fun uple_obj -> ";
           "       let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
-          "        "^(full_variant_name  module_name item_name)^"(";
+          "        "^"(";
         ]@
           ( arguments_in_variant_output 4 "urg" l)@
-        [  "       )) temp";   
+        [  "       )) temp)";   
            "else"
         ] ;;  
 
