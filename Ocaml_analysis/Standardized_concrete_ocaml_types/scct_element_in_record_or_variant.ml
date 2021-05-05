@@ -58,7 +58,7 @@ module Private = struct
 
     let inner_converter_from_crobj_in_listy_variant  ~module_name 
         (Scct_element_in_record_or_variant_t.U(item_name,_,l))=
-      let n = List.length(l) in 
+      let n = Scct_inner_uple.dimension(l) in 
       let local_tab_width = 4 in 
       let local_tab = String.make local_tab_width ' ' in 
       let not_indented_yet =
@@ -66,12 +66,12 @@ module Private = struct
       then  
             [
              (full_variant_name  module_name item_name)^"(Image.image ( fun uple_obj -> ";
-             "let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
+             "let "^(Scct_common.arguments_in_input "urg" (Scct_inner_uple.dimension l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
              "(";
             ]@
-              ( arguments_in_variant_output 0 "urg" l)@
+              (Scct_inner_uple.vertical_homogeneous_from_crobj ~tab_width:0 ~separator:"," "urg" l)@
             [")) temp)"]
-      else let pl_atm = List.hd l in  
+      else let pl_atm = Scct_inner_uple.first_component l in  
            [
               (full_variant_name  module_name item_name)^"(Image.image (  ";
               "       "^(Scct_possibly_listy_atom.converter_from_crobj pl_atm);
