@@ -45,7 +45,7 @@ module Private = struct
        "let of_concrete_object crobj = ";
     ] @ ( Image.image (fun line->second_tab^line)  function_body) 
       @
-    [ "else raise(Of_concrete_object_exn(crobj)) "^ds ] ;;
+    [ "     raise(Of_concrete_object_exn(crobj)) "^ds ] ;;
   
   
   let write_converters_for_variant ~tab_width rov= 

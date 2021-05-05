@@ -10,18 +10,18 @@
 module Private = struct
 
     let c= "Concrete_"^"object_field.";;
+    let wr = Scct_common.wrap_in_parentheses_if_needed ;;
     
     let listify is_a_list name =
           if not(is_a_list) 
           then name 
-          else (Scct_common.wrap_in_parentheses_if_needed name)^" list" ;; 
+          else (wr name)^" list" ;; 
 
     let write_record_in_ocaml 
           (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) =
            let temp1 = Image.image (
              fun  (varname,is_a_list2,atm) ->
-                Scct_common.wrap_in_parentheses_if_needed(
-                    listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
+                wr(listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
           ) l in 
            let first_draft = String.concat " * " temp1 in     
            item_name ^" : "^(listify is_a_list1 first_draft) 
@@ -40,12 +40,12 @@ module Private = struct
         ;;
     
 
-    let arguments_in_output third_tab_width argname l=
+    let arguments_in_variant_output third_tab_width argname l=
        let temp1 = Ennig.index_everything l in  
        let n = List.length(l) in 
        Image.image (
          fun (k,(varname,is_a_list,atm)) ->
-            let comma_or_not = (if k=n then "," else "") in
+            let comma_or_not = (if (k=n)&&(n>1) then "" else ",") in
             (String.make  third_tab_width ' ')^(Scct_atomic_type.converter_from_crobj atm)
             ^" "^argname^(string_of_int k)^comma_or_not
        ) temp1 ;;
@@ -69,7 +69,7 @@ module Private = struct
         "if hook = "^(hook_name item_name);
         "then "^(full_variant_name  module_name item_name)^"(";
       ]@
-        ( arguments_in_output 5 "arg" l)@
+        ( arguments_in_variant_output 5 "arg" l)@
       [  "      )";   
         "else"
       ] ;;
@@ -84,7 +84,7 @@ module Private = struct
           "       let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
           "        "^(full_variant_name  module_name item_name)^"(";
         ]@
-          ( arguments_in_output 4 "urg" l)@
+          ( arguments_in_variant_output 4 "urg" l)@
         [  "       )) temp";   
            "else"
         ] ;;  
