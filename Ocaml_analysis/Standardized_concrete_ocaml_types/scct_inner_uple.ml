@@ -6,20 +6,20 @@
 *)
 
 
-type t = IU of (string * bool * Scct_atomic_type_t.t ) list
+
 
 
 module Private = struct
 
   let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
 
-  let write_type (IU(l)) = 
+  let write_type l = 
         String.concat " * "  (Image.image (
            fun  pl_atm ->wrap(Scct_possibly_listy_atom.write_in_ocaml pl_atm)
         ) l) 
        ;;
   
-  let vertical_homogeneous_from_crobj ~tab_width ~separator argname (IU l)=
+  let vertical_homogeneous_from_crobj ~tab_width ~separator argname l=
      let temp1 = Ennig.index_everything l in  
      let n = List.length(l) in 
      Image.image (
@@ -29,8 +29,8 @@ module Private = struct
           ^" "^argname^(string_of_int k)^comma_or_not
      ) temp1 ;;
 
-  let first_component (IU l) = List.hd l;;
-  let dimension (IU l) = List.length l ;;
+  let first_component l = List.hd l;;
+  let dimension l = List.length l ;;
   
 
 end ;;
