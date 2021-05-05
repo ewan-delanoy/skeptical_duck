@@ -40,18 +40,18 @@ module Private = struct
 
   
   let converter_from_crobj_in_nonlisty_variant 
-        ~module_name 
+        ~constructor
         (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
     [
       "if hook = "^(hook_name item_name);
-      "then "^(full_variant_name  module_name item_name)^"(";
+      "then "^(full_variant_name constructor item_name)^"(";
     ]@
       (Scct_inner_uple.vertical_homogeneous_from_crobj ~tab_width:8 ~separator:"," "arg" l)@
     [  "     )";   
       "else"
     ] ;;
 
-    let inner_converter_from_crobj_in_listy_variant  ~module_name 
+    let inner_converter_from_crobj_in_listy_variant  ~constructor 
         (Scct_element_in_record_or_variant_t.U(item_name,_,l))=
       let n = Scct_inner_uple.dimension(l) in 
       let local_tab_width = 4 in 
@@ -60,7 +60,7 @@ module Private = struct
       (if n>1
       then  
             [
-             (full_variant_name  module_name item_name)^"(Image.image ( fun uple_obj -> ";
+             constructor^"(Image.image ( fun uple_obj -> ";
              "let "^(Scct_common.arguments_in_input "urg" (Scct_inner_uple.dimension l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
              "(";
             ]@
@@ -68,7 +68,7 @@ module Private = struct
             [")) temp)"]
       else let pl_atm = Scct_inner_uple.first_component l in  
            [
-              (full_variant_name  module_name item_name)^"(Image.image (  ";
+              constructor^"(Image.image (  ";
               "       "^(Scct_possibly_listy_atom.converter_from_crobj pl_atm);
               ") temp)"
            ]) in 
@@ -76,24 +76,24 @@ module Private = struct
 
 
     let converter_from_crobj_in_listy_variant 
-       ~module_name elt =
+       ~constructor elt =
       let (Scct_element_in_record_or_variant_t.U(item_name,_,l))=elt in 
       [
         "if hook = "^(hook_name item_name);
         "then let temp = Concrete_object_field.unwrap_list arg1 in ";
       ]@
-       (inner_converter_from_crobj_in_listy_variant  ~module_name elt)@
+       (inner_converter_from_crobj_in_listy_variant  ~constructor elt)@
       [    
         "else"
       ] ;;  
 
     let converter_from_crobj_in_variant 
-      ~module_name  elt = 
+      ~constructor  elt = 
       match elt with
         (Scct_element_in_record_or_variant_t.U(item_name,is_a_list, l))->
        if is_a_list 
-       then  converter_from_crobj_in_listy_variant ~module_name  elt 
-       else  converter_from_crobj_in_nonlisty_variant ~module_name elt ;;   
+       then  converter_from_crobj_in_listy_variant ~constructor  elt 
+       else  converter_from_crobj_in_nonlisty_variant ~constructor elt ;;   
 
 end ;;
 
