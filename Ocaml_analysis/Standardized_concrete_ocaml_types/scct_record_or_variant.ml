@@ -24,7 +24,7 @@ module Private = struct
       connector_word^"_for_"^(String.lowercase_ascii connector_name) ;;
 
   let full_connector_name  module_name connector_name =
-     (String.capitalize_ascii module_name)^"."^(String.capitalize_ascii connector_name) ;;     
+     (String.capitalize_ascii module_name)^"."^connector_name ;;     
 
   let preliminary connector_word connector_name=
    "let "^(connector_exterior_name connector_word connector_name)^" = salt ^ \""^
@@ -54,21 +54,25 @@ module Private = struct
   
   module Variant = struct 
   
-    
+    let connector_word = "hook" ;;
+
     let write_converter_from_crobj rov= 
        let data = rov.Scct_record_or_variant_t.data in 
        let max_arity = snd(Max.maximize_it (fun 
-       (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
+       (Scct_element_in_record_or_variant_t.U(variant_name,is_a_list,prod)) ->
           Scct_inner_uple.dimension prod
        ) data) in
        let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
-       let first_line_in_body = "let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
+       let first_line_in_body = "let ("^connector_word^","^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
+       let modname = rov.Scct_record_or_variant_t.modulename in 
        let old_function_body =  
        first_line_in_body
         ::(
-         List.flatten(Image.image (
+         List.flatten(Image.image ( fun item -> 
+          let (Scct_element_in_record_or_variant_t.U(variant_name,_,_)) = item in 
+           let constructor =full_connector_name modname variant_name in 
            Scct_element_in_record_or_variant.converter_from_crobj_in_variant
-             ~module_name:rov.Scct_record_or_variant_t.modulename 
+             ~constructor item
          ) data) 
        ) in 
        let addition_to_last_line = " raise(Of_concrete_object_exn(crobj)) "^ds in 
@@ -86,17 +90,15 @@ module Private = struct
        let first_tab = String.make tab_width ' ' in 
        let data = rov.Scct_record_or_variant_t.data in 
        let broken_mod = broken_modulename_quote rov.Scct_record_or_variant_t.modulename 
-       and hooks = Image.image ( fun
-        (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
-         let c_variant = String.capitalize_ascii vague_variant_name 
-         and l_variant =  String.lowercase_ascii vague_variant_name  in 
-         "let hook_for_"^l_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
+       and preliminaries = Image.image ( fun
+        (Scct_element_in_record_or_variant_t.U(variant_name,is_a_list,prod)) ->
+         preliminary connector_word variant_name
        ) data in
        let lines =[
         "let salt = "^broken_mod^" "^ds ;
         "\n";
       ] @ 
-       (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
+       (Strung.reposition_left_hand_side_according_to_separator "=" preliminaries)  @
       [
         "\n";
       ] @ 
