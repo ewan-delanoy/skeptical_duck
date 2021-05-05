@@ -20,3 +20,6 @@ let arguments_in_input argname n=
     else let temp1 = Ennig.doyle (fun k->
           if k<=n then argname^(string_of_int k) else "_") 1 max_nbr_of_arguments in 
          "(" ^ (String.concat "," temp1) ^ ")" ;;    
+
+let values_in_input l =
+    "("^(String.concat "," (Image.image (fun (varname,_,_)->varname) l))^")";;         
