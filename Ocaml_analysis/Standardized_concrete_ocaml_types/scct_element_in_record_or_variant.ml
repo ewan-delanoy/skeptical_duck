@@ -44,7 +44,7 @@ module Private = struct
         (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
     [
       "if "^question;
-      "then "^(full_variant_name constructor item_name)^"(";
+      "then "^constructor^"(";
     ]@
       (Scct_inner_uple.vertical_homogeneous_from_crobj ~tab_width:8 ~separator:"," "arg" l)@
     [  "     )";   
