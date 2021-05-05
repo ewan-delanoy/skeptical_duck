@@ -16,15 +16,23 @@ module Private = struct
     let cut_index = (if String.length(modname)<4 then 1 else 3) in 
     let  left_part = Cull_string.beginning   cut_index modname 
     and right_part = Cull_string.cobeginning cut_index modname in 
-    "\""^left_part^"\"^\""^right_part^"\"";; 
+    "\""^left_part^"\"^\""^right_part^".\"";; 
 
   let write_converters_for_record ~tab_width rov= failwith("undefined1");;
   let write_converters_for_variant ~tab_width rov= 
      let first_tab = String.make tab_width ' ' in 
-     let broken_mod = broken_modulename_quote rov.Scct_record_or_variant_t.modulename in 
+     let broken_mod = broken_modulename_quote rov.Scct_record_or_variant_t.modulename 
+     and hooks = Image.image ( fun
+      (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
+       let c_variant = String.capitalize_ascii vague_variant_name 
+       and uc_variant =  String.capitalize_ascii vague_variant_name  in 
+       "let hook_for_"^uc_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
+     ) rov.Scct_record_or_variant_t.data in 
      let lines =[
       "let salt = "^broken_mod^" "^Particular_string.double_semicolon ;
-    ] in 
+    ] @ 
+     (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
+    [] in 
      String.concat "\n" (Image.image (fun line->first_tab^line) lines);;
      
   let write_converters ~tab_width rov=
