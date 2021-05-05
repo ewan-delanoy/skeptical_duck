@@ -64,7 +64,7 @@ module Private = struct
        let (temp1,temp2) = Listennou.ht (List.rev old_function_body) in 
        let function_body = List.rev ((temp1^addition_to_last_line)::temp2) in 
       [
-        "exception Of_concrete_object_exn of string "^ds;
+        "exception Of_concrete_object_exn of Concrete_object_t.t "^ds;
         "\n";
          "let of_concrete_object crobj = ";
       ] @ ( Image.image (fun line->second_tab^line)  function_body) 
