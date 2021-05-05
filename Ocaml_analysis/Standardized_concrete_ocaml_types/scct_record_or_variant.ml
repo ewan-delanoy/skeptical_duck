@@ -40,7 +40,7 @@ module Private = struct
     let middle_lines =Image.image (
      fun (idx,elt)->
        let end_part = (if idx = total then "" else " ;") in 
-        (Scct_element_in_record_or_variant.write_variant_in_ocaml elt) ^ end_part
+        second_tab ^ (Scct_element_in_record_or_variant.write_variant_in_ocaml elt) ^ end_part
     ) indexed_data in 
     let lines = [first_tab ^"{"] @
       (Image.image (fun line->first_tab^line) middle_lines )@
@@ -54,7 +54,7 @@ module Private = struct
     let middle_lines =Image.image (
      fun (idx,elt)->
        let beg_part = (if idx = 1 then "" else "| ") in 
-        beg_part ^ (Scct_element_in_record_or_variant.write_variant_in_ocaml elt)
+        second_tab ^ beg_part ^ (Scct_element_in_record_or_variant.write_variant_in_ocaml elt)
     ) indexed_data in 
     let lines = (Image.image (fun line->first_tab^line) middle_lines ) in 
    String.concat "\n" lines ;;
