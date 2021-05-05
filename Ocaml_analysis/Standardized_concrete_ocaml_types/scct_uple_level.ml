@@ -53,18 +53,15 @@ module Private = struct
     let full_variant_name  module_name variant_name =
     (String.capitalize_ascii module_name)^"."^(String.capitalize_ascii variant_name) ;;     
 
-    let preliminary_in_variant ~tab_width ~variant_name ()=
-       let tab = String.make tab_width ' ' in 
-       tab^"let "^(hook_name variant_name)^" = salt ^ \""^
+    let preliminary_in_variant ~variant_name ()=
+       "let "^(hook_name variant_name)^" = salt ^ \""^
         (String.capitalize_ascii variant_name) ^ "\" " ^ 
         Particular_string.double_semicolon        
     ;;       
 
     let converter_from_crobj_in_nonlisty_variant 
-        ~tab_width ~module_name ~variant_name 
+          ~module_name ~variant_name 
           (Scct_uple_level_t.U(_, l))=
-      let tab = String.make tab_width ' ' in 
-      let tump1 = 
       [
         "if hook = "^(hook_name variant_name);
         "then "^(full_variant_name  module_name variant_name)^"(";
@@ -72,14 +69,11 @@ module Private = struct
         ( arguments_in_output 5 "arg" l)@
       [  "      )";   
         "else"
-      ] in
-      String.concat "\n" (Image.image (fun line->tab^line) tump1);;
+      ] ;;
 
       let converter_from_crobj_in_listy_variant 
-      ~tab_width ~module_name ~variant_name 
+         ~module_name ~variant_name 
         (Scct_uple_level_t.U(_, l))=
-        let tab = String.make tab_width ' ' in 
-        let tump1 = 
         [
           "if hook = "^(hook_name variant_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
@@ -90,19 +84,19 @@ module Private = struct
           ( arguments_in_output 10 "urg" l)@
         [  "       ))";   
            "else"
-        ] in
-        String.concat "\n" (Image.image (fun line->tab^line) tump1);;  
+        ] ;;  
 
       let converter_from_crobj_in_variant 
-        ~tab_width ~module_name ~variant_name elt = 
+        ~module_name ~variant_name elt = 
         match elt with
           (Scct_uple_level_t.U(is_a_list, l))->
          if is_a_list 
-         then converter_from_crobj_in_listy_variant ~tab_width ~module_name ~variant_name elt 
-         else  converter_from_crobj_in_nonlisty_variant ~tab_width ~module_name ~variant_name elt ;;   
+         then converter_from_crobj_in_listy_variant ~module_name ~variant_name elt 
+         else  converter_from_crobj_in_nonlisty_variant ~module_name ~variant_name elt ;;   
 
 end ;;
 
+let arguments_in_input = Private.arguments_in_input ;;
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
 let preliminary_in_variant = Private.preliminary_in_variant ;; 
 let write_in_ocaml = Private.write_in_ocaml ;; 
