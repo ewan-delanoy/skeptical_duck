@@ -38,12 +38,7 @@ module Private = struct
   let full_variant_name  module_name variant_name =
   (String.capitalize_ascii module_name)^"."^(String.capitalize_ascii variant_name) ;;     
 
-  let preliminary_in_variant ~variant_name ()=
-     "let "^(hook_name variant_name)^" = salt ^ \""^
-      (String.capitalize_ascii variant_name) ^ "\" " ^ 
-      Particular_string.double_semicolon        
-  ;;       
-
+  
   let converter_from_crobj_in_nonlisty_variant 
         ~module_name 
         (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
@@ -103,6 +98,5 @@ module Private = struct
 end ;;
 
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
-let preliminary_in_variant = Private.preliminary_in_variant ;; 
 let write_record_in_ocaml = Private.write_record_in_ocaml ;; 
 let write_variant_in_ocaml = Private.write_variant_in_ocaml ;; 

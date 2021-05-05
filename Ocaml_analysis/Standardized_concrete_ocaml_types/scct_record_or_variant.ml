@@ -19,6 +19,17 @@ module Private = struct
     let  left_part = Cull_string.beginning   cut_index modname 
     and right_part = Cull_string.cobeginning cut_index modname in 
     "\""^left_part^"\"^\""^right_part^".\"";; 
+
+  let connector_exterior_name connector_word connector_name =
+      connector_word^"_for_"^(String.lowercase_ascii connector_name) ;;
+
+  let full_connector_name  module_name connector_name =
+     (String.capitalize_ascii module_name)^"."^(String.capitalize_ascii connector_name) ;;     
+
+  let preliminary connector_word connector_name=
+   "let "^(connector_exterior_name connector_word connector_name)^" = salt ^ \""^
+     connector_name ^ "\" " ^ ds ;;
+            
   
   module Record = struct
   
