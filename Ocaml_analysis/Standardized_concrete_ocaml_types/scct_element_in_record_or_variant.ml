@@ -20,7 +20,7 @@ module Private = struct
   let write_record_in_ocaml 
         (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) =
          let temp1 = Image.image (
-           fun  (varname,is_a_list2,atm) ->Scct_atomic_type.old_write_in_ocaml is_a_list2 atm
+           fun  pl_atm ->Scct_possibly_listy_atom.write_in_ocaml pl_atm
         ) l in 
          let first_draft = String.concat " * " temp1 in     
          item_name ^" : "^(listify is_a_list1 first_draft) 
@@ -29,8 +29,8 @@ module Private = struct
   let write_variant_in_ocaml 
        (Scct_element_in_record_or_variant_t.U(vague_item_name,is_a_list1, l)) =
         let temp1 = Image.image (
-          fun  (varname,is_a_list2,atm) ->
-             wrap(Scct_atomic_type.old_write_in_ocaml is_a_list2 atm)
+          fun  pl_atm ->
+             wrap(Scct_possibly_listy_atom.write_in_ocaml pl_atm)
        ) l in 
         let first_draft = String.concat " * " temp1 in   
         let item_name = String.capitalize_ascii  vague_item_name in 
@@ -42,9 +42,9 @@ module Private = struct
      let temp1 = Ennig.index_everything l in  
      let n = List.length(l) in 
      Image.image (
-       fun (k,(varname,is_a_list,atm)) ->
+       fun (k,pl_atm) ->
           let comma_or_not = (if (k=n)||(n=1) then "" else ",") in
-          (String.make  third_tab_width ' ')^(Scct_atomic_type.old_converter_from_crobj is_a_list atm)
+          (String.make  third_tab_width ' ')^(Scct_possibly_listy_atom.converter_from_crobj pl_atm)
           ^" "^argname^(string_of_int k)^comma_or_not
      ) temp1 ;;
 
@@ -87,10 +87,10 @@ module Private = struct
             ]@
               ( arguments_in_variant_output 0 "urg" l)@
             [")) temp)"]
-      else let (_,atm_is_listy,atm) = List.hd l in  
+      else let pl_atm = List.hd l in  
            [
               (full_variant_name  module_name item_name)^"(Image.image (  ";
-              "       "^(Scct_atomic_type.old_converter_from_crobj atm_is_listy atm);
+              "       "^(Scct_possibly_listy_atom.converter_from_crobj pl_atm);
               ") temp)"
            ]) in 
       Image.image (fun line->local_tab^line) not_indented_yet;;   
