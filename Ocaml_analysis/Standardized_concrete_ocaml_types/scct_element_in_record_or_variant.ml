@@ -28,13 +28,14 @@ module Private = struct
          ;;
 
     let write_variant_in_ocaml 
-         (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) =
+         (Scct_element_in_record_or_variant_t.U(vague_item_name,is_a_list1, l)) =
           let temp1 = Image.image (
             fun  (varname,is_a_list2,atm) ->
                Scct_common.wrap_in_parentheses_if_needed(
                    listify is_a_list2 (Scct_atomic_type.write_in_ocaml atm))
          ) l in 
-          let first_draft = String.concat " * " temp1 in     
+          let first_draft = String.concat " * " temp1 in   
+          let item_name = String.capitalize_ascii  vague_item_name in 
           item_name ^" of "^(listify is_a_list1 first_draft) 
         ;;
     
