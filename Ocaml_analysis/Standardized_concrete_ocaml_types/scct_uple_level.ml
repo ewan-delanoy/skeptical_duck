@@ -17,7 +17,7 @@ module Private = struct
           else (Scct_common.wrap_in_parentheses_if_needed name)^" list" ;; 
 
     let write_in_ocaml 
-         (Scct_uple_level_t.U(is_a_list1, l)) =
+         (Scct_element_in_record_in_variant_t.U(is_a_list1, l)) =
           let temp1 = Image.image (
             fun  (varname,is_a_list2,atm) ->
                Scct_common.wrap_in_parentheses_if_needed(
@@ -52,7 +52,7 @@ module Private = struct
 
     let converter_from_crobj_in_nonlisty_variant 
           ~module_name ~variant_name 
-          (Scct_uple_level_t.U(_, l))=
+          (Scct_element_in_record_in_variant_t.U(_, l))=
       [
         "if hook = "^(hook_name variant_name);
         "then "^(full_variant_name  module_name variant_name)^"(";
@@ -64,7 +64,7 @@ module Private = struct
 
       let converter_from_crobj_in_listy_variant 
          ~module_name ~variant_name 
-        (Scct_uple_level_t.U(_, l))=
+        (Scct_element_in_record_in_variant_t.U(_, l))=
         [
           "if hook = "^(hook_name variant_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
@@ -80,7 +80,7 @@ module Private = struct
       let converter_from_crobj_in_variant 
         ~module_name ~variant_name elt = 
         match elt with
-          (Scct_uple_level_t.U(is_a_list, l))->
+          (Scct_element_in_record_in_variant_t.U(is_a_list, l))->
          if is_a_list 
          then converter_from_crobj_in_listy_variant ~module_name ~variant_name elt 
          else  converter_from_crobj_in_nonlisty_variant ~module_name ~variant_name elt ;;   
