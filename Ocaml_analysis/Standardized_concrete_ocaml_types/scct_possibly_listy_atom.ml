@@ -5,21 +5,21 @@
 
 *)
 
-type t = T of  string * bool * Scct_atomic_type_t.t ;;
+
 
 module Private = struct
     
     let c= "Concrete_"^"object_field.";;
     let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
     
-    let converters (T(_,is_listy,atm)) =
+    let converters (_,is_listy,atm) =
           let cv_of_crobj =  Scct_atomic_type.converter_from_crobj atm 
           and cv_to_crobj =  Scct_atomic_type.converter_from_crobj atm in 
           if is_listy 
           then ("( "^c^"to_list"^" "^cv_of_crobj^" )","( "^c^"of_list"^" "^cv_to_crobj^" )")  
           else (cv_of_crobj,cv_to_crobj) ;;
     
-    let write_in_ocaml (T(_,is_listy,atm)) =     
+    let write_in_ocaml (_,is_listy,atm) =     
        let default = Scct_atomic_type.write_in_ocaml atm in 
        if is_listy 
        then (wrap default)^" list" 
