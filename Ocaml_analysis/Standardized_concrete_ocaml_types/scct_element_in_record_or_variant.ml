@@ -40,10 +40,10 @@ module Private = struct
 
   
   let converter_from_crobj_in_nonlisty_variant 
-        ~constructor
+        ~constructor ~question
         (Scct_element_in_record_or_variant_t.U(item_name,_, l))=
     [
-      "if hook = "^(hook_name item_name);
+      "if "^question;
       "then "^(full_variant_name constructor item_name)^"(";
     ]@
       (Scct_inner_uple.vertical_homogeneous_from_crobj ~tab_width:8 ~separator:"," "arg" l)@
@@ -76,10 +76,10 @@ module Private = struct
 
 
     let converter_from_crobj_in_listy_variant 
-       ~constructor elt =
+       ~constructor ~question elt =
       let (Scct_element_in_record_or_variant_t.U(item_name,_,l))=elt in 
       [
-        "if hook = "^(hook_name item_name);
+        "if "^question;
         "then let temp = Concrete_object_field.unwrap_list arg1 in ";
       ]@
        (inner_converter_from_crobj_in_listy_variant  ~constructor elt)@
@@ -88,12 +88,12 @@ module Private = struct
       ] ;;  
 
     let converter_from_crobj_in_variant 
-      ~constructor  elt = 
+      ~constructor ~question elt = 
       match elt with
         (Scct_element_in_record_or_variant_t.U(item_name,is_a_list, l))->
        if is_a_list 
-       then  converter_from_crobj_in_listy_variant ~constructor  elt 
-       else  converter_from_crobj_in_nonlisty_variant ~constructor elt ;;   
+       then  converter_from_crobj_in_listy_variant ~constructor ~question elt 
+       else  converter_from_crobj_in_nonlisty_variant ~constructor ~question elt ;;   
 
 end ;;
 

@@ -70,9 +70,10 @@ module Private = struct
         ::(
          List.flatten(Image.image ( fun item -> 
           let (Scct_element_in_record_or_variant_t.U(variant_name,_,_)) = item in 
-           let constructor =full_connector_name modname variant_name in 
+           let constructor =full_connector_name modname variant_name 
+           and question = connector_word^" = "^(connector_exterior_name connector_word variant_name) in 
            Scct_element_in_record_or_variant.converter_from_crobj_in_variant
-             ~constructor item
+             ~constructor ~question item
          ) data) 
        ) in 
        let addition_to_last_line = " raise(Of_concrete_object_exn(crobj)) "^ds in 
