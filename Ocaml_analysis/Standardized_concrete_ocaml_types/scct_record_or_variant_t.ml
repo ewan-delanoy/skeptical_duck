@@ -6,7 +6,9 @@
 
 *)
 
-type t= 
-  Record of (string*Scct_uple_level_t.t) list 
- |Variant of (string*Scct_uple_level_t.t) list ;;
+type t= {
+   modulename : string ;
+   is_variant : bool ;
+   data : (string*Scct_uple_level_t.t) list ;
+} ;;
 
