@@ -81,7 +81,7 @@ module Private = struct
           "if hook = "^(hook_name variant_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
           "     Image.image ( fun uple_obj -> ";
-          "       let "^(Scct_common.arguments_in_input "urg" l)^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
+          "       let "^(Scct_common.arguments_in_input "urg" (List.length l))^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
           "        (";
         ]@
           ( arguments_in_output 10 "urg" l)@
