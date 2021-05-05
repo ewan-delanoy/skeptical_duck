@@ -8,7 +8,8 @@
 
 module Private = struct 
 
-  
+  let ds = Particular_string.double_semicolon ;;
+
   let second_tab = String.make 4 ' ';;
 
   let broken_modulename_quote vague_modname =
@@ -36,14 +37,15 @@ module Private = struct
        List.flatten(Image.image (
          Scct_element_in_record_or_variant.converter_from_crobj_in_variant
            ~module_name:rov.Scct_record_or_variant_t.modulename 
-           ~variant_name:"zorglub" 
        ) data) 
      ) in 
     [
-      "let of_concrete_object crobj = ";
+      "exception Of_concrete_object_exn of string "^ds;
+      "\n";
+       "let of_concrete_object crobj = ";
     ] @ ( Image.image (fun line->second_tab^line)  function_body) 
       @
-    [] ;;
+    [ "else raise(Of_concrete_object_exn(crobj)) "^ds ] ;;
   
   
   let write_converters_for_variant ~tab_width rov= 
@@ -57,13 +59,11 @@ module Private = struct
        "let hook_for_"^uc_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
      ) data in
      let lines =[
-      "let salt = "^broken_mod^" "^Particular_string.double_semicolon ;
+      "let salt = "^broken_mod^" "^ds ;
       "\n";
     ] @ 
      (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
     [
-      "\n";
-      "exception Of_concrete_object_exn of string "^Particular_string.double_semicolon;
       "\n";
     ] @ 
       (write_converter_from_crobj_for_variant rov)@
