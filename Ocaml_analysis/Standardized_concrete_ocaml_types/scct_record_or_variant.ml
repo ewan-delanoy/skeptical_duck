@@ -48,7 +48,7 @@ module Private = struct
        let data = rov.Scct_record_or_variant_t.data in 
        let max_arity = snd(Max.maximize_it (fun 
        (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
-          List.length prod
+          Scct_inner_uple.dimension prod
        ) data) in
        let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
        let first_line_in_body = "let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
