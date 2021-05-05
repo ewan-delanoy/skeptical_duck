@@ -5,7 +5,7 @@
 
 *)
 
-exception Too_many_arguments of int ;;
+
 
 module Private = struct
 
@@ -27,15 +27,6 @@ module Private = struct
           listify is_a_list1 first_draft 
         ;;
     
-    let max_nbr_of_arguments = 7 ;;
-
-    let arguments_in_input argname l=
-        let n = List.length(l) in 
-        if n> max_nbr_of_arguments 
-        then raise(Too_many_arguments(n))
-        else let temp1 = Ennig.doyle (fun k->
-              if k<=n then argname^(string_of_int k) else "_") 1 max_nbr_of_arguments in 
-             "(" ^ (String.concat "," temp1) ^ ")" ;;
 
     let arguments_in_output second_tab_width argname l=
        let temp1 = Ennig.index_everything l in  
@@ -78,7 +69,7 @@ module Private = struct
           "if hook = "^(hook_name variant_name);
           "then let temp = Concrete_object_field.unwrap_list arg1 in ";
           "     Image.image ( fun uple_obj -> ";
-          "       let "^(arguments_in_input "urg" l)^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
+          "       let "^(Scct_common.arguments_in_input "urg" l)^" = Concrete_object_field.unwrap_bounded_uple uple_obj in ";
           "        (";
         ]@
           ( arguments_in_output 10 "urg" l)@
@@ -96,7 +87,6 @@ module Private = struct
 
 end ;;
 
-let arguments_in_input = Private.arguments_in_input ;;
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
 let preliminary_in_variant = Private.preliminary_in_variant ;; 
 let write_in_ocaml = Private.write_in_ocaml ;; 
