@@ -11,5 +11,5 @@ an uple or a list of uples.
 
 *)
 
-type t= U of bool * ((string * bool * Scct_atomic_type_t.t ) list) ;;
+type t= U of string * bool * ((string * bool * Scct_atomic_type_t.t ) list) ;;
 
