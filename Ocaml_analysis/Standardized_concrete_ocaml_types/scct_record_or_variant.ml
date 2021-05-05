@@ -45,12 +45,7 @@ module Private = struct
      (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
     [
       "exception Of_concrete_object_exn of string "^Particular_string.double_semicolon;
-      "let of_concrete_object crobj = ";
     ] @ 
-      (
-        Image.image (fun line->second_tab^line)
-        ["let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in ";
-      "();;"]) @
     [] in 
      String.concat "\n" (Image.image (fun line->first_tab^line) lines);;
      
