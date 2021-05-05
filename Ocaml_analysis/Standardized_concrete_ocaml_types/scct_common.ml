@@ -14,8 +14,7 @@ let wrap_in_parentheses_if_needed typename =
 
 let max_nbr_of_arguments = 7 ;;    
 
-let arguments_in_input argname l=
-    let n = List.length(l) in 
+let arguments_in_input argname n=
     if n> max_nbr_of_arguments 
     then raise(Too_many_arguments(n))
     else let temp1 = Ennig.doyle (fun k->

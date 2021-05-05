@@ -18,20 +18,39 @@ module Private = struct
     and right_part = Cull_string.cobeginning cut_index modname in 
     "\""^left_part^"\"^\""^right_part^".\"";; 
 
+  
+
   let write_converters_for_record ~tab_width rov= failwith("undefined1");;
+  
+  
+  
   let write_converters_for_variant ~tab_width rov= 
      let first_tab = String.make tab_width ' ' in 
+     let data = rov.Scct_record_or_variant_t.data in 
      let broken_mod = broken_modulename_quote rov.Scct_record_or_variant_t.modulename 
      and hooks = Image.image ( fun
       (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
        let c_variant = String.capitalize_ascii vague_variant_name 
-       and uc_variant =  String.capitalize_ascii vague_variant_name  in 
+       and uc_variant =  String.uncapitalize_ascii vague_variant_name  in 
        "let hook_for_"^uc_variant^" = salt ^ \""^c_variant^"\" "^Particular_string.double_semicolon
-     ) rov.Scct_record_or_variant_t.data in 
+     ) data 
+     and max_arity = snd(Max.maximize_it (fun 
+     (Scct_element_in_record_or_variant_t.U(vague_variant_name,is_a_list,prod)) ->
+        List.length prod
+     ) data) in
+     let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
      let lines =[
       "let salt = "^broken_mod^" "^Particular_string.double_semicolon ;
     ] @ 
      (Strung.reposition_left_hand_side_according_to_separator "=" hooks)  @
+    [
+      "exception Of_concrete_object_exn of string "^Particular_string.double_semicolon;
+      "let of_concrete_object crobj = ";
+    ] @ 
+      (
+        Image.image (fun line->second_tab^line)
+        ["let (hook,"^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in ";
+      "();;"]) @
     [] in 
      String.concat "\n" (Image.image (fun line->first_tab^line) lines);;
      
