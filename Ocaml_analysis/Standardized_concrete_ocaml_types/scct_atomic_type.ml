@@ -65,7 +65,11 @@ module Private = struct
 
 
 end ;;
-    
+
+let converter_from_crobj atm  = fst (Private.nonlisty_converters atm) ;;
+let converter_to_crobj   atm  = snd (Private.nonlisty_converters atm) ;;
+let write_in_ocaml = Private.write_nonlisty_in_ocaml ;; 
+
 let old_converter_from_crobj is_listy atm = fst (Private.converters is_listy atm) ;;
 let old_converter_to_crobj is_listy  atm  = snd (Private.converters is_listy atm) ;;
 let old_write_in_ocaml = Private.write_in_ocaml ;;    
