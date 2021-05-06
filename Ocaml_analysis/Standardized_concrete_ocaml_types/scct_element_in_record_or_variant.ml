@@ -17,18 +17,7 @@ module Private = struct
         then name 
         else (wrap name)^" list" ;; 
 
-  let write_record_in_ocaml 
-        (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) = 
-         let first_draft = Scct_inner_uple.write_type l in   
-         item_name ^" : "^(listify is_a_list1 first_draft) 
-       ;;
 
-  let write_variant_in_ocaml 
-       (Scct_element_in_record_or_variant_t.U(vague_item_name,is_a_list1, l)) =
-        let item_name = String.capitalize_ascii  vague_item_name in 
-        let first_draft = Scct_inner_uple.write_type l in  
-        item_name ^" of "^(listify is_a_list1 first_draft) 
-      ;;
   
   let write_type ~separator
       (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) = 
@@ -95,6 +84,4 @@ module Private = struct
 end ;;
 
 let converter_from_crobj_in_variant = Private.converter_from_crobj_in_variant ;;
-let write_record_in_ocaml = Private.write_record_in_ocaml ;; 
-let write_variant_in_ocaml = Private.write_variant_in_ocaml ;; 
 let write_type = Private.write_type ;; 
