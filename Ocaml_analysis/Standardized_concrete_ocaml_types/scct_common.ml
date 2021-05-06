@@ -23,3 +23,8 @@ let arguments_in_input argname n=
 
 let values_in_input l =
     "("^(String.concat "," (Image.image (fun (varname,_,_)->varname) l))^")";;         
+
+let listify is_a_list name =
+    if not(is_a_list) 
+    then name 
+    else (wrap_in_parentheses_if_needed name)^" list" ;;     
