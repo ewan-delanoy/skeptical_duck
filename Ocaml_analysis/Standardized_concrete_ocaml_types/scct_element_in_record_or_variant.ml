@@ -11,18 +11,12 @@ module Private = struct
 
   let c= "Concrete_"^"object_field.";;
   let wrap = Scct_common.wrap_in_parentheses_if_needed ;;
-  
-  let listify is_a_list name =
-        if not(is_a_list) 
-        then name 
-        else (wrap name)^" list" ;; 
-
 
   
   let write_type ~separator
       (Scct_element_in_record_or_variant_t.U(item_name,is_a_list1, l)) = 
        let first_draft = Scct_inner_uple.write_type l in   
-       item_name ^separator^(listify is_a_list1 first_draft) 
+       item_name ^separator^(Scct_common.listify is_a_list1 first_draft) 
      ;;
 
   let converter_from_crobj_in_nonlisty_variant 

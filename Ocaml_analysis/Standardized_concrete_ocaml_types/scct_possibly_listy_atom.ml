@@ -19,11 +19,8 @@ module Private = struct
           then ("( "^c^"to_list"^" "^cv_of_crobj^" )","( "^c^"of_list"^" "^cv_to_crobj^" )")  
           else (cv_of_crobj,cv_to_crobj) ;;
     
-    let write_in_ocaml (_,is_listy,atm) =     
-       let default = Scct_atomic_type.write_in_ocaml atm in 
-       if is_listy 
-       then (wrap default)^" list" 
-       else default ;;     
+    let write_in_ocaml (_,is_listy,atm) =   
+      Scct_common.listify is_listy (Scct_atomic_type.write_in_ocaml atm)  ;;     
 
 
 end ;;

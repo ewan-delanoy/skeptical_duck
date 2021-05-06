@@ -19,10 +19,7 @@ let arguments_in_input argname n=
     then raise(Too_many_arguments(n))
     else let temp1 = Ennig.doyle (fun k->
           if k<=n then argname^(string_of_int k) else "_") 1 max_nbr_of_arguments in 
-         "(" ^ (String.concat "," temp1) ^ ")" ;;    
-
-let values_in_input l =
-    "("^(String.concat "," (Image.image (fun (varname,_,_)->varname) l))^")";;         
+         "(" ^ (String.concat "," temp1) ^ ")" ;;       
 
 let listify is_a_list name =
     if not(is_a_list) 
