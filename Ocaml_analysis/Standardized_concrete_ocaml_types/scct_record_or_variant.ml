@@ -87,6 +87,36 @@ module Private = struct
       ] @ ( Image.image (fun line->second_tab^line)  function_body) 
          ;;
     
+    let write_converter_to_crobj rov= 
+         let data = rov.Scct_record_or_variant_t.data in 
+         let max_arity = snd(Max.maximize_it (fun 
+         (Scct_element_in_record_or_variant_t.U(variant_name,is_a_list,prod)) ->
+            Scct_inner_uple.dimension prod
+         ) data) in
+         let first_arg_uple = Scct_common.arguments_in_input "arg" max_arity in   
+         let first_line_in_body = "let ("^connector_word^","^first_arg_uple^")=Concrete_object_field.unwrap_bounded_variant crobj in " in 
+         let modname = rov.Scct_record_or_variant_t.modulename in 
+         let old_function_body =  
+         first_line_in_body
+          ::(
+           List.flatten(Image.image ( fun item -> 
+            let (Scct_element_in_record_or_variant_t.U(variant_name,_,_)) = item in 
+             let constructor =full_connector_name modname variant_name 
+             and question = connector_word^" = "^(connector_exterior_name connector_word variant_name) in 
+             Scct_element_in_record_or_variant.converter_from_crobj_in_variant
+               ~constructor ~question item
+           ) data) 
+         ) in 
+         let addition_to_last_line = " raise(Of_concrete_object_exn(crobj)) "^ds in 
+         let (temp1,temp2) = Listennou.ht (List.rev old_function_body) in 
+         let function_body = List.rev ((temp1^addition_to_last_line)::temp2) in 
+        [
+          "exception Of_concrete_object_exn of Concrete_object_t.t "^ds;
+          "\n";
+           "let of_concrete_object crobj = ";
+        ] @ ( Image.image (fun line->second_tab^line)  function_body) 
+           ;;
+           
     
     let write_converters ~tab_width rov= 
        let first_tab = String.make tab_width ' ' in 
@@ -105,6 +135,7 @@ module Private = struct
         "\n";
       ] @ 
         (write_converter_from_crobj rov)@
+        (write_converter_to_crobj rov)@
       [] in 
        String.concat "\n" (Image.image (fun line->first_tab^line) lines);;
        
