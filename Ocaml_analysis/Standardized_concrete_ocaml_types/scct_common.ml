@@ -25,3 +25,7 @@ let listify is_a_list name =
     if not(is_a_list) 
     then name 
     else (wrap_in_parentheses_if_needed name)^" list" ;;     
+
+let add_appendix_to_last_line appendix lines =
+      let (last_line,other_lines) = Listennou.ht (List.rev lines) in 
+      List.rev ((last_line^appendix)::other_lines) ;;    
