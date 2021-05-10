@@ -144,13 +144,6 @@ module Exn = struct
         let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
        (unwrap_int arg1,unwrap_int arg2);;
    
-   let of_string_list l=Concrete_object_t.List (Image.image wrap_string l);;
-   let to_string_list crobj = Image.image unwrap_string (unwrap_list crobj);;
-   
-   
-   let of_string_triple_list l= Concrete_object_t.List (Image.image of_string_triple l);;
-   let to_string_triple_list crobj = Image.image to_string_triple (unwrap_list crobj);;
-   
    
    let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
    let to_pair to_a to_b crobj=
@@ -170,6 +163,5 @@ module Exn = struct
    
    let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
    let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
-   
    
    

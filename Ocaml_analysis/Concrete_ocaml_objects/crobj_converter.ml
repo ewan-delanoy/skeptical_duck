@@ -31,10 +31,6 @@ module Pair = struct
        Concrete_object_field.of_list (fst int) ,
        Concrete_object_field.to_list (snd int) 
    );;
-   let int_pair = (
-       Concrete_object_field.of_pair (fst int) (fst int),
-       Concrete_object_field.to_pair (snd int) (snd int)
-   );;
    let int_triple = (
        Concrete_object_field.of_triple (fst int) (fst int) (fst int),
        Concrete_object_field.to_triple (snd int) (snd int) (snd int)
@@ -71,10 +67,9 @@ module Of = struct
    let bool = fst(Pair.bool) ;;
    let int = fst(Pair.int);;
    let int_list = fst(Pair.int_list);; 
-   let int_pair = fst(Pair.int_pair);; 
    let int_triple = fst(Pair.int_triple);; 
    let string = fst(Pair.string);;
-   let string_list = fst(Pair.string_list);; 
+   let string_list = snd(Pair.string_list);; 
    let string_pair = fst(Pair.string_pair);;
    let string_pair_list = fst(Pair.string_pair_list);;
    let string_triple = fst(Pair.string_triple);; 
@@ -86,7 +81,6 @@ module To = struct
    let bool = snd(Pair.bool) ;;
    let int = snd(Pair.int);;
    let int_list = snd(Pair.int_list);; 
-   let int_pair = snd(Pair.int_pair);; 
    let int_triple = snd(Pair.int_triple);; 
    let string = snd(Pair.string);;
    let string_list = snd(Pair.string_list);; 
