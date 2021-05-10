@@ -153,8 +153,6 @@ module Exn = struct
    let of_string_triple_list l= Concrete_object_t.List (Image.image of_string_triple l);;
    let to_string_triple_list crobj = Image.image to_string_triple (unwrap_list crobj);;
    
-   let of_string_list_list l=Concrete_object_t.List (Image.image of_string_list l);;
-   let to_string_list_list crobj = Image.image to_string_list (unwrap_list crobj);;
    
    let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
    let to_pair to_a to_b crobj=
