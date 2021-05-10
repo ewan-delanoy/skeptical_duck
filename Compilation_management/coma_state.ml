@@ -1600,41 +1600,40 @@ let reflect_latest_changes_in_github cs opt_msg=
   let new_fw = Fw_wrapper.reflect_latest_changes_in_github old_fw opt_msg in 
   {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
 
-let check_module_sequence_for_forgettability cs l=
-   let temp1 = List.rev (Three_parts.generic l) in 
-    Option.filter_and_unpack (
-     fun (_,mn,to_be_deleted_after_mn)->
-       let eless = endingless_at_module cs mn in   
-       let temp2 = List.filter (fun mn2->
-          List.mem mn2 to_be_deleted_after_mn
-       ) (below cs eless) in 
-       if temp2 = []
-       then None 
-       else Some(mn,temp2)
-   ) temp1 ;;
+  let check_module_sequence_for_forgettability cs l=
+  let temp1 = List.rev (Three_parts.generic l) in 
+   Option.filter_and_unpack (
+    fun (to_be_deleted_before_mn,mn,_)->
+      let eless = endingless_at_module cs mn in   
+      let temp2 = List.filter (fun mn2->
+         not(List.mem mn2 to_be_deleted_before_mn) 
+      ) (below cs eless) in 
+      if temp2 = []
+      then None 
+      else Some(mn,temp2)
+  ) temp1 ;;
 
 
 let check_rootless_path_sequence_for_forgettability cs old_l =
-  let l = List.filter Dfn_rootless.is_compilable old_l in 
-  let temp1 = List.rev (Three_parts.generic l) in 
-  Option.filter_and_unpack (
-     fun (_,rp,to_be_deleted_after_rp)->
-       let mn = Dfn_rootless.to_module rp in 
-       let acolytes = rootless_paths_at_module cs mn in  
-       let remaining_acolytes = List.filter (
-         fun rp2 -> (rp2<>rp) && (List.mem rp2 to_be_deleted_after_rp)
-       ) acolytes in 
-       if remaining_acolytes<>[]
-       then None
-       else 
-       let temp2 = List.filter (fun rp2->
-          List.mem rp2 to_be_deleted_after_rp
-       ) (acolytes_below_module cs mn) in 
-       if temp2 = []
-       then None 
-       else Some(mn,temp2)
-   ) temp1 ;;
-
+ let l = List.filter Dfn_rootless.is_compilable old_l in 
+ let temp1 = List.rev (Three_parts.generic l) in 
+ Option.filter_and_unpack (
+    fun (to_be_deleted_before_rp,rp,_)->
+      let mn = Dfn_rootless.to_module rp in 
+      let acolytes = rootless_paths_at_module cs mn in  
+      let remaining_acolytes = List.filter (
+        fun rp2 -> not (List.mem rp2 (rp::to_be_deleted_before_rp))
+      ) acolytes in 
+      if remaining_acolytes<>[]
+      then None
+      else 
+      let temp2 = List.filter (fun rp2->
+         not(List.mem rp2 to_be_deleted_before_rp) 
+      ) (acolytes_below_module cs mn) in 
+      if temp2 = []
+      then None 
+      else Some(mn,temp2)
+  ) temp1 ;;
 
 exception Empty_acolytes_list ;; 
 exception Too_many_acolytes of Dfn_rootless_t.t list ;;
