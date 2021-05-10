@@ -50,7 +50,7 @@ let mem = Functor_for_sets.mem Private.tr ;;
 let of_concrete_object crobj=
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Hex_molecular_linker_t.M(
-      Concrete_object_field.to_list Hex_atomic_linker.of_concrete_object arg1
+      Crobj_converter_combinator.to_list Hex_atomic_linker.of_concrete_object arg1
    );;
 
 let pair cell1 cell2 = constructor [Hex_atomic_linker.pair (cell1,cell2)];;
@@ -73,7 +73,7 @@ let test_for_passive_to_active_conversion cell (Hex_molecular_linker_t.M(l))=
 
 let to_concrete_object (Hex_molecular_linker_t.M(l))=
    Concrete_object_t.Variant("Hex_"^"molecular_linker_t.M",
-     [Concrete_object_field.of_list Hex_atomic_linker.to_concrete_object l]);;
+     [Crobj_converter_combinator.of_list Hex_atomic_linker.to_concrete_object l]);;
 
 let to_readable_string = Private.to_readable_string;; 
 
