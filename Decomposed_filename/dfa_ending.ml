@@ -62,11 +62,11 @@ let is_compilable edg =
 
 
 let to_concrete_object (Dfa_ending_t.E(e)) =
-    Concrete_object_t.Variant ("Dfa_"^"ending_t.E",[Concrete_object_field.wrap_string(e)]);;
+    Concrete_object_t.Variant ("Dfa_"^"ending_t.E",[Crobj_converter.Of.string(e)]);;
 
 let of_concrete_object crobj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Dfa_ending_t.E(
-      Concrete_object_field.unwrap_string arg1
+      Crobj_converter.To.string arg1
    );;
 

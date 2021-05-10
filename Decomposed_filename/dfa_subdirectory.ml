@@ -53,11 +53,11 @@ let soak (Dfa_subdirectory_t.SD(s1),Dfa_subdirectory_t.SD(s2)) (Dfa_subdirectory
    |None -> None ;;
 
 let to_concrete_object (Dfa_subdirectory_t.SD(s))=
-    Concrete_object_t.Variant("Dfa_"^"subdirectory_t.SD",[Concrete_object_field.wrap_string(s)]);;
+    Concrete_object_t.Variant("Dfa_"^"subdirectory_t.SD",[Crobj_converter.Of.string(s)]);;
 
 let of_concrete_object ccrt_obj =
    let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
-   Dfa_subdirectory_t.SD(Concrete_object_field.unwrap_string arg1);;
+   Dfa_subdirectory_t.SD(Crobj_converter.To.string arg1);;
 
 
 
