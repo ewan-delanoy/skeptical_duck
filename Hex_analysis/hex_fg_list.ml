@@ -6,8 +6,8 @@
 
 
 
-let of_concrete_object crobj = Concrete_object_field.to_list Hex_finished_game.of_concrete_object crobj;;
-let to_concrete_object l = Concrete_object_field.of_list Hex_finished_game.to_concrete_object l;;
+let of_concrete_object crobj = Crobj_converter_combinator.to_list Hex_finished_game.of_concrete_object crobj;;
+let to_concrete_object l = Crobj_converter_combinator.of_list Hex_finished_game.to_concrete_object l;;
 
 let remove_redundancies l=
  let rec tempf=(function

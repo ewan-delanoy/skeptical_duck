@@ -133,7 +133,7 @@ let of_concrete_object  crobj=
    {
       Hex_finished_game_t.dimension = Hex_dimension.of_concrete_object (g dimension_label);
       winner = Hex_player.of_concrete_object (g winner_label);
-      sequence_of_moves = Concrete_object_field.to_list Hex_cell.of_concrete_object (g sequences_of_moves_label);
+      sequence_of_moves = Crobj_converter_combinator.to_list Hex_cell.of_concrete_object (g sequences_of_moves_label);
    };;
 
 let to_concrete_object fgame =
@@ -141,7 +141,7 @@ let to_concrete_object fgame =
    Concrete_object_t.Record([
      dimension_label,Hex_dimension.to_concrete_object(fgame.Hex_finished_game_t.dimension);
      winner_label, Hex_player.to_concrete_object(fgame.Hex_finished_game_t.winner);
-     sequences_of_moves_label, Concrete_object_field.of_list Hex_cell.to_concrete_object(fgame.Hex_finished_game_t.sequence_of_moves);
+     sequences_of_moves_label, Crobj_converter_combinator.of_list Hex_cell.to_concrete_object(fgame.Hex_finished_game_t.sequence_of_moves);
    ]);;
 
 end;;

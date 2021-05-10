@@ -153,10 +153,4 @@ module Exn = struct
    let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
    let to_list to_a crobj= Image.image to_a (unwrap_list crobj);;
    
-   let of_array of_a arr= Concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
-   let to_array to_a crobj= Array.map to_a (unwrap_array crobj);;
-   
-   let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
-   let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
-   
    

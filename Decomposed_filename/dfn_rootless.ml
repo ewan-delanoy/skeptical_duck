@@ -25,16 +25,7 @@ let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
      ]
    ) ;;
 
-let pair_of_concrete_object crobj =
-   let (arg1,arg2,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
-   (of_concrete_object arg1,of_concrete_object arg2);;
 
-
-let pair_to_concrete_object (cell1,cell2)=
-   Concrete_object_t.Uple [
-      to_concrete_object(cell1);
-      to_concrete_object(cell2)
-   ];;   
 
 end ;; 
 
@@ -44,11 +35,10 @@ let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
 let is_in (Dfn_rootless_t.J(s,m,e)) sd = Dfa_subdirectory.begins_with s sd;;
 
 let list_of_concrete_object crobj=
-   Concrete_object_field.to_list Private.of_concrete_object crobj
-;;
+  Crobj_converter_combinator.to_list Private.of_concrete_object crobj ;;
 
 let list_to_concrete_object l=
-   Concrete_object_field.of_list Private.to_concrete_object l;;
+   Crobj_converter_combinator.of_list Private.to_concrete_object l;;
 
 
 let of_concrete_object = Private.of_concrete_object ;;
@@ -56,11 +46,10 @@ let of_concrete_object = Private.of_concrete_object ;;
 let of_line line = Dfn_common.string_to_rootless line;;
 
 let pair_list_of_concrete_object crobj=
-   Concrete_object_field.to_list Private.pair_of_concrete_object crobj
-;;
+  Crobj_converter_combinator.to_pair_list Private.of_concrete_object crobj ;;
 
 let pair_list_to_concrete_object l=
-   Concrete_object_field.of_list Private.pair_to_concrete_object l;;
+  Crobj_converter_combinator.of_pair_list Private.to_concrete_object l;;
 
 
 let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;

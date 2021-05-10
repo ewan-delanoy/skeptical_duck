@@ -16,7 +16,7 @@ let pair_of_crobj crobj=
    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
   (
     Dfn_rootless.of_concrete_object arg1,
-    Concrete_object_field.unwrap_string arg2
+    Crobj_converter.To.string arg2
   );;
 
 let pair_to_crobj (watched_file,modif_date)=
@@ -24,7 +24,7 @@ let pair_to_crobj (watched_file,modif_date)=
      [
         
         Dfn_rootless.to_concrete_object watched_file;
-        Concrete_object_field.wrap_string(modif_date);
+        Crobj_converter.Of.string(modif_date);
      ]
    ) ;;
 
@@ -39,8 +39,8 @@ let of_concrete_object ccrt_obj =
    let g=Concrete_object_field.get_record ccrt_obj in
    {
       Fw_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
-      compilable_files = Concrete_object_field.to_list pair_of_crobj (g compilable_files_label);
-      noncompilable_files = Concrete_object_field.to_list pair_of_crobj (g noncompilable_files_label);
+      compilable_files = Crobj_converter_combinator.to_list pair_of_crobj (g compilable_files_label);
+      noncompilable_files = Crobj_converter_combinator.to_list pair_of_crobj (g noncompilable_files_label);
       last_noticed_changes = Dircopy_diff.of_concrete_object (g last_noticed_changes_label);
    };; 
 
@@ -48,8 +48,8 @@ let to_concrete_object fw=
    let items= 
    [
     configuration_label, Fw_configuration.to_concrete_object fw.Fw_wrapper_t.configuration;
-    compilable_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.compilable_files;
-    noncompilable_files_label, Concrete_object_field.of_list pair_to_crobj fw.Fw_wrapper_t.noncompilable_files;
+    compilable_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_wrapper_t.compilable_files;
+    noncompilable_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_wrapper_t.noncompilable_files;
     last_noticed_changes_label, Dircopy_diff.to_concrete_object fw.Fw_wrapper_t.last_noticed_changes
    ]  in
    Concrete_object_t.Record items;;

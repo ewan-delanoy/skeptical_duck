@@ -25,7 +25,7 @@ let of_concrete_object crobj =
     else 
     if hook = hook_for_disjunction
     then Hex_strategy_static_constructor_t.Exhaustive_Disjunction(
-        Concrete_object_field.to_list Hex_cell.of_concrete_object arg1
+    Crobj_converter_combinator.to_list Hex_cell.of_concrete_object arg1
          )
     else raise(Of_concrete_object_exn(hook));;
 
@@ -37,5 +37,5 @@ let to_concrete_object = function
            ])
    |Exhaustive_Disjunction (cells)->
             Concrete_object_t.Variant(hook_for_disjunction,
-           [Concrete_object_field.of_list Hex_cell.to_concrete_object cells]) ;;
+           [Crobj_converter_combinator.of_list Hex_cell.to_concrete_object cells]) ;;
    

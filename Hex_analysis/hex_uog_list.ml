@@ -51,7 +51,7 @@ let extract_untamed_openings dfgl =
    Ordered.sort Hex_untamed_opening.cmp temp1 ;;
 
 
-let of_concrete_object crobj = Concrete_object_field.to_list Hex_untamed_opening.of_concrete_object crobj;;
+let of_concrete_object crobj = Crobj_converter_combinator.to_list Hex_untamed_opening.of_concrete_object crobj;;
 
 
 let insert_in = Private.insert_in;;  
@@ -71,4 +71,4 @@ let seek_interesting_move l=
 let simplify_by_move move l=Option.filter_and_unpack 
 (Hex_untamed_opening.simplify_by_move move) l;;     
 
-let to_concrete_object l = Concrete_object_field.of_list Hex_untamed_opening.to_concrete_object l;;
+let to_concrete_object l = Crobj_converter_combinator.of_list Hex_untamed_opening.to_concrete_object l;;
