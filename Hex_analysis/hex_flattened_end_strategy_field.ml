@@ -22,7 +22,7 @@ let of_concrete_object  crobj=
       Hex_flattened_end_strategy_t.dimension = Hex_dimension.of_concrete_object (g dimension_label);
       beneficiary = Hex_player.of_concrete_object (g beneficiary_label);
       data = Hex_extended_molecular.of_concrete_object (g data_label);
-      index = Concrete_object_field.unwrap_int (g index_label);
+      index = Crobj_converter.To.int (g index_label);
    };;
 
 let to_concrete_object fles =

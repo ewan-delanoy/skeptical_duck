@@ -59,8 +59,8 @@ let neighbors (Hex_dimension_t.D dim) (Hex_cell_t.C(i1,j1)) =
 let of_concrete_object crobj = 
     let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Hex_cell_t.C(
-      Concrete_object_field.unwrap_int arg1,
-      Concrete_object_field.unwrap_int arg2
+      Crobj_converter.To.int arg1,
+      Crobj_converter.To.int arg2
    );;
 
 let of_int_pair (i,j) =Hex_cell_t.C(i,j);;
@@ -69,16 +69,12 @@ let of_string= Private.of_string;;
 
 let ordinate (Hex_cell_t.C(i,j))=j;;
 
-let pair_of_concrete_object crobj =
-   let (arg1,arg2,_,_,_,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
-   (of_concrete_object arg1,of_concrete_object arg2);;
+let pair_of_concrete_object = 
+     Crobj_converter_combinator.to_pair of_concrete_object of_concrete_object ;;
 
 
-let pair_to_concrete_object (cell1,cell2)=
-   Concrete_object_t.Uple [
-      Private.to_concrete_object(cell1);
-      Private.to_concrete_object(cell2)
-   ];;
+let pair_to_concrete_object =
+   Crobj_converter_combinator.of_pair Private.to_concrete_object Private.to_concrete_object ;;
 
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (Private.to_string ap);;     

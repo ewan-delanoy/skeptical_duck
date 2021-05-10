@@ -28,17 +28,12 @@ module Exn = struct
    
    let wrap_encoded_string encoded_s=Concrete_object_t.String(encoded_s);;
    let wrap_int i = (Concrete_object_t.Int i);;
-   let wrap_string s = Concrete_object_t.String(Encoded_string.encode s);;
    
    let unwrap_int ccrt_obj=
       match ccrt_obj with 
       Concrete_object_t.Int(i)->i 
       |_->raise(Exn.Unwrap_int_exn(ccrt_obj));;
    
-   let unwrap_string ccrt_obj=
-      match ccrt_obj with 
-      Concrete_object_t.String(encoded_s)->Encoded_string.decode encoded_s 
-      |_->raise(Exn.Unwrap_string_exn(ccrt_obj));;
    
    let unwrap_list ccrt_obj=
       match ccrt_obj with 
