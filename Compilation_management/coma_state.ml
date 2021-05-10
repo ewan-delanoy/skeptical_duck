@@ -1603,10 +1603,10 @@ let reflect_latest_changes_in_github cs opt_msg=
 let check_module_sequence_for_forgettability cs l=
    let temp1 = List.rev (Three_parts.generic l) in 
     Option.filter_and_unpack (
-     fun (to_be_deleted_before_mn,mn,_)->
+     fun (_,mn,to_be_deleted_after_mn)->
        let eless = endingless_at_module cs mn in   
        let temp2 = List.filter (fun mn2->
-          not(List.mem mn2 to_be_deleted_before_mn) 
+          List.mem mn2 to_be_deleted_after_mn
        ) (below cs eless) in 
        if temp2 = []
        then None 
@@ -1618,7 +1618,7 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
   let l = List.filter Dfn_rootless.is_compilable old_l in 
   let temp1 = List.rev (Three_parts.generic l) in 
   Option.filter_and_unpack (
-     fun (to_be_deleted_before_rp,rp,_)->
+     fun (_,rp,to_be_deleted_after_rp)->
        let mn = Dfn_rootless.to_module rp in 
        let acolytes = rootless_paths_at_module cs mn in  
        let remaining_acolytes = List.filter (
@@ -1628,7 +1628,7 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
        then None
        else 
        let temp2 = List.filter (fun rp2->
-          not(List.mem rp2 to_be_deleted_before_rp) 
+          List.mem rp2 to_be_deleted_after_rp
        ) (acolytes_below_module cs mn) in 
        if temp2 = []
        then None 
