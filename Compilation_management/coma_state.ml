@@ -1622,7 +1622,7 @@ let check_rootless_path_sequence_for_forgettability cs old_l =
        let mn = Dfn_rootless.to_module rp in 
        let acolytes = rootless_paths_at_module cs mn in  
        let remaining_acolytes = List.filter (
-         fun rp2 -> not (List.mem rp2 (rp::to_be_deleted_before_rp))
+         fun rp2 -> (rp2<>rp) && (List.mem rp2 to_be_deleted_after_rp)
        ) acolytes in 
        if remaining_acolytes<>[]
        then None
