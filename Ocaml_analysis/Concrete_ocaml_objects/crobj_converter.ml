@@ -62,10 +62,6 @@ module Pair = struct
        Concrete_object_field.of_triple (fst string) (fst string) (fst string),
        Concrete_object_field.to_triple (snd string) (snd string) (snd string)
    );;
-   let string_triple_list = (
-       Concrete_object_field.of_list (fst string_triple) ,
-       Concrete_object_field.to_list (snd string_triple) 
-   );;
    
 end ;;
 
@@ -82,7 +78,6 @@ module Of = struct
    let string_pair = fst(Pair.string_pair);;
    let string_pair_list = fst(Pair.string_pair_list);;
    let string_triple = fst(Pair.string_triple);; 
-   let string_triple_list = fst(Pair.string_triple_list);;
 
 end ;;
 
@@ -98,7 +93,6 @@ module To = struct
    let string_pair = snd(Pair.string_pair);;
    let string_pair_list = snd(Pair.string_pair_list);;
    let string_triple = snd(Pair.string_triple);; 
-   let string_triple_list = snd(Pair.string_triple_list);;
 
 end ;;
 

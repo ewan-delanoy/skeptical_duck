@@ -21,24 +21,24 @@ module Private = struct
      let g = Concrete_object_field.get_record crobj in 
      {
            Htscr_config_t.building_site = Concrete_object_field.unwrap_string(g building_site_label);
-          endings_for_dynamic_homemades = Concrete_object_field.to_string_pair_list(g endings_for_dynamic_homemades_label);
-                list_of_allowed_endings = Concrete_object_field.to_string_list(g list_of_allowed_endings_label);
-                        list_of_proxies = Concrete_object_field.to_string_list(g list_of_proxies_label);
-                            source_tags = Concrete_object_field.to_string_list(g source_tags_label);
+          endings_for_dynamic_homemades = Crobj_converter.To.string_pair_list(g endings_for_dynamic_homemades_label);
+                list_of_allowed_endings = Crobj_converter.To.string_list(g list_of_allowed_endings_label);
+                        list_of_proxies = Crobj_converter.To.string_list(g list_of_proxies_label);
+                            source_tags = Crobj_converter.To.string_list(g source_tags_label);
                      static_subdir_name = Dfa_subdirectory.of_concrete_object(g static_subdir_name_label);
-                                website = Concrete_object_field.unwrap_string(g website_label);
+                                website = Crobj_converter.To.string(g website_label);
      };;
   
   
      let to_concrete_object  config= 
      Concrete_object_t.Record([ 
                       building_site_label , Concrete_object_field.wrap_string(config.Htscr_config_t.building_site);
-      endings_for_dynamic_homemades_label , Concrete_object_field.of_string_pair_list(config.Htscr_config_t.endings_for_dynamic_homemades);
-            list_of_allowed_endings_label , Concrete_object_field.of_string_list(config.Htscr_config_t.list_of_allowed_endings);
-                    list_of_proxies_label , Concrete_object_field.of_string_list(config.Htscr_config_t.list_of_proxies);
-                        source_tags_label , Concrete_object_field.of_string_list(config.Htscr_config_t.source_tags);
+      endings_for_dynamic_homemades_label , Crobj_converter.Of.string_pair_list(config.Htscr_config_t.endings_for_dynamic_homemades);
+            list_of_allowed_endings_label , Crobj_converter.Of.string_list(config.Htscr_config_t.list_of_allowed_endings);
+                    list_of_proxies_label , Crobj_converter.Of.string_list(config.Htscr_config_t.list_of_proxies);
+                        source_tags_label , Crobj_converter.Of.string_list(config.Htscr_config_t.source_tags);
                  static_subdir_name_label , Dfa_subdirectory.to_concrete_object(config.Htscr_config_t.static_subdir_name);
-                            website_label , Concrete_object_field.wrap_string(config.Htscr_config_t.website);
+                            website_label , Crobj_converter.Of.string(config.Htscr_config_t.website);
      ]);;
   
   let full_static_subdir_path config =
