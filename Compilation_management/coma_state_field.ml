@@ -565,49 +565,49 @@ let product_up_to_date_for_module_label = salt ^ "product_up_to_date_for_module"
 let directories_label                   = salt ^ "directories";;
 let printer_equipped_types_label        = salt ^ "printer_equipped_types";;
 
-let cr_of_pair f l= Concrete_object_field.of_pair_list  Dfa_module.to_concrete_object f l;;
-let cr_to_pair f crobj= Concrete_object_field.to_pair_list  Dfa_module.of_concrete_object f crobj;;
+let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
+let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_field.get_record ccrt_obj in
    {
       Coma_state_t.frontier_with_unix_world = Fw_wrapper_field.of_concrete_object (g frontier_with_unix_world_label);
-      modules = Concrete_object_field.to_list Dfa_module.of_concrete_object (g modules_label);
+      modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
       subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
       principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
-      mli_presence_for_module = cr_to_pair Concrete_object_field.to_bool (g mli_presence_for_module_label);
-      principal_mt_for_module = cr_to_pair Concrete_object_field.unwrap_string (g principal_mt_for_module_label);
-      mli_mt_for_module = cr_to_pair Concrete_object_field.unwrap_string (g mli_mt_for_module_label);
-      needed_libs_for_module = cr_to_pair (Concrete_object_field.to_list Ocaml_library.of_concrete_object) (g needed_libs_for_module_label);
-      direct_fathers_for_module = cr_to_pair (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
-      ancestors_for_module = cr_to_pair (Concrete_object_field.to_list Dfa_module.of_concrete_object) (g ancestors_for_module_label); 
-      needed_dirs_for_module = cr_to_pair (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
-      product_up_to_date_for_module = cr_to_pair Concrete_object_field.to_bool (g product_up_to_date_for_module_label);
-      directories = (Concrete_object_field.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
-      printer_equipped_types = Concrete_object_field.to_pair_list 
+      mli_presence_for_module = cr_to_pair Crobj_converter.To.bool (g mli_presence_for_module_label);
+      principal_mt_for_module = cr_to_pair Crobj_converter.To.string (g principal_mt_for_module_label);
+      mli_mt_for_module = cr_to_pair Crobj_converter.To.string (g mli_mt_for_module_label);
+      needed_libs_for_module = cr_to_pair (Crobj_converter_combinator.to_list Ocaml_library.of_concrete_object) (g needed_libs_for_module_label);
+      direct_fathers_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
+      ancestors_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_module.of_concrete_object) (g ancestors_for_module_label); 
+      needed_dirs_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
+      product_up_to_date_for_module = cr_to_pair Crobj_converter.To.bool (g product_up_to_date_for_module_label);
+      directories = (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
+      printer_equipped_types = Crobj_converter_combinator.to_pair_list 
                                       Dfn_endingless.of_concrete_object
-                                      Concrete_object_field.to_bool (g printer_equipped_types_label);
+                                      Crobj_converter.To.bool (g printer_equipped_types_label);
    };; 
 
 let to_concrete_object cs=
    let items= 
    [
     frontier_with_unix_world_label, Fw_wrapper_field.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
-    modules_label, Concrete_object_field.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
+    modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
     subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
-    mli_presence_for_module_label, cr_of_pair Concrete_object_field.of_bool cs.Coma_state_t.mli_presence_for_module;  
-    principal_mt_for_module_label, cr_of_pair (fun s->Concrete_object_field.wrap_string s) cs.Coma_state_t.principal_mt_for_module;
-    mli_mt_for_module_label, cr_of_pair (fun s->Concrete_object_field.wrap_string s) cs.Coma_state_t.mli_mt_for_module;
-    needed_libs_for_module_label, cr_of_pair (Concrete_object_field.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
-    direct_fathers_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
-    ancestors_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   
-    needed_dirs_for_module_label, cr_of_pair (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object)  (cs.Coma_state_t.needed_dirs_for_module);  
-    product_up_to_date_for_module_label, cr_of_pair Concrete_object_field.of_bool cs.Coma_state_t.product_up_to_date_for_module; 
-    directories_label,  (Concrete_object_field.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
-    printer_equipped_types_label,  Concrete_object_field.of_pair_list 
+    mli_presence_for_module_label, cr_of_pair Crobj_converter.Of.bool cs.Coma_state_t.mli_presence_for_module;  
+    principal_mt_for_module_label, cr_of_pair Crobj_converter.Of.string cs.Coma_state_t.principal_mt_for_module;
+    mli_mt_for_module_label, cr_of_pair Crobj_converter.Of.string  cs.Coma_state_t.mli_mt_for_module;
+    needed_libs_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
+    direct_fathers_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
+    ancestors_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   
+    needed_dirs_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object)  (cs.Coma_state_t.needed_dirs_for_module);  
+    product_up_to_date_for_module_label, cr_of_pair Crobj_converter.Of.bool cs.Coma_state_t.product_up_to_date_for_module; 
+    directories_label,  (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
+    printer_equipped_types_label,  Crobj_converter_combinator.of_pair_list 
                                       Dfn_endingless.to_concrete_object
-                                      Concrete_object_field.of_bool cs.Coma_state_t.printer_equipped_types;    
+                                      Crobj_converter.Of.bool cs.Coma_state_t.printer_equipped_types;    
    ]  in
    Concrete_object_t.Record items;;
 

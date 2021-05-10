@@ -20,7 +20,7 @@ module Private = struct
   let of_concrete_object  crobj= 
      let g = Concrete_object_field.get_record crobj in 
      {
-           Htscr_config_t.building_site = Concrete_object_field.unwrap_string(g building_site_label);
+           Htscr_config_t.building_site = Crobj_converter.To.string(g building_site_label);
           endings_for_dynamic_homemades = Crobj_converter.To.string_pair_list(g endings_for_dynamic_homemades_label);
                 list_of_allowed_endings = Crobj_converter.To.string_list(g list_of_allowed_endings_label);
                         list_of_proxies = Crobj_converter.To.string_list(g list_of_proxies_label);
@@ -32,7 +32,7 @@ module Private = struct
   
      let to_concrete_object  config= 
      Concrete_object_t.Record([ 
-                      building_site_label , Concrete_object_field.wrap_string(config.Htscr_config_t.building_site);
+                      building_site_label , Crobj_converter.Of.string(config.Htscr_config_t.building_site);
       endings_for_dynamic_homemades_label , Crobj_converter.Of.string_pair_list(config.Htscr_config_t.endings_for_dynamic_homemades);
             list_of_allowed_endings_label , Crobj_converter.Of.string_list(config.Htscr_config_t.list_of_allowed_endings);
                     list_of_proxies_label , Crobj_converter.Of.string_list(config.Htscr_config_t.list_of_proxies);
