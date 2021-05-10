@@ -139,11 +139,6 @@ module Exn = struct
    let of_int_list l=Concrete_object_t.List (Image.image (fun i->Concrete_object_t.Int(i)) l);;
    let to_int_list crobj = Image.image unwrap_int (unwrap_list crobj);;
    
-   let of_int_pair (i,j)=Concrete_object_t.Uple (Image.image (fun k->Concrete_object_t.Int(k)) [i;j]);;
-   let to_int_pair crobj = 
-        let (arg1,arg2,_,_,_,_,_)=unwrap_bounded_uple crobj in
-       (unwrap_int arg1,unwrap_int arg2);;
-   
    
    let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
    let to_pair to_a to_b crobj=
