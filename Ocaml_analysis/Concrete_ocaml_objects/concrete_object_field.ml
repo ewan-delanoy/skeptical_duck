@@ -153,4 +153,3 @@ module Exn = struct
    let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
    let to_list to_a crobj= Image.image to_a (unwrap_list crobj);;
    
-   
