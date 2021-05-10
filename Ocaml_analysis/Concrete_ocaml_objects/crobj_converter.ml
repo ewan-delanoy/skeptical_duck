@@ -28,12 +28,12 @@ module Pair = struct
        )
    );;
    let int_list = (
-       Concrete_object_field.of_list (fst int) ,
-       Concrete_object_field.to_list (snd int) 
+       Crobj_converter_combinator.of_list (fst int) ,
+       Crobj_converter_combinator.to_list (snd int) 
    );;
    let int_triple = (
-       Concrete_object_field.of_triple (fst int) (fst int) (fst int),
-       Concrete_object_field.to_triple (snd int) (snd int) (snd int)
+       Crobj_converter_combinator.of_triple (fst int) (fst int) (fst int),
+       Crobj_converter_combinator.to_triple (snd int) (snd int) (snd int)
    );;
    let string =(
        (fun s -> Concrete_object_t.String(Encoded_string.encode s)),
@@ -43,20 +43,20 @@ module Pair = struct
        |_->raise(Unwrap_string_exn(ccrt_obj)))
    );;
    let string_list = (
-       Concrete_object_field.of_list (fst string) ,
-       Concrete_object_field.to_list (snd string) 
+       Crobj_converter_combinator.of_list (fst string) ,
+       Crobj_converter_combinator.to_list (snd string) 
    );;
    let string_pair = (
-       Concrete_object_field.of_pair (fst string) (fst string),
-       Concrete_object_field.to_pair (snd string) (snd string)
+       Crobj_converter_combinator.of_pair (fst string) (fst string),
+       Crobj_converter_combinator.to_pair (snd string) (snd string)
    );;
    let string_pair_list = (
-       Concrete_object_field.of_list (fst string_pair) ,
-       Concrete_object_field.to_list (snd string_pair) 
+       Crobj_converter_combinator.of_list (fst string_pair) ,
+       Crobj_converter_combinator.to_list (snd string_pair) 
    );;
    let string_triple = (
-       Concrete_object_field.of_triple (fst string) (fst string) (fst string),
-       Concrete_object_field.to_triple (snd string) (snd string) (snd string)
+       Crobj_converter_combinator.of_triple (fst string) (fst string) (fst string),
+       Crobj_converter_combinator.to_triple (snd string) (snd string) (snd string)
    );;
    
 end ;;
