@@ -46,10 +46,10 @@ let of_concrete_object = Private.of_concrete_object ;;
 let of_line line = Dfn_common.string_to_rootless line;;
 
 let pair_list_of_concrete_object crobj=
-  Crobj_converter_combinator.to_pair_list Private.of_concrete_object crobj ;;
+  Crobj_converter_combinator.to_pair_list Private.of_concrete_object Private.of_concrete_object crobj ;;
 
 let pair_list_to_concrete_object l=
-  Crobj_converter_combinator.of_pair_list Private.to_concrete_object l;;
+  Crobj_converter_combinator.of_pair_list Private.to_concrete_object Private.to_concrete_object l;;
 
 
 let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
