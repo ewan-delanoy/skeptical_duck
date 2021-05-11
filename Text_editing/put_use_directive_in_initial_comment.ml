@@ -47,3 +47,13 @@ let in_file ~new_directive fn =
       ) old_lines in 
     let new_text = String.concat "\n" new_lines in 
     Io.overwrite_with fn new_text;;
+
+let usual root ap =
+    let s_ap=Absolute_path.to_string ap in 
+    let s_cdir=Dfa_root.connectable_to_subpath root in 
+    let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
+    "#use\""^shortened_path^"\";"^";" ;;
+    
+let put_usual root ap =
+    let new_directive = usual root ap in 
+    in_file ~new_directive ap;;    
