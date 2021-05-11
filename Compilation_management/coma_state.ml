@@ -1461,7 +1461,9 @@ let duplicate_module cs old_t1 old_t2=
    else 
    let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
    let ap2=Absolute_path.of_string s_ap2 in
-   let _ =  Put_use_directive_in_initial_comment.put_usual (root cs) ap2 in 
+   let _ =  (
+     if s_ending = "ml"
+     then Put_use_directive_in_initial_comment.put_usual (root cs) ap2) in 
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 
