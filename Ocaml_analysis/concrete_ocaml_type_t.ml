@@ -16,5 +16,7 @@ type t=
    |List of string * t 
    |Array of string * t 
    |Record of (string * t) list
-   |Variant of string * ((string * t) list);;
+   |Variant of string * ((string * t) list)
+   |Modularized of string 
+   |Auxiliary of string * int;;
 
