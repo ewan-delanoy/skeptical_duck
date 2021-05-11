@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/read_ocaml_files_without_expanding_inclusions.ml";;
+#use"Ocaml_analysis/read_ocaml_file_without_expanding_inclusions.ml";;
 
 Same as read_ocaml_files except that :
 Module inclusions are not expanded.

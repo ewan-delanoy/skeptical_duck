@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_strong_opening.ml";;
+#use"Hex_analysis/hex_untamed_opening.ml";;
 
 *)
 

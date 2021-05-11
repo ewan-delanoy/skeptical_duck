@@ -1,6 +1,6 @@
 (* 
 
-#use"Concrete_ocaml_objects/double_partial_crobj_t.ml";;
+#use"Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
 
 First argument says if a comma appears last, waiting for another item.
 

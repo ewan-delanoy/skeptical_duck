@@ -1,6 +1,6 @@
 (*
 
-#use"GParser/hparser_for_c_language.ml";;
+#use"GParser/gparser_for_c_language.ml";;
 
 *)
 

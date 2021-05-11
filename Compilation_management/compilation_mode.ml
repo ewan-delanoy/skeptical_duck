@@ -1,6 +1,6 @@
 (* 
 
-#use"Makefile_makers/compilation_mode.ml";;
+#use"Compilation_management/compilation_mode.ml";;
 
 *)
 

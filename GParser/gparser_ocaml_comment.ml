@@ -1,6 +1,6 @@
 (*
 
-#use"GParser/kparser_ocaml_comment.ml";;
+#use"GParser/gparser_ocaml_comment.ml";;
 
 *)
 

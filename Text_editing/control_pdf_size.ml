@@ -1,6 +1,6 @@
 (*
 
-#use "Text_editing/control_pdf_size.ml";;
+#use"Text_editing/control_pdf_size.ml";;
 
 *)
 

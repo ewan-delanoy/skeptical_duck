@@ -1,6 +1,6 @@
 (*
 
-#use"GParser/hparser_result.ml";;
+#use"GParser/gparser_result.ml";;
 
 *)
 

@@ -1,6 +1,6 @@
 (*
 
-#use"Php_analizer/Great_Replacement/characters_in_namespace_name.ml";;
+#use"characters_in_namespace_name.ml";;
 
 *)
 

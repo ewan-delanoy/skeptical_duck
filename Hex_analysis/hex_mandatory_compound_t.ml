@@ -1,6 +1,6 @@
 (* 
 
-#use"Hex_analysis/hex_mandatory_set_t.ml";;
+#use"Hex_analysis/hex_mandatory_compound_t.ml";;
 
 *)
 
