@@ -1,4 +1,3 @@
-
 (* 
 
 Useful to avoid empty strings between two successive separators in

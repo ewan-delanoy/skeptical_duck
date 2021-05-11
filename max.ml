@@ -1,4 +1,8 @@
+(*
 
+#use"max.ml";;
+
+*) 
 
 
 let list=function 

@@ -1,6 +1,8 @@
 (*
 
+#use"image.ml";;
 The most used function in all those modules !
+
 
 *)
 

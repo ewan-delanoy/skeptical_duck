@@ -1,4 +1,8 @@
+(*
 
+#use"uple.ml";;
+
+*) 
 
 let list_of_pairs l=
 if List.length(l)<2 then [] else

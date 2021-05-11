@@ -1,4 +1,8 @@
+(*
 
+#use"cartesian.ml";;
+
+*) 
 
 let product a b=
 if (a=[])||(b=[]) then [] else

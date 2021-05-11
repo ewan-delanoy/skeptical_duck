@@ -1,4 +1,8 @@
+(*
 
+#use"multiset.ml";;
+
+*) 
 type 'a t=M of ('a*int) list;; 
 
 let to_list (M l)=Image.image(fst)(l);;

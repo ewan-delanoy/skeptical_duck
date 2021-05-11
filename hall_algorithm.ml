@@ -1,4 +1,8 @@
+(*
 
+#use"hall_algorithm.ml";;
+
+*) 
 type ('a,'b) t=
 { 
   choices_made:('a*'b) list; 

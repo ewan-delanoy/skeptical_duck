@@ -1,4 +1,8 @@
+(*
 
+#use"min.ml";;
+
+*) 
 
 
 let list=function 

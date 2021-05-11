@@ -1,4 +1,8 @@
+(*
 
+#use"memoized.ml";;
+
+*) 
 type ('a,'b) map=('a->'b);;
 
 let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=

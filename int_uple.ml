@@ -1,4 +1,8 @@
+(*
 
+#use"int_uple.ml";;
+
+*) 
 let translate_pair a (x1,x2)=(a+x1,a+x2);;
 let translate_triple a (x1,x2,x3)=(a+x1,a+x2,a+x3);;
 let translate_fourtuple a (x1,x2,x3,x4)=(a+x1,a+x2,a+x3,a+x4);;

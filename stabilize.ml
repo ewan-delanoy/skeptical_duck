@@ -1,3 +1,8 @@
+(*
+
+#use"stabilize.ml";;
+
+*) 
 
 let one_more_time f (an_holl,da_ober)=
  let l_da_ober=Set_of_polys.forget_order(da_ober) in

@@ -1,4 +1,8 @@
- 
+(*
+
+#use"ennig.ml";;
+
+*) 
  let doyle f a b=
  let accu=ref([]) in
  let rec doyle0=(function

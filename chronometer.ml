@@ -1,3 +1,8 @@
+(*
+
+#use"chronometer.ml";;
+
+*) 
 
 let rewrite_days=function
 0->""
