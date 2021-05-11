@@ -1720,3 +1720,11 @@ let compute_dependencies  prepared_list_of_modules =
   Image.image (fun mname->mname) good_list ;; 
 
 end ;;   
+
+let principal_acolyte cs eless = 
+  let mn = Dfn_endingless.to_module eless in 
+  let edg = principal_ending_at_module cs mn in 
+  Dfn_join.to_ending eless edg ;;
+
+let all_principals cs =
+    Image.image (principal_acolyte cs) (all_endinglesses cs) ;;  
