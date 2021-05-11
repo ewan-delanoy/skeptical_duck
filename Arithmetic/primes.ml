@@ -31,7 +31,7 @@ let next_prime n=
   ) in
   tempf(n+1);;
 
-let power=Easy_arithmetic.power;;
+let power=Basic.power;;
 
 let rec naive_list_of_divisors=function
 1->Set_of_integers.singleton(1)
