@@ -1445,15 +1445,7 @@ let show_value_occurrences_in_modulesystem cs t=
 
 end;;
 
-let usual_directive_in_initial_comment cs ap =
-  let s_ap=Absolute_path.to_string ap in 
-  let s_cdir=Dfa_root.connectable_to_subpath (root cs) in 
-  let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
-  "#use\""^shortened_path^"\";"^";" ;;
 
-let put_usual_directive_in_initial_comment cs ap =
-   let new_directive = usual_directive_in_initial_comment cs ap in 
-   Put_use_directive_in_initial_comment.in_file ~new_directive ap;;
 
 exception Module_already_exists of string;;
 
@@ -1469,7 +1461,7 @@ let duplicate_module cs old_t1 old_t2=
    else 
    let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
    let ap2=Absolute_path.of_string s_ap2 in
-   let _ = put_usual_directive_in_initial_comment cs ap2 in 
+   let _ =  Put_use_directive_in_initial_comment.put_usual (root cs) ap2 in 
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 
