@@ -1452,7 +1452,8 @@ let duplicate_module cs old_t1 old_t2=
    and t2=String.uncapitalize_ascii old_t2 in 
    let ap1=decipher_path cs t1 in
    let s_ap1=Absolute_path.to_string ap1 in
-   let s_ap2=(Cull_string.before_rightmost_possibly_all s_ap1 '/')^"/"^t2^".ml" in
+   let s_ending = Cull_string.after_rightmost s_ap1 '.' in 
+   let s_ap2=(Cull_string.before_rightmost_possibly_all s_ap1 '/')^"/"^t2^"."^s_ending in
    if Sys.file_exists s_ap2
    then raise(Module_already_exists(t2))
    else 
