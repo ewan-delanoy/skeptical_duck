@@ -115,6 +115,16 @@ let register_rootless_paths fw rootless_paths=
     }  in 
     (Fw_wrapper_field.reflect_creations_in_diff fw2 rootless_paths,(c_paths,nc_paths));;
 
+let deal_with_initial_comment_if_needed fw rless =
+   if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
+   then ()
+   else
+      let root = Fw_wrapper_field.root fw in 
+      let full = Dfn_join.root_to_rootless root rless in 
+      let ap = Dfn_full.to_absolute_path full in 
+      Put_use_directive_in_initial_comment.put_usual root ap
+   ;;    
+
 let relocate_compilable_files_to fw rootless_paths new_subdir=
     let s_root = Dfa_root.connectable_to_subpath (Fw_wrapper_field.root fw) 
     and s_subdir = Dfa_subdirectory.connectable_to_subpath new_subdir in 
@@ -132,6 +142,7 @@ let relocate_compilable_files_to fw rootless_paths new_subdir=
          let (path,_)=pair in 
          if(List.mem path rootless_paths) 
          then let new_path = Dfn_rootless.relocate_to path new_subdir in 
+              let _ = deal_with_initial_comment_if_needed fw new_path in 
               (new_path,recompute_mtime fw new_path)
          else pair
       ) (fw.Fw_wrapper_t.compilable_files)  
