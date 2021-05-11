@@ -1,3 +1,9 @@
+(*
+
+#use"Padioleau/ast_fuzzy.ml";;
+
+*)
+
 (* Yoann Padioleau
  *
  * Copyright (C) 2013 Facebook

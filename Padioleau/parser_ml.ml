@@ -1,3 +1,8 @@
+(*
+
+#use"Padioleau/parser_ml.ml";;
+
+*)
 type token =
   | TUnknown of (Parse_info.info)
   | EOF of (Parse_info.info)

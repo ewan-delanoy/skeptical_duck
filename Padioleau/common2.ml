@@ -1,3 +1,8 @@
+(*
+
+#use"Padioleau/common2.ml";;
+
+*)
 (*s: common.ml *)
 (* Yoann Padioleau
  *
