@@ -7,9 +7,12 @@
 
 type t=NumLib |StrLib |UnixLib;;
 
-let correspondances=[NumLib,"num";StrLib,"str";UnixLib,"unix"];;
+let correspondances=[
+   Ocaml_library_t.NumLib,"num";
+   Ocaml_library_t.StrLib,"str";
+   Ocaml_library_t.UnixLib,"unix"];;
 let capitalized_correspondances =Image.image (
-   fun (x,y)->(x,"Ocaml"^"_library."^y)
+   fun (x,y)->(x,"Ocaml"^"_library_t."^y)
 ) correspondances;;
 
 exception Unknown_lib of string;;
