@@ -13,7 +13,7 @@ type t={
      mli_presence_for_module : (Dfa_module_t.t * bool ) list;
      principal_mt_for_module : (Dfa_module_t.t * string ) list;
      mli_mt_for_module : (Dfa_module_t.t * string ) list;
-     needed_libs_for_module : (Dfa_module_t.t * Ocaml_library.t list ) list;
+     needed_libs_for_module : (Dfa_module_t.t * Ocaml_library_t.t list ) list;
      direct_fathers_for_module : (Dfa_module_t.t * Dfa_module_t.t list ) list;
      ancestors_for_module : (Dfa_module_t.t * Dfa_module_t.t list ) list; 
      needed_dirs_for_module : (Dfa_module_t.t * (Dfa_subdirectory_t.t list)) list;
