@@ -21,8 +21,8 @@ let of_concrete_object  crobj=
      Htscr_state_t.stored_proxies = Htscr_item.list_of_concrete_object(g stored_proxies_label);
           stored_static_homemades = Htscr_item.list_of_concrete_object(g stored_static_homemades_label);
          stored_dynamic_homemades = Htscr_item.list_of_concrete_object(g stored_dynamic_homemades_label);
-                      proxy_count = Crobj_converter.To.int(g proxy_count_label);
-                    dynamic_count = Crobj_converter.To.int(g dynamic_count_label);
+                      proxy_count = Crobj_converter.int_of_concrete_object(g proxy_count_label);
+                    dynamic_count = Crobj_converter.int_of_concrete_object(g dynamic_count_label);
    };;
 
 
@@ -31,8 +31,8 @@ let to_concrete_object  st =
               stored_proxies_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_proxies);
      stored_static_homemades_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_static_homemades);
     stored_dynamic_homemades_label , Htscr_item.list_to_concrete_object(st.Htscr_state_t.stored_dynamic_homemades);
-                 proxy_count_label , Crobj_converter.Of.int(st.Htscr_state_t.proxy_count);
-               dynamic_count_label , Crobj_converter.Of.int(st.Htscr_state_t.dynamic_count);
+                 proxy_count_label , Crobj_converter.int_to_concrete_object(st.Htscr_state_t.proxy_count);
+               dynamic_count_label , Crobj_converter.int_to_concrete_object(st.Htscr_state_t.dynamic_count);
    ]);;
 
 let check_for_already_registered_request st req= 
