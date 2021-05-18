@@ -9,7 +9,7 @@
 exception Unwrap_int_exn of Concrete_object_t.t;;
 exception Unwrap_string_exn of Concrete_object_t.t;;
 
-(*  
+ 
 module Pair = struct 
 
    let bool =((fun bowl->
@@ -88,7 +88,7 @@ module To = struct
    let string_triple = snd(Pair.string_triple);; 
 
 end ;;
-*)
+
 
 let bool_of_concrete_object = Concrete_object_field.unwrap_lonely_variant [true,"True";false,"False"];;
 let bool_to_concrete_object bowl = 
