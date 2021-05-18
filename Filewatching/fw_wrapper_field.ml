@@ -16,7 +16,7 @@ let pair_of_crobj crobj=
    let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
   (
     Dfn_rootless.of_concrete_object arg1,
-    Crobj_converter.To.string arg2
+    Crobj_converter.string_of_concrete_object arg2
   );;
 
 let pair_to_crobj (watched_file,modif_date)=
@@ -24,7 +24,7 @@ let pair_to_crobj (watched_file,modif_date)=
      [
         
         Dfn_rootless.to_concrete_object watched_file;
-        Crobj_converter.Of.string(modif_date);
+        Crobj_converter.string_to_concrete_object(modif_date);
      ]
    ) ;;
 

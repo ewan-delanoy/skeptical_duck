@@ -24,20 +24,20 @@ let of_concrete_object  crobj=
    let g = Concrete_object_field.get_record crobj in 
    {
       Htscr_item_t.category = Htscr_item_category.of_concrete_object (g category_label);
-      original_request = Crobj_converter.To.string  (g original_request_label);
-      polished_request = Crobj_converter.To.string  (g polished_request_label);
+      original_request = Crobj_converter.string_of_concrete_object  (g original_request_label);
+      polished_request = Crobj_converter.string_of_concrete_object  (g polished_request_label);
       location = Dfa_subdirectory.of_concrete_object (g location_label);
-      filename = Crobj_converter.To.string (g filename_label);
+      filename = Crobj_converter.string_of_concrete_object (g filename_label);
    };;
 
 let to_concrete_object item =
  
    Concrete_object_t.Record([
       category_label, Htscr_item_category.to_concrete_object (item.Htscr_item_t.category);
-      original_request_label, Crobj_converter.Of.string  (item.Htscr_item_t.original_request);
-      polished_request_label, Crobj_converter.Of.string  (item.Htscr_item_t.polished_request);
+      original_request_label, Crobj_converter.string_to_concrete_object  (item.Htscr_item_t.original_request);
+      polished_request_label, Crobj_converter.string_to_concrete_object  (item.Htscr_item_t.polished_request);
       location_label, Dfa_subdirectory.to_concrete_object (item.Htscr_item_t.location);
-      filename_label, Crobj_converter.Of.string (item.Htscr_item_t.filename);
+      filename_label, Crobj_converter.string_to_concrete_object (item.Htscr_item_t.filename);
    ]);;
 
 let list_of_concrete_object crobj = Crobj_converter_combinator.to_list of_concrete_object crobj;;
