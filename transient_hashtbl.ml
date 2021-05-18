@@ -17,13 +17,13 @@ let pairs_label = salt ^ "pairs";;
 let of_concrete_object a_of_crobj b_of_crobj crobj= 
    let g = Concrete_object_field.get_record crobj in 
    {
-      Transient_hashtbl_t.max_size = Crobj_converter.To.int (g max_size_label);
+      Transient_hashtbl_t.max_size = Crobj_converter.int_of_concrete_object (g max_size_label);
       pairs = Crobj_converter_combinator.to_pair_list a_of_crobj b_of_crobj (g pairs_label)
    };;
 
 let to_concrete_object a_to_crobj b_to_crobj tbl= 
    Concrete_object_t.Record([
-     max_size_label, Crobj_converter.Of.int(tbl.Transient_hashtbl_t.max_size); 
+     max_size_label, Crobj_converter.int_to_concrete_object(tbl.Transient_hashtbl_t.max_size); 
      pairs_label, Crobj_converter_combinator.of_pair_list a_to_crobj b_to_crobj tbl.Transient_hashtbl_t.pairs;
    ]);;
 

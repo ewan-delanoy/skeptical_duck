@@ -59,8 +59,8 @@ let neighbors (Hex_dimension_t.D dim) (Hex_cell_t.C(i1,j1)) =
 let of_concrete_object crobj = 
     let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
    Hex_cell_t.C(
-      Crobj_converter.To.int arg1,
-      Crobj_converter.To.int arg2
+      Crobj_converter.int_of_concrete_object arg1,
+      Crobj_converter.int_of_concrete_object arg2
    );;
 
 let of_int_pair (i,j) =Hex_cell_t.C(i,j);;
