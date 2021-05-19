@@ -1726,3 +1726,17 @@ let principal_acolyte cs eless =
 
 let all_principals cs =
     Image.image (principal_acolyte cs) (all_endinglesses cs) ;;  
+
+exception Module_not_found_while_choosing_automatic of Dfa_module_t.t ;;
+
+let choose_automatic_if_possible cs modulename =
+    let mname = Dfa_module.to_line modulename 
+    and list_of_modules = Coma_state_automatic.ordered_list_of_modules cs in 
+    let auto_version = Dfa_module.of_line(mname^"_automatic") in 
+    if not(List.mem modulename list_of_modules)
+    then raise(Module_not_found_while_choosing_automatic modulename)
+    else 
+    if List.mem auto_version list_of_modules
+    then auto_version
+    else modulename ;;      
+    
