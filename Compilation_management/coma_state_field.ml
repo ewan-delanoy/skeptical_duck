@@ -465,13 +465,13 @@ let printer_equipped_types_from_preceding_data
       modules_field,
         subdir_for_modules_field,
           principal_ending_at_module_field)=
-  let the_root = Fw_wrapper_field.root frontier_with_unix_world_field in         
+  let the_root = Fw_wrapper_automatic.root frontier_with_unix_world_field in         
   Option.filter_and_unpack (
     fun mn->
     let subdir = List.assoc mn subdir_for_modules_field 
     and pr_end= List.assoc mn principal_ending_at_module_field  in
     let rootless=Dfn_rootless_t.J(subdir,mn,pr_end) in 
-    let text=Fw_wrapper_field.get_content frontier_with_unix_world_field rootless in
+    let text=Fw_wrapper_automatic.get_content frontier_with_unix_world_field rootless in
     if (Substring.is_a_substring_of ("let "^"print_out ") text)
     then let eless=Dfn_endingless_t.J(the_root,subdir,mn) in 
          Some(eless)
@@ -523,11 +523,11 @@ let transplant wrapped_cs new_frontier =
           let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
           and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
           let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
-          (mn,Fw_wrapper_field.get_mtime new_frontier rootless)
+          (mn,Fw_wrapper_automatic.get_mtime new_frontier rootless)
      ) cs.Coma_state_t.principal_ending_for_module
      and new_mli_mts=Image.image (fun (mn,subdir)->
           let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
-          (mn,Fw_wrapper_field.get_mtime_or_zero_if_file_is_nonregistered 
+          (mn,Fw_wrapper_automatic.get_mtime_or_zero_if_file_is_nonregistered 
            new_frontier rootless)
      ) cs.Coma_state_t.subdir_for_module 
      and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
@@ -570,7 +570,7 @@ let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_c
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_automatic.get_record ccrt_obj in
    {
-      Coma_state_t.frontier_with_unix_world = Fw_wrapper_field.of_concrete_object (g frontier_with_unix_world_label);
+      Coma_state_t.frontier_with_unix_world = Fw_wrapper_automatic.of_concrete_object (g frontier_with_unix_world_label);
       modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
       subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
       principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
@@ -591,7 +591,7 @@ let of_concrete_object ccrt_obj =
 let to_concrete_object cs=
    let items= 
    [
-    frontier_with_unix_world_label, Fw_wrapper_field.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
+    frontier_with_unix_world_label, Fw_wrapper_automatic.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
     modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
     subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
     principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
