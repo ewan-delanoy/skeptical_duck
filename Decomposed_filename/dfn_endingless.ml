@@ -60,7 +60,7 @@ let to_concrete_object (Dfn_endingless_t.J(r,s,m))=
    ) ;;
 
 let of_concrete_object crobj =
-   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
    Dfn_endingless_t.J(
       Dfa_root.of_concrete_object arg1,
       Dfa_subdirectory.of_concrete_object arg2,

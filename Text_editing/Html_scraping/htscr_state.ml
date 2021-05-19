@@ -16,7 +16,7 @@ let dynamic_count_label            = salt ^ "dynamic_count";;
 
 
 let of_concrete_object  crobj= 
-   let g = Concrete_object_field.get_record crobj in 
+   let g = Concrete_object_automatic.get_record crobj in 
    {
      Htscr_state_t.stored_proxies = Htscr_item.list_of_concrete_object(g stored_proxies_label);
           stored_static_homemades = Htscr_item.list_of_concrete_object(g stored_static_homemades_label);

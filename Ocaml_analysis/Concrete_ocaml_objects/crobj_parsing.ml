@@ -160,7 +160,7 @@ let first_step s =
    let (action,next_idx) = next_basic_increase s 1 in 
    match action with 
     Crobj_basic_increase_t.Push_int(i)->(Some(Concrete_object_t.Int(i)),None,next_idx)
-   |Crobj_basic_increase_t.Push_string(encoded_s)->(Some(Concrete_object_field.wrap_encoded_string(encoded_s)),None,next_idx)
+   |Crobj_basic_increase_t.Push_string(encoded_s)->(Some(Concrete_object_automatic.wrap_encoded_string(encoded_s)),None,next_idx)
    |Crobj_basic_increase_t.Open(opening)->(None,Some(Double_partial_crobj.initialize(opening)),next_idx)
    |_->raise(First_step_exn(action));;
 

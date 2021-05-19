@@ -25,7 +25,7 @@ let recently_changed_label = salt ^ "recently_changed";;
 let recently_created_label = salt ^ "recently_created";;
 
 let of_concrete_object ccrt_obj = 
-   let g=Concrete_object_field.get_record ccrt_obj in
+   let g=Concrete_object_automatic.get_record ccrt_obj in
    {
       Dircopy_diff_t.recently_deleted = Dfn_rootless.list_of_concrete_object (g recently_deleted_label);
       recently_changed = Dfn_rootless.list_of_concrete_object (g recently_changed_label);

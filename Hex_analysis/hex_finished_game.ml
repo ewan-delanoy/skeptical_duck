@@ -129,7 +129,7 @@ let sequences_of_moves_label = salt ^ "sequences_of_moves";;
 
 
 let of_concrete_object  crobj= 
-   let g = Concrete_object_field.get_record crobj in 
+   let g = Concrete_object_automatic.get_record crobj in 
    {
       Hex_finished_game_t.dimension = Hex_dimension.of_concrete_object (g dimension_label);
       winner = Hex_player.of_concrete_object (g winner_label);

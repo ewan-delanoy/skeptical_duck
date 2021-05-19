@@ -21,7 +21,7 @@ let filename_label         = salt ^ "filename";;
 
 
 let of_concrete_object  crobj= 
-   let g = Concrete_object_field.get_record crobj in 
+   let g = Concrete_object_automatic.get_record crobj in 
    {
       Htscr_item_t.category = Htscr_item_category.of_concrete_object (g category_label);
       original_request = Crobj_converter.string_of_concrete_object  (g original_request_label);

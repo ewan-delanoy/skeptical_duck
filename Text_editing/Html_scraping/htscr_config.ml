@@ -41,7 +41,7 @@ module Private = struct
     string_pair_to_concrete_object ;;  
 
   let of_concrete_object  crobj= 
-     let g = Concrete_object_field.get_record crobj in 
+     let g = Concrete_object_automatic.get_record crobj in 
      {
            Htscr_config_t.building_site = Crobj_converter.string_of_concrete_object(g building_site_label);
           endings_for_dynamic_homemades = string_pair_list_of_concrete_object(g endings_for_dynamic_homemades_label);

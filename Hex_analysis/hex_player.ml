@@ -38,6 +38,6 @@ let namings =
 
 end ;;
 
-let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.namings;;
-let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.namings;;
+let of_concrete_object = Concrete_object_automatic.unwrap_lonely_variant Private.namings;;
+let to_concrete_object = Concrete_object_automatic.wrap_lonely_variant Private.namings;;
 

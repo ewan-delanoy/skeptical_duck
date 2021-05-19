@@ -18,6 +18,6 @@ module Private = struct
 end ;;   
 
 
-let of_concrete_object = Concrete_object_field.unwrap_lonely_variant Private.crobj_correspondences;;
+let of_concrete_object = Concrete_object_automatic.unwrap_lonely_variant Private.crobj_correspondences;;
 
-let to_concrete_object = Concrete_object_field.wrap_lonely_variant Private.crobj_correspondences;; 
+let to_concrete_object = Concrete_object_automatic.wrap_lonely_variant Private.crobj_correspondences;; 

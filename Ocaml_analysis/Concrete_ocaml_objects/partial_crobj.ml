@@ -35,7 +35,7 @@ let push_one_more_item item =function
    |Variant(constructor,l)->Partial_crobj_t.Variant(constructor,item :: l);;
 
 let push_int i = push_one_more_item (Concrete_object_t.Int(i));;
-let push_string encoded_s = push_one_more_item (Concrete_object_field.wrap_encoded_string encoded_s);;
+let push_string encoded_s = push_one_more_item (Concrete_object_automatic.wrap_encoded_string encoded_s);;
 
 let push_field_name recdname=function 
     Partial_crobj_t.Record(l)->Partial_crobj_t.RecordPlusFieldName(l,recdname)

@@ -6,7 +6,7 @@
 
 
 let of_concrete_object crobj=
-   let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+   let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
    Hex_fg_double_list_t.DL(
       Crobj_converter_combinator.to_list Hex_finished_game.of_concrete_object arg1,
       Crobj_converter_combinator.to_list Hex_finished_game.of_concrete_object arg2

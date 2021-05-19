@@ -17,7 +17,7 @@ let index_label          = salt ^ "index";;
 
 
 let of_concrete_object  crobj= 
-   let g = Concrete_object_field.get_record crobj in 
+   let g = Concrete_object_automatic.get_record crobj in 
    {
       Hex_flattened_end_strategy_t.dimension = Hex_dimension.of_concrete_object (g dimension_label);
       beneficiary = Hex_player.of_concrete_object (g beneficiary_label);

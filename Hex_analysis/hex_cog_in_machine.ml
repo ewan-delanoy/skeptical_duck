@@ -7,7 +7,7 @@
 
 
 let of_concrete_object crobj= 
-   let (arg1,arg2,arg3,arg4,arg5,_,_)=Concrete_object_field.unwrap_bounded_uple crobj in 
+   let (arg1,arg2,arg3,arg4,arg5,_,_)=Concrete_object_automatic.unwrap_bounded_uple crobj in 
    Hex_cog_in_machine_t.C
    (
     Hex_strategy_static_constructor.of_concrete_object arg1,

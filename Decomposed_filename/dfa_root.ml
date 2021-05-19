@@ -16,6 +16,6 @@ let to_concrete_object (Dfa_root_t.R(line))=
     Concrete_object_t.Variant("Dfa_"^"root.R",[Crobj_converter.string_to_concrete_object(line)]);;
 
 let of_concrete_object ccrt_obj =
-   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant ccrt_obj in 
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant ccrt_obj in 
    Dfa_root_t.R(Crobj_converter.string_of_concrete_object arg1);;
 

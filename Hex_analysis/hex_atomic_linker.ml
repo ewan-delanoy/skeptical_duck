@@ -42,7 +42,7 @@ let to_concrete_object = function
  ;;
 
 let of_concrete_object crobj=
-   let (lab,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_field.unwrap_bounded_variant crobj in 
+   let (lab,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
    if lab=eyed_label
    then Hex_atomic_linker_t.Eyed_claw(Hex_cardinal_direction.of_concrete_object arg1,
                                       Hex_cardinal_direction.of_concrete_object arg2,

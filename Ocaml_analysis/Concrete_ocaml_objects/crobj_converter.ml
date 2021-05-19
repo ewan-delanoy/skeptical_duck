@@ -10,7 +10,7 @@ exception Unwrap_int_exn of Concrete_object_t.t;;
 exception Unwrap_string_exn of Concrete_object_t.t;;
 
 
-let bool_of_concrete_object = Concrete_object_field.unwrap_lonely_variant [true,"True";false,"False"];;
+let bool_of_concrete_object = Concrete_object_automatic.unwrap_lonely_variant [true,"True";false,"False"];;
 let bool_to_concrete_object bowl = 
     if bowl 
     then Concrete_object_t.Variant("True",[]) 

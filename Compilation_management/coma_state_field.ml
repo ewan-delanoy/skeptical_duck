@@ -568,7 +568,7 @@ let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concr
 let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
 
 let of_concrete_object ccrt_obj = 
-   let g=Concrete_object_field.get_record ccrt_obj in
+   let g=Concrete_object_automatic.get_record ccrt_obj in
    {
       Coma_state_t.frontier_with_unix_world = Fw_wrapper_field.of_concrete_object (g frontier_with_unix_world_label);
       modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);

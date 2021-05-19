@@ -49,8 +49,8 @@ let compute_needed_libraries_from_uncapitalized_modules_list l=
       ) l
    ) all_libraries;;
            
-let of_concrete_object =Concrete_object_field.unwrap_lonely_variant 
+let of_concrete_object =Concrete_object_automatic.unwrap_lonely_variant 
   capitalized_correspondances;;
           
-let to_concrete_object =Concrete_object_field.wrap_lonely_variant 
+let to_concrete_object =Concrete_object_automatic.wrap_lonely_variant 
   capitalized_correspondances;;    
