@@ -8,7 +8,7 @@
 module Private = struct 
 
 let rec helper (moves_before,player,moves_after,fles)=
-   let a = Hex_flattened_end_strategy_field.active_part fles in 
+   let a = Hex_flattened_end_strategy_automatic.active_part fles in 
    if Hex_cell_set.length a=1
    then  (
            match moves_after with 
