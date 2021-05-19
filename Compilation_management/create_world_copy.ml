@@ -36,7 +36,7 @@ module Private = struct
      ];;
   
     let commands_for_copying cs rootlesses destination=
-       let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_field.root cs) 
+       let s_old_root=Dfa_root.connectable_to_subpath(Coma_state_automatic.root cs) 
        and s_new_root=Dfa_root.connectable_to_subpath destination in 
        let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
        let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
@@ -81,9 +81,9 @@ module Private = struct
       let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
       let restricted_cs=(if Needed_data_summary.is_everything summary
           then cs 
-          else Coma_state_field.restrict cs modules_in_good_order
+          else Coma_state_automatic.restrict cs modules_in_good_order
       ) in 
-      let faraway_cs1 = Coma_state_field.transplant 
+      let faraway_cs1 = Coma_state_automatic.transplant 
          restricted_cs faraway_fw in 
       let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
       let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
@@ -91,14 +91,14 @@ module Private = struct
       faraway_cs2;;                      
   
     let unfreeze_copy cs destroot =
-        let old_config = Coma_state_field.configuration cs in 
+        let old_config = Coma_state_automatic.configuration cs in 
         let remote_config = {
            old_config with 
            Fw_configuration_t.root = destroot ;
            dir_for_backup =  default_backup_dir ;
            gitpush_after_backup = false ;
         } in 
-        let remote_cs = Coma_state_field.empty_one remote_config in 
+        let remote_cs = Coma_state_automatic.empty_one remote_config in 
         let remote_cs2 =Modify_coma_state.Physical_followed_by_internal.refresh remote_cs in 
         let _ = Save_coma_state.save remote_cs2 in 
         remote_cs2;;    

@@ -11,16 +11,16 @@ module Physical = struct
 let forget_modules cs mod_names=
    let new_fw=
       Fw_wrapper.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw;;
+   Coma_state_automatic.set_frontier_with_unix_world cs new_fw;;
 
 let forget_rootless_paths cs rootless_paths=
    let new_fw=Fw_wrapper.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;   
+   Coma_state_automatic.set_frontier_with_unix_world cs new_fw ;;   
 
 
 let recompile cs =
    let (new_fw,(changed_compilables,changed_noncompilables))=Fw_wrapper.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
-   let new_cs= Coma_state_field.set_frontier_with_unix_world cs new_fw in 
+   let new_cs= Coma_state_automatic.set_frontier_with_unix_world cs new_fw in 
    (new_cs,changed_compilables,changed_noncompilables);;
 
 let refresh config =
@@ -29,16 +29,16 @@ let refresh config =
     Coma_constant.minimal_set_of_needed_dirs 
         Coma_constant.conventional_files_with_minimal_content) in 
    let fw = Fw_initialize.init config in
-   let cs0 = Coma_state_field.empty_one config in  
-   Coma_state_field.set_frontier_with_unix_world cs0 fw;;
+   let cs0 = Coma_state_automatic.empty_one config in  
+   Coma_state_automatic.set_frontier_with_unix_world cs0 fw;;
 
 let register_rootless_paths cs rps=
    let (new_fw,(c_paths,nc_paths))=Fw_wrapper.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
-   (Coma_state_field.set_frontier_with_unix_world cs new_fw,c_paths) ;;
+   (Coma_state_automatic.set_frontier_with_unix_world cs new_fw,c_paths) ;;
 
 let relocate_module_to cs mod_name new_subdir=
    let new_fw=Fw_wrapper.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+   Coma_state_automatic.set_frontier_with_unix_world cs new_fw ;;
 
 let rename_module cs old_middle_name new_nonslashed_name=
   let old_nm=Dfn_middle.to_module old_middle_name in
@@ -58,7 +58,7 @@ let rename_module cs old_middle_name new_nonslashed_name=
 
 let rename_subdirectory cs (old_subdir,new_subdir)=
    let new_fw=Fw_wrapper.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
-   Coma_state_field.set_frontier_with_unix_world cs new_fw ;;
+   Coma_state_automatic.set_frontier_with_unix_world cs new_fw ;;
 
 
 exception Rename_string_or_value_exn of string ;;
@@ -152,14 +152,14 @@ let (cs3,rejected_pairs,accepted_pairs)=
 let rejected_mns=Image.image snd rejected_pairs in  
 let new_preqt=Image.image(
         fun (mn,_)->(mn,not(List.mem mn rejected_mns))
-      )  (Coma_state_field.preq_types cs3) in   
-let cs4=Coma_state_field.set_directories cs3 new_dirs in 
-let cs5=Coma_state_field.set_preq_types cs4 new_preqt in 
+      )  (Coma_state_automatic.preq_types cs3) in   
+let cs4=Coma_state_automatic.set_directories cs3 new_dirs in 
+let cs5=Coma_state_automatic.set_preq_types cs4 new_preqt in 
 cs5 ;;
 
 
 let refresh cs = 
-        let dir =Coma_state_field.root cs  in 
+        let dir =Coma_state_automatic.root cs  in 
         let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
         let temp1=fw1.Fw_wrapper_t.compilable_files in
         let temp2=Coma_state.Simplified_ts_creation.classify_according_to_module dir temp1 in
@@ -173,15 +173,15 @@ let refresh cs =
         let rlesses_in_good_order=List.flatten temp4 in 
         let (failures,cs1)=Coma_state.Try_to_register.mlx_files cs rlesses_in_good_order in  
         let pre_preqt=Coma_state.printer_equipped_types_from_data cs1 in
-        let l_mod=Coma_state_field.ordered_list_of_modules cs1 in 
+        let l_mod=Coma_state_automatic.ordered_list_of_modules cs1 in 
         let (cs2,rejected_pairs,_)=
           Coma_state.Ocaml_target_making.usual_feydeau 
           cs1 l_mod in
         let rejected_endinglesses=Image.image snd rejected_pairs in 
         let new_ptypes=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
         let new_dirs=Coma_state.compute_subdirectories_list cs2 in
-        let cs3=Coma_state_field.set_directories cs2 new_dirs in 
-        let cs4=Coma_state_field.set_preq_types cs3 new_ptypes in
+        let cs3=Coma_state_automatic.set_directories cs2 new_dirs in 
+        let cs4=Coma_state_automatic.set_preq_types cs3 new_ptypes in
         cs4    ;;
 
 
@@ -228,7 +228,7 @@ let rename_module cs2 old_middle_name new_nonslashed_name=
       ".cm* ") in     
   let principal_mt=Coma_state.md_compute_modification_time new_eless (Coma_state.principal_ending_at_module cs2 old_nm)
   and mli_mt=Coma_state.md_compute_modification_time new_eless Dfa_ending.mli in
-  let cs3=Coma_state_field.change_one_module_name cs2 old_nm new_nm in 
+  let cs3=Coma_state_automatic.change_one_module_name cs2 old_nm new_nm in 
   let cs4=Coma_state.set_principal_mt_at_module cs3 new_nm principal_mt in 
   let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
   let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
@@ -257,8 +257,8 @@ let rename_subdirectory cs old_subdir new_subdir=
      Some(new_sd) -> new_sd 
      |None -> sd
    ) in 
-  let cs1=Coma_state_field.modify_all_subdirs cs rename_in_sd in 
-  let cs2=Coma_state_field.modify_all_needed_dirs cs1 rename_in_sd in 
+  let cs1=Coma_state_automatic.modify_all_subdirs cs rename_in_sd in 
+  let cs2=Coma_state_automatic.modify_all_needed_dirs cs1 rename_in_sd in 
    let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2)
    and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
        let final_eless = (
@@ -305,7 +305,7 @@ let recompile cs =
   Internal.recompile (cs2,changed_compilables,changed_noncompilables);;
   
 let refresh cs =
-   let cs2=Physical.refresh (Coma_state_field.configuration cs)  in
+   let cs2=Physical.refresh (Coma_state_automatic.configuration cs)  in
    Internal.refresh cs2;;
 
 let register_rootless_paths cs rootless_paths= 
@@ -376,7 +376,7 @@ module And_backup = struct
             let backup cs diff opt= 
             if not(Dircopy_diff.is_empty diff) 
             then Reflect_change_in_github.backup
-                  (Coma_state_field.configuration cs) 
+                  (Coma_state_automatic.configuration cs) 
                   diff opt
             else (print_string "No recent changes to commit ...";flush stdout);;
 
@@ -443,7 +443,7 @@ module And_save = struct
          cs2;;
 
       let internet_access cs bowl=   
-         let cs2=Coma_state_field.set_push_after_backup cs bowl in 
+         let cs2=Coma_state_automatic.set_push_after_backup cs bowl in 
          let _=Save_coma_state.save cs2 in 
          cs2;;
       

@@ -5,47 +5,47 @@
 (* Inherited values *)
 
 
-let frontier_with_unix_world = Coma_state_field.frontier_with_unix_world;;
-let root =Coma_state_field.root;;
-let backup_dir =Coma_state_field.backup_dir;;
-let gitpush_after_backup =Coma_state_field.gitpush_after_backup;;
-let github_url =Coma_state_field.github_url;;
-let confidential_files =Coma_state_field.confidential_files;;
+let frontier_with_unix_world = Coma_state_automatic.frontier_with_unix_world;;
+let root =Coma_state_automatic.root;;
+let backup_dir =Coma_state_automatic.backup_dir;;
+let gitpush_after_backup =Coma_state_automatic.gitpush_after_backup;;
+let github_url =Coma_state_automatic.github_url;;
+let confidential_files =Coma_state_automatic.confidential_files;;
 
 
-let subdir_at_module = Coma_state_field.subdir_at_module ;;
-let principal_ending_at_module = Coma_state_field.principal_ending_at_module ;;
-let mli_presence_at_module = Coma_state_field.mli_presence_at_module ;;
-let principal_mt_at_module = Coma_state_field.principal_mt_at_module ;;
-let mli_mt_at_module = Coma_state_field.mli_mt_at_module ;;
-let needed_libs_at_module  = Coma_state_field.needed_libs_at_module ;;
-let direct_fathers_at_module = Coma_state_field.direct_fathers_at_module ;;
-let ancestors_at_module = Coma_state_field.ancestors_at_module ;; 
-let needed_dirs_at_module  = Coma_state_field.needed_dirs_at_module ;;
-let product_up_to_date_at_module = Coma_state_field.product_up_to_date_at_module ;;
-let directories = Coma_state_field.directories;;
-let preq_types = Coma_state_field.preq_types;;
+let subdir_at_module = Coma_state_automatic.subdir_at_module ;;
+let principal_ending_at_module = Coma_state_automatic.principal_ending_at_module ;;
+let mli_presence_at_module = Coma_state_automatic.mli_presence_at_module ;;
+let principal_mt_at_module = Coma_state_automatic.principal_mt_at_module ;;
+let mli_mt_at_module = Coma_state_automatic.mli_mt_at_module ;;
+let needed_libs_at_module  = Coma_state_automatic.needed_libs_at_module ;;
+let direct_fathers_at_module = Coma_state_automatic.direct_fathers_at_module ;;
+let ancestors_at_module = Coma_state_automatic.ancestors_at_module ;; 
+let needed_dirs_at_module  = Coma_state_automatic.needed_dirs_at_module ;;
+let product_up_to_date_at_module = Coma_state_automatic.product_up_to_date_at_module ;;
+let directories = Coma_state_automatic.directories;;
+let preq_types = Coma_state_automatic.preq_types;;
 
 
-let set_frontier_with_unix_world = Coma_state_field.set_frontier_with_unix_world;;
-let set_subdir_at_module = Coma_state_field.set_subdir_at_module ;;
-let set_principal_ending_at_module = Coma_state_field.set_principal_ending_at_module ;;
-let set_mli_presence_at_module = Coma_state_field.set_mli_presence_at_module ;;
-let set_principal_mt_at_module = Coma_state_field.set_principal_mt_at_module ;;
-let set_mli_mt_at_module = Coma_state_field.set_mli_mt_at_module ;;
-let set_needed_libs_at_module  = Coma_state_field.set_needed_libs_at_module ;;
-let set_direct_fathers_at_module = Coma_state_field.set_direct_fathers_at_module ;;
-let set_ancestors_at_module = Coma_state_field.set_ancestors_at_module ;; 
+let set_frontier_with_unix_world = Coma_state_automatic.set_frontier_with_unix_world;;
+let set_subdir_at_module = Coma_state_automatic.set_subdir_at_module ;;
+let set_principal_ending_at_module = Coma_state_automatic.set_principal_ending_at_module ;;
+let set_mli_presence_at_module = Coma_state_automatic.set_mli_presence_at_module ;;
+let set_principal_mt_at_module = Coma_state_automatic.set_principal_mt_at_module ;;
+let set_mli_mt_at_module = Coma_state_automatic.set_mli_mt_at_module ;;
+let set_needed_libs_at_module  = Coma_state_automatic.set_needed_libs_at_module ;;
+let set_direct_fathers_at_module = Coma_state_automatic.set_direct_fathers_at_module ;;
+let set_ancestors_at_module = Coma_state_automatic.set_ancestors_at_module ;; 
 
-let set_needed_dirs_at_module  = Coma_state_field.set_needed_dirs_at_module ;;
-let set_product_up_to_date_at_module = Coma_state_field.set_product_up_to_date_at_module ;;
-let set_directories = Coma_state_field.set_directories;;
-let set_preq_types = Coma_state_field.set_preq_types;;
+let set_needed_dirs_at_module  = Coma_state_automatic.set_needed_dirs_at_module ;;
+let set_product_up_to_date_at_module = Coma_state_automatic.set_product_up_to_date_at_module ;;
+let set_directories = Coma_state_automatic.set_directories;;
+let set_preq_types = Coma_state_automatic.set_preq_types;;
 
 
-let ordered_list_of_modules = Coma_state_field.ordered_list_of_modules;;
-let follows_it = Coma_state_field.follows_it_but_does_not_necessarily_depend_on_it;;
-let all_used_subdirs = Coma_state_field.all_used_subdirs;;
+let ordered_list_of_modules = Coma_state_automatic.ordered_list_of_modules;;
+let follows_it = Coma_state_automatic.follows_it_but_does_not_necessarily_depend_on_it;;
+let all_used_subdirs = Coma_state_automatic.all_used_subdirs;;
 
 
 
@@ -227,12 +227,12 @@ let unregister_module cs eless=
    if pre_desc<>[]
    then raise(Derelict_children(nm,pre_desc))
    else
-   let cs2=Coma_state_field.remove_in_each_at_module cs nm in
-   let old_preqtypes = Coma_state_field.preq_types cs2 in 
+   let cs2=Coma_state_automatic.remove_in_each_at_module cs nm in
+   let old_preqtypes = Coma_state_automatic.preq_types cs2 in 
    let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
    let cs3=(
      if new_preqtypes <> old_preqtypes 
-     then Coma_state_field.set_preq_types cs2 new_preqtypes
+     then Coma_state_automatic.set_preq_types cs2 new_preqtypes
      else cs2
    ) in 
    cs3;;     
@@ -258,12 +258,12 @@ let partially_remove_mlx_file cs mlxfile=
     if (not(check_ending_in_at_module edg cs nm))
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_module cs nm
-         then let cs5=Coma_state_field.remove_in_each_at_module cs nm in 
-              let old_preqtypes = Coma_state_field.preq_types cs5 in 
+         then let cs5=Coma_state_automatic.remove_in_each_at_module cs nm in 
+              let old_preqtypes = Coma_state_automatic.preq_types cs5 in 
               let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
               let cs6=(
                 if new_preqtypes <> old_preqtypes 
-                then Coma_state_field.set_preq_types cs5 new_preqtypes
+                then Coma_state_automatic.set_preq_types cs5 new_preqtypes
                 else cs5
               ) in 
               cs6
@@ -384,7 +384,7 @@ let update_just_one_module cs rootless =
     if not(List.mem mn (ordered_list_of_modules cs))
     then cs 
     else let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=complete_info cs rootless in 
-         Coma_state_field.set_in_each cs mn (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated);;
+         Coma_state_automatic.set_in_each cs mn (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated);;
 
 
   let check_unix_presence eless edg=
@@ -522,7 +522,7 @@ let reposition_module cs eless (l_before,l_after)=
     if max_before>(find_idx eless)
     then raise(Bad_upper_constraint(pivot))
     else 
-    Coma_state_field.reposition_in_each cs pivot eless;;  
+    Coma_state_automatic.reposition_in_each cs pivot eless;;  
 
 let find_value_definition cs s= 
   if not(String.contains s '.')
@@ -651,7 +651,7 @@ module PrivateThree=struct
            let middle = Dfn_endingless.to_middle ( endingless_at_module cs nm) in 
            Dfn_middle.to_line middle )
       ) cycles in     
-      let cs2=Coma_state_field.reorder cs (Image.image fst reordered_list) in    
+      let cs2=Coma_state_automatic.reorder cs (Image.image fst reordered_list) in    
       let cs3=update_ancs_libs_and_dirs cs2 in 
       let active_descendants=Option.filter_and_unpack (
           fun nm->
@@ -757,9 +757,9 @@ let register_mlx_file_on_monitored_modules cs rless =
           let middle = Dfn_rootless.to_middle rless
           and ending=Dfn_rootless.to_ending rless in 
           let nm=Dfn_rootless.to_module rless in
-          if not(Coma_state_field.test_module_for_registration cs nm)
+          if not(Coma_state_automatic.test_module_for_registration cs nm)
           then  let info=complete_id_during_new_module_registration cs rless in
-                Coma_state_field.push_right_in_each cs info 
+                Coma_state_automatic.push_right_in_each cs info 
           else
           let edgs=registered_endings_at_module cs nm in
           if List.length(edgs)>1
@@ -779,13 +779,13 @@ let register_mlx_file_on_monitored_modules cs rless =
                  complete_info cs old_rless in
                let new_mlimt = md_compute_modification_time eless ending in
                let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
-               Coma_state_field.set_in_each cs nm new_dt
+               Coma_state_automatic.set_in_each cs nm new_dt
           else
           let new_dt=complete_id_during_new_module_registration cs rless in 
           let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=new_dt in
           let temp3=List.rev(dirfath) in
           if temp3=[]
-          then Coma_state_field.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
+          then Coma_state_automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
           else  
           let last_father=List.hd(temp3) in
           let nm=Dfn_rootless.to_module rless in 
@@ -816,8 +816,8 @@ let register_mlx_file_on_monitored_modules cs rless =
           )(follows_it cs last_father) in 
           let _=
             ( 
-              cs_walker:=Coma_state_field.remove_in_each_at_module (!cs_walker) nm;
-              cs_walker:=Coma_state_field.push_after_module_in_each (!cs_walker) last_father new_dt;  
+              cs_walker:=Coma_state_automatic.remove_in_each_at_module (!cs_walker) nm;
+              cs_walker:=Coma_state_automatic.push_after_module_in_each (!cs_walker) last_father new_dt;  
             )
           in
           (!cs_walker);;
@@ -1194,7 +1194,7 @@ let read_persistent_version x=
         let ap= Dfn_full.to_absolute_path full_path in
         let the_archive=Io.read_whole_file ap in
         let archived_object = Crobj_parsing.parse the_archive in 
-        Coma_state_field.of_concrete_object archived_object;;      
+        Coma_state_automatic.of_concrete_object archived_object;;      
 
 module Try_to_register=struct
 
@@ -1308,7 +1308,7 @@ let forgotten_files_in_build_subdir cs=
       fun s->
        let s_mn=Cull_string.before_rightmost_possibly_all s '.' in 
        let mn=Dfa_module.of_line s_mn in 
-       not(Coma_state_field.test_module_for_registration cs mn)
+       not(Coma_state_automatic.test_module_for_registration cs mn)
        ) temp1;;
 
 exception Absent_module of string;;
