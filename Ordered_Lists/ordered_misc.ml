@@ -41,3 +41,8 @@ let minimal_transversals l=
      (Set_of_integers.forget_order a) in    
   Private.helper_for_minimal_transversals (starter,others) ;;  
   
+
+let translate_at_level_two ll translation=
+  Image.image (
+    fun l->Ordered.merge Total_ordering.for_integers l translation
+  ) ll ;;
