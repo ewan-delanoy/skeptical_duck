@@ -7,6 +7,6 @@
 
 type t = {
    headquarters : Vdw_repeatedly_partitionable_t.t ;
-   variables : (int * Vdw_fan_t.t) list ;
+   variables : (Vdw_variable_t.t * Vdw_fan_t.t) list ;
 };;
 
