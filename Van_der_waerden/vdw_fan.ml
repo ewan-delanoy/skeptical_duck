@@ -21,16 +21,15 @@ let apply_change
 
 end ;;  
 
-let apply_changes fan changes = 
+let apply_changes changes fan = 
   List.fold_left  Private.apply_change  fan changes ;; 
 
-let partition (rp,fan) criterion=
+let prepare_partition (rp,fan) criterion=
    let (Vdw_fan_t.F components) = fan in 
    let temp1 = Image.image (fun (idx,l)->(idx,criterion)) components in 
    let (new_rp,changes) = 
      Vdw_repeatedly_partitionable.partition rp temp1 in 
-   let new_fan = apply_changes fan changes in 
-   (new_rp,new_fan,changes);;  
+   (new_rp,changes);;  
     
 let translate 
    (Vdw_fan_t.F components) translation =
