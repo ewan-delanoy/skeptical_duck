@@ -8,5 +8,3 @@ an initial partition (i.e. an object of type )
 *)
 
 type t = F of (int * (int list)) list;;
-
-  
