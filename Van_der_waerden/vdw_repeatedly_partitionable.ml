@@ -37,6 +37,9 @@ let rec iterator_for_multiple_enhancer (already_treated,walker,to_be_treated) =
         iterator_for_multiple_enhancer (already_treated2,new_walker,others) ;;
 end ;;  
 
+let expand rp k = List.assoc k (rp.Vdw_repeatedly_partitionable_t.parts);;
+
+
 let partition rp enhancements =
    Private.iterator_for_multiple_enhancer ([],rp,enhancements) ;;
 

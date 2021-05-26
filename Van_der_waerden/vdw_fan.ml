@@ -24,6 +24,16 @@ end ;;
 let apply_changes changes fan = 
   List.fold_left  Private.apply_change  fan changes ;; 
 
+
+let expand rp (Vdw_fan_t.F components) =
+  List.flatten( Image.image 
+    (fun (idx,translation)->
+       Ordered_misc.translate_at_level_two 
+        (Vdw_repeatedly_partitionable.expand rp idx) translation
+      )
+  components) ;; 
+
+
 let prepare_partition (rp,fan) criterion=
    let (Vdw_fan_t.F components) = fan in 
    let temp1 = Image.image (fun (idx,l)->(idx,criterion)) components in 
