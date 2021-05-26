@@ -12,12 +12,19 @@ let enhance rp (part_idx,criterion) =
     and old_history = rp.Vdw_repeatedly_partitionable_t.history in
     let part = List.assoc part_idx old_parts in 
     let (part1,part2) = Vdw_criterion.partition criterion part in
-    if (part1=[]) || (part2=[])
-    then (rp,None) 
+    let old_gains = rp.Vdw_repeatedly_partitionable_t.gains in 
+    if part1 = []
+    then ({rp with 
+        Vdw_repeatedly_partitionable_t.gains = (part_idx,criterion,0,part_idx):: old_gains},None)  
     else 
+    if part2 = []
+    then ({rp with 
+        Vdw_repeatedly_partitionable_t.gains = (part_idx,criterion,part_idx,0):: old_gains},None)  
+    else   
     let n = List.length old_parts in 
     let summary = (part_idx,criterion,n+1,n+2) in 
     ({
+      rp with
       Vdw_repeatedly_partitionable_t.parts = old_parts @ [(n+1,part1);(n+2,part2)];
        main = List.flatten (Image.image (fun idx->
               if idx=part_idx then [n+1;n+2] else [idx]
@@ -48,6 +55,7 @@ let start ll =
     Vdw_repeatedly_partitionable_t.parts = [1,ll];
      main = [1];
      history = []; 
+     gains = [];
    } ;;
 
   
