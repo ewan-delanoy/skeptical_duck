@@ -5,5 +5,7 @@
 *)
 
 type t =
-   Cardinality_equals of int
+   Cardinality_lower_than_or_equal_to of int
   |Compatible_with of (int list) ;;
+
+  
