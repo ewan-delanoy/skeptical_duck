@@ -4,7 +4,14 @@
 
 *)
 
+exception Remember_partition_exn of int * Vdw_criterion_t.t ;;
+
 module Private = struct 
+
+let add_if_needed uple gains =
+   if List.mem uple gains 
+   then gains 
+   else uple :: gains ;; 
 
 let enhance rp (part_idx,criterion) =
     let old_parts = rp.Vdw_repeatedly_partitionable_t.parts 
@@ -15,11 +22,13 @@ let enhance rp (part_idx,criterion) =
     let old_gains = rp.Vdw_repeatedly_partitionable_t.gains in 
     if part1 = []
     then ({rp with 
-        Vdw_repeatedly_partitionable_t.gains = (part_idx,criterion,0,part_idx):: old_gains},None)  
+        Vdw_repeatedly_partitionable_t.gains = 
+          add_if_needed (part_idx,criterion,0,part_idx)  old_gains},None)  
     else 
     if part2 = []
     then ({rp with 
-        Vdw_repeatedly_partitionable_t.gains = (part_idx,criterion,part_idx,0):: old_gains},None)  
+        Vdw_repeatedly_partitionable_t.gains = 
+          add_if_needed (part_idx,criterion,part_idx,0) old_gains},None)  
     else   
     let n = List.length old_parts in 
     let summary = (part_idx,criterion,n+1,n+2) in 
@@ -49,6 +58,15 @@ let expand rp k = List.assoc k (rp.Vdw_repeatedly_partitionable_t.parts);;
 
 let partition rp enhancements =
    Private.iterator_for_multiple_enhancer ([],rp,enhancements) ;;
+
+let remember_partition rp part_idx criterion=
+    match Option.seek (fun (idx,criterion2,_,_)->
+      (idx,criterion2)=(part_idx,criterion)
+      ) 
+     (rp.Vdw_repeatedly_partitionable_t.history @ 
+      rp.Vdw_repeatedly_partitionable_t.gains) with 
+    None -> raise (Remember_partition_exn(part_idx,criterion))
+   |Some(_,_,idx1,idx2) -> (idx1,idx2);;
 
 let start ll =
    {
