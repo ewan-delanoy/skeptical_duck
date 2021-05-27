@@ -4,6 +4,8 @@
 
 *)
 
+exception New_partition_exn of (Vdw_variable_t.t option) * (Vdw_variable_t.t option) ;;
+
 
 module Private = struct 
 
@@ -15,8 +17,11 @@ let expand env var =
       |Some fan -> Vdw_fan.expand rp fan;;
 
 let register_fan_if_necessary old_env fan = 
+   if fan = Vdw_fan_t.F [] 
+   then (old_env,None)
+   else       
    match Option.seek (fun (_,fan2)->fan2=fan) old_env.Vdw_environment_t.variables with 
-    Some(var,_) -> (old_env,var)
+    Some(var,_) -> (old_env,Some var)
    |None -> let old_vars = old_env.Vdw_environment_t.variables in 
             let m = List.length old_vars in 
             let new_var = Vdw_variable_t.V(m+1) in 
@@ -25,7 +30,7 @@ let register_fan_if_necessary old_env fan =
                  Vdw_environment_t.variables = 
                  (Vdw_variable_t.V(m+1),fan)  :: old_vars ;
             } in 
-            (new_env,new_var) ;;
+            (new_env,Some new_var) ;;
 
 
 let define_partition old_env var criterion=
@@ -43,11 +48,15 @@ let define_partition old_env var criterion=
          Vdw_environment_t.headquarters = new_rp  ;
          variables = new_vars ;
    } in
-   let (env3,var1) =  register_fan_if_necessary env2 fan1 in 
-   let (env4,var2) =  register_fan_if_necessary env3 fan2 in 
-   (env4,(var1,var2))
+   let (env3,opt_var1) =  register_fan_if_necessary env2 fan1 in 
+   let (env4,opt_var2) =  register_fan_if_necessary env3 fan2 in 
+   (env4,(opt_var1,opt_var2))
    ;;
 
+let define_partition_on_ref env_ref var criterion =
+      let (new_env,(var1,var2)) = define_partition (!env_ref) var criterion in 
+      let _ = (env_ref:=new_env) in 
+      (var1,var2) ;;   
 
 let define_translate old_env var translation =
     let (Vdw_variable_t.V v) = var in 
@@ -63,12 +72,16 @@ let define_translate old_env var translation =
       Vdw_environment_t.variables = new_vars ;
      },new_var);;
 
+
+
 end ;;   
 
-let define_partition env_ref var criterion =
-    let (new_env,(var1,var2)) = Private.define_partition (!env_ref) var criterion in 
-    let _ = (env_ref:=new_env) in 
-    (var1,var2) ;;
+let define_new_partition env_ref var criterion =
+    let (opt_var1,opt_var2) = Private.define_partition_on_ref env_ref var criterion in 
+    try (Option.unpack opt_var1,Option.unpack opt_var2) with 
+    _ -> raise(New_partition_exn(opt_var1,opt_var2) ) ;;
+
+let define_partition = Private.define_partition_on_ref ;;
 
 let define_translate env_ref var translation =
       let (new_env,new_var) = Private.define_translate (!env_ref) var translation in 

@@ -8,7 +8,7 @@ module Private = struct
 
 let test criterion l = match criterion with 
    (Vdw_criterion_t.Cardinality_lower_than_or_equal_to k) ->
-        (List.length l)=k
+        (List.length l) <= k
   |(Compatible_with l2) ->
         let z= Set_of_integers.safe_set 
          (l@l2) in 
