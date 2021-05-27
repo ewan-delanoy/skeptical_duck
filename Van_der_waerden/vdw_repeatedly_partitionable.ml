@@ -15,7 +15,6 @@ let add_if_needed uple gains =
 
 let enhance rp (part_idx,criterion) =
     let old_parts = rp.Vdw_repeatedly_partitionable_t.parts 
-    and old_main = rp.Vdw_repeatedly_partitionable_t.main 
     and old_history = rp.Vdw_repeatedly_partitionable_t.history in
     let part = List.assoc part_idx old_parts in 
     let (part1,part2) = Vdw_criterion.partition criterion part in
@@ -35,9 +34,6 @@ let enhance rp (part_idx,criterion) =
     ({
       rp with
       Vdw_repeatedly_partitionable_t.parts = old_parts @ [(n+1,part1);(n+2,part2)];
-       main = List.flatten (Image.image (fun idx->
-              if idx=part_idx then [n+1;n+2] else [idx]
-              ) old_main) ;
        history = (part_idx,criterion,n+1,n+2) :: old_history; 
      },Some(summary)) ;;
       
@@ -71,7 +67,6 @@ let remember_partition rp part_idx criterion=
 let start ll =
    {
     Vdw_repeatedly_partitionable_t.parts = [1,ll];
-     main = [1];
      history = []; 
      gains = [];
    } ;;

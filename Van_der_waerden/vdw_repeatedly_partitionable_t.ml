@@ -6,9 +6,9 @@
 
 type t =
    {
-     parts : (int * (int list list)) list;
-     history : ( int * Vdw_criterion_t.t * int * int) list; 
-     gains : ( int * Vdw_criterion_t.t * int * int) list; 
+     parts : ( Vdw_part_t.t * (int list list)) list;
+     history : ( Vdw_part_t.t * Vdw_criterion_t.t * Vdw_part_t.t * Vdw_part_t.t) list; 
+     gains : ( Vdw_part_t.t * Vdw_criterion_t.t * (Vdw_part_t.t option) * (Vdw_part_t.t option)) list; 
    } ;;
 
   
