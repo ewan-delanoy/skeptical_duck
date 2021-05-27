@@ -76,8 +76,9 @@ let define_translate env_ref var translation =
       new_var ;;    
 
 let start ll=
+   ref(
    {
       Vdw_environment_t.headquarters = Vdw_repeatedly_partitionable.start ll  ;
       variables = [Vdw_variable_t.V 1,Vdw_fan_t.F [Vdw_part_t.P 1,[]]] ;
-   };;
+   });;
    

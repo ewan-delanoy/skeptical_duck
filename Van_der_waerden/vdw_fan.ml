@@ -42,16 +42,21 @@ module Private = struct
   let remember_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
      let both = Image.image (fun (idx,l)->
-      let (part1,part2) = Vdw_repeatedly_partitionable.remember_partition rp idx criterion in
-      (part1,part2,l)
+      let (opt_part1,opt_part2) = 
+      Vdw_repeatedly_partitionable.remember_partition rp idx criterion in
+      (opt_part1,opt_part2,l)
      ) components in 
     let memory1 = Option.filter_and_unpack (
-      fun (part1,part2,l)->
-        if part1 < 1 then None else Some(part1,l)
+      fun (opt_part1,opt_part2,l)->
+        match opt_part1 with 
+        None -> None 
+        |Some part1 -> Some(part1,l)
     ) both 
     and memory2 = Option.filter_and_unpack (
-      fun (part1,part2,l)->
-        if part2 < 1 then None else Some(part2,l)
+      fun (opt_part1,opt_part2,l)->
+        match opt_part2 with 
+        None -> None 
+        |Some part2 -> Some(part2,l)
     ) both in 
     (Vdw_fan_t.F  memory1,Vdw_fan_t.F  memory2) ;;
   
