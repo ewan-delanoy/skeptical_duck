@@ -17,8 +17,6 @@ module Private = struct
     components) in 
     Vdw_fan_t.F new_components;;
   
-  
-  
   end ;;  
   
   let apply_changes changes fan = 
