@@ -34,10 +34,12 @@ let enhance rp (part_idx,criterion) =
     and new_part_index2 = Vdw_part_t.P (n+2) in  
     let summary = (part_idx,criterion,new_part_index1,new_part_index2) in 
     ({
-      rp with
       Vdw_repeatedly_partitionable_t.parts = old_parts @ 
          [(new_part_index1,part1);(new_part_index2,part2)];
        history = summary :: old_history; 
+       gains = 
+        (new_part_index2,criterion,None,Some new_part_index2) :: 
+        (new_part_index1,criterion,Some new_part_index1,None) ::old_gains;
      },Some(summary)) ;;
       
 let rec iterator_for_multiple_enhancer (already_treated,walker,to_be_treated) =
