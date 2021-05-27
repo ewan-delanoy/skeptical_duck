@@ -5,6 +5,7 @@
 *)
 
 exception New_partition_exn of (Vdw_variable_t.t option) * (Vdw_variable_t.t option) ;;
+exception Extract_and_translate_exn of Vdw_variable_t.t * (int list) ;;
 
 
 module Private = struct 
@@ -72,7 +73,10 @@ let define_translate old_env var translation =
       Vdw_environment_t.variables = new_vars ;
      },new_var);;
 
-
+let define_translate_on_ref env_ref var criterion =
+      let (new_env,new_var) = define_translate (!env_ref) var criterion in 
+      let _ = (env_ref:=new_env) in 
+      new_var ;;  
 
 end ;;   
 
@@ -83,12 +87,17 @@ let define_new_partition env_ref var criterion =
 
 let define_partition = Private.define_partition_on_ref ;;
 
-let define_translate env_ref var translation =
-      let (new_env,new_var) = Private.define_translate (!env_ref) var translation in 
-      let _ = (env_ref:=new_env) in 
-      new_var ;;    
+let define_translate = Private.define_translate_on_ref ;;
 
 let expand env_ref var= Private.expand (!env_ref) var;;
+
+let extract_and_translate env_ref var translation = 
+   let criterion = Vdw_criterion_t.Compatible_with translation in 
+   let (opt_var1,_) = define_partition env_ref var criterion in 
+   match opt_var1 with 
+   None -> raise(Extract_and_translate_exn(var,translation))
+   |Some var1 -> define_translate env_ref var1 translation ;;
+
 
 let start ll=
    ref(

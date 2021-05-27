@@ -31,6 +31,12 @@ module Private = struct
         )
     components) ;; 
   
+  let merge rp (Vdw_fan_t.F components1) (Vdw_fan_t.F components2)=
+      let components2 = List.filter (
+        fun x->not(List.mem x components1)
+      ) components1 in 
+      Vdw_fan_t.F (components1@components2)
+    ;;   
   
   let prepare_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
