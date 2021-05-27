@@ -13,11 +13,11 @@ let add_if_needed uple gains =
    then gains 
    else uple :: gains ;; 
 
-let enhance rp (part_idx,criterion) =
+let enhance rp (part_idx,criterion,translation) =
     let old_parts = rp.Vdw_repeatedly_partitionable_t.parts 
     and old_history = rp.Vdw_repeatedly_partitionable_t.history in
     let part = List.assoc part_idx old_parts in 
-    let (part1,part2) = Vdw_criterion.partition criterion part in
+    let (part1,part2) = Vdw_criterion.partition criterion translation part in
     let old_gains = rp.Vdw_repeatedly_partitionable_t.gains in 
     if part1 = []
     then ({rp with 

@@ -38,9 +38,10 @@ module Private = struct
       Vdw_fan_t.F (components1@components2)
     ;;   
   
+
   let prepare_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
-     let temp1 = Image.image (fun (idx,l)->(idx,criterion)) components in 
+     let temp1 = Image.image (fun (idx,l)->(idx,criterion,l)) components in 
      let (new_rp,changes) = 
        Vdw_repeatedly_partitionable.partition rp temp1 in 
      (new_rp,changes);;  
