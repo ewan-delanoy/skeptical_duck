@@ -4,7 +4,7 @@
 
 *)
 
-exception Remember_partition_exn of int * Vdw_criterion_t.t ;;
+exception Remember_partition_exn of Vdw_part_t.t * Vdw_criterion_t.t ;;
 
 module Private = struct 
 
@@ -22,19 +22,22 @@ let enhance rp (part_idx,criterion) =
     if part1 = []
     then ({rp with 
         Vdw_repeatedly_partitionable_t.gains = 
-          add_if_needed (part_idx,criterion,0,part_idx)  old_gains},None)  
+          add_if_needed (part_idx,criterion,None,Some(part_idx))  old_gains},None)  
     else 
     if part2 = []
     then ({rp with 
         Vdw_repeatedly_partitionable_t.gains = 
-          add_if_needed (part_idx,criterion,part_idx,0) old_gains},None)  
+          add_if_needed (part_idx,criterion,Some(part_idx),None) old_gains},None)  
     else   
     let n = List.length old_parts in 
-    let summary = (part_idx,criterion,n+1,n+2) in 
+    let new_part_index1 = Vdw_part_t.P (n+1) 
+    and new_part_index2 = Vdw_part_t.P (n+2) in  
+    let summary = (part_idx,criterion,new_part_index1,new_part_index2) in 
     ({
       rp with
-      Vdw_repeatedly_partitionable_t.parts = old_parts @ [(n+1,part1);(n+2,part2)];
-       history = (part_idx,criterion,n+1,n+2) :: old_history; 
+      Vdw_repeatedly_partitionable_t.parts = old_parts @ 
+         [(new_part_index1,part1);(new_part_index2,part2)];
+       history = summary :: old_history; 
      },Some(summary)) ;;
       
 let rec iterator_for_multiple_enhancer (already_treated,walker,to_be_treated) =
@@ -56,17 +59,21 @@ let partition rp enhancements =
    Private.iterator_for_multiple_enhancer ([],rp,enhancements) ;;
 
 let remember_partition rp part_idx criterion=
-    match Option.seek (fun (idx,criterion2,_,_)->
-      (idx,criterion2)=(part_idx,criterion)
+    let history_made_vague = Image.image (fun 
+     (part_idx,criterion2,part_idx1,part_idx2)->
+      (part_idx,criterion2,Some part_idx1,Some part_idx2)
+    ) rp.Vdw_repeatedly_partitionable_t.history in 
+    match Option.seek (fun (idx,criterion3,_,_)->
+      (idx,criterion3)=(part_idx,criterion)
       ) 
-     (rp.Vdw_repeatedly_partitionable_t.history @ 
+     (history_made_vague @ 
       rp.Vdw_repeatedly_partitionable_t.gains) with 
     None -> raise (Remember_partition_exn(part_idx,criterion))
-   |Some(_,_,idx1,idx2) -> (idx1,idx2);;
+   |Some(_,_,opt_idx1,opt_idx2) -> (opt_idx1,opt_idx2);;
 
 let start ll =
    {
-    Vdw_repeatedly_partitionable_t.parts = [1,ll];
+    Vdw_repeatedly_partitionable_t.parts = [Vdw_part_t.P(1),ll];
      history = []; 
      gains = [];
    } ;;

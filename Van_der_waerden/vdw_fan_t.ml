@@ -9,5 +9,5 @@ Vdw_repeatedly_partitionable_t.t)
 
 *)
 
-type t = F of (int * (int list)) list;;
+type t = F of (Vdw_part_t.t * (int list)) list;;
 
