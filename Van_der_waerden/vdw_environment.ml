@@ -75,6 +75,8 @@ let define_translate env_ref var translation =
       let _ = (env_ref:=new_env) in 
       new_var ;;    
 
+let expand env_ref var= Private.expand (!env_ref) var;;
+
 let start ll=
    ref(
    {
