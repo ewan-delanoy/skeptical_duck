@@ -78,7 +78,20 @@ let define_translate_on_ref env_ref var criterion =
       let _ = (env_ref:=new_env) in 
       new_var ;;  
 
+let define_merger old_env var1 var2 =
+    let old_vars = old_env.Vdw_environment_t.variables in 
+    let fan1 = List.assoc var1 old_vars 
+    and fan2 = List.assoc var2 old_vars in
+    let fan3 = Vdw_fan.merge fan1 fan2 in 
+    let (new_env,opt)=register_fan_if_necessary old_env fan3 in 
+    (new_env,Option.unpack opt);;
+
 end ;;   
+
+let define_merger env_ref var1 var2 =
+   let (new_env,new_var) = Private.define_merger (!env_ref) var1 var2  in 
+   let _ = (env_ref:=new_env) in 
+   new_var ;;  
 
 let define_new_partition env_ref var criterion =
     let (opt_var1,opt_var2) = Private.define_partition_on_ref env_ref var criterion in 

@@ -31,7 +31,7 @@ module Private = struct
         )
     components) ;; 
   
-  let merge rp (Vdw_fan_t.F components1) (Vdw_fan_t.F components2)=
+  let merge (Vdw_fan_t.F components1) (Vdw_fan_t.F components2)=
       let components2 = List.filter (
         fun x->not(List.mem x components1)
       ) components1 in 
