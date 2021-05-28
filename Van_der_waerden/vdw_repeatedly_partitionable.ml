@@ -45,27 +45,27 @@ let atomic_partition rp (part_idx,criterion) =
         (new_part_index1,criterion,Some new_part_index1,None) ::old_gains;
      },Some(summary)) ;;
 
-let rec partition_at_criterion_level 
-  (changes_so_far,rp,treated_parts,parts_to_be_treated,criterion) =
-  match parts_to_be_treated with 
-  [] -> (changes_so_far,rp,List.rev treated_parts)
-  |part_idx :: other_parts ->
-     let (new_rp,opt_enhancement) = atomic_partition rp (part_idx,criterion) in 
-     let (more_changes,treated,to_be_treated) = (match opt_enhancement with
-          None -> (changes_so_far,part_idx::treated_parts,other_parts) 
-         |Some change -> 
-            let (_,_,new_part1,new_part2) = change in 
-            (change :: changes_so_far,new_part2::new_part1::treated_parts,other_parts) 
-     ) in 
-     partition_at_criterion_level (more_changes,new_rp,treated,to_be_treated,criterion) ;;    
+let rec almost_atomic_partition walker items =
+      match items with 
+      [] ->  (walker,None)
+      | item :: others -> 
+          let (new_walker,opt_enhancement) = atomic_partition  walker item in 
+          match opt_enhancement with 
+          Some(enhancement) -> (new_walker,opt_enhancement)
+          |None -> almost_atomic_partition new_walker others ;;
 
-let rec partition_at_cartesian_level (changes_so_far,rp,part_indices,criteria) =   
-   match criteria with 
-   [] -> (rp,changes_so_far)
-   | criterion ::other_criteria ->
-      let (more_changes_so_far,new_rp,new_part_indices) =
-        partition_at_criterion_level (changes_so_far,rp,[],part_indices,criterion) in
-     partition_at_cartesian_level (more_changes_so_far,new_rp,new_part_indices,other_criteria);;  
+let rec partition_at_cartesian_level 
+   (changes_so_far,walker,old_indices,criteria) =
+   let items = Cartesian.product old_indices criteria in 
+   let (new_walker,opt_enhancement) = almost_atomic_partition walker items in 
+   match opt_enhancement with 
+   None -> (walker,changes_so_far)
+   |Some enhancement ->
+     let (_,_,idx1,idx2) = enhancement in 
+     partition_at_cartesian_level 
+      (enhancement::changes_so_far,new_walker,idx1::idx2::old_indices,criteria) ;;
+
+
 
 let partition_at_part_level rp (part_index,criteria) =
   partition_at_cartesian_level ([],rp,[part_index],criteria) ;;
