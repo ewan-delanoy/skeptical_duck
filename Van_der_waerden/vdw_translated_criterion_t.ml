@@ -4,6 +4,6 @@
 
 *)
 
-type t = C of Vdw_nontranslated_criterion_t.t *  (int list) ;;
+type t = C of Vdw_criterion_t.t *  (int list) ;;
 
   

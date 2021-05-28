@@ -42,7 +42,7 @@ module Private = struct
   let prepare_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
      let temp1 = Image.image (fun (idx,translation)->
-        let full_criterion = Vdw_criterion_t.C(criterion,translation) in 
+        let full_criterion = Vdw_translated_criterion_t.C(criterion,translation) in 
         (idx,full_criterion)) components in 
      let (new_rp,changes) = 
        Vdw_repeatedly_partitionable.partition rp temp1 in 
@@ -52,7 +52,7 @@ module Private = struct
      let (Vdw_fan_t.F components) = fan in 
      let both = Image.image (fun (idx,translation)->
       let (opt_part1,opt_part2) = 
-      let full_criterion = Vdw_criterion_t.C(criterion,translation) in 
+      let full_criterion = Vdw_translated_criterion_t.C(criterion,translation) in 
       Vdw_repeatedly_partitionable.remember_partition rp idx full_criterion in
       (opt_part1,opt_part2,translation)
      ) components in 
