@@ -62,16 +62,10 @@ let define_partition_on_ref env_ref var criterion =
 let define_translate old_env var translation =
     let (Vdw_variable_t.V v) = var in 
     if v < 1 then (old_env,Vdw_variable_t.V 0) else 
-    let old_fan = List.assoc var old_env.Vdw_environment_t.variables  
-    and old_vars = old_env.Vdw_environment_t.variables in 
-    let old_length = List.length old_vars 
-    and new_fan = Vdw_fan.translate old_fan  translation in 
-    let new_var = Vdw_variable_t.V(old_length+1) in 
-    let new_vars = (new_var,new_fan) :: old_vars in
-    ({
-      old_env with
-      Vdw_environment_t.variables = new_vars ;
-     },new_var);;
+    let old_fan = List.assoc var old_env.Vdw_environment_t.variables in 
+    let new_fan = Vdw_fan.translate old_fan  translation in 
+    let (new_env,opt)=register_fan_if_necessary old_env new_fan in 
+    (new_env,Option.unpack opt);;
 
 let define_translate_on_ref env_ref var criterion =
       let (new_env,new_var) = define_translate (!env_ref) var criterion in 

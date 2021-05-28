@@ -4,8 +4,6 @@
 
 *)
 
-type t =
-   Cardinality_lower_than_or_equal_to of int
-  |Compatible_with of (int list) ;;
+type t = C of Vdw_nontranslated_criterion_t.t *  (int list) ;;
 
   
