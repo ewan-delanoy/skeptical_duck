@@ -41,29 +41,32 @@ module Private = struct
 
   let prepare_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
-     let temp1 = Image.image (fun (idx,l)->(idx,criterion,l)) components in 
+     let temp1 = Image.image (fun (idx,translation)->
+        let full_criterion = Vdw_criterion_t.C(criterion,translation) in 
+        (idx,full_criterion)) components in 
      let (new_rp,changes) = 
        Vdw_repeatedly_partitionable.partition rp temp1 in 
      (new_rp,changes);;  
       
   let remember_partition (rp,fan) criterion=
      let (Vdw_fan_t.F components) = fan in 
-     let both = Image.image (fun (idx,l)->
+     let both = Image.image (fun (idx,translation)->
       let (opt_part1,opt_part2) = 
-      Vdw_repeatedly_partitionable.remember_partition rp idx criterion in
-      (opt_part1,opt_part2,l)
+      let full_criterion = Vdw_criterion_t.C(criterion,translation) in 
+      Vdw_repeatedly_partitionable.remember_partition rp idx full_criterion in
+      (opt_part1,opt_part2,translation)
      ) components in 
     let memory1 = Option.filter_and_unpack (
-      fun (opt_part1,opt_part2,l)->
+      fun (opt_part1,opt_part2,translation)->
         match opt_part1 with 
         None -> None 
-        |Some part1 -> Some(part1,l)
+        |Some part1 -> Some(part1,translation)
     ) both 
     and memory2 = Option.filter_and_unpack (
-      fun (opt_part1,opt_part2,l)->
+      fun (opt_part1,opt_part2,translation)->
         match opt_part2 with 
         None -> None 
-        |Some part2 -> Some(part2,l)
+        |Some part2 -> Some(part2,translation)
     ) both in 
     (Vdw_fan_t.F  memory1,Vdw_fan_t.F  memory2) ;;
   

@@ -99,7 +99,7 @@ let define_translate = Private.define_translate_on_ref ;;
 let expand env_ref var= Private.expand (!env_ref) var;;
 
 let extract_and_translate env_ref var translation = 
-   let criterion = Vdw_criterion_t.Compatible_with translation in 
+   let criterion = Vdw_nontranslated_criterion_t.Compatible_with translation in 
    let (opt_var1,_) = define_partition env_ref var criterion in 
    match opt_var1 with 
    None -> raise(Extract_and_translate_exn(var,translation))
