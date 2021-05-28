@@ -6,6 +6,7 @@
 
 exception Remember_partition_exn of Vdw_part_t.t * Vdw_translated_criterion_t.t ;;
 
+
 module Private = struct 
 
 let add_if_needed uple gains =
@@ -13,7 +14,9 @@ let add_if_needed uple gains =
    then gains 
    else uple :: gains ;; 
 
-let enhance rp (part_idx,criterion) =
+
+
+let atomic_partition rp (part_idx,criterion) =
     let old_parts = rp.Vdw_repeatedly_partitionable_t.parts 
     and old_history = rp.Vdw_repeatedly_partitionable_t.history in
     let part = List.assoc part_idx old_parts in 
@@ -41,24 +44,49 @@ let enhance rp (part_idx,criterion) =
         (new_part_index2,criterion,None,Some new_part_index2) :: 
         (new_part_index1,criterion,Some new_part_index1,None) ::old_gains;
      },Some(summary)) ;;
-      
-let rec iterator_for_multiple_enhancer (already_treated,walker,to_be_treated) =
-    match to_be_treated with 
-    [] ->  (walker,List.rev already_treated)
-    | item :: others -> 
-        let (new_walker,opt_enhancement) = enhance  walker item in 
-        let already_treated2 = (match  opt_enhancement with 
-        None ->  already_treated
-        |Some(enhancement) -> enhancement::already_treated
-        ) in 
-        iterator_for_multiple_enhancer (already_treated2,new_walker,others) ;;
+
+let rec partition_at_criterion_level 
+  (changes_so_far,rp,treated_parts,parts_to_be_treated,criterion) =
+  match parts_to_be_treated with 
+  [] -> (changes_so_far,rp,List.rev treated_parts)
+  |part_idx :: other_parts ->
+     let (new_rp,opt_enhancement) = atomic_partition rp (part_idx,criterion) in 
+     let (more_changes,treated,to_be_treated) = (match opt_enhancement with
+          None -> (changes_so_far,part_idx::treated_parts,other_parts) 
+         |Some change -> 
+            let (_,_,new_part1,new_part2) = change in 
+            (change :: changes_so_far,new_part2::new_part1::treated_parts,other_parts) 
+     ) in 
+     partition_at_criterion_level (more_changes,new_rp,treated,to_be_treated,criterion) ;;    
+
+let rec partition_at_cartesian_level (changes_so_far,rp,part_indices,criteria) =   
+   match criteria with 
+   [] -> (rp,changes_so_far)
+   | criterion ::other_criteria ->
+      let (more_changes_so_far,new_rp,new_part_indices) =
+        partition_at_criterion_level (changes_so_far,rp,[],part_indices,criterion) in
+     partition_at_cartesian_level (more_changes_so_far,new_rp,new_part_indices,other_criteria);;  
+
+let partition_at_part_level rp (part_index,criteria) =
+  partition_at_cartesian_level ([],rp,[part_index],criteria) ;;
+
+
 end ;;  
 
 let expand rp k = List.assoc k (rp.Vdw_repeatedly_partitionable_t.parts);;
 
 
-let partition rp enhancements =
-   Private.iterator_for_multiple_enhancer ([],rp,enhancements) ;;
+let partition rp requirements = 
+   let rec iterator =(
+    fun (already_treated,walker,to_be_treated) ->
+    match to_be_treated with 
+    [] ->  (walker,List.rev already_treated)
+    | item :: others -> 
+        let (new_walker,new_changes) = Private.partition_at_part_level  walker item in 
+        let already_treated2 = List.rev_append new_changes already_treated in 
+        iterator (already_treated2,new_walker,others)
+   ) in 
+   iterator ([],rp,requirements) ;;
 
 let remember_partition rp part_idx criterion=
     let history_made_vague = Image.image (fun 
