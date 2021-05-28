@@ -6,8 +6,8 @@
 
 module Private = struct
 
-let test criterion translation l = match criterion with 
-   (Vdw_criterion_t.Cardinality_lower_than_or_equal_to k) ->
+let test (Vdw_criterion_t.C(nt_criterion,translation)) l = match nt_criterion with 
+   (Vdw_nontranslated_criterion_t.Cardinality_lower_than_or_equal_to k) ->
         (List.length l) + (List.length translation) <= k
   |(Compatible_with l2) ->
         let z= Set_of_integers.safe_set 
@@ -18,5 +18,5 @@ let test criterion translation l = match criterion with
 
 end ;;     
   
-let partition criterion translation ll =
-     List.partition (Private.test criterion translation) ll;;
+let partition criterion ll =
+     List.partition (Private.test criterion) ll;;
