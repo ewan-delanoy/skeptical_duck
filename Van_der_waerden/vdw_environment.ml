@@ -33,8 +33,37 @@ let register_fan_if_necessary old_env fan =
             } in 
             (new_env,Some new_var) ;;
 
+let remember_partition_opt env var criterion=
+   let history_made_vague = Image.image (fun 
+      (var,criterion2,var1,var2)->
+      (var,criterion2,Some var1,Some var2)
+   ) env.Vdw_environment_t.partition_history in 
+   match Option.seek (fun (var3,criterion3,_,_)->
+      (var3,criterion3)=(var,criterion)
+   ) (history_made_vague @ 
+    env.Vdw_environment_t.partition_gains) with 
+    None -> None
+   |Some(_,_,opt_var1,opt_var2) -> Some(opt_var1,opt_var2);;
+
+let register_partition env (var,criterion,opt_var1,opt_var2) = 
+    if (opt_var1<>None) && (opt_var2<>None)
+    then {
+           env with 
+           Vdw_environment_t.partition_history =
+           (var,criterion,Option.unpack opt_var1,Option.unpack opt_var2) ::
+            (env.Vdw_environment_t.partition_history)
+         }
+    else {
+           env with 
+           Vdw_environment_t.partition_gains =
+           (var,criterion,opt_var1,opt_var2) ::
+           (env.Vdw_environment_t.partition_gains)
+         } ;;    
 
 let define_partition old_env var criterion=
+   if (remember_partition_opt old_env var criterion) <> None 
+   then (old_env,None)
+   else   
    let old_rp = old_env.Vdw_environment_t.headquarters
    and old_fan = List.assoc var old_env.Vdw_environment_t.variables  
    and old_vars = old_env.Vdw_environment_t.variables in 
@@ -46,12 +75,14 @@ let define_partition old_env var criterion=
    let (fan1,fan2)= Vdw_fan.remember_partition (new_rp,new_fan) criterion in
    let env2 = 
         {
+         old_env with
          Vdw_environment_t.headquarters = new_rp  ;
          variables = new_vars ;
    } in
    let (env3,opt_var1) =  register_fan_if_necessary env2 fan1 in 
    let (env4,opt_var2) =  register_fan_if_necessary env3 fan2 in 
-   (env4,(opt_var1,opt_var2))
+   let env5 = register_partition env4 (var,criterion,opt_var1,opt_var2) in 
+   (env5,(opt_var1,opt_var2))
    ;;
 
 let define_partition_on_ref env_ref var criterion =
@@ -111,5 +142,9 @@ let start ll=
    {
       Vdw_environment_t.headquarters = Vdw_repeatedly_partitionable.start ll  ;
       variables = [Vdw_variable_t.V 1,Vdw_fan_t.F [Vdw_part_t.P 1,[[]]]] ;
+      partition_history = []; 
+      partition_gains = []; 
+      translation_history = [];
+      mergeing_history = [];  
    });;
    
