@@ -14,9 +14,23 @@ let add_if_needed uple gains =
    then gains 
    else uple :: gains ;; 
 
-
+let remember_partition_opt rp part_idx criterion=
+   let history_made_vague = Image.image (fun 
+    (part_idx,criterion2,part_idx1,part_idx2)->
+     (part_idx,criterion2,Some part_idx1,Some part_idx2)
+   ) rp.Vdw_repeatedly_partitionable_t.history in 
+   match Option.seek (fun (idx,criterion3,_,_)->
+     (idx,criterion3)=(part_idx,criterion)
+     ) 
+    (history_made_vague @ 
+     rp.Vdw_repeatedly_partitionable_t.gains) with 
+   None -> None
+  |Some(_,_,opt_idx1,opt_idx2) -> Some(opt_idx1,opt_idx2);;
 
 let atomic_partition rp (part_idx,criterion) =
+    if (remember_partition_opt rp part_idx criterion) <> None 
+    then (rp,None)
+    else  
     let old_parts = rp.Vdw_repeatedly_partitionable_t.parts 
     and old_history = rp.Vdw_repeatedly_partitionable_t.history in
     let part = List.assoc part_idx old_parts in 
@@ -59,7 +73,7 @@ let rec partition_at_cartesian_level
    let items = Cartesian.product old_indices criteria in 
    let (new_walker,opt_enhancement) = almost_atomic_partition walker items in 
    match opt_enhancement with 
-   None -> (walker,changes_so_far)
+   None -> (new_walker,changes_so_far)
    |Some enhancement ->
      let (_,_,idx1,idx2) = enhancement in 
      partition_at_cartesian_level 
@@ -89,17 +103,9 @@ let partition rp requirements =
    iterator ([],rp,requirements) ;;
 
 let remember_partition rp part_idx criterion=
-    let history_made_vague = Image.image (fun 
-     (part_idx,criterion2,part_idx1,part_idx2)->
-      (part_idx,criterion2,Some part_idx1,Some part_idx2)
-    ) rp.Vdw_repeatedly_partitionable_t.history in 
-    match Option.seek (fun (idx,criterion3,_,_)->
-      (idx,criterion3)=(part_idx,criterion)
-      ) 
-     (history_made_vague @ 
-      rp.Vdw_repeatedly_partitionable_t.gains) with 
+    match Private.remember_partition_opt rp part_idx criterion with 
     None -> raise (Remember_partition_exn(part_idx,criterion))
-   |Some(_,_,opt_idx1,opt_idx2) -> (opt_idx1,opt_idx2);;
+   |Some(half1,half2) -> (half1,half2);;
 
 let start ll =
    {
