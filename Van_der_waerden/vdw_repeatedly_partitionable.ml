@@ -4,6 +4,7 @@
 
 *)
 
+
 exception Remember_partition_exn of Vdw_part_t.t * Vdw_translated_criterion_t.t ;;
 exception Cartesian_partition_exn of  (Vdw_part_t.t * Vdw_translated_criterion_t.t * Vdw_part_t.t * Vdw_part_t.t) list ;;
 
@@ -93,9 +94,9 @@ let rec molecular_partition (changes,walker,items) =
         |None -> changes ) in 
         molecular_partition (new_changes,new_walker,others);;  
 
-let rec iterator_for_cartesian_partition  (walker,constituents,criteria) =
+let rec iterator_for_cartesian_partition  (walker,constituents,criteria,accu) =
     match criteria with 
-    [] -> (walker,constituents)
+    [] -> (walker,constituents,accu)
     | criterion :: other_criteria ->
       let temp1 = Image.image (fun constituent->(constituent,criterion)) constituents in 
       let (new_walker,changes) = molecular_partition ([],walker,temp1) in 
@@ -104,16 +105,16 @@ let rec iterator_for_cartesian_partition  (walker,constituents,criteria) =
          None -> [c]
          |Some(_,_,c1,c2) -> [c1;c2]
       ) constituents) in 
-      iterator_for_cartesian_partition  (new_walker,new_constituents,other_criteria) ;;
+      iterator_for_cartesian_partition  (new_walker,new_constituents,other_criteria,accu@changes) ;;
 
 let cartesian_partition walker constituents criteria =
-    let (walker2,final_constituents) = iterator_for_cartesian_partition  (walker,constituents,criteria)  in 
+    let (walker2,final_constituents,changes_made) = iterator_for_cartesian_partition  (walker,constituents,criteria,[])  in 
     let temp1 = Cartesian.product constituents criteria in
     let (walker3,no_changes) =
-      molecular_partition ([],walker,temp1) in 
+      molecular_partition ([],walker2,temp1) in 
     if no_changes <> []
     then raise(Cartesian_partition_exn no_changes)
-    else (walker3,final_constituents);;      
+    else (walker3,final_constituents,changes_made);;      
 
 end ;;  
 
