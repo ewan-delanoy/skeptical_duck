@@ -5,7 +5,7 @@
 *)
 
 exception Remember_partition_exn of Vdw_part_t.t * Vdw_translated_criterion_t.t ;;
-
+exception Cartesian_partition_exn of  (Vdw_part_t.t * Vdw_translated_criterion_t.t * Vdw_part_t.t * Vdw_part_t.t) list ;;
 
 module Private = struct 
 
@@ -68,7 +68,7 @@ let rec almost_atomic_partition walker items =
           Some(enhancement) -> (new_walker,opt_enhancement)
           |None -> almost_atomic_partition new_walker others ;;
 
-let rec partition_at_cartesian_level 
+let rec partition_at_slow_cartesian_level 
    (changes_so_far,walker,old_indices,criteria) =
    let items = Cartesian.product old_indices criteria in 
    let (new_walker,opt_enhancement) = almost_atomic_partition walker items in 
@@ -76,16 +76,48 @@ let rec partition_at_cartesian_level
    None -> (new_walker,changes_so_far)
    |Some enhancement ->
      let (_,_,idx1,idx2) = enhancement in 
-     partition_at_cartesian_level 
+     partition_at_slow_cartesian_level 
       (enhancement::changes_so_far,new_walker,idx1::idx2::old_indices,criteria) ;;
 
-
-
 let partition_at_part_level rp (part_index,criteria) =
-  partition_at_cartesian_level ([],rp,[part_index],criteria) ;;
+  partition_at_slow_cartesian_level ([],rp,[part_index],criteria) ;;
 
+let rec molecular_partition (changes,walker,items) =
+    match items with 
+    [] ->  (walker,List.rev changes)
+    | item :: others -> 
+        let (new_walker,opt_enhancement) = atomic_partition  walker item in 
+        let new_changes= (
+        match opt_enhancement with 
+        Some(enhancement) -> enhancement :: changes
+        |None -> changes ) in 
+        molecular_partition (new_changes,new_walker,others);;  
+
+let rec iterator_for_cartesian_partition  (walker,constituents,criteria) =
+    match criteria with 
+    [] -> (walker,constituents)
+    | criterion :: other_criteria ->
+      let temp1 = Image.image (fun constituent->(constituent,criterion)) constituents in 
+      let (new_walker,changes) = molecular_partition ([],walker,temp1) in 
+      let new_constituents = List.flatten(Image.image (
+         fun c -> match Option.seek (fun (part,_,_,_)->part = c) changes with 
+         None -> [c]
+         |Some(_,_,c1,c2) -> [c1;c2]
+      ) constituents) in 
+      iterator_for_cartesian_partition  (new_walker,new_constituents,other_criteria) ;;
+
+let cartesian_partition walker constituents criteria =
+    let (walker2,final_constituents) = iterator_for_cartesian_partition  (walker,constituents,criteria)  in 
+    let temp1 = Cartesian.product constituents criteria in
+    let (walker3,no_changes) =
+      molecular_partition ([],walker,temp1) in 
+    if no_changes <> []
+    then raise(Cartesian_partition_exn no_changes)
+    else (walker3,final_constituents);;      
 
 end ;;  
+
+let cartesian_partition = Private.cartesian_partition ;;
 
 let expand rp k = List.assoc k (rp.Vdw_repeatedly_partitionable_t.parts);;
 

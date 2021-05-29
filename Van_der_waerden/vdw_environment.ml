@@ -33,6 +33,7 @@ let register_fan_if_necessary old_env fan =
             } in 
             (new_env,Some new_var) ;;
 
+
 let remember_partition_opt env var criterion=
    let history_made_vague = Image.image (fun 
       (var,criterion2,var1,var2)->
@@ -61,9 +62,9 @@ let register_partition env (var,criterion,opt_var1,opt_var2) =
          } ;;    
 
 let define_partition old_env var criterion=
-   if (remember_partition_opt old_env var criterion) <> None 
-   then (old_env,None)
-   else   
+   match (remember_partition_opt old_env var criterion) with
+   Some(opt_var1,opt_var2) -> (old_env,(opt_var1,opt_var2))
+   | None ->  
    let old_rp = old_env.Vdw_environment_t.headquarters
    and old_fan = List.assoc var old_env.Vdw_environment_t.variables  
    and old_vars = old_env.Vdw_environment_t.variables in 
@@ -90,26 +91,54 @@ let define_partition_on_ref env_ref var criterion =
       let _ = (env_ref:=new_env) in 
       (var1,var2) ;;   
 
+     
+
 let define_translate old_env var translation =
-    let (Vdw_variable_t.V v) = var in 
-    if v < 1 then (old_env,Vdw_variable_t.V 0) else 
+    match List.assoc_opt (var,translation) old_env.Vdw_environment_t.translation_history with 
+    Some(var2) -> (old_env,var2)
+    |None ->      
     let old_fan = List.assoc var old_env.Vdw_environment_t.variables in 
     let new_fan = Vdw_fan.translate old_fan  translation in 
-    let (new_env,opt)=register_fan_if_necessary old_env new_fan in 
-    (new_env,Option.unpack opt);;
+    let (env2,opt)=register_fan_if_necessary old_env new_fan in 
+    let var3 = Option.unpack opt in 
+    let env3 = {
+       env2 with 
+       Vdw_environment_t.translation_history =
+       ((var,translation),var3)::
+        (env2.Vdw_environment_t.translation_history)
+    } in 
+    (env3,var3);;
 
 let define_translate_on_ref env_ref var criterion =
       let (new_env,new_var) = define_translate (!env_ref) var criterion in 
       let _ = (env_ref:=new_env) in 
       new_var ;;  
 
-let define_merger old_env var1 var2 =
+let put_two_variables_in_order old_var1 old_var2 = 
+   let (Vdw_variable_t.V ivar1) = old_var1 
+   and (Vdw_variable_t.V ivar2) = old_var2 in 
+   if ivar2 < ivar1
+   then (old_var2,old_var1)
+   else (old_var1,old_var2) ;;      
+
+let define_merger old_env old_var1 old_var2 = 
+    let (var1,var2) = put_two_variables_in_order old_var1 old_var2 in 
+    match List.assoc_opt (var1,var2) old_env.Vdw_environment_t.mergeing_history with 
+    Some(var4) -> (old_env,var4)
+    |None ->     
     let old_vars = old_env.Vdw_environment_t.variables in 
     let fan1 = List.assoc var1 old_vars 
     and fan2 = List.assoc var2 old_vars in
     let fan3 = Vdw_fan.merge fan1 fan2 in 
-    let (new_env,opt)=register_fan_if_necessary old_env fan3 in 
-    (new_env,Option.unpack opt);;
+    let (env2,opt)=register_fan_if_necessary old_env fan3 in 
+    let var3 = Option.unpack opt in 
+    let env3 = {
+       env2 with 
+       Vdw_environment_t.mergeing_history =
+       ((var1,var2),var3)::
+        (env2.Vdw_environment_t.mergeing_history)
+    } in 
+    (env3,var3);;
 
 end ;;   
 
