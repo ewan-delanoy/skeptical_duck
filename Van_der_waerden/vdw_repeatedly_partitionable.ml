@@ -107,9 +107,10 @@ let rec iterator_for_cartesian_partition  (walker,constituents,criteria,accu) =
       ) constituents) in 
       iterator_for_cartesian_partition  (new_walker,new_constituents,other_criteria,accu@changes) ;;
 
+
 let cartesian_partition walker constituents criteria =
     let (walker2,final_constituents,changes_made) = iterator_for_cartesian_partition  (walker,constituents,criteria,[])  in 
-    let temp1 = Cartesian.product constituents criteria in
+    let temp1 = Cartesian.product final_constituents criteria in
     let (walker3,no_changes) =
       molecular_partition ([],walker2,temp1) in 
     if no_changes <> []
