@@ -34,6 +34,8 @@ let lower_measure n =
    |8 -> 4*q+3 
    | _ -> failwith("unforeseen");;  
 
+let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;   
+let oint = Total_ordering.for_integers ;;
 
 let big_base =   
   let unordered_base = 
@@ -41,7 +43,17 @@ let big_base =
    ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
      (Set_of_integers.safe_set(Ennig.ennig 1 15))
   in 
-  Ordered.sort
-  (Total_ordering.silex_compare Total_ordering.for_integers)  
-  unordered_base ;;
+  Ordered.sort oord unordered_base ;;
 
+let extract_core ll= 
+  let common = Ordered.fold_intersect oint ll in 
+  (common,Image.image (fun x->Ordered.setminus oint x common) ll) ;;
+
+(*
+let splash_composition common ll= 
+  Image.image (Ordered.merge oint common) ll ;;
+
+let compose lll =
+   Ordered.sort oord
+  (List.flatten(Image.image (fun (common,ll)->Image.image (Ordered.merge oint common) ll) lll)) ;;
+*)
