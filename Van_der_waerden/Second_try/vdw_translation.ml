@@ -12,6 +12,7 @@ let merge
       Ordered.merge oint translation1 translation2
     );;
 
+(*    
 let partition (Vdw_translation_t.T translation) (ll,common)=
     let oint = Total_ordering.for_integers in 
     let translation2 = Ordered.setminus oint translation common in 
@@ -20,6 +21,15 @@ let partition (Vdw_translation_t.T translation) (ll,common)=
     ) ll in 
     (Vdw_comm_on.extract_core temp1,
      Vdw_comm_on.extract_core temp2);;
+*)
+
+let partition (Vdw_translation_t.T translation) ll=
+   let int_order = Total_ordering.for_integers in 
+     let (temp1,temp2) =List.partition (
+         Ordered.is_included_in int_order translation
+     ) ll in 
+    (Image.image (fun x->
+      Ordered.setminus int_order x translation) temp1,temp2);;
 
 let setminus 
      (Vdw_translation_t.T translation1)
