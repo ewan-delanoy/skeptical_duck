@@ -309,6 +309,7 @@ let lower_measure n =
     |8 -> 4*q+3 
     | _ -> failwith("unforeseen");;  
         
+    
 let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;   
 let oint = Total_ordering.for_integers ;;
         
