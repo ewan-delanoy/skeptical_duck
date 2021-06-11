@@ -26,7 +26,6 @@ let test_for_admissibility constraints soi = match constraints with
  |General_case obstructions ->
   List.for_all (fun obs->not(Set_of_integers.is_included_in obs soi )) obstructions ;;
   
-
 let max_easy_length = 15 ;;
 
 let naive_power_set soi =
@@ -320,3 +319,7 @@ let big_base =
              (Set_of_integers.safe_set(Ennig.ennig 1 15))
           in 
           Ordered.sort oord unordered_base ;;         
+
+let extract_core_and_simplify ll = 
+    let core = Ordered.fold_intersect oint ll in 
+    (core,Image.image (fun l->Ordered.setminus oint l core) ll) ;;          
