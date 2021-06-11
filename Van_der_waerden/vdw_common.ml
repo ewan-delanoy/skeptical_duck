@@ -309,6 +309,7 @@ let lower_measure n =
     | _ -> failwith("unforeseen");;  
         
     
+    
 let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;   
 let oint = Total_ordering.for_integers ;;
         
@@ -323,3 +324,13 @@ let big_base =
 let extract_core_and_simplify ll = 
     let core = Ordered.fold_intersect oint ll in 
     (core,Image.image (fun l->Ordered.setminus oint l core) ll) ;;          
+
+let level_two_translate translation ll=
+   Image.image (Ordered.merge oint translation) ll ;;
+
+let reconstruct parts =
+    let temp1 = Image.image (fun (a,b)->level_two_translate a b) parts in 
+    Ordered.fold_merge oord temp1 ;;
+
+
+
