@@ -160,7 +160,9 @@ module Private = struct
     fix_indexation pairs2 false ;;
   
   let absorb_new_snippet (prologue,older_snippets) = 
-     (" ",prologue) :: older_snippets ;; 
+     let n = List.length(older_snippets) + 1 in 
+     let sn_descr = "Snippet "^(string_of_int n)^" : " in 
+     older_snippets @ [sn_descr,prologue];; 
   
   let fix_indexation_in_file fn =
     let (_,old_pairs) = read_and_parse fn in 
