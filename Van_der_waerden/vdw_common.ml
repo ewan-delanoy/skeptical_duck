@@ -6,6 +6,7 @@
 
 exception Set_too_large_to_be_solved_naively ;; 
 
+
 let diameter soi =
   if Set_of_integers.length(soi)<2 then 0 else 
   (Set_of_integers.max soi) - (Set_of_integers.min soi) + 1  ;;  
@@ -272,54 +273,10 @@ let check_for_precomputed_value hashtbl (width,soi) =
          then Some(level1 soi) 
          else None;;
  
-(*
 
-The measure below is for width <=3 
-
-*)         
-
-let measure n =
-    if n<1 then 0 else 
-    let q=(n/9) in 
-    match n mod 9 with
-      0 -> 4*q+1 
-    |1 -> 4*q+1
-    |2 -> 4*q+2  
-    |3 -> 4*q+2
-    |4 -> 4*q+3
-    |5 -> 4*q+4
-    |6 -> 4*q+4  
-    |7 -> 4*q+4
-    |8 -> 4*q+4 
-    | _ -> failwith("unforeseen");;   
-        
-let lower_measure n =
-    if n<1 then 0 else 
-    let q=(n/9) in 
-    match n mod 9 with
-      0 -> 4*q
-    |1 -> 4*q
-    |2 -> 4*q 
-    |3 -> 4*q
-    |4 -> 4*q+1
-    |5 -> 4*q+1
-    |6 -> 4*q+2  
-    |7 -> 4*q+2
-    |8 -> 4*q+3 
-    | _ -> failwith("unforeseen");;  
-        
-    
     
 let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;   
-let oint = Total_ordering.for_integers ;;
-        
-let big_base =   
-          let unordered_base = 
-            naive_restricted_power_set
-           ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
-             (Set_of_integers.safe_set(Ennig.ennig 1 15))
-          in 
-          Ordered.sort oord unordered_base ;;         
+let oint = Total_ordering.for_integers ;;     
 
 let extract_core_and_simplify ll = 
     let core = Ordered.fold_intersect oint ll in 
@@ -332,5 +289,51 @@ let reconstruct parts =
     let temp1 = Image.image (fun (a,b)->level_two_translate a b) parts in 
     Ordered.fold_merge oord temp1 ;;
 
+module Width_up_to_four = struct 
 
+(*
+
+The measure below is for width <=4
+
+*)         
+
+let measure n =
+  if n<1 then 0 else 
+  let q=(n/9) in 
+  match n mod 9 with
+    0 -> 4*q+1 
+  |1 -> 4*q+1
+  |2 -> 4*q+2  
+  |3 -> 4*q+2
+  |4 -> 4*q+3
+  |5 -> 4*q+4
+  |6 -> 4*q+4  
+  |7 -> 4*q+4
+  |8 -> 4*q+4 
+  | _ -> failwith("unforeseen");;   
+      
+let lower_measure n =
+  if n<1 then 0 else 
+  let q=(n/9) in 
+  match n mod 9 with
+    0 -> 4*q
+  |1 -> 4*q
+  |2 -> 4*q 
+  |3 -> 4*q
+  |4 -> 4*q+1
+  |5 -> 4*q+1
+  |6 -> 4*q+2  
+  |7 -> 4*q+2
+  |8 -> 4*q+3 
+  | _ -> failwith("unforeseen");;  
+      
+let big_base =   
+    let unordered_base = 
+      naive_restricted_power_set
+     ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
+       (Set_of_integers.safe_set(Ennig.ennig 1 15))
+    in 
+    Ordered.sort oord unordered_base ;;      
+
+end ;;  
 
