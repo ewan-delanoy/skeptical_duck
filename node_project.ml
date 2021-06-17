@@ -5,7 +5,6 @@
 *)
 
 
-
 let compact_replacer = Dfn_rootless.of_line "Fads/compact_replacer.txt";;
 
 let config = 
@@ -26,10 +25,11 @@ let config =
      Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "deizlevr",
       Dfa_ending_t.E "txt")];
    github_url = "https://github.com/ewan-delanoy/node_app";
-   confidential_files = [
+   encoding_protected_files = [
      compact_replacer,
    Dfn_rootless_t.J (Dfa_subdirectory_t.SD "models", Dfa_module_t.M "mysql_connection",
        Dfa_ending_t.E "js")];
+    subdirs_for_archived_mlx_files = [];    
    } ;;
 
 let watcher_ref = ref (Fw_nonmodular_wrapper.empty_one config);;

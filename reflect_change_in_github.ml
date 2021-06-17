@@ -47,7 +47,7 @@ let commands_for_backup config diff=
        and s_backup_dir = Dfa_root.connectable_to_subpath destination_dir in 
        let s_full_path = s_backup_dir^(Dfn_rootless.to_line replacee) in 
        Unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
-   ) config.Fw_configuration_t.confidential_files in 
+   ) config.Fw_configuration_t.encoding_protected_files in 
    (temp3@temp4@temp5@temp8,temp6@temp7);;
 
 let backup_with_message config  diff msg=
@@ -95,3 +95,6 @@ end ;;
 
 let backup config diff opt_msg=
   Private.backup config diff opt_msg;;
+
+  
+  

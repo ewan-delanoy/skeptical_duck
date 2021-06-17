@@ -19,13 +19,14 @@ let to_t x=(Coma_state_t.CS x);;
 *)
 (* End of converters *)
 
+
 let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
 let configuration cs=(frontier_with_unix_world cs).Fw_wrapper_t.configuration;;
 let root cs= Fw_configuration.root (configuration cs);;
 let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
 let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
 let github_url cs=(configuration cs).Fw_configuration_t.github_url;;
-let confidential_files cs=(configuration cs).Fw_configuration_t.confidential_files;;
+let encoding_protected_files cs=(configuration cs).Fw_configuration_t.encoding_protected_files;;
 
 
 let subdir_at_module cs mn=

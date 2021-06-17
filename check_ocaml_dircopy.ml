@@ -10,7 +10,6 @@ Usable on a github clone of the remote master version.
 exception Failure_in_clone_directory_creation;;
 exception Failure_during_github_cloning;;
 
-
 let filter_diff_according_to_admissibility data diff=
    let filter_list = List.filter (Fw_configuration.test_for_admissibility data) in 
    {
@@ -20,13 +19,13 @@ let filter_diff_according_to_admissibility data diff=
   };;
 
 
-let commands_for_confidentiality confidential_files =
+let commands_for_confidentiality encoding_protected_files =
    Image.image (
      fun (replacer,replacee) ->
        let s_replacer = Dfn_rootless.to_line  replacer in 
        let s_full_path = Fw_constant.clone_download_location^"/"^(Dfn_rootless.to_line replacee) in 
        Unix_command.prefix_for_reverse_replacing_patterns^s_replacer^" "^s_full_path
-   ) confidential_files ;;
+   ) encoding_protected_files ;;
 
 
 let check data =
@@ -49,7 +48,7 @@ let check data =
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
-  let cmds = commands_for_confidentiality data.Fw_configuration_t.confidential_files in 
+  let cmds = commands_for_confidentiality data.Fw_configuration_t.encoding_protected_files in 
   let _= Unix_command.conditional_multiple_uc cmds in 
   let root_dir = data.Fw_configuration_t.root in 
   let diff1=Prepare_dircopy_update.compute_restricted_diff
