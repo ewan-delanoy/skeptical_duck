@@ -4,7 +4,6 @@
 
 *)
 
-
 module Private = struct
 
   let text_for_big_constants_file_in_other_world destination destbackupdir destgab =
@@ -53,7 +52,7 @@ module Private = struct
   
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
 
-  let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary =
+  let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) ?(destarchive=[]) summary =
       let url=Coma_big_constant.github_url in 
       let (conv_files,needed_dirs) = (
         if Needed_data_summary.is_everything summary
@@ -70,7 +69,7 @@ module Private = struct
           Needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
        (commands_for_copying cs (compilables@noncompilables) destination) in
-      let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[]) in 
+      let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[],destarchive) in 
       let faraway_fw1 = Fw_initialize.compute_and_store_modification_times faraway_config (compilables,noncompilables) in  
       let faraway_fw =Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
                      Coma_constant.rootless_path_for_parametersfile 

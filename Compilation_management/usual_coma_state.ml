@@ -11,11 +11,12 @@ module Private = struct
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple 
   and url=Coma_big_constant.github_url in 
-  let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[]) in 
+  let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[],[Coma_constant.githubbed_archive_subdir]) in 
   ref(Coma_state_automatic.empty_one  config);;
 end;;
 
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;; 
+
 
 let add_printer_equipped_type mn=
    let old_cs=(!(Private.main_ref)) in 

@@ -10,8 +10,7 @@ let root =Coma_state_automatic.root;;
 let backup_dir =Coma_state_automatic.backup_dir;;
 let gitpush_after_backup =Coma_state_automatic.gitpush_after_backup;;
 let github_url =Coma_state_automatic.github_url;;
-let confidential_files =Coma_state_automatic.confidential_files;;
-
+let encoding_protected_files =Coma_state_automatic.encoding_protected_files;;
 
 let subdir_at_module = Coma_state_automatic.subdir_at_module ;;
 let principal_ending_at_module = Coma_state_automatic.principal_ending_at_module ;;
@@ -1739,4 +1738,4 @@ let choose_automatic_if_possible cs modulename =
     if List.mem auto_version list_of_modules
     then auto_version
     else modulename ;;      
-    
+
