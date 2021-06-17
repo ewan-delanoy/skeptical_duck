@@ -6,16 +6,16 @@
 
 module Private = struct 
 
-
 let salt = "Fw_"^"configuration_t.";;
 
-let root_label                    = salt ^ "root";;
-let dir_for_backup_label          = salt ^ "dir_for_backup";;
-let gitpush_after_backup_label    = salt ^ "gitpush_after_backup";;
-let ignored_subdirectories_label  = salt ^ "ignored_subdirectories";;
-let ignored_files_label           = salt ^ "ignored_files";;
-let github_url_label              = salt ^ "github_url";;
-let confidential_files_label      = salt ^ "confidential_files";;
+let root_label                           = salt ^ "root";;
+let dir_for_backup_label                 = salt ^ "dir_for_backup";;
+let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
+let ignored_subdirectories_label         = salt ^ "ignored_subdirectories";;
+let ignored_files_label                  = salt ^ "ignored_files";;
+let github_url_label                     = salt ^ "github_url";;
+let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
+let subdirs_for_archived_mlx_files_label = salt ^ "subdirs_for_archived_mlx_files";;
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object_automatic.get_record ccrt_obj in
@@ -26,7 +26,8 @@ let of_concrete_object ccrt_obj =
       ignored_subdirectories = Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object(g ignored_subdirectories_label);
       ignored_files = Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g ignored_files_label);
       github_url = Crobj_converter.string_of_concrete_object (g github_url_label);
-      confidential_files = Dfn_rootless.pair_list_of_concrete_object (g confidential_files_label);
+      encoding_protected_files = Dfn_rootless.pair_list_of_concrete_object (g encoding_protected_files_label);
+      subdirs_for_archived_mlx_files = Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object(g subdirs_for_archived_mlx_files_label);
    };; 
 
 let to_concrete_object config=
@@ -38,7 +39,8 @@ let to_concrete_object config=
     ignored_subdirectories_label, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object config.Fw_configuration_t.ignored_subdirectories;
     ignored_files_label, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object config.Fw_configuration_t.ignored_files;
     github_url_label, Crobj_converter.string_to_concrete_object config.Fw_configuration_t.github_url;
-    confidential_files_label, Dfn_rootless.pair_list_to_concrete_object config.Fw_configuration_t.confidential_files;
+    encoding_protected_files_label, Dfn_rootless.pair_list_to_concrete_object config.Fw_configuration_t.encoding_protected_files;
+    subdirs_for_archived_mlx_files_label, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object config.Fw_configuration_t.subdirs_for_archived_mlx_files;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -48,7 +50,7 @@ let root config = config.Fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) = 
+let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files,subdirs_for_archived) = 
     {
       Fw_configuration_t.root = root_dir;
       dir_for_backup = backup_dir ;
@@ -56,7 +58,8 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) =
       ignored_subdirectories = Coma_constant.git_ignored_subdirectories;
       ignored_files = [];
       github_url = git_url;
-      confidential_files = secret_files;
+      encoding_protected_files = secret_files;
+      subdirs_for_archived_mlx_files = subdirs_for_archived;
     };; 
 
 let test_for_admissibility data rl=

@@ -2,6 +2,11 @@
 
 #use"Filewatching/fw_configuration_t.ml";;
 
+
+In the encoding_protected_files field, the list elements are pair of files ;
+the first elt of the pair contains the encoding, and the second elt is the
+encoded file. This allows you to vary the encoding depending on the file.
+
 *)
 
 type t ={
@@ -11,5 +16,6 @@ type t ={
   ignored_subdirectories : Dfa_subdirectory_t.t list;
   ignored_files : Dfn_rootless_t.t list;
   github_url : string;
-  confidential_files : ( Dfn_rootless_t.t * Dfn_rootless_t.t) list;
+  encoding_protected_files : ( Dfn_rootless_t.t * Dfn_rootless_t.t) list;
+  subdirs_for_archived_mlx_files : Dfa_subdirectory_t.t list ; 
 };;
