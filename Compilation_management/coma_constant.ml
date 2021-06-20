@@ -53,7 +53,6 @@ let git_ignored_subdirectories =
   [
      utility_files_subdir;
      build_subdir;
-     githubbed_archive_subdir;
      fads_subdir;
   ];;
 

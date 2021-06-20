@@ -11,7 +11,8 @@ module Private = struct
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple 
   and url=Coma_big_constant.github_url in 
-  let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[],[Coma_constant.githubbed_archive_subdir]) in 
+  let config = Fw_configuration.constructor 
+   (root,backup_dir,githubbing,url,[],[Coma_constant.githubbed_archive_subdir]) in 
   ref(Coma_state_automatic.empty_one  config);;
 end;;
 

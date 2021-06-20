@@ -629,6 +629,14 @@ module PrivateThree=struct
       "\n\n\n"
     ;;    
 
+    let message_about_changed_archived_compilables changed_ac=
+    let temp1=Image.image Dfn_rootless.to_line changed_ac in
+    "\n\n\n"^
+    "The following archived files have been directly changed :\n"^
+    (String.concat "\n" temp1)^
+    "\n\n\n"
+  ;;    
+
     let announce_changed_modules changed_modules=
       if changed_modules=[]
       then ()
@@ -638,6 +646,11 @@ module PrivateThree=struct
       if changed_noncompilables=[]
       then ()
       else (print_string(message_about_changed_noncompilables changed_noncompilables);flush stdout);;
+    
+    let announce_changed_archived_compilables changed_ac=
+      if changed_ac=[]
+      then ()
+      else (print_string(message_about_changed_archived_compilables changed_ac);flush stdout);;  
 
     let put_md_list_back_in_order tolerate_cycles 
       cs initially_active_nms=
@@ -724,12 +737,16 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 
 let latest_changes_in_noncompilables cs =
    let fw = frontier_with_unix_world cs in 
-   let (_,(_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
+   let (_,(_,_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
 
 let latest_changes cs = 
-  (latest_changes_in_compilables cs,latest_changes_in_noncompilables cs);;
+  let fw = frontier_with_unix_world cs in 
+  let (_,(changed_archived_compilables,_,changed_noncompilables)) = Fw_wrapper.inspect_and_update fw in 
+  (Image.image Dfn_rootless.to_line changed_archived_compilables,
+   latest_changes_in_compilables cs,
+  Image.image Dfn_rootless.to_line changed_noncompilables);;
 
 let printer_equipped_types_from_data cs=
   Option.filter_and_unpack (
@@ -1739,3 +1756,4 @@ let choose_automatic_if_possible cs modulename =
     then auto_version
     else modulename ;;      
 
+let gmx = 8 ;;

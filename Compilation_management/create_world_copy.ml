@@ -70,8 +70,8 @@ module Private = struct
       let _=Image.image Unix_command.uc 
        (commands_for_copying cs (compilables@noncompilables) destination) in
       let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[],destarchive) in 
-      let faraway_fw1 = Fw_initialize.compute_and_store_modification_times faraway_config (compilables,noncompilables) in  
-      let faraway_fw =Fw_wrapper.overwrite_compilable_file_if_it_exists faraway_fw1 
+      let faraway_fw1 = Fw_initialize.compute_and_store_modification_times faraway_config ([],compilables,noncompilables) in  
+      let faraway_fw =Fw_wrapper.overwrite_usual_compilable_file_if_it_exists faraway_fw1 
                      Coma_constant.rootless_path_for_parametersfile 
                        (text_for_big_constants_file_in_other_world destination destbackupdir destgab) in 
       (modules_in_good_order,faraway_fw);; 
@@ -85,7 +85,7 @@ module Private = struct
       let faraway_cs1 = Coma_state_automatic.transplant 
          restricted_cs faraway_fw in 
       let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
-      let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[]) in 
+      let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[],[]) in 
       let _=Save_coma_state.save faraway_cs2 in   
       faraway_cs2;;                      
   

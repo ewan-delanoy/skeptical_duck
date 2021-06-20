@@ -59,7 +59,7 @@ let expand cs summary =
                 if List.mem (Dfn_rootless.to_module rless) all_needed_modules 
                 then Some rless
                 else None    
-        ) (fw.Fw_wrapper_t.compilable_files) in
+        ) (fw.Fw_wrapper_t.usual_compilable_files) in
         (all_needed_modules,compilables,noncompilables);;
 
 
