@@ -1,0 +1,19 @@
+1) Initially I used the following simple paradigm : the "apply" function takes 1 parser, 1 string and returns 1 value.
+But things are not so simple as in Ocaml for example we have the "let ...=... and ...=... " syntax where "several values" are defined in "one single expr".
+I'll try changing the apply function, making it return a list of values.
+
+2) It is painful and humiliating to have to abandon a given abstraction - or to have to delete all of today's written code.
+
+3) DRY is obvious to apply in the mathematical context, but not in the CS context. Because there are several ways to decompose a given problem, there are several (sometimes incompatible) ways to apply DRY.
+
+4) A "particular case" subtype can be represented as A(x) or (<some label for A>,x)
+
+5) What needs to be explicitely a type and what doesn't ?
+
+6) Stuck for a long time on how to implement the computation of level-two connectors on a Hex_mp_report_t.t object
+
+  Step 1 : Write a full enumeration of the "report" hierarchy
+
+  Hex_end_of_battle_t.t < Hex_ctct_report_t.t  < Hex_uc_report_t.t < Hex_mp_report_t.t
+
+  Step 2 : use Hex_ctct_index_t.t 's rather than ints in the connector field of Hex_uc_report_t.t and Hex_mp_report_t.t

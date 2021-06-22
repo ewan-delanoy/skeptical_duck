@@ -1,6 +1,6 @@
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/concrete_object_field.ml";;
+#use"Ocaml_analysis/Concrete_ocaml_objects/concrete_object.ml";;
 
 *)
 
