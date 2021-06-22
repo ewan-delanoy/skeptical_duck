@@ -178,7 +178,7 @@ let name_for_eyed_claw d1 d2 =
      (Private.char_for_ground_description d2) ;;
 
 
-let of_concrete_object = Concrete_object_automatic.unwrap_lonely_variant Private.crobj_correspondences;;
+let of_concrete_object = Concrete_object.unwrap_lonely_variant Private.crobj_correspondences;;
 
 let oppose = function  
      Hex_cardinal_direction_t.Down  -> Hex_cardinal_direction_t.Up
@@ -214,7 +214,7 @@ let sides_for_player = function
 
 
 
-let to_concrete_object = Concrete_object_automatic.wrap_lonely_variant Private.crobj_correspondences;;
+let to_concrete_object = Concrete_object.wrap_lonely_variant Private.crobj_correspondences;;
 
 
 let to_int = function 

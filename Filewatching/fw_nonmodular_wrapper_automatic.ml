@@ -13,7 +13,7 @@ exception Rootless_not_found of Dfn_rootless_t.t;;
 module Private = struct 
 
 let pair_of_crobj crobj=
-   let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
   (
     Dfn_rootless.of_concrete_object arg1,
     Crobj_converter.string_of_concrete_object arg2
@@ -35,7 +35,7 @@ let watched_files_label        = salt ^ "watched_files";;
 let last_noticed_changes_label = salt ^ "last_noticed_changes";;
 
 let of_concrete_object ccrt_obj = 
-   let g=Concrete_object_automatic.get_record ccrt_obj in
+   let g=Concrete_object.get_record ccrt_obj in
    {
       Fw_nonmodular_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
       watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);

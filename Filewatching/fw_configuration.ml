@@ -18,7 +18,7 @@ let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
 let subdirs_for_archived_mlx_files_label = salt ^ "subdirs_for_archived_mlx_files";;
 
 let of_concrete_object ccrt_obj = 
-   let g=Concrete_object_automatic.get_record ccrt_obj in
+   let g=Concrete_object.get_record ccrt_obj in
    {
       Fw_configuration_t.root = Dfa_root.of_concrete_object(g root_label);
       dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);

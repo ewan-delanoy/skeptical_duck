@@ -66,7 +66,7 @@ let to_concrete_object (Dfa_ending_t.E(e)) =
     [Crobj_converter.string_to_concrete_object(e)]);;
 
 let of_concrete_object crobj =
-   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
    Dfa_ending_t.E(
       Crobj_converter.string_of_concrete_object arg1
    );;

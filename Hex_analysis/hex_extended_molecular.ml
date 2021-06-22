@@ -154,7 +154,7 @@ let active_part_label               = salt ^ "active_part";;
 
 
 let of_concrete_object  crobj= 
-   let g = Concrete_object_automatic.get_record crobj in 
+   let g = Concrete_object.get_record crobj in 
    {
       Hex_extended_molecular_t.molecular_part = Hex_molecular_linker.of_concrete_object (g molecular_part_label);
       nonmolecular_passive_part = Hex_cell_set.of_concrete_object (g nonmolecular_passive_part_label);

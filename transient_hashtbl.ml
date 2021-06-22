@@ -15,7 +15,7 @@ let max_size_label = salt ^ "max_size";;
 let pairs_label = salt ^ "pairs";;
 
 let of_concrete_object a_of_crobj b_of_crobj crobj= 
-   let g = Concrete_object_automatic.get_record crobj in 
+   let g = Concrete_object.get_record crobj in 
    {
       Transient_hashtbl_t.max_size = Crobj_converter.int_of_concrete_object (g max_size_label);
       pairs = Crobj_converter_combinator.to_pair_list a_of_crobj b_of_crobj (g pairs_label)

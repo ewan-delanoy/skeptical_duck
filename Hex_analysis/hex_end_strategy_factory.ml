@@ -119,7 +119,7 @@ let compute_all_end_configs
 
 
 let of_concrete_object crobj=
-    let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+    let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
     Hex_end_strategy_factory_t.F(
         Hex_dimension.of_concrete_object arg1, 
         Hex_player.of_concrete_object arg2, 

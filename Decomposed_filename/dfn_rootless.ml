@@ -8,7 +8,7 @@
 module Private = struct 
 
 let of_concrete_object crobj =
-   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,arg2,arg3,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
    Dfn_rootless_t.J(
       Dfa_subdirectory.of_concrete_object arg1,
       Dfa_module.of_concrete_object arg2,

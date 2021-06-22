@@ -16,7 +16,7 @@ let hook_for_disjunction  = salt ^ "Exhaustive_Disjunction";;
 exception Of_concrete_object_exn of string;;
 
 let of_concrete_object crobj =
-    let (hook,(arg1,arg2,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+    let (hook,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
     if hook = hook_for_molecular 
     then Hex_strategy_static_constructor_t.Molecular(
            Hex_molecular_linker.of_concrete_object arg1,

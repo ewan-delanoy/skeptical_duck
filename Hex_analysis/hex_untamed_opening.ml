@@ -19,7 +19,7 @@ let has_odd_length (Hex_untamed_opening_t.O l)=(((List.length l) mod 2)=1);;
 
 
 let of_concrete_object crobj=
-   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
    Hex_untamed_opening_t.O(
       Crobj_converter_combinator.to_list Hex_cell.of_concrete_object arg1
    );;

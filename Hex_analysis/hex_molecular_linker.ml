@@ -48,7 +48,7 @@ let mem = Functor_for_sets.mem Private.tr ;;
 
 
 let of_concrete_object crobj=
-   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
    Hex_molecular_linker_t.M(
       Crobj_converter_combinator.to_list Hex_atomic_linker.of_concrete_object arg1
    );;

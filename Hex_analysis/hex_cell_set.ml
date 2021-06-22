@@ -79,7 +79,7 @@ let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;     
 
 let of_concrete_object crobj=
-   let (_,(arg1,_,_,_,_,_,_))=Concrete_object_automatic.unwrap_bounded_variant crobj in 
+   let (_,(arg1,_,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
    Hex_cell_set_t.S(
       Crobj_converter_combinator.to_list Hex_cell.of_concrete_object arg1
    );;
