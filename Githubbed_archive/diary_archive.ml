@@ -806,7 +806,6 @@ Much later, you can "unfreeze" the project as follows
 
 let g2 = Create_world_copy.unfreeze_copy (!ucs) alabama_dir ;;
 
-
 (*
 
 Then, you can to the separate dir, launch utop in it, and enjoy.
