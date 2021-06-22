@@ -6,19 +6,124 @@
 
 exception Register_rootless_path_exn of string list;;
 
+module Automatic = struct 
+
+   exception Rootless_not_found of Dfn_rootless_t.t;;
+
+
+   module Private = struct 
+   
+   let pair_of_crobj crobj=
+      let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
+     (
+       Dfn_rootless.of_concrete_object arg1,
+       Crobj_converter.string_of_concrete_object arg2
+     );;
+   
+   let pair_to_crobj (watched_file,modif_date)=
+     Concrete_object_t.Variant("Dfn_"^"rootless.J",
+        [
+           
+           Dfn_rootless.to_concrete_object watched_file;
+           Crobj_converter.string_to_concrete_object(modif_date);
+        ]
+      ) ;;
+   
+   let salt = "Fw_"^"nonmodular_wrapper_t.";;
+   
+   let configuration_label        = salt ^ "configuration";;
+   let watched_files_label        = salt ^ "watched_files";;
+   let last_noticed_changes_label = salt ^ "last_noticed_changes";;
+   
+   let of_concrete_object ccrt_obj = 
+      let g=Concrete_object.get_record ccrt_obj in
+      {
+         Fw_nonmodular_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
+         watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
+         last_noticed_changes = Dircopy_diff.of_concrete_object (g last_noticed_changes_label);
+      };; 
+   
+   let to_concrete_object fw=
+      let items= 
+      [
+       configuration_label, Fw_configuration.to_concrete_object fw.Fw_nonmodular_wrapper_t.configuration;
+       watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_nonmodular_wrapper_t.watched_files;
+       last_noticed_changes_label, Dircopy_diff.to_concrete_object fw.Fw_nonmodular_wrapper_t.last_noticed_changes
+      ]  in
+      Concrete_object_t.Record items;;
+   
+   
+   end ;;
+   
+   let reflect_changes_in_diff fw l= {
+      fw with 
+      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+        Dircopy_diff.add_changes 
+          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) l
+   } ;;
+   
+   let get_content fw rootless = 
+       let root = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration) in 
+       let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
+       Io.read_whole_file(Absolute_path.of_string s_ap);;     
+           
+   let get_mtime_or_zero_if_file_is_nonregistered fw rootless =
+      match Option.seek (fun (rootless1,_)->rootless1=rootless) 
+       (fw.Fw_nonmodular_wrapper_t.watched_files) with 
+      None -> "0."
+     |Some(_,mtime)-> mtime  ;; 
+   
+   
+   let get_mtime fw rootless  =
+     match Option.seek (fun (rootless1,_)->rootless1=rootless) 
+     (fw.Fw_nonmodular_wrapper_t.watched_files) with 
+      None -> raise (Rootless_not_found(rootless))
+     |Some(_,mtime)-> mtime  ;; 
+   
+   let of_concrete_object = Private.of_concrete_object;;
+   let to_concrete_object = Private.to_concrete_object;;
+   
+   let reflect_creations_in_diff fw created_ones= {
+      fw with 
+      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+        Dircopy_diff.create 
+          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) created_ones
+   } ;;
+   
+   
+   let reflect_destructions_in_diff fw destroyed_ones = {
+      fw with 
+      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+        Dircopy_diff.destroy  
+          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) destroyed_ones 
+   } ;;
+   
+   
+   let reflect_replacements_in_diff fw reps= {
+      fw with 
+      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+        Dircopy_diff.replace 
+          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) reps
+   } ;;
+   
+   let root fw = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration);;
+   
+
+end ;;   
+
 module Private = struct
 
 let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
 
 let recompute_mtime fw path =
-     let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw) 
+     let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
      and s_path=Dfn_rootless.to_line path in 
      let file = s_root^s_path in 
      mtime file;;
 
 
 let recompute_all_info fw path =
-     let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw) 
+     let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
      and s_path=Dfn_rootless.to_line path in 
      let file = s_root^s_path in 
      (path,mtime file);;
@@ -40,7 +145,7 @@ let update_some_files fw (w_files,sw_files) = {
 
 
 let remove_files fw rootless_paths=
-    let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw) in 
+    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in 
     let removals_to_be_made = Image.image (
       fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
     ) rootless_paths in 
@@ -51,11 +156,11 @@ let remove_files fw rootless_paths=
          not(List.mem path rootless_paths)
       ) (fw.Fw_nonmodular_wrapper_t.watched_files)  ;
    } in 
-   Fw_nonmodular_wrapper_automatic.reflect_destructions_in_diff fw2 rootless_paths ;;
+   Automatic.reflect_destructions_in_diff fw2 rootless_paths ;;
 
 
 let register_rootless_paths fw rootless_paths= 
-   let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw) in
+   let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in
    let bad_paths = Option.filter_and_unpack (
      fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
      if not(Sys.file_exists s_full_path)
@@ -71,13 +176,13 @@ let register_rootless_paths fw rootless_paths=
         (fw.Fw_nonmodular_wrapper_t.watched_files)@
           (Image.image (recompute_all_info fw) rootless_paths)  ;
     }  in 
-    Fw_nonmodular_wrapper_automatic.reflect_creations_in_diff fw2 rootless_paths;;
+    Automatic.reflect_creations_in_diff fw2 rootless_paths;;
 
 let deal_with_initial_comment_if_needed fw rless =
    if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
    then ()
    else
-      let root = Fw_nonmodular_wrapper_automatic.root fw in 
+      let root = Automatic.root fw in 
       let full = Dfn_join.root_to_rootless root rless in 
       let ap = Dfn_full.to_absolute_path full in 
       Put_use_directive_in_initial_comment.put_usual root ap
@@ -91,10 +196,10 @@ let helper_during_string_replacement fw (old_string,new_string) accu old_list=
     let new_list =Image.image (
        fun pair->
          let (old_path,_)=pair in 
-         if not(Supstring.contains (Fw_nonmodular_wrapper_automatic.get_content fw old_path) old_string)
+         if not(Supstring.contains (Automatic.get_content fw old_path) old_string)
          then pair 
          else 
-            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to_rootless (Fw_nonmodular_wrapper_automatic.root fw) old_path) in 
+            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to_rootless (Automatic.root fw) old_path) in 
             let _=(
              Replace_inside.replace_inside_file (old_string,new_string) ap;
              accu:=old_path::(!accu)
@@ -115,7 +220,7 @@ let replace_string fw (old_string,new_string)=
     (new_fw,changed_files);;         
        
 let rename_value_inside_rootless fw (old_name,new_name) preceding_files rootless_path=
-   let full_path = Dfn_join.root_to_rootless (Fw_nonmodular_wrapper_automatic.root fw) rootless_path in 
+   let full_path = Dfn_join.root_to_rootless (Automatic.root fw) rootless_path in 
    let absolute_path=Dfn_full.to_absolute_path  full_path in 
    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files old_name new_name absolute_path in 
@@ -152,7 +257,7 @@ let helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) l_pairs =
      (comp,List.rev(!ref_for_subdirectory_renaming));;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
-    let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw)  in 
+    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw)  in 
     let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
     and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
     let old_full_path = s_root^s_old_subdir 
@@ -164,7 +269,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       fw with
       Fw_nonmodular_wrapper_t.watched_files = files  ;
    } in 
-   Fw_nonmodular_wrapper_automatic.reflect_replacements_in_diff fw2 reps;;   
+   Automatic.reflect_replacements_in_diff fw2 reps;;   
 
 let helper1_during_inspection fw accu pair=
    let (rootless_path,old_mtime)=pair in 
@@ -186,7 +291,7 @@ let inspect_and_update fw =
        fw with
        Fw_nonmodular_wrapper_t.watched_files         = new_files ;
     }  in 
-    let new_fw = Fw_nonmodular_wrapper_automatic.reflect_changes_in_diff fw2 changed_files in 
+    let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
     (new_fw,changed_files);;         
 
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
@@ -194,10 +299,10 @@ let replace_string_in_list_of_pairs fw (replacee,replacer) l=
    let new_l=Image.image (
       fun pair ->
         let (rootless,mtime)=pair in 
-        let content = Fw_nonmodular_wrapper_automatic.get_content fw rootless in 
+        let content = Automatic.get_content fw rootless in 
         if Substring.is_a_substring_of replacee content 
         then let _=(changed_ones:= rootless:: (!changed_ones)) in 
-             let s_root = Dfa_root.connectable_to_subpath (Fw_nonmodular_wrapper_automatic.root fw) 
+             let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
              and s_path=Dfn_rootless.to_line rootless in 
              let file = s_root^s_path in  
              let ap=Absolute_path.of_string file in 
@@ -215,17 +320,17 @@ let replace_string fw (replacee,replacer) =
        fw with
        Fw_nonmodular_wrapper_t.watched_files = new_files;
    } in 
-   let fw3 = Fw_nonmodular_wrapper_automatic.reflect_changes_in_diff fw2 changed_files in 
+   let fw3 = Automatic.reflect_changes_in_diff fw2 changed_files in 
    (fw3,changed_files);;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
     let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files replacee (Overwriter.of_string pre_replacer) path in 
-    let rootless = Dfn_common.decompose_absolute_path_using_root path (Fw_nonmodular_wrapper_automatic.root fw)  in 
+    let rootless = Dfn_common.decompose_absolute_path_using_root path (Automatic.root fw)  in 
     let fw2= update_some_files fw ([rootless],[]) in 
     let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
-    let fw4 =  Fw_nonmodular_wrapper_automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
+    let fw4 =  Automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
     (fw4,(rootless::changed_files));;
 
    module Initialization = struct 
