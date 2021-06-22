@@ -21,8 +21,8 @@ let largest_nonsurrendering_beginning_for_one fgame fles =
     match Hex_meeting_result.meet fles fgame with 
      Hex_meeting_result_t.Player_surrenders(moves_before,_,_)->
        let d=List.length(fgame.Hex_finished_game_t.sequence_of_moves)-List.length(moves_before) 
-       and color = Hex_player.color(Hex_flattened_end_strategy_automatic.beneficiary fles) 
-       and s_idx = string_of_int(Hex_flattened_end_strategy_automatic.index fles) in 
+       and color = Hex_player.color(Hex_flattened_end_strategy.beneficiary fles) 
+       and s_idx = string_of_int(Hex_flattened_end_strategy.index fles) in 
        let msg = "Surrender to "^color^" strategy number "^s_idx^" detected, "^
                  (string_of_int d)^" moves deleted\n" in 
        let new_fgame = {fgame with Hex_finished_game_t.sequence_of_moves = moves_before} in           

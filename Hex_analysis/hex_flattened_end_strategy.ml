@@ -113,9 +113,15 @@ let visualize fles=
 
 end;;
 
-
+let active_part = Automatic.active_part ;;
+let beneficiary = Automatic.beneficiary ;;
 let immediate_opportunities = Private.immediate_opportunities;;
+let index = Automatic.index ;;
+let of_concrete_object = Automatic.of_concrete_object ;;
+let passive_part = Automatic.passive_part ;;
+let set_index = Automatic.set_index ;;
 let support = Private.support;;
+let to_concrete_object = Automatic.to_concrete_object ;;
 let use_ally_move_to_simplify_several = Private.use_ally_move_to_simplify_several;;
 let use_enemy_move_to_simplify_several = Private.use_enemy_move_to_simplify_several;;
 let use_move_to_simplify_one = Private.use_move_to_simplify_one;;

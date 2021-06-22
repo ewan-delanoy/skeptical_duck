@@ -77,7 +77,7 @@ let create_new_strategy show_msg old_factory static_constructor comment indices=
                 false
               )
       |Some(Hex_cog_in_machine_t.C(_,_,_,old_fles))->
-              let si = string_of_int(Hex_flattened_end_strategy_automatic.index old_fles) in 
+              let si = string_of_int(Hex_flattened_end_strategy.index old_fles) in 
               (
                  old_fles,
                  l,
@@ -141,7 +141,7 @@ let restrict_to_strats_with_indices
    (Hex_end_strategy_factory_t.F(dim,player,l)) indices =
    let partial_l=List.filter (
       fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-        List.mem (Hex_flattened_end_strategy_automatic.index fles) indices
+        List.mem (Hex_flattened_end_strategy.index fles) indices
    ) l in 
    let pre_reindexer = Ennig.index_everything indices in 
    let reindexer=Image.image (fun (x,y)->(y,x)) pre_reindexer in
@@ -154,7 +154,7 @@ let remove_strats_with_indices factory  unordered_removed_indices =
    let (Hex_end_strategy_factory_t.F(dim,player,l)) = factory in 
    let old_indices=Image.image (
       fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-         (Hex_flattened_end_strategy_automatic.index fles) 
+         (Hex_flattened_end_strategy.index fles) 
    ) l in 
    let remaining_indices = List.filter (fun idx->
       not(Set_of_integers.mem idx removed_indices)
@@ -171,7 +171,7 @@ let compute_isolated_end_configs_in_one_factory factory =
    let syndicated_indices = indices_used_in_exhaustive_disjunctions factory in 
    Option.filter_and_unpack (
      fun (Hex_cog_in_machine_t.C(_,_,_,fles))->
-        if List.mem (Hex_flattened_end_strategy_automatic.index fles)  syndicated_indices 
+        if List.mem (Hex_flattened_end_strategy.index fles)  syndicated_indices 
         then None 
         else Some(fles)
    ) l;;
