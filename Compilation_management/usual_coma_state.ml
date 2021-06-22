@@ -13,7 +13,7 @@ let main_ref=
   and url=Coma_big_constant.github_url in 
   let config = Fw_configuration.constructor 
    (root,backup_dir,githubbing,url,[],[Coma_constant.githubbed_archive_subdir]) in 
-  ref(Coma_state_automatic.empty_one  config);;
+  ref(Coma_state.empty_one  config);;
 end;;
 
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;; 
@@ -49,9 +49,9 @@ let find_endingless modname=
 
 
 let fix_lag () =
-   let config = Coma_state_automatic.configuration (!(Private.main_ref)) in 
+   let config = Coma_state.configuration (!(Private.main_ref)) in 
    let diff = Check_ocaml_dircopy.check config in 
-   let cs2 = Coma_state_automatic.impose_last_changes (!(Private.main_ref)) diff in 
+   let cs2 = Coma_state.impose_last_changes (!(Private.main_ref)) diff in 
    let cs3 = Coma_state.reflect_latest_changes_in_github cs2 (Some"Fix lag") in 
    (Private.main_ref:=cs3;Save_coma_state.save cs3);;
 

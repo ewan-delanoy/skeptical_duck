@@ -665,6 +665,17 @@ let follows_it = Automatic.follows_it_but_does_not_necessarily_depend_on_it;;
 let all_used_subdirs = Automatic.all_used_subdirs;;
 
 
+let change_one_module_name = Automatic.change_one_module_name ;;
+let configuration = Automatic.configuration ;;
+let empty_one = Automatic.empty_one ;;
+let impose_last_changes = Automatic.impose_last_changes ;;
+let modify_all_needed_dirs = Automatic.modify_all_needed_dirs ;;
+let modify_all_subdirs = Automatic.modify_all_subdirs ;;
+let restrict = Automatic.restrict ;;
+let root = Automatic.root ;;
+let set_push_after_backup = Automatic.set_push_after_backup ;;
+let to_concrete_object = Automatic.to_concrete_object ;;
+let transplant = Automatic.transplant ;;
 
 
 (* End of inherited values *)

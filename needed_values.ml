@@ -14,7 +14,7 @@ let cdd ()=Usual_coma_state.clean_debug_dir ();;
 
 let ced ()=Usual_coma_state.clean_exec_dir ();;
 
-let cod ()=Check_ocaml_dircopy.check (Coma_state_automatic.configuration (!(Usual_coma_state.main_ref)));;
+let cod ()=Check_ocaml_dircopy.check (Coma_state.configuration (!(Usual_coma_state.main_ref)));;
 
 let cof = Usual_coma_state.census_of_foreigners;;
 

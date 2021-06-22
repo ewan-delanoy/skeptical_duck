@@ -10,7 +10,7 @@ let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple 
   and url=Coma_big_constant.github_url in  
   let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[],[]) in 
-  ref(Coma_state_automatic.empty_one  config);;
+  ref(Coma_state.empty_one  config);;
 
 let see_yet_unofficial_changes ()=
    let temp1=Coma_state.all_mlx_files (!main_ref) in 

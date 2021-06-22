@@ -75,7 +75,7 @@ module Private=struct
   
     let save_targetfile rootless_path_for_targetfile cs=
       let root_dir = Coma_state.root cs in 
-      let s1=Crobj_parsing.unparse(Coma_state_automatic.to_concrete_object cs) in
+      let s1=Crobj_parsing.unparse(Coma_state.to_concrete_object cs) in
       let lt=Dfn_join.root_to_rootless root_dir rootless_path_for_targetfile in
       Io.overwrite_with (Dfn_full.to_absolute_path lt) s1;;
     
