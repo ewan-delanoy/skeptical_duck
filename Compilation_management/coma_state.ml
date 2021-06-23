@@ -844,32 +844,33 @@ let force_modification_time root_dir cs mlx=
       cs3;;
 
 
-exception Non_registered_module of Dfn_endingless_t.t;;  
-exception Derelict_children of Dfa_module_t.t*(Dfa_module_t.t list);;  
+ 
+exception Derelict_children of Dfa_module_t.t list;;  
            
-            
-let unregister_module cs eless=
-  let nm=Dfn_endingless.to_module eless in
-  let pre_desc=List.filter(
-      fun mn7->
-       List.mem nm ( ancestors_at_module cs mn7 )
+let unregister_modules cs elesses=
+  let nms= Image.image Dfn_endingless.to_module elesses in
+  let descendants=List.filter(
+      fun mn-> List.exists(fun mn2->
+       List.mem mn2 ( ancestors_at_module cs mn ) ) nms
   ) (ordered_list_of_modules cs) in
-   if pre_desc<>[]
-   then raise(Derelict_children(nm,pre_desc))
+  let problematic_descendants=List.filter(
+      fun mn-> not(List.mem mn nms)
+  ) descendants in
+   if problematic_descendants<>[]
+   then raise(Derelict_children(problematic_descendants))
    else
-   let cs2=Automatic.remove_in_each_at_module cs nm in
+   let cs2=List.fold_left Automatic.remove_in_each_at_module cs nms in
    let old_preqtypes = Automatic.preq_types cs2 in 
-   let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
-   let cs3=(
+   let new_preqtypes = List.filter (fun (eless2,_)->not(List.mem eless2 elesses)) old_preqtypes in
+   let cs3 = (
      if new_preqtypes <> old_preqtypes 
      then Automatic.set_preq_types cs2 new_preqtypes
      else cs2
    ) in 
    cs3;;     
+
+let unregister_module cs eless= unregister_modules cs [eless] ;; 
                     
-let unregister_modules cs elesses = List.fold_left unregister_module cs elesses ;; 
-
-
 exception Non_registered_file of Dfn_full_t.t;;  
 exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
                       
