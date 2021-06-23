@@ -281,7 +281,7 @@ module Physical = struct
    
    module Physical_followed_by_internal = struct
    
-   exception Forget_modules_exn of (Dfa_module_t.t * Dfa_module_t.t list) list ;;
+   exception Forget_modules_exn of (Dfa_module_t.t * Dfa_module_t.t) list ;;
    
    let forget_modules cs mod_names= 
      let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
@@ -291,7 +291,7 @@ module Physical = struct
      let cs2=Physical.forget_modules cs mod_names  in
      Internal.forget_modules cs2 mod_names ;;
    
-   exception Forget_rootless_paths_exn of (Dfa_module_t.t * Dfn_rootless_t.t list) list ;;
+   exception Forget_rootless_paths_exn of (Dfa_module_t.t * Dfn_rootless_t.t) list ;;
    
    let forget_rootless_paths cs rootless_paths= 
      let check = Coma_state.check_rootless_path_sequence_for_forgettability cs rootless_paths in 
