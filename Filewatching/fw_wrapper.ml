@@ -6,7 +6,6 @@
 
 exception Register_rootless_path_exn of string list;;
 
-
 module Automatic = struct 
 
    exception Rootless_not_found of Dfn_rootless_t.t;;
