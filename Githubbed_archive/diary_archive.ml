@@ -1,5 +1,42 @@
 
 (************************************************************************************************************************
+Snippet 52 : 
+************************************************************************************************************************)
+
+
+
+(************************************************************************************************************************
+Snippet 51 : Remove all "automatic" modules 
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let u1 = ae ();;
+let u2 = Image.image (fun eless ->
+   Dfa_module.to_line(Dfn_endingless.to_module eless)  
+) u1;;
+let u3 = List.filter (
+  fun x-> Supstring.ends_with x "_automatic"
+) u2 ;;
+
+let computed_u3 = ["concrete_object_automatic"; "fw_wrapper_automatic"; "coma_state_automatic";
+"fw_nonmodular_wrapper_automatic"; "hex_flattened_end_strategy_automatic"];;
+
+let g1 = vfm "hex_flattened_end_strategy_automatic" ;;
+let g2 = Image.image fst g1 ;;
+
+let g3 = Image.image (fun x-> Replace_inside.replace_inside_string ("x",x) "let x = Automatic.x ;;") g2;;
+let g4 = String.concat "\n" g3 ;;
+let g5 = "\n\n\n" ^ g4 ^ "\n\n\n" ;; 
+
+let h1 = List.flatten (Image.image snd g1) ;;
+let h2 = Ordered.sort Total_ordering.standard h1 ;;
+let h3 = List.iter (
+  fun fn -> Replace_inside.replace_inside_file ("Hex_flattened_end_strategy_automatic.","Hex_flattened_end_strategy.") fn
+) h2 ;;
+
+
+(************************************************************************************************************************
 Snippet 50 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
 let ap_for_diary = Absolute_path.of_string "Githubbed_archive/diary_archive.ml";;
@@ -790,7 +827,9 @@ let alabama_dir = Dfa_root.of_line (home^"/Teuliou/OCaml/Alabama") ;;
 
 (*
 
-To store a "frozen" copy of the project in a separate directory 
+To store a "frozen" copy of the project in a separate directory.
+You can combine this with a cp -R (which often will not suffice by itself since you 
+also need the dependecies from other subdirectories).
 
 *)
 
