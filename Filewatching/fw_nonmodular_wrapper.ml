@@ -55,7 +55,7 @@ module Automatic = struct
    
    end ;;
    
-   
+   let configuration fw = fw.Fw_nonmodular_wrapper_t.configuration ;;
    
    let get_content fw rootless = 
        let root = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration) in 
