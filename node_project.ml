@@ -5,7 +5,10 @@
 *)
 
 
-let compact_replacer = Dfn_rootless.of_line "Fads/compact_replacer.txt";;
+let compact_replacer = 
+  (Dfa_subdirectory.connectable_to_subpath 
+   Coma_constant.confidential_data_subdir 
+  )^"compact_replacer.txt";;
 
 let config = 
   let home = Sys.getenv "HOME" in 
