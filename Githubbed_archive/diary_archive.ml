@@ -1,7 +1,68 @@
 
 (************************************************************************************************************************
-Snippet 52 : 
+Snippet 53 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 52 : Painful debugging session for Needed_values.fg
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let sd= Dfa_subdirectory.of_line "Hex_analysis";;
+let u1 = ae ();;
+let u2 = List.filter (fun eless ->
+   Dfa_subdirectory.begins_with (Dfn_endingless.to_subdirectory eless) sd 
+) u1;;
+let u3 = Image.image (fun eless ->
+  Dfa_module.to_line(Dfn_endingless.to_module eless)  
+) u2 ;;
+let bad1 () =fgs u3 ;;
+let bad2 () = Usual_coma_state.forget_several u3 ;; 
+
+
+let bad3 () = Modify_coma_state.Syntactic_sugar.forget ucs u3 ;;
+
+let ref_for_modules = ref []
+and ref_for_paths = ref [] ;;
+let hum =List.iter (
+     fun descr ->
+       if String.contains descr '.'
+       then ref_for_paths:= (Dfn_rootless.of_line descr)::(!ref_for_paths)
+       else ref_for_modules:= (Dfa_module.of_line descr) ::(!ref_for_modules)
+  ) u3 ;;
+let all_paths = List.rev(!ref_for_paths) 
+and all_modules =  List.rev(!ref_for_modules) ;;
+
+let bad4 () = Modify_coma_state.Reference.forget_modules ucs all_modules ;;  
+
+let cs = (!ucs) ;;
+let bad5 () = Modify_coma_state.And_save.forget_modules cs all_modules ;;  
+let bad6 () = Modify_coma_state.And_backup.forget_modules cs all_modules ;;  
+let bad7 () = Modify_coma_state.After_checking.forget_modules cs all_modules ;; 
+let bad8 () = Modify_coma_state.Physical_followed_by_internal.forget_modules cs all_modules ;; 
+
+let mod_names = all_modules ;;
+let check = Coma_state.check_module_sequence_for_forgettability cs mod_names ;;
+   
+let cs2=Modify_coma_state.Physical.forget_modules cs mod_names ;;
+let bad9 () = Modify_coma_state.Internal.forget_modules cs2 mod_names ;;
+
+let mns = mod_names ;;
+let old_endinglesses = Image.image (Coma_state.endingless_at_module cs2) mns ;;
+let bad10 ()=Coma_state.unregister_modules  cs2 old_endinglesses ;;
+let bad11 ()=List.fold_left Coma_state.unregister_module  cs2 old_endinglesses ;;
+
+let one_more_step (ccs,elesses) = 
+    let (eless,other_elesses) = Listennou.ht elesses in 
+    (Coma_state.unregister_module ccs eless,other_elesses) ;;
+let starting_point = (cs2,old_endinglesses) ;;
+let iterate = Memoized.small one_more_step starting_point ;;
+let bad12 () = iterate (List.length old_endinglesses) ;;
+let bad13 () = Tools_for_debugging.extract_from_iteration one_more_step starting_point;;
+let bad14 () = one_more_step starting_point ;;
+
 
 
 
