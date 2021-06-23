@@ -884,7 +884,8 @@ Snippet  37 : Testing freezing and unfreezing of world copies
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let alabama_dir = Dfa_root.of_line (home^"/Teuliou/OCaml/Alabama") ;;
+let remote_dir = Dfa_root.of_line 
+   (home^"/Teuliou/OCaml/Forgotten_projects/Html_scraping_project") ;;
 
 (*
 
@@ -894,9 +895,12 @@ also need the dependecies from other subdirectories).
 
 *)
 
+let sd= Dfa_subdirectory.of_line "Text_editing/Html_scraping";;
+
 let g1 = Create_world_copy.frozen_copy (!ucs)
-    ~destination:alabama_dir 
-    (Needed_data_summary_t.Selection([],[Dfa_subdirectory.of_line "Hex_analysis"])) ;;
+    ~destination:remote_dir 
+    (Needed_data_summary_t.Selection([],
+    [sd])) ;;
    
 (*
 
@@ -904,11 +908,11 @@ Much later, you can "unfreeze" the project as follows
 
 *)    
 
-let g2 = Create_world_copy.unfreeze_copy (!ucs) alabama_dir ;;
+let g2 = Create_world_copy.unfreeze_copy (!ucs) remote_dir ;;
 
 (*
 
-Then, you can to the separate dir, launch utop in it, and enjoy.
+Then, you can cd to the separate dir, launch utop in it, and enjoy.
 
 *)
 

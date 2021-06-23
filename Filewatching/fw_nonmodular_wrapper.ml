@@ -386,7 +386,7 @@ let initialize = Private.Initialization.init ;;
 
 let inspect_and_update = Private.inspect_and_update;;
 
-
+let of_concrete_object = Automatic.of_concrete_object ;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_nonmodular_wrapper_t.configuration in 
@@ -404,4 +404,4 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
-
+let to_concrete_object = Automatic.to_concrete_object ;;
