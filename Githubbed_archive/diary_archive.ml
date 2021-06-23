@@ -994,7 +994,7 @@ let (bad_in_z1,good_in_z1) = List.partition (
 let good_modules = Image.image 
   (fun (Dfn_endingless_t.J(r,sd,m)) ->m) good_in_z1;;
 
-let new_cs = Coma_state_automatic.restrict cs good_modules ;;  
+let new_cs = Coma_state.Automatic.restrict cs good_modules ;;  
 Save_coma_state.save new_cs ;;
 
 (************************************************************************************************************************
