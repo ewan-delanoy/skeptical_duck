@@ -1246,26 +1246,26 @@ module PrivateThree=struct
            
     let message_about_changed_modules changed_modules=
       let temp1=Image.image Dfa_module.to_line changed_modules in
-      "\n\n\n"^
+      "\n\n"^
       "The following modules have been directly changed :\n"^
       (String.concat "\n" temp1)^
-      "\n\n\n"
+      "\n\n"
     ;;       
 
     let message_about_changed_noncompilables changed_noncompilables=
       let temp1=Image.image Dfn_rootless.to_line changed_noncompilables in
-      "\n\n\n"^
+      "\n\n"^
       "The following noncompilables have been directly changed :\n"^
       (String.concat "\n" temp1)^
-      "\n\n\n"
+      "\n\n"
     ;;    
 
     let message_about_changed_archived_compilables changed_ac=
     let temp1=Image.image Dfn_rootless.to_line changed_ac in
-    "\n\n\n"^
+    "\n\n"^
     "The following archived files have been directly changed :\n"^
     (String.concat "\n" temp1)^
-    "\n\n\n"
+    "\n\n"
   ;;    
 
     let announce_changed_modules changed_modules=

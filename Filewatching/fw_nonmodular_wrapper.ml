@@ -124,6 +124,8 @@ let recompute_mtime fw path =
      let file = s_root^s_path in 
      mtime file;;
 
+let recompute_mtime_opt fw path =
+    try Some(recompute_mtime fw path) with _ -> None ;;
 
 let recompute_all_info fw path =
      let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
@@ -274,16 +276,37 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
    } in 
    Automatic.reflect_replacements_in_diff fw2 reps;;   
 
-let helper1_during_inspection fw accu pair=
-   let (rootless_path,old_mtime)=pair in 
-   let new_mtime = recompute_mtime fw rootless_path in 
-   if new_mtime <> old_mtime
-   then let _=(accu:=rootless_path::(!accu)) in 
-        recompute_all_info fw rootless_path
-   else pair;;
+let message_about_missing_files missing_files=
+   let temp1=Image.image Dfn_rootless.to_line missing_files in
+   "\n\n"^
+   "The following files have been deleted without warning :\n"^
+   (String.concat "\n" temp1)^
+   "\n\n"
+ ;;    
+
+let announce_missing_files missing_files=
+     if missing_files=[]
+     then ()
+     else (print_string(message_about_missing_files missing_files);flush stdout);;
+            
+
+let helper1_during_inspection fw accu (rl,old_mtime,new_mtime)=
+   let _ = (if new_mtime <> old_mtime then accu:=rl::(!accu)) in 
+   (rl,new_mtime);;
 
 let helper2_during_inspection fw accu l_pairs =
-   let new_l_pairs = Image.image (helper1_during_inspection fw accu) l_pairs in 
+   let temp1 = Image.image (fun (rl,old_mtime)->
+      (rl,old_mtime,recompute_mtime_opt fw rl)
+      ) l_pairs in 
+   let (good_temp1,bad_temp1) =  List.partition (
+       fun (_,_,opt) -> opt <> None 
+   ) temp1 in
+   let good_pairs = Image.image (fun 
+     (rl,old_mtime,opt) -> (rl,old_mtime,Option.unpack opt)
+   ) good_temp1 
+   and missing_files = Image.image (fun (rl,_,_)->rl) bad_temp1 in
+   let _ = announce_missing_files missing_files in 
+   let new_l_pairs = Image.image (helper1_during_inspection fw accu) good_pairs in 
    (new_l_pairs,List.rev(!accu));;
 
 let inspect_and_update fw = 
