@@ -721,7 +721,6 @@ let rootless_paths_at_module cs mn=
    Image.image Dfn_full.to_rootless (acolytes_at_module cs mn);;
   
 
-
 let registered_endings_at_module cs mn=
   List.filter (fun edg->
   check_ending_in_at_module edg cs mn 
@@ -737,6 +736,9 @@ let check_for_single_ending_at_module cs mn=
 
 
 let size cs = List.length (ordered_list_of_modules cs);;      
+
+let all_rootlesses cs =
+   List.flatten(Image.image (rootless_paths_at_module cs) (ordered_list_of_modules cs));;
 
 
 let up_to_date_elesses cs =
@@ -1060,6 +1062,8 @@ let above cs eless=
   let nm=Dfn_endingless.to_module eless in
   ancestors_at_module cs nm;;
  
+let below_module cs mn0 =
+  List.filter(fun mn->List.mem mn0 (ancestors_at_module cs mn)) (ordered_list_of_modules cs);; 
 
 let below cs eless=
         let mn0=Dfn_endingless.to_module eless  in
@@ -2241,39 +2245,27 @@ let reflect_latest_changes_in_github cs opt_msg=
   let new_fw = Fw_wrapper.reflect_latest_changes_in_github old_fw opt_msg in 
   {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
 
-  let check_module_sequence_for_forgettability cs l=
-  let temp1 = List.rev (Three_parts.generic l) in 
-  let temp2 = Image.image (
-    fun (to_be_deleted_before_mn,mn,_)->
-      Option.filter_and_unpack (fun mn2->
-         if (List.mem mn2 to_be_deleted_before_mn) 
-         then None 
-         else Some (mn,mn2) 
-      ) (ancestors_at_module cs mn)
-  ) temp1 in 
-  List.flatten temp2;;
+let check_module_sequence_for_forgettability cs l=
+  let modules_below = List.filter (
+    fun mn -> List.exists (fun mn2->
+        List.mem mn2 (ancestors_at_module cs mn)
+      ) l 
+  )(ordered_list_of_modules cs) in 
+  List.filter (fun mn->not(List.mem mn l)) modules_below;;
 
 
 let check_rootless_path_sequence_for_forgettability cs old_l =
- let l = List.filter Dfn_rootless.is_compilable old_l in 
- let temp1 = List.rev (Three_parts.generic l) in 
- let temp2 = Image.image (
-  fun (to_be_deleted_before_rp,rp,_)->
-    let mn = Dfn_rootless.to_module rp in 
-    let acolytes = rootless_paths_at_module cs mn in  
-    let remaining_acolytes = List.filter (
-      fun rp2 -> not (List.mem rp2 (rp::to_be_deleted_before_rp))
-    ) acolytes in 
-    if remaining_acolytes<>[]
-    then []
-    else 
-    Option.filter_and_unpack (fun rp2->
-       if (List.mem rp2 to_be_deleted_before_rp) 
-       then None 
-       else Some(rp,rp2) 
-    ) (acolytes_above_module cs mn) 
-) temp1 in 
-List.flatten temp2;;
+  (* if there are several rootlesses corresponding to the same module, 
+    because of our conventions, there are two of them and one of them is a mli. 
+    So any one of the two can be deleted without harming the other
+    *)
+  let possibly_redundant = Option.filter_and_unpack (fun rl->
+    if not(Dfn_rootless.is_compilable rl) then None else
+    Some(Dfn_rootless.to_module rl)  ) old_l in 
+  let l = Listennou.nonredundant_version   possibly_redundant in 
+  check_module_sequence_for_forgettability cs l ;;
+
+ 
 
 exception Empty_acolytes_list ;; 
 exception Too_many_acolytes of Dfn_rootless_t.t list ;;
