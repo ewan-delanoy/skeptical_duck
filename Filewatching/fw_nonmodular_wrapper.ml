@@ -55,12 +55,7 @@ module Automatic = struct
    
    end ;;
    
-   let reflect_changes_in_diff fw l= {
-      fw with 
-      Fw_nonmodular_wrapper_t.last_noticed_changes = 
-        Dircopy_diff.add_changes 
-          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) l
-   } ;;
+   
    
    let get_content fw rootless = 
        let root = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration) in 
@@ -83,6 +78,13 @@ module Automatic = struct
    let of_concrete_object = Private.of_concrete_object;;
    let to_concrete_object = Private.to_concrete_object;;
    
+   let reflect_changes_in_diff fw l= {
+      fw with 
+      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+        Dircopy_diff.add_changes 
+          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) l
+   } ;;
+
    let reflect_creations_in_diff fw created_ones= {
       fw with 
       Fw_nonmodular_wrapper_t.last_noticed_changes = 
@@ -108,6 +110,7 @@ module Automatic = struct
    
    let root fw = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration);;
    
+   let watched_files fw = fw.Fw_nonmodular_wrapper_t.watched_files ;;
 
 end ;;   
 
@@ -405,3 +408,4 @@ let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
+
