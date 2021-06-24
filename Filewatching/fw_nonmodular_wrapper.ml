@@ -359,6 +359,17 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let fw4 =  Automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
     (fw4,(rootless::changed_files));;
 
+   let overwrite_file_if_it_exists fw rootless new_content =
+      let root = Automatic.root fw in 
+      if List.exists ( fun (r,_)->r=rootless ) fw.Fw_nonmodular_wrapper_t.watched_files 
+      then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
+           let _=Io.overwrite_with ap new_content in 
+           ({
+              fw with 
+              Fw_nonmodular_wrapper_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.Fw_nonmodular_wrapper_t.watched_files);
+           },true)
+      else (fw,false);;
+
    module Initialization = struct 
 
       module Private = struct 
@@ -417,6 +428,8 @@ let initialize = Private.Initialization.init ;;
 let inspect_and_update = Private.inspect_and_update;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
+
+let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_nonmodular_wrapper_t.configuration in 
