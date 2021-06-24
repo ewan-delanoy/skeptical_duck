@@ -320,6 +320,36 @@ let inspect_and_update fw =
     let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
     (new_fw,changed_files);;         
 
+let apply_text_transformation_in_list_of_pairs fw tr l=
+    let changed_ones=ref[]  in 
+    let new_l=Image.image (
+       fun pair ->
+         let (rootless,mtime)=pair in 
+         let old_content = Automatic.get_content fw rootless in 
+         let new_content = tr old_content in
+         if new_content <> old_content
+         then let _=(changed_ones:= rootless:: (!changed_ones)) in 
+              let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
+              and s_path=Dfn_rootless.to_line rootless in 
+              let file = s_root^s_path in  
+              let ap=Absolute_path.of_string file in 
+              let _=(Io.overwrite_with ap new_content) in 
+              recompute_all_info fw rootless 
+         else pair     
+    ) l in 
+    (new_l,List.rev(!changed_ones));;
+
+let apply_text_transformation fw tr =
+      let (new_files,changed_files) =  
+      apply_text_transformation_in_list_of_pairs fw tr
+       fw.Fw_nonmodular_wrapper_t.watched_files  in 
+      let fw2 ={
+          fw with
+          Fw_nonmodular_wrapper_t.watched_files = new_files;
+      } in 
+      let fw3 = Automatic.reflect_changes_in_diff fw2 changed_files in 
+      (fw3,changed_files);;    
+
 let replace_string_in_list_of_pairs fw (replacee,replacer) l=
    let changed_ones=ref[]  in 
    let new_l=Image.image (
@@ -469,6 +499,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
 
 end;;
 
+let apply_text_transformation = Private.apply_text_transformation;;
 
 let empty_one config= {
    Fw_nonmodular_wrapper_t.configuration = config;
