@@ -370,6 +370,34 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
            },true)
       else (fw,false);;
 
+   let relocate_files_to fw rootless_paths new_subdir=
+      let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
+      and s_subdir = Dfa_subdirectory.connectable_to_subpath new_subdir in 
+      let displacements_to_be_made = Image.image (
+        fun (path,_)->" mv "^s_root^(Dfn_rootless.to_line path)^" "^
+        s_root^s_subdir 
+      ) rootless_paths in 
+      let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
+      let reps = Image.image (fun (path,_)->
+        (path,Dfn_rootless.relocate_to path new_subdir)
+      ) rootless_paths in 
+      let fw2 = {
+        fw with 
+        Fw_nonmodular_wrapper_t.watched_files = Image.image (fun pair->
+           let (path,_)=pair in 
+           (match List.assoc_opt path rootless_paths with
+           Some(should_deal_with_initial_comment) -> 
+                let new_path = Dfn_rootless.relocate_to path new_subdir in 
+                let _ = (
+                  if  should_deal_with_initial_comment
+                  then deal_with_initial_comment_if_needed fw new_path
+                ) in 
+                (new_path,recompute_mtime fw new_path)
+           | None -> pair)
+        ) (fw.Fw_nonmodular_wrapper_t.watched_files)  
+     } in 
+     Automatic.reflect_replacements_in_diff fw2 reps ;;
+
    module Initialization = struct 
 
       module Private = struct 
@@ -438,6 +466,9 @@ let reflect_latest_changes_in_github fw opt_msg=
 
 
 let register_rootless_paths = Private.register_rootless_paths;;
+
+let relocate_files_to = Private.relocate_files_to;;
+
 
 let remove_files = Private.remove_files;;
 
