@@ -547,7 +547,7 @@ let inspect_and_update = Private.inspect_and_update;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 
-let overwrite_usual_compilable_file_if_it_exists = Private.overwrite_usual_compilable_file_if_it_exists;;
+let overwrite_file_if_it_exists = Private.overwrite_usual_compilable_file_if_it_exists;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.Fw_wrapper_t.configuration in 

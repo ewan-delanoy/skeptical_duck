@@ -71,7 +71,7 @@ module Private = struct
        (commands_for_copying cs (compilables@noncompilables) destination) in
       let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[],destarchive) in 
       let faraway_fw1 = Fw_initialize.compute_and_store_modification_times faraway_config ([],compilables,noncompilables) in  
-      let faraway_fw =Fw_wrapper.overwrite_usual_compilable_file_if_it_exists faraway_fw1 
+      let faraway_fw =Fw_wrapper.overwrite_file_if_it_exists faraway_fw1 
                      Coma_constant.rootless_path_for_parametersfile 
                        (text_for_big_constants_file_in_other_world destination destbackupdir destgab) in 
       (modules_in_good_order,faraway_fw);; 
