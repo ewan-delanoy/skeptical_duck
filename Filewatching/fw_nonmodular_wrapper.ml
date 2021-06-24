@@ -398,6 +398,35 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
      } in 
      Automatic.reflect_replacements_in_diff fw2 reps ;;
 
+   let rename_files fw renaming_schemes =
+      let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw)  in 
+      let displacements_to_be_made = Image.image (
+        fun (path1,path2)->" mv "^s_root^(Dfn_rootless.to_line path1)^" "^
+        s_root^(Dfn_rootless.to_line path2)
+      ) renaming_schemes in 
+      let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
+      let fw2 = {
+        fw with 
+        Fw_nonmodular_wrapper_t.watched_files = Image.image (fun pair->
+           let (path,_)=pair in 
+           (match List.assoc_opt path renaming_schemes with
+           Some(new_path) -> 
+                let _ = (
+                  if  (Dfn_rootless.to_ending new_path) = Dfa_ending.ml
+                  then deal_with_initial_comment_if_needed fw new_path
+                ) in 
+                (new_path,recompute_mtime fw new_path)
+           | None -> pair)
+        ) (fw.Fw_nonmodular_wrapper_t.watched_files)  
+     } in 
+     Automatic.reflect_replacements_in_diff fw2 renaming_schemes ;;
+
+   let relocate_files_to fw rootless_paths new_subdir=
+     let renaming_schemes = Image.image (fun (path,_)->
+       (path,Dfn_rootless.relocate_to path new_subdir)
+     ) rootless_paths in 
+     rename_files fw renaming_schemes ;;
+
    module Initialization = struct 
 
       module Private = struct 
@@ -469,8 +498,9 @@ let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_files_to = Private.relocate_files_to;;
 
-
 let remove_files = Private.remove_files;;
+
+let rename_files = Private.rename_files;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 
