@@ -48,10 +48,10 @@ module Automatic = struct
       Concrete_object_t.Record items;;
    
    let configuration fw =
-       (fw.Fw_wrapper_t.parent).Fw_nonmodular_wrapper_t.configuration ;;
+       (fw.Fw_wrapper_t.parent).File_watcher_t.configuration ;;
 
    
-   let watched_files fw = (fw.Fw_wrapper_t.parent).Fw_nonmodular_wrapper_t.watched_files ;;
+   let watched_files fw = (fw.Fw_wrapper_t.parent).File_watcher_t.watched_files ;;
    
    let partition_for_pairs parent all_files =
       let (c_files,nc_files) = List.partition (

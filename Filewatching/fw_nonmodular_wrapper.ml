@@ -38,7 +38,7 @@ module Automatic = struct
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
-         Fw_nonmodular_wrapper_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
+         File_watcher_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
          watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
          last_noticed_changes = Dircopy_diff.of_concrete_object (g last_noticed_changes_label);
       };; 
@@ -46,25 +46,25 @@ module Automatic = struct
    let to_concrete_object fw=
       let items= 
       [
-       configuration_label, Fw_configuration.to_concrete_object fw.Fw_nonmodular_wrapper_t.configuration;
-       watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_nonmodular_wrapper_t.watched_files;
-       last_noticed_changes_label, Dircopy_diff.to_concrete_object fw.Fw_nonmodular_wrapper_t.last_noticed_changes
+       configuration_label, Fw_configuration.to_concrete_object fw.File_watcher_t.configuration;
+       watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.File_watcher_t.watched_files;
+       last_noticed_changes_label, Dircopy_diff.to_concrete_object fw.File_watcher_t.last_noticed_changes
       ]  in
       Concrete_object_t.Record items;;
    
    
    end ;;
    
-   let configuration fw = fw.Fw_nonmodular_wrapper_t.configuration ;;
+   let configuration fw = fw.File_watcher_t.configuration ;;
    
    let get_content fw rootless = 
-       let root = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration) in 
+       let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
        let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
        Io.read_whole_file(Absolute_path.of_string s_ap);;     
            
    let get_mtime_or_zero_if_file_is_nonregistered fw rootless =
       match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-       (fw.Fw_nonmodular_wrapper_t.watched_files) with 
+       (fw.File_watcher_t.watched_files) with 
       None -> "0."
      |Some(_,mtime)-> mtime  ;; 
    
@@ -72,59 +72,59 @@ module Automatic = struct
    
    let get_mtime fw rootless  =
      match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-     (fw.Fw_nonmodular_wrapper_t.watched_files) with 
+     (fw.File_watcher_t.watched_files) with 
       None -> raise (Rootless_not_found(rootless))
      |Some(_,mtime)-> mtime  ;; 
    
-   let last_noticed_changes fw = fw.Fw_nonmodular_wrapper_t.last_noticed_changes ;;
+   let last_noticed_changes fw = fw.File_watcher_t.last_noticed_changes ;;
 
    let of_concrete_object = Private.of_concrete_object;;
    
    let set_configuration fw new_config = {
       fw with 
-       Fw_nonmodular_wrapper_t.configuration = new_config ;
+       File_watcher_t.configuration = new_config ;
    } ;;
 
    let set_last_noticed_changes fw new_lnc = {
       fw with 
-       Fw_nonmodular_wrapper_t.last_noticed_changes = new_lnc ;
+       File_watcher_t.last_noticed_changes = new_lnc ;
    } ;;
 
    let to_concrete_object = Private.to_concrete_object;;
    
    let reflect_changes_in_diff fw l= {
       fw with 
-      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+      File_watcher_t.last_noticed_changes = 
         Dircopy_diff.add_changes 
-          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) l
+          (fw.File_watcher_t.last_noticed_changes) l
    } ;;
 
    let reflect_creations_in_diff fw created_ones= {
       fw with 
-      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+      File_watcher_t.last_noticed_changes = 
         Dircopy_diff.create 
-          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) created_ones
+          (fw.File_watcher_t.last_noticed_changes) created_ones
    } ;;
    
    
    let reflect_destructions_in_diff fw destroyed_ones = {
       fw with 
-      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+      File_watcher_t.last_noticed_changes = 
         Dircopy_diff.destroy  
-          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) destroyed_ones 
+          (fw.File_watcher_t.last_noticed_changes) destroyed_ones 
    } ;;
    
    
    let reflect_replacements_in_diff fw reps= {
       fw with 
-      Fw_nonmodular_wrapper_t.last_noticed_changes = 
+      File_watcher_t.last_noticed_changes = 
         Dircopy_diff.replace 
-          (fw.Fw_nonmodular_wrapper_t.last_noticed_changes) reps
+          (fw.File_watcher_t.last_noticed_changes) reps
    } ;;
    
-   let root fw = Fw_configuration.root (fw.Fw_nonmodular_wrapper_t.configuration);;
+   let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
    
-   let watched_files fw = fw.Fw_nonmodular_wrapper_t.watched_files ;;
+   let watched_files fw = fw.File_watcher_t.watched_files ;;
 
 end ;;   
 
@@ -158,8 +158,8 @@ let update_in_list_of_pairs fw  to_be_updated pairs  =
 
 let update_some_files fw (w_files,sw_files) = {
     fw with 
-      Fw_nonmodular_wrapper_t.watched_files = update_in_list_of_pairs fw w_files 
-      (fw.Fw_nonmodular_wrapper_t.watched_files) ;
+      File_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
+      (fw.File_watcher_t.watched_files) ;
 } ;;
 
 
@@ -171,9 +171,9 @@ let remove_files fw rootless_paths=
     let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
     let fw2 ={
       fw with 
-      Fw_nonmodular_wrapper_t.watched_files = List.filter (fun (path,_)->
+      File_watcher_t.watched_files = List.filter (fun (path,_)->
          not(List.mem path rootless_paths)
-      ) (fw.Fw_nonmodular_wrapper_t.watched_files)  ;
+      ) (fw.File_watcher_t.watched_files)  ;
    } in 
    Automatic.reflect_destructions_in_diff fw2 rootless_paths ;;
 
@@ -191,8 +191,8 @@ let register_rootless_paths fw rootless_paths=
    else 
    let fw2=  {
       fw with 
-      Fw_nonmodular_wrapper_t.watched_files =  
-        (fw.Fw_nonmodular_wrapper_t.watched_files)@
+      File_watcher_t.watched_files =  
+        (fw.File_watcher_t.watched_files)@
           (Image.image (recompute_all_info fw) rootless_paths)  ;
     }  in 
     Automatic.reflect_creations_in_diff fw2 rootless_paths;;
@@ -231,10 +231,10 @@ let replace_string fw (old_string,new_string)=
     let ref_for_changed_files=ref[]  in 
     let (new_files,changed_files)=
         helper_during_string_replacement 
-           fw (old_string,new_string) ref_for_changed_files fw.Fw_nonmodular_wrapper_t.watched_files in 
+           fw (old_string,new_string) ref_for_changed_files fw.File_watcher_t.watched_files in 
     let new_fw ={
        fw with
-       Fw_nonmodular_wrapper_t.watched_files = new_files ;
+       File_watcher_t.watched_files = new_files ;
     }  in 
     (new_fw,changed_files);;         
        
@@ -249,10 +249,10 @@ let rename_value_inside_rootless fw (old_name,new_name) preceding_files rootless
          if path = rootless_path 
          then recompute_all_info fw path
          else pair 
-   ) (fw.Fw_nonmodular_wrapper_t.watched_files) in 
+   ) (fw.File_watcher_t.watched_files) in 
    {
       fw with 
-       Fw_nonmodular_wrapper_t.watched_files = new_watched_files
+       File_watcher_t.watched_files = new_watched_files
    };;  
 
 let ref_for_subdirectory_renaming = ref [];;
@@ -283,10 +283,10 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
     and new_full_path = s_root^s_new_subdir in 
     let cmd=" mv "^old_full_path^" "^new_full_path in 
         let _=Unix_command.hardcore_uc cmd in 
-    let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.Fw_nonmodular_wrapper_t.watched_files) in 
+    let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.File_watcher_t.watched_files) in 
    let fw2 = {
       fw with
-      Fw_nonmodular_wrapper_t.watched_files = files  ;
+      File_watcher_t.watched_files = files  ;
    } in 
    Automatic.reflect_replacements_in_diff fw2 reps;;   
 
@@ -326,10 +326,10 @@ let helper2_during_inspection fw accu l_pairs =
 let inspect_and_update fw = 
     let ref_for_files=ref[]  in 
     let (new_files,changed_files)=
-        helper2_during_inspection fw ref_for_files fw.Fw_nonmodular_wrapper_t.watched_files in 
+        helper2_during_inspection fw ref_for_files fw.File_watcher_t.watched_files in 
     let fw2 ={
        fw with
-       Fw_nonmodular_wrapper_t.watched_files         = new_files ;
+       File_watcher_t.watched_files         = new_files ;
     }  in 
     let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
     (new_fw,changed_files);;         
@@ -361,10 +361,10 @@ let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
    let changed_files=ref[]  in 
    let new_files = Image.image (
       apply_text_transformation_on_pair fw tr changed_files selected_files_opt
-   )  fw.Fw_nonmodular_wrapper_t.watched_files  in 
+   )  fw.File_watcher_t.watched_files  in 
    let fw2 ={
       fw with
-      Fw_nonmodular_wrapper_t.watched_files = new_files;
+      File_watcher_t.watched_files = new_files;
    } in 
    let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files) in 
    (fw3,!changed_files);;    
@@ -394,12 +394,12 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
 
    let overwrite_file_if_it_exists fw rootless new_content =
       let root = Automatic.root fw in 
-      if List.exists ( fun (r,_)->r=rootless ) fw.Fw_nonmodular_wrapper_t.watched_files 
+      if List.exists ( fun (r,_)->r=rootless ) fw.File_watcher_t.watched_files 
       then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
            let _=Io.overwrite_with ap new_content in 
            ({
               fw with 
-              Fw_nonmodular_wrapper_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.Fw_nonmodular_wrapper_t.watched_files);
+              File_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.File_watcher_t.watched_files);
            },true)
       else (fw,false);;
 
@@ -412,7 +412,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
       let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
       let fw2 = {
         fw with 
-        Fw_nonmodular_wrapper_t.watched_files = Image.image (fun pair->
+        File_watcher_t.watched_files = Image.image (fun pair->
            let (path,_)=pair in 
            (match List.assoc_opt path renaming_schemes with
            Some(new_path) -> 
@@ -422,7 +422,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
                 ) in 
                 (new_path,recompute_mtime fw new_path)
            | None -> pair)
-        ) (fw.Fw_nonmodular_wrapper_t.watched_files)  
+        ) (fw.File_watcher_t.watched_files)  
      } in 
      Automatic.reflect_replacements_in_diff fw2 renaming_schemes ;;
 
@@ -455,7 +455,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
               (path,mtime)
            ) in 
              {
-               Fw_nonmodular_wrapper_t.configuration = config;
+               File_watcher_t.configuration = config;
                watched_files = Image.image compute_info to_be_watched;
                last_noticed_changes = Dircopy_diff.empty_one;
              };;
@@ -472,7 +472,7 @@ let apply_text_transformation_on_all_files = Private.apply_text_transformation_o
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
 
 let empty_one config= {
-   Fw_nonmodular_wrapper_t.configuration = config;
+   File_watcher_t.configuration = config;
    watched_files = [];
    last_noticed_changes = Dircopy_diff.empty_one;
 };; 
@@ -492,9 +492,9 @@ let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 
 let reflect_latest_changes_in_github fw opt_msg=
-   let config = fw.Fw_nonmodular_wrapper_t.configuration in 
-   let _= Reflect_change_in_github.backup config fw.Fw_nonmodular_wrapper_t.last_noticed_changes opt_msg in 
-   {fw with Fw_nonmodular_wrapper_t.last_noticed_changes = Dircopy_diff.empty_one} ;; 
+   let config = fw.File_watcher_t.configuration in 
+   let _= Reflect_change_in_github.backup config fw.File_watcher_t.last_noticed_changes opt_msg in 
+   {fw with File_watcher_t.last_noticed_changes = Dircopy_diff.empty_one} ;; 
 
 
 let register_rootless_paths = Private.register_rootless_paths;;

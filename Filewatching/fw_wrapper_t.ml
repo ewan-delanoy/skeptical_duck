@@ -8,6 +8,6 @@ defined in  the configuration parameter
 *)
 
 type t ={
-  parent : Fw_nonmodular_wrapper_t.t ;
+  parent : File_watcher_t.t ;
 };;
 
