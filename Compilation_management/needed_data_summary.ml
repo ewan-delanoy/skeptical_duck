@@ -39,7 +39,7 @@ let expand cs summary =
                   (Image.image Dfn_endingless.to_subdirectory all_needed_elesses) 
         and all_needed_modules = 
          Image.image Dfn_endingless.to_module all_needed_elesses in      
-        let original_noncompilables = Fw_wrapper.noncompilable_files fw in
+        let original_noncompilables = Fw_with_module_linking.noncompilable_files fw in
         (*
            we do not know a priori if the noncompilables in other subdirectories
            are needed, so we include them all by default 
@@ -53,7 +53,7 @@ let expand cs summary =
             ) original_noncompilables) in        
         let compilables= List.filter (
             fun rless->List.mem (Dfn_rootless.to_module rless) all_needed_modules 
-        ) (Fw_wrapper.usual_compilable_files fw) in
+        ) (Fw_with_module_linking.usual_compilable_files fw) in
         (all_needed_modules,compilables,noncompilables);;
 
 
