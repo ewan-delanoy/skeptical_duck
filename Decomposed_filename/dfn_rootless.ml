@@ -53,7 +53,13 @@ let pair_list_to_concrete_object l=
 
 
 let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
-     
+
+let rename_module_as  (old_m,new_m) old_path=
+   let (Dfn_rootless_t.J(s,m,e))=old_path in 
+   if m=old_m
+   then Dfn_rootless_t.J(s,new_m,e)
+   else old_path;;
+
 let rename_subdirectory_as  (old_subdir,new_subdir) old_path=
    let (Dfn_rootless_t.J(s,m,e))=old_path in 
    if s=old_subdir
