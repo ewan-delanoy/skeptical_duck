@@ -36,13 +36,13 @@ module Automatic = struct
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
-         Fw_wrapper_t.parent = Fw_nonmodular_wrapper.of_concrete_object(g parent_label);
+         Fw_wrapper_t.parent = File_watcher.of_concrete_object(g parent_label);
       };; 
    
    let to_concrete_object fw=
       let items= 
       [
-       parent_label, Fw_nonmodular_wrapper.to_concrete_object fw.Fw_wrapper_t.parent;
+       parent_label, File_watcher.to_concrete_object fw.Fw_wrapper_t.parent;
       
       ]  in
       Concrete_object_t.Record items;;
@@ -58,7 +58,7 @@ module Automatic = struct
           fun (rl,_)->
             Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
       )  all_files in 
-      let config = Fw_nonmodular_wrapper.Automatic.configuration parent in
+      let config = File_watcher.Automatic.configuration parent in
       let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
       let is_archived = (fun (rl,_)->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
       let (a_files,u_files) = List.partition is_archived  c_files in 
@@ -75,21 +75,21 @@ module Automatic = struct
    end ;;
 
    let configuration      = Private.configuration ;;
-   let get_content fw     = Fw_nonmodular_wrapper.get_content 
+   let get_content fw     = File_watcher.get_content 
                                   (Private.parent fw) ;;
-   let get_mtime fw       = Fw_nonmodular_wrapper.get_mtime 
+   let get_mtime fw       = File_watcher.get_mtime 
                                   (Private.parent fw) ;; 
    let get_mtime_or_zero_if_file_is_nonregistered fw  = 
-                       Fw_nonmodular_wrapper.get_mtime_or_zero_if_file_is_nonregistered
+                       File_watcher.get_mtime_or_zero_if_file_is_nonregistered
                                   (Private.parent fw) ;;     
-   let last_noticed_changes fw = Fw_nonmodular_wrapper.Automatic.last_noticed_changes
+   let last_noticed_changes fw = File_watcher.Automatic.last_noticed_changes
                                   (Private.parent fw) ;;                                                                                         
    let of_concrete_object = Private.of_concrete_object;;
    let parent             = Private.parent ;;
-   let root fw     = Fw_nonmodular_wrapper.Automatic.root (Private.parent fw) ;;
+   let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
    let set_configuration fw new_config = 
       let old_parent = fw.Fw_wrapper_t.parent in
-      let new_parent = Fw_nonmodular_wrapper.Automatic.set_configuration old_parent new_config in 
+      let new_parent = File_watcher.Automatic.set_configuration old_parent new_config in 
       Private.usual_update new_parent
       (* {
       fw with 
@@ -97,7 +97,7 @@ module Automatic = struct
       } *);;
    let set_last_noticed_changes fw new_config = 
       let old_parent = fw.Fw_wrapper_t.parent in
-      let new_parent = Fw_nonmodular_wrapper.Automatic.set_last_noticed_changes old_parent new_config in 
+      let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
       Private.usual_update new_parent
       (* {
       fw with 
@@ -119,7 +119,7 @@ module Private = struct
           fun rl->
             Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
       )  all_files in 
-      let config = Fw_nonmodular_wrapper.Automatic.configuration parent in
+      let config = File_watcher.Automatic.configuration parent in
       let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
       let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
       let (a_files,u_files) = List.partition is_archived  c_files in 
@@ -127,13 +127,13 @@ module Private = struct
 
 let noncompilable_files fw  =
       let parent = Automatic.parent fw in 
-      let all_files = Image.image fst (Fw_nonmodular_wrapper.Automatic.watched_files parent) in 
+      let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
       let (_,_,nc_files) = partition_for_singles parent all_files in 
       nc_files ;;
 
 let usual_compilable_files fw  =
    let parent = Automatic.parent fw in 
-   let all_files = Image.image fst (Fw_nonmodular_wrapper.Automatic.watched_files parent) in 
+   let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
    let (_,u_files,_) = partition_for_singles parent all_files in 
    u_files ;;
 
@@ -142,27 +142,27 @@ let forget_modules fw mod_names =
    let the_files = List.filter (
      fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
    ) (usual_compilable_files fw) in    
-   let new_parent = Fw_nonmodular_wrapper.remove_files old_parent the_files in
+   let new_parent = File_watcher.remove_files old_parent the_files in
    Automatic.usual_update new_parent;;
 
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw in 
-   let (new_parent,changed_files) = Fw_nonmodular_wrapper.inspect_and_update old_parent in
+   let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
    (Automatic.usual_update new_parent,
     partition_for_singles new_parent changed_files);;
 
 let of_configuration config =   
-    let mother = Fw_nonmodular_wrapper.of_configuration config in 
+    let mother = File_watcher.of_configuration config in 
     Automatic.usual_update mother ;;
 
 let of_configuration_and_list config files=   
-      let mother = Fw_nonmodular_wrapper.of_configuration_and_list config files  in 
+      let mother = File_watcher.of_configuration_and_list config files  in 
       Automatic.usual_update mother ;;
 
 let overwrite_file_if_it_exists fw rootless new_content = 
    let old_parent = Automatic.parent fw in 
    let (new_parent,change_made) = 
-      Fw_nonmodular_wrapper.overwrite_file_if_it_exists 
+      File_watcher.overwrite_file_if_it_exists 
         old_parent rootless new_content in 
    if change_made 
    then Automatic.usual_update new_parent
@@ -170,12 +170,12 @@ let overwrite_file_if_it_exists fw rootless new_content =
 
 let reflect_latest_changes_in_github fw opt_msg=  
    let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_nonmodular_wrapper.reflect_latest_changes_in_github old_parent opt_msg in 
+   let new_parent = File_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
    Automatic.usual_update new_parent ;;   
 
 let register_rootless_paths fw rootless_paths= 
    let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_nonmodular_wrapper.register_rootless_paths 
+   let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
    (Automatic.usual_update new_parent,
      partition_for_singles new_parent rootless_paths ) ;;    
@@ -185,13 +185,13 @@ let relocate_module_to fw mod_name new_subdir=
       fun path-> (Dfn_rootless.to_module path)=mod_name 
    ) (usual_compilable_files fw) in 
    let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_nonmodular_wrapper.relocate_files_to 
+   let new_parent = File_watcher.relocate_files_to 
         old_parent the_files new_subdir in 
    Automatic.usual_update new_parent ;;  
 
 let remove_files fw rootless_paths=   
    let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_nonmodular_wrapper.remove_files 
+   let new_parent = File_watcher.remove_files 
       old_parent rootless_paths in 
    Automatic.usual_update new_parent ;;
 
@@ -210,12 +210,12 @@ let rename_module_on_filename_level fw (old_module,new_module) =
       ) replacements  in
       let _ =Unix_command.conditional_multiple_uc l_cmds in  
       let old_parent = Automatic.parent fw in 
-      let new_parent = Fw_nonmodular_wrapper.rename_files  old_parent replacements in 
+      let new_parent = File_watcher.rename_files  old_parent replacements in 
       Automatic.usual_update new_parent ;;  
       
 let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
    let old_parent = Automatic.parent fw in 
-   let (new_parent,changed_files) = Fw_nonmodular_wrapper.apply_text_transformation_on_some_files old_parent
+   let (new_parent,changed_files) = File_watcher.apply_text_transformation_on_some_files old_parent
       (Look_for_module_names.change_module_name_in_ml_ocamlcode  
       old_module new_module)  files_to_be_rewritten in 
    (Automatic.usual_update new_parent,changed_files) ;;  
@@ -227,19 +227,19 @@ let rename_module_on_both_levels fw old_module new_module files_to_be_rewritten=
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_nonmodular_wrapper.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
+   let new_parent = File_watcher.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
    Automatic.usual_update new_parent ;;   
 
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw in 
-   let (new_parent,changed_files) = Fw_nonmodular_wrapper.replace_string old_parent (replacee,replacer) in
+   let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
    (Automatic.usual_update new_parent,
     partition_for_singles new_parent changed_files);;   
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
    let old_parent = Automatic.parent fw in 
    let (new_parent,changed_files) = 
-        Fw_nonmodular_wrapper.replace_value 
+        File_watcher.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
    (Automatic.usual_update new_parent,
     partition_for_singles new_parent changed_files);;   
@@ -251,7 +251,7 @@ end;;
 let canonical_tripartition = Private.partition_for_singles ;;
 
 let empty_one config= {
-   Fw_wrapper_t.parent = Fw_nonmodular_wrapper.empty_one config;
+   Fw_wrapper_t.parent = File_watcher.empty_one config;
 };; 
 
 let forget_modules = Private.forget_modules ;;
