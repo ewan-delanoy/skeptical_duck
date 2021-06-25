@@ -39,27 +39,21 @@ let expand cs summary =
                   (Image.image Dfn_endingless.to_subdirectory all_needed_elesses) 
         and all_needed_modules = 
          Image.image Dfn_endingless.to_module all_needed_elesses in      
-        let original_noncompilables = fw.Fw_wrapper_t.noncompilable_files in
+        let original_noncompilables = Fw_wrapper.noncompilable_files fw in
         (*
            we do not know a priori if the noncompilables in other subdirectories
            are needed, so we include them all by default 
         *)      
         let noncompilables =
             (match summary with 
-             Needed_data_summary_t.Everything -> Image.image fst original_noncompilables
+             Needed_data_summary_t.Everything -> original_noncompilables
             |Selection(needed_modules,needed_subdirs)-> 
-              Option.filter_and_unpack (
-                fun (rless,_)->
-                    if List.mem (Dfn_rootless.to_subdirectory rless) all_needed_subdirs 
-                    then Some rless
-                    else None    
+              List.filter (
+                fun rless-> List.mem (Dfn_rootless.to_subdirectory rless) all_needed_subdirs 
             ) original_noncompilables) in        
-        let compilables= Option.filter_and_unpack (
-            fun (rless,_)->
-                if List.mem (Dfn_rootless.to_module rless) all_needed_modules 
-                then Some rless
-                else None    
-        ) (fw.Fw_wrapper_t.usual_compilable_files) in
+        let compilables= List.filter (
+            fun rless->List.mem (Dfn_rootless.to_module rless) all_needed_modules 
+        ) (Fw_wrapper.usual_compilable_files fw) in
         (all_needed_modules,compilables,noncompilables);;
 
 

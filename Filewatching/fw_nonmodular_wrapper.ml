@@ -427,7 +427,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
      Automatic.reflect_replacements_in_diff fw2 renaming_schemes ;;
 
    let relocate_files_to fw rootless_paths new_subdir=
-     let renaming_schemes = Image.image (fun (path,_)->
+     let renaming_schemes = Image.image (fun path->
        (path,Dfn_rootless.relocate_to path new_subdir)
      ) rootless_paths in 
      rename_files fw renaming_schemes ;;
