@@ -36,22 +36,22 @@ module Automatic = struct
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
-         Fw_wrapper_t.parent = File_watcher.of_concrete_object(g parent_label);
+         Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
       };; 
    
    let to_concrete_object fw=
       let items= 
       [
-       parent_label, File_watcher.to_concrete_object fw.Fw_wrapper_t.parent;
+       parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
       
       ]  in
       Concrete_object_t.Record items;;
    
    let configuration fw =
-       (fw.Fw_wrapper_t.parent).File_watcher_t.configuration ;;
+       (fw.Fw_with_module_linking_t.parent).File_watcher_t.configuration ;;
 
    
-   let watched_files fw = (fw.Fw_wrapper_t.parent).File_watcher_t.watched_files ;;
+   let watched_files fw = (fw.Fw_with_module_linking_t.parent).File_watcher_t.watched_files ;;
    
    let partition_for_pairs parent all_files =
       let (c_files,nc_files) = List.partition (
@@ -66,11 +66,11 @@ module Automatic = struct
 
    let usual_update mother =
    {
-      Fw_wrapper_t.parent = mother ;
+      Fw_with_module_linking_t.parent = mother ;
    } ;;  
       
       
-   let parent fw = fw.Fw_wrapper_t.parent ;;
+   let parent fw = fw.Fw_with_module_linking_t.parent ;;
 
    end ;;
 
@@ -88,7 +88,7 @@ module Automatic = struct
    let parent             = Private.parent ;;
    let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
    let set_configuration fw new_config = 
-      let old_parent = fw.Fw_wrapper_t.parent in
+      let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_configuration old_parent new_config in 
       Private.usual_update new_parent
       (* {
@@ -96,7 +96,7 @@ module Automatic = struct
        Fw_wrapper_t.parent = new_parent;
       } *);;
    let set_last_noticed_changes fw new_config = 
-      let old_parent = fw.Fw_wrapper_t.parent in
+      let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
       Private.usual_update new_parent
       (* {
@@ -251,7 +251,7 @@ end;;
 let canonical_tripartition = Private.partition_for_singles ;;
 
 let empty_one config= {
-   Fw_wrapper_t.parent = File_watcher.empty_one config;
+   Fw_with_module_linking_t.parent = File_watcher.empty_one config;
 };; 
 
 let forget_modules = Private.forget_modules ;;
