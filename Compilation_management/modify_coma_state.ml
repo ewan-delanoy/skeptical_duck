@@ -52,7 +52,7 @@ module Physical = struct
    ) (Coma_state.ordered_list_of_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let old_fw = Coma_state.frontier_with_unix_world cs in 
-     let new_fw = Fw_wrapper.rename_module old_fw old_nm new_nm all_acolytes_below in 
+     let new_fw = Fw_wrapper.rename_module_on_filename_level_and_in_files old_fw old_nm new_nm all_acolytes_below in 
      Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
