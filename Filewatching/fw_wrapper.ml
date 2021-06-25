@@ -409,10 +409,13 @@ let helper2_inside_module_renaming_in_filename fw new_module rootless_to_be_rena
   let (Dfn_rootless_t.J(s,m,e))=rootless_to_be_renamed in 
   (rootless_to_be_renamed,Dfn_rootless_t.J(s,new_module,e));;
 
-let rename_module_in_filename_only fw rootlesses_to_be_renamed new_module =
+let rename_module_in_filename_only fw old_module new_module =
+   let acolytes = Option.filter_and_unpack (
+       fun (rl,_) -> if (Dfn_rootless.to_module rl) = old_module then Some rl else None 
+   ) fw.Fw_wrapper_t.usual_compilable_files in
    let s_new_module = Dfa_module.to_line new_module in 
-   let l_cmds = Image.image (helper1_inside_module_renaming_in_filename fw s_new_module) rootlesses_to_be_renamed in 
-   let replacements = Image.image (helper2_inside_module_renaming_in_filename fw new_module) rootlesses_to_be_renamed  in            
+   let l_cmds = Image.image (helper1_inside_module_renaming_in_filename fw s_new_module) acolytes in 
+   let replacements = Image.image (helper2_inside_module_renaming_in_filename fw new_module) acolytes  in            
    let _ =Unix_command.conditional_multiple_uc l_cmds in  
    let old_compilable_files = fw.Fw_wrapper_t.usual_compilable_files  in    
    let new_compilable_files = Image.image (
@@ -452,9 +455,8 @@ let rename_module_in_files fw (old_module,new_module) files_to_be_rewritten =
       
 
 
-let rename_module_everywhere fw rootlesses_to_be_renamed new_module files_to_be_rewritten=
-   let (Dfn_rootless_t.J(_,old_module,_))=List.hd rootlesses_to_be_renamed in
-   let fw2=rename_module_in_filename_only fw rootlesses_to_be_renamed new_module in 
+let rename_module_everywhere fw old_module new_module files_to_be_rewritten=
+   let fw2=rename_module_in_filename_only fw old_module new_module in 
    let fw3=rename_module_in_files fw2 (old_module,new_module) files_to_be_rewritten in 
    fw3;;
 

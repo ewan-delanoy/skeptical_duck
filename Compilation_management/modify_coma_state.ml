@@ -44,7 +44,6 @@ module Physical = struct
    let rename_module cs old_middle_name new_nonslashed_name=
      let old_nm=Dfn_middle.to_module old_middle_name in
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
-     let old_acolytes=Coma_state.acolytes_at_module cs old_nm in
      let separated_acolytes_below=Option.filter_and_unpack(
        fun mn->
         if List.mem old_nm (Coma_state.ancestors_at_module cs mn)
@@ -52,9 +51,8 @@ module Physical = struct
        else None
    ) (Coma_state.ordered_list_of_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
-     let old_acolyte_paths=Image.image Dfn_full.to_rootless old_acolytes in 
      let old_fw = Coma_state.frontier_with_unix_world cs in 
-     let new_fw = Fw_wrapper.rename_module old_fw old_acolyte_paths new_nm all_acolytes_below in 
+     let new_fw = Fw_wrapper.rename_module old_fw old_nm new_nm all_acolytes_below in 
      Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
