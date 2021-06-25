@@ -18,7 +18,7 @@ module Automatic = struct
   
   
   let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
-  let configuration cs=(frontier_with_unix_world cs).Fw_wrapper_t.configuration;;
+  let configuration cs=Fw_wrapper.Automatic.configuration (frontier_with_unix_world cs) ;;
   let root cs= Fw_configuration.root (configuration cs);;
   let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
   let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
@@ -97,9 +97,9 @@ module Automatic = struct
   
   let set_push_after_backup cs bowl = let ccs=of_t cs in 
        let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
-       let old_config = old_frontier.Fw_wrapper_t.configuration in 
+       let old_config = Fw_wrapper.Automatic.configuration old_frontier in 
        let new_config = {old_config with Fw_configuration_t.gitpush_after_backup=bowl } in 
-       let new_frontier = {old_frontier with Fw_wrapper_t.configuration = new_config} in 
+       let new_frontier = Fw_wrapper.Automatic.set_configuration old_frontier new_config  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
   
@@ -189,14 +189,12 @@ module Automatic = struct
   
   let impose_last_changes cs diff =
      let old_fw = frontier_with_unix_world cs in 
-     let old_diff = old_fw.Fw_wrapper_t.last_noticed_changes in 
+     let old_diff = Fw_wrapper.Automatic.last_noticed_changes old_fw in 
      if not(Dircopy_diff.is_empty old_diff)
      then raise(Impose_last_change_exn(old_diff))
      else 
-     let new_fw = {
-         old_fw with 
-         Fw_wrapper_t.last_noticed_changes = diff 
-     } in 
+     let new_fw = 
+      Fw_wrapper.Automatic.set_last_noticed_changes old_fw diff in  
      set_frontier_with_unix_world cs new_fw ;;
   
   let modify_all_subdirs cs f =
@@ -2235,7 +2233,7 @@ let test_for_foreign root ap =
       ;;
 
 let census_of_foreigners cs=
-   let config = (cs.Coma_state_t.frontier_with_unix_world).Fw_wrapper_t.configuration in 
+   let config = Fw_wrapper.Automatic.configuration (cs.Coma_state_t.frontier_with_unix_world) in 
    let  the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 

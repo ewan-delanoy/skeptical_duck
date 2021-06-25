@@ -29,7 +29,7 @@ module Physical = struct
       let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
-      let fw = Fw_initialize.init config in
+      let fw = Fw_wrapper.of_configuration config in
       let cs0 = Coma_state.empty_one config in  
       Coma_state.set_frontier_with_unix_world cs0 fw;;
    
@@ -52,8 +52,8 @@ module Physical = struct
    ) (Coma_state.ordered_list_of_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let old_fw = Coma_state.frontier_with_unix_world cs in 
-     let new_fw = Fw_wrapper.rename_module_on_filename_level_and_in_files old_fw old_nm new_nm all_acolytes_below in 
-     Coma_state.set_frontier_with_unix_world cs new_fw ;;
+     let (new_fw,changed_dependencies) = Fw_wrapper.rename_module_on_filename_level_and_in_files old_fw old_nm new_nm all_acolytes_below in 
+     (Coma_state.set_frontier_with_unix_world cs new_fw,changed_dependencies) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
       let new_fw=Fw_wrapper.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
@@ -318,7 +318,7 @@ module Physical = struct
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
-      let cs2=Physical.rename_module cs old_middle_name new_nonslashed_name in
+      let (cs2,_)=Physical.rename_module cs old_middle_name new_nonslashed_name in
       Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
    
    let rename_subdirectory cs old_subdir new_subdir=

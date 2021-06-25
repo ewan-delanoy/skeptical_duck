@@ -4,7 +4,6 @@
 
 *)
 
-
 let compact_replacer = 
   Dfn_rootless.of_line (
   (Dfa_subdirectory.connectable_to_subpath 
@@ -42,7 +41,7 @@ let watcher_ref = ref (Fw_nonmodular_wrapper.empty_one config);;
 let refresh () =
     let diff = Check_ocaml_dircopy.check config in 
     let _ = Reflect_change_in_github.backup config diff None in 
-    watcher_ref:=(Fw_nonmodular_wrapper.initialize config) ;;
+    watcher_ref:=(Fw_nonmodular_wrapper.of_configuration config) ;;
 
 let update opt_msg =
     let old_fw = (!watcher_ref) in 

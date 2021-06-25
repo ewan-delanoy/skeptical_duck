@@ -75,7 +75,20 @@ module Automatic = struct
       None -> raise (Rootless_not_found(rootless))
      |Some(_,mtime)-> mtime  ;; 
    
+   let last_noticed_changes fw = fw.Fw_nonmodular_wrapper_t.last_noticed_changes ;;
+
    let of_concrete_object = Private.of_concrete_object;;
+   
+   let set_configuration fw new_config = {
+      fw with 
+       Fw_nonmodular_wrapper_t.configuration = new_config ;
+   } ;;
+
+   let set_last_noticed_changes fw new_lnc = {
+      fw with 
+       Fw_nonmodular_wrapper_t.last_noticed_changes = new_lnc ;
+   } ;;
+
    let to_concrete_object = Private.to_concrete_object;;
    
    let reflect_changes_in_diff fw l= {
@@ -418,9 +431,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
      ) rootless_paths in 
      rename_files fw renaming_schemes ;;
 
-   module Initialization = struct 
-
-      module Private = struct 
+   
         
         let first_init config =
            let the_root = config.Fw_configuration_t.root in 
@@ -432,9 +443,8 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
            ) list1 in
            List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
         
-        end ;;
         
-        let compute_and_store_modification_times config to_be_watched =
+        let of_configuration_and_list config to_be_watched =
             let the_root = config.Fw_configuration_t.root in  
             let compute_info=( fun path->
               let s_root = Dfa_root.connectable_to_subpath the_root
@@ -449,13 +459,10 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
                last_noticed_changes = Dircopy_diff.empty_one;
              };;
         
-        let init config = 
-           let to_be_watched = Private.first_init config in 
-           compute_and_store_modification_times config to_be_watched ;;
+        let of_configuration config = 
+           let to_be_watched = first_init config in 
+           of_configuration_and_list config to_be_watched ;;
         
-        
-    
-    end ;;  
 
 
 end;;
@@ -473,11 +480,13 @@ let get_content = Automatic.get_content ;;
 let get_mtime   = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
-let initialize = Private.Initialization.init ;;
+
 
 let inspect_and_update = Private.inspect_and_update;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
+let of_configuration = Private.of_configuration ;;
+let of_configuration_and_list = Private.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 

@@ -4,6 +4,7 @@
 
 *)
 
+(*
 module Private = struct 
 
   let first_init config =
@@ -50,4 +51,4 @@ module Private = struct
   let init config = 
      let (ac_to_be_watched,uc_to_be_watched,noncompilables) = Private.first_init config in 
      compute_and_store_modification_times config (ac_to_be_watched,uc_to_be_watched,noncompilables);;
-  
+*)  
