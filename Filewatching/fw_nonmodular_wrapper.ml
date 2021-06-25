@@ -246,7 +246,7 @@ let ref_for_subdirectory_renaming = ref [];;
 let remember_during_subdirectory_renaming pair =
    (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
 
-let helper1_during_subdirectory_renaming fw (old_subdir,new_subdir) pair=
+let rename_subdirectory_on_pair fw (old_subdir,new_subdir) pair=
    let (rootless_path,_)=pair in 
    match Dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
    Some(new_rootless_path) -> 
@@ -256,9 +256,9 @@ let helper1_during_subdirectory_renaming fw (old_subdir,new_subdir) pair=
         recompute_all_info fw new_rootless_path
    |None -> pair;;
 
-let helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) l_pairs =
+let rename_subdirectory_on_pairs fw (old_subdir,new_subdir) l_pairs =
      let _=(ref_for_subdirectory_renaming := []) in 
-     let comp=Image.image (helper1_during_subdirectory_renaming fw (old_subdir,new_subdir)) l_pairs in 
+     let comp=Image.image (rename_subdirectory_on_pair fw (old_subdir,new_subdir)) l_pairs in 
      (comp,List.rev(!ref_for_subdirectory_renaming));;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=
@@ -269,7 +269,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
     and new_full_path = s_root^s_new_subdir in 
     let cmd=" mv "^old_full_path^" "^new_full_path in 
         let _=Unix_command.hardcore_uc cmd in 
-    let (files,reps)   =  helper2_during_subdirectory_renaming fw (old_subdir,new_subdir) (fw.Fw_nonmodular_wrapper_t.watched_files) in 
+    let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.Fw_nonmodular_wrapper_t.watched_files) in 
    let fw2 = {
       fw with
       Fw_nonmodular_wrapper_t.watched_files = files  ;
