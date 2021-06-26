@@ -102,27 +102,18 @@ end ;;
 
 module Private = struct
 
-   let partition_for_singles parent all_files =
-      let (c_files,nc_files) = List.partition (
-          fun rl->
-            Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
-      )  all_files in 
-      let config = File_watcher.Automatic.configuration parent in
-      let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
-      let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
-      let (a_files,u_files) = List.partition is_archived  c_files in 
-      (a_files,u_files,nc_files) ;;   
+   
 
 let noncompilable_files fw  =
       let parent = Automatic.parent fw in 
       let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
-      let (_,_,nc_files) = partition_for_singles parent all_files in 
+      let (_,_,nc_files) = File_watcher.partition_for_singles parent all_files in 
       nc_files ;;
 
 let usual_compilable_files fw  =
    let parent = Automatic.parent fw in 
    let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
-   let (_,u_files,_) = partition_for_singles parent all_files in 
+   let (_,u_files,_) = File_watcher.partition_for_singles parent all_files in 
    u_files ;;
 
 let forget_modules fw mod_names =
@@ -137,7 +128,7 @@ let inspect_and_update fw  =
    let old_parent = Automatic.parent fw in 
    let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
    (Automatic.usual_update new_parent,
-    partition_for_singles new_parent changed_files);;
+   File_watcher.partition_for_singles new_parent changed_files);;
 
 let of_configuration config =   
     let mother = File_watcher.of_configuration config in 
@@ -166,7 +157,7 @@ let register_rootless_paths fw rootless_paths=
    let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
    (Automatic.usual_update new_parent,
-     partition_for_singles new_parent rootless_paths ) ;;    
+   File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
    
 let relocate_module_to fw mod_name new_subdir=
    let the_files = List.filter (
@@ -222,7 +213,7 @@ let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw in 
    let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
    (Automatic.usual_update new_parent,
-    partition_for_singles new_parent changed_files);;   
+   File_watcher.partition_for_singles new_parent changed_files);;   
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
    let old_parent = Automatic.parent fw in 
@@ -230,13 +221,12 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
         File_watcher.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
    (Automatic.usual_update new_parent,
-    partition_for_singles new_parent changed_files);;   
+   File_watcher.partition_for_singles new_parent changed_files);;   
 
 
 
 end;;
 
-let canonical_tripartition = Private.partition_for_singles ;;
 
 let empty_one config= {
    Fw_with_module_linking_t.parent = File_watcher.empty_one config;
