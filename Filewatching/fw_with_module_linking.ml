@@ -28,7 +28,7 @@ module Automatic = struct
         ]
       ) ;;
    
-   let salt = "Fw_"^"wrapper_t.";;
+   let salt = "Fw_"^"with_module_linking_t.";;
    
    let parent_label                    = salt ^ "parent";;
 
@@ -47,22 +47,10 @@ module Automatic = struct
       ]  in
       Concrete_object_t.Record items;;
    
-   let configuration fw =
-       (fw.Fw_with_module_linking_t.parent).File_watcher_t.configuration ;;
+   let configuration fw = File_watcher.Automatic.configuration (fw.Fw_with_module_linking_t.parent) ;;
 
    
-   let watched_files fw = (fw.Fw_with_module_linking_t.parent).File_watcher_t.watched_files ;;
-   
-   let partition_for_pairs parent all_files =
-      let (c_files,nc_files) = List.partition (
-          fun (rl,_)->
-            Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
-      )  all_files in 
-      let config = File_watcher.Automatic.configuration parent in
-      let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
-      let is_archived = (fun (rl,_)->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
-      let (a_files,u_files) = List.partition is_archived  c_files in 
-      (a_files,u_files,nc_files) ;;
+   let watched_files fw = File_watcher.Automatic.watched_files (fw.Fw_with_module_linking_t.parent) ;;
 
    let usual_update mother =
    {

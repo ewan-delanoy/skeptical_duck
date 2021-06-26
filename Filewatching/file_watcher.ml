@@ -463,7 +463,17 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
         let of_configuration config = 
            let to_be_watched = first_init config in 
            of_configuration_and_list config to_be_watched ;;
-        
+      
+      let partition_for_singles fw all_files =
+            let (c_files,nc_files) = List.partition (
+                fun rl->
+                  Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
+            )  all_files in 
+            let config = Automatic.configuration fw in
+            let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
+            let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
+            let (a_files,u_files) = List.partition is_archived  c_files in 
+            (a_files,u_files,nc_files) ;;          
 
 
 end;;
@@ -490,6 +500,8 @@ let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
+
+let partition_for_singles = Private.partition_for_singles ;; 
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.File_watcher_t.configuration in 
