@@ -464,7 +464,9 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
            let to_be_watched = first_init config in 
            of_configuration_and_list config to_be_watched ;;
       
-      let partition_for_singles fw all_files =
+      module Modular = struct
+
+      let canonical_tripartition fw all_files =
             let (c_files,nc_files) = List.partition (
                 fun rl->
                   Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
@@ -473,8 +475,19 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
             let archived_subdirs = config.Fw_configuration_t.subdirs_for_archived_mlx_files in 
             let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
             let (a_files,u_files) = List.partition is_archived  c_files in 
-            (a_files,u_files,nc_files) ;;          
-
+            (a_files,u_files,nc_files) ;;     
+            
+      let noncompilable_files fw  =
+            let all_files = Image.image fst (Automatic.watched_files fw) in 
+            let (_,_,nc_files) = canonical_tripartition fw all_files in 
+            nc_files ;;
+      
+      let usual_compilable_files fw  =
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,u_files,_) = canonical_tripartition fw all_files in 
+         u_files ;;      
+      
+      end ;;      
 
 end;;
 
@@ -495,13 +508,15 @@ let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if
 
 let inspect_and_update = Private.inspect_and_update;;
 
+let noncompilable_files = Private.Modular.noncompilable_files ;;
+
 let of_concrete_object = Automatic.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 
-let partition_for_singles = Private.partition_for_singles ;; 
+let partition_for_singles = Private.Modular.canonical_tripartition ;; 
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.File_watcher_t.configuration in 
@@ -525,3 +540,4 @@ let replace_value = Private.replace_value;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
+let usual_compilable_files = Private.Modular.usual_compilable_files ;;
