@@ -104,11 +104,8 @@ module Private = struct
 
 
 let forget_modules fw mod_names =
-   let old_parent = Automatic.parent fw in 
-   let the_files = List.filter (
-     fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
-   ) (File_watcher.usual_compilable_files old_parent) in    
-   let new_parent = File_watcher.remove_files old_parent the_files in
+   let old_parent = Automatic.parent fw in   
+   let new_parent = File_watcher.forget_modules old_parent mod_names in
    Automatic.usual_update new_parent;;
 
 let inspect_and_update fw  =

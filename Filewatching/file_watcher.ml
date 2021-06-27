@@ -486,10 +486,18 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          remove_files fw the_files;;      
 
       let noncompilable_files fw  =
-            let all_files = Image.image fst (Automatic.watched_files fw) in 
-            let (_,_,nc_files) = canonical_tripartition fw all_files in 
-            nc_files ;;
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,_,nc_files) = canonical_tripartition fw all_files in 
+         nc_files ;;
       
+      let relocate_module_to fw mod_name new_subdir=
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,u_files,_) = canonical_tripartition fw all_files in 
+         let the_files = List.filter (
+                  fun path-> (Dfn_rootless.to_module path)=mod_name 
+         ) u_files in 
+         relocate_files_to fw the_files new_subdir ;;        
+
       let usual_compilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
@@ -537,6 +545,8 @@ let reflect_latest_changes_in_github fw opt_msg=
 let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_files_to = Private.relocate_files_to;;
+
+let relocate_module_to = Private.Modular.relocate_module_to ;;
 
 let remove_files = Private.remove_files;;
 
