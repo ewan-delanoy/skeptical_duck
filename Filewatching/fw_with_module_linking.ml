@@ -102,25 +102,12 @@ end ;;
 
 module Private = struct
 
-   
-
-let noncompilable_files fw  =
-      let parent = Automatic.parent fw in 
-      let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
-      let (_,_,nc_files) = File_watcher.partition_for_singles parent all_files in 
-      nc_files ;;
-
-let usual_compilable_files fw  =
-   let parent = Automatic.parent fw in 
-   let all_files = Image.image fst (File_watcher.Automatic.watched_files parent) in 
-   let (_,u_files,_) = File_watcher.partition_for_singles parent all_files in 
-   u_files ;;
 
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw in 
    let the_files = List.filter (
      fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
-   ) (usual_compilable_files fw) in    
+   ) (File_watcher.usual_compilable_files old_parent) in    
    let new_parent = File_watcher.remove_files old_parent the_files in
    Automatic.usual_update new_parent;;
 
@@ -160,10 +147,10 @@ let register_rootless_paths fw rootless_paths=
    File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
    
 let relocate_module_to fw mod_name new_subdir=
+let old_parent = Automatic.parent fw in 
    let the_files = List.filter (
       fun path-> (Dfn_rootless.to_module path)=mod_name 
-   ) (usual_compilable_files fw) in 
-   let old_parent = Automatic.parent fw in 
+   ) (File_watcher.usual_compilable_files old_parent) in 
    let new_parent = File_watcher.relocate_files_to 
         old_parent the_files new_subdir in 
    Automatic.usual_update new_parent ;;  
@@ -175,9 +162,10 @@ let remove_files fw rootless_paths=
    Automatic.usual_update new_parent ;;
 
 let rename_module_on_filename_level fw (old_module,new_module) =
+      let old_parent = Automatic.parent fw in 
       let acolytes = List.filter (
           fun rl -> (Dfn_rootless.to_module rl) = old_module 
-      ) (usual_compilable_files fw) in
+      ) (File_watcher.usual_compilable_files old_parent) in
       let replacements = Image.image (fun old_rl->
           (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
       let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in 
@@ -242,7 +230,7 @@ let get_mtime_or_zero_if_file_is_nonregistered = Automatic.get_mtime_or_zero_if_
 
 let inspect_and_update = Private.inspect_and_update;;
 
-let noncompilable_files = Private.noncompilable_files ;;
+let noncompilable_files fw = File_watcher.noncompilable_files (Automatic.parent fw) ;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 
@@ -272,4 +260,4 @@ let root = Automatic.root ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
-let usual_compilable_files = Private.usual_compilable_files ;;
+let usual_compilable_files fw = File_watcher.usual_compilable_files (Automatic.parent fw) ;;

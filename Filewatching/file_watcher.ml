@@ -476,7 +476,15 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
             let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
             let (a_files,u_files) = List.partition is_archived  c_files in 
             (a_files,u_files,nc_files) ;;     
-            
+
+      let forget_modules fw mod_names =
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,u_files,_) = canonical_tripartition fw all_files in 
+         let the_files = List.filter (
+                 fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
+         ) u_files in    
+         remove_files fw the_files;;      
+
       let noncompilable_files fw  =
             let all_files = Image.image fst (Automatic.watched_files fw) in 
             let (_,_,nc_files) = canonical_tripartition fw all_files in 
@@ -499,6 +507,8 @@ let empty_one config= {
    watched_files = [];
    last_noticed_changes = Dircopy_diff.empty_one;
 };; 
+
+let forget_modules = Private.Modular.forget_modules ;;
 
 let get_content = Automatic.get_content ;;
 let get_mtime   = Automatic.get_mtime ;;
