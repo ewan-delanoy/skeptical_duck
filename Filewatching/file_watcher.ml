@@ -496,7 +496,36 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let the_files = List.filter (
                   fun path-> (Dfn_rootless.to_module path)=mod_name 
          ) u_files in 
-         relocate_files_to fw the_files new_subdir ;;        
+         relocate_files_to fw the_files new_subdir ;;
+         
+      let rename_module_on_filename_level fw (old_module,new_module) =
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,u_files,_) = canonical_tripartition fw all_files in 
+         let acolytes = List.filter (
+                fun rl -> (Dfn_rootless.to_module rl) = old_module 
+         ) u_files in
+         let replacements = Image.image (fun old_rl->
+                (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
+         let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in 
+         let l_cmds = Image.image (
+                fun (old_rl,new_rl) ->
+                  let s_old_ap=s_root^(Dfn_rootless.to_line old_rl) 
+                  and s_new_ap=s_root^(Dfn_rootless.to_line new_rl) in    
+                  "mv "^s_old_ap^" "^s_new_ap
+            ) replacements  in
+         let _ =Unix_command.conditional_multiple_uc l_cmds in  
+         rename_files  fw replacements  ;;  
+            
+      let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
+         apply_text_transformation_on_some_files fw
+            (Look_for_module_names.change_module_name_in_ml_ocamlcode  
+            old_module new_module)  files_to_be_rewritten  ;;  
+               
+      let rename_module_on_filename_level_and_in_files fw old_module new_module files_to_be_rewritten=
+         let fw2=rename_module_on_filename_level fw (old_module,new_module) in 
+         let fw3=rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
+         fw3;;
+         
 
       let usual_compilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
@@ -551,6 +580,8 @@ let relocate_module_to = Private.Modular.relocate_module_to ;;
 let remove_files = Private.remove_files;;
 
 let rename_files = Private.rename_files;;
+
+let rename_module_on_filename_level_and_in_files = Private.Modular.rename_module_on_filename_level_and_in_files ;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 

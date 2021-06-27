@@ -144,12 +144,9 @@ let register_rootless_paths fw rootless_paths=
    File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
    
 let relocate_module_to fw mod_name new_subdir=
-let old_parent = Automatic.parent fw in 
-   let the_files = List.filter (
-      fun path-> (Dfn_rootless.to_module path)=mod_name 
-   ) (File_watcher.usual_compilable_files old_parent) in 
-   let new_parent = File_watcher.relocate_files_to 
-        old_parent the_files new_subdir in 
+   let old_parent = Automatic.parent fw in 
+   let new_parent = File_watcher.relocate_module_to 
+        old_parent mod_name new_subdir in 
    Automatic.usual_update new_parent ;;  
 
 let remove_files fw rootless_paths=   
