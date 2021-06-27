@@ -182,9 +182,10 @@ let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewrit
    (Automatic.usual_update new_parent,changed_files) ;;  
          
 let rename_module_on_both_levels fw old_module new_module files_to_be_rewritten=
-   let fw2=rename_module_on_filename_level fw (old_module,new_module) in 
-   let fw3=rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
-   fw3;;
+   let old_parent = Automatic.parent fw in 
+   let (new_parent,changed_files) = File_watcher.rename_module_on_filename_level_and_in_files
+     old_parent old_module new_module files_to_be_rewritten in 
+     (Automatic.usual_update new_parent,changed_files);;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw in 
