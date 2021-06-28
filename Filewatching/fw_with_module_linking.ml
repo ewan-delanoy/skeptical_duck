@@ -16,33 +16,39 @@ module Automatic = struct
       let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
      (
        Dfn_rootless.of_concrete_object arg1,
-       Crobj_converter.string_of_concrete_object arg2
+       Crobj_converter_combinator.to_list Dfa_module.of_concrete_object arg2
      );;
    
-   let pair_to_crobj (watched_file,modif_date)=
+   let pair_to_crobj (watched_file,linking)=
      Concrete_object_t.Variant("Dfn_"^"rootless.J",
         [
            
            Dfn_rootless.to_concrete_object watched_file;
-           Crobj_converter.string_to_concrete_object(modif_date);
+           Crobj_converter_combinator.of_list Dfa_module.to_concrete_object linking
         ]
       ) ;;
    
    let salt = "Fw_"^"with_module_linking_t.";;
    
-   let parent_label                    = salt ^ "parent";;
+   let parent_label             = salt ^ "parent";;
+   let module_linking_label     = salt ^ "module_linking";;
+   let index_for_caching_label  = salt ^ "index_for_caching";;
 
    
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
          Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
+         module_linking = Crobj_converter_combinator.to_list pair_of_crobj (g module_linking_label);
+         index_for_caching = Crobj_converter.int_of_concrete_object(g index_for_caching_label);
       };; 
    
    let to_concrete_object fw=
       let items= 
       [
-       parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
+         parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
+         module_linking_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_with_module_linking_t.module_linking;
+         index_for_caching_label, Crobj_converter.int_to_concrete_object fw.Fw_with_module_linking_t.index_for_caching;
       
       ]  in
       Concrete_object_t.Record items;;
@@ -55,6 +61,9 @@ module Automatic = struct
    let usual_update mother =
    {
       Fw_with_module_linking_t.parent = mother ;
+      module_linking = [];
+      index_for_caching = 0;
+
    } ;;  
       
       
@@ -213,6 +222,8 @@ end;;
 
 let empty_one config= {
    Fw_with_module_linking_t.parent = File_watcher.empty_one config;
+   module_linking = [];
+   index_for_caching = 0;
 };; 
 
 let forget_modules = Private.forget_modules ;;
