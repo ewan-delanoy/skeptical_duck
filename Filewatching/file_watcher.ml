@@ -485,6 +485,15 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          ) u_files in    
          remove_files fw the_files;;      
 
+      let module_linking fw = 
+         let all_files = Image.image fst (Automatic.watched_files fw) in 
+         let (_,u_files,_) = canonical_tripartition fw all_files in 
+         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+         Image.image ( fun rl->
+           let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
+           (rl,Look_for_module_names.names_in_mlx_file(Absolute_path.of_string s_ap))   
+         ) u_files ;;    
+
       let noncompilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,_,nc_files) = canonical_tripartition fw all_files in 
@@ -554,6 +563,8 @@ let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if
 
 
 let inspect_and_update = Private.inspect_and_update;;
+
+let module_linking = Private.Modular.module_linking ;;
 
 let noncompilable_files = Private.Modular.noncompilable_files ;;
 
