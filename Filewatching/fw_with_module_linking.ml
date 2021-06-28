@@ -87,19 +87,17 @@ module Automatic = struct
    let set_configuration fw new_config = 
       let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_configuration old_parent new_config in 
-      Private.usual_update new_parent
-      (* {
+      {
       fw with 
-       Fw_wrapper_t.parent = new_parent;
-      } *);;
+         Fw_with_module_linking_t.parent = new_parent;
+      } ;;
    let set_last_noticed_changes fw new_config = 
       let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
-      Private.usual_update new_parent
-      (* {
+      {
       fw with 
-       Fw_wrapper_t.parent = new_parent;
-      } *) ;;
+         Fw_with_module_linking_t.parent = new_parent;
+      }  ;;
    let to_concrete_object = Private.to_concrete_object;;
    let usual_update       = Private.usual_update ;;
    let watched_files      = Private.watched_files ;;
@@ -114,8 +112,12 @@ module Private = struct
 
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw in   
-   let new_parent = File_watcher.forget_modules old_parent mod_names in
-   Automatic.usual_update new_parent;;
+   let new_parent = File_watcher.forget_modules old_parent mod_names in 
+   
+   {
+      fw with 
+      Fw_with_module_linking_t.parent = new_parent;
+   } ;;
 
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw in 

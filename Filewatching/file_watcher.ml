@@ -68,7 +68,7 @@ module Automatic = struct
       None -> "0."
      |Some(_,mtime)-> mtime  ;; 
    
-     
+       
    
    let get_mtime fw rootless  =
      match Option.seek (fun (rootless1,_)->rootless1=rootless) 
@@ -485,13 +485,17 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          ) u_files in    
          remove_files fw the_files;;      
 
+      let get_linking fw rootless = 
+         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+         let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
+         Look_for_module_names.names_in_mlx_file(Absolute_path.of_string s_ap);;      
+
+
       let module_linking fw = 
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
-         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
          Image.image ( fun rl->
-           let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
-           (rl,Look_for_module_names.names_in_mlx_file(Absolute_path.of_string s_ap))   
+           (rl,get_linking fw rl)   
          ) u_files ;;    
 
       let noncompilable_files fw  =
@@ -557,6 +561,7 @@ let empty_one config= {
 let forget_modules = Private.Modular.forget_modules ;;
 
 let get_content = Automatic.get_content ;;
+let get_linking = Private.Modular.get_linking ;;
 let get_mtime   = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
