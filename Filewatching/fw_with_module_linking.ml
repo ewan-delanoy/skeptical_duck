@@ -16,39 +16,33 @@ module Automatic = struct
       let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
      (
        Dfn_rootless.of_concrete_object arg1,
-       Crobj_converter_combinator.to_list Dfa_module.of_concrete_object arg2
+       Crobj_converter.string_of_concrete_object arg2
      );;
    
-   let pair_to_crobj (watched_file,linking)=
+   let pair_to_crobj (watched_file,modif_date)=
      Concrete_object_t.Variant("Dfn_"^"rootless.J",
         [
            
            Dfn_rootless.to_concrete_object watched_file;
-           Crobj_converter_combinator.of_list Dfa_module.to_concrete_object linking
+           Crobj_converter.string_to_concrete_object(modif_date);
         ]
       ) ;;
    
    let salt = "Fw_"^"with_module_linking_t.";;
    
-   let parent_label             = salt ^ "parent";;
-   let module_linking_label     = salt ^ "module_linking";;
-   let index_for_caching_label  = salt ^ "index_for_caching";;
+   let parent_label                    = salt ^ "parent";;
 
    
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
          Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
-         module_linking = Crobj_converter_combinator.to_list pair_of_crobj (g module_linking_label);
-         index_for_caching = Crobj_converter.int_of_concrete_object(g index_for_caching_label);
       };; 
    
    let to_concrete_object fw=
       let items= 
       [
-         parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
-         module_linking_label, Crobj_converter_combinator.of_list pair_to_crobj fw.Fw_with_module_linking_t.module_linking;
-         index_for_caching_label, Crobj_converter.int_to_concrete_object fw.Fw_with_module_linking_t.index_for_caching;
+       parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
       
       ]  in
       Concrete_object_t.Record items;;
@@ -61,9 +55,6 @@ module Automatic = struct
    let usual_update mother =
    {
       Fw_with_module_linking_t.parent = mother ;
-      module_linking = [];
-      index_for_caching = 0;
-
    } ;;  
       
       
@@ -87,17 +78,19 @@ module Automatic = struct
    let set_configuration fw new_config = 
       let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_configuration old_parent new_config in 
-      {
+      Private.usual_update new_parent
+      (* {
       fw with 
-         Fw_with_module_linking_t.parent = new_parent;
-      } ;;
+       Fw_wrapper_t.parent = new_parent;
+      } *);;
    let set_last_noticed_changes fw new_config = 
       let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
-      {
+      Private.usual_update new_parent
+      (* {
       fw with 
-         Fw_with_module_linking_t.parent = new_parent;
-      }  ;;
+       Fw_wrapper_t.parent = new_parent;
+      } *) ;;
    let to_concrete_object = Private.to_concrete_object;;
    let usual_update       = Private.usual_update ;;
    let watched_files      = Private.watched_files ;;
@@ -112,12 +105,8 @@ module Private = struct
 
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw in   
-   let new_parent = File_watcher.forget_modules old_parent mod_names in 
-   
-   {
-      fw with 
-      Fw_with_module_linking_t.parent = new_parent;
-   } ;;
+   let new_parent = File_watcher.forget_modules old_parent mod_names in
+   Automatic.usual_update new_parent;;
 
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw in 
@@ -224,8 +213,6 @@ end;;
 
 let empty_one config= {
    Fw_with_module_linking_t.parent = File_watcher.empty_one config;
-   module_linking = [];
-   index_for_caching = 0;
 };; 
 
 let forget_modules = Private.forget_modules ;;
