@@ -5,5 +5,3 @@
 *)
 
 type t = L of (string * Vdw_combination_t.t ) list ;;
-
-  
