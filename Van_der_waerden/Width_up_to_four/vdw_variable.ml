@@ -11,10 +11,10 @@ end ;;
 
 let get x = List.assoc x (!Private.main_ref) ;;
 
-(*
-let homogeneous_translatuon x translation =
-    let x_content = get x in 
-*)    
+
+let homogeneous_translation x translation =
+    Vdw_common.Width_up_to_four.homogeneous_translation (get x) translation ;;
+   
 
 let set x y =
       match List.assoc_opt x (!Private.main_ref) with 

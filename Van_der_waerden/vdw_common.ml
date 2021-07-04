@@ -294,6 +294,25 @@ let extended_partition selector  ll=
      (extract_core_and_simplify temp1,
       extract_core_and_simplify temp2) ;;
 
+let test_joinability criterion l1 l2 =
+    test_for_admissibility criterion (Set_of_integers.safe_set (l1@l2)) ;;
+
+exception Homogeneous_translation of (int list) * ( (int list) * (int list) );;
+
+let homogeneous_translation criterion ll translation =
+   match ll with 
+   [] -> None
+   | head :: others ->
+     let tester = test_joinability criterion translation in 
+     let is_joinable = tester head in 
+     match Option.seek (fun l1->(tester l1)=is_joinable) others with 
+      (Some l1) -> raise (Homogeneous_translation(translation,(head,l1)))
+     | None -> 
+       if is_joinable
+       then Some(Image.image (fun l->Set_of_integers.safe_set (l@translation)) ll)
+       else None;;
+
+
 module Width_up_to_four = struct 
 
 (*
@@ -343,6 +362,10 @@ let big_base =
 let is_admissible l = test_for_admissibility    
     (Vdw_list_of_constraints_t.Defined_by_max_width 4)
     (Set_of_integers.safe_set l);;
+
+let homogeneous_translation  ll translation =
+  homogeneous_translation 
+   (Vdw_list_of_constraints_t.Defined_by_max_width 4) ll translation ;;
 
 end ;;  
 
