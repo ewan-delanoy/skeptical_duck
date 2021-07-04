@@ -333,7 +333,11 @@ let big_base =
      ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
        (Set_of_integers.safe_set(Ennig.ennig 1 15))
     in 
-    Ordered.sort oord unordered_base ;;      
+    Ordered.sort oord unordered_base ;;  
+    
+let is_admissible l = test_for_admissibility    
+    (Vdw_list_of_constraints_t.Defined_by_max_width 4)
+    (Set_of_integers.safe_set l);;
 
 end ;;  
 
