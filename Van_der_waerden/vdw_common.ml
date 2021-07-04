@@ -289,6 +289,11 @@ let reconstruct parts =
     let temp1 = Image.image (fun (a,b)->level_two_translate a b) parts in 
     Ordered.fold_merge oord temp1 ;;
 
+let extended_partition selector  ll= 
+    let (temp1,temp2) = List.partition (Ordered.is_included_in oint selector ) ll in 
+     (extract_core_and_simplify temp1,
+      extract_core_and_simplify temp2) ;;
+
 module Width_up_to_four = struct 
 
 (*

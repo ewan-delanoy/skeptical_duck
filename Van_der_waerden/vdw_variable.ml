@@ -10,6 +10,12 @@ let main_ref = ref ([]: (string * (int list list)) list) ;;
 end ;;
 
 let get x = List.assoc x (!Private.main_ref) ;;
+
+(*
+let homogeneous_translatuon x translation =
+    let x_content = get x in 
+*)    
+
 let set x y =
       match List.assoc_opt x (!Private.main_ref) with 
       None -> (Private.main_ref := (x,y) :: (!Private.main_ref))
