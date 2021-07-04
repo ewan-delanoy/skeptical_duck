@@ -27,9 +27,10 @@ let temp2 = Image.image (
   fun (tr,core) -> 
    Option.unpack(Vdw_variable.homogeneous_translation core tr)
 ) temp1 in 
- Vdw_combination_t.C(Option.filter_and_unpack tempf2 l,
+ (Vdw_combination_t.C(Option.filter_and_unpack tempf2 l),
  Ordered.fold_merge Vdw_common.oord temp2);;
 
+ 
 let replace_with_in (x,combination_for_x) combination_for_y =
   let (Vdw_combination_t.C partition_for_y) = combination_for_y in
   let (before,opt,after) = 
