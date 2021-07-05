@@ -27,6 +27,9 @@ module Private = struct
                 x_content <> Vdw_common.reconstruct temp1
           ) assignments ;;
   
+  let get (Vdw_environment_t.L assignments) x =  
+     List.assoc x assignments;;  
+
   let main_ref = ref (Vdw_environment_t.L []) ;;
   
   end ;;     
@@ -37,3 +40,5 @@ let add_new_assignment assignment =
     let _ = (Private.main_ref:=new_env) in new_env ;;
   
 let check () = Private.check  (!Private.main_ref) ;; 
+
+let get x = Private.get (!Private.main_ref) x ;;

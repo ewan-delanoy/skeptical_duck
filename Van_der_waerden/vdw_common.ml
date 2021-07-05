@@ -279,6 +279,7 @@ let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;
 let oint = Total_ordering.for_integers ;;     
 
 let extract_core_and_simplify ll = 
+    if ll = [] then ([],[]) else 
     let core = Ordered.fold_intersect oint ll in 
     (core,Image.image (fun l->Ordered.setminus oint l core) ll) ;;          
 
