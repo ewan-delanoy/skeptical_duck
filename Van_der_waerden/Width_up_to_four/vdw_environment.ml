@@ -30,7 +30,40 @@ module Private = struct
   let get (Vdw_environment_t.L assignments) x =  
      List.assoc x assignments;;  
 
-  let main_ref = ref (Vdw_environment_t.L []) ;;
+
+  exception Empty_result_in_ext_part ;;
+
+let oint = Vdw_common.oint ;;  
+
+let extract old_env obstruction (complement,name_for_x) =
+   (*
+      we take extra care not to create new names for already named variables
+   *)  
+   let x = Vdw_variable.get name_for_x 
+   and effective_obstruction = Ordered.setminus oint obstruction complement 
+   and omerge = Ordered.merge oint in 
+   let ((core_for_a,a),(core_for_b,b)) = 
+       Vdw_common.extended_partition effective_obstruction x in 
+   if b= [] 
+   then raise(Empty_result_in_ext_part)    
+   else 
+   if a = []
+   then (if core_for_b=[] then (old_env,([],name_for_x)) else 
+         let zb = Vdw_indexed_namer.register_new b in 
+         let new_env = 
+          add_new_assignment old_env (name_for_x,
+          Vdw_combination_t.C [core_for_b,zb]) in 
+         (new_env,(omerge complement core_for_b,zb))
+        )
+   else       
+   let za = Vdw_indexed_namer.register_new  a in
+   let zb = Vdw_indexed_namer.register_new b in 
+   let new_env = 
+     add_new_assignment old_env (name_for_x,
+          Vdw_combination_t.C [core_for_a,za;core_for_b,zb]) in 
+   (new_env,(omerge complement core_for_b,zb)) ;;   
+
+   let main_ref = ref (Vdw_environment_t.L []) ;; 
   
   end ;;     
   
@@ -40,5 +73,12 @@ let add_new_assignment assignment =
     let _ = (Private.main_ref:=new_env) in new_env ;;
   
 let check () = Private.check  (!Private.main_ref) ;; 
+
+let extract obstruction (complement,name_for_x) =
+  let (new_env,answer) = 
+   Private.extract (!Private.main_ref) 
+   obstruction (complement,name_for_x) in 
+  let _ = (Private.main_ref:=new_env) in answer ;;
+
 
 let get x = Private.get (!Private.main_ref) x ;;
