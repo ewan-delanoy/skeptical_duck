@@ -4,6 +4,8 @@
 
 *)
 
+exception Empty_argument_in_register_new_exn ;;
+
 module Private = struct 
 
 let main_ref = ref ([] : (int * int) list) ;; 
@@ -19,7 +21,16 @@ let consume_new x =
         let _=(main_ref:=new_list) in
        y+1 ;;
 
+let register_new ll=
+  if ll=[] 
+  then raise(Empty_argument_in_register_new_exn) else
+  let x = List.length(List.hd ll) in 
+  let y = consume_new x in 
+  let z = "z"^(string_of_int x)^"_"^(string_of_int y) in 
+  let _ = (Vdw_variable.set z ll) in 
+  z ;;
+
 end ;;  
 
 let consume_new = Private.consume_new ;; 
-
+let register_new = Private.register_new ;; 

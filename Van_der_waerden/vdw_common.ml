@@ -296,7 +296,8 @@ let extended_partition selector  ll=
       extract_core_and_simplify temp2) ;;
 
 let test_joinability criterion l1 l2 =
-    test_for_admissibility criterion (Set_of_integers.safe_set (l1@l2)) ;;
+    test_for_admissibility criterion 
+    (Set_of_integers.safe_set (l1@l2)) ;;
 
 exception Homogeneous_translation_exn of (int list) * ( (int list) * (int list) );;
 
@@ -306,7 +307,7 @@ let homogeneous_translation criterion ll translation =
    | head :: others ->
      let tester = test_joinability criterion translation in 
      let is_joinable = tester head in 
-     match Option.seek (fun l1->(tester l1)=is_joinable) others with 
+     match Option.seek (fun l1->(tester l1)<>is_joinable) others with 
       (Some l1) -> raise (Homogeneous_translation_exn(translation,(head,l1)))
      | None -> 
        if is_joinable
