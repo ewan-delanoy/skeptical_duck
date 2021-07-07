@@ -4,8 +4,6 @@
 
 *)
 
-type t = 
-    Empty 
-  | Usual of int * int  ;;
+type t = NE of int * int  ;;
 
   
