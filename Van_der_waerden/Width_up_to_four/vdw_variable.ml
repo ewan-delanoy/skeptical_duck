@@ -6,24 +6,22 @@
 
 
 module Private = struct 
-let name_for_empty_set = "empty_set";;    
+ 
 
-let main_ref = ref ([]: (string * (int list list)) list) ;;
+let main_ref = ref ([]: (Vdw_nonempty_index_t.t * (int list list)) list) ;;
 
 end ;;
 
-let empty_set () = 
-    let name = Private.name_for_empty_set in  
-    let _=(match List.assoc_opt name (!Private.main_ref) with 
-     Some(_) -> ()
-      |None ->   Private.main_ref := (name,[]) :: (!Private.main_ref)
-    ) in name ;;
 
-let get x = List.assoc x (!Private.main_ref) ;;
+
+let get opt = match opt with 
+  None -> [] 
+  |Some y ->List.assoc y (!Private.main_ref) ;;
 
 
 let homogeneous_translation x translation =
-    Vdw_common.Width_up_to_four.homogeneous_translation (get x) translation ;;
+    Vdw_common.Width_up_to_four.homogeneous_translation 
+      (get x) translation ;;
    
 let set x y =
       match List.assoc_opt x (!Private.main_ref) with 
