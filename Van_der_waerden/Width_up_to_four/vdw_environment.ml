@@ -49,7 +49,7 @@ let extract old_env obstruction (complement,name_for_x) =
    then raise(Empty_result_in_ext_part)    
    else 
    if a = []
-   then (if core_for_b=[] then (old_env,([],name_for_x)) else 
+   then (if core_for_b=[] then (old_env,(complement,name_for_x)) else 
          let zb = Vdw_indexed_namer.register_new b in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
