@@ -74,11 +74,19 @@ let add_new_assignment assignment =
   
 let check () = Private.check  (!Private.main_ref) ;; 
 
-let extract obstruction (complement,name_for_x) =
+let extract  (complement,name_for_x) obstruction=
   let (new_env,answer) = 
    Private.extract (!Private.main_ref) 
    obstruction (complement,name_for_x) in 
   let _ = (Private.main_ref:=new_env) in answer ;;
 
+let fold_extract pair obstructions =
+    List.fold_left extract pair obstructions ;;
+
+let fold_extract_at_point pair m =
+  fold_extract pair (Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4)
 
 let get x = Private.get (!Private.main_ref) x ;;
+
+let homogeneous_translation x l=
+    Vdw_combination.homogeneous_translation (get x) l;;
