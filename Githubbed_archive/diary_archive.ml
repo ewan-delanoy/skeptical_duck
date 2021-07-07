@@ -1,8 +1,22 @@
 
 (************************************************************************************************************************
-Snippet 53 : 
+Snippet 53 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
 
+open Needed_values ;;
+
+let sd1 = Dfa_subdirectory.of_line "Van_der_Waerden/Width_up_to_four";;
+
+let u1 =ae () ;;
+
+let u2 = List.filter (
+  fun eless ->
+    Dfa_subdirectory.begins_with (Dfn_endingless.to_subdirectory eless) sd1
+) u1;; 
+
+let u3 = Image.image (
+   fun eless -> Dfa_module.to_line(Dfn_endingless.to_module eless)
+) u2 ;;
 
 (************************************************************************************************************************
 Snippet 52 : Painful debugging session for Needed_values.fg
@@ -918,65 +932,15 @@ Then, you can cd to the separate dir, launch utop in it, and enjoy.
 
 
 (************************************************************************************************************************
-Snippet  36 : Fixing a Coma_state_object.t using
+Snippet  36 : Obsolete
 ************************************************************************************************************************)
-open Needed_values ;;
 
-let old_cs = (!ucs) ;;
-
-let old_fw = Coma_state.frontier_with_unix_world old_cs ;;
-
-let c_files = old_fw.Fw_wrapper_t.usual_compilable_files ;;  
-let nc_files = old_fw.Fw_wrapper_t.noncompilable_files ;;  
-
-
-let (bad_c,good_c) = List.partition (
-   fun (Dfn_rootless_t.J(sd,m,e),_) ->
-     List.exists (Dfa_subdirectory.begins_with sd) 
-       [Dfa_subdirectory_t.SD"Temporary";
-       Dfa_subdirectory_t.SD"Automatically_generated"]
-) c_files ;;
-let (bad_nc,good_nc) = List.partition (
-   fun (Dfn_rootless_t.J(sd,m,e),_) ->
-     List.exists (Dfa_subdirectory.begins_with sd) 
-       [Dfa_subdirectory_t.SD"Temporary";
-       Dfa_subdirectory_t.SD"Automatically_generated"]
-) nc_files ;;
-
-
-
-let new_fw = { old_fw with 
-Fw_wrapper_t.usual_compilable_files = good_c
-} ;;
-let new_cs = {old_cs with 
-   Coma_state_t.frontier_with_unix_world = new_fw 
-};;
-Save_coma_state.save new_cs ;;
 
 
 (************************************************************************************************************************
-Snippet  35 : Adding an item to the ignored subdirs list
+Snippet  35 : Obsolete
 ************************************************************************************************************************)
-open Needed_values ;;
 
-let old_cs = (!ucs) ;;
-
-let old_fw = Coma_state.frontier_with_unix_world old_cs ;;
-let old_config = old_fw.Fw_wrapper_t.configuration ;;
-let old_ign_subdirs = old_config.Fw_configuration_t.ignored_subdirectories;;
-let new_ign_subdirs =
-    old_ign_subdirs @ 
-    [ Dfa_subdirectory_t.SD "Hex_analysis/Hex_gitignored_text_files"];;
-let new_config = { old_config with 
- Fw_configuration_t.ignored_subdirectories = new_ign_subdirs
-} ;;
-let new_fw = { old_fw with 
-Fw_wrapper_t.configuration = new_config
-} ;;
-let new_cs = {old_cs with 
-   Coma_state_t.frontier_with_unix_world = new_fw 
-};;
-Save_coma_state.save new_cs ;;
 
 (************************************************************************************************************************
 Snippet  34 : Fixing a Coma_state_object.t using Coma_state_automatic.restrict
@@ -1114,19 +1078,8 @@ let act1 () = Replace_inside.replace_several_inside_file reps ap1;;
 
 
 (************************************************************************************************************************
-Snippet  29 : Testing that registering works on non-compilable files 
+Snippet  29 : Obsolete
 ************************************************************************************************************************)
-open Needed_values ;;
-
-let old_cs = (!ucs);;
-let old_fr = old_cs.Coma_state_t.frontier_with_unix_world ;; 
-let old_nc = old_fr.Fw_wrapper_t.noncompilable_files ;;
-
-regi "Text_editing/Html_scraping/htscr_state.txt";;
-
-let new_cs = (!ucs);;
-let new_fr = new_cs.Coma_state_t.frontier_with_unix_world ;; 
-let new_nc = new_fr.Fw_wrapper_t.noncompilable_files ;;
 
 
 (************************************************************************************************************************
@@ -1391,22 +1344,9 @@ Io.overwrite_with the_ap new_text;;
 
 
 (************************************************************************************************************************
-Snippet  24 : Using the Fw_wrapper module to delete a file
+Snippet  24 : Obsolete
 ************************************************************************************************************************)
-open Needed_values;;
 
-let old_cs = (!ucs);;
-let old_fw = old_cs.Coma_state_t.frontier_with_unix_world ;;
-let old_nc_files = old_fw.Fw_wrapper_t.noncompilable_files ;;
-
-let to_be_deleted = Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "old_ocamlinit",
-Dfa_ending_t.E "txt") ;;
-
-let new_fw = Fw_wrapper.remove_files old_fw [to_be_deleted];;
-let new_nc_files = new_fw.Fw_wrapper_t.noncompilable_files ;;
-let new_cs = {old_cs with Coma_state_t.frontier_with_unix_world = new_fw } ;;
-
-Save_coma_state.save new_cs ;; 
 
 (************************************************************************************************************************
 Snippet  23 : Delete some HTML footnotes (with their links) and reindex
