@@ -22,7 +22,8 @@ module Private = struct
                 let x_content = Vdw_variable.get x 
                 and (Vdw_combination_t.C partition_for_x) = combination_for_x in 
                 let temp1 = Image.image (
-                  fun (translation,core) -> (translation,Vdw_variable.get core)
+                  fun (translation,core) -> 
+                    (translation,Vdw_variable.get core)
                 ) partition_for_x in 
                 x_content <> Vdw_common.reconstruct temp1
           ) assignments ;;
@@ -52,7 +53,7 @@ let extract old_env obstruction (complement,name_for_x) =
          let zb = Vdw_indexed_namer.register_new b in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
-          Vdw_combination_t.C [core_for_b,zb]) in 
+          Vdw_combination.constructor [core_for_b,zb]) in 
          (new_env,(omerge complement core_for_b,zb))
         )
    else       
@@ -60,8 +61,11 @@ let extract old_env obstruction (complement,name_for_x) =
    let zb = Vdw_indexed_namer.register_new b in 
    let new_env = 
      add_new_assignment old_env (name_for_x,
-          Vdw_combination_t.C [core_for_a,za;core_for_b,zb]) in 
+          Vdw_combination.constructor [core_for_a,za;core_for_b,zb]) in 
    (new_env,(omerge complement core_for_b,zb)) ;;   
+
+    let obstructions_at_point m =
+      Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4 ;;
 
    let main_ref = ref (Vdw_environment_t.L []) ;; 
   
@@ -84,7 +88,7 @@ let fold_extract pair obstructions =
     List.fold_left extract pair obstructions ;;
 
 let fold_extract_at_point pair m =
-  fold_extract pair (Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4)
+  fold_extract pair (Private.obstructions_at_point m) ;;
 
 let get x = Private.get (!Private.main_ref) x ;;
 
