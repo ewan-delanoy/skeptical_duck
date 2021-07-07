@@ -6,8 +6,18 @@
 
 
 module Private = struct 
+let name_for_empty_set = "empty_set";;    
+
 let main_ref = ref ([]: (string * (int list list)) list) ;;
+
 end ;;
+
+let empty_set () = 
+    let name = Private.name_for_empty_set in  
+    let _=(match List.assoc_opt name (!Private.main_ref) with 
+     Some(_) -> ()
+      |None ->   Private.main_ref := (name,[]) :: (!Private.main_ref)
+    ) in name ;;
 
 let get x = List.assoc x (!Private.main_ref) ;;
 
