@@ -6,13 +6,13 @@
 
 module Private = struct 
 
+let merge = Ordered.merge Total_ordering.for_integers ;;   
+
 let order_for_pairs =
    Total_ordering.product 
    Vdw_nonempty_index.order
     (Total_ordering.silex_compare Total_ordering.for_integers)
        ;;
-
-   
 
 end ;;   
 
@@ -25,31 +25,23 @@ exception Homogeneous_translation_exn of Vdw_nonempty_index_t.t * (int list) * (
 let homogeneous_translation 
  (Vdw_combination_t.C l) translation =
  let temp1 = Image.image (fun (core1,translation1) ->
-   let full_translation = 
-    Ordered.merge Vdw_common.oint
-    translation1 translation in 
-    (core1,full_translation)   
+    (core1,Private.merge translation1 translation)   
 ) l  in 
- let tempf1 =  (fun (core1,translation1) ->
-     ((core1,translation1),
-     Vdw_variable.homogeneous_translation core1 (translation1))  
-)  in 
-let tempf2 = (fun (core1,translation1)->
-   try tempf1 (core1,translation1) with 
+let tempf = (fun (core1,translation1)->
+   try ((core1,translation1),
+   Vdw_variable.homogeneous_translation core1 (translation1))   with 
    Vdw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
       raise(Homogeneous_translation_exn(core1,tr,(l1,l2)) )
 ) in 
-let temp2 = Image.image tempf2 temp1 in 
+let temp2 = Image.image tempf temp1 in 
 let temp3 = Option.filter_and_unpack (
     fun ((core1,translation1),res)-> match res with 
     Vdw_homogeneous_translation_result_t.Nothing_taken -> None 
     |Vdw_homogeneous_translation_result_t.All_taken(ll) ->
      Some((core1,translation1),ll)
 ) temp2 in
-let temp4 = Image.image fst temp3 
-and temp5 = Image.image snd temp3  in 
- (constructor temp4,
- Ordered.fold_merge Vdw_common.oord temp5);;
+ (constructor (Image.image fst temp3),
+ Ordered.fold_merge Vdw_common.oord (Image.image snd temp3));;
 
 
 

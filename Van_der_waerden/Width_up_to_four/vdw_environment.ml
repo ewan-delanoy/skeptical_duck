@@ -20,11 +20,11 @@ module Private = struct
   let check (Vdw_environment_t.L assignments) = 
       List.filter (
             fun (x,combination_for_x) ->
-                let x_content = Vdw_variable.get (Some x) 
+                let x_content = Vdw_variable.get x 
                 and (Vdw_combination_t.C partition_for_x) = combination_for_x in 
                 let temp1 = Image.image (
                   fun (core,translation) -> 
-                    (translation,Vdw_variable.get (Some core))
+                    (translation,Vdw_variable.get core)
                 ) partition_for_x in 
                 x_content <> Vdw_common.reconstruct temp1
           ) assignments ;;
@@ -41,7 +41,7 @@ let extract old_env obstruction (complement,name_for_x) =
    (*
       we take extra care not to create new names for already named variables
    *)  
-   let x = Vdw_variable.get (Some name_for_x) 
+   let x = Vdw_variable.get name_for_x 
    and effective_obstruction = Ordered.setminus oint obstruction complement 
    and omerge = Ordered.merge oint in 
    let ((core_for_a,a),(core_for_b,b)) = 
@@ -65,8 +65,18 @@ let extract old_env obstruction (complement,name_for_x) =
           Vdw_combination.constructor [za,core_for_a;zb,core_for_b]) in 
    (new_env,(omerge complement core_for_b,Some zb)) ;;   
 
-   let foldable_extract old_env obstruction (complement,name_for_x) =
-    extract old_env obstruction (complement,Option.unpack name_for_x) ;;
+  let rec extract_several old_env (treated,to_be_treated) old_pair =
+    match to_be_treated with 
+    [] -> (old_env,(old_pair,None))
+    | obstruction :: other_obstructions ->
+      let (new_env,(complement_for_y,opt_y)) = 
+      extract old_env obstruction old_pair in 
+     (match opt_y with 
+      None -> (old_env,(old_pair,Some(treated,obstruction)))
+     |Some(name_for_y) ->
+      extract_several new_env (obstruction::treated,other_obstructions) (complement_for_y,name_for_y)
+     )
+     ;;
 
     let obstructions_at_point m =
       Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4 ;;
@@ -88,13 +98,15 @@ let extract  (complement,name_for_x) obstruction=
    obstruction (complement,name_for_x) in 
   let _ = (Private.main_ref:=new_env) in answer ;;
 
-(*  
-let fold_extract pair obstructions =
-    List.fold_left extract pair obstructions ;;
+let extract_several  (complement,name_for_x) obstructions=
+  let (new_env,answer) = 
+   Private.extract_several (!Private.main_ref) 
+   obstructions (complement,name_for_x) in 
+  let _ = (Private.main_ref:=new_env) in answer ;;
 
-let fold_extract_at_point pair m =
-  fold_extract pair (Private.obstructions_at_point m) ;;
-*)
+let extract_several_at_point pair m =
+  extract_several pair ([],Private.obstructions_at_point m) ;;
+
 
 let get x = Private.get (!Private.main_ref) x ;;
 
