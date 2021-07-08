@@ -4,4 +4,4 @@
 
 *)
 
-type t = L of (string * Vdw_combination_t.t ) list ;;
+type t = L of (Vdw_nonempty_index_t.t * Vdw_combination_t.t ) list ;;

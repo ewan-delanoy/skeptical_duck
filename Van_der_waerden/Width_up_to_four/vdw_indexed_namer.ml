@@ -30,15 +30,17 @@ let register_new ll=
   let _ = (Vdw_variable.set z ll) in 
   z ;;
 
-(*  
+
 let register_if_necessary ll =
   if ll=[] 
   then None 
   else 
-  match Option.seek ()   
-*)
+  match Vdw_variable.mem ll with 
+  Some name -> Some name 
+  | None -> Some(register_new ll) ;;   
+
 
 end ;;  
 
 let consume_new = Private.consume_new ;; 
-let register_new = Private.register_new ;; 
+let register_if_necessary = Private.register_if_necessary ;; 
