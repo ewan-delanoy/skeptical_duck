@@ -26,9 +26,17 @@ let register_new ll=
   then raise(Empty_argument_in_register_new_exn) else
   let x = List.length(List.hd ll) in 
   let y = consume_new x in 
-  let z = "z"^(string_of_int x)^"_"^(string_of_int y) in 
+  let z = Vdw_nonempty_index_t.Usual(x,y) in 
   let _ = (Vdw_variable.set z ll) in 
   z ;;
+
+(*  
+let register_if_necessary ll =
+  if ll=[] 
+  then None 
+  else 
+  match Option.seek ()   
+*)
 
 end ;;  
 

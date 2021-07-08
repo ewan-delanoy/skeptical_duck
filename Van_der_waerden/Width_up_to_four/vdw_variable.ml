@@ -12,7 +12,6 @@ let main_ref = ref ([]: (Vdw_nonempty_index_t.t * (int list list)) list) ;;
 
 end ;;
 
-
 let get opt = match opt with 
   None -> [] 
   |Some y ->List.assoc y (!Private.main_ref) ;;
@@ -22,6 +21,12 @@ let homogeneous_translation x translation =
     Vdw_common.Width_up_to_four.homogeneous_translation 
       (get x) translation ;;
    
+let mem y =
+   match Option.seek (fun (x1,y1)->y1=y) (!Private.main_ref) with 
+   None -> None 
+   |Some(x,_) -> Some x ;;
+
+
 let set x y =
       match List.assoc_opt x (!Private.main_ref) with 
       None -> (Private.main_ref := (x,y) :: (!Private.main_ref))
