@@ -20,46 +20,53 @@ let constructor l =
    Vdw_combination_t.C (Ordered.sort Private.order_for_pairs l) ;;
      
 
-exception Homogeneous_translation_exn of string * (int list) * ( (int list) * (int list) );;
+exception Homogeneous_translation_exn of Vdw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
 
 let homogeneous_translation 
  (Vdw_combination_t.C l) translation =
+ let temp1 = Image.image (fun (core1,translation1) ->
+   let full_translation = 
+    Ordered.merge Vdw_common.oint
+    translation1 translation in 
+    (core1,full_translation)   
+) l  in 
  let tempf1 =  (fun (core1,translation1) ->
-     let full_translation = 
-      Ordered.merge Vdw_common.oint
-      translation1 translation in 
-      match Vdw_variable.homogeneous_translation 
-         (Some core1) (full_translation) with 
-      None -> None 
-      |Some ll1 -> Some(full_translation,core1)   
+     ((core1,translation1),
+     Vdw_variable.homogeneous_translation 
+         (Some core1) (translation1))  
 )  in 
 let tempf2 = (fun (core1,translation1)->
-   try tempf1 (translation1,core1) with 
+   try tempf1 (core1,translation1) with 
    Vdw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
       raise(Homogeneous_translation_exn(core1,tr,(l1,l2)) )
 ) in 
-let temp1 = Option.filter_and_unpack tempf2 l in 
-let temp2 = Image.image (
-  fun (tr,core) -> 
-   Option.unpack(Vdw_variable.homogeneous_translation core tr)
-) temp1 in 
- (constructor(Option.filter_and_unpack tempf2 l),
- Ordered.fold_merge Vdw_common.oord temp2);;
+let temp2 = Image.image tempf2 temp1 in 
+let temp3 = Option.filter_and_unpack (
+    fun ((core1,translation1),res)-> match res with 
+    Vdw_homogeneous_translation_result_t.Nothing_taken -> None 
+    |Vdw_homogeneous_translation_result_t.All_taken(ll) ->
+     Some((core1,translation1),ll)
+) temp2 in
+let temp4 = Image.image fst temp3 
+and temp5 = Image.image snd temp3  in 
+ (constructor temp4,
+ Ordered.fold_merge Vdw_common.oord temp5);;
 
 
 let replace_with_in (x,combination_for_x) combination_for_y =
-  let (Vdw_combination_t.C partition_for_y) = combination_for_y in
+  let (Vdw_combination_t.C content_for_y) = combination_for_y in
   let (before,opt,after) = 
      Three_parts.select_center_element_and_reverse_left 
-     (fun (translation,core)->core = x) partition_for_y in 
+     (fun (core,translation)->core = x) content_for_y in 
   match opt with 
    None -> combination_for_y  
-  |Some(translation,_) -> 
-     let (Vdw_combination_t.C partition_for_x) = combination_for_x in 
+  |Some(_,translation) -> 
+     let (Vdw_combination_t.C content_for_x) = combination_for_x in 
     let new_center = Image.image (
-     fun (translation1,core1)->
-           (Ordered.merge Vdw_common.oint translation translation1,core1)
-    ) partition_for_x in 
+     fun (core1,translation1)->
+           (core1,Ordered.merge Vdw_common.oint 
+           translation translation1)
+    ) content_for_x in 
     constructor(List.rev_append before (new_center@after)) ;;
 
   
