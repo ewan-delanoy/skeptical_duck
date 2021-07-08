@@ -7,14 +7,12 @@
 module Private = struct 
 
 let order_for_pairs =
-   ((fun (translation1,core1) (translation2,core2) -> 
-      let trial1 = 
-         Total_ordering.lex_for_strings core1 core2 in 
-      if trial1 <> Total_ordering.Equal 
-      then trial1 
-      else Total_ordering.silex_compare 
-           Total_ordering.for_integers  translation1 translation2      
-      ) :> ((int list) * string) Total_ordering.t);; 
+   Total_ordering.product 
+   Vdw_nonempty_index.order
+    (Total_ordering.silex_compare Total_ordering.for_integers)
+       ;;
+
+   
 
 end ;;   
 
@@ -26,16 +24,16 @@ exception Homogeneous_translation_exn of string * (int list) * ( (int list) * (i
 
 let homogeneous_translation 
  (Vdw_combination_t.C l) translation =
- let tempf1 =  (fun (translation1,core1) ->
+ let tempf1 =  (fun (core1,translation1) ->
      let full_translation = 
       Ordered.merge Vdw_common.oint
       translation1 translation in 
       match Vdw_variable.homogeneous_translation 
-         core1 (full_translation) with 
+         (Some core1) (full_translation) with 
       None -> None 
       |Some ll1 -> Some(full_translation,core1)   
 )  in 
-let tempf2 = (fun (translation1,core1)->
+let tempf2 = (fun (core1,translation1)->
    try tempf1 (translation1,core1) with 
    Vdw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
       raise(Homogeneous_translation_exn(core1,tr,(l1,l2)) )

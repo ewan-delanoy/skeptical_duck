@@ -4,6 +4,8 @@
 
 *)
 
-type t = NE of int * int  ;;
+type t = 
+   Usual of int * int  
+  |Solution of int ;;
 
   
