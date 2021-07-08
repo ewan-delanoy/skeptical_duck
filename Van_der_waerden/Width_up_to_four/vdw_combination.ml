@@ -32,8 +32,7 @@ let homogeneous_translation
 ) l  in 
  let tempf1 =  (fun (core1,translation1) ->
      ((core1,translation1),
-     Vdw_variable.homogeneous_translation 
-         (Some core1) (translation1))  
+     Vdw_variable.homogeneous_translation core1 (translation1))  
 )  in 
 let tempf2 = (fun (core1,translation1)->
    try tempf1 (core1,translation1) with 
@@ -51,6 +50,7 @@ let temp4 = Image.image fst temp3
 and temp5 = Image.image snd temp3  in 
  (constructor temp4,
  Ordered.fold_merge Vdw_common.oord temp5);;
+
 
 
 let replace_with_in (x,combination_for_x) combination_for_y =

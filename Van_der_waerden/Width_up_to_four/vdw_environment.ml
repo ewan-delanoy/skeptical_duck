@@ -20,11 +20,11 @@ module Private = struct
   let check (Vdw_environment_t.L assignments) = 
       List.filter (
             fun (x,combination_for_x) ->
-                let x_content = Vdw_variable.get x 
+                let x_content = Vdw_variable.get (Some x) 
                 and (Vdw_combination_t.C partition_for_x) = combination_for_x in 
                 let temp1 = Image.image (
-                  fun (translation,core) -> 
-                    (translation,Vdw_variable.get core)
+                  fun (core,translation) -> 
+                    (translation,Vdw_variable.get (Some core))
                 ) partition_for_x in 
                 x_content <> Vdw_common.reconstruct temp1
           ) assignments ;;
@@ -41,29 +41,32 @@ let extract old_env obstruction (complement,name_for_x) =
    (*
       we take extra care not to create new names for already named variables
    *)  
-   let x = Vdw_variable.get name_for_x 
+   let x = Vdw_variable.get (Some name_for_x) 
    and effective_obstruction = Ordered.setminus oint obstruction complement 
    and omerge = Ordered.merge oint in 
    let ((core_for_a,a),(core_for_b,b)) = 
        Vdw_common.extended_partition effective_obstruction x in 
    if b= [] 
-   then (old_env,([],Vdw_variable.empty_set()))    
+   then (old_env,([],None))    
    else 
    if a = []
-   then (if core_for_b=[] then (old_env,(complement,name_for_x)) else 
-         let zb = Vdw_indexed_namer.register_new b in 
+   then (if core_for_b=[] then (old_env,(complement,Some name_for_x)) else 
+         let zb = Option.unpack(Vdw_indexed_namer.register_if_necessary b) in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
-          Vdw_combination.constructor [core_for_b,zb]) in 
-         (new_env,(omerge complement core_for_b,zb))
+          Vdw_combination.constructor [zb,core_for_b]) in 
+         (new_env,(omerge complement core_for_b,Some zb))
         )
    else       
-   let za = Vdw_indexed_namer.register_new  a in
-   let zb = Vdw_indexed_namer.register_new b in 
+   let za = Option.unpack(Vdw_indexed_namer.register_if_necessary  a) in
+   let zb = Option.unpack(Vdw_indexed_namer.register_if_necessary b) in 
    let new_env = 
      add_new_assignment old_env (name_for_x,
-          Vdw_combination.constructor [core_for_a,za;core_for_b,zb]) in 
-   (new_env,(omerge complement core_for_b,zb)) ;;   
+          Vdw_combination.constructor [za,core_for_a;zb,core_for_b]) in 
+   (new_env,(omerge complement core_for_b,Some zb)) ;;   
+
+   let foldable_extract old_env obstruction (complement,name_for_x) =
+    extract old_env obstruction (complement,Option.unpack name_for_x) ;;
 
     let obstructions_at_point m =
       Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4 ;;
@@ -85,11 +88,13 @@ let extract  (complement,name_for_x) obstruction=
    obstruction (complement,name_for_x) in 
   let _ = (Private.main_ref:=new_env) in answer ;;
 
+(*  
 let fold_extract pair obstructions =
     List.fold_left extract pair obstructions ;;
 
 let fold_extract_at_point pair m =
   fold_extract pair (Private.obstructions_at_point m) ;;
+*)
 
 let get x = Private.get (!Private.main_ref) x ;;
 
