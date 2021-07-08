@@ -4,6 +4,6 @@
 
 *)
 
-type t = C of (int list * string) list ;;
+type t = C of (Vdw_nonempty_index_t.t * (int list)) list ;;
 
   

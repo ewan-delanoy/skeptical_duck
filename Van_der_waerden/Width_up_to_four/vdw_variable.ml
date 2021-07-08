@@ -28,7 +28,9 @@ let set x y =
       None -> (Private.main_ref := (x,y) :: (!Private.main_ref))
       |Some old_y ->
            if old_y <> y 
-           then let msg = "Warning : "^x^" has already been set.\n Resetting ...\n" in 
+           then let msg = "Warning : "^
+                 (Vdw_nonempty_index.to_string x)^
+                 " has already been set.\n Resetting ...\n" in 
                let new_list = Image.image (
                   fun p -> let (x1,y1) = p in  if x1 = x then (x,y) else p 
                ) (!Private.main_ref) in 
