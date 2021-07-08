@@ -303,7 +303,7 @@ exception Homogeneous_translation_exn of (int list) * ( (int list) * (int list) 
 
 let homogeneous_translation criterion ll translation =
    match ll with 
-   [] -> None
+   [] -> Vdw_homogeneous_translation_result_t.Nothing_taken
    | head :: others ->
      let tester = test_joinability criterion translation in 
      let is_joinable = tester head in 
@@ -311,9 +311,9 @@ let homogeneous_translation criterion ll translation =
       (Some l1) -> raise (Homogeneous_translation_exn(translation,(head,l1)))
      | None -> 
        if is_joinable
-       then Some(Image.image (fun l->
+       then Vdw_homogeneous_translation_result_t.All_taken(Image.image (fun l->
         Ordered.safe_set oint (l@translation)) ll)
-       else None;;
+       else Vdw_homogeneous_translation_result_t.Nothing_taken;;
 
 
 module Width_up_to_four = struct 
