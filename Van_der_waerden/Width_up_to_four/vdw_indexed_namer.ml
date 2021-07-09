@@ -26,7 +26,7 @@ let register_new ll=
   then raise(Empty_argument_in_register_new_exn) else
   let x = List.length(List.hd ll) in 
   let y = consume_new x in 
-  let z = Vdw_nonempty_index_t.Usual(x,y) in 
+  let z = Vdw_nonempty_index_t.Part(x,y) in 
   let _ = (Vdw_variable.set z ll) in 
   z ;;
 
