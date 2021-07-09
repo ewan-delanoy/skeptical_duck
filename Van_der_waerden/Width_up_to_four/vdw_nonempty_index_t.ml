@@ -5,7 +5,8 @@
 *)
 
 type t = 
-   Usual of int * int  
-  |Solution of int ;;
+   Part of int * int  
+  |Helper of int * int 
+  |Solution of int * int;;
 
   

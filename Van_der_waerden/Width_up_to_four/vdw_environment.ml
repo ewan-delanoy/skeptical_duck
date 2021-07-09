@@ -6,15 +6,27 @@
 
 
 module Private = struct
+ 
+  let notify_new_assignment_among_variables (x,combination_for_x) =
+    let opt_expansion =(
+       try Some(Vdw_combination.expand_fully combination_for_x) with 
+       _ -> None  
+    ) in 
+    match opt_expansion with 
+    None -> ()
+    |Some expansion -> Vdw_variable.set x expansion ;;
 
-  let react_to_new_assignment (Vdw_environment_t.L old_list) (x,combination_for_x) =
+  let react_to_new_assignment 
+    (Vdw_environment_t.L old_list) (x,combination_for_x) =
     Vdw_environment_t.L (Image.image (
       fun (y,combination_for_y) -> 
           (y,Vdw_combination.replace_with_in (x,combination_for_x) combination_for_y)  
      ) old_list );;  
   
   let add_new_assignment old_env assignment =
-      let (Vdw_environment_t.L new_list)= react_to_new_assignment old_env assignment in 
+      let (Vdw_environment_t.L new_list)= 
+       react_to_new_assignment old_env assignment in 
+      let _ =  notify_new_assignment_among_variables assignment in 
       Vdw_environment_t.L (assignment :: new_list) ;;   
   
   let check (Vdw_environment_t.L assignments) = 
