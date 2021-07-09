@@ -316,6 +316,8 @@ let homogeneous_translation criterion ll translation =
        else Vdw_homogeneous_translation_result_t.Nothing_taken;;
 
 
+
+
 module Width_up_to_four = struct 
 
 (*
@@ -369,6 +371,11 @@ let is_admissible l = test_for_admissibility
 let homogeneous_translation  ll translation =
   homogeneous_translation 
    (Vdw_list_of_constraints_t.Defined_by_max_width 4) ll translation ;;
+
+let decompose n d=
+    let delta = (measure n) -(measure(n-1)) in 
+    let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
+    List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
 
 end ;;  
 
