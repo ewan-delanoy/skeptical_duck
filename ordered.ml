@@ -67,6 +67,51 @@ let rec sort (cmpr:'a Total_ordering.t) x=
        and y2=sort(cmpr)(snd temp1) in
        merge cmpr y1 y2;;
 
+let is_included_in (cmpr:'a Total_ordering.t) ox oy=
+       let rec tempf=(function (u,v)->
+         if u=[] then true else
+         if v=[] then false else
+         let xu=List.hd(u) and yu=List.tl(u) 
+         and xv=List.hd(v) and yv=List.tl(v) in
+         match cmpr(xu)(xv) with
+           Total_ordering.Lower->false
+         |Total_ordering.Equal->tempf(yu,yv)
+         |Total_ordering.Greater->tempf(u,yv)
+       ) in
+       tempf(ox,oy);;       
+
+let helper1_for_minimal_elements_selection (cmpr:'a Total_ordering.t)  
+       comparator =
+       let rec tempf = (fun
+       (treated,to_be_treated) -> match to_be_treated with 
+       [] -> (None,List.rev treated) 
+      |new_item :: others ->
+         if new_item = comparator 
+         then (* ignore and continue *) tempf (treated,others)
+         else       
+         if is_included_in cmpr new_item comparator
+         then (* finish *)  (Some new_item,[])
+         else 
+         if is_included_in cmpr comparator new_item
+         then tempf (treated,others)
+         else tempf (new_item::treated,others)  
+       ) in tempf ;;    
+     
+let rec helper2_for_minimal_elements_selection (cmpr:'a Total_ordering.t)  =
+        let rec tempf = (fun 
+       (treated,to_be_treated) -> match to_be_treated with 
+        [] -> List.rev treated 
+       |new_item :: others ->
+         let (opt,checked_subset) = 
+           helper1_for_minimal_elements_selection cmpr new_item ([],others) in 
+         if opt<>None 
+         then tempf(treated,others) 
+         else tempf(new_item::treated,checked_subset)) in   
+       tempf ;;
+         
+let select_minimal_elements_for_inclusion tr ll=
+       helper2_for_minimal_elements_selection tr ([],ll) ;;
+  
 
 end;;
 
@@ -126,19 +171,7 @@ let intersect = Private.intersect;;
 
 let intersects cmpr ox oy = not(does_not_intersect cmpr ox oy);;
 
-let is_included_in (cmpr:'a Total_ordering.t) ox oy=
-    let rec tempf=(function (u,v)->
-      if u=[] then true else
-      if v=[] then false else
-      let xu=List.hd(u) and yu=List.tl(u) 
-      and xv=List.hd(v) and yv=List.tl(v) in
-      match cmpr(xu)(xv) with
-        Total_ordering.Lower->false
-      |Total_ordering.Equal->tempf(yu,yv)
-      |Total_ordering.Greater->tempf(u,yv)
-    ) in
-    tempf(ox,oy);;
-
+let is_included_in = Private.is_included_in ;;
 
 let rec mem (cmpr:'a Total_ordering.t) x ol=
    let rec tempf=(function
@@ -157,6 +190,8 @@ let outsert cmpr x oy=Private.setminus cmpr oy [x];;
 let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
                      then ox 
                      else Private.sort cmpr ox;;
+
+let select_minimal_elements_for_inclusion = Private.select_minimal_elements_for_inclusion;;
 
 let setminus = Private.setminus;;
 
