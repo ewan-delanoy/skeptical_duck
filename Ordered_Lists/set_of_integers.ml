@@ -18,6 +18,7 @@ let merge l= Functor_for_sets.merge tr l;;
 let min x= Functor_for_sets.min tr x;;
 let outsert x oy= Functor_for_sets.outsert tr x oy;;
 let safe_set l= Functor_for_sets.safe_set tr l;;
+let select_minimal_elements_for_inclusion l= Functor_for_sets.select_minimal_elements_for_inclusion tr l;;
 let setminus x y= Functor_for_sets.setminus tr x y;;
 let singleton a= Functor_for_sets.singleton tr a;;
 let size_of_intersection x y= Functor_for_sets.size_of_intersection tr x y;;

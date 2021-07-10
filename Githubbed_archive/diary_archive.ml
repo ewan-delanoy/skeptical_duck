@@ -1,8 +1,6 @@
-
 (************************************************************************************************************************
-Snippet 53 : Extracting modules in a subdirectory
+Snippet 44 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let sd1 = Dfa_subdirectory.of_line "Van_der_Waerden/Width_up_to_four";;
@@ -19,9 +17,8 @@ let u3 = Image.image (
 ) u2 ;;
 
 (************************************************************************************************************************
-Snippet 52 : Painful debugging session for Needed_values.fg
+Snippet 43 : Painful debugging session for Needed_values.fg
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let sd= Dfa_subdirectory.of_line "Hex_analysis";;
@@ -81,9 +78,8 @@ let bad14 () = one_more_step starting_point ;;
 
 
 (************************************************************************************************************************
-Snippet 51 : Remove all "automatic" modules 
+Snippet 42 : Remove all "automatic" modules 
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let u1 = ae ();;
@@ -112,7 +108,7 @@ let h3 = List.iter (
 
 
 (************************************************************************************************************************
-Snippet 50 : Typical use of the Manage_diary module
+Snippet 41 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
 let ap_for_diary = Absolute_path.of_string "Githubbed_archive/diary_archive.ml";;
 
@@ -129,7 +125,7 @@ let diary_text = Io.read_whole_file ap_for_diary ;;
 let (g1,g2) =  Manage_diary.Private.read_and_parse ap_for_diary ;;
 
 (************************************************************************************************************************
-Snippet  49 : Deduce the lower measure from the usual measure (related to Vdw)
+Snippet  40 : Deduce the lower measure from the usual measure (related to Vdw)
 ************************************************************************************************************************)
 let measure n =
   if n<1 then 0 else 
@@ -169,7 +165,7 @@ let compute_lower_measure n =
 
 
 (************************************************************************************************************************
-Snippet  48 : Unfinished attempt for automated Crobj converters writing
+Snippet  39 : Unfinished attempt for automated Crobj converters writing
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -547,7 +543,7 @@ let elements_in_product = Str.split (Str.regexp_string "*") comp_type2 ;;
 *)
 
 (************************************************************************************************************************
-Snippet  47 : Ramblings from the Vdw_common module (II)
+Snippet  38 : Ramblings from the Vdw_common module (II)
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -591,7 +587,7 @@ exception Size_mismatch of (int list) * (int list) ;;
 let add_for_m n computed_val =
    let _ = Image.image (
        fun z->
-        let ttemp2 = Vdw_common.look_for_arithmetic_progressions_in_with_width_up_to 4 
+        let ttemp2 = Vdw_common.Private.look_for_arithmetic_progressions_in_with_width_up_to 4 
          (Set_of_integers_t.S z) in 
         if ttemp2<>[]
         then raise(Obstruction_encountered(z,ttemp2))
@@ -669,11 +665,11 @@ let v7 = (selector 18 w2  []);;
 *)
 
 (************************************************************************************************************************
-Snippet  46 : Ramblings from the Vdw_common module
+Snippet  37 : Ramblings from the Vdw_common module
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let nrps = Memoized.make(fun n->Vdw_common.naive_restricted_power_set
+let nrps = Memoized.make(fun n->Vdw_common.Private.naive_restricted_power_set
    ( Vdw_list_of_constraints_t.Defined_by_max_width 4)
    (Set_of_integers.safe_set(Ennig.ennig 1 n))
    );;
@@ -721,7 +717,7 @@ let w4 = Image.image (gmeasure_1 (
 let w5 = Ordered_misc.minimal_elts_wrt_inclusion w4;;
 
 (************************************************************************************************************************
-Snippet  45 : Add a new subdir to a Coma_state_t.t object
+Snippet  36 : Add a new subdir to a Coma_state_t.t object
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -737,7 +733,7 @@ Save_coma_state.save new_cs ;;
 
 
 (************************************************************************************************************************
-Snippet  44 : Check and fix initial comments in files
+Snippet  35 : Check and fix initial comments in files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -770,7 +766,7 @@ let z8 () = Explicit.image (
 
 
 (************************************************************************************************************************
-Snippet  43 : Relocate all modules in a subdirectory
+Snippet  34 : Relocate all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -791,7 +787,7 @@ let u3 = Image.image ( fun
 let act1 () = Explicit.image (fun mn->relo mn sd2) u3 ;;
 
 (************************************************************************************************************************
-Snippet  42 : Delete all modules in a subdirectory
+Snippet  33 : Delete all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -810,7 +806,7 @@ let act1 () = fgs u3 ;;
 
 
 (************************************************************************************************************************
-Snippet  41 : Code from an abandoned, self-contained module
+Snippet  32 : Code from an abandoned, self-contained module
 ************************************************************************************************************************)
 exception Too_many_arguments of int ;;
 
@@ -838,7 +834,7 @@ let add_appendix_to_last_line appendix lines =
       List.rev ((last_line^appendix)::other_lines) ;;    
 
 (************************************************************************************************************************
-Snippet  40 : Permutations far (wrt Hamming distance) from shift with constants. 
+Snippet  31 : Permutations far (wrt Hamming distance) from shift with constants. 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -871,7 +867,7 @@ Ennig.doyle (fun x->(x,hh x)) 3 10;;
 let hf n = List.hd(ff n) ;;
 
 (************************************************************************************************************************
-Snippet  39 : Mass inheritance from a Private submodule 
+Snippet  30 : Mass inheritance from a Private submodule 
 ************************************************************************************************************************)
 let z1 = 
   ["conventional_files_with_full_content";
@@ -886,15 +882,14 @@ let z1 =
   let z3 = "\n\n\n" ^ (String.concat "\n" z2) ^ "\n\n\n" ;; 
 
 (************************************************************************************************************************
-Snippet  38 : Typical use of the Other_coma_state module 
+Snippet  29 : Typical use of the Other_coma_state module 
 ************************************************************************************************************************)
-
 let act1 () = Other_coma_state.repopulate (Needed_data_summary_t.Everything);;
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
 
 (************************************************************************************************************************
-Snippet  37 : Testing freezing and unfreezing of world copies
+Snippet  28 : Testing freezing and unfreezing of world copies
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -932,18 +927,7 @@ Then, you can cd to the separate dir, launch utop in it, and enjoy.
 
 
 (************************************************************************************************************************
-Snippet  36 : Obsolete
-************************************************************************************************************************)
-
-
-
-(************************************************************************************************************************
-Snippet  35 : Obsolete
-************************************************************************************************************************)
-
-
-(************************************************************************************************************************
-Snippet  34 : Fixing a Coma_state_object.t using Coma_state_automatic.restrict
+Snippet  27 : Fixing a Coma_state_object.t using Coma_state_automatic.restrict
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -966,7 +950,7 @@ let new_cs = Coma_state.Automatic.restrict cs good_modules ;;
 Save_coma_state.save new_cs ;;
 
 (************************************************************************************************************************
-Snippet  33 : Remove interval of lines in a file 
+Snippet  26 : Remove interval of lines in a file 
 ************************************************************************************************************************)
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
@@ -1010,7 +994,7 @@ let v8 = "\n\n\n" ^ (String.concat "\n" v7) ^ "\n\n\n";;
 let v9 = print_string v8 ;;
 
 (************************************************************************************************************************
-Snippet  32 : Removing module wrappers in a set of files
+Snippet  25 : Removing module wrappers in a set of files
 ************************************************************************************************************************)
 let remove_module_wrapper_in_text text =
   let lines = Lines_in_string.core text in 
@@ -1036,7 +1020,7 @@ let u1 = More_unix.simple_ls the_dir ;;
 let act1 () = List.iter remove_module_wrapper_in_file u1 ;;
 
 (************************************************************************************************************************
-Snippet  31 : Sorting names in the dictionary order
+Snippet  24 : Sorting names in the dictionary order
 ************************************************************************************************************************)
 let z1 = Ordered.sort Total_ordering.lex_for_strings 
 [
@@ -1058,7 +1042,7 @@ let z2 = "\n\n\n" ^ (String.concat "\n" z1) ^ "\n\n\n" ;;
 print_string z2;;
 
 (************************************************************************************************************************
-Snippet  30 : Remove phpbb links to footnotes 
+Snippet  23 : Remove phpbb links to footnotes 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -1078,23 +1062,18 @@ let act1 () = Replace_inside.replace_several_inside_file reps ap1;;
 
 
 (************************************************************************************************************************
-Snippet  29 : Obsolete
-************************************************************************************************************************)
-
-
-(************************************************************************************************************************
-Snippet  28 : Compute misfits in VdW(<=4)
+Snippet  22 : Compute misfits in VdW(<=4)
 ************************************************************************************************************************)
 open Needed_values;;
 
 let ns = Memoized.make(fun n->
-  Vdw_common.naive_solver
+  Vdw_common.Unused.naive_solver
  ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
    (Set_of_integers.safe_set(Ennig.ennig 1 n))
 );;
 
 let nps = Memoized.make(fun n->
-  Vdw_common.naive_restricted_power_set
+  Vdw_common.Private.naive_restricted_power_set
  ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
    (Set_of_integers.safe_set(Ennig.ennig 1 n))
 );; 
@@ -1105,7 +1084,7 @@ let translated_nps = Memoized.make(fun n->
 );;  
 
 let is_admissible l= 
-  Vdw_common.test_for_admissibility 
+  Vdw_common.Private.test_for_admissibility 
   ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
   (Set_of_integers.safe_set l);;
 
@@ -1134,7 +1113,7 @@ let level = Memoized.make(fun p->
    List.filter (fun x->(List.length x)=p) big_base
 ) ;; 
 
-let order_for_sketch_pairs = Total_ordering.product Vdw_common.oint Vdw_common.oord ;; 
+let order_for_sketch_pairs = Total_ordering.product Vdw_common.Private.oint Vdw_common.Private.oord ;; 
 let ref_for_sketch_pairs = ref [] ;;
 let hashtbl_for_sketch_pair_expansion = Hashtbl.create 100 ;; 
 
@@ -1184,8 +1163,8 @@ let misfits_for_8 = Option.filter_and_unpack (
 
 let see =(hi misfits_for_7,hi misfits_for_8,hi all_misfits) ;;
 
-let oint = Vdw_common.oint ;;
-let oord = Vdw_common.oord ;;
+let oint = Vdw_common.Private.oint ;;
+let oord = Vdw_common.Private.oord ;;
 
 let list1 = 
   [
@@ -1244,7 +1223,7 @@ let list8 = Image.image (fun x->List.nth list7 (x-1)) [2; 3; 4; 6; 7; 8; 13] ;;
 
 
 (************************************************************************************************************************
-Snippet  27 : Typical use of Html_to_phpbb.translate
+Snippet  21 : Typical use of Html_to_phpbb.translate
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -1258,7 +1237,7 @@ let ap1 = Absolute_path.of_string
 Io.overwrite_with ap1 u2;;  
 
 (************************************************************************************************************************
-Snippet  26 : Interaction between "beginning" and "end" of a large tex file
+Snippet  20 : Interaction between "beginning" and "end" of a large tex file
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -1318,7 +1297,7 @@ let usual_cleaning () =
 
 
 (************************************************************************************************************************
-Snippet  25 : Add blank space at the beginning of lines (to make copy&paste easier )
+Snippet  19 : Add blank space at the beginning of lines (to make copy&paste easier )
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -1344,12 +1323,7 @@ Io.overwrite_with the_ap new_text;;
 
 
 (************************************************************************************************************************
-Snippet  24 : Obsolete
-************************************************************************************************************************)
-
-
-(************************************************************************************************************************
-Snippet  23 : Delete some HTML footnotes (with their links) and reindex
+Snippet  18 : Delete some HTML footnotes (with their links) and reindex
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -1411,7 +1385,7 @@ Io.overwrite_with ap1 new_text ;;
 
 
 (************************************************************************************************************************
-Snippet  22 : Remove contiguous lines in a file
+Snippet  17 : Remove contiguous lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -1426,7 +1400,7 @@ Replace_inside.replace_inside_file (to_be_deleted,"") the_ap ;;
 
 
 (************************************************************************************************************************
-Snippet  21 : Put fillable footnotes in an html draft 
+Snippet  16 : Put fillable footnotes in an html draft 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -1443,7 +1417,7 @@ let memo = String.concat "\n\n" (Ennig.doyle write1 121 170) ;;
 Io.overwrite_with ap memo ;; 
 
 (************************************************************************************************************************
-Snippet  20 : Aggregate pages
+Snippet  15 : Aggregate pages
 ************************************************************************************************************************)
 let home = Sys.getenv "HOME" ;;
 let workdir = home^"/Downloads/Adrifor";;
@@ -1457,7 +1431,7 @@ Coherent_pdf.implode ("p","") ;;
 Coherent_pdf.merge ["part1";"part2";"part3"] "whole";;
 
 (************************************************************************************************************************
-Snippet  19 : Cleaning up and fixing a chaotic mass download
+Snippet  14 : Cleaning up and fixing a chaotic mass download
 ************************************************************************************************************************)
 let downloads_s_dir = home ^ "/Downloads";; 
 
@@ -1508,7 +1482,7 @@ Coherent_pdf.implode ("p","") ;;
 
 
 (************************************************************************************************************************
-Snippet  18 : Update footnote format in old phpbb text
+Snippet  13 : Update footnote format in old phpbb text
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -1567,7 +1541,7 @@ Io.overwrite_with ap corrected_text ;;
 
 
 (************************************************************************************************************************
-Snippet  17 : Combinatorial musings
+Snippet  12 : Combinatorial musings
 ************************************************************************************************************************)
 exception Hard_computation of string * int ;;
 
@@ -1687,7 +1661,7 @@ let res1 = Ennig.doyle (fun x->fst(ff x)) 1 30;;
 
 
 (************************************************************************************************************************
-Snippet  16 : Massive conversion of audios into videos using ffmepgs
+Snippet  11 : Massive conversion of audios into videos using ffmepgs
 ************************************************************************************************************************)
 let base1 =
   [
@@ -1864,7 +1838,7 @@ let cmds = cmds1 @ cmds2 @ cmds3 ;;
 
 
 (************************************************************************************************************************
-Snippet  15 : Removing misinterpreted characters from a freshly OCR-ed doc
+Snippet  10 : Removing misinterpreted characters from a freshly OCR-ed doc
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -1911,7 +1885,7 @@ Replace_inside.replace_several_inside_file
    ["\n\012\n","\n"] tex_ap ;;
 
 (************************************************************************************************************************
-Snippet  14 : Typical use of the Trim_text_between_tags module
+Snippet  9 : Typical use of the Trim_text_between_tags module
 ************************************************************************************************************************)
 let home = Sys.getenv "HOME" ;;
 let ap = Absolute_path.of_string 
@@ -1921,7 +1895,7 @@ Trim_text_between_tags.in_file [("[i]","[/i]")] ap;;
 
 
 (************************************************************************************************************************
-Snippet  13 : Put fillable footnotes in a phpbb draft 
+Snippet  8 : Put fillable footnotes in a phpbb draft 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -1936,7 +1910,7 @@ let memo = String.concat "\n\n" (Ennig.doyle write1 1 5) ;;
 Io.overwrite_with ap memo ;; 
 
 (************************************************************************************************************************
-Snippet  12 : Finding extremal vertices in a polytope
+Snippet  7 : Finding extremal vertices in a polytope
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -2014,9 +1988,9 @@ let u3 = List.filter (
 *)
 
 (************************************************************************************************************************
-Snippet  11 : Abandoned code snippet to remove paragraph containing footnotes.
+Snippet  6 : Abandoned code snippet to remove paragraph containing footnotes.
 It is much simpler to add html paragraph tags only when the region of text
-does not contain footnotes (see the Htmlize module and snippet 9)
+does not contain footnotes (see the Htmlize module and snippet 4)
 ************************************************************************************************************************)
 exception Unbalanced_html_paragraph_tags of int * int ;;
 exception Nested_html_paragraphs of (int * int) * (int * int) ;;
@@ -2059,7 +2033,7 @@ let remove_paragraphs_containing_footnotes txt l= ();;
 
 
 (************************************************************************************************************************
-Snippet  10 : Mass deletion of modules 
+Snippet  5 : Mass deletion of modules 
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -2090,7 +2064,7 @@ let u6 = List.filter (
 let u7=List.rev(Image.image fst u6);;
 
 (************************************************************************************************************************
-Snippet  9 : Code to OCR-size PDF's into .txt (and later html)
+Snippet  4 : Code to OCR-size PDF's into .txt (and later html)
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -2163,7 +2137,7 @@ let act () = Replace_inside.replace_several_inside_file
 
 
 (************************************************************************************************************************
-Snippet  8 : Typical use of the Read_russian module
+Snippet  3 : Typical use of the Read_russian module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -2181,7 +2155,7 @@ Replace_inside.overwrite_between_markers_inside_file
   ("\\begin{document}","\\end{document}") ap1;;
 
 (************************************************************************************************************************
-Snippet  7 : Convert footnotes between phpBB and HTML
+Snippet  2 : Convert footnotes between phpBB and HTML
 ************************************************************************************************************************)
 let peggy j =
    let sj=string_of_int j in 
@@ -2202,7 +2176,7 @@ let peggy j =
  
 
 (************************************************************************************************************************
-Snippet  6 : Typical use of the Coherent_pdf module on a freshly scanned doc
+Snippet  1 : Typical use of the Coherent_pdf module on a freshly scanned doc
 ************************************************************************************************************************)
 let home = Sys.getenv "HOME" ;;
 let workdir = home^"/Downloads/Building_Site";;
@@ -2275,101 +2249,4 @@ let act3 () = Coherent_pdf.remove_page_range_in_in_a_total_of
 let act4 ()= Coherent_pdf.insert_in_just_after 
     ~inserted_one: "p272" ~receiving_one: "mariage"
      ~page_number:315 ~initial_total_length:732;;
-
-
-(************************************************************************************************************************
-Snippet  5 : Reconstructing a Hex_composite_pattern_t.object 
-************************************************************************************************************************)
-let standardized_cpattern = Hex_composite_pattern_t.C (Hex_pattern_t.Pat [((5, 4), true); ((6, 2), true)],
-Hex_unified_connector_t.Named
- {Hex_named_connector_t.name =
-   Hex_connector_name_t.Border
-    (Hex_border_connector_name_t.Eyed_claw (Hex_cardinal_direction_t.Up,
-      Hex_cardinal_direction_t.Right));
-  entry = (Hex_island_t.I(Hex_anchor_t.No_anchor,Set_of_poly_pairs_t.S [(4, 3)]));
-  junction =
-   [(1, 1); (1, 2); (1, 3); (1, 4); (1, 5); (1, 6); (1, 7); (2, 1); 
-    (2, 2); (2, 3); (2, 4); (2, 5); (2, 6); (3, 1); (3, 2); (3, 3); 
-    (3, 4); (3, 5); (4, 2)];
-  exit = (Hex_island_t.I(Hex_anchor_t.Single_anchor Hex_cardinal_direction_t.Up,
-  Set_of_poly_pairs_t.S [])); apex = Some (4, 3)}) ;;
-let (Hex_composite_pattern_t.C(_,uc_in_sc)) = standardized_cpattern ;;
-let nc_in_sc = (function 
-(Hex_unified_connector_t.Named x)->x 
-| _-> failwith("this will never happen")) uc_in_sc ;;
-let (Hex_island_t.I(anchor1_in_nc,pairs1_in_nc)) = nc_in_sc.Hex_named_connector_t.entry ;;
-let (Hex_island_t.I(anchor2_in_nc,pairs2_in_nc)) = nc_in_sc.Hex_named_connector_t.exit ;;
-
-
-
-(************************************************************************************************************************
-Snippet  4 : Detecting irregularities in games
-************************************************************************************************************************)
-Hex_persistent.initialize_all_data_if_necessary ();;
-
-let (Hex_fg_double_list_t.DL(black_games,white_games)) = (!(Hex_persistent.games_ref)) ;;
-
-let all_games = black_games @ white_games;;
-let indexed_games = Ennig.index_everything all_games ;;
-let indexed_mps = Explicit.image (fun (idx,game)->
-   (idx,Hex_mp_report.cumulative_constructor game) ) indexed_games;;
-
-let irregs = Option.filter_and_unpack (
-  fun (idx,mpr) -> let res = Hex_mp_report.irregularities mpr in 
-  if  res<>([],[],[])
-  then Some(idx,res)
-  else None
-) indexed_mps;;
-
-(************************************************************************************************************************
-Snippet  3 : Reconstructing an inner connector from scratch
-************************************************************************************************************************)
-let z1 = Hex_typical_inner_connector_name.full_constructor 
-   Hex_typical_inner_connector_name_t.Haddock3 Hex_cardinal_direction_t.Up;; 
-
-let z2 =  Hex_connector.translate (2,4) z1 ;;
-
-let z3 = Hex_connector_name_t.Inner(Hex_inner_connector_name_t.Typical(
-   Hex_typical_inner_connector_name_t.Haddock3,
-   Hex_cardinal_direction_t.Up));;
-
-let z4 = Hex_named_connector.Private.add_name z3 z2;;
-
-
-(************************************************************************************************************************
-Snippet  2 :  Debugging a now-obsolete function in Hex_uog_list
-************************************************************************************************************************)
-Hex_persistent.initialize_all_data_if_necessary ();;
-(*
-let opt1 = (!(Hex_uog_list.Private.ref_for_compute_maximal_jockeyed_opening_exn));;
-*)
-
-let (game1,gl1) = Option.unpack None;;
-
-let seq1=game1.Hex_finished_game_t.sequence_of_moves ;;
-let (Hex_fg_double_list_t.DL(black_games,white_games)) = gl1;;
-
-let measure1 seq l_games =
-     List.filter (fun game-> 
-      Listennou.comparable_for_prefix_order seq game.Hex_finished_game_t.sequence_of_moves
-     )l_games ;; 
-
-let measure2 seq = (measure1 seq black_games,measure1 seq white_games) ;;     
-
-let measure3 seq = let (a,b) = measure2 seq in (a<>[],b<>[]);;
-
-let ff k = measure3 (Listennou.big_head k seq1);;
-
-
-(************************************************************************************************************************
-Snippet  1 :  Extract games
-************************************************************************************************************************)
-open Needed_values;;
-
-Hex_persistent.initialize_all_data_if_necessary ();;
-
-let (Hex_fg_double_list_t.DL(black_games,white_games)) = (!(Hex_persistent.games_ref)) ;;
-
-let all_games = black_games @ white_games;;
-
 
