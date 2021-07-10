@@ -551,12 +551,12 @@ Snippet  47 : Ramblings from the Vdw_common module (II)
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let nrps = Memoized.make(fun n->Vdw_common.naive_restricted_power_set
+let nrps = Memoized.make(fun n->Vdw_common.Private.naive_restricted_power_set
    ( Vdw_list_of_constraints_t.Defined_by_max_width 4)
    (Set_of_integers.safe_set(Ennig.ennig 1 n))
    );;
 
-let ns = Memoized.make(fun n->Vdw_common.naive_solver
+let ns = Memoized.make(fun n->Vdw_common.Unused.naive_solver
    ( Vdw_list_of_constraints_t.Defined_by_max_width 4)
    (Set_of_integers.safe_set(Ennig.ennig 1 n))
    );;

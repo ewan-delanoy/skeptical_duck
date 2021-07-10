@@ -42,12 +42,14 @@ module Private = struct
           ) assignments ;;
   
   let get (Vdw_environment_t.L assignments) x =  
-     List.assoc x assignments;;  
+     match List.assoc_opt x assignments with 
+     Some(y)->y 
+    |None -> Vdw_combination.constructor [x,[]];;  
 
 
   exception Empty_result_in_ext_part ;;
 
-let oint = Vdw_common.oint ;;  
+let oint = Total_ordering.for_integers ;;  
 
 let extract old_env obstruction (complement,name_for_x) =
    (*

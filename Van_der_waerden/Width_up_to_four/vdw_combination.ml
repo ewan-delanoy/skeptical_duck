@@ -6,6 +6,10 @@
 
 module Private = struct 
 
+   let oord = 
+      Total_ordering.silex_compare 
+         Total_ordering.for_integers ;;
+
    let merge = Ordered.merge Total_ordering.for_integers ;;   
    
    let order_for_pairs =
@@ -30,7 +34,7 @@ module Private = struct
         Vdw_homogeneous_translation_result_t.Nothing_taken -> None 
         |Vdw_homogeneous_translation_result_t.All_taken(ll) -> Some ll
      ) temp1 in 
-     Ordered.fold_merge Vdw_common.oord temp2 ;;
+     Ordered.fold_merge Private.oord temp2 ;;
    
    exception Homogeneous_translation_exn of Vdw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
    
@@ -53,7 +57,7 @@ module Private = struct
         Some((core1,translation1),ll)
    ) temp2 in
     (constructor (Image.image fst temp3),
-    Ordered.fold_merge Vdw_common.oord (Image.image snd temp3));;
+    Ordered.fold_merge Private.oord (Image.image snd temp3));;
    
    
    
@@ -68,7 +72,7 @@ module Private = struct
         let (Vdw_combination_t.C content_for_x) = combination_for_x in 
        let new_center = Image.image (
         fun (core1,translation1)->
-              (core1,Ordered.merge Vdw_common.oint 
+              (core1,Ordered.merge Total_ordering.for_integers 
               translation translation1)
        ) content_for_x in 
        constructor(List.rev_append before (new_center@after)) ;;

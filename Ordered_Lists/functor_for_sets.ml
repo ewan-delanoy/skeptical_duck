@@ -10,6 +10,42 @@ instance defines only the value it needs.
 
 type ('a,'b) parameter = (('a list) -> 'b) * ('b -> ('a list)) * ('a Total_ordering.t);;
 
+module Private = struct 
+
+     let helper1_for_minimal_elements_selection ((co,deco,cmpr):('a,'b) parameter)  
+     comparator =
+     let rec tempf = (fun
+     (treated,to_be_treated) -> match to_be_treated with 
+     [] -> (None,List.rev treated) 
+    |new_item :: others ->
+       if new_item = comparator 
+       then (* ignore and continue *) tempf (treated,others)
+       else       
+       if Ordered.is_included_in cmpr (deco new_item) (deco comparator)
+       then (* finish *)  (Some new_item,[])
+       else 
+       if Ordered.is_included_in cmpr (deco comparator) (deco new_item)
+       then tempf (treated,others)
+       else tempf (new_item::treated,others)  
+     ) in tempf ;;    
+   
+   let rec helper2_for_minimal_elements_selection ((co,deco,cmpr):('a,'b) parameter)  =
+      let rec tempf = (fun 
+     (treated,to_be_treated) -> match to_be_treated with 
+      [] -> List.rev treated 
+     |new_item :: others ->
+       let (opt,checked_subset) = 
+         helper1_for_minimal_elements_selection (co,deco,cmpr) new_item ([],others) in 
+       if opt<>None 
+       then tempf(treated,others) 
+       else tempf(new_item::treated,checked_subset)) in   
+     tempf ;;
+       
+   let select_minimal_elements_for_inclusion tr ll=
+     helper2_for_minimal_elements_selection tr ([],ll) ;;
+
+end ;;     
+
 let does_not_intersect ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= Ordered.does_not_intersect cmpr (deco ox) (deco oy);;
     
@@ -59,6 +95,8 @@ let outsert ((co,deco,cmpr):('a,'b) parameter)
 
 let safe_set ((co,deco,cmpr):('a,'b) parameter) 
      l= co(Ordered.safe_set cmpr l);;
+
+let select_minimal_elements_for_inclusion = Private.select_minimal_elements_for_inclusion;;
 
 let setminus ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Ordered.setminus cmpr (deco ox) (deco oy));;
