@@ -298,8 +298,22 @@ let from_snd (f:'b Total_ordering_t.t)=((fun (x1,y1) (x2,y2)->
   else standard x1 x2
 ): ('a*'b) Total_ordering_t.t );;
 
+let cardinality_then_diameter =((fun l1 l2->
+  let first_try=standard (List.length l1) (List.length l2) in
+  if first_try<>Total_ordering_result_t.Equal 
+  then first_try
+  else 
+  let diam1 = List.hd(List.rev l1) - (List.hd l1)
+  and diam2 = List.hd(List.rev l2) - (List.hd l2) in 
+  let second_try=standard diam1 diam2 in
+  if second_try<>Total_ordering_result_t.Equal 
+  then second_try
+  else lex_compare for_integers l1 l2
+): (int list) Total_ordering_t.t );;
+
 end ;;
 
+let cardinality_then_diameter = Private.cardinality_then_diameter ;;
 let for_integers = Private.for_integers ;;
 let lex_compare = Private.lex_compare ;;
 let lex_for_strings = Private.lex_for_strings ;;
