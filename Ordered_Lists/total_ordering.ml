@@ -5,7 +5,7 @@
 *)
 
 
-
+module Private = struct
 let leq (computer:'a Total_ordering_t.t) x y=
    let v=computer(x)(y) in
    (v=Total_ordering_result_t.Lower)||(v=Total_ordering_result_t.Equal);;
@@ -298,6 +298,16 @@ let from_snd (f:'b Total_ordering_t.t)=((fun (x1,y1) (x2,y2)->
   else standard x1 x2
 ): ('a*'b) Total_ordering_t.t );;
 
- 
+end ;;
+
+let for_integers = Private.for_integers ;;
+let lex_compare = Private.lex_compare ;;
+let lex_for_strings = Private.lex_for_strings ;;
+let product = Private.product ;;
+let silex_compare = Private.silex_compare ;;
+let silex_for_strings = Private.silex_for_strings ;;
+let standard = Private.standard ;;
+let standard2 = Private.standard2 ;;
+
  
            

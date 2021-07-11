@@ -1,4 +1,36 @@
 (************************************************************************************************************************
+Snippet 46 : 
+************************************************************************************************************************)
+open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 45 : Search/replace following some module refactoring
+************************************************************************************************************************)
+open Needed_values ;;
+
+let aps = ref [] ;;
+let list_for_reps = ref [] ;;
+aps := (Image.image (fun s->Absolute_path.of_string s) 
+  [
+    "ordered.ml";
+    "Van_der_Waerden/Width_up_to_four/vdw_nonempty_index.ml";
+    "Van_der_Waerden/vdw_common.ml";
+    "Ordered_Lists/functor_for_sets.ml";
+    "Ocaml_analysis/follow_ocaml_values.ml";
+  ] );;
+list_for_reps := [
+  "Total_ordering.t)","Total_ordering_t.t)";
+  "Total_ordering.t )","Total_ordering_t.t )";
+  "Total_ordering.t\r","Total_ordering_t.t\r";
+] ;;
+
+
+let act1 () = List.iter 
+  (Replace_inside.replace_several_inside_file 
+     (!list_for_reps)) (!aps);
+
+(************************************************************************************************************************
 Snippet 44 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
