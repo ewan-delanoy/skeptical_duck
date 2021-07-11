@@ -9,7 +9,7 @@ module Private=struct
 let order_for_string_pairs =
   ((Total_ordering.product 
   Total_ordering.lex_for_strings Total_ordering.standard): 
-  (string*string) Total_ordering.t
+  (string*string) Total_ordering_t.t
   );;
 
 let followed_values_from_items l=
