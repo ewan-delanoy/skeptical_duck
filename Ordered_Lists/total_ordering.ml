@@ -6,19 +6,17 @@
 
 
 
-type 'a t=('a -> 'a ->Total_ordering_result_t.t);;
-
-let leq (computer:'a t) x y=
+let leq (computer:'a Total_ordering_t.t) x y=
    let v=computer(x)(y) in
    (v=Total_ordering_result_t.Lower)||(v=Total_ordering_result_t.Equal);;
    
- let lt (computer:'a t) x y=(computer(x)(y)=Total_ordering_result_t.Lower);;   
+ let lt (computer:'a Total_ordering_t.t) x y=(computer(x)(y)=Total_ordering_result_t.Lower);;   
  
- let geq (computer:'a t) x y=
+ let geq (computer:'a Total_ordering_t.t) x y=
    let v=computer(x)(y) in
    (v=Total_ordering_result_t.Lower)||(v=Total_ordering_result_t.Equal);;
    
- let gt (computer:'a t) x y=(computer(x)(y)=Total_ordering_result_t.Greater);;   
+ let gt (computer:'a Total_ordering_t.t) x y=(computer(x)(y)=Total_ordering_result_t.Greater);;   
  
  let from_lt f=
    let temp1=(fun x y->
@@ -28,7 +26,7 @@ let leq (computer:'a t) x y=
           then Total_ordering_result_t.Greater
           else Total_ordering_result_t.Equal
    ) in
-   (temp1:'a t);;
+   (temp1:'a Total_ordering_t.t);;
  
  let standard_completion f g=
   let answer=(fun x y->
@@ -42,7 +40,7 @@ let leq (computer:'a t) x y=
                   then Total_ordering_result_t.Lower
                   else Total_ordering_result_t.Greater
   ) in
-  (answer: 'a t);;
+  (answer: 'a Total_ordering_t.t);;
  
  let standard=((fun x y->
     if x=y
@@ -50,16 +48,16 @@ let leq (computer:'a t) x y=
     else if x<y
          then Total_ordering_result_t.Lower
          else Total_ordering_result_t.Greater
- ): 'a t);;
+ ): 'a Total_ordering_t.t);;
  
 let standard2=((fun (x1,y1) (x2,y2)->
     let t1=standard x1 x2 in 
     if t1<> Total_ordering_result_t.Equal 
     then t1
     else standard y1 y2
- ): ('a * 'b) t);;
+ ): ('a * 'b) Total_ordering_t.t);;
 
- let completion f (g:'a t)=
+ let completion f (g:'a Total_ordering_t.t)=
   let answer=(fun x y->
    if f(y)(x)
    then Total_ordering_result_t.Greater
@@ -67,7 +65,7 @@ let standard2=((fun (x1,y1) (x2,y2)->
         then Total_ordering_result_t.Lower
          else g(x)(y)
   ) in
-  (answer: 'a t);;
+  (answer: 'a Total_ordering_t.t);;
  
 let combine=((fun ~tried_first ~tried_second->
   (fun x y->
@@ -76,18 +74,18 @@ let combine=((fun ~tried_first ~tried_second->
    then first_trial
    else tried_second x y
   ) ): 
-    tried_first:('a t) -> tried_second:('a t) -> ('a t)
+    tried_first:('a Total_ordering_t.t) -> tried_second:('a Total_ordering_t.t) -> ('a Total_ordering_t.t)
   );;
 
- let product (f:'a t) (g:'b t)=
+ let product (f:'a Total_ordering_t.t) (g:'b Total_ordering_t.t)=
   ((fun (x1,y1) (x2,y2)->
      let t=f(x1)(x2) in
      if t<>Total_ordering_result_t.Equal 
      then t
      else g y1 y2
- ): ('a*'b) t);;
+ ): ('a*'b) Total_ordering_t.t);;
  
- let triple_product (f:'a t) (g:'b t) (h:'c t)=
+ let triple_product (f:'a Total_ordering_t.t) (g:'b Total_ordering_t.t) (h:'c Total_ordering_t.t)=
   ((fun (x1,y1,z1) (x2,y2,z2)->
      let tx=f(x1)(x2) in
      if tx<>Total_ordering_result_t.Equal 
@@ -96,9 +94,9 @@ let combine=((fun ~tried_first ~tried_second->
           if ty<>Total_ordering_result_t.Equal 
           then ty
           else h z1 z2
- ): ('a*'b*'c) t);;
+ ): ('a*'b*'c) Total_ordering_t.t);;
  
- let rec lex_compare (f:'a t)=
+ let rec lex_compare (f:'a Total_ordering_t.t)=
   let rec tempf=(
     fun l1 l2->
      match l1 with 
@@ -112,18 +110,18 @@ let combine=((fun ~tried_first ~tried_second->
            if t<>Total_ordering_result_t.Equal then t else
            tempf b1 b2
       )) in
-     (tempf:>( ('a list) t));;
+     (tempf:>( ('a list) Total_ordering_t.t));;
  
 
 
-let silex_compare (f:'a t)=
+let silex_compare (f:'a Total_ordering_t.t)=
   let tempf=(
     fun l1 l2->
      let t=standard(List.length l1)(List.length l2) in
      if t<>Total_ordering_result_t.Equal then t else
      lex_compare f l1 l2
   ) in
-   (tempf:>( ('a list) t));;
+   (tempf:>( ('a list) Total_ordering_t.t));;
  
 
 let from_list (l:'a list)=
@@ -137,7 +135,7 @@ let from_list (l:'a list)=
   tempf l) in
   from_lt tempc;;
 
-let min (f:'a t)=function
+let min (f:'a Total_ordering_t.t)=function
  []->failwith("Min of the empty set is undefined")
  |a::b->
    let rec tempf=(fun
@@ -149,7 +147,7 @@ let min (f:'a t)=function
    ) in
    tempf(a,b);;
 
-let max (f:'a t)=function
+let max (f:'a Total_ordering_t.t)=function
  []->failwith("Max of the empty set is undefined")
  |a::b->
    let rec tempf=(fun
@@ -161,7 +159,7 @@ let max (f:'a t)=function
    ) in
    tempf(a,b);;
    
-let minimize_it_with_care (cf:'a t) 
+let minimize_it_with_care (cf:'a Total_ordering_t.t) 
    f=function
 []->failwith("careful min on empty set undefined")
 |x::y->
@@ -180,7 +178,7 @@ in
  minimize_it_with_care0([x],f(x),y);;
 
 
-let maximize_it_with_care (cf:'a t) 
+let maximize_it_with_care (cf:'a Total_ordering_t.t) 
    f=function
 []->failwith("careful max on empty set undefined")
 |x::y->
@@ -198,7 +196,7 @@ let maximize_it_with_care (cf:'a t)
 in
  maximize_it_with_care0([x],f(x),y);;
 
-let modify_locally (f:'a t) l=
+let modify_locally (f:'a Total_ordering_t.t) l=
   let big_m=max(f)(l) in
   let tempf=(fun x y->
     if List.mem(x)(l)
@@ -212,7 +210,7 @@ let modify_locally (f:'a t) l=
          else f x y
   
   ) in
-  (tempf:>( 'a t));;
+  (tempf:>( 'a Total_ordering_t.t));;
 
 let list_for_dictionary_order=
   [97; 65; 98; 66; 99; 67; 100; 68; 101; 69; 102; 70; 103; 71; 104; 72; 105;
@@ -230,10 +228,10 @@ let for_characters=let tempf=(fun x y->
   standard 
         (reindexer_for_dictionary_order(int_of_char x))
         (reindexer_for_dictionary_order(int_of_char y))
-  ) in (tempf:>char t);;
+  ) in (tempf:>char Total_ordering_t.t);;
 
 let for_integers=let tempf=(fun (x:int) (y:int)-> standard x y 
-    ) in (tempf:>int t);;  
+    ) in (tempf:>int Total_ordering_t.t);;  
 
 let lex_for_strings=
     ((fun s1 s2->
@@ -244,7 +242,7 @@ let lex_for_strings=
       match Option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Ennig.ennig 0 (m-1)) with
       None->standard m1 m2
       |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
-    ) : string t);;
+    ) : string Total_ordering_t.t);;
 
 let silex_for_strings=
       ((fun s1 s2->
@@ -255,7 +253,7 @@ let silex_for_strings=
         if first_try<>Total_ordering_result_t.Equal
         then first_try
         else lex_for_strings s1 s2
-      ) : string t);;    
+      ) : string Total_ordering_t.t);;    
 
 let lex_for_string_lists=
   ((fun l1 l2->
@@ -267,7 +265,7 @@ let lex_for_string_lists=
       else if right_part=[] 
            then Total_ordering_result_t.Greater 
            else lex_for_strings (List.hd left_part) (List.hd right_part)  
-  ) : (string list) t);;
+  ) : (string list) Total_ordering_t.t);;
 
 let for_longest_match=  
     ((fun s1 s2->
@@ -282,7 +280,7 @@ let for_longest_match=
           (String.sub s1 0 m2)=s2
       ) then Total_ordering_result_t.Lower else
       lex_for_strings s1 s2
-     ): string t);;
+     ): string Total_ordering_t.t);;
 
 
 let for_longest_match_pairs=  
@@ -291,14 +289,14 @@ let for_longest_match_pairs=
   if first_try<>Total_ordering_result_t.Equal 
   then first_try
   else standard v1 v2
- ): (string*'b) t);;
+ ): (string*'b) Total_ordering_t.t);;
  
-let from_snd (f:'b t)=((fun (x1,y1) (x2,y2)->
+let from_snd (f:'b Total_ordering_t.t)=((fun (x1,y1) (x2,y2)->
   let first_try=f y1 y2 in
   if first_try<>Total_ordering_result_t.Equal 
   then first_try
   else standard x1 x2
-): ('a*'b) t );;
+): ('a*'b) Total_ordering_t.t );;
 
  
  
