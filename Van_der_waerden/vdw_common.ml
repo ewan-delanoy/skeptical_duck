@@ -88,7 +88,7 @@ module Private = struct
     and pre_part2 = obstructions_passing_through_two_points_above width soi  in 
     let part2 = Image.image (fun x->[x]) pre_part2 in 
     let temp1 = Ordered.select_minimal_elements_for_inclusion oint part1 @ part2 in 
-    Ordered.sort oord temp1 ;;
+    Ordered.sort Total_ordering.cardinality_then_diameter temp1 ;;
     
   
 
@@ -152,7 +152,7 @@ let first_cut constraints soi =
 
 let silex_order = ((fun x y->Total_ordering.silex_compare Total_ordering.for_integers 
    (Set_of_integers.forget_order x)  (Set_of_integers.forget_order y))
-  :> Set_of_integers_t.t Total_ordering.t );;    
+  :> Set_of_integers_t.t Total_ordering_t.t );;    
 let is_silex_lower_than x y= (silex_order x y)=Total_ordering_result_t.Lower  ;;
 
 let naive_half_power_set soi =

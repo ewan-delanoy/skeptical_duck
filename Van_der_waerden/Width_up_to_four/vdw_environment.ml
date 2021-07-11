@@ -51,7 +51,11 @@ module Private = struct
 
 let oint = Total_ordering.for_integers ;;  
 
-let extract old_env obstruction (complement,name_for_x) =
+let add_new_extraction old_extr_env (name_for_x,list_for_c)=
+ ( (name_for_x,list_for_c) :: old_extr_env);;
+    
+
+let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    (*
       we take extra care not to create new names for already named variables
    *)  
@@ -61,34 +65,38 @@ let extract old_env obstruction (complement,name_for_x) =
    let ((core_for_a,a),(core_for_b,b)) = 
        Vdw_common.extended_partition effective_obstruction x in 
    if b= [] 
-   then (old_env,([],None))    
+   then ((old_env,old_extr_env),([],None))    
    else 
    if a = []
-   then (if core_for_b=[] then (old_env,(complement,Some name_for_x)) else 
+   then (if core_for_b=[] then ((old_env,old_extr_env),(complement,Some name_for_x)) else 
          let zb = Option.unpack(Vdw_indexed_namer.register_if_necessary b) in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
-          Vdw_combination.constructor [zb,core_for_b]) in 
-         (new_env,(omerge complement core_for_b,Some zb))
+          Vdw_combination.constructor [zb,core_for_b]) 
+         and new_extr_env = add_new_extraction
+          old_extr_env (name_for_x,[zb,core_for_b]) in 
+         ((new_env,new_extr_env),(omerge complement core_for_b,Some zb))
         )
    else       
    let za = Option.unpack(Vdw_indexed_namer.register_if_necessary  a) in
    let zb = Option.unpack(Vdw_indexed_namer.register_if_necessary b) in 
    let new_env = 
      add_new_assignment old_env (name_for_x,
-          Vdw_combination.constructor [za,core_for_a;zb,core_for_b]) in 
-   (new_env,(omerge complement core_for_b,Some zb)) ;;   
+          Vdw_combination.constructor [za,core_for_a;zb,core_for_b]) 
+   and new_extr_env = add_new_extraction
+   old_extr_env (name_for_x,[za,core_for_a;zb,core_for_b]) in 
+   ((new_env,new_extr_env),(omerge complement core_for_b,Some zb)) ;;   
 
-  let rec extract_several old_env (treated,to_be_treated) old_pair =
+  let rec extract_several old_envpair (treated,to_be_treated) old_pair =
     match to_be_treated with 
-    [] -> (old_env,(old_pair,None))
+    [] -> (old_envpair,(old_pair,None))
     | obstruction :: other_obstructions ->
-      let (new_env,(complement_for_y,opt_y)) = 
-      extract old_env obstruction old_pair in 
+      let (new_envpair,(complement_for_y,opt_y)) = 
+      extract old_envpair obstruction old_pair in 
      (match opt_y with 
-      None -> (old_env,(old_pair,Some(treated,obstruction)))
+      None -> (old_envpair,(old_pair,Some(treated,obstruction)))
      |Some(name_for_y) ->
-      extract_several new_env (obstruction::treated,other_obstructions) (complement_for_y,name_for_y)
+      extract_several new_envpair (obstruction::treated,other_obstructions) (complement_for_y,name_for_y)
      )
      ;;
 
@@ -96,6 +104,8 @@ let extract old_env obstruction (complement,name_for_x) =
       Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4 ;;
 
    let main_ref = ref (Vdw_environment_t.L []) ;; 
+
+   let main_extraction_ref = ref ([]) ;; 
   
   end ;;     
   
@@ -107,16 +117,22 @@ let add_new_assignment assignment =
 let check () = Private.check  (!Private.main_ref) ;; 
 
 let extract  (complement,name_for_x) obstruction=
-  let (new_env,answer) = 
-   Private.extract (!Private.main_ref) 
+  let (new_envpair,answer) = 
+   Private.extract (!Private.main_ref,!Private.main_extraction_ref) 
    obstruction (complement,name_for_x) in 
-  let _ = (Private.main_ref:=new_env) in answer ;;
+  let _ = (
+    Private.main_ref:=(fst new_envpair);
+    Private.main_extraction_ref:=(snd new_envpair);  
+  ) in answer ;;
 
 let extract_several  (complement,name_for_x) obstructions=
-  let (new_env,answer) = 
-   Private.extract_several (!Private.main_ref) 
+  let (new_envpair,answer) = 
+   Private.extract_several (!Private.main_ref,!Private.main_extraction_ref)  
    obstructions (complement,name_for_x) in 
-  let _ = (Private.main_ref:=new_env) in answer ;;
+   let _ = (
+    Private.main_ref:=(fst new_envpair);
+    Private.main_extraction_ref:=(snd new_envpair);  
+  ) in answer ;;
 
 let extract_several_at_point pair m =
   extract_several pair ([],Private.obstructions_at_point m) ;;

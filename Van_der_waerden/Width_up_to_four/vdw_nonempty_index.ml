@@ -32,7 +32,7 @@ module Private = struct
   
   end ;;  
 
-  let order = (Private.full_order:  Vdw_nonempty_index_t.t Total_ordering.t);;
+  let order = (Private.full_order:  Vdw_nonempty_index_t.t Total_ordering_t.t);;
   
   let to_string = function 
   (Vdw_nonempty_index_t.Part(x1,y1)) ->
