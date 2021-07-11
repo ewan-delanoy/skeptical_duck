@@ -8,7 +8,7 @@ instance defines only the value it needs.
 *)
 
 
-type ('a,'b) parameter = (('a list) -> 'b) * ('b -> ('a list)) * ('a Total_ordering.t);;
+type ('a,'b) parameter = (('a list) -> 'b) * ('b -> ('a list)) * ('a Total_ordering_t.t);;
 
 
 let does_not_intersect ((co,deco,cmpr):('a,'b) parameter) 
