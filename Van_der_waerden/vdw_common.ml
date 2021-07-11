@@ -53,10 +53,44 @@ module Private = struct
       then raise Set_too_large_to_be_solved_naively
       else Listennou.power_set (Set_of_integers.forget_order soi) ;;  
     
-    let naive_restricted_power_set constraints soi =
+  let naive_restricted_power_set constraints soi =
         let temp1 = naive_power_set soi in 
         List.filter (fun l-> test_for_admissibility constraints (Set_of_integers.safe_set l)) temp1 ;;
-       
+  
+  let obstructions_passing_through_point_above width x =
+     Ennig.doyle (fun t->[x-2*t;x-t]) 1 width ;;
+  
+  let obstructions_passing_through_one_of_points_above 
+     width soi =
+    let l = Set_of_integers.forget_order soi in  
+    let m = List.hd l in  
+    let temp1 = List.flatten 
+      (Image.image 
+      (obstructions_passing_through_point_above width) l)  in 
+    List.filter (List.for_all(fun x->x<m)) temp1  ;;
+
+  let obstructions_passing_through_two_points_above
+    width soi = 
+    let l = Set_of_integers.forget_order soi in  
+    let m = List.hd l in  
+    let temp1 = Option.filter_and_unpack (
+      fun (x,y)->
+        let z = 2*x -y in 
+        if (y-x<=width)&&(z<m)
+        then Some z
+      else None  
+    ) (Uple.list_of_pairs l) in 
+    Ordered.sort oint temp1 ;;
+
+  let minimal_obstructions_corresponding_to_above 
+    width soi =
+    let part1 = obstructions_passing_through_one_of_points_above width soi
+    and pre_part2 = obstructions_passing_through_two_points_above width soi  in 
+    let part2 = Image.image (fun x->[x]) pre_part2 in 
+    let temp1 = Ordered.select_minimal_elements_for_inclusion oint part1 @ part2 in 
+    Ordered.sort oord temp1 ;;
+    
+  
 
 end ;;  
 
@@ -397,6 +431,9 @@ let decompose n d=
     let delta = (measure n) -(measure(n-1)) in 
     let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
     List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
+
+let minimal_obstructions_corresponding_to_above n =
+  Private.minimal_obstructions_corresponding_to_above 4 n ;;       
 
 end ;;  
 
