@@ -13,9 +13,9 @@ module Private = struct
         let xu=List.hd(u) and yu=List.tl(u) 
         and xv=List.hd(v) and yv=List.tl(v) in
         match cmpr(xu)(xv) with
-         Total_ordering.Lower->tempf(yu,v,accu)
-        |Total_ordering.Equal->tempf(yu,yv,xu::accu)
-        |Total_ordering.Greater->tempf(u,yv,accu)
+         Total_ordering_result_t.Lower->tempf(yu,v,accu)
+        |Total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
+        |Total_ordering_result_t.Greater->tempf(u,yv,accu)
       ) in
       tempf(ox,oy,[]);;
   
@@ -24,7 +24,7 @@ module Private = struct
     let rec tempf=(function
     (a,to_be_treated)->match to_be_treated with
      []->true
-     |b::others->if (cmpr(a)(b)=Total_ordering.Lower)
+     |b::others->if (cmpr(a)(b)=Total_ordering_result_t.Lower)
                    then tempf(b,others)
                    else false
     ) in
@@ -38,9 +38,9 @@ module Private = struct
         let xu=List.hd(u) and yu=List.tl(u) 
         and xv=List.hd(v) and yv=List.tl(v) in
       match cmpr(xu)(xv) with
-        Total_ordering.Lower->tempf(yu,v,xu::accu)
-      |Total_ordering.Equal->tempf(yu,yv,xu::accu)
-      |Total_ordering.Greater->tempf(u,yv,xv::accu)
+        Total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+      |Total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
+      |Total_ordering_result_t.Greater->tempf(u,yv,xv::accu)
       ) in
       tempf(ox,oy,[]);;
   
@@ -53,9 +53,9 @@ module Private = struct
         let xu=List.hd(u) and yu=List.tl(u) 
         and xv=List.hd(v) and yv=List.tl(v) in
         match cmpr(xu)(xv) with
-           Total_ordering.Lower->tempf(yu,v,xu::accu)
-          |Total_ordering.Equal->tempf(yu,yv,accu)
-          |Total_ordering.Greater->tempf(u,yv,accu)
+           Total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+          |Total_ordering_result_t.Equal->tempf(yu,yv,accu)
+          |Total_ordering_result_t.Greater->tempf(u,yv,accu)
      ) in
      tempf(ox,oy,[]);;
   
@@ -74,9 +74,9 @@ module Private = struct
            let xu=List.hd(u) and yu=List.tl(u) 
            and xv=List.hd(v) and yv=List.tl(v) in
            match cmpr(xu)(xv) with
-             Total_ordering.Lower->false
-           |Total_ordering.Equal->tempf(yu,yv)
-           |Total_ordering.Greater->tempf(u,yv)
+             Total_ordering_result_t.Lower->false
+           |Total_ordering_result_t.Equal->tempf(yu,yv)
+           |Total_ordering_result_t.Greater->tempf(u,yv)
          ) in
          tempf(ox,oy);;       
   
@@ -128,11 +128,11 @@ module Private = struct
                 |(a2,c2)::others2->
                   (
                     match cmpr a1 a2 with
-                    Total_ordering.Lower->
+                    Total_ordering_result_t.Lower->
                       tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
-                    |Total_ordering.Greater->
+                    |Total_ordering_result_t.Greater->
                     tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
-                    |Total_ordering.Equal->
+                    |Total_ordering_result_t.Equal->
                     tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
                   )
                 )      
@@ -145,9 +145,9 @@ module Private = struct
           let xu=List.hd(u) and yu=List.tl(u) 
           and xv=List.hd(v) and yv=List.tl(v) in
           match cmpr(xu)(xv) with
-            Total_ordering.Lower->tempf(yu,v)
-          |Total_ordering.Equal->false
-          |Total_ordering.Greater->tempf(u,yv)
+            Total_ordering_result_t.Lower->tempf(yu,v)
+          |Total_ordering_result_t.Equal->false
+          |Total_ordering_result_t.Greater->tempf(u,yv)
       ) in
       tempf(ox,oy);;
   
@@ -177,9 +177,9 @@ module Private = struct
      let rec tempf=(function
       []->false
       |a::others->match cmpr(x)(a) with
-         Total_ordering.Lower->false
-         |Total_ordering.Equal->true
-         |Total_ordering.Greater->tempf others
+         Total_ordering_result_t.Lower->false
+         |Total_ordering_result_t.Equal->true
+         |Total_ordering_result_t.Greater->tempf others
      )  in
      tempf ol;;    
   
