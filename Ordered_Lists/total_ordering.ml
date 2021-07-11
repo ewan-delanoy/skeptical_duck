@@ -4,56 +4,57 @@
 
 *)
 
-type result=Lower |Equal |Greater;;
 
-type 'a t=('a->'a->result);;
+
+type 'a t=('a -> 'a ->Total_ordering_result_t.t);;
+
 let leq (computer:'a t) x y=
    let v=computer(x)(y) in
-   (v=Lower)||(v=Equal);;
+   (v=Total_ordering_result_t.Lower)||(v=Total_ordering_result_t.Equal);;
    
- let lt (computer:'a t) x y=(computer(x)(y)=Lower);;   
+ let lt (computer:'a t) x y=(computer(x)(y)=Total_ordering_result_t.Lower);;   
  
  let geq (computer:'a t) x y=
    let v=computer(x)(y) in
-   (v=Lower)||(v=Equal);;
+   (v=Total_ordering_result_t.Lower)||(v=Total_ordering_result_t.Equal);;
    
- let gt (computer:'a t) x y=(computer(x)(y)=Greater);;   
+ let gt (computer:'a t) x y=(computer(x)(y)=Total_ordering_result_t.Greater);;   
  
  let from_lt f=
    let temp1=(fun x y->
      if f(x)(y)
-     then Lower
+     then Total_ordering_result_t.Lower
      else if f(y)(x)
-          then Greater
-          else Equal
+          then Total_ordering_result_t.Greater
+          else Total_ordering_result_t.Equal
    ) in
    (temp1:'a t);;
  
  let standard_completion f g=
   let answer=(fun x y->
    if f(y)(x)
-   then Greater
+   then Total_ordering_result_t.Greater
    else if f(x)(y)
-        then Lower
+        then Total_ordering_result_t.Lower
         else if g(x)(y)
-             then Equal
+             then Total_ordering_result_t.Equal
              else if x<y
-                  then Lower
-                  else Greater
+                  then Total_ordering_result_t.Lower
+                  else Total_ordering_result_t.Greater
   ) in
   (answer: 'a t);;
  
  let standard=((fun x y->
     if x=y
-    then Equal
+    then Total_ordering_result_t.Equal
     else if x<y
-         then Lower
-         else Greater
+         then Total_ordering_result_t.Lower
+         else Total_ordering_result_t.Greater
  ): 'a t);;
  
 let standard2=((fun (x1,y1) (x2,y2)->
     let t1=standard x1 x2 in 
-    if t1<> Equal 
+    if t1<> Total_ordering_result_t.Equal 
     then t1
     else standard y1 y2
  ): ('a * 'b) t);;
@@ -61,9 +62,9 @@ let standard2=((fun (x1,y1) (x2,y2)->
  let completion f (g:'a t)=
   let answer=(fun x y->
    if f(y)(x)
-   then Greater
+   then Total_ordering_result_t.Greater
    else if f(x)(y)
-        then Lower
+        then Total_ordering_result_t.Lower
          else g(x)(y)
   ) in
   (answer: 'a t);;
@@ -71,7 +72,7 @@ let standard2=((fun (x1,y1) (x2,y2)->
 let combine=((fun ~tried_first ~tried_second->
   (fun x y->
    let first_trial = tried_first x y in 
-   if first_trial <> Equal 
+   if first_trial <> Total_ordering_result_t.Equal 
    then first_trial
    else tried_second x y
   ) ): 
@@ -81,7 +82,7 @@ let combine=((fun ~tried_first ~tried_second->
  let product (f:'a t) (g:'b t)=
   ((fun (x1,y1) (x2,y2)->
      let t=f(x1)(x2) in
-     if t<>Equal 
+     if t<>Total_ordering_result_t.Equal 
      then t
      else g y1 y2
  ): ('a*'b) t);;
@@ -89,10 +90,10 @@ let combine=((fun ~tried_first ~tried_second->
  let triple_product (f:'a t) (g:'b t) (h:'c t)=
   ((fun (x1,y1,z1) (x2,y2,z2)->
      let tx=f(x1)(x2) in
-     if tx<>Equal 
+     if tx<>Total_ordering_result_t.Equal 
      then tx
      else let ty=g(y1)(y2) in
-          if ty<>Equal 
+          if ty<>Total_ordering_result_t.Equal 
           then ty
           else h z1 z2
  ): ('a*'b*'c) t);;
@@ -101,14 +102,14 @@ let combine=((fun ~tried_first ~tried_second->
   let rec tempf=(
     fun l1 l2->
      match l1 with 
-     []->(if l2=[] then Equal else Lower)
+     []->(if l2=[] then Total_ordering_result_t.Equal else Total_ordering_result_t.Lower)
      |a1::b1->
       (
         match l2 with 
-        []->Greater
+        []->Total_ordering_result_t.Greater
         |a2::b2->
           let t=f(a1)(a2) in
-           if t<>Equal then t else
+           if t<>Total_ordering_result_t.Equal then t else
            tempf b1 b2
       )) in
      (tempf:>( ('a list) t));;
@@ -119,7 +120,7 @@ let silex_compare (f:'a t)=
   let tempf=(
     fun l1 l2->
      let t=standard(List.length l1)(List.length l2) in
-     if t<>Equal then t else
+     if t<>Total_ordering_result_t.Equal then t else
      lex_compare f l1 l2
   ) in
    (tempf:>( ('a list) t));;
@@ -142,7 +143,7 @@ let min (f:'a t)=function
    let rec tempf=(fun
     (candidate,l)->match l with
       []->candidate
-      |c::peurrest->if f(c)(candidate)=Lower
+      |c::peurrest->if f(c)(candidate)=Total_ordering_result_t.Lower
                     then tempf(c,peurrest)
                     else tempf(candidate,peurrest)
    ) in
@@ -154,7 +155,7 @@ let max (f:'a t)=function
    let rec tempf=(fun
     (candidate,l)->match l with
       []->candidate
-      |c::peurrest->if f(c)(candidate)=Greater
+      |c::peurrest->if f(c)(candidate)=Total_ordering_result_t.Greater
                     then tempf(c,peurrest)
                     else tempf(candidate,peurrest)
    ) in
@@ -169,9 +170,9 @@ let minimize_it_with_care (cf:'a t)
   []->(current_value,List.rev(current_candidates))
   |a::peurrest->let va=f(a) in
                 let howl=cf(va)(current_value) in
-                if howl=Lower
+                if howl=Total_ordering_result_t.Lower
 				then minimize_it_with_care0([a],va,peurrest)
-				else if howl=Equal
+				else if howl=Total_ordering_result_t.Equal
 				     then minimize_it_with_care0(a::current_candidates,current_value,peurrest)
 					 else minimize_it_with_care0(current_candidates,current_value,peurrest)
  ) 
@@ -188,9 +189,9 @@ let maximize_it_with_care (cf:'a t)
   []->(current_value,List.rev(current_candidates))
   |a::peurrest->let va=f(a) in
                 let howl=cf(va)(current_value) in
-                if howl=Greater
+                if howl=Total_ordering_result_t.Greater
 				then maximize_it_with_care0([a],va,peurrest)
-				else if howl=Equal
+				else if howl=Total_ordering_result_t.Equal
 				     then maximize_it_with_care0(a::current_candidates,current_value,peurrest)
 					 else maximize_it_with_care0(current_candidates,current_value,peurrest)
  ) 
@@ -203,7 +204,7 @@ let modify_locally (f:'a t) l=
     if List.mem(x)(l)
     then if List.mem(y)(l)
          then if x=y
-              then Equal
+              then Total_ordering_result_t.Equal
               else (from_list l x y)
          else f big_m y
     else if List.mem(y)(l)
@@ -251,7 +252,7 @@ let silex_for_strings=
         and m2=String.length s2
         in
         let first_try=standard(m1)(m2) in
-        if first_try<>Equal
+        if first_try<>Total_ordering_result_t.Equal
         then first_try
         else lex_for_strings s1 s2
       ) : string t);;    
@@ -261,10 +262,10 @@ let lex_for_string_lists=
       let (_,left_part,right_part)=Listennou.factor (l1,l2) in
       if left_part=[] 
       then (if right_part=[] 
-           then Equal 
-           else Lower)
+           then Total_ordering_result_t.Equal 
+           else Total_ordering_result_t.Lower)
       else if right_part=[] 
-           then Greater 
+           then Total_ordering_result_t.Greater 
            else lex_for_strings (List.hd left_part) (List.hd right_part)  
   ) : (string list) t);;
 
@@ -275,11 +276,11 @@ let for_longest_match=
       if (
           if m1>m2 then false else
           (String.sub s2 0 m1)=s1
-      ) then Greater else
+      ) then Total_ordering_result_t.Greater else
       if (
           if m2>m1 then false else
           (String.sub s1 0 m2)=s2
-      ) then Lower else
+      ) then Total_ordering_result_t.Lower else
       lex_for_strings s1 s2
      ): string t);;
 
@@ -287,14 +288,14 @@ let for_longest_match=
 let for_longest_match_pairs=  
 ((fun (s1,v1) (s2,v2)->
   let first_try=silex_for_strings(s2)(s1) in
-  if first_try<>Equal 
+  if first_try<>Total_ordering_result_t.Equal 
   then first_try
   else standard v1 v2
  ): (string*'b) t);;
  
 let from_snd (f:'b t)=((fun (x1,y1) (x2,y2)->
   let first_try=f y1 y2 in
-  if first_try<>Equal 
+  if first_try<>Total_ordering_result_t.Equal 
   then first_try
   else standard x1 x2
 ): ('a*'b) t );;
