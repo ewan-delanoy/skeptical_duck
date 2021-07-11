@@ -18,6 +18,18 @@ module Private = struct
        (Total_ordering.silex_compare Total_ordering.for_integers)
           ;;
    
+   let intlist_to_string l=
+     "["^
+      (String.concat "," (Image.image string_of_int l))^
+     "]" ;; 
+
+   let to_string (Vdw_combination_t.C l) = 
+      let temp1 = Image.image (fun (core,translation)->
+       (Vdw_nonempty_index.to_string core)^"."^
+       (intlist_to_string translation)   
+      ) l in 
+      String.concat " + " temp1 ;;
+
    end ;;   
    
    let constructor l =
@@ -77,6 +89,8 @@ module Private = struct
        ) content_for_x in 
        constructor(List.rev_append before (new_center@after)) ;;
    
+   let to_string = Private.to_string ;;
+
    let union (Vdw_combination_t.C l1) (Vdw_combination_t.C l2) =
         constructor (l1@l2) ;; 
 

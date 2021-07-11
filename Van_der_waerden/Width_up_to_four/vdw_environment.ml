@@ -51,10 +51,16 @@ module Private = struct
 
 let oint = Total_ordering.for_integers ;;  
 
-let add_new_extraction old_extr_env (name_for_x,list_for_c)=
- ( (name_for_x,list_for_c) :: old_extr_env);;
-    
+let describe_new_extraction (name_for_x,list_for_c)=
+ (Vdw_nonempty_index.to_string name_for_x)^
+ " partitioned : " 
+ ^(Vdw_combination.to_string (Vdw_combination_t.C list_for_c))^"\n" 
 
+let add_new_extraction old_extr_env pair=
+ let msg = describe_new_extraction pair in 
+ let _= (print_string msg;flush stdout) in
+ ( pair :: old_extr_env);;
+    
 let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    (*
       we take extra care not to create new names for already named variables
@@ -100,8 +106,40 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
      )
      ;;
 
-    let obstructions_at_point m =
-      Ennig.doyle (fun t->[m-(2*t);m-t]) 1 4 ;;
+  let prepare_element_for_homogeneous_translation 
+    old_envpair (core,translation) =
+      let obstructions =
+      Vdw_common.Width_up_to_four.minimal_obstructions_corresponding_to_above 
+        (Set_of_integers.safe_set translation) in
+     extract_several old_envpair ([],obstructions) 
+       (translation,core)  
+    ;;
+
+    let rec prepare_elements_for_homogeneous_translation 
+      (treated,to_be_treated) =
+      match to_be_treated with 
+      [] -> treated 
+      | elt :: other_elts ->
+        let (new_envpair,_) =
+        prepare_element_for_homogeneous_translation  
+         treated elt in
+        prepare_elements_for_homogeneous_translation 
+          (new_envpair,other_elts) ;;
+
+  
+  let prepare_homogeneous_translation old_envpair
+    (Vdw_combination_t.C l) translation =
+   let temp1 = Image.image (fun (core1,translation1) ->
+     (core1,Ordered.merge oint translation1 translation)   
+   ) l  in 
+   let temp2 = List.filter (fun (core1,translation1)->
+    try (fun x->false)
+    (Vdw_variable.homogeneous_translation core1 translation1) 
+    with _-> true
+   ) temp1 in 
+   prepare_elements_for_homogeneous_translation 
+     (old_envpair,temp2) ;;
+    
 
    let main_ref = ref (Vdw_environment_t.L []) ;; 
 
@@ -134,11 +172,18 @@ let extract_several  (complement,name_for_x) obstructions=
     Private.main_extraction_ref:=(snd new_envpair);  
   ) in answer ;;
 
-let extract_several_at_point pair m =
-  extract_several pair ([],Private.obstructions_at_point m) ;;
 
 
 let get x = Private.get (!Private.main_ref) x ;;
 
-let homogeneous_translation x l=
-    Vdw_combination.homogeneous_translation (get x) l;;
+let homogeneous_translation x translation=
+   let combination_for_x = get x in 
+   let new_envpair = 
+    Private.prepare_homogeneous_translation 
+    (!Private.main_ref,!Private.main_extraction_ref)  
+      combination_for_x translation in 
+   let _ = (
+    Private.main_ref:=(fst new_envpair);
+    Private.main_extraction_ref:=(snd new_envpair);  
+   ) in 
+  Vdw_combination.homogeneous_translation combination_for_x translation;;
