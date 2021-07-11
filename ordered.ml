@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-  let intersect (cmpr:'a Total_ordering.t) ox oy=
+  let intersect (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=(function (u,v,accu)->
         if u=[] then (List.rev(accu)) else
         if v=[] then (List.rev(accu)) else
@@ -19,7 +19,7 @@ module Private = struct
       ) in
       tempf(ox,oy,[]);;
   
-  let is_increasing (cmpr:'a Total_ordering.t) l=
+  let is_increasing (cmpr:'a Total_ordering_t.t) l=
     if List.length(l)<2 then true else
     let rec tempf=(function
     (a,to_be_treated)->match to_be_treated with
@@ -31,7 +31,7 @@ module Private = struct
     tempf(List.hd l,List.tl l);;
     
   
-  let merge (cmpr:'a Total_ordering.t) ox oy=
+  let merge (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=(function (u,v,accu)->
         if u=[] then (List.rev_append(accu)(v)) else
         if v=[] then (List.rev_append(accu)(u)) else
@@ -45,7 +45,7 @@ module Private = struct
       tempf(ox,oy,[]);;
   
   
-  let setminus (cmpr:'a Total_ordering.t) ox oy=
+  let setminus (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=
       (function (u,v,accu)->
         if u=[] then (List.rev(accu)) else
@@ -59,7 +59,7 @@ module Private = struct
      ) in
      tempf(ox,oy,[]);;
   
-  let rec sort (cmpr:'a Total_ordering.t) x=
+  let rec sort (cmpr:'a Total_ordering_t.t) x=
     if List.length(x)<2
     then x
     else let temp1=Listennou.split_list_in_half(x) in
@@ -67,7 +67,7 @@ module Private = struct
          and y2=sort(cmpr)(snd temp1) in
          merge cmpr y1 y2;;
   
-  let is_included_in (cmpr:'a Total_ordering.t) ox oy=
+  let is_included_in (cmpr:'a Total_ordering_t.t) ox oy=
          let rec tempf=(function (u,v)->
            if u=[] then true else
            if v=[] then false else
@@ -80,7 +80,7 @@ module Private = struct
          ) in
          tempf(ox,oy);;       
   
-  let helper1_for_minimal_elements_selection (cmpr:'a Total_ordering.t)  
+  let helper1_for_minimal_elements_selection (cmpr:'a Total_ordering_t.t)  
          comparator =
          let rec tempf = (fun
          (treated,to_be_treated) -> match to_be_treated with 
@@ -97,7 +97,7 @@ module Private = struct
            else tempf (new_item::treated,others)  
          ) in tempf ;;    
        
-  let rec helper2_for_minimal_elements_selection (cmpr:'a Total_ordering.t)  =
+  let rec helper2_for_minimal_elements_selection (cmpr:'a Total_ordering_t.t)  =
           let rec tempf = (fun 
          (treated,to_be_treated) -> match to_be_treated with 
           [] -> List.rev treated 
@@ -116,7 +116,7 @@ module Private = struct
   end;;
   
   
-  let diff (cmpr: 'a Total_ordering.t) =
+  let diff (cmpr: 'a Total_ordering_t.t) =
             let rec tempf=(fun
               (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
                 match to_be_treated1 with
@@ -139,7 +139,7 @@ module Private = struct
             ) in
             tempf;;   
   
-  let does_not_intersect (cmpr:'a Total_ordering.t) ox oy=
+  let does_not_intersect (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=(function (u,v)->
           if (u=[])||(v=[]) then true else
           let xu=List.hd(u) and yu=List.tl(u) 
@@ -173,7 +173,7 @@ module Private = struct
   
   let is_included_in = Private.is_included_in ;;
   
-  let rec mem (cmpr:'a Total_ordering.t) x ol=
+  let rec mem (cmpr:'a Total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false
       |a::others->match cmpr(x)(a) with
