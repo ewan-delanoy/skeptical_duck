@@ -153,7 +153,7 @@ let first_cut constraints soi =
 let silex_order = ((fun x y->Total_ordering.silex_compare Total_ordering.for_integers 
    (Set_of_integers.forget_order x)  (Set_of_integers.forget_order y))
   :> Set_of_integers_t.t Total_ordering.t );;    
-let is_silex_lower_than x y= (silex_order x y)=Total_ordering.Lower  ;;
+let is_silex_lower_than x y= (silex_order x y)=Total_ordering_result_t.Lower  ;;
 
 let naive_half_power_set soi =
   let temp1 = Private.naive_power_set soi in 

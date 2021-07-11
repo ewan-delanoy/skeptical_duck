@@ -10,18 +10,18 @@ module Private = struct
   (Vdw_nonempty_index_t.Part(x2,y2)) ->
     Total_ordering.standard2 (x1,y1) (x2,y2) 
     |Helper(_,_)
-    |Solution(_,_) -> Total_ordering.Lower ;;
+    |Solution(_,_) -> Total_ordering_result_t.Lower ;;
   
   let order_for_helper (x1,y1) = function 
     (Vdw_nonempty_index_t.Part(_,_)) ->
-      Total_ordering.Greater
+      Total_ordering_result_t.Greater
     |Helper(x2,y2) -> Total_ordering.standard2 (x1,y1) (x2,y2) 
-      |Solution(_,_) -> Total_ordering.Greater;;  
+      |Solution(_,_) -> Total_ordering_result_t.Greater;;  
   
   let order_for_solution (x1,y1) = function 
     (Vdw_nonempty_index_t.Part(_,_))
     |Helper(_,_) ->
-      Total_ordering.Greater
+      Total_ordering_result_t.Greater
     |Solution(x2,y2) -> Total_ordering.standard2 (x1,y1) (x2,y2) ;;  
   
   let full_order idx1 idx2 = match idx1 with 
