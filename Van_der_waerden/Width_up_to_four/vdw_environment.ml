@@ -111,9 +111,10 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
      ;;
 
   let prepare_element_for_homogeneous_translation 
-    old_envpair (core,translation) =
+    old_envpair (core,translation,bound) =
       let obstructions =
-      Vdw_common.Width_up_to_four.minimal_obstructions_corresponding_to_above 
+      Vdw_common.minimal_obstructions_corresponding_to_above 
+        (4,bound)
         (Set_of_integers.safe_set translation) in
      extract_several old_envpair ([],obstructions) 
        (translation,core)  
@@ -134,7 +135,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
   let prepare_homogeneous_translation old_envpair
     (Vdw_combination_t.C l) translation =
    let temp1 = Image.image (fun (core1,translation1) ->
-     (core1,Ordered.merge oint translation1 translation)   
+     (core1,Ordered.merge oint translation1 translation,List.hd translation)   
    ) l  in 
    prepare_elements_for_homogeneous_translation 
      (old_envpair,temp1) ;;
