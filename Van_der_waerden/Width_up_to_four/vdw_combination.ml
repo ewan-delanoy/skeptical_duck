@@ -17,16 +17,11 @@ module Private = struct
       Vdw_nonempty_index.order
        (Total_ordering.silex_compare Total_ordering.for_integers)
           ;;
-   
-   let intlist_to_string l=
-     "["^
-      (String.concat "," (Image.image string_of_int l))^
-     "]" ;; 
 
    let to_string (Vdw_combination_t.C l) = 
       let temp1 = Image.image (fun (core,translation)->
        (Vdw_nonempty_index.to_string core)^"."^
-       (intlist_to_string translation)   
+       (Strung.of_intlist translation)   
       ) l in 
       String.concat " + " temp1 ;;
 

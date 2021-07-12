@@ -51,15 +51,19 @@ module Private = struct
 
 let oint = Total_ordering.for_integers ;;  
 
-let describe_new_extraction (name_for_x,list_for_c)=
- (Vdw_nonempty_index.to_string name_for_x)^
- " partitioned : " 
- ^(Vdw_combination.to_string (Vdw_combination_t.C list_for_c))^"\n" 
+let offset_of = Strung.insert_repetitive_offset_on_the_left ' ';;
 
-let add_new_extraction old_extr_env pair=
- let msg = describe_new_extraction pair in 
+let describe_new_extraction (name_for_x,obstr,list_for_c)=
+ (offset_of 7 (Vdw_nonempty_index.to_string name_for_x))^
+ " partitioned wrt "^
+ (offset_of 7 (Strung.of_intlist obstr))^
+ " : "^ 
+ (Vdw_combination.to_string (Vdw_combination_t.C list_for_c))^"\n" 
+
+let add_new_extraction old_extr_env triple=
+ let msg = describe_new_extraction triple in 
  let _= (print_string msg;flush stdout) in
- ( pair :: old_extr_env);;
+ ( triple :: old_extr_env);;
     
 let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    (*
@@ -80,7 +84,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
           add_new_assignment old_env (name_for_x,
           Vdw_combination.constructor [zb,core_for_b]) 
          and new_extr_env = add_new_extraction
-          old_extr_env (name_for_x,[zb,core_for_b]) in 
+          old_extr_env (name_for_x,effective_obstruction,[zb,core_for_b]) in 
          ((new_env,new_extr_env),(omerge complement core_for_b,Some zb))
         )
    else       
@@ -90,7 +94,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
      add_new_assignment old_env (name_for_x,
           Vdw_combination.constructor [za,core_for_a;zb,core_for_b]) 
    and new_extr_env = add_new_extraction
-   old_extr_env (name_for_x,[za,core_for_a;zb,core_for_b]) in 
+   old_extr_env (name_for_x,effective_obstruction,[za,core_for_a;zb,core_for_b]) in 
    ((new_env,new_extr_env),(omerge complement core_for_b,Some zb)) ;;   
 
   let rec extract_several old_envpair (treated,to_be_treated) old_pair =
@@ -132,13 +136,8 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    let temp1 = Image.image (fun (core1,translation1) ->
      (core1,Ordered.merge oint translation1 translation)   
    ) l  in 
-   let temp2 = List.filter (fun (core1,translation1)->
-    try (fun x->false)
-    (Vdw_variable.homogeneous_translation core1 translation1) 
-    with _-> true
-   ) temp1 in 
    prepare_elements_for_homogeneous_translation 
-     (old_envpair,temp2) ;;
+     (old_envpair,temp1) ;;
     
 
    let main_ref = ref (Vdw_environment_t.L []) ;; 
@@ -186,4 +185,4 @@ let homogeneous_translation x translation=
     Private.main_ref:=(fst new_envpair);
     Private.main_extraction_ref:=(snd new_envpair);  
    ) in 
-  Vdw_combination.homogeneous_translation combination_for_x translation;;
+  Vdw_combination.homogeneous_translation (get x) translation;;
