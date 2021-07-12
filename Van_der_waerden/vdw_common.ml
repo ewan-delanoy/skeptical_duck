@@ -4,6 +4,8 @@
 
 *)
 
+exception Unknown_width_in_measure_exn of int ;;
+
 module Private = struct 
 
   let oord = Total_ordering.silex_compare Total_ordering.for_integers ;;   
@@ -88,7 +90,29 @@ module Private = struct
     let temp1 = Ordered.select_minimal_elements_for_inclusion oint (part1 @ part2) in 
     Ordered.sort Total_ordering.cardinality_then_diameter temp1 ;;
     
-  
+
+  let measure_in_width_four n =
+      if n<1 then 0 else 
+      let q=(n/9) in 
+      match n mod 9 with
+        0 -> 4*q+1 
+      |1 -> 4*q+1
+      |2 -> 4*q+2  
+      |3 -> 4*q+2
+      |4 -> 4*q+3
+      |5 -> 4*q+4
+      |6 -> 4*q+4  
+      |7 -> 4*q+4
+      |8 -> 4*q+4 
+      | _ -> failwith("unforeseen");;     
+
+
+
+let measure (Vdw_max_width_t.MW mw) n=
+  match mw with 
+  4 -> measure_in_width_four n 
+  | _ -> raise( Unknown_width_in_measure_exn mw);;
+
 
 end ;;  
 
@@ -371,6 +395,7 @@ let reconstruct parts =
         Ordered.fold_merge Private.oord temp1 ;;
 
 
+let measure = Private.measure ;;        
 let minimal_obstructions_corresponding_to_above = Private.minimal_obstructions_corresponding_to_above ;;
 
 module Width_up_to_four = struct 
