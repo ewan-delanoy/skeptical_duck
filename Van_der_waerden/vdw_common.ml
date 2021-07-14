@@ -420,20 +420,11 @@ let decompose max_width n d=
     let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
     List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
 
-module Width_up_to_four = struct 
-
-
-let big_base =   
-    let unordered_base = 
-      Private.naive_restricted_power_set
-     ( Vdw_list_of_constraints_t.Defined_by_max_width 4) 
-       (Set_of_integers.safe_set(Ennig.ennig 1 15))
-    in 
-    Ordered.sort Private.oord unordered_base ;;  
-    
-let is_admissible l = Private.test_for_admissibility    
-    (Vdw_list_of_constraints_t.Defined_by_max_width 4)
-    (Set_of_integers.safe_set l);;
-
-end ;;  
+let generic_computer (Vdw_max_width_t.MW max_width) n =   
+      let unordered_base = 
+        Private.naive_restricted_power_set
+       ( Vdw_list_of_constraints_t.Defined_by_max_width max_width) 
+         (Set_of_integers.safe_set(Ennig.ennig 1 n))
+      in 
+      Ordered.sort Private.oord unordered_base ;;
 

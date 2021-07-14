@@ -6,6 +6,7 @@
 
 let mw = Vdw_max_width_t.MW 4 ;;
 
+let base_for_15 = Vdw_common.generic_computer mw 15 ;;
 let decompose = Vdw_common.decompose mw ;;
 let lower_measure = Vdw_common.lower_measure mw ;;
 let measure = Vdw_common.measure mw ;;
