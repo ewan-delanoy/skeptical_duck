@@ -106,13 +106,30 @@ module Private = struct
       |8 -> 4*q+4 
       | _ -> failwith("unforeseen");;     
 
-
+  let lower_measure_in_width_four n =
+        if n<1 then 0 else 
+        let q=(n/9) in 
+        match n mod 9 with
+          0 -> 4*q
+        |1 -> 4*q
+        |2 -> 4*q 
+        |3 -> 4*q
+        |4 -> 4*q+1
+        |5 -> 4*q+1
+        |6 -> 4*q+2  
+        |7 -> 4*q+2
+        |8 -> 4*q+3 
+        | _ -> failwith("unforeseen");;  
 
 let measure (Vdw_max_width_t.MW mw) n=
   match mw with 
   4 -> measure_in_width_four n 
   | _ -> raise( Unknown_width_in_measure_exn mw);;
 
+let lower_measure (Vdw_max_width_t.MW mw) n=
+  match mw with 
+  4 -> measure_in_width_four n 
+  | _ -> raise( Unknown_width_in_measure_exn mw);;  
 
 end ;;  
 
@@ -394,9 +411,14 @@ let reconstruct parts =
           Private.level_two_translate a b) parts in 
         Ordered.fold_merge Private.oord temp1 ;;
 
-
+let lower_measure = Private.lower_measure ;; 
 let measure = Private.measure ;;        
 let minimal_obstructions_corresponding_to_above = Private.minimal_obstructions_corresponding_to_above ;;
+
+let decompose max_width n d=
+    let delta = (measure max_width n) -(measure max_width  (n-1)) in 
+    let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
+    List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
 
 module Width_up_to_four = struct 
 
