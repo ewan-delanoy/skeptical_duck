@@ -422,42 +422,7 @@ let decompose max_width n d=
 
 module Width_up_to_four = struct 
 
-(*
 
-The measure below is for width <=4
-
-*)         
-
-let measure n =
-  if n<1 then 0 else 
-  let q=(n/9) in 
-  match n mod 9 with
-    0 -> 4*q+1 
-  |1 -> 4*q+1
-  |2 -> 4*q+2  
-  |3 -> 4*q+2
-  |4 -> 4*q+3
-  |5 -> 4*q+4
-  |6 -> 4*q+4  
-  |7 -> 4*q+4
-  |8 -> 4*q+4 
-  | _ -> failwith("unforeseen");;   
-      
-let lower_measure n =
-  if n<1 then 0 else 
-  let q=(n/9) in 
-  match n mod 9 with
-    0 -> 4*q
-  |1 -> 4*q
-  |2 -> 4*q 
-  |3 -> 4*q
-  |4 -> 4*q+1
-  |5 -> 4*q+1
-  |6 -> 4*q+2  
-  |7 -> 4*q+2
-  |8 -> 4*q+3 
-  | _ -> failwith("unforeseen");;  
-      
 let big_base =   
     let unordered_base = 
       Private.naive_restricted_power_set
@@ -469,16 +434,6 @@ let big_base =
 let is_admissible l = Private.test_for_admissibility    
     (Vdw_list_of_constraints_t.Defined_by_max_width 4)
     (Set_of_integers.safe_set l);;
-
-let homogeneous_translation  ll translation =
-  homogeneous_translation 
-   (Vdw_list_of_constraints_t.Defined_by_max_width 4) ll translation ;;
-
-let decompose n d=
-    let delta = (measure n) -(measure(n-1)) in 
-    let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
-    List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
-     
 
 end ;;  
 

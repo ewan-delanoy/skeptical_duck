@@ -16,7 +16,7 @@ let get x = List.assoc x (!Private.main_ref) ;;
 
 
 let homogeneous_translation x translation =
-    Vdw_common.Width_up_to_four.homogeneous_translation 
+    Vdw_current_max_width.homogeneous_translation 
       (get x) translation ;;
    
 let mem y =
