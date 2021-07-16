@@ -38,7 +38,7 @@ let hmx = Usual_coma_state.find_endingless;;
 
 let hod = Printf.sprintf "0x%08x";;
 
-let ia = Usual_coma_state.internet_access;;
+let ia = Usual_coma_state.set_internet_access;;
 
 let image = Image.image ;;
 

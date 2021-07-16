@@ -66,7 +66,7 @@ let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Priva
 
 let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
 
 let latest_changes ()=Coma_state.latest_changes (!(Private.main_ref));;
 
