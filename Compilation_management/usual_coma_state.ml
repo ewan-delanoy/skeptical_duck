@@ -66,7 +66,7 @@ let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Priva
 
 let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+let internet_access () = Coma_state.Automatic.gitpush_after_backup (!(Private.main_ref)) ;;
 
 let latest_changes ()=Coma_state.latest_changes (!(Private.main_ref));;
 
@@ -100,6 +100,9 @@ let rename_module old_name new_name=
 let rename_string_or_value old_name new_name=
    Modify_coma_state.Reference.rename_string_or_value
    (Private.main_ref) old_name new_name;;
+
+let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+
 
 let show_value_occurrences_in_modulesystem module_name=
    Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
