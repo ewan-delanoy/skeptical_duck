@@ -5,6 +5,7 @@
 *)
 
 exception Unknown_width_in_measure_exn of int ;;
+exception Unknown_width_in_lower_measure_exn of int ;;
 
 module Private = struct 
 
@@ -128,8 +129,10 @@ let measure (Vdw_max_width_t.MW mw) n=
 
 let lower_measure (Vdw_max_width_t.MW mw) n=
   match mw with 
-  4 -> measure_in_width_four n 
-  | _ -> raise( Unknown_width_in_measure_exn mw);;  
+  4 -> lower_measure_in_width_four n 
+  | _ -> raise( Unknown_width_in_lower_measure_exn mw);;  
+
+let optify (n,d) = if d<0 then None else Some(n,d) ;;
 
 end ;;  
 
@@ -417,8 +420,7 @@ let minimal_obstructions_corresponding_to_above = Private.minimal_obstructions_c
 
 let decompose max_width n d=
     let delta = (measure max_width n) -(measure max_width  (n-1)) in 
-    let draft =[(n-1,d-delta+1),[n];(n-1,d-delta),[]] in 
-    List.filter (fun ((n1,d1),l) -> d1>=0) draft;;
+    ((n-1,d-delta+1),[n],Private.optify(n-1,d-delta));;
 
 let generic_computer (Vdw_max_width_t.MW max_width) n =   
       let unordered_base = 
