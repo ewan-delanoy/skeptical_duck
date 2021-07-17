@@ -52,7 +52,9 @@ let compute_and_remember (n,d) =
      let t = Vdwfw_current.threshhold in   
      if n=t 
      then compute_and_remember_in_threshhold_case d
-     else expand_template(template (n,d)) ;;           
+     else let answer =expand_template(template (n,d)) in 
+          let _ = set (n,d) answer in 
+          answer;;           
 
 end ;; 
 
