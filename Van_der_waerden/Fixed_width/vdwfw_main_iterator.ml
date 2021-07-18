@@ -30,12 +30,12 @@ let template (n,d) =
        else Some(n-1,d-delt)) in 
      (n-1,d+1-delt,optional_part) ;;     
 
-let expand_template (i,j,optional_part) =
-     let _ = get (i,j)  in 
-     let (partial,_) = Vdwfw_environment.homogeneous_translation (fsol i j) [i+j]   in 
+let expand_template ((old_n1,old_d1),linker1,optional_part) =
+     let _ = get (old_n1,old_d1)  in 
+     let (partial,_) = Vdwfw_environment.homogeneous_translation (fsol old_n1 old_d1) linker1   in 
      match optional_part with 
       None -> partial 
-     |Some(i2,j2) -> Vdwfw_combination.union partial (get (i2,j2))  ;;
+     |Some(old_n2,old_d2) -> Vdwfw_combination.union partial (get (old_n2,old_d2))  ;;
 
 let compute_and_remember_in_threshhold_case d =
     let t = Vdwfw_current.threshhold in   
@@ -52,10 +52,23 @@ let compute_and_remember (n,d) =
      let t = Vdwfw_current.threshhold in   
      if n=t 
      then compute_and_remember_in_threshhold_case d
-     else let answer =expand_template(template (n,d)) in 
+     else let answer =expand_template(Vdwfw_current.decompose n d) in 
           let _ = set (n,d) answer in 
           answer;;           
+
+let closest_obstruction (n,d) =
+     try (fun _->None)(compute_and_remember (n,d)) with 
+     Unregistered (x, y) -> Some (x,y) ;;
+     
+let rec zigzag  (treated,to_be_treated) = 
+   match to_be_treated with 
+   [] -> List.rev treated 
+   | (n1,d1) :: others ->
+      match  closest_obstruction (n1,d1) with 
+      None ->  zigzag  ((n1,d1)::treated,others)
+      |Some(n2,d2) ->  zigzag  (treated,(n2,d2)::to_be_treated) ;;
 
 end ;; 
 
 let compute_and_remember = Private.compute_and_remember ;;
+let zigzag l= Private.zigzag ([],l);; 
