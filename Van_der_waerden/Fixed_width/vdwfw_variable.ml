@@ -24,6 +24,7 @@ let mem y =
    None -> None 
    |Some(x,_) -> Some x ;;
 
+let reset () = (Private.main_ref := []) ;;
 
 let set x y =
       match List.assoc_opt x (!Private.main_ref) with 

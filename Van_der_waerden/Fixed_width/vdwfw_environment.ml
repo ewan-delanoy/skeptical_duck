@@ -187,3 +187,9 @@ let homogeneous_translation x translation=
     Private.main_extraction_ref:=(snd new_envpair);  
    ) in 
   Vdwfw_combination.homogeneous_translation (get x) translation;;
+
+let reset () =
+  (
+  Private.main_ref := (Vdwfw_environment_t.L[]) ;
+  Private.main_extraction_ref := [] 
+  );;

@@ -54,15 +54,43 @@ let closest_obstruction (n,d) =
      try (fun _->None)(compute_and_remember (n,d)) with 
      Unregistered (x, y) -> Some (x,y) ;;
      
-let rec zigzag  (treated,to_be_treated) = 
+let rec helper_for_zigzagging  (treated,to_be_treated) = 
    match to_be_treated with 
    [] -> List.rev treated 
    | (n1,d1) :: others ->
       match  closest_obstruction (n1,d1) with 
-      None ->  zigzag  ((n1,d1)::treated,others)
-      |Some(n2,d2) ->  zigzag  (treated,(n2,d2)::to_be_treated) ;;
+      None ->  helper_for_zigzagging  ((n1,d1)::treated,others)
+      |Some(n2,d2) ->  helper_for_zigzagging  (treated,(n2,d2)::to_be_treated) ;;
+
+let reset_all () = 
+     (
+         Vdwfw_variable.reset();
+         Vdwfw_environment.reset();
+         main_ref:=[] ;
+     ) ;;
+
+let naive_zigzag l =
+     let _= reset_all () in 
+     helper_for_zigzagging([],l) ;; 
+
+let fixer_for_zigzagging =(fun old_f l->
+     if List.length(l)<2 then naive_zigzag l else
+     let temp1 = List.rev l in 
+     let (last_elt,temp2) = Listennou.ht temp1 in 
+     let nonlast_elts = List.rev temp2 in       
+     let temp3 = old_f nonlast_elts in 
+     naive_zigzag (temp3@[last_elt])
+) ;;
+
+let hashtbl_for_zigzagging = Hashtbl.create 500 ;;
+
+let rec zigzag l = match Hashtbl.find_opt hashtbl_for_zigzagging l with 
+  Some(old_answer) -> old_answer 
+  | None -> let answer = fixer_for_zigzagging zigzag l in 
+            let _ = (Hashtbl.add hashtbl_for_zigzagging l answer) in 
+            answer ;;
 
 end ;; 
 
 let compute_and_remember = Private.compute_and_remember ;;
-let zigzag l= Private.zigzag ([],l);; 
+let zigzag = Private.zigzag;; 
