@@ -51,7 +51,7 @@ module Private = struct
      Ordered.fold_merge Private.oord temp2 ;;
    
    let fold_union l = match l with 
-       [] -> raise(Empty_union)
+       [] -> Vdwfw_combination_t.C [](* raise(Empty_union) *)
       |comb :: others -> List.fold_left Private.union comb others ;;
 
    exception Homogeneous_translation_exn of Vdwfw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;

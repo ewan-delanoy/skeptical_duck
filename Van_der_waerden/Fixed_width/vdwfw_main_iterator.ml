@@ -21,23 +21,15 @@ let get (n,d) =
 let set (n,d) res =
   let _=(main_ref:=(n,d)::(!main_ref)) in 
   Vdwfw_environment.add_new_assignment  (fsol n d,res) ;;
-  
 
-let expand_template ((old_n1,old_d1),linker1,optional_part) =
-     let _ = get (old_n1,old_d1)  in 
-     let (partial,_) = Vdwfw_environment.homogeneous_translation (fsol old_n1 old_d1) linker1   in 
-     match optional_part with 
-      None -> partial 
-     |Some(old_n2,old_d2) -> Vdwfw_combination.union partial (get (old_n2,old_d2))  ;;
-
-let expand_tamplete_element ((n,d),linker) =
+let expand_template_element ((n,d),linker) =
      let _ = get (n,d)  in
      if linker = []
      then Vdwfw_environment.get (fsol n d)    
      else (fst(Vdwfw_environment.homogeneous_translation (fsol n d) linker));;                
 
-let expand_tamplete l=
-    Vdwfw_combination.fold_union (Image.image expand_tamplete_element l) ;;
+let expand_template l=
+    Vdwfw_combination.fold_union (Image.image expand_template_element l) ;;
 
 let compute_and_remember_in_threshhold_case d =
     let t = Vdwfw_current.threshhold in   
