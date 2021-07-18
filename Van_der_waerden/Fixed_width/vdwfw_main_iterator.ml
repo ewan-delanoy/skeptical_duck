@@ -21,14 +21,7 @@ let get (n,d) =
 let set (n,d) res =
   let _=(main_ref:=(n,d)::(!main_ref)) in 
   Vdwfw_environment.add_new_assignment  (fsol n d,res) ;;
-
-let template (n,d) =
-     let delt = Vdwfw_current.measure (n+1) - Vdwfw_current.measure (n) in 
-     let optional_part=
-      (if (delt=1) && (d=0)
-       then None 
-       else Some(n-1,d-delt)) in 
-     (n-1,d+1-delt,optional_part) ;;     
+  
 
 let expand_template ((old_n1,old_d1),linker1,optional_part) =
      let _ = get (old_n1,old_d1)  in 
@@ -36,6 +29,15 @@ let expand_template ((old_n1,old_d1),linker1,optional_part) =
      match optional_part with 
       None -> partial 
      |Some(old_n2,old_d2) -> Vdwfw_combination.union partial (get (old_n2,old_d2))  ;;
+
+let expand_tamplete_element ((n,d),linker) =
+     let _ = get (n,d)  in
+     if linker = []
+     then Vdwfw_environment.get (fsol n d)    
+     else (fst(Vdwfw_environment.homogeneous_translation (fsol n d) linker));;                
+
+let expand_tamplete l=
+    Vdwfw_combination.fold_union (Image.image expand_tamplete_element l) ;;
 
 let compute_and_remember_in_threshhold_case d =
     let t = Vdwfw_current.threshhold in   

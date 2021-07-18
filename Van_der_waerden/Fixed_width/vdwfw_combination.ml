@@ -4,6 +4,8 @@
 
 *)
 
+exception Empty_union ;;
+
 module Private = struct 
 
    let oord = 
@@ -25,10 +27,15 @@ module Private = struct
       ) l in 
       String.concat " + " temp1 ;;
 
+   let constructor l =
+         Vdwfw_combination_t.C (Ordered.sort order_for_pairs l) ;;
+
+   let union (Vdwfw_combination_t.C l1) (Vdwfw_combination_t.C l2) =
+      constructor (l1@l2) ;;    
+
    end ;;   
    
-   let constructor l =
-      Vdwfw_combination_t.C (Ordered.sort Private.order_for_pairs l) ;;
+   let constructor  = Private.constructor ;;
         
    
    let expand_fully (Vdwfw_combination_t.C l)= 
@@ -43,6 +50,10 @@ module Private = struct
      ) temp1 in 
      Ordered.fold_merge Private.oord temp2 ;;
    
+   let fold_union l = match l with 
+       [] -> raise(Empty_union)
+      |comb :: others -> List.fold_left Private.union comb others ;;
+
    exception Homogeneous_translation_exn of Vdwfw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
    
    let homogeneous_translation 
@@ -86,8 +97,7 @@ module Private = struct
    
    let to_string = Private.to_string ;;
 
-   let union (Vdwfw_combination_t.C l1) (Vdwfw_combination_t.C l2) =
-        constructor (l1@l2) ;; 
+   let union = Private.union ;; 
 
 
 

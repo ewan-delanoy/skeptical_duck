@@ -420,7 +420,8 @@ let minimal_obstructions_corresponding_to_above = Private.minimal_obstructions_c
 
 let decompose max_width n d=
     let delta = (measure max_width n) -(measure max_width  (n-1)) in 
-    ((n-1,d-delta+1),[n],Private.optify(n-1,d-delta));;
+    let draft = [ (n-1,d-delta+1),[n] ; (n-1,d-delta),[]] in 
+    List.filter ( fun ((n1,d1),l) -> d1>0 ) draft ;;
 
 let generic_computer (Vdw_max_width_t.MW max_width) n =   
       let unordered_base = 
