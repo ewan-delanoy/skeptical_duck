@@ -185,7 +185,8 @@ let rightmost_blowup max_width n r =
    and small_m = measure max_width (n-r) in   
    let temp1 = generic_computer max_width r in 
    Option.filter_and_unpack (fun small_sol->
-    let remaining_length = big_m - (List.length small_sol) in 
+    let remaining_length = big_m - (List.length small_sol) 
+    and translated_sol = Image.image (fun t->n-r+t) small_sol in 
     let d = small_m-remaining_length in 
-    if d<0 then None else Some((n-r,d),small_sol) 
+    if d<0 then None else Some((n-r,d),translated_sol) 
    ) temp1 ;;
