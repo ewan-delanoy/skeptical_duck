@@ -169,9 +169,10 @@ module Music = struct
         else Some(x,Ordered.setminus Private.oint y rightmost_side)
       ) in 
       let tempf2 = (fun x->Option.unpack(Option.find_and_stop (tempf1 x) temp2)) in 
-      Image.image tempf2;;       
+      Image.image tempf2 temp2;;       
 
 end ;;  
+
 
 let decompose max_width n d=
     let delta = (Private.measure max_width n) -(Private.measure max_width  (n-1)) in 
