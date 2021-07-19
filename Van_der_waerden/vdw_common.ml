@@ -84,7 +84,7 @@ module Private = struct
     Ordered.sort oint temp1 ;;
 
   let minimal_obstructions_corresponding_to_above 
-    (width,bound) soi =
+    (Vdw_max_width_t.MW width) bound soi =
     let part1 = obstructions_passing_through_one_of_points_above (width,bound) soi
     and pre_part2 = obstructions_passing_through_two_points_above (width,bound) soi  in 
     let part2 = Image.image (fun x->[x]) pre_part2 in 

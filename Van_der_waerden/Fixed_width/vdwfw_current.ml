@@ -15,6 +15,7 @@ let homogeneous_translation =
       (fun (Vdw_max_width_t.MW m)->m) mw) ) ;;
 let lower_measure = Vdw_common.lower_measure mw ;;
 let measure = Vdw_common.measure mw ;;
+let minimal_obstructions_corresponding_to_above = Vdw_common.minimal_obstructions_corresponding_to_above mw ;;
 let rightmost_blowup = Vdw_common.rightmost_blowup mw ;;
 
 
