@@ -138,7 +138,7 @@ end ;;
 let decompose max_width n d=
     let delta = (Private.measure max_width n) -(Private.measure max_width  (n-1)) in 
     let draft = [ (n-1,d-delta+1),[n] ; (n-1,d-delta),[]] in 
-    List.filter ( fun ((n1,d1),l) -> d1>0 ) draft ;;
+    List.filter ( fun ((n1,d1),l) -> d1>=0 ) draft ;;
 
 let extended_partition selector  ll= 
     let (temp1,temp2) = List.partition 

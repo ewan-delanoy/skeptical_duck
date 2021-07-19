@@ -32,7 +32,8 @@ let expand_template l=
     Vdwfw_combination.fold_union (Image.image expand_template_element l) ;;
 
 let adhoc_decompose n d =
-    if (n,d) =(21,0) then Vdwfw_current.rightmost_blowup 21 3 else 
+    if (n,d) =(21,0) then Vdwfw_current.rightmost_blowup 21 3 else
+    if (n,d) =(24,0) then Vdwfw_current.rightmost_blowup 24 8 else 
      Vdwfw_current.decompose n d ;;  
 
 let compute_and_remember_in_threshhold_case d =
