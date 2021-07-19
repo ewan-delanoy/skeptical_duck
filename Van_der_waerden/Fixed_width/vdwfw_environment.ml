@@ -113,8 +113,8 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
   let prepare_element_for_homogeneous_translation 
     old_envpair (core,translation,bound) =
       let obstructions =
-      Vdw_common.minimal_obstructions_corresponding_to_above 
-        (4,bound)
+      Vdwfw_current.minimal_obstructions_corresponding_to_above 
+        bound
         (Set_of_integers.safe_set translation) in
      extract_several old_envpair ([],obstructions) 
        (translation,core)  

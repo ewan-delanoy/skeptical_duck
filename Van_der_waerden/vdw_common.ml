@@ -134,11 +134,51 @@ let lower_measure (Vdw_max_width_t.MW mw) n=
 
 end ;;  
 
+module Music = struct 
+
+  let prod a b =
+    let temp1 = Cartesian.product a b in
+    let temp2 = Image.image (fun (x,y)->
+       Set_of_integers.safe_set (x@y)
+     ) temp1  in 
+    let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+    let temp4 = Image.image Set_of_integers.forget_order temp3 in 
+    Ordered.sort Private.oord temp4 ;;
+
+    let shadow ll obstructions = 
+      let indexed_obstructions = Ennig.index_everything obstructions in 
+      let tempf1 = (fun l->
+           Set_of_integers.safe_set(Option.filter_and_unpack (
+               fun (idx,obs) ->
+                if Ordered.is_included_in Private.oint obs l 
+                then Some idx 
+                else None      
+           ) indexed_obstructions)) in 
+      let temp1 = Image.image tempf1 ll in     
+      let temp2 = Ordered_misc.minimal_transversals temp1 in 
+      let tempf2 = (fun k->List.nth obstructions (k-1)) in 
+      Image.image (Set_of_integers.image tempf2) temp2 ;;
+      
+    let effective_blowup n m ll=
+      let rightmost_side = Ennig.ennig m n in 
+      let temp1 = Image.image (Ordered.intersect Private.oint rightmost_side) ll in 
+      let temp2 = Ordered.sort Private.oord temp1 in 
+      let tempf1 = ( fun x y->
+        if (Ordered.intersect Private.oint rightmost_side y)<> x
+        then None 
+        else Some(x,Ordered.setminus Private.oint y rightmost_side)
+      ) in 
+      let tempf2 = (fun x->Option.unpack(Option.find_and_stop (tempf1 x) temp2)) in 
+      Image.image tempf2;;       
+
+end ;;  
 
 let decompose max_width n d=
     let delta = (Private.measure max_width n) -(Private.measure max_width  (n-1)) in 
     let draft = [ (n-1,d-delta+1),[n] ; (n-1,d-delta),[]] in 
     List.filter ( fun ((n1,d1),l) -> d1>=0 ) draft ;;
+
+
 
 let extended_partition selector  ll= 
     let (temp1,temp2) = List.partition 
