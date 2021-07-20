@@ -35,7 +35,7 @@ module Private = struct
   
 
   let test_for_admissibility constraints soi = match constraints with 
-      Vdw_list_of_constraints_t.Defined_by_max_width(max_width) ->
+      Udw_list_of_constraints_t.Defined_by_max_width(max_width) ->
         ((look_for_arithmetic_progressions_in_with_width_up_to max_width soi) = [])
      |General_case obstructions ->
       List.for_all (fun obs->not(Set_of_integers.is_included_in obs soi )) obstructions ;;
@@ -190,7 +190,7 @@ let extended_partition selector  ll=
 let generic_computer (Vdw_max_width_t.MW max_width) n =   
         let unordered_base = 
           Private.naive_restricted_power_set
-         ( Vdw_list_of_constraints_t.Defined_by_max_width max_width) 
+         ( Udw_list_of_constraints_t.Defined_by_max_width max_width) 
            (Set_of_integers.safe_set(Ennig.ennig 1 n))
         in 
         Ordered.sort Private.oord unordered_base ;;
