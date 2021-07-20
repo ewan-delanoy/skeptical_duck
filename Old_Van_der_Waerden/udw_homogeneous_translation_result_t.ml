@@ -1,6 +1,6 @@
 (*
 
-#use"Old_Van_der_Waerden/vdw_homogeneous_translation_result_t.ml";;
+#use"Old_Van_der_Waerden/udw_homogeneous_translation_result_t.ml";;
 
 *)
 

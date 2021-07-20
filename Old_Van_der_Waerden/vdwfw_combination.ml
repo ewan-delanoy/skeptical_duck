@@ -45,8 +45,8 @@ module Private = struct
      ) l in 
      let temp2 = Option.filter_and_unpack (
         function 
-        Vdw_homogeneous_translation_result_t.Nothing_taken -> None 
-        |Vdw_homogeneous_translation_result_t.All_taken(ll) -> Some ll
+        Udw_homogeneous_translation_result_t.Nothing_taken -> None 
+        |Udw_homogeneous_translation_result_t.All_taken(ll) -> Some ll
      ) temp1 in 
      Ordered.fold_merge Private.oord temp2 ;;
    
@@ -70,8 +70,8 @@ module Private = struct
    let temp2 = Image.image tempf temp1 in 
    let temp3 = Option.filter_and_unpack (
        fun ((core1,translation1),res)-> match res with 
-       Vdw_homogeneous_translation_result_t.Nothing_taken -> None 
-       |Vdw_homogeneous_translation_result_t.All_taken(ll) ->
+       Udw_homogeneous_translation_result_t.Nothing_taken -> None 
+       |Udw_homogeneous_translation_result_t.All_taken(ll) ->
         Some((core1,translation1),ll)
    ) temp2 in
     (constructor (Image.image fst temp3),

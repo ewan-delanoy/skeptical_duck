@@ -199,7 +199,7 @@ exception Homogeneous_translation_exn of (int list) * ( (int list) * (int list) 
 
 let homogeneous_translation criterion ll translation =
    match ll with 
-   [] -> Vdw_homogeneous_translation_result_t.Nothing_taken
+   [] -> Udw_homogeneous_translation_result_t.Nothing_taken
    | head :: others ->
      let tester = Private.test_joinability criterion translation in 
      let is_joinable = tester head in 
@@ -207,9 +207,9 @@ let homogeneous_translation criterion ll translation =
       (Some l1) -> raise (Homogeneous_translation_exn(translation,(head,l1)))
      | None -> 
        if is_joinable
-       then Vdw_homogeneous_translation_result_t.All_taken(Image.image (fun l->
+       then Udw_homogeneous_translation_result_t.All_taken(Image.image (fun l->
         Ordered.safe_set Private.oint (l@translation)) ll)
-       else Vdw_homogeneous_translation_result_t.Nothing_taken;;
+       else Udw_homogeneous_translation_result_t.Nothing_taken;;
 
 
 let lower_measure = Private.lower_measure ;; 
