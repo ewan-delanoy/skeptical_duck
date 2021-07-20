@@ -24,4 +24,17 @@ let look_for_arithmetic_progressions_in_with_width_equal_to
   List.filter (fun obstruction ->
     Ordered.is_included_in oint obstruction soi) temp1 ;;  
 
+let level_two_translate translation ll=
+    Image.image (Ordered.merge oint translation) ll ;;
 
+let max_easy_length = 15 ;;
+
+exception Set_too_large_to_be_solved_naively ;; 
+    
+let naive_power_set soi =
+  if (List.length soi) > max_easy_length 
+  then raise Set_too_large_to_be_solved_naively
+  else Ordered.sort ointlist (Listennou.power_set soi) ;;  
+      
+
+  
