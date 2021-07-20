@@ -17,19 +17,19 @@ module Private = struct
     |Some expansion -> Udwfw_variable.set x expansion ;;
 
   let react_to_new_assignment 
-    (Vdwfw_environment_t.L old_list) (x,combination_for_x) =
-    Vdwfw_environment_t.L (Image.image (
+    (Udwfw_environment_t.L old_list) (x,combination_for_x) =
+    Udwfw_environment_t.L (Image.image (
       fun (y,combination_for_y) -> 
           (y,Udwfw_combination.replace_with_in (x,combination_for_x) combination_for_y)  
      ) old_list );;  
   
   let add_new_assignment old_env assignment =
-      let (Vdwfw_environment_t.L new_list)= 
+      let (Udwfw_environment_t.L new_list)= 
        react_to_new_assignment old_env assignment in 
       let _ =  notify_new_assignment_among_variables assignment in 
-      Vdwfw_environment_t.L (assignment :: new_list) ;;   
+      Udwfw_environment_t.L (assignment :: new_list) ;;   
   
-  let check (Vdwfw_environment_t.L assignments) = 
+  let check (Udwfw_environment_t.L assignments) = 
       List.filter (
             fun (x,combination_for_x) ->
                 let x_content = Udwfw_variable.get x 
@@ -41,7 +41,7 @@ module Private = struct
                 x_content <> Udw_common.reconstruct temp1
           ) assignments ;;
   
-  let get (Vdwfw_environment_t.L assignments) x =  
+  let get (Udwfw_environment_t.L assignments) x =  
      match List.assoc_opt x assignments with 
      Some(y)->y 
     |None -> Udwfw_combination.constructor [x,[]];;  
@@ -141,7 +141,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
      (old_envpair,temp1) ;;
     
 
-   let main_ref = ref (Vdwfw_environment_t.L []) ;; 
+   let main_ref = ref (Udwfw_environment_t.L []) ;; 
 
    let main_extraction_ref = ref ([]) ;; 
   
@@ -190,6 +190,6 @@ let homogeneous_translation x translation=
 
 let reset () =
   (
-  Private.main_ref := (Vdwfw_environment_t.L[]) ;
+  Private.main_ref := (Udwfw_environment_t.L[]) ;
   Private.main_extraction_ref := [] 
   );;
