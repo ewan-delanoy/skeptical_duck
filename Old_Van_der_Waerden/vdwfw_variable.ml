@@ -32,7 +32,7 @@ let set x y =
       |Some old_y ->
            if old_y <> y 
            then let msg = "Warning : "^
-                 (Vdwfw_nonempty_index.to_string x)^
+                 (Udwfw_nonempty_index.to_string x)^
                  " has already been set.\n Resetting ...\n" in 
                let new_list = Image.image (
                   fun p -> let (x1,y1) = p in  if x1 = x then (x,y) else p 

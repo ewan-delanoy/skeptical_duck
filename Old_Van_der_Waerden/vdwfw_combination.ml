@@ -16,13 +16,13 @@ module Private = struct
    
    let order_for_pairs =
       Total_ordering.product 
-      Vdwfw_nonempty_index.order
+      Udwfw_nonempty_index.order
        (Total_ordering.silex_compare Total_ordering.for_integers)
           ;;
 
    let to_string (Vdwfw_combination_t.C l) = 
       let temp1 = Image.image (fun (core,translation)->
-       (Vdwfw_nonempty_index.to_string core)^"."^
+       (Udwfw_nonempty_index.to_string core)^"."^
        (Strung.of_intlist translation)   
       ) l in 
       String.concat " + " temp1 ;;

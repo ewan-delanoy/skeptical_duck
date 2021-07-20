@@ -54,7 +54,7 @@ let oint = Total_ordering.for_integers ;;
 let offset_of = Strung.insert_repetitive_offset_on_the_left ' ';;
 
 let describe_new_extraction (name_for_x,obstr,list_for_c)=
- (offset_of 7 (Vdwfw_nonempty_index.to_string name_for_x))^
+ (offset_of 7 (Udwfw_nonempty_index.to_string name_for_x))^
  " partitioned wrt "^
  (offset_of 7 (Strung.of_intlist obstr))^
  " : "^ 
