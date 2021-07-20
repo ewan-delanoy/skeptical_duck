@@ -5,10 +5,17 @@ open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 43 : Defining a Private submodule
+Snippet 43 : Remove all snippets containing a given substring (todo : integerate it
+in the Manage_diary module directly)
 ************************************************************************************************************************)
 open Needed_values ;;
 
+let ap_for_diary = Absolute_path.of_string "Githubbed_archive/diary_archive.ml";;
+let (g1,g2) =  Manage_diary.Private.read_and_parse ap_for_diary ;;
+let g3 = Ennig.index_everything g2;;
+let g4 = List.filter (fun (j,(x,y))->Substring.is_a_substring_of "Vdw_" y) g3 ;;
+let g5 = Image.image fst g4 ;;
+let act1 () = Manage_diary.remove_snippets ap_for_diary g5;;
 
 
 (************************************************************************************************************************
