@@ -64,7 +64,7 @@ module Private = struct
    let tempf = (fun (core1,translation1)->
       try ((core1,translation1),
       Vdwfw_variable.homogeneous_translation core1 (translation1))   with 
-      Vdw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
+      Udw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
          raise(Homogeneous_translation_exn(core1,tr,(l1,l2)) )
    ) in 
    let temp2 = Image.image tempf temp1 in 

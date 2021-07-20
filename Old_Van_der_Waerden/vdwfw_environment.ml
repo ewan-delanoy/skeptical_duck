@@ -38,7 +38,7 @@ module Private = struct
                   fun (core,translation) -> 
                     (translation,Vdwfw_variable.get core)
                 ) partition_for_x in 
-                x_content <> Vdw_common.reconstruct temp1
+                x_content <> Udw_common.reconstruct temp1
           ) assignments ;;
   
   let get (Vdwfw_environment_t.L assignments) x =  
@@ -73,7 +73,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    and effective_obstruction = Ordered.setminus oint obstruction complement 
    and omerge = Ordered.merge oint in 
    let ((core_for_a,a),(core_for_b,b)) = 
-       Vdw_common.extended_partition effective_obstruction x in 
+       Udw_common.extended_partition effective_obstruction x in 
    if b= [] 
    then ((old_env,old_extr_env),([],None))    
    else 
