@@ -16,7 +16,7 @@ let get x = List.assoc x (!Private.main_ref) ;;
 
 
 let homogeneous_translation x translation =
-    Vdwfw_current.homogeneous_translation 
+    Udwfw_current.homogeneous_translation 
       (get x) translation ;;
    
 let mem y =

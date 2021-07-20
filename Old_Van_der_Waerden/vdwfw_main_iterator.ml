@@ -32,15 +32,15 @@ let expand_template l=
     Vdwfw_combination.fold_union (Image.image expand_template_element l) ;;
 
 let adhoc_decompose n d =
-    if (n,d) =(21,0) then Vdwfw_current.rightmost_blowup 21 3 else
-    if (n,d) =(24,0) then Vdwfw_current.rightmost_blowup 24 8 else 
-     Vdwfw_current.decompose n d ;;  
+    if (n,d) =(21,0) then Udwfw_current.rightmost_blowup 21 3 else
+    if (n,d) =(24,0) then Udwfw_current.rightmost_blowup 24 8 else 
+     Udwfw_current.decompose n d ;;  
 
 let compute_and_remember_in_threshhold_case d =
-    let t = Vdwfw_current.threshhold in   
-    let size = (Vdwfw_current.measure t) -d in  
+    let t = Udwfw_current.threshhold in   
+    let size = (Udwfw_current.measure t) -d in  
     let data = List.filter (fun x->List.length x = size)
-       Vdwfw_current.base_for_threshhold in   
+       Udwfw_current.base_for_threshhold in   
     let _ =(Vdwfw_variable.set (fsol t d) data;
     main_ref:=(t,d)::(!main_ref)) in 
     Vdwfw_environment.get (fsol t d);;
@@ -48,7 +48,7 @@ let compute_and_remember_in_threshhold_case d =
 let compute_and_remember (n,d) = 
      try get (n,d) with 
      _->
-     let t = Vdwfw_current.threshhold in   
+     let t = Udwfw_current.threshhold in   
      if n=t 
      then compute_and_remember_in_threshhold_case d
      else let answer =expand_template(adhoc_decompose n d) in 
