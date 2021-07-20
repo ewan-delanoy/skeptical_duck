@@ -35,8 +35,6 @@ module Private = struct
      let temp1 = Substring.occurrences_of_in snippet_keyword text in 
      Option.filter_and_unpack (snippet_analysis_at_index text) temp1 ;;
   
-  Listennou.force_find;;
-  
   let apply_replacements_to_snippet replacements absolute_idx sn_descr sn_indices = 
       if sn_indices = []  
       then ("Snippet ")^(string_of_int absolute_idx)^" : "^sn_descr 
