@@ -15,18 +15,18 @@ let fsol  n d = Udwfw_nonempty_index_t.Solution (n,d) ;;
 
 let get (n,d) = 
      if List.mem (n,d) (!main_ref)
-     then Vdwfw_environment.get (fsol n d)
+     then Udwfw_environment.get (fsol n d)
      else  raise(Unregistered(n,d)) ;; 
 
 let set (n,d) res =
   let _=(main_ref:=(n,d)::(!main_ref)) in 
-  Vdwfw_environment.add_new_assignment  (fsol n d,res) ;;
+  Udwfw_environment.add_new_assignment  (fsol n d,res) ;;
 
 let expand_template_element ((n,d),linker) =
      let _ = get (n,d)  in
      if linker = []
-     then Vdwfw_environment.get (fsol n d)    
-     else (fst(Vdwfw_environment.homogeneous_translation (fsol n d) linker));;                
+     then Udwfw_environment.get (fsol n d)    
+     else (fst(Udwfw_environment.homogeneous_translation (fsol n d) linker));;                
 
 let expand_template l=
     Udwfw_combination.fold_union (Image.image expand_template_element l) ;;
@@ -43,7 +43,7 @@ let compute_and_remember_in_threshhold_case d =
        Udwfw_current.base_for_threshhold in   
     let _ =(Udwfw_variable.set (fsol t d) data;
     main_ref:=(t,d)::(!main_ref)) in 
-    Vdwfw_environment.get (fsol t d);;
+    Udwfw_environment.get (fsol t d);;
 
 let compute_and_remember (n,d) = 
      try get (n,d) with 
@@ -70,7 +70,7 @@ let rec helper_for_zigzagging  (treated,to_be_treated) =
 let reset_all () = 
      (
          Udwfw_variable.reset();
-         Vdwfw_environment.reset();
+         Udwfw_environment.reset();
          main_ref:=[] ;
      ) ;;
 
