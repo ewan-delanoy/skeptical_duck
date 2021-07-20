@@ -79,7 +79,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    else 
    if a = []
    then (if core_for_b=[] then ((old_env,old_extr_env),(complement,Some name_for_x)) else 
-         let zb = Option.unpack(Vdwfw_indexed_namer.register_if_necessary b) in 
+         let zb = Option.unpack(Udwfw_indexed_namer.register_if_necessary b) in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
           Udwfw_combination.constructor [zb,core_for_b]) 
@@ -88,8 +88,8 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
          ((new_env,new_extr_env),(omerge complement core_for_b,Some zb))
         )
    else       
-   let za = Option.unpack(Vdwfw_indexed_namer.register_if_necessary  a) in
-   let zb = Option.unpack(Vdwfw_indexed_namer.register_if_necessary b) in 
+   let za = Option.unpack(Udwfw_indexed_namer.register_if_necessary  a) in
+   let zb = Option.unpack(Udwfw_indexed_namer.register_if_necessary b) in 
    let new_env = 
      add_new_assignment old_env (name_for_x,
           Udwfw_combination.constructor [za,core_for_a;zb,core_for_b]) 
