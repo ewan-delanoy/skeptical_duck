@@ -41,7 +41,7 @@ module Private = struct
    let expand_fully (Vdwfw_combination_t.C l)= 
      let temp1 = Image.image (
         fun (core,translation) ->
-          Vdwfw_variable.homogeneous_translation core translation 
+          Udwfw_variable.homogeneous_translation core translation 
      ) l in 
      let temp2 = Option.filter_and_unpack (
         function 
@@ -63,7 +63,7 @@ module Private = struct
    ) l  in 
    let tempf = (fun (core1,translation1)->
       try ((core1,translation1),
-      Vdwfw_variable.homogeneous_translation core1 (translation1))   with 
+      Udwfw_variable.homogeneous_translation core1 (translation1))   with 
       Udw_common.Homogeneous_translation_exn(tr,(l1,l2)) ->
          raise(Homogeneous_translation_exn(core1,tr,(l1,l2)) )
    ) in 

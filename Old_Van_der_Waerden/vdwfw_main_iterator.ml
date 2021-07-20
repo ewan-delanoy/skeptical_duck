@@ -41,7 +41,7 @@ let compute_and_remember_in_threshhold_case d =
     let size = (Udwfw_current.measure t) -d in  
     let data = List.filter (fun x->List.length x = size)
        Udwfw_current.base_for_threshhold in   
-    let _ =(Vdwfw_variable.set (fsol t d) data;
+    let _ =(Udwfw_variable.set (fsol t d) data;
     main_ref:=(t,d)::(!main_ref)) in 
     Vdwfw_environment.get (fsol t d);;
 
@@ -69,7 +69,7 @@ let rec helper_for_zigzagging  (treated,to_be_treated) =
 
 let reset_all () = 
      (
-         Vdwfw_variable.reset();
+         Udwfw_variable.reset();
          Vdwfw_environment.reset();
          main_ref:=[] ;
      ) ;;

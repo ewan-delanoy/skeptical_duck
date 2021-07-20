@@ -14,7 +14,7 @@ module Private = struct
     ) in 
     match opt_expansion with 
     None -> ()
-    |Some expansion -> Vdwfw_variable.set x expansion ;;
+    |Some expansion -> Udwfw_variable.set x expansion ;;
 
   let react_to_new_assignment 
     (Vdwfw_environment_t.L old_list) (x,combination_for_x) =
@@ -32,11 +32,11 @@ module Private = struct
   let check (Vdwfw_environment_t.L assignments) = 
       List.filter (
             fun (x,combination_for_x) ->
-                let x_content = Vdwfw_variable.get x 
+                let x_content = Udwfw_variable.get x 
                 and (Vdwfw_combination_t.C partition_for_x) = combination_for_x in 
                 let temp1 = Image.image (
                   fun (core,translation) -> 
-                    (translation,Vdwfw_variable.get core)
+                    (translation,Udwfw_variable.get core)
                 ) partition_for_x in 
                 x_content <> Udw_common.reconstruct temp1
           ) assignments ;;
@@ -69,7 +69,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    (*
       we take extra care not to create new names for already named variables
    *)  
-   let x = Vdwfw_variable.get name_for_x 
+   let x = Udwfw_variable.get name_for_x 
    and effective_obstruction = Ordered.setminus oint obstruction complement 
    and omerge = Ordered.merge oint in 
    let ((core_for_a,a),(core_for_b,b)) = 

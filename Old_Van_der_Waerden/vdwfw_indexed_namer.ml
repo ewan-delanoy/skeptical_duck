@@ -27,7 +27,7 @@ let register_new ll=
   let x = List.length(List.hd ll) in 
   let y = consume_new x in 
   let z = Udwfw_nonempty_index_t.Part(x,y) in 
-  let _ = (Vdwfw_variable.set z ll) in 
+  let _ = (Udwfw_variable.set z ll) in 
   z ;;
 
 
@@ -35,7 +35,7 @@ let register_if_necessary ll =
   if ll=[] 
   then None 
   else 
-  match Vdwfw_variable.mem ll with 
+  match Udwfw_variable.mem ll with 
   Some name -> Some name 
   | None -> Some(register_new ll) ;;   
 
