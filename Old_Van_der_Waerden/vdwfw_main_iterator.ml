@@ -29,7 +29,7 @@ let expand_template_element ((n,d),linker) =
      else (fst(Vdwfw_environment.homogeneous_translation (fsol n d) linker));;                
 
 let expand_template l=
-    Vdwfw_combination.fold_union (Image.image expand_template_element l) ;;
+    Udwfw_combination.fold_union (Image.image expand_template_element l) ;;
 
 let adhoc_decompose n d =
     if (n,d) =(21,0) then Udwfw_current.rightmost_blowup 21 3 else

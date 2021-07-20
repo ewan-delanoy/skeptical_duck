@@ -9,7 +9,7 @@ module Private = struct
  
   let notify_new_assignment_among_variables (x,combination_for_x) =
     let opt_expansion =(
-       try Some(Vdwfw_combination.expand_fully combination_for_x) with 
+       try Some(Udwfw_combination.expand_fully combination_for_x) with 
        _ -> None  
     ) in 
     match opt_expansion with 
@@ -20,7 +20,7 @@ module Private = struct
     (Vdwfw_environment_t.L old_list) (x,combination_for_x) =
     Vdwfw_environment_t.L (Image.image (
       fun (y,combination_for_y) -> 
-          (y,Vdwfw_combination.replace_with_in (x,combination_for_x) combination_for_y)  
+          (y,Udwfw_combination.replace_with_in (x,combination_for_x) combination_for_y)  
      ) old_list );;  
   
   let add_new_assignment old_env assignment =
@@ -44,7 +44,7 @@ module Private = struct
   let get (Vdwfw_environment_t.L assignments) x =  
      match List.assoc_opt x assignments with 
      Some(y)->y 
-    |None -> Vdwfw_combination.constructor [x,[]];;  
+    |None -> Udwfw_combination.constructor [x,[]];;  
 
 
   exception Empty_result_in_ext_part ;;
@@ -58,7 +58,7 @@ let describe_new_extraction (name_for_x,obstr,list_for_c)=
  " partitioned wrt "^
  (offset_of 7 (Strung.of_intlist obstr))^
  " : "^ 
- (Vdwfw_combination.to_string (Udwfw_combination_t.C list_for_c))^"\n" 
+ (Udwfw_combination.to_string (Udwfw_combination_t.C list_for_c))^"\n" 
 
 let add_new_extraction old_extr_env triple=
  let msg = describe_new_extraction triple in 
@@ -82,7 +82,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
          let zb = Option.unpack(Vdwfw_indexed_namer.register_if_necessary b) in 
          let new_env = 
           add_new_assignment old_env (name_for_x,
-          Vdwfw_combination.constructor [zb,core_for_b]) 
+          Udwfw_combination.constructor [zb,core_for_b]) 
          and new_extr_env = add_new_extraction
           old_extr_env (name_for_x,effective_obstruction,[zb,core_for_b]) in 
          ((new_env,new_extr_env),(omerge complement core_for_b,Some zb))
@@ -92,7 +92,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
    let zb = Option.unpack(Vdwfw_indexed_namer.register_if_necessary b) in 
    let new_env = 
      add_new_assignment old_env (name_for_x,
-          Vdwfw_combination.constructor [za,core_for_a;zb,core_for_b]) 
+          Udwfw_combination.constructor [za,core_for_a;zb,core_for_b]) 
    and new_extr_env = add_new_extraction
    old_extr_env (name_for_x,effective_obstruction,[za,core_for_a;zb,core_for_b]) in 
    ((new_env,new_extr_env),(omerge complement core_for_b,Some zb)) ;;   
@@ -186,7 +186,7 @@ let homogeneous_translation x translation=
     Private.main_ref:=(fst new_envpair);
     Private.main_extraction_ref:=(snd new_envpair);  
    ) in 
-  Vdwfw_combination.homogeneous_translation (get x) translation;;
+  Udwfw_combination.homogeneous_translation (get x) translation;;
 
 let reset () =
   (
