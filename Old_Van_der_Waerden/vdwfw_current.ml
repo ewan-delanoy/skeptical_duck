@@ -4,7 +4,7 @@
 
 *)
 
-let mw = Vdw_max_width_t.MW 4 ;;
+let mw = Udw_max_width_t.MW 4 ;;
 let threshhold = 15 ;; 
 
 let base_for_threshhold = Vdw_common.generic_computer mw threshhold ;;
@@ -12,7 +12,7 @@ let decompose = Vdw_common.decompose mw ;;
 let homogeneous_translation = 
      Vdw_common.homogeneous_translation 
      (Udw_list_of_constraints_t.Defined_by_max_width (
-      (fun (Vdw_max_width_t.MW m)->m) mw) ) ;;
+      (fun (Udw_max_width_t.MW m)->m) mw) ) ;;
 let lower_measure = Vdw_common.lower_measure mw ;;
 let measure = Vdw_common.measure mw ;;
 let minimal_obstructions_corresponding_to_above = Vdw_common.minimal_obstructions_corresponding_to_above mw ;;

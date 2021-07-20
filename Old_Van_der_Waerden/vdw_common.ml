@@ -84,7 +84,7 @@ module Private = struct
     Ordered.sort oint temp1 ;;
 
   let minimal_obstructions_corresponding_to_above 
-    (Vdw_max_width_t.MW width) bound soi =
+    (Udw_max_width_t.MW width) bound soi =
     let part1 = obstructions_passing_through_one_of_points_above (width,bound) soi
     and pre_part2 = obstructions_passing_through_two_points_above (width,bound) soi  in 
     let part2 = Image.image (fun x->[x]) pre_part2 in 
@@ -122,12 +122,12 @@ module Private = struct
         |8 -> 4*q+3 
         | _ -> failwith("unforeseen");;  
 
-let measure (Vdw_max_width_t.MW mw) n=
+let measure (Udw_max_width_t.MW mw) n=
   match mw with 
   4 -> measure_in_width_four n 
   | _ -> raise( Unknown_width_in_measure_exn mw);;
 
-let lower_measure (Vdw_max_width_t.MW mw) n=
+let lower_measure (Udw_max_width_t.MW mw) n=
   match mw with 
   4 -> lower_measure_in_width_four n 
   | _ -> raise( Unknown_width_in_lower_measure_exn mw);;  
@@ -187,7 +187,7 @@ let extended_partition selector  ll=
      (Private.extract_core_and_simplify temp1,
       Private.extract_core_and_simplify temp2) ;;
 
-let generic_computer (Vdw_max_width_t.MW max_width) n =   
+let generic_computer (Udw_max_width_t.MW max_width) n =   
         let unordered_base = 
           Private.naive_restricted_power_set
          ( Udw_list_of_constraints_t.Defined_by_max_width max_width) 
