@@ -1,6 +1,6 @@
 (*
 
-#use"Van_der_Waerden/vdw_common.ml";;
+#use"Van_der_Waerden/vdw_preliminaries.ml";;
 
 *)
 
