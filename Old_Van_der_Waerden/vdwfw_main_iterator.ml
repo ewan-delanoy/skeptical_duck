@@ -11,7 +11,7 @@ module Private = struct
 let main_ref = ref [] ;;
 
 
-let fsol  n d = Vdwfw_nonempty_index_t.Solution (n,d) ;;
+let fsol  n d = Udwfw_nonempty_index_t.Solution (n,d) ;;
 
 let get (n,d) = 
      if List.mem (n,d) (!main_ref)

@@ -54,7 +54,7 @@ module Private = struct
        [] -> Vdwfw_combination_t.C [](* raise(Empty_union) *)
       |comb :: others -> List.fold_left Private.union comb others ;;
 
-   exception Homogeneous_translation_exn of Vdwfw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
+   exception Homogeneous_translation_exn of Udwfw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
    
    let homogeneous_translation 
     (Vdwfw_combination_t.C l) translation =

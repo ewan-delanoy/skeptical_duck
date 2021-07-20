@@ -8,7 +8,7 @@
 module Private = struct 
  
 
-let main_ref = ref ([]: (Vdwfw_nonempty_index_t.t * (int list list)) list) ;;
+let main_ref = ref ([]: (Udwfw_nonempty_index_t.t * (int list list)) list) ;;
 
 end ;;
 
