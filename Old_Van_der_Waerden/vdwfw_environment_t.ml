@@ -4,4 +4,4 @@
 
 *)
 
-type t = L of (Udwfw_nonempty_index_t.t * Vdwfw_combination_t.t ) list ;;
+type t = L of (Udwfw_nonempty_index_t.t * Udwfw_combination_t.t ) list ;;

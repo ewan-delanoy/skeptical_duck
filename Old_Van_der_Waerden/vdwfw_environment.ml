@@ -33,7 +33,7 @@ module Private = struct
       List.filter (
             fun (x,combination_for_x) ->
                 let x_content = Udwfw_variable.get x 
-                and (Vdwfw_combination_t.C partition_for_x) = combination_for_x in 
+                and (Udwfw_combination_t.C partition_for_x) = combination_for_x in 
                 let temp1 = Image.image (
                   fun (core,translation) -> 
                     (translation,Udwfw_variable.get core)
@@ -58,7 +58,7 @@ let describe_new_extraction (name_for_x,obstr,list_for_c)=
  " partitioned wrt "^
  (offset_of 7 (Strung.of_intlist obstr))^
  " : "^ 
- (Vdwfw_combination.to_string (Vdwfw_combination_t.C list_for_c))^"\n" 
+ (Vdwfw_combination.to_string (Udwfw_combination_t.C list_for_c))^"\n" 
 
 let add_new_extraction old_extr_env triple=
  let msg = describe_new_extraction triple in 
@@ -133,7 +133,7 @@ let extract (old_env,old_extr_env) obstruction (complement,name_for_x) =
 
   
   let prepare_homogeneous_translation old_envpair
-    (Vdwfw_combination_t.C l) translation =
+    (Udwfw_combination_t.C l) translation =
    let temp1 = Image.image (fun (core1,translation1) ->
      (core1,Ordered.merge oint translation1 translation,List.hd translation)   
    ) l  in 

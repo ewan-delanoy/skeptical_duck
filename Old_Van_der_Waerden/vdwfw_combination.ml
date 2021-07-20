@@ -20,7 +20,7 @@ module Private = struct
        (Total_ordering.silex_compare Total_ordering.for_integers)
           ;;
 
-   let to_string (Vdwfw_combination_t.C l) = 
+   let to_string (Udwfw_combination_t.C l) = 
       let temp1 = Image.image (fun (core,translation)->
        (Udwfw_nonempty_index.to_string core)^"."^
        (Strung.of_intlist translation)   
@@ -28,9 +28,9 @@ module Private = struct
       String.concat " + " temp1 ;;
 
    let constructor l =
-         Vdwfw_combination_t.C (Ordered.sort order_for_pairs l) ;;
+         Udwfw_combination_t.C (Ordered.sort order_for_pairs l) ;;
 
-   let union (Vdwfw_combination_t.C l1) (Vdwfw_combination_t.C l2) =
+   let union (Udwfw_combination_t.C l1) (Udwfw_combination_t.C l2) =
       constructor (l1@l2) ;;    
 
    end ;;   
@@ -38,7 +38,7 @@ module Private = struct
    let constructor  = Private.constructor ;;
         
    
-   let expand_fully (Vdwfw_combination_t.C l)= 
+   let expand_fully (Udwfw_combination_t.C l)= 
      let temp1 = Image.image (
         fun (core,translation) ->
           Udwfw_variable.homogeneous_translation core translation 
@@ -51,13 +51,13 @@ module Private = struct
      Ordered.fold_merge Private.oord temp2 ;;
    
    let fold_union l = match l with 
-       [] -> Vdwfw_combination_t.C [](* raise(Empty_union) *)
+       [] -> Udwfw_combination_t.C [](* raise(Empty_union) *)
       |comb :: others -> List.fold_left Private.union comb others ;;
 
    exception Homogeneous_translation_exn of Udwfw_nonempty_index_t.t * (int list) * ( (int list) * (int list) );;
    
    let homogeneous_translation 
-    (Vdwfw_combination_t.C l) translation =
+    (Udwfw_combination_t.C l) translation =
     let temp1 = Image.image (fun (core1,translation1) ->
        (core1,Private.merge translation1 translation)   
    ) l  in 
@@ -80,14 +80,14 @@ module Private = struct
    
    
    let replace_with_in (x,combination_for_x) combination_for_y =
-     let (Vdwfw_combination_t.C content_for_y) = combination_for_y in
+     let (Udwfw_combination_t.C content_for_y) = combination_for_y in
      let (before,opt,after) = 
         Three_parts.select_center_element_and_reverse_left 
         (fun (core,translation)->core = x) content_for_y in 
      match opt with 
       None -> combination_for_y  
      |Some(_,translation) -> 
-        let (Vdwfw_combination_t.C content_for_x) = combination_for_x in 
+        let (Udwfw_combination_t.C content_for_x) = combination_for_x in 
        let new_center = Image.image (
         fun (core1,translation1)->
               (core1,Ordered.merge Total_ordering.for_integers 
