@@ -41,12 +41,12 @@ let lower_measure_in_width_four n =
 
 end ;;
 
-let measure (Udw_max_width_t.MW mw) n=
+let measure (Vdw_max_width_t.MW mw) n=
 match mw with 
 4 -> Private.measure_in_width_four n 
 | _ -> raise( Untreated_width mw);;
 
-let lower_measure (Udw_max_width_t.MW mw) n=
+let lower_measure (Vdw_max_width_t.MW mw) n=
 match mw with 
 4 -> Private.lower_measure_in_width_four n 
 | _ -> raise( Untreated_width mw);;  
