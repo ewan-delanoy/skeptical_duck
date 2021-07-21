@@ -15,6 +15,3 @@ let test_joinability =
 let naive_restricted_power_set = 
   Vdw_max_width.naive_restricted_power_set mw;;
 
-
-  
-
