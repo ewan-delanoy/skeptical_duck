@@ -6,9 +6,9 @@
 
 let mw = Vdw_max_width_t.MW 4 ;;
 
-let lower_measure n = Vdw_precomputed.lower_measure mw ;;
+let lower_measure = Vdw_precomputed.lower_measure mw ;;
 
-let measure n = Vdw_precomputed.measure mw ;;
+let measure = Vdw_precomputed.measure mw ;;
 
 let naive_restricted_power_set = 
   Vdw_max_width.naive_restricted_power_set mw;;
