@@ -39,22 +39,20 @@ let lower_measure_in_width_four n =
       |8 -> 4*q+3 
       | _ -> failwith("unforeseen");;  
 
-let hashtbl_for_restricted_power_set = Hashtbl.create 4;;
 
-let mw1 = Vdw_max_width_t.MW 4 
-and n1 = Ennig.ennig 1 15 ;;
+let restricted_power_set =Memoized.recursive (fun old_f (max_width,soi) ->
+  if soi = [] 
+  then [[]]  
+  else 
+  let temp1 = List.rev soi in 
+  let (last_elt,temp2) = Listennou.ht temp1 in 
+  let soi2 = List.rev temp2 in 
+  Vdw_max_width.extender max_width (old_f (max_width,soi2)) last_elt  
+);;
 
-Hashtbl.add hashtbl_for_restricted_power_set (mw1,n1) 
-  (Vdw_max_width.naive_restricted_power_set mw1 n1) ;;
-
-let restricted_power_set pair =
-   let (max_width,n) = pair in 
-   match Hashtbl.find_opt hashtbl_for_restricted_power_set pair with
-   Some(old_answer) -> old_answer
-   | None ->
-    let answer = Vdw_max_width.naive_restricted_power_set max_width n in 
-    let _ = Hashtbl.add hashtbl_for_restricted_power_set pair answer in 
-    answer ;;
+let act1 () = Ennig.doyle (fun n->
+  restricted_power_set (Vdw_max_width_t.MW 4,Ennig.ennig 1 n)
+) 1 24;;
 
 end ;;
 
