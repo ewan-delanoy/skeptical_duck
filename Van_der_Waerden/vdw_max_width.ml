@@ -23,4 +23,9 @@ let naive_restricted_power_set max_width soi =
         List.filter (fun l-> test_for_admissibility max_width 
         l) temp1 ;;
   
+let extender max_width ll x=
+  let temp1 = Image.image 
+     (fun y->Ordered.safe_set Vdw_preliminaries.oint (y@[x])) ll in 
+  let temp2 = List.filter (test_for_admissibility max_width) temp1 in
+  Ordered.merge  Vdw_preliminaries.ointlist ll temp2 ;;
 
