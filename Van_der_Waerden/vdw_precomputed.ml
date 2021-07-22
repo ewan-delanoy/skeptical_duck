@@ -50,8 +50,8 @@ let restricted_power_set =Memoized.recursive (fun old_f (max_width,soi) ->
   Vdw_max_width.extender max_width (old_f (max_width,soi2)) last_elt  
 );;
 
-let act1 () = Ennig.doyle (fun n->
-  restricted_power_set (Vdw_max_width_t.MW 4,Ennig.ennig 1 n)
+let computation1 = Ennig.doyle (fun n->
+  List.length(restricted_power_set (Vdw_max_width_t.MW 4,Ennig.ennig 1 n)) 
 ) 1 24;;
 
 end ;;
