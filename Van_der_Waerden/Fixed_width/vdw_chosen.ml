@@ -6,6 +6,8 @@
 
 let max_width = Vdw_max_width_t.MW 4 ;;
 
+let extender = Vdw_max_width.extender max_width ;;
+
 let lower_measure = Vdw_precomputed.lower_measure max_width ;;
 
 let measure = Vdw_precomputed.measure max_width ;;
