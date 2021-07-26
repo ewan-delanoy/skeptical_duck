@@ -490,7 +490,6 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
          Look_for_module_names.names_in_mlx_file(Absolute_path.of_string s_ap);;      
 
-
       let module_linking fw = 
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
