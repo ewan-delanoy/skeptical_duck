@@ -35,7 +35,7 @@ let detect_printer_declaration_at_index text idx =
   if not (Substring.is_a_substring_located_at po_keyword text idx2 )
   then None 
   else  
-  match after_blanks text (idx+(String.length let_keyword)) with 
+  match after_blanks text (idx2+(String.length let_keyword)) with 
    None -> None 
   |Some(idx3) ->
   if not (Substring.is_a_substring_located_at equal_sign text idx3 )
@@ -54,3 +54,8 @@ end ;;
 
 let detect text = Private.detect_printer_declaration_from_index text 0;;
 
+(*
+
+detect "123 let print_out = 54" ;;
+
+*)
