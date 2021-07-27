@@ -10,8 +10,6 @@ let let_keyword = "let" ;;
 
 let po_keyword  = "print_out" ;;
 
-let equal_sign = "=" ;;
-
 let blanks = [' ';'\n';'\r';'\t'];;
 
 let after_blanks text =
@@ -35,19 +33,17 @@ let detect_printer_declaration_at_index text idx =
   if not (Substring.is_a_substring_located_at po_keyword text idx2 )
   then None 
   else  
-  match after_blanks text (idx2+(String.length po_keyword)) with 
-   None -> None 
-  |Some(idx3) ->
-  if not (Substring.is_a_substring_located_at equal_sign text idx3 )
-  then None 
-  else Some(idx2,idx3) ;;
+  let idx3 = idx2+(String.length po_keyword) in 
+  if List.mem (Strung.get text idx3) blanks 
+  then Some(idx2)
+  else None;;
   
 let rec detect_printer_declaration_from_index text idx = 
    if idx>(String.length text)
    then None 
    else
    match  detect_printer_declaration_at_index text idx with 
-   Some(idx2,idx3) -> Some(idx,idx2,idx3)
+   Some(idx2) -> Some(idx,idx2)
    |None -> detect_printer_declaration_from_index text (idx+1) ;;    
 
 end ;;   
