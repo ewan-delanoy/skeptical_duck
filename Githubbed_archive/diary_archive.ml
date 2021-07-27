@@ -1,8 +1,38 @@
 (************************************************************************************************************************
-Snippet 45 : 
+Snippet 46 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 45 : Test the 
+************************************************************************************************************************)
+open Needed_values ;;
+
+let z1 = ae () ;;
+let z2 = Image.image (
+  fun el->
+    let full = Dfn_join.to_ending el Dfa_ending.ml in 
+    let ap = Dfn_full.to_absolute_path full in 
+    (el,ap)
+) z1;;
+let (z3,z4) = List.partition (fun (el,ap)->
+  Sys.file_exists (Absolute_path.to_string ap)
+  ) z2 ;;
+let z5 = Explicit.image (
+  fun (el,ap)->(el,Io.read_whole_file ap)
+) z3 ;; 
+let z6 = Option.filter_and_unpack (
+  fun (el,text) -> 
+    let temp1 = Outside_comments_and_strings.good_substrings text in 
+    if List.exists (fun (i,j,subtext)->
+      (Detect_printer_declaration_in_text.detect subtext)<>None 
+      ) temp1 
+    then Some (Dfn_endingless.to_module el)
+    else None  
+) z5 ;;
+let z7 = Image.image Dfn_endingless.to_module (Coma_state.printer_equipped_types_from_data (!ucs)) ;;
+let check = (z6 = z7) ;;
 
 (************************************************************************************************************************
 Snippet 44 : Old version of a Van der Waerden-related module

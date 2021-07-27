@@ -544,12 +544,28 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let (_,u_files,_) = canonical_tripartition fw all_files in 
          u_files ;;      
       
+      let test_for_printer fw rootless = 
+         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+         let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
+         let text = Io.read_whole_file (Absolute_path.of_string s_ap) in 
+         let snippets = Outside_comments_and_strings.good_substrings text in 
+         List.exists (fun (i,j,subtext)->
+           (Detect_printer_declaration_in_text.detect subtext)<>None 
+         ) snippets ;;
+   
+      let compute_printer_equipped_types fw = 
+            let all_files = Image.image fst (Automatic.watched_files fw) in 
+            let (_,u_files,_) = canonical_tripartition fw all_files in 
+            List.filter ( test_for_printer fw ) u_files ;;   
+
       end ;;      
 
 end;;
 
 let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
+
+let compute_printer_equipped_types = Private.Modular.compute_printer_equipped_types ;;
 
 let empty_one config= {
    File_watcher_t.configuration = config;
@@ -603,6 +619,8 @@ let rename_subdirectory_as = Private.rename_subdirectory_as;;
 let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
+
+let test_for_printer = Private.Modular.test_for_printer ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
