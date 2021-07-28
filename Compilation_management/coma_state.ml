@@ -97,9 +97,9 @@ module Automatic = struct
   
   let set_push_after_backup cs bowl = let ccs=of_t cs in 
        let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
-       let old_config = Fw_with_module_linking.Automatic.configuration old_frontier in 
-       let new_config = {old_config with Fw_configuration_t.gitpush_after_backup=bowl } in 
-       let new_frontier = Fw_with_module_linking.Automatic.set_configuration old_frontier new_config  in 
+       let new_frontier = 
+        Fw_with_module_linking.Automatic.set_gitpush_after_backup 
+         old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
   
