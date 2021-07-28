@@ -83,6 +83,15 @@ module Automatic = struct
       fw with 
        Fw_wrapper_t.parent = new_parent;
       } *);;
+   let set_gitpush_after_backup fw new_gab = 
+      let old_nonmodular = fw.Fw_with_module_linking_t.parent in 
+      let new_nonmodular = File_watcher.Automatic.set_gitpush_after_backup 
+            old_nonmodular new_gab in 
+      {
+         (* fw with *) 
+         Fw_with_module_linking_t.parent = new_nonmodular ;
+      } ;;
+      
    let set_last_noticed_changes fw new_config = 
       let old_parent = fw.Fw_with_module_linking_t.parent in
       let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
