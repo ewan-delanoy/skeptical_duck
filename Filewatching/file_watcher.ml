@@ -79,19 +79,7 @@ module Automatic = struct
    let last_noticed_changes fw = fw.File_watcher_t.last_noticed_changes ;;
 
    let of_concrete_object = Private.of_concrete_object;;
-   
-   let set_configuration fw new_config = {
-      fw with 
-       File_watcher_t.configuration = new_config ;
-   } ;;
-
-   let set_last_noticed_changes fw new_lnc = {
-      fw with 
-       File_watcher_t.last_noticed_changes = new_lnc ;
-   } ;;
-
-   let to_concrete_object = Private.to_concrete_object;;
-   
+  
    let reflect_changes_in_diff fw l= {
       fw with 
       File_watcher_t.last_noticed_changes = 
@@ -124,6 +112,31 @@ module Automatic = struct
    
    let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
    
+
+   let set_configuration fw new_config = {
+      fw with 
+       File_watcher_t.configuration = new_config ;
+   } ;;
+
+   let set_gitpush_after_backup fw new_gab = 
+      let old_config = fw.File_watcher_t.configuration in 
+      let new_config = {
+         old_config with 
+         Fw_configuration_t.gitpush_after_backup = new_gab
+      } in
+      {
+      fw with 
+       File_watcher_t.configuration = new_config ;
+   } ;;
+
+   let set_last_noticed_changes fw new_lnc = {
+      fw with 
+       File_watcher_t.last_noticed_changes = new_lnc ;
+   } ;;
+
+   let to_concrete_object = Private.to_concrete_object;;
+   
+  
    let watched_files fw = fw.File_watcher_t.watched_files ;;
 
 end ;;   
