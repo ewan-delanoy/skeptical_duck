@@ -75,14 +75,6 @@ module Automatic = struct
    let of_concrete_object = Private.of_concrete_object;;
    let parent             = Private.parent ;;
    let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
-   let set_configuration fw new_config = 
-      let old_parent = fw.Fw_with_module_linking_t.parent in
-      let new_parent = File_watcher.Automatic.set_configuration old_parent new_config in 
-      Private.usual_update new_parent
-      (* {
-      fw with 
-       Fw_wrapper_t.parent = new_parent;
-      } *);;
    let set_gitpush_after_backup fw new_gab = 
       let old_nonmodular = fw.Fw_with_module_linking_t.parent in 
       let new_nonmodular = File_watcher.Automatic.set_gitpush_after_backup 

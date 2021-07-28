@@ -111,12 +111,6 @@ module Automatic = struct
    } ;;
    
    let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
-   
-
-   let set_configuration fw new_config = {
-      fw with 
-       File_watcher_t.configuration = new_config ;
-   } ;;
 
    let set_gitpush_after_backup fw new_gab = 
       let old_config = fw.File_watcher_t.configuration in 
