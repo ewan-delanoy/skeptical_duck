@@ -9,5 +9,6 @@ defined in  the configuration parameter
 
 type t ={
   parent : File_watcher_t.t ;
+  modules_in_watched_files : (Dfn_rootless_t.t * (Dfa_module_t.t list)) list;
+  printers_in_watched_files : Dfn_rootless_t.t list; 
 };;
-
