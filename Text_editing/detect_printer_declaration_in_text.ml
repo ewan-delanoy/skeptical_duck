@@ -52,6 +52,6 @@ let detect text = Private.detect_printer_declaration_from_index text 0;;
 
 (*
 
-detect "123 let print_out = 54" ;;
+detect "123 l"^"et print_out = 54" ;;
 
 *)
