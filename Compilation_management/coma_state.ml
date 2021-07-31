@@ -102,8 +102,6 @@ module Automatic = struct
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
-  
-  
   let set_subdir_at_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.subdir_for_module in 
@@ -2347,7 +2345,7 @@ let compute_dependencies  prepared_list_of_modules =
   )     in 
   let (cycles,good_list) = Reconstruct_linear_poset.reconstruct_linear_poset coatoms  modules_in_lex_order in 
   let _ = treat_circular_dependencies cycles in
-  Image.image (fun mname->mname) good_list ;; 
+  good_list ;; 
 
 end ;;   
 
