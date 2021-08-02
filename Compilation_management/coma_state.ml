@@ -1397,73 +1397,73 @@ exception Bad_pair of Dfn_rootless_t.t*Dfa_ending_t.t;;
 
 
 let register_mlx_file_on_monitored_modules cs rless =
-          let middle = Dfn_rootless.to_middle rless
-          and ending=Dfn_rootless.to_ending rless in 
-          let nm=Dfn_rootless.to_module rless in
-          if not(Automatic.test_module_for_registration cs nm)
-          then  let info=complete_id_during_new_module_registration cs rless in
+  let middle = Dfn_rootless.to_middle rless
+  and ending=Dfn_rootless.to_ending rless in 
+  let nm=Dfn_rootless.to_module rless in
+  if not(Automatic.test_module_for_registration cs nm)
+  then  let info=complete_id_during_new_module_registration cs rless in
                 Automatic.push_right_in_each cs info 
-          else
-          let edgs=registered_endings_at_module cs nm in
-          if List.length(edgs)>1
-          then  raise(Overcrowding(rless,edgs))
-          else  
-          if List.mem ending edgs
-          then raise(Already_registered_file(rless))
-          else
-          if (not(List.mem Dfa_ending.mli (ending::edgs)))
-          then raise(Bad_pair(rless,List.hd edgs))
-          else 
-          if ending = Dfa_ending.mli
-          then let old_pr_end = List.hd edgs in
-               let old_rless =
-                Dfn_join.middle_to_ending middle old_pr_end in
-              let (eless,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
+  else
+  let edgs=registered_endings_at_module cs nm in
+  if List.length(edgs)>1
+  then  raise(Overcrowding(rless,edgs))
+  else  
+  if List.mem ending edgs
+  then raise(Already_registered_file(rless))
+  else
+  if (not(List.mem Dfa_ending.mli (ending::edgs)))
+  then raise(Bad_pair(rless,List.hd edgs))
+  else 
+  if ending = Dfa_ending.mli
+  then let old_pr_end = List.hd edgs in
+       let old_rless =
+         Dfn_join.middle_to_ending middle old_pr_end in
+        let (eless,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
                  complete_info cs old_rless in
-               let new_mlimt = md_compute_modification_time eless ending in
-               let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
-               Automatic.set_in_each cs nm new_dt
-          else
-          let new_dt=complete_id_during_new_module_registration cs rless in 
-          let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=new_dt in
-          let temp3=List.rev(dirfath) in
-          if temp3=[]
-          then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
-          else  
-          let last_father=List.hd(temp3) in
-          let nm=Dfn_rootless.to_module rless in 
-          let cs_walker=ref(cs) in 
-          let _=List.iter(
-                 fun current_module ->
-              let current_anc= ancestors_at_module (!cs_walker) current_module in  
-              if not(List.mem nm current_anc)
-              then ()
-              else  
-                   let current_libs= needed_libs_at_module cs current_module in
-                   let new_ancestors=Option.filter_and_unpack(
-                      fun nm2->
-                      if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
-                      then Some(nm2)
-                      else None
-                    ) (ordered_list_of_modules (!cs_walker)) 
-                    and new_libs=List.filter (
-                      fun lib->(List.mem lib libned)||(List.mem lib current_libs)
-                    ) Ocaml_library.all_libraries in  
-                    let ordered_dirs=Set_of_polys.merge
-                       (Set_of_polys.safe_set(needed_dirs_at_module (!cs_walker) current_module))
-                       (Set_of_polys.safe_set (dirned)) in
-                    let new_dirs=Set_of_polys.forget_order(ordered_dirs) in
-                    cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
-                    cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
-                    cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
-          )(follows_it cs last_father) in 
-          let _=
-            ( 
+        let new_mlimt = md_compute_modification_time eless ending in
+        let new_dt=(old_pr_end,true,prmt,new_mlimt,libned,dirfath,allanc,dirned,false) in
+        Automatic.set_in_each cs nm new_dt
+  else
+  let new_dt=complete_id_during_new_module_registration cs rless in 
+  let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=new_dt in
+  let temp3=List.rev(dirfath) in
+  if temp3=[]
+  then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
+  else  
+  let last_father=List.hd(temp3) in
+  let nm=Dfn_rootless.to_module rless in 
+  let cs_walker=ref(cs) in 
+  let _=List.iter(
+      fun current_module ->
+      let current_anc= ancestors_at_module (!cs_walker) current_module in  
+      if not(List.mem nm current_anc)
+      then ()
+      else  
+      let current_libs= needed_libs_at_module cs current_module in
+      let new_ancestors=Option.filter_and_unpack(
+        fun nm2->
+        if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
+        then Some(nm2)
+        else None
+      ) (ordered_list_of_modules (!cs_walker)) 
+      and new_libs=List.filter (
+          fun lib->(List.mem lib libned)||(List.mem lib current_libs)
+      ) Ocaml_library.all_libraries in  
+      let ordered_dirs=Set_of_polys.merge
+        (Set_of_polys.safe_set(needed_dirs_at_module (!cs_walker) current_module))
+        (Set_of_polys.safe_set (dirned)) in
+      let new_dirs=Set_of_polys.forget_order(ordered_dirs) in
+      cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
+      cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
+      cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
+  )(follows_it cs last_father) in 
+  let _=
+  ( 
               cs_walker:=Automatic.remove_in_each_at_module (!cs_walker) nm;
               cs_walker:=Automatic.push_after_module_in_each (!cs_walker) last_father new_dt;  
-            )
-          in
-          (!cs_walker);;
+  )
+  in
+  (!cs_walker);;
 
 module Modern = struct 
 (*
