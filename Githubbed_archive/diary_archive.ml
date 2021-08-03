@@ -17,7 +17,7 @@ let extract_interval ((i,j),_) =
    String.concat "\n" temp2 ;;
 
 let ref_for_colombo = ref ([
-   ((961, 985), "compute_principal_ending");
+   ((961, 985),   "compute_principal_ending");
    ((1024, 1031), "registrations_for_lonely_ending");
    ((2267, 2350), "Simplified_ts_creation")
 ]:(((int * int) * string) list)) ;;

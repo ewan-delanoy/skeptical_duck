@@ -398,6 +398,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
 
 end;;
 
+let configuration = Automatic.configuration ;;
 
 let empty_one config= {
    Fw_with_module_linking_t.parent = File_watcher.empty_one config;
@@ -414,6 +415,8 @@ let get_mtime = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
 let inspect_and_update = Private.inspect_and_update;;
+
+let last_noticed_changes = Automatic.last_noticed_changes ;;
 
 let noncompilable_files fw = File_watcher.noncompilable_files (Automatic.parent fw) ;;
 
@@ -442,6 +445,8 @@ let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
 
 let root = Automatic.root ;;
+
+let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
