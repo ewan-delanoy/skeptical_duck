@@ -446,6 +446,8 @@ let replace_value = Private.replace_value;;
 
 let root = Automatic.root ;;
 
+let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
+
 let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
