@@ -17,7 +17,7 @@ let of_line e =
 
 let connectable_to_modulename (Dfa_ending_t.E(e)) = "." ^ e ;;
 
-let restrict_to_ocaml_ending (Dfa_ending_t.E(e)) =
+let convert_to_ocaml_ending (Dfa_ending_t.E(e)) =
    if not(Supstring.begins_with e "ml")
    then raise(Not_an_ocaml_ending(e))
    else let n=String.length(e) in 

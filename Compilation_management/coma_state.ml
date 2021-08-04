@@ -976,7 +976,7 @@ let md_compute_modification_times hm=
       Dfa_ending.compute_on_all_ocaml_endings (md_compute_modification_time hm);;
     
 let md_associated_modification_time  (ml_mt,mli_mt,mll_mt,mly_mt) edg=
-  match Dfa_ending.restrict_to_ocaml_ending edg with
+  match Dfa_ending.convert_to_ocaml_ending edg with
      Dfa_ocaml_ending_t.Ml->ml_mt
     |Mli->mli_mt
     |Mll->mll_mt
@@ -1020,7 +1020,7 @@ let  check_unix_presences hm=
     Dfa_ending.compute_on_all_ocaml_endings (fun edg->check_unix_presence hm edg);;  
 
 let registrations_for_lonely_ending old_edg =
-   let edg = Dfa_ending.restrict_to_ocaml_ending old_edg in 
+   let edg = Dfa_ending.convert_to_ocaml_ending old_edg in 
     (
       edg=Dfa_ocaml_ending_t.Ml,
       edg=Dfa_ocaml_ending_t.Mli,
