@@ -153,11 +153,11 @@ let of_configuration config =
     let mother = File_watcher.of_configuration config in 
     Automatic.constructor mother ;;
 
-let of_configuration_and_list config files=   
+let of_configuration_and_list (config,files)=   
    let mother = File_watcher.of_configuration_and_list config files  in 
    Automatic.constructor mother ;;
 
-let overwrite_file_if_it_exists fw rootless new_content = 
+let overwrite_file_if_it_exists fw (rootless,new_content) = 
    let old_parent = Automatic.parent fw 
    and old_module_linking = Automatic.module_linking fw 
    and old_printers = Automatic.printers fw in 
@@ -214,7 +214,7 @@ let register_rootless_paths fw rootless_paths=
    },
    File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
    
-let relocate_module_to fw mod_name new_subdir=
+let relocate_module_to fw (mod_name,new_subdir)=
    let old_parent = Automatic.parent fw 
    and old_module_linking = Automatic.module_linking fw 
    and old_printers = Automatic.printers fw in 
@@ -318,7 +318,7 @@ let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewrit
       ) u_files; 
     },changed_files) ;;  
          
-let rename_module_on_both_levels fw old_module new_module files_to_be_rewritten=
+let rename_module_on_both_levels fw (old_module,new_module,files_to_be_rewritten)=
    let fw2 = rename_module_on_filename_level fw (old_module,new_module) in 
    rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten ;;
 
@@ -369,7 +369,7 @@ let replace_string fw (replacee,replacer)=
    },
    File_watcher.partition_for_singles new_parent changed_files);;   
 
-let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
+let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
    and old_module_linking = Automatic.module_linking fw 
    and old_printers = Automatic.printers fw in 

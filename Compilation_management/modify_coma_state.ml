@@ -38,7 +38,7 @@ module Physical = struct
       (Coma_state.set_frontier_with_unix_world cs new_fw,ac_paths,uc_paths) ;;
    
    let relocate_module_to cs mod_name new_subdir=
-      let new_fw=Fw_with_module_linking.relocate_module_to (cs.Coma_state_t.frontier_with_unix_world) mod_name new_subdir in   
+      let new_fw=Fw_with_module_linking.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    let rename_module cs old_middle_name new_nonslashed_name=
@@ -52,7 +52,7 @@ module Physical = struct
    ) (Coma_state.ordered_list_of_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let old_fw = Coma_state.frontier_with_unix_world cs in 
-     let (new_fw,changed_dependencies) = Fw_with_module_linking.rename_module_on_filename_level_and_in_files old_fw old_nm new_nm all_acolytes_below in 
+     let (new_fw,changed_dependencies) = Fw_with_module_linking.rename_module_on_filename_level_and_in_files old_fw (old_nm,new_nm,all_acolytes_below) in 
      (Coma_state.set_frontier_with_unix_world cs new_fw,changed_dependencies) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
@@ -82,7 +82,7 @@ module Physical = struct
                    let preceding_files=Image.image  (fun eless2->
                         Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
                    ) temp2 in
-                   Fw_with_module_linking.replace_value old_fw (preceding_files,path) (old_sov,new_sov)
+                   Fw_with_module_linking.replace_value old_fw ((preceding_files,path),(old_sov,new_sov))
       ) in 
       (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_ac_files,changed_uc_files,changed_noncompilable_files));;       
    
@@ -590,4 +590,4 @@ module Physical = struct
    
    end;;
    
-   let gmx = 7;;
+   
