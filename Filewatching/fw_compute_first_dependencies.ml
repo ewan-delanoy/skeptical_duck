@@ -13,11 +13,12 @@ module Private = struct
 
 
 let check_admissibility_of_acolytes_list l=
-   let temp1 = Image.image (fun rl->(Dfn_rootless.to_ending rl,rl)) l in 
+   let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Listennou.partition_according_to_fst temp1 in 
    let temp3 = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
    if temp3<>[]
-   then raise(Several_locations_for_one_ending(temp3))
+   then let temp5 = Image.image (fun (edg,detailed_l) -> (edg,Image.image fst detailed_l) ) temp3 in 
+        raise(Several_locations_for_one_ending(temp5))
    else 
    let temp4 = Image.image (fun (edg,l_rl)->
       (Dfa_ending.convert_to_ocaml_ending edg,List.hd l_rl)
@@ -25,33 +26,27 @@ let check_admissibility_of_acolytes_list l=
    let (temp5,temp6) = List.partition 
     (function (edg,rl)->edg=Dfa_ocaml_ending_t.Mli) temp4 in 
    if (temp4=[]) || (List.length(temp6)>1)
-   then raise(Nonadmissible_acolytes_list(Image.image snd temp4))
+   then raise(Nonadmissible_acolytes_list(Image.image (fun (_,(rl,_))->rl) temp4))
    else        
-   let opt_mli_rless = (
+   let opt_mli_detailed_rless = (
       if temp5=[] 
       then None 
       else Some(snd(List.hd temp5))) in
-   let principal_rless = (
+   let principal_detailed_rless = (
       if temp6=[]
-      then Option.unpack opt_mli_rless 
+      then Option.unpack opt_mli_detailed_rless 
       else snd(List.hd temp6)    
    ) in     
-   (opt_mli_rless,principal_rless) ;;
+   (opt_mli_detailed_rless,principal_detailed_rless) ;;
 
-let classify_according_to_module root compilable_files =
-    let temp1 = Image.image (fun rless->
-       (Dfn_rootless.to_module rless,rless)  
+let classify_according_to_module compilable_files =
+    let temp1 = Image.image (fun (rless,details)->
+       (Dfn_rootless.to_module rless,(rless,details))  
     ) compilable_files in 
     let temp2 = Listennou.partition_according_to_fst temp1 in 
-    let ap_from_rootless = (fun rless->
-       let full = Dfn_join.root_to_rootless root rless in 
-       Dfn_full.to_absolute_path full
-      ) in 
     Image.image (fun (mn,l)->
       let (opt_mli,principal)=check_admissibility_of_acolytes_list l in 
-      let opt_mli_ap = Option.propagate ap_from_rootless opt_mli 
-      and principal_ap = ap_from_rootless principal in
-      (mn,(opt_mli,opt_mli_ap,principal,principal_ap))
+      (mn,(opt_mli,principal))
       ) temp2 ;;
 
 let treat_circular_dependencies m_cycles= 
@@ -72,9 +67,11 @@ let compute_dependencies  prepared_list_of_modules =
   let lex_sort = Ordered.sort lex_order in 
   let modules_in_lex_order = lex_sort (Image.image fst prepared_list_of_modules) in 
   let coatoms = Memoized.make (fun mname ->
-     let (opt,opt_ap,pr_rless,pr_ap) = List.assoc mname  prepared_list_of_modules in 
-     let mli_part = (match opt_ap with None->[] |(Some ap)->Look_for_module_names.names_in_mlx_file ap)
-     and pr_part =  Look_for_module_names.names_in_mlx_file pr_ap in 
+     let (opt_mli,(pr_rless,pr_details)) = List.assoc mname  prepared_list_of_modules in 
+     let mli_part = (match opt_mli with 
+       None->[] 
+       |(Some (mli_rless,mli_details))->Fw_file_small_details.used_modules mli_details)
+     and pr_part = Fw_file_small_details.used_modules pr_details in 
      let temp1 = lex_sort(mli_part@pr_part) in 
      Ordered.intersect lex_order  modules_in_lex_order temp1
   )     in 
@@ -84,37 +81,39 @@ let compute_dependencies  prepared_list_of_modules =
 
 end ;;   
 
+
 let main fw  = 
-   let dir =Fw_with_small_details.root fw  in 
-   let temp1=Fw_with_small_details.usual_compilable_files fw in
-   let temp2= Private.classify_according_to_module dir temp1 in
-   let (ancestors_for_module,old_coatom_map)= Private.compute_dependencies temp2 in
+   let u_files=Fw_with_small_details.usual_compilable_files fw in 
+   let temp2=List.filter (fun (rl,_)->List.mem rl u_files)
+      (fw.Fw_with_small_details_t.small_details_in_files)  in
+   let temp3= Private.classify_according_to_module temp2 in
+   let (ancestors_for_module,old_coatom_map)= Private.compute_dependencies temp3 in
    let dep_ordered_list_of_modules = Image.image fst ancestors_for_module in  
-   let dep_ordered_temp2 = Image.image (
-     fun mn->(mn,List.assoc mn temp2)
+   let dep_ordered_temp3 = Image.image (
+     fun mn->(mn,List.assoc mn temp3)
    ) dep_ordered_list_of_modules in 
    let subdir_for_module = Image.image (
-      fun (mn,(opt_mli_rless,_,pr_rless,_))->
+      fun (mn,(opt_mli_rless,(pr_rless,_)))->
        (mn,Dfn_rootless.to_subdirectory pr_rless)
-    ) dep_ordered_temp2
+    ) dep_ordered_temp3
    and principal_ending_for_module = Image.image (
-      fun (mn,(opt_mli_rless,_,pr_rless,_))->
+      fun (mn,(opt_mli_rless,(pr_rless,_)))->
        (mn,Dfn_rootless.to_ending pr_rless)
-   ) dep_ordered_temp2 
+   ) dep_ordered_temp3 
    and mli_presence_for_module = Image.image (
-      fun (mn,(opt_mli_rless,_,pr_rless,_))->
+      fun (mn,(opt_mli_rless,(pr_rless,_)))->
        (mn,opt_mli_rless<>None)
-    ) dep_ordered_temp2 
+    ) dep_ordered_temp3 
    and principal_mt_for_module = Image.image (
-      fun (mn,(opt_mli_rless,_,pr_rless,_))->
+      fun (mn,(opt_mli_rless,(pr_rless,_)))->
        Fw_with_small_details.get_mtime fw pr_rless
-   ) dep_ordered_temp2 
+   ) dep_ordered_temp3 
    and mli_mt_for_module = Image.image (
-      fun (mn,(opt_mli_rless,_,pr_rless,_))->
+      fun (mn,(opt_mli_rless,(pr_rless,_)))->
        match opt_mli_rless with 
        None -> "0."
-     |Some(mli_rless)-> Fw_with_small_details.get_mtime fw mli_rless
-   ) dep_ordered_temp2
+     |Some(mli_rless,_)-> Fw_with_small_details.get_mtime fw mli_rless
+   ) dep_ordered_temp3
    and direct_fathers_for_module = Image.image (
       fun mn->
        let ttemp4 = old_coatom_map mn in 
@@ -131,6 +130,7 @@ let main fw  =
     direct_fathers_for_module,
     ancestors_for_module 
    );;
+
 
 (*   
     modules : Dfa_module_t.t list;
