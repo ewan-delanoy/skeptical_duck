@@ -25,7 +25,7 @@ module Automatic = struct
          let g=Concrete_object.get_record ccrt_obj in
          {
             Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
-            small_details_in_files = cr_to_pair_list Fw_file_simple_details.of_concrete_object (g small_details_in_files_label);
+            small_details_in_files = cr_to_pair_list Fw_file_small_details.of_concrete_object (g small_details_in_files_label);
 
          };; 
       
@@ -34,7 +34,7 @@ module Automatic = struct
          let items= 
          [
            parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
-           small_details_in_files_label, cr_of_pair_list  Fw_file_simple_details.to_concrete_object (fw.Fw_with_module_linking_t.small_details_in_files);
+           small_details_in_files_label, cr_of_pair_list  Fw_file_small_details.to_concrete_object (fw.Fw_with_module_linking_t.small_details_in_files);
          
          ]  in
          Concrete_object_t.Record items;;
