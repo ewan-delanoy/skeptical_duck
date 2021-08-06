@@ -516,18 +516,6 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          ) u_files in    
          remove_files fw the_files;;      
 
-      let get_linking fw rootless = 
-         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
-         let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
-         Look_for_module_names.names_in_mlx_file(Absolute_path.of_string s_ap);;      
-
-      let module_linking fw = 
-         let all_files = Image.image fst (Automatic.watched_files fw) in 
-         let (_,u_files,_) = canonical_tripartition fw all_files in 
-         Image.image ( fun rl->
-           (rl,get_linking fw rl)   
-         ) u_files ;;    
-
       let noncompilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,_,nc_files) = canonical_tripartition fw all_files in 
@@ -573,21 +561,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
       let usual_compilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
-         u_files ;;      
-      
-      let test_for_printer fw rootless = 
-         let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
-         let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
-         let text = Io.read_whole_file (Absolute_path.of_string s_ap) in 
-         let snippets = Outside_comments_and_strings.good_substrings text in 
-         List.exists (fun (i,j,subtext)->
-           (Detect_printer_declaration_in_text.detect subtext)<>None 
-         ) snippets ;;
-   
-      let compute_printer_equipped_types fw = 
-            let all_files = Image.image fst (Automatic.watched_files fw) in 
-            let (_,u_files,_) = canonical_tripartition fw all_files in 
-            List.filter ( test_for_printer fw ) u_files ;;   
+         u_files ;;        
 
       end ;;      
 
@@ -597,8 +571,6 @@ let apply_text_transformation_on_all_files = Private.apply_text_transformation_o
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
 
 let compilable_files = Private.Modular.compilable_files ;;
-
-let compute_printer_equipped_types = Private.Modular.compute_printer_equipped_types ;;
 
 let compute_all_small_details = Private.Modular.compute_all_small_details ;;
 
@@ -613,15 +585,12 @@ let empty_one config= {
 let forget_modules = Private.Modular.forget_modules ;;
 
 let get_content = Automatic.get_content ;;
-let get_linking = Private.Modular.get_linking ;;
 let get_mtime   = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
 
 
 let inspect_and_update = Private.inspect_and_update;;
-
-let module_linking = Private.Modular.module_linking ;;
 
 let noncompilable_files = Private.Modular.noncompilable_files ;;
 
@@ -656,8 +625,6 @@ let rename_subdirectory_as = Private.rename_subdirectory_as;;
 let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
-
-let test_for_printer = Private.Modular.test_for_printer ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 

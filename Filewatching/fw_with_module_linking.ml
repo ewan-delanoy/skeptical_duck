@@ -17,17 +17,16 @@ module Automatic = struct
          
       let salt = "Fw_"^"with_module_linking_t.";;
       
-      let parent_label                    = salt ^ "parent";;
-      let modules_in_watched_files_label  = salt ^ "modules_in_watched_files";;
-      let printers_in_watched_files_label = salt ^ "printers_in_watched_files";;
+      let parent_label                  = salt ^ "parent";;
+      let small_details_in_files_label  = salt ^ "small_details_in_files";;
       
       
       let of_concrete_object ccrt_obj = 
          let g=Concrete_object.get_record ccrt_obj in
          {
             Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
-            modules_in_watched_files = cr_to_pair_list (Crobj_converter_combinator.to_list Dfa_module.of_concrete_object) (g modules_in_watched_files_label);
-            printers_in_watched_files = Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g printers_in_watched_files_label);
+            small_details_in_files = cr_to_pair_list Fw_file_simple_details.of_concrete_object (g small_details_in_files_label);
+
          };; 
       
    
@@ -35,8 +34,7 @@ module Automatic = struct
          let items= 
          [
            parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
-           modules_in_watched_files_label, cr_of_pair_list (Crobj_converter_combinator.of_list Dfa_module.to_concrete_object) (fw.Fw_with_module_linking_t.modules_in_watched_files);
-           printers_in_watched_files_label, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object (fw.Fw_with_module_linking_t.printers_in_watched_files);
+           small_details_in_files_label, cr_of_pair_list  Fw_file_simple_details.to_concrete_object (fw.Fw_with_module_linking_t.small_details_in_files);
          
          ]  in
          Concrete_object_t.Record items;;
@@ -49,14 +47,9 @@ module Automatic = struct
    let watched_files fw = File_watcher.Automatic.watched_files (fw.Fw_with_module_linking_t.parent) ;;
 
    let constructor mother =
-      let all_files = Image.image fst (File_watcher.Automatic.watched_files mother) in 
-      let (_,u_files,_) = File_watcher.partition_for_singles mother all_files in 
    {
       Fw_with_module_linking_t.parent = mother ;
-      modules_in_watched_files = File_watcher.module_linking mother;
-      printers_in_watched_files = List.filter (
-         File_watcher.test_for_printer mother
-      ) u_files; 
+      small_details_in_files = File_watcher.compute_all_small_details mother;
    } ;;  
       
       
@@ -74,11 +67,9 @@ module Automatic = struct
                        File_watcher.get_mtime_or_zero_if_file_is_nonregistered
                                   (Private.parent fw) ;;     
    let last_noticed_changes fw = File_watcher.Automatic.last_noticed_changes
-                                  (Private.parent fw) ;;  
-   let module_linking fw = fw.Fw_with_module_linking_t.modules_in_watched_files;;                                                                                                                      
+                                  (Private.parent fw) ;;                                                                                                                     
    let of_concrete_object = Private.of_concrete_object;;
    let parent             = Private.parent ;;
-   let printers fw = fw.Fw_with_module_linking_t.printers_in_watched_files;; 
    let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
    let set_gitpush_after_backup fw new_gab = 
       let old_nonmodular = fw.Fw_with_module_linking_t.parent in 
@@ -96,6 +87,7 @@ module Automatic = struct
       fw with 
        Fw_with_module_linking_t.parent = new_parent;
       } ;;
+   let small_details_in_files fw = fw.Fw_with_module_linking_t.small_details_in_files ;;   
    let to_concrete_object = Private.to_concrete_object;;
    
    let watched_files      = Private.watched_files ;;
@@ -110,42 +102,28 @@ module Private = struct
 
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
-   let selector = (fun rl ->
-      not(List.mem (Dfn_rootless.to_module rl) mod_names)
-   )in
+   and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.forget_modules old_parent mod_names in
    {
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = List.filter (
-        fun (rl,_)->selector rl
-      ) old_module_linking;
-      printers_in_watched_files = List.filter selector old_printers; 
+      small_details_in_files = List.filter (
+        fun (rl,_)->not(List.mem (Dfn_rootless.to_module rl) mod_names)
+      ) old_details;
    } ;;  
 
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
-   let all_files = Image.image fst (File_watcher.Automatic.watched_files new_parent) in 
-   let (_,u_files,_) = File_watcher.partition_for_singles new_parent all_files in 
    ({
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
         fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files 
-         then (rl,File_watcher.get_linking new_parent rl)
+         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
          else old_pair  
-      ) old_module_linking;
-      printers_in_watched_files = List.filter (
-         fun rl -> 
-            if List.mem rl changed_files 
-            then File_watcher.test_for_printer new_parent rl 
-            else List.mem rl old_printers    
-      ) u_files; 
+      ) old_details;
    },
    File_watcher.partition_for_singles new_parent changed_files);;
 
@@ -159,30 +137,21 @@ let of_configuration_and_list (config,files)=
 
 let overwrite_file_if_it_exists fw (rootless,new_content) = 
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,change_made) = 
       File_watcher.overwrite_file_if_it_exists 
         old_parent rootless new_content in 
    if change_made 
    then 
-      let all_files = Image.image fst (File_watcher.Automatic.watched_files new_parent) in 
-       let (_,u_files,_) = File_watcher.partition_for_singles new_parent all_files in 
       {
          Fw_with_module_linking_t.parent = new_parent ;
-         modules_in_watched_files = Image.image (
+         small_details_in_files = Image.image (
             fun old_pair->
             let rl = fst old_pair in
             if rl  = rootless 
-            then (rl,File_watcher.get_linking new_parent rl)
+            then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
             else old_pair  
-         ) old_module_linking;
-         printers_in_watched_files = List.filter (
-         fun rl -> 
-         if rl = rootless 
-         then File_watcher.test_for_printer new_parent rl 
-         else List.mem rl old_printers    
-        ) u_files; 
+         ) old_details;
       }
    else fw ;;           
 
@@ -196,70 +165,51 @@ let reflect_latest_changes_in_github fw opt_msg=
 
 let register_rootless_paths fw rootless_paths= 
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
    ({
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = old_module_linking @ 
+      small_details_in_files = old_details @ 
       (Image.image (fun rl->
-         (rl,File_watcher.get_linking new_parent rl)) 
+         (rl,File_watcher.compute_small_details_on_one_file new_parent rl)) 
          rootless_paths)
       ;
-      printers_in_watched_files = old_printers @ 
-      (List.filter (fun rl->
-         File_watcher.test_for_printer new_parent rl ) 
-         rootless_paths); 
    },
    File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
    
 let relocate_module_to fw (mod_name,new_subdir)=
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.relocate_module_to 
         old_parent mod_name new_subdir in 
    {
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
          if (Dfn_rootless.to_module rl) = mod_name 
          then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
-              (new_rl,File_watcher.get_linking new_parent new_rl)
+              (new_rl,snd old_pair)
          else old_pair        
-      ) old_module_linking 
-      ;
-      printers_in_watched_files = Image.image (
-         fun rl->
-         if (Dfn_rootless.to_module rl) = mod_name 
-         then Dfn_rootless.relocate_to rl new_subdir 
-         else rl       
-      ) old_printers  ; 
+      ) old_details;
    } ;;  
 
 let remove_files fw rootless_paths=   
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
-   let selector = (fun rl ->
-      not(List.mem rl rootless_paths)
-   ) in
+   and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.remove_files 
       old_parent rootless_paths in 
    {
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = List.filter (
-         fun (rl,_)->selector rl
-      ) old_module_linking;
-      printers_in_watched_files = List.filter selector old_printers; 
+      small_details_in_files = List.filter (
+         fun (rl,_)->not(List.mem rl rootless_paths)
+      ) old_details;
    } ;;
 
 let rename_module_on_filename_level fw (old_module,new_module) =
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in
+   and old_details = Automatic.small_details_in_files fw  in 
    let acolytes = List.filter (
           fun rl -> (Dfn_rootless.to_module rl) = old_module 
    ) (File_watcher.usual_compilable_files old_parent) in
@@ -277,45 +227,30 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    let new_parent = File_watcher.rename_files  old_parent replacements in 
    {
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
             fun old_pair->
             let rl = fst old_pair in
             match List.assoc_opt rl replacements with 
-            Some(new_rl) -> (new_rl,File_watcher.get_linking new_parent new_rl)
+            Some(new_rl) -> (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl)
             | None -> old_pair        
-      ) old_module_linking;
-      printers_in_watched_files = Image.image (
-      fun rl->
-         match List.assoc_opt rl replacements with 
-         Some(new_rl) -> new_rl 
-        | None ->  rl       
-      ) old_printers  ; 
+      ) old_details;
    } ;;     
       
 let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in
+   and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.apply_text_transformation_on_some_files old_parent
       (Look_for_module_names.change_module_name_in_ml_ocamlcode  
       old_module new_module)  files_to_be_rewritten in 
-   let all_files = Image.image fst (File_watcher.Automatic.watched_files new_parent) in 
-   let (_,u_files,_) = File_watcher.partition_for_singles new_parent all_files in    
    ({
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
         fun old_pair->
           let rl = fst old_pair in
           if List.mem rl changed_files
-          then (rl,File_watcher.get_linking new_parent rl)
+          then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
           else old_pair  
-      ) old_module_linking;
-      printers_in_watched_files = List.filter (
-        fun rl -> 
-        if List.mem rl changed_files
-        then File_watcher.test_for_printer new_parent rl 
-        else List.mem rl old_printers    
-      ) u_files; 
+      ) old_details;
     },changed_files) ;;  
          
 let rename_module_on_both_levels fw (old_module,new_module,files_to_be_rewritten)=
@@ -324,75 +259,50 @@ let rename_module_on_both_levels fw (old_module,new_module,files_to_be_rewritten
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in
+   and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
    {
       Fw_with_module_linking_t.parent = new_parent ;
-       modules_in_watched_files = Image.image (
+       small_details_in_files = Image.image (
       fun old_pair->
       let rl = fst old_pair in
       match Dfn_rootless.soak (old_subdir,new_subdir) rl with 
-      (Some new_rl) -> (new_rl,File_watcher.get_linking new_parent new_rl)
+      (Some new_rl) -> (new_rl,snd old_pair)
       | None -> old_pair        
-      ) old_module_linking ;
-      printers_in_watched_files = Image.image (
-         fun rl->
-         match Dfn_rootless.soak (old_subdir,new_subdir) rl with 
-         (Some new_rl) -> new_rl
-         | None -> rl   
-  ) old_printers  ; 
+      ) old_details ;
 } ;;   
 
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
-   let all_files = Image.image fst (File_watcher.Automatic.watched_files new_parent) in 
-   let (_,u_files,_) = File_watcher.partition_for_singles new_parent all_files in  
    ({
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files
-         then (rl,File_watcher.get_linking new_parent rl)
+         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
          else old_pair  
-      ) old_module_linking;
-      printers_in_watched_files = List.filter (
-      fun rl -> 
-      if List.mem rl changed_files
-      then File_watcher.test_for_printer new_parent rl 
-      else List.mem rl old_printers    
-     ) u_files; 
+      ) old_details;
    },
    File_watcher.partition_for_singles new_parent changed_files);;   
 
 let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
-   and old_module_linking = Automatic.module_linking fw 
-   and old_printers = Automatic.printers fw in 
+   and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = 
         File_watcher.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
-   let all_files = Image.image fst (File_watcher.Automatic.watched_files new_parent) in 
-   let (_,u_files,_) = File_watcher.partition_for_singles new_parent all_files in        
    ({
       Fw_with_module_linking_t.parent = new_parent ;
-      modules_in_watched_files = Image.image (
+      small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files
-         then (rl,File_watcher.get_linking new_parent rl)
+         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
          else old_pair  
-      ) old_module_linking;
-      printers_in_watched_files = List.filter (
-      fun rl -> 
-      if List.mem rl changed_files
-      then File_watcher.test_for_printer new_parent rl 
-      else List.mem rl old_printers    
-     ) u_files; 
+      ) old_details;
    },
    File_watcher.partition_for_singles new_parent changed_files);;   
 
@@ -402,8 +312,7 @@ let configuration = Automatic.configuration ;;
 
 let empty_one config= {
    Fw_with_module_linking_t.parent = File_watcher.empty_one config;
-   modules_in_watched_files = [];
-   printers_in_watched_files = []; 
+   small_details_in_files = [];
 };; 
 
 let forget_modules = Private.forget_modules ;;
