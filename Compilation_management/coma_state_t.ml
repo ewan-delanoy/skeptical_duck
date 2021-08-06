@@ -6,7 +6,7 @@
 
 
 type t={
-     frontier_with_unix_world : Fw_with_module_linking_t.t;
+     frontier_with_unix_world : Fw_with_small_details_t.t;
      modules : Dfa_module_t.t list ;
      subdir_for_module : (Dfa_module_t.t * Dfa_subdirectory_t.t ) list;
      principal_ending_for_module : (Dfa_module_t.t * Dfa_ending_t.t ) list;

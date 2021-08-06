@@ -24,7 +24,7 @@ module Automatic = struct
       let of_concrete_object ccrt_obj = 
          let g=Concrete_object.get_record ccrt_obj in
          {
-            Fw_with_module_linking_t.parent = File_watcher.of_concrete_object(g parent_label);
+            Fw_with_small_details_t.parent = File_watcher.of_concrete_object(g parent_label);
             small_details_in_files = cr_to_pair_list Fw_file_small_details.of_concrete_object (g small_details_in_files_label);
 
          };; 
@@ -33,27 +33,27 @@ module Automatic = struct
       let to_concrete_object fw=
          let items= 
          [
-           parent_label, File_watcher.to_concrete_object fw.Fw_with_module_linking_t.parent;
-           small_details_in_files_label, cr_of_pair_list  Fw_file_small_details.to_concrete_object (fw.Fw_with_module_linking_t.small_details_in_files);
+           parent_label, File_watcher.to_concrete_object fw.Fw_with_small_details_t.parent;
+           small_details_in_files_label, cr_of_pair_list  Fw_file_small_details.to_concrete_object (fw.Fw_with_small_details_t.small_details_in_files);
          
          ]  in
          Concrete_object_t.Record items;;
       
    
    
-   let configuration fw = File_watcher.Automatic.configuration (fw.Fw_with_module_linking_t.parent) ;;
+   let configuration fw = File_watcher.Automatic.configuration (fw.Fw_with_small_details_t.parent) ;;
 
    
-   let watched_files fw = File_watcher.Automatic.watched_files (fw.Fw_with_module_linking_t.parent) ;;
+   let watched_files fw = File_watcher.Automatic.watched_files (fw.Fw_with_small_details_t.parent) ;;
 
    let constructor mother =
    {
-      Fw_with_module_linking_t.parent = mother ;
+      Fw_with_small_details_t.parent = mother ;
       small_details_in_files = File_watcher.compute_all_small_details mother;
    } ;;  
       
       
-   let parent fw = fw.Fw_with_module_linking_t.parent ;;
+   let parent fw = fw.Fw_with_small_details_t.parent ;;
 
    end ;;
 
@@ -72,22 +72,22 @@ module Automatic = struct
    let parent             = Private.parent ;;
    let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
    let set_gitpush_after_backup fw new_gab = 
-      let old_nonmodular = fw.Fw_with_module_linking_t.parent in 
+      let old_nonmodular = fw.Fw_with_small_details_t.parent in 
       let new_nonmodular = File_watcher.Automatic.set_gitpush_after_backup 
             old_nonmodular new_gab in 
       {
           fw with  
-         Fw_with_module_linking_t.parent = new_nonmodular ;
+         Fw_with_small_details_t.parent = new_nonmodular ;
       } ;;
       
    let set_last_noticed_changes fw new_config = 
-      let old_parent = fw.Fw_with_module_linking_t.parent in
+      let old_parent = fw.Fw_with_small_details_t.parent in
       let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
       {
       fw with 
-       Fw_with_module_linking_t.parent = new_parent;
+       Fw_with_small_details_t.parent = new_parent;
       } ;;
-   let small_details_in_files fw = fw.Fw_with_module_linking_t.small_details_in_files ;;   
+   let small_details_in_files fw = fw.Fw_with_small_details_t.small_details_in_files ;;   
    let to_concrete_object = Private.to_concrete_object;;
    
    let watched_files      = Private.watched_files ;;
@@ -105,7 +105,7 @@ let forget_modules fw mod_names =
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.forget_modules old_parent mod_names in
    {
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = List.filter (
         fun (rl,_)->not(List.mem (Dfn_rootless.to_module rl) mod_names)
       ) old_details;
@@ -116,7 +116,7 @@ let inspect_and_update fw  =
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
    ({
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
         fun old_pair->
          let rl = fst old_pair in
@@ -144,7 +144,7 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
    if change_made 
    then 
       {
-         Fw_with_module_linking_t.parent = new_parent ;
+         Fw_with_small_details_t.parent = new_parent ;
          small_details_in_files = Image.image (
             fun old_pair->
             let rl = fst old_pair in
@@ -160,7 +160,7 @@ let reflect_latest_changes_in_github fw opt_msg=
    let new_parent = File_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
    {
       fw with 
-       Fw_with_module_linking_t.parent = new_parent;
+       Fw_with_small_details_t.parent = new_parent;
    } ;;  
 
 let register_rootless_paths fw rootless_paths= 
@@ -169,7 +169,7 @@ let register_rootless_paths fw rootless_paths=
    let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
    ({
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = old_details @ 
       (Image.image (fun rl->
          (rl,File_watcher.compute_small_details_on_one_file new_parent rl)) 
@@ -184,7 +184,7 @@ let relocate_module_to fw (mod_name,new_subdir)=
    let new_parent = File_watcher.relocate_module_to 
         old_parent mod_name new_subdir in 
    {
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
@@ -201,7 +201,7 @@ let remove_files fw rootless_paths=
    let new_parent = File_watcher.remove_files 
       old_parent rootless_paths in 
    {
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = List.filter (
          fun (rl,_)->not(List.mem rl rootless_paths)
       ) old_details;
@@ -226,7 +226,7 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    let old_parent = Automatic.parent fw in 
    let new_parent = File_watcher.rename_files  old_parent replacements in 
    {
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
             fun old_pair->
             let rl = fst old_pair in
@@ -243,7 +243,7 @@ let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewrit
       (Look_for_module_names.change_module_name_in_ml_ocamlcode  
       old_module new_module)  files_to_be_rewritten in 
    ({
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
         fun old_pair->
           let rl = fst old_pair in
@@ -262,7 +262,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
    {
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
        small_details_in_files = Image.image (
       fun old_pair->
       let rl = fst old_pair in
@@ -277,7 +277,7 @@ let replace_string fw (replacee,replacer)=
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
    ({
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
@@ -295,7 +295,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
         File_watcher.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
    ({
-      Fw_with_module_linking_t.parent = new_parent ;
+      Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
@@ -311,7 +311,7 @@ end;;
 let configuration = Automatic.configuration ;;
 
 let empty_one config= {
-   Fw_with_module_linking_t.parent = File_watcher.empty_one config;
+   Fw_with_small_details_t.parent = File_watcher.empty_one config;
    small_details_in_files = [];
 };; 
 
