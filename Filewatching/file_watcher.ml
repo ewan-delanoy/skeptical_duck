@@ -484,14 +484,23 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
             let (a_files,u_files) = List.partition is_archived  c_files in 
             (a_files,u_files,nc_files) ;;     
 
-      let compute_small_details fw =
+      let compute_small_details_on_one_file fw rl=
          let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+         let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
+         let ap = Absolute_path.of_string s_ap in 
+         Fw_file_simple_details.compute ap ;;
+
+      let compute_all_small_details fw =
+         let c_files = Option.filter_and_unpack (
+                fun (rl,_)->
+               if Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
+               then Some rl 
+               else None   
+         )  (Automatic.watched_files fw) in 
          Image.image (
-            fun (rl,_) ->
-               let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
-               let ap = Absolute_path.of_string s_ap in 
-               (rl,Fw_file_simple_details.compute ap)
-         ) (Automatic.watched_files fw) ;;
+            fun rl ->
+               (rl,compute_small_details_on_one_file fw rl)
+         ) c_files ;;
            
 
       let forget_modules fw mod_names =
@@ -584,7 +593,9 @@ let apply_text_transformation_on_some_files = Private.apply_text_transformation_
 
 let compute_printer_equipped_types = Private.Modular.compute_printer_equipped_types ;;
 
-let compute_small_details = Private.Modular.compute_small_details ;;
+let compute_all_small_details = Private.Modular.compute_all_small_details ;;
+
+let compute_small_details_on_one_file = Private.Modular.compute_small_details_on_one_file ;;
 
 let empty_one config= {
    File_watcher_t.configuration = config;
