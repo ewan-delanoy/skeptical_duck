@@ -7,5 +7,5 @@
 
 type t ={
   parent : File_watcher_t.t ;
-  small_details_in_files : (Dfn_rootless_t.t * Fw_file_simple_details_t.t) list;
+  small_details_in_files : (Dfn_rootless_t.t * Fw_file_small_details_t.t) list;
 };;
