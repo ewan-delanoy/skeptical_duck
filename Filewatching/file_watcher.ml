@@ -483,6 +483,16 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
             let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
             let (a_files,u_files) = List.partition is_archived  c_files in 
             (a_files,u_files,nc_files) ;;     
+      
+      let compilable_files fw =
+         Option.filter_and_unpack (
+                      fun (rl,_)->
+                     if Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
+                     then Some rl 
+                     else None   
+         )  (Automatic.watched_files fw) ;;
+                       
+
 
       let compute_small_details_on_one_file fw rl=
          let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
@@ -491,12 +501,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          Fw_file_simple_details.compute ap ;;
 
       let compute_all_small_details fw =
-         let c_files = Option.filter_and_unpack (
-                fun (rl,_)->
-               if Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
-               then Some rl 
-               else None   
-         )  (Automatic.watched_files fw) in 
+         let c_files = compilable_files fw in 
          Image.image (
             fun rl ->
                (rl,compute_small_details_on_one_file fw rl)
@@ -590,6 +595,8 @@ end;;
 
 let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
+
+let compilable_files = Private.Modular.compilable_files ;;
 
 let compute_printer_equipped_types = Private.Modular.compute_printer_equipped_types ;;
 
