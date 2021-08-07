@@ -104,31 +104,12 @@ let main fw  =
       fun (mn,(opt_mli_rless,(pr_rless,_)))->
        (mn,opt_mli_rless<>None)
     ) dep_ordered_temp3 
-   and principal_mt_for_module = Image.image (
-      fun (mn,(opt_mli_rless,(pr_rless,_)))->
-       Fw_with_small_details.get_mtime fw pr_rless
-   ) dep_ordered_temp3 
-   and mli_mt_for_module = Image.image (
-      fun (mn,(opt_mli_rless,(pr_rless,_)))->
-       match opt_mli_rless with 
-       None -> "0."
-     |Some(mli_rless,_)-> Fw_with_small_details.get_mtime fw mli_rless
-   ) dep_ordered_temp3
-   and direct_fathers_for_module = Image.image (
-      fun mn->
-       let ttemp4 = old_coatom_map mn in 
-       List.filter (fun mn2->
-         Ordered.mem Private.lex_order mn ttemp4) dep_ordered_list_of_modules
-   ) dep_ordered_list_of_modules in 
+    in 
    (
     dep_ordered_list_of_modules,
     subdir_for_module,
     principal_ending_for_module,
-    mli_presence_for_module,
-    principal_mt_for_module,
-    mli_mt_for_module,
-    direct_fathers_for_module,
-    ancestors_for_module 
+    mli_presence_for_module
    );;
 
 
@@ -137,6 +118,7 @@ let main fw  =
     subdir_for_module : (Dfa_module_t.t * Dfa_subdirectory_t.t) list;
     principal_ending_for_module : (Dfa_module_t.t * Dfa_ending_t.t) list;
     mli_presence_for_module : (Dfa_module_t.t * bool) list;
+    
     principal_mt_for_module : (Dfa_module_t.t * string) list;
     mli_mt_for_module : (Dfa_module_t.t * string) list;
     direct_fathers_for_module : (Dfa_module_t.t * Dfa_module_t.t list) list;

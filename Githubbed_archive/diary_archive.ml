@@ -1,7 +1,88 @@
 (************************************************************************************************************************
-Snippet 48 : 
+Snippet 49 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 48 : Primitive version of the Fw_with_dependencies module 
+************************************************************************************************************************)
+open Needed_values ;;
+module Private = struct 
+
+  let index fw = fw.Fw_with_dependencies_t.index_for_caching ;;  
+  let parent fw = fw.Fw_with_dependencies_t.parent ;;
+  
+  let new_state (instance,state) = (instance,Fw_indexer.new_state instance) ;;
+  
+  let getter f fw = f (parent fw) ;;
+  
+  let constructor f arg =
+    {
+       Fw_with_dependencies_t.parent = f arg;
+       index_for_caching = Fw_indexer.new_instance ();
+    } ;;
+
+  let univar f fw arg=
+     let old_parent = parent fw  in 
+     let new_parent = f old_parent arg
+     and new_index = new_state (index fw) in  
+    {
+       Fw_with_dependencies_t.parent = new_parent;
+       index_for_caching = new_index;
+    } ;;
+
+  let zeroplump f fw =
+    let old_parent = parent fw  in 
+    let (new_parent,additional_data) = f old_parent
+    and new_index = new_state (index fw) in  
+   ({
+      Fw_with_dependencies_t.parent = new_parent;
+      index_for_caching = new_index;
+   },additional_data) ;;  
+  
+  let uniplump f fw arg=
+    let old_parent = parent fw  in 
+    let (new_parent,additional_data) = f old_parent arg
+    and new_index = new_state (index fw) in  
+   ({
+      Fw_with_dependencies_t.parent = new_parent;
+      index_for_caching = new_index;
+   },additional_data) ;; 
+
+  end ;;   
+  
+let configuration = Private.getter Fw_with_small_details.configuration ;;
+let empty_one = Private.constructor Fw_with_small_details.empty_one;;
+let forget_modules = Private.univar Fw_with_small_details.forget_modules ;;
+let get_content = Private.getter Fw_with_small_details.get_content ;;  
+let get_mtime = Private.getter Fw_with_small_details.get_mtime ;;    
+let get_mtime_or_zero_if_file_is_nonregistered = Private.getter Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered ;;  
+let inspect_and_update = Private.zeroplump Fw_with_small_details.inspect_and_update;;
+let last_noticed_changes = Private.getter Fw_with_small_details.last_noticed_changes ;;
+let noncompilable_files = Private.getter Fw_with_small_details.noncompilable_files ;;
+let of_concrete_object = Private.constructor Fw_with_small_details.of_concrete_object ;;
+let of_configuration = Private.constructor Fw_with_small_details.of_configuration ;;
+let of_configuration_and_list = Private.constructor Fw_with_small_details.of_configuration_and_list ;;
+let overwrite_file_if_it_exists = Private.univar Fw_with_small_details.overwrite_file_if_it_exists;;
+let reflect_latest_changes_in_github = Private.univar Fw_with_small_details.reflect_latest_changes_in_github ;;
+let register_rootless_paths = Private.uniplump Fw_with_small_details.register_rootless_paths ;;
+let relocate_module_to = Private.univar Fw_with_small_details.relocate_module_to ;;
+let remove_files = Private.univar Fw_with_small_details.remove_files ;;
+let rename_module_on_filename_level_and_in_files = Private.uniplump Fw_with_small_details.rename_module_on_filename_level_and_in_files;;
+let rename_subdirectory_as = Private.univar Fw_with_small_details.rename_subdirectory_as;;
+let replace_string = Private.uniplump Fw_with_small_details.replace_string ;;
+let replace_value = Private.uniplump Fw_with_small_details.replace_value ;;
+let root = Private.getter Fw_with_small_details.root ;;
+let set_gitpush_after_backup = Private.univar Fw_with_small_details.set_gitpush_after_backup ;;
+let set_last_noticed_changes = Private.univar Fw_with_small_details.set_last_noticed_changes ;;
+let to_concrete_object = Private.getter Fw_with_small_details.to_concrete_object ;;
+let usual_compilable_files = Private.getter Fw_with_small_details.usual_compilable_files ;;
+
+
+
+
+
 
 (************************************************************************************************************************
 Snippet 47 : Using intervals of line indices to extract values from a module
@@ -282,7 +363,7 @@ module Automatic = struct
   
   
   let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
-  let configuration cs=Fw_with_module_linking.Automatic.configuration (frontier_with_unix_world cs) ;;
+  let configuration cs=Fw_with_small_details.Automatic.configuration (frontier_with_unix_world cs) ;;
   let root cs= Fw_configuration.root (configuration cs);;
   let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
   let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
@@ -362,7 +443,7 @@ module Automatic = struct
   let set_push_after_backup cs bowl = let ccs=of_t cs in 
        let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
        let new_frontier = 
-        Fw_with_module_linking.Automatic.set_gitpush_after_backup 
+        Fw_with_small_details.Automatic.set_gitpush_after_backup 
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
@@ -451,12 +532,12 @@ module Automatic = struct
   
   let impose_last_changes cs diff =
      let old_fw = frontier_with_unix_world cs in 
-     let old_diff = Fw_with_module_linking.Automatic.last_noticed_changes old_fw in 
+     let old_diff = Fw_with_small_details.Automatic.last_noticed_changes old_fw in 
      if not(Dircopy_diff.is_empty old_diff)
      then raise(Impose_last_change_exn(old_diff))
      else 
      let new_fw = 
-      Fw_with_module_linking.Automatic.set_last_noticed_changes old_fw diff in  
+      Fw_with_small_details.Automatic.set_last_noticed_changes old_fw diff in  
      set_frontier_with_unix_world cs new_fw ;;
   
   let modify_all_subdirs cs f =
@@ -477,7 +558,7 @@ module Automatic = struct
   
   let empty_one config=
       to_t({
-       Coma_state_t.frontier_with_unix_world= Fw_with_module_linking.empty_one config;
+       Coma_state_t.frontier_with_unix_world= Fw_with_small_details.empty_one config;
        modules = [];
        subdir_for_module = [] ;
        principal_ending_for_module = [] ;
@@ -723,13 +804,13 @@ module Automatic = struct
         modules_field,
           subdir_for_modules_field,
             principal_ending_at_module_field)=
-    let the_root = Fw_with_module_linking.root frontier_with_unix_world_field in         
+    let the_root = Fw_with_small_details.root frontier_with_unix_world_field in         
     Option.filter_and_unpack (
       fun mn->
       let subdir = List.assoc mn subdir_for_modules_field 
       and pr_end= List.assoc mn principal_ending_at_module_field  in
       let rootless=Dfn_rootless_t.J(subdir,mn,pr_end) in 
-      let text=Fw_with_module_linking.get_content frontier_with_unix_world_field rootless in
+      let text=Fw_with_small_details.get_content frontier_with_unix_world_field rootless in
       if (Substring.is_a_substring_of ("let "^"print_out ") text)
       then let eless=Dfn_endingless_t.J(the_root,subdir,mn) in 
            Some(eless)
@@ -781,11 +862,11 @@ module Automatic = struct
             let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
             and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
             let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
-            (mn,Fw_with_module_linking.get_mtime new_frontier rootless)
+            (mn,Fw_with_small_details.get_mtime new_frontier rootless)
        ) cs.Coma_state_t.principal_ending_for_module
        and new_mli_mts=Image.image (fun (mn,subdir)->
             let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
-            (mn,Fw_with_module_linking.get_mtime_or_zero_if_file_is_nonregistered 
+            (mn,Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered 
              new_frontier rootless)
        ) cs.Coma_state_t.subdir_for_module 
        and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
@@ -828,7 +909,7 @@ module Automatic = struct
   let of_concrete_object ccrt_obj = 
      let g=Concrete_object.get_record ccrt_obj in
      {
-        Coma_state_t.frontier_with_unix_world = Fw_with_module_linking.of_concrete_object (g frontier_with_unix_world_label);
+        Coma_state_t.frontier_with_unix_world = Fw_with_small_details.of_concrete_object (g frontier_with_unix_world_label);
         modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
         subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
         principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
@@ -849,7 +930,7 @@ module Automatic = struct
   let to_concrete_object cs=
      let items= 
      [
-      frontier_with_unix_world_label, Fw_with_module_linking.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
+      frontier_with_unix_world_label, Fw_with_small_details.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
       modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
       subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
       principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
@@ -1504,9 +1585,9 @@ end;;
 end ;;  
 
 let refresh (cs_frontier,cs) = 
-  let dir =Fw_with_module_linking.root cs_frontier  in 
+  let dir =Fw_with_small_details.root cs_frontier  in 
   let fw1 = cs_frontier in 
-  let temp1=Image.image (fun x->(x,()) ) (Fw_with_module_linking.usual_compilable_files fw1) in
+  let temp1=Image.image (fun x->(x,()) ) (Fw_with_small_details.usual_compilable_files fw1) in
   let temp2=Colombo.Simplified_ts_creation.classify_according_to_module dir temp1 in
   let temp3=Colombo.Simplified_ts_creation.compute_dependencies temp2 in
   let temp4=Image.image (fun (mname,_)->
