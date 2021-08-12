@@ -89,28 +89,17 @@ let main fw  =
    let temp3= Private.classify_according_to_module temp2 in
    let (ancestors_for_module,old_coatom_map)= Private.compute_dependencies temp3 in
    let dep_ordered_list_of_modules = Image.image fst ancestors_for_module in  
-   let dep_ordered_temp3 = Image.image (
-     fun mn->(mn,List.assoc mn temp3)
-   ) dep_ordered_list_of_modules in 
-   let subdir_for_module = Image.image (
-      fun (mn,(opt_mli_rless,(pr_rless,_)))->
-       (mn,Dfn_rootless.to_subdirectory pr_rless)
-    ) dep_ordered_temp3
-   and principal_ending_for_module = Image.image (
-      fun (mn,(opt_mli_rless,(pr_rless,_)))->
-       (mn,Dfn_rootless.to_ending pr_rless)
-   ) dep_ordered_temp3 
-   and mli_presence_for_module = Image.image (
-      fun (mn,(opt_mli_rless,(pr_rless,_)))->
-       (mn,opt_mli_rless<>None)
-    ) dep_ordered_temp3 
-    in 
-   (
-    dep_ordered_list_of_modules,
-    subdir_for_module,
-    principal_ending_for_module,
-    mli_presence_for_module
-   );;
+   Image.image (
+     fun (mn,ancestors)->
+      let (opt_mli_rless,(pr_rless,pr_details)) = List.assoc mn temp3 in 
+      let unordered_fathers  = old_coatom_map mn in 
+      let fathers = List.filter (fun mn2->
+         Ordered.mem Private.lex_order mn2 unordered_fathers
+         ) dep_ordered_list_of_modules in 
+      (mn,Dfn_rootless.to_subdirectory pr_rless,
+       Dfn_rootless.to_ending pr_rless,pr_details,opt_mli_rless,
+       fathers,ancestors)  
+   ) ancestors_for_module ;;
 
 
 (*   
