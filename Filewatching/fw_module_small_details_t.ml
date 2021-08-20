@@ -12,6 +12,6 @@ type t ={
   subdirectory : Dfa_subdirectory_t.t ;
   principal_ending : Dfa_ocaml_ending_t.t ;
   mli_present : bool ;
-  principal_modification_time : string option ;
+  principal_modification_time : string ;
   mli_modification_time : string option ;
 };;
