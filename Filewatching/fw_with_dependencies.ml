@@ -4,7 +4,7 @@
 
 *)
 
-(*
+
 
 module Private = struct 
 
@@ -15,177 +15,138 @@ module Private = struct
   
   let getter f fw = f (parent fw) ;;
   
-  let constructor f arg =
-    {
-       Fw_with_dependencies_t.parent = f arg;
-       index_for_caching = Fw_indexer.new_instance ();
-    } ;;
-
-  let univar f fw arg=
-     let old_parent = parent fw  in 
-     let new_parent = f old_parent arg
-     and new_index = new_state (index fw) in  
-    {
-       Fw_with_dependencies_t.parent = new_parent;
-       index_for_caching = new_index;
-    } ;;
-
-  let zeroplump f fw =
-    let old_parent = parent fw  in 
-    let (new_parent,additional_data) = f old_parent
-    and new_index = new_state (index fw) in  
-   ({
-      Fw_with_dependencies_t.parent = new_parent;
-      index_for_caching = new_index;
-   },additional_data) ;;  
+  type fw_method_label =
+    Constructor
+   |Univariate 
+   |Zerovariate_producer 
+   |Univariate_producer ;;   
   
-  let uniplump f fw arg=
-    let old_parent = parent fw  in 
-    let (new_parent,additional_data) = f old_parent arg
-    and new_index = new_state (index fw) in  
-   ({
-      Fw_with_dependencies_t.parent = new_parent;
-      index_for_caching = new_index;
-   },additional_data) ;; 
+  type ('fw,'a,'b) fw_method = FWM of fw_method_label * ( 'fw -> 'a -> ('fw * 'b) );;
 
-  module Without_dependencies = struct 
+  let constructor f = FWM(Constructor,(fun fw arg->(f arg, ()) )) ;;
+  let univariate f =  FWM(Univariate,(fun fw arg->(f fw arg, ()) )) ;;
+  let zerovariate_producer f =  FWM(Zerovariate_producer,(fun fw arg->(f fw) )) ;;  
+  let univariate_producer f =  FWM(Univariate_producer,(fun fw arg->(f fw arg) )) ;; 
 
-  let empty_one = constructor Fw_with_small_details.empty_one;;
-  let forget_modules = univar Fw_with_small_details.forget_modules ;;
-  let inspect_and_update = zeroplump Fw_with_small_details.inspect_and_update;;
-  let of_concrete_object = constructor Fw_with_small_details.of_concrete_object ;;
-  let of_configuration = constructor Fw_with_small_details.of_configuration ;;
-  let of_configuration_and_list = constructor Fw_with_small_details.of_configuration_and_list ;;
-  let overwrite_file_if_it_exists =univar Fw_with_small_details.overwrite_file_if_it_exists;;
-  let register_rootless_paths = uniplump Fw_with_small_details.register_rootless_paths ;;  
-  let relocate_module_to = univar Fw_with_small_details.relocate_module_to ;;
-  let remove_files = univar Fw_with_small_details.remove_files ;;
-  let rename_module_on_filename_level_and_in_files = uniplump Fw_with_small_details.rename_module_on_filename_level_and_in_files;;  
-  let rename_subdirectory_as = univar Fw_with_small_details.rename_subdirectory_as;;
-  let replace_string = uniplump Fw_with_small_details.replace_string ;;
-  let replace_value = uniplump Fw_with_small_details.replace_value ;;
-  let set_gitpush_after_backup = univar Fw_with_small_details.set_gitpush_after_backup ;;
-  let set_last_noticed_changes = univar Fw_with_small_details.set_last_noticed_changes ;;
+  
+  let transpose (local_hashtbl,local_get) (FWM(fw_label,f)) opt_g =
+    FWM(fw_label,
+     fun old_fw arg ->
+      let visible_result = f old_fw arg in 
+      let (new_fw,additional_data) = visible_result in 
+      let new_idx = new_fw.Fw_with_dependencies_t.index_for_caching in
+      let old_dep_val = local_get old_fw in 
+      let new_dep_val = 
+      (match opt_g with 
+      None -> local_get new_fw
+      |Some(transposer) ->transposer new_fw old_dep_val arg additional_data) in 
+      let _ = (Hashtbl.add local_hashtbl new_idx new_dep_val) in
+      visible_result   
+    );; 
+  
+
+  module Enter = struct 
+    
+    let empty_one = constructor Fw_with_small_details.empty_one;;
+    let forget_modules = univariate Fw_with_small_details.forget_modules ;;
+    let inspect_and_update = zerovariate_producer Fw_with_small_details.inspect_and_update;;
+    let of_concrete_object = constructor Fw_with_small_details.of_concrete_object ;;
+    let of_configuration = constructor Fw_with_small_details.of_configuration ;;
+    let of_configuration_and_list = constructor Fw_with_small_details.of_configuration_and_list ;;
+    let overwrite_file_if_it_exists =univariate Fw_with_small_details.overwrite_file_if_it_exists;;
+    let register_rootless_paths = univariate_producer Fw_with_small_details.register_rootless_paths ;;  
+    let relocate_module_to = univariate Fw_with_small_details.relocate_module_to ;;
+    let remove_files = univariate Fw_with_small_details.remove_files ;;
+    let rename_module_on_filename_level_and_in_files = univariate_producer Fw_with_small_details.rename_module_on_filename_level_and_in_files;;  
+    let rename_subdirectory_as = univariate Fw_with_small_details.rename_subdirectory_as;;
+    let replace_string = univariate_producer Fw_with_small_details.replace_string ;;
+    let replace_value = univariate_producer Fw_with_small_details.replace_value ;;
+    let set_gitpush_after_backup = univariate Fw_with_small_details.set_gitpush_after_backup ;;
+    let set_last_noticed_changes = univariate Fw_with_small_details.set_last_noticed_changes ;;
+    
+  end ;;  
+
+  module Cached = struct 
+    
+    let add_caching (FWM(fw_label,f)) =
+      FWM(fw_label,
+        fun fw arg ->
+        let old_parent = parent fw in 
+        let (new_parent,additional_data) = f old_parent arg in 
+        ({
+          Fw_with_dependencies_t.parent = new_parent ;
+          index_for_caching = Fw_indexer.new_instance ();
+        },additional_data)
+      ) ;;
+      
+    let empty_one = add_caching Enter.empty_one ;;
+    let forget_modules = add_caching Enter.forget_modules ;;
+    let inspect_and_update = add_caching Enter.inspect_and_update ;;
+    let of_concrete_object = add_caching Enter.of_concrete_object ;;
+    let of_configuration = add_caching Enter.of_configuration ;;
+    let of_configuration_and_list = add_caching Enter.of_configuration_and_list ;;
+    let overwrite_file_if_it_exists = add_caching Enter.overwrite_file_if_it_exists ;;
+    let register_rootless_paths = add_caching Enter.register_rootless_paths ;;
+    let relocate_module_to = add_caching Enter.relocate_module_to ;;
+    let remove_files = add_caching Enter.remove_files ;;
+    let rename_module_on_filename_level_and_in_files = add_caching Enter.rename_module_on_filename_level_and_in_files ;;
+    let rename_subdirectory_as = add_caching Enter.rename_subdirectory_as ;;
+    let replace_string = add_caching Enter.replace_string ;;
+    let replace_value = add_caching Enter.replace_value ;;
+    let set_gitpush_after_backup = add_caching Enter.set_gitpush_after_backup ;;
+    let set_last_noticed_changes = add_caching Enter.set_last_noticed_changes ;;
+
 
   end ;;  
 
-  module First_dependencies = struct 
+  (* 
+  module Modularized_details = struct
 
-    let the_hashtbl = ((Hashtbl.create 10) : (Fw_instance_index_t.t * Fw_state_index_t.t,
-    Dfa_module_t.t list * (Dfa_module_t.t * Dfa_subdirectory_t.t) list *
-    (Dfa_module_t.t * Dfa_ending_t.t) list * (Dfa_module_t.t * bool) list *
-    string list * string list * Dfa_module_t.t list list *
-    (Dfa_module_t.t * Dfa_module_t.t list) list)
-    Hashtbl.t );;
-   
+    let the_hashtbl = ((Hashtbl.create 10));;
+    let force_get fw = Fw_compute_first_dependencies.main (fw.Fw_with_dependencies_t.parent) ;;
     let get fw =
-       match Hashtbl.find_opt the_hashtbl (fw.Fw_with_dependencies_t.index_for_caching) with 
-       Some(mods,su,pr_end,mli,pr_mt,mli_mt,fath,ances)->(mods,su,pr_end,mli,pr_mt,mli_mt,fath,ances)
-       |None ->
-        Fw_compute_first_dependencies.main (fw.Fw_with_dependencies_t.parent) ;;
+      let idx = fw.Fw_with_dependencies_t.index_for_caching in 
+      match Hashtbl.find_opt the_hashtbl idx with 
+      Some(l)-> l
+      |None ->
+       let answer = force_get fw in 
+       let _ = (Hashtbl.add the_hashtbl idx answer) in 
+       answer ;;
+    let trsp fwm opt_g = transpose (the_hashtbl,get) fwm opt_g ;; 
+    let empty_one = trsp Cached.empty_one (Some(fun new_fw old_dep_val arg ad -> [])) ;;
+    let forget_modules = trsp Cached.forget_modules (Some(fun new_fw old_dep_val mod_names ad->
+       let selector1 = List.filter (fun mn->not(List.mem mn mod_names)) in 
+       Option.filter_and_unpack (
+          fun  (mn,su,pr_end,pr_details,opt_mli_data,fath,ances) ->
+            if List.mem mn mod_names
+            then None 
+            else Some(mn,su,pr_end,pr_details,opt_mli_data,selector1 fath,selector1 ances)  
+       )  old_dep_val
+      )) ;;
+    let inspect_and_update = trsp Cached.inspect_and_update (Some(fun new_fw old_dep_val arg ad->
+      let (a_files,u_files,nc_files) = ad in
+      Option.filter_and_unpack (
+        (* order is important when recomputing coatoms *)
+        fun  (mn,su,pr_end,pr_details,opt_mli_data,fath,ances) ->
+          if List.mem mn u_files
+          then None 
+          else Some(mn,su,pr_end,pr_details,opt_mli_data,selector1 fath,selector1 ances)  
+      )  old_dep_val
+      )) ;;
 
-    let empty_one config = 
-       let current = Without_dependencies.empty_one config in 
-       let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching)
-       ([],[],[],[],[],[],[],[]) in 
-       current ;;
+  end ;;  
+  *)
+end;;
 
-    let forget_modules fw mod_names = 
-        let current = Without_dependencies.forget_modules fw mod_names in 
-        let (old_mods,old_su,old_pr_end,old_mli,old_pr_mt,old_mli_mt,old_fath,old_ances) = get fw in 
-        let indexed_mods = Ennig.index_everything mods in 
-        let bad_indices 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
+  (*
 
-      let inspect_and_update fw arg = 
-        let current = Without_dependencies.inspect_and_update fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
+  (mn,Dfn_rootless.to_subdirectory pr_rless,
+       Dfn_rootless.to_ending pr_rless,pr_details,opt_mli_rless,
+       fathers,ancestors)  
 
-      let of_concrete_object fw arg = 
-        let current = Without_dependencies.of_concrete_object fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
+  (mods,su,pr_end,opt_mli_data,fath,ances)
 
-      let of_configuration fw arg = 
-        let current = Without_dependencies.of_configuration fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let of_configuration_and_list fw arg = 
-        let current = Without_dependencies.of_configuration_and_list fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let overwrite_file_if_it_exists fw arg = 
-        let current = Without_dependencies.overwrite_file_if_it_exists fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let register_rootless_paths fw arg = 
-        let current = Without_dependencies.register_rootless_paths fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let relocate_module_to fw arg = 
-        let current = Without_dependencies.relocate_module_to fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let remove_files fw arg = 
-        let current = Without_dependencies.remove_files fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let rename_module_on_filename_level_and_in_files fw arg = 
-        let current = Without_dependencies.rename_module_on_filename_level_and_in_files fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let rename_subdirectory_as fw arg = 
-        let current = Without_dependencies.rename_subdirectory_as fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let replace_string fw arg = 
-        let current = Without_dependencies.replace_string fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let replace_value fw arg = 
-        let current = Without_dependencies.replace_value fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let set_gitpush_after_backup fw arg = 
-        let current = Without_dependencies.set_gitpush_after_backup fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;
-
-      let set_last_noticed_changes fw arg = 
-        let current = Without_dependencies.set_last_noticed_changes fw arg in 
-        let _ =Hashtbl.add the_hashtbl (current.Fw_with_dependencies_t.index_for_caching) 
-        () in 
-        current ;;    
-  
-  
-    end ;;   
-  
+e
 
     module Whole = struct 
 

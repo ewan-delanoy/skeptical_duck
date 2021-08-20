@@ -491,9 +491,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
                      then Some rl 
                      else None   
          )  (Automatic.watched_files fw) ;;
-                       
-
-
+      
       let compute_small_details_on_one_file fw rl=
          let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
          let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 

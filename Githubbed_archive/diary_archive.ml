@@ -1,7 +1,25 @@
 (************************************************************************************************************************
-Snippet 49 : 
+Snippet 50 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 49 : Get a list of value names from an interval of lines in a file
+************************************************************************************************************************)
+open Needed_values ;;
+
+let u1 = rf "Filewatching/fw_with_dependencies.ml";;
+let u2 = Lines_in_string.interval u1 33 48 ;;
+let u3 = Lines_in_string.lines u2 ;;
+(*
+let compute_names = Image.image (
+  fun line ->
+     let temp1 = Cull_string.two_sided_cutting ("    let ","") line in 
+     let j1 = Strung.char_finder_from (fun c->List.mem c [' ';'\r';'\t']) temp1 1 in
+     Cull_string.interval temp1 1 (j1-1)
+) u3;;
+*)
 
 
 (************************************************************************************************************************
