@@ -86,9 +86,31 @@ let classify_according_to_module compilable_files =
 
 end ;;   
 
+(*
+let has_printer fw = fw.Fw_module_small_details_t.has_printer ;;  
+*)
 
 let modularize_details fw  = 
    let u_files=Fw_with_small_details.usual_compilable_files fw in 
-   let temp2=List.filter (fun (rl,_)->List.mem rl u_files)
+   let temp1=List.filter (fun (rl,_)->List.mem rl u_files)
       (fw.Fw_with_small_details_t.small_details_in_files)  in
-   Private.classify_according_to_module temp2 ;;
+   Private.classify_according_to_module temp1 ;;
+
+(*   
+let mli_present fw = fw.Fw_module_small_details_t.mli_present ;; 
+let opt_mli_modification_time fw = fw.Fw_module_small_details_t.mli_modification_time ;;      
+let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;; 
+let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
+*)
+
+let recompute_details_for_module fw mod_name =  
+   let temp1=List.filter (fun (rl,_)->(Dfn_rootless.to_module rl)=mod_name)
+      (fw.Fw_with_small_details_t.small_details_in_files)  in
+   Private.classify_according_to_module temp1 ;;
+
+(*
+let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
+let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;    
+let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
+*)
+    
