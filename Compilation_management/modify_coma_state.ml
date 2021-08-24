@@ -38,7 +38,7 @@ module Physical = struct
       (Coma_state.set_frontier_with_unix_world cs new_fw,ac_paths,uc_paths) ;;
    
    let relocate_module_to cs mod_name new_subdir=
-      let new_fw=Fw_with_small_details.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
+      let (new_fw,_)=Fw_with_small_details.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    let rename_module cs old_middle_name new_nonslashed_name=

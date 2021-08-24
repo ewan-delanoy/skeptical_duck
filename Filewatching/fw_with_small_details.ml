@@ -190,17 +190,21 @@ let relocate_module_to fw (mod_name,new_subdir)=
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.relocate_module_to 
         old_parent mod_name new_subdir in 
-   {
+   let accu = ref [] in      
+   let new_fw = {
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
          fun old_pair->
          let rl = fst old_pair in
          if (Dfn_rootless.to_module rl) = mod_name 
          then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
-              (new_rl,snd old_pair)
+              let new_pair = (new_rl,snd old_pair) in 
+              let _ = (accu := (rl,new_pair) :: (!accu)) in
+              new_pair
          else old_pair        
       ) old_details;
-   } ;;  
+   } in 
+   (new_fw,!accu);;  
 
 let remove_files fw rootless_paths=   
    let old_parent = Automatic.parent fw 
