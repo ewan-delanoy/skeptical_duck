@@ -85,6 +85,15 @@ let classify_according_to_module compilable_files =
       (mn,compute_details_from_acolytes_list l)
       ) temp2 ;;
 
+let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
+     let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
+     let extra_data = List.filter (
+         fun (rl,_) ->
+         ((Dfn_rootless.to_module rl) = mod_name) && ((List.assoc_opt rl l)=None)
+     ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
+     compute_details_from_acolytes_list (l@extra_data) ;;
+ 
+
 
 end ;;   
 
@@ -107,6 +116,7 @@ let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;;
 let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
 *)
 
+let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
 
 (*
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
