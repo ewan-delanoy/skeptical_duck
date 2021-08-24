@@ -144,6 +144,8 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
    let (new_parent,change_made) = 
       File_watcher.overwrite_file_if_it_exists 
         old_parent rootless new_content in 
+   let accu = ref None in      
+   let new_fw = (
    if change_made 
    then 
       {
@@ -152,11 +154,13 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
             fun old_pair->
             let rl = fst old_pair in
             if rl  = rootless 
-            then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
+            then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+                 let _= (accu:=Some(new_pair)) in 
+                 new_pair
             else old_pair  
          ) old_details;
       }
-   else fw ;;           
+   else fw ) in (new_fw,!accu);;           
 
 let reflect_latest_changes_in_github fw opt_msg=  
    let old_parent = Automatic.parent fw in 
