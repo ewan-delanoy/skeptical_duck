@@ -17,7 +17,9 @@ module Private = struct
 let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
    Total_ordering.lex_for_strings m1 m2) : Dfa_module_t.t Total_ordering_t.t);;
 
-let check_admissibility_of_acolytes_list l=
+
+
+let compute_details_from_acolytes_list l=
    let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Listennou.partition_according_to_fst temp1 in 
    let temp3 = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
@@ -80,7 +82,7 @@ let classify_according_to_module compilable_files =
     ) compilable_files in 
     let temp2 = Listennou.partition_according_to_fst temp1 in 
     Image.image (fun (mn,l)->
-      (mn,check_admissibility_of_acolytes_list l)
+      (mn,compute_details_from_acolytes_list l)
       ) temp2 ;;
 
 
@@ -89,6 +91,8 @@ end ;;
 (*
 let has_printer fw = fw.Fw_module_small_details_t.has_printer ;;  
 *)
+
+let compute_details_from_acolytes_list = Private.compute_details_from_acolytes_list ;;
 
 let modularize_details fw  = 
    let u_files=Fw_with_small_details.usual_compilable_files fw in 
@@ -103,10 +107,6 @@ let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;;
 let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
 *)
 
-let recompute_details_for_module fw mod_name =  
-   let temp1=List.filter (fun (rl,_)->(Dfn_rootless.to_module rl)=mod_name)
-      (fw.Fw_with_small_details_t.small_details_in_files)  in
-   Private.classify_according_to_module temp1 ;;
 
 (*
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
