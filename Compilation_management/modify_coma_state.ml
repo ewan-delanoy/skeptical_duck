@@ -19,7 +19,7 @@ module Physical = struct
    
 
    let recompile cs =
-      let (new_fw,(changed_archived_compilables,changed_usual_compilables,changed_noncompilables))
+      let (new_fw,((changed_archived_compilables,changed_usual_compilables,changed_noncompilables),_))
          =Fw_with_small_details.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
       let new_cs= Coma_state.set_frontier_with_unix_world cs new_fw in 
       (new_cs,changed_archived_compilables,changed_usual_compilables,changed_noncompilables);;

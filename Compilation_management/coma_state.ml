@@ -1362,13 +1362,13 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 
 let latest_changes_in_noncompilables cs =
    let fw = frontier_with_unix_world cs in 
-   let (_,(_,_,changed_noncompilables)) = Fw_with_small_details.inspect_and_update fw in 
+   let (_,((_,_,changed_noncompilables),_)) = Fw_with_small_details.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
 
 let latest_changes cs = 
   let fw = frontier_with_unix_world cs in 
-  let (_,(changed_archived_compilables,_,changed_noncompilables)) = Fw_with_small_details.inspect_and_update fw in 
+  let (_,((changed_archived_compilables,_,changed_noncompilables),_)) = Fw_with_small_details.inspect_and_update fw in 
   (Image.image Dfn_rootless.to_line changed_archived_compilables,
    latest_changes_in_compilables cs,
   Image.image Dfn_rootless.to_line changed_noncompilables);;

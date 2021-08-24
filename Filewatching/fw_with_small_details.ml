@@ -115,17 +115,20 @@ let inspect_and_update fw  =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
+   let changed_details_ref = ref [] in 
    ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = Image.image (
         fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files 
-         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
+         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+              let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
+              new_pair 
          else old_pair  
       ) old_details;
    },
-   File_watcher.partition_for_singles new_parent changed_files);;
+   (File_watcher.partition_for_singles new_parent changed_files,!changed_details_ref));;
 
 let of_configuration config =   
     let mother = File_watcher.of_configuration config in 
