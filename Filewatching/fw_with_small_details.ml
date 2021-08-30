@@ -199,7 +199,7 @@ let relocate_module_to fw (mod_name,new_subdir)=
          if (Dfn_rootless.to_module rl) = mod_name 
          then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
               let new_pair = (new_rl,snd old_pair) in 
-              let _ = (accu := (rl,new_pair) :: (!accu)) in
+              let _ = (accu := (rl,Some new_pair) :: (!accu)) in
               new_pair
          else old_pair        
       ) old_details;
