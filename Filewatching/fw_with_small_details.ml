@@ -155,7 +155,7 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
             let rl = fst old_pair in
             if rl  = rootless 
             then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
-                 let _= (accu:=Some(new_pair)) in 
+                 let _= (accu:=Some(rl,Some(new_pair))) in 
                  new_pair
             else old_pair  
          ) old_details;
