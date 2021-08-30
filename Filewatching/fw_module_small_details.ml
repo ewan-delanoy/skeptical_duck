@@ -84,22 +84,14 @@ let classify_according_to_module compilable_files =
     Image.image (fun (mn,l)->
       (mn,compute_details_from_acolytes_list l)
       ) temp2 ;;
-
-let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
-     let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
-     let extra_data = List.filter (
-         fun (rl,_) ->
-         ((Dfn_rootless.to_module rl) = mod_name) && ((List.assoc_opt rl l)=None)
-     ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
-     compute_details_from_acolytes_list (l@extra_data) ;;
  
-let recompute_module_details_from_list_of_strong_changes fw mod_name unfiltered_l =
+let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
       let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
       let extra_data = List.filter (
           fun (rl,_) ->
           ((Dfn_rootless.to_module rl) = mod_name) && ((List.assoc_opt rl l)=None)
       ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
-      compute_details_from_acolytes_list ((Image.image snd l)@extra_data) ;;     
+      compute_details_from_acolytes_list ((Option.filter_and_unpack snd l)@extra_data) ;;     
 
 
 end ;;   
@@ -124,7 +116,6 @@ let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modi
 *)
 
 let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
-let recompute_module_details_from_list_of_strong_changes = Private.recompute_module_details_from_list_of_strong_changes ;;
 
 (*
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
