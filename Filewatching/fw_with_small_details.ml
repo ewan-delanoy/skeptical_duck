@@ -206,17 +206,17 @@ let relocate_module_to fw (mod_name,new_subdir)=
    } in 
    (new_fw,!accu);;  
 
-let remove_files fw rootless_paths=   
+let remove_files fw removed_rootless_paths=   
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.remove_files 
-      old_parent rootless_paths in 
-   {
+      old_parent removed_rootless_paths in 
+   ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = List.filter (
-         fun (rl,_)->not(List.mem rl rootless_paths)
+         fun (rl,_)->not(List.mem rl removed_rootless_paths)
       ) old_details;
-   } ;;
+   },Image.image (fun rl->(rl,None)) removed_rootless_paths) ;;
 
 let rename_module_on_filename_level fw (old_module,new_module) =
    let old_parent = Automatic.parent fw 
@@ -236,17 +236,21 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    let _ =Unix_command.conditional_multiple_uc l_cmds in  
    let old_parent = Automatic.parent fw in 
    let new_parent = File_watcher.rename_files  old_parent replacements in 
+   let accu = ref [] in 
    let new_details = Image.image (
       fun old_pair->
       let rl = fst old_pair in
       match List.assoc_opt rl replacements with 
-      Some(new_rl) -> (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl)
+      Some(new_rl) -> 
+         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl) in 
+         let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+         new_pair 
       | None -> old_pair         
    ) old_details in 
-   {
+   ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_details;
-   } ;;     
+   },List.rev(!accu)) ;;     
       
 let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
    let old_parent = Automatic.parent fw 
@@ -254,51 +258,64 @@ let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewrit
    let (new_parent,changed_files) = File_watcher.apply_text_transformation_on_some_files old_parent
       (Look_for_module_names.change_module_name_in_ml_ocamlcode  
       old_module new_module)  files_to_be_rewritten in 
+   let accu = ref [] in
+   let new_details = Image.image (
+      fun old_pair->
+        let rl = fst old_pair in
+        if List.mem rl changed_files
+        then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+             let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+             new_pair 
+        else old_pair  
+    ) old_details in    
    ({
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-        fun old_pair->
-          let rl = fst old_pair in
-          if List.mem rl changed_files
-          then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
-          else old_pair  
-      ) old_details;
-    },changed_files) ;;  
+      small_details_in_files = new_details;
+    },List.rev(!accu)) ;;  
          
 let rename_module_on_both_levels fw (old_module,new_module,files_to_be_rewritten)=
-   let fw2 = rename_module_on_filename_level fw (old_module,new_module) in 
-   rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten ;;
+   let (fw2,changes1) = rename_module_on_filename_level fw (old_module,new_module) in 
+   let (fw3,changes2) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
+   (fw3,changes1@changes2) ;;
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
-   {
-      Fw_with_small_details_t.parent = new_parent ;
-       small_details_in_files = Image.image (
+   let accu = ref [] in
+   let new_details = Image.image (
       fun old_pair->
       let rl = fst old_pair in
       match Dfn_rootless.soak (old_subdir,new_subdir) rl with 
-      (Some new_rl) -> (new_rl,snd old_pair)
+      (Some new_rl) -> 
+         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+             let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+             new_pair 
       | None -> old_pair        
-      ) old_details ;
-} ;;   
+   ) old_details in 
+   ({
+      Fw_with_small_details_t.parent = new_parent ;
+      small_details_in_files = new_details ;
+   },List.rev(!accu)) ;;   
 
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
+   let accu = ref [] in 
+   let new_details = Image.image (
+      fun old_pair->
+      let rl = fst old_pair in
+      if List.mem rl changed_files
+      then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+           let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+           new_pair 
+      else old_pair  
+   ) old_details in
    ({
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-         fun old_pair->
-         let rl = fst old_pair in
-         if List.mem rl changed_files
-         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
-         else old_pair  
-      ) old_details;
-   },
-   File_watcher.partition_for_singles new_parent changed_files);;   
+      small_details_in_files = new_details;
+   },List.rev(!accu));;   
 
 let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
@@ -306,17 +323,20 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let (new_parent,changed_files) = 
         File_watcher.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
-   ({
-      Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-         fun old_pair->
+   let accu = ref [] in 
+   let new_details = Image.image (
+      fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files
-         then (rl,File_watcher.compute_small_details_on_one_file new_parent rl)
+         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+                 let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+                 new_pair 
          else old_pair  
-      ) old_details;
-   },
-   File_watcher.partition_for_singles new_parent changed_files);;   
+      ) old_details in      
+   ({
+      Fw_with_small_details_t.parent = new_parent ;
+      small_details_in_files = new_details;
+   },List.rev(!accu));;   
 
 end;;
 

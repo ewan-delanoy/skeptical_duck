@@ -14,7 +14,7 @@ module Physical = struct
       Coma_state.set_frontier_with_unix_world cs new_fw;;
    
    let forget_rootless_paths cs rootless_paths=
-      let new_fw=Fw_with_small_details.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
+      let (new_fw,_)=Fw_with_small_details.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;   
    
 
@@ -56,7 +56,7 @@ module Physical = struct
      (Coma_state.set_frontier_with_unix_world cs new_fw,changed_dependencies) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
-      let new_fw=Fw_with_small_details.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
+      let (new_fw,_)=Fw_with_small_details.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    
@@ -65,10 +65,10 @@ module Physical = struct
    
    let rename_string_or_value cs old_sov new_sov =
       let old_fw = Coma_state.frontier_with_unix_world cs in 
-      let (new_fw,(changed_ac_files,changed_uc_files,changed_noncompilable_files))=(
+      let new_fw=(
          if not(String.contains old_sov '.')
-         then let (fw,(changed_ac_files,changed_uc_files,changed_nc_files))= Fw_with_small_details.replace_string old_fw (old_sov,new_sov) in 
-              (fw,(changed_ac_files,changed_uc_files,changed_nc_files))
+         then let (fw,_)= Fw_with_small_details.replace_string old_fw (old_sov,new_sov) in 
+              fw
          else 
               let j=Substring.leftmost_index_of_in "." old_sov in
               if j<0 
@@ -82,9 +82,9 @@ module Physical = struct
                    let preceding_files=Image.image  (fun eless2->
                         Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
                    ) temp2 in
-                   Fw_with_small_details.replace_value old_fw ((preceding_files,path),(old_sov,new_sov))
+                   fst(Fw_with_small_details.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)))
       ) in 
-      (Coma_state.set_frontier_with_unix_world cs new_fw,(changed_ac_files,changed_uc_files,changed_noncompilable_files));;       
+      Coma_state.set_frontier_with_unix_world cs new_fw;;       
    
    
    
@@ -326,7 +326,7 @@ module Physical = struct
       Internal.rename_subdirectory cs2 old_subdir new_subdir;;
    
    let rename_string_or_value cs old_sov new_sov =
-      let (cs2,_)=Physical.rename_string_or_value cs old_sov new_sov in
+      let cs2=Physical.rename_string_or_value cs old_sov new_sov in
       Internal.rename_string_or_value cs2;;
    
    end;;
