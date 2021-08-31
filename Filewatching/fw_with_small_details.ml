@@ -236,15 +236,16 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    let _ =Unix_command.conditional_multiple_uc l_cmds in  
    let old_parent = Automatic.parent fw in 
    let new_parent = File_watcher.rename_files  old_parent replacements in 
+   let new_details = Image.image (
+      fun old_pair->
+      let rl = fst old_pair in
+      match List.assoc_opt rl replacements with 
+      Some(new_rl) -> (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl)
+      | None -> old_pair         
+   ) old_details in 
    {
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-            fun old_pair->
-            let rl = fst old_pair in
-            match List.assoc_opt rl replacements with 
-            Some(new_rl) -> (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl)
-            | None -> old_pair        
-      ) old_details;
+      small_details_in_files = new_details;
    } ;;     
       
 let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
