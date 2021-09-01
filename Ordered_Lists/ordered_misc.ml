@@ -42,6 +42,21 @@ let minimal_transversals l=
   Private.helper_for_minimal_transversals (starter,others) ;;  
   
 
+let reorder_list_of_pairs_using_list_of_singles pairs singles =
+  let idx=Memoized.make(fun x->
+     Listennou.find_index x singles   
+  ) in 
+  let ordr = (fun x1 x2 -> Total_ordering.for_integers (idx x1) (idx x2)) in 
+  let ordr2 = Total_ordering.product ordr Total_ordering.standard in 
+  Ordered.sort ordr2 pairs ;;
+
+(*
+
+reorder_list_of_pairs_using_list_of_singles (Ennig.doyle( fun t->(t,t+100)) 1 8)
+[2;5;3;6;4;7;1;8] ;;
+*)
+
+
 let translate_at_level_two ll translation=
   Image.image (
     fun l->Ordered.merge Total_ordering.for_integers l translation
