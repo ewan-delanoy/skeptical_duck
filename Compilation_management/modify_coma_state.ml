@@ -34,7 +34,7 @@ module Physical = struct
       Coma_state.set_frontier_with_unix_world cs0 fw;;
    
    let register_rootless_paths cs rps=
-      let (new_fw,(ac_paths,uc_paths,nc_paths))=Fw_with_small_details.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
+      let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_small_details.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
       (Coma_state.set_frontier_with_unix_world cs new_fw,ac_paths,uc_paths) ;;
    
    let relocate_module_to cs mod_name new_subdir=

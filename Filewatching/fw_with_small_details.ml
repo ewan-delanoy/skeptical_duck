@@ -175,16 +175,15 @@ let register_rootless_paths fw rootless_paths=
    and old_details = Automatic.small_details_in_files fw  in 
    let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
+   let new_details =    (Image.image (fun rl->
+      (rl,File_watcher.compute_small_details_on_one_file new_parent rl)) 
+      rootless_paths) in 
    ({
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = old_details @ 
-      (Image.image (fun rl->
-         (rl,File_watcher.compute_small_details_on_one_file new_parent rl)) 
-         rootless_paths)
-      ;
+      small_details_in_files = old_details @ new_details ;
    },
-   File_watcher.partition_for_singles new_parent rootless_paths ) ;;    
-   
+   (File_watcher.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
+
 let relocate_module_to fw (mod_name,new_subdir)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
