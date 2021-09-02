@@ -19,7 +19,7 @@ let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
 
 
 
-let compute_details_from_acolytes_list l=
+let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Listennou.partition_according_to_fst temp1 in 
    let temp3 = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
@@ -76,13 +76,13 @@ let compute_details_from_acolytes_list l=
    };;
 
    
-let classify_according_to_module compilable_files =
+let compute_details_from_acolytes_list_for_several_modules compilable_files =
     let temp1 = Image.image (fun (rless,details)->
        (Dfn_rootless.to_module rless,(rless,details))  
     ) compilable_files in 
     let temp2 = Listennou.partition_according_to_fst temp1 in 
     Image.image (fun (mn,l)->
-      (mn,compute_details_from_acolytes_list l)
+      (mn,compute_details_from_acolytes_list_for_one_module l)
       ) temp2 ;;
  
 let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
@@ -91,7 +91,7 @@ let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
           fun (rl,_) ->
           ((Dfn_rootless.to_module rl) = mod_name) && ((List.assoc_opt rl l)=None)
       ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
-      compute_details_from_acolytes_list ((Option.filter_and_unpack snd l)@extra_data) ;;     
+      compute_details_from_acolytes_list_for_one_module ((Option.filter_and_unpack snd l)@extra_data) ;;     
 
 
 end ;;   
@@ -100,13 +100,16 @@ end ;;
 let has_printer fw = fw.Fw_module_small_details_t.has_printer ;;  
 *)
 
-let compute_details_from_acolytes_list = Private.compute_details_from_acolytes_list ;;
+let compute_details_from_acolytes_list_for_one_module = Private.compute_details_from_acolytes_list_for_one_module ;;
+
+let compute_details_from_acolytes_list_for_several_modules = Private.compute_details_from_acolytes_list_for_several_modules ;;
+
 
 let modularize_details fw  = 
    let u_files=Fw_with_small_details.usual_compilable_files fw in 
    let temp1=List.filter (fun (rl,_)->List.mem rl u_files)
       (fw.Fw_with_small_details_t.small_details_in_files)  in
-   Private.classify_according_to_module temp1 ;;
+   Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;
 
 (*   
 let mli_present fw = fw.Fw_module_small_details_t.mli_present ;; 
