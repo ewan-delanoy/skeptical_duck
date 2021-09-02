@@ -46,9 +46,38 @@ let compute_dependencies  l =
    ) in 
   Image.image (fun (mn,ancestors)->(mn,(coatoms mn,ancestors))) good_list ;; 
 
+let compute_coatoms_in_small_extension older_modules extension =
+   let modules_in_correct_order = 
+       (Image.image fst older_modules) @ (Image.image fst extension) in 
+   let lex_sort = Ordered.sort lex_order in 
+   let coatoms = (fun mname ->
+      let details = List.assoc mname  extension in 
+      let temp1 = lex_sort(details.Fw_module_small_details_t.used_modules) in 
+      List.filter  (fun mn-> Ordered.mem lex_order mn temp1) modules_in_correct_order
+       )  in
+   Image.image (fun (mname,_)->(mname,coatoms mname)) extension ;;           
+
+let rec iterator_for_ancestor_computation (treated,to_be_treated) =
+   match to_be_treated with 
+   [] -> treated 
+   | (mn,coat_mn) :: others ->
+      let temp1 = (coat_mn) :: (Image.image (fun mn2->snd(List.assoc mn2 treated)) coat_mn) in 
+      let ancestors_in_lex_order = Ordered.sort lex_order (List.flatten temp1) in 
+      let ancestors_mn = Option.filter_and_unpack (
+         fun (mn3,_) ->
+            if Ordered.mem lex_order mn3  ancestors_in_lex_order 
+            then Some mn3 
+            else None   
+      )  treated in 
+      iterator_for_ancestor_computation (treated@[(mn,(coat_mn,ancestors_mn))],others) ;;  
+
+let compute_coatoms_and_ancestors_in_small_extension older_modules extension =
+   let ext_with_coatoms = compute_coatoms_in_small_extension older_modules extension in 
+   iterator_for_ancestor_computation (older_modules,ext_with_coatoms) ;;
+
 end ;;   
 
-
+let compute_coatoms_and_ancestors_in_small_extension = Private.compute_coatoms_and_ancestors_in_small_extension ;;
 let main = Private.compute_dependencies ;;
 
 
