@@ -62,6 +62,22 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files,subdirs_for_
       subdirs_for_archived_mlx_files = subdirs_for_archived;
     };; 
 
+(*    
+let dummy = 
+  {
+    Fw_configuration_t.root = Dfa_root.dummy ;
+    dir_for_backup = Dfa_root.dummy ;
+    gitpush_after_backup = false ;
+    ignored_subdirectories = [];
+    ignored_files = [];
+    github_url = "";
+    encoding_protected_files = [];
+    subdirs_for_archived_mlx_files = [];
+  };; *)
+  
+  
+
+
 let test_for_admissibility data rl=
   (List.mem (
     (Dfn_rootless.to_ending rl)

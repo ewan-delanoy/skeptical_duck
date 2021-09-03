@@ -8,6 +8,7 @@ The rightmost trailing slash is removed.
 
 let without_trailing_slash (Dfa_root_t.R s)=s;;
 let connectable_to_subpath (Dfa_root_t.R s)=s^"/";;  
+let dummy = Dfa_root_t.R "" ;;
 
 let of_line line = Dfa_root_t.R(Tools_for_absolute_path.remove_trailing_slash line);;
 
