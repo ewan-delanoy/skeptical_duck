@@ -575,6 +575,12 @@ let compute_all_small_details = Private.Modular.compute_all_small_details ;;
 
 let compute_small_details_on_one_file = Private.Modular.compute_small_details_on_one_file ;;
 
+let dummy = {
+   File_watcher_t.configuration = Fw_configuration.dummy ;
+   watched_files = [];
+   last_noticed_changes = Dircopy_diff.empty_one;
+};; 
+
 let empty_one config= {
    File_watcher_t.configuration = config;
    watched_files = [];
