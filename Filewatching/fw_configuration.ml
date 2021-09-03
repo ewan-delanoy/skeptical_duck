@@ -62,7 +62,7 @@ let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files,subdirs_for_
       subdirs_for_archived_mlx_files = subdirs_for_archived;
     };; 
 
-(*    
+ 
 let dummy = 
   {
     Fw_configuration_t.root = Dfa_root.dummy ;
@@ -73,7 +73,7 @@ let dummy =
     github_url = "";
     encoding_protected_files = [];
     subdirs_for_archived_mlx_files = [];
-  };; *)
+  };; 
   
   
 
