@@ -341,6 +341,11 @@ end;;
 
 let configuration = Automatic.configuration ;;
 
+let dummy = {
+   Fw_with_small_details_t.parent = File_watcher.dummy ;
+   small_details_in_files = [];
+};; 
+
 let empty_one config= {
    Fw_with_small_details_t.parent = File_watcher.empty_one config;
    small_details_in_files = [];
