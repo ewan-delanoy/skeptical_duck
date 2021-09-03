@@ -96,9 +96,9 @@ let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
 
 end ;;   
 
-(*
+
 let has_printer fw = fw.Fw_module_small_details_t.has_printer ;;  
-*)
+
 
 let compute_details_from_acolytes_list_for_one_module = Private.compute_details_from_acolytes_list_for_one_module ;;
 
