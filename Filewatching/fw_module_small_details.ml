@@ -120,8 +120,9 @@ let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modi
 
 let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
 
-(*
+
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
+(*
 let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;    
 let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
 *)
