@@ -585,6 +585,7 @@ let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification
 let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
 let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
+let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;
 let of_concrete_object = Private.Exit.of_concrete_object ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
