@@ -111,20 +111,14 @@ let modularize_details fw  =
       (fw.Fw_with_small_details_t.small_details_in_files)  in
    Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;
 
-(*   
+
 let mli_present fw = fw.Fw_module_small_details_t.mli_present ;; 
 let opt_mli_modification_time fw = fw.Fw_module_small_details_t.mli_modification_time ;;      
 let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;; 
 let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
-*)
-
 let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
-
-
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
 let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;  
-(*
-  
 let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
-*)
+
     

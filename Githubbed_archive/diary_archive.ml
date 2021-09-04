@@ -82,6 +82,7 @@ let noncompilable_files = Private.getter Fw_with_small_details.noncompilable_fil
 let of_concrete_object = Private.constructor Fw_with_small_details.of_concrete_object ;;
 let of_configuration = Private.constructor Fw_with_small_details.of_configuration ;;
 let of_configuration_and_list = Private.constructor Fw_with_small_details.of_configuration_and_list ;;
+(*
 let overwrite_file_if_it_exists = Private.univar Fw_with_small_details.overwrite_file_if_it_exists;;
 let reflect_latest_changes_in_github = Private.univar Fw_with_small_details.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.uniplump Fw_with_small_details.register_rootless_paths ;;
@@ -89,6 +90,7 @@ let relocate_module_to = Private.univar Fw_with_small_details.relocate_module_to
 let remove_files = Private.univar Fw_with_small_details.remove_files ;;
 let rename_module_on_filename_level_and_in_files = Private.uniplump Fw_with_small_details.rename_module_on_filename_level_and_in_files;;
 let rename_subdirectory_as = Private.univar Fw_with_small_details.rename_subdirectory_as;;
+*)
 let replace_string = Private.uniplump Fw_with_small_details.replace_string ;;
 let replace_value = Private.uniplump Fw_with_small_details.replace_value ;;
 let root = Private.getter Fw_with_small_details.root ;;
