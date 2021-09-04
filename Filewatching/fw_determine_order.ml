@@ -30,7 +30,7 @@ let compute_dependencies  l =
   let modules_in_lex_order = lex_sort modules in 
   let coatoms_in_lex_order = Memoized.make (fun mname ->
      let details = List.assoc mname  l in 
-     let temp1 = lex_sort(details.Fw_module_small_details_t.used_modules) in 
+     let temp1 = lex_sort(Fw_module_small_details.used_modules  details) in 
      Ordered.intersect lex_order  modules_in_lex_order temp1
   )     in 
   let (cycles,good_list) = Reconstruct_linear_poset.reconstruct_linear_poset coatoms_in_lex_order  
@@ -52,7 +52,7 @@ let compute_coatoms_in_small_extension older_modules extension =
    let lex_sort = Ordered.sort lex_order in 
    let coatoms = (fun mname ->
       let details = List.assoc mname  extension in 
-      let temp1 = lex_sort(details.Fw_module_small_details_t.used_modules) in 
+      let temp1 = lex_sort(Fw_module_small_details.used_modules details) in 
       List.filter  (fun mn-> Ordered.mem lex_order mn temp1) modules_in_correct_order
        )  in
    Image.image (fun (mname,_)->(mname,coatoms mname)) extension ;;           
