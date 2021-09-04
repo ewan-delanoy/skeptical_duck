@@ -517,7 +517,12 @@ module All_printables = struct
       let rep = Dfn_middle.rename_module (old_mname,new_mname) in 
       Image.image rep old_dep_val
     ));;  
-    let rename_subdirectory_as = passive_trsp All_subdirectories.rename_subdirectory_as ;;
+    let rename_subdirectory_as = trsp All_subdirectories.rename_subdirectory_as 
+    (Some(fun new_fw old_dep_val arg ad -> 
+      let (old_sdir,new_sdir) = arg in
+      let rep = Dfn_middle.rename_subdirectory (old_sdir,new_sdir) in 
+      Image.image rep old_dep_val
+    ));;  
     let replace_string = trsp All_subdirectories.replace_string None ;;
     let replace_value = trsp All_subdirectories.replace_value None ;;
     let set_gitpush_after_backup = passive_trsp All_subdirectories.set_gitpush_after_backup ;;
