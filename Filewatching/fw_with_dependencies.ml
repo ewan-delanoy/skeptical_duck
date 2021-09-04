@@ -514,7 +514,7 @@ module All_printables = struct
     let rename_module_on_filename_level_and_in_files = trsp All_subdirectories.rename_module_on_filename_level_and_in_files
     (Some(fun new_fw old_dep_val arg ad -> 
       let (old_mname,new_mname,_) = arg in
-      let rep = (fun mn->if mn = old_mname then new_mname else mn) in 
+      let rep = Dfn_middle.rename_module (old_mname,new_mname) in 
       Image.image rep old_dep_val
     ));;  
     let rename_subdirectory_as = passive_trsp All_subdirectories.rename_subdirectory_as ;;
