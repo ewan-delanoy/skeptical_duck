@@ -562,11 +562,14 @@ end;;
 
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
+let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let empty_one = Private.Exit.empty_one ;;
 let forget_modules = Private.Exit.forget_modules ;;
+let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
+let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;
 let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
                               None -> "0." |Some(fl)->fl ;;
 let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
