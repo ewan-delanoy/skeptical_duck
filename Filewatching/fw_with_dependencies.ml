@@ -589,7 +589,7 @@ let replace_value = Private.Exit.replace_value ;;
 let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
-
+let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;
 
   
 
