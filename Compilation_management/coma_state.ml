@@ -490,9 +490,9 @@ module Automatic = struct
       and new_needed_dirs = restr (cs.Coma_state_t.needed_dirs_for_module) 
       and new_products_up_to_date = restr cs.Coma_state_t.product_up_to_date_for_module in  
       let new_preq_types= List.filter (
-          fun (eless,_)->
-            let middle = Dfn_endingless.to_middle eless in 
-          List.exists (fun (mn,subdir)->middle = Dfn_middle_t.J(subdir,mn) ) new_subdirs 
+          fun middle->
+            let mn = Dfn_middle.to_module middle in 
+            List.mem mn smaller_list_of_modules
           )  cs.Coma_state_t.printer_equipped_types   in 
       let new_directories = Ordered.sort Total_ordering.standard (Image.image snd new_subdirs) in 
   to_t({ cs with 
@@ -526,8 +526,7 @@ module Automatic = struct
        ) cs.Coma_state_t.subdir_for_module 
        and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
        ) cs.Coma_state_t.product_up_to_date_for_module
-       and new_preq_types=Image.image (fun (eless,_)->(eless,false)
-       ) cs.Coma_state_t.printer_equipped_types in 
+       and new_preq_types= cs.Coma_state_t.printer_equipped_types in 
        to_t({
              cs with    
               Coma_state_t.frontier_with_unix_world= new_frontier;
@@ -577,9 +576,9 @@ module Automatic = struct
         needed_dirs_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
         product_up_to_date_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g product_up_to_date_for_module_label);
         directories = (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
-        printer_equipped_types = Crobj_converter_combinator.to_pair_list 
-                                        Dfn_endingless.of_concrete_object
-                                        Crobj_converter.bool_of_concrete_object (g printer_equipped_types_label);
+        printer_equipped_types = Crobj_converter_combinator.to_list 
+                                        Dfn_middle.of_concrete_object
+                                         (g printer_equipped_types_label);
      };; 
   
   let to_concrete_object cs=
@@ -598,9 +597,9 @@ module Automatic = struct
       needed_dirs_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object)  (cs.Coma_state_t.needed_dirs_for_module);  
       product_up_to_date_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.product_up_to_date_for_module; 
       directories_label,  (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
-      printer_equipped_types_label,  Crobj_converter_combinator.of_pair_list 
-                                        Dfn_endingless.to_concrete_object
-                                        Crobj_converter.bool_to_concrete_object cs.Coma_state_t.printer_equipped_types;    
+      printer_equipped_types_label,  Crobj_converter_combinator.of_list 
+                                        Dfn_middle.to_concrete_object
+                                        cs.Coma_state_t.printer_equipped_types;    
      ]  in
      Concrete_object_t.Record items;;
   
@@ -745,6 +744,13 @@ let up_to_date_elesses cs =
        else None
    )(ordered_list_of_modules cs);;
 
+let preq_types_with_extra_info cs =
+   let root = root cs  in 
+   Image.image (fun middle->
+    let mn = Dfn_middle.to_module middle in 
+    (Dfn_join.root_to_middle root middle,product_up_to_date_at_module cs mn)
+   ) (preq_types cs) ;;
+
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 
 let find_subdir_from_suffix cs possibly_slashed_suffix =
@@ -855,7 +861,9 @@ let unregister_modules cs elesses=
    else
    let cs2=List.fold_left Automatic.remove_in_each_at_module cs nms in
    let old_preqtypes = Automatic.preq_types cs2 in 
-   let new_preqtypes = List.filter (fun (eless2,_)->not(List.mem eless2 elesses)) old_preqtypes in
+   let new_preqtypes = List.filter (fun 
+    middle -> List.for_all (fun eless->
+       (Dfn_endingless.to_middle eless)<>middle ) elesses) old_preqtypes in
    let cs3 = (
      if new_preqtypes <> old_preqtypes 
      then Automatic.set_preq_types cs2 new_preqtypes
@@ -885,7 +893,10 @@ let partially_remove_mlx_file cs mlxfile=
     else if check_for_single_ending_at_module cs nm
          then let cs5=Automatic.remove_in_each_at_module cs nm in 
               let old_preqtypes = Automatic.preq_types cs5 in 
-              let new_preqtypes = List.filter (fun (eless2,_)->eless2<>eless ) old_preqtypes in 
+              let new_preqtypes = List.filter (fun 
+                middle -> 
+                (Dfn_endingless.to_middle eless)<>middle 
+              ) old_preqtypes in
               let cs6=(
                 if new_preqtypes <> old_preqtypes 
                 then Automatic.set_preq_types cs5 new_preqtypes
@@ -1698,7 +1709,7 @@ let prepare_pretty_printers_for_ocamldebug cs deps =
     let s= Dfa_module.to_line mname in 
     "load_printer "^s^".cmo"
   ) deps) 
-  and preq_types = cs.Coma_state_t.printer_equipped_types  in 
+  and preq_types = preq_types_with_extra_info cs  in 
   let printable_deps = List.filter (
     fun mn -> let eless = endingless_at_module cs mn in 
     List.mem (eless,true) preq_types
@@ -1796,7 +1807,9 @@ end;;
 
 
 let add_printer_equipped_type cs mn=
-  set_preq_types cs ((preq_types cs)@[mn]);;
+  let eless = endingless_at_module cs mn in 
+  let middle = Dfn_endingless.to_middle eless in 
+  set_preq_types cs ((preq_types cs)@[middle]);;
 
 let remove_printer_equipped_type cs mn=
   set_preq_types cs (List.filter (fun mn2->mn2<>mn) (preq_types cs));;
@@ -1804,7 +1817,7 @@ let remove_printer_equipped_type cs mn=
 let uple_form cs=
   (cs,
    directories cs,
-   preq_types cs
+   preq_types_with_extra_info cs
    );;
 
 

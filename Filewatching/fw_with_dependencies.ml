@@ -520,7 +520,8 @@ module All_printables = struct
     let rename_subdirectory_as = trsp All_subdirectories.rename_subdirectory_as 
     (Some(fun new_fw old_dep_val arg ad -> 
       let (old_sdir,new_sdir) = arg in
-      let rep = Dfn_middle.rename_subdirectory (old_sdir,new_sdir) in 
+      let s_new_sdir = Dfa_subdirectory.without_trailing_slash new_sdir in 
+      let rep = Dfn_middle.rename_endsubdirectory (old_sdir,s_new_sdir) in 
       Image.image rep old_dep_val
     ));;  
     let replace_string = trsp All_subdirectories.replace_string None ;;

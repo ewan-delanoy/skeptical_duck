@@ -19,5 +19,5 @@ type t={
      needed_dirs_for_module : (Dfa_module_t.t * (Dfa_subdirectory_t.t list)) list;
      product_up_to_date_for_module : (Dfa_module_t.t * bool) list;
      directories : Dfa_subdirectory_t.t list;
-     printer_equipped_types : (Dfn_endingless_t.t*bool) list;
+     printer_equipped_types : Dfn_middle_t.t list;
 };;

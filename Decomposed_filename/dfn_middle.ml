@@ -23,15 +23,18 @@ module Private = struct
 end ;; 
   
 let of_concrete_object = Private.of_concrete_object ;; 
+let rename_endsubdirectory 
+   (old_subdir,new_subdirname) 
+      (Dfn_middle_t.J(s,m))=
+   Dfn_middle_t.J(
+   		(Dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
+         m
+	    );; 
+
 let rename_module (m1,m2) middle =
   let (Dfn_middle_t.J(s,m)) = middle in 
   if m = m1 
   then Dfn_middle_t.J(s,m2)
-  else middle;; 
-let rename_subdirectory (s1,s2) middle =
-  let (Dfn_middle_t.J(s,m)) = middle in 
-  if s = s1 
-  then Dfn_middle_t.J(s2,m)
   else middle;;       
 let to_concrete_object = Private.to_concrete_object ;;   
 let to_line (Dfn_middle_t.J(s,m)) = (Dfa_subdirectory.connectable_to_subpath s)^ (Dfa_module.to_line m);;

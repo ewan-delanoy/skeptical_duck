@@ -149,13 +149,8 @@ module Physical = struct
    let new_dirs=Coma_state.compute_subdirectories_list cs2  in
    let (cs3,rejected_pairs,accepted_pairs)=
           Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-   let rejected_mns=Image.image snd rejected_pairs in  
-   let new_preqt=Image.image(
-           fun (mn,_)->(mn,not(List.mem mn rejected_mns))
-         )  (Coma_state.preq_types cs3) in   
    let cs4=Coma_state.set_directories cs3 new_dirs in 
-   let cs5=Coma_state.set_preq_types cs4 new_preqt in 
-   cs5 ;;
+   cs4 ;;
    
    
    let refresh cs = 
@@ -177,8 +172,7 @@ module Physical = struct
            let (cs2,rejected_pairs,_)=
              Coma_state.Ocaml_target_making.usual_feydeau 
              cs1 l_mod in
-           let rejected_endinglesses=Image.image snd rejected_pairs in 
-           let new_ptypes=Image.image (fun mn->(mn,not(List.mem mn rejected_endinglesses))) pre_preqt in 
+           let new_ptypes=Image.image Dfn_endingless.to_middle pre_preqt in 
            let new_dirs=Coma_state.compute_subdirectories_list cs2 in
            let cs3=Coma_state.set_directories cs2 new_dirs in 
            let cs4=Coma_state.set_preq_types cs3 new_ptypes in
@@ -205,8 +199,8 @@ module Physical = struct
      let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
      let cs4=Coma_state.set_mli_mt_at_module cs3 mn mli_mt in 
      let old_preq_types = Coma_state.preq_types cs4 in 
-     let new_preq_types=Image.image (fun (h,bowl)->
-        (Dfn_endingless.rename_endsubdirectory (old_subdir,s_subdir) h,bowl)) old_preq_types in 
+     let new_preq_types=Image.image (Dfn_middle.rename_endsubdirectory 
+     (old_subdir,s_subdir) ) old_preq_types in 
      let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
      cs5;;   
    
@@ -233,10 +227,9 @@ module Physical = struct
      let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
      let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
      let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
-     let old_eless = Dfn_join.root_to_middle root_dir old_middle_name in
-     let eless_replacer=(fun x->if x=old_eless then new_eless else x) in 
+     let new_middle = Dfn_endingless.to_middle new_eless in 
      let old_preq_types=Coma_state.preq_types cs6 in 
-     let new_preq_types=Image.image (fun (h,bowl)->(eless_replacer h,bowl)) old_preq_types in 
+     let new_preq_types=Image.image (fun x->if x=old_middle_name then new_middle else x) old_preq_types in 
      let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
      let cs_walker=ref(cs7) in 
      let _=List.iter(fun mn->
@@ -259,15 +252,11 @@ module Physical = struct
       ) in 
      let cs1=Coma_state.modify_all_subdirs cs rename_in_sd in 
      let cs2=Coma_state.modify_all_needed_dirs cs1 rename_in_sd in 
-      let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2)
-      and new_peqt=Image.image (fun (eless,is_compiled_correctly)->
-          let final_eless = (
-              match Dfn_endingless.soak (old_subdir,new_subdir) eless with 
-           Some(new_eless) -> new_eless
-           |None -> eless
-          ) in 
-          (final_eless,is_compiled_correctly)
-      )(Coma_state.preq_types cs2) in
+     let s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
+      let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2) 
+      and new_peqt=Image.image (fun middle->
+             Dfn_middle.rename_endsubdirectory (old_subdir,s_new_subdir) middle
+       )(Coma_state.preq_types cs2) in
       let cs3= Coma_state.set_directories cs2 new_dirs in 
       let cs4= Coma_state.set_preq_types cs3 new_peqt in 
       cs4;; 
@@ -589,5 +578,3 @@ module Physical = struct
    
    
    end;;
-   
-   
