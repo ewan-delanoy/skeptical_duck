@@ -478,7 +478,7 @@ module All_printables = struct
        fun mn ->
          let details = List.assoc mn main_table in 
          let subdir = Fw_module_small_details.subdirectory details in 
-         Dfn_join.middle_to_ending subdir mn 
+         Dfn_join.subdirectory_to_module subdir mn 
     ) mods_without_subdirs;;
   let get fw =
     let idx = fw.Fw_with_dependencies_t.index_for_caching in 
@@ -501,7 +501,7 @@ module All_printables = struct
       []
     ));;
     let forget_modules = trsp All_subdirectories.forget_modules (Some(fun new_fw old_dep_val arg ad -> 
-      List.filter (fun mn->not(List.mem mn arg)) old_dep_val
+      List.filter (fun middle->not(List.mem (Dfn_middle.to_module middle) arg)) old_dep_val
     ));;;;
     let inspect_and_update = trsp All_subdirectories.inspect_and_update None ;;
     let of_concrete_object = trsp All_subdirectories.of_concrete_object None ;;
@@ -509,7 +509,7 @@ module All_printables = struct
     let of_configuration_and_list = trsp All_subdirectories.of_configuration_and_list None ;;
     let overwrite_file_if_it_exists = trsp All_subdirectories.overwrite_file_if_it_exists None ;;
     let register_rootless_paths = trsp All_subdirectories.register_rootless_paths None ;;  
-    let relocate_module_to = passive_trsp All_subdirectories.relocate_module_to ;;
+    let relocate_module_to = trsp All_subdirectories.relocate_module_to None ;;
     let remove_files = trsp All_subdirectories.remove_files None ;;
     let rename_module_on_filename_level_and_in_files = trsp All_subdirectories.rename_module_on_filename_level_and_in_files
     (Some(fun new_fw old_dep_val arg ad -> 
