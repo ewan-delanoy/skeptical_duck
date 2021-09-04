@@ -1,8 +1,46 @@
 (************************************************************************************************************************
-Snippet 50 : 
+Snippet 51 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+
+(************************************************************************************************************************
+Snippet 50 : Extracting lines from a file and modifying them
+************************************************************************************************************************)
+open Needed_values ;;
+
+let z1 = rf "Fads/sirloin.ml" ;;
+let z2 = Lines_in_string.interval z1 60 75 ;;
+let z3 = Lines_in_string.lines z2 ;;
+let z4 = Image.image (
+  fun line->
+    let j1=String.index_from line 8 ' ' 
+    and j2=String.index line '=' in 
+    let j3=String.index_from line (j2+2) ' ' in 
+    (Cull_string.interval line 9 j1,
+     Cull_string.interval line (j2+3) j3)
+) z3 ;;
+
+let check_z4 = Ordered.sort Total_ordering.lex_for_strings (Image.image snd z4) ;;
+
+let write (fun_name,lbl)=
+ let addendum=(
+   if lbl = "constructor" then " dummy_fw" else
+   if lbl = "zerovariate_producer" then " dummy_arg" else ""
+
+) in 
+ "    let "^fun_name^" = extract_"^lbl^" All_printables."^fun_name^addendum^" ;;" ;;
+
+let z5 = "\n\n\n" ^(String.concat "\n" (Image.image write z4)) ^ "\n\n\n";; 
+let z6 () = print_string z5 ;;
+
+
+let write2 (fun_name,lbl)=
+ "let "^fun_name^" = Private.Exit."^fun_name^" ;;" ;;
+
+let z7 = "\n\n\n" ^(String.concat "\n" (Image.image write2 z4)) ^ "\n\n\n";; 
+let z8 () = print_string z7 ;;
 
 (************************************************************************************************************************
 Snippet 49 : Get a list of value names from an interval of lines in a file

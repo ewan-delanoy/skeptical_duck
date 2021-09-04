@@ -561,9 +561,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let (_,u_files,_) = canonical_tripartition fw all_files in 
          u_files ;;        
 
-      end ;;      
-
-      
+      end ;;       
 end;;
 
 let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;

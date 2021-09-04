@@ -467,12 +467,19 @@ module All_printables = struct
 
   let the_hashtbl = ((Hashtbl.create 10));;
   let force_get fw =  
-    Option.filter_and_unpack (
+    let mods_without_subdirs = Option.filter_and_unpack (
        fun (mn,details) ->
         if Fw_module_small_details.has_printer details
         then Some mn 
         else None  
-    ) (Modularized_details.get fw) ;;
+    ) (Modularized_details.get fw) 
+    and main_table = Modularized_details.get fw in 
+    Image.image (
+       fun mn ->
+         let details = List.assoc mn main_table in 
+         let subdir = Fw_module_small_details.subdirectory details in 
+         Dfn_join.middle_to_ending subdir mn 
+    ) mods_without_subdirs;;
   let get fw =
     let idx = fw.Fw_with_dependencies_t.index_for_caching in 
     match Hashtbl.find_opt the_hashtbl idx with 
