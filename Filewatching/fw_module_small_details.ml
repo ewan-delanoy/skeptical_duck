@@ -22,27 +22,28 @@ let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
 let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Listennou.partition_according_to_fst temp1 in 
-   let temp3 = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
-   if temp3<>[]
-   then let temp5 = Image.image (fun (edg,detailed_l) -> (edg,Image.image fst detailed_l) ) temp3 in 
-        raise(Several_locations_for_one_ending(temp5))
+   let should_be_empty = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
+   if should_be_empty<>[]
+   then let clearer_picture = Image.image (fun (edg,detailed_l) -> (edg,Image.image fst detailed_l) ) 
+                       should_be_empty in 
+        raise(Several_locations_for_one_ending(clearer_picture))
    else 
-   let temp4 = Image.image (fun (edg,l_rl)->
+   let temp3 = Image.image (fun (edg,l_rl)->
       (Dfa_ending.convert_to_ocaml_ending edg,List.hd l_rl)
-      ) temp3   in 
-   let (temp5,temp6) = List.partition 
-    (function (edg,rl)->edg=Dfa_ocaml_ending_t.Mli) temp4 in 
-   if (temp4=[]) || (List.length(temp6)>1)
-   then raise(Nonadmissible_acolytes_list(Image.image (fun (_,(rl,_))->rl) temp4))
+      ) temp2   in 
+   let (temp4,temp5) = List.partition 
+    (function (edg,rl)->edg=Dfa_ocaml_ending_t.Mli) temp3 in 
+   if (temp3=[]) || (List.length(temp5)>1)
+   then raise(Nonadmissible_acolytes_list(Image.image (fun (_,(rl,_))->rl) temp3))
    else        
    let opt_mli_detailed_rless = (
-      if temp5=[] 
+      if temp4=[] 
       then None 
-      else Some(snd(List.hd temp5))) in
+      else Some(snd(List.hd temp4))) in
    let principal_detailed_rless = (
-      if temp6=[]
+      if temp5=[]
       then Option.unpack opt_mli_detailed_rless 
-      else snd(List.hd temp6)    
+      else snd(List.hd temp5)    
    ) in     
    let (principal_rless,principal_details) = principal_detailed_rless in 
    let principal_subdir = Dfn_rootless.to_subdirectory principal_rless in
