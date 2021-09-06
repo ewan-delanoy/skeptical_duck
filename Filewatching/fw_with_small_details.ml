@@ -287,7 +287,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let rl = fst old_pair in
       match Dfn_rootless.soak (old_subdir,new_subdir) rl with 
       (Some new_rl) -> 
-         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl) in 
              let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
              new_pair 
       | None -> old_pair        

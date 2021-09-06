@@ -86,11 +86,18 @@ let compute_details_from_acolytes_list_for_several_modules compilable_files =
       (mn,compute_details_from_acolytes_list_for_one_module l)
       ) temp2 ;;
  
+let is_overriden_by_item rl (rl2,opt) =
+    if rl2=rl then true else match opt with 
+    None -> false 
+    |Some(rl3,_) -> rl3 = rl ;;
+
+let is_overriden_by_list rl l = List.exists (is_overriden_by_item rl) l ;;    
+
 let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
-      let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
-      let extra_data = List.filter (
+   let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
+   let extra_data = List.filter (
           fun (rl,_) ->
-          ((Dfn_rootless.to_module rl) = mod_name) && ((List.assoc_opt rl l)=None)
+          ((Dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
       ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
       compute_details_from_acolytes_list_for_one_module ((Option.filter_and_unpack snd l)@extra_data) ;;     
 
