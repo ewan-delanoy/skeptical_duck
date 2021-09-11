@@ -34,12 +34,12 @@ let commands_for_backup config diff=
    ) changed_ones in
    let temp6=Image.image(
       fun fn->
-      "git add "^fn
+      "git -C "^s_destination^" add "^fn
    ) (created_ones@changed_ones) in
    let temp7=Image.image(
       fun rl->
       let fn = Dfn_rootless.to_line rl in 
-      "git rm "^fn
+      "git -C "^s_destination^" rm "^fn
    ) (Dircopy_diff.recently_deleted diff) in
    let temp8= Image.image (
      fun (replacer,replacee) ->
@@ -63,8 +63,8 @@ let backup_with_message config  diff msg=
        [Unix_command.cd s_destination]@   
        git_cmds@   
        [
-         "git commit -m \""^msg^"\"";
-         "git push"
+         "git -C "^s_destination^" commit -m \""^msg^"\"";
+         "git -C "^s_destination^" push"
        ]@
        [Unix_command.cd cwd]
        ) 
@@ -74,7 +74,7 @@ let backup_with_message config  diff msg=
        [Unix_command.cd s_destination]@   
        git_cmds@   
        [
-         "git commit -m \""^msg^"\""
+         "git -C "^s_destination^" commit -m \""^msg^"\""
        ]@
        [Unix_command.cd cwd]
        ) 

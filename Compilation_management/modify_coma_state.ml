@@ -10,17 +10,17 @@ module Physical = struct
 
    let forget_modules cs mod_names=
       let new_fw=
-         Fw_with_small_details.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
+         Fw_with_dependencies.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
       Coma_state.set_frontier_with_unix_world cs new_fw;;
    
    let forget_rootless_paths cs rootless_paths=
-      let (new_fw,_)=Fw_with_small_details.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
+      let (new_fw,_)=Fw_with_dependencies.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;   
    
 
    let recompile cs =
       let (new_fw,((changed_archived_compilables,changed_usual_compilables,changed_noncompilables),_))
-         =Fw_with_small_details.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
+         =Fw_with_dependencies.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
       let new_cs= Coma_state.set_frontier_with_unix_world cs new_fw in 
       (new_cs,changed_archived_compilables,changed_usual_compilables,changed_noncompilables);;
    
@@ -29,16 +29,16 @@ module Physical = struct
       let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
-      let fw = Fw_with_small_details.of_configuration config in
+      let fw = Fw_with_dependencies.of_configuration config in
       let cs0 = Coma_state.empty_one config in  
       Coma_state.set_frontier_with_unix_world cs0 fw;;
    
    let register_rootless_paths cs rps=
-      let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_small_details.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
+      let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_dependencies.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
       (Coma_state.set_frontier_with_unix_world cs new_fw,ac_paths,uc_paths) ;;
    
    let relocate_module_to cs mod_name new_subdir=
-      let (new_fw,_)=Fw_with_small_details.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
+      let (new_fw,_)=Fw_with_dependencies.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    let rename_module cs old_middle_name new_nonslashed_name=
@@ -52,11 +52,11 @@ module Physical = struct
    ) (Coma_state.ordered_list_of_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let old_fw = Coma_state.frontier_with_unix_world cs in 
-     let (new_fw,changed_dependencies) = Fw_with_small_details.rename_module_on_filename_level_and_in_files old_fw (old_nm,new_nm,all_acolytes_below) in 
+     let (new_fw,changed_dependencies) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files old_fw (old_nm,new_nm,all_acolytes_below) in 
      (Coma_state.set_frontier_with_unix_world cs new_fw,changed_dependencies) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
-      let (new_fw,_)=Fw_with_small_details.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
+      let (new_fw,_)=Fw_with_dependencies.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
    
    
@@ -67,7 +67,7 @@ module Physical = struct
       let old_fw = Coma_state.frontier_with_unix_world cs in 
       let new_fw=(
          if not(String.contains old_sov '.')
-         then let (fw,_)= Fw_with_small_details.replace_string old_fw (old_sov,new_sov) in 
+         then let (fw,_)= Fw_with_dependencies.replace_string old_fw (old_sov,new_sov) in 
               fw
          else 
               let j=Substring.leftmost_index_of_in "." old_sov in
@@ -82,7 +82,7 @@ module Physical = struct
                    let preceding_files=Image.image  (fun eless2->
                         Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
                    ) temp2 in
-                   fst(Fw_with_small_details.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)))
+                   fst(Fw_with_dependencies.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)))
       ) in 
       Coma_state.set_frontier_with_unix_world cs new_fw;;       
    
@@ -156,7 +156,7 @@ module Physical = struct
    let refresh cs = 
            let dir =Coma_state.root cs  in 
            let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
-           let temp1=Image.image (fun x->(x,()) ) (Fw_with_small_details.usual_compilable_files fw1) in
+           let temp1=Image.image (fun x->(x,()) ) (Fw_with_dependencies.usual_compilable_files fw1) in
            let temp2=Coma_state.Simplified_ts_creation.classify_according_to_module dir temp1 in
            let temp3=Coma_state.Simplified_ts_creation.compute_dependencies temp2 in
            let temp4=Image.image (fun (mname,_)->

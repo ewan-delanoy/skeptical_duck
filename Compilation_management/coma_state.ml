@@ -18,7 +18,7 @@ module Automatic = struct
   
   
   let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
-  let configuration cs=Fw_with_small_details.configuration (frontier_with_unix_world cs) ;;
+  let configuration cs=Fw_with_dependencies.configuration (frontier_with_unix_world cs) ;;
   let root cs= Fw_configuration.root (configuration cs);;
   let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
   let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
@@ -98,7 +98,7 @@ module Automatic = struct
   let set_push_after_backup cs bowl = let ccs=of_t cs in 
        let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
        let new_frontier = 
-        Fw_with_small_details.set_gitpush_after_backup 
+        Fw_with_dependencies.set_gitpush_after_backup 
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
@@ -187,12 +187,12 @@ module Automatic = struct
   
   let impose_last_changes cs diff =
      let old_fw = frontier_with_unix_world cs in 
-     let old_diff = Fw_with_small_details.last_noticed_changes old_fw in 
+     let old_diff = Fw_with_dependencies.last_noticed_changes old_fw in 
      if not(Dircopy_diff.is_empty old_diff)
      then raise(Impose_last_change_exn(old_diff))
      else 
      let new_fw = 
-      Fw_with_small_details.set_last_noticed_changes old_fw diff in  
+      Fw_with_dependencies.set_last_noticed_changes old_fw diff in  
      set_frontier_with_unix_world cs new_fw ;;
   
   let modify_all_subdirs cs f =
@@ -213,7 +213,7 @@ module Automatic = struct
   
   let empty_one config=
       to_t({
-       Coma_state_t.frontier_with_unix_world= Fw_with_small_details.empty_one config;
+       Coma_state_t.frontier_with_unix_world= Fw_with_dependencies.empty_one config;
        modules = [];
        subdir_for_module = [] ;
        principal_ending_for_module = [] ;
@@ -517,11 +517,11 @@ module Automatic = struct
             let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
             and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
             let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
-            (mn,Fw_with_small_details.get_mtime new_frontier rootless)
+            (mn,Fw_with_dependencies.get_mtime new_frontier rootless)
        ) cs.Coma_state_t.principal_ending_for_module
        and new_mli_mts=Image.image (fun (mn,subdir)->
             let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
-            (mn,Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered 
+            (mn,Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered 
              new_frontier rootless)
        ) cs.Coma_state_t.subdir_for_module 
        and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
@@ -563,7 +563,7 @@ module Automatic = struct
   let of_concrete_object ccrt_obj = 
      let g=Concrete_object.get_record ccrt_obj in
      {
-        Coma_state_t.frontier_with_unix_world = Fw_with_small_details.of_concrete_object (g frontier_with_unix_world_label);
+        Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
         modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
         subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
         principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
@@ -584,7 +584,7 @@ module Automatic = struct
   let to_concrete_object cs=
      let items= 
      [
-      frontier_with_unix_world_label, Fw_with_small_details.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
+      frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
       modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
       subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
       principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
@@ -1373,13 +1373,13 @@ let _=PrivateThree.announce_changed_modules changed_modules in
 
 let latest_changes_in_noncompilables cs =
    let fw = frontier_with_unix_world cs in 
-   let (_,((_,_,changed_noncompilables),_)) = Fw_with_small_details.inspect_and_update fw in 
+   let (_,((_,_,changed_noncompilables),_)) = Fw_with_dependencies.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
 
 let latest_changes cs = 
   let fw = frontier_with_unix_world cs in 
-  let (_,((changed_archived_compilables,_,changed_noncompilables),_)) = Fw_with_small_details.inspect_and_update fw in 
+  let (_,((changed_archived_compilables,_,changed_noncompilables),_)) = Fw_with_dependencies.inspect_and_update fw in 
   (Image.image Dfn_rootless.to_line changed_archived_compilables,
    latest_changes_in_compilables cs,
   Image.image Dfn_rootless.to_line changed_noncompilables);;
@@ -2204,8 +2204,8 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
   let middle = Dfn_endingless.to_middle eless in 
-  let mli_modif_time=Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
-  and pr_modif_time=Fw_with_small_details.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
+  let mli_modif_time=Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
+  and pr_modif_time=Fw_with_dependencies.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
   and old_mli_modif_time=mli_mt_at_module cs mn
   and old_pr_modif_time=principal_mt_at_module cs mn 
   in
@@ -2242,15 +2242,16 @@ let test_for_foreign root ap =
       ;;
 
 let census_of_foreigners cs=
-   let config = Fw_with_small_details.configuration (cs.Coma_state_t.frontier_with_unix_world) in 
+   let config = Fw_with_dependencies.configuration (cs.Coma_state_t.frontier_with_unix_world) in 
    let  the_root = config.Fw_configuration_t.root in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 
    List.filter (test_for_foreign the_root) list1;;
 
+
 let reflect_latest_changes_in_github cs opt_msg=
   let old_fw = cs.Coma_state_t.frontier_with_unix_world in 
-  let new_fw = Fw_with_small_details.reflect_latest_changes_in_github old_fw opt_msg in 
+  let new_fw = Fw_with_dependencies.reflect_latest_changes_in_github old_fw opt_msg in 
   {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
 
 let check_module_sequence_for_forgettability cs l=
