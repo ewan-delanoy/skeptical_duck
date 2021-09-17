@@ -225,15 +225,6 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    ) (File_watcher.usual_compilable_files old_parent) in
    let replacements = Image.image (fun old_rl->
           (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
-   let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in 
-   let l_cmds = Image.image (
-          fun (old_rl,new_rl) ->
-            let s_old_ap=s_root^(Dfn_rootless.to_line old_rl) 
-            and s_new_ap=s_root^(Dfn_rootless.to_line new_rl) in    
-            "mv "^s_old_ap^" "^s_new_ap
-   ) replacements  in
-   let _ =Unix_command.conditional_multiple_uc l_cmds in  
-   let old_parent = Automatic.parent fw in 
    let new_parent = File_watcher.rename_files  old_parent replacements in 
    let accu = ref [] in 
    let new_details = Image.image (

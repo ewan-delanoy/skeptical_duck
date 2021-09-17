@@ -1,9 +1,449 @@
 (************************************************************************************************************************
-Snippet 51 : 
+Snippet 56 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+(************************************************************************************************************************
+Snippet 55 : Long debugging session on the rename_module functionality (as in snippet 54), with
+use of rsh to initialize
+************************************************************************************************************************)
+open Needed_values ;;
 
+rsh();;
+
+let (case1,case2) = ("dfa_subdirectory","afd_sybdirectoru") ;;
+let cases = [ case1 ; case2 ] ;;
+
+let see_cases () = Image.image (fun s->
+  Sys.file_exists("Decomposed_filename/"^s^".ml")) cases ;;
+
+let (current_name,other_name) = 
+  let sc = see_cases () in 
+  if sc = [false;true] then (case2,case1) else 
+  if sc = [true;false] then (case1,case2) else 
+  failwith("Unforeseen case");;  
+
+let mn = Dfa_module.of_line(String.uncapitalize_ascii current_name) ;;
+let old_eless = Coma_state.endingless_at_module (!ucs) mn ;;
+let old_middle_name = Dfn_endingless.to_middle old_eless ;; 
+let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii other_name) ;;
+let tcs = (!ucs) ;;
+let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
+  " as "^(No_slashes.to_string new_nonslashed_name) ;;
+let old_nm=Dfn_middle.to_module old_middle_name ;;
+let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) ;;
+let separated_acolytes_below=Option.filter_and_unpack(
+      fun mn->
+       if List.mem old_nm (Coma_state.ancestors_at_module tcs mn)
+      then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module tcs mn))
+      else None
+) (Coma_state.ordered_list_of_modules tcs) ;;
+let all_acolytes_below=List.flatten separated_acolytes_below ;;
+let old_fw = Coma_state.frontier_with_unix_world tcs ;;
+let old_pal = Fw_with_dependencies.Private.parent old_fw;;
+let (bad1,_) = 
+    Fw_with_small_details.rename_module_on_filename_level_and_in_files old_pal
+     (old_nm,new_nm,all_acolytes_below) ;;
+  
+module Pri  = Fw_with_small_details.Private ;;
+module Auto = Fw_with_small_details.Automatic ;;
+
+let (old_module,new_module,files_to_be_rewritten) = (old_nm,new_nm,all_acolytes_below) ;;
+
+(*
+let (bad2,_) = Pri.rename_module_on_filename_level old_pal (old_module,new_module) ;;
+
+let (post_bad2,_) = Pri.rename_module_on_content_level bad2 
+   (old_module,new_module) files_to_be_rewritten ;;
+*)
+
+
+(************************************************************************************************************************
+Snippet 54 : Long debugging session on the rename_module functionality.
+************************************************************************************************************************)
+open Needed_values ;;
+
+(*
+
+#use"Fads/painful_debugging.ml";;
+
+*)
+
+open Needed_values ;;
+
+let (case1,case2) = ("dfa_subdirectory","afd_sybdirectoru") ;;
+let cases = [ case1 ; case2 ] ;;
+
+let see_cases () = Image.image (fun s->
+  Sys.file_exists("Decomposed_filename/"^s^".ml")) cases ;;
+
+let (current_name,other_name) = 
+  let sc = see_cases () in 
+  if sc = [false;true] then (case2,case1) else 
+  if sc = [true;false] then (case1,case2) else 
+  failwith("Unforeseen case");;  
+
+(* let bad0 = ren current_name other_name ;;  *)
+
+(* let bad1 = Usual_coma_state.rename_module current_name other_name ;;  *)
+
+(* let bad2 = Modify_coma_state.Syntactic_sugar.rename_module ucs current_name other_name ;; *)
+
+let mn = Dfa_module.of_line(String.uncapitalize_ascii current_name) ;;
+let old_eless = Coma_state.endingless_at_module (!ucs) mn ;;
+let old_middle_name = Dfn_endingless.to_middle old_eless ;; 
+let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii other_name) ;;
+
+
+(* let bad3 = Modify_coma_state.Reference.rename_module ucs old_middle_name new_nonslashed_name;; *)
+
+let tcs = (!ucs) ;;
+
+(*
+
+let bad4 = Modify_coma_state.And_save.rename_module tcs old_middle_name new_nonslashed_name;; 
+
+let post_bad4=(ucs:=bad4) ;; 
+
+*)
+
+(*
+let bad5 = Modify_coma_state.And_backup.rename_module tcs old_middle_name new_nonslashed_name;; 
+
+
+let post_bad5=(
+  Save_coma_state.save bad5 ;
+  ucs:=bad5) ;;
+*)  
+
+let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
+  " as "^(No_slashes.to_string new_nonslashed_name) ;;
+
+(*
+let bad6=Modify_coma_state.Physical_followed_by_internal.rename_module tcs old_middle_name new_nonslashed_name ;;
+
+let post_bad6=(
+  let bud = Coma_state.reflect_latest_changes_in_github bad6 (Some msg) in 
+  Save_coma_state.save bud ;
+  ucs:=bud) ;;
+*)
+
+(*
+let (bad7,_)= Modify_coma_state.Physical.rename_module tcs old_middle_name new_nonslashed_name ;;
+
+
+let post_bad7=(
+  let bart=Modify_coma_state.Internal.rename_module bad7 old_middle_name new_nonslashed_name in 
+  let bud = Coma_state.reflect_latest_changes_in_github bart (Some msg) in 
+  Save_coma_state.save bud ;
+  ucs:=bud) ;;
+*)
+  
+let old_nm=Dfn_middle.to_module old_middle_name ;;
+let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) ;;
+let separated_acolytes_below=Option.filter_and_unpack(
+      fun mn->
+       if List.mem old_nm (Coma_state.ancestors_at_module tcs mn)
+      then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module tcs mn))
+      else None
+) (Coma_state.ordered_list_of_modules tcs) ;;
+let all_acolytes_below=List.flatten separated_acolytes_below ;;
+let old_fw = Coma_state.frontier_with_unix_world tcs ;;
+
+(*
+let (bad8,_) = 
+  Fw_with_dependencies.rename_module_on_filename_level_and_in_files old_fw 
+   (old_nm,new_nm,all_acolytes_below) ;;
+
+let post_bad8=(
+    let bag = Coma_state.set_frontier_with_unix_world tcs bad8 in
+    let bart=Modify_coma_state.Internal.rename_module bag old_middle_name new_nonslashed_name in 
+    let bud = Coma_state.reflect_latest_changes_in_github bart (Some msg) in 
+    Save_coma_state.save bud ;
+    ucs:=bud) ;;
+*)    
+  
+
+
+
+(************************************************************************************************************************
+Snippet 53 : Visualize Git tree
+************************************************************************************************************************)
+open Needed_values ;;
+
+let gc = "git -C "^home^"/Teuliou/OCaml/Idaho_backup ";;
+
+let cmd_for_z0 = gc ^ "ls-tree -r HEAD > ~/Downloads/temp.txt";;
+let z0 = Sys.command cmd_for_z0 ;;
+
+let z1 = rf "~/Downloads/temp.txt";;
+let z2 = Lines_in_string.lines z1 ;;
+let z3 = List.filter (fun line->
+   Supstring.contains line "depth_one"
+  ) z2;;
+let z4 = Image.image (Cull_string.cobeginning 53) z3;;
+
+
+let cmds1 = Image.image (fun x->gc^"rm --cached "^x) z4 ;;
+let cmds2 = Image.image (fun x->
+  let cx = String.capitalize_ascii x in
+  gc^"add "^cx) z4 ;;
+let cmds3 = cmds1 @ cmds2 ;;
+let anse1 = Image.image Sys.command cmds3 ;;
+
+(************************************************************************************************************************
+Snippet 52 : Long debugging session on the rename_subdir functionality,
+with just one main function ("compressed" version of snippet 51)
+************************************************************************************************************************)
+open Needed_values ;;
+
+module Pri = Reflect_change_in_github.Private ;;
+
+let special_doyle f i j=
+  let temp1 = Ennig.ennig i j in 
+  Image.image f temp1 ;;
+
+let peggy () = 
+   let _ = rsh() in 
+   let (case1,case2) = 
+    ("Depth_two_testdir","Dopth_twe_tistder") in 
+   let cases = [ case1 ; case2 ] in 
+   let sc = Image.image (fun s->
+      Sys.file_exists("Depth_one_testdir/"^s)) cases in
+   let (current_name,other_name) = (
+    if sc = [false;true] then (case2,case1) else 
+    if sc = [true;false] then (case1,case2) else 
+    failwith("Unforeseen case")) in   
+   let old_subdirname = "Depth_one_testdir/"^current_name 
+   and new_subdir_short_name = other_name in 
+   let old_subdir = Coma_state.find_subdir_from_suffix (!ucs) old_subdirname  in
+   let new_subdir = Coma_state.compute_long_subdir_name (!ucs) old_subdir new_subdir_short_name  in
+   let tcs = !ucs in 
+   let cs2=Modify_coma_state.After_checking.rename_subdirectory tcs old_subdir new_subdir  in
+   let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
+   " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+   let fw_with_dep = cs2.Coma_state_t.frontier_with_unix_world in 
+   let fw_with_sd = fw_with_dep.Fw_with_dependencies_t.parent in 
+   let fw_the_first = fw_with_sd.Fw_with_small_details_t.parent in 
+   let config = fw_the_first.File_watcher_t.configuration in 
+   let diff = fw_the_first.File_watcher_t.last_noticed_changes in 
+   let destination_dir = config.Fw_configuration_t.dir_for_backup in
+   let (nongit_cmds,git_cmds) = Pri.commands_for_backup config diff in 
+   let s_destination=Dfa_root.connectable_to_subpath destination_dir in 
+   let _ =Image.image Unix_command.uc nongit_cmds in   
+   let cwd=Sys.getcwd() in 
+   let final_cmds = 
+   (
+    [Unix_command.cd s_destination]@   
+    git_cmds@   
+    [
+      "git commit -m \""^msg^"\""
+    ]@
+    [Unix_command.cd cwd]
+    ) in      
+  let whole () = Image.image Sys.command final_cmds in 
+  let fc_get  = (fun k->List.nth final_cmds (k-1)) in
+  let fc k = 
+   let cmd = fc_get k in 
+   (Sys.command cmd,cmd) in
+  let first_half () = special_doyle (fun k->fst(fc k)) 1 9 in
+  let second_half () = special_doyle (fun k->fst(fc k)) 10 19 in 
+  (first_half,second_half,whole,fc_get,fc) ;;
+
+
+let (first_half,second_half,whole,fc_get,fc) = peggy ();;
+
+(*
+let backup_with_message config  diff msg=
+  let destination_dir = config.Fw_configuration_t.dir_for_backup in 
+  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
+  let s_destination=Dfa_root.connectable_to_subpath destination_dir in
+  let _=Image.image Unix_command.uc nongit_cmds in
+  let _=(
+  if config.Fw_configuration_t.gitpush_after_backup
+  then let cwd=Sys.getcwd() in
+       Image.image Unix_command.uc
+       (
+       [Unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git commit -m \""^msg^"\"";
+         "git push"
+       ]@
+       [Unix_command.cd cwd]
+       ) 
+  else let cwd=Sys.getcwd() in
+       Image.image Unix_command.uc
+       (
+       [Unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git commit -m \""^msg^"\""
+       ]@
+       [Unix_command.cd cwd]
+       ) 
+  ) in
+  ();;
+  *)
+
+(*  
+ 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ clean -n 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ clean -f -d
+
+*)
+
+
+(*  
+ 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/Depth_three_testdir/example.txt 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/Depth_three_testdir/*.ml 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/tested_module_five.ml 
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ status
+
+*)
+
+
+
+(*
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ rm Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
+file /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
+
+*)
+
+(*
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ rm Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
+file /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
+
+*)
+
+(*
+
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ config core.longpaths true
+git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add .
+
+*)
+
+(************************************************************************************************************************
+Snippet 51 : Long debugging session on the rename_subdir functionality
+************************************************************************************************************************)
+open Needed_values ;;
+
+rsh();;
+
+let (case1,case2) = ("Depth_two_testdir","Dopth_twe_tistder") ;;
+let cases = [ case1 ; case2 ] ;;
+
+let see_cases () = Image.image (fun s->
+  Sys.file_exists("Depth_one_testdir/"^s)) cases ;;
+
+let (current_name,other_name) = 
+  let sc = see_cases () in 
+  if sc = [false;true] then (case2,case1) else 
+  if sc = [true;false] then (case1,case2) else 
+  failwith("Unforeseen case");;    
+
+   
+let old_subdirname = "Depth_one_testdir/"^current_name ;;
+let new_subdir_short_name = other_name ;;
+
+(*
+
+let bad0 = rensub old_subdirname new_subdir_short_name ;;
+
+*)
+
+let old_subdir = Coma_state.find_subdir_from_suffix (!ucs) old_subdirname  ;;
+let new_subdir = Coma_state.compute_long_subdir_name (!ucs) old_subdir new_subdir_short_name  ;;
+
+let tcs = !ucs ;;
+
+(*
+let bad1 = Modify_coma_state.And_backup.rename_subdirectory tcs old_subdir new_subdir;;
+*)
+
+let cs2=Modify_coma_state.After_checking.rename_subdirectory tcs old_subdir new_subdir  ;;
+let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
+" as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) ;;
+
+(* let bad2= Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;;  *)
+
+let fw_with_dep = cs2.Coma_state_t.frontier_with_unix_world ;;
+
+(* let bad3 = Fw_with_dependencies.reflect_latest_changes_in_github fw_with_dep (Some msg) ;; *)
+
+let fw_with_sd = fw_with_dep.Fw_with_dependencies_t.parent ;;
+
+(* let bad4 = Fw_with_small_details.reflect_latest_changes_in_github fw_with_sd (Some msg) ;; *)
+
+let fw_the_first = fw_with_sd.Fw_with_small_details_t.parent ;;
+
+(* let bad5 = File_watcher.reflect_latest_changes_in_github fw_the_first (Some msg) ;; *)
+
+
+let config = fw_the_first.File_watcher_t.configuration ;;
+let diff = fw_the_first.File_watcher_t.last_noticed_changes ;;
+
+(* let bad6 = Reflect_change_in_github.backup config diff (Some msg) ;; *)
+
+(* let bad7 = Reflect_change_in_github.Private.backup_with_message config diff msg ;; *)
+
+module Pri = Reflect_change_in_github.Private ;;
+
+let destination_dir = config.Fw_configuration_t.dir_for_backup ;;
+let (nongit_cmds,git_cmds) = Pri.commands_for_backup config diff ;;
+let s_destination=Dfa_root.connectable_to_subpath destination_dir ;;
+let act1 =Image.image Unix_command.uc nongit_cmds ;;
+let cwd=Sys.getcwd() ;;
+let final_cmds = 
+(
+    [Unix_command.cd s_destination]@   
+    git_cmds@   
+    [
+      "git commit -m \""^msg^"\""
+    ]@
+    [Unix_command.cd cwd]
+) ;;      
+let act2 () = Image.image Sys.command final_cmds ;;
+
+let fc k = 
+   let cmd = List.nth final_cmds (k-1) in 
+   (Sys.command cmd,cmd) ;;
+
+(*
+let backup_with_message config  diff msg=
+  let destination_dir = config.Fw_configuration_t.dir_for_backup in 
+  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
+  let s_destination=Dfa_root.connectable_to_subpath destination_dir in
+  let _=Image.image Unix_command.uc nongit_cmds in
+  let _=(
+  if config.Fw_configuration_t.gitpush_after_backup
+  then let cwd=Sys.getcwd() in
+       Image.image Unix_command.uc
+       (
+       [Unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git commit -m \""^msg^"\"";
+         "git push"
+       ]@
+       [Unix_command.cd cwd]
+       ) 
+  else let cwd=Sys.getcwd() in
+       Image.image Unix_command.uc
+       (
+       [Unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git commit -m \""^msg^"\""
+       ]@
+       [Unix_command.cd cwd]
+       ) 
+  ) in
+  ();;
+  *)
 
 (************************************************************************************************************************
 Snippet 50 : Miscellaneous tests on compilation management
