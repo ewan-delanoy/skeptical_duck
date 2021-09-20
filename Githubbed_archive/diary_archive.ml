@@ -1,7 +1,22 @@
 (************************************************************************************************************************
-Snippet 56 : 
+Snippet 57 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 56 : Replacing a long interval in a file with another
+************************************************************************************************************************)
+open Needed_values ;;
+
+let ap1 = Absolute_path.of_string "../Idaho/Compilation_management/coma_state.ml" ;;
+let ap1_text = Io.read_whole_file ap1 ;;
+let to_be_replaced = Lines_in_string.interval ap1_text 1 676 ;;
+
+let towards_complement = rf "Fads/pan.ml";;
+let replacement = Lines_in_string.interval towards_complement 9 240 ;;
+
+let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
 Snippet 55 : Long debugging session on the rename_module functionality (as in snippet 54), with
@@ -61,14 +76,6 @@ let (post_bad2,_) = Pri.rename_module_on_content_level bad2
 (************************************************************************************************************************
 Snippet 54 : Long debugging session on the rename_module functionality.
 ************************************************************************************************************************)
-open Needed_values ;;
-
-(*
-
-#use"Fads/painful_debugging.ml";;
-
-*)
-
 open Needed_values ;;
 
 let (case1,case2) = ("dfa_subdirectory","afd_sybdirectoru") ;;
