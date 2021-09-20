@@ -57,7 +57,7 @@ let all_acolytes_below=List.flatten separated_acolytes_below ;;
 let old_fw = Coma_state.frontier_with_unix_world tcs ;;
 let old_pal = Fw_with_dependencies.Private.parent old_fw;;
 let (bad1,_) = 
-    Fw_with_small_details.rename_module_on_filename_level_and_in_files old_pal
+    Fw_with_small_details.rename_module old_pal
      (old_nm,new_nm,all_acolytes_below) ;;
   
 module Pri  = Fw_with_small_details.Private ;;
@@ -616,7 +616,7 @@ let reflect_latest_changes_in_github = Private.univar Fw_with_small_details.refl
 let register_rootless_paths = Private.uniplump Fw_with_small_details.register_rootless_paths ;;
 let relocate_module_to = Private.univar Fw_with_small_details.relocate_module_to ;;
 let remove_files = Private.univar Fw_with_small_details.remove_files ;;
-let rename_module_on_filename_level_and_in_files = Private.uniplump Fw_with_small_details.rename_module_on_filename_level_and_in_files;;
+let rename_module_on_filename_level_and_in_files = Private.uniplump Fw_with_small_details.rename_module;;
 let rename_subdirectory_as = Private.univar Fw_with_small_details.rename_subdirectory_as;;
 *)
 let replace_string = Private.uniplump Fw_with_small_details.replace_string ;;
