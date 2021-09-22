@@ -2698,7 +2698,6 @@ let text1 = "\n\n\n"^(String.concat "\n" (Ennig.doyle write1 1 num_of_pages))^"\
  
 Io.overwrite_with ap1 text1;;
 
-
 let partial_texts = Ennig.doyle (fun j->
 let k =List.nth main_list (j-1) in   
 let sk = string_of_int k in 

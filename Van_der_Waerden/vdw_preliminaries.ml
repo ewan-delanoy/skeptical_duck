@@ -37,4 +37,34 @@ let naive_power_set soi =
   else Ordered.sort ointlist (Listennou.power_set soi) ;;  
       
 
-  
+  let obstructions_passing_through_point_above width x =
+    Ennig.doyle (fun t->[x-2*t;x-t]) 1 width ;;
+ 
+ let obstructions_passing_through_one_of_points_above 
+    (width,bound) soi =
+   let l = Set_of_integers.forget_order soi in  
+   let temp1 = List.flatten 
+     (Image.image 
+     (obstructions_passing_through_point_above width) l)  in 
+   List.filter (List.for_all(fun x->x<bound)) temp1  ;;
+
+ let obstructions_passing_through_two_points_above
+   (width,bound) soi = 
+   let l = Set_of_integers.forget_order soi in  
+   let temp1 = Option.filter_and_unpack (
+     fun (x,y)->
+       let z = 2*x -y in 
+       if (y-x<=width)&&(z<bound)
+       then Some z
+     else None  
+   ) (Uple.list_of_pairs l) in 
+   Ordered.sort oint temp1 ;;
+
+ let minimal_obstructions_corresponding_to_above 
+   (Udw_max_width_t.MW width) bound soi =
+   let part1 = obstructions_passing_through_one_of_points_above (width,bound) soi
+   and pre_part2 = obstructions_passing_through_two_points_above (width,bound) soi  in 
+   let part2 = Image.image (fun x->[x]) pre_part2 in 
+   let temp1 = Ordered.select_minimal_elements_for_inclusion oint (part1 @ part2) in 
+   Ordered.sort Total_ordering.cardinality_then_diameter temp1 ;;
+     
