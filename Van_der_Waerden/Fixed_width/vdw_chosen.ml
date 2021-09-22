@@ -20,3 +20,6 @@ let test_for_admissibility =
          
 let test_joinability = 
     Vdw_max_width.test_joinability max_width;;
+
+let minimal_obstructions =
+  Vdw_preliminaries.minimal_obstructions_corresponding_to_above max_width;;    
