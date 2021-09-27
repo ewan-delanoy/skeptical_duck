@@ -1,14 +1,6335 @@
 (************************************************************************************************************************
-Snippet 58 : 
+Snippet 73 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+(************************************************************************************************************************
+Snippet 72 : Musings on the Vand der Waerden problem, version 13 : add
+Current_partition_watcher.ugly_part and Marshall_plan.compute_from_scratch,
+oslo_compute 21 0 has no D or E component
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int|E of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let lmea = Vdw_chosen.lower_measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Data_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(E k) ->("E",k) 
+    |(Og(_,_))->raise(Data_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else 
+     if lbl = "E" then E k else   
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let is_ugly cv = match cv with 
+ (Og(_,_)) -> true |
+  _ -> let (lbl,k) = data_for_variable cv in 
+       (int_of_char(String.get lbl 0))>=68 ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0;4, E 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+module Expansion = struct
+
+let subst_by_in cvar replacement_for_cvar l=
+  let temp1 = List.flatten(Image.image (
+     fun pair ->
+      let (lamb2,cvar2) = pair in 
+      if cvar2=cvar 
+      then Image.image (
+          fun (lamb3,cvar3)->
+            (Ordered.merge oi lamb2 lamb3,cvar3)) replacement_for_cvar
+      else [pair]      
+  ) l) in
+  List.filter (fun (lamb4,cvar4)->is_adm lamb4) temp1 ;; 
+
+let origin n d =
+   let delt = mea(n)-mea(n-1) in   
+   List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+   [
+     [],(n-1,d-delt);
+     [n],(n-1,d+1-delt)
+   ];;   
+
+let allowed_substitution_by_in (n,d) expr = 
+   subst_by_in (n,d) (origin n d) expr;;
+
+let special1 n d =
+   let temp1 = origin n d in 
+   let temp2 = allowed_substitution_by_in (n-1,d) temp1 in 
+   let temp3 = allowed_substitution_by_in (n-2,d+1) temp2 in
+   temp3 ;;
+
+let special2 n d =
+   let temp1 = origin n d in 
+   let temp2 = allowed_substitution_by_in (n-1,d+1) temp1 in 
+   let temp3 = allowed_substitution_by_in (n-2,d+1) temp2 in
+   temp3 ;;
+     
+
+let current n d = 
+   if (n,d)=(18,1) then special1 n d else 
+   if (n,d)=(21,0) then special2 n d else    
+   origin n d ;;
+
+end ;;   
+
+let see = Expansion.current ;;
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (Expansion.current n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (Expansion.current n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let ni = Oslo.needed_intermediaries ;;
+
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+let decompose ((PW (_,_,ll)):t) cvar =
+     List.assoc cvar ll ;;
+
+let ugly_part ((PW (_,_,ll)):t) cvar =
+     let temp1 = List.assoc cvar ll in 
+     List.filter (fun (lamb,cv)->Colored.is_ugly cv) temp1 ;;     
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+   "E",[List.filter (fun x->(List.length x)=4) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+       (E 0),[[],E 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Expansion.current n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+let decompose cvar = Partition_watcher.decompose (!main) cvar;;
+let ugly_part cvar = Partition_watcher.ugly_part (!main) cvar;;
+
+end ;;  
+
+let deco = Current_partition_watcher.decompose ;;
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+let up = Current_partition_watcher.ugly_part ;;
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Expansion.current n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+let rec compute_affinities_then_oslo (n,d) =
+   let missing_affs = detect_missing_affinities n d in 
+   if missing_affs = []
+   then oslo_compute n d 
+   else let _ = Image.image (
+         fun (lamb,cv) -> Current_partition_watcher.partition lamb cv
+        ) missing_affs in 
+        compute_affinities_then_oslo (n,d) ;;
+
+let compute_from_scratch n d =
+    let temp1 = (Oslo.needed_intermediaries n d)@[n,d] in 
+    let _ = Image.image compute_affinities_then_oslo temp1 in 
+    Oslo.get n d;;
+
+end ;;   
+
+let wpc = Marshall_plan.write_partition_commands ;;
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+Oslo.add (15,4) (Colored_variable_assignment.get (E 0)) ;;
+
+
+
+Image.image (fun n->
+   Marshall_plan.compute_from_scratch n 0  
+)(Ennig.ennig 16 23) ;;
+
+(*
+let g1 = Oslo.needed_intermediaries 24 0;;
+
+let dcg i j = deco(Og(i,j));;
+let upp l=List.filter(fun (x,(i,j))->(up (Og(i,j)))<>[]) l;;
+
+let n0=21 and d0=0;;
+let h1 = Expansion.current n0 d0;;
+let h2 = Expansion.allowed_substitution_by_in (n0-1,d0+1) h1;;
+let h3 = Expansion.allowed_substitution_by_in (n0-2,d0+1) h2;;
+*)
+
 
 
 (************************************************************************************************************************
-Snippet 57 : Remove all modules in a directory
+Snippet 71 : Musings on the Vand der Waerden problem, version 12 : painfully long
+computation of oslo_compute 21 0
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int|E of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let lmea = Vdw_chosen.lower_measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(E k) ->("E",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else 
+     if lbl = "E" then E k else   
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0;4, E 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+module Expansion = struct
+
+let subst_by_in cvar replacement_for_cvar l=
+  let temp1 = List.flatten(Image.image (
+     fun pair ->
+      let (lamb2,cvar2) = pair in 
+      if cvar2=cvar 
+      then Image.image (
+          fun (lamb3,cvar3)->
+            (Ordered.merge oi lamb2 lamb3,cvar3)) replacement_for_cvar
+      else [pair]      
+  ) l) in
+  List.filter (fun (lamb4,cvar4)->is_adm lamb4) temp1 ;; 
+
+let origin n d =
+   let delt = mea(n)-mea(n-1) in   
+   List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+   [
+     [],(n-1,d-delt);
+     [n],(n-1,d+1-delt)
+   ];;   
+
+let allowed_substitution_by_in (n,d) expr = 
+   subst_by_in (n,d) (origin n d) expr;;
+
+let special1 n d =
+     let temp1 = origin n d in 
+     let temp2 = allowed_substitution_by_in (n-1,d) temp1 in 
+     let temp3 = allowed_substitution_by_in (n-2,d+1) temp2 in
+     temp3 ;;
+
+let current n d = 
+   if (n,d)=(18,1) then special1 n d else 
+   origin n d ;;
+
+end ;;   
+
+let see = Expansion.current ;;
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (Expansion.current n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (Expansion.current n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let ni = Oslo.needed_intermediaries ;;
+
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+let decompose ((PW (_,_,ll)):t) cvar =
+     List.assoc cvar ll ;;
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+   "E",[List.filter (fun x->(List.length x)=4) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+       (E 0),[[],E 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Expansion.current n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+let decompose cvar = Partition_watcher.decompose (!main) cvar;;
+
+end ;;  
+
+let deco = Current_partition_watcher.decompose ;;
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Expansion.current n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+end ;;   
+
+let wpc = Marshall_plan.write_partition_commands ;;
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+Oslo.add (15,4) (Colored_variable_assignment.get (E 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (B 6) ;;
+let passing = Current_partition_watcher.partition [18] (B 7) ;;
+let passing = Current_partition_watcher.partition [18] (B 8) ;;
+let passing = Current_partition_watcher.partition [18] (B 9) ;;
+let passing = Current_partition_watcher.partition [18] (B 10) ;;
+let passing = Current_partition_watcher.partition [18] (B 11) ;;
+let passing = Current_partition_watcher.partition [18] (B 12) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 2) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 4) ;;
+
+
+let passing = Current_partition_watcher.partition [17;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 8) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 11) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 12) ;;
+
+oslo_compute 18 1;;
+
+let passing = Current_partition_watcher.partition [19] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 8) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 8) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 9) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 9) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 11) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 11) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 12) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 13) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 15) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 15) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 16) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 15) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 17) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 18) ;;
+
+let passing = Current_partition_watcher.partition [17;19] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 18) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 19) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 20) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 19) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 20) ;;
+
+oslo_compute 19 0 ;;
+
+let passing = Current_partition_watcher.partition [19;20] (A 1) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 20) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (B 21) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (B 25) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 19) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 23) ;;
+
+oslo_compute 20 0 ;;
+
+(* Erasable part begins here *)
+
+let passing = Current_partition_watcher.partition [16] (D 0) ;;
+oslo_compute 16 2 ;;
+let passing = Current_partition_watcher.partition [16] (E 0) ;;
+oslo_compute 16 3 ;;
+
+let passing = Current_partition_watcher.partition [17] (C 5) ;;
+let passing = Current_partition_watcher.partition [17] (C 6) ;;
+let passing = Current_partition_watcher.partition [17] (C 12) ;;
+let passing = Current_partition_watcher.partition [17] (C 16) ;;
+let passing = Current_partition_watcher.partition [17] (C 18) ;;
+let passing = Current_partition_watcher.partition [17] (C 20) ;;
+let passing = Current_partition_watcher.partition [17] (C 23) ;;
+let passing = Current_partition_watcher.partition [17] (C 24) ;;
+let passing = Current_partition_watcher.partition [17] (C 25) ;;
+let passing = Current_partition_watcher.partition [17] (C 26) ;;
+let passing = Current_partition_watcher.partition [17] (C 27) ;;
+let passing = Current_partition_watcher.partition [17] (C 28) ;;
+let passing = Current_partition_watcher.partition [16;17] (D 1) ;;
+oslo_compute 17 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (D 2) ;;
+let passing = Current_partition_watcher.partition [17] (D 3) ;;
+let passing = Current_partition_watcher.partition [17] (D 4) ;;
+let passing = Current_partition_watcher.partition [16;17] (E 1) ;;
+oslo_compute 17 2 ;;
+
+let passing = Current_partition_watcher.partition [18] (C 5) ;;
+let passing = Current_partition_watcher.partition [18] (C 16) ;;
+let passing = Current_partition_watcher.partition [18] (C 18) ;;
+let passing = Current_partition_watcher.partition [18] (C 20) ;;
+let passing = Current_partition_watcher.partition [18] (C 23) ;;
+let passing = Current_partition_watcher.partition [18] (C 24) ;;
+let passing = Current_partition_watcher.partition [18] (C 25) ;;
+let passing = Current_partition_watcher.partition [18] (C 26) ;;
+let passing = Current_partition_watcher.partition [18] (C 27) ;;
+let passing = Current_partition_watcher.partition [18] (C 28) ;;
+let passing = Current_partition_watcher.partition [18] (C 29) ;;
+let passing = Current_partition_watcher.partition [18] (C 30) ;;
+let passing = Current_partition_watcher.partition [18] (C 31) ;;
+let passing = Current_partition_watcher.partition [18] (C 32) ;;
+let passing = Current_partition_watcher.partition [16;18] (D 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 5) ;;
+let passing = Current_partition_watcher.partition [16;18] (D 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 7) ;;
+let passing = Current_partition_watcher.partition [16;18] (D 8) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 9) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 10) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 13) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 14) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 15) ;;
+let passing = Current_partition_watcher.partition [17;18] (D 16) ;;
+oslo_compute 18 2 ;;
+
+
+let passing = Current_partition_watcher.partition [19] (B 7) ;;
+let passing = Current_partition_watcher.partition [19] (B 9) ;;
+let passing = Current_partition_watcher.partition [19] (B 14) ;;
+let passing = Current_partition_watcher.partition [19] (B 15) ;;
+let passing = Current_partition_watcher.partition [19] (B 17) ;;
+let passing = Current_partition_watcher.partition [19] (B 18) ;;
+let passing = Current_partition_watcher.partition [19] (B 19) ;;
+let passing = Current_partition_watcher.partition [19] (B 20) ;;
+let passing = Current_partition_watcher.partition [19] (B 21) ;;
+let passing = Current_partition_watcher.partition [19] (B 22) ;;
+let passing = Current_partition_watcher.partition [19] (B 23) ;;
+let passing = Current_partition_watcher.partition [19] (B 24) ;;
+let passing = Current_partition_watcher.partition [19] (B 25) ;;
+let passing = Current_partition_watcher.partition [19] (B 26) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 5) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 5) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 16) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 18) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 18) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 20) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 20) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 20) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 23) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 23) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 23) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 24) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 24) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 24) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 25) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 25) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 25) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 26) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 26) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 26) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 27) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 27) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 27) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 28) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 29) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 31) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 31) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 33) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 35) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 35) ;;
+let passing = Current_partition_watcher.partition [16;19] (C 36) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 37) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 38) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 41) ;;
+let passing = Current_partition_watcher.partition [17;19] (C 42) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 45) ;;
+let passing = Current_partition_watcher.partition [18;19] (C 46) ;;
+
+let passing = Current_partition_watcher.partition [16;17;19] (D 9) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 9) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 13) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 15) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 17) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (D 19) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 19) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (D 20) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (D 21) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (D 22) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 23) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (D 24) ;;
+
+oslo_compute 19 1 ;;
+
+let passing = Current_partition_watcher.partition [20] (A 1) ;;
+let passing = Current_partition_watcher.partition [20] (A 2) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 7) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 9) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 9) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 9) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 15) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 15) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 15) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 17) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 17) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 18) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 18) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 20) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 20) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 20) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 21) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 21) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 23) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 23) ;;
+let passing = Current_partition_watcher.partition [18;20] (B 24) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 25) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 25) ;;
+let passing = Current_partition_watcher.partition [16;20] (B 26) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 26) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 27) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 29) ;;
+let passing = Current_partition_watcher.partition [19;20] (B 29) ;;
+let passing = Current_partition_watcher.partition [17;20] (B 30) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 16) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 20) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 20) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 20) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 23) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 23) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 23) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 23) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 24) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 24) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 24) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 25) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 25) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 26) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 27) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 27) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 27) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 27) ;;
+let passing = Current_partition_watcher.partition [16;17;20] (C 28) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 37) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 37) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 38) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 39) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 41) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 45) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (C 47) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (D 22) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (D 23) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (D 31) ;;
+
+let passing = Current_partition_watcher.partition [17;18;20] (C 49) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 49) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (C 50) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 50) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 51) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (C 52) ;;
+
+oslo_compute 20 1 ;;
+
+let passing = Current_partition_watcher.partition [19;21] (A 1) ;;
+let passing = Current_partition_watcher.partition [20;21] (A 1) ;;
+let passing = Current_partition_watcher.partition [20;21] (A 2) ;;
+let passing = Current_partition_watcher.partition [16;18;21] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;20;21] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18;21] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;20;21] (B 7) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;18;21] (B 9) ;;
+let passing = Current_partition_watcher.partition [16;20;21] (B 9) ;;
+let passing = Current_partition_watcher.partition [18;19;21] (B 9) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 9) ;;
+let passing = Current_partition_watcher.partition [16;20;21] (B 15) ;;
+let passing = Current_partition_watcher.partition [18;19;21] (B 15) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 15) ;;
+let passing = Current_partition_watcher.partition [16;19;21] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;20;21] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;20;21] (B 18) ;;
+let passing = Current_partition_watcher.partition [17;18;21] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;20;21] (B 19) ;;
+let passing = Current_partition_watcher.partition [18;19;21] (B 19) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;18;21] (B 20) ;;
+let passing = Current_partition_watcher.partition [18;19;21] (B 20) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 20) ;;
+let passing = Current_partition_watcher.partition [18;19;21] (B 23) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 23) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 24) ;;
+let passing = Current_partition_watcher.partition [16;19;21] (B 25) ;;
+let passing = Current_partition_watcher.partition [16;20;21] (B 25) ;;
+let passing = Current_partition_watcher.partition [17;20;21] (B 30) ;;
+let passing = Current_partition_watcher.partition [16;18;19;21] (C 25) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 25) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 26) ;;
+let passing = Current_partition_watcher.partition [16;17;20;21] (C 27) ;;
+let passing = Current_partition_watcher.partition [16;18;19;21] (C 27) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 27) ;;
+let passing = Current_partition_watcher.partition [16;18;19;21] (C 28) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 28) ;;
+let passing = Current_partition_watcher.partition [16;17;20;21] (C 49) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 49) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 50) ;;
+let passing = Current_partition_watcher.partition [17;18;20;21] (C 51) ;;
+
+let passing = Current_partition_watcher.partition [18;20;21] (B 31) ;;
+let passing = Current_partition_watcher.partition [18;20;21] (B 32) ;;
+
+oslo_compute 21 0 ;;
+
+(* Erasable part ends here *)
+
+
+
+(*
+let z1 = Marshall_plan.write_partition_commands 18 1 ;;
+
+let is_a_d =function (D k)->true |_->false ;;
+let z1 = (!(Current_partition_watcher.main)) ;;
+let (PW(_,_,z2)) = z1 ;;
+let z3 = List.filter (fun (x,y)->
+   List.exists (fun (a,b)->is_a_d b) y) z2 ;;
+*)
+
+(************************************************************************************************************************
+Snippet 70 : Musings on the Van der Waerden problem, version 11 : add the Expansion
+submodule and use it to avoid the D variant in the computation of
+oslo_compute 18 1, and E variant and compute up to oslo_compute 20 0
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int|E of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let lmea = Vdw_chosen.lower_measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(E k) ->("E",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else 
+     if lbl = "E" then E k else   
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0;4, E 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+module Expansion = struct
+
+let subst_by_in cvar replacement_for_cvar l=
+  let temp1 = List.flatten(Image.image (
+     fun pair ->
+      let (lamb2,cvar2) = pair in 
+      if cvar2=cvar 
+      then Image.image (
+          fun (lamb3,cvar3)->
+            (Ordered.merge oi lamb2 lamb3,cvar3)) replacement_for_cvar
+      else [pair]      
+  ) l) in
+  List.filter (fun (lamb4,cvar4)->is_adm lamb4) temp1 ;; 
+
+let origin n d =
+   let delt = mea(n)-mea(n-1) in   
+   List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+   [
+     [],(n-1,d-delt);
+     [n],(n-1,d+1-delt)
+   ];;   
+
+let allowed_substitution_by_in (n,d) expr = 
+   subst_by_in (n,d) (origin n d) expr;;
+
+let special1 n d =
+     let temp1 = origin n d in 
+     let temp2 = allowed_substitution_by_in (n-1,d) temp1 in 
+     let temp3 = allowed_substitution_by_in (n-2,d+1) temp2 in
+     temp3 ;;
+
+let current n d = 
+   if (n,d)=(18,1) then special1 n d else 
+   origin n d ;;
+
+end ;;   
+
+let see = Expansion.current ;;
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (Expansion.current n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (Expansion.current n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let ni = Oslo.needed_intermediaries ;;
+
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+let decompose ((PW (_,_,ll)):t) cvar =
+     List.assoc cvar ll ;;
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+   "E",[List.filter (fun x->(List.length x)=4) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+       (E 0),[[],E 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Expansion.current n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+let decompose cvar = Partition_watcher.decompose (!main) cvar;;
+
+end ;;  
+
+let deco = Current_partition_watcher.decompose ;;
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Expansion.current n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+end ;;   
+
+let wpc = Marshall_plan.write_partition_commands ;;
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+Oslo.add (15,4) (Colored_variable_assignment.get (E 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (B 6) ;;
+let passing = Current_partition_watcher.partition [18] (B 7) ;;
+let passing = Current_partition_watcher.partition [18] (B 8) ;;
+let passing = Current_partition_watcher.partition [18] (B 9) ;;
+let passing = Current_partition_watcher.partition [18] (B 10) ;;
+let passing = Current_partition_watcher.partition [18] (B 11) ;;
+let passing = Current_partition_watcher.partition [18] (B 12) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 2) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 4) ;;
+
+
+let passing = Current_partition_watcher.partition [17;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 8) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 11) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 12) ;;
+
+oslo_compute 18 1;;
+
+let passing = Current_partition_watcher.partition [19] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 8) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 8) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 9) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 9) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 11) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 11) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 12) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 13) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 15) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 15) ;;
+let passing = Current_partition_watcher.partition [16;19] (B 16) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 15) ;;
+let passing = Current_partition_watcher.partition [16;17;19] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 17) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 18) ;;
+
+let passing = Current_partition_watcher.partition [17;19] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;19] (B 18) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 19) ;;
+let passing = Current_partition_watcher.partition [18;19] (B 20) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 19) ;;
+let passing = Current_partition_watcher.partition [16;18;19] (C 20) ;;
+
+oslo_compute 19 0 ;;
+
+let passing = Current_partition_watcher.partition [19;20] (A 1) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 7) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (B 17) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (B 19) ;;
+let passing = Current_partition_watcher.partition [17;18;20] (B 20) ;;
+let passing = Current_partition_watcher.partition [17;19;20] (B 21) ;;
+let passing = Current_partition_watcher.partition [16;19;20] (B 25) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 16) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 19) ;;
+let passing = Current_partition_watcher.partition [16;17;19;20] (C 23) ;;
+
+oslo_compute 20 0 ;;
+
+(* Erasable part begins here *)
+
+oslo_compute 16 2 ;;
+
+(* Erasable part ends here *)
+
+(*
+let z1 = Marshall_plan.write_partition_commands 18 1 ;;
+
+let is_a_d =function (D k)->true |_->false ;;
+let z1 = (!(Current_partition_watcher.main)) ;;
+let (PW(_,_,z2)) = z1 ;;
+let z3 = List.filter (fun (x,y)->
+   List.exists (fun (a,b)->is_a_d b) y) z2 ;;
+*)
+
+(************************************************************************************************************************
+Snippet 69 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
+colored_variable type, and add Partition_watcher.decompose and 
+Current_partition_watcher.decompose
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let lmea = Vdw_chosen.lower_measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else  
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+let decompose ((PW (_,_,ll)):t) cvar =
+     List.assoc cvar ll ;;
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+let decompose = Partition_watcher.decompose (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Oslo.prepare_computation n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+end ;;   
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (D 0) ;;
+oslo_compute 16 2 ;;
+
+
+let passing = Current_partition_watcher.partition [17] (C 2) ;;
+let passing = Current_partition_watcher.partition [17] (C 3) ;;
+let passing = Current_partition_watcher.partition [17] (C 4) ;;
+let passing = Current_partition_watcher.partition [16;17] (D 1) ;;
+oslo_compute 17 1 ;;
+
+let passing = Current_partition_watcher.partition [18] (B 6) ;;
+let passing = Current_partition_watcher.partition [18] (B 7) ;;
+let passing = Current_partition_watcher.partition [18] (B 8) ;;
+let passing = Current_partition_watcher.partition [18] (B 9) ;;
+let passing = Current_partition_watcher.partition [18] (B 10) ;;
+let passing = Current_partition_watcher.partition [18] (B 11) ;;
+let passing = Current_partition_watcher.partition [18] (B 12) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 5) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 8) ;;
+
+let passing = Current_partition_watcher.partition [17;18] (C 9) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 10) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 15) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 16) ;;
+
+oslo_compute 18 1 ;;
+
+let z1 = Marshall_plan.write_partition_commands 18 1 ;;
+
+(************************************************************************************************************************
+Snippet 68 : Musings on the Van der Waerden problem, version 9 : add lmea and
+remove D variant in the definition of the colored_variable type
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let lmea = Vdw_chosen.lower_measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Oslo.prepare_computation n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+end ;;   
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let z1 = Oslo.needed_intermediaries 19 0 ;;
+let z2 = Marshall_plan.detect_missing_affinities 19 0 ;;
+
+(************************************************************************************************************************
+Snippet 67 : Musings on the Van der Waerden problem, version 8 : adding
+Marshall_plan.write_partition_commands
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let intlist_to_string lamb =
+   "["^(String.concat ";" (Image.image string_of_int lamb))^"]" ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else  
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let to_ocaml_readable_string cv= match cv with  
+   (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+   | _ -> let (lbl,k) = data_for_variable cv in 
+          lbl^" "^(string_of_int k) ;; 
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   (intlist_to_string lamb)^","^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Oslo.prepare_computation n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+
+let  write_partition_commands_from_list l=
+  let temp1 = Image.image (fun (lamb,cv)->
+   "let passing = Current_partition_watcher.partition "^
+   (intlist_to_string lamb)^" ("^(Colored.to_ocaml_readable_string cv)^") ;;"
+   )  l in 
+  "\n\n\n" ^ (String.concat "\n" temp1) ^ "\n\n\n" ;;   
+  
+let write_partition_commands n d =
+    let missing_affs = detect_missing_affinities n d in 
+    print_string(write_partition_commands_from_list missing_affs) ;;  
+
+end ;;   
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (D 0) ;;
+oslo_compute 16 2 ;;
+
+
+let passing = Current_partition_watcher.partition [17] (C 2) ;;
+let passing = Current_partition_watcher.partition [17] (C 3) ;;
+let passing = Current_partition_watcher.partition [17] (C 4) ;;
+let passing = Current_partition_watcher.partition [16;17] (D 1) ;;
+oslo_compute 17 1 ;;
+
+let passing = Current_partition_watcher.partition [18] (B 6) ;;
+let passing = Current_partition_watcher.partition [18] (B 7) ;;
+let passing = Current_partition_watcher.partition [18] (B 8) ;;
+let passing = Current_partition_watcher.partition [18] (B 9) ;;
+let passing = Current_partition_watcher.partition [18] (B 10) ;;
+let passing = Current_partition_watcher.partition [18] (B 11) ;;
+let passing = Current_partition_watcher.partition [18] (B 12) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 3) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 5) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 7) ;;
+let passing = Current_partition_watcher.partition [16;18] (C 8) ;;
+
+let passing = Current_partition_watcher.partition [17;18] (C 9) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 10) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 15) ;;
+let passing = Current_partition_watcher.partition [17;18] (C 16) ;;
+
+oslo_compute 18 1 ;;
+let z1 = Marshall_plan.write_partition_commands 18 1;;
+
+
+(************************************************************************************************************************
+Snippet 66 : Musings on the Van der Waerden problem, version 7 : adding 
+Colored.order{_for_pairs} and using it in Affinity.analyse_combination 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+type colored_variable = 
+   A of int |B of int|C of int|D of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else  
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+let order = ((fun cv1 cv2->
+  let (lbl1,k1) = data_for_variable cv1 
+  and (lbl2,k2) = data_for_variable cv2 in  
+  let trial1 = Total_ordering.standard lbl1 lbl2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.standard k1 k2 
+) : colored_variable Total_ordering_t.t) ;;
+
+let order_for_pairs = ((fun (lamb1,cv1) (lamb2,cv2)->
+   let trial1 = order cv1 cv2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    (Total_ordering.silex_compare Total_ordering.standard ) lamb1 lamb2 
+ ) : (int list * colored_variable) Total_ordering_t.t) ;;
+ 
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (Ordered.sort Colored.order_for_pairs bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Oslo.prepare_computation n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+   
+end ;;   
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (D 0) ;;
+oslo_compute 16 2 ;;
+
+
+let passing = Current_partition_watcher.partition [17] (C 2) ;;
+let passing = Current_partition_watcher.partition [17] (C 3) ;;
+let passing = Current_partition_watcher.partition [17] (C 4) ;;
+let passing = Current_partition_watcher.partition [16;17] (D 1) ;;
+oslo_compute 17 1 ;;
+
+oslo_compute 18 1 ;;
+let z1 = Marshall_plan.detect_missing_affinities 18 1;;
+
+(************************************************************************************************************************
+Snippet 65 : Musings on the Van der Waerden problem, version 6 : adding
+Marshall_plan.detect_missing_affinities
+************************************************************************************************************************)
+open Needed_values ;;
+type colored_variable = 
+   A of int |B of int|C of int|D of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) |(D k) ->("D",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     if lbl = "D" then D k else  
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0;3, D 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+end ;;  
+
+module Affinity = struct
+
+   let shadow (Aff l) cvar = 
+      Option.filter_and_unpack (
+         fun ((selector,cvar2),is_compatible) ->
+           if cvar2 = cvar 
+           then Some(selector,is_compatible)   
+           else None
+      ) l;;
+  
+  let expand_using_partition aff parti  =
+     let (Aff(old_affinities)) = aff 
+     and ((selector,partitioned),(part1,part2)) = parti in
+     let temp1 = shadow aff partitioned in 
+     let temp2 = List.flatten(Image.image (
+        fun (selector2,is_compatible) ->
+           [((selector2,part1),is_compatible);
+            ((selector2,part2),is_compatible)]     
+     ) temp1) in
+     let new_affinities = old_affinities @ 
+         [((selector,part1),true);
+         ((selector,part2),false);]@temp2  in 
+     Aff(new_affinities) ;;
+  
+  let insert affty  (Aff old_affinities)  =
+     if List.mem affty old_affinities 
+     then Aff old_affinities
+     else Aff(affty :: old_affinities) ;;
+  
+  let analyse_combination (Aff affinities) combination =
+     let temp0 = List.filter (
+       fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+     ) combination in 
+     let temp1 = Image.image (fun 
+        pair -> 
+         let res = (
+          if fst pair = []
+          then Some true
+          else List.assoc_opt  pair affinities 
+         ) in
+         (pair,res)
+     ) temp0 in 
+     let filterer = (fun criterion ->
+        Option.filter_and_unpack 
+       (fun (pair,opt)->
+         if opt=criterion then Some pair else None) temp1
+     ) in 
+     let bad_ones = filterer None in 
+     let checked_version = filterer (Some true) in 
+     (bad_ones,checked_version);;
+   
+  
+  
+end ;;   
+  
+
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+         ((Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None)
+         && (nn >= wall_position)   
+   ) temp1 ;;      
+
+exception Pusher_for_needed_intermediaries_exn ;;   
+
+let pusher_for_needed_intermediaries (treated,to_be_treated) =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   match (List.rev to_be_treated) with 
+     [] -> raise (Pusher_for_needed_intermediaries_exn) 
+    |pair :: others -> 
+      let new_ones = Ordered.sort oh (direct_descendants pair) in 
+   (Ordered.insert oh pair treated,
+            Ordered.merge oh new_ones others) ;;  
+
+let needed_intermediaries n d = 
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_step = pusher_for_needed_intermediaries (treated,to_be_treated) in 
+         tempf(new_step) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+   "D",[List.filter (fun x->(List.length x)=5) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+       (D 0),[[],D 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+module Marshall_plan = struct 
+
+let detect_missing_affinities n d=         
+   let skeleton = Image.image (
+     fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+   ) (Oslo.prepare_computation n d) in 
+   let old_state = (!(Current_partition_watcher.main)) in 
+   let (PW(affinities,_,ll)) = old_state in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+      let (lamb,cvar) = old_pair in 
+      match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+       (Some expansion) -> Image.image (fun
+        (lamb2,cvar2)-> 
+        (Ordered.merge oi lamb lamb2,cvar2)) expansion
+      |None -> [old_pair]
+      ) skeleton) in 
+      fst(Affinity.analyse_combination affinities combination2)  
+    ;;  
+   
+end ;;   
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+Oslo.add (15,3) (Colored_variable_assignment.get (D 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (D 0) ;;
+oslo_compute 16 2 ;;
+
+
+let passing = Current_partition_watcher.partition [17] (C 2) ;;
+let passing = Current_partition_watcher.partition [17] (C 3) ;;
+let passing = Current_partition_watcher.partition [17] (C 4) ;;
+let passing = Current_partition_watcher.partition [16;17] (D 1) ;;
+oslo_compute 17 1 ;;
+
+oslo_compute 18 1 ;;
+let z1 = Marshall_plan.detect_missing_affinities 18 1;;
+
+
+(************************************************************************************************************************
+Snippet 64 : Musings on the Van der Waerden problem, version 5 : adding 
+Oslo.needed_intermediaries, and display partitions as they are made
+
+************************************************************************************************************************)
+open Needed_values ;;
+
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+module Affinity = struct
+
+ let shadow (Aff l) cvar = 
+    Option.filter_and_unpack (
+       fun ((selector,cvar2),is_compatible) ->
+         if cvar2 = cvar 
+         then Some(selector,is_compatible)   
+         else None
+    ) l;;
+
+let expand_using_partition aff parti  =
+   let (Aff(old_affinities)) = aff 
+   and ((selector,partitioned),(part1,part2)) = parti in
+   let temp1 = shadow aff partitioned in 
+   let temp2 = List.flatten(Image.image (
+      fun (selector2,is_compatible) ->
+         [((selector2,part1),is_compatible);
+          ((selector2,part2),is_compatible)]     
+   ) temp1) in
+   let new_affinities = old_affinities @ 
+       [((selector,part1),true);
+       ((selector,part2),false);]@temp2  in 
+   Aff(new_affinities) ;;
+
+let insert affty  (Aff old_affinities)  =
+   if List.mem affty old_affinities 
+   then Aff old_affinities
+   else Aff(affty :: old_affinities) ;;
+
+let analyse_combination (Aff affinities) combination =
+   let temp0 = List.filter (
+     fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+   ) combination in 
+   let temp1 = Image.image (fun 
+      pair -> 
+       let res = (
+        if fst pair = []
+        then Some true
+        else List.assoc_opt  pair affinities 
+       ) in
+       (pair,res)
+   ) temp0 in 
+   let filterer = (fun criterion ->
+      Option.filter_and_unpack 
+     (fun (pair,opt)->
+       if opt=criterion then Some pair else None) temp1
+   ) in 
+   let bad_ones = filterer None in 
+   let checked_version = filterer (Some true) in 
+   (bad_ones,checked_version);;
+ 
+
+
+end ;;   
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+end ;;  
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+
+let direct_descendants (n,d) =
+   let temp1 = Image.image snd (prepare_computation n d) in 
+   List.filter (fun (nn,dd)->
+            (Hashtbl.find_opt hashtbl_for_oslo (nn,dd)) = None   
+   ) temp1 ;;      
+      
+let needed_intermediaries n d =
+   let oh = Total_ordering.standard2 in (* oh is for "order here" *)
+   let rec tempf = (fun (treated,to_be_treated)->
+      match (List.rev to_be_treated) with 
+       [] -> treated 
+      |pair :: others -> 
+         let new_ones = Ordered.sort oh (direct_descendants pair) in 
+         tempf(Ordered.insert oh pair treated,
+               Ordered.merge oh new_ones others) 
+   ) in 
+   tempf([],direct_descendants (n,d) ) ;;      
+
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+     
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+let explain_partition (selector,cv,a,b,opt_cvs) =
+   let s_selector = "["^(String.concat ";" (Image.image string_of_int selector))^"]" in  
+   let beginning_of_msg = "\n\n"^(Colored.to_string cv)^" "
+   and end_of_msg = (
+      if a=[] then "is uniformly incompatible with "^s_selector else  
+      if b=[] then "is uniformly compatible with "^s_selector else   
+      let (cv_i,cv_j) = Option.unpack opt_cvs in       
+      " splits as "^(Colored.to_string cv_i)
+      ^" + "^(Colored.to_string cv_j)) in 
+   let msg = beginning_of_msg ^ end_of_msg in 
+   (print_string msg ;flush stdout) ;;             
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let _ = explain_partition (selector,cv,a,b,opt_cvs) in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+let passing = Current_partition_watcher.partition [18] (A 0) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 3) ;;
+let passing = Current_partition_watcher.partition [16;18] (B 4) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 5) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 7) ;;
+let passing = Current_partition_watcher.partition [17;18] (B 8) ;;
+
+oslo_compute 18 0 ;;
+
+
+(************************************************************************************************************************
+Snippet 63 : Musings on the Van der Waerden problem, version 4 : adding 
+the Affinity submodule and make each part in a partition inherit the affinities
+of the whole
+************************************************************************************************************************)
+open Needed_values ;;
+
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;   
+type list_of_affinities = Aff of ((int list * colored_variable) * bool)  list ;;    
+type partition_watcher = 
+   PW of 
+   list_of_affinities *
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+module Affinity = struct
+
+ let shadow (Aff l) cvar = 
+    Option.filter_and_unpack (
+       fun ((selector,cvar2),is_compatible) ->
+         if cvar2 = cvar 
+         then Some(selector,is_compatible)   
+         else None
+    ) l;;
+
+let expand_using_partition aff parti  =
+   let (Aff(old_affinities)) = aff 
+   and ((selector,partitioned),(part1,part2)) = parti in
+   let temp1 = shadow aff partitioned in 
+   let temp2 = List.flatten(Image.image (
+      fun (selector2,is_compatible) ->
+         [((selector2,part1),is_compatible);
+          ((selector2,part2),is_compatible)]     
+   ) temp1) in
+   let new_affinities = old_affinities @ 
+       [((selector,part1),true);
+       ((selector,part2),false);]@temp2  in 
+   Aff(new_affinities) ;;
+
+let insert affty  (Aff old_affinities)  =
+   if List.mem affty old_affinities 
+   then Aff old_affinities
+   else Aff(affty :: old_affinities) ;;
+
+let analyse_combination (Aff affinities) combination =
+   let temp0 = List.filter (
+     fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+   ) combination in 
+   let temp1 = Image.image (fun 
+      pair -> 
+       let res = (
+        if fst pair = []
+        then Some true
+        else List.assoc_opt  pair affinities 
+       ) in
+       (pair,res)
+   ) temp0 in 
+   let filterer = (fun criterion ->
+      Option.filter_and_unpack 
+     (fun (pair,opt)->
+       if opt=criterion then Some pair else None) temp1
+   ) in 
+   let bad_ones = filterer None in 
+   let checked_version = filterer (Some true) in 
+   (bad_ones,checked_version);;
+ 
+
+
+end ;;   
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+end ;;  
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let new_affinities =  Affinity.expand_using_partition old_affinities parti
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let insert_affinity (PW(old_affinities,old_parties,ll)) affty  =
+   PW(Affinity.insert affty old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let (bad_ones,checked_version) = Affinity.analyse_combination affinities combination in 
+  if bad_ones <> []
+  then raise(Missing_affinities bad_ones)
+  else checked_version;;
+
+     
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW(Aff[],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+   
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.insert_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+
+oslo_compute 17 0 ;;
+
+
+
+
+
+(************************************************************************************************************************
+Snippet 62 : Musings on the Van der Waerden problem, version 3 : adding
+affinities and memorize each partition made in the partition watcher
+************************************************************************************************************************)
+open Needed_values ;;
+
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;    
+type partition_watcher = 
+   PW of 
+   (((int list * colored_variable) * bool)  list)*
+   (((int list * colored_variable) * (colored_variable * colored_variable)) list) *
+   ((colored_variable * (int list * colored_variable) list) list) ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;; 
+let mea = Vdw_chosen.measure ;;
+let is_adm = Vdw_chosen.test_for_admissibility ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+end ;;  
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+      
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  ((selector,partitioned),(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition 
+   (PW(old_affinities,old_parties,ll):t) parti  =
+   let ((selector,partitioned),(part1,part2)) = parti in
+   let new_affinities = old_affinities @ 
+       [((selector,part1),true);
+       ((selector,part2),false);] 
+   and new_parties = old_parties @ [parti]   in 
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_affinities,new_parties,new_ll):>t) ;;
+
+let expand_using_affinity pw affty  =
+   let (PW(old_affinities,old_parties,ll)) = pw in 
+   if List.mem affty old_affinities 
+   then pw 
+   else PW(affty :: old_affinities,old_parties,ll) ;;        
+    
+
+exception Missing_affinities of ( (int list) * colored_variable) list;;   
+
+let check_combination_using_affinities combination (PW(affinities,_,_):t)=
+  let temp0 = List.filter (
+    fun (lamb,_)->Vdw_chosen.test_for_admissibility lamb
+  ) combination in 
+  let temp1 = Image.image (fun 
+     pair -> 
+      let res = (
+       if fst pair = []
+       then Some true
+       else List.assoc_opt  pair affinities 
+      ) in
+      (pair,res)
+  ) temp0 in 
+  let temp2 = List.filter (fun (pair,opt)->opt=None) temp1 in 
+  if temp2 <> []
+  then raise(Missing_affinities(Image.image fst temp2))
+  else 
+  Option.filter_and_unpack 
+  (fun (pair,opt)->if opt=Some true 
+                   then Some pair 
+                   else None 
+   ) temp1 ;;
+
+     
+
+let expand_using_t combination (pw:t) =
+   let (PW(_,_,ll)) = pw in 
+   let ref_for_unknowns = ref [] in 
+   let combination2 = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in
+   let new_combination = check_combination_using_affinities combination2  pw in
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(affinities,parties,ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(affinities,parties,ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(affinities,parties,List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW (_,_,ll)):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = List.partition (Vdw_chosen.test_joinability selector)  old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    if (a=[])||(b=[])
+    then (a,b,None)  
+    else
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (a,b,Some(Colored.variable_from_label lbl i,
+              Colored.variable_from_label lbl j)) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW([],[],[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+])) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+   
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (a,b,opt_cvs) = Colored_variable_assignment.partition selector cv in 
+    let new_state = (
+    match opt_cvs with 
+    None -> 
+      let affty=((selector,cv),b=[]) in 
+      Partition_watcher.expand_using_affinity old_state affty
+    |Some(cv_i,cv_j) -> 
+        Partition_watcher.expand_using_partition 
+        old_state ((selector,cv),(cv_i,cv_j)) 
+    ) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+oslo_compute 17 0 ;;
+
+
+
+
+
+(************************************************************************************************************************
+Snippet 61 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
+************************************************************************************************************************)
+open Needed_values ;;
+
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;    
+type partition_watcher = 
+   PW of (colored_variable * (int list * colored_variable) list) list ;;   
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;;
+let mea = Vdw_chosen.measure ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+  (Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+  
+
+module Colored = struct 
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+    (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+    |(Og(_,_))->raise(Label_for_variable_exn) ;;
+  
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+     if lbl = "A" then A k else 
+     if lbl = "B" then B k else  
+     if lbl = "C" then C k else 
+     raise(Variable_from_label_exn) ;;  
+
+let is_an_og = function (Og(_,_)) -> true | _ -> false ;;
+
+let usual_rewriting cv= match cv with  
+ (Og(n,d)) ->
+     if n <> wall_position then cv else 
+     (match List.assoc_opt d [0,A 0;1, B 0;2, C 0] with 
+           (Some cv2) -> cv2 
+           | None -> cv)  
+  | _ ->cv ;;
+
+let to_string cv= match cv with  
+  (Og(n,d)) -> "Og("^(string_of_int n)^","^(string_of_int d)^")" 
+  | _ -> let (lbl,k) = data_for_variable cv in 
+         lbl^(string_of_int k) ;;  
+
+end ;;  
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+module Partition_watcher = struct 
+
+type t = partition_watcher ;; 
+
+let expand_using_partition_in_list 
+  (partitioned,(part1,part2)) l =
+  List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    if cvar = partitioned 
+    then [lamb,part1;lamb,part2]
+    else [old_pair]
+  ) l);;
+
+let expand_using_partition (PW(ll):t) parti  =
+   let new_ll = Image.image (fun (x,y)->
+       (x,expand_using_partition_in_list parti y)
+   ) ll in 
+   (PW(new_ll):>t) ;;
+
+let expand_using_t combination (PW(ll):t)   =
+   let ref_for_unknowns = ref [] in 
+   let new_combination = List.flatten(Image.image (fun old_pair->
+    let (lamb,cvar) = old_pair in 
+    match List.assoc_opt (Colored.usual_rewriting cvar) ll with 
+     (Some expansion) -> Image.image (fun
+      (lamb2,cvar2)-> 
+      (Ordered.merge oi lamb lamb2,cvar2)) expansion
+    |None -> let _ = (ref_for_unknowns:=cvar::(!ref_for_unknowns)) in 
+             [old_pair]
+    ) combination) in 
+   (new_combination,!ref_for_unknowns) ;;
+
+
+let force_insert_in new_pair (PW(ll):t) =
+   if Colored.is_an_og (fst new_pair) 
+   then (PW(ll@[new_pair]):>t)
+   else  
+   let (rev_before,opt_og,incomplete_after) = 
+     Three_parts.select_center_element_and_reverse_left
+      (fun (expanded_one,_) -> 
+        Colored.is_an_og expanded_one
+      ) ll in 
+   let full_after = (match opt_og with 
+      (Some og_elt) -> og_elt :: incomplete_after 
+      | None -> incomplete_after 
+   ) in
+   (PW(List.rev_append rev_before (new_pair :: full_after)):>t);; 
+
+exception Insert_carefully_exn of colored_variable list ;;
+
+let insert_carefully (x,old_expansion_for_x) pw =
+   let (new_expansion_for_x,unknowns) = 
+     expand_using_t old_expansion_for_x pw in 
+   if unknowns <> []   
+   then raise(Insert_carefully_exn(unknowns))
+   else force_insert_in (x,new_expansion_for_x) pw ;; 
+
+let subitem_to_string (lamb,cv) =
+   "["^(String.concat ";" (Image.image string_of_int lamb))
+   ^"],"^(Colored.to_string cv);;
+
+let pw_list_to_string expansion =
+   "["^(String.concat ";" (Image.image subitem_to_string expansion))^"]";;
+
+let item_to_string (expanded_one,expansion) = 
+   (String.make 3 ' ')^"("^
+    (Colored.to_string expanded_one)^","^(pw_list_to_string expansion)^")" ;;
+
+let print ((PW ll):t) = 
+   let temp1 = String.concat "\n" (Image.image item_to_string ll) in 
+   let temp2 = "\n\n\n[\n" ^ temp1 ^ "\n]\n\n\n" in 
+   print_string temp2 ;;
+
+
+end ;;  
+
+
+module Colored_variable_assignment = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = Colored.data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = nonempty_partition selector old_val 
+    and (lbl,_) = Colored.data_for_variable colored_var in 
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (Colored.variable_from_label lbl i,
+     Colored.variable_from_label lbl j,a,b) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+module Current_partition_watcher = struct 
+
+let main = ref (PW[
+       (A 0),[[],A 0];
+       (B 0),[[],B 0];
+       (C 0),[[],C 0];
+]) ;;
+
+let set_and_show new_state = (
+  main := new_state ;
+  Partition_watcher.print new_state 
+) ;;
+
+
+let partition selector cv =
+    let old_state = (!main) in 
+    let (cv_i,cv_j,a,b) = Colored_variable_assignment.partition selector cv in 
+    let new_state = Partition_watcher.expand_using_partition 
+        old_state (cv,(cv_i,cv_j)) in 
+    let _ = set_and_show new_state in 
+    (a,b) ;;
+        
+let oslo_compute n d=         
+    let res = Oslo.compute n d in 
+    let skeleton = Image.image (
+      fun (lamb,(nn,dd))->(lamb,Og(nn,dd))
+    ) (Oslo.prepare_computation n d) in 
+    let old_state = (!main) in 
+    let new_state = Partition_watcher.insert_carefully 
+       (Og(n,d),skeleton) old_state in 
+    let _ = set_and_show new_state in   
+    res ;; 
+
+let print () = Partition_watcher.print (!main) ;;
+
+end ;;  
+
+let oslo_compute = Current_partition_watcher.oslo_compute ;;
+
+
+Oslo.add (15,0) (Colored_variable_assignment.get (A 0)) ;;
+Oslo.add (15,1) (Colored_variable_assignment.get (B 0)) ;;
+Oslo.add (15,2) (Colored_variable_assignment.get (C 0)) ;;
+
+let passing = Current_partition_watcher.partition [16] (B 0) ;;
+oslo_compute 16 0 ;;
+
+let passing = Current_partition_watcher.partition [16] (C 0) ;;
+oslo_compute 16 1 ;;
+
+
+
+let passing = Current_partition_watcher.partition [17] (B 1) ;;
+let passing = Current_partition_watcher.partition [17] (B 2) ;;
+let passing = Current_partition_watcher.partition [16;17] (C 1) ;;
+oslo_compute 17 0 ;;
+
+
+
+
+(************************************************************************************************************************
+Snippet 60 : Musings on the Van der Waerden problem, version 2 : adding colored variables
+************************************************************************************************************************)
+open Needed_values ;;
+
+type colored_variable = 
+   A of int |B of int|C of int| Og of int * int ;;    
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;;
+let mea = Vdw_chosen.measure ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;; 
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+exception First_part_is_empty of int list ;;
+exception Second_part_is_empty of int list ;;
+
+let nonempty_partition selector ll = 
+  let answer = List.partition (Vdw_chosen.test_joinability selector) ll in 
+  if (fst answer) = [] then raise(First_part_is_empty selector) else 
+  if (snd answer) = [] then raise(Second_part_is_empty selector) else  
+  answer ;; 
+
+module Oslo = struct 
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let add = Hashtbl.add hashtbl_for_oslo ;;
+exception Get_exn of int * int ;;
+let get n d =
+       let m = Vdw_chosen.measure(n)-d in 
+       if (m<0)||(d<0)
+       then []
+       else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+             _ -> raise (Get_exn(n,d));;
+
+let prepare_computation n d =
+        let delt = mea(n)-mea(n-1) in   
+        List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+        [
+          [],(n-1,d-delt);
+          [n],(n-1,d+1-delt)
+        ];;   
+let compute n d =
+      let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,get nn dd)) 
+         (prepare_computation n d) in    
+      let result = checked_combination temp1 in 
+      let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+      result ;;
+end ;;
+
+let og = Oslo.get ;;
+let see = Oslo.prepare_computation ;;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+(Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+
+
+module Colored = struct 
+
+type t = colored_variable ;;
+
+let storage = ref [
+   "A",[List.filter (fun x->(List.length x)=8) wall];
+   "B",[List.filter (fun x->(List.length x)=7) wall];
+   "C",[List.filter (fun x->(List.length x)=6) wall];
+] ;;
+
+exception Label_for_variable_exn ;;
+let data_for_variable = function 
+  (A k) ->("A",k) |(B k) ->("B",k) |(C k) ->("C",k) 
+  |(Og(_,_))->raise(Label_for_variable_exn) ;;
+
+exception Variable_from_label_exn ;;  
+let variable_from_label lbl k=
+   if lbl = "A" then A k else 
+   if lbl = "B" then B k else  
+   if lbl = "C" then C k else 
+   raise(Variable_from_label_exn) ;;
+   
+exception Get_exn of t ;;
+
+let get colored_var =
+    match colored_var with 
+    Og(n,d) ->Oslo.get n d
+    | _ -> let (lbl,k) = data_for_variable colored_var in 
+           try List.nth (List.assoc lbl (!storage)) k with 
+           _ -> raise(Get_exn(colored_var));; 
+
+
+let add_new lbl wahl =
+   let old_list = List.assoc lbl (!storage) in    
+   let new_list = old_list @ [wahl] in 
+   let new_storage = Image.image (
+     fun old_pair ->
+       if (fst old_pair)=lbl 
+       then (lbl,new_list)
+       else old_pair  
+   ) (!storage) in 
+   let _=(storage:=new_storage) in 
+   List.length old_list (* index of newly created entry *) ;;
+   
+let partition selector colored_var =
+    let old_val = get colored_var in 
+    let (a,b) = nonempty_partition selector old_val 
+    and (lbl,_) = data_for_variable colored_var in 
+    let i = add_new lbl a in 
+    let j = add_new lbl b in
+    (i,j,a,b) ;; 
+
+let check_partitioning ll=
+   let temp1 = Image.image (fun (x,ly)->
+     (get x,Image.image (fun (lamb,y)->(lamb,get y)) ly )
+    ) ll in 
+    check_correct_partitioning temp1 ;;
+
+end ;;  
+
+
+Oslo.add (15,0) (Colored.get (A 0)) ;;
+Oslo.add (15,1) (Colored.get (B 0)) ;;
+Oslo.add (15,2) (Colored.get (C 0)) ;;
+
+let passing = Colored.partition [16] (B 0) ;;
+Oslo.compute 16 0 ;;
+
+let check1 = Colored.check_partitioning [
+     (B 0), [[],B 1;[],B 2];
+     Og(16,0), [[], A 0;[16], B 1];
+] ;;
+
+let passing = Colored.partition [16] (C 0) ;;
+Oslo.compute 16 1 ;;
+
+let check2 = Colored.check_partitioning [
+     (B 0), [[],B 1;[],B 2];
+     (C 0), [[],C 1;[],C 2];
+     Og(16,0), [[],A 0;[16],B 1];
+     Og(16,1), [[],B 1;[],B 2;[16],C 1];
+] ;;
+
+
+let passing = Colored.partition [17] (B 1) ;;
+let passing = Colored.partition [17] (B 2) ;;
+let passing = Colored.partition [16;17] (C 1) ;;
+Oslo.compute 17 0 ;;
+
+let check3 = Colored.check_partitioning [
+     (B 0), [[],B 3;[],B 4;[],B 5;[],B 6];
+     (C 0), [[],C 2;[],C 3;[],C 4];
+     Og(16,0), [[],A 0;[16],B 3;[16],B 4];
+     Og(16,1), [[],B 3;[],B 4;[],B 5;[],B 6;[16],C 3;[16],C 4];
+     Og(17,0), [[],A 0;[16],B 3;[16],B 4;[17],B 3;[17],B 5;[16;17],C 3];
+] ;;
+
+
+
+(************************************************************************************************************************
+Snippet 59 : Musings on the Van der Waerden problem  
+************************************************************************************************************************)
+open Needed_values ;;
+
+let oi = Vdw_preliminaries.oint ;;
+let oil = Vdw_preliminaries.ointlist ;;
+let mea = Vdw_chosen.measure ;;
+
+let dot lamb ll = 
+    Ordered.safe_set oil
+  (Image.image (Ordered.merge oi lamb) ll) ;;
+
+let combination ll =
+    let temp1 = Image.image (fun (lamb,sl)->dot lamb sl) ll in 
+    Ordered.fold_merge oil temp1 ;;     
+
+let checked_combination ll =
+   List.filter Vdw_chosen.test_for_admissibility (combination ll) ;;
+
+let sel selector ll =
+    List.partition (Vdw_chosen.test_joinability selector) ll;;    
+
+let check_correct_partitioning =
+    List.for_all (
+      fun (whole,parts)->whole = combination parts
+    ) ;;
+
+let rps n = Vdw_precomputed.restricted_power_set 
+(Vdw_max_width_t.MW 4,Ennig.ennig 1 n) ;;
+
+let hashtbl_for_oslo = Hashtbl.create 30;;
+let oslo_add = Hashtbl.add hashtbl_for_oslo ;;
+exception Oslo_get_exn of int * int ;;
+let oslo_get n d =
+   let m = Vdw_chosen.measure(n)-d in 
+   if (m<0)||(d<0)
+   then []
+   else  try Hashtbl.find  hashtbl_for_oslo (n,d) with 
+         _ -> raise (Oslo_get_exn(n,d));;
+let og = oslo_get ;;
+let see n d =
+    let delt = mea(n)-mea(n-1) in   
+    List.filter (fun (lamb,(m,dee))->(dee<=mea(m))&&(dee>=0) )
+    [
+      [],(n-1,d-delt);
+      [n],(n-1,d+1-delt)
+    ];;   
+let oslo_compute n d =
+  let temp1 = Image.image (fun (lamb,(nn,dd))->(lamb,oslo_get nn dd)) (see n d) in    
+  let result = checked_combination temp1 in 
+  let _ = Hashtbl.add hashtbl_for_oslo (n,d) result in 
+  result ;;
+
+    
+
+let computation1 () = Ennig.doyle (fun n->
+  List.length(rps n) 
+) 1 15;;
+
+let timed_computation1 () = Chronometer.it computation1 ();;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+(Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+
+let aa0 = List.filter (fun x->(List.length x)=8) wall ;;
+let bb0 = List.filter (fun x->(List.length x)=7) wall ;;
+let cc0 = List.filter (fun x->(List.length x)=6) wall ;;
+
+oslo_add (15,0) aa0 ;;
+oslo_add (15,1) bb0 ;;
+oslo_add (15,2) cc0 ;;
+
+let (bb1,bb2) = sel [16] bb0 ;;
+
+oslo_compute 16 0 ;;
+
+let check1 = check_correct_partitioning [
+     bb0, [[],bb1;[],bb2];
+     og 16 0, [[],aa0;[16],bb1];
+] ;;
+
+let (cc1,cc2) = sel [16] cc0 ;;
+
+oslo_compute 16 1 ;;
+
+let check2 = check_correct_partitioning [
+     bb0, [[],bb1;[],bb2];
+     cc0, [[],cc1;[],cc2];
+     og 16 0, [[],aa0;[16],bb1];
+     og 16 1, [[],bb1;[],bb2;[16],cc1];
+] ;;
+
+let (bb3,bb4) = sel [17] bb1 ;;
+let (bb5,bb6) = sel [17] bb2 ;;
+let (cc3,cc4) = sel [16;17] cc1 ;;
+
+oslo_compute 17 0;;
+
+let check3 = check_correct_partitioning [
+     bb0, [[],bb3;[],bb4;[],bb5;[],bb6];
+     cc0, [[],cc2;[],cc3;[],cc4];
+     og 16 0, [[],aa0;[16],bb3;[16],bb4];
+     og 16 1, [[],bb3;[],bb4;[],bb5;[],bb6;[16],cc3;[16],cc4];
+     og 17 0, [[],aa0;[16],bb3;[16],bb4;[17],bb3;[17],bb5;[16;17],cc3];
+] ;;
+
+(*
+
+([],aa0) = sel [18] aa0 ;;
+let (bb7,bb8) = sel [16;18] bb3 ;;
+let (bb9,bb10) = sel [16;18] bb4 ;;
+let (bb11,bb12) = sel [17;18] bb5 ;;
+
+
+let check4 = check_correct_partitioning [
+     bb0, [[],bb6;[],bb7;[],bb8;[],bb9;[],bb10;[],bb11;[],bb12;];
+     cc0, [[],cc2;[],cc3;[],cc4];
+     og 16 0, [[],aa0;[16],bb7;[16],bb8;[16],bb9;[16],bb10];
+     og 16 1, [[],bb6;[],bb7;[],bb8;[],bb9;[],bb10;[],bb11;[],bb12;[16],cc3;[16],cc4];
+     og 17 0, [[],aa0;[16],bb3;[16],bb4;[17],bb3;[17],bb11;[17],bb12;[16;17],cc3];
+] ;;
+
+*)
+
+(************************************************************************************************************************
+Snippet 58 : Compute summaries for levels, in a Van der Waerden context
+************************************************************************************************************************)
+open Needed_values ;;
+
+
+let oi = Vdw_preliminaries.oint ;;
+let rps n = Vdw_precomputed.restricted_power_set 
+(Vdw_max_width_t.MW 4,Ennig.ennig 1 n) ;;
+
+let computation1 () = Ennig.doyle (fun n->
+  List.length(rps n) 
+) 1 15;;
+
+let timed_computation1 () = Chronometer.it computation1 ();;
+
+let wall_position = 15 ;;
+
+let wall = Vdw_precomputed.restricted_power_set 
+(Vdw_max_width_t.MW 4,Ennig.ennig 1 wall_position) ;;
+
+let aa0 = List.filter (fun x->(List.length x)=8) wall ;;
+let bb0 = List.filter (fun x->(List.length x)=7) wall ;;
+let cc0 = List.filter (fun x->(List.length x)=6) wall ;;
+
+let result_for_level1=
+[ [9; 13]; [10; 13]; [11; 14]; [11; 15]; [12; 15]; [14; 15];  ] ;;
+let result_for_level0 = [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 15]; 
+];;
+
+let check_result_for_level1 = 
+    List.filter (fun z->List.for_all(fun y->
+        not(Ordered.is_included_in oi y z)
+      ) result_for_level1) bb0 ;;
+
+let check_result_for_level0 = 
+    List.filter (fun z->List.for_all(fun y->
+            not(Ordered.is_included_in oi y z)
+    ) result_for_level0) aa0 ;;      
+
+
+let current_d = 0 ;;
+let current_m = (Vdw_chosen.measure wall_position)-current_d ;;
+let current_wall_part = List.filter (fun x->
+  (List.length x)=current_m) wall ;;
+
+let unexpected_impossibilities r = 
+   let bound = (Vdw_chosen.measure (wall_position+r)) - current_m in 
+   let temp1 = List.filter (fun l->List.length(l)>bound) (rps r) in 
+   Image.image (Image.image (fun t->t+wall_position)) temp1;;
+
+let y1 = List.flatten (Ennig.doyle unexpected_impossibilities 1 10);;
+let y2 = Ordered.select_minimal_elements_for_inclusion 
+           Total_ordering.for_integers y1 ;;
+     
+let z1 = Vdw_chosen.minimal_obstructions (wall_position+1) 
+(Set_of_integers.safe_set [18; 20; 21]) ;;
+let z2 = Ennig.index_everything z1 ;;
+let shadow x =
+    Option.filter_and_unpack (
+      fun (j,forb)->
+        if Ordered.is_included_in Total_ordering.for_integers forb x
+        then Some j 
+        else None  
+    ) z2 ;;
+let z3 = Image.image shadow current_wall_part ;;    
+let z4 = Image.image Set_of_integers.safe_set z3 ;;
+let z5 = Ordered_misc.minimal_transversals z4 ;;
+
+
+let base1 = [[14; 15]; [10; 13]];;
+let base2 = [[13; 15]; [11; 14]] ;;
+
+let base1 = [ [11; 14; 15]; [10; 13; 15]; [10; 11; 13; 14]];;
+let base2 = [ [12; 15]; [10; 14]] ;;
+
+let base1 = [[11; 12; 14; 15]; [10; 11; 14; 15]; [10; 12; 13; 15];
+[10; 11; 13; 14]];;
+
+
+let u1 = Cartesian.product base1 base2 ;;
+let u2 = Image.image (fun (x,y)->Ordered.merge Total_ordering.for_integers x y) u1;;
+let u3 = Ordered.select_minimal_elements_for_inclusion 
+Total_ordering.for_integers u2 ;;
+
+
+let result1=
+[ [9; 13]; [10; 13]; [11; 14]; [11; 15]; [12; 15]; [14; 15];  ] ;;
+let result2= [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 15]; 
+];;
+
+
+(************************************************************************************************************************
+Snippet 57 : Remove all modules in a subdirectory
+************************************************************************************************************************)
+open Needed_values ;;
 
 let sd = Dfa_subdirectory.of_line "Old_Van_der_Waerden";;
 let z1 = ae () ;;

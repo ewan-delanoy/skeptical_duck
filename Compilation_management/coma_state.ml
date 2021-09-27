@@ -1924,9 +1924,10 @@ let start_debugging cs=
   let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug cs debugged_file_path in 
   let answer=Unix_command.conditional_multiple_uc cmds in 
+  let dbgbuild_path =  Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir) in 
 	let msg=(
 	  if answer
-	  then "\n\n Now, start \n\nocamldebug _debug_build/"^name_element_for_debugged_file^
+	  then "\n\n Now, start \n\nocamldebug "^dbgbuild_path^name_element_for_debugged_file^
          ".ocaml_debuggable\n\nin another terminal.\n\n"^
          "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
          "source "^ppodbg_path^" \n\n"
