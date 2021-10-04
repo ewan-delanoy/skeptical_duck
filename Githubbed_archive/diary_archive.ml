@@ -1,7 +1,852 @@
 (************************************************************************************************************************
-Snippet 78 : 
+Snippet 81 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+(************************************************************************************************************************
+Snippet 80 : Musings on the Vand der Waerden problem, version 20 : add
+Constraint.analyze_shadow, and start using it
+************************************************************************************************************************)
+open Needed_values ;;
+type expandable = E of string ;;
+type vdw_constraint = C of (int list) list ;; (* The constraint is that 
+none of the int lists in the list are contained in the set *)
+
+let mea = Vdw_chosen.measure ;;
+
+let mi ll =
+   let temp1 = Image.image Set_of_integers.safe_set ll in 
+   let temp2 = Ordered_misc.minimal_elts_wrt_inclusion temp1 in 
+   Image.image Set_of_integers.forget_order temp2 ;;
+
+let mt ll =
+   let temp1 = Image.image Set_of_integers.safe_set ll in 
+   let temp2 = Ordered_misc.minimal_transversals temp1 in 
+   Image.image Set_of_integers.forget_order temp2 ;;
+
+let bitmap_to_intlist bm=
+  let temp1 = Ennig.index_everything (Strung.explode bm) in 
+  Option.filter_and_unpack (
+     fun (j,c)->if c='1' then Some j else None
+  ) temp1 ;;
+
+let intlist_to_bitmap (n,il) =
+   String.concat "" 
+    (Ennig.doyle (fun j->if List.mem j il then "1" else "0") 1 n);;  
+
+let rap x y = x ^ (Cull_string.cobeginning (String.length x) y);;
+
+let erap prefix pattern n = rap prefix 
+  (intlist_to_bitmap (n,List.filter (fun x->
+   List.mem (x mod 9) pattern ) (Ennig.ennig 1 n))) ;;
+
+let brap assocl_for_n assocl_for_r patt  n =
+   match List.assoc_opt n assocl_for_n with 
+    Some(ready_answer) -> ready_answer 
+   |None ->
+    let r = n mod 9 in 
+    let pattern = Image.image (fun x->(x+r) mod 9) patt in 
+    let prefix = List.assoc r assocl_for_r in 
+    erap prefix pattern n ;;  
+
+let srap assocl_for_n assocl_for_r n =
+    match List.assoc_opt n assocl_for_n with 
+     Some(ready_answer) -> ready_answer 
+    |None ->
+     let r = n mod 9 in 
+     List.assoc r assocl_for_r ;; 
+
+let extend_by_one_char c s =
+  let possibilities = 
+  (if c='F' then [(s,"0");(s,"1")] else [(s,String.make 1 c)]) in 
+  Option.filter_and_unpack (fun (s,t)->
+    if Vdw_string.admissible_parts_are_joinable s t 
+    then Some(s^t) 
+    else None 
+  ) possibilities ;;  
+
+let extend_several_by_one_char l c=
+   List.flatten (Image.image (extend_by_one_char c) l) ;;
+
+(*   
+let extend_several_by_several_chars l s=
+   let walker = ref l in 
+   for k = 0 to (String.length s)-1 do
+      walker := extend_several_by_one_char (!walker) (String.get s k)
+   done;
+   (!walker);;  
+*)   
+
+let expand = Memoized.recursive (fun old_f (E s)->
+     let n = String.length s in 
+     if n<1 then [""] else 
+     let t = Cull_string.coending 1 s and c= Strung.get s n in 
+     extend_several_by_one_char (old_f (E t)) c) ;;
+
+let expand_several l = 
+   let temp1 = Image.image expand l in      
+   Ordered.fold_merge Total_ordering.lex_for_strings temp1 ;;
+
+let base = expand (E(String.make 8 'F'));;
+
+let main_hashtbl = Hashtbl.create 2000;; 
+
+let main_algorithm old_f (vdw_s,k) =
+   let n = Vdw_string.cardinality vdw_s in 
+   if k<1 then (n,"") else 
+   let temp1 = [0,"0";1,"1"] in 
+   let temp2 = List.filter (fun (j,extension)->
+        Vdw_string.admissible_parts_are_joinable vdw_s extension
+   ) temp1  in
+   let temp3 = Image.image (
+     fun (j,extension) -> 
+       let new_s = (Vdw_string.tail vdw_s)^extension in 
+       let (m,old_sol) = old_f (new_s,k-1) in
+       let contribution_of_first_char =(
+          if (Strung.get vdw_s 1) = '1' then 1 else 0
+       )  in
+       (m+contribution_of_first_char,extension^old_sol)
+   ) temp2 in 
+   let (m,temp4) = Max.maximize_it_with_care fst temp3 in 
+   (m,snd(List.hd(temp4)));; 
+
+let rec pre_main (vdw_s,k) =
+   (* we assume that vdw_s has length 8 *)
+   match Hashtbl.find_opt main_hashtbl (vdw_s,k) with 
+   Some(old_answer) -> old_answer 
+   | None ->
+      let answer=(main_algorithm pre_main (vdw_s,k) ) in 
+      let _= Hashtbl.add main_hashtbl (vdw_s,k) answer in 
+      answer ;;
+
+let almost_main (s,k) =
+    (* we remove any assumption on the length of s *)
+    let d = 8 - (String.length s) in 
+    if d >0 
+    then pre_main((String.make d '0')^s,k) 
+    else 
+      let before = Cull_string.coending 8 s 
+      and after = Cull_string.ending 8 s in 
+      let (old_card,old_sol) =pre_main(after,k) in 
+      ((Vdw_string.cardinality before)+old_card,old_sol) ;; 
+
+exception Length_mismatch of string * int ;;
+
+let main (s,imposed_prefix,k) =
+   let d = k - (String.length imposed_prefix) in 
+   if d < 0
+   then  raise(Length_mismatch(imposed_prefix,k))      
+   else  let (old_card,old_sol) =almost_main(s^imposed_prefix,d) in 
+         (old_card,imposed_prefix^old_sol) ;;
+
+let shadow n =
+   if n<=8
+   then let zeroes = String.make (8-n) '0' in 
+        let temp1 = List.filter (Substring.is_the_ending_of zeroes) base in  
+        snd (Max.maximize_it_with_care Vdw_string.cardinality temp1)  
+   else let m = Vdw_chosen.measure n in 
+        List.filter (
+          fun prefix -> fst(main("",prefix,n)) = m
+        )  base ;;   
+        
+let analyze_shadow ll=
+   let tempf = (fun s->
+     List.filter (fun j->
+        (Strung.get s j,Strung.get s (2*j))=('1','1')
+      ) (Ennig.ennig 1 4)
+   ) in 
+   mt(Image.image tempf ll);;
+    
+let gmain ll n =
+     let temp1 = Image.image (fun prefix->main("",prefix,n)) ll in 
+     let (m,temp2) = Max.maximize_it_with_care fst temp1 in 
+     (m,Image.image snd temp2) ;;   
+
+
+module Constraint = struct 
+
+let order = Total_ordering.silex_compare Total_ordering.for_integers ;;
+
+let make ll = C(Ordered.sort order (mi ll));; 
+   
+let basic_test patt elt =
+   List.exists (fun k->(Strung.get patt k)<>'1') elt ;;
+
+let test (C ll) patt = List.for_all (basic_test patt) ll;;
+
+let representatives cstr= List.filter (test cstr) base;;
+
+let shift (C ll) =(C (Image.image (Image.image (fun x->x-1)) ll));;
+
+let impose_0 (C ll)=
+   C([1]::(List.filter (fun x->not(List.mem 1 x)) ll)) ;;
+
+let impose_1 (C ll)=
+   if List.mem [1] ll 
+   then None
+   else
+      let (temp1,temp2) = List.partition (List.mem 1) ll in
+      let temp3 = Image.image List.tl temp1 in 
+      Some(make (temp2@temp3));; 
+
+let corrector_for_extension_by_1 (C ll) =
+     make ([[1;2];[2;4];[3;6];[4;8]]@ll);;
+
+let corrector_for_extension_by_0 (C ll) =
+      C(List.filter (fun l->l<>[0]) ll);;
+ 
+let corrector_for_extension e cstr=
+  if e=1 
+  then corrector_for_extension_by_1 cstr 
+  else corrector_for_extension_by_0 cstr ;;      
+
+let bare_possible_expansions cstr =
+    let case0 = (0,impose_0 cstr) in
+    match impose_1 cstr with    
+    None -> [case0]
+    |Some(cstr1) -> [case0;(1,cstr1)] ;;
+
+let possible_expansions cstr =
+   Image.image (fun (e,cstr2)->
+      let cstr3 = shift cstr2 in 
+     (e,corrector_for_extension e cstr3)   
+   ) (bare_possible_expansions cstr)
+
+let doubled l= C(Image.image (fun j->[j;2*j]) l);;    
+
+let analyze_shadow (C ll) sha=
+   let temp1 = Ennig.index_everything ll in 
+   let tempf = (fun s->
+     Option.filter_and_unpack (fun (idx,cstr_elt)->
+        if List.for_all (fun j->(Strung.get s j)='1') cstr_elt 
+        then Some idx
+        else None
+      ) temp1
+   ) in 
+   let temp2 = mt(Image.image tempf sha) in 
+   Image.image (Image.image (fun k->List.nth ll (k-1))) temp2 ;;
+
+end ;;   
+
+
+let reconstructed_main0 =
+   brap 
+     [1,"1";2,"11";3,"011";9,"101100011";10,"0101100011"]
+     [0,"10110001011000";1,"010110001011000";2,"1011000";3,"01011000";
+      4,"";5,"";6,"";7,"";8,""]   
+      [0;5;6;8]  ;;  
+
+let check_reconstructed_main0 = 
+   let temp1 = Image.image (fun j->
+       (j,snd(main ("00000000","",j)),reconstructed_main0 j)) (Ennig.ennig 1 100) in 
+   List.filter (fun (j,a,b)->a<>b) temp1;;   
+
+let reconstructed_shadow =
+   srap
+      [
+         (1, ["10000000"]); 
+         (2, ["11000000"]);
+         (3, ["01100000"; "10100000"; "11000000"]); 
+         (4, ["10110000"; "11010000"]);
+         (7, ["00110110"; "01011010"; "01100110"; "01101100"; "10100110"; 
+         "10110100";"11000110"; "11001010"; "11001100"; "11011000"]);
+         (8,["00011011"; "00101101"; "00110011"; "00110110"; "01010011"; 
+         "01011010";"01100011"; "01100101"; "01100110"; "01101100"; 
+         "10001011"; "10001101"; "10011001"; "10100011"; "10100101"; 
+         "10100110"; "10110001"; "10110100"; "11000011"; "11000101"; 
+         "11000110"; "11001010"; "11001100"; "11010001"; "11011000"]);
+         (9,  ["10110001"; "11000101"; "11000110"; "11010001"]);
+         (10, ["01011000"; "01100010"; "01100011"; "01101000"; "10000110"; 
+         "10001011";"10010100"; "10011001"; "10100010"; "10100011"; 
+         "10100110"; "10110000"; "10110001"; "10110100"; "11000010"; 
+         "11000011"; "11000101"; "11000110"; "11001010"; "11010000"; 
+         "11010001"; "11011000"])
+      ]
+      [
+      0,["10110001"; "10110100"; "11000101"; "11000110"; "11010001"; "11011000"];
+      1, ["01011000"; "01011010"; "01100010"; "01100011"; "01101000"; "01101100";
+      "10000110"; "10001011"; "10010100"; "10011001"; "10100010"; "10100011";
+      "10100110"; "10110000"; "10110001"; "10110100"; "11000010"; "11000011";
+      "11000101"; "11000110"; "11001010"; "11001100"; "11010000"; "11010001";
+      "11011000"];   
+      2,["10110001"; "10110100"; "11000011"; "11000101"; "11001010"; "11010001";
+      "11011000"];
+      3,["01011000"; "01011010"; "01100001"; "01100010"; "01100101"; "01101000";
+      "01101100"; "10100001"; "10100010"; "10100101"; "10100110"; "10110000";
+      "10110001"; "10110100"; "11000001"; "11000010"; "11000011"; "11000101";
+      "11000110"; "11001010"; "11001100"; "11010000"; "11010001"; "11011000"];
+      4,["10110000"; "10110001"; "10110100"; "11010000"; "11010001"; "11011000"];
+      5,["11011000"];
+      6,["01101100"; "10110100"; "11001100"; "11011000"];
+      7,["00110110"; "01011010"; "01100110"; "01101100"; "10100110"; "10110001";
+      "10110100"; "11000101"; "11000110"; "11001010"; "11001100"; "11010001";
+      "11011000"];
+      8,["00011011"; "00101101"; "00110011"; "00110110"; "01010011"; "01011000";
+      "01011010"; "01100010"; "01100011"; "01100101"; "01100110"; "01101000";
+      "01101100"; "10001011"; "10001101"; "10011001"; "10100010"; "10100011";
+      "10100101"; "10100110"; "10110000"; "10110001"; "10110100"; "11000010";
+      "11000011"; "11000101"; "11000110"; "11001010"; "11001100"; "11010000";
+      "11010001"; "11011000"];
+
+      ] ;;
+
+
+let check_reconstructed_shadow = 
+   let temp1 = Image.image (fun j->
+             (j,shadow j,reconstructed_shadow j)) (Ennig.ennig 1 100) in 
+   List.filter (fun (j,a,b)->a<>b) temp1;;        
+
+
+let first_addendum n=
+  match (n mod 9) with 
+  0 -> if n = 9 then [1;4] else [1;3;4]
+ |2 -> if n = 2 then [1] else [1;3;4]
+ |5 -> [1]
+ |6 -> [1;3]
+ |7 -> if n = 7 then [1;2;3] else [1;2;3;4]
+ |_ -> [] ;;
+ 
+let expand_first_addendum m=
+   let l = first_addendum m in
+   if l = [] then [] else 
+   let cstr = Constraint.doubled l in 
+   Image.image (fun (e,cstr2)->(m-1,mea(m)-1-e,cstr2)) 
+   (Constraint.possible_expansions cstr) ;;   
+ 
+let g1 = List.flatten(Ennig.doyle expand_first_addendum 8 100);;
+let (g2,g3) = List.partition (fun (n,goal,cstr)->
+    goal>=(mea(n))
+   ) g1 ;;
+
+let (g4,g5) = List.partition (fun (n,goal,cstr)->goal=(mea n)-1) g3 ;;   
+let g5 = Image.image (fun (n,goal,cstr)-> (n,goal,cstr,
+ Constraint.analyze_shadow cstr (shadow n)) ) g4;;   
+let (g6,empty) = List.partition 
+  (fun (n,goal,cstr,res)->List.length res=1) g5 ;; 
+let g7 = Image.image (fun (n,goal,cstr,res)->(n,goal,cstr,List.hd res)) g6;;
+
+let g8 = Image.image (fun (n,goal,cstr,res)->n mod 9) g7 ;;   
+let g9 = List.filter (fun (n,goal,cstr,res)->(n mod 9)=8) g7 ;;
+   
+
+
+let second_addendum n=
+  match (n mod 9) with 
+  1 -> if n = 1 then [] else [[1];[2;5];[3;7]]
+ |4 -> if n = 4 then [] else [[1]]
+ |5 -> if n = 5 then [] else [[2;5]]
+ |6 -> if n = 6 then [] else [[1;3];[2;5]]
+ |8 -> if n = 8 then [[1];[2;4];[3;6];[3;7];[4;8]] else [[1];[2;5];[3;6];[3;7];[4;8]]
+ |_ -> [] ;;
+ 
+let expand_second_addendum m=
+   let l = second_addendum m in
+   if l = [] then [] else 
+   let cstr = Constraint.make l in 
+   Image.image (fun (e,cstr2)->(m-1,mea(m)-1-e,cstr2)) 
+   (Constraint.possible_expansions cstr) ;;   
+
+let h1 = List.flatten(Ennig.doyle expand_second_addendum 8 100);;
+let (h2,h3) = List.partition (fun (n,goal,cstr)->
+       goal>=(mea(n))
+      ) h1 ;;
+let (h4,h5) = List.partition (fun (n,goal,cstr)->goal=(mea n)-1) h3 ;;   
+let h5 = Image.image (fun (n,goal,cstr)-> (n,goal,cstr,
+    Constraint.analyze_shadow cstr (shadow n)) ) h4;;   
+let (h6,empty) = List.partition 
+     (fun (n,goal,cstr,res)->List.length res=1) h5 ;; 
+let h7 = Image.image (fun (n,goal,cstr,res)->(n,goal,cstr,List.hd res)) h6;;
+let h8 = Image.image (fun (n,goal,cstr,res)->n mod 9) h7 ;;   
+let h9 = List.filter (fun (n,goal,cstr,res)->(n mod 9)=8) h7 ;;
+
+Ordered_misc.reorder_list_of_pairs_using_list_of_singles ;;
+
+
+(************************************************************************************************************************
+Snippet 79 : Musings on the Vand der Waerden problem, version 19 : add 
+Constraint submodule, and start testing it
+************************************************************************************************************************)
+open Needed_values ;;
+
+type expandable = E of string ;;
+type vdw_constraint = C of (int list) list ;; (* The constraint is that 
+none of the int lists in the list are contained in the set *)
+
+let mea = Vdw_chosen.measure ;;
+
+let mi ll =
+   let temp1 = Image.image Set_of_integers.safe_set ll in 
+   let temp2 = Ordered_misc.minimal_elts_wrt_inclusion temp1 in 
+   Image.image Set_of_integers.forget_order temp2 ;;
+
+let mt ll =
+   let temp1 = Image.image Set_of_integers.safe_set ll in 
+   let temp2 = Ordered_misc.minimal_transversals temp1 in 
+   Image.image Set_of_integers.forget_order temp2 ;;
+
+let bitmap_to_intlist bm=
+  let temp1 = Ennig.index_everything (Strung.explode bm) in 
+  Option.filter_and_unpack (
+     fun (j,c)->if c='1' then Some j else None
+  ) temp1 ;;
+
+let intlist_to_bitmap (n,il) =
+   String.concat "" 
+    (Ennig.doyle (fun j->if List.mem j il then "1" else "0") 1 n);;  
+
+let rap x y = x ^ (Cull_string.cobeginning (String.length x) y);;
+
+let erap prefix pattern n = rap prefix 
+  (intlist_to_bitmap (n,List.filter (fun x->
+   List.mem (x mod 9) pattern ) (Ennig.ennig 1 n))) ;;
+
+let brap assocl_for_n assocl_for_r patt  n =
+   match List.assoc_opt n assocl_for_n with 
+    Some(ready_answer) -> ready_answer 
+   |None ->
+    let r = n mod 9 in 
+    let pattern = Image.image (fun x->(x+r) mod 9) patt in 
+    let prefix = List.assoc r assocl_for_r in 
+    erap prefix pattern n ;;  
+
+let srap assocl_for_n assocl_for_r n =
+    match List.assoc_opt n assocl_for_n with 
+     Some(ready_answer) -> ready_answer 
+    |None ->
+     let r = n mod 9 in 
+     List.assoc r assocl_for_r ;; 
+
+let extend_by_one_char c s =
+  let possibilities = 
+  (if c='F' then [(s,"0");(s,"1")] else [(s,String.make 1 c)]) in 
+  Option.filter_and_unpack (fun (s,t)->
+    if Vdw_string.admissible_parts_are_joinable s t 
+    then Some(s^t) 
+    else None 
+  ) possibilities ;;  
+
+let extend_several_by_one_char l c=
+   List.flatten (Image.image (extend_by_one_char c) l) ;;
+
+(*   
+let extend_several_by_several_chars l s=
+   let walker = ref l in 
+   for k = 0 to (String.length s)-1 do
+      walker := extend_several_by_one_char (!walker) (String.get s k)
+   done;
+   (!walker);;  
+*)   
+
+let expand = Memoized.recursive (fun old_f (E s)->
+     let n = String.length s in 
+     if n<1 then [""] else 
+     let t = Cull_string.coending 1 s and c= Strung.get s n in 
+     extend_several_by_one_char (old_f (E t)) c) ;;
+
+let expand_several l = 
+   let temp1 = Image.image expand l in      
+   Ordered.fold_merge Total_ordering.lex_for_strings temp1 ;;
+
+let base = expand (E(String.make 8 'F'));;
+
+let main_hashtbl = Hashtbl.create 2000;; 
+
+let main_algorithm old_f (vdw_s,k) =
+   let n = Vdw_string.cardinality vdw_s in 
+   if k<1 then (n,"") else 
+   let temp1 = [0,"0";1,"1"] in 
+   let temp2 = List.filter (fun (j,extension)->
+        Vdw_string.admissible_parts_are_joinable vdw_s extension
+   ) temp1  in
+   let temp3 = Image.image (
+     fun (j,extension) -> 
+       let new_s = (Vdw_string.tail vdw_s)^extension in 
+       let (m,old_sol) = old_f (new_s,k-1) in
+       let contribution_of_first_char =(
+          if (Strung.get vdw_s 1) = '1' then 1 else 0
+       )  in
+       (m+contribution_of_first_char,extension^old_sol)
+   ) temp2 in 
+   let (m,temp4) = Max.maximize_it_with_care fst temp3 in 
+   (m,snd(List.hd(temp4)));; 
+
+let rec pre_main (vdw_s,k) =
+   (* we assume that vdw_s has length 8 *)
+   match Hashtbl.find_opt main_hashtbl (vdw_s,k) with 
+   Some(old_answer) -> old_answer 
+   | None ->
+      let answer=(main_algorithm pre_main (vdw_s,k) ) in 
+      let _= Hashtbl.add main_hashtbl (vdw_s,k) answer in 
+      answer ;;
+
+let almost_main (s,k) =
+    (* we remove any assumption on the length of s *)
+    let d = 8 - (String.length s) in 
+    if d >0 
+    then pre_main((String.make d '0')^s,k) 
+    else 
+      let before = Cull_string.coending 8 s 
+      and after = Cull_string.ending 8 s in 
+      let (old_card,old_sol) =pre_main(after,k) in 
+      ((Vdw_string.cardinality before)+old_card,old_sol) ;; 
+
+exception Length_mismatch of string * int ;;
+
+let main (s,imposed_prefix,k) =
+   let d = k - (String.length imposed_prefix) in 
+   if d < 0
+   then  raise(Length_mismatch(imposed_prefix,k))      
+   else  let (old_card,old_sol) =almost_main(s^imposed_prefix,d) in 
+         (old_card,imposed_prefix^old_sol) ;;
+
+let shadow n =
+   if n<=8
+   then let zeroes = String.make (8-n) '0' in 
+        let temp1 = List.filter (Substring.is_the_ending_of zeroes) base in  
+        snd (Max.maximize_it_with_care Vdw_string.cardinality temp1)  
+   else let m = Vdw_chosen.measure n in 
+        List.filter (
+          fun prefix -> fst(main("",prefix,n)) = m
+        )  base ;;   
+        
+let analyze_shadow ll=
+   let tempf = (fun s->
+     List.filter (fun j->
+        (Strung.get s j,Strung.get s (2*j))=('1','1')
+      ) (Ennig.ennig 1 4)
+   ) in 
+   mt(Image.image tempf ll);;
+    
+let gmain ll n =
+     let temp1 = Image.image (fun prefix->main("",prefix,n)) ll in 
+     let (m,temp2) = Max.maximize_it_with_care fst temp1 in 
+     (m,Image.image snd temp2) ;;   
+
+
+module Constraint = struct 
+
+let order = Total_ordering.silex_compare Total_ordering.for_integers ;;
+
+let make ll = C(Ordered.sort order (mi ll));; 
+   
+let basic_test patt elt =
+   List.exists (fun k->(Strung.get patt k)<>'1') elt ;;
+
+let test (C ll) patt = List.for_all (basic_test patt) ll;;
+
+let representatives cstr= List.filter (test cstr) base;;
+
+let shift (C ll) =(C (Image.image (Image.image (fun x->x-1)) ll));;
+
+let impose_0 (C ll)=
+   C([1]::(List.filter (fun x->not(List.mem 1 x)) ll)) ;;
+
+let impose_1 (C ll)=
+   if List.mem [1] ll 
+   then None
+   else
+      let (temp1,temp2) = List.partition (List.mem 1) ll in
+      let temp3 = Image.image List.tl temp1 in 
+      Some(make (temp2@temp3));; 
+
+let possible_expansions cstr =
+    let case0 = (0,impose_0 cstr) in
+    match impose_1 cstr with    
+    None -> [case0]
+    |Some(cstr1) -> [case0;(1,cstr1)] ;;
+
+let doubled l= C(Image.image (fun j->[j;2*j]) l);;    
+
+end ;;   
+
+
+let reconstructed_main0 =
+   brap 
+     [1,"1";2,"11";3,"011";9,"101100011";10,"0101100011"]
+     [0,"10110001011000";1,"010110001011000";2,"1011000";3,"01011000";
+      4,"";5,"";6,"";7,"";8,""]   
+      [0;5;6;8]  ;;  
+
+let check_reconstructed_main0 = 
+   let temp1 = Image.image (fun j->
+       (j,snd(main ("00000000","",j)),reconstructed_main0 j)) (Ennig.ennig 1 100) in 
+   List.filter (fun (j,a,b)->a<>b) temp1;;   
+
+let reconstructed_shadow =
+   srap
+      [
+         (1, ["10000000"]); 
+         (2, ["11000000"]);
+         (3, ["01100000"; "10100000"; "11000000"]); 
+         (4, ["10110000"; "11010000"]);
+         (7, ["00110110"; "01011010"; "01100110"; "01101100"; "10100110"; 
+         "10110100";"11000110"; "11001010"; "11001100"; "11011000"]);
+         (8,["00011011"; "00101101"; "00110011"; "00110110"; "01010011"; 
+         "01011010";"01100011"; "01100101"; "01100110"; "01101100"; 
+         "10001011"; "10001101"; "10011001"; "10100011"; "10100101"; 
+         "10100110"; "10110001"; "10110100"; "11000011"; "11000101"; 
+         "11000110"; "11001010"; "11001100"; "11010001"; "11011000"]);
+         (9,  ["10110001"; "11000101"; "11000110"; "11010001"]);
+         (10, ["01011000"; "01100010"; "01100011"; "01101000"; "10000110"; 
+         "10001011";"10010100"; "10011001"; "10100010"; "10100011"; 
+         "10100110"; "10110000"; "10110001"; "10110100"; "11000010"; 
+         "11000011"; "11000101"; "11000110"; "11001010"; "11010000"; 
+         "11010001"; "11011000"])
+      ]
+      [
+      0,["10110001"; "10110100"; "11000101"; "11000110"; "11010001"; "11011000"];
+      1, ["01011000"; "01011010"; "01100010"; "01100011"; "01101000"; "01101100";
+      "10000110"; "10001011"; "10010100"; "10011001"; "10100010"; "10100011";
+      "10100110"; "10110000"; "10110001"; "10110100"; "11000010"; "11000011";
+      "11000101"; "11000110"; "11001010"; "11001100"; "11010000"; "11010001";
+      "11011000"];   
+      2,["10110001"; "10110100"; "11000011"; "11000101"; "11001010"; "11010001";
+      "11011000"];
+      3,["01011000"; "01011010"; "01100001"; "01100010"; "01100101"; "01101000";
+      "01101100"; "10100001"; "10100010"; "10100101"; "10100110"; "10110000";
+      "10110001"; "10110100"; "11000001"; "11000010"; "11000011"; "11000101";
+      "11000110"; "11001010"; "11001100"; "11010000"; "11010001"; "11011000"];
+      4,["10110000"; "10110001"; "10110100"; "11010000"; "11010001"; "11011000"];
+      5,["11011000"];
+      6,["01101100"; "10110100"; "11001100"; "11011000"];
+      7,["00110110"; "01011010"; "01100110"; "01101100"; "10100110"; "10110001";
+      "10110100"; "11000101"; "11000110"; "11001010"; "11001100"; "11010001";
+      "11011000"];
+      8,["00011011"; "00101101"; "00110011"; "00110110"; "01010011"; "01011000";
+      "01011010"; "01100010"; "01100011"; "01100101"; "01100110"; "01101000";
+      "01101100"; "10001011"; "10001101"; "10011001"; "10100010"; "10100011";
+      "10100101"; "10100110"; "10110000"; "10110001"; "10110100"; "11000010";
+      "11000011"; "11000101"; "11000110"; "11001010"; "11001100"; "11010000";
+      "11010001"; "11011000"];
+
+      ] ;;
+
+
+let check_reconstructed_shadow = 
+   let temp1 = Image.image (fun j->
+             (j,shadow j,reconstructed_shadow j)) (Ennig.ennig 1 100) in 
+   List.filter (fun (j,a,b)->a<>b) temp1;;        
+
+
+let first_addendum n=
+  match (n mod 9) with 
+  0 -> if n = 9 then [[1;4]] else [[1;3;4]]
+ |2 -> if n = 2 then [[1]] else [[1;3;4]]
+ |5 -> [[1]]
+ |6 -> [[1;3]]
+ |7 -> if n = 7 then [[1;2;3]] else [[1;2;3;4]]
+ |_ -> [] ;;
+ 
+let expand_first_addendum n=
+   let l = first_addendum n in
+   if l = [] then (n,0,0) else 
+   let cstr = Constraint.make l in 
+   let reps = Constraint.representatives cstr in 
+   (n,fst(gmain reps n),(mea n)-1) ;;   
+ 
+let g1 = Ennig.doyle expand_first_addendum 8 100;;
+
+(*
+
+let ff n = analyze_shadow (shadow n) ;; 
+
+let mz l= 
+ Ordered.sort (Total_ordering.lex_compare Total_ordering.for_integers)
+ (mt (Image.image (fun j->[j;2*j]) l)) ;;
+
+let gg r=
+  let temp1 = List.filter
+  (fun t->shadow(r+9*t)=shadow(r+9*(t+1))) [0;1;2;3;4;5] in 
+  let q=List.hd temp1 in 
+  (temp1,shadow(r+9*q));;
+*)
+
+
+
+
+(************************************************************************************************************************
+Snippet 78 : Musings on the Vand der Waerden problem, version 18 : starting 
+a different approach
+************************************************************************************************************************)
+open Needed_values ;;
+type expandable = E of string ;;
+
+let bitmap_to_intlist bm=
+  let temp1 = Ennig.index_everything (Strung.explode bm) in 
+  Option.filter_and_unpack (
+     fun (j,c)->if c='1' then Some j else None
+  ) temp1 ;;
+
+let intlist_to_bitmap (n,il) =
+   String.concat "" 
+    (Ennig.doyle (fun j->if List.mem j il then "1" else "0") 1 n);;  
+
+let rap x y = x ^ (Cull_string.cobeginning (String.length x) y);;
+
+let erap prefix pattern n = rap prefix 
+  (intlist_to_bitmap (n,List.filter (fun x->
+   List.mem (x mod 9) pattern ) (Ennig.ennig 1 n))) ;;
+
+let brap assocl_for_n assocl_for_r patt  n =
+   match List.assoc_opt n assocl_for_n with 
+    Some(ready_answer) -> ready_answer 
+   |None ->
+    let r = n mod 9 in 
+    let pattern = Image.image (fun x->(x+r) mod 9) patt in 
+    let prefix = List.assoc r assocl_for_r in 
+    erap prefix pattern n ;;  
+
+let extend_by_one_char c s =
+  let possibilities = 
+  (if c='F' then [(s,"0");(s,"1")] else [(s,String.make 1 c)]) in 
+  Option.filter_and_unpack (fun (s,t)->
+    if Vdw_string.admissible_parts_are_joinable s t 
+    then Some(s^t) 
+    else None 
+  ) possibilities ;;  
+
+let extend_several_by_one_char l c=
+   List.flatten (Image.image (extend_by_one_char c) l) ;;
+
+(*   
+let extend_several_by_several_chars l s=
+   let walker = ref l in 
+   for k = 0 to (String.length s)-1 do
+      walker := extend_several_by_one_char (!walker) (String.get s k)
+   done;
+   (!walker);;  
+*)   
+
+let expand = Memoized.recursive (fun old_f (E s)->
+     let n = String.length s in 
+     if n<1 then [""] else 
+     let t = Cull_string.coending 1 s and c= Strung.get s n in 
+     extend_several_by_one_char (old_f (E t)) c) ;;
+
+let expand_several l = 
+   let temp1 = Image.image expand l in      
+   Ordered.fold_merge Total_ordering.lex_for_strings temp1 ;;
+
+let base = expand (E(String.make 8 'F'));;
+
+let main_hashtbl = Hashtbl.create 2000;; 
+
+let main_algorithm old_f (vdw_s,k) =
+   let n = Vdw_string.cardinality vdw_s in 
+   if k<1 then (n,"") else 
+   let temp1 = [0,"0";1,"1"] in 
+   let temp2 = List.filter (fun (j,extension)->
+        Vdw_string.admissible_parts_are_joinable vdw_s extension
+   ) temp1  in
+   let temp3 = Image.image (
+     fun (j,extension) -> 
+       let new_s = (Vdw_string.tail vdw_s)^extension in 
+       let (m,old_sol) = old_f (new_s,k-1) in
+       let contribution_of_first_char =(
+          if (Strung.get vdw_s 1) = '1' then 1 else 0
+       )  in
+       (m+contribution_of_first_char,extension^old_sol)
+   ) temp2 in 
+   let (m,temp4) = Max.maximize_it_with_care fst temp3 in 
+   (m,snd(List.hd(temp4)));; 
+
+let rec pre_main (vdw_s,k) =
+   (* we assume that vdw_s has length 8 *)
+   match Hashtbl.find_opt main_hashtbl (vdw_s,k) with 
+   Some(old_answer) -> old_answer 
+   | None ->
+      let answer=(main_algorithm pre_main (vdw_s,k) ) in 
+      let _= Hashtbl.add main_hashtbl (vdw_s,k) answer in 
+      answer ;;
+
+let almost_main (s,k) =
+    (* we remove any assumption on the length of s *)
+    let d = 8 - (String.length s) in 
+    if d >0 
+    then pre_main((String.make d '0')^s,k) 
+    else 
+      let before = Cull_string.coending 8 s 
+      and after = Cull_string.ending 8 s in 
+      let (old_card,old_sol) =pre_main(after,k) in 
+      ((Vdw_string.cardinality before)+old_card,old_sol) ;; 
+
+exception Length_mismatch of string * int ;;
+
+let main (s,imposed_prefix,k) =
+   let d = k - (String.length imposed_prefix) in 
+   if d < 0
+   then  raise(Length_mismatch(imposed_prefix,k))      
+   else  let (old_card,old_sol) =almost_main(s^imposed_prefix,d) in 
+         (old_card,imposed_prefix^old_sol) ;;
+
+let shadow n =
+   if n<=8
+   then let zeroes = String.make (8-n) '0' in 
+        let temp1 = List.filter (Substring.is_the_ending_of zeroes) base in  
+        snd (Max.maximize_it_with_care Vdw_string.cardinality temp1)  
+   else let m = Vdw_chosen.measure n in 
+        List.filter (
+          fun prefix -> fst(main("",prefix,n)) = m
+        )  base ;;   
+        
+let reconstructed_main0 =
+   brap 
+     [1,"1";2,"11";3,"011";9,"101100011";10,"0101100011"]
+     [0,"10110001011000";1,"010110001011000";2,"1011000";3,"01011000";
+      4,"";5,"";6,"";7,"";8,""]   
+      [0;5;6;8]  ;;  
+
+
+let check_reconstructed_main0 = 
+   let temp1 = Image.image (fun j->
+       (j,snd(main ("00000000","",j)),reconstructed_main0 j)) (Ennig.ennig 1 100) in 
+   List.filter (fun (j,a,b)->a<>b) temp1;;   
+
+
+(*
+
+Ordered.sort Total_ordering.lex_for_strings base = base ;;
+
+let ff k=
+   let _  =Image.image (fun s->main (s,"",k)) base  in 
+   main ("00000000","",k) ;;      
+
+let gg k = bitmap_to_intlist(snd(ff k));;   
+
+
+let z1 = Image.image (fun x->(x mod 9)) (gg(9+9*5));;
+let z2 = snd(ff(9+9*5));;
+let z3 = Cull_string.beginning 14 z2;;
+
+
+let uf1 n = erap "010110001011000" [0;1;6;7]  n ;;
+let tf1 n = if n=1 then "1" else 
+            if n=10 then "0101100011" else uf1 n ;; 
+let uf2 n = erap "1011000" [1;2;7;8]  n ;;
+let tf2 n = if n=2 then "11" else  uf2 n ;; 
+let uf3 n = erap "01011000" [0;2;3;8]  n ;;
+let tf3 n = if n=3 then "011" else  uf3 n ;; 
+let uf4 n = erap "" [0;1;3;4]  n ;;
+let tf4 n = uf4 n ;; 
+let uf5 n = erap "" [1;2;4;5]  n ;;
+let tf5 n = uf5 n ;; 
+let uf6 n = erap "" [2;3;5;6]  n ;;
+let tf6 n = uf6 n ;; 
+let uf7 n = erap "" [3;4;6;7]  n ;;
+let tf7 n = uf7 n ;; 
+let uf8 n = erap "" [4;5;7;8]  n ;;
+let tf8 n = uf8 n ;; 
+let uf9 n = erap "10110001011000" [0;5;6;8]  n ;;
+let tf9 n = if n=9 then "101100011" else uf9 n ;; 
+
+
+
+let r0 = 9;;
+let z4 = Ennig.doyle (fun k->(r0+9*k,snd(ff(r0+9*k)),tf9(r0+9*k))) 0 10;;
+let z5 = List.filter (fun (n,a,b)->a<>b) z4 ;;
+*)
+
+
 
 
 (************************************************************************************************************************
