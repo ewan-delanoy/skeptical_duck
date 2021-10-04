@@ -1,7 +1,262 @@
 (************************************************************************************************************************
-Snippet 81 : 
+Snippet 82 : 
 ************************************************************************************************************************)
 open Needed_values ;;
+
+(************************************************************************************************************************
+Snippet 81 : Musings on the Vand der Waerden problem, version 20 : add
+Constraint.optimize and Statement submodule
+************************************************************************************************************************)
+open Needed_values ;;
+type expandable = E of string ;;
+type vdw_constraint = C of (int list) list ;; (* The constraint is that 
+none of the int lists in the list are contained in the set *)
+type statement = St of int * vdw_constraint * int ;; (* The statement
+St(n,cstr,m) says that an admissible subset in [1..n] satisfying cstr
+has cardinality <= m
+*)
+
+let mea = Vdw_chosen.measure ;;
+
+let mi  = Ordered_misc.minimal_elts_wrt_inclusion ;;
+let mt = Ordered_misc.minimal_transversals ;;
+   
+
+let bitmap_to_intlist bm=
+  let temp1 = Ennig.index_everything (Strung.explode bm) in 
+  Option.filter_and_unpack (
+     fun (j,c)->if c='1' then Some j else None
+  ) temp1 ;;
+
+let intlist_to_bitmap (n,il) =
+   String.concat "" 
+    (Ennig.doyle (fun j->if List.mem j il then "1" else "0") 1 n);;  
+
+let rap x y = x ^ (Cull_string.cobeginning (String.length x) y);;
+
+let erap prefix pattern n = rap prefix 
+  (intlist_to_bitmap (n,List.filter (fun x->
+   List.mem (x mod 9) pattern ) (Ennig.ennig 1 n))) ;;
+
+let brap assocl_for_n assocl_for_r patt  n =
+   match List.assoc_opt n assocl_for_n with 
+    Some(ready_answer) -> ready_answer 
+   |None ->
+    let r = n mod 9 in 
+    let pattern = Image.image (fun x->(x+r) mod 9) patt in 
+    let prefix = List.assoc r assocl_for_r in 
+    erap prefix pattern n ;;  
+
+let srap assocl_for_n assocl_for_r n =
+    match List.assoc_opt n assocl_for_n with 
+     Some(ready_answer) -> ready_answer 
+    |None ->
+     let r = n mod 9 in 
+     List.assoc r assocl_for_r ;; 
+
+let extend_by_one_char c s =
+  let possibilities = 
+  (if c='F' then [(s,"0");(s,"1")] else [(s,String.make 1 c)]) in 
+  Option.filter_and_unpack (fun (s,t)->
+    if Vdw_string.admissible_parts_are_joinable s t 
+    then Some(s^t) 
+    else None 
+  ) possibilities ;;  
+
+let extend_several_by_one_char l c=
+   List.flatten (Image.image (extend_by_one_char c) l) ;;
+
+(*   
+let extend_several_by_several_chars l s=
+   let walker = ref l in 
+   for k = 0 to (String.length s)-1 do
+      walker := extend_several_by_one_char (!walker) (String.get s k)
+   done;
+   (!walker);;  
+*)   
+
+let expand = Memoized.recursive (fun old_f (E s)->
+     let n = String.length s in 
+     if n<1 then [""] else 
+     let t = Cull_string.coending 1 s and c= Strung.get s n in 
+     extend_several_by_one_char (old_f (E t)) c) ;;
+
+let expand_several l = 
+   let temp1 = Image.image expand l in      
+   Ordered.fold_merge Total_ordering.lex_for_strings temp1 ;;
+
+let base = expand (E(String.make 8 'F'));;
+
+let main_hashtbl = Hashtbl.create 2000;; 
+
+let main_algorithm old_f (vdw_s,k) =
+   let n = Vdw_string.cardinality vdw_s in 
+   if k<1 then (n,"") else 
+   let temp1 = [0,"0";1,"1"] in 
+   let temp2 = List.filter (fun (j,extension)->
+        Vdw_string.admissible_parts_are_joinable vdw_s extension
+   ) temp1  in
+   let temp3 = Image.image (
+     fun (j,extension) -> 
+       let new_s = (Vdw_string.tail vdw_s)^extension in 
+       let (m,old_sol) = old_f (new_s,k-1) in
+       let contribution_of_first_char =(
+          if (Strung.get vdw_s 1) = '1' then 1 else 0
+       )  in
+       (m+contribution_of_first_char,extension^old_sol)
+   ) temp2 in 
+   let (m,temp4) = Max.maximize_it_with_care fst temp3 in 
+   (m,snd(List.hd(temp4)));; 
+
+let rec pre_main (vdw_s,k) =
+   (* we assume that vdw_s has length 8 *)
+   match Hashtbl.find_opt main_hashtbl (vdw_s,k) with 
+   Some(old_answer) -> old_answer 
+   | None ->
+      let answer=(main_algorithm pre_main (vdw_s,k) ) in 
+      let _= Hashtbl.add main_hashtbl (vdw_s,k) answer in 
+      answer ;;
+
+let almost_main (s,k) =
+    (* we remove any assumption on the length of s *)
+    let d = 8 - (String.length s) in 
+    if d >0 
+    then pre_main((String.make d '0')^s,k) 
+    else 
+      let before = Cull_string.coending 8 s 
+      and after = Cull_string.ending 8 s in 
+      let (old_card,old_sol) =pre_main(after,k) in 
+      ((Vdw_string.cardinality before)+old_card,old_sol) ;; 
+
+exception Length_mismatch of string * int ;;
+
+let main (s,imposed_prefix,k) =
+   let d = k - (String.length imposed_prefix) in 
+   if d < 0
+   then  raise(Length_mismatch(imposed_prefix,k))      
+   else  let (old_card,old_sol) =almost_main(s^imposed_prefix,d) in 
+         (old_card,imposed_prefix^old_sol) ;;
+
+let shadow n =
+   if n<=8
+   then let zeroes = String.make (8-n) '0' in 
+        let temp1 = List.filter (Substring.is_the_ending_of zeroes) base in  
+        snd (Max.maximize_it_with_care Vdw_string.cardinality temp1)  
+   else let m = Vdw_chosen.measure n in 
+        List.filter (
+          fun prefix -> fst(main("",prefix,n)) = m
+        )  base ;;   
+        
+let analyze_shadow ll=
+   let tempf = (fun s->
+     List.filter (fun j->
+        (Strung.get s j,Strung.get s (2*j))=('1','1')
+      ) (Ennig.ennig 1 4)
+   ) in 
+   mt(Image.image tempf ll);;
+    
+let gmain ll n =
+     let temp1 = Image.image (fun prefix->main("",prefix,n)) ll in 
+     let (m,temp2) = Max.maximize_it_with_care fst temp1 in 
+     (m,Image.image snd temp2) ;;   
+
+
+module Constraint = struct 
+
+let order = Total_ordering.silex_compare Total_ordering.for_integers ;;
+
+let make ll = C(Ordered.sort order (mi ll));; 
+   
+let basic_test patt elt =
+   List.exists (fun k->(Strung.get patt k)<>'1') elt ;;
+
+let test (C ll) patt = List.for_all (basic_test patt) ll;;
+
+let representatives cstr= List.filter (test cstr) base;;
+
+let shift (C ll) =(C (Image.image (Image.image (fun x->x-1)) ll));;
+
+let impose_0 (C ll)=
+   C([1]::(List.filter (fun x->not(List.mem 1 x)) ll)) ;;
+
+let impose_1 (C ll)=
+   if List.mem [1] ll 
+   then None
+   else
+      let (temp1,temp2) = List.partition (List.mem 1) ll in
+      let temp3 = Image.image List.tl temp1 in 
+      Some(make (temp2@temp3));; 
+
+let corrector_for_extension_by_1 (C ll) =
+     make ([[1;2];[2;4];[3;6];[4;8]]@ll);;
+
+let corrector_for_extension_by_0 (C ll) =
+      C(List.filter (fun l->l<>[0]) ll);;
+ 
+let corrector_for_extension e cstr=
+  if e=1 
+  then corrector_for_extension_by_1 cstr 
+  else corrector_for_extension_by_0 cstr ;;      
+
+let bare_possible_expansions cstr =
+    let case0 = (0,impose_0 cstr) in
+    match impose_1 cstr with    
+    None -> [case0]
+    |Some(cstr1) -> [case0;(1,cstr1)] ;;
+
+let possible_expansions cstr =
+   Image.image (fun (e,cstr2)->
+      let cstr3 = shift cstr2 in 
+     (e,corrector_for_extension e cstr3)   
+   ) (bare_possible_expansions cstr)
+
+let doubled l= C(Image.image (fun j->[j;2*j]) l);;    
+
+let analyze_shadow (C ll) sha=
+   let temp1 = Ennig.index_everything ll in 
+   let tempf = (fun s->
+     Option.filter_and_unpack (fun (idx,cstr_elt)->
+        if List.for_all (fun j->(Strung.get s j)='1') cstr_elt 
+        then Some idx
+        else None
+      ) temp1
+   ) in 
+   let temp2 = mt(Image.image tempf sha) in 
+   Image.image (Image.image (fun k->List.nth ll (k-1))) temp2 ;;
+
+let gmain cstr n = gmain (representatives cstr) n ;;  
+
+let optimizations n (C ll) m = 
+   let tester = (fun ll2->
+      fst(gmain (C ll2) n)<=m) in 
+   let temp1 = Ordered_misc.minimal_elts_in_upwards_filter tester ll in 
+   Image.image (fun ll3->C ll3) temp1 ;;
+
+let optimize n cstr m = List.hd (optimizations n cstr m);;
+
+end ;;   
+
+
+module Statement = struct 
+
+let check (St(n,cstr,m)) =
+   (fst(Constraint.gmain cstr n)=m);;   
+
+let cmp =((fun (St(n1,cstr1,m1)) (St(n2,cstr2,m2)) ->
+   let trial1 = Total_ordering.standard2 (n1,m1) (n2,m2) in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+      Total_ordering.standard cstr1 cstr2   
+)  : statement Total_ordering_t.t);;   
+
+let descendants (St(n,cstr,m)) =
+    let temp1 = Constraint.possible_expansions cstr in 
+    let temp2 = List.filter (fun (e,cstr2)->m-e<(mea(n-1))) temp1 in
+    Image.image (fun (e,cstr2)->
+      St(n,Constraint.optimize n cstr2 (m-e),m-e)) temp2 ;;
+   
+     
+
+end ;;   
 
 (************************************************************************************************************************
 Snippet 80 : Musings on the Vand der Waerden problem, version 20 : add
@@ -14,15 +269,8 @@ none of the int lists in the list are contained in the set *)
 
 let mea = Vdw_chosen.measure ;;
 
-let mi ll =
-   let temp1 = Image.image Set_of_integers.safe_set ll in 
-   let temp2 = Ordered_misc.minimal_elts_wrt_inclusion temp1 in 
-   Image.image Set_of_integers.forget_order temp2 ;;
-
-let mt ll =
-   let temp1 = Image.image Set_of_integers.safe_set ll in 
-   let temp2 = Ordered_misc.minimal_transversals temp1 in 
-   Image.image Set_of_integers.forget_order temp2 ;;
+let mi  = Ordered_misc.minimal_elts_wrt_inclusion ;;
+let mt = Ordered_misc.minimal_transversals ;;
 
 let bitmap_to_intlist bm=
   let temp1 = Ennig.index_everything (Strung.explode bm) in 
@@ -374,15 +622,8 @@ none of the int lists in the list are contained in the set *)
 
 let mea = Vdw_chosen.measure ;;
 
-let mi ll =
-   let temp1 = Image.image Set_of_integers.safe_set ll in 
-   let temp2 = Ordered_misc.minimal_elts_wrt_inclusion temp1 in 
-   Image.image Set_of_integers.forget_order temp2 ;;
-
-let mt ll =
-   let temp1 = Image.image Set_of_integers.safe_set ll in 
-   let temp2 = Ordered_misc.minimal_transversals temp1 in 
-   Image.image Set_of_integers.forget_order temp2 ;;
+let mi  = Ordered_misc.minimal_elts_wrt_inclusion ;;
+let mt = Ordered_misc.minimal_transversals ;;
 
 let bitmap_to_intlist bm=
   let temp1 = Ennig.index_everything (Strung.explode bm) in 
@@ -10592,7 +10833,7 @@ let shadow x =
     ) z2 ;;
 let z3 = Image.image shadow current_wall_part ;;    
 let z4 = Image.image Set_of_integers.safe_set z3 ;;
-let z5 = Ordered_misc.minimal_transversals z4 ;;
+
 
 
 let base1 = [[14; 15]; [10; 13]];;
