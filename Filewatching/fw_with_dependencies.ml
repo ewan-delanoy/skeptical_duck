@@ -9,7 +9,9 @@ module Private = struct
   let index fw = fw.Fw_with_dependencies_t.index_for_caching ;;  
   let parent fw = fw.Fw_with_dependencies_t.parent ;;
   
-  let new_state (instance,state) = (instance,Fw_indexer.new_state instance) ;;
+  let new_state (instance,state) = 
+    let _ = Fw_indexer.push_state instance in 
+    (instance,Fw_indexer.get_state instance) ;;
   
   let getter f fw = f (parent fw) ;;
   
@@ -82,9 +84,10 @@ module Private = struct
         fun fw arg ->
         let old_parent = parent fw in 
         let (new_parent,additional_data) = f old_parent arg in 
+        let instance = Fw_indexer.create_new_instance () in 
         ({
           Fw_with_dependencies_t.parent = new_parent ;
-          index_for_caching = Fw_indexer.new_instance ();
+          index_for_caching = (instance, Fw_indexer.get_state instance);
         },additional_data)
       ) ;;
       
