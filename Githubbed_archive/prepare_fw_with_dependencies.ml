@@ -86,7 +86,7 @@ let index_determination meth_uple =
    
 
 
-let cached meth_uple =
+let text_for_method meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in
    let (left,right,old_res) = data_from_opt_extra opt_extra 
    and args = list_of_arguments meth_uple in 
@@ -107,7 +107,7 @@ let cached meth_uple =
    ]) ;;   
 
    let full_text () =
-      let all_meth_lines = Image.image cached methods in 
+      let all_meth_lines = Image.image text_for_method methods in 
          "module Cached = struct \n\n"^
          (String.concat "\n\n" all_meth_lines)^
          "end ;;"
@@ -117,15 +117,118 @@ let cached meth_uple =
 end ;;   
 
 
+let cartesian_ref = ref [] ;;
+
+let add_to_cartesian submod methd text=
+  (cartesian_ref:=((submod,methd),text)::(!cartesian_ref)) ;;
+
+exception Seek_in_cartesian of string ;;
+
+let seek_in_cartesian submod methd=
+   try List.assoc (submod,methd) (!cartesian_ref) with 
+   _ -> raise(Seek_in_cartesian(submod));;
+
+let ghetto_ref = ref ([]: (string * string list) list) ;;
+
+let add_to_ghetto submod lines=
+    (ghetto_ref:=(submod,lines)::(!ghetto_ref)) ;;  
+
+exception Seek_in_ghetto of string ;;
+
+let seek_in_ghetto submod =
+     try List.assoc submod (!ghetto_ref) with 
+     _ -> raise(Seek_in_ghetto(submod));;
+
+let text_from_ghetto submod = 
+   let lines = seek_in_ghetto submod in 
+   let (first_line,other_lines) = Listennou.ht lines in 
+   let all_lines = 
+      (" let force_get fw = "^first_line) ::
+      (other_lines @
+      [
+        " let get fw = " ;
+        "   let idx = index fw in " ; 
+        "   match Hashtbl.find_opt the_hashtbl idx with " ;
+        "      Some(old_answer)-> old_answer " ;
+        "     | None -> ";
+        "   let answer = force_get fw in "; 
+        "   let _ = (Hashtbl.add the_hashtbl idx answer) in ";
+        "   answer ;; "
+      ]) in 
+   all_lines;;    
+
+   add_to_ghetto
+   "Modularized_details"
+   ["Fw_module_small_details.modularize_details (parent fw)"];;
+ 
+ add_to_ghetto
+   "Order"
+   ["Fw_determine_order.main (Modularized_details.get fw)"];;
+ 
+ add_to_ghetto
+   "Needed_dirs" 
+   [   "let details = Modularized_details.get fw in ";
+    " let subdir_at_module = (fun mn->";
+    "   Fw_module_small_details.subdirectory(List.assoc mn details)";
+    " ) in ";
+    " Image.image (";
+    "  fun (mn,(_,ancestors)) ->";
+    "   let temp1 = Image.image subdir_at_module (mn::ancestors) in ";
+    "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
+    ") (Order.get fw) ;;"];;
+ 
+ add_to_ghetto
+    "Needed_libs" 
+    [   "let details = Modularized_details.get fw in ";
+     " let needed_libs_at_module = (fun mn->";
+     "   Fw_module_small_details.subdirectory(List.assoc mn details)";
+     " ) in ";
+     " Image.image (";
+     "  fun (mn,(_,ancestors)) ->";
+     "   let temp1 = Image.image needed_libs_at_module (mn::ancestors) in ";
+     "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
+     ") (Order.get fw) ;;"];;
+ 
+add_to_ghetto
+     "All_subdirectories" 
+     [   
+       " let details = Modularized_details.get fw in ";
+       " Ordered.sort Total_ordering.standard (Image.image (";
+       "  fun (mn,details_on_mn) ->";
+       "  Fw_module_small_details.subdirectory(details_on_mn)";
+       ") details) ;;"
+     ];;
+ 
+
+ add_to_ghetto
+    "All_printables"
+    [
+      " let mods_without_subdirs = Option.filter_and_unpack (";
+      "  fun (mn,details) ->";
+      " if Fw_module_small_details.has_printer details";
+      "  then Some mn"; 
+      "  else None";  
+      " ) (Modularized_details.get fw)"; 
+      " and main_table = Modularized_details.get fw in ";
+      " Image.image (";
+      "    fun mn ->";
+      "      let details = List.assoc mn main_table in ";
+      "      let subdir = Fw_module_small_details.subdirectory details in ";
+      "      Dfn_join.subdirectory_to_module subdir mn"; 
+      " ) mods_without_subdirs ;;" 
+    ] ;;
+  
 
 
 let text_for_submodule sumo =      
    String.concat "\n" 
-   [
+   ([
       "module "^(sumo)^" = struct \n";
-      " let the_hashtbl = ((Hashtbl.create 10)) ;; ";
-      "end ;;"
-   ];;
+      " let the_hashtbl = ((Hashtbl.create 10)) ;; "
+   ]@
+   (text_from_ghetto sumo)   
+   @[   "\nend ;;"
+   ]);;
 
 let text_for_all_subdmodules () = 
    let temp1 =

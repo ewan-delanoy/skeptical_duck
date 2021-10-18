@@ -1,11 +1,11 @@
 (************************************************************************************************************************
-Snippet 84 : 
+Snippet 83 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 83 : Musings on the Vand der Waerden problem, version 22 : computing 
+Snippet 82 : Musings on the Vand der Waerden problem, version 22 : computing 
 some statement levels
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -373,7 +373,7 @@ let u1 = List.filter (fun (St(n,_,_))->n mod 9=7) (level 3) ;;
 
 
 (************************************************************************************************************************
-Snippet 82 : Musings on the Vand der Waerden problem, version 21 : add
+Snippet 81 : Musings on the Vand der Waerden problem, version 21 : add
 StatSys submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -656,7 +656,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 81 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 80 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.optimize and Statement submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -910,7 +910,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 80 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 79 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.analyze_shadow, and start using it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1262,7 +1262,7 @@ Ordered_misc.reorder_list_of_pairs_using_list_of_singles ;;
 
 
 (************************************************************************************************************************
-Snippet 79 : Musings on the Vand der Waerden problem, version 19 : add 
+Snippet 78 : Musings on the Vand der Waerden problem, version 19 : add 
 Constraint submodule, and start testing it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1557,7 +1557,7 @@ let gg r=
 
 
 (************************************************************************************************************************
-Snippet 78 : Musings on the Vand der Waerden problem, version 18 : starting 
+Snippet 77 : Musings on the Vand der Waerden problem, version 18 : starting 
 a different approach
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1742,7 +1742,7 @@ let z5 = List.filter (fun (n,a,b)->a<>b) z4 ;;
 
 
 (************************************************************************************************************************
-Snippet 77 : Musings on the Vand der Waerden problem, version 17 : adding the
+Snippet 76 : Musings on the Vand der Waerden problem, version 17 : adding the
 I variant, and oslo_compute 33 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2496,7 +2496,7 @@ let upp l=List.filter(fun (x,(i,j))->
 *)
 
 (************************************************************************************************************************
-Snippet 76 : Musings on the Vand der Waerden problem, version 16 : adding the
+Snippet 75 : Musings on the Vand der Waerden problem, version 16 : adding the
 H variant, and oslo_compute 26 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -3202,7 +3202,7 @@ let upp l=List.filter(fun (x,(i,j))->
 
 
 (************************************************************************************************************************
-Snippet 75 : Musings on the Vand der Waerden problem, version 15 : working
+Snippet 74 : Musings on the Vand der Waerden problem, version 15 : working
 Eisenhower.determine_next_special_expansion, and oslo_compute 25 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -3908,7 +3908,7 @@ let h13 = Expansion.allowed_substitution_by_in (n0-7,d0) h12;;
 
 
 (************************************************************************************************************************
-Snippet 74 : Musings on the Vand der Waerden problem, version 15 : debug 
+Snippet 73 : Musings on the Vand der Waerden problem, version 15 : debug 
 Eisenhower.determine_next_special_expansion
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4594,7 +4594,7 @@ let next_u = (n0,d0,(n1-n0,d1-d0)::treated,temp3) ;;
 
 
 (************************************************************************************************************************
-Snippet 73 : Musings on the Vand der Waerden problem, version 14 : add 
+Snippet 72 : Musings on the Vand der Waerden problem, version 14 : add 
 Current_partition_watcher.ugly_part , oslo_compute 24 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -5187,7 +5187,7 @@ let h9 = Expansion.allowed_substitution_by_in (n0-6,d0+1) h8;;
 
 
 (************************************************************************************************************************
-Snippet 72 : Musings on the Vand der Waerden problem, version 13 : add
+Snippet 71 : Musings on the Vand der Waerden problem, version 13 : add
 Current_partition_watcher.ugly_part and Marshall_plan.compute_from_scratch,
 oslo_compute 21 0 has no D or E component
 ************************************************************************************************************************)
@@ -5741,7 +5741,7 @@ let h3 = Expansion.allowed_substitution_by_in (n0-2,d0+1) h2;;
 
 
 (************************************************************************************************************************
-Snippet 71 : Musings on the Vand der Waerden problem, version 12 : painfully long
+Snippet 70 : Musings on the Vand der Waerden problem, version 12 : painfully long
 computation of oslo_compute 21 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -6599,7 +6599,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 70 : Musings on the Van der Waerden problem, version 11 : add the Expansion
+Snippet 69 : Musings on the Van der Waerden problem, version 11 : add the Expansion
 submodule and use it to avoid the D variant in the computation of
 oslo_compute 18 1, and E variant and compute up to oslo_compute 20 0
 ************************************************************************************************************************)
@@ -7205,7 +7205,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 69 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
+Snippet 68 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
 colored_variable type, and add Partition_watcher.decompose and 
 Current_partition_watcher.decompose
 ************************************************************************************************************************)
@@ -7723,7 +7723,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.write_partition_commands 18 1 ;;
 
 (************************************************************************************************************************
-Snippet 68 : Musings on the Van der Waerden problem, version 9 : add lmea and
+Snippet 67 : Musings on the Van der Waerden problem, version 9 : add lmea and
 remove D variant in the definition of the colored_variable type
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -8201,7 +8201,7 @@ let z1 = Oslo.needed_intermediaries 19 0 ;;
 let z2 = Marshall_plan.detect_missing_affinities 19 0 ;;
 
 (************************************************************************************************************************
-Snippet 67 : Musings on the Van der Waerden problem, version 8 : adding
+Snippet 66 : Musings on the Van der Waerden problem, version 8 : adding
 Marshall_plan.write_partition_commands
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -8713,7 +8713,7 @@ let z1 = Marshall_plan.write_partition_commands 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 66 : Musings on the Van der Waerden problem, version 7 : adding 
+Snippet 65 : Musings on the Van der Waerden problem, version 7 : adding 
 Colored.order{_for_pairs} and using it in Affinity.analyse_combination 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9197,7 +9197,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 (************************************************************************************************************************
-Snippet 65 : Musings on the Van der Waerden problem, version 6 : adding
+Snippet 64 : Musings on the Van der Waerden problem, version 6 : adding
 Marshall_plan.detect_missing_affinities
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9666,7 +9666,7 @@ let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 64 : Musings on the Van der Waerden problem, version 5 : adding 
+Snippet 63 : Musings on the Van der Waerden problem, version 5 : adding 
 Oslo.needed_intermediaries, and display partitions as they are made
 
 ************************************************************************************************************************)
@@ -10088,7 +10088,7 @@ oslo_compute 18 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 63 : Musings on the Van der Waerden problem, version 4 : adding 
+Snippet 62 : Musings on the Van der Waerden problem, version 4 : adding 
 the Affinity submodule and make each part in a partition inherit the affinities
 of the whole
 ************************************************************************************************************************)
@@ -10473,7 +10473,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 62 : Musings on the Van der Waerden problem, version 3 : adding
+Snippet 61 : Musings on the Van der Waerden problem, version 3 : adding
 affinities and memorize each partition made in the partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -10825,7 +10825,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 61 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
+Snippet 60 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11119,7 +11119,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 60 : Musings on the Van der Waerden problem, version 2 : adding colored variables
+Snippet 59 : Musings on the Van der Waerden problem, version 2 : adding colored variables
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11291,7 +11291,7 @@ let check3 = Colored.check_partitioning [
 
 
 (************************************************************************************************************************
-Snippet 59 : Musings on the Van der Waerden problem  
+Snippet 58 : Musings on the Van der Waerden problem  
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11418,7 +11418,7 @@ let check4 = check_correct_partitioning [
 *)
 
 (************************************************************************************************************************
-Snippet 58 : Compute summaries for levels, in a Van der Waerden context
+Snippet 57 : Compute summaries for levels, in a Van der Waerden context
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11472,8 +11472,7 @@ let y1 = List.flatten (Ennig.doyle unexpected_impossibilities 1 10);;
 let y2 = Ordered.select_minimal_elements_for_inclusion 
            Total_ordering.for_integers y1 ;;
      
-let z1 = Vdw_chosen.minimal_obstructions (wall_position+1) 
-(Set_of_integers.safe_set [18; 20; 21]) ;;
+let z1 = Vdw_chosen.minimal_obstructions (wall_position+1) ([18; 20; 21]) ;;
 let z2 = Ennig.index_everything z1 ;;
 let shadow x =
     Option.filter_and_unpack (
@@ -11510,7 +11509,7 @@ let result2= [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 
 
 
 (************************************************************************************************************************
-Snippet 57 : Remove all modules in a subdirectory
+Snippet 56 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11527,7 +11526,7 @@ let z3 = Image.image (
 let act () = fgs z3 ;;  
 
 (************************************************************************************************************************
-Snippet 56 : Replacing a long interval in a file with another
+Snippet 55 : Replacing a long interval in a file with another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11541,7 +11540,7 @@ let replacement = Lines_in_string.interval towards_complement 9 240 ;;
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
-Snippet 55 : Long debugging session on the rename_module functionality (as in snippet 54), with
+Snippet 54 : Long debugging session on the rename_module functionality (as in snippet 53), with
 use of rsh to initialize
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -11596,7 +11595,7 @@ let (post_bad2,_) = Pri.rename_module_on_content_level bad2
 
 
 (************************************************************************************************************************
-Snippet 54 : Long debugging session on the rename_module functionality.
+Snippet 53 : Long debugging session on the rename_module functionality.
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11696,7 +11695,7 @@ let post_bad8=(
 
 
 (************************************************************************************************************************
-Snippet 53 : Visualize Git tree
+Snippet 52 : Visualize Git tree
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11721,8 +11720,8 @@ let cmds3 = cmds1 @ cmds2 ;;
 let anse1 = Image.image Sys.command cmds3 ;;
 
 (************************************************************************************************************************
-Snippet 52 : Long debugging session on the rename_subdir functionality,
-with just one main function ("compressed" version of snippet 51)
+Snippet 51 : Long debugging session on the rename_subdir functionality,
+with just one main function ("compressed" version of snippet 50)
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11856,7 +11855,7 @@ git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add .
 *)
 
 (************************************************************************************************************************
-Snippet 51 : Long debugging session on the rename_subdir functionality
+Snippet 50 : Long debugging session on the rename_subdir functionality
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11975,7 +11974,7 @@ let backup_with_message config  diff msg=
   *)
 
 (************************************************************************************************************************
-Snippet 50 : Miscellaneous tests on compilation management
+Snippet 49 : Miscellaneous tests on compilation management
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12018,7 +12017,7 @@ reco "1";;
 fgs ["tf_one";"tf_two";"tf_three";"tf_four";"tf_five"] ;;
 
 (************************************************************************************************************************
-Snippet 49 : Extracting lines from a file and modifying them
+Snippet 48 : Extracting lines from a file and modifying them
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12055,7 +12054,7 @@ let z7 = "\n\n\n" ^(String.concat "\n" (Image.image write2 z4)) ^ "\n\n\n";;
 let z8 () = print_string z7 ;;
 
 (************************************************************************************************************************
-Snippet 48 : Get a list of value names from an interval of lines in a file
+Snippet 47 : Get a list of value names from an interval of lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12070,88 +12069,6 @@ let compute_names = Image.image (
      Cull_string.interval temp1 1 (j1-1)
 ) u3;;
 *)
-
-
-(************************************************************************************************************************
-Snippet 47 : Primitive version of the Fw_with_dependencies module 
-************************************************************************************************************************)
-open Needed_values ;;
-module Private = struct 
-
-  let index fw = fw.Fw_with_dependencies_t.index_for_caching ;;  
-  let parent fw = fw.Fw_with_dependencies_t.parent ;;
-  
-  let new_state (instance,state) = (instance,Fw_indexer.new_state instance) ;;
-  
-  let getter f fw = f (parent fw) ;;
-  
-  let constructor f arg =
-    {
-       Fw_with_dependencies_t.parent = f arg;
-       index_for_caching = Fw_indexer.new_instance ();
-    } ;;
-
-  let univar f fw arg=
-     let old_parent = parent fw  in 
-     let new_parent = f old_parent arg
-     and new_index = new_state (index fw) in  
-    {
-       Fw_with_dependencies_t.parent = new_parent;
-       index_for_caching = new_index;
-    } ;;
-
-  let zeroplump f fw =
-    let old_parent = parent fw  in 
-    let (new_parent,additional_data) = f old_parent
-    and new_index = new_state (index fw) in  
-   ({
-      Fw_with_dependencies_t.parent = new_parent;
-      index_for_caching = new_index;
-   },additional_data) ;;  
-  
-  let uniplump f fw arg=
-    let old_parent = parent fw  in 
-    let (new_parent,additional_data) = f old_parent arg
-    and new_index = new_state (index fw) in  
-   ({
-      Fw_with_dependencies_t.parent = new_parent;
-      index_for_caching = new_index;
-   },additional_data) ;; 
-
-  end ;;   
-  
-let configuration = Private.getter Fw_with_small_details.configuration ;;
-let empty_one = Private.constructor Fw_with_small_details.empty_one;;
-let forget_modules = Private.univar Fw_with_small_details.forget_modules ;;
-let get_content = Private.getter Fw_with_small_details.get_content ;;  
-let get_mtime = Private.getter Fw_with_small_details.get_mtime ;;    
-let get_mtime_or_zero_if_file_is_nonregistered = Private.getter Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered ;;  
-let inspect_and_update = Private.zeroplump Fw_with_small_details.inspect_and_update;;
-let last_noticed_changes = Private.getter Fw_with_small_details.last_noticed_changes ;;
-let noncompilable_files = Private.getter Fw_with_small_details.noncompilable_files ;;
-let of_concrete_object = Private.constructor Fw_with_small_details.of_concrete_object ;;
-let of_configuration = Private.constructor Fw_with_small_details.of_configuration ;;
-let of_configuration_and_list = Private.constructor Fw_with_small_details.of_configuration_and_list ;;
-(*
-let overwrite_file_if_it_exists = Private.univar Fw_with_small_details.overwrite_file_if_it_exists;;
-let reflect_latest_changes_in_github = Private.univar Fw_with_small_details.reflect_latest_changes_in_github ;;
-let register_rootless_paths = Private.uniplump Fw_with_small_details.register_rootless_paths ;;
-let relocate_module_to = Private.univar Fw_with_small_details.relocate_module_to ;;
-let remove_files = Private.univar Fw_with_small_details.remove_files ;;
-let rename_module_on_filename_level_and_in_files = Private.uniplump Fw_with_small_details.rename_module;;
-let rename_subdirectory_as = Private.univar Fw_with_small_details.rename_subdirectory_as;;
-*)
-let replace_string = Private.uniplump Fw_with_small_details.replace_string ;;
-let replace_value = Private.uniplump Fw_with_small_details.replace_value ;;
-let root = Private.getter Fw_with_small_details.root ;;
-let set_gitpush_after_backup = Private.univar Fw_with_small_details.set_gitpush_after_backup ;;
-let set_last_noticed_changes = Private.univar Fw_with_small_details.set_last_noticed_changes ;;
-let to_concrete_object = Private.getter Fw_with_small_details.to_concrete_object ;;
-let usual_compilable_files = Private.getter Fw_with_small_details.usual_compilable_files ;;
-
-
-
-
 
 
 (************************************************************************************************************************
