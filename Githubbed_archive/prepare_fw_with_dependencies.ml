@@ -39,7 +39,7 @@ let methods = [
    "register_rootless_paths",true,["rootlesses"],Some "extra";
    "relocate_module_to",true,["pair"],Some "extra";
    "remove_files",true,["files_to_be_removed"],Some "extra";
-   "rename_module",true,["triple"],Some "extra";
+   "rename_module_on_filename_level_and_in_files",true,["triple"],Some "extra";
    "rename_subdirectory_as",true,["pair"],Some "extra";
    "replace_string",true,["pair"],Some "extra";
    "replace_value",true,["pair"],Some "extra";
@@ -327,7 +327,7 @@ mod_details "relocate_module_to" (mod_details_usual_preliminary,"") ;;
 
 mod_details "remove_files" (mod_details_usual_preliminary,"") ;;
 
-mod_details "rename_module" (mod_details_usual_preliminary,"") ;;
+mod_details "rename_module_on_filename_level_and_in_files" (mod_details_usual_preliminary,"") ;;
 
 mod_details "rename_subdirectory_as" (mod_details_usual_preliminary,"") ;;
 
@@ -349,6 +349,85 @@ add_to_ghetto
    ["Fw_determine_order.main (Modularized_details.get fw)"];;
  
 let order = add_to_cartesian "Order";;
+
+order "empty_one" ([" let answer = [] in "],"") ;;
+
+order "forget_modules" ([
+   " let old_val = get old_fw in ";
+   " let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in "
+],"") ;;
+
+let order_usual_preliminary = [
+   " let old_val = get old_fw in ";
+   " let modules_in_old_order = Image.image fst old_val in ";
+   " let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles";
+   " (Modularized_details.get new_fw) modules_in_old_order in ";
+   " let answer = Fw_determine_order.main  details_in_old_order in ";
+] ;;
+
+order "inspect_and_update" (order_usual_preliminary,"") ;;
+
+order "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+order "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+order "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+order "overwrite_file_if_it_exists" (order_usual_preliminary,"") ;;
+
+order "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+order "register_rootless_paths" ([
+   " let old_val = get old_fw in ";
+   " let extended_details_list = Modularized_details.get new_fw in ";
+   " let new_details = Listennou.big_tail (List.length old_val) extended_details_list in";
+   " let new_modules_in_order = Image.image fst (Fw_determine_order.main new_details) in ";
+   " let new_details_in_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles";
+   "     new_details new_modules_in_order in ";
+   " let answer = Fw_determine_order.compute_coatoms_and_ancestors_in_small_extension";
+   "      old_val new_details_in_order in ";
+],"") ;;
+
+order "relocate_module_to" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+order "remove_files" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+order "rename_module_on_filename_level_and_in_files" ([
+  " let old_val = get old_fw in ";
+  " let (old_mname,new_mname,_) = triple in";
+  " let rep = (fun mn->if mn = old_mname then new_mname else mn) in  ";
+  " let answer = Image.image (fun (mn2,(coat_mn2,ancestors_mn2)) ->";
+  "     (rep mn2,(Image.image rep coat_mn2,Image.image rep ancestors_mn2))";
+  " ) old_val in ";
+],"") ;;
+
+order "rename_subdirectory_as" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+order "replace_string" (order_usual_preliminary,"") ;;
+
+order "replace_value" (order_usual_preliminary,"") ;;
+
+order "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+order "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
 
  add_to_ghetto
    "Needed_dirs" 
@@ -420,7 +499,8 @@ let text_for_submodule sumo =
 
 let restricted = [
       "Modularized_details";
-      (* "Order";
+      "Order";
+      (* 
       "Needed_dirs";
       "Needed_libs";
       "All_subdirectories";
