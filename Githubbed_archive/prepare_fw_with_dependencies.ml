@@ -618,6 +618,82 @@ add_to_ghetto
  
 let all_subdirectories = add_to_cartesian "All_subdirectories";;     
 
+all_subdirectories "empty_one" ([" let answer = [] in "],"") ;;
+
+all_subdirectories "forget_modules" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "inspect_and_update" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "overwrite_file_if_it_exists" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+all_subdirectories "register_rootless_paths" ([
+  " let old_val = get old_fw in ";
+  " let (_,novelties) = extra in ";
+  " let possibly_new = Ordered.sort Total_ordering.standard ";
+  "   (Image.image (fun (rl,dets)->Dfn_rootless.to_subdirectory rl  ) novelties) in ";
+  " let answer = Ordered.merge Total_ordering.standard possibly_new old_val in ";
+],"") ;;
+
+all_subdirectories "relocate_module_to" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+all_subdirectories "remove_files" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "rename_module_on_filename_level_and_in_files" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+all_subdirectories "rename_subdirectory_as" ([
+   " let old_val = get old_fw in ";
+   " let rep = (fun sdir ->";
+   "   match Dfa_subdirectory.soak arg sdir with ";
+   "   None -> sdir ";
+   "   |Some new_sdir -> new_sdir   ";
+   " ) in ";
+   " let answer = Image.image rep old_val in ";
+],"") ;;
+
+all_subdirectories "replace_string" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "replace_value" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_subdirectories "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+all_subdirectories "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
  add_to_ghetto
     "All_printables"
     [
@@ -656,8 +732,9 @@ let restricted = [
       "Order";
       "Needed_dirs";
       "Needed_libs";
-      (* 
       "All_subdirectories";
+      (* 
+      
       "All_printables"  *)
 ] ;; 
 
