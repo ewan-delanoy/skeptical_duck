@@ -11578,7 +11578,7 @@ let all_acolytes_below=List.flatten separated_acolytes_below ;;
 let old_fw = Coma_state.frontier_with_unix_world tcs ;;
 let old_pal = Fw_with_dependencies.Private.parent old_fw;;
 let (bad1,_) = 
-    Fw_with_small_details.rename_module old_pal
+    Fw_with_small_details.rename_module_on_filename_level_and_in_files old_pal
      (old_nm,new_nm,all_acolytes_below) ;;
   
 module Pri  = Fw_with_small_details.Private ;;

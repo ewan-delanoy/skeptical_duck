@@ -372,7 +372,7 @@ let relocate_module_to = Private.relocate_module_to;;
 
 let remove_files = Private.remove_files;;
 
-let rename_module = Private.rename_module_on_both_levels ;;
+let rename_module_on_filename_level_and_in_files = Private.rename_module_on_both_levels ;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 
