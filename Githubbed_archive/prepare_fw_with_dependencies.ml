@@ -47,20 +47,20 @@ let methods = [
    "set_last_noticed_changes",true,["diff"],None;
 ] ;;
 
-module Cached = struct 
+module Common = struct 
 
 let list_of_arguments (meth_name,ancestor_is_here,other_args,opt_extra) opt_parent =
-    let ancestor_part = (
-       if ancestor_is_here 
-       then opt_parent^" "  
-       else ""
-    ) in 
-    ancestor_part^(String.concat " " other_args);;
+   let ancestor_part = (
+      if ancestor_is_here 
+      then opt_parent^" "  
+      else ""
+   ) in 
+   ancestor_part^(String.concat " " other_args);;
+   
+end ;;
 
-let data_from_opt_extra opt_extra =
-   match opt_extra with 
-   None -> (" { "," } ;; ","new_parent")
-   |Some(extra) -> (" ({ "," },"^extra^" ) ;; ","(new_parent,"^extra^")") ;;
+
+module Cached = struct 
 
 let optional_line_for_old_parent meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
@@ -70,6 +70,10 @@ let optional_line_for_old_parent meth_uple =
         ]  
    else [];;   
 
+let data_from_opt_extra opt_extra new_fw_name=
+   match opt_extra with 
+    None -> (" { "," } ;; ",new_fw_name)
+   |Some(extra) -> (" ({ "," },"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
 
 let index_determination meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
@@ -88,8 +92,8 @@ let index_determination meth_uple =
 
 let text_for_method meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in
-   let (left,right,old_res) = data_from_opt_extra opt_extra 
-   and args = list_of_arguments meth_uple in 
+   let (left,right,old_res) = data_from_opt_extra opt_extra "new_parent"
+   and args = Common.list_of_arguments meth_uple in 
    String.concat "\n" 
    ([ 
       "let "^meth_name^" "^(args "old_fw")^" =  ";
@@ -116,17 +120,74 @@ let text_for_method meth_uple =
 
 end ;;   
 
+module Modular = struct 
 
-let cartesian_ref = ref [] ;;
+let preceding_module modname =
+     let k = Listennou.find_index modname submodules in 
+     if k = 1 then "Cached" else List.nth submodules (k-2) ;;  
 
-let add_to_cartesian submod methd text=
-  (cartesian_ref:=((submod,methd),text)::(!cartesian_ref)) ;;
+let data_from_opt_extra opt_extra rest_of_line addendum_modifier=
+     match opt_extra with 
+      None -> ([
+                 " let new_fw = "^rest_of_line
+               ]," new_fw")
+     |Some(extra) -> 
+          if addendum_modifier=""
+          then ([
+                 " let visible = "^rest_of_line;
+                 " let (new_fw,"^extra^") = visible in "
+               ]," visible")
+          else ([
+            " let (new_fw,"^extra^") = "^rest_of_line
+               ]," (new_fw,"^addendum_modifier^extra^")") ;;
+
+
+let text_for_method modname meth_uple modmeth_uple =
+   let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple 
+   and (lines_before_answer,addendum_modifier) = modmeth_uple in
+   let args = Common.list_of_arguments meth_uple 
+   and prmod = preceding_module modname in 
+   let rest_of_line = prmod^"."^meth_name^" "^(args "old_fw")^" in " in 
+   let (introducing_new_fw,final_answer) = 
+       data_from_opt_extra opt_extra rest_of_line addendum_modifier in 
+   String.concat "\n" 
+   ([ 
+      "let "^meth_name^" "^(args "old_fw")^" =  ";   
+   ]
+   @introducing_new_fw
+   @lines_before_answer   
+   @[ 
+      " let _ = Hashtbl.add the_hashtbl (index new_fw) answer in ";
+      final_answer^" ;;"
+   ]) ;;
+
+end ;;   
+
+
+let cartesian_ref = ref ([]:((string * string) * (string list * string)) list) ;;
+
+let add_to_cartesian submod methd data=
+  (cartesian_ref:=((submod,methd),data)::(!cartesian_ref)) ;;
 
 exception Seek_in_cartesian of string ;;
 
-let seek_in_cartesian submod methd=
+let seek_in_cartesian submod methd =
    try List.assoc (submod,methd) (!cartesian_ref) with 
    _ -> raise(Seek_in_cartesian(submod));;
+
+exception Seek_method of string ;;
+    
+let seek_method methd =
+   try Listennou.force_find (fun (methd2,_,_,_)->methd2 = methd) methods with 
+   _ -> raise(Seek_method(methd));;
+
+
+let text_from_cartesian modname methd = 
+   let meth_uple = seek_method methd 
+   and modmeth_uple = seek_in_cartesian modname methd in 
+   Modular.text_for_method modname meth_uple modmeth_uple
+;; 
+
 
 let ghetto_ref = ref ([]: (string * string list) list) ;;
 
@@ -157,14 +218,138 @@ let text_from_ghetto submod =
       ]) in 
    all_lines;;    
 
-   add_to_ghetto
+add_to_ghetto
    "Modularized_details"
    ["Fw_module_small_details.modularize_details (parent fw)"];;
  
- add_to_ghetto
+let mod_details = add_to_cartesian "Modularized_details";;
+
+mod_details "empty_one" ([" let answer = [] in "],"") ;;
+
+mod_details "forget_modules" ([
+   " let old_val = get old_fw in ";
+   " let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in "
+],"") ;;
+
+mod_details "inspect_and_update" ([
+   " let old_val = get old_fw in ";
+   " let ((a_files,u_files,nc_files),changed_u_files) = extra in ";
+   " let tempf = (";
+   "   fun old_pair ->";
+   "    let (mn,details) = old_pair in "; 
+   "    let temp1 = List.filter (fun (rl,details2)->";
+   "       (Dfn_rootless.to_module rl)= mn";
+   "      ) changed_u_files in ";
+   " if temp1 <> []";
+   " then (mn, Fw_module_small_details.compute_details_from_acolytes_list_for_one_module temp1)";
+   "    else old_pair"; 
+   " ) in "; 
+   " let answer = Image.image tempf old_val in "
+],"") ;;
+
+mod_details "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+mod_details "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+mod_details "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+mod_details "overwrite_file_if_it_exists" ([
+   " let old_val = get old_fw in ";
+   " let answer = ( match extra with ";
+   "      None -> old_val ";
+   "      |Some(change) ->";
+   " let tempf = (";
+   "        fun old_pair -> ";
+   "          let (mn,details) = old_pair in ";
+   "          let temp1 = List.filter (fun (rl,details2)->";
+   "             (Dfn_rootless.to_module rl)= mn";
+   "            ) [change] in";
+   "          if temp1 <> []";
+   "          then let new_parent = parent new_fw in ";
+   "               (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "          else old_pair ";
+   "      ) in ";
+   " Image.image tempf old_val) in ";
+],"") ;;
+
+mod_details "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+mod_details "register_rootless_paths" ([
+   "  let old_val = get old_fw in ";
+   "  let ((a_files,u_files,nc_files),new_details) = extra in";
+   "  let involved_mods = Image.image Dfn_rootless.to_module rootlesses in";
+   "  let (overlapping,nonoverlapping) = List.partition (";
+   "     fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) involved_mods ";
+   "  ) new_details in ";
+   "  let tempf1 = (";
+   "    fun old_pair -> ";
+   "      let (mn,details) = old_pair in ";
+   "      let temp1 = Option.filter_and_unpack (fun (rl,details2)->";
+   "         if (Dfn_rootless.to_module rl)= mn";
+   "         then Some(rl,Some(rl,details2))";
+   "         else None ";
+   "        ) overlapping in";
+   "      if temp1 <> []";
+   "      then let new_parent = parent new_fw in ";
+   "           (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "      else old_pair ";
+   "  ) in ";
+   "  let answer = (Image.image tempf1 old_val)@";
+   "  (Fw_module_small_details.compute_details_from_acolytes_list_for_several_modules nonoverlapping) in ";
+],"") ;;
+
+let mod_details_usual_preliminary = [
+   " let old_val = get old_fw in ";
+   " let tempf = (";
+   "   fun old_pair -> ";
+   "     let (mn,details) = old_pair in ";
+   "     let temp1 = List.filter (fun (rl,new_pair_for_rl)->";
+   "        (Dfn_rootless.to_module rl)= mn";
+   "       ) extra in";
+   "     if temp1 <> []";
+   "     then let new_parent = parent new_fw in ";
+   "          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "     else old_pair ";
+   " ) in ";
+   " let answer = Image.image tempf old_val in ";
+] ;;
+
+
+mod_details "relocate_module_to" (mod_details_usual_preliminary,"") ;;
+
+mod_details "remove_files" (mod_details_usual_preliminary,"") ;;
+
+mod_details "rename_module" (mod_details_usual_preliminary,"") ;;
+
+mod_details "rename_subdirectory_as" (mod_details_usual_preliminary,"") ;;
+
+mod_details "replace_string" (mod_details_usual_preliminary,"") ;;
+
+mod_details "replace_value" (mod_details_usual_preliminary,"") ;;
+
+mod_details "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+mod_details "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+
+add_to_ghetto
    "Order"
    ["Fw_determine_order.main (Modularized_details.get fw)"];;
  
+let order = add_to_cartesian "Order";;
+
  add_to_ghetto
    "Needed_dirs" 
    [   "let details = Modularized_details.get fw in ";
@@ -227,13 +412,25 @@ let text_for_submodule sumo =
       " let the_hashtbl = ((Hashtbl.create 10)) ;; "
    ]@
    (text_from_ghetto sumo)   
+   @(Image.image (fun (methname,_,_,_)->
+      "\n"^(text_from_cartesian sumo methname)) methods)
    @[   "\nend ;;"
    ]);;
+
+
+let restricted = [
+      "Modularized_details";
+      (* "Order";
+      "Needed_dirs";
+      "Needed_libs";
+      "All_subdirectories";
+      "All_printables"  *)
+] ;; 
 
 let text_for_all_subdmodules () = 
    let temp1 =
       (Cached.full_text ()) 
-      ::(Image.image text_for_submodule submodules) in 
+      ::(Image.image text_for_submodule restricted) in 
    "\n\n\n"^(String.concat "\n\n\n" temp1)^"\n\n\n" ;;
     
 let prelude = String.concat "\n" [
