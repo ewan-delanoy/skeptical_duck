@@ -449,9 +449,6 @@ needed_dirs "forget_modules" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-let needed_dirs_usual_preliminary = [
-   
-] ;;
 
 needed_dirs "inspect_and_update" ([
   " let answer = force_get new_fw in "
@@ -536,6 +533,79 @@ needed_dirs "set_last_noticed_changes" ([
 
 let needed_libs = add_to_cartesian "Needed_libs";;     
 
+needed_libs "empty_one" ([" let answer = [] in "],"") ;;
+
+needed_libs "forget_modules" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+let needed_dirs_usual_preliminary = [
+   
+] ;;
+
+needed_libs "inspect_and_update" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "overwrite_file_if_it_exists" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+needed_libs "register_rootless_paths" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "relocate_module_to" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+needed_libs "remove_files" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "rename_module_on_filename_level_and_in_files" ([
+  " let old_val = get old_fw in ";
+  " let (old_mname,new_mname,_) = triple in";
+  " let rep = (fun mn->if mn = old_mname then new_mname else mn) in ";
+  " let answer = Image.image (fun (mn2,libs) -> (rep mn2,libs)) old_val in ";
+],"") ;;
+
+needed_libs "rename_subdirectory_as" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+needed_libs "replace_string" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "replace_value" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_libs "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+needed_libs "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
 add_to_ghetto
      "All_subdirectories" 
      [   
@@ -585,9 +655,8 @@ let restricted = [
       "Modularized_details";
       "Order";
       "Needed_dirs";
-      (* 
-      
       "Needed_libs";
+      (* 
       "All_subdirectories";
       "All_printables"  *)
 ] ;; 
