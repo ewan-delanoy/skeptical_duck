@@ -671,7 +671,7 @@ all_subdirectories "rename_module_on_filename_level_and_in_files" ([
 all_subdirectories "rename_subdirectory_as" ([
    " let old_val = get old_fw in ";
    " let rep = (fun sdir ->";
-   "   match Dfa_subdirectory.soak arg sdir with ";
+   "   match Dfa_subdirectory.soak pair sdir with ";
    "   None -> sdir ";
    "   |Some new_sdir -> new_sdir   ";
    " ) in ";
@@ -714,6 +714,81 @@ all_subdirectories "set_last_noticed_changes" ([
   
 let all_printables = add_to_cartesian "All_printables";;
 
+all_printables "empty_one" ([" let answer = [] in "],"") ;;
+
+all_printables "forget_modules" ([
+  " let old_val = get old_fw in ";
+  " let answer = List.filter (fun middle->";
+  "    not(List.mem (Dfn_middle.to_module middle) mods_to_be_erased)) old_val in "
+],"") ;;
+
+all_printables "inspect_and_update" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "overwrite_file_if_it_exists" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+all_printables "register_rootless_paths" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "relocate_module_to" ([
+  "  let answer = get old_fw in "
+],"") ;;
+
+all_printables "remove_files" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "rename_module_on_filename_level_and_in_files" ([
+  " let old_val = get old_fw in ";
+  " let (old_mname,new_mname,_) = triple in";
+  " let rep = Dfn_middle.rename_module (old_mname,new_mname) in ";
+  " let answer = Image.image rep old_val in ";
+],"") ;;
+
+all_printables "rename_subdirectory_as" ([
+   " let old_val = get old_fw in ";
+   " let (old_sdir,new_sdir) = pair in";
+   " let s_new_sdir = Dfa_subdirectory.without_trailing_slash new_sdir in ";
+   " let rep = Dfn_middle.rename_endsubdirectory (old_sdir,s_new_sdir) in ";
+   " let answer = Image.image rep old_val in ";
+],"") ;;
+
+all_printables "replace_string" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "replace_value" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+all_printables "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+all_printables "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
 let text_for_submodule sumo =      
    String.concat "\n" 
    ([
@@ -727,31 +802,69 @@ let text_for_submodule sumo =
    ]);;
 
 
-let restricted = [
-      "Modularized_details";
-      "Order";
-      "Needed_dirs";
-      "Needed_libs";
-      "All_subdirectories";
-      (* 
-      
-      "All_printables"  *)
-] ;; 
-
 let text_for_all_subdmodules () = 
    let temp1 =
       (Cached.full_text ()) 
-      ::(Image.image text_for_submodule restricted) in 
+      ::(Image.image text_for_submodule submodules) in 
    "\n\n\n"^(String.concat "\n\n\n" temp1)^"\n\n\n" ;;
     
 let prelude = String.concat "\n" [
-  "let expand_index idx = (idx,Fw_indexer.get_state idx) ;;";
-  "let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; ";  
-  "let parent fw = fw.Fw_with_dependencies_t.parent ;;";
+  "module Private = struct\n"; 
+  " let expand_index idx = (idx,Fw_indexer.get_state idx) ;;";
+  " let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; ";  
+  " let parent fw = fw.Fw_with_dependencies_t.parent ;;";
+] ;;
+
+let postlude = String.concat "\n" [
+   "  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;";
+   "  module Exit = All_printables ;; ";
+   "end;;";
+   "";
+   "let all_subdirectories fw = Private.All_subdirectories.get fw;;";
+   "let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;";
+   "let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;";
+   "let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;";
+   "let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;";
+   "let empty_one = Private.Exit.empty_one ;;";
+   "let forget_modules = Private.Exit.forget_modules ;;";
+   "let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;";
+   "let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;";
+   "let inspect_and_update = Private.Exit.inspect_and_update ;;";
+   "let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;";
+   "let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with ";
+   "                              None -> \"0.\" |Some(fl)->fl ;;";
+   "let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;";
+   "let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;";
+   "let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;";
+   "let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;";
+   "let of_concrete_object = Private.Exit.of_concrete_object ;;";
+   "let of_configuration = Private.Exit.of_configuration ;;";
+   "let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;";
+   "let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;";
+   "let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;";
+   "let principal_mt_for_module fw mn = Fw_module_small_details.principal_modification_time (Private.details_for_module fw mn) ;;";
+   "let printer_equipped_types fw = Private.All_printables.get fw;;";
+   "let reflect_latest_changes_in_github = Private.Exit.reflect_latest_changes_in_github ;;";
+   "let register_rootless_paths = Private.Exit.register_rootless_paths ;;";
+   "let relocate_module_to = Private.Exit.relocate_module_to ;;";
+   "let remove_files = Private.Exit.remove_files ;;";
+   "let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on_filename_level_and_in_files ;;";
+   "let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;";
+   "let replace_string = Private.Exit.replace_string ;;";
+   "let replace_value = Private.Exit.replace_value ;;";
+   "let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;";
+   "let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;";
+   "let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;";
+   "let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;";
+   "let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;";
+
+
 ] ;;
 
 let write_all () =
-   let text = "\n\n"^prelude^"\n\n"^(text_for_all_subdmodules ()) 
+   let text = "\n\n"^prelude^"\n\n"
+               ^(text_for_all_subdmodules ()) 
+               ^("\n\n"^postlude^"\n\n")
    and file = Absolute_path.of_string "Fads/sirloin.ml"
    and beg_mark = "(* Beginning of sirloin *)"
    and end_mark = "(* End of sirloin *)" in 
