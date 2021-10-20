@@ -441,6 +441,87 @@ order "set_last_noticed_changes" ([
     "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
     ") (Order.get fw) ;;"];;
  
+let needed_dirs = add_to_cartesian "Needed_dirs";;
+
+needed_dirs "empty_one" ([" let answer = [] in "],"") ;;
+
+needed_dirs "forget_modules" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+let needed_dirs_usual_preliminary = [
+   
+] ;;
+
+needed_dirs "inspect_and_update" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "of_concrete_object" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "of_configuration" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "of_configuration_and_list" ([
+   " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "overwrite_file_if_it_exists" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "reflect_latest_changes_in_github" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+needed_dirs "register_rootless_paths" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "relocate_module_to" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "remove_files" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "rename_module_on_filename_level_and_in_files" ([
+  " let old_val = get old_fw in ";
+  " let (old_mname,new_mname,_) = triple in";
+  " let rep = (fun mn->if mn = old_mname then new_mname else mn) in ";
+  " let answer = Image.image (fun (mn2,sdirs) -> (rep mn2,sdirs)) old_val in ";
+],"") ;;
+
+needed_dirs "rename_subdirectory_as" ([
+  " let old_val = get old_fw in ";
+  " let rep = (fun sdir ->";
+   "   match Dfa_subdirectory.soak pair sdir with ";
+   "   None -> sdir ";
+   "   |Some new_sdir -> new_sdir   ";
+   " ) in ";
+   " let answer = Image.image (fun (mn,sdirs)->(mn,Image.image rep sdirs) ) old_val in ";
+],"") ;;
+
+needed_dirs "replace_string" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "replace_value" ([
+  " let answer = force_get new_fw in "
+],"") ;;
+
+needed_dirs "set_gitpush_after_backup" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
+needed_dirs "set_last_noticed_changes" ([
+   "  let answer = get old_fw in "
+],"") ;;
+
  add_to_ghetto
     "Needed_libs" 
     [   "let details = Modularized_details.get fw in ";
@@ -452,7 +533,9 @@ order "set_last_noticed_changes" ([
      "   let temp1 = Image.image needed_libs_at_module (mn::ancestors) in ";
      "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
      ") (Order.get fw) ;;"];;
- 
+
+let needed_libs = add_to_cartesian "Needed_libs";;     
+
 add_to_ghetto
      "All_subdirectories" 
      [   
@@ -463,6 +546,7 @@ add_to_ghetto
        ") details) ;;"
      ];;
  
+let all_subdirectories = add_to_cartesian "All_subdirectories";;     
 
  add_to_ghetto
     "All_printables"
@@ -482,7 +566,7 @@ add_to_ghetto
       " ) mods_without_subdirs ;;" 
     ] ;;
   
-
+let all_printables = add_to_cartesian "All_printables";;
 
 let text_for_submodule sumo =      
    String.concat "\n" 
@@ -500,8 +584,9 @@ let text_for_submodule sumo =
 let restricted = [
       "Modularized_details";
       "Order";
-      (* 
       "Needed_dirs";
+      (* 
+      
       "Needed_libs";
       "All_subdirectories";
       "All_printables"  *)
