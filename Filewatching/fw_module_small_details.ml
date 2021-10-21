@@ -29,7 +29,7 @@ let compute_details_from_acolytes_list_for_one_module l=
         raise(Several_locations_for_one_ending(clearer_picture))
    else 
    let temp3 = Image.image (fun (edg,l_rl)->
-      (Dfa_ending.convert_to_ocaml_ending edg,List.hd l_rl)
+      (Dfa_ocaml_ending.of_ending edg,List.hd l_rl)
       ) temp2   in 
    let (temp4,temp5) = List.partition 
     (function (edg,rl)->edg=Dfa_ocaml_ending_t.Mli) temp3 in 
@@ -70,7 +70,7 @@ let compute_details_from_acolytes_list_for_one_module l=
       used_libraries = Fw_file_small_details.used_libraries principal_details ;
       has_printer = Fw_file_small_details.has_printer principal_details ;
       subdirectory = principal_subdir ;
-      principal_ending = Dfa_ending.convert_to_ocaml_ending (Dfn_rootless.to_ending principal_rless) ;
+      principal_ending = Dfa_ocaml_ending.of_ending (Dfn_rootless.to_ending principal_rless) ;
       mli_present = (opt_mli_detailed_rless <> None) ;
       principal_modification_time = Fw_file_small_details.modification_time principal_details ;
       mli_modification_time = opt_mli_mt ;
