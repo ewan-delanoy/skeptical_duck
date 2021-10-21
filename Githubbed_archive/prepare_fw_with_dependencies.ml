@@ -527,7 +527,7 @@ needed_dirs "set_last_noticed_changes" ([
      " ) in ";
      " Image.image (";
      "  fun (mn,(_,ancestors)) ->";
-     "   let temp1 = Image.image needed_libs_at_module (mn::ancestors) in ";
+     "   let temp1 = List.flatten(Image.image needed_libs_at_module (mn::ancestors)) in ";
      "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
      ") (Order.get fw) ;;"];;
 
