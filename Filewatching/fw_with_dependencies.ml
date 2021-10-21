@@ -11,9 +11,6 @@ module Private = struct
  let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; 
  let parent fw = fw.Fw_with_dependencies_t.parent ;;
 
-
-
-
 module Cached = struct 
 
 let empty_one config =  
@@ -725,13 +722,12 @@ let set_last_noticed_changes old_fw diff =
 
 end ;;
 
-
 module Needed_libs = struct 
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
  let force_get fw = let details = Modularized_details.get fw in 
  let needed_libs_at_module = (fun mn->
-   Fw_module_small_details.subdirectory(List.assoc mn details)
+   Fw_module_small_details.used_libraries(List.assoc mn details)
  ) in 
  Image.image (
   fun (mn,(_,ancestors)) ->

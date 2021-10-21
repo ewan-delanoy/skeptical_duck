@@ -22,7 +22,7 @@ let z4 () = print_string z3 ;;
 
 let fn = "Filewatching/fw_with_dependencies.ml";;
 let fn = "Fads/jug.ml";;
-let z5 = Lines_in_string.interval (rf fn) 519 612 ;;
+let z5 = Lines_in_string.interval (rf fn) 9 92 ;;
 let z6 = Lines_in_string.lines z5;;
 let z7 = Image.image (fun line->"   \""^line^"\";") z6;;
 let z8 = "\n\n\n"^(String.concat "\n" z7)^"\n\n\n" ;;
@@ -30,6 +30,11 @@ let z9  = print_string z8 ;;
 
 let z6 = Image.image (Cull_string.cobeginning 6) z6;;
 
+let g1 = Image.image (fun s->
+   let j = Strung.char_finder_from (fun c->c='/') s 1 in 
+   Cull_string.beginning j s  ) z6;;
+let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
+let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
 Snippet 82 : Musings on the Vand der Waerden problem, version 22 : computing 

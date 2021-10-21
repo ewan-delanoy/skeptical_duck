@@ -523,7 +523,7 @@ needed_dirs "set_last_noticed_changes" ([
     "Needed_libs" 
     [   "let details = Modularized_details.get fw in ";
      " let needed_libs_at_module = (fun mn->";
-     "   Fw_module_small_details.subdirectory(List.assoc mn details)";
+     "   Fw_module_small_details.used_libraries(List.assoc mn details)";
      " ) in ";
      " Image.image (";
      "  fun (mn,(_,ancestors)) ->";
