@@ -18,7 +18,7 @@ let to_string = function
   | Dfa_ocaml_ending_t.Mli ->  "mli" ;; 
 
 
-let capitalized_correspondances= Image.image (fun cml_edg->
+let capitalized_correspondances = Image.image (fun cml_edg->
     (cml_edg,to_string cml_edg)
    ) [
    Dfa_ocaml_ending_t.Mll ;  
@@ -28,6 +28,8 @@ let capitalized_correspondances= Image.image (fun cml_edg->
  ];;
 
 end ;;
+
+let all = Image.image fst Private.capitalized_correspondances ;;
 
 let of_ending (Dfa_ending_t.E(e)) = 
    match Option.seek (fun (cml_edg,e2)->e2=e) Private.capitalized_correspondances with 
