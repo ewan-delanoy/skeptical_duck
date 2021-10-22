@@ -466,10 +466,24 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
                watched_files = Image.image compute_info to_be_watched;
                last_noticed_changes = Dircopy_diff.empty_one;
              };;
-        
-        let of_configuration config = 
-           let to_be_watched = first_init config in 
-           of_configuration_and_list config to_be_watched ;;
+      
+         let of_configuration config = 
+               let to_be_watched = first_init config in 
+               of_configuration_and_list config to_be_watched ;;
+
+      let transplant fw new_config =  
+            let old_watched_files = Automatic.watched_files fw  
+            and temporary_fw = {
+            fw with
+            File_watcher_t.configuration = new_config ;
+            } in 
+            { temporary_fw with 
+            File_watcher_t.watched_files = Image.image (
+               fun (rl,_) -> (rl,recompute_mtime temporary_fw rl)
+            ) old_watched_files;
+            last_noticed_changes = Dircopy_diff.empty_one;
+           };;
+          
       
       module Modular = struct
 
@@ -555,6 +569,16 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let fw3=rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
          fw3;;
          
+      let restrict fw smaller_list_of_modules =  
+         let old_watched_files = Automatic.watched_files fw in 
+         {
+         fw with
+         File_watcher_t.watched_files = List.filter (
+             fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) smaller_list_of_modules
+         ) old_watched_files;
+         last_noticed_changes = Dircopy_diff.empty_one;
+       };;
+  
 
       let usual_compilable_files fw  =
          let all_files = Image.image fst (Automatic.watched_files fw) in 
@@ -627,6 +651,10 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
+let restrict = Private.Modular.restrict ;;
+
 let to_concrete_object = Automatic.to_concrete_object ;;
+
+let transplant = Private.transplant ;;
 
 let usual_compilable_files = Private.Modular.usual_compilable_files ;;
