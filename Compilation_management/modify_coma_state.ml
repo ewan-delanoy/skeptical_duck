@@ -193,7 +193,7 @@ module Physical = struct
       (List.hd new_acolytes) in
      let principal_mt=Coma_state.md_compute_modification_time new_name 
                             (Coma_state.principal_ending_at_module cs mn)
-     and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ending.mli in
+     and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ocaml_ending_t.Mli in
      let s_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
      let cs2=Coma_state.set_subdir_at_module cs mn new_subdir in 
      let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
@@ -221,7 +221,7 @@ module Physical = struct
          (Dfa_module.to_line old_nm)^
          ".cm* ") in     
      let principal_mt=Coma_state.md_compute_modification_time new_eless (Coma_state.principal_ending_at_module cs2 old_nm)
-     and mli_mt=Coma_state.md_compute_modification_time new_eless Dfa_ending.mli in
+     and mli_mt=Coma_state.md_compute_modification_time new_eless Dfa_ocaml_ending_t.Mli in
      let cs3=Coma_state.change_one_module_name cs2 old_nm new_nm in 
      let cs4=Coma_state.set_principal_mt_at_module cs3 new_nm principal_mt in 
      let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 

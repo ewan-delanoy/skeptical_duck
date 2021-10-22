@@ -516,7 +516,7 @@ module Automatic = struct
        let new_principal_mts=Image.image (fun (mn,_)->
             let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
             and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
-            let rootless = (Dfn_rootless_t.J(subdir,mn,pr_end)) in 
+            let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ocaml_ending.to_ending pr_end)) in 
             (mn,Fw_with_dependencies.get_mtime new_frontier rootless)
        ) cs.Coma_state_t.principal_ending_for_module
        and new_mli_mts=Image.image (fun (mn,subdir)->
@@ -566,7 +566,7 @@ module Automatic = struct
         Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
         modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
         subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
-        principal_ending_for_module = cr_to_pair Dfa_ending.of_concrete_object (g principal_ending_for_module_label);
+        principal_ending_for_module = cr_to_pair Dfa_ocaml_ending.of_concrete_object (g principal_ending_for_module_label);
         mli_presence_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g mli_presence_for_module_label);
         principal_mt_for_module = cr_to_pair Crobj_converter.string_of_concrete_object (g principal_mt_for_module_label);
         mli_mt_for_module = cr_to_pair Crobj_converter.string_of_concrete_object (g mli_mt_for_module_label);
@@ -587,7 +587,7 @@ module Automatic = struct
       frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
       modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
       subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
-      principal_ending_for_module_label, cr_of_pair Dfa_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
+      principal_ending_for_module_label, cr_of_pair Dfa_ocaml_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
       mli_presence_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.mli_presence_for_module;  
       principal_mt_for_module_label, cr_of_pair Crobj_converter.string_to_concrete_object cs.Coma_state_t.principal_mt_for_module;
       mli_mt_for_module_label, cr_of_pair Crobj_converter.string_to_concrete_object  cs.Coma_state_t.mli_mt_for_module;
@@ -691,7 +691,7 @@ let check_ending_in_at_module edg cs mn=
    if edg=principal_ending_at_module cs mn
    then true 
    else 
-   if edg=Dfa_ending.mli
+   if edg=Dfa_ocaml_ending_t.Mli
    then mli_presence_at_module cs mn
    else false;;
 
@@ -702,9 +702,9 @@ let acolytes_at_module cs mn=
   Option.filter_and_unpack (fun 
   edg->
      if check_ending_in_at_module edg cs mn
-     then Some(Dfn_join.to_ending eless edg)
+     then Some(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg))
      else None
-) Dfa_ending.all_ocaml_endings;;
+) Dfa_ocaml_ending.all ;;
 
 
 
@@ -719,13 +719,13 @@ let rootless_paths_at_module cs mn=
 let registered_endings_at_module cs mn=
   List.filter (fun edg->
   check_ending_in_at_module edg cs mn 
-  ) Dfa_ending.all_ocaml_endings;;
+  ) Dfa_ocaml_ending.all ;;
 
 
 
 let check_for_single_ending_at_module cs mn=
   if mli_presence_at_module cs mn
-  then (principal_ending_at_module cs mn)=(Dfa_ending.mli)
+  then (principal_ending_at_module cs mn)=(Dfa_ocaml_ending_t.Mli)
   else true ;;
 
 
@@ -821,7 +821,7 @@ let all_endinglesses cs=
 
 let get_modification_time cs mn edg=
   if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
-  if edg=Dfa_ending.mli then mli_mt_at_module cs mn else 
+  if edg=Dfa_ocaml_ending_t.Mli then mli_mt_at_module cs mn else 
   "0.";;
 
 exception Non_existent_mtime of Dfn_full_t.t;;
@@ -832,7 +832,7 @@ let force_modification_time root_dir cs mlx=
       let file=Dfn_full.to_line mlx in 
       let new_val=string_of_float((Unix.stat file).Unix.st_mtime)  in
       let cs2=(
-        if edg=principal_ending_at_module cs nm 
+        if (Dfa_ocaml_ending.of_ending edg)=principal_ending_at_module cs nm 
         then set_principal_mt_at_module cs nm new_val
         else cs
       ) in
@@ -887,7 +887,7 @@ let partially_remove_mlx_file cs mlxfile=
     if pre_desc<>[]
     then raise(Abandoned_children(mlxfile,pre_desc))
     else
-    let edg=Dfn_full.to_ending mlxfile in
+    let edg=Dfa_ocaml_ending.of_ending(Dfn_full.to_ending mlxfile) in
     if (not(check_ending_in_at_module edg cs nm))
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_module cs nm
@@ -905,7 +905,7 @@ let partially_remove_mlx_file cs mlxfile=
               cs6
          else (* if we get here, there are two registered endings, one of which
               is the mli *) 
-              if edg=(Dfa_ending.mli)
+              if edg=(Dfa_ocaml_ending_t.Mli)
               then (
                        let cs3=set_mli_presence_at_module cs nm false in 
                        set_mli_mt_at_module cs3 nm "0."
@@ -913,7 +913,7 @@ let partially_remove_mlx_file cs mlxfile=
                else 
                      let old_mt=principal_mt_at_module cs nm in
                      (
-                      let cs4=set_principal_ending_at_module cs nm (Dfa_ending.mli) in 
+                      let cs4=set_principal_ending_at_module cs nm (Dfa_ocaml_ending_t.Mli) in 
                       set_principal_mt_at_module cs4 nm old_mt
                     );;
             
@@ -928,7 +928,7 @@ let compute_subdirectories_list cs=
 let  check_registrations cs eless=
    let mn=Dfn_endingless.to_module eless in 
    Dfa_ending.compute_on_all_ocaml_endings 
-      (fun edg->check_ending_in_at_module edg cs mn);;
+      (fun edg->check_ending_in_at_module (Dfa_ocaml_ending.of_ending edg) cs mn);;
 
 
 module PrivateTwo=struct
@@ -970,24 +970,25 @@ end;;
 let compute_principal_ending (mlr,mlir,mllr,mlyr)=
     let temp1=List.combine
       [mlr;mllr;mlyr]
-      [Dfa_ending.ml;Dfa_ending.mll;Dfa_ending.mly] in
+      [Dfa_ocaml_ending_t.Ml;Dfa_ocaml_ending_t.Mll;Dfa_ocaml_ending_t.Mly] in
     let temp2=Option.filter_and_unpack (
        fun (bowl,ending)->if bowl then Some(ending) else None 
     ) temp1 in
-    if temp2=[] then Dfa_ending.mli else List.hd temp2;;
+    if temp2=[] then Dfa_ocaml_ending_t.Mli else List.hd temp2;;
 
 let md_compute_modification_time hm edg=
-  let mlx=Dfn_join.to_ending hm edg in
+  let mlx=Dfn_join.to_ending hm (Dfa_ocaml_ending.to_ending edg) in
   let file=Dfn_full.to_line mlx in 
   if not(Sys.file_exists file) then "0." else
   let st=Unix.stat file in
   string_of_float(st.Unix.st_mtime);;
 
 let md_compute_modification_times hm=
-      Dfa_ending.compute_on_all_ocaml_endings (md_compute_modification_time hm);;
+      Dfa_ending.compute_on_all_ocaml_endings (fun edg->
+        md_compute_modification_time hm (Dfa_ocaml_ending.of_ending edg) );;
     
 let md_associated_modification_time  (ml_mt,mli_mt,mll_mt,mly_mt) edg=
-  match Dfa_ocaml_ending.of_ending edg with
+  match edg with
      Dfa_ocaml_ending_t.Ml->ml_mt
     |Mli->mli_mt
     |Mll->mll_mt
@@ -1030,8 +1031,7 @@ let update_just_one_module cs rootless =
 let  check_unix_presences hm=
     Dfa_ending.compute_on_all_ocaml_endings (fun edg->check_unix_presence hm edg);;  
 
-let registrations_for_lonely_ending old_edg =
-   let edg = Dfa_ocaml_ending.of_ending old_edg in 
+let registrations_for_lonely_ending edg =
     (
       edg=Dfa_ocaml_ending_t.Ml,
       edg=Dfa_ocaml_ending_t.Mli,
@@ -1043,7 +1043,7 @@ let registrations_for_lonely_ending old_edg =
 let complete_id_during_new_module_registration cs rless=
     let middle = Dfn_rootless.to_middle rless in 
     let eless=Dfn_join.root_to_middle (root cs) middle 
-    and edg=Dfn_rootless.to_ending rless in
+    and edg=Dfa_ocaml_ending.of_ending(Dfn_rootless.to_ending rless) in
     let modules_written_in_file=find_needed_data cs rless in
     let (mlp,mlir,mllr,mlyr)=registrations_for_lonely_ending edg
     and (mlmt,mlimt,mllmt,mlymt)=md_compute_modification_times eless in
@@ -1177,7 +1177,7 @@ let find_value_definition cs s=
 
 let all_ml_absolute_paths cs=  
 Option.filter_and_unpack (fun mn->
-  if not(check_ending_in_at_module Dfa_ending.ml cs mn)
+  if not(check_ending_in_at_module Dfa_ocaml_ending_t.Ml cs mn)
   then None
   else 
   let hm=endingless_at_module cs mn in
@@ -1189,7 +1189,7 @@ let modules_using_value cs value_name =
   Option.filter_and_unpack (fun mn->
   let eless=endingless_at_module cs mn
   and pr_end=principal_ending_at_module cs mn in
-  let mlx=Dfn_join.to_ending eless pr_end in
+  let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
    let ap=Dfn_full.to_absolute_path mlx in
    if Substring.is_a_substring_of 
        value_name (Io.read_whole_file ap)
@@ -1203,7 +1203,7 @@ let modules_using_value cs value_name =
 let update_ancs_libs_and_dirs_at_module cs mn=
   let eless=endingless_at_module cs mn  
   and pr_end=principal_ending_at_module cs mn in
-  let rless=Dfn_full.to_rootless (Dfn_join.to_ending eless pr_end) in 
+  let rless=Dfn_full.to_rootless (Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end)) in 
   let fathers=direct_fathers_at_module cs mn in
   let separated_ancestors=Image.image 
   (fun nm2->
@@ -1316,7 +1316,7 @@ module PrivateThree=struct
 end;; 
      
 let md_recompute_modification_time eless edg=
-  let mlx=Dfn_join.to_ending eless edg in
+  let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg) in
   let file=Dfn_full.to_line mlx in
   if not(Sys.file_exists file) then "0." else
   let st=Unix.stat file in
@@ -1326,7 +1326,7 @@ let md_recompute_modification_time eless edg=
 let check_for_possible_change cs mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
-  let mli_modif_time=md_recompute_modification_time eless Dfa_ending.mli 
+  let mli_modif_time=md_recompute_modification_time eless Dfa_ocaml_ending_t.Mli 
   and pr_modif_time=md_recompute_modification_time eless pr_ending 
   and old_mli_modif_time=mli_mt_at_module cs mn
   and old_pr_modif_time=principal_mt_at_module cs mn 
@@ -1340,7 +1340,7 @@ let check_for_possible_change cs mn=
   if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_at_module cs mn)
   then None
   else
-  let rless=Dfn_full.to_rootless(Dfn_join.to_ending eless pr_ending) in
+  let rless=Dfn_full.to_rootless(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_ending)) in
   let direct_fathers=find_needed_data cs rless in
   Some(
     pr_modif_time,
@@ -1389,7 +1389,7 @@ let printer_equipped_types_from_data cs=
     fun mn->
     let eless=endingless_at_module cs mn
     and pr_end=principal_ending_at_module cs mn in
-    let mlx=Dfn_join.to_ending eless pr_end in
+    let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
     let ap=Dfn_full.to_absolute_path mlx in
     let text=Io.read_whole_file ap in
     if (Substring.is_a_substring_of ("let "^"print_out ") text)
@@ -1401,13 +1401,13 @@ let printer_equipped_types_from_data cs=
 
 
 exception Already_registered_file of Dfn_rootless_t.t;;  
-exception Overcrowding of Dfn_rootless_t.t*(Dfa_ending_t.t list);;
-exception Bad_pair of Dfn_rootless_t.t*Dfa_ending_t.t;; 
+exception Overcrowding of Dfn_rootless_t.t*(Dfa_ocaml_ending_t.t list);;
+exception Bad_pair of Dfn_rootless_t.t*Dfa_ocaml_ending_t.t;; 
 
 
 let register_mlx_file_on_monitored_modules cs rless =
   let middle = Dfn_rootless.to_middle rless
-  and ending=Dfn_rootless.to_ending rless in 
+  and ending=Dfa_ocaml_ending.of_ending(Dfn_rootless.to_ending rless) in 
   let nm=Dfn_rootless.to_module rless in
   if not(Automatic.test_module_for_registration cs nm)
   then  let info=complete_id_during_new_module_registration cs rless in
@@ -1420,13 +1420,13 @@ let register_mlx_file_on_monitored_modules cs rless =
   if List.mem ending edgs
   then raise(Already_registered_file(rless))
   else
-  if (not(List.mem Dfa_ending.mli (ending::edgs)))
+  if (not(List.mem Dfa_ocaml_ending_t.Mli (ending::edgs)))
   then raise(Bad_pair(rless,List.hd edgs))
   else 
-  if ending = Dfa_ending.mli
+  if ending = Dfa_ocaml_ending_t.Mli
   then let old_pr_end = List.hd edgs in
        let old_rless =
-         Dfn_join.middle_to_ending middle old_pr_end in
+         Dfn_join.middle_to_ending middle (Dfa_ocaml_ending.to_ending old_pr_end) in
         let (eless,_,old_mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=
                  complete_info cs old_rless in
         let new_mlimt = md_compute_modification_time eless ending in
@@ -1483,7 +1483,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let nm=Dfn_endingless.to_module hm in
     let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_fhm=Dfn_endingless.to_line hm in
-    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in
+    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm in
     let ending=(if mli_reg then ".mli" else ".ml") in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
     let opt_exec_move=(if (cmod=Compilation_mode_t.Executable)&&(not(mli_reg)) 
@@ -1521,7 +1521,7 @@ let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
     let s_root=Dfa_root.connectable_to_subpath(dir) in
     let s_eless=Dfn_endingless.to_line eless in
     let dir_and_libs=needed_dirs_and_libs_in_command cmod cs nm in
-    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm in 
+    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm in 
     let full_mli=s_eless^".mli" in
     let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
     let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
@@ -1558,8 +1558,8 @@ exception  Unregistered_element of Dfn_endingless_t.t;;
 let command_for_module_separate_compilation cmod cs eless=
     let dir = root cs in 
     let nm=Dfn_endingless.to_module eless in
-    let mli_reg=check_ending_in_at_module Dfa_ending.mli cs nm
-    and ml_reg=check_ending_in_at_module Dfa_ending.ml cs nm in
+    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm
+    and ml_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Ml cs nm in
     let temp2=(
     let co=command_for_cmo cmod dir cs eless in 
     if mli_reg
@@ -2177,7 +2177,7 @@ module Recent_changes = struct
                let pr_ending = principal_ending_at_module cs mn in 
                let endings = (
                    if mli_presence_at_module cs mn 
-                   then  [Dfa_ending.mli;pr_ending]
+                   then  [Dfa_ocaml_ending_t.Mli;pr_ending]
                    else [pr_ending]
                ) in 
             List.exists (check_for_change_at_module_and_ending cs mn) endings ;;
@@ -2204,9 +2204,10 @@ module Late_Recompilation = struct
 let quick_update cs (new_fw,changed_rootlesses)  mn=
   let eless =endingless_at_module cs mn 
   and pr_ending=principal_ending_at_module cs mn in
+  let ocaml_pr_ending=Dfa_ocaml_ending.to_ending pr_ending in 
   let middle = Dfn_endingless.to_middle eless in 
   let mli_modif_time=Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
-  and pr_modif_time=Fw_with_dependencies.get_mtime new_fw (Dfn_join.middle_to_ending middle pr_ending)  
+  and pr_modif_time=Fw_with_dependencies.get_mtime new_fw (Dfn_join.middle_to_ending middle ocaml_pr_ending)  
   and old_mli_modif_time=mli_mt_at_module cs mn
   and old_pr_modif_time=principal_mt_at_module cs mn 
   in
@@ -2217,7 +2218,7 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
      (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
   then None
   else
-  let mlx=Dfn_join.middle_to_ending middle pr_ending in
+  let mlx=Dfn_join.middle_to_ending middle ocaml_pr_ending in
   let direct_fathers=find_needed_data cs mlx in
   Some(
     pr_modif_time,
@@ -2365,7 +2366,7 @@ end ;;
 let principal_acolyte cs eless = 
   let mn = Dfn_endingless.to_module eless in 
   let edg = principal_ending_at_module cs mn in 
-  Dfn_join.to_ending eless edg ;;
+  Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg) ;;
 
 let all_principals cs =
     Image.image (principal_acolyte cs) (all_endinglesses cs) ;;  
