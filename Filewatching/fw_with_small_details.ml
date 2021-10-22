@@ -328,6 +328,22 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
       small_details_in_files = new_details;
    },List.rev(!accu));;   
 
+   let restrict fw smaller_list_of_modules=   
+      let new_parent = File_watcher.restrict (Automatic.parent fw) smaller_list_of_modules  
+      and old_details = Automatic.small_details_in_files fw in 
+      {
+         Fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = List.filter (fun (rl,_)->
+            List.mem (Dfn_rootless.to_module rl) smaller_list_of_modules) old_details;
+      } ;;
+
+   let transplant fw new_config=   
+      let new_parent = File_watcher.transplant (Automatic.parent fw) new_config in 
+      {
+         fw with 
+         Fw_with_small_details_t.parent = new_parent ;
+      } ;;
+
 end;;
 
 let configuration = Automatic.configuration ;;
@@ -380,6 +396,8 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
+let restrict = Private.restrict ;;
+
 let root = Automatic.root ;;
 
 let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
@@ -387,5 +405,7 @@ let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
+
+let transplant = Private.transplant ;;
 
 let usual_compilable_files fw = File_watcher.usual_compilable_files (Automatic.parent fw) ;;
