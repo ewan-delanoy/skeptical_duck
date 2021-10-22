@@ -807,7 +807,9 @@ let text_for_all_subdmodules () =
       (Cached.full_text ()) 
       ::(Image.image text_for_submodule submodules) in 
    "\n\n\n"^(String.concat "\n\n\n" temp1)^"\n\n\n" ;;
-    
+
+   
+
 let prelude = String.concat "\n" [
   "module Private = struct\n"; 
   " let expand_index idx = (idx,Fw_indexer.get_state idx) ;;";
@@ -861,7 +863,7 @@ let postlude = String.concat "\n" [
 
 ] ;;
 
-let write_all () =
+let write_all_to_draft () =
    let text = "\n\n"^prelude^"\n\n"
                ^(text_for_all_subdmodules ()) 
                ^("\n\n"^postlude^"\n\n")
@@ -871,6 +873,15 @@ let write_all () =
    Replace_inside.overwrite_between_markers_inside_file 
      (Overwriter.of_string text) (beg_mark,end_mark) file ;;
      
+let write_all () =
+      let text = "(*\n\n#use\"Filewatching/fw_with_dependencies.ml\";;\n\n*)\n\n"^
+                 "\n\n"^prelude^"\n\n"
+                  ^(text_for_all_subdmodules ()) 
+                  ^("\n\n"^postlude^"\n\n")
+      and file = Absolute_path.of_string "Filewatching/fw_with_dependencies.ml" in 
+      Io.overwrite_with file text   ;;
+        
+
 
 
 

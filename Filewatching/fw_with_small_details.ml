@@ -331,18 +331,18 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let restrict fw smaller_list_of_modules=   
       let new_parent = File_watcher.restrict (Automatic.parent fw) smaller_list_of_modules  
       and old_details = Automatic.small_details_in_files fw in 
-      {
+      ({
          Fw_with_small_details_t.parent = new_parent ;
          small_details_in_files = List.filter (fun (rl,_)->
             List.mem (Dfn_rootless.to_module rl) smaller_list_of_modules) old_details;
-      } ;;
+      },smaller_list_of_modules) ;;
 
    let transplant fw new_config=   
       let new_parent = File_watcher.transplant (Automatic.parent fw) new_config in 
-      {
+      ({
          fw with 
          Fw_with_small_details_t.parent = new_parent ;
-      } ;;
+      },new_config) ;;
 
 end;;
 
