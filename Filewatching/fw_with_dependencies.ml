@@ -159,16 +159,6 @@ let replace_value old_fw pair =
    index_for_caching = expand_index instance_idx ;
  },extra ) ;; 
 
-let restrict old_fw smaller_list_of_modules =  
- let old_parent = parent old_fw in 
- let (new_parent,smaller_list_of_modules2) = Fw_with_small_details.restrict old_parent smaller_list_of_modules in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },smaller_list_of_modules2 ) ;; 
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let old_parent = parent old_fw in 
  let new_parent = Fw_with_small_details.set_gitpush_after_backup old_parent yes_or_no in 
@@ -187,17 +177,7 @@ let set_last_noticed_changes old_fw diff =
  { 
    Fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
- } ;; 
-
-let transplant old_fw new_config =  
- let old_parent = parent old_fw in 
- let (new_parent,new_config2) = Fw_with_small_details.transplant old_parent new_config in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },new_config2 ) ;; end ;;
+ } ;; end ;;
 
 
 module Modularized_details = struct 
@@ -432,14 +412,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = Cached.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
- let old_val = get old_fw in 
- let answer = List.filter (fun (mn,_)->List.mem mn smaller_list_of_modules) old_val in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = Cached.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -451,13 +423,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = Cached.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -603,14 +568,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = Modularized_details.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
- let old_val = get old_fw in 
- let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = Modularized_details.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -622,13 +579,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = Modularized_details.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -762,14 +712,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = Order.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
- let old_val = get old_fw in 
- let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = Order.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -781,13 +723,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = Order.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -915,14 +850,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = Needed_dirs.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
- let old_val = get old_fw in 
- let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = Needed_dirs.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -934,13 +861,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = Needed_dirs.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -1071,13 +991,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = Needed_libs.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
-  let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = Needed_libs.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -1089,13 +1002,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = Needed_libs.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -1233,13 +1139,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let restrict old_fw smaller_list_of_modules =  
- let visible = All_subdirectories.restrict old_fw smaller_list_of_modules in 
- let (new_fw,smaller_list_of_modules2) = visible in 
-  let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
-
 let set_gitpush_after_backup old_fw yes_or_no =  
  let new_fw = All_subdirectories.set_gitpush_after_backup old_fw yes_or_no in 
   let answer = get old_fw in 
@@ -1251,13 +1150,6 @@ let set_last_noticed_changes old_fw diff =
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
-
-let transplant old_fw new_config =  
- let visible = All_subdirectories.transplant old_fw new_config in 
- let (new_fw,new_config2) = visible in 
-  let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
 
 end ;;
 
@@ -1300,11 +1192,9 @@ let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on
 let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
-let restrict fw smaller_list_of_modules = fst(Private.Exit.restrict fw smaller_list_of_modules) ;;
 let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;
-let transplant fw new_config = fst(Private.Exit.transplant fw new_config) ;;
 let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;
 

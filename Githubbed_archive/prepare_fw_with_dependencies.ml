@@ -43,10 +43,8 @@ let methods = [
    "rename_subdirectory_as",true,["pair"],Some "extra";
    "replace_string",true,["pair"],Some "extra";
    "replace_value",true,["pair"],Some "extra";
-   "restrict",true,["smaller_list_of_modules"],Some "smaller_list_of_modules2";
    "set_gitpush_after_backup",true,["yes_or_no"],None;
    "set_last_noticed_changes",true,["diff"],None;
-   "transplant",true,["new_config"],Some "new_config2";
 ] ;;
 
 module Common = struct 
@@ -337,11 +335,6 @@ mod_details "replace_string" (mod_details_usual_preliminary,"") ;;
 
 mod_details "replace_value" (mod_details_usual_preliminary,"") ;;
 
-mod_details "restrict" ([
-   " let old_val = get old_fw in ";
-   " let answer = List.filter (fun (mn,_)->List.mem mn smaller_list_of_modules) old_val in "
-],"") ;;
-
 mod_details "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
@@ -350,9 +343,6 @@ mod_details "set_last_noticed_changes" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
-mod_details "transplant" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 add_to_ghetto
    "Order"
@@ -431,20 +421,11 @@ order "replace_string" (order_usual_preliminary,"") ;;
 
 order "replace_value" (order_usual_preliminary,"") ;;
 
-order "restrict" ([
-   " let old_val = get old_fw in ";
-   " let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in "
-],"") ;;
-
 order "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
 order "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-order "transplant" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
@@ -530,20 +511,11 @@ needed_dirs "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_dirs "restrict" ([
-   " let old_val = get old_fw in ";
-   " let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in "
-],"") ;;
-
 needed_dirs "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
 needed_dirs "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-needed_dirs "transplant" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
@@ -627,20 +599,11 @@ needed_libs "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_libs "restrict" ([
-   " let old_val = get old_fw in ";
-   " let answer = List.filter (fun (mn,_)->not(List.mem mn smaller_list_of_modules)) old_val in "
-],"") ;;
-
 needed_libs "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
 needed_libs "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-needed_libs "transplant" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
@@ -725,10 +688,6 @@ all_subdirectories "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_subdirectories "restrict" ([
-   "  let answer = force_get new_fw in "
-],"") ;;
-
 all_subdirectories "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
@@ -736,11 +695,6 @@ all_subdirectories "set_gitpush_after_backup" ([
 all_subdirectories "set_last_noticed_changes" ([
    "  let answer = get old_fw in "
 ],"") ;;
-
-all_subdirectories "transplant" ([
-   "  let answer = force_get new_fw in "
-],"") ;;
-
 
  add_to_ghetto
     "All_printables"
@@ -829,20 +783,12 @@ all_printables "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_printables "restrict" ([
-   "  let answer = force_get new_fw in "
-],"") ;;
-
 all_printables "set_gitpush_after_backup" ([
    "  let answer = get old_fw in "
 ],"") ;;
 
 all_printables "set_last_noticed_changes" ([
    "  let answer = get old_fw in "
-],"") ;;
-
-all_printables "transplant" ([
-   "  let answer = force_get new_fw in "
 ],"") ;;
 
 let text_for_submodule sumo =      
@@ -910,12 +856,10 @@ let postlude = String.concat "\n" [
    "let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;";
    "let replace_string = Private.Exit.replace_string ;;";
    "let replace_value = Private.Exit.replace_value ;;";
-   "let restrict fw smaller_list_of_modules = fst(Private.Exit.restrict fw smaller_list_of_modules) ;;";
    "let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;";
    "let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;";
    "let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;";
    "let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;";
-   "let transplant fw new_config = fst(Private.Exit.transplant fw new_config) ;;";
    "let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;";
 
 
