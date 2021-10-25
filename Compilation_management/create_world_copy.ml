@@ -78,12 +78,7 @@ module Private = struct
 
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
       let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
-      let restricted_cs=(if Needed_data_summary.is_everything summary
-          then cs 
-          else Coma_state.restrict cs modules_in_good_order
-      ) in 
-      let faraway_cs1 = Coma_state.transplant 
-         restricted_cs faraway_fw in 
+      let faraway_cs1 = Coma_state.passive_constructor faraway_fw in 
       let faraway_cs = Coma_state.update_just_one_module faraway_cs1  Coma_constant.rootless_path_for_parametersfile in   
       let faraway_cs2 = Modify_coma_state.Internal.recompile (faraway_cs,[],[],[]) in 
       let _=Save_coma_state.save faraway_cs2 in   
