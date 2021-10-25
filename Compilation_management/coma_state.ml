@@ -1,5 +1,7 @@
 (* 
+
 #use"Compilation_management/coma_state.ml";;
+
 *)
 
 module Automatic = struct 
@@ -230,6 +232,46 @@ module Automatic = struct
   });;
   
   
+  let passive_constructor fw = 
+      let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
+      to_t({
+       Coma_state_t.frontier_with_unix_world= fw;
+       modules = Fw_with_dependencies.dep_ordered_modules fw ;
+       subdir_for_module = Image.image (
+                             fun mn -> (mn,Fw_with_dependencies.subdir_for_module fw mn) 
+                           ) modules_in_order ;
+       principal_ending_for_module = Image.image (
+                             fun mn -> (mn,Fw_with_dependencies.principal_ending_for_module fw mn) 
+                           ) modules_in_order ;
+       mli_presence_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.mli_presence_for_module fw mn) 
+                           ) modules_in_order ;
+       principal_mt_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.principal_mt_for_module fw mn) 
+                           ) modules_in_order ;
+       mli_mt_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.mli_mt_for_module fw mn) 
+                           ) modules_in_order ;
+       needed_libs_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.needed_libs_for_module fw mn) 
+                          ) modules_in_order ; 
+       direct_fathers_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.direct_fathers_for_module fw mn) 
+                          ) modules_in_order ; 
+       ancestors_for_module = Image.image (
+                            fun mn -> (mn,Fw_with_dependencies.ancestors_for_module fw mn) 
+                          ) modules_in_order ;                    
+       needed_dirs_for_module = Image.image (
+                              fun mn -> (mn,Fw_with_dependencies.needed_dirs_for_module fw mn) 
+                          ) modules_in_order ; 
+       directories = Fw_with_dependencies.all_subdirectories  fw;
+       printer_equipped_types = Fw_with_dependencies.printer_equipped_types  fw ;
+       product_up_to_date_for_module = Image.image (
+                              fun mn -> (mn,false) 
+                          ) modules_in_order  ;
+  });;
+  
+
   let change_one_module_name wrapped_cs old_mn new_mn=
       (* note that preq_types are not dealt with here *)
       let cs=of_t wrapped_cs in
@@ -2384,4 +2426,4 @@ let choose_automatic_if_possible cs modulename =
     then auto_version
     else modulename ;;      
 
-let gmx = 8 ;;
+let passive_constructor = Automatic.passive_constructor ;;
