@@ -514,69 +514,9 @@ module Automatic = struct
       else None
     ) modules_field;;    
   
-  let restrict wrapped_cs smaller_list_of_modules =
-      let cs=of_t wrapped_cs in 
-      let restr =(fun l->Associative_list.restrict l smaller_list_of_modules) in    
-      let temp_direct_fathers = restr (cs.Coma_state_t.direct_fathers_for_module) 
-      and temp_ancestors = restr (cs.Coma_state_t.ancestors_for_module) in 
-      let among_fathers =Image.image (fun (key,fathers)->
-         (key,List.filter (fun father -> List.mem father smaller_list_of_modules) fathers) ) in 
-      let new_subdirs = restr (cs.Coma_state_t.subdir_for_module) 
-      and new_principal_endings = restr (cs.Coma_state_t.principal_ending_for_module) 
-      and new_mli_presences = restr (cs.Coma_state_t.mli_presence_for_module) 
-      and new_principal_mts = restr (cs.Coma_state_t.principal_mt_for_module) 
-      and new_mli_mts = restr (cs.Coma_state_t.mli_mt_for_module) 
-      and new_needed_libs = restr (cs.Coma_state_t.needed_libs_for_module) 
-      and new_direct_fathers = among_fathers  temp_direct_fathers  
-      and new_ancestors = among_fathers  temp_ancestors
-      and new_needed_dirs = restr (cs.Coma_state_t.needed_dirs_for_module) 
-      and new_products_up_to_date = restr cs.Coma_state_t.product_up_to_date_for_module in  
-      let new_preq_types= List.filter (
-          fun middle->
-            let mn = Dfn_middle.to_module middle in 
-            List.mem mn smaller_list_of_modules
-          )  cs.Coma_state_t.printer_equipped_types   in 
-      let new_directories = Ordered.sort Total_ordering.standard (Image.image snd new_subdirs) in 
-  to_t({ cs with 
-        Coma_state_t.modules = smaller_list_of_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
-        Coma_state_t.directories = new_directories;
-        Coma_state_t.printer_equipped_types = new_preq_types;
-  });;  
   
-  let transplant wrapped_cs new_frontier = 
-       let cs=of_t wrapped_cs in 
-       let new_principal_mts=Image.image (fun (mn,_)->
-            let subdir = List.assoc mn cs.Coma_state_t.subdir_for_module 
-            and pr_end = List.assoc mn cs.Coma_state_t.principal_ending_for_module in 
-            let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ocaml_ending.to_ending pr_end)) in 
-            (mn,Fw_with_dependencies.get_mtime new_frontier rootless)
-       ) cs.Coma_state_t.principal_ending_for_module
-       and new_mli_mts=Image.image (fun (mn,subdir)->
-            let rootless = (Dfn_rootless_t.J(subdir,mn,Dfa_ending.mli)) in 
-            (mn,Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered 
-             new_frontier rootless)
-       ) cs.Coma_state_t.subdir_for_module 
-       and new_products_up_to_date=Image.image (fun (mn,_)->(mn,false)
-       ) cs.Coma_state_t.product_up_to_date_for_module
-       and new_preq_types= cs.Coma_state_t.printer_equipped_types in 
-       to_t({
-             cs with    
-              Coma_state_t.frontier_with_unix_world= new_frontier;
-              principal_mt_for_module = new_principal_mts;
-              mli_mt_for_module = new_mli_mts;
-              product_up_to_date_for_module = new_products_up_to_date;
-              printer_equipped_types = new_preq_types;
-       });;
+  
+  
   
   module Private = struct 
   
@@ -708,11 +648,9 @@ let empty_one = Automatic.empty_one ;;
 let impose_last_changes = Automatic.impose_last_changes ;;
 let modify_all_needed_dirs = Automatic.modify_all_needed_dirs ;;
 let modify_all_subdirs = Automatic.modify_all_subdirs ;;
-let restrict = Automatic.restrict ;;
 let root = Automatic.root ;;
 let set_push_after_backup = Automatic.set_push_after_backup ;;
 let to_concrete_object = Automatic.to_concrete_object ;;
-let transplant = Automatic.transplant ;;
 
 
 (* End of inherited values *)
