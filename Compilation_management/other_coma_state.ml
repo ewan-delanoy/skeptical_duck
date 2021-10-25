@@ -131,15 +131,7 @@ let repopulate summary=
   (!Usual_coma_state.main_ref) summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
   in 
-  (Private.main_ref := cs ;Save_coma_state.save cs);;
-  (*
-  let _=Create_world_copy.fully_developed_copy
-  (!Usual_coma_state.main_ref) summary
-  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
-  in 
-  initialize()
-  *)
-  ;; 
+  (Private.main_ref := cs ;Save_coma_state.save cs) ;; 
 
 let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 
