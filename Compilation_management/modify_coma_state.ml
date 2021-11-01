@@ -78,10 +78,10 @@ module Physical = struct
    
    let rename_string_or_value cs old_sov new_sov =
       let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
-      let new_fw=(
+      let (new_fw,changed_rootlesses)=(
          if not(String.contains old_sov '.')
-         then let (fw,_)= Fw_with_dependencies.replace_string old_fw (old_sov,new_sov) in 
-              fw
+         then let (fw1,changes1) = Fw_with_dependencies.replace_string old_fw (old_sov,new_sov) in 
+              (fw1,Image.image fst changes1)
          else 
               let j=Substring.leftmost_index_of_in "." old_sov in
               if j<0 
@@ -95,9 +95,11 @@ module Physical = struct
                    let preceding_files=Image.image  (fun eless2->
                         Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
                    ) temp2 in
-                   fst(Fw_with_dependencies.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)))
+                   let (fw2,changes2) = Fw_with_dependencies.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)) in 
+                   (fw2,Image.image fst changes2) 
       ) in 
-      Coma_state.set_frontier_with_unix_world cs new_fw;;       
+      let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+      (Coma_state.set_frontier_with_unix_world cs new_fw,changed_modules_in_any_order);;       
    
    
    
@@ -123,11 +125,11 @@ module Physical = struct
       Coma_state.unregister_mlx_files cs full_paths ;; 
    
    
-   let modern_recompile cs (changed_ac,changed_modules,changed_noncompilables) = 
+   let modern_recompile cs (changed_ac,changed_modules_in_any_order,changed_noncompilables) = 
       let _=Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac in
       let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
-      if changed_modules=[] then cs else
-      let (all_deps,new_deps,_) = Coma_state.below_several cs changed_modules in     
+      if changed_modules_in_any_order=[] then cs else
+      let (all_deps,new_deps,changed_modules) = Coma_state.below_several cs changed_modules_in_any_order in     
       let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in 
       let _=Coma_state.PrivateThree.announce_involved_modules new_deps in 
       let (cs2,rejected_pairs,accepted_pairs)=
@@ -141,46 +143,6 @@ module Physical = struct
       let _ = List.iter (fun (mn,_)->memorize_last_result true mn)  accepted_pairs in 
       !cs_walker ;;
       
-
-   let recompile (cs,changed_ac,changed_uc,changed_noncompilables) = 
-      let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
-      let ref_for_changed_modules=ref[] 
-     and ref_for_changed_shortpaths=ref[] in
-     let declare_changed=(fun nm->
-       ref_for_changed_modules:=nm::(!ref_for_changed_modules);
-       ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                           (Coma_state.rootless_lines_at_module cs nm))
-       ) in
-     let cs_walker=ref(cs) in   
-     let _=List.iter (fun mname->
-       match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_uc) mname with
-       None->()
-       |Some(pr_modif_time,mli_modif_time,direct_fathers)->
-       (
-       declare_changed(mname);
-       cs_walker:=Coma_state.set_principal_mt_for_module (!cs_walker) mname pr_modif_time;
-       cs_walker:=Coma_state.set_mli_mt_for_module (!cs_walker) mname mli_modif_time;
-       cs_walker:=Coma_state.set_direct_fathers_for_module (!cs_walker) mname direct_fathers;
-       cs_walker:=Coma_state.set_product_up_to_date_for_module (!cs_walker) mname false;
-       )
-   )(Coma_state.dep_ordered_modules cs) in
-   let _=Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac in
-   let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
-   let changed_modules=List.rev(!ref_for_changed_modules) in 
-   if changed_modules=[] then (!cs_walker) else
-   let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in
-   let ((cs2,nms_to_be_updated),rootless_paths)= 
-    (Coma_state.PrivateThree.put_md_list_back_in_order false 
-     (!cs_walker) changed_modules,
-   (!ref_for_changed_shortpaths))  in   
-      if nms_to_be_updated=[] then cs2 else
-   let new_dirs=Coma_state.compute_subdirectories_list cs2  in
-   let (cs3,rejected_pairs,accepted_pairs)=
-          Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-   let cs4=Coma_state.set_all_subdirectories cs3 new_dirs in 
-   cs4 ;;
-   
-   
    let refresh cs = 
       let fw = cs.Coma_state_t.frontier_with_unix_world in 
       let mods = Fw_with_dependencies.dep_ordered_modules fw in 
@@ -263,7 +225,8 @@ module Physical = struct
       cs4;; 
    
    
-   let rename_string_or_value cs = recompile (cs,[],[],[]);; 
+   let rename_string_or_value cs changed_modules_in_any_order = 
+      modern_recompile cs ([],changed_modules_in_any_order,[]);; 
    
    end;;
    
@@ -316,8 +279,8 @@ module Physical = struct
       Internal.rename_subdirectory cs2 old_subdir new_subdir;;
    
    let rename_string_or_value cs old_sov new_sov =
-      let cs2=Physical.rename_string_or_value cs old_sov new_sov in
-      Internal.rename_string_or_value cs2;;
+      let (cs2,changed_modules_in_any_order)=Physical.rename_string_or_value cs old_sov new_sov in
+      Internal.rename_string_or_value cs2 changed_modules_in_any_order;;
    
    end;;
    
