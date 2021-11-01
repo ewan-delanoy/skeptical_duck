@@ -12,7 +12,7 @@ module Private = struct
  let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; 
  let parent fw = fw.Fw_with_dependencies_t.parent ;;
 
-
+(* Pre-processed text starts here *)
 
 
 module Cached = struct 
@@ -99,7 +99,6 @@ let register_rootless_paths old_fw rootlesses =
    index_for_caching = expand_index instance_idx ;
  },extra ) ;; 
 
- 
 let relocate_module_to old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Fw_with_small_details.relocate_module_to old_parent pair in 
@@ -1159,6 +1158,9 @@ let set_last_noticed_changes old_fw diff =
  new_fw ;;
 
 end ;;
+
+
+(* Pre-processed text ends here *)
 
 
 

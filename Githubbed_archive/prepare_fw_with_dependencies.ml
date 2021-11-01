@@ -840,56 +840,10 @@ let prelude = String.concat "\n" [
   " let parent fw = fw.Fw_with_dependencies_t.parent ;;";
 ] ;;
 
-let postlude = String.concat "\n" [
-   "  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;";
-   "  module Exit = All_printables ;; ";
-   "end;;";
-   "";
-   "let all_subdirectories fw = Private.All_subdirectories.get fw;;";
-   "let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;";
-   "let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;";
-   "let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;";
-   "let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;";
-   "let empty_one = Private.Exit.empty_one ;;";
-   "let forget_modules = Private.Exit.forget_modules ;;";
-   "let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;";
-   "let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;";
-   "let inspect_and_update = Private.Exit.inspect_and_update ;;";
-   "let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;";
-   "let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with ";
-   "                              None -> \"0.\" |Some(fl)->fl ;;";
-   "let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;";
-   "let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;";
-   "let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;";
-   "let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;";
-   "let of_concrete_object = Private.Exit.of_concrete_object ;;";
-   "let of_configuration = Private.Exit.of_configuration ;;";
-   "let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;";
-   "let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;";
-   "let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;";
-   "let principal_mt_for_module fw mn = Fw_module_small_details.principal_modification_time (Private.details_for_module fw mn) ;;";
-   "let printer_equipped_types fw = Private.All_printables.get fw;;";
-   "let reflect_latest_changes_in_github = Private.Exit.reflect_latest_changes_in_github ;;";
-   "let register_rootless_paths = Private.Exit.register_rootless_paths ;;";
-   "let relocate_module_to = Private.Exit.relocate_module_to ;;";
-   "let remove_files = Private.Exit.remove_files ;;";
-   "let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on_filename_level_and_in_files ;;";
-   "let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;";
-   "let replace_string = Private.Exit.replace_string ;;";
-   "let replace_value = Private.Exit.replace_value ;;";
-   "let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;";
-   "let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;";
-   "let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;";
-   "let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;";
-   "let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;";
 
-
-] ;;
 
 let write_all_to_draft () =
-   let text = "\n\n"^prelude^"\n\n"
-               ^(text_for_all_subdmodules ()) 
-               ^("\n\n"^postlude^"\n\n")
+   let text = text_for_all_subdmodules ()
    and file = Absolute_path.of_string "Fads/sirloin.ml"
    and beg_mark = "(* Beginning of sirloin *)"
    and end_mark = "(* End of sirloin *)" in 
@@ -897,12 +851,13 @@ let write_all_to_draft () =
      (Overwriter.of_string text) (beg_mark,end_mark) file ;;
      
 let write_all () =
-      let text = "(*\n\n#use\"Filewatching/fw_with_dependencies.ml\";;\n\n*)\n\n"^
-                 "\n\n"^prelude^"\n\n"
-                  ^(text_for_all_subdmodules ()) 
-                  ^("\n\n"^postlude^"\n\n")
-      and file = Absolute_path.of_string "Filewatching/fw_with_dependencies.ml" in 
-      Io.overwrite_with file text   ;;
+   let text = text_for_all_subdmodules ()
+   and file = Absolute_path.of_string "Filewatching/fw_with_dependencies.ml" in 
+   Replace_inside.overwrite_between_markers_inside_file 
+       (Overwriter.of_string text) 
+        ("(* Pre-processed text starts here *)",
+         "(* Pre-processed text ends here *)") 
+        file ;;
         
 
 
