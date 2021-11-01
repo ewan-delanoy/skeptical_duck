@@ -6,9 +6,9 @@ type token_location = {
     str: string; (* the content of the "token" *)
     charpos: int; (* byte position *)
     line: int; column: int;
-    file: Common.filename;
+    file: Padioleau_common.filename;
 } 
-(* see also type filepos = { l: int; c: int; } in common.mli *)
+(* see also type filepos = { l: int; c: int; } in Padioleau_common.mli *)
 
 (* to deal with expanded tokens, e.g. preprocessor like cpp for C *)
 type token_origin =
@@ -60,7 +60,7 @@ val str_of_info   : info -> string
 val line_of_info  : info -> int
 val col_of_info   : info -> int
 val pos_of_info   : info -> int
-val file_of_info  : info -> Common.filename
+val file_of_info  : info -> Padioleau_common.filename
 
 (* small error reporting, for longer reports use error_message above *)
 val string_of_info: info -> string
@@ -76,7 +76,7 @@ val compare_pos: info -> info -> int
 val min_max_ii_by_pos: info list -> info * info
 
 type parsing_stat = {
-  filename: Common.filename;
+  filename: Padioleau_common.filename;
   mutable correct: int;
   mutable bad: int;
   (* used only for cpp for now *)
@@ -84,7 +84,7 @@ type parsing_stat = {
   mutable commentized: int;
   mutable problematic_lines: (string list * int ) list;
 }
-val default_stat: Common.filename -> parsing_stat
+val default_stat: Padioleau_common.filename -> parsing_stat
 val print_parsing_stat_list: ?verbose:bool -> parsing_stat list -> unit
 val print_recurring_problematic_tokens: parsing_stat list -> unit
 
@@ -107,18 +107,18 @@ val tok_add_s: string -> info -> info
 
 (* f(i) will contain the (line x col) of the i char position *)
 val full_charpos_to_pos_large: 
-  Common.filename -> (int -> (int * int))
+  Padioleau_common.filename -> (int -> (int * int))
 (* fill in the line and column field of token_location that were not set
  * during lexing because of limitations of ocamllex. *)
 val complete_token_location_large : 
-  Common.filename -> (int -> (int * int))  -> token_location -> token_location
+  Padioleau_common.filename -> (int -> (int * int))  -> token_location -> token_location
 
-val error_message : Common.filename -> (string * int) -> string
+val error_message : Padioleau_common.filename -> (string * int) -> string
 val error_message_info :  info -> string
 val print_bad: int -> int * int -> string array -> unit
 
 (* channel, size, source *)
-type changen = unit -> (in_channel * int * Common.filename)
+type changen = unit -> (in_channel * int * Padioleau_common.filename)
 (* Create filename-arged functions from changen-type ones *)
-val file_wrap_changen : (changen -> 'a) -> (Common.filename -> 'a)
+val file_wrap_changen : (changen -> 'a) -> (Padioleau_common.filename -> 'a)
 val full_charpos_to_pos_large_from_changen : changen -> (int -> (int * int))

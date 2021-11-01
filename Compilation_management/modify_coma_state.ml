@@ -35,8 +35,20 @@ module Physical = struct
    
    let register_rootless_paths cs rps=
       let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_dependencies.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
-      (Coma_state.set_frontier_with_unix_world cs new_fw,ac_paths,uc_paths) ;;
+      let old_list_of_cmpl_results= cs.Coma_state_t.product_up_to_date_for_module in 
+     let new_list_of_cmpl_results = Image.image (
+        fun mn -> 
+          match List.assoc_opt mn old_list_of_cmpl_results with 
+          None -> (mn,false)
+          |Some(old_res) -> (mn,old_res)
+     ) (Fw_with_dependencies.dep_ordered_modules new_fw) in 
+     let cs2 = { cs with 
+       Coma_state_t.frontier_with_unix_world = new_fw ;
+       product_up_to_date_for_module = new_list_of_cmpl_results
+     } in 
+      (cs2,(ac_paths,uc_paths,nc_paths)) ;;
    
+
    let relocate_module_to cs mod_name new_subdir=
       let (new_fw,_)=Fw_with_dependencies.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;
@@ -46,14 +58,15 @@ module Physical = struct
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
      let separated_acolytes_below=Option.filter_and_unpack(
        fun mn->
-        if List.mem old_nm (Coma_state.ancestors_at_module cs mn)
+        if List.mem old_nm (Coma_state.ancestors_for_module cs mn)
        then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs mn))
        else None
-   ) (Coma_state.ordered_list_of_modules cs) in
+   ) (Coma_state.dep_ordered_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
-     let old_fw = Coma_state.frontier_with_unix_world cs in 
+     let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
      let (new_fw,changed_dependencies) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files old_fw (old_nm,new_nm,all_acolytes_below) in 
-     (Coma_state.set_frontier_with_unix_world cs new_fw,changed_dependencies) ;;
+     let cs2 = Coma_state.passive_constructor new_fw in 
+     (cs2,changed_dependencies) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
       let (new_fw,_)=Fw_with_dependencies.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
@@ -64,7 +77,7 @@ module Physical = struct
    
    
    let rename_string_or_value cs old_sov new_sov =
-      let old_fw = Coma_state.frontier_with_unix_world cs in 
+      let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
       let new_fw=(
          if not(String.contains old_sov '.')
          then let (fw,_)= Fw_with_dependencies.replace_string old_fw (old_sov,new_sov) in 
@@ -77,7 +90,7 @@ module Physical = struct
                    let endingless=Coma_state.decipher_module cs  module_name 
                    and path=Coma_state.decipher_path cs  module_name in 
                    let nm=Dfn_endingless.to_module endingless in
-                   let pre_temp2=(Coma_state.ancestors_at_module cs nm)@[nm] in
+                   let pre_temp2=(Coma_state.ancestors_for_module cs nm)@[nm] in
                    let temp2=Image.image (Coma_state.endingless_at_module cs) pre_temp2 in
                    let preceding_files=Image.image  (fun eless2->
                         Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
@@ -93,9 +106,6 @@ module Physical = struct
    module Internal = struct
    
    let forget_modules cs mns =
-     let old_endinglesses = Image.image (Coma_state.endingless_at_module cs) mns in   
-     let cs2=Coma_state.unregister_modules  cs old_endinglesses in
-     let new_dirs=Coma_state.compute_subdirectories_list cs2  in 
      let temp1 = Image.image Dfa_module.to_line mns in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
      let _=Image.image
@@ -103,8 +113,7 @@ module Physical = struct
                    let cmd="rm -f _build/"^mname^edg in
                    Unix_command.uc(cmd))
                   temp2 in
-     let cs3=Coma_state.set_directories cs2 new_dirs in 
-     cs3;;    
+     cs;;    
    
    
    let forget_rootless_paths cs rootless_paths=
@@ -114,6 +123,25 @@ module Physical = struct
       Coma_state.unregister_mlx_files cs full_paths ;; 
    
    
+   let modern_recompile cs (changed_ac,changed_modules,changed_noncompilables) = 
+      let _=Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac in
+      let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
+      if changed_modules=[] then cs else
+      let (all_deps,new_deps,_) = Coma_state.below_several cs changed_modules in     
+      let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in 
+      let _=Coma_state.PrivateThree.announce_involved_modules new_deps in 
+      let (cs2,rejected_pairs,accepted_pairs)=
+             Coma_state.Ocaml_target_making.usual_feydeau cs all_deps in 
+      let cs_walker = ref(cs2) in 
+      let memorize_last_result = (fun res mn->
+         cs_walker := Coma_state.set_product_up_to_date_for_module 
+             (!cs_walker) mn res      
+      ) in        
+      let _ = List.iter (fun (mn,_)->memorize_last_result false mn) rejected_pairs in 
+      let _ = List.iter (fun (mn,_)->memorize_last_result true mn)  accepted_pairs in 
+      !cs_walker ;;
+      
+
    let recompile (cs,changed_ac,changed_uc,changed_noncompilables) = 
       let new_fw = cs.Coma_state_t.frontier_with_unix_world in 
       let ref_for_changed_modules=ref[] 
@@ -130,12 +158,12 @@ module Physical = struct
        |Some(pr_modif_time,mli_modif_time,direct_fathers)->
        (
        declare_changed(mname);
-       cs_walker:=Coma_state.set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
-       cs_walker:=Coma_state.set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
-       cs_walker:=Coma_state.set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
-       cs_walker:=Coma_state.set_product_up_to_date_at_module (!cs_walker) mname false;
+       cs_walker:=Coma_state.set_principal_mt_for_module (!cs_walker) mname pr_modif_time;
+       cs_walker:=Coma_state.set_mli_mt_for_module (!cs_walker) mname mli_modif_time;
+       cs_walker:=Coma_state.set_direct_fathers_for_module (!cs_walker) mname direct_fathers;
+       cs_walker:=Coma_state.set_product_up_to_date_for_module (!cs_walker) mname false;
        )
-   )(Coma_state.ordered_list_of_modules cs) in
+   )(Coma_state.dep_ordered_modules cs) in
    let _=Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac in
    let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
    let changed_modules=List.rev(!ref_for_changed_modules) in 
@@ -149,38 +177,24 @@ module Physical = struct
    let new_dirs=Coma_state.compute_subdirectories_list cs2  in
    let (cs3,rejected_pairs,accepted_pairs)=
           Coma_state.Ocaml_target_making.usual_feydeau cs2 nms_to_be_updated in 
-   let cs4=Coma_state.set_directories cs3 new_dirs in 
+   let cs4=Coma_state.set_all_subdirectories cs3 new_dirs in 
    cs4 ;;
    
    
    let refresh cs = 
-           let dir =Coma_state.root cs  in 
-           let fw1 = cs.Coma_state_t.frontier_with_unix_world in 
-           let temp1=Image.image (fun x->(x,()) ) (Fw_with_dependencies.usual_compilable_files fw1) in
-           let temp2=Coma_state.Simplified_ts_creation.classify_according_to_module dir temp1 in
-           let temp3=Coma_state.Simplified_ts_creation.compute_dependencies temp2 in
-           let temp4=Image.image (fun (mname,_)->
-              let (opt,opt_ap,pr_rless,pr_ap) = List.assoc mname temp2 in 
-               match opt with 
-                None -> [pr_rless]
-               |Some(mli_rless) -> [mli_rless;pr_rless]
-            ) temp3 in 
-           let rlesses_in_good_order=List.flatten temp4 in 
-           let (failures,cs1)=Coma_state.Try_to_register.mlx_files cs rlesses_in_good_order in  
-           let pre_preqt=Coma_state.printer_equipped_types_from_data cs1 in
-           let l_mod=Coma_state.ordered_list_of_modules cs1 in 
-           let (cs2,rejected_pairs,_)=
-             Coma_state.Ocaml_target_making.usual_feydeau 
-             cs1 l_mod in
-           let new_ptypes=Image.image Dfn_endingless.to_middle pre_preqt in 
-           let new_dirs=Coma_state.compute_subdirectories_list cs2 in
-           let cs3=Coma_state.set_directories cs2 new_dirs in 
-           let cs4=Coma_state.set_preq_types cs3 new_ptypes in
-           cs4    ;;
+      let fw = cs.Coma_state_t.frontier_with_unix_world in 
+      let mods = Fw_with_dependencies.dep_ordered_modules fw in 
+      let (cs2,rejected_pairs,accepted_pairs)=
+             Coma_state.Ocaml_target_making.usual_feydeau cs mods in 
+      let cmpl_results = Image.image (
+        fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
+      ) mods in 
+      {cs2 with Coma_state_t.product_up_to_date_for_module = cmpl_results  };;
    
    
-   let register_rootless_paths cs rootless_paths=
-     Coma_state.register_mlx_files cs rootless_paths ;;
+   let register_rootless_paths cs (ac_paths,uc_paths,nc_paths) =
+     let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
+     modern_recompile cs (ac_paths,unordered_mods,nc_paths) ;;
    
    let relocate_module_to cs mn new_subdir=
      let old_endingless = Coma_state.endingless_at_module cs mn in  
@@ -192,57 +206,44 @@ module Physical = struct
      let new_name=Dfn_full.to_endingless
       (List.hd new_acolytes) in
      let principal_mt=Coma_state.md_compute_modification_time new_name 
-                            (Coma_state.principal_ending_at_module cs mn)
+                            (Coma_state.principal_ending_for_module cs mn)
      and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ocaml_ending_t.Mli in
      let s_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
-     let cs2=Coma_state.set_subdir_at_module cs mn new_subdir in 
-     let cs3=Coma_state.set_principal_mt_at_module cs2 mn principal_mt in 
-     let cs4=Coma_state.set_mli_mt_at_module cs3 mn mli_mt in 
-     let old_preq_types = Coma_state.preq_types cs4 in 
+     let cs2=Coma_state.set_subdir_for_module cs mn new_subdir in 
+     let cs3=Coma_state.set_principal_mt_for_module cs2 mn principal_mt in 
+     let cs4=Coma_state.set_mli_mt_for_module cs3 mn mli_mt in 
+     let old_preq_types = Coma_state.printer_equipped_types cs4 in 
      let new_preq_types=Image.image (Dfn_middle.rename_endsubdirectory 
      (old_subdir,s_subdir) ) old_preq_types in 
      let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
      cs5;;   
    
    
-   let rename_module cs2 old_middle_name new_nonslashed_name=
+
+   let rename_module pre_cs2 old_middle_name new_nonslashed_name changes=
+     let cs2 = Coma_state.passive_constructor (Coma_state.Automatic.frontier_with_unix_world pre_cs2) in 
      let root_dir=Coma_state.root cs2 in 
-     let old_nm=Dfn_middle.to_module old_middle_name in
+     let old_nm=Dfn_middle.to_module old_middle_name in 
+     let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
+     let old_list_of_cmpl_results= cs2.Coma_state_t.product_up_to_date_for_module in 
+     let new_list_of_cmpl_results = Image.image (
+        fun old_pair -> 
+          let (mn,cmpl_result) = old_pair in 
+          if mn = old_nm 
+          then (new_nm,false)
+          else old_pair    
+     ) old_list_of_cmpl_results in 
+     let cs3 = { cs2 with 
+       Coma_state_t.product_up_to_date_for_module = new_list_of_cmpl_results
+     } in 
      let s_root=Dfa_root.connectable_to_subpath root_dir in   
      let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
-     let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in
-     let old_acolytes=Coma_state.acolytes_at_module cs2 old_nm in
-     let new_acolytes=Image.image (
-       fun (Dfn_full_t.J(r,s,m,e))->Dfn_full_t.J(r,s,new_nm,e)
-     ) old_acolytes in 
-     let new_eless=Dfn_full.to_endingless(List.hd new_acolytes) in
      let _=Unix_command.uc
          ("rm -f "^s_root^s_build_dir^
          (Dfa_module.to_line old_nm)^
-         ".cm* ") in     
-     let principal_mt=Coma_state.md_compute_modification_time new_eless (Coma_state.principal_ending_at_module cs2 old_nm)
-     and mli_mt=Coma_state.md_compute_modification_time new_eless Dfa_ocaml_ending_t.Mli in
-     let cs3=Coma_state.change_one_module_name cs2 old_nm new_nm in 
-     let cs4=Coma_state.set_principal_mt_at_module cs3 new_nm principal_mt in 
-     let cs5=Coma_state.set_mli_mt_at_module cs4 new_nm mli_mt in 
-     let cs6=Coma_state.set_product_up_to_date_at_module cs5 new_nm false in 
-     let replacer=Image.image(function x->if x=old_nm then new_nm else x) in
-     let new_middle = Dfn_endingless.to_middle new_eless in 
-     let old_preq_types=Coma_state.preq_types cs6 in 
-     let new_preq_types=Image.image (fun x->if x=old_middle_name then new_middle else x) old_preq_types in 
-     let cs7=Coma_state.set_preq_types cs6 new_preq_types in 
-     let cs_walker=ref(cs7) in 
-     let _=List.iter(fun mn->
-         let old_dirfath=Coma_state.direct_fathers_at_module (!cs_walker) mn
-         and old_ancestors=Coma_state.ancestors_at_module (!cs_walker) mn in
-         (
-         cs_walker:=(Coma_state.set_direct_fathers_at_module (!cs_walker) mn (replacer old_dirfath)) ;
-         cs_walker:=(Coma_state.set_ancestors_at_module (!cs_walker) mn (replacer old_ancestors)); 
-         )
-     )(Coma_state.follows_it cs2 old_nm) in
-     let cs8=(!cs_walker) in    
-     let cs9=recompile (cs8,[],[],[]) in 
-     cs9;;
+         ".cm* ") in            
+     let cs4=modern_recompile cs3 ([],[new_nm],[]) in 
+     cs4;;
    
    let rename_subdirectory cs old_subdir new_subdir=
      let rename_in_sd=(fun sd -> 
@@ -253,11 +254,11 @@ module Physical = struct
      let cs1=Coma_state.modify_all_subdirs cs rename_in_sd in 
      let cs2=Coma_state.modify_all_needed_dirs cs1 rename_in_sd in 
      let s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
-      let new_dirs=Image.image rename_in_sd (Coma_state.directories cs2) 
+      let new_dirs=Image.image rename_in_sd (Coma_state.all_subdirectories cs2) 
       and new_peqt=Image.image (fun middle->
              Dfn_middle.rename_endsubdirectory (old_subdir,s_new_subdir) middle
-       )(Coma_state.preq_types cs2) in
-      let cs3= Coma_state.set_directories cs2 new_dirs in 
+       )(Coma_state.printer_equipped_types cs2) in
+      let cs3= Coma_state.set_all_subdirectories cs2 new_dirs in 
       let cs4= Coma_state.set_preq_types cs3 new_peqt in 
       cs4;; 
    
@@ -288,18 +289,18 @@ module Physical = struct
      let cs2=Physical.forget_rootless_paths cs rootless_paths  in
      Internal.forget_rootless_paths cs2 rootless_paths;;
    
-   
    let recompile cs = 
-     let (cs2,changed_ac,changed_uc,changed_noncompilables)=Physical.recompile cs  in
-     Internal.recompile (cs2,changed_ac,changed_uc,changed_noncompilables);;
+     let (cs2,changed_ac,changed_uc,changed_noncompilables)=Physical.recompile cs  in 
+     let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
+     Internal.modern_recompile cs2 (changed_ac,unordered_mods,changed_noncompilables);;
      
    let refresh cs =
       let cs2=Physical.refresh (Coma_state.configuration cs)  in
       Internal.refresh cs2;;
    
    let register_rootless_paths cs rootless_paths= 
-      let (cs2,ac_paths,uc_paths)=Physical.register_rootless_paths cs rootless_paths in
-      Internal.register_rootless_paths cs2 uc_paths;;
+      let (cs2,triple)=Physical.register_rootless_paths cs rootless_paths in
+      Internal.register_rootless_paths cs2 triple;;
    
    let relocate_module_to cs mod_name new_subdir= 
      let cs2=Physical.relocate_module_to cs mod_name  new_subdir  in
@@ -307,8 +308,8 @@ module Physical = struct
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
-      let (cs2,_)=Physical.rename_module cs old_middle_name new_nonslashed_name in
-      Internal.rename_module cs2 old_middle_name new_nonslashed_name;;
+      let (cs2,changes)=Physical.rename_module cs old_middle_name new_nonslashed_name in
+      Internal.rename_module cs2 old_middle_name new_nonslashed_name changes;;
    
    let rename_subdirectory cs old_subdir new_subdir=
       let cs2=Physical.rename_subdirectory cs (old_subdir,new_subdir) in
@@ -319,7 +320,6 @@ module Physical = struct
       Internal.rename_string_or_value cs2;;
    
    end;;
-   
    
    
    module After_checking = struct
@@ -334,6 +334,7 @@ module Physical = struct
    
          (* No check needed before recompiling *)
    
+
          (* No check needed before refreshing *)
    
          let register_rootless_paths cs rootless_paths=

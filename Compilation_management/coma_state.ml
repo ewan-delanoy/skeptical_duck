@@ -19,7 +19,7 @@ module Automatic = struct
   (* End of converters *)
   
   
-  let frontier_with_unix_world cs = (of_t cs).Coma_state_t.frontier_with_unix_world;;
+  let frontier_with_unix_world cs = cs.Coma_state_t.frontier_with_unix_world;;
   let configuration cs=Fw_with_dependencies.configuration (frontier_with_unix_world cs) ;;
   let root cs= Fw_configuration.root (configuration cs);;
   let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
@@ -28,59 +28,69 @@ module Automatic = struct
   let encoding_protected_files cs=(configuration cs).Fw_configuration_t.encoding_protected_files;;
   
   
-  let subdir_at_module cs mn=
-     try List.assoc mn ( (of_t cs).Coma_state_t.subdir_for_module) with 
-     _ -> raise(Module_not_found(mn));;
+  let subdir_for_module cs mn= 
+   Fw_with_dependencies.subdir_for_module
+     (frontier_with_unix_world cs) mn ;;
+     
   
-  let principal_ending_at_module cs mn=
-     try List.assoc mn ( (of_t cs).Coma_state_t.principal_ending_for_module) with 
-     _ -> raise(Module_not_found(mn));;
+  let principal_ending_for_module cs mn=
+    Fw_with_dependencies.principal_ending_for_module
+     (frontier_with_unix_world cs) mn ;;
   
-  let mli_presence_at_module cs mn=
-     try List.assoc mn ( (of_t cs).Coma_state_t.mli_presence_for_module) with 
-     _ -> raise(Module_not_found(mn));;
+  let mli_presence_for_module cs mn=
+    Fw_with_dependencies.mli_presence_for_module
+    (frontier_with_unix_world cs) mn;;
   
-  let principal_mt_at_module cs mn=
-     try List.assoc mn ( (of_t cs).Coma_state_t.principal_mt_for_module) with 
-     _ -> raise(Module_not_found(mn));;
+  let principal_mt_for_module cs mn=
+    Fw_with_dependencies.principal_mt_for_module
+    (frontier_with_unix_world cs) mn ;;
   
-  let mli_mt_at_module cs mn=
-      try List.assoc mn ( (of_t cs).Coma_state_t.mli_mt_for_module) with 
-      _ -> raise(Module_not_found(mn));;
+  let mli_mt_for_module cs mn=
+    Fw_with_dependencies.mli_mt_for_module
+    (frontier_with_unix_world cs) mn;;
   
-  let needed_libs_at_module cs mn=
-      try List.assoc mn ( (of_t cs).Coma_state_t.needed_libs_for_module) with 
-      _ -> raise(Module_not_found(mn));;
+  let needed_libs_for_module cs mn=
+    Fw_with_dependencies.needed_libs_for_module
+    (frontier_with_unix_world cs) mn;;
   
-  let direct_fathers_at_module cs mn=
-      try  List.assoc mn ( (of_t cs).Coma_state_t.direct_fathers_for_module) with 
-      _ -> raise(Module_not_found(mn));;
+  let direct_fathers_for_module cs mn=
+    Fw_with_dependencies.direct_fathers_for_module
+    (frontier_with_unix_world cs) mn;;
   
-  let ancestors_at_module cs mn=
-      try  List.assoc mn ( (of_t cs).Coma_state_t.ancestors_for_module) with 
-      _ -> raise(Module_not_found(mn));;
+  let ancestors_for_module cs mn=
+    Fw_with_dependencies.ancestors_for_module
+    (frontier_with_unix_world cs) mn;;
+
   
-  let needed_dirs_at_module cs mn=
-      try  List.assoc mn  ((of_t cs).Coma_state_t.needed_dirs_for_module) with 
-      _ -> raise(Module_not_found(mn));;
+  let needed_dirs_for_module cs mn=
+    Fw_with_dependencies.needed_dirs_for_module
+    (frontier_with_unix_world cs) mn;;
   
-  let product_up_to_date_at_module cs mn=
+  let product_up_to_date_for_module cs mn=
      try  List.assoc mn ((of_t cs).Coma_state_t.product_up_to_date_for_module) with     
      _ -> raise(Module_not_found(mn));;
   
-  let directories cs=(of_t cs).Coma_state_t.directories;;
-  let preq_types cs=(of_t cs).Coma_state_t.printer_equipped_types;;
+  let all_subdirectories cs = 
+    Fw_with_dependencies.all_subdirectories
+    (frontier_with_unix_world cs) ;;
+  
+  
+  let printer_equipped_types cs =
+    Fw_with_dependencies.printer_equipped_types
+    (frontier_with_unix_world cs) ;;
   
   
   
-  let ordered_list_of_modules cs=((of_t cs).Coma_state_t.modules);; 
+  let dep_ordered_modules cs=
+    Fw_with_dependencies.dep_ordered_modules
+    (frontier_with_unix_world cs) ;;
   
   let test_module_for_registration cs modname=
-    List.mem modname (ordered_list_of_modules cs);;
+    List.mem modname (dep_ordered_modules cs);;
   
   let follows_it_but_does_not_necessarily_depend_on_it cs mn=
       let (_,_,after) = Three_parts.select_center_element_and_reverse_left (fun x->x=mn)
-        (ordered_list_of_modules cs) in 
+        (dep_ordered_modules cs) in 
       after;;
   
   
@@ -104,47 +114,47 @@ module Automatic = struct
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
-  let set_subdir_at_module cs mn v=
+  let set_subdir_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.subdir_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.subdir_for_module=new_assocs });;
       
   
-  let set_principal_ending_at_module cs mn v=
+  let set_principal_ending_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.principal_ending_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.principal_ending_for_module=new_assocs });;
   
   
-  let set_mli_presence_at_module cs mn v=
+  let set_mli_presence_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.mli_presence_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.mli_presence_for_module=new_assocs });;
   
   
-  let set_principal_mt_at_module cs mn v=
+  let set_principal_mt_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.principal_mt_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.principal_mt_for_module=new_assocs });;
   
-  let set_mli_mt_at_module cs mn v=
+  let set_mli_mt_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.mli_mt_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.mli_mt_for_module=new_assocs });;
   
-  let set_needed_libs_at_module cs mn v=
+  let set_needed_libs_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.needed_libs_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.needed_libs_for_module=new_assocs });;
   
   
-  let set_direct_fathers_at_module cs mn v=
+  let set_direct_fathers_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.direct_fathers_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
@@ -152,14 +162,14 @@ module Automatic = struct
   
   
   
-  let set_ancestors_at_module cs mn v=
+  let set_ancestors_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.ancestors_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.ancestors_for_module=new_assocs });;
   
   
-  let set_needed_dirs_at_module cs mn v=
+  let set_needed_dirs_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.needed_dirs_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
@@ -167,7 +177,7 @@ module Automatic = struct
       
   
   
-  let set_product_up_to_date_at_module cs mn v=
+  let set_product_up_to_date_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.product_up_to_date_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
@@ -175,7 +185,7 @@ module Automatic = struct
       
   
   
-  let set_directories cs v = let ccs=of_t cs in 
+  let set_all_subdirectories cs v = let ccs=of_t cs in 
                               to_t({ccs with Coma_state_t.directories=v});;
   
   
@@ -234,38 +244,49 @@ module Automatic = struct
   
   let passive_constructor fw = 
       let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
+      let subdirs_fm = Image.image (
+        fun mn -> (mn,Fw_with_dependencies.subdir_for_module fw mn) 
+      ) modules_in_order in 
+      let principal_endings_fm = Image.image (
+                             fun mn -> (mn,Fw_with_dependencies.principal_ending_for_module fw mn) 
+                           ) modules_in_order in 
+      let mli_presences_fm =  Image.image (
+        fun mn -> (mn,Fw_with_dependencies.mli_presence_for_module fw mn) 
+     ) modules_in_order in 
+     let principal_mts_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.principal_mt_for_module fw mn) 
+     ) modules_in_order in 
+     let mli_mts_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.mli_mt_for_module fw mn) 
+     ) modules_in_order in 
+     let needed_libs_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.needed_libs_for_module fw mn) 
+     ) modules_in_order in 
+     let needed_dirs_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.needed_dirs_for_module fw mn) 
+     ) modules_in_order in 
+     let direct_fathers_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.direct_fathers_for_module fw mn) 
+     ) modules_in_order in 
+     let ancestors_fm = Image.image (
+      fun mn -> (mn,Fw_with_dependencies.ancestors_for_module fw mn) 
+     ) modules_in_order in 
+     let all_subdirs = Fw_with_dependencies.all_subdirectories  fw in 
+     let preq_types = Fw_with_dependencies.printer_equipped_types  fw in 
       to_t({
        Coma_state_t.frontier_with_unix_world= fw;
-       modules = Fw_with_dependencies.dep_ordered_modules fw ;
-       subdir_for_module = Image.image (
-                             fun mn -> (mn,Fw_with_dependencies.subdir_for_module fw mn) 
-                           ) modules_in_order ;
-       principal_ending_for_module = Image.image (
-                             fun mn -> (mn,Fw_with_dependencies.principal_ending_for_module fw mn) 
-                           ) modules_in_order ;
-       mli_presence_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.mli_presence_for_module fw mn) 
-                           ) modules_in_order ;
-       principal_mt_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.principal_mt_for_module fw mn) 
-                           ) modules_in_order ;
-       mli_mt_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.mli_mt_for_module fw mn) 
-                           ) modules_in_order ;
-       needed_libs_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.needed_libs_for_module fw mn) 
-                          ) modules_in_order ; 
-       direct_fathers_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.direct_fathers_for_module fw mn) 
-                          ) modules_in_order ; 
-       ancestors_for_module = Image.image (
-                            fun mn -> (mn,Fw_with_dependencies.ancestors_for_module fw mn) 
-                          ) modules_in_order ;                    
-       needed_dirs_for_module = Image.image (
-                              fun mn -> (mn,Fw_with_dependencies.needed_dirs_for_module fw mn) 
-                          ) modules_in_order ; 
-       directories = Fw_with_dependencies.all_subdirectories  fw;
-       printer_equipped_types = Fw_with_dependencies.printer_equipped_types  fw ;
+       modules = modules_in_order ;
+       subdir_for_module = subdirs_fm ;
+       principal_ending_for_module = principal_endings_fm ;
+       mli_presence_for_module = mli_presences_fm  ;
+       principal_mt_for_module = principal_mts_fm ;
+       mli_mt_for_module = mli_mts_fm ;
+       needed_libs_for_module = needed_libs_fm ; 
+       direct_fathers_for_module = direct_fathers_fm ; 
+       ancestors_for_module = ancestors_fm ;                    
+       needed_dirs_for_module = needed_dirs_fm ; 
+       directories = all_subdirs;
+       printer_equipped_types = preq_types ;
        product_up_to_date_for_module = Image.image (
                               fun mn -> (mn,false) 
                           ) modules_in_order  ;
@@ -273,9 +294,9 @@ module Automatic = struct
   
 
   let change_one_module_name wrapped_cs old_mn new_mn=
-      (* note that preq_types are not dealt with here *)
+      (* note that printer_equipped_types are not dealt with here *)
       let cs=of_t wrapped_cs in
-      let new_modules = Image.image (fun x->if x=old_mn then new_mn else x)(ordered_list_of_modules cs) in  
+      let new_modules = Image.image (fun x->if x=old_mn then new_mn else x)(dep_ordered_modules cs) in  
       let rep_pair = (old_mn,new_mn) in 
       let new_subdirs = Associative_list.change_name_for_key (cs.Coma_state_t.subdir_for_module) rep_pair
       and new_principal_endings = Associative_list.change_name_for_key (cs.Coma_state_t.principal_ending_for_module) rep_pair
@@ -303,7 +324,7 @@ module Automatic = struct
   
   let remove_in_each_at_module wrapped_cs mname=
       let cs=of_t wrapped_cs in
-      let new_modules = List.filter (fun x->x<>mname) (ordered_list_of_modules cs) 
+      let new_modules = List.filter (fun x->x<>mname) (dep_ordered_modules cs) 
       and new_subdirs = Associative_list.remove_key (cs.Coma_state_t.subdir_for_module) mname
       and new_principal_endings = Associative_list.remove_key (cs.Coma_state_t.principal_ending_for_module) mname
       and new_mli_presences = Associative_list.remove_key (cs.Coma_state_t.mli_presence_for_module) mname
@@ -388,7 +409,7 @@ module Automatic = struct
   let reposition_in_each wrapped_cs mn1 mn2=
       let cs=of_t wrapped_cs in
       let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
-      let new_modules = Listennou.reposition_by_putting_snd_immediately_after_fst (ordered_list_of_modules cs) mn1 mn2 
+      let new_modules = Listennou.reposition_by_putting_snd_immediately_after_fst (dep_ordered_modules cs) mn1 mn2 
       and new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
       and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
       and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
@@ -464,7 +485,7 @@ module Automatic = struct
       let nm=Dfn_endingless.to_module hm
       and subdir=Dfn_endingless.to_subdirectory hm 
       and  cs=of_t wrapped_cs in
-      let new_modules = Listennou.push_immediately_after (ordered_list_of_modules cs) nm  pivot 
+      let new_modules = Listennou.push_immediately_after (dep_ordered_modules cs) nm  pivot 
       and new_subdirs = Associative_list.push_immediately_after (cs.Coma_state_t.subdir_for_module) (nm,subdir) pivot 
       and new_principal_endings = Associative_list.push_immediately_after (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) pivot 
       and new_mli_presences = Associative_list.push_immediately_after (cs.Coma_state_t.mli_presence_for_module) (nm,mlip) pivot 
@@ -492,7 +513,7 @@ module Automatic = struct
   let endingless_at_module cs mn=
      Dfn_endingless_t.J(
           root cs,
-          subdir_at_module cs mn,
+          subdir_for_module cs mn,
           mn
       );;
   
@@ -500,12 +521,12 @@ module Automatic = struct
      (frontier_with_unix_world_field,
         modules_field,
           subdir_for_modules_field,
-            principal_ending_at_module_field)=
+            principal_ending_for_module_field)=
     let the_root = Fw_with_small_details.root frontier_with_unix_world_field in         
     Option.filter_and_unpack (
       fun mn->
       let subdir = List.assoc mn subdir_for_modules_field 
-      and pr_end= List.assoc mn principal_ending_at_module_field  in
+      and pr_end= List.assoc mn principal_ending_for_module_field  in
       let rootless=Dfn_rootless_t.J(subdir,mn,pr_end) in 
       let text=Fw_with_small_details.get_content frontier_with_unix_world_field rootless in
       if (Substring.is_a_substring_of ("let "^"print_out ") text)
@@ -542,6 +563,7 @@ module Automatic = struct
   let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
   let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
   
+
   let of_concrete_object ccrt_obj = 
      let g=Concrete_object.get_record ccrt_obj in
      {
@@ -600,44 +622,44 @@ end ;;
 (* Inherited values *)
 
 
-let frontier_with_unix_world = Automatic.frontier_with_unix_world;;
+
 let root =Automatic.root;;
 let backup_dir =Automatic.backup_dir;;
 let gitpush_after_backup =Automatic.gitpush_after_backup;;
 let github_url =Automatic.github_url;;
 let encoding_protected_files =Automatic.encoding_protected_files;;
 
-let subdir_at_module = Automatic.subdir_at_module ;;
-let principal_ending_at_module = Automatic.principal_ending_at_module ;;
-let mli_presence_at_module = Automatic.mli_presence_at_module ;;
-let principal_mt_at_module = Automatic.principal_mt_at_module ;;
-let mli_mt_at_module = Automatic.mli_mt_at_module ;;
-let needed_libs_at_module  = Automatic.needed_libs_at_module ;;
-let direct_fathers_at_module = Automatic.direct_fathers_at_module ;;
-let ancestors_at_module = Automatic.ancestors_at_module ;; 
-let needed_dirs_at_module  = Automatic.needed_dirs_at_module ;;
-let product_up_to_date_at_module = Automatic.product_up_to_date_at_module ;;
-let directories = Automatic.directories;;
-let preq_types = Automatic.preq_types;;
+let subdir_for_module = Automatic.subdir_for_module ;;
+let principal_ending_for_module = Automatic.principal_ending_for_module ;;
+let mli_presence_for_module = Automatic.mli_presence_for_module ;;
+let principal_mt_for_module = Automatic.principal_mt_for_module ;;
+let mli_mt_for_module = Automatic.mli_mt_for_module ;;
+let needed_libs_for_module  = Automatic.needed_libs_for_module ;;
+let direct_fathers_for_module = Automatic.direct_fathers_for_module ;;
+let ancestors_for_module = Automatic.ancestors_for_module ;; 
+let needed_dirs_for_module  = Automatic.needed_dirs_for_module ;;
+let product_up_to_date_for_module = Automatic.product_up_to_date_for_module ;;
+let all_subdirectories = Automatic.all_subdirectories;;
+let printer_equipped_types = Automatic.printer_equipped_types;;
 
 
 let set_frontier_with_unix_world = Automatic.set_frontier_with_unix_world;;
-let set_subdir_at_module = Automatic.set_subdir_at_module ;;
-let set_principal_ending_at_module = Automatic.set_principal_ending_at_module ;;
-let set_mli_presence_at_module = Automatic.set_mli_presence_at_module ;;
-let set_principal_mt_at_module = Automatic.set_principal_mt_at_module ;;
-let set_mli_mt_at_module = Automatic.set_mli_mt_at_module ;;
-let set_needed_libs_at_module  = Automatic.set_needed_libs_at_module ;;
-let set_direct_fathers_at_module = Automatic.set_direct_fathers_at_module ;;
-let set_ancestors_at_module = Automatic.set_ancestors_at_module ;; 
+let set_subdir_for_module = Automatic.set_subdir_for_module ;;
+let set_principal_ending_for_module = Automatic.set_principal_ending_for_module ;;
+let set_mli_presence_for_module = Automatic.set_mli_presence_for_module ;;
+let set_principal_mt_for_module = Automatic.set_principal_mt_for_module ;;
+let set_mli_mt_for_module = Automatic.set_mli_mt_for_module ;;
+let set_needed_libs_for_module  = Automatic.set_needed_libs_for_module ;;
+let set_direct_fathers_for_module = Automatic.set_direct_fathers_for_module ;;
+let set_ancestors_for_module = Automatic.set_ancestors_for_module ;; 
 
-let set_needed_dirs_at_module  = Automatic.set_needed_dirs_at_module ;;
-let set_product_up_to_date_at_module = Automatic.set_product_up_to_date_at_module ;;
-let set_directories = Automatic.set_directories;;
+let set_needed_dirs_for_module  = Automatic.set_needed_dirs_for_module ;;
+let set_product_up_to_date_for_module = Automatic.set_product_up_to_date_for_module ;;
+let set_all_subdirectories = Automatic.set_all_subdirectories;;
 let set_preq_types = Automatic.set_preq_types;;
 
 
-let ordered_list_of_modules = Automatic.ordered_list_of_modules;;
+let dep_ordered_modules = Automatic.dep_ordered_modules;;
 let follows_it = Automatic.follows_it_but_does_not_necessarily_depend_on_it;;
 let all_used_subdirs = Automatic.all_used_subdirs;;
 
@@ -659,7 +681,7 @@ let to_concrete_object = Automatic.to_concrete_object ;;
 let endingless_at_module cs mn=
    Dfn_endingless_t.J(
         root cs,
-        subdir_at_module cs mn,
+        subdir_for_module cs mn,
         mn
     );;
 
@@ -668,11 +690,11 @@ let endingless_from_mildly_capitalized_module_name cs mname=
     endingless_at_module cs (Dfa_module.of_line(String.capitalize_ascii mname));;
 
 let check_ending_in_at_module edg cs mn=
-   if edg=principal_ending_at_module cs mn
+   if edg=principal_ending_for_module cs mn
    then true 
    else 
    if edg=Dfa_ocaml_ending_t.Mli
-   then mli_presence_at_module cs mn
+   then mli_presence_for_module cs mn
    else false;;
 
 
@@ -704,32 +726,32 @@ let registered_endings_at_module cs mn=
 
 
 let check_for_single_ending_at_module cs mn=
-  if mli_presence_at_module cs mn
-  then (principal_ending_at_module cs mn)=(Dfa_ocaml_ending_t.Mli)
+  if mli_presence_for_module cs mn
+  then (principal_ending_for_module cs mn)=(Dfa_ocaml_ending_t.Mli)
   else true ;;
 
 
 
-let size cs = List.length (ordered_list_of_modules cs);;      
+let size cs = List.length (dep_ordered_modules cs);;      
 
 let all_rootlesses cs =
-   List.flatten(Image.image (rootless_paths_at_module cs) (ordered_list_of_modules cs));;
+   List.flatten(Image.image (rootless_paths_at_module cs) (dep_ordered_modules cs));;
 
 
 let up_to_date_elesses cs =
    Option.filter_and_unpack (
      fun mn->
-       if product_up_to_date_at_module cs mn
+       if product_up_to_date_for_module cs mn
        then Some(endingless_at_module cs mn)
        else None
-   )(ordered_list_of_modules cs);;
+   )(dep_ordered_modules cs);;
 
 let preq_types_with_extra_info cs =
    let root = root cs  in 
    Image.image (fun middle->
     let mn = Dfn_middle.to_module middle in 
-    (Dfn_join.root_to_middle root middle,product_up_to_date_at_module cs mn)
-   ) (preq_types cs) ;;
+    (Dfn_join.root_to_middle root middle,product_up_to_date_for_module cs mn)
+   ) (printer_equipped_types cs) ;;
 
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 
@@ -767,10 +789,10 @@ let compute_long_subdir_name cs old_subdir new_subdir_short_name =
 let modules_with_their_ancestors cs l=
    let temp1=List.filter (
      fun nm->List.mem nm l 
-     ) (ordered_list_of_modules cs )   in 
+     ) (dep_ordered_modules cs )   in 
    let temp2=Image.image (
      fun nm->
-       (ancestors_at_module cs nm)@[nm] 
+       (ancestors_for_module cs nm)@[nm] 
    ) temp1 in 
    let temp3=List.flatten temp2 in 
    Listennou.nonredundant_version temp3;;
@@ -779,7 +801,7 @@ let find_needed_data_for_file cs fn=
       let temp1=Look_for_module_names.names_in_mlx_file fn in
       List.filter (
          fun mn->List.mem mn temp1  
-      )(ordered_list_of_modules cs);;
+      )(dep_ordered_modules cs);;
 
 let  find_needed_data cs rless=
    let full_version = Dfn_join.root_to_rootless (root cs) rless in 
@@ -793,15 +815,15 @@ let needed_dirs_and_libs_in_command cmod cs mn=
    "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
   and libs=String.concat(" ")
     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
-    (needed_libs_at_module cs mn)) in
+    (needed_libs_for_module cs mn)) in
     String.concat " " ["";dirs;libs;""];;
 
 let all_endinglesses cs=
-  Image.image (endingless_at_module cs) (ordered_list_of_modules cs);; 
+  Image.image (endingless_at_module cs) (dep_ordered_modules cs);; 
 
 let get_modification_time cs mn edg=
-  if edg=principal_ending_at_module cs mn then principal_mt_at_module cs mn else 
-  if edg=Dfa_ocaml_ending_t.Mli then mli_mt_at_module cs mn else 
+  if edg=principal_ending_for_module cs mn then principal_mt_for_module cs mn else 
+  if edg=Dfa_ocaml_ending_t.Mli then mli_mt_for_module cs mn else 
   "0.";;
 
 exception Non_existent_mtime of Dfn_full_t.t;;
@@ -812,13 +834,13 @@ let force_modification_time root_dir cs mlx=
       let file=Dfn_full.to_line mlx in 
       let new_val=string_of_float((Unix.stat file).Unix.st_mtime)  in
       let cs2=(
-        if (Dfa_ocaml_ending.of_ending edg)=principal_ending_at_module cs nm 
-        then set_principal_mt_at_module cs nm new_val
+        if (Dfa_ocaml_ending.of_ending edg)=principal_ending_for_module cs nm 
+        then set_principal_mt_for_module cs nm new_val
         else cs
       ) in
       let cs3=(
         if edg=Dfa_ending.mli
-        then set_mli_mt_at_module cs2 nm new_val
+        then set_mli_mt_for_module cs2 nm new_val
         else cs2
       ) in     
       cs3;;
@@ -831,8 +853,8 @@ let unregister_modules cs elesses=
   let nms= Image.image Dfn_endingless.to_module elesses in
   let descendants=List.filter(
       fun mn-> List.exists(fun mn2->
-       List.mem mn2 ( ancestors_at_module cs mn ) ) nms
-  ) (ordered_list_of_modules cs) in
+       List.mem mn2 ( ancestors_for_module cs mn ) ) nms
+  ) (dep_ordered_modules cs) in
   let problematic_descendants=List.filter(
       fun mn-> not(List.mem mn nms)
   ) descendants in
@@ -840,7 +862,7 @@ let unregister_modules cs elesses=
    then raise(Derelict_children(problematic_descendants))
    else
    let cs2=List.fold_left Automatic.remove_in_each_at_module cs nms in
-   let old_preqtypes = Automatic.preq_types cs2 in 
+   let old_preqtypes = Automatic.printer_equipped_types cs2 in 
    let new_preqtypes = List.filter (fun 
     middle -> List.for_all (fun eless->
        (Dfn_endingless.to_middle eless)<>middle ) elesses) old_preqtypes in
@@ -862,8 +884,8 @@ let partially_remove_mlx_file cs mlxfile=
     and nm=Dfn_full.to_module mlxfile in
     let pre_desc=List.filter(
       fun mn7->
-      List.mem nm ( ancestors_at_module cs mn7)
-    ) (ordered_list_of_modules cs) in
+      List.mem nm ( ancestors_for_module cs mn7)
+    ) (dep_ordered_modules cs) in
     if pre_desc<>[]
     then raise(Abandoned_children(mlxfile,pre_desc))
     else
@@ -872,7 +894,7 @@ let partially_remove_mlx_file cs mlxfile=
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_module cs nm
          then let cs5=Automatic.remove_in_each_at_module cs nm in 
-              let old_preqtypes = Automatic.preq_types cs5 in 
+              let old_preqtypes = Automatic.printer_equipped_types cs5 in 
               let new_preqtypes = List.filter (fun 
                 middle -> 
                 (Dfn_endingless.to_middle eless)<>middle 
@@ -887,14 +909,14 @@ let partially_remove_mlx_file cs mlxfile=
               is the mli *) 
               if edg=(Dfa_ocaml_ending_t.Mli)
               then (
-                       let cs3=set_mli_presence_at_module cs nm false in 
-                       set_mli_mt_at_module cs3 nm "0."
+                       let cs3=set_mli_presence_for_module cs nm false in 
+                       set_mli_mt_for_module cs3 nm "0."
                    )
                else 
-                     let old_mt=principal_mt_at_module cs nm in
+                     let old_mt=principal_mt_for_module cs nm in
                      (
-                      let cs4=set_principal_ending_at_module cs nm (Dfa_ocaml_ending_t.Mli) in 
-                      set_principal_mt_at_module cs4 nm old_mt
+                      let cs4=set_principal_ending_for_module cs nm (Dfa_ocaml_ending_t.Mli) in 
+                      set_principal_mt_for_module cs4 nm old_mt
                     );;
             
 
@@ -927,7 +949,7 @@ let find_needed_libraries cs rless ordered_ancestors=
       then true
       else List.exists 
            (fun mn->
-            List.mem lib (needed_libs_at_module cs mn) ) 
+            List.mem lib (needed_libs_for_module cs mn) ) 
            ordered_ancestors
   )
   Ocaml_library.all_libraries;;
@@ -935,7 +957,7 @@ let find_needed_libraries cs rless ordered_ancestors=
 
 let find_needed_directories cs rless ordered_ancestors=
   let temp1=Image.image (fun mn->
-    Set_of_polys.sort(needed_dirs_at_module cs mn)) ordered_ancestors in
+    Set_of_polys.sort(needed_dirs_for_module cs mn)) ordered_ancestors in
   let subdir_in_mlx=Dfn_rootless.to_subdirectory rless in
   let temp2=(
       if subdir_in_mlx<>Dfa_subdirectory.main 
@@ -984,21 +1006,21 @@ let complete_info cs  rless=
   let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
   let temp1=Image.image 
           (fun mn->
-           Set_of_polys.sort(ancestors_at_module cs mn)) 
+           Set_of_polys.sort(ancestors_for_module cs mn)) 
           modules_written_in_file in
   let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
   let tempf=(fun mn->
               if Set_of_polys.mem mn temp2
               then Some(mn)
               else None) in
-  let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
+  let allanc=Option.filter_and_unpack tempf (dep_ordered_modules cs) in
   let libned=PrivateTwo.find_needed_libraries cs rless modules_written_in_file
   and dirned=PrivateTwo.find_needed_directories cs rless modules_written_in_file in
   (hm,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
 
 let update_just_one_module cs rootless =
     let mn = Dfn_rootless.to_module rootless in 
-    if not(List.mem mn (ordered_list_of_modules cs))
+    if not(List.mem mn (dep_ordered_modules cs))
     then cs 
     else let (_,pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated)=complete_info cs rootless in 
          Automatic.set_in_each cs mn (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated);;
@@ -1031,14 +1053,14 @@ let complete_id_during_new_module_registration cs rless=
     let prmt=md_associated_modification_time (mlmt,mlimt,mllmt,mlymt) pr_end in
     let temp1=Image.image 
           (fun mn->
-           Set_of_polys.sort(ancestors_at_module cs mn)) 
+           Set_of_polys.sort(ancestors_for_module cs mn)) 
           modules_written_in_file in
     let temp2=Set_of_polys.fold_merge ((Set_of_polys.sort(modules_written_in_file) )::temp1) in
     let tempf=(fun mn->
               if Set_of_polys.mem mn temp2
               then Some(mn)
               else None) in
-    let allanc=Option.filter_and_unpack tempf (ordered_list_of_modules cs) in
+    let allanc=Option.filter_and_unpack tempf (dep_ordered_modules cs) in
     let libned=PrivateTwo.find_needed_libraries cs rless modules_written_in_file
     and dirned=PrivateTwo.find_needed_directories cs rless modules_written_in_file in
     (eless,pr_end,mlir,prmt,mlimt,libned,modules_written_in_file,allanc,dirned,false);;
@@ -1046,50 +1068,50 @@ let complete_id_during_new_module_registration cs rless=
 
 let above cs eless=
   let nm=Dfn_endingless.to_module eless in
-  ancestors_at_module cs nm;;
+  ancestors_for_module cs nm;;
  
 let below_module cs mn0 =
-  List.filter(fun mn->List.mem mn0 (ancestors_at_module cs mn)) (ordered_list_of_modules cs);; 
+  List.filter(fun mn->List.mem mn0 (ancestors_for_module cs mn)) (dep_ordered_modules cs);; 
 
 let below cs eless=
         let mn0=Dfn_endingless.to_module eless  in
         Option.filter_and_unpack(fun mn->
-            if List.mem mn0 (ancestors_at_module cs mn)
+            if List.mem mn0 (ancestors_for_module cs mn)
             then Some(mn)
-            else None) (ordered_list_of_modules cs);;    
+            else None) (dep_ordered_modules cs);;    
 
 let directly_above cs eless=
     let nm=Dfn_endingless.to_module eless in
-     direct_fathers_at_module cs nm;;     
+     direct_fathers_for_module cs nm;;     
 
 let directly_below cs eless=
         let mn0=Dfn_endingless.to_module eless  in
         Option.filter_and_unpack(fun mn->
-            if List.mem mn0 (direct_fathers_at_module cs mn)
+            if List.mem mn0 (direct_fathers_for_module cs mn)
             then Some(mn)
-            else None) (ordered_list_of_modules cs);;        
+            else None) (dep_ordered_modules cs);;        
 
 let ordered_as_in_coma_state cs l=
-   List.filter (fun x->List.mem x l) (ordered_list_of_modules cs);;
+   List.filter (fun x->List.mem x l) (dep_ordered_modules cs);;
 
 let above_one_in_several_or_inside cs l=
-  let temp1=Image.image (ancestors_at_module cs) l in
+  let temp1=Image.image (ancestors_for_module cs) l in
   let temp2=List.flatten (l::temp1) in
   ordered_as_in_coma_state cs  temp2;;
 
 let acolytes_above_module cs mn =
-   let temp2 = Image.image (rootless_paths_at_module cs) (ancestors_at_module cs mn) in 
+   let temp2 = Image.image (rootless_paths_at_module cs) (ancestors_for_module cs mn) in 
    List.flatten temp2 ;; 
 
 let all_mlx_files cs=
-  let mods=ordered_list_of_modules cs in
+  let mods=dep_ordered_modules cs in
   List.flatten(Image.image(acolytes_at_module cs) mods);;                
       
 let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path 
         (all_mlx_files cs);;  
 
 let all_rootless_paths cs=
-    let mods=ordered_list_of_modules cs in
+    let mods=dep_ordered_modules cs in
     List.flatten(Image.image(rootless_lines_at_module cs) mods);;  
      
 
@@ -1111,7 +1133,7 @@ List.filter (fun ap->Substring.is_a_substring_of
   some_string (Io.read_whole_file ap)) temp1;;
 
 
-let system_size cs=List.length(ordered_list_of_modules cs);;
+let system_size cs=List.length(dep_ordered_modules cs);;
 
 exception Inconsistent_constraints of Dfa_module_t.t*Dfa_module_t.t;;
 exception Bad_upper_constraint of Dfa_module_t.t;;  
@@ -1121,7 +1143,7 @@ exception Nonregistered_module_during_reposition of Dfn_endingless_t.t;;
 
  
 let reposition_module cs eless (l_before,l_after)=
-    let l_mods = ordered_list_of_modules cs in 
+    let l_mods = dep_ordered_modules cs in 
     let n=List.length(l_mods) in 
     let find_idx=(fun mn->Listennou.find_index mn l_mods) 
     and get=(fun j->List.nth l_mods (j-1)) in
@@ -1163,18 +1185,18 @@ Option.filter_and_unpack (fun mn->
   let hm=endingless_at_module cs mn in
   let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
   Some(Dfn_full.to_absolute_path mlx)
-) (ordered_list_of_modules cs);;
+) (dep_ordered_modules cs);;
 
 let modules_using_value cs value_name =
   Option.filter_and_unpack (fun mn->
   let eless=endingless_at_module cs mn
-  and pr_end=principal_ending_at_module cs mn in
+  and pr_end=principal_ending_for_module cs mn in
   let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
    let ap=Dfn_full.to_absolute_path mlx in
    if Substring.is_a_substring_of 
        value_name (Io.read_whole_file ap)
    then Some eless
-   else None ) (ordered_list_of_modules cs);;
+   else None ) (dep_ordered_modules cs);;
 
 
 
@@ -1182,27 +1204,27 @@ let modules_using_value cs value_name =
 
 let update_ancs_libs_and_dirs_at_module cs mn=
   let eless=endingless_at_module cs mn  
-  and pr_end=principal_ending_at_module cs mn in
+  and pr_end=principal_ending_for_module cs mn in
   let rless=Dfn_full.to_rootless (Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end)) in 
-  let fathers=direct_fathers_at_module cs mn in
+  let fathers=direct_fathers_for_module cs mn in
   let separated_ancestors=Image.image 
   (fun nm2->
-    Set_of_polys.safe_set(ancestors_at_module cs nm2)
+    Set_of_polys.safe_set(ancestors_for_module cs nm2)
   ) fathers in
   let ancestors_with_wrong_order=Set_of_polys.fold_merge((Set_of_polys.safe_set fathers)::separated_ancestors) in
   let ordered_ancestors=List.filter (
     fun mn->Set_of_polys.mem mn ancestors_with_wrong_order
-  ) (ordered_list_of_modules cs) in
+  ) (dep_ordered_modules cs) in
   let new_libs=PrivateTwo.find_needed_libraries cs rless ordered_ancestors
   and new_dirs=PrivateTwo.find_needed_directories cs rless ordered_ancestors in
-  let cs2=set_ancestors_at_module cs mn ordered_ancestors in 
-  let cs3=set_needed_libs_at_module cs2 mn new_libs in
-  set_needed_dirs_at_module cs3 mn new_dirs;;
+  let cs2=set_ancestors_for_module cs mn ordered_ancestors in 
+  let cs3=set_needed_libs_for_module cs2 mn new_libs in
+  set_needed_dirs_for_module cs3 mn new_dirs;;
 
 
 let update_ancs_libs_and_dirs cs=
   let cs_walker=ref(cs) in 
-  let _=List.iter(fun mn->cs_walker:=update_ancs_libs_and_dirs_at_module (!cs_walker) mn)(ordered_list_of_modules cs) in
+  let _=List.iter(fun mn->cs_walker:=update_ancs_libs_and_dirs_at_module (!cs_walker) mn)(dep_ordered_modules cs) in
   (!cs_walker);;  
 
 
@@ -1232,24 +1254,33 @@ module PrivateThree=struct
     let message_about_changed_modules changed_modules=
       let temp1=Image.image Dfa_module.to_line changed_modules in
       "\n\n"^
-      "The following modules have been directly changed :\n"^
-      (String.concat "\n" temp1)^
+      "The following modules have been directly changed :\n\n"^
+      (String.concat ", " temp1)^
       "\n\n"
     ;;       
+
+    let message_about_involved_modules involved_modules=
+      let temp1=Image.image Dfa_module.to_line involved_modules in
+      "\n\n"^
+      "The following modules need to be recompiled \n"^
+      "because they depend on directly changed modules :\n\n"^
+      (String.concat ", " temp1)^
+      "\n\n"
+    ;;    
 
     let message_about_changed_noncompilables changed_noncompilables=
       let temp1=Image.image Dfn_rootless.to_line changed_noncompilables in
       "\n\n"^
-      "The following noncompilables have been directly changed :\n"^
-      (String.concat "\n" temp1)^
+      "The following noncompilables have been directly changed :\n\n"^
+      (String.concat ", " temp1)^
       "\n\n"
     ;;    
 
     let message_about_changed_archived_compilables changed_ac=
     let temp1=Image.image Dfn_rootless.to_line changed_ac in
     "\n\n"^
-    "The following archived files have been directly changed :\n"^
-    (String.concat "\n" temp1)^
+    "The following archived files have been directly changed :\n\n"^
+    (String.concat ", " temp1)^
     "\n\n"
   ;;    
 
@@ -1257,6 +1288,11 @@ module PrivateThree=struct
       if changed_modules=[]
       then ()
       else (print_string(message_about_changed_modules changed_modules);flush stdout);;
+
+    let announce_involved_modules involved_modules=
+      if involved_modules=[]
+      then ()
+      else (print_string(message_about_involved_modules involved_modules);flush stdout);;  
              
     let announce_changed_noncompilables changed_noncompilables=
       if changed_noncompilables=[]
@@ -1270,8 +1306,8 @@ module PrivateThree=struct
 
     let put_md_list_back_in_order tolerate_cycles 
       cs initially_active_nms=
-      let md_list=ordered_list_of_modules cs in
-      let coat=Memoized.make (fun nm->direct_fathers_at_module cs nm) in
+      let md_list=dep_ordered_modules cs in
+      let coat=Memoized.make (fun nm->direct_fathers_for_module cs nm) in
       let (cycles,reordered_list)=Reconstruct_linear_poset.reconstruct_linear_poset 
          coat md_list in
       let _=treat_circular_dependencies tolerate_cycles (
@@ -1287,10 +1323,10 @@ module PrivateThree=struct
             then Some(nm)
             else
             if List.exists (fun nm2->List.mem nm2 initially_active_nms) 
-                 (ancestors_at_module cs nm)
+                 (ancestors_for_module cs nm)
             then Some(nm)
             else None
-      ) (ordered_list_of_modules cs) in  
+      ) (dep_ordered_modules cs) in  
       (cs3,active_descendants);;
      
 end;; 
@@ -1305,19 +1341,19 @@ let md_recompute_modification_time eless edg=
 
 let check_for_possible_change cs mn=
   let eless =endingless_at_module cs mn 
-  and pr_ending=principal_ending_at_module cs mn in
+  and pr_ending=principal_ending_for_module cs mn in
   let mli_modif_time=md_recompute_modification_time eless Dfa_ocaml_ending_t.Mli 
   and pr_modif_time=md_recompute_modification_time eless pr_ending 
-  and old_mli_modif_time=mli_mt_at_module cs mn
-  and old_pr_modif_time=principal_mt_at_module cs mn 
+  and old_mli_modif_time=mli_mt_for_module cs mn
+  and old_pr_modif_time=principal_mt_for_module cs mn 
   in
   let mn = Dfn_endingless.to_module eless in 
   let no_change_for_mlis =(
-     if not(mli_presence_at_module cs mn)
+     if not(mli_presence_for_module cs mn)
      then true 
     else   mli_modif_time = old_mli_modif_time
   ) in 
-  if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_at_module cs mn)
+  if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_for_module cs mn)
   then None
   else
   let rless=Dfn_full.to_rootless(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_ending)) in
@@ -1345,20 +1381,20 @@ let latest_changes_in_compilables cs =
     (
     declare_changed(mname);
     )
-)(ordered_list_of_modules cs) in
+)(dep_ordered_modules cs) in
 let changed_modules=List.rev(!ref_for_changed_modules) in
 if changed_modules=[] then [] else
 let _=PrivateThree.announce_changed_modules changed_modules in
 (!ref_for_changed_shortpaths);; 
 
 let latest_changes_in_noncompilables cs =
-   let fw = frontier_with_unix_world cs in 
+   let fw = Automatic.frontier_with_unix_world cs in 
    let (_,((_,_,changed_noncompilables),_)) = Fw_with_dependencies.inspect_and_update fw in 
    Image.image Dfn_rootless.to_line changed_noncompilables;;
 
 
 let latest_changes cs = 
-  let fw = frontier_with_unix_world cs in 
+  let fw = Automatic.frontier_with_unix_world cs in 
   let (_,((changed_archived_compilables,_,changed_noncompilables),_)) = Fw_with_dependencies.inspect_and_update fw in 
   (Image.image Dfn_rootless.to_line changed_archived_compilables,
    latest_changes_in_compilables cs,
@@ -1368,14 +1404,14 @@ let printer_equipped_types_from_data cs=
   Option.filter_and_unpack (
     fun mn->
     let eless=endingless_at_module cs mn
-    and pr_end=principal_ending_at_module cs mn in
+    and pr_end=principal_ending_for_module cs mn in
     let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
     let ap=Dfn_full.to_absolute_path mlx in
     let text=Io.read_whole_file ap in
     if (Substring.is_a_substring_of ("let "^"print_out ") text)
     then Some(eless)
     else None
-  ) (ordered_list_of_modules cs);;
+  ) (dep_ordered_modules cs);;
  
 
 
@@ -1424,27 +1460,27 @@ let register_mlx_file_on_monitored_modules cs rless =
   let cs_walker=ref(cs) in 
   let _=List.iter(
       fun current_module ->
-      let current_anc= ancestors_at_module (!cs_walker) current_module in  
+      let current_anc= ancestors_for_module (!cs_walker) current_module in  
       if not(List.mem nm current_anc)
       then ()
       else  
-      let current_libs= needed_libs_at_module cs current_module in
+      let current_libs= needed_libs_for_module cs current_module in
       let new_ancestors=Option.filter_and_unpack(
         fun nm2->
         if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
         then Some(nm2)
         else None
-      ) (ordered_list_of_modules (!cs_walker)) 
+      ) (dep_ordered_modules (!cs_walker)) 
       and new_libs=List.filter (
           fun lib->(List.mem lib libned)||(List.mem lib current_libs)
       ) Ocaml_library.all_libraries in  
       let ordered_dirs=Set_of_polys.merge
-        (Set_of_polys.safe_set(needed_dirs_at_module (!cs_walker) current_module))
+        (Set_of_polys.safe_set(needed_dirs_for_module (!cs_walker) current_module))
         (Set_of_polys.safe_set (dirned)) in
       let new_dirs=Set_of_polys.forget_order(ordered_dirs) in
-      cs_walker:=set_ancestors_at_module (!cs_walker) current_module new_ancestors;
-      cs_walker:=set_needed_libs_at_module (!cs_walker) current_module new_libs;
-      cs_walker:=set_needed_dirs_at_module (!cs_walker) current_module new_dirs;
+      cs_walker:=set_ancestors_for_module (!cs_walker) current_module new_ancestors;
+      cs_walker:=set_needed_libs_for_module (!cs_walker) current_module new_libs;
+      cs_walker:=set_needed_dirs_for_module (!cs_walker) current_module new_dirs;
   )(follows_it cs last_father) in 
   let _=
   ( 
@@ -1560,7 +1596,7 @@ let command_for_predebuggable  cs short_path=
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_subdirs = Image.image (
        fun nm->
-               let subdir=subdir_at_module cs nm in 
+               let subdir=subdir_for_module cs nm in 
         (subdir,nm)
     ) nm_deps in 
     let s_root=Dfa_root.connectable_to_subpath(root cs) in
@@ -1572,7 +1608,7 @@ let command_for_predebuggable  cs short_path=
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
+     (fun (_,nm) -> Set_of_polys.sort(needed_libs_for_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let extension=".cma" in
     let libs=String.concat(" ")
@@ -1598,7 +1634,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
     let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
     let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
     let nm_deps_with_subdirs = Image.image (
-       fun nm->let subdir=subdir_at_module cs nm in 
+       fun nm->let subdir=subdir_for_module cs nm in 
         (subdir,nm)
     ) nm_deps in 
     let s_root=Dfa_root.connectable_to_subpath(root cs) in
@@ -1619,7 +1655,7 @@ let command_for_debuggable_or_executable cmod cs rootless_path=
       Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
         (Image.image Dfa_module.to_line nm_direct_deps)) in 
     let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.sort(needed_libs_at_module cs nm)) nm_deps_with_subdirs in
+     (fun (_,nm) -> Set_of_polys.sort(needed_libs_for_module cs nm)) nm_deps_with_subdirs in
     let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
     let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
     let libs=String.concat(" ")
@@ -1661,7 +1697,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
        let (nm,eless,cmd)=triple in
        if (Unix_command.uc cmd)=0
        then 
-            let cs2=set_product_up_to_date_at_module cs nm true in 
+            let cs2=set_product_up_to_date_for_module cs nm true in 
             helper_for_feydeau cmod cs2 (rejected,(nm,eless)::treated,other_triples)
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
@@ -1670,7 +1706,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
             let (rejected_siblings_as_triples,survivors)=List.partition
            (
               fun (nm2,_,_)->
-                List.mem nm (ancestors_at_module cs nm2)
+                List.mem nm (ancestors_for_module cs nm2)
            ) triples_after in 
            let rejected_siblings_with_redundancies =  
               Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
@@ -1679,7 +1715,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (nm3,hm3)->
-                cs_walker:=set_product_up_to_date_at_module (!cs_walker) nm3 false
+                cs_walker:=set_product_up_to_date_for_module (!cs_walker) nm3 false
            ) newly_rejected in 
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
          
@@ -1689,10 +1725,10 @@ let prepare_pretty_printers_for_ocamldebug cs deps =
     let s= Dfa_module.to_line mname in 
     "load_printer "^s^".cmo"
   ) deps) 
-  and preq_types = preq_types_with_extra_info cs  in 
+  and printer_equipped_types = preq_types_with_extra_info cs  in 
   let printable_deps = List.filter (
     fun mn -> let eless = endingless_at_module cs mn in 
-    List.mem (eless,true) preq_types
+    List.mem (eless,true) printer_equipped_types
   ) deps in 
   let temp2 = Image.image (fun mname->
     let s= Dfa_module.to_line mname in 
@@ -1710,7 +1746,7 @@ let dependencies_inside_shaft cmod cs (opt_modnames,opt_rootless_path)=
         (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
        let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
        let nm_deps=modules_with_their_ancestors cs nm_direct_deps in 
-       let deps =List.filter (fun mn->List.mem mn nm_deps) (ordered_list_of_modules cs) in 
+       let deps =List.filter (fun mn->List.mem mn nm_deps) (dep_ordered_modules cs) in 
        let _=(if cmod = Compilation_mode_t.Debug 
               then prepare_pretty_printers_for_ocamldebug cs deps) in 
        deps;;
@@ -1789,14 +1825,14 @@ end;;
 let add_printer_equipped_type cs mn=
   let eless = endingless_at_module cs mn in 
   let middle = Dfn_endingless.to_middle eless in 
-  set_preq_types cs ((preq_types cs)@[middle]);;
+  set_preq_types cs ((printer_equipped_types cs)@[middle]);;
 
 let remove_printer_equipped_type cs mn=
-  set_preq_types cs (List.filter (fun mn2->mn2<>mn) (preq_types cs));;
+  set_preq_types cs (List.filter (fun mn2->mn2<>mn) (printer_equipped_types cs));;
 
 let uple_form cs=
   (cs,
-   directories cs,
+   all_subdirectories cs,
    preq_types_with_extra_info cs
    );;
 
@@ -1806,7 +1842,7 @@ let unregister_mlx_file cs mlx=
     let following = mn::(follows_it cs mn) in  
     let was_lonely=
       (List.length(registered_endings_at_module cs mn)=1) in 
-    let _=set_product_up_to_date_at_module cs mn false in 
+    let _=set_product_up_to_date_for_module cs mn false in 
     let cs2=partially_remove_mlx_file cs mlx in
     let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
@@ -1814,7 +1850,7 @@ let unregister_mlx_file cs mlx=
            else ( fun (cs4,_,_)->cs4)
            (Ocaml_target_making.usual_feydeau 
              cs2 following) ) in 
-    set_directories cs3 new_dirs;;   
+    set_all_subdirectories cs3 new_dirs;;   
 
 let unregister_mlx_files cs mlxs = 
   List.fold_left unregister_mlx_file cs mlxs ;; 
@@ -1884,8 +1920,8 @@ end;;
 
 let register_mlx_file cs mlx=
           let (cs2,new_dirs)= 
-          Register_mlx_file.on_targets (cs,directories cs) mlx in   
-           set_directories cs2 new_dirs;;            
+          Register_mlx_file.on_targets (cs,all_subdirectories cs) mlx in   
+           set_all_subdirectories cs2 new_dirs;;            
 
 let register_mlx_files cs mlxs = List.fold_left register_mlx_file cs mlxs;;
 
@@ -1932,7 +1968,7 @@ let start_executing cs short_path=
   Unix_command.conditional_multiple_uc cmds;;   
 
 let decipher_path cs x=Find_suitable_ending.find_file_location 
-   (root cs) (directories cs) x;;
+   (root cs) (all_subdirectories cs) x;;
 
 let forgotten_files_in_build_subdir cs= 
    let s_root=Dfa_root.connectable_to_subpath (root cs) 
@@ -1983,7 +2019,7 @@ let rename_value_inside_module cs old_name new_name=
    let endingless=decipher_module cs  module_name 
    and path=decipher_path cs  module_name in 
    let nm=Dfn_endingless.to_module endingless in
-   let pre_temp2=(ancestors_at_module cs nm)@[nm] in
+   let pre_temp2=(ancestors_for_module cs nm)@[nm] in
    let temp2=Image.image (endingless_at_module cs) pre_temp2 in
    let preceding_files=Image.image  (fun eless2->
    	 Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
@@ -2154,9 +2190,9 @@ module Recent_changes = struct
                <>(get_modification_time cs mn edg);;
 
             let check_for_change_at_module  cs mn=
-               let pr_ending = principal_ending_at_module cs mn in 
+               let pr_ending = principal_ending_for_module cs mn in 
                let endings = (
-                   if mli_presence_at_module cs mn 
+                   if mli_presence_for_module cs mn 
                    then  [Dfa_ocaml_ending_t.Mli;pr_ending]
                    else [pr_ending]
                ) in 
@@ -2169,7 +2205,7 @@ module Recent_changes = struct
                if check_for_change_at_module cs mn 
                then Some(mn)
                else None
-            ) (ordered_list_of_modules cs);;
+            ) (dep_ordered_modules cs);;
 
             let check_for_changes cs = 
             let changes = detect_changes cs in 
@@ -2183,18 +2219,18 @@ module Late_Recompilation = struct
 
 let quick_update cs (new_fw,changed_rootlesses)  mn=
   let eless =endingless_at_module cs mn 
-  and pr_ending=principal_ending_at_module cs mn in
+  and pr_ending=principal_ending_for_module cs mn in
   let ocaml_pr_ending=Dfa_ocaml_ending.to_ending pr_ending in 
   let middle = Dfn_endingless.to_middle eless in 
   let mli_modif_time=Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
   and pr_modif_time=Fw_with_dependencies.get_mtime new_fw (Dfn_join.middle_to_ending middle ocaml_pr_ending)  
-  and old_mli_modif_time=mli_mt_at_module cs mn
-  and old_pr_modif_time=principal_mt_at_module cs mn 
+  and old_mli_modif_time=mli_mt_for_module cs mn
+  and old_pr_modif_time=principal_mt_for_module cs mn 
   in
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
   let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(product_up_to_date_at_module cs mn)&&
+  if (old_values=new_values)&&(product_up_to_date_for_module cs mn)&&
      (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
   then None
   else
@@ -2239,9 +2275,9 @@ let reflect_latest_changes_in_github cs opt_msg=
 let check_module_sequence_for_forgettability cs l=
   let modules_below = List.filter (
     fun mn -> List.exists (fun mn2->
-        List.mem mn2 (ancestors_at_module cs mn)
+        List.mem mn2 (ancestors_for_module cs mn)
       ) l 
-  )(ordered_list_of_modules cs) in 
+  )(dep_ordered_modules cs) in 
   List.filter (fun mn->not(List.mem mn l)) modules_below;;
 
 
@@ -2345,7 +2381,7 @@ end ;;
 
 let principal_acolyte cs eless = 
   let mn = Dfn_endingless.to_module eless in 
-  let edg = principal_ending_at_module cs mn in 
+  let edg = principal_ending_for_module cs mn in 
   Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg) ;;
 
 let all_principals cs =
@@ -2355,7 +2391,7 @@ exception Module_not_found_while_choosing_automatic of Dfa_module_t.t ;;
 
 let choose_automatic_if_possible cs modulename =
     let mname = Dfa_module.to_line modulename 
-    and list_of_modules = Automatic.ordered_list_of_modules cs in 
+    and list_of_modules = Automatic.dep_ordered_modules cs in 
     let auto_version = Dfa_module.of_line(mname^"_automatic") in 
     if not(List.mem modulename list_of_modules)
     then raise(Module_not_found_while_choosing_automatic modulename)
@@ -2365,3 +2401,13 @@ let choose_automatic_if_possible cs modulename =
     else modulename ;;      
 
 let passive_constructor = Automatic.passive_constructor ;;
+
+let below_several cs mods = 
+  let all_mods_in_order = dep_ordered_modules cs in 
+  let below_module = (fun mn->below cs (endingless_at_module cs mn)) in 
+  let temp1 = List.flatten(mods :: (Image.image below_module mods)) in
+  let all_deps = List.filter (fun mn->List.mem mn temp1) all_mods_in_order in 
+  let (mods_in_order,new_deps) = List.partition (fun mn->List.mem mn mods) all_deps in 
+  (all_deps,new_deps,mods_in_order) ;;
+    
+

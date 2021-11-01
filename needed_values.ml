@@ -68,7 +68,7 @@ let ruco () = Other_coma_state.recompile None ;;
 
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
-let ri () = Listennou.redundant_indices (Coma_state.ordered_list_of_modules (!Usual_coma_state.main_ref));;
+let ri () = Listennou.redundant_indices (Coma_state.dep_ordered_modules (!Usual_coma_state.main_ref));;
 
 let rsh = Usual_coma_state.refresh;;
 

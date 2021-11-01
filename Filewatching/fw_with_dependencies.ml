@@ -99,6 +99,7 @@ let register_rootless_paths old_fw rootlesses =
    index_for_caching = expand_index instance_idx ;
  },extra ) ;; 
 
+ 
 let relocate_module_to old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Fw_with_small_details.relocate_module_to old_parent pair in 
@@ -275,10 +276,10 @@ let register_rootless_paths old_fw rootlesses =
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
   let old_val = get old_fw in 
-  let ((a_files,u_files,nc_files),new_details) = extra in
-  let involved_mods = Image.image Dfn_rootless.to_module rootlesses in
+  let ((a_files,u_files,nc_files),new_details) = extra in 
+  let old_mods = Image.image fst old_val in 
   let (overlapping,nonoverlapping) = List.partition (
-     fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) involved_mods 
+     fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) old_mods 
   ) new_details in 
   let tempf1 = (
     fun old_pair -> 
@@ -337,23 +338,29 @@ let remove_files old_fw files_to_be_removed =
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
- let visible = Cached.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,extra) = Cached.rename_module_on_filename_level_and_in_files old_fw triple in 
  let old_val = get old_fw in 
+ let (old_mn,new_mn,_) = triple in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
+     let (pre_mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
-        (Dfn_rootless.to_module rl)= mn
+        (Dfn_rootless.to_module rl)= pre_mn
        ) extra in
      if temp1 <> []
      then let new_parent = parent new_fw in 
+          let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
           (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
+ let changed_modules_in_any_order = Option.filter_and_unpack (fun (_,opt)->match opt with 
+ None -> None |(Some(new_rl,_))->Some (Dfn_rootless.to_module new_rl)) extra in 
+ let changed_modules = Option.filter_and_unpack (fun (mn,_)->
+ if List.mem mn changed_modules_in_any_order then Some mn else None
+  ) answer in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- visible ;;
+ (new_fw,changed_modules) ;;
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Cached.rename_subdirectory_as old_fw pair in 

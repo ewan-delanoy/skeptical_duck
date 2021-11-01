@@ -126,20 +126,20 @@ let preceding_module modname =
      let k = Listennou.find_index modname submodules in 
      if k = 1 then "Cached" else List.nth submodules (k-2) ;;  
 
-let data_from_opt_extra opt_extra rest_of_line addendum_modifier=
+let data_from_opt_extra opt_extra rest_of_line additional_extra=
      match opt_extra with 
       None -> ([
                  " let new_fw = "^rest_of_line
                ]," new_fw")
      |Some(extra) -> 
-          if addendum_modifier=""
+          if additional_extra=""
           then ([
                  " let visible = "^rest_of_line;
                  " let (new_fw,"^extra^") = visible in "
                ]," visible")
           else ([
             " let (new_fw,"^extra^") = "^rest_of_line
-               ]," (new_fw,"^addendum_modifier^extra^")") ;;
+               ]," (new_fw,"^additional_extra^")") ;;
 
 
 let text_for_method modname meth_uple modmeth_uple =
@@ -284,10 +284,10 @@ mod_details "reflect_latest_changes_in_github" ([
 
 mod_details "register_rootless_paths" ([
    "  let old_val = get old_fw in ";
-   "  let ((a_files,u_files,nc_files),new_details) = extra in";
-   "  let involved_mods = Image.image Dfn_rootless.to_module rootlesses in";
+   "  let ((a_files,u_files,nc_files),new_details) = extra in ";
+   "  let old_mods = Image.image fst old_val in ";
    "  let (overlapping,nonoverlapping) = List.partition (";
-   "     fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) involved_mods ";
+   "     fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) old_mods ";
    "  ) new_details in ";
    "  let tempf1 = (";
    "    fun old_pair -> ";
@@ -327,7 +327,28 @@ mod_details "relocate_module_to" (mod_details_usual_preliminary,"") ;;
 
 mod_details "remove_files" (mod_details_usual_preliminary,"") ;;
 
-mod_details "rename_module_on_filename_level_and_in_files" (mod_details_usual_preliminary,"") ;;
+mod_details "rename_module_on_filename_level_and_in_files" ([
+   " let old_val = get old_fw in ";
+   " let (old_mn,new_mn,_) = triple in ";
+   " let tempf = (";
+   "   fun old_pair -> ";
+   "     let (pre_mn,details) = old_pair in ";
+   "     let temp1 = List.filter (fun (rl,new_pair_for_rl)->";
+   "        (Dfn_rootless.to_module rl)= pre_mn";
+   "       ) extra in";
+   "     if temp1 <> []";
+   "     then let new_parent = parent new_fw in ";
+   "          let mn = (if pre_mn = old_mn then new_mn else pre_mn) in ";
+   "          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "     else old_pair ";
+   " ) in ";
+   " let answer = Image.image tempf old_val in ";
+   " let changed_modules_in_any_order = Option.filter_and_unpack (fun (_,opt)->match opt with ";
+   " None -> None |(Some(new_rl,_))->Some (Dfn_rootless.to_module new_rl)) extra in ";
+   " let changed_modules = Option.filter_and_unpack (fun (mn,_)->";
+   " if List.mem mn changed_modules_in_any_order then Some mn else None";
+   "  ) answer in ";
+],"changed_modules") ;;
 
 mod_details "rename_subdirectory_as" (mod_details_usual_preliminary,"") ;;
 

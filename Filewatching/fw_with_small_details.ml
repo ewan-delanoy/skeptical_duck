@@ -116,17 +116,18 @@ let inspect_and_update fw  =
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
    let changed_details_ref = ref [] in 
+   let new_small_details = Image.image (
+      fun old_pair->
+       let rl = fst old_pair in
+       if List.mem rl changed_files 
+       then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+            let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
+            new_pair 
+       else old_pair  
+    ) old_details in 
    ({
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-        fun old_pair->
-         let rl = fst old_pair in
-         if List.mem rl changed_files 
-         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
-              let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
-              new_pair 
-         else old_pair  
-      ) old_details;
+      small_details_in_files = new_small_details;
    },
    (File_watcher.partition_for_singles new_parent changed_files,!changed_details_ref));;
 
@@ -148,17 +149,18 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
    let new_fw = (
    if change_made 
    then 
+      let new_small_details = Image.image (
+         fun old_pair->
+         let rl = fst old_pair in
+         if rl  = rootless 
+         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+              let _= (accu:=Some(rl,Some(new_pair))) in 
+              new_pair
+         else old_pair  
+      ) old_details in 
       {
          Fw_with_small_details_t.parent = new_parent ;
-         small_details_in_files = Image.image (
-            fun old_pair->
-            let rl = fst old_pair in
-            if rl  = rootless 
-            then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
-                 let _= (accu:=Some(rl,Some(new_pair))) in 
-                 new_pair
-            else old_pair  
-         ) old_details;
+         small_details_in_files = new_small_details;
       }
    else fw ) in (new_fw,!accu);;           
 
@@ -190,18 +192,19 @@ let relocate_module_to fw (mod_name,new_subdir)=
    let new_parent = File_watcher.relocate_module_to 
         old_parent mod_name new_subdir in 
    let accu = ref [] in      
+   let new_small_details = Image.image (
+      fun old_pair->
+      let rl = fst old_pair in
+      if (Dfn_rootless.to_module rl) = mod_name 
+      then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
+           let new_pair = (new_rl,snd old_pair) in 
+           let _ = (accu := (rl,Some new_pair) :: (!accu)) in
+           new_pair
+      else old_pair        
+   ) old_details in 
    let new_fw = {
       Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = Image.image (
-         fun old_pair->
-         let rl = fst old_pair in
-         if (Dfn_rootless.to_module rl) = mod_name 
-         then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
-              let new_pair = (new_rl,snd old_pair) in 
-              let _ = (accu := (rl,Some new_pair) :: (!accu)) in
-              new_pair
-         else old_pair        
-      ) old_details;
+      small_details_in_files = new_small_details;
    } in 
    (new_fw,!accu);;  
 
@@ -328,21 +331,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
       small_details_in_files = new_details;
    },List.rev(!accu));;   
 
-   let restrict fw smaller_list_of_modules=   
-      let new_parent = File_watcher.restrict (Automatic.parent fw) smaller_list_of_modules  
-      and old_details = Automatic.small_details_in_files fw in 
-      ({
-         Fw_with_small_details_t.parent = new_parent ;
-         small_details_in_files = List.filter (fun (rl,_)->
-            List.mem (Dfn_rootless.to_module rl) smaller_list_of_modules) old_details;
-      },smaller_list_of_modules) ;;
-
-   let transplant fw new_config=   
-      let new_parent = File_watcher.transplant (Automatic.parent fw) new_config in 
-      ({
-         fw with 
-         Fw_with_small_details_t.parent = new_parent ;
-      },new_config) ;;
+   
 
 end;;
 
@@ -396,8 +385,6 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
-let restrict = Private.restrict ;;
-
 let root = Automatic.root ;;
 
 let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
@@ -405,7 +392,5 @@ let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
-
-let transplant = Private.transplant ;;
 
 let usual_compilable_files fw = File_watcher.usual_compilable_files (Automatic.parent fw) ;;

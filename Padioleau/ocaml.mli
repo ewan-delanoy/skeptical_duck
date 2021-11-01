@@ -58,9 +58,9 @@ val vof_string : string -> v
 val vof_list   : ('a -> v) -> 'a list -> v
 val vof_option : ('a -> v) -> 'a option -> v
 val vof_ref    : ('a -> v) -> 'a ref -> v
-val vof_either    : ('a -> v) -> ('b -> v) -> ('a, 'b) Common.either -> v
+val vof_either    : ('a -> v) -> ('b -> v) -> ('a, 'b) Padioleau_common.either -> v
 val vof_either3    : ('a -> v) -> ('b -> v) -> ('c -> v) -> 
-  ('a, 'b, 'c) Common.either3 -> v
+  ('a, 'b, 'c) Padioleau_common.either3 -> v
 
 val int_ofv:    v -> int
 val float_ofv:  v -> float
@@ -109,10 +109,10 @@ val map_of_ref: 'a -> 'b -> 'b
 val map_of_option: ('a -> 'b) -> 'a option -> 'b option
 val map_of_list: ('a -> 'a) -> 'a list -> 'a list
 val map_of_either: 
-  ('a -> 'b) -> ('c -> 'd) -> ('a, 'c) Common.either -> ('b, 'd) Common.either
+  ('a -> 'b) -> ('c -> 'd) -> ('a, 'c) Padioleau_common.either -> ('b, 'd) Padioleau_common.either
 val map_of_either3: 
   ('a -> 'b) -> ('c -> 'd) -> ('e -> 'f) -> 
-  ('a, 'c, 'e) Common.either3 -> ('b, 'd, 'f) Common.either3
+  ('a, 'c, 'e) Padioleau_common.either3 -> ('b, 'd, 'f) Padioleau_common.either3
 
 (* pure visitor building blocks, used by code generated using ocamltarzan *)
 val v_unit: unit -> unit
@@ -124,7 +124,7 @@ val v_list: ('a -> unit) -> 'a list -> unit
 val v_ref: ('a -> unit) -> 'a ref -> unit
 val v_either: 
   ('a -> unit) -> ('b -> unit) -> 
-  ('a, 'b) Common.either -> unit
+  ('a, 'b) Padioleau_common.either -> unit
 val v_either3: 
   ('a -> unit) -> ('b -> unit) -> ('c -> unit) ->
-  ('a, 'b, 'c) Common.either3 -> unit
+  ('a, 'b, 'c) Padioleau_common.either3 -> unit

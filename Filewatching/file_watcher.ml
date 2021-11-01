@@ -5,6 +5,7 @@
 *)
 
 exception Register_rootless_path_exn of string list;;
+exception Already_registered_rootless_paths_exn of string list;;
 
 module Automatic = struct 
 
@@ -187,19 +188,27 @@ let remove_files fw rootless_paths=
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in
-   let bad_paths = Option.filter_and_unpack (
+   let nonexistent_paths = Option.filter_and_unpack (
      fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
      if not(Sys.file_exists s_full_path)
      then Some(s_full_path)
      else None
    ) rootless_paths in 
-   if bad_paths<>[]
-   then raise(Register_rootless_path_exn(bad_paths))
+   if nonexistent_paths<>[]
+   then raise(Register_rootless_path_exn(nonexistent_paths))
    else 
+   let old_watched_files = fw.File_watcher_t.watched_files in    
+   let redundant_paths = List.filter (
+         fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
+   ) rootless_paths in 
+   if redundant_paths<>[]
+   then raise(Already_registered_rootless_paths_exn
+          (Image.image Dfn_rootless.to_line redundant_paths))
+   else    
    let fw2=  {
       fw with 
       File_watcher_t.watched_files =  
-        (fw.File_watcher_t.watched_files)@
+        old_watched_files@
           (Image.image (recompute_all_info fw) rootless_paths)  ;
     }  in 
     Automatic.reflect_creations_in_diff fw2 rootless_paths;;

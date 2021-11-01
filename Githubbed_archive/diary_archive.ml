@@ -1,12 +1,112 @@
 (************************************************************************************************************************
-Snippet 84 : 
+Snippet 85 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
 (************************************************************************************************************************
-Snippet 83 : 
+Snippet 84 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
+
+let aps_ref = ref [];;
+
+ aps_ref := [
+   Absolute_path.of_string "../Idaho/Compilation_management/coma_state.ml";
+   Absolute_path.of_string "../Idaho/Compilation_management/modify_coma_state.ml";
+   Absolute_path.of_string "../Idaho/Ocaml_analysis/read_needed_ocaml_files.ml"
+];;
+
+let rep (x,y) = 
+   Image.image (
+     fun ap -> Replace_inside.replace_inside_file (x,y) ap
+   ) (!aps_ref) ;; 
+
+rep ("subdir_at_module","subdir_for_module")   ;;
+rep ("principal_ending_at_module","principal_ending_for_module")   ;;
+rep ("mli_presence_at_module","mli_presence_for_module")   ;;
+rep ("principal_mt_at_module","principal_mt_for_module")   ;;
+rep ("mli_mt_at_module","mli_mt_for_module")   ;;
+rep ("direct_fathers_at_module","direct_fathers_for_module")   ;;
+rep ("ancestors_at_module","ancestors_for_module")   ;;
+rep ("needed_libs_at_module","needed_libs_for_module")   ;;
+rep ("needed_dirs_at_module","needed_dirs_for_module")   ;;
+rep ("product_up_to_date_at_module","product_up_to_date_for_module")   ;;
+
+
+(************************************************************************************************************************
+Snippet 83 : Debugging session involving the Coma_state module
+************************************************************************************************************************)
+open Needed_values ;;
+let summary = Needed_data_summary_t.Everything ;;
+
+let bad1 () = Other_coma_state.repopulate summary;;
+
+let act1 = (Other_coma_state.Private.ref_for_unofficial_changes:=None) ;;
+
+let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple ;;
+
+let usual_cs = (!Usual_coma_state.main_ref) ;;
+
+let bad2 ()=Create_world_copy.fully_developed_copy
+  usual_cs summary
+  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;;
+
+module Pri = Create_world_copy.Private ;;
+
+let (modules_in_good_order,faraway_fw) = 
+   Pri.frozen_copy usual_cs ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab summary ;;
+
+let faraway_cs1 = Coma_state.passive_constructor faraway_fw ;;
+
+let bad3 () = Modify_coma_state.Internal.recompile (faraway_cs1,[],[],[]) ;;
+
+let (changed_ac,changed_uc,changed_noncompilables) = ([],[],[]) ;;
+
+let new_fw = faraway_cs1.Coma_state_t.frontier_with_unix_world ;;
+
+let ref_for_changed_modules=ref[] 
+and ref_for_changed_shortpaths=ref[] ;;
+let declare_changed=(fun nm->
+    ref_for_changed_modules:=nm::(!ref_for_changed_modules);
+    ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
+                        (Coma_state.rootless_lines_at_module faraway_cs1 nm))
+    ) ;;
+let cs_walker=ref(faraway_cs1) ;;     
+let act2 =List.iter (fun mname->
+      match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_uc) mname with
+      None->()
+      |Some(pr_modif_time,mli_modif_time,direct_fathers)->
+      (
+      declare_changed(mname);
+      cs_walker:=Coma_state.set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
+      cs_walker:=Coma_state.set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
+      cs_walker:=Coma_state.set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
+      cs_walker:=Coma_state.set_product_up_to_date_at_module (!cs_walker) mname false;
+      )
+)(Coma_state.ordered_list_of_modules faraway_cs1) ;;
+let act3 = Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac ;;
+let act4 = Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables ;;
+let changed_modules=List.rev(!ref_for_changed_modules) ;;
+(* let act5 = Coma_state.PrivateThree.announce_changed_modules changed_modules ;; *)
+let ((cs2,nms_to_be_updated),rootless_paths)= 
+ (Coma_state.PrivateThree.put_md_list_back_in_order false 
+  (!cs_walker) changed_modules,
+(!ref_for_changed_shortpaths))  ;;   
+let new_dirs=Coma_state.compute_subdirectories_list cs2  ;;
+module Otm = Coma_state.Ocaml_target_making ;;
+let bad4 () =
+   Otm.usual_feydeau cs2 nms_to_be_updated ;;
+
+let (opt_modnames,opt_rootless_path)=   (Some nms_to_be_updated,None) 
+and cmod = Compilation_mode_t.Usual ;;
+let bad5 () = Otm.feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
+let bad6 () = Otm.shaft_part_of_feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
+let cmds = Otm.list_of_commands_for_shaft_part_of_feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
+let bad7 () = Otm.helper_for_feydeau cmod cs2 ([],[],cmds);; 
+
+
+
 
 (************************************************************************************************************************
 Snippet 82 : Extract a line interval from a file and treat it

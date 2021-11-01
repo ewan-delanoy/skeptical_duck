@@ -1,5 +1,5 @@
 type parenthesis_pair = string * string
-type associator = string
+type associator = A of string
 
 val decompose_without_taking_blanks_into_account :
   parenthesis_pair list -> string -> (parenthesis_pair option * string) list
