@@ -24,6 +24,11 @@ old_fw_present (bool),
 list of other args (string list),
 optional returned data (string option)
 
+The last element of the uple is preceded by a +
+when the method is not present in the Fw_with_small_details
+version, and must therefore be added (in the Entrance
+submodule).
+
 *)
 
 
@@ -49,6 +54,11 @@ let methods = [
 
 module Common = struct 
 
+let extract_initial_plus_symbol_if_present s=
+  if Supstring.begins_with s "+"
+  then Cull_string.cobeginning 1 s 
+  else s ;;  
+
 let list_of_arguments (meth_name,ancestor_is_here,other_args,opt_extra) opt_parent =
    let ancestor_part = (
       if ancestor_is_here 
@@ -58,6 +68,30 @@ let list_of_arguments (meth_name,ancestor_is_here,other_args,opt_extra) opt_pare
    ancestor_part^(String.concat " " other_args);;
    
 end ;;
+
+
+module Entrance = struct 
+
+   let extra_value_added opt_extra = match opt_extra with 
+      None -> false 
+     |Some(pre_extra) ->  Supstring.begins_with pre_extra "+" ;;
+
+   let text_for_method meth_uple =
+      let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
+      let args = Common.list_of_arguments meth_uple in 
+      if extra_value_added opt_extra
+      then "let "^meth_name^" "^(args "old_fw")^" = (Fw_with_small_details."^meth_name^" "^(args "old_fw")^",()) ;;"   
+      else "let "^meth_name^" = Fw_with_small_details."^meth_name^" ;;" ;; 
+   
+   let full_text () =
+         let all_meth_lines = Image.image text_for_method methods in 
+            "module Entrance = struct \n\n"^
+            (String.concat "\n\n" all_meth_lines)^
+            "end ;;"
+         ;;
+   
+   
+   end ;;   
 
 
 module Cached = struct 
@@ -73,7 +107,9 @@ let optional_line_for_old_parent meth_uple =
 let data_from_opt_extra opt_extra new_fw_name=
    match opt_extra with 
     None -> (" { "," } ;; ",new_fw_name)
-   |Some(extra) -> (" ({ "," },"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
+   |Some(pre_extra) -> 
+       let extra = Common.extract_initial_plus_symbol_if_present pre_extra in 
+       (" ({ "," },"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
 
 let index_determination meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
@@ -100,7 +136,7 @@ let text_for_method meth_uple =
    ]
    @(optional_line_for_old_parent meth_uple)
    @[    
-      " let "^old_res^" = Fw_with_small_details."^meth_name^" "^(args "old_parent")^" in ";
+      " let "^old_res^" = Entrance."^meth_name^" "^(args "old_parent")^" in ";
    ]
    @(index_determination meth_uple)
    @[   
@@ -126,20 +162,21 @@ let preceding_module modname =
      let k = Listennou.find_index modname submodules in 
      if k = 1 then "Cached" else List.nth submodules (k-2) ;;  
 
-let data_from_opt_extra opt_extra rest_of_line additional_extra=
+let data_from_opt_extra opt_extra rest_of_line newer_extra=
      match opt_extra with 
       None -> ([
                  " let new_fw = "^rest_of_line
                ]," new_fw")
-     |Some(extra) -> 
-          if additional_extra=""
+     |Some(pre_extra) -> 
+          let extra = Common.extract_initial_plus_symbol_if_present pre_extra in 
+          if newer_extra=""
           then ([
                  " let visible = "^rest_of_line;
                  " let (new_fw,"^extra^") = visible in "
                ]," visible")
           else ([
             " let (new_fw,"^extra^") = "^rest_of_line
-               ]," (new_fw,"^additional_extra^")") ;;
+               ]," (new_fw,"^newer_extra^")") ;;
 
 
 let text_for_method modname meth_uple modmeth_uple =
@@ -827,18 +864,11 @@ let text_for_submodule sumo =
 
 let text_for_all_subdmodules () = 
    let temp1 =
-      (Cached.full_text ()) 
+      (Entrance.full_text ()) :: (Cached.full_text ()) 
       ::(Image.image text_for_submodule submodules) in 
    "\n\n\n"^(String.concat "\n\n\n" temp1)^"\n\n\n" ;;
 
    
-
-let prelude = String.concat "\n" [
-  "module Private = struct\n"; 
-  " let expand_index idx = (idx,Fw_indexer.get_state idx) ;;";
-  " let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; ";  
-  " let parent fw = fw.Fw_with_dependencies_t.parent ;;";
-] ;;
 
 
 

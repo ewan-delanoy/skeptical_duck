@@ -15,10 +15,47 @@ module Private = struct
 (* Pre-processed text starts here *)
 
 
+module Entrance = struct 
+
+let empty_one = Fw_with_small_details.empty_one ;;
+
+let forget_modules = Fw_with_small_details.forget_modules ;;
+
+let inspect_and_update = Fw_with_small_details.inspect_and_update ;;
+
+let of_concrete_object = Fw_with_small_details.of_concrete_object ;;
+
+let of_configuration = Fw_with_small_details.of_configuration ;;
+
+let of_configuration_and_list = Fw_with_small_details.of_configuration_and_list ;;
+
+let overwrite_file_if_it_exists = Fw_with_small_details.overwrite_file_if_it_exists ;;
+
+let reflect_latest_changes_in_github = Fw_with_small_details.reflect_latest_changes_in_github ;;
+
+let register_rootless_paths = Fw_with_small_details.register_rootless_paths ;;
+
+let relocate_module_to = Fw_with_small_details.relocate_module_to ;;
+
+let remove_files = Fw_with_small_details.remove_files ;;
+
+let rename_module_on_filename_level_and_in_files = Fw_with_small_details.rename_module_on_filename_level_and_in_files ;;
+
+let rename_subdirectory_as = Fw_with_small_details.rename_subdirectory_as ;;
+
+let replace_string = Fw_with_small_details.replace_string ;;
+
+let replace_value = Fw_with_small_details.replace_value ;;
+
+let set_gitpush_after_backup = Fw_with_small_details.set_gitpush_after_backup ;;
+
+let set_last_noticed_changes = Fw_with_small_details.set_last_noticed_changes ;;end ;;
+
+
 module Cached = struct 
 
 let empty_one config =  
- let new_parent = Fw_with_small_details.empty_one config in 
+ let new_parent = Entrance.empty_one config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
  { 
    Fw_with_dependencies_t.parent = new_parent ;
@@ -27,7 +64,7 @@ let empty_one config =
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_parent = parent old_fw in 
- let new_parent = Fw_with_small_details.forget_modules old_parent mods_to_be_erased in 
+ let new_parent = Entrance.forget_modules old_parent mods_to_be_erased in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  { 
@@ -37,7 +74,7 @@ let forget_modules old_fw mods_to_be_erased =
 
 let inspect_and_update old_fw  =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.inspect_and_update old_parent  in 
+ let (new_parent,extra) = Entrance.inspect_and_update old_parent  in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -46,7 +83,7 @@ let inspect_and_update old_fw  =
  },extra ) ;; 
 
 let of_concrete_object crobj =  
- let new_parent = Fw_with_small_details.of_concrete_object crobj in 
+ let new_parent = Entrance.of_concrete_object crobj in 
  let instance_idx = Fw_indexer.create_new_instance () in 
  { 
    Fw_with_dependencies_t.parent = new_parent ;
@@ -54,7 +91,7 @@ let of_concrete_object crobj =
  } ;; 
 
 let of_configuration config =  
- let new_parent = Fw_with_small_details.of_configuration config in 
+ let new_parent = Entrance.of_configuration config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
  { 
    Fw_with_dependencies_t.parent = new_parent ;
@@ -62,7 +99,7 @@ let of_configuration config =
  } ;; 
 
 let of_configuration_and_list pair =  
- let new_parent = Fw_with_small_details.of_configuration_and_list pair in 
+ let new_parent = Entrance.of_configuration_and_list pair in 
  let instance_idx = Fw_indexer.create_new_instance () in 
  { 
    Fw_with_dependencies_t.parent = new_parent ;
@@ -71,7 +108,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.overwrite_file_if_it_exists old_parent pair in 
+ let (new_parent,extra) = Entrance.overwrite_file_if_it_exists old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -81,7 +118,7 @@ let overwrite_file_if_it_exists old_fw pair =
 
 let reflect_latest_changes_in_github old_fw opt_msg =  
  let old_parent = parent old_fw in 
- let new_parent = Fw_with_small_details.reflect_latest_changes_in_github old_parent opt_msg in 
+ let new_parent = Entrance.reflect_latest_changes_in_github old_parent opt_msg in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  { 
@@ -91,7 +128,7 @@ let reflect_latest_changes_in_github old_fw opt_msg =
 
 let register_rootless_paths old_fw rootlesses =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.register_rootless_paths old_parent rootlesses in 
+ let (new_parent,extra) = Entrance.register_rootless_paths old_parent rootlesses in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -101,7 +138,7 @@ let register_rootless_paths old_fw rootlesses =
 
 let relocate_module_to old_fw pair =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.relocate_module_to old_parent pair in 
+ let (new_parent,extra) = Entrance.relocate_module_to old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -111,7 +148,7 @@ let relocate_module_to old_fw pair =
 
 let remove_files old_fw files_to_be_removed =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.remove_files old_parent files_to_be_removed in 
+ let (new_parent,extra) = Entrance.remove_files old_parent files_to_be_removed in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -121,7 +158,7 @@ let remove_files old_fw files_to_be_removed =
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.rename_module_on_filename_level_and_in_files old_parent triple in 
+ let (new_parent,extra) = Entrance.rename_module_on_filename_level_and_in_files old_parent triple in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -131,7 +168,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.rename_subdirectory_as old_parent pair in 
+ let (new_parent,extra) = Entrance.rename_subdirectory_as old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -141,7 +178,7 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.replace_string old_parent pair in 
+ let (new_parent,extra) = Entrance.replace_string old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -151,7 +188,7 @@ let replace_string old_fw pair =
 
 let replace_value old_fw pair =  
  let old_parent = parent old_fw in 
- let (new_parent,extra) = Fw_with_small_details.replace_value old_parent pair in 
+ let (new_parent,extra) = Entrance.replace_value old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  ({ 
@@ -161,7 +198,7 @@ let replace_value old_fw pair =
 
 let set_gitpush_after_backup old_fw yes_or_no =  
  let old_parent = parent old_fw in 
- let new_parent = Fw_with_small_details.set_gitpush_after_backup old_parent yes_or_no in 
+ let new_parent = Entrance.set_gitpush_after_backup old_parent yes_or_no in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  { 
@@ -171,7 +208,7 @@ let set_gitpush_after_backup old_fw yes_or_no =
 
 let set_last_noticed_changes old_fw diff =  
  let old_parent = parent old_fw in 
- let new_parent = Fw_with_small_details.set_last_noticed_changes old_parent diff in 
+ let new_parent = Entrance.set_last_noticed_changes old_parent diff in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
  { 
