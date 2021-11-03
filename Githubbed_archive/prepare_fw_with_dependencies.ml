@@ -842,22 +842,17 @@ let prelude = String.concat "\n" [
 
 
 
-let write_all_to_draft () =
-   let text = text_for_all_subdmodules ()
-   and file = Absolute_path.of_string "Fads/sirloin.ml"
-   and beg_mark = "(* Beginning of sirloin *)"
-   and end_mark = "(* End of sirloin *)" in 
-   Replace_inside.overwrite_between_markers_inside_file 
-     (Overwriter.of_string text) (beg_mark,end_mark) file ;;
-     
+let write_all_to_file file =
+      let text = text_for_all_subdmodules () in 
+      Replace_inside.overwrite_between_markers_inside_file 
+          (Overwriter.of_string text) 
+           ("(* Pre-processed text starts here *)",
+            "(* Pre-processed text ends here *)") 
+           file ;;     
+
 let write_all () =
-   let text = text_for_all_subdmodules ()
-   and file = Absolute_path.of_string "Filewatching/fw_with_dependencies.ml" in 
-   Replace_inside.overwrite_between_markers_inside_file 
-       (Overwriter.of_string text) 
-        ("(* Pre-processed text starts here *)",
-         "(* Pre-processed text ends here *)") 
-        file ;;
+   write_all_to_file 
+   (Absolute_path.of_string "Filewatching/fw_with_dependencies.ml") ;;
         
 
 
