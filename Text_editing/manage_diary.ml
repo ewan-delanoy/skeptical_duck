@@ -105,19 +105,22 @@ module Private = struct
                 Some(text1,text2,other_lines3)
      |Closer | Ordinary_line->  raise(Get_next_chunk_exn(linedex,line)) ;; 
   
+     type diary = D of (string * string) list ;;
+
   let rec get_all_chunks (treated_chunks,lines) =
       match get_next_chunk lines with 
-       None -> treated_chunks 
+       None -> D(treated_chunks) 
       |Some(text1,text2,other_lines) -> get_all_chunks ((text1,text2)::treated_chunks,other_lines) ;; 
   
-  
+
+
   let parse text =
     let lines = Lines_in_string.core text in 
     let lines2 = Image.image (fun (linedex,line)->((linedex,line),compute_kind line)) lines in 
     let (prologue,lines3) = get_next_ordinary_lines ("",lines2) in 
     (prologue,get_all_chunks ([],lines3));;
   
-  let unparse pairs =
+  let unparse (D pairs) =
       let chunks = List.rev_map (fun
         (snippet_description,snippet_content)->
         long_opener ^ snippet_description ^ long_closer ^ "\n" ^ 
@@ -128,7 +131,7 @@ module Private = struct
   let read_and_parse fn = parse (Io.read_whole_file fn) ;;
   let unparse_and_write_to pairs fn = Io.overwrite_with fn (unparse pairs) ;;
   
-  let fix_indexation pairs display_reps=
+  let fix_indexation (D pairs) display_reps=
       let temp1 = Image.image (fun 
       (sn_descr,sn_content)->
         (sn_descr,sn_content,snippet_analysis sn_descr)
@@ -142,25 +145,30 @@ module Private = struct
              if idx = absolute_idx then None else Some(idx,absolute_idx)
       ) temp2 in 
       let _ = (if display_reps then announce_replacements replacements) in 
-      Image.image (
+      D(Image.image (
         fun (absolute_idx,(sn_descr,sn_content,sn_indices)) ->
            let new_sn_descr = 
             apply_replacements_to_snippet replacements absolute_idx sn_descr sn_indices in 
             (new_sn_descr,sn_content)
-      ) temp2 ;;
+      ) temp2) ;;
   
-  let remove_snippets pairs indices=
+  let remove_snippets (D pairs) indices=
     let temp1 = Ennig.index_everything pairs in 
     let pairs2 = Option.filter_and_unpack (fun 
        (idx,pair) -> 
         if List.mem idx indices then None else Some pair
     ) temp1 in 
-    fix_indexation pairs2 false ;;
+    fix_indexation (D pairs2) false ;;
   
-  let absorb_new_snippet (prologue,older_snippets) = 
+  let absorb_new_snippet (prologue,D older_snippets) = 
      let n = List.length(older_snippets) + 1 in 
      let sn_descr = "Snippet "^(string_of_int n)^" : " in 
-     older_snippets @ [sn_descr,prologue];; 
+     D(older_snippets @ [sn_descr,prologue]);; 
+
+  let absorb_new_snippet_in_file fn =
+      let (prologue,old_pairs) = read_and_parse fn in 
+      let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
+      unparse_and_write_to new_pairs fn ;;   
   
   let fix_indexation_in_file fn =
     let (_,old_pairs) = read_and_parse fn in 
@@ -173,14 +181,12 @@ module Private = struct
       let new_pairs = remove_snippets old_pairs indices in 
       unparse_and_write_to new_pairs fn ;;  
   
-  let absorb_new_snippet_in_file fn =
-    let (prologue,old_pairs) = read_and_parse fn in 
-    let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
-    unparse_and_write_to new_pairs fn ;;
+
+  
   
   exception Nonindexed_empty_snippet of string ;;  
 
-  let empty_snippets pairs =
+  let empty_snippets (D pairs) =
     Option.filter_and_unpack (fun 
     (sn_descr,sn_content)->
       if (Cull_string.trim_spaces sn_content) <> "" 
@@ -194,14 +200,22 @@ module Private = struct
       let (prologue,pairs) = read_and_parse fn in 
       empty_snippets pairs ;;
 
+  let make_snippets_blank_in_internal_representation l indices =
+     let temp1 = Ennig.index_everything l in 
+     Image.image (fun triple -> 
+        let (idx,(sn_descr,sn_content)) = triple in 
+        if List.mem idx indices 
+        then (sn_descr,"\n\n\n") 
+        else (sn_descr,sn_content) 
+      ) temp1 ;;     
+
   end ;; 
   
-  let absorb_new_snippet = Private.absorb_new_snippet_in_file ;;
-  let empty_snippets = Private.empty_snippets_in_file ;;
+  
   let fix_indexation = Private.fix_indexation_in_file ;;
   let remove_snippets = Private.remove_snippets_in_file ;;
   
-  
+
   
   (*    
   let z4 = 

@@ -1,11 +1,11 @@
 (************************************************************************************************************************
-Snippet 85 : 
+Snippet 84 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 84 : Replacements on several files
+Snippet 83 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -33,79 +33,60 @@ rep ("needed_libs_at_module","needed_libs_for_module")   ;;
 rep ("needed_dirs_at_module","needed_dirs_for_module")   ;;
 rep ("product_up_to_date_at_module","product_up_to_date_for_module")   ;;
 
+let fix () =
+   let _ = Sys.command (
+      "cp Decomposed_filename/dfa_subdirectory.ml "^
+      "../Idaho/Decomposed_filename/afd_sybdirectoru.ml") in
+   let _ = Sys.command (
+         "mv ../Idaho/Decomposed_filename/afd_sybdirectoru.ml "^
+         "../Idaho/Decomposed_filename/dfa_subdirectory.ml") in   
+   let _ =  Image.image (fun s->
+       let ap= Absolute_path.of_string ("../Idaho/"^s) in 
+       Replace_inside.replace_inside_file  
+       ("Afd_sybdirectoru.","Dfa_subdirectory.") ap
+       ) [
+      "Decomposed_filename/dfn_rootless.ml";
+      "Decomposed_filename/dfn_endingless.ml";
+      "Decomposed_filename/dfn_middle.ml";
+      "Decomposed_filename/dfn_full.ml";
+      "find_suitable_ending.ml";"more_unix.ml";"node_project.ml";"prepare_dircopy_update.ml";
+      "Compilation_management/coma_constant.ml";
+      "Compilation_management/coma_state.ml";
+      "Compilation_management/save_coma_state.ml";
+      "Compilation_management/modify_coma_state.ml";
+      "Compilation_management/create_world_copy.ml";
+      "Filewatching/fw_configuration.ml";
+      "Filewatching/file_watcher.ml";
+      "Filewatching/fw_with_dependencies.ml";
+   ] in    
+   ruco () ;;
 
-(************************************************************************************************************************
-Snippet 83 : Debugging session involving the Coma_state module
-************************************************************************************************************************)
-open Needed_values ;;
-let summary = Needed_data_summary_t.Everything ;;
+(*   
+let aps_ref = ref [];;
 
-let bad1 () = Other_coma_state.repopulate summary;;
+ aps_ref := Image.image (fun s->Absolute_path.of_string ("../Idaho/"^s)) [
+   "Decomposed_filename/dfn_rootless.ml";
+   "Decomposed_filename/dfn_endingless.ml";
+   "Decomposed_filename/dfn_middle.ml";
+   "Decomposed_filename/dfn_full.ml";
+   "find_suitable_ending.ml";"more_unix.ml";"node_project.ml";"prepare_dircopy_update.ml";
+   "Compilation_management/coma_constant.ml";
+   "Compilation_management/coma_state.ml";
+   "Compilation_management/save_coma_state.ml";
+   "Compilation_management/modify_coma_state.ml";
+   "Compilation_management/create_world_copy.ml";
+   "Filewatching/fw_configuration.ml";
+   "Filewatching/file_watcher.ml";
+   "Filewatching/fw_with_dependencies.ml";
+];;
 
-let act1 = (Other_coma_state.Private.ref_for_unofficial_changes:=None) ;;
+let rep (x,y) = 
+   Image.image (
+     fun ap -> Replace_inside.replace_inside_file (x,y) ap
+   ) (!aps_ref) ;; 
 
-let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple ;;
-
-let usual_cs = (!Usual_coma_state.main_ref) ;;
-
-let bad2 ()=Create_world_copy.fully_developed_copy
-  usual_cs summary
-  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;;
-
-module Pri = Create_world_copy.Private ;;
-
-let (modules_in_good_order,faraway_fw) = 
-   Pri.frozen_copy usual_cs ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab summary ;;
-
-let faraway_cs1 = Coma_state.passive_constructor faraway_fw ;;
-
-let bad3 () = Modify_coma_state.Internal.recompile (faraway_cs1,[],[],[]) ;;
-
-let (changed_ac,changed_uc,changed_noncompilables) = ([],[],[]) ;;
-
-let new_fw = faraway_cs1.Coma_state_t.frontier_with_unix_world ;;
-
-let ref_for_changed_modules=ref[] 
-and ref_for_changed_shortpaths=ref[] ;;
-let declare_changed=(fun nm->
-    ref_for_changed_modules:=nm::(!ref_for_changed_modules);
-    ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (Coma_state.rootless_lines_at_module faraway_cs1 nm))
-    ) ;;
-let cs_walker=ref(faraway_cs1) ;;     
-let act2 =List.iter (fun mname->
-      match Coma_state.Late_Recompilation.quick_update (!cs_walker) (new_fw,changed_uc) mname with
-      None->()
-      |Some(pr_modif_time,mli_modif_time,direct_fathers)->
-      (
-      declare_changed(mname);
-      cs_walker:=Coma_state.set_principal_mt_at_module (!cs_walker) mname pr_modif_time;
-      cs_walker:=Coma_state.set_mli_mt_at_module (!cs_walker) mname mli_modif_time;
-      cs_walker:=Coma_state.set_direct_fathers_at_module (!cs_walker) mname direct_fathers;
-      cs_walker:=Coma_state.set_product_up_to_date_at_module (!cs_walker) mname false;
-      )
-)(Coma_state.ordered_list_of_modules faraway_cs1) ;;
-let act3 = Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac ;;
-let act4 = Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables ;;
-let changed_modules=List.rev(!ref_for_changed_modules) ;;
-(* let act5 = Coma_state.PrivateThree.announce_changed_modules changed_modules ;; *)
-let ((cs2,nms_to_be_updated),rootless_paths)= 
- (Coma_state.PrivateThree.put_md_list_back_in_order false 
-  (!cs_walker) changed_modules,
-(!ref_for_changed_shortpaths))  ;;   
-let new_dirs=Coma_state.compute_subdirectories_list cs2  ;;
-module Otm = Coma_state.Ocaml_target_making ;;
-let bad4 () =
-   Otm.usual_feydeau cs2 nms_to_be_updated ;;
-
-let (opt_modnames,opt_rootless_path)=   (Some nms_to_be_updated,None) 
-and cmod = Compilation_mode_t.Usual ;;
-let bad5 () = Otm.feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
-let bad6 () = Otm.shaft_part_of_feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
-let cmds = Otm.list_of_commands_for_shaft_part_of_feydeau cmod cs2 (opt_modnames,opt_rootless_path) ;;
-let bad7 () = Otm.helper_for_feydeau cmod cs2 ([],[],cmds);; 
-
-
+rep ("Afd_sybdirectoru.","Dfa_subdirectory.")   ;;
+*)
 
 
 (************************************************************************************************************************
@@ -12442,8 +12423,8 @@ let act1 () =
 
 
 (************************************************************************************************************************
-Snippet 42 : Remove all snippets containing a given substring (todo : integerate it
-in the Manage_diary module directly)
+Snippet 42 : Remove all snippets containing a given substring (todo : integrate it
+into the Manage_diary module directly)
 ************************************************************************************************************************)
 open Needed_values ;;
 
