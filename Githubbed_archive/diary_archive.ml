@@ -12278,7 +12278,7 @@ let (g1,Manage_diary.Private.D g2) =  Manage_diary.Private.read_and_parse ap_for
 let g3 = Ennig.index_everything g2;;
 let g4 = List.filter (fun (j,(x,y))->Substring.is_a_substring_of "Vdw_" y) g3 ;;
 let g5 = Image.image fst g4 ;;
-let act1 () = Manage_diary.remove_snippets ap_for_diary g5;;
+let act1 () = Manage_diary.remove_snippets g5;;
 
 
 (************************************************************************************************************************

@@ -664,6 +664,4 @@ let restrict = Private.Modular.restrict ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
-let transplant = Private.transplant ;;
-
 let usual_compilable_files = Private.Modular.usual_compilable_files ;;
