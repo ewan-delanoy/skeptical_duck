@@ -183,12 +183,16 @@ module Private = struct
       let new_pairs = remove_snippets old_pairs indices in 
       unparse_and_write_to new_pairs fn ;;  
 
+    let usual_path = 
+        Absolute_path.of_string(
+        Dfn_common.recompose_potential_absolute_path 
+          Coma_big_constant.This_World.root   Coma_constant.rootless_path_for_diary_file);;
 
   end ;; 
   
   
-  let fix_indexation = Private.fix_indexation_in_file ;;
-  let remove_snippets = Private.remove_snippets_in_file ;;
+  let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
+  let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
   
 
   
