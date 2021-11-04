@@ -128,9 +128,6 @@ module Private = struct
       ) pairs in 
       String.concat "\n" chunks ;;
   
-  let read_and_parse fn = parse (Io.read_whole_file fn) ;;
-  let unparse_and_write_to pairs fn = Io.overwrite_with fn (unparse pairs) ;;
-  
   let fix_indexation (D pairs) display_reps=
       let temp1 = Image.image (fun 
       (sn_descr,sn_content)->
@@ -158,56 +155,34 @@ module Private = struct
        (idx,pair) -> 
         if List.mem idx indices then None else Some pair
     ) temp1 in 
-    fix_indexation (D pairs2) false ;;
+    fix_indexation (D pairs2) true ;;
   
   let absorb_new_snippet (prologue,D older_snippets) = 
      let n = List.length(older_snippets) + 1 in 
      let sn_descr = "Snippet "^(string_of_int n)^" : " in 
      D(older_snippets @ [sn_descr,prologue]);; 
 
-  let absorb_new_snippet_in_file fn =
+     
+
+  
+    let read_and_parse fn = parse (Io.read_whole_file fn) ;;
+    let unparse_and_write_to pairs fn = Io.overwrite_with fn (unparse pairs) ;;
+  
+    let absorb_new_snippet_in_file fn =
       let (prologue,old_pairs) = read_and_parse fn in 
       let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
       unparse_and_write_to new_pairs fn ;;   
-  
-  let fix_indexation_in_file fn =
-    let (_,old_pairs) = read_and_parse fn in 
-    let new_pairs = fix_indexation old_pairs true in 
-    unparse_and_write_to new_pairs fn ;;
-      
-  let remove_snippets_in_file fn indices =
-      let _ = fix_indexation_in_file fn in  
+
+    let fix_indexation_in_file fn =
+      let (_,old_pairs) = read_and_parse fn in 
+      let new_pairs = fix_indexation old_pairs true in 
+      unparse_and_write_to new_pairs fn ;;
+    
+    let remove_snippets_in_file fn indices = 
       let (_,old_pairs) = read_and_parse fn in 
       let new_pairs = remove_snippets old_pairs indices in 
       unparse_and_write_to new_pairs fn ;;  
-  
 
-  
-  
-  exception Nonindexed_empty_snippet of string ;;  
-
-  let empty_snippets (D pairs) =
-    Option.filter_and_unpack (fun 
-    (sn_descr,sn_content)->
-      if (Cull_string.trim_spaces sn_content) <> "" 
-      then None  
-      else match snippet_analysis sn_descr with 
-           [] -> raise ( Nonindexed_empty_snippet sn_descr)
-           |(_,_,idx) :: _ -> Some idx
-    ) pairs ;;  
-  
-  let empty_snippets_in_file fn = 
-      let (prologue,pairs) = read_and_parse fn in 
-      empty_snippets pairs ;;
-
-  let make_snippets_blank_in_internal_representation l indices =
-     let temp1 = Ennig.index_everything l in 
-     Image.image (fun triple -> 
-        let (idx,(sn_descr,sn_content)) = triple in 
-        if List.mem idx indices 
-        then (sn_descr,"\n\n\n") 
-        else (sn_descr,sn_content) 
-      ) temp1 ;;     
 
   end ;; 
   

@@ -28,13 +28,16 @@ let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
 
 
 
-
+let short_path_for_diary_file= Dfn_short.of_line"diary_archive.ml";;
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
 let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
+ 
+let rootless_path_for_diary_file=
+  Dfn_join.subdirectory_to_short  githubbed_archive_subdir short_path_for_diary_file;;
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  utility_files_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
@@ -115,6 +118,7 @@ end ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
  let githubbed_archive_subdir = Private.githubbed_archive_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
  let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
  let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
  let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
