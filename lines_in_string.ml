@@ -72,8 +72,14 @@ module Private = struct
      let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
      Io.overwrite_with dest_file new_text ;; 
      
+   exception Lines_in_char_range_exn of int*int;;
 
-
+   let number_of_lines_in_char_interval s  i j=
+     try (List.length(List.filter (fun k->
+         String.get s (k-1)='\n'
+     ) (Ennig.ennig i j))) with
+     _->raise(Lines_in_char_range_exn(i,j));;    
+  
   end ;;   
   
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
@@ -120,19 +126,11 @@ let indent_interval_in_file_with (i,j) fn ~tab_width=
 
 let interval = Private.interval ;;
 
+   let line_index_from_char_index s char_idx=
+      1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
+
   let lines s= Image.image snd (core s);;
-  
-  exception Lines_in_char_range_exn of int*int;;
-  
-  let number_of_lines_in_char_interval s  i j=
-     try (List.length(List.filter (fun k->
-         String.get s (k-1)='\n'
-     ) (Ennig.ennig i j))) with
-     _->raise(Lines_in_char_range_exn(i,j));; 
-  
-  let line_index_from_char_index s char_idx=
-    1+(number_of_lines_in_char_interval s 1 char_idx);;
-  
+
   let remove_interval s i j=
     let temp1=core s in
     let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
