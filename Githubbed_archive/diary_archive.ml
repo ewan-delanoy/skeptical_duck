@@ -12035,7 +12035,7 @@ Snippet 45 : Using intervals of line indices to extract values from a module
 open Needed_values ;;
 
 let u1 = Needed_values.rf "Compilation_management/coma_state.ml";;
-let u2 = Lines_in_string.core u1 ;; 
+let u2 = Lines_in_string.indexed_lines u1 ;; 
 
 let extract_interval ((i,j),_) =
    let temp1 = List.filter (fun (k,_)->(i<=k) && (k<=j)) u2 in 
@@ -13062,7 +13062,7 @@ Snippet  25 : Remove interval of lines in a file
 ************************************************************************************************************************)
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
-let v1 = Lines_in_string.core old_text ;;
+let v1 = Lines_in_string.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (
    fun (j,line)->
@@ -13086,7 +13086,7 @@ let act () = Replace_inside.replace_inside_file (old_snippet,new_snippet) ap ;;
 
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
-let v1 = Lines_in_string.core old_text ;;
+let v1 = Lines_in_string.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (fun (j,line)->Cull_string.trim_spaces line) v2 ;;
 let v4 = List.filter (Substring.is_the_beginning_of "The value ") v3;;
@@ -13105,7 +13105,7 @@ let v9 = print_string v8 ;;
 Snippet  24 : Removing module wrappers in a set of files
 ************************************************************************************************************************)
 let remove_module_wrapper_in_text text =
-  let lines = Lines_in_string.core text in 
+  let lines = Lines_in_string.indexed_lines text in 
   let (i1,_)= Listennou.force_find (fun (_,line)->
     Supstring.begins_with (Cull_string.trim_spaces line) "module "
   ) lines in
@@ -13162,7 +13162,7 @@ let dir = (Sys.getenv "HOME")^"/Teuliou/html_files/Translations/";;
 let ap1 =   Absolute_path.create_file_if_absent (dir^"/notes_to_dot.txt") ;;
 
 let text1= Io.read_whole_file ap1;;
-let lines1 = Lines_in_string.core text1;;
+let lines1 = Lines_in_string.indexed_lines text1;;
 
 let act1 () = Replace_inside.replace_several_inside_file reps ap1;;
 

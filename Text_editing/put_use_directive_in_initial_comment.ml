@@ -5,7 +5,7 @@
 *)
 
 let detect_initial_comment_in_text text = 
-  let lines = Lines_in_string.core text in 
+  let lines = Lines_in_string.indexed_lines text in 
   let first_line = snd (List.hd lines) in 
   if (Cull_string.trim_spaces first_line) <> "(*" then None else 
   match Option.seek (fun (line_idx,line)->
@@ -30,7 +30,7 @@ let in_text ~new_directive text =
   match detect_initial_comment_in_text text  with 
   None -> text 
   |Some(i1,line1,i2) ->
-    let old_lines = Lines_in_string.core text in 
+    let old_lines = Lines_in_string.indexed_lines text in 
     let new_lines = Image.image (fun (line_idx,line)->
         if line_idx = i1 then new_directive else line
       ) old_lines in 
@@ -41,7 +41,7 @@ let in_file ~new_directive fn =
    match detect_initial_comment_in_text text  with 
   None -> () 
   |Some(i1,line1,i2) ->
-    let old_lines = Lines_in_string.core text in 
+    let old_lines = Lines_in_string.indexed_lines text in 
     let new_lines = Image.image (fun (line_idx,line)->
         if line_idx = i1 then new_directive else line
       ) old_lines in 

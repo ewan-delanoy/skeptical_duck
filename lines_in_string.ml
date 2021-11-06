@@ -13,7 +13,7 @@ module Private = struct
      let s=left_offset^old_s^right_offset in
      Str.split (Str.regexp_string "\n") s ;;
 
-  let core text=
+  let indexed_lines text=
      Ennig.index_everything (lines text);;
   
   let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
@@ -50,7 +50,7 @@ module Private = struct
    (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
        
   let interval text i j=
-    let temp1=core text in
+    let temp1=indexed_lines text in
     let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
     let temp3=Image.image snd temp2 in
     String.concat "\n" temp3;;  
@@ -86,28 +86,28 @@ module Private = struct
   let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
 
 
-  let core = Private.core ;;
+  let indexed_lines = Private.indexed_lines ;;
   
   (*
   
-  core "a\nb";;
-  core "\na\nb";;
-  core "a\nb\n";;
+  indexed_lines "a\nb";;
+  indexed_lines "\na\nb";;
+  indexed_lines "a\nb\n";;
   
   *)
 
-  let enhanced_core s= Private.enhance (Private.core s);;
+  let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
   
   (*
   
-  enhanced_core "a\nb";;
-  enhanced_core "\na\nb";;
-  enhanced_core "a\nb\n";;
+  enhanced_indexed_lines "a\nb";;
+  enhanced_indexed_lines "\na\nb";;
+  enhanced_indexed_lines "a\nb\n";;
   
   *)
 
   let indent_interval_in_string_with (i,j) ~text ~tab_width =
-    let old_lines = core text 
+    let old_lines = indexed_lines text 
     and tab = String.make tab_width ' ' in 
     let new_lines = Image.image (
         fun (k,line) -> 
@@ -129,10 +129,10 @@ let interval = Private.interval ;;
    let line_index_from_char_index s char_idx=
       1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
 
-  let lines s= Image.image snd (core s);;
+  let lines s= Image.image snd (indexed_lines s);;
 
   let remove_interval s i j=
-    let temp1=core s in
+    let temp1=indexed_lines s in
     let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
     let temp3=Image.image snd temp2 in
     String.concat "\n" temp3;; 
@@ -143,7 +143,7 @@ let interval = Private.interval ;;
      Io.overwrite_with fn s2;;   
   
   let remove_lines_containing_substring_in_string pattern text =
-     let temp1=core text in
+     let temp1=indexed_lines text in
      let temp2=List.filter (fun (_,line)->not(Substring.is_a_substring_of pattern line)) temp1  in
      let temp3=Image.image snd temp2 in
      String.concat "\n" temp3;; 

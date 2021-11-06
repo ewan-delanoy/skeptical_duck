@@ -20,7 +20,7 @@ module Private = struct
 
 
   let remove_first_blankets text =
-    let indexed_lines = Lines_in_string.core text in 
+    let indexed_lines = Lines_in_string.indexed_lines text in 
     let m = List.length indexed_lines in 
     let nth_line = (fun k->List.assoc k indexed_lines) in 
     let line_is_empty = (fun j->Cull_string.trim_spaces(nth_line j)="")

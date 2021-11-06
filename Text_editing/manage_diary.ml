@@ -115,7 +115,7 @@ module Private = struct
 
 
   let parse text =
-    let lines = Lines_in_string.core text in 
+    let lines = Lines_in_string.indexed_lines text in 
     let lines2 = Image.image (fun (linedex,line)->((linedex,line),compute_kind line)) lines in 
     let (prologue,lines3) = get_next_ordinary_lines ("",lines2) in 
     (prologue,get_all_chunks ([],lines3));;
