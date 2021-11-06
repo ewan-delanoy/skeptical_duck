@@ -57,7 +57,7 @@ module Private = struct
       
   (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
     
-  let copy_interval_from_string_to_string (i,j) src dest =
+  let copy_interval_from_string_to_string src (i,j) dest =
      let src_linelength = List.length (lines src) in 
      let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
      let (before,in_between,after) = tripartition_associated_to_interval temp1 i j in 
@@ -66,10 +66,10 @@ module Private = struct
       
   (* copy_interval_from_string_to_string (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
 
-  let copy_interval_from_file_to_file (i,j) src_file dest_file =
+  let copy_interval_from_file_to_file src_file  (i,j) dest_file =
      let src = Io.read_whole_file src_file 
      and old_text = Io.read_whole_file dest_file  in 
-     let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
+     let new_text = copy_interval_from_string_to_string src (i,j) old_text in 
      Io.overwrite_with dest_file new_text ;; 
      
    exception Lines_in_char_range_exn of int*int;;
