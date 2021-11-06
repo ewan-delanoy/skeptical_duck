@@ -85,16 +85,7 @@ module Private = struct
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
   let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
 
-  let enhanced_core s= Private.enhance (Private.core s);;
-  
-  (*
-  
-  enhanced_core "a\nb";;
-  enhanced_core "\na\nb";;
-  enhanced_core "a\nb\n";;
-  
-  *)
-  
+
   let core = Private.core ;;
   
   (*
@@ -105,7 +96,16 @@ module Private = struct
   
   *)
 
+  let enhanced_core s= Private.enhance (Private.core s);;
   
+  (*
+  
+  enhanced_core "a\nb";;
+  enhanced_core "\na\nb";;
+  enhanced_core "a\nb\n";;
+  
+  *)
+
   let indent_interval_in_string_with (i,j) ~text ~tab_width =
     let old_lines = core text 
     and tab = String.make tab_width ' ' in 
