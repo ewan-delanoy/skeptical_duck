@@ -78,7 +78,7 @@ let common_part_in_conventional_files =
      rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
-     
+     rootless_path_for_diary_file, "";
    ] ;;     
 
 
