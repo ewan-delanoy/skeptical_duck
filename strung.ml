@@ -374,3 +374,10 @@ let reposition_left_hand_side_according_to_separator separator lines =
              left^(String.make offset ' ')^right
          ) temp1;;      
 
+let announce ~trailer ~printer ~items ~separator=
+   if items = []
+   then ()
+   else   
+   let temp1 = Image.image printer items in
+   let msg = "\n\n"^trailer^"\n\n"^(String.concat separator temp1)^"\n\n" in 
+   (print_string msg;flush stdout) ;;    
