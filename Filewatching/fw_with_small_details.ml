@@ -49,7 +49,7 @@ module Automatic = struct
    let constructor mother =
    {
       Fw_with_small_details_t.parent = mother ;
-      small_details_in_files = File_watcher.compute_all_small_details mother;
+      small_details_in_files = Fw_tripartite.compute_all_small_details mother;
    } ;;  
       
       
@@ -103,7 +103,7 @@ module Private = struct
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = File_watcher.forget_modules old_parent mod_names in
+   let new_parent = Fw_tripartite.forget_modules old_parent mod_names in
    {
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = List.filter (
@@ -120,7 +120,7 @@ let inspect_and_update fw  =
       fun old_pair->
        let rl = fst old_pair in
        if List.mem rl changed_files 
-       then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+       then let new_pair = (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl) in 
             let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
             new_pair 
        else old_pair  
@@ -129,7 +129,7 @@ let inspect_and_update fw  =
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_small_details;
    },
-   (File_watcher.partition_for_singles new_parent changed_files,!changed_details_ref));;
+   (Fw_tripartite.partition_for_singles new_parent changed_files,!changed_details_ref));;
 
 let of_configuration config =   
     let mother = File_watcher.of_configuration config in 
@@ -153,7 +153,7 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
          fun old_pair->
          let rl = fst old_pair in
          if rl  = rootless 
-         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+         then let new_pair = (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl) in 
               let _= (accu:=Some(rl,Some(new_pair))) in 
               new_pair
          else old_pair  
@@ -178,18 +178,18 @@ let register_rootless_paths fw rootless_paths=
    let new_parent = File_watcher.register_rootless_paths 
         old_parent rootless_paths in 
    let new_details =    (Image.image (fun rl->
-      (rl,File_watcher.compute_small_details_on_one_file new_parent rl)) 
+      (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl)) 
       rootless_paths) in 
    ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = old_details @ new_details ;
    },
-   (File_watcher.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
+   (Fw_tripartite.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
 
 let relocate_module_to fw (mod_name,new_subdir)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = File_watcher.relocate_module_to 
+   let new_parent = Fw_tripartite.relocate_module_to 
         old_parent mod_name new_subdir in 
    let accu = ref [] in      
    let new_small_details = Image.image (
@@ -225,7 +225,7 @@ let rename_module_on_filename_level fw (old_module,new_module) =
    and old_details = Automatic.small_details_in_files fw  in 
    let acolytes = List.filter (
           fun rl -> (Dfn_rootless.to_module rl) = old_module 
-   ) (File_watcher.usual_compilable_files old_parent) in
+   ) (Fw_tripartite.usual_compilable_files old_parent) in
    let replacements = Image.image (fun old_rl->
           (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
    let new_parent = File_watcher.rename_files  old_parent replacements in 
@@ -235,7 +235,7 @@ let rename_module_on_filename_level fw (old_module,new_module) =
       let rl = fst old_pair in
       match List.assoc_opt rl replacements with 
       Some(new_rl) -> 
-         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl) in 
+         let new_pair = (new_rl,Fw_tripartite.compute_small_details_on_one_file new_parent new_rl) in 
          let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
          new_pair 
       | None -> old_pair         
@@ -256,7 +256,7 @@ let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewrit
       fun old_pair->
         let rl = fst old_pair in
         if List.mem rl changed_files
-        then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+        then let new_pair = (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl) in 
              let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
              new_pair 
         else old_pair  
@@ -281,7 +281,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let rl = fst old_pair in
       match Dfn_rootless.soak (old_subdir,new_subdir) rl with 
       (Some new_rl) -> 
-         let new_pair = (new_rl,File_watcher.compute_small_details_on_one_file new_parent new_rl) in 
+         let new_pair = (new_rl,Fw_tripartite.compute_small_details_on_one_file new_parent new_rl) in 
              let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
              new_pair 
       | None -> old_pair        
@@ -300,7 +300,7 @@ let replace_string fw (replacee,replacer)=
       fun old_pair->
       let rl = fst old_pair in
       if List.mem rl changed_files
-      then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+      then let new_pair = (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl) in 
            let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
            new_pair 
       else old_pair  
@@ -321,7 +321,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
       fun old_pair->
          let rl = fst old_pair in
          if List.mem rl changed_files
-         then let new_pair = (rl,File_watcher.compute_small_details_on_one_file new_parent rl) in 
+         then let new_pair = (rl,Fw_tripartite.compute_small_details_on_one_file new_parent rl) in 
                  let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
                  new_pair 
          else old_pair  
@@ -359,7 +359,7 @@ let inspect_and_update = Private.inspect_and_update;;
 
 let last_noticed_changes = Automatic.last_noticed_changes ;;
 
-let noncompilable_files fw = File_watcher.noncompilable_files (Automatic.parent fw) ;;
+let noncompilable_files fw = Fw_tripartite.noncompilable_files (Automatic.parent fw) ;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 
@@ -393,4 +393,4 @@ let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
-let usual_compilable_files fw = File_watcher.usual_compilable_files (Automatic.parent fw) ;;
+let usual_compilable_files fw = Fw_tripartite.usual_compilable_files (Automatic.parent fw) ;;

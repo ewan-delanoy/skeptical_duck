@@ -13015,7 +13015,10 @@ let z3 = "\n\n\n" ^ (String.concat "\n" z2) ^ "\n\n\n" ;;
 (************************************************************************************************************************
 Snippet  27 : Typical use of the Other_coma_state module 
 ************************************************************************************************************************)
-let act1 () = Other_coma_state.repopulate (Needed_data_summary_t.Everything);;
+let act1 () = 
+   Other_coma_state.repopulate 
+   (Needed_data_summary_t.Everything);;
+
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
 

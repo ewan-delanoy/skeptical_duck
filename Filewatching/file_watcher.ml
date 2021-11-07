@@ -494,7 +494,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
            };;
           
       
-      module Modular = struct
+      (*# module Modular = struct
 
       let canonical_tripartition fw all_files =
             let (c_files,nc_files) = List.partition (
@@ -594,17 +594,14 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
          let (_,u_files,_) = canonical_tripartition fw all_files in 
          u_files ;;        
 
-      end ;;       
+      end ;; #*)       
 end;;
 
 let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
 
-let compilable_files = Private.Modular.compilable_files ;;
 
-let compute_all_small_details = Private.Modular.compute_all_small_details ;;
-
-let compute_small_details_on_one_file = Private.Modular.compute_small_details_on_one_file ;;
+let configuration = Automatic.configuration ;;
 
 let dummy = {
    File_watcher_t.configuration = Fw_configuration.dummy ;
@@ -618,7 +615,7 @@ let empty_one config= {
    last_noticed_changes = Dircopy_diff.empty_one;
 };; 
 
-let forget_modules = Private.Modular.forget_modules ;;
+
 
 let get_content = Automatic.get_content ;;
 let get_mtime   = Automatic.get_mtime ;;
@@ -626,7 +623,6 @@ let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if
 
 let inspect_and_update = Private.inspect_and_update;;
 
-let noncompilable_files = Private.Modular.noncompilable_files ;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
@@ -634,7 +630,6 @@ let of_configuration_and_list = Private.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 
-let partition_for_singles = Private.Modular.canonical_tripartition ;; 
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.File_watcher_t.configuration in 
@@ -646,13 +641,12 @@ let register_rootless_paths = Private.register_rootless_paths;;
 
 let relocate_files_to = Private.relocate_files_to;;
 
-let relocate_module_to = Private.Modular.relocate_module_to ;;
+
 
 let remove_files = Private.remove_files;;
 
 let rename_files = Private.rename_files;;
 
-let rename_module_on_filename_level_and_in_files = Private.Modular.rename_module_on_filename_level_and_in_files ;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 
@@ -660,8 +654,8 @@ let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
 
-let restrict = Private.Modular.restrict ;;
+let root = Automatic.root ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
-let usual_compilable_files = Private.Modular.usual_compilable_files ;;
+let watched_files = Automatic.watched_files ;;

@@ -64,9 +64,8 @@ module Physical = struct
    ) (Coma_state.dep_ordered_modules cs) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
-     let (new_fw,changed_dependencies) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files old_fw (old_nm,new_nm,all_acolytes_below) in 
-     let cs2 = Coma_state.passive_constructor new_fw in 
-     (cs2,changed_dependencies) ;;
+     Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
+      old_fw (old_nm,new_nm,all_acolytes_below) ;;
    
    let rename_subdirectory cs (old_subdir,new_subdir)=
       let (new_fw,_)=Fw_with_dependencies.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
@@ -182,12 +181,11 @@ module Physical = struct
    
    
 
-   let rename_module pre_cs2 old_middle_name new_nonslashed_name changes=
-     let cs2 = Coma_state.passive_constructor (Coma_state.Automatic.frontier_with_unix_world pre_cs2) in 
-     let root_dir=Coma_state.root cs2 in 
+   let rename_module cs old_middle_name new_nonslashed_name (new_fw,changes) =
+     let root_dir=Coma_state.root cs in 
      let old_nm=Dfn_middle.to_module old_middle_name in 
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
-     let old_list_of_cmpl_results= cs2.Coma_state_t.product_up_to_date_for_module in 
+     let old_list_of_cmpl_results= cs.Coma_state_t.product_up_to_date_for_module in 
      let new_list_of_cmpl_results = Image.image (
         fun old_pair -> 
           let (mn,cmpl_result) = old_pair in 
@@ -195,6 +193,7 @@ module Physical = struct
           then (new_nm,false)
           else old_pair    
      ) old_list_of_cmpl_results in 
+     let cs2 = Coma_state.passive_constructor new_fw in  
      let cs3 = { cs2 with 
        Coma_state_t.product_up_to_date_for_module = new_list_of_cmpl_results
      } in 
@@ -271,8 +270,8 @@ module Physical = struct
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
-      let (cs2,changes)=Physical.rename_module cs old_middle_name new_nonslashed_name in
-      Internal.rename_module cs2 old_middle_name new_nonslashed_name changes;;
+      let (new_fw,changes)=Physical.rename_module cs old_middle_name new_nonslashed_name in
+      Internal.rename_module cs old_middle_name new_nonslashed_name (new_fw,changes);;
    
    let rename_subdirectory cs old_subdir new_subdir=
       let cs2=Physical.rename_subdirectory cs (old_subdir,new_subdir) in
