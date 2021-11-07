@@ -98,7 +98,8 @@ let minimal_set_of_needed_dirs =
   [
     persistent_data_subdir ; 
     usual_build_subdir ;
-    utility_files_subdir
+    utility_files_subdir ;
+    githubbed_archive_subdir
   ] ;;  
 
 let full_set_of_needed_dirs = 
