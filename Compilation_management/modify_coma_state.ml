@@ -125,12 +125,13 @@ module Physical = struct
    
    
    let modern_recompile cs (changed_ac,changed_modules_in_any_order,changed_noncompilables) = 
-      let _=Coma_state.PrivateThree.announce_changed_archived_compilables changed_ac in
-      let _=Coma_state.PrivateThree.announce_changed_noncompilables changed_noncompilables in
       if changed_modules_in_any_order=[] then cs else
       let (all_deps,new_deps,changed_modules) = Coma_state.below_several cs changed_modules_in_any_order in     
-      let _=Coma_state.PrivateThree.announce_changed_modules changed_modules in 
-      let _=Coma_state.PrivateThree.announce_involved_modules new_deps in 
+      let _ = Strung.announce 
+      ~trailer:("The following modules need to be recompiled \n"^
+      "because they depend on directly changed modules :")
+         ~printer:Dfa_module.to_line ~items:new_deps 
+         ~separator: ", " in 
       let (cs2,rejected_pairs,accepted_pairs)=
              Coma_state.Ocaml_target_making.usual_feydeau cs all_deps in 
       let cs_walker = ref(cs2) in 

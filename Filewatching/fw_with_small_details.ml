@@ -114,7 +114,7 @@ let forget_modules fw mod_names =
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,changed_files) = File_watcher.inspect_and_update old_parent in
+   let (new_parent,changed_files) = Fw_modular.inspect_and_update old_parent in
    let changed_details_ref = ref [] in 
    let new_small_details = Image.image (
       fun old_pair->
