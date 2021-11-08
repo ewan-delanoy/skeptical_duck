@@ -460,7 +460,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
         let first_init config =
            let the_root = config.Fw_configuration_t.root in 
            let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-           let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories in 
+           let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
            let list2 = Option.filter_and_unpack(
              fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                       _->None 
