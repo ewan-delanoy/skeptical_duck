@@ -1,8 +1,102 @@
 (************************************************************************************************************************
-Snippet 83 : 
+Snippet 85 : 
 ************************************************************************************************************************)
+
+(************************************************************************************************************************
+Snippet 84 : Change a subfield in a Coma_state_t.t object
+************************************************************************************************************************)
+
+let v0_ref = Usual_coma_state.Private.main_ref;;
+let v0 = (!v0_ref) ;;
+let v1 = v0.Coma_state_t.frontier_with_unix_world ;;
+let v2 = v1.Fw_with_dependencies_t.parent ;;
+let v3 = v2.Fw_with_small_details_t.parent ;;
+let old_config = File_watcher.configuration v3 ;;
+
+let new_config = {old_config with 
+Fw_configuration_t.subdirs_for_archived_mlx_files = [Dfa_subdirectory_t.SD "Githubbed_archive"]
+} ;;
+let w3 = {v3 with File_watcher_t.configuration = new_config} ;;
+let w2 = {v2 with Fw_with_small_details_t.parent = w3} ;;
+let w1 = {v1 with Fw_with_dependencies_t.parent = w2} ;;
+let w0 = {v0 with Coma_state_t.frontier_with_unix_world = w1} ;;
+v0_ref:=w0 ;;
+
+(************************************************************************************************************************
+Snippet 83 : Painful debugging session involving Usual_coma_state.rename_module 
+************************************************************************************************************************)
+
 open Needed_values ;;
 
+let bad1 () =
+   Needed_values.ren "lexer_ml" "rexel_ml" ;;
+ 
+ let old_name = "lexer_ml" ;;
+ let new_name = "rexel_ml" ;;
+ 
+ let bad2 () = Usual_coma_state.rename_module 
+     old_name new_name ;;
+ 
+ let ucs_ref = Usual_coma_state.Private.main_ref ;;
+ 
+ let bad3 () =
+    Modify_coma_state.Syntactic_sugar.rename_module 
+    ucs_ref old_name new_name;;
+ 
+ let mn = Dfa_module.of_line(String.uncapitalize_ascii old_name) ;;
+ let old_eless = Coma_state.endingless_at_module (!ucs_ref) mn ;;
+ let old_middle_name = Dfn_endingless.to_middle old_eless ;;  
+ let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) ;;
+ 
+ let bad4 () =
+   Modify_coma_state.Reference.rename_module ucs_ref old_middle_name new_nonslashed_name;; 
+ 
+ let old_ucs = (!ucs_ref) ;;
+ 
+ let bad5 () =
+   Modify_coma_state.Physical_followed_by_internal.rename_module old_ucs old_middle_name new_nonslashed_name;; 
+ 
+ let (new_fw,changes)=Modify_coma_state.Physical.rename_module old_ucs old_middle_name new_nonslashed_name ;;
+ 
+ module Inte = Modify_coma_state.Internal ;;
+ 
+ let bad6 () =
+   Inte.rename_module old_ucs old_middle_name new_nonslashed_name (new_fw,changes);;
+ 
+ let root_dir=Coma_state.root old_ucs ;;
+ let old_nm=Dfn_middle.to_module old_middle_name ;;
+ let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) ;;
+ let old_list_of_cmpl_results= old_ucs.Coma_state_t.product_up_to_date_for_module ;;
+ let new_list_of_cmpl_results = Image.image (
+        fun old_pair -> 
+          let (mn,cmpl_result) = old_pair in 
+          if mn = old_nm 
+          then (new_nm,false)
+          else old_pair    
+     ) old_list_of_cmpl_results ;;
+ let bad7 () = Coma_state.passive_constructor new_fw ;;
+ 
+ let modules_in_order = Fw_with_dependencies.dep_ordered_modules new_fw ;;
+ let bad8 () = Image.image (
+     fun mn -> (mn,Fw_with_dependencies.subdir_for_module new_fw mn) 
+   ) modules_in_order ;;
+ 
+ let bad9 () = Tools_for_debugging.extract_from_list (
+     fun mn -> (mn,Fw_with_dependencies.subdir_for_module new_fw mn) 
+   ) modules_in_order ;;
+ 
+ let ugly_duck = Dfa_module_t.M "rexel_ml" ;;
+ 
+ let bad_fox = new_fw.Fw_with_dependencies_t.parent;;
+ let bad_fowl = bad_fox.Fw_with_small_details_t.parent ;;
+ let w_files = bad_fowl.File_watcher_t.watched_files ;;
+ let check_w_files = List.filter (
+    fun (rl,_)->(Dfn_rootless.to_module rl) = ugly_duck
+ ) w_files ;;
+ 
+ let mod_dets = Fw_with_dependencies.Private.Modularized_details.get new_fw;;
+ let check_mod_dets = List.assoc_opt ugly_duck mod_dets ;;
+ List.assoc_opt (Dfa_module_t.M "lexer_ml") mod_dets ;;
 
 (************************************************************************************************************************
 Snippet 82 : Typical use of marked comments
@@ -74,6 +168,51 @@ let fix () =
       "Filewatching/fw_with_dependencies.ml";
    ] in    
    ruco () ;;
+
+   let fix () =
+      let _ = Sys.command (
+         "cp Decomposed_filename/dfa_subdirectory.ml "^
+         "../Idaho/Decomposed_filename/afd_sybdirectoru.ml") in
+      let _ = Sys.command (
+            "mv ../Idaho/Decomposed_filename/afd_sybdirectoru.ml "^
+            "../Idaho/Decomposed_filename/dfa_subdirectory.ml") in   
+      let _ =  Image.image (fun s->
+          let ap= Absolute_path.of_string ("../Idaho/"^s) in 
+          Replace_inside.replace_inside_file  
+          ("Afd_sybdirectoru.","Dfa_subdirectory.") ap
+          ) [
+         "Decomposed_filename/dfn_rootless.ml";
+         "Decomposed_filename/dfn_endingless.ml";
+         "Decomposed_filename/dfn_middle.ml";
+         "Decomposed_filename/dfn_full.ml";
+         "find_suitable_ending.ml";"more_unix.ml";"node_project.ml";"prepare_dircopy_update.ml";
+         "Compilation_management/coma_constant.ml";
+         "Compilation_management/coma_state.ml";
+         "Compilation_management/save_coma_state.ml";
+         "Compilation_management/modify_coma_state.ml";
+         "Compilation_management/create_world_copy.ml";
+         "Filewatching/fw_configuration.ml";
+         "Filewatching/file_watcher.ml";
+         "Filewatching/fw_with_dependencies.ml";
+      ] in    
+      ruco () ;;   
+
+      let fix () =
+         let _ = Sys.command (
+            "cp Padioleau/lexer_ml.ml "^
+            "../Idaho/Padioleau/rexel_ml.ml") in
+         let _ = Sys.command (
+               "mv ../Idaho/Padioleau/rexel_ml.ml "^
+               "../Idaho/Padioleau/lexer_ml.ml") in   
+         let _ =  Image.image (fun s->
+             let ap= Absolute_path.of_string ("../Idaho/"^s) in 
+             Replace_inside.replace_inside_file  
+             ("Rexel_ml.","Lexer_ml.") ap
+             ) [
+            "Padioleau/parse_ml.ml";
+         ] in    
+         ruco () ;;   
+
 
 (*   
 let aps_ref = ref [];;
@@ -13035,6 +13174,19 @@ let act1 () =
 
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
+
+Other_coma_state.Private.ref_for_unofficial_changes :=
+(
+   Some ["Filewatching/fw_with_small_details_t.ml"; "Filewatching/file_watcher.ml";
+   "Filewatching/fw_modular.ml"; "Filewatching/fw_with_small_details.ml";
+   "Filewatching/fw_module_small_details.ml";
+   "Filewatching/fw_with_dependencies.ml";
+   "Compilation_management/coma_state.ml";
+   "Compilation_management/modify_coma_state.ml";
+   "Compilation_management/create_world_copy.ml";
+   "Compilation_management/other_coma_state.ml" ]
+)
+;;
 
 (************************************************************************************************************************
 Snippet  26 : Testing freezing and unfreezing of world copies

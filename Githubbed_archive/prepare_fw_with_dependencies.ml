@@ -270,7 +270,7 @@ mod_details "forget_modules" ([
 
 mod_details "inspect_and_update" ([
    " let old_val = get old_fw in ";
-   " let ((a_files,u_files,nc_files),changed_u_files) = extra in ";
+   " let ((a_files,u_files),changed_u_files) = extra in ";
    " let tempf = (";
    "   fun old_pair ->";
    "    let (mn,details) = old_pair in "; 

@@ -41,10 +41,10 @@ module Automatic = struct
       
    
    
-   let configuration fw = File_watcher.Automatic.configuration (fw.Fw_with_small_details_t.parent) ;;
+   let configuration fw = File_watcher.configuration (fw.Fw_with_small_details_t.parent) ;;
 
    
-   let watched_files fw = File_watcher.Automatic.watched_files (fw.Fw_with_small_details_t.parent) ;;
+   let watched_files fw = File_watcher.watched_files (fw.Fw_with_small_details_t.parent) ;;
 
    let constructor mother =
    {
@@ -66,14 +66,14 @@ module Automatic = struct
    let get_mtime_or_zero_if_file_is_nonregistered fw  = 
                        File_watcher.get_mtime_or_zero_if_file_is_nonregistered
                                   (Private.parent fw) ;;     
-   let last_noticed_changes fw = File_watcher.Automatic.last_noticed_changes
+   let last_noticed_changes fw = File_watcher.last_noticed_changes
                                   (Private.parent fw) ;;                                                                                                                     
    let of_concrete_object = Private.of_concrete_object;;
    let parent             = Private.parent ;;
-   let root fw     = File_watcher.Automatic.root (Private.parent fw) ;;
+   let root fw     = File_watcher.root (Private.parent fw) ;;
    let set_gitpush_after_backup fw new_gab = 
       let old_nonmodular = fw.Fw_with_small_details_t.parent in 
-      let new_nonmodular = File_watcher.Automatic.set_gitpush_after_backup 
+      let new_nonmodular = File_watcher.set_gitpush_after_backup 
             old_nonmodular new_gab in 
       {
           fw with  
@@ -82,7 +82,7 @@ module Automatic = struct
       
    let set_last_noticed_changes fw new_config = 
       let old_parent = fw.Fw_with_small_details_t.parent in
-      let new_parent = File_watcher.Automatic.set_last_noticed_changes old_parent new_config in 
+      let new_parent = File_watcher.set_last_noticed_changes old_parent new_config in 
       {
       fw with 
        Fw_with_small_details_t.parent = new_parent;
@@ -114,7 +114,7 @@ let forget_modules fw mod_names =
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,changed_files) = Fw_modular.inspect_and_update old_parent in
+   let (new_parent,changed_files,(a_files,u_files)) = Fw_modular.inspect_and_update old_parent in
    let changed_details_ref = ref [] in 
    let new_small_details = Image.image (
       fun old_pair->
@@ -129,7 +129,7 @@ let inspect_and_update fw  =
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_small_details;
    },
-   (Fw_modular.partition_for_singles new_parent changed_files,!changed_details_ref));;
+   ((a_files,u_files),!changed_details_ref));;
 
 let of_configuration config =   
     let mother = File_watcher.of_configuration config in 
@@ -220,56 +220,36 @@ let remove_files fw removed_rootless_paths=
       ) old_details;
    },Image.image (fun rl->(rl,None)) removed_rootless_paths) ;;
 
-let rename_module_on_filename_level fw (old_module,new_module) =
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let acolytes = List.filter (
-          fun rl -> (Dfn_rootless.to_module rl) = old_module 
-   ) (Fw_modular.usual_compilable_files old_parent) in
-   let replacements = Image.image (fun old_rl->
-          (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
-   let new_parent = File_watcher.rename_files  old_parent replacements in 
-   let accu = ref [] in 
-   let new_details = Image.image (
-      fun old_pair->
-      let rl = fst old_pair in
-      match List.assoc_opt rl replacements with 
-      Some(new_rl) -> 
-         let new_pair = (new_rl,Fw_modular.compute_small_details_on_one_file new_parent new_rl) in 
-         let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-         new_pair 
-      | None -> old_pair         
-   ) old_details in 
-   ({
-      Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_details;
-   },List.rev(!accu)) ;;     
-      
-let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,changed_files) = File_watcher.apply_text_transformation_on_some_files old_parent
-      (Look_for_module_names.change_module_name_in_ml_ocamlcode  
-      old_module new_module)  files_to_be_rewritten in 
-   let accu = ref [] in
-   let new_details = Image.image (
-      fun old_pair->
-        let rl = fst old_pair in
-        if List.mem rl changed_files
-        then let new_pair = (rl,Fw_modular.compute_small_details_on_one_file new_parent rl) in 
-             let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-             new_pair 
-        else old_pair  
-    ) old_details in    
-   ({
-      Fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_details;
-    },List.rev(!accu)) ;;  
-         
-let rename_module_on_both_levels fw (old_module,new_module,files_to_be_rewritten)=
-   let (fw2,changes1) = rename_module_on_filename_level fw (old_module,new_module) in 
-   let (fw3,changes2) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
-   (fw3,changes1@changes2) ;;
+
+   let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
+      let old_parent = Automatic.parent fw 
+      and old_details = Automatic.small_details_in_files fw  in 
+      let (new_parent,file_renamings,filecontent_changes) = Fw_modular.rename_module_on_filename_level_and_in_files 
+        old_parent (old_module,new_module,files_to_be_rewritten) in 
+      let optional_new_rl = (fun rl->
+         match List.assoc_opt rl file_renamings with 
+            Some(new_rl) -> Some(new_rl) 
+            | None ->
+               if List.mem rl filecontent_changes
+               then Some rl 
+               else None
+      ) in 
+      let accu = ref [] in 
+      let new_details = Image.image (
+         fun old_pair->
+           let rl = fst old_pair in 
+           match optional_new_rl rl with 
+            Some(new_rl) -> 
+           let new_pair = (new_rl,Fw_modular.compute_small_details_on_one_file new_parent new_rl) in 
+           let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+           new_pair 
+          | None -> old_pair  
+       ) old_details in    
+      ({
+         Fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = new_details;
+       },List.rev(!accu)) ;;  
+
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw 
@@ -377,7 +357,7 @@ let relocate_module_to = Private.relocate_module_to;;
 
 let remove_files = Private.remove_files;;
 
-let rename_module_on_filename_level_and_in_files = Private.rename_module_on_both_levels ;;
+let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 

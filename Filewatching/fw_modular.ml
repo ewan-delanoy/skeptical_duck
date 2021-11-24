@@ -62,7 +62,7 @@ module Private = struct
             announce "The following archived files have been changed :" a_files;
             announce "The following usual compilables have been changed :" u_files;
          ) in
-         answer ;;   
+         (new_fw,changed_files,(a_files,u_files)) ;;   
 
         let noncompilable_files fw  =
          let all_files = Image.image fst (File_watcher.watched_files fw) in 
@@ -77,34 +77,39 @@ module Private = struct
          ) u_files in 
          File_watcher.relocate_files_to fw the_files new_subdir ;;
          
-      let rename_module_on_filename_level fw (old_module,new_module) =
-         let all_files = Image.image fst (File_watcher.watched_files fw) in 
-         let (_,u_files,_) = canonical_tripartition fw all_files in 
-         let acolytes = List.filter (
-                fun rl -> (Dfn_rootless.to_module rl) = old_module 
-         ) u_files in
-         let replacements = Image.image (fun old_rl->
-                (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
-         let s_root = Dfa_root.connectable_to_subpath (File_watcher.root fw) in 
-         let l_cmds = Image.image (
-                fun (old_rl,new_rl) ->
-                  let s_old_ap=s_root^(Dfn_rootless.to_line old_rl) 
-                  and s_new_ap=s_root^(Dfn_rootless.to_line new_rl) in    
-                  "mv "^s_old_ap^" "^s_new_ap
-            ) replacements  in
-         let _ =Unix_command.conditional_multiple_uc l_cmds in  
-         File_watcher.rename_files  fw replacements  ;;  
-            
-      let rename_module_on_content_level fw (old_module,new_module) files_to_be_rewritten =
-         File_watcher.apply_text_transformation_on_some_files fw
-            (Look_for_module_names.change_module_name_in_ml_ocamlcode  
-            old_module new_module)  files_to_be_rewritten  ;;  
+         let rename_module_on_filename_level old_fw (old_module,new_module) = 
+            let all_files = Image.image fst (File_watcher.watched_files old_fw) in 
+            let (a_files,u_files,nc_files) = canonical_tripartition old_fw all_files in 
+            let acolytes = List.filter (
+                   fun rl -> (Dfn_rootless.to_module rl) = old_module 
+            ) u_files in
+            let replacements = Image.image (fun old_rl->
+                   (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
+            let new_fw = File_watcher.rename_files  old_fw replacements in 
+            (new_fw,replacements) ;;     
                
-      let rename_module_on_filename_level_and_in_files fw old_module new_module files_to_be_rewritten=
-         let fw2=rename_module_on_filename_level fw (old_module,new_module) in 
-         let fw3=rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
-         fw3;;
-
+         let rename_module_on_content_level old_fw (old_module,new_module) files_to_be_rewritten =
+            let (new_fw,changed_files) = File_watcher.apply_text_transformation_on_some_files old_fw
+               (Look_for_module_names.change_module_name_in_ml_ocamlcode  
+               old_module new_module)  files_to_be_rewritten in 
+            let (a_files,u_files,nc_files) = canonical_tripartition old_fw changed_files in 
+            let announce = (fun trail files ->
+               Strung.announce 
+                        ~trailer: trail
+                           ~printer:Dfn_rootless.to_line ~items:files 
+                           ~separator: "\n"
+            ) in
+            let _ = (
+               announce "The following noncompilables have their affected by the renaming :" nc_files;
+               announce "The following archived files have their content affected by the renaming :" a_files;
+            ) in   
+            (new_fw,u_files) ;;  
+                  
+         let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten)=
+            let (fw2,file_renamings) = rename_module_on_filename_level fw (old_module,new_module) in 
+            let (fw3,filecontent_changes) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
+            (fw3,file_renamings,filecontent_changes) ;;   
+   
       let usual_compilable_files fw  =
          let all_files = Image.image fst (File_watcher.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
@@ -125,6 +130,8 @@ let noncompilable_files = Private.noncompilable_files ;;
 let partition_for_singles = Private.canonical_tripartition ;; 
 
 let relocate_module_to = Private.relocate_module_to ;;
+
+let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
 
 let usual_compilable_files = Private.usual_compilable_files ;;
 

@@ -80,7 +80,7 @@ module Private = struct
       let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
       let faraway_cs1 = Coma_state.passive_constructor faraway_fw in 
       let all_modules = Coma_state.dep_ordered_modules faraway_cs1 in 
-      let faraway_cs2 = Modify_coma_state.Internal.modern_recompile faraway_cs1 ([],all_modules,[]) in 
+      let faraway_cs2 = Modify_coma_state.Internal.modern_recompile faraway_cs1 all_modules in 
       let _=Save_coma_state.save faraway_cs2 in   
       faraway_cs2;;                      
   

@@ -2,6 +2,7 @@
 
 #use"Filewatching/fw_with_small_details_t.ml";;
 
+Stores the small details for archived or usual files (not the noncompilables).
 
 *)
 

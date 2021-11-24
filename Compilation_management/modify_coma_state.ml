@@ -19,10 +19,10 @@ module Physical = struct
    
 
    let recompile cs =
-      let (new_fw,((changed_archived_compilables,changed_usual_compilables,changed_noncompilables),_))
+      let (new_fw,((changed_archived_compilables,changed_usual_compilables),_))
          =Fw_with_dependencies.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
       let new_cs= Coma_state.set_frontier_with_unix_world cs new_fw in 
-      (new_cs,changed_archived_compilables,changed_usual_compilables,changed_noncompilables);;
+      (new_cs,changed_usual_compilables);;
    
    let refresh config =
       let root = config.Fw_configuration_t.root in 
@@ -46,7 +46,7 @@ module Physical = struct
        Coma_state_t.frontier_with_unix_world = new_fw ;
        product_up_to_date_for_module = new_list_of_cmpl_results
      } in 
-      (cs2,(ac_paths,uc_paths,nc_paths)) ;;
+      (cs2,uc_paths) ;;
    
 
    let relocate_module_to cs mod_name new_subdir=
@@ -124,7 +124,7 @@ module Physical = struct
       Coma_state.unregister_mlx_files cs full_paths ;; 
    
    
-   let modern_recompile cs (changed_ac,changed_modules_in_any_order,changed_noncompilables) = 
+   let modern_recompile cs changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then cs else
       let (all_deps,new_deps,changed_modules) = Coma_state.below_several cs changed_modules_in_any_order in     
       let _ = Strung.announce 
@@ -154,9 +154,9 @@ module Physical = struct
       {cs2 with Coma_state_t.product_up_to_date_for_module = cmpl_results  };;
    
    
-   let register_rootless_paths cs (ac_paths,uc_paths,nc_paths) =
+   let register_rootless_paths cs uc_paths =
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
-     modern_recompile cs (ac_paths,unordered_mods,nc_paths) ;;
+     modern_recompile cs unordered_mods ;;
    
    let relocate_module_to cs mn new_subdir=
      let old_endingless = Coma_state.endingless_at_module cs mn in  
@@ -204,7 +204,7 @@ module Physical = struct
          ("rm -f "^s_root^s_build_dir^
          (Dfa_module.to_line old_nm)^
          ".cm* ") in            
-     let cs4=modern_recompile cs3 ([],[new_nm],[]) in 
+     let cs4=modern_recompile cs3 [new_nm] in 
      cs4;;
    
    let rename_subdirectory cs old_subdir new_subdir=
@@ -226,7 +226,7 @@ module Physical = struct
    
    
    let rename_string_or_value cs changed_modules_in_any_order = 
-      modern_recompile cs ([],changed_modules_in_any_order,[]);; 
+      modern_recompile cs changed_modules_in_any_order ;; 
    
    end;;
    
@@ -253,9 +253,9 @@ module Physical = struct
      Internal.forget_rootless_paths cs2 rootless_paths;;
    
    let recompile cs = 
-     let (cs2,changed_ac,changed_uc,changed_noncompilables)=Physical.recompile cs  in 
+     let (cs2,changed_uc)=Physical.recompile cs  in 
      let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
-     Internal.modern_recompile cs2 (changed_ac,unordered_mods,changed_noncompilables);;
+     Internal.modern_recompile cs2 unordered_mods ;;
      
    let refresh cs =
       let cs2=Physical.refresh (Coma_state.configuration cs)  in

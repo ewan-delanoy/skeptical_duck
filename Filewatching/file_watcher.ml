@@ -362,7 +362,7 @@ let adhoc_membership path selected_files_opt=
    None -> true 
    |Some selected_files -> List.mem path selected_files ;;
 
-let apply_text_transformation_on_pair fw tr changed_files selected_files_opt pair=
+let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt pair=
    let (path,_) = pair in 
    if not(adhoc_membership path selected_files_opt)
    then pair 
@@ -372,7 +372,7 @@ let apply_text_transformation_on_pair fw tr changed_files selected_files_opt pai
    if new_content = old_content   
    then pair 
    else 
-   let _=(changed_files:= path:: (!changed_files)) in 
+   let _=(changed_files_ref:= path:: (!changed_files_ref)) in 
    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
    and s_path=Dfn_rootless.to_line path in 
    let file = s_root^s_path in  
@@ -380,17 +380,18 @@ let apply_text_transformation_on_pair fw tr changed_files selected_files_opt pai
    let _=(Io.overwrite_with ap new_content) in 
    recompute_all_info fw path ;;
 
+
 let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
-   let changed_files=ref[]  in 
+   let changed_files_ref=ref[]  in 
    let new_files = Image.image (
-      apply_text_transformation_on_pair fw tr changed_files selected_files_opt
+      apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    )  fw.File_watcher_t.watched_files  in 
    let fw2 ={
       fw with
       File_watcher_t.watched_files = new_files;
    } in 
-   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files) in 
-   (fw3,!changed_files);;    
+   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
+   (fw3,!changed_files_ref);;    
 
 let apply_text_transformation_on_some_files fw tr l=
       apply_text_transformation_on_adhoc_option fw tr (Some l) ;;   
@@ -487,19 +488,6 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
                let to_be_watched = first_init config in 
                of_configuration_and_list config to_be_watched ;;
 
-      let transplant fw new_config =  
-            let old_watched_files = Automatic.watched_files fw  
-            and temporary_fw = {
-            fw with
-            File_watcher_t.configuration = new_config ;
-            } in 
-            { temporary_fw with 
-            File_watcher_t.watched_files = Image.image (
-               fun (rl,_) -> (rl,recompute_mtime temporary_fw rl)
-            ) old_watched_files;
-            last_noticed_changes = Dircopy_diff.empty_one;
-           };;
-          
      
 end;;
 
@@ -529,6 +517,7 @@ let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if
 
 let inspect_and_update = Private.inspect_and_update;;
 
+let last_noticed_changes = Automatic.last_noticed_changes ;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
@@ -561,6 +550,10 @@ let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
 
 let root = Automatic.root ;;
+
+let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
+
+let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
