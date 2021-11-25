@@ -557,4 +557,6 @@ let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
 
 let to_concrete_object = Automatic.to_concrete_object ;;
 
+let update_some_files = Private.update_some_files ;; 
+
 let watched_files = Automatic.watched_files ;;
