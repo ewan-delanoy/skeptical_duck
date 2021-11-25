@@ -164,7 +164,7 @@ let update_in_list_of_pairs fw  to_be_updated pairs  =
         else pair
    ) pairs;;
 
-let update_some_files fw (w_files,sw_files) = {
+let update_some_files fw w_files = {
     fw with 
       File_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
       (fw.File_watcher_t.watched_files) ;
@@ -411,7 +411,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
       preceding_files replacee (Overwriter.of_string pre_replacer) path in 
     let rootless = Dfn_common.decompose_absolute_path_using_root path (Automatic.root fw)  in 
-    let fw2= update_some_files fw ([rootless],[]) in 
+    let fw2= update_some_files fw [rootless] in 
     let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
     let fw4 =  Automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
     (fw4,(rootless::changed_files));;
