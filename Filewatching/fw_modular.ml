@@ -117,6 +117,24 @@ module Private = struct
             let (fw3,u_files,a_files) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
             (fw3,file_renamings,u_files,a_files) ;;   
    
+      
+let replace_string fw (replacee,replacer) =
+   File_watcher.apply_text_transformation_on_all_files fw (
+      Replace_inside.replace_inside_string (replacee,replacer)
+   ) ;;
+
+let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
+    let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
+    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
+      preceding_files replacee (Overwriter.of_string pre_replacer) path in 
+    let rootless = Dfn_common.decompose_absolute_path_using_root path 
+        (File_watcher.root fw)  in 
+    let fw2= File_watcher.update_some_files fw [rootless] in 
+    let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
+    let fw4 = File_watcher.Automatic.reflect_changes_in_diff 
+        fw3 (rootless::changed_files) in         
+    (fw4,(rootless::changed_files));;
+
       let usual_compilable_files fw  =
          let all_files = Image.image fst (File_watcher.watched_files fw) in 
          let (_,u_files,_) = canonical_tripartition fw all_files in 
@@ -139,6 +157,10 @@ let partition_for_singles = Private.canonical_tripartition ;;
 let relocate_module_to = Private.relocate_module_to ;;
 
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
+
+let replace_string = Private.replace_string;;
+
+let replace_value = Private.replace_value;;
 
 let usual_compilable_files = Private.usual_compilable_files ;;
 
