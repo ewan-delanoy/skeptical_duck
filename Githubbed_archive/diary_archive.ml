@@ -1,6 +1,18 @@
 (************************************************************************************************************************
-Snippet 85 : 
+Snippet 86 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 85 : Test the prepare_fw_with_dependencies.ml file
+************************************************************************************************************************)
+
+let the_other_one = 
+   Absolute_path.of_string "../Idaho/Filewatching/fw_with_dependencies.ml" ;;
+ 
+(*  #use "Githubbed_archive/prepare_fw_with_dependencies.ml";; 
+   
+ write_all_to_file the_other_one ;;  *)
 
 (************************************************************************************************************************
 Snippet 84 : Change a subfield in a Coma_state_t.t object
@@ -13177,14 +13189,7 @@ let act2 () = Other_coma_state.officialize_changes ();;
 
 Other_coma_state.Private.ref_for_unofficial_changes :=
 (
-   Some ["Filewatching/fw_with_small_details_t.ml"; "Filewatching/file_watcher.ml";
-   "Filewatching/fw_modular.ml"; "Filewatching/fw_with_small_details.ml";
-   "Filewatching/fw_module_small_details.ml";
-   "Filewatching/fw_with_dependencies.ml";
-   "Compilation_management/coma_state.ml";
-   "Compilation_management/modify_coma_state.ml";
-   "Compilation_management/create_world_copy.ml";
-   "Compilation_management/other_coma_state.ml" ]
+   Some [ ]
 )
 ;;
 

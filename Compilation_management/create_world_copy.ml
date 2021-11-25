@@ -52,7 +52,7 @@ module Private = struct
   
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
 
-  let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) ?(destarchive=[]) summary =
+  let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) ?(destarchive=[Coma_constant.githubbed_archive_subdir]) summary =
       let url=Coma_big_constant.github_url in 
       let (conv_files,needed_dirs) = (
         if Needed_data_summary.is_everything summary
