@@ -545,9 +545,6 @@ let rename_files = Private.rename_files;;
 
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 
-let replace_string = Private.replace_string;;
-
-let replace_value = Private.replace_value;;
 
 let root = Automatic.root ;;
 
