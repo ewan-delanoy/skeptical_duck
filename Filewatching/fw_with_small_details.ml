@@ -274,7 +274,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,changed_files) = File_watcher.replace_string old_parent (replacee,replacer) in
+   let (new_parent,changed_files) = Fw_modular.replace_string old_parent (replacee,replacer) in
    let accu = ref [] in 
    let new_details = Image.image (
       fun old_pair->
@@ -294,7 +294,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
    let (new_parent,changed_files) = 
-        File_watcher.replace_value 
+        Fw_modular.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
    let accu = ref [] in 
    let new_details = Image.image (
