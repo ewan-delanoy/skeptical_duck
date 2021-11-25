@@ -224,13 +224,13 @@ let remove_files fw removed_rootless_paths=
    let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
       let old_parent = Automatic.parent fw 
       and old_details = Automatic.small_details_in_files fw  in 
-      let (new_parent,file_renamings,filecontent_changes) = Fw_modular.rename_module_on_filename_level_and_in_files 
+      let (new_parent,file_renamings,u_files,a_files) = Fw_modular.rename_module_on_filename_level_and_in_files 
         old_parent (old_module,new_module,files_to_be_rewritten) in 
       let optional_new_rl = (fun rl->
          match List.assoc_opt rl file_renamings with 
             Some(new_rl) -> Some(new_rl) 
             | None ->
-               if List.mem rl filecontent_changes
+               if List.mem rl u_files
                then Some rl 
                else None
       ) in 

@@ -34,6 +34,9 @@ let w1 = {v1 with Fw_with_dependencies_t.parent = w2} ;;
 let w0 = {v0 with Coma_state_t.frontier_with_unix_world = w1} ;;
 v0_ref:=w0 ;;
 
+let g1 = Fw_modular.Private.full_tripartition v3 ;;
+let (a_files,_,_) = g1 ;;
+
 (************************************************************************************************************************
 Snippet 83 : Painful debugging session involving Usual_coma_state.rename_module 
 ************************************************************************************************************************)
