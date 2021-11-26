@@ -1202,12 +1202,23 @@ end ;;
 
 
 
-  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;
+  
   module Exit = All_printables ;; 
+
+  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;
+  let check_ending_on_module fw edg  mn=
+   if edg=Fw_module_small_details.principal_ending (details_for_module fw mn)
+   then true 
+   else 
+   if edg=Dfa_ocaml_ending_t.Mli
+   then Fw_module_small_details.mli_present (details_for_module fw mn) 
+   else false;;
+
 end;;
 
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
+let check_ending_on_module = Private.check_ending_on_module ;;
 let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
