@@ -109,6 +109,7 @@ module Private = struct
             ) in
             let _ = (
                announce "The following archived files have their content affected by the renaming :" changed_a_files;
+               announce "The following usual compilables have their content affected by the renaming :" changed_u_files;
             ) in   
             (fw2,changed_u_files,changed_a_files) ;;  
                   
@@ -118,10 +119,25 @@ module Private = struct
             (fw3,file_renamings,u_files,a_files) ;;   
    
       
-let replace_string fw (replacee,replacer) =
-   File_watcher.apply_text_transformation_on_all_files fw (
-      Replace_inside.replace_inside_string (replacee,replacer)
-   ) ;;
+let replace_string old_fw (replacee,replacer) = 
+   let apply = (fun fw files->
+      File_watcher.apply_text_transformation_on_some_files fw 
+      (Replace_inside.replace_inside_string (replacee,replacer)) files
+   ) in 
+   let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
+   let (fw1,changed_u_files) = apply old_fw all_u_files in 
+   let (fw2,changed_a_files) = apply fw1 all_a_files in 
+   let announce = (fun trail files ->
+      Strung.announce 
+               ~trailer: trail
+                  ~printer:Dfn_rootless.to_line ~items:files 
+                  ~separator: "\n"
+   ) in
+   let _ = (
+      announce "The following archived files have their content affected by the renaming :" changed_a_files;
+      announce "The following usual compilables have their content affected by the renaming :" changed_u_files;
+   ) in 
+   (fw2,(changed_a_files,changed_u_files)) ;;
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
@@ -130,10 +146,10 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let rootless = Dfn_common.decompose_absolute_path_using_root path 
         (File_watcher.root fw)  in 
     let fw2= File_watcher.update_some_files fw [rootless] in 
-    let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
+    let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 
     let fw4 = File_watcher.Automatic.reflect_changes_in_diff 
-        fw3 (rootless::changed_files) in         
-    (fw4,(rootless::changed_files));;
+        fw3 (changed_a_files@rootless::changed_u_files) in         
+    (fw4,(changed_a_files,rootless::changed_u_files));;
 
       let usual_compilable_files fw  =
          let all_files = Image.image fst (File_watcher.watched_files fw) in 
