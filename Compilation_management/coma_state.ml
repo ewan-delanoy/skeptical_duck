@@ -927,15 +927,15 @@ let register_mlx_file_on_monitored_modules cs rless =
 module Command = struct 
 
 let module_separate_compilation cmod cs eless =
- Commands_for_batch_compilation.command_for_module_separate_compilation 
+ Commands_for_batch_compilation.module_separate_compilation 
    cmod (Automatic.frontier_with_unix_world cs) eless;;
 
 let predebuggable cs short_path =
-  Commands_for_batch_compilation.command_for_predebuggable 
+  Commands_for_batch_compilation.predebuggable 
     (Automatic.frontier_with_unix_world cs) short_path ;; 
 
 let debuggable_or_executable cmod cs rootless_path =
-  Commands_for_batch_compilation.command_for_debuggable_or_executable
+  Commands_for_batch_compilation.debuggable_or_executable
     cmod (Automatic.frontier_with_unix_world cs) rootless_path ;; 
 
 end;;

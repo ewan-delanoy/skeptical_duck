@@ -19,7 +19,7 @@ let needed_dirs_and_libs_in_command cmod fw mn=
 
 end ;;  
 
-
+module Private = struct
 (*
 exception Unregistered_cmi of Dfn_endingless_t.t;;
 exception Unregistered_cmo of Dfn_endingless_t.t;;
@@ -202,6 +202,11 @@ let command_for_debuggable_or_executable cmod fw rootless_path=
     )
     ;;          
 
+  end ;; 
 
-
+let module_separate_compilation = Private.command_for_module_separate_compilation ;;
+   
+let predebuggable cs short_path = Private.command_for_predebuggable ;; 
+   
+let debuggable_or_executable cmod cs rootless_path = Private.command_for_debuggable_or_executable ;;   
 
