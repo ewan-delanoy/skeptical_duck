@@ -121,7 +121,7 @@ module Physical = struct
       let compilable_paths = List.filter Dfn_rootless.is_compilable rootless_paths in 
       let the_root = Coma_state.root cs in 
       let full_paths = Image.image (Dfn_join.root_to_rootless the_root) compilable_paths in  
-      Coma_state.unregister_mlx_files cs full_paths ;; 
+      Organize_batch_compilation.unregister_mlx_files cs full_paths ;; 
    
    
    let modern_recompile cs changed_modules_in_any_order = 
@@ -133,7 +133,7 @@ module Physical = struct
          ~printer:Dfa_module.to_line ~items:new_deps 
          ~separator: ", " in 
       let (cs2,rejected_pairs,accepted_pairs)=
-             Coma_state.Ocaml_target_making.usual_feydeau cs all_deps in 
+        Organize_batch_compilation.Ocaml_target_making.usual_feydeau cs all_deps in 
       let cs_walker = ref(cs2) in 
       let memorize_last_result = (fun res mn->
          cs_walker := Coma_state.set_last_compilation_result_for_module 
@@ -147,7 +147,7 @@ module Physical = struct
       let fw = cs.Coma_state_t.frontier_with_unix_world in 
       let mods = Fw_with_dependencies.dep_ordered_modules fw in 
       let (cs2,rejected_pairs,accepted_pairs)=
-             Coma_state.Ocaml_target_making.usual_feydeau cs mods in 
+         Organize_batch_compilation.Ocaml_target_making.usual_feydeau cs mods in 
       let cmpl_results = Image.image (
         fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
       ) mods in 
