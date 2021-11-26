@@ -19,12 +19,6 @@ end;;
 let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;; 
 
 
-let add_printer_equipped_type mn=
-   let old_cs=(!(Private.main_ref)) in 
-   let new_cs=Coma_state.add_printer_equipped_type old_cs mn in 
-   (Private.main_ref := new_cs ;
-    Save_coma_state.save new_cs);;
-
 let all_endinglesses ()=Coma_state.all_endinglesses (!(Private.main_ref)) ;; 
 let all_principals ()=Coma_state.all_principals (!(Private.main_ref)) ;; 
 

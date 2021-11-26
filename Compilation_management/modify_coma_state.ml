@@ -42,7 +42,7 @@ module Physical = struct
           None -> (mn,false)
           |Some(old_res) -> (mn,old_res)
      ) (Fw_with_dependencies.dep_ordered_modules new_fw) in 
-     let cs2 = { cs with 
+     let cs2 = { 
        Coma_state_t.frontier_with_unix_world = new_fw ;
        product_up_to_date_for_module = new_list_of_cmpl_results
      } in 
@@ -158,29 +158,6 @@ module Physical = struct
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
      modern_recompile cs unordered_mods ;;
    
-   let relocate_module_to cs mn new_subdir=
-     let old_endingless = Coma_state.endingless_at_module cs mn in  
-     let old_subdir = Dfn_endingless.to_subdirectory old_endingless in 
-     let mn=Dfn_endingless.to_module old_endingless in
-     let old_acolytes= Coma_state.acolytes_at_module cs mn in
-     let new_acolytes=Image.image 
-       (fun mlx->Dfn_full.relocate mlx new_subdir) old_acolytes in
-     let new_name=Dfn_full.to_endingless
-      (List.hd new_acolytes) in
-     let principal_mt=Coma_state.md_compute_modification_time new_name 
-                            (Coma_state.principal_ending_for_module cs mn)
-     and mli_mt=Coma_state.md_compute_modification_time new_name Dfa_ocaml_ending_t.Mli in
-     let s_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
-     let cs2=Coma_state.set_subdir_for_module cs mn new_subdir in 
-     let cs3=Coma_state.set_principal_mt_for_module cs2 mn principal_mt in 
-     let cs4=Coma_state.set_mli_mt_for_module cs3 mn mli_mt in 
-     let old_preq_types = Coma_state.printer_equipped_types cs4 in 
-     let new_preq_types=Image.image (Dfn_middle.rename_endsubdirectory 
-     (old_subdir,s_subdir) ) old_preq_types in 
-     let cs5=Coma_state.set_preq_types cs4 new_preq_types in 
-     cs5;;   
-   
-   
 
    let rename_module cs old_middle_name new_nonslashed_name (new_fw,changes) =
      let root_dir=Coma_state.root cs in 
@@ -206,23 +183,6 @@ module Physical = struct
          ".cm* ") in            
      let cs4=modern_recompile cs3 [new_nm] in 
      cs4;;
-   
-   let rename_subdirectory cs old_subdir new_subdir=
-     let rename_in_sd=(fun sd -> 
-        match Dfa_subdirectory.soak (old_subdir,new_subdir) sd with 
-        Some(new_sd) -> new_sd 
-        |None -> sd
-      ) in 
-     let cs1=Coma_state.modify_all_subdirs cs rename_in_sd in 
-     let cs2=Coma_state.modify_all_needed_dirs cs1 rename_in_sd in 
-     let s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
-      let new_dirs=Image.image rename_in_sd (Coma_state.all_subdirectories cs2) 
-      and new_peqt=Image.image (fun middle->
-             Dfn_middle.rename_endsubdirectory (old_subdir,s_new_subdir) middle
-       )(Coma_state.printer_equipped_types cs2) in
-      let cs3= Coma_state.set_all_subdirectories cs2 new_dirs in 
-      let cs4= Coma_state.set_preq_types cs3 new_peqt in 
-      cs4;; 
    
    
    let rename_string_or_value cs changed_modules_in_any_order = 
@@ -266,8 +226,7 @@ module Physical = struct
       Internal.register_rootless_paths cs2 triple;;
    
    let relocate_module_to cs mod_name new_subdir= 
-     let cs2=Physical.relocate_module_to cs mod_name  new_subdir  in
-     Internal.relocate_module_to cs2 mod_name  new_subdir;;
+     Physical.relocate_module_to cs mod_name  new_subdir ;;
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
@@ -275,8 +234,7 @@ module Physical = struct
       Internal.rename_module cs old_middle_name new_nonslashed_name (new_fw,changes);;
    
    let rename_subdirectory cs old_subdir new_subdir=
-      let cs2=Physical.rename_subdirectory cs (old_subdir,new_subdir) in
-      Internal.rename_subdirectory cs2 old_subdir new_subdir;;
+      Physical.rename_subdirectory cs (old_subdir,new_subdir) ;;
    
    let rename_string_or_value cs old_sov new_sov =
       let (cs2,changed_modules_in_any_order)=Physical.rename_string_or_value cs old_sov new_sov in

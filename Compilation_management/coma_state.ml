@@ -94,9 +94,9 @@ module Automatic = struct
       after;;
   
   
-  let all_used_subdirs cs =
-     let current_assoc = (of_t cs).Coma_state_t.subdir_for_module in 
-     Image.image snd current_assoc ;;
+  let all_used_subdirs cs = 
+     let fw = frontier_with_unix_world cs in 
+     Image.image (Fw_with_dependencies.subdir_for_module fw) (dep_ordered_modules cs) ;;
   
   
   
@@ -114,83 +114,12 @@ module Automatic = struct
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
-  let set_subdir_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.subdir_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.subdir_for_module=new_assocs });;
-      
-  
-  let set_principal_ending_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.principal_ending_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.principal_ending_for_module=new_assocs });;
-  
-  
-  let set_mli_presence_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.mli_presence_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.mli_presence_for_module=new_assocs });;
-  
-  
-  let set_principal_mt_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.principal_mt_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.principal_mt_for_module=new_assocs });;
-  
-  let set_mli_mt_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.mli_mt_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.mli_mt_for_module=new_assocs });;
-  
-  let set_needed_libs_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.needed_libs_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.needed_libs_for_module=new_assocs });;
-  
-  
-  let set_direct_fathers_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.direct_fathers_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.direct_fathers_for_module=new_assocs });;
-  
-  
-  
-  let set_ancestors_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.ancestors_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.ancestors_for_module=new_assocs });;
-  
-  
-  let set_needed_dirs_for_module cs mn v=
-      let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.needed_dirs_for_module in 
-      let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.needed_dirs_for_module=new_assocs });;
-      
-  
-  
   let set_product_up_to_date_for_module cs mn v=
       let ccs=of_t cs in 
       let old_assocs = ccs.Coma_state_t.product_up_to_date_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
       to_t({ccs with Coma_state_t.product_up_to_date_for_module=new_assocs });;
       
-  
-  
-  let set_all_subdirectories cs v = let ccs=of_t cs in 
-                              to_t({ccs with Coma_state_t.directories=v});;
-  
-  
-  let set_preq_types cs v = let ccs=of_t cs in 
-                              to_t({ccs with Coma_state_t.printer_equipped_types=v});;
   
   
   (* Adhoc setters *)
@@ -207,18 +136,6 @@ module Automatic = struct
       Fw_with_dependencies.set_last_noticed_changes old_fw diff in  
      set_frontier_with_unix_world cs new_fw ;;
   
-  let modify_all_subdirs cs f =
-     let ccs=of_t cs in 
-     let old_subdirs = ((of_t cs).Coma_state_t.subdir_for_module) in 
-     let new_subdirs = Image.image (fun (key,vaal)->(key,f vaal)) old_subdirs in 
-     to_t({ccs with Coma_state_t.subdir_for_module= new_subdirs });;
-  
-  let modify_all_needed_dirs cs f =
-     let ccs=of_t cs in 
-     let old_needed_dirs = ((of_t cs).Coma_state_t.needed_dirs_for_module) in 
-     let new_needed_dirs = Image.image (fun (key,vaal)->(key,Image.image f vaal)) old_needed_dirs in 
-     to_t({ccs with Coma_state_t.needed_dirs_for_module= new_needed_dirs });;
-  
   (* End of adhoc setters *)
   
   
@@ -226,67 +143,14 @@ module Automatic = struct
   let empty_one config=
       to_t({
        Coma_state_t.frontier_with_unix_world= Fw_with_dependencies.empty_one config;
-       modules = [];
-       subdir_for_module = [] ;
-       principal_ending_for_module = [] ;
-       mli_presence_for_module = [] ;
-       principal_mt_for_module = [] ;
-       mli_mt_for_module = [] ;
-       needed_libs_for_module = [] ;
-       direct_fathers_for_module = [];
-       ancestors_for_module = [] ; 
-       needed_dirs_for_module = [];
        product_up_to_date_for_module = [];
-       directories =[];
-       printer_equipped_types =[];
   });;
   
   
   let passive_constructor fw = 
       let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
-      let subdirs_fm = Image.image (
-        fun mn -> (mn,Fw_with_dependencies.subdir_for_module fw mn) 
-      ) modules_in_order in 
-      let principal_endings_fm = Image.image (
-                             fun mn -> (mn,Fw_with_dependencies.principal_ending_for_module fw mn) 
-                           ) modules_in_order in 
-      let mli_presences_fm =  Image.image (
-        fun mn -> (mn,Fw_with_dependencies.mli_presence_for_module fw mn) 
-     ) modules_in_order in 
-     let principal_mts_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.principal_mt_for_module fw mn) 
-     ) modules_in_order in 
-     let mli_mts_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.mli_mt_for_module fw mn) 
-     ) modules_in_order in 
-     let needed_libs_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.needed_libs_for_module fw mn) 
-     ) modules_in_order in 
-     let needed_dirs_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.needed_dirs_for_module fw mn) 
-     ) modules_in_order in 
-     let direct_fathers_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.direct_fathers_for_module fw mn) 
-     ) modules_in_order in 
-     let ancestors_fm = Image.image (
-      fun mn -> (mn,Fw_with_dependencies.ancestors_for_module fw mn) 
-     ) modules_in_order in 
-     let all_subdirs = Fw_with_dependencies.all_subdirectories  fw in 
-     let preq_types = Fw_with_dependencies.printer_equipped_types  fw in 
       to_t({
        Coma_state_t.frontier_with_unix_world= fw;
-       modules = modules_in_order ;
-       subdir_for_module = subdirs_fm ;
-       principal_ending_for_module = principal_endings_fm ;
-       mli_presence_for_module = mli_presences_fm  ;
-       principal_mt_for_module = principal_mts_fm ;
-       mli_mt_for_module = mli_mts_fm ;
-       needed_libs_for_module = needed_libs_fm ; 
-       direct_fathers_for_module = direct_fathers_fm ; 
-       ancestors_for_module = ancestors_fm ;                    
-       needed_dirs_for_module = needed_dirs_fm ; 
-       directories = all_subdirs;
-       printer_equipped_types = preq_types ;
        product_up_to_date_for_module = Image.image (
                               fun mn -> (mn,false) 
                           ) modules_in_order  ;
@@ -296,111 +160,33 @@ module Automatic = struct
   let change_one_module_name wrapped_cs old_mn new_mn=
       (* note that printer_equipped_types are not dealt with here *)
       let cs=of_t wrapped_cs in
-      let new_modules = Image.image (fun x->if x=old_mn then new_mn else x)(dep_ordered_modules cs) in  
       let rep_pair = (old_mn,new_mn) in 
-      let new_subdirs = Associative_list.change_name_for_key (cs.Coma_state_t.subdir_for_module) rep_pair
-      and new_principal_endings = Associative_list.change_name_for_key (cs.Coma_state_t.principal_ending_for_module) rep_pair
-      and new_mli_presences = Associative_list.change_name_for_key (cs.Coma_state_t.mli_presence_for_module) rep_pair
-      and new_principal_mts = Associative_list.change_name_for_key (cs.Coma_state_t.principal_mt_for_module) rep_pair
-      and new_mli_mts = Associative_list.change_name_for_key (cs.Coma_state_t.mli_mt_for_module) rep_pair
-      and new_needed_libs = Associative_list.change_name_for_key (cs.Coma_state_t.needed_libs_for_module) rep_pair
-      and new_direct_fathers = Associative_list.change_name_for_key (cs.Coma_state_t.direct_fathers_for_module) rep_pair
-      and new_ancestors = Associative_list.change_name_for_key (cs.Coma_state_t.ancestors_for_module) rep_pair
-      and new_needed_dirs = Associative_list.change_name_for_key (cs.Coma_state_t.needed_dirs_for_module) rep_pair  
-      and new_products_up_to_date = Associative_list.change_name_for_key  cs.Coma_state_t.product_up_to_date_for_module rep_pair  in 
+      let new_products_up_to_date = Associative_list.change_name_for_key  cs.Coma_state_t.product_up_to_date_for_module rep_pair  in 
   to_t({ cs with 
-        Coma_state_t.modules = new_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module= new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
   
   let remove_in_each_at_module wrapped_cs mname=
       let cs=of_t wrapped_cs in
-      let new_modules = List.filter (fun x->x<>mname) (dep_ordered_modules cs) 
-      and new_subdirs = Associative_list.remove_key (cs.Coma_state_t.subdir_for_module) mname
-      and new_principal_endings = Associative_list.remove_key (cs.Coma_state_t.principal_ending_for_module) mname
-      and new_mli_presences = Associative_list.remove_key (cs.Coma_state_t.mli_presence_for_module) mname
-      and new_principal_mts = Associative_list.remove_key (cs.Coma_state_t.principal_mt_for_module) mname
-      and new_mli_mts = Associative_list.remove_key (cs.Coma_state_t.mli_mt_for_module) mname
-      and new_needed_libs = Associative_list.remove_key (cs.Coma_state_t.needed_libs_for_module) mname
-      and new_direct_fathers = Associative_list.remove_key (cs.Coma_state_t.direct_fathers_for_module) mname
-      and new_ancestors = Associative_list.remove_key (cs.Coma_state_t.ancestors_for_module) mname
-      and new_needed_dirs = Associative_list.remove_key (cs.Coma_state_t.needed_dirs_for_module) mname  
-      and new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
+      let new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
   to_t({ cs with 
-        Coma_state_t.modules = new_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module= new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
   
   
   
   let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
-      let nm=Dfn_endingless.to_module hm
-      and subdir=Dfn_endingless.to_subdirectory hm 
+      let nm=Dfn_endingless.to_module hm 
       and  cs=of_t wrapped_cs in
-      let new_modules = (cs.Coma_state_t.modules)@[nm] 
-      and new_subdirs = (  cs.Coma_state_t.subdir_for_module) @[nm,subdir]
-      and new_principal_endings = (  cs.Coma_state_t.principal_ending_for_module) @[nm,pr_end] 
-      and new_mli_presences = (  cs.Coma_state_t.mli_presence_for_module) @[nm,mlip] 
-      and new_principal_mts = (  cs.Coma_state_t.principal_mt_for_module) @[nm,prmt] 
-      and new_mli_mts = (  cs.Coma_state_t.mli_mt_for_module) @[nm,mlimt] 
-      and new_needed_libs = (  cs.Coma_state_t.needed_libs_for_module) @[nm,libned] 
-      and new_direct_fathers = (  cs.Coma_state_t.direct_fathers_for_module) @[nm,dirfath]
-      and new_ancestors = (  cs.Coma_state_t.ancestors_for_module) @[nm,allanc] 
-      and new_needed_dirs = (cs.Coma_state_t.needed_dirs_for_module)@[nm,dirned] 
-      and new_products_up_to_date = (cs.Coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
-  to_t({ cs with 
-        Coma_state_t.modules = new_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
+      let new_products_up_to_date = (cs.Coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
+  to_t({ cs with
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
   
   let set_in_each wrapped_cs nm (pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
       let cs=of_t wrapped_cs in
-      let new_principal_endings = Associative_list.change_value_for_key (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) 
-      and new_mli_presences = Associative_list.change_value_for_key (cs.Coma_state_t.mli_presence_for_module) (nm, mlip) 
-      and new_principal_mts = Associative_list.change_value_for_key (cs.Coma_state_t.principal_mt_for_module) (nm,prmt) 
-      and new_mli_mts = Associative_list.change_value_for_key (cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) 
-      and new_needed_libs = Associative_list.change_value_for_key (cs.Coma_state_t.needed_libs_for_module) (nm,libned) 
-      and new_direct_fathers = Associative_list.change_value_for_key (cs.Coma_state_t.direct_fathers_for_module) (nm,dirfath)
-      and new_ancestors = Associative_list.change_value_for_key (cs.Coma_state_t.ancestors_for_module) (nm,allanc) 
-      and new_needed_dirs = Associative_list.change_value_for_key (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) 
-      and new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
+      let new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
   to_t({ cs with 
-        (* the "module" and "subdir" fields are not changed *)
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
     
@@ -409,28 +195,8 @@ module Automatic = struct
   let reposition_in_each wrapped_cs mn1 mn2=
       let cs=of_t wrapped_cs in
       let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
-      let new_modules = Listennou.reposition_by_putting_snd_immediately_after_fst (dep_ordered_modules cs) mn1 mn2 
-      and new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
-      and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
-      and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
-      and new_principal_mts = l_rep (cs.Coma_state_t.principal_mt_for_module) 
-      and new_mli_mts = l_rep (cs.Coma_state_t.mli_mt_for_module) 
-      and new_needed_libs = l_rep (cs.Coma_state_t.needed_libs_for_module) 
-      and new_direct_fathers = l_rep (cs.Coma_state_t.direct_fathers_for_module) 
-      and new_ancestors = l_rep (cs.Coma_state_t.ancestors_for_module) 
-      and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module)
-      and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
+      let new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
   to_t({ cs with 
-        Coma_state_t.modules = new_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
   
@@ -438,75 +204,18 @@ module Automatic = struct
   let reorder wrapped_cs reordered_list_of_modules =
        let cs=of_t wrapped_cs in 
       let l_rep =(fun l->Associative_list.reorder l reordered_list_of_modules) in    
-      let new_subdirs = l_rep (cs.Coma_state_t.subdir_for_module) 
-      and new_principal_endings = l_rep (cs.Coma_state_t.principal_ending_for_module) 
-      and new_mli_presences = l_rep (cs.Coma_state_t.mli_presence_for_module) 
-      and new_principal_mts = l_rep (cs.Coma_state_t.principal_mt_for_module) 
-      and new_mli_mts = l_rep (cs.Coma_state_t.mli_mt_for_module) 
-      and new_needed_libs = l_rep (cs.Coma_state_t.needed_libs_for_module) 
-      and new_direct_fathers = l_rep (cs.Coma_state_t.direct_fathers_for_module) 
-      and new_ancestors = l_rep (cs.Coma_state_t.ancestors_for_module) 
-      and new_needed_dirs = l_rep (cs.Coma_state_t.needed_dirs_for_module) 
-      and new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
+      let new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
   to_t({ cs with 
-        Coma_state_t.modules = reordered_list_of_modules;
-        Coma_state_t.subdir_for_module=  new_subdirs;
-        Coma_state_t.principal_ending_for_module=  new_principal_endings;
-        Coma_state_t.mli_presence_for_module=  new_mli_presences;
-        Coma_state_t.principal_mt_for_module=  new_principal_mts;
-        Coma_state_t.mli_mt_for_module=  new_mli_mts;
-        Coma_state_t.needed_libs_for_module=  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module=  new_direct_fathers;
-        Coma_state_t.ancestors_for_module=  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;  
   
-  (* For debugging purposes *)
-  
-  let sizes wrapped_cs =
-      let cs=of_t wrapped_cs in
-      [ 
-        ["modules",List.length(cs.Coma_state_t.modules)];
-        ["subdirs",List.length(cs.Coma_state_t.subdir_for_module)];
-        ["pr_endings",List.length(cs.Coma_state_t.principal_ending_for_module)];
-        ["mlis",List.length(cs.Coma_state_t.mli_presence_for_module)];
-        ["mod_times",List.length(cs.Coma_state_t.principal_mt_for_module)];
-        ["mli_mod_times",List.length(cs.Coma_state_t.mli_mt_for_module)];
-        ["needed_libs",List.length(cs.Coma_state_t.needed_libs_for_module)];
-        ["fathers",List.length(cs.Coma_state_t.direct_fathers_for_module)];
-        ["ancestors",List.length(cs.Coma_state_t.ancestors_for_module)];
-        ["needed_dirs",List.length(cs.Coma_state_t.needed_dirs_for_module)];
-        ["datechecks",List.length(cs.Coma_state_t.product_up_to_date_for_module)];
-    ];;
   
   
   let push_after_module_in_each wrapped_cs pivot (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
       let nm=Dfn_endingless.to_module hm
-      and subdir=Dfn_endingless.to_subdirectory hm 
       and  cs=of_t wrapped_cs in
-      let new_modules = Listennou.push_immediately_after (dep_ordered_modules cs) nm  pivot 
-      and new_subdirs = Associative_list.push_immediately_after (cs.Coma_state_t.subdir_for_module) (nm,subdir) pivot 
-      and new_principal_endings = Associative_list.push_immediately_after (cs.Coma_state_t.principal_ending_for_module) (nm,pr_end) pivot 
-      and new_mli_presences = Associative_list.push_immediately_after (cs.Coma_state_t.mli_presence_for_module) (nm,mlip) pivot 
-      and new_principal_mts = Associative_list.push_immediately_after (cs.Coma_state_t.principal_mt_for_module) (nm,prmt) pivot 
-      and new_mli_mts = Associative_list.push_immediately_after (cs.Coma_state_t.mli_mt_for_module) (nm,mlimt) pivot 
-      and new_needed_libs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_libs_for_module) (nm,libned) pivot 
-      and new_direct_fathers = Associative_list.push_immediately_after (cs.Coma_state_t.direct_fathers_for_module) (nm,dirfath) pivot 
-      and new_ancestors = Associative_list.push_immediately_after (cs.Coma_state_t.ancestors_for_module) (nm,allanc) pivot 
-      and new_needed_dirs = Associative_list.push_immediately_after (cs.Coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
-      and new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
+      let new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
   to_t({ cs with 
-        Coma_state_t.modules = new_modules;
-        Coma_state_t.subdir_for_module =  new_subdirs;
-        Coma_state_t.principal_ending_for_module =  new_principal_endings;
-        Coma_state_t.mli_presence_for_module =  new_mli_presences;
-        Coma_state_t.principal_mt_for_module =  new_principal_mts;
-        Coma_state_t.mli_mt_for_module =  new_mli_mts;
-        Coma_state_t.needed_libs_for_module =  new_needed_libs;
-        Coma_state_t.direct_fathers_for_module =  new_direct_fathers;
-        Coma_state_t.ancestors_for_module =  new_ancestors;
-        Coma_state_t.needed_dirs_for_module = new_needed_dirs;
         Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
   });;
       
@@ -544,21 +253,7 @@ module Automatic = struct
   let salt = "Coma_"^"state_field.";;
   
   let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
-  let dir_for_backup_label                = salt ^ "dir_for_backup";;
-  let gitpush_after_backup_label          = salt ^ "gitpush_after_backup";;
-  let modules_label                       = salt ^ "modules";;
-  let subdir_for_module_label             = salt ^ "subdir_for_module";;
-  let principal_ending_for_module_label   = salt ^ "principal_ending_for_module";;
-  let mli_presence_for_module_label       = salt ^ "mli_presence_for_module";;
-  let principal_mt_for_module_label       = salt ^ "principal_mt_for_module";;
-  let mli_mt_for_module_label             = salt ^ "mli_mt_for_module";;
-  let needed_libs_for_module_label        = salt ^ "needed_libs_for_module";;
-  let direct_fathers_for_module_label     = salt ^ "direct_fathers_for_module";;
-  let ancestors_for_module_label          = salt ^ "ancestors_for_module";;
-  let needed_dirs_for_module_label        = salt ^ "needed_dirs_for_module";;
   let product_up_to_date_for_module_label = salt ^ "product_up_to_date_for_module";;
-  let directories_label                   = salt ^ "directories";;
-  let printer_equipped_types_label        = salt ^ "printer_equipped_types";;
   
   let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
   let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
@@ -568,42 +263,14 @@ module Automatic = struct
      let g=Concrete_object.get_record ccrt_obj in
      {
         Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
-        modules = Crobj_converter_combinator.to_list Dfa_module.of_concrete_object (g modules_label);
-        subdir_for_module = cr_to_pair Dfa_subdirectory.of_concrete_object (g subdir_for_module_label);
-        principal_ending_for_module = cr_to_pair Dfa_ocaml_ending.of_concrete_object (g principal_ending_for_module_label);
-        mli_presence_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g mli_presence_for_module_label);
-        principal_mt_for_module = cr_to_pair Crobj_converter.string_of_concrete_object (g principal_mt_for_module_label);
-        mli_mt_for_module = cr_to_pair Crobj_converter.string_of_concrete_object (g mli_mt_for_module_label);
-        needed_libs_for_module = cr_to_pair (Crobj_converter_combinator.to_list Ocaml_library.of_concrete_object) (g needed_libs_for_module_label);
-        direct_fathers_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
-        ancestors_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_module.of_concrete_object) (g ancestors_for_module_label); 
-        needed_dirs_for_module = cr_to_pair (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
         product_up_to_date_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g product_up_to_date_for_module_label);
-        directories = (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object)  (g directories_label);
-        printer_equipped_types = Crobj_converter_combinator.to_list 
-                                        Dfn_middle.of_concrete_object
-                                         (g printer_equipped_types_label);
      };; 
   
   let to_concrete_object cs=
      let items= 
      [
       frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
-      modules_label, Crobj_converter_combinator.of_list Dfa_module.to_concrete_object cs.Coma_state_t.modules;
-      subdir_for_module_label, cr_of_pair Dfa_subdirectory.to_concrete_object cs.Coma_state_t.subdir_for_module;
-      principal_ending_for_module_label, cr_of_pair Dfa_ocaml_ending.to_concrete_object cs.Coma_state_t.principal_ending_for_module;
-      mli_presence_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.mli_presence_for_module;  
-      principal_mt_for_module_label, cr_of_pair Crobj_converter.string_to_concrete_object cs.Coma_state_t.principal_mt_for_module;
-      mli_mt_for_module_label, cr_of_pair Crobj_converter.string_to_concrete_object  cs.Coma_state_t.mli_mt_for_module;
-      needed_libs_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Ocaml_library.to_concrete_object) cs.Coma_state_t.needed_libs_for_module; 
-      direct_fathers_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.direct_fathers_for_module;   
-      ancestors_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_module.to_concrete_object) cs.Coma_state_t.ancestors_for_module;   
-      needed_dirs_for_module_label, cr_of_pair (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object)  (cs.Coma_state_t.needed_dirs_for_module);  
-      product_up_to_date_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.product_up_to_date_for_module; 
-      directories_label,  (Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object) cs.Coma_state_t.directories; 
-      printer_equipped_types_label,  Crobj_converter_combinator.of_list 
-                                        Dfn_middle.to_concrete_object
-                                        cs.Coma_state_t.printer_equipped_types;    
+      product_up_to_date_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.product_up_to_date_for_module;    
      ]  in
      Concrete_object_t.Record items;;
   
@@ -644,19 +311,7 @@ let printer_equipped_types = Automatic.printer_equipped_types;;
 
 
 let set_frontier_with_unix_world = Automatic.set_frontier_with_unix_world;;
-let set_subdir_for_module = Automatic.set_subdir_for_module ;;
-let set_principal_ending_for_module = Automatic.set_principal_ending_for_module ;;
-let set_mli_presence_for_module = Automatic.set_mli_presence_for_module ;;
-let set_principal_mt_for_module = Automatic.set_principal_mt_for_module ;;
-let set_mli_mt_for_module = Automatic.set_mli_mt_for_module ;;
-let set_needed_libs_for_module  = Automatic.set_needed_libs_for_module ;;
-let set_direct_fathers_for_module = Automatic.set_direct_fathers_for_module ;;
-let set_ancestors_for_module = Automatic.set_ancestors_for_module ;; 
-
-let set_needed_dirs_for_module  = Automatic.set_needed_dirs_for_module ;;
 let set_product_up_to_date_for_module = Automatic.set_product_up_to_date_for_module ;;
-let set_all_subdirectories = Automatic.set_all_subdirectories;;
-let set_preq_types = Automatic.set_preq_types;;
 
 
 let dep_ordered_modules = Automatic.dep_ordered_modules;;
@@ -668,8 +323,6 @@ let change_one_module_name = Automatic.change_one_module_name ;;
 let configuration = Automatic.configuration ;;
 let empty_one = Automatic.empty_one ;;
 let impose_last_changes = Automatic.impose_last_changes ;;
-let modify_all_needed_dirs = Automatic.modify_all_needed_dirs ;;
-let modify_all_subdirs = Automatic.modify_all_subdirs ;;
 let root = Automatic.root ;;
 let set_push_after_backup = Automatic.set_push_after_backup ;;
 let to_concrete_object = Automatic.to_concrete_object ;;
@@ -759,7 +412,7 @@ let find_subdir_from_suffix cs possibly_slashed_suffix =
   let suffix = Cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
   let temp1 = List.filter (
     fun subdir -> Supstring.contains (Dfa_subdirectory.without_trailing_slash subdir) suffix
-  ) (cs.Coma_state_t.directories) in 
+  ) (all_subdirectories cs) in 
   let test_for_minimality = (fun subdir1->
      List.for_all (fun subdir2 ->
         if subdir2 = subdir1 then true else 
@@ -826,24 +479,8 @@ let get_modification_time cs mn edg=
   if edg=Dfa_ocaml_ending_t.Mli then mli_mt_for_module cs mn else 
   "0.";;
 
-exception Non_existent_mtime of Dfn_full_t.t;;
+(* exception Non_existent_mtime of Dfn_full_t.t;; *)
 
-let force_modification_time root_dir cs mlx=
-      let edg=Dfn_full.to_ending mlx in
-      let nm=Dfn_full.to_module mlx in
-      let file=Dfn_full.to_line mlx in 
-      let new_val=string_of_float((Unix.stat file).Unix.st_mtime)  in
-      let cs2=(
-        if (Dfa_ocaml_ending.of_ending edg)=principal_ending_for_module cs nm 
-        then set_principal_mt_for_module cs nm new_val
-        else cs
-      ) in
-      let cs3=(
-        if edg=Dfa_ending.mli
-        then set_mli_mt_for_module cs2 nm new_val
-        else cs2
-      ) in     
-      cs3;;
 
 
  
@@ -862,16 +499,7 @@ let unregister_modules cs elesses=
    then raise(Derelict_children(problematic_descendants))
    else
    let cs2=List.fold_left Automatic.remove_in_each_at_module cs nms in
-   let old_preqtypes = Automatic.printer_equipped_types cs2 in 
-   let new_preqtypes = List.filter (fun 
-    middle -> List.for_all (fun eless->
-       (Dfn_endingless.to_middle eless)<>middle ) elesses) old_preqtypes in
-   let cs3 = (
-     if new_preqtypes <> old_preqtypes 
-     then Automatic.set_preq_types cs2 new_preqtypes
-     else cs2
-   ) in 
-   cs3;;     
+   cs2;;     
 
 let unregister_module cs eless= unregister_modules cs [eless] ;; 
                     
@@ -880,8 +508,7 @@ exception Abandoned_children of Dfn_full_t.t * (Dfa_module_t.t list);;
                       
                      
 let partially_remove_mlx_file cs mlxfile=
-    let eless=Dfn_full.to_endingless mlxfile
-    and nm=Dfn_full.to_module mlxfile in
+    let nm=Dfn_full.to_module mlxfile in
     let pre_desc=List.filter(
       fun mn7->
       List.mem nm ( ancestors_for_module cs mn7)
@@ -894,19 +521,11 @@ let partially_remove_mlx_file cs mlxfile=
     then raise(Non_registered_file(mlxfile))
     else if check_for_single_ending_at_module cs nm
          then let cs5=Automatic.remove_in_each_at_module cs nm in 
-              let old_preqtypes = Automatic.printer_equipped_types cs5 in 
-              let new_preqtypes = List.filter (fun 
-                middle -> 
-                (Dfn_endingless.to_middle eless)<>middle 
-              ) old_preqtypes in
-              let cs6=(
-                if new_preqtypes <> old_preqtypes 
-                then Automatic.set_preq_types cs5 new_preqtypes
-                else cs5
-              ) in 
-              cs6
+              cs5
          else (* if we get here, there are two registered endings, one of which
               is the mli *) 
+              cs ;;
+              (*
               if edg=(Dfa_ocaml_ending_t.Mli)
               then (
                        let cs3=set_mli_presence_for_module cs nm false in 
@@ -918,7 +537,7 @@ let partially_remove_mlx_file cs mlxfile=
                       let cs4=set_principal_ending_for_module cs nm (Dfa_ocaml_ending_t.Mli) in 
                       set_principal_mt_for_module cs4 nm old_mt
                     );;
-            
+             *) 
 
 
 let compute_subdirectories_list cs=
@@ -1201,135 +820,6 @@ let modules_using_value cs value_name =
 
 
 
-
-let update_ancs_libs_and_dirs_at_module cs mn=
-  let eless=endingless_at_module cs mn  
-  and pr_end=principal_ending_for_module cs mn in
-  let rless=Dfn_full.to_rootless (Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end)) in 
-  let fathers=direct_fathers_for_module cs mn in
-  let separated_ancestors=Image.image 
-  (fun nm2->
-    Set_of_polys.safe_set(ancestors_for_module cs nm2)
-  ) fathers in
-  let ancestors_with_wrong_order=Set_of_polys.fold_merge((Set_of_polys.safe_set fathers)::separated_ancestors) in
-  let ordered_ancestors=List.filter (
-    fun mn->Set_of_polys.mem mn ancestors_with_wrong_order
-  ) (dep_ordered_modules cs) in
-  let new_libs=PrivateTwo.find_needed_libraries cs rless ordered_ancestors
-  and new_dirs=PrivateTwo.find_needed_directories cs rless ordered_ancestors in
-  let cs2=set_ancestors_for_module cs mn ordered_ancestors in 
-  let cs3=set_needed_libs_for_module cs2 mn new_libs in
-  set_needed_dirs_for_module cs3 mn new_dirs;;
-
-
-let update_ancs_libs_and_dirs cs=
-  let cs_walker=ref(cs) in 
-  let _=List.iter(fun mn->cs_walker:=update_ancs_libs_and_dirs_at_module (!cs_walker) mn)(dep_ordered_modules cs) in
-  (!cs_walker);;  
-
-
-module PrivateThree=struct
-
-    let message_about_circular_dependencies printer cycles= 
-      if cycles=[]
-      then ""
-      else
-      let temp1=Image.image(fun cycle->
-        let ttemp1=Image.image printer cycle in
-         String.concat " -> " ttemp1 
-      ) cycles in
-      let temp2=String.concat "\n\n" temp1 in
-      temp2;;
-    
-    exception Circular_dependencies of string;;
-    
-    let treat_circular_dependencies tolerate_cycles printer cycles=
-      if cycles=[]
-      then ()
-      else let msg=message_about_circular_dependencies printer cycles in  
-           if tolerate_cycles
-           then (print_string msg;flush stdout)     
-           else raise(Circular_dependencies(msg));; 
-           
-    let message_about_changed_modules changed_modules=
-      let temp1=Image.image Dfa_module.to_line changed_modules in
-      "\n\n"^
-      "The following modules have been directly changed :\n\n"^
-      (String.concat ", " temp1)^
-      "\n\n"
-    ;;       
-
-    let message_about_involved_modules involved_modules=
-      let temp1=Image.image Dfa_module.to_line involved_modules in
-      "\n\n"^
-      "The following modules need to be recompiled \n"^
-      "because they depend on directly changed modules :\n\n"^
-      (String.concat ", " temp1)^
-      "\n\n"
-    ;;    
-
-    let message_about_changed_noncompilables changed_noncompilables=
-      let temp1=Image.image Dfn_rootless.to_line changed_noncompilables in
-      "\n\n"^
-      "The following noncompilables have been directly changed :\n\n"^
-      (String.concat ", " temp1)^
-      "\n\n"
-    ;;    
-
-    let message_about_changed_archived_compilables changed_ac=
-    let temp1=Image.image Dfn_rootless.to_line changed_ac in
-    "\n\n"^
-    "The following archived files have been directly changed :\n\n"^
-    (String.concat ", " temp1)^
-    "\n\n"
-  ;;    
-
-    let announce_changed_modules changed_modules=
-      if changed_modules=[]
-      then ()
-      else (print_string(message_about_changed_modules changed_modules);flush stdout);;
-
-    let announce_involved_modules involved_modules=
-      if involved_modules=[]
-      then ()
-      else (print_string(message_about_involved_modules involved_modules);flush stdout);;  
-             
-    let announce_changed_noncompilables changed_noncompilables=
-      if changed_noncompilables=[]
-      then ()
-      else (print_string(message_about_changed_noncompilables changed_noncompilables);flush stdout);;
-    
-    let announce_changed_archived_compilables changed_ac=
-      if changed_ac=[]
-      then ()
-      else (print_string(message_about_changed_archived_compilables changed_ac);flush stdout);;  
-
-    let put_md_list_back_in_order tolerate_cycles 
-      cs initially_active_nms=
-      let md_list=dep_ordered_modules cs in
-      let coat=Memoized.make (fun nm->direct_fathers_for_module cs nm) in
-      let (cycles,reordered_list)=Reconstruct_linear_poset.reconstruct_linear_poset 
-         coat md_list in
-      let _=treat_circular_dependencies tolerate_cycles (
-        (fun nm->
-           let middle = Dfn_endingless.to_middle ( endingless_at_module cs nm) in 
-           Dfn_middle.to_line middle )
-      ) cycles in     
-      let cs2=Automatic.reorder cs (Image.image fst reordered_list) in    
-      let cs3=update_ancs_libs_and_dirs cs2 in 
-      let active_descendants=Option.filter_and_unpack (
-          fun nm->
-            if List.mem nm initially_active_nms
-            then Some(nm)
-            else
-            if List.exists (fun nm2->List.mem nm2 initially_active_nms) 
-                 (ancestors_for_module cs nm)
-            then Some(nm)
-            else None
-      ) (dep_ordered_modules cs) in  
-      (cs3,active_descendants);;
-     
-end;; 
      
 let md_recompute_modification_time eless edg=
   let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg) in
@@ -1365,29 +855,7 @@ let check_for_possible_change cs mn=
    )   
   ;;
   
-(*  
-let latest_changes_in_compilables cs = 
-  let ref_for_changed_modules=ref[] 
-  and ref_for_changed_shortpaths=ref[] in
-  let declare_changed=(fun nm->
-    ref_for_changed_modules:=nm::(!ref_for_changed_modules);
-    ref_for_changed_shortpaths:=((!ref_for_changed_shortpaths)@
-                        (rootless_lines_at_module cs nm))
-    ) in
-  let cs_walker=ref(cs) in   
-  let _=List.iter (fun mname->
-    match check_for_possible_change (!cs_walker) mname with
-    None->()
-    |_->
-    (
-    declare_changed(mname);
-    )
-)(dep_ordered_modules cs) in
-let changed_modules=List.rev(!ref_for_changed_modules) in
-if changed_modules=[] then [] else
-let _=PrivateThree.announce_changed_modules changed_modules in
-(!ref_for_changed_shortpaths);; 
-*)
+
 
 let latest_changes cs = 
   let fw = Automatic.frontier_with_unix_world cs in 
@@ -1454,41 +922,7 @@ let register_mlx_file_on_monitored_modules cs rless =
   let temp3=List.rev(dirfath) in
   if temp3=[]
   then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
-  else  
-  let last_father=List.hd(temp3) in
-  let nm=Dfn_rootless.to_module rless in 
-  let cs_walker=ref(cs) in 
-  let _=List.iter(
-      fun current_module ->
-      let current_anc= ancestors_for_module (!cs_walker) current_module in  
-      if not(List.mem nm current_anc)
-      then ()
-      else  
-      let current_libs= needed_libs_for_module cs current_module in
-      let new_ancestors=Option.filter_and_unpack(
-        fun nm2->
-        if (List.mem nm2 allanc)||(List.mem nm2 current_anc)
-        then Some(nm2)
-        else None
-      ) (dep_ordered_modules (!cs_walker)) 
-      and new_libs=List.filter (
-          fun lib->(List.mem lib libned)||(List.mem lib current_libs)
-      ) Ocaml_library.all_libraries in  
-      let ordered_dirs=Set_of_polys.merge
-        (Set_of_polys.safe_set(needed_dirs_for_module (!cs_walker) current_module))
-        (Set_of_polys.safe_set (dirned)) in
-      let new_dirs=Set_of_polys.forget_order(ordered_dirs) in
-      cs_walker:=set_ancestors_for_module (!cs_walker) current_module new_ancestors;
-      cs_walker:=set_needed_libs_for_module (!cs_walker) current_module new_libs;
-      cs_walker:=set_needed_dirs_for_module (!cs_walker) current_module new_dirs;
-  )(follows_it cs last_father) in 
-  let _=
-  ( 
-              cs_walker:=Automatic.remove_in_each_at_module (!cs_walker) nm;
-              cs_walker:=Automatic.push_after_module_in_each (!cs_walker) last_father new_dt;  
-  )
-  in
-  (!cs_walker);;
+  else  cs ;;
 
 module Modern = struct 
 (*
@@ -1822,13 +1256,6 @@ let usual_feydeau cs modnames = feydeau Compilation_mode_t.Usual cs (Some(modnam
 end;;  
 
 
-let add_printer_equipped_type cs mn=
-  let eless = endingless_at_module cs mn in 
-  let middle = Dfn_endingless.to_middle eless in 
-  set_preq_types cs ((printer_equipped_types cs)@[middle]);;
-
-let remove_printer_equipped_type cs mn=
-  set_preq_types cs (List.filter (fun mn2->mn2<>mn) (printer_equipped_types cs));;
 
 let uple_form cs=
   (cs,
@@ -1844,13 +1271,12 @@ let unregister_mlx_file cs mlx=
       (List.length(registered_endings_at_module cs mn)=1) in 
     let _=set_product_up_to_date_for_module cs mn false in 
     let cs2=partially_remove_mlx_file cs mlx in
-    let new_dirs=compute_subdirectories_list cs2 in
     let cs3=(if was_lonely 
            then cs2
            else ( fun (cs4,_,_)->cs4)
            (Ocaml_target_making.usual_feydeau 
              cs2 following) ) in 
-    set_all_subdirectories cs3 new_dirs;;   
+    cs3 ;;   
 
 let unregister_mlx_files cs mlxs = 
   List.fold_left unregister_mlx_file cs mlxs ;; 
@@ -1921,7 +1347,7 @@ end;;
 let register_mlx_file cs mlx=
           let (cs2,new_dirs)= 
           Register_mlx_file.on_targets (cs,all_subdirectories cs) mlx in   
-           set_all_subdirectories cs2 new_dirs;;            
+           cs2 ;;            
 
 let register_mlx_files cs mlxs = List.fold_left register_mlx_file cs mlxs;;
 
