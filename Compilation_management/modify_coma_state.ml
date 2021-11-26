@@ -6,6 +6,7 @@
 
 
 
+
 module Physical = struct 
 
    let forget_modules cs mod_names=
@@ -125,7 +126,7 @@ module Physical = struct
          ~printer:Dfa_module.to_line ~items:new_deps 
          ~separator: ", " in 
       let (cs2,rejected_pairs,accepted_pairs)=
-        Organize_batch_compilation.Ocaml_target_making.usual_feydeau cs all_deps in 
+        Organize_batch_compilation.usual_batch cs all_deps in 
       let cs_walker = ref(cs2) in 
       let memorize_last_result = (fun res mn->
          cs_walker := Coma_state.set_last_compilation_result_for_module 
@@ -139,7 +140,7 @@ module Physical = struct
       let fw = cs.Coma_state_t.frontier_with_unix_world in 
       let mods = Fw_with_dependencies.dep_ordered_modules fw in 
       let (cs2,rejected_pairs,accepted_pairs)=
-         Organize_batch_compilation.Ocaml_target_making.usual_feydeau cs mods in 
+         Organize_batch_compilation.usual_batch cs mods in 
       let cmpl_results = Image.image (
         fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
       ) mods in 
