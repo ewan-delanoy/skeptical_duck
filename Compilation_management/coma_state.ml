@@ -924,29 +924,6 @@ let register_mlx_file_on_monitored_modules cs rless =
   then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
   else  cs ;;
 
-module Command = struct 
-
-let module_separate_compilation cmod cs eless =
- Commands_for_batch_compilation.module_separate_compilation 
-   cmod (Automatic.frontier_with_unix_world cs) eless;;
-
-let predebuggable cs short_path =
-  Commands_for_batch_compilation.predebuggable 
-    (Automatic.frontier_with_unix_world cs) short_path ;; 
-
-let debuggable_or_executable cmod cs rootless_path =
-  Commands_for_batch_compilation.debuggable_or_executable
-    cmod (Automatic.frontier_with_unix_world cs) rootless_path ;; 
-
-end;;
-
-let ocamldebug_printersfile_path root= 
-           (Dfa_root.connectable_to_subpath root)^
-           (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir)) ^
-             "cmos_for_ocamldebug.txt";;
-
-
-
 
 let uple_form cs=
   (root cs,
