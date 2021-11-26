@@ -34,7 +34,7 @@ module Private = struct
                          else None) in 
       let central_cmd=
           (Compilation_mode.executioner cmod)^
-          (Private.needed_dirs_and_libs_in_command cmod fw nm)^
+          (needed_dirs_and_libs_in_command cmod fw nm)^
               " -c "^s_fhm^ending in
               let full_mli=s_fhm^".mli" in
               let almost_full_answer=(
@@ -63,7 +63,7 @@ module Private = struct
       let nm=Dfn_endingless.to_module eless in
       let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_eless=Dfn_endingless.to_line eless in
-      let dir_and_libs=Private.needed_dirs_and_libs_in_command cmod fw nm in
+      let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
       let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
       let full_mli=s_eless^".mli" in
       let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
