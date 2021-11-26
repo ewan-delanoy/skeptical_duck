@@ -13,7 +13,7 @@ module Physical = struct
          Fw_with_dependencies.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
       Coma_state.set_frontier_with_unix_world cs new_fw;;
    
-   let forget_rootless_paths cs rootless_paths=
+   let forget_nonmodular_rootlesses cs rootless_paths=
       let (new_fw,_)=Fw_with_dependencies.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
       Coma_state.set_frontier_with_unix_world cs new_fw ;;   
    
@@ -116,14 +116,6 @@ module Physical = struct
                   temp2 in
      cs;;    
    
-   
-   let forget_rootless_paths cs rootless_paths=
-      let compilable_paths = List.filter Dfn_rootless.is_compilable rootless_paths in 
-      let the_root = Coma_state.root cs in 
-      let full_paths = Image.image (Dfn_join.root_to_rootless the_root) compilable_paths in  
-      Organize_batch_compilation.unregister_mlx_files cs full_paths ;; 
-   
-   
    let modern_recompile cs changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then cs else
       let (all_deps,new_deps,changed_modules) = Coma_state.below_several cs changed_modules_in_any_order in     
@@ -204,13 +196,8 @@ module Physical = struct
    
    exception Forget_rootless_paths_exn of Dfa_module_t.t list ;;
    
-   let forget_rootless_paths cs rootless_paths= 
-     let check = Coma_state.check_rootless_path_sequence_for_forgettability cs rootless_paths in 
-     if check <> []
-     then raise(Forget_rootless_paths_exn(check))
-     else 
-     let cs2=Physical.forget_rootless_paths cs rootless_paths  in
-     Internal.forget_rootless_paths cs2 rootless_paths;;
+   let forget_nonmodular_rootlesses cs rootless_paths= 
+     Physical.forget_nonmodular_rootlesses cs rootless_paths  ;;
    
    let recompile cs = 
      let (cs2,changed_uc)=Physical.recompile cs  in 
@@ -249,9 +236,9 @@ module Physical = struct
             let _=Coma_state.Recent_changes.check_for_changes cs in 
             Physical_followed_by_internal.forget_modules cs mod_names;; 
    
-         let forget_rootless_paths cs rootless_paths=
+         let forget_nonmodular_rootlesses cs rootless_paths=
             let _=Coma_state.Recent_changes.check_for_changes cs in 
-            Physical_followed_by_internal.forget_rootless_paths cs rootless_paths;;    
+            Physical_followed_by_internal.forget_nonmodular_rootlesses cs rootless_paths;;    
    
          (* No check needed before recompiling *)
    
@@ -297,8 +284,8 @@ module Physical = struct
             let  cs2=After_checking.forget_modules cs mod_names in 
             Coma_state.reflect_latest_changes_in_github cs2 None;; 
    
-         let forget_rootless_paths cs rootless_paths=
-            let cs2=After_checking.forget_rootless_paths cs rootless_paths in 
+         let forget_nonmodular_rootlesses cs rootless_paths=
+            let cs2=After_checking.forget_nonmodular_rootlesses cs rootless_paths in 
             Coma_state.reflect_latest_changes_in_github cs2 None ;; 
    
    
@@ -348,8 +335,8 @@ module Physical = struct
             let _=Save_coma_state.save cs2 in 
             cs2;;
    
-         let forget_rootless_paths cs rootless_paths=
-            let cs2=And_backup.forget_rootless_paths cs rootless_paths in 
+         let forget_nonmodular_rootlesses cs rootless_paths=
+            let cs2=And_backup.forget_nonmodular_rootlesses cs rootless_paths in 
             let _=Save_coma_state.save cs2 in 
             cs2;;
    
@@ -404,8 +391,8 @@ module Physical = struct
             let new_cs = And_save.forget_modules (!pcs) mod_names in 
             pcs:=new_cs;;
    
-         let forget_rootless_paths pcs rootless_paths=
-            let new_cs = And_save.forget_rootless_paths (!pcs) rootless_paths in 
+         let forget_nonmodular_rootlesses pcs rootless_paths=
+            let new_cs = And_save.forget_nonmodular_rootlesses (!pcs) rootless_paths in 
             pcs:=new_cs;; 
    
          let initialize pcs =
@@ -470,7 +457,7 @@ module Physical = struct
       ) data in
       let all_paths = List.rev(!ref_for_paths) 
       and all_modules =  List.rev(!ref_for_modules) in 
-      let _=(if all_paths=[] then () else Reference.forget_rootless_paths cs_ref all_paths) in 
+      let _=(if all_paths=[] then () else Reference.forget_nonmodular_rootlesses cs_ref all_paths) in 
       let _=(if all_modules=[] then () else Reference.forget_modules cs_ref all_modules) in 
       ();;
    
