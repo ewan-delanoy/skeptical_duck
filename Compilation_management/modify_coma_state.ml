@@ -35,7 +35,7 @@ module Physical = struct
    
    let register_rootless_paths cs rps=
       let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_dependencies.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
-      let old_list_of_cmpl_results= cs.Coma_state_t.product_up_to_date_for_module in 
+      let old_list_of_cmpl_results= cs.Coma_state_t.last_compilation_result_for_module in 
      let new_list_of_cmpl_results = Image.image (
         fun mn -> 
           match List.assoc_opt mn old_list_of_cmpl_results with 
@@ -44,7 +44,7 @@ module Physical = struct
      ) (Fw_with_dependencies.dep_ordered_modules new_fw) in 
      let cs2 = { 
        Coma_state_t.frontier_with_unix_world = new_fw ;
-       product_up_to_date_for_module = new_list_of_cmpl_results
+       last_compilation_result_for_module = new_list_of_cmpl_results
      } in 
       (cs2,uc_paths) ;;
    
@@ -136,7 +136,7 @@ module Physical = struct
              Coma_state.Ocaml_target_making.usual_feydeau cs all_deps in 
       let cs_walker = ref(cs2) in 
       let memorize_last_result = (fun res mn->
-         cs_walker := Coma_state.set_product_up_to_date_for_module 
+         cs_walker := Coma_state.set_last_compilation_result_for_module 
              (!cs_walker) mn res      
       ) in        
       let _ = List.iter (fun (mn,_)->memorize_last_result false mn) rejected_pairs in 
@@ -151,7 +151,7 @@ module Physical = struct
       let cmpl_results = Image.image (
         fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
       ) mods in 
-      {cs2 with Coma_state_t.product_up_to_date_for_module = cmpl_results  };;
+      {cs2 with Coma_state_t.last_compilation_result_for_module = cmpl_results  };;
    
    
    let register_rootless_paths cs uc_paths =
@@ -163,7 +163,7 @@ module Physical = struct
      let root_dir=Coma_state.root cs in 
      let old_nm=Dfn_middle.to_module old_middle_name in 
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
-     let old_list_of_cmpl_results= cs.Coma_state_t.product_up_to_date_for_module in 
+     let old_list_of_cmpl_results= cs.Coma_state_t.last_compilation_result_for_module in 
      let new_list_of_cmpl_results = Image.image (
         fun old_pair -> 
           let (mn,cmpl_result) = old_pair in 
@@ -173,7 +173,7 @@ module Physical = struct
      ) old_list_of_cmpl_results in 
      let cs2 = Coma_state.passive_constructor new_fw in  
      let cs3 = { cs2 with 
-       Coma_state_t.product_up_to_date_for_module = new_list_of_cmpl_results
+       Coma_state_t.last_compilation_result_for_module = new_list_of_cmpl_results
      } in 
      let s_root=Dfa_root.connectable_to_subpath root_dir in   
      let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  

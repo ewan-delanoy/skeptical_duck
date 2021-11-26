@@ -66,8 +66,8 @@ module Automatic = struct
     Fw_with_dependencies.needed_dirs_for_module
     (frontier_with_unix_world cs) mn;;
   
-  let product_up_to_date_for_module cs mn=
-     try  List.assoc mn ((of_t cs).Coma_state_t.product_up_to_date_for_module) with     
+  let last_compilation_result_for_module cs mn=
+     try  List.assoc mn ((of_t cs).Coma_state_t.last_compilation_result_for_module) with     
      _ -> raise(Module_not_found(mn));;
   
   let all_subdirectories cs = 
@@ -114,11 +114,11 @@ module Automatic = struct
          old_frontier bowl  in 
        to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
   
-  let set_product_up_to_date_for_module cs mn v=
+  let set_last_compilation_result_for_module cs mn v=
       let ccs=of_t cs in 
-      let old_assocs = ccs.Coma_state_t.product_up_to_date_for_module in 
+      let old_assocs = ccs.Coma_state_t.last_compilation_result_for_module in 
       let new_assocs=Associative_list.change_value_for_key old_assocs (mn,v) in 
-      to_t({ccs with Coma_state_t.product_up_to_date_for_module=new_assocs });;
+      to_t({ccs with Coma_state_t.last_compilation_result_for_module=new_assocs });;
       
   
   
@@ -143,7 +143,7 @@ module Automatic = struct
   let empty_one config=
       to_t({
        Coma_state_t.frontier_with_unix_world= Fw_with_dependencies.empty_one config;
-       product_up_to_date_for_module = [];
+       last_compilation_result_for_module = [];
   });;
   
   
@@ -151,7 +151,7 @@ module Automatic = struct
       let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
       to_t({
        Coma_state_t.frontier_with_unix_world= fw;
-       product_up_to_date_for_module = Image.image (
+       last_compilation_result_for_module = Image.image (
                               fun mn -> (mn,false) 
                           ) modules_in_order  ;
   });;
@@ -161,16 +161,16 @@ module Automatic = struct
       (* note that printer_equipped_types are not dealt with here *)
       let cs=of_t wrapped_cs in
       let rep_pair = (old_mn,new_mn) in 
-      let new_products_up_to_date = Associative_list.change_name_for_key  cs.Coma_state_t.product_up_to_date_for_module rep_pair  in 
+      let new_products_up_to_date = Associative_list.change_name_for_key  cs.Coma_state_t.last_compilation_result_for_module rep_pair  in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
   
   let remove_in_each_at_module wrapped_cs mname=
       let cs=of_t wrapped_cs in
-      let new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.product_up_to_date_for_module mname  in 
+      let new_products_up_to_date = Associative_list.remove_key  cs.Coma_state_t.last_compilation_result_for_module mname  in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
   
   
@@ -178,16 +178,16 @@ module Automatic = struct
   let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
       let nm=Dfn_endingless.to_module hm 
       and  cs=of_t wrapped_cs in
-      let new_products_up_to_date = (cs.Coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
+      let new_products_up_to_date = (cs.Coma_state_t.last_compilation_result_for_module)@[nm,upy]  in 
   to_t({ cs with
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
   
   let set_in_each wrapped_cs nm (pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
       let cs=of_t wrapped_cs in
-      let new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.product_up_to_date_for_module (nm,upy)  in 
+      let new_products_up_to_date = Associative_list.change_value_for_key  cs.Coma_state_t.last_compilation_result_for_module (nm,upy)  in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
     
   
@@ -195,18 +195,18 @@ module Automatic = struct
   let reposition_in_each wrapped_cs mn1 mn2=
       let cs=of_t wrapped_cs in
       let l_rep=(fun l->Associative_list.reposition_by_putting_snd_immediately_after_fst l mn1 mn2 ) in 
-      let new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module in 
+      let new_products_up_to_date = l_rep cs.Coma_state_t.last_compilation_result_for_module in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
   
   
   let reorder wrapped_cs reordered_list_of_modules =
        let cs=of_t wrapped_cs in 
       let l_rep =(fun l->Associative_list.reorder l reordered_list_of_modules) in    
-      let new_products_up_to_date = l_rep cs.Coma_state_t.product_up_to_date_for_module  in 
+      let new_products_up_to_date = l_rep cs.Coma_state_t.last_compilation_result_for_module  in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;  
   
   
@@ -214,9 +214,9 @@ module Automatic = struct
   let push_after_module_in_each wrapped_cs pivot (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
       let nm=Dfn_endingless.to_module hm
       and  cs=of_t wrapped_cs in
-      let new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
+      let new_products_up_to_date = Associative_list.push_immediately_after cs.Coma_state_t.last_compilation_result_for_module (nm,upy) pivot  in 
   to_t({ cs with 
-        Coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+        Coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
   });;
       
   let endingless_at_module cs mn=
@@ -253,7 +253,7 @@ module Automatic = struct
   let salt = "Coma_"^"state_field.";;
   
   let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
-  let product_up_to_date_for_module_label = salt ^ "product_up_to_date_for_module";;
+  let last_compilation_result_for_module_label = salt ^ "last_compilation_result_for_module";;
   
   let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
   let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
@@ -263,14 +263,14 @@ module Automatic = struct
      let g=Concrete_object.get_record ccrt_obj in
      {
         Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
-        product_up_to_date_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g product_up_to_date_for_module_label);
+        last_compilation_result_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g last_compilation_result_for_module_label);
      };; 
   
   let to_concrete_object cs=
      let items= 
      [
       frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
-      product_up_to_date_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.product_up_to_date_for_module;    
+      last_compilation_result_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.last_compilation_result_for_module;    
      ]  in
      Concrete_object_t.Record items;;
   
@@ -305,13 +305,13 @@ let needed_libs_for_module  = Automatic.needed_libs_for_module ;;
 let direct_fathers_for_module = Automatic.direct_fathers_for_module ;;
 let ancestors_for_module = Automatic.ancestors_for_module ;; 
 let needed_dirs_for_module  = Automatic.needed_dirs_for_module ;;
-let product_up_to_date_for_module = Automatic.product_up_to_date_for_module ;;
+let last_compilation_result_for_module = Automatic.last_compilation_result_for_module ;;
 let all_subdirectories = Automatic.all_subdirectories;;
 let printer_equipped_types = Automatic.printer_equipped_types;;
 
 
 let set_frontier_with_unix_world = Automatic.set_frontier_with_unix_world;;
-let set_product_up_to_date_for_module = Automatic.set_product_up_to_date_for_module ;;
+let set_last_compilation_result_for_module = Automatic.set_last_compilation_result_for_module ;;
 
 
 let dep_ordered_modules = Automatic.dep_ordered_modules;;
@@ -394,7 +394,7 @@ let all_rootlesses cs =
 let up_to_date_elesses cs =
    Option.filter_and_unpack (
      fun mn->
-       if product_up_to_date_for_module cs mn
+       if last_compilation_result_for_module cs mn
        then Some(endingless_at_module cs mn)
        else None
    )(dep_ordered_modules cs);;
@@ -403,7 +403,7 @@ let preq_types_with_extra_info cs =
    let root = root cs  in 
    Image.image (fun middle->
     let mn = Dfn_middle.to_module middle in 
-    (Dfn_join.root_to_middle root middle,product_up_to_date_for_module cs mn)
+    (Dfn_join.root_to_middle root middle,last_compilation_result_for_module cs mn)
    ) (printer_equipped_types cs) ;;
 
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
@@ -843,7 +843,7 @@ let check_for_possible_change cs mn=
      then true 
     else   mli_modif_time = old_mli_modif_time
   ) in 
-  if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(product_up_to_date_for_module cs mn)
+  if no_change_for_mlis&&(pr_modif_time=old_pr_modif_time)&&(last_compilation_result_for_module cs mn)
   then None
   else
   let rless=Dfn_full.to_rootless(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_ending)) in
@@ -1131,7 +1131,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
        let (nm,eless,cmd)=triple in
        if (Unix_command.uc cmd)=0
        then 
-            let cs2=set_product_up_to_date_for_module cs nm true in 
+            let cs2=set_last_compilation_result_for_module cs nm true in 
             helper_for_feydeau cmod cs2 (rejected,(nm,eless)::treated,other_triples)
        else if (cmod<>Compilation_mode_t.Usual)
             then raise(Failed_during_compilation(triple))
@@ -1149,7 +1149,7 @@ let rec helper_for_feydeau  (cmod:Compilation_mode_t.t) cs (rejected,treated,to_
            let cs_walker=ref(cs) in 
            let _=List.iter(
               fun (nm3,hm3)->
-                cs_walker:=set_product_up_to_date_for_module (!cs_walker) nm3 false
+                cs_walker:=set_last_compilation_result_for_module (!cs_walker) nm3 false
            ) newly_rejected in 
            helper_for_feydeau cmod (!cs_walker) (rejected@newly_rejected,treated,survivors) ;;
          
@@ -1269,7 +1269,7 @@ let unregister_mlx_file cs mlx=
     let following = mn::(follows_it cs mn) in  
     let was_lonely=
       (List.length(registered_endings_at_module cs mn)=1) in 
-    let _=set_product_up_to_date_for_module cs mn false in 
+    let _=set_last_compilation_result_for_module cs mn false in 
     let cs2=partially_remove_mlx_file cs mlx in
     let cs3=(if was_lonely 
            then cs2
@@ -1656,7 +1656,7 @@ let quick_update cs (new_fw,changed_rootlesses)  mn=
   let new_values=(mli_modif_time,pr_modif_time)
   and old_values=(old_mli_modif_time,old_pr_modif_time) in
   let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(product_up_to_date_for_module cs mn)&&
+  if (old_values=new_values)&&(last_compilation_result_for_module cs mn)&&
      (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
   then None
   else

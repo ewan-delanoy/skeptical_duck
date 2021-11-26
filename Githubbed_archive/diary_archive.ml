@@ -81,7 +81,7 @@ let bad1 () =
  let root_dir=Coma_state.root old_ucs ;;
  let old_nm=Dfn_middle.to_module old_middle_name ;;
  let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) ;;
- let old_list_of_cmpl_results= old_ucs.Coma_state_t.product_up_to_date_for_module ;;
+ let old_list_of_cmpl_results= old_ucs.Coma_state_t.last_compilation_result_for_module ;;
  let new_list_of_cmpl_results = Image.image (
         fun old_pair -> 
           let (mn,cmpl_result) = old_pair in 
@@ -154,7 +154,7 @@ rep ("direct_fathers_at_module","direct_fathers_for_module")   ;;
 rep ("ancestors_at_module","ancestors_for_module")   ;;
 rep ("needed_libs_at_module","needed_libs_for_module")   ;;
 rep ("needed_dirs_at_module","needed_dirs_for_module")   ;;
-rep ("product_up_to_date_at_module","product_up_to_date_for_module")   ;;
+rep ("product_up_to_date_at_module","last_compilation_result_for_module")   ;;
 
 let fix () =
    let _ = Sys.command (

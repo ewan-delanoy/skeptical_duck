@@ -6238,7 +6238,7 @@ type t={
      direct_fathers_for_module : (Assistance_dfa_module_t.t * Assistance_dfa_module_t.t list ) list;
      ancestors_for_module : (Assistance_dfa_module_t.t * Assistance_dfa_module_t.t list ) list; 
      needed_dirs_for_module : (Assistance_dfa_module_t.t * (Assistance_dfa_subdirectory_t.t list)) list;
-     product_up_to_date_for_module : (Assistance_dfa_module_t.t * bool) list;
+     last_compilation_result_for_module : (Assistance_dfa_module_t.t * bool) list;
      directories : Assistance_dfa_subdirectory_t.t list;
      printer_equipped_types : (Assistance_dfn_endingless_t.t*bool) list;
 };;
@@ -9573,7 +9573,7 @@ let needed_dirs_at_module cs mn=
     _ -> raise(Module_not_found(mn));;
 
 let product_up_to_date_at_module cs mn=
-   try  List.assoc mn ((of_t cs).Assistance_coma_state_t.product_up_to_date_for_module) with     
+   try  List.assoc mn ((of_t cs).Assistance_coma_state_t.last_compilation_result_for_module) with     
    _ -> raise(Module_not_found(mn));;
 
 let directories cs=(of_t cs).Assistance_coma_state_t.directories;;
@@ -9679,9 +9679,9 @@ let set_needed_dirs_at_module cs mn v=
 
 let set_product_up_to_date_at_module cs mn v=
     let ccs=of_t cs in 
-    let old_assocs = ccs.Assistance_coma_state_t.product_up_to_date_for_module in 
+    let old_assocs = ccs.Assistance_coma_state_t.last_compilation_result_for_module in 
     let new_assocs=Assistance_associative_list.change_value_for_key old_assocs (mn,v) in 
-    to_t({ccs with Assistance_coma_state_t.product_up_to_date_for_module=new_assocs });;
+    to_t({ccs with Assistance_coma_state_t.last_compilation_result_for_module=new_assocs });;
     
 
 
@@ -9738,7 +9738,7 @@ let empty_one config=
      direct_fathers_for_module = [];
      ancestors_for_module = [] ; 
      needed_dirs_for_module = [];
-     product_up_to_date_for_module = [];
+     last_compilation_result_for_module = [];
      directories =[];
      printer_equipped_types =[];
 });;
@@ -9758,7 +9758,7 @@ let change_one_module_name wrapped_cs old_mn new_mn=
     and new_direct_fathers = Assistance_associative_list.change_name_for_key (cs.Assistance_coma_state_t.direct_fathers_for_module) rep_pair
     and new_ancestors = Assistance_associative_list.change_name_for_key (cs.Assistance_coma_state_t.ancestors_for_module) rep_pair
     and new_needed_dirs = Assistance_associative_list.change_name_for_key (cs.Assistance_coma_state_t.needed_dirs_for_module) rep_pair  
-    and new_products_up_to_date = Assistance_associative_list.change_name_for_key  cs.Assistance_coma_state_t.product_up_to_date_for_module rep_pair  in 
+    and new_products_up_to_date = Assistance_associative_list.change_name_for_key  cs.Assistance_coma_state_t.last_compilation_result_for_module rep_pair  in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = new_modules;
       Assistance_coma_state_t.subdir_for_module=  new_subdirs;
@@ -9770,7 +9770,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module= new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
 
 let remove_in_each_at_module wrapped_cs mname=
@@ -9785,7 +9785,7 @@ let remove_in_each_at_module wrapped_cs mname=
     and new_direct_fathers = Assistance_associative_list.remove_key (cs.Assistance_coma_state_t.direct_fathers_for_module) mname
     and new_ancestors = Assistance_associative_list.remove_key (cs.Assistance_coma_state_t.ancestors_for_module) mname
     and new_needed_dirs = Assistance_associative_list.remove_key (cs.Assistance_coma_state_t.needed_dirs_for_module) mname  
-    and new_products_up_to_date = Assistance_associative_list.remove_key  cs.Assistance_coma_state_t.product_up_to_date_for_module mname  in 
+    and new_products_up_to_date = Assistance_associative_list.remove_key  cs.Assistance_coma_state_t.last_compilation_result_for_module mname  in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = new_modules;
       Assistance_coma_state_t.subdir_for_module=  new_subdirs;
@@ -9797,7 +9797,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module= new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
 
 
@@ -9816,7 +9816,7 @@ let push_right_in_each wrapped_cs (hm,pr_end,mlip,prmt,mlimt,libned,dirfath,alla
     and new_direct_fathers = (  cs.Assistance_coma_state_t.direct_fathers_for_module) @[nm,dirfath]
     and new_ancestors = (  cs.Assistance_coma_state_t.ancestors_for_module) @[nm,allanc] 
     and new_needed_dirs = (cs.Assistance_coma_state_t.needed_dirs_for_module)@[nm,dirned] 
-    and new_products_up_to_date = (cs.Assistance_coma_state_t.product_up_to_date_for_module)@[nm,upy]  in 
+    and new_products_up_to_date = (cs.Assistance_coma_state_t.last_compilation_result_for_module)@[nm,upy]  in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = new_modules;
       Assistance_coma_state_t.subdir_for_module=  new_subdirs;
@@ -9828,7 +9828,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
 
 let set_in_each wrapped_cs nm (pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirned,upy)=
@@ -9841,7 +9841,7 @@ let set_in_each wrapped_cs nm (pr_end,mlip,prmt,mlimt,libned,dirfath,allanc,dirn
     and new_direct_fathers = Assistance_associative_list.change_value_for_key (cs.Assistance_coma_state_t.direct_fathers_for_module) (nm,dirfath)
     and new_ancestors = Assistance_associative_list.change_value_for_key (cs.Assistance_coma_state_t.ancestors_for_module) (nm,allanc) 
     and new_needed_dirs = Assistance_associative_list.change_value_for_key (cs.Assistance_coma_state_t.needed_dirs_for_module) (nm,dirned) 
-    and new_products_up_to_date = Assistance_associative_list.change_value_for_key  cs.Assistance_coma_state_t.product_up_to_date_for_module (nm,upy)  in 
+    and new_products_up_to_date = Assistance_associative_list.change_value_for_key  cs.Assistance_coma_state_t.last_compilation_result_for_module (nm,upy)  in 
 to_t({ cs with 
       (* the "module" and "subdir" fields are not changed *)
       Assistance_coma_state_t.principal_ending_for_module=  new_principal_endings;
@@ -9852,7 +9852,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
   
 
@@ -9870,7 +9870,7 @@ let reposition_in_each wrapped_cs mn1 mn2=
     and new_direct_fathers = l_rep (cs.Assistance_coma_state_t.direct_fathers_for_module) 
     and new_ancestors = l_rep (cs.Assistance_coma_state_t.ancestors_for_module) 
     and new_needed_dirs = l_rep (cs.Assistance_coma_state_t.needed_dirs_for_module)
-    and new_products_up_to_date = l_rep cs.Assistance_coma_state_t.product_up_to_date_for_module in 
+    and new_products_up_to_date = l_rep cs.Assistance_coma_state_t.last_compilation_result_for_module in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = new_modules;
       Assistance_coma_state_t.subdir_for_module=  new_subdirs;
@@ -9882,7 +9882,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
 
 
@@ -9898,7 +9898,7 @@ let reorder wrapped_cs reordered_list_of_modules =
     and new_direct_fathers = l_rep (cs.Assistance_coma_state_t.direct_fathers_for_module) 
     and new_ancestors = l_rep (cs.Assistance_coma_state_t.ancestors_for_module) 
     and new_needed_dirs = l_rep (cs.Assistance_coma_state_t.needed_dirs_for_module) 
-    and new_products_up_to_date = l_rep cs.Assistance_coma_state_t.product_up_to_date_for_module  in 
+    and new_products_up_to_date = l_rep cs.Assistance_coma_state_t.last_compilation_result_for_module  in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = reordered_list_of_modules;
       Assistance_coma_state_t.subdir_for_module=  new_subdirs;
@@ -9910,7 +9910,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;  
 
 (* For debugging purposes *)
@@ -9928,7 +9928,7 @@ let sizes wrapped_cs =
       ["fathers",List.length(cs.Assistance_coma_state_t.direct_fathers_for_module)];
       ["ancestors",List.length(cs.Assistance_coma_state_t.ancestors_for_module)];
       ["needed_dirs",List.length(cs.Assistance_coma_state_t.needed_dirs_for_module)];
-      ["datechecks",List.length(cs.Assistance_coma_state_t.product_up_to_date_for_module)];
+      ["datechecks",List.length(cs.Assistance_coma_state_t.last_compilation_result_for_module)];
   ];;
 
 
@@ -9946,7 +9946,7 @@ let push_after_module_in_each wrapped_cs pivot (hm,pr_end,mlip,prmt,mlimt,libned
     and new_direct_fathers = Assistance_associative_list.push_immediately_after (cs.Assistance_coma_state_t.direct_fathers_for_module) (nm,dirfath) pivot 
     and new_ancestors = Assistance_associative_list.push_immediately_after (cs.Assistance_coma_state_t.ancestors_for_module) (nm,allanc) pivot 
     and new_needed_dirs = Assistance_associative_list.push_immediately_after (cs.Assistance_coma_state_t.needed_dirs_for_module) (nm,dirned) pivot
-    and new_products_up_to_date = Assistance_associative_list.push_immediately_after cs.Assistance_coma_state_t.product_up_to_date_for_module (nm,upy) pivot  in 
+    and new_products_up_to_date = Assistance_associative_list.push_immediately_after cs.Assistance_coma_state_t.last_compilation_result_for_module (nm,upy) pivot  in 
 to_t({ cs with 
       Assistance_coma_state_t.modules = new_modules;
       Assistance_coma_state_t.subdir_for_module =  new_subdirs;
@@ -9958,7 +9958,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module =  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module =  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
 });;
     
 let endingless_at_module cs mn=
@@ -10002,7 +10002,7 @@ let restrict wrapped_cs smaller_list_of_modules =
     and new_direct_fathers = among_fathers  temp_direct_fathers  
     and new_ancestors = among_fathers  temp_ancestors
     and new_needed_dirs = restr (cs.Assistance_coma_state_t.needed_dirs_for_module) 
-    and new_products_up_to_date = restr cs.Assistance_coma_state_t.product_up_to_date_for_module in  
+    and new_products_up_to_date = restr cs.Assistance_coma_state_t.last_compilation_result_for_module in  
     let new_preq_types= List.filter (
         fun (eless,_)->
           let middle = Assistance_dfn_endingless.to_middle eless in 
@@ -10020,7 +10020,7 @@ to_t({ cs with
       Assistance_coma_state_t.direct_fathers_for_module=  new_direct_fathers;
       Assistance_coma_state_t.ancestors_for_module=  new_ancestors;
       Assistance_coma_state_t.needed_dirs_for_module = new_needed_dirs;
-      Assistance_coma_state_t.product_up_to_date_for_module = new_products_up_to_date;
+      Assistance_coma_state_t.last_compilation_result_for_module = new_products_up_to_date;
       Assistance_coma_state_t.directories = new_directories;
       Assistance_coma_state_t.printer_equipped_types = new_preq_types;
 });;  
@@ -10039,7 +10039,7 @@ let transplant wrapped_cs new_frontier =
            new_frontier rootless)
      ) cs.Assistance_coma_state_t.subdir_for_module 
      and new_products_up_to_date=Assistance_image.image (fun (mn,_)->(mn,false)
-     ) cs.Assistance_coma_state_t.product_up_to_date_for_module
+     ) cs.Assistance_coma_state_t.last_compilation_result_for_module
      and new_preq_types=Assistance_image.image (fun (eless,_)->(eless,false)
      ) cs.Assistance_coma_state_t.printer_equipped_types in 
      to_t({
@@ -10047,7 +10047,7 @@ let transplant wrapped_cs new_frontier =
             Assistance_coma_state_t.frontier_with_unix_world= new_frontier;
             principal_mt_for_module = new_principal_mts;
             mli_mt_for_module = new_mli_mts;
-            product_up_to_date_for_module = new_products_up_to_date;
+            last_compilation_result_for_module = new_products_up_to_date;
             printer_equipped_types = new_preq_types;
      });;
 
@@ -10068,7 +10068,7 @@ let needed_libs_for_module_label        = salt ^ "needed_libs_for_module";;
 let direct_fathers_for_module_label     = salt ^ "direct_fathers_for_module";;
 let ancestors_for_module_label          = salt ^ "ancestors_for_module";;
 let needed_dirs_for_module_label        = salt ^ "needed_dirs_for_module";;
-let product_up_to_date_for_module_label = salt ^ "product_up_to_date_for_module";;
+let last_compilation_result_for_module_label = salt ^ "last_compilation_result_for_module";;
 let directories_label                   = salt ^ "directories";;
 let printer_equipped_types_label        = salt ^ "printer_equipped_types";;
 
@@ -10089,7 +10089,7 @@ let of_concrete_object ccrt_obj =
       direct_fathers_for_module = cr_to_pair (Assistance_crobj_converter_combinator.to_list Assistance_dfa_module.of_concrete_object) (g direct_fathers_for_module_label);
       ancestors_for_module = cr_to_pair (Assistance_crobj_converter_combinator.to_list Assistance_dfa_module.of_concrete_object) (g ancestors_for_module_label); 
       needed_dirs_for_module = cr_to_pair (Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object) (g needed_dirs_for_module_label);
-      product_up_to_date_for_module = cr_to_pair Assistance_crobj_converter.bool_of_concrete_object (g product_up_to_date_for_module_label);
+      last_compilation_result_for_module = cr_to_pair Assistance_crobj_converter.bool_of_concrete_object (g last_compilation_result_for_module_label);
       directories = (Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object)  (g directories_label);
       printer_equipped_types = Assistance_crobj_converter_combinator.to_pair_list 
                                       Assistance_dfn_endingless.of_concrete_object
@@ -10110,7 +10110,7 @@ let to_concrete_object cs=
     direct_fathers_for_module_label, cr_of_pair (Assistance_crobj_converter_combinator.of_list Assistance_dfa_module.to_concrete_object) cs.Assistance_coma_state_t.direct_fathers_for_module;   
     ancestors_for_module_label, cr_of_pair (Assistance_crobj_converter_combinator.of_list Assistance_dfa_module.to_concrete_object) cs.Assistance_coma_state_t.ancestors_for_module;   
     needed_dirs_for_module_label, cr_of_pair (Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object)  (cs.Assistance_coma_state_t.needed_dirs_for_module);  
-    product_up_to_date_for_module_label, cr_of_pair Assistance_crobj_converter.bool_to_concrete_object cs.Assistance_coma_state_t.product_up_to_date_for_module; 
+    last_compilation_result_for_module_label, cr_of_pair Assistance_crobj_converter.bool_to_concrete_object cs.Assistance_coma_state_t.last_compilation_result_for_module; 
     directories_label,  (Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object) cs.Assistance_coma_state_t.directories; 
     printer_equipped_types_label,  Assistance_crobj_converter_combinator.of_pair_list 
                                       Assistance_dfn_endingless.to_concrete_object
