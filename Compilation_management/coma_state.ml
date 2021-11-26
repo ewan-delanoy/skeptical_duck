@@ -1087,7 +1087,9 @@ end;;
 
 
 let uple_form cs=
-  (cs,
+  (root cs,
+   up_to_date_elesses cs,
+   to_concrete_object cs,
    all_subdirectories cs,
    preq_types_with_extra_info cs
    );;

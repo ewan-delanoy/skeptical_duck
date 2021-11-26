@@ -73,9 +73,8 @@ module Private=struct
     
     
   
-    let save_targetfile rootless_path_for_targetfile cs=
-      let root_dir = Coma_state.root cs in 
-      let s1=Crobj_parsing.unparse(Coma_state.to_concrete_object cs) in
+    let save_targetfile rootless_path_for_targetfile root_dir crobj_form=
+      let s1=Crobj_parsing.unparse crobj_form in
       let lt=Dfn_join.root_to_rootless root_dir rootless_path_for_targetfile in
       Io.overwrite_with (Dfn_full.to_absolute_path lt) s1;;
     
@@ -88,12 +87,10 @@ module Private=struct
       rootless_path_for_printersfile
       )
       uple= 
-      let (cs,directories,printer_equipped_types)=uple in
-      let root_dir = Coma_state.root cs in  
-      let hms=Coma_state.up_to_date_elesses cs in 
+      let (root_dir,hms,crobj_form,directories,printer_equipped_types)=uple in
        (
         save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,hms);
-        save_targetfile rootless_path_for_targetfile cs;
+        save_targetfile rootless_path_for_targetfile root_dir crobj_form;
         save_printersfile (root_dir,rootless_path_for_printersfile) printer_equipped_types;
        );;
     

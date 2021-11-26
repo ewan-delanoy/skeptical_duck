@@ -202,10 +202,10 @@ module Private = struct
   
   end ;; 
   
-  let module_separate_compilation = Private.command_for_module_separate_compilation ;;
+let module_separate_compilation = Private.command_for_module_separate_compilation ;;
      
-  let predebuggable = Private.command_for_predebuggable ;; 
+let predebuggable = Private.command_for_predebuggable ;; 
      
-  let debuggable_or_executable  = Private.command_for_debuggable_or_executable ;;   
+let debuggable_or_executable  = Private.command_for_debuggable_or_executable ;;   
   
   
