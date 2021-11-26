@@ -1238,6 +1238,7 @@ let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on
 let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
+let root fw = Fw_with_small_details.root (Private.parent fw);;
 let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;

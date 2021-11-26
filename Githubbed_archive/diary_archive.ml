@@ -1,12 +1,10 @@
 (************************************************************************************************************************
-Snippet 86 : 
+Snippet 85 : 
 ************************************************************************************************************************)
-
 
 (************************************************************************************************************************
-Snippet 85 : Test the prepare_fw_with_dependencies.ml file
+Snippet 84 : Test the prepare_fw_with_dependencies.ml file
 ************************************************************************************************************************)
-
 let the_other_one = 
    Absolute_path.of_string "../Idaho/Filewatching/fw_with_dependencies.ml" ;;
  
@@ -15,9 +13,8 @@ let the_other_one =
  write_all_to_file the_other_one ;;  *)
 
 (************************************************************************************************************************
-Snippet 84 : Change a subfield in a Coma_state_t.t object
+Snippet 83 : Change a subfield in a Coma_state_t.t object
 ************************************************************************************************************************)
-
 let v0_ref = Usual_coma_state.Private.main_ref;;
 let v0 = (!v0_ref) ;;
 let v1 = v0.Coma_state_t.frontier_with_unix_world ;;
@@ -38,9 +35,8 @@ let g1 = Fw_modular.Private.full_tripartition v3 ;;
 let (a_files,_,_) = g1 ;;
 
 (************************************************************************************************************************
-Snippet 83 : Painful debugging session involving Usual_coma_state.rename_module 
+Snippet 82 : Painful debugging session involving Usual_coma_state.rename_module 
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let bad1 () =
@@ -114,7 +110,7 @@ let bad1 () =
  List.assoc_opt (Dfa_module_t.M "lexer_ml") mod_dets ;;
 
 (************************************************************************************************************************
-Snippet 82 : Typical use of marked comments
+Snippet 81 : Typical use of marked comments
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -128,7 +124,7 @@ let act2 () = Shorten_long_blank_intervals.in_file dest1 ;;
 
 
 (************************************************************************************************************************
-Snippet 81 : Replacements on several files
+Snippet 80 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -258,7 +254,7 @@ rep ("Afd_sybdirectoru.","Dfa_subdirectory.")   ;;
 
 
 (************************************************************************************************************************
-Snippet 80 : Extract a line interval from a file and treat it
+Snippet 79 : Extract a line interval from a file and treat it
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -286,7 +282,7 @@ let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
 let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
-Snippet 79 : Musings on the Vand der Waerden problem, version 22 : computing 
+Snippet 78 : Musings on the Vand der Waerden problem, version 22 : computing 
 some statement levels
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -654,7 +650,7 @@ let u1 = List.filter (fun (St(n,_,_))->n mod 9=7) (level 3) ;;
 
 
 (************************************************************************************************************************
-Snippet 78 : Musings on the Vand der Waerden problem, version 21 : add
+Snippet 77 : Musings on the Vand der Waerden problem, version 21 : add
 StatSys submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -937,7 +933,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 77 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 76 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.optimize and Statement submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1191,7 +1187,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 76 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 75 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.analyze_shadow, and start using it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1543,7 +1539,7 @@ Ordered_misc.reorder_list_of_pairs_using_list_of_singles ;;
 
 
 (************************************************************************************************************************
-Snippet 75 : Musings on the Vand der Waerden problem, version 19 : add 
+Snippet 74 : Musings on the Vand der Waerden problem, version 19 : add 
 Constraint submodule, and start testing it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1838,7 +1834,7 @@ let gg r=
 
 
 (************************************************************************************************************************
-Snippet 74 : Musings on the Vand der Waerden problem, version 18 : starting 
+Snippet 73 : Musings on the Vand der Waerden problem, version 18 : starting 
 a different approach
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2023,7 +2019,7 @@ let z5 = List.filter (fun (n,a,b)->a<>b) z4 ;;
 
 
 (************************************************************************************************************************
-Snippet 73 : Musings on the Vand der Waerden problem, version 17 : adding the
+Snippet 72 : Musings on the Vand der Waerden problem, version 17 : adding the
 I variant, and oslo_compute 33 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2777,7 +2773,7 @@ let upp l=List.filter(fun (x,(i,j))->
 *)
 
 (************************************************************************************************************************
-Snippet 72 : Musings on the Vand der Waerden problem, version 16 : adding the
+Snippet 71 : Musings on the Vand der Waerden problem, version 16 : adding the
 H variant, and oslo_compute 26 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -3483,7 +3479,7 @@ let upp l=List.filter(fun (x,(i,j))->
 
 
 (************************************************************************************************************************
-Snippet 71 : Musings on the Vand der Waerden problem, version 15 : working
+Snippet 70 : Musings on the Vand der Waerden problem, version 15 : working
 Eisenhower.determine_next_special_expansion, and oslo_compute 25 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4189,7 +4185,7 @@ let h13 = Expansion.allowed_substitution_by_in (n0-7,d0) h12;;
 
 
 (************************************************************************************************************************
-Snippet 70 : Musings on the Vand der Waerden problem, version 15 : debug 
+Snippet 69 : Musings on the Vand der Waerden problem, version 15 : debug 
 Eisenhower.determine_next_special_expansion
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4875,7 +4871,7 @@ let next_u = (n0,d0,(n1-n0,d1-d0)::treated,temp3) ;;
 
 
 (************************************************************************************************************************
-Snippet 69 : Musings on the Vand der Waerden problem, version 14 : add 
+Snippet 68 : Musings on the Vand der Waerden problem, version 14 : add 
 Current_partition_watcher.ugly_part , oslo_compute 24 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -5468,7 +5464,7 @@ let h9 = Expansion.allowed_substitution_by_in (n0-6,d0+1) h8;;
 
 
 (************************************************************************************************************************
-Snippet 68 : Musings on the Vand der Waerden problem, version 13 : add
+Snippet 67 : Musings on the Vand der Waerden problem, version 13 : add
 Current_partition_watcher.ugly_part and Marshall_plan.compute_from_scratch,
 oslo_compute 21 0 has no D or E component
 ************************************************************************************************************************)
@@ -6022,7 +6018,7 @@ let h3 = Expansion.allowed_substitution_by_in (n0-2,d0+1) h2;;
 
 
 (************************************************************************************************************************
-Snippet 67 : Musings on the Vand der Waerden problem, version 12 : painfully long
+Snippet 66 : Musings on the Vand der Waerden problem, version 12 : painfully long
 computation of oslo_compute 21 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -6880,7 +6876,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 66 : Musings on the Van der Waerden problem, version 11 : add the Expansion
+Snippet 65 : Musings on the Van der Waerden problem, version 11 : add the Expansion
 submodule and use it to avoid the D variant in the computation of
 oslo_compute 18 1, and E variant and compute up to oslo_compute 20 0
 ************************************************************************************************************************)
@@ -7486,7 +7482,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 65 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
+Snippet 64 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
 colored_variable type, and add Partition_watcher.decompose and 
 Current_partition_watcher.decompose
 ************************************************************************************************************************)
@@ -8004,7 +8000,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.write_partition_commands 18 1 ;;
 
 (************************************************************************************************************************
-Snippet 64 : Musings on the Van der Waerden problem, version 9 : add lmea and
+Snippet 63 : Musings on the Van der Waerden problem, version 9 : add lmea and
 remove D variant in the definition of the colored_variable type
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -8482,7 +8478,7 @@ let z1 = Oslo.needed_intermediaries 19 0 ;;
 let z2 = Marshall_plan.detect_missing_affinities 19 0 ;;
 
 (************************************************************************************************************************
-Snippet 63 : Musings on the Van der Waerden problem, version 8 : adding
+Snippet 62 : Musings on the Van der Waerden problem, version 8 : adding
 Marshall_plan.write_partition_commands
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -8994,7 +8990,7 @@ let z1 = Marshall_plan.write_partition_commands 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 62 : Musings on the Van der Waerden problem, version 7 : adding 
+Snippet 61 : Musings on the Van der Waerden problem, version 7 : adding 
 Colored.order{_for_pairs} and using it in Affinity.analyse_combination 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9478,7 +9474,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 (************************************************************************************************************************
-Snippet 61 : Musings on the Van der Waerden problem, version 6 : adding
+Snippet 60 : Musings on the Van der Waerden problem, version 6 : adding
 Marshall_plan.detect_missing_affinities
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9947,7 +9943,7 @@ let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 60 : Musings on the Van der Waerden problem, version 5 : adding 
+Snippet 59 : Musings on the Van der Waerden problem, version 5 : adding 
 Oslo.needed_intermediaries, and display partitions as they are made
 
 ************************************************************************************************************************)
@@ -10369,7 +10365,7 @@ oslo_compute 18 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 59 : Musings on the Van der Waerden problem, version 4 : adding 
+Snippet 58 : Musings on the Van der Waerden problem, version 4 : adding 
 the Affinity submodule and make each part in a partition inherit the affinities
 of the whole
 ************************************************************************************************************************)
@@ -10754,7 +10750,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 58 : Musings on the Van der Waerden problem, version 3 : adding
+Snippet 57 : Musings on the Van der Waerden problem, version 3 : adding
 affinities and memorize each partition made in the partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -11106,7 +11102,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 57 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
+Snippet 56 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11400,7 +11396,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 56 : Musings on the Van der Waerden problem, version 2 : adding colored variables
+Snippet 55 : Musings on the Van der Waerden problem, version 2 : adding colored variables
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11572,7 +11568,7 @@ let check3 = Colored.check_partitioning [
 
 
 (************************************************************************************************************************
-Snippet 55 : Musings on the Van der Waerden problem  
+Snippet 54 : Musings on the Van der Waerden problem  
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11699,7 +11695,7 @@ let check4 = check_correct_partitioning [
 *)
 
 (************************************************************************************************************************
-Snippet 54 : Compute summaries for levels, in a Van der Waerden context
+Snippet 53 : Compute summaries for levels, in a Van der Waerden context
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11790,7 +11786,7 @@ let result2= [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 
 
 
 (************************************************************************************************************************
-Snippet 53 : Remove all modules in a subdirectory
+Snippet 52 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11807,7 +11803,7 @@ let z3 = Image.image (
 let act () = fgs z3 ;;  
 
 (************************************************************************************************************************
-Snippet 52 : Replacing a long interval in a file with another
+Snippet 51 : Replacing a long interval in a file with another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11821,7 +11817,7 @@ let replacement = Lines_in_string.interval towards_complement 9 240 ;;
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
-Snippet 51 : Visualize Git tree
+Snippet 50 : Visualize Git tree
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11846,8 +11842,8 @@ let cmds3 = cmds1 @ cmds2 ;;
 let anse1 = Image.image Sys.command cmds3 ;;
 
 (************************************************************************************************************************
-Snippet 50 : Long debugging session on the rename_subdir functionality,
-with just one main function ("compressed" version of snippet 49)
+Snippet 49 : Long debugging session on the rename_subdir functionality,
+with just one main function ("compressed" version of snippet 48)
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11981,7 +11977,7 @@ git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add .
 *)
 
 (************************************************************************************************************************
-Snippet 49 : Long debugging session on the rename_subdir functionality
+Snippet 48 : Long debugging session on the rename_subdir functionality
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12100,7 +12096,7 @@ let backup_with_message config  diff msg=
   *)
 
 (************************************************************************************************************************
-Snippet 48 : Miscellaneous tests on compilation management
+Snippet 47 : Miscellaneous tests on compilation management
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12143,7 +12139,7 @@ reco "1";;
 fgs ["tf_one";"tf_two";"tf_three";"tf_four";"tf_five"] ;;
 
 (************************************************************************************************************************
-Snippet 47 : Extracting lines from a file and modifying them
+Snippet 46 : Extracting lines from a file and modifying them
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12180,7 +12176,7 @@ let z7 = "\n\n\n" ^(String.concat "\n" (Image.image write2 z4)) ^ "\n\n\n";;
 let z8 () = print_string z7 ;;
 
 (************************************************************************************************************************
-Snippet 46 : Get a list of value names from an interval of lines in a file
+Snippet 45 : Get a list of value names from an interval of lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12198,7 +12194,7 @@ let compute_names = Image.image (
 
 
 (************************************************************************************************************************
-Snippet 45 : Using intervals of line indices to extract values from a module
+Snippet 44 : Using intervals of line indices to extract values from a module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12319,7 +12315,7 @@ main ((1842,1874),"Try_to_register") Curcuma;;
 *)
 
 (************************************************************************************************************************
-Snippet 44 : Test the Detect_printer_declaration_in_text.detect function
+Snippet 43 : Test the Detect_printer_declaration_in_text.detect function
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12349,7 +12345,7 @@ let z7 = Image.image Dfn_endingless.to_module (Coma_state.printer_equipped_types
 let check = (z6 = z7) ;;
 
 (************************************************************************************************************************
-Snippet 43 : Old version of a Van der Waerden-related module
+Snippet 42 : Old version of a Van der Waerden-related module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12436,7 +12432,7 @@ let act1 () =
 
 
 (************************************************************************************************************************
-Snippet 42 : Remove all snippets containing a given substring (todo : integrate it
+Snippet 41 : Remove all snippets containing a given substring (todo : integrate it
 into the Manage_diary module directly)
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -12450,7 +12446,7 @@ let act1 () = Manage_diary.remove_snippets g5;;
 
 
 (************************************************************************************************************************
-Snippet 41 : Search/replace following some module refactoring
+Snippet 40 : Search/replace following some module refactoring
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12476,7 +12472,7 @@ let act1 () = List.iter
      (!list_for_reps)) (!aps);
 
 (************************************************************************************************************************
-Snippet 40 : Extracting modules in a subdirectory
+Snippet 39 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12494,7 +12490,7 @@ let u3 = Image.image (
 ) u2 ;;
 
 (************************************************************************************************************************
-Snippet 39 : Painful debugging session for Needed_values.fg
+Snippet 38 : Painful debugging session for Needed_values.fg
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12555,7 +12551,7 @@ let bad14 () = one_more_step starting_point ;;
 
 
 (************************************************************************************************************************
-Snippet 38 : Remove all "automatic" modules 
+Snippet 37 : Remove all "automatic" modules 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12585,9 +12581,8 @@ let h3 = List.iter (
 
 
 (************************************************************************************************************************
-Snippet 37 : Typical use of the Manage_diary module
+Snippet 36 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
-
 let act1 () = Manage_diary.fix_indexation ();;
 
 let act2 () = Manage_diary.remove_snippets [ (* put indices here *)];;
@@ -12598,7 +12593,7 @@ let diary_text = Io.read_whole_file ap_for_diary ;;
 let (g1,g2) =  Manage_diary.Private.read_and_parse ap_for_diary ;;
 
 (************************************************************************************************************************
-Snippet  36 : Deduce the lower measure from the usual measure (related to Vdw)
+Snippet  35 : Deduce the lower measure from the usual measure (related to Vdw)
 ************************************************************************************************************************)
 let measure n =
   if n<1 then 0 else 
@@ -12638,7 +12633,7 @@ let compute_lower_measure n =
 
 
 (************************************************************************************************************************
-Snippet  35 : Unfinished attempt for automated Crobj converters writing
+Snippet  34 : Unfinished attempt for automated Crobj converters writing
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13014,22 +13009,6 @@ let elements_in_product = Str.split (Str.regexp_string "*") comp_type2 ;;
         (Cull_string.trim_spaces (Cull_string.beginning (j-1) line),comp_type1 ) ;;
      
 *)
-
-(************************************************************************************************************************
-Snippet  34 : Add a new subdir to a Coma_state_t.t object
-************************************************************************************************************************)
-open Needed_values ;;
-
-let sd1 = Dfa_subdirectory.of_line "";;
-let sd1 = Dfa_subdirectory.of_line "Ocaml_analysis/Concrete_ocaml_types";;
-relo "concrete_ocaml_type_t" sd1 ;;
-
-let cs = (!ucs) ;;
-let old_sdirs = cs.Coma_state_t.directories ;;
-let new_sdirs = old_sdirs @ [Dfa_subdirectory_t.SD "Ocaml_analysis/Concrete_ocaml_types"] ;;
-let new_cs = {cs with Coma_state_t.directories = new_sdirs } ;;
-Save_coma_state.save new_cs ;;
-
 
 (************************************************************************************************************************
 Snippet  33 : Check and fix initial comments in files
