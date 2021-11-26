@@ -1213,7 +1213,16 @@ end ;;
    if edg=Dfa_ocaml_ending_t.Mli
    then Fw_module_small_details.mli_present (details_for_module fw mn) 
    else false;;
-
+  let modules_with_their_ancestors fw l=
+   let temp1=Option.filter_and_unpack (
+     fun (nm,_)->if List.mem nm l then Some nm else None
+     ) (Order.get fw )   in 
+   let temp2=Image.image (
+     fun nm->
+       (snd (List.assoc nm (Order.get fw)))@[nm] 
+   ) temp1 in 
+   let temp3=List.flatten temp2 in 
+   Listennou.nonredundant_version temp3;;
 end;;
 
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
@@ -1231,6 +1240,7 @@ let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Privat
 let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
                               None -> "0." |Some(fl)->fl ;;
 let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
+let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;
