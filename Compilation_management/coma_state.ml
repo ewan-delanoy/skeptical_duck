@@ -924,190 +924,19 @@ let register_mlx_file_on_monitored_modules cs rless =
   then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
   else  cs ;;
 
-module Modern = struct 
-(*
-exception Unregistered_cmi of Dfn_endingless_t.t;;
-exception Unregistered_cmo of Dfn_endingless_t.t;;
-*)
-let command_for_cmi (cmod:Compilation_mode_t.t) dir cs hm=
-    let nm=Dfn_endingless.to_module hm in
-    let s_root=Dfa_root.connectable_to_subpath(dir) in
-    let s_fhm=Dfn_endingless.to_line hm in
-    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm in
-    let ending=(if mli_reg then ".mli" else ".ml") in
-    let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
-    let opt_exec_move=(if (cmod=Compilation_mode_t.Executable)&&(not(mli_reg)) 
-                       then Some("mv "^s_fhm^".o "^s_root^workdir) 
-                       else None) in 
-    let central_cmd=
-        (Compilation_mode.executioner cmod)^
-        (needed_dirs_and_libs_in_command cmod cs nm)^
-            " -c "^s_fhm^ending in
-            let full_mli=s_fhm^".mli" in
-            let almost_full_answer=(
-            if (not mli_reg)
-               &&(Sys.file_exists(full_mli))
-            then (* 
-                   in this situation the mli file exists but is not registered.
-                   So the compilation manager must treat it as though it didn't
-                   exist. We temporarily rename it so that ocamlc will ignore it.
-                  *)
-                  let dummy_mli=s_root^"uvueaoqhkt" in
-                  [
-                   "mv "^full_mli^" "^dummy_mli;
-                   central_cmd;
-                   "mv "^s_fhm^".cm* "^s_root^workdir;
-                   "mv "^dummy_mli^" "^full_mli
-                  ] 
-            else  [
-                     central_cmd;
-                     "mv "^s_fhm^".cm* "^s_root^workdir
-                   ]
-            ) in 
-            Option.add_element_on_the_right almost_full_answer opt_exec_move;;
-   
-  let command_for_cmo (cmod:Compilation_mode_t.t) dir cs eless=
-    let nm=Dfn_endingless.to_module eless in
-    let s_root=Dfa_root.connectable_to_subpath(dir) in
-    let s_eless=Dfn_endingless.to_line eless in
-    let dir_and_libs=needed_dirs_and_libs_in_command cmod cs nm in
-    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm in 
-    let full_mli=s_eless^".mli" in
-    let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
-    let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
-                       then Some("mv "^s_eless^".o "^s_root^workdir) 
-                       else None) in 
-    let central_cmds=
-    [ 
-      (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_eless^".ml";
-      "mv "^s_eless^".cm* "^s_root^workdir
-    ] in 
-    let almost_full_answer= 
-    (if (not mli_reg) &&(Sys.file_exists(full_mli))
-    then 
-          (* 
-                   in this situation the mli file exists but is not registered.
-                   So the compilation manager must treat it as though it didn't
-                   exist. We temporarily rename it so that ocamlc will ignore it.
-          *)
-                  let dummy_mli=s_root^"uvueaoqhkt" in
-                  [
-                   "mv "^full_mli^" "^dummy_mli
-                  ]
-                  @ 
-                   central_cmds
-                  @ 
-                  [ 
-                   "mv "^dummy_mli^" "^full_mli
-                  ] 
-    else central_cmds)
-    in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+module Command = struct 
 
-exception  Unregistered_element of Dfn_endingless_t.t;;   
+let module_separate_compilation cmod cs eless =
+ Commands_for_batch_compilation.command_for_module_separate_compilation 
+   cmod (Automatic.frontier_with_unix_world cs) eless;;
 
-let command_for_module_separate_compilation cmod cs eless=
-    let dir = root cs in 
-    let nm=Dfn_endingless.to_module eless in
-    let mli_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Mli cs nm
-    and ml_reg=check_ending_in_at_module Dfa_ocaml_ending_t.Ml cs nm in
-    let temp2=(
-    let co=command_for_cmo cmod dir cs eless in 
-    if mli_reg
-    then let ci=command_for_cmi cmod dir cs eless in 
-         if ml_reg
-         then [ci;co]
-         else [ci]
-    else [co]) in 
-    List.flatten temp2;;
+let predebuggable cs short_path =
+  Commands_for_batch_compilation.command_for_predebuggable 
+    (Automatic.frontier_with_unix_world cs) short_path ;; 
 
-exception  Command_for_predebuggable_or_preexecutable_exn;;
-
-let command_for_predebuggable  cs short_path=
-    let cmod = Compilation_mode_t.Debug in 
-    let full_path=Absolute_path.of_string(
-        (Dfa_root.connectable_to_subpath(root cs))^short_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-    let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_subdirs = Image.image (
-       fun nm->
-               let subdir=subdir_for_module cs nm in 
-        (subdir,nm)
-    ) nm_deps in 
-    let s_root=Dfa_root.connectable_to_subpath(root cs) in
-    let workdir=
-      (Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) in
-    let unpointed_short_path = Cull_string.before_rightmost short_path '.' in 
-    let libs_for_prow = 
-      Set_of_polys.sort(
-      Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
-        (Image.image Dfa_module.to_line nm_direct_deps)) in 
-    let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.sort(needed_libs_for_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-    let extension=".cma" in
-    let libs=String.concat(" ")
-      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-    Option.add_element_on_the_right   
-    [ 
-      (Compilation_mode.executioner cmod)^
-      " -I "^s_root^workdir^" "^
-      libs^" -c "^s_root^unpointed_short_path^".ml";
-    ] 
-    (Unix_command.mv (s_root^unpointed_short_path^".cm*") (s_root^workdir) )
-    ;;          
-
-
-
-
-exception  Command_for_debuggable_or_executable_exn;;
-
-let command_for_debuggable_or_executable cmod cs rootless_path=
-    if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
-    let full_path=Absolute_path.of_string(
-        (Dfa_root.connectable_to_subpath (root cs))^rootless_path) in 
-    let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-    let nm_deps =modules_with_their_ancestors cs nm_direct_deps in 
-    let nm_deps_with_subdirs = Image.image (
-       fun nm->let subdir=subdir_for_module cs nm in 
-        (subdir,nm)
-    ) nm_deps in 
-    let s_root=Dfa_root.connectable_to_subpath(root cs) in
-    let workdir=
-      (Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod)) 
-    and ending=Compilation_mode.ending_for_nonlast_module cmod 
-    and last_ending=Compilation_mode.ending_for_last_module cmod 
-    and product_ending=Compilation_mode.ending_for_final_product cmod  in
-    let cm_elements_but_the_last = Image.image (
-      fun (subdir,nm)->(Dfa_module.to_line nm)^ending
-    ) nm_deps_with_subdirs in 
-    let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
-    let nm_name = (Cull_string.after_rightmost unpointed_short_path '/') in 
-    let last_cm_element=nm_name^last_ending in 
-    let all_cm_elements= cm_elements_but_the_last @ [last_cm_element] in 
-    let libs_for_prow = 
-      Set_of_polys.sort(
-      Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
-        (Image.image Dfa_module.to_line nm_direct_deps)) in 
-    let pre_libs1=Image.image 
-     (fun (_,nm) -> Set_of_polys.sort(needed_libs_for_module cs nm)) nm_deps_with_subdirs in
-    let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-    let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
-    let libs=String.concat(" ")
-      (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-    Option.add_element_on_the_right  
-    [ 
-      ((Compilation_mode.executioner cmod)^
-       " -I "^s_root^workdir^" "^
-       libs^" -o "^nm_name^product_ending^
-        (String.concat " " all_cm_elements));
-    ]
-    (
-      Unix_command.mv ((Sys.getcwd())^"/"^nm_name^product_ending) (s_root^workdir)
-    )
-    ;;          
-
-
-
+let debuggable_or_executable cmod cs rootless_path =
+  Commands_for_batch_compilation.command_for_debuggable_or_executable
+    cmod (Automatic.frontier_with_unix_world cs) rootless_path ;; 
 
 end;;
 
@@ -1191,7 +1020,7 @@ let list_of_commands_for_shaft_part_of_feydeau cmod cs (opt_modulenames,opt_root
    let l=dependencies_inside_shaft cmod cs (opt_modulenames,opt_rootless_path) in 
    let temp1=Image.image (fun mn->
      let eless=endingless_at_module cs mn in 
-     let cmds=Modern.command_for_module_separate_compilation cmod cs eless in 
+     let cmds=Command.module_separate_compilation cmod cs eless in 
     Image.image (fun cmd->(mn,endingless_at_module cs mn,cmd) ) cmds ) l in 
     List.flatten temp1;;
 
@@ -1204,7 +1033,7 @@ let list_of_commands_for_connecting_part_of_feydeau cmod cs (_,opt_rootless_path
    |Compilation_mode_t.Executable ->[] 
    |_->
       let rootless_path=Option.unpack opt_rootless_path in 
-      Modern.command_for_predebuggable cs rootless_path) in 
+      Command.predebuggable cs rootless_path) in 
    cmds;;
 
 
@@ -1214,7 +1043,7 @@ let list_of_commands_for_end_part_of_feydeau cmod cs (_,opt_rootless_path)=
    Compilation_mode_t.Usual->[] 
    |_->
       let rootless_path=Option.unpack opt_rootless_path in 
-      Modern.command_for_debuggable_or_executable cmod cs rootless_path) in 
+      Command.debuggable_or_executable cmod cs rootless_path) in 
    cmds;;   
 
 let list_of_commands_for_ternary_feydeau cmod cs short_path=

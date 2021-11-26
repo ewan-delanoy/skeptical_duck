@@ -5,21 +5,6 @@
 *)
 
 
-let check_ending_in_at_module = Coma_state.check_ending_in_at_module ;;
-let modules_with_their_ancestors = Coma_state.modules_with_their_ancestors;;
-let needed_libs_for_module = Coma_state.needed_libs_for_module;;
-let root = Coma_state.root ;;
-let subdir_for_module = Coma_state.subdir_for_module ;; 
-
-(
-  Fw_with_dependencies.check_ending_on_module, 
-  Fw_with_dependencies.modules_with_their_ancestors, 
-  Fw_with_dependencies.needed_libs_for_module,
-  Fw_with_dependencies.root,
-  Fw_with_dependencies.subdir_for_module
-);;
-
-
 module Private = struct
 
 let needed_dirs_and_libs_in_command cmod fw mn=
