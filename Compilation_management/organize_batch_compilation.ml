@@ -5,6 +5,9 @@
 *)
 
 
+module Private = struct 
+
+  
 let ocamldebug_printersfile_path root= 
            (Dfa_root.connectable_to_subpath root)^
            (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir)) ^
@@ -167,84 +170,7 @@ let usual_feydeau cs modnames = feydeau Compilation_mode_t.Usual cs (Some(modnam
 end;;  
 
 
-let unregister_mlx_file cs mlx=
-    let mn=Dfn_full.to_module mlx in 
-    let following = mn::(Coma_state.follows_it cs mn) in  
-    let was_lonely=
-      (List.length(Coma_state.registered_endings_at_module cs mn)=1) in 
-    let _=Coma_state.set_last_compilation_result_for_module cs mn false in 
-    let cs2=Coma_state.partially_remove_mlx_file cs mlx in
-    let cs3=(if was_lonely 
-           then cs2
-           else ( fun (cs4,_,_)->cs4)
-           (Ocaml_target_making.usual_feydeau 
-             cs2 following) ) in 
-    cs3 ;;   
 
-
-let unregister_mlx_files cs mlxs = 
-  List.fold_left unregister_mlx_file cs mlxs ;; 
-
-   
-
-module Try_to_register=struct
-
-  let mlx_file cs mlx_file=
-    try(Some(Coma_state.register_mlx_file_on_monitored_modules 
-        cs mlx_file)) with _->None;;  
-
-module Private=struct
-
-exception Pusher_exn;;
-
-let pusher  (cs,failures,yet_untreated)=
-     match yet_untreated with
-      []->raise(Pusher_exn)
-      |mlx::others->
-      (
-        match mlx_file cs mlx with
-        None->(cs,mlx::failures,others)
-        |Some(nfs)->(nfs,failures,others)
-      );; 
-
-let rec iterator x=
-   let (cs,failures,yet_untreated)=x in
-   match yet_untreated with
-      []->(failures,cs)
-      |mlx::others->iterator(pusher x);;   
-
-end;;
-
-let mlx_files cs mlx_files=
-   Private.iterator(cs,[],mlx_files);;
- 
-
-end;;  
-
-
-
-module Register_mlx_file=struct
-
-let on_targets (cs,old_dirs) rless=
-    let new_dir=Dfn_rootless.to_subdirectory rless in
-   let cs2= Coma_state.register_mlx_file_on_monitored_modules cs rless in
-   let new_dirs=
-   (if List.mem new_dir old_dirs then old_dirs else old_dirs@[new_dir] )
-    in
-    let nm=Dfn_rootless.to_module rless in 
-    let (cs3,_,_)=Ocaml_target_making.usual_feydeau cs2 [nm] in 
-    (cs3,new_dirs);; 
-  
-
-end;;  
-
-
-let register_mlx_file cs mlx=
-          let (cs2,new_dirs)= 
-          Register_mlx_file.on_targets (cs,Coma_state.all_subdirectories cs) mlx in   
-           cs2 ;;            
-
-let register_mlx_files cs mlxs = List.fold_left register_mlx_file cs mlxs;;
 
 let clean_debug_dir cs=
   let s_root=Dfa_root.connectable_to_subpath(Coma_state.root cs) in
@@ -287,4 +213,16 @@ let start_executing cs short_path=
   let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau 
     Compilation_mode_t.Executable cs short_path in 
   Unix_command.conditional_multiple_uc cmds;;   
+
+end ;;
+
+let clean_debug_dir = Private.clean_debug_dir;;
+let clean_exec_dir = Private.clean_exec_dir;;
+let start_debugging = Private.start_debugging;;
+let start_executing = Private.start_executing ;;
+
+let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
+
+
+
 
