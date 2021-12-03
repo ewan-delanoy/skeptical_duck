@@ -285,6 +285,8 @@ let get_mtime_or_zero_if_file_is_nonregistered = Private.get_mtime_or_zero_if_fi
 
 let inspect_and_update = Private.inspect_and_update ;;
 
+let last_noticed_changes = Private.last_noticed_changes ;;
+
 let noncompilable_files = Private.noncompilable_files ;;
 
 let of_concrete_object = Private.of_concrete_object ;;
@@ -312,6 +314,8 @@ let rename_module_on_filename_level_and_in_files = Private.rename_module_on_file
 let replace_string = Private.replace_string;;
 
 let replace_value = Private.replace_value;;
+
+let root = Private.root ;; 
 
 let set_gitpush_after_backup = Private.set_gitpush_after_backup ;; 
 
