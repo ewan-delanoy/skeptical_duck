@@ -14,7 +14,7 @@ module Private = struct
    let get_content fw rl = File_watcher.get_content (parent fw) rl ;;
    let get_mtime fw rl = File_watcher.get_mtime (parent fw) rl ;;
    let get_mtime_or_zero_if_file_is_nonregistered fw rl = File_watcher.get_mtime_or_zero_if_file_is_nonregistered (parent fw) rl ;;
-   let last_noticed_changes = File_watcher.last_noticed_changes ;;
+   let last_noticed_changes fw = File_watcher.last_noticed_changes (parent fw);;
    let root fw = File_watcher.root (parent fw) ;;
    let update_parent fw new_parent = {fw with Fw_with_archives_t.parent = new_parent} ;;
    let watched_files fw = File_watcher.watched_files (parent fw) ;;
@@ -29,9 +29,9 @@ module Private = struct
          subdirs_for_archived_mlx_files = subdirs;
 
       };; 
-   let empty_one config = File_watcher.empty_one config ;;
-   let of_configuration config = File_watcher.of_configuration config ;;
-   let of_configuration_and_list config l = File_watcher.of_configuration_and_list config l;;
+   let empty_one config = constructor(File_watcher.empty_one config) None ;;
+   let of_configuration config = constructor(File_watcher.of_configuration config) None ;;
+   let of_configuration_and_list config l = constructor (File_watcher.of_configuration_and_list config l) None;;
    let overwrite_file_if_it_exists fw rl new_content = 
       let old_parent = parent fw in 
       let (new_parent,file_exists) = File_watcher.overwrite_file_if_it_exists old_parent rl new_content in 

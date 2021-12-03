@@ -851,8 +851,9 @@ let latest_changes cs =
   let fw = Automatic.frontier_with_unix_world cs in 
   let par1 = fw.Fw_with_dependencies_t.parent in 
   let par2 = par1.Fw_with_small_details_t.parent in 
-  let (_,changed_files) = File_watcher.inspect_and_update ~verbose:false par2 in 
-  let (a_files,u_files,nc_files) = Fw_modular.partition_for_singles par2 changed_files in 
+  let par3 = par2.Fw_with_archives_t.parent in 
+  let (_,changed_files) = File_watcher.inspect_and_update ~verbose:false par3 in 
+  let (a_files,u_files,nc_files) = Fw_with_archives.partition_for_singles par2 changed_files in 
   let im = Image.image Dfn_rootless.to_line in 
   (im a_files,im u_files,im nc_files);;
 

@@ -7,6 +7,6 @@ Stores the small details for archived or usual files (not the noncompilables).
 *)
 
 type t ={
-  parent : File_watcher_t.t ;
+  parent : Fw_with_archives_t.t ;
   small_details_in_files : (Dfn_rootless_t.t * Fw_file_small_details_t.t) list;
 };;
