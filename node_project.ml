@@ -32,7 +32,6 @@ let config =
      compact_replacer,
    Dfn_rootless_t.J (Dfa_subdirectory_t.SD "models", Dfa_module_t.M "mysql_connection",
        Dfa_ending_t.E "js")];
-    subdirs_for_archived_mlx_files = [];    
    } ;;
 
 let watcher_ref = ref (File_watcher.empty_one config);;

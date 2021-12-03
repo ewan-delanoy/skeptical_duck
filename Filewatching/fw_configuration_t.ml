@@ -17,5 +17,4 @@ type t ={
   ignored_files : Dfn_rootless_t.t list;
   github_url : string;
   encoding_protected_files : ( Dfn_rootless_t.t * Dfn_rootless_t.t) list;
-  subdirs_for_archived_mlx_files : Dfa_subdirectory_t.t list ; 
 };;

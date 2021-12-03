@@ -497,11 +497,6 @@ let apply_text_transformation_on_some_files = Private.apply_text_transformation_
 
 let configuration = Automatic.configuration ;;
 
-let dummy = {
-   File_watcher_t.configuration = Fw_configuration.dummy ;
-   watched_files = [];
-   last_noticed_changes = Dircopy_diff.empty_one;
-};; 
 
 let empty_one config= {
    File_watcher_t.configuration = config;
