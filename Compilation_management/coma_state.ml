@@ -1220,37 +1220,6 @@ module Recent_changes = struct
 
 end;;    
 
-module Late_Recompilation = struct 
-
-let quick_update cs (new_fw,changed_rootlesses)  mn=
-  let eless =endingless_at_module cs mn 
-  and pr_ending=principal_ending_for_module cs mn in
-  let ocaml_pr_ending=Dfa_ocaml_ending.to_ending pr_ending in 
-  let middle = Dfn_endingless.to_middle eless in 
-  let mli_modif_time=Fw_with_dependencies.get_mtime_or_zero_if_file_is_nonregistered new_fw (Dfn_join.middle_to_ending middle Dfa_ending.mli) 
-  and pr_modif_time=Fw_with_dependencies.get_mtime new_fw (Dfn_join.middle_to_ending middle ocaml_pr_ending)  
-  and old_mli_modif_time=mli_mt_for_module cs mn
-  and old_pr_modif_time=principal_mt_for_module cs mn 
-  in
-  let new_values=(mli_modif_time,pr_modif_time)
-  and old_values=(old_mli_modif_time,old_pr_modif_time) in
-  let mn = Dfn_endingless.to_module eless in 
-  if (old_values=new_values)&&(last_compilation_result_for_module cs mn)&&
-     (List.for_all (fun rl->(Dfn_rootless.to_middle rl)<>middle ) changed_rootlesses)  
-  then None
-  else
-  let mlx=Dfn_join.middle_to_ending middle ocaml_pr_ending in
-  let direct_fathers=find_needed_data cs mlx in
-  Some(
-    pr_modif_time,
-    mli_modif_time,
-    direct_fathers
-   )   
-  ;;
-
-
-end ;;
-
 let test_for_foreign root ap =
    match (
      try Some(Dfn_common.decompose_absolute_path_using_root ap root) with 
