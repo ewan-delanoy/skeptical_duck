@@ -217,6 +217,8 @@ let compute_all_small_details = Private.compute_all_small_details ;;
 
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
 
+let configuration = Private.configuration ;;
+
 let constructor = Private.constructor ;;
 
 let forget_modules = Private.forget_modules ;;
@@ -240,4 +242,6 @@ let replace_value = Private.replace_value;;
 let to_concrete_object = Private.to_concrete_object ;;
 
 let usual_compilable_files = Private.usual_compilable_files ;;
+
+let watched_files = Private.watched_files ;;
 
