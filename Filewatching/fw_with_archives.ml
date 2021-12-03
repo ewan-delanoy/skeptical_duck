@@ -203,11 +203,21 @@ module Private = struct
       ]  in
       Concrete_object_t.Record items;;   
 
+   let constructor par opt_subdirs= 
+      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.githubbed_archive_subdir]) in    
+      {
+         Fw_with_archives_t.parent = par;
+         subdirs_for_archived_mlx_files = subdirs;
+
+      };; 
+
 end ;;
 
 let compute_all_small_details = Private.compute_all_small_details ;;
 
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
+
+let constructor = Private.constructor ;;
 
 let forget_modules = Private.forget_modules ;;
 
