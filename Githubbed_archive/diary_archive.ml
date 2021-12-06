@@ -1,6 +1,42 @@
 (************************************************************************************************************************
-Snippet 86 : 
+Snippet 87 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 86 : Write repetitive code for PARI-GP
+************************************************************************************************************************)
+
+let s_ap = home^
+"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp" ;;
+
+let ap = Absolute_path.of_string s_ap ;;
+
+let gtext t1 t2 = 
+  String.concat "\n"
+  ["c_fa="^(string_of_int t1); 
+   "c_t1="^(string_of_int t2); 
+   "c_for_t2=big_subst(for_t2,[t1,fa],[c_t1,c_fa])";
+ "interm=subst(part3_for_t3,t1,c_t1)";
+ "c_for_t3=factor(polresultant(interm,c_for_t2,t2))[2,1]";
+ "around_t2=make_zero(special_euclid(interm,c_for_t2,t2,c_for_t3,t3),t2)";
+ "listput(accu,[[c_fa,c_t1],around_t2])";
+ "printf(Str(c_fa,\",\"c_t1,\" done\\n\"))"] ;;
+
+let u1 = Cartesian.product (Ennig.ennig 11 50) (Ennig.ennig 101 140) ;;
+let u2 = Image.image (fun (t1,t2)->gtext t1 t2) u1 ;; 
+let u3 = String.concat "\n\n\n" u2 ;;
+
+Io.Private.append_string_to_file u3 ap;;
+
+(*
+
+let z1 = home^
+"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn1.gp" ;;
+
+let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
+
+*)
 
 (************************************************************************************************************************
 Snippet 85 : A useful shortcut using Lines_in_string.remove_interval_in_file 
