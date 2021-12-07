@@ -1,12 +1,28 @@
 (************************************************************************************************************************
-Snippet 87 : 
+Snippet 83 : Rename scanned files
 ************************************************************************************************************************)
+open Needed_values ;;
 
+let ap1 = Absolute_path.of_string (home^"/Downloads/Building_site/");;
+let s_ap1 = Absolute_path.to_string ap1 ;;
+let u2 = More_unix.beheaded_simple_ls (Directory_name.of_string s_ap1) ;;
+let u3 = Image.image (fun s->(int_of_string(Cull_string.interval s 8 14),s)) u2 ;;
+let (Set_of_poly_pairs_t.S u4) = Set_of_poly_pairs.safe_set u3 ;;
+let u5 = Ennig.index_everything (Image.image fst u4) ;;
+let u6 = Image.image (
+  fun (k,old_k)->
+    let sk = string_of_int k 
+     and sok = string_of_int old_k in 
+  "mv "^s_ap1^"korres\\ "^sok^".jpg "^s_ap1^"p"^sk^".jpg"
+) u5 ;; 
+let u7 = Image.image Sys.command u6 ;;
+
+Coherent_pdf.workspace_directory := s_ap1 ;;
+Coherent_pdf.implode ("p","") ;;
 
 (************************************************************************************************************************
-Snippet 86 : Write repetitive code for PARI-GP
+Snippet 82 : Write repetitive code for PARI-GP
 ************************************************************************************************************************)
-
 let s_ap = home^
 "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp" ;;
 
@@ -39,15 +55,14 @@ let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
 *)
 
 (************************************************************************************************************************
-Snippet 85 : A useful shortcut using Lines_in_string.remove_interval_in_file 
+Snippet 81 : A useful shortcut using Lines_in_string.remove_interval_in_file 
 ************************************************************************************************************************)
-
 let ri fn x y =
      Lines_in_string.remove_interval_in_file 
       (Absolute_path.of_string fn) x y ;;
 
 (************************************************************************************************************************
-Snippet 84 : Test the prepare_fw_with_dependencies.ml file
+Snippet 80 : Test the prepare_fw_with_dependencies.ml file
 ************************************************************************************************************************)
 let the_other_one = 
    Absolute_path.of_string "../Idaho/Filewatching/fw_with_dependencies.ml" ;;
@@ -57,104 +72,7 @@ let the_other_one =
  write_all_to_file the_other_one ;;  *)
 
 (************************************************************************************************************************
-Snippet 83 : Change a subfield in a Coma_state_t.t object
-************************************************************************************************************************)
-let v0_ref = Usual_coma_state.Private.main_ref;;
-let v0 = (!v0_ref) ;;
-let v1 = v0.Coma_state_t.frontier_with_unix_world ;;
-let v2 = v1.Fw_with_dependencies_t.parent ;;
-let v3 = v2.Fw_with_small_details_t.parent ;;
-let old_config = File_watcher.configuration v3 ;;
-
-let new_config = {old_config with 
-Fw_configuration_t.subdirs_for_archived_mlx_files = [Dfa_subdirectory_t.SD "Githubbed_archive"]
-} ;;
-let w3 = {v3 with File_watcher_t.configuration = new_config} ;;
-let w2 = {v2 with Fw_with_small_details_t.parent = w3} ;;
-let w1 = {v1 with Fw_with_dependencies_t.parent = w2} ;;
-let w0 = {v0 with Coma_state_t.frontier_with_unix_world = w1} ;;
-v0_ref:=w0 ;;
-
-let g1 = Fw_modular.Private.full_tripartition v3 ;;
-let (a_files,_,_) = g1 ;;
-
-(************************************************************************************************************************
-Snippet 82 : Painful debugging session involving Usual_coma_state.rename_module 
-************************************************************************************************************************)
-open Needed_values ;;
-
-let bad1 () =
-   Needed_values.ren "lexer_ml" "rexel_ml" ;;
- 
- let old_name = "lexer_ml" ;;
- let new_name = "rexel_ml" ;;
- 
- let bad2 () = Usual_coma_state.rename_module 
-     old_name new_name ;;
- 
- let ucs_ref = Usual_coma_state.Private.main_ref ;;
- 
- let bad3 () =
-    Modify_coma_state.Syntactic_sugar.rename_module 
-    ucs_ref old_name new_name;;
- 
- let mn = Dfa_module.of_line(String.uncapitalize_ascii old_name) ;;
- let old_eless = Coma_state.endingless_at_module (!ucs_ref) mn ;;
- let old_middle_name = Dfn_endingless.to_middle old_eless ;;  
- let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) ;;
- 
- let bad4 () =
-   Modify_coma_state.Reference.rename_module ucs_ref old_middle_name new_nonslashed_name;; 
- 
- let old_ucs = (!ucs_ref) ;;
- 
- let bad5 () =
-   Modify_coma_state.Physical_followed_by_internal.rename_module old_ucs old_middle_name new_nonslashed_name;; 
- 
- let (new_fw,changes)=Modify_coma_state.Physical.rename_module old_ucs old_middle_name new_nonslashed_name ;;
- 
- module Inte = Modify_coma_state.Internal ;;
- 
- let bad6 () =
-   Inte.rename_module old_ucs old_middle_name new_nonslashed_name (new_fw,changes);;
- 
- let root_dir=Coma_state.root old_ucs ;;
- let old_nm=Dfn_middle.to_module old_middle_name ;;
- let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) ;;
- let old_list_of_cmpl_results= old_ucs.Coma_state_t.last_compilation_result_for_module ;;
- let new_list_of_cmpl_results = Image.image (
-        fun old_pair -> 
-          let (mn,cmpl_result) = old_pair in 
-          if mn = old_nm 
-          then (new_nm,false)
-          else old_pair    
-     ) old_list_of_cmpl_results ;;
- let bad7 () = Coma_state.passive_constructor new_fw ;;
- 
- let modules_in_order = Fw_with_dependencies.dep_ordered_modules new_fw ;;
- let bad8 () = Image.image (
-     fun mn -> (mn,Fw_with_dependencies.subdir_for_module new_fw mn) 
-   ) modules_in_order ;;
- 
- let bad9 () = Tools_for_debugging.extract_from_list (
-     fun mn -> (mn,Fw_with_dependencies.subdir_for_module new_fw mn) 
-   ) modules_in_order ;;
- 
- let ugly_duck = Dfa_module_t.M "rexel_ml" ;;
- 
- let bad_fox = new_fw.Fw_with_dependencies_t.parent;;
- let bad_fowl = bad_fox.Fw_with_small_details_t.parent ;;
- let w_files = bad_fowl.File_watcher_t.watched_files ;;
- let check_w_files = List.filter (
-    fun (rl,_)->(Dfn_rootless.to_module rl) = ugly_duck
- ) w_files ;;
- 
- let mod_dets = Fw_with_dependencies.Private.Modularized_details.get new_fw;;
- let check_mod_dets = List.assoc_opt ugly_duck mod_dets ;;
- List.assoc_opt (Dfa_module_t.M "lexer_ml") mod_dets ;;
-
-(************************************************************************************************************************
-Snippet 81 : Typical use of marked comments
+Snippet 79 : Typical use of marked comments
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -168,7 +86,7 @@ let act2 () = Shorten_long_blank_intervals.in_file dest1 ;;
 
 
 (************************************************************************************************************************
-Snippet 80 : Replacements on several files
+Snippet 78 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -298,7 +216,7 @@ rep ("Afd_sybdirectoru.","Dfa_subdirectory.")   ;;
 
 
 (************************************************************************************************************************
-Snippet 79 : Extract a line interval from a file and treat it
+Snippet 77 : Extract a line interval from a file and treat it
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -326,7 +244,7 @@ let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
 let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
-Snippet 78 : Musings on the Vand der Waerden problem, version 22 : computing 
+Snippet 76 : Musings on the Vand der Waerden problem, version 22 : computing 
 some statement levels
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -694,7 +612,7 @@ let u1 = List.filter (fun (St(n,_,_))->n mod 9=7) (level 3) ;;
 
 
 (************************************************************************************************************************
-Snippet 77 : Musings on the Vand der Waerden problem, version 21 : add
+Snippet 75 : Musings on the Vand der Waerden problem, version 21 : add
 StatSys submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -977,7 +895,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 76 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 74 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.optimize and Statement submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1231,7 +1149,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 75 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 73 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.analyze_shadow, and start using it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1583,7 +1501,7 @@ Ordered_misc.reorder_list_of_pairs_using_list_of_singles ;;
 
 
 (************************************************************************************************************************
-Snippet 74 : Musings on the Vand der Waerden problem, version 19 : add 
+Snippet 72 : Musings on the Vand der Waerden problem, version 19 : add 
 Constraint submodule, and start testing it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1878,7 +1796,7 @@ let gg r=
 
 
 (************************************************************************************************************************
-Snippet 73 : Musings on the Vand der Waerden problem, version 18 : starting 
+Snippet 71 : Musings on the Vand der Waerden problem, version 18 : starting 
 a different approach
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2063,7 +1981,7 @@ let z5 = List.filter (fun (n,a,b)->a<>b) z4 ;;
 
 
 (************************************************************************************************************************
-Snippet 72 : Musings on the Vand der Waerden problem, version 17 : adding the
+Snippet 70 : Musings on the Vand der Waerden problem, version 17 : adding the
 I variant, and oslo_compute 33 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2817,7 +2735,7 @@ let upp l=List.filter(fun (x,(i,j))->
 *)
 
 (************************************************************************************************************************
-Snippet 71 : Musings on the Vand der Waerden problem, version 16 : adding the
+Snippet 69 : Musings on the Vand der Waerden problem, version 16 : adding the
 H variant, and oslo_compute 26 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -3523,7 +3441,7 @@ let upp l=List.filter(fun (x,(i,j))->
 
 
 (************************************************************************************************************************
-Snippet 70 : Musings on the Vand der Waerden problem, version 15 : working
+Snippet 68 : Musings on the Vand der Waerden problem, version 15 : working
 Eisenhower.determine_next_special_expansion, and oslo_compute 25 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4229,7 +4147,7 @@ let h13 = Expansion.allowed_substitution_by_in (n0-7,d0) h12;;
 
 
 (************************************************************************************************************************
-Snippet 69 : Musings on the Vand der Waerden problem, version 15 : debug 
+Snippet 67 : Musings on the Vand der Waerden problem, version 15 : debug 
 Eisenhower.determine_next_special_expansion
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4915,7 +4833,7 @@ let next_u = (n0,d0,(n1-n0,d1-d0)::treated,temp3) ;;
 
 
 (************************************************************************************************************************
-Snippet 68 : Musings on the Vand der Waerden problem, version 14 : add 
+Snippet 66 : Musings on the Vand der Waerden problem, version 14 : add 
 Current_partition_watcher.ugly_part , oslo_compute 24 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -5508,7 +5426,7 @@ let h9 = Expansion.allowed_substitution_by_in (n0-6,d0+1) h8;;
 
 
 (************************************************************************************************************************
-Snippet 67 : Musings on the Vand der Waerden problem, version 13 : add
+Snippet 65 : Musings on the Vand der Waerden problem, version 13 : add
 Current_partition_watcher.ugly_part and Marshall_plan.compute_from_scratch,
 oslo_compute 21 0 has no D or E component
 ************************************************************************************************************************)
@@ -6062,7 +5980,7 @@ let h3 = Expansion.allowed_substitution_by_in (n0-2,d0+1) h2;;
 
 
 (************************************************************************************************************************
-Snippet 66 : Musings on the Vand der Waerden problem, version 12 : painfully long
+Snippet 64 : Musings on the Vand der Waerden problem, version 12 : painfully long
 computation of oslo_compute 21 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -6920,7 +6838,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 65 : Musings on the Van der Waerden problem, version 11 : add the Expansion
+Snippet 63 : Musings on the Van der Waerden problem, version 11 : add the Expansion
 submodule and use it to avoid the D variant in the computation of
 oslo_compute 18 1, and E variant and compute up to oslo_compute 20 0
 ************************************************************************************************************************)
@@ -7526,7 +7444,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 64 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
+Snippet 62 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
 colored_variable type, and add Partition_watcher.decompose and 
 Current_partition_watcher.decompose
 ************************************************************************************************************************)
@@ -8044,7 +7962,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.write_partition_commands 18 1 ;;
 
 (************************************************************************************************************************
-Snippet 63 : Musings on the Van der Waerden problem, version 9 : add lmea and
+Snippet 61 : Musings on the Van der Waerden problem, version 9 : add lmea and
 remove D variant in the definition of the colored_variable type
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -8522,7 +8440,7 @@ let z1 = Oslo.needed_intermediaries 19 0 ;;
 let z2 = Marshall_plan.detect_missing_affinities 19 0 ;;
 
 (************************************************************************************************************************
-Snippet 62 : Musings on the Van der Waerden problem, version 8 : adding
+Snippet 60 : Musings on the Van der Waerden problem, version 8 : adding
 Marshall_plan.write_partition_commands
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9034,7 +8952,7 @@ let z1 = Marshall_plan.write_partition_commands 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 61 : Musings on the Van der Waerden problem, version 7 : adding 
+Snippet 59 : Musings on the Van der Waerden problem, version 7 : adding 
 Colored.order{_for_pairs} and using it in Affinity.analyse_combination 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9518,7 +9436,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 (************************************************************************************************************************
-Snippet 60 : Musings on the Van der Waerden problem, version 6 : adding
+Snippet 58 : Musings on the Van der Waerden problem, version 6 : adding
 Marshall_plan.detect_missing_affinities
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9987,7 +9905,7 @@ let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 59 : Musings on the Van der Waerden problem, version 5 : adding 
+Snippet 57 : Musings on the Van der Waerden problem, version 5 : adding 
 Oslo.needed_intermediaries, and display partitions as they are made
 
 ************************************************************************************************************************)
@@ -10409,7 +10327,7 @@ oslo_compute 18 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 58 : Musings on the Van der Waerden problem, version 4 : adding 
+Snippet 56 : Musings on the Van der Waerden problem, version 4 : adding 
 the Affinity submodule and make each part in a partition inherit the affinities
 of the whole
 ************************************************************************************************************************)
@@ -10794,7 +10712,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 57 : Musings on the Van der Waerden problem, version 3 : adding
+Snippet 55 : Musings on the Van der Waerden problem, version 3 : adding
 affinities and memorize each partition made in the partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -11146,7 +11064,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 56 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
+Snippet 54 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11440,7 +11358,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 55 : Musings on the Van der Waerden problem, version 2 : adding colored variables
+Snippet 53 : Musings on the Van der Waerden problem, version 2 : adding colored variables
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11612,7 +11530,7 @@ let check3 = Colored.check_partitioning [
 
 
 (************************************************************************************************************************
-Snippet 54 : Musings on the Van der Waerden problem  
+Snippet 52 : Musings on the Van der Waerden problem  
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11739,7 +11657,7 @@ let check4 = check_correct_partitioning [
 *)
 
 (************************************************************************************************************************
-Snippet 53 : Compute summaries for levels, in a Van der Waerden context
+Snippet 51 : Compute summaries for levels, in a Van der Waerden context
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11830,7 +11748,7 @@ let result2= [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 
 
 
 (************************************************************************************************************************
-Snippet 52 : Remove all modules in a subdirectory
+Snippet 50 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11847,7 +11765,7 @@ let z3 = Image.image (
 let act () = fgs z3 ;;  
 
 (************************************************************************************************************************
-Snippet 51 : Replacing a long interval in a file with another
+Snippet 49 : Replacing a long interval in a file with another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11861,7 +11779,7 @@ let replacement = Lines_in_string.interval towards_complement 9 240 ;;
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
-Snippet 50 : Visualize Git tree
+Snippet 48 : Visualize Git tree
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11884,260 +11802,6 @@ let cmds2 = Image.image (fun x->
   gc^"add "^cx) z4 ;;
 let cmds3 = cmds1 @ cmds2 ;;
 let anse1 = Image.image Sys.command cmds3 ;;
-
-(************************************************************************************************************************
-Snippet 49 : Long debugging session on the rename_subdir functionality,
-with just one main function ("compressed" version of snippet 48)
-************************************************************************************************************************)
-open Needed_values ;;
-
-module Pri = Reflect_change_in_github.Private ;;
-
-let special_doyle f i j=
-  let temp1 = Ennig.ennig i j in 
-  Image.image f temp1 ;;
-
-let peggy () = 
-   let _ = rsh() in 
-   let (case1,case2) = 
-    ("Depth_two_testdir","Dopth_twe_tistder") in 
-   let cases = [ case1 ; case2 ] in 
-   let sc = Image.image (fun s->
-      Sys.file_exists("Depth_one_testdir/"^s)) cases in
-   let (current_name,other_name) = (
-    if sc = [false;true] then (case2,case1) else 
-    if sc = [true;false] then (case1,case2) else 
-    failwith("Unforeseen case")) in   
-   let old_subdirname = "Depth_one_testdir/"^current_name 
-   and new_subdir_short_name = other_name in 
-   let old_subdir = Coma_state.find_subdir_from_suffix (!ucs) old_subdirname  in
-   let new_subdir = Coma_state.compute_long_subdir_name (!ucs) old_subdir new_subdir_short_name  in
-   let tcs = !ucs in 
-   let cs2=Modify_coma_state.After_checking.rename_subdirectory tcs old_subdir new_subdir  in
-   let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
-   " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-   let fw_with_dep = cs2.Coma_state_t.frontier_with_unix_world in 
-   let fw_with_sd = fw_with_dep.Fw_with_dependencies_t.parent in 
-   let fw_the_first = fw_with_sd.Fw_with_small_details_t.parent in 
-   let config = fw_the_first.File_watcher_t.configuration in 
-   let diff = fw_the_first.File_watcher_t.last_noticed_changes in 
-   let destination_dir = config.Fw_configuration_t.dir_for_backup in
-   let (nongit_cmds,git_cmds) = Pri.commands_for_backup config diff in 
-   let s_destination=Dfa_root.connectable_to_subpath destination_dir in 
-   let _ =Image.image Unix_command.uc nongit_cmds in   
-   let cwd=Sys.getcwd() in 
-   let final_cmds = 
-   (
-    [Unix_command.cd s_destination]@   
-    git_cmds@   
-    [
-      "git commit -m \""^msg^"\""
-    ]@
-    [Unix_command.cd cwd]
-    ) in      
-  let whole () = Image.image Sys.command final_cmds in 
-  let fc_get  = (fun k->List.nth final_cmds (k-1)) in
-  let fc k = 
-   let cmd = fc_get k in 
-   (Sys.command cmd,cmd) in
-  let first_half () = special_doyle (fun k->fst(fc k)) 1 9 in
-  let second_half () = special_doyle (fun k->fst(fc k)) 10 19 in 
-  (first_half,second_half,whole,fc_get,fc) ;;
-
-
-let (first_half,second_half,whole,fc_get,fc) = peggy ();;
-
-(*
-let backup_with_message config  diff msg=
-  let destination_dir = config.Fw_configuration_t.dir_for_backup in 
-  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
-  let s_destination=Dfa_root.connectable_to_subpath destination_dir in
-  let _=Image.image Unix_command.uc nongit_cmds in
-  let _=(
-  if config.Fw_configuration_t.gitpush_after_backup
-  then let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
-       (
-       [Unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git commit -m \""^msg^"\"";
-         "git push"
-       ]@
-       [Unix_command.cd cwd]
-       ) 
-  else let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
-       (
-       [Unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git commit -m \""^msg^"\""
-       ]@
-       [Unix_command.cd cwd]
-       ) 
-  ) in
-  ();;
-  *)
-
-(*  
- 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ clean -n 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ clean -f -d
-
-*)
-
-
-(*  
- 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/Depth_three_testdir/example.txt 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/Depth_three_testdir/*.ml 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ reset HEAD depth_one_testdir/Depth_two_testdir/tested_module_five.ml 
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ status
-
-*)
-
-
-
-(*
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ rm Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
-file /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/testable_executable.ml
-
-*)
-
-(*
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ rm Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
-file /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add Depth_one_testdir/Dopth_twe_tistder/Depth_three_testdir/testable_executable.ml
-
-*)
-
-(*
-
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ config core.longpaths true
-git -C /Users/ewandelanoy/Teuliou/OCaml/Idaho_backup/ add .
-
-*)
-
-(************************************************************************************************************************
-Snippet 48 : Long debugging session on the rename_subdir functionality
-************************************************************************************************************************)
-open Needed_values ;;
-
-rsh();;
-
-let (case1,case2) = ("Depth_two_testdir","Dopth_twe_tistder") ;;
-let cases = [ case1 ; case2 ] ;;
-
-let see_cases () = Image.image (fun s->
-  Sys.file_exists("Depth_one_testdir/"^s)) cases ;;
-
-let (current_name,other_name) = 
-  let sc = see_cases () in 
-  if sc = [false;true] then (case2,case1) else 
-  if sc = [true;false] then (case1,case2) else 
-  failwith("Unforeseen case");;    
-
-   
-let old_subdirname = "Depth_one_testdir/"^current_name ;;
-let new_subdir_short_name = other_name ;;
-
-(*
-
-let bad0 = rensub old_subdirname new_subdir_short_name ;;
-
-*)
-
-let old_subdir = Coma_state.find_subdir_from_suffix (!ucs) old_subdirname  ;;
-let new_subdir = Coma_state.compute_long_subdir_name (!ucs) old_subdir new_subdir_short_name  ;;
-
-let tcs = !ucs ;;
-
-(*
-let bad1 = Modify_coma_state.And_backup.rename_subdirectory tcs old_subdir new_subdir;;
-*)
-
-let cs2=Modify_coma_state.After_checking.rename_subdirectory tcs old_subdir new_subdir  ;;
-let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
-" as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) ;;
-
-(* let bad2= Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;;  *)
-
-let fw_with_dep = cs2.Coma_state_t.frontier_with_unix_world ;;
-
-(* let bad3 = Fw_with_dependencies.reflect_latest_changes_in_github fw_with_dep (Some msg) ;; *)
-
-let fw_with_sd = fw_with_dep.Fw_with_dependencies_t.parent ;;
-
-(* let bad4 = Fw_with_small_details.reflect_latest_changes_in_github fw_with_sd (Some msg) ;; *)
-
-let fw_the_first = fw_with_sd.Fw_with_small_details_t.parent ;;
-
-(* let bad5 = File_watcher.reflect_latest_changes_in_github fw_the_first (Some msg) ;; *)
-
-
-let config = fw_the_first.File_watcher_t.configuration ;;
-let diff = fw_the_first.File_watcher_t.last_noticed_changes ;;
-
-(* let bad6 = Reflect_change_in_github.backup config diff (Some msg) ;; *)
-
-(* let bad7 = Reflect_change_in_github.Private.backup_with_message config diff msg ;; *)
-
-module Pri = Reflect_change_in_github.Private ;;
-
-let destination_dir = config.Fw_configuration_t.dir_for_backup ;;
-let (nongit_cmds,git_cmds) = Pri.commands_for_backup config diff ;;
-let s_destination=Dfa_root.connectable_to_subpath destination_dir ;;
-let act1 =Image.image Unix_command.uc nongit_cmds ;;
-let cwd=Sys.getcwd() ;;
-let final_cmds = 
-(
-    [Unix_command.cd s_destination]@   
-    git_cmds@   
-    [
-      "git commit -m \""^msg^"\""
-    ]@
-    [Unix_command.cd cwd]
-) ;;      
-let act2 () = Image.image Sys.command final_cmds ;;
-
-let fc k = 
-   let cmd = List.nth final_cmds (k-1) in 
-   (Sys.command cmd,cmd) ;;
-
-(*
-let backup_with_message config  diff msg=
-  let destination_dir = config.Fw_configuration_t.dir_for_backup in 
-  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
-  let s_destination=Dfa_root.connectable_to_subpath destination_dir in
-  let _=Image.image Unix_command.uc nongit_cmds in
-  let _=(
-  if config.Fw_configuration_t.gitpush_after_backup
-  then let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
-       (
-       [Unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git commit -m \""^msg^"\"";
-         "git push"
-       ]@
-       [Unix_command.cd cwd]
-       ) 
-  else let cwd=Sys.getcwd() in
-       Image.image Unix_command.uc
-       (
-       [Unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git commit -m \""^msg^"\""
-       ]@
-       [Unix_command.cd cwd]
-       ) 
-  ) in
-  ();;
-  *)
 
 (************************************************************************************************************************
 Snippet 47 : Miscellaneous tests on compilation management
