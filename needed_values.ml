@@ -49,7 +49,9 @@ let lc = Usual_coma_state.latest_changes;;
 let muv=Usual_coma_state.modules_using_value;;
 
 let ocs=Other_coma_state.main_ref;;
+
 let osv=Other_coma_state.show_value_occurrences_in_modulesystem;;  
+
 let ovfm modname =Other_coma_state.list_values_from_module_in_modulesystem modname ;;
 
 let reco msg=Usual_coma_state.recompile (Some msg);; 
