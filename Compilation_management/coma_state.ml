@@ -1043,45 +1043,6 @@ let rename_value_inside_module cs old_name new_name=
 
 end;;
 
-
-module Values_in_modules = struct
-
-
-
-let list_values_from_module_in_modulesystem cs module_name=
-   let temp1=all_mlx_paths cs in
-   let temp2=Image.image (fun ap->
-    let ttemp1=Look_for_module_names.list_values_from_module_in_file module_name ap in
-    Set_of_strings.image (fun x->(x,ap) ) ttemp1
-    ) temp1 in
-   let temp3=List.flatten temp2 in
-   let temp4=Image.image fst temp3 in 
-   let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
-   Image.image (
-      fun x->(x,Option.filter_and_unpack(
-        fun (y,ap)->if y=x then Some(ap) else None
-      ) temp3)
-   ) temp5 ;;
-
-
-let show_value_occurrences_in_modulesystem cs t=
-   let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
-   let temp1=all_mlx_paths cs in
-   let temp2=Image.image (fun ap->
-      let text = Io.read_whole_file ap in   
-      let temp3=Substring.occurrences_of_in t text in 
-      let closeups = Image.image (fun j->Cull_string.closeup_around_index 
-          text j
-      ) temp3 in
-      let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
-      Image.image (fun x->mname^":\n"^x ) closeups
-   ) temp1 in
-   let temp4=List.flatten temp2 in
-   let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
-   print_string temp5;;
-
-end;;
-
 let list_values_from_module cs mn = 
   Fw_with_batch_compilation.list_values_from_module  (qarent cs) mn ;;
 
