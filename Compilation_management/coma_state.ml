@@ -1042,26 +1042,10 @@ module Values_in_modules = struct
 
 
 
-let list_values_from_module_in_file module_name file=
-   let s=Io.read_whole_file file in
-   let temp1=Look_for_module_names.indices_in_mlx_file file in
-   let temp2=List.filter (fun (t,(i,j))->
-     (t=Alternative_str_example.index_for_pointed_case)&&
-     (Cull_string.interval s i j=(String.capitalize_ascii module_name))
-   ) temp1 in
-   let temp3=Image.image(fun (t,(i,j))->
-    let opt=After.after_star 
-     Charset.ocaml_modulename_nonfirst_letters
-     s (j+2) in
-    let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
-     Cull_string.interval s (j+2) end_idx
-   ) temp2 in
-   Set_of_strings.sort temp3;;
-
 let list_values_from_module_in_modulesystem cs module_name=
    let temp1=all_mlx_paths cs in
    let temp2=Image.image (fun ap->
-    let ttemp1=list_values_from_module_in_file module_name ap in
+    let ttemp1=Look_for_module_names.list_values_from_module_in_file module_name ap in
     Set_of_strings.image (fun x->(x,ap) ) ttemp1
     ) temp1 in
    let temp3=List.flatten temp2 in
@@ -1085,13 +1069,17 @@ let show_value_occurrences_in_modulesystem cs t=
    let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
    let temp1=all_mlx_paths cs in
    let temp2=Image.image (fun ap->
-    let ttemp1=list_value_occurrences_in_file t ap in
-    let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
-    Image.image (fun x->mname^":\n"^x ) ttemp1
-    ) temp1 in
-   let temp3=List.flatten temp2 in
-   let temp4=String.concat "\n\n\n" (""::temp3@[""]) in 
-   print_string temp4;;
+      let text = Io.read_whole_file ap in   
+      let temp3=Substring.occurrences_of_in t text in 
+      let closeups = Image.image (fun j->Cull_string.closeup_around_index 
+          text j
+      ) temp3 in
+      let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
+      Image.image (fun x->mname^":\n"^x ) closeups
+   ) temp1 in
+   let temp4=List.flatten temp2 in
+   let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
+   print_string temp5;;
 
 end;;
 
