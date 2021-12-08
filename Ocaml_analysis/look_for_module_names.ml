@@ -89,12 +89,29 @@ let change_several_module_names_in_ml_file l_changes file=
    let new_s=change_several_module_names_in_ml_ocamlcode l_changes s in
    Io.overwrite_with file new_s;;  
 
+let list_values_from_module_in_file module_name file=
+   let s=Io.read_whole_file file in
+   let temp1=indices_in_mlx_file file in
+   let temp2=List.filter (fun (t,(i,j))->
+     (t=Alternative_str_example.index_for_pointed_case)&&
+     (Cull_string.interval s i j=(String.capitalize_ascii module_name))
+   ) temp1 in
+   let temp3=Image.image(fun (t,(i,j))->
+    let opt=After.after_star 
+     Charset.ocaml_modulename_nonfirst_letters
+     s (j+2) in
+    let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
+     Cull_string.interval s (j+2) end_idx
+   ) temp2 in
+   Set_of_strings.sort temp3;;
+
 end ;;
 
 let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
  let change_module_name_in_ml_ocamlcode = Private.change_module_name_in_ml_ocamlcode ;;
  let change_several_module_names_in_ml_ocamlcode = Private.change_several_module_names_in_ml_ocamlcode ;;
  let indices_in_mlx_file = Private.indices_in_mlx_file ;;
+ let list_values_from_module_in_file = Private.list_values_from_module_in_file ;;
  let names_in_mlx_file = Private.names_in_mlx_file ;;
  
 

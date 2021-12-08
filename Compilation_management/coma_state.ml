@@ -1040,38 +1040,7 @@ end;;
 
 module Values_in_modules = struct
 
-(*  
-let replace_string cs old_string new_string=
-  let temp1=files_containing_string cs old_string in
-  let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
-  let temp2=Image.image (fun ap->
-    Cull_string.cobeginning m (Absolute_path.to_string ap)) temp1 in
-  let temp3=temp2@["";""] in 
-  let message="\n\n The following files will be rewritten : \n\n"^
-  (String.concat "\n" temp3) in
-  let _=(print_string message;flush stdout) in
-  List.iter (Replace_inside.replace_inside_file (old_string,new_string)) temp1;;
 
-
-
-
-
-let rename_string_or_value cs old_name new_name=
-  if not(String.contains old_name '.')
-  then replace_string cs old_name new_name
-  else 
-    let new_full_name=(Cull_string.before_rightmost old_name '.')^"."^new_name in
-    (Local_rename_value_inside_module.rename_value_inside_module 
-            cs old_name (Overwriter.of_string new_name); 
-     replace_string cs old_name new_full_name
-    );;
-*)
-
-(*
-if the string argument has a dot inside it, we interpret it
-as a value inside a module.
-Otherwise we interpret it as a mere string.
-*)
 
 let list_values_from_module_in_file module_name file=
    let s=Io.read_whole_file file in
