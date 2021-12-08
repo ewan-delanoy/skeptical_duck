@@ -1040,7 +1040,7 @@ end;;
 
 module Values_in_modules = struct
 
-  
+(*  
 let replace_string cs old_string new_string=
   let temp1=files_containing_string cs old_string in
   let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
@@ -1053,11 +1053,7 @@ let replace_string cs old_string new_string=
   List.iter (Replace_inside.replace_inside_file (old_string,new_string)) temp1;;
 
 
-(*
-if the string argument has a dot inside it, we interpret it
-as a value inside a module.
-Otherwise we interpret it as a mere string.
-*)
+
 
 
 let rename_string_or_value cs old_name new_name=
@@ -1069,7 +1065,13 @@ let rename_string_or_value cs old_name new_name=
             cs old_name (Overwriter.of_string new_name); 
      replace_string cs old_name new_full_name
     );;
+*)
 
+(*
+if the string argument has a dot inside it, we interpret it
+as a value inside a module.
+Otherwise we interpret it as a mere string.
+*)
 
 let list_values_from_module_in_file module_name file=
    let s=Io.read_whole_file file in
