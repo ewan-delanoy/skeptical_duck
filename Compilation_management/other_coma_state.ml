@@ -83,8 +83,7 @@ let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;;
 let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
-   Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
-   (!(Private.main_ref)) module_name;;
+   Coma_state.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
@@ -131,7 +130,7 @@ let repopulate summary=
 let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
-   Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
+   Coma_state.show_value_occurrences
    (!(Private.main_ref)) module_name;;
 
 
