@@ -65,8 +65,7 @@ let internet_access () = Coma_state.Automatic.gitpush_after_backup (!(Private.ma
 let latest_changes ()=Coma_state.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
-   Coma_state.Values_in_modules.list_values_from_module_in_modulesystem 
-   (!(Private.main_ref)) module_name;;
+   Coma_state.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
