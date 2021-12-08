@@ -1082,7 +1082,11 @@ let show_value_occurrences_in_modulesystem cs t=
 
 end;;
 
+let list_values_from_module cs mn = 
+  Fw_with_batch_compilation.list_values_from_module  (qarent cs) mn ;;
 
+let show_value_occurrences cs t = 
+  Fw_with_batch_compilation.show_value_occurrences  (qarent cs) t ;;   
 
 exception Module_already_exists of string;;
 
