@@ -4,6 +4,12 @@
 
 *)
 
+let qarent cs = {
+   Fw_with_batch_compilation_t.parent = cs.Coma_state_t.frontier_with_unix_world ;
+   last_compilation_result_for_module = cs.Coma_state_t.last_compilation_result_for_module;
+} ;;
+
+
 module Automatic = struct 
 
   exception Module_not_found of Dfa_module_t.t ;;

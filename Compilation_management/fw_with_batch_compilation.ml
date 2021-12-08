@@ -267,11 +267,17 @@ module Private = struct
       Compilation_mode_t.Executable fw short_path in 
     Unix_command.conditional_multiple_uc cmds;;   
   
+  let list_values_from_module fw mn = Fw_with_dependencies.list_values_from_module (parent fw) mn ;;
+  let show_value_occurrences fw mn = Fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
+
+
   end ;;
   
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
+let list_values_from_module = Private.list_values_from_module ;;
 let of_concrete_object = Private.of_concrete_object ;;
+let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
 let to_concrete_object = Private.to_concrete_object ;;  
