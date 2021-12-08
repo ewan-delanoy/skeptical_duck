@@ -119,11 +119,6 @@ let _ = (Private.ref_for_unofficial_changes:=None) in
    Modify_coma_state.Reference.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
-let replace_string old_string new_string=
-let _ = (Private.ref_for_unofficial_changes:=None) in 
-   Coma_state.Values_in_modules.replace_string 
-   (!(Private.main_ref)) old_string new_string ;;
-
 let repopulate summary=
   let _ = (Private.ref_for_unofficial_changes:=None) in 
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
