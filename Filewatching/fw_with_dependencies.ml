@@ -1223,6 +1223,74 @@ end ;;
    ) temp1 in 
    let temp3=List.flatten temp2 in 
    Listennou.nonredundant_version temp3;;
+  
+  let root fw = Fw_with_small_details.root (parent fw) ;;
+
+  let subdir_for_module fw mn =Fw_module_small_details.subdirectory (details_for_module fw mn) ;;
+
+   let endingless_at_module cs mn=
+   Dfn_endingless_t.J(
+        root cs,
+        subdir_for_module cs mn,
+        mn
+    );;
+
+  let check_ending_in_at_module edg fw mn=
+    if edg= Fw_module_small_details.principal_ending (details_for_module fw mn)
+    then true 
+    else 
+    if edg=Dfa_ocaml_ending_t.Mli
+    then Fw_module_small_details.mli_present (details_for_module fw mn)
+    else false;;
+
+
+  let acolytes_at_module fw mn=
+    let eless = endingless_at_module fw mn in
+    Option.filter_and_unpack (fun 
+    edg->
+      if check_ending_in_at_module edg fw mn
+      then Some(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg))
+      else None
+    ) Dfa_ocaml_ending.all ;;
+
+  let all_mlx_files fw=
+   let mods=Image.image fst (Order.get fw) in
+   List.flatten(Image.image(acolytes_at_module fw) mods);;                
+       
+ let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_mlx_files cs);;  
+
+ let list_values_from_module fw module_name=
+ let temp1=all_mlx_paths fw in
+ let temp2=Image.image (fun ap->
+  let ttemp1=Look_for_module_names.list_values_from_module_in_file module_name ap in
+  Set_of_strings.image (fun x->(x,ap) ) ttemp1
+  ) temp1 in
+ let temp3=List.flatten temp2 in
+ let temp4=Image.image fst temp3 in 
+ let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
+ Image.image (
+    fun x->(x,Option.filter_and_unpack(
+      fun (y,ap)->if y=x then Some(ap) else None
+    ) temp3)
+ ) temp5 ;;
+
+
+let show_value_occurrences fw t=
+ let m=String.length(Dfa_root.connectable_to_subpath (root fw)) in
+ let temp1=all_mlx_paths fw in
+ let temp2=Image.image (fun ap->
+    let text = Io.read_whole_file ap in   
+    let temp3=Substring.occurrences_of_in t text in 
+    let closeups = Image.image (fun j->Cull_string.closeup_around_index 
+        text j
+    ) temp3 in
+    let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
+    Image.image (fun x->mname^":\n"^x ) closeups
+ ) temp1 in
+ let temp4=List.flatten temp2 in
+ let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
+ print_string temp5;; 
+
 end;;
 
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
@@ -1237,6 +1305,7 @@ let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;
 let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
 let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;
+let list_values_from_module = Private.list_values_from_module ;; 
 let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
                               None -> "0." |Some(fl)->fl ;;
 let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
@@ -1262,6 +1331,7 @@ let replace_value = Private.Exit.replace_value ;;
 let root fw = Fw_with_small_details.root (Private.parent fw);;
 let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
 let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
+let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;
 let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;

@@ -1056,14 +1056,7 @@ let list_values_from_module_in_modulesystem cs module_name=
         fun (y,ap)->if y=x then Some(ap) else None
       ) temp3)
    ) temp5 ;;
- 
-let list_value_occurrences_in_file t file=
-   let s=Io.read_whole_file file in
-   let temp1=Substring.occurrences_of_in t s in
-   Image.image (fun j->Cull_string.closeup_around_index 
-      s j
-   ) temp1;; 
- 
+
 
 let show_value_occurrences_in_modulesystem cs t=
    let m=String.length(Dfa_root.connectable_to_subpath (root cs)) in
