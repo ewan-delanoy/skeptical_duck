@@ -98,8 +98,7 @@ let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private
 
 
 let show_value_occurrences_in_modulesystem module_name=
-   Coma_state.Values_in_modules.show_value_occurrences_in_modulesystem
-   (!(Private.main_ref)) module_name;;
+   Coma_state.show_value_occurrences (!(Private.main_ref)) module_name;;
 
 let start_debugging ()=Organize_batch_compilation.start_debugging (!(Private.main_ref));;
 let start_executing short_path= Organize_batch_compilation.start_executing (!(Private.main_ref)) short_path;;
