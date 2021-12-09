@@ -25,6 +25,10 @@ let set_gitpush_after_backup cs bowl =
   tneraq new_parent ;; 
 let start_debugging cs = Fw_with_batch_compilation.start_debugging (qarent cs) ;; 
 let start_executing cs short_path = Fw_with_batch_compilation.start_executing (qarent cs) short_path;;  
+let usual_batch cs modnames = 
+  let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (qarent cs) modnames in 
+  (tneraq new_parent,rejected_ones,accepted_ones) ;; 
+
 
 module Automatic = struct 
 

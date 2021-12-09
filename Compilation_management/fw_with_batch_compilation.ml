@@ -210,7 +210,7 @@ module Private = struct
          (list_of_commands_for_connecting_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path))@
          (list_of_commands_for_end_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path)) in 
        let _=Image.image  Unix_command.hardcore_uc all_cmds in 
-       ()
+       () ;;
   
   
   
