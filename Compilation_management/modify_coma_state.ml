@@ -6,107 +6,8 @@
 
 
 
-(*
-module Physical = struct 
 
-   let forget_modules cs mod_names=
-      let new_fw=
-         Fw_with_dependencies.forget_modules (cs.Coma_state_t.frontier_with_unix_world) mod_names in   
-      Coma_state.set_frontier_with_unix_world cs new_fw;;
    
-   let forget_nonmodular_rootlesses cs rootless_paths=
-      let (new_fw,_)=Fw_with_dependencies.remove_files (cs.Coma_state_t.frontier_with_unix_world) rootless_paths in   
-      Coma_state.set_frontier_with_unix_world cs new_fw ;;   
-   
-
-   let recompile cs =
-      let (new_fw,((changed_archived_compilables,changed_usual_compilables),_))
-         =Fw_with_dependencies.inspect_and_update (cs.Coma_state_t.frontier_with_unix_world) in   
-      let new_cs= Coma_state.set_frontier_with_unix_world cs new_fw in 
-      (new_cs,changed_usual_compilables);;
-   
-   let refresh config =
-      let root = config.Fw_configuration_t.root in 
-      let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
-       Coma_constant.minimal_set_of_needed_dirs 
-           Coma_constant.conventional_files_with_minimal_content) in 
-      let fw = Fw_with_dependencies.of_configuration config in
-      let cs0 = Coma_state.empty_one config in  
-      Coma_state.set_frontier_with_unix_world cs0 fw;;
-   
-   let register_rootless_paths cs rps=
-      let (new_fw,((ac_paths,uc_paths,nc_paths),_))=Fw_with_dependencies.register_rootless_paths (cs.Coma_state_t.frontier_with_unix_world) rps in   
-      let old_list_of_cmpl_results= cs.Coma_state_t.last_compilation_result_for_module in 
-     let new_list_of_cmpl_results = Image.image (
-        fun mn -> 
-          match List.assoc_opt mn old_list_of_cmpl_results with 
-          None -> (mn,false)
-          |Some(old_res) -> (mn,old_res)
-     ) (Fw_with_dependencies.dep_ordered_modules new_fw) in 
-     let cs2 = { 
-       Coma_state_t.frontier_with_unix_world = new_fw ;
-       last_compilation_result_for_module = new_list_of_cmpl_results
-     } in 
-      (cs2,uc_paths) ;;
-   
-
-   let relocate_module_to cs mod_name new_subdir=
-      let (new_fw,_)=Fw_with_dependencies.relocate_module_to cs.Coma_state_t.frontier_with_unix_world (mod_name,new_subdir) in   
-      Coma_state.set_frontier_with_unix_world cs new_fw ;;
-   
-   let rename_module cs old_middle_name new_nonslashed_name=
-     let old_nm=Dfn_middle.to_module old_middle_name in
-     let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
-     let separated_acolytes_below=Option.filter_and_unpack(
-       fun mn->
-        if List.mem old_nm (Coma_state.ancestors_for_module cs mn)
-       then Some(Image.image (Dfn_full.to_rootless) (Coma_state.acolytes_at_module cs mn))
-       else None
-   ) (Coma_state.dep_ordered_modules cs) in
-     let all_acolytes_below=List.flatten separated_acolytes_below in
-     let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
-     Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
-      old_fw (old_nm,new_nm,all_acolytes_below) ;;
-   
-   let rename_subdirectory cs (old_subdir,new_subdir)=
-      let (new_fw,_)=Fw_with_dependencies.rename_subdirectory_as (cs.Coma_state_t.frontier_with_unix_world) (old_subdir,new_subdir) in   
-      Coma_state.set_frontier_with_unix_world cs new_fw ;;
-   
-   
-   exception Rename_string_or_value_exn of string ;;
-   
-   
-   let rename_string_or_value cs old_sov new_sov =
-      let old_fw = Coma_state.Automatic.frontier_with_unix_world cs in 
-      let (new_fw,changed_rootlesses)=(
-         if not(String.contains old_sov '.')
-         then let (fw1,changes1) = Fw_with_dependencies.replace_string old_fw (old_sov,new_sov) in 
-              (fw1,Image.image fst changes1)
-         else 
-              let j=Substring.leftmost_index_of_in "." old_sov in
-              if j<0 
-              then raise(Rename_string_or_value_exn(old_sov))
-              else let module_name=Cull_string.beginning (j-1) old_sov in
-                   let endingless=Coma_state.decipher_module cs  module_name 
-                   and path=Coma_state.decipher_path cs  module_name in 
-                   let nm=Dfn_endingless.to_module endingless in
-                   let pre_temp2=(Coma_state.ancestors_for_module cs nm)@[nm] in
-                   let temp2=Image.image (Coma_state.endingless_at_module cs) pre_temp2 in
-                   let preceding_files=Image.image  (fun eless2->
-                        Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
-                   ) temp2 in
-                   let (fw2,changes2) = Fw_with_dependencies.replace_value old_fw ((preceding_files,path),(old_sov,new_sov)) in 
-                   (fw2,Image.image fst changes2) 
-      ) in 
-      let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-      (Coma_state.set_frontier_with_unix_world cs new_fw,changed_modules_in_any_order);;       
-   
-   
-   
-   end;;
-*)
-   
-
 module Internal = struct
    
    let forget_modules cs mns =
@@ -140,25 +41,14 @@ module Internal = struct
      let root_dir=Coma_state.root cs in 
      let old_nm=Dfn_middle.to_module old_middle_name in 
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
-     let old_list_of_cmpl_results= cs.Coma_state_t.last_compilation_result_for_module in 
-     let new_list_of_cmpl_results = Image.image (
-        fun old_pair -> 
-          let (mn,cmpl_result) = old_pair in 
-          if mn = old_nm 
-          then (new_nm,false)
-          else old_pair    
-     ) old_list_of_cmpl_results in   
-     let cs3 = { cs2 with 
-       Coma_state_t.last_compilation_result_for_module = new_list_of_cmpl_results
-     } in 
      let s_root=Dfa_root.connectable_to_subpath root_dir in   
      let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
      let _=Unix_command.uc
          ("rm -f "^s_root^s_build_dir^
          (Dfa_module.to_line old_nm)^
          ".cm* ") in            
-     let cs4=Coma_state.modern_recompile cs3 [new_nm] in 
-     cs4;;
+     let cs3=Coma_state.modern_recompile cs2 [new_nm] in 
+     cs3;;
    
    
    let rename_string_or_value cs changed_modules_in_any_order = 

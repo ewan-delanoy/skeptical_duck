@@ -366,7 +366,18 @@ module Private = struct
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let (new_parent,extra) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
       old_parent (old_nm,new_nm,all_acolytes_below) in 
-      (set_parent fw new_parent,extra);;
+    let old_list_of_cmpl_results= fw.Fw_with_batch_compilation_t.last_compilation_result_for_module in 
+    let new_list_of_cmpl_results = Image.image (
+         fun old_pair -> 
+           let (mn,cmpl_result) = old_pair in 
+           if mn = old_nm 
+           then (new_nm,false)
+           else old_pair    
+      ) old_list_of_cmpl_results in   
+      ({ 
+        Fw_with_batch_compilation_t.parent = new_parent ;
+        last_compilation_result_for_module = new_list_of_cmpl_results;
+      },extra);;
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,_)=Fw_with_dependencies.rename_subdirectory_as 
