@@ -368,7 +368,7 @@ module Private = struct
       old_parent (old_nm,new_nm,all_acolytes_below) in 
       (set_parent fw new_parent,extra);;
    
-   let rename_subdirectory fw (old_subdir,new_subdir)=
+   let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,_)=Fw_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
          set_parent fw new_parent ;;
@@ -406,11 +406,18 @@ module Private = struct
 let all_subdirectories = Private.all_subdirectories ;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
+let forget_modules = Private.forget_modules ;;
+let inspect_and_update = Private.inspect_and_update ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
+let of_configuration = Private.of_configuration ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
+let relocate_module_to = Private.relocate_module_to ;;
+let remove_files = Private.remove_files ;;
+let rename_string_or_value = Private.rename_string_or_value ;;
+let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let root = Private.root ;;
 let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
