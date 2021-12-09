@@ -86,23 +86,32 @@ module Private=struct
       rootless_path_for_loadingsfile,
       rootless_path_for_printersfile
       )
-      uple= 
-      let (root_dir,hms,crobj_form,directories,printer_equipped_types)=uple in
+      (root_dir,elesses,crobj_form,directories,printer_equipped_types) = 
        (
-        save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,hms);
+        save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,elesses);
         save_targetfile rootless_path_for_targetfile root_dir crobj_form;
         save_printersfile (root_dir,rootless_path_for_printersfile) printer_equipped_types;
        );;
-    
-    let save_all cs=write_all 
+
+       
+      
+
+    let save_all cs=
+      let root_dir = Coma_state.root cs 
+      and elesses = Coma_state.up_to_date_elesses cs
+      and crobj_form = Coma_state.to_concrete_object cs 
+      and directories = Coma_state.all_subdirectories cs 
+      and printer_equipped_types = Coma_state.preq_types_with_extra_info cs 
+        in
+       write_all 
       (
         Coma_constant.rootless_path_for_targetfile,
         Coma_constant.rootless_path_for_loadingsfile,
         Coma_constant.rootless_path_for_printersfile
       )
-      (
-	      Coma_state.uple_form cs
-      );;
+      
+	      (root_dir,elesses,crobj_form,directories,printer_equipped_types)
+      ;;
 
 end;;  
 
