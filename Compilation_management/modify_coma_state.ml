@@ -117,24 +117,6 @@ module Physical = struct
                   temp2 in
      cs;;    
    
-   let modern_recompile cs changed_modules_in_any_order = 
-      if changed_modules_in_any_order=[] then cs else
-      let (all_deps,new_deps,changed_modules) = Coma_state.below_several cs changed_modules_in_any_order in     
-      let _ = Strung.announce 
-      ~trailer:("The following modules need to be recompiled \n"^
-      "because they depend on directly changed modules :")
-         ~printer:Dfa_module.to_line ~items:new_deps 
-         ~separator: ", " in 
-      let (cs2,rejected_pairs,accepted_pairs)=
-        Organize_batch_compilation.usual_batch cs all_deps in 
-      let cs_walker = ref(cs2) in 
-      let memorize_last_result = (fun res mn->
-         cs_walker := Coma_state.set_last_compilation_result_for_module 
-             (!cs_walker) mn res      
-      ) in        
-      let _ = List.iter (fun (mn,_)->memorize_last_result false mn) rejected_pairs in 
-      let _ = List.iter (fun (mn,_)->memorize_last_result true mn)  accepted_pairs in 
-      !cs_walker ;;
       
    let refresh cs = 
       let fw = cs.Coma_state_t.frontier_with_unix_world in 
@@ -149,7 +131,7 @@ module Physical = struct
    
    let register_rootless_paths cs uc_paths =
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
-     modern_recompile cs unordered_mods ;;
+     Coma_state.modern_recompile cs unordered_mods ;;
    
 
    let rename_module cs old_middle_name new_nonslashed_name (new_fw,changes) =
@@ -174,12 +156,12 @@ module Physical = struct
          ("rm -f "^s_root^s_build_dir^
          (Dfa_module.to_line old_nm)^
          ".cm* ") in            
-     let cs4=modern_recompile cs3 [new_nm] in 
+     let cs4=Coma_state.modern_recompile cs3 [new_nm] in 
      cs4;;
    
    
    let rename_string_or_value cs changed_modules_in_any_order = 
-      modern_recompile cs changed_modules_in_any_order ;; 
+      Coma_state.modern_recompile cs changed_modules_in_any_order ;; 
    
    end;;
    
@@ -203,7 +185,7 @@ module Physical = struct
    let recompile cs = 
      let (cs2,changed_uc)=Physical.recompile cs  in 
      let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
-     Internal.modern_recompile cs2 unordered_mods ;;
+     Coma_state.modern_recompile cs2 unordered_mods ;;
      
    let refresh cs =
       let cs2=Physical.refresh (Coma_state.configuration cs)  in
