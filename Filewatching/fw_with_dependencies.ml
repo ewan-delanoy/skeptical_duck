@@ -1339,6 +1339,7 @@ let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let empty_one = Private.Exit.empty_one ;;
+let endingless_at_module = Private.endingless_at_module ;;
 let forget_modules = Private.Exit.forget_modules ;;
 let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;
 let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;
