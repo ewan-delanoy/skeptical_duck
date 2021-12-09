@@ -272,13 +272,15 @@ module Private = struct
   let list_values_from_module fw mn = Fw_with_dependencies.list_values_from_module (parent fw) mn ;;
   let show_value_occurrences fw mn = Fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
 
-  let up_to_date_elesses cs =
+  let up_to_date_elesses fw =
     Option.filter_and_unpack (
       fun mn->
-        if last_compilation_result_for_module cs mn
-        then Some(endingless_at_module cs mn)
+        if last_compilation_result_for_module fw mn
+        then Some(endingless_at_module fw mn)
         else None
-    )(dep_ordered_modules cs);;
+    )(dep_ordered_modules fw);;
+
+  let number_of_modules fw = Fw_with_dependencies.number_of_modules (parent fw) ;;  
 
   end ;;
   
@@ -286,6 +288,7 @@ let all_subdirectories = Private.all_subdirectories ;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let list_values_from_module = Private.list_values_from_module ;;
+let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
 let root = Private.root ;;
