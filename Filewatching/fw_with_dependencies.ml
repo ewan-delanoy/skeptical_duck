@@ -1291,7 +1291,7 @@ let show_value_occurrences fw t=
  let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
  print_string temp5;; 
 
-
+let number_of_modules fw = List.length (Order.get fw) ;;
 
 end;;
 
@@ -1315,6 +1315,7 @@ let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;
+let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.Exit.of_concrete_object ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;

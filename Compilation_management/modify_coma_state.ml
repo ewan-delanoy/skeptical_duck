@@ -399,9 +399,9 @@ module Physical = struct
          let initialize pcs =
          let new_cs = Coma_state.read_persistent_version (!pcs) in 
          pcs:=new_cs;;
-   
+
          let initialize_if_empty pcs =
-            if Coma_state.system_size (!pcs)  = 0 
+            if Coma_state.system_size (!pcs) = 0 
             then initialize pcs;;
    
          let internet_access pcs bowl=
