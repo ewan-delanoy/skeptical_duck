@@ -401,7 +401,7 @@ module Physical = struct
          pcs:=new_cs;;
 
          let initialize_if_empty pcs =
-            if Coma_state.system_size (!pcs) = 0 
+            if Coma_state.number_of_modules (!pcs) = 0 
             then initialize pcs;;
    
          let internet_access pcs bowl=
