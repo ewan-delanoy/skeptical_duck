@@ -29,9 +29,6 @@ let census_of_foreigners ()= Coma_state.census_of_foreigners (!(Private.main_ref
 let clean_debug_dir ()=Coma_state.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
 
-let decipher_path pathname= Coma_state.decipher_path (!(Private.main_ref)) pathname;;
-let decipher_module modname= Coma_state.decipher_module (!(Private.main_ref)) modname;;
-
 let directly_above modname=Coma_state.Almost_concrete.local_directly_above (!(Private.main_ref)) modname;;
 let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref)) modname;;
 
