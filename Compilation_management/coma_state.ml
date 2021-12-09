@@ -738,8 +738,6 @@ List.filter (fun ap->Substring.is_a_substring_of
   some_string (Io.read_whole_file ap)) temp1;;
 
 
-let system_size cs=List.length(dep_ordered_modules cs);;
-
 let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (qarent fw) ;;
 
 exception Inconsistent_constraints of Dfa_module_t.t*Dfa_module_t.t;;

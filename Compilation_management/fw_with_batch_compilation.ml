@@ -281,6 +281,10 @@ module Private = struct
     )(dep_ordered_modules fw);;
 
   let number_of_modules fw = Fw_with_dependencies.number_of_modules (parent fw) ;;  
+  
+  let set_gitpush_after_backup fw bowl = 
+    let new_parent = Fw_with_dependencies.set_gitpush_after_backup (parent fw) bowl in 
+    {fw with Fw_with_batch_compilation_t.parent = new_parent} ;; 
 
   end ;;
   
@@ -292,6 +296,7 @@ let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
 let root = Private.root ;;
+let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
