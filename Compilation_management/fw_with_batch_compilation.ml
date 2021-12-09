@@ -50,7 +50,7 @@ module Private = struct
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
       ) (printer_equipped_types fw) ;;
 
-  let all_subdirectories fw = Fw_with_dependencies.all_subdirectories fw ;;    
+  let all_subdirectories fw = Fw_with_dependencies.all_subdirectories (parent fw) ;;    
   
   let salt = "Fw_"^"with_batch_compilation.";;
     

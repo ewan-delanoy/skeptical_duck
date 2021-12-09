@@ -9,6 +9,7 @@ let qarent cs = {
    last_compilation_result_for_module = cs.Coma_state_t.last_compilation_result_for_module;
 } ;;
 
+let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 
 module Automatic = struct 
 
@@ -27,7 +28,6 @@ module Automatic = struct
   
   let frontier_with_unix_world cs = cs.Coma_state_t.frontier_with_unix_world;;
   let configuration cs=Fw_with_dependencies.configuration (frontier_with_unix_world cs) ;;
-  let root cs= Fw_configuration.root (configuration cs);;
   let backup_dir cs=(configuration cs).Fw_configuration_t.dir_for_backup;;
   let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
   let github_url cs=(configuration cs).Fw_configuration_t.github_url;;
@@ -77,8 +77,7 @@ module Automatic = struct
      _ -> raise(Module_not_found(mn));;
   
   let all_subdirectories cs = 
-    Fw_with_dependencies.all_subdirectories
-    (frontier_with_unix_world cs) ;;
+    Fw_with_batch_compilation.all_subdirectories (qarent cs) ;;
   
   
   let printer_equipped_types cs =
@@ -296,7 +295,7 @@ end ;;
 
 
 
-let root =Automatic.root;;
+
 let backup_dir =Automatic.backup_dir;;
 let gitpush_after_backup =Automatic.gitpush_after_backup;;
 let github_url =Automatic.github_url;;
@@ -329,7 +328,6 @@ let change_one_module_name = Automatic.change_one_module_name ;;
 let configuration = Automatic.configuration ;;
 let empty_one = Automatic.empty_one ;;
 let impose_last_changes = Automatic.impose_last_changes ;;
-let root = Automatic.root ;;
 let set_push_after_backup = Automatic.set_push_after_backup ;;
 let to_concrete_object = Automatic.to_concrete_object ;;
 
@@ -397,20 +395,12 @@ let all_rootlesses cs =
    List.flatten(Image.image (rootless_paths_at_module cs) (dep_ordered_modules cs));;
 
 
-let up_to_date_elesses cs =
-   Option.filter_and_unpack (
-     fun mn->
-       if last_compilation_result_for_module cs mn
-       then Some(endingless_at_module cs mn)
-       else None
-   )(dep_ordered_modules cs);;
+let up_to_date_elesses cs = 
+  Fw_with_batch_compilation.up_to_date_elesses (qarent cs) ;; 
 
-let preq_types_with_extra_info cs =
-   let root = root cs  in 
-   Image.image (fun middle->
-    let mn = Dfn_middle.to_module middle in 
-    (Dfn_join.root_to_middle root middle,last_compilation_result_for_module cs mn)
-   ) (printer_equipped_types cs) ;;
+let preq_types_with_extra_info cs = 
+    Fw_with_batch_compilation.preq_types_with_extra_info (qarent cs) ;; 
+   
 
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 
@@ -920,15 +910,6 @@ let register_mlx_file_on_monitored_modules cs rless =
   if temp3=[]
   then Automatic.set_in_each cs nm (pr_end,mlir,prmt,mlimt,libned,dirfath,allanc,dirned,is_updated) 
   else  cs ;;
-
-
-let uple_form cs=
-  (root cs,
-   up_to_date_elesses cs,
-   to_concrete_object cs,
-   all_subdirectories cs,
-   preq_types_with_extra_info cs
-   );;
 
 
 
