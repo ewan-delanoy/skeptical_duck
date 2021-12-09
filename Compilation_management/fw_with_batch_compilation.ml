@@ -414,6 +414,7 @@ let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
+let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
 let remove_files = Private.remove_files ;;
 let rename_string_or_value = Private.rename_string_or_value ;;

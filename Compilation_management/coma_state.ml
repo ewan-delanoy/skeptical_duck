@@ -16,9 +16,30 @@ let tneraq fw = {
 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
+let forget_modules cs mods = 
+  let new_parent = Fw_with_batch_compilation.forget_modules (qarent cs) mods in 
+  tneraq new_parent ;; 
+let inspect_and_update cs  = 
+    let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (qarent cs)  in 
+    (tneraq new_parent,changed_usual_compilables) ;;   
 let modern_recompile cs changed_modules_in_any_order = 
   let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
   tneraq new_parent ;; 
+let of_configuration config = 
+    let new_parent = Fw_with_batch_compilation.of_configuration config in 
+    tneraq new_parent ;;   
+let register_rootless_paths cs mod_names = 
+    let (new_parent,uc_paths) = Fw_with_batch_compilation.register_rootless_paths (qarent cs) mod_names in 
+    (tneraq new_parent,uc_paths) ;;      
+let relocate_module_to cs mod_name new_subdir = 
+    let new_parent = Fw_with_batch_compilation.relocate_module_to (qarent cs) mod_name new_subdir in 
+    tneraq new_parent ;;    
+let rename_string_or_value cs old_sov new_sov = 
+    let (new_parent,changed_modules_in_any_order) = Fw_with_batch_compilation.rename_string_or_value (qarent cs) old_sov new_sov  in 
+    (tneraq new_parent,changed_modules_in_any_order) ;; 
+let rename_subdirectory_as cs (old_subdir,new_subdir) = 
+    let new_parent = Fw_with_batch_compilation.rename_subdirectory_as (qarent cs) (old_subdir,new_subdir) in 
+    tneraq new_parent ;;      
 let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 let set_gitpush_after_backup cs bowl = 
   let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
