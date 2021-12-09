@@ -286,12 +286,27 @@ module Private = struct
     let new_parent = Fw_with_dependencies.set_gitpush_after_backup (parent fw) bowl in 
     {fw with Fw_with_batch_compilation_t.parent = new_parent} ;; 
 
+  
+  let modern_recompile fw changed_modules_in_any_order = 
+      if changed_modules_in_any_order=[] then fw else
+      let (all_deps,new_deps,changed_modules) = 
+        Fw_with_dependencies.below_several (parent fw) changed_modules_in_any_order in     
+      let _ = Strung.announce 
+      ~trailer:("The following modules need to be recompiled \n"^
+      "because they depend on directly changed modules :")
+         ~printer:Dfa_module.to_line ~items:new_deps 
+         ~separator: ", " in 
+      let (fw2,rejected_pairs,accepted_pairs)=
+        Ocaml_target_making.usual_feydeau fw all_deps in 
+      fw2 ;;
+
   end ;;
   
 let all_subdirectories = Private.all_subdirectories ;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let list_values_from_module = Private.list_values_from_module ;;
+let modern_recompile = Private.modern_recompile ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
