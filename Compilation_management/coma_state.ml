@@ -37,6 +37,9 @@ let relocate_module_to cs mod_name new_subdir =
 let remove_files cs rps = 
     let new_parent = Fw_with_batch_compilation.remove_files (qarent cs) rps in 
     tneraq new_parent ;;        
+let rename_module cs old_middle_name new_nonslashed_name = 
+    let (new_parent,extra) = Fw_with_batch_compilation.rename_module (qarent cs) old_middle_name new_nonslashed_name in 
+    (tneraq new_parent,extra) ;;   
 let rename_string_or_value cs old_sov new_sov = 
     let (new_parent,changed_modules_in_any_order) = Fw_with_batch_compilation.rename_string_or_value (qarent cs) old_sov new_sov  in 
     (tneraq new_parent,changed_modules_in_any_order) ;; 
