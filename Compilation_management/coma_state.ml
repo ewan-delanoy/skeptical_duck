@@ -14,6 +14,8 @@ let tneraq fw = {
    last_compilation_result_for_module = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;
 } ;;
 
+let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
+let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
 let modern_recompile cs changed_modules_in_any_order = 
   let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
   tneraq new_parent ;; 
@@ -21,6 +23,8 @@ let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 let set_gitpush_after_backup cs bowl = 
   let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
   tneraq new_parent ;; 
+let start_debugging cs = Fw_with_batch_compilation.start_debugging (qarent cs) ;; 
+let start_executing cs short_path = Fw_with_batch_compilation.start_executing (qarent cs) short_path;;  
 
 module Automatic = struct 
 
