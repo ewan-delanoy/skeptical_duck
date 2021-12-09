@@ -9,7 +9,15 @@ let qarent cs = {
    last_compilation_result_for_module = cs.Coma_state_t.last_compilation_result_for_module;
 } ;;
 
+let tneraq fw = {
+   Coma_state_t.frontier_with_unix_world = fw.Fw_with_batch_compilation_t.parent ;
+   last_compilation_result_for_module = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;
+} ;;
+
 let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
+let set_gitpush_after_backup cs bowl = 
+  let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
+  tneraq new_parent ;; 
 
 module Automatic = struct 
 
