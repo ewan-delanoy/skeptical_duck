@@ -49,6 +49,8 @@ module Private = struct
        let mn = Dfn_middle.to_module middle in 
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
       ) (printer_equipped_types fw) ;;
+
+  let all_subdirectories fw = Fw_with_dependencies.all_subdirectories fw ;;    
   
   let salt = "Fw_"^"with_batch_compilation.";;
     
@@ -270,17 +272,28 @@ module Private = struct
   let list_values_from_module fw mn = Fw_with_dependencies.list_values_from_module (parent fw) mn ;;
   let show_value_occurrences fw mn = Fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
 
+  let up_to_date_elesses cs =
+    Option.filter_and_unpack (
+      fun mn->
+        if last_compilation_result_for_module cs mn
+        then Some(endingless_at_module cs mn)
+        else None
+    )(dep_ordered_modules cs);;
 
   end ;;
   
+let all_subdirectories = Private.all_subdirectories ;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let list_values_from_module = Private.list_values_from_module ;;
 let of_concrete_object = Private.of_concrete_object ;;
+let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
+let root = Private.root ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
 let to_concrete_object = Private.to_concrete_object ;;  
+let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
   
   
