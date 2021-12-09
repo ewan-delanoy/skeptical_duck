@@ -417,6 +417,7 @@ let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
 let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
 let remove_files = Private.remove_files ;;
+let rename_module = Private.rename_module ;;
 let rename_string_or_value = Private.rename_string_or_value ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let root = Private.root ;;

@@ -6,7 +6,7 @@
 
 
 
-
+(*
 module Physical = struct 
 
    let forget_modules cs mod_names=
@@ -104,8 +104,10 @@ module Physical = struct
    
    
    end;;
+*)
    
-   module Internal = struct
+
+module Internal = struct
    
    let forget_modules cs mns =
      let temp1 = Image.image Dfa_module.to_line mns in 
@@ -134,7 +136,7 @@ module Physical = struct
      Coma_state.modern_recompile cs unordered_mods ;;
    
 
-   let rename_module cs old_middle_name new_nonslashed_name (new_fw,changes) =
+   let rename_module cs old_middle_name new_nonslashed_name (cs2,changes) =
      let root_dir=Coma_state.root cs in 
      let old_nm=Dfn_middle.to_module old_middle_name in 
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
@@ -145,8 +147,7 @@ module Physical = struct
           if mn = old_nm 
           then (new_nm,false)
           else old_pair    
-     ) old_list_of_cmpl_results in 
-     let cs2 = Coma_state.passive_constructor new_fw in  
+     ) old_list_of_cmpl_results in   
      let cs3 = { cs2 with 
        Coma_state_t.last_compilation_result_for_module = new_list_of_cmpl_results
      } in 
@@ -165,7 +166,7 @@ module Physical = struct
    
    end;;
    
-   module Physical_followed_by_internal = struct
+module Physical_followed_by_internal = struct
    
    exception Forget_modules_exn of Dfa_module_t.t  list ;;
    
@@ -174,40 +175,40 @@ module Physical = struct
      if check <> []
      then raise(Forget_modules_exn(check))
      else 
-     let cs2=Physical.forget_modules cs mod_names  in
+     let cs2=Coma_state.forget_modules cs mod_names  in
      Internal.forget_modules cs2 mod_names ;;
    
    exception Forget_rootless_paths_exn of Dfa_module_t.t list ;;
    
    let forget_nonmodular_rootlesses cs rootless_paths= 
-     Physical.forget_nonmodular_rootlesses cs rootless_paths  ;;
+     Coma_state.remove_files cs rootless_paths  ;;
    
    let recompile cs = 
-     let (cs2,changed_uc)=Physical.recompile cs  in 
+     let (cs2,changed_uc)=Coma_state.inspect_and_update cs  in 
      let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
      Coma_state.modern_recompile cs2 unordered_mods ;;
      
    let refresh cs =
-      let cs2=Physical.refresh (Coma_state.configuration cs)  in
+      let cs2=Coma_state.of_configuration (Coma_state.configuration cs)  in
       Internal.refresh cs2;;
    
    let register_rootless_paths cs rootless_paths= 
-      let (cs2,triple)=Physical.register_rootless_paths cs rootless_paths in
+      let (cs2,triple)=Coma_state.register_rootless_paths cs rootless_paths in
       Internal.register_rootless_paths cs2 triple;;
    
    let relocate_module_to cs mod_name new_subdir= 
-     Physical.relocate_module_to cs mod_name  new_subdir ;;
+     Coma_state.relocate_module_to cs mod_name  new_subdir ;;
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
-      let (new_fw,changes)=Physical.rename_module cs old_middle_name new_nonslashed_name in
-      Internal.rename_module cs old_middle_name new_nonslashed_name (new_fw,changes);;
+      let (cs2,changes)=Coma_state.rename_module cs old_middle_name new_nonslashed_name in
+      Internal.rename_module cs old_middle_name new_nonslashed_name (cs2,changes);;
    
    let rename_subdirectory cs old_subdir new_subdir=
-      Physical.rename_subdirectory cs (old_subdir,new_subdir) ;;
+      Coma_state.rename_subdirectory_as cs (old_subdir,new_subdir) ;;
    
    let rename_string_or_value cs old_sov new_sov =
-      let (cs2,changed_modules_in_any_order)=Physical.rename_string_or_value cs old_sov new_sov in
+      let (cs2,changed_modules_in_any_order)=Coma_state.rename_string_or_value cs old_sov new_sov in
       Internal.rename_string_or_value cs2 changed_modules_in_any_order;;
    
    end;;

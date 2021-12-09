@@ -33,7 +33,10 @@ let register_rootless_paths cs mod_names =
     (tneraq new_parent,uc_paths) ;;      
 let relocate_module_to cs mod_name new_subdir = 
     let new_parent = Fw_with_batch_compilation.relocate_module_to (qarent cs) mod_name new_subdir in 
-    tneraq new_parent ;;    
+    tneraq new_parent ;;  
+let remove_files cs rps = 
+    let new_parent = Fw_with_batch_compilation.remove_files (qarent cs) rps in 
+    tneraq new_parent ;;        
 let rename_string_or_value cs old_sov new_sov = 
     let (new_parent,changed_modules_in_any_order) = Fw_with_batch_compilation.rename_string_or_value (qarent cs) old_sov new_sov  in 
     (tneraq new_parent,changed_modules_in_any_order) ;; 
