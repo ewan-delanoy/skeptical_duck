@@ -120,12 +120,7 @@ module Automatic = struct
      to_t({ccs with Coma_state_t.frontier_with_unix_world=v});;
   
   
-  let set_push_after_backup cs bowl = let ccs=of_t cs in 
-       let old_frontier = ccs.Coma_state_t.frontier_with_unix_world in 
-       let new_frontier = 
-        Fw_with_dependencies.set_gitpush_after_backup 
-         old_frontier bowl  in 
-       to_t({ccs with Coma_state_t.frontier_with_unix_world=new_frontier });;
+
   
   let set_last_compilation_result_for_module cs mn v=
       let ccs=of_t cs in 
@@ -336,7 +331,6 @@ let change_one_module_name = Automatic.change_one_module_name ;;
 let configuration = Automatic.configuration ;;
 let empty_one = Automatic.empty_one ;;
 let impose_last_changes = Automatic.impose_last_changes ;;
-let set_push_after_backup = Automatic.set_push_after_backup ;;
 let to_concrete_object = Automatic.to_concrete_object ;;
 
 

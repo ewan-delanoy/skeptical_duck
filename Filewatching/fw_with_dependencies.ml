@@ -1293,9 +1293,26 @@ let show_value_occurrences fw t=
 
 let number_of_modules fw = List.length (Order.get fw) ;;
 
+let below fw eless=
+  let mods_in_order = Order.get fw in 
+  let mn0=Dfn_endingless.to_module eless  in
+  Option.filter_and_unpack(fun (mn,_)->
+    if List.mem mn0 (snd(List.assoc mn mods_in_order))
+    then Some(mn)
+    else None) mods_in_order;;
+
+let below_several fw mods = 
+  let all_mods_in_order = Image.image fst (Order.get fw) in 
+  let below_module = (fun mn->below fw (endingless_at_module fw mn)) in 
+  let temp1 = List.flatten(mods :: (Image.image below_module mods)) in
+  let all_deps = List.filter (fun mn->List.mem mn temp1) all_mods_in_order in 
+  let (mods_in_order,new_deps) = List.partition (fun mn->List.mem mn mods) all_deps in 
+  (all_deps,new_deps,mods_in_order) ;;
+
 end;;
 
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
+let below_several = Private.below_several ;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
 let check_ending_on_module = Private.check_ending_on_module ;;
 let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;

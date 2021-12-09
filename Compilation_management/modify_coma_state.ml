@@ -342,7 +342,7 @@ module Physical = struct
             cs2;;
    
          let internet_access cs bowl=   
-            let cs2=Coma_state.set_push_after_backup cs bowl in 
+            let cs2=Coma_state.set_gitpush_after_backup cs bowl in 
             let _=Save_coma_state.save cs2 in 
             cs2;;
          
