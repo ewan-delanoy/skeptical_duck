@@ -4,7 +4,7 @@
 
 *)
 
-
+exception Absent_module of string;;
 
 module Private = struct
 
@@ -1309,13 +1309,33 @@ let below_several fw mods =
   let (mods_in_order,new_deps) = List.partition (fun mn->List.mem mn mods) all_deps in 
   (all_deps,new_deps,mods_in_order) ;;
 
+let decipher_path fw x=Find_suitable_ending.find_file_location 
+  (root fw) (All_subdirectories.get fw) x;;
+
+let decipher_module fw capitalized_or_not_x=
+  let x=String.uncapitalize_ascii capitalized_or_not_x in 
+  let s=Cull_string.before_rightmost_possibly_all x '.' in
+  match (Option.find_and_stop(
+      fun edg->
+      let t=s^(Dfa_ending.connectable_to_modulename edg) in 
+      try(Some(decipher_path fw t)) with _->None
+  ) Dfa_ending.all_ocaml_endings) with
+  None->raise(Absent_module(x))
+  |Some(ap)->
+    let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root fw) in 
+    let mlx = Dfn_join.root_to_rootless (root fw) rootless_path in 
+    Dfn_full.to_endingless mlx ;;
+
 end;;
 
+let acolytes_at_module = Private.acolytes_at_module ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let below_several = Private.below_several ;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
 let check_ending_on_module = Private.check_ending_on_module ;;
 let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;
+let decipher_module = Private.decipher_module ;;
+let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let empty_one = Private.Exit.empty_one ;;

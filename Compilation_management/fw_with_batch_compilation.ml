@@ -4,6 +4,8 @@
 
 *)
 
+   
+exception Rename_string_or_value_exn of string ;;
 
 module Private = struct 
 
@@ -17,7 +19,10 @@ module Private = struct
   let set_cmpl_results fw new_list = {fw with 
     Fw_with_batch_compilation_t.last_compilation_result_for_module = new_list ;
   } ;; 
-  
+  let set_parent fw new_parent = {fw with 
+    Fw_with_batch_compilation_t.parent = new_parent ;
+  } ;;  
+
   let ancestors_for_module fw mn = Fw_with_dependencies.ancestors_for_module (parent fw) mn ;;
   let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
   let printer_equipped_types fw = Fw_with_dependencies.printer_equipped_types (parent fw) ;;   
@@ -299,6 +304,102 @@ module Private = struct
       let (fw2,rejected_pairs,accepted_pairs)=
         Ocaml_target_making.usual_feydeau fw all_deps in 
       fw2 ;;
+
+   let forget_modules fw mod_names=
+      let new_parent = Fw_with_dependencies.forget_modules (parent fw) mod_names in   
+      set_parent fw new_parent;;
+   
+   let remove_files fw rootless_paths=
+      let (new_parent,_)=Fw_with_dependencies.remove_files (parent fw) rootless_paths in   
+      set_parent fw new_parent ;;   
+   
+   let inspect_and_update fw =
+      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_))
+         =Fw_with_dependencies.inspect_and_update (parent fw) in   
+      (set_parent fw new_parent,changed_usual_compilables);;
+   
+   let of_configuration config =
+      let root = config.Fw_configuration_t.root in 
+      let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
+       Coma_constant.minimal_set_of_needed_dirs 
+           Coma_constant.conventional_files_with_minimal_content) in 
+      let initial_parent = Fw_with_dependencies.of_configuration config in 
+      {
+       Fw_with_batch_compilation_t.parent = initial_parent ;
+       last_compilation_result_for_module = Image.image (
+           fun mn -> (mn,false)
+       ) (Fw_with_dependencies.dep_ordered_modules initial_parent);
+      };;
+      
+   
+   let register_rootless_paths fw rps=
+      let (new_parent,((ac_paths,uc_paths,nc_paths),_))=
+       Fw_with_dependencies.register_rootless_paths (parent fw) rps in   
+      let old_list_of_cmpl_results= fw.Fw_with_batch_compilation_t.last_compilation_result_for_module in 
+     let new_list_of_cmpl_results = Image.image (
+        fun mn -> 
+          match List.assoc_opt mn old_list_of_cmpl_results with 
+          None -> (mn,false)
+          |Some(old_res) -> (mn,old_res)
+     ) (Fw_with_dependencies.dep_ordered_modules new_parent) in 
+     let cs2 = { 
+      Fw_with_batch_compilation_t.parent = new_parent ;
+       last_compilation_result_for_module = new_list_of_cmpl_results
+     } in 
+      (cs2,uc_paths) ;;
+   
+
+   let relocate_module_to fw mod_name new_subdir=
+      let (new_parent,_)=Fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
+      set_parent fw new_parent ;;
+   
+   let rename_module fw old_middle_name new_nonslashed_name=
+     let old_nm=Dfn_middle.to_module old_middle_name in
+     let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
+     let old_parent = parent fw in 
+     let separated_acolytes_below=Option.filter_and_unpack(
+       fun mn->
+        if List.mem old_nm (Fw_with_dependencies.ancestors_for_module old_parent mn)
+       then Some(Image.image (Dfn_full.to_rootless) (Fw_with_dependencies.acolytes_at_module old_parent mn))
+       else None
+   ) (Fw_with_dependencies.dep_ordered_modules old_parent) in
+     let all_acolytes_below=List.flatten separated_acolytes_below in
+     let (new_parent,extra) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
+      old_parent (old_nm,new_nm,all_acolytes_below) in 
+      (set_parent fw new_parent,extra);;
+   
+   let rename_subdirectory fw (old_subdir,new_subdir)=
+      let (new_parent,_)=Fw_with_dependencies.rename_subdirectory_as 
+         (parent fw) (old_subdir,new_subdir) in   
+         set_parent fw new_parent ;;
+   
+   let rename_string_or_value fw old_sov new_sov =
+      let old_parent = parent fw in 
+      let (new_parent,changed_rootlesses)=(
+         if not(String.contains old_sov '.')
+         then let (parent1,changes1) = Fw_with_dependencies.replace_string old_parent (old_sov,new_sov) in 
+              (parent1,Image.image fst changes1)
+         else 
+              let j=Substring.leftmost_index_of_in "." old_sov in
+              if j<0 
+              then raise(Rename_string_or_value_exn(old_sov))
+              else let module_name=Cull_string.beginning (j-1) old_sov in
+                   let endingless=Fw_with_dependencies.decipher_module old_parent  module_name 
+                   and path=Fw_with_dependencies.decipher_path old_parent  module_name in 
+                   let nm=Dfn_endingless.to_module endingless in
+                   let pre_temp2=(Fw_with_dependencies.ancestors_for_module old_parent nm)@[nm] in
+                   let temp2=Image.image (Fw_with_dependencies.endingless_at_module old_parent) pre_temp2 in
+                   let preceding_files=Image.image  (fun eless2->
+                        Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
+                   ) temp2 in
+                   let (parent2,changes2) = Fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_sov,new_sov)) in 
+                   (parent2,Image.image fst changes2) 
+      ) in 
+      let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+      (set_parent fw new_parent,changed_modules_in_any_order);;       
+   
+       
+
 
   end ;;
   
