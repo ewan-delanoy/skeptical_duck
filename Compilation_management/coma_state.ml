@@ -14,6 +14,9 @@ let tneraq fw = {
    last_compilation_result_for_module = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;
 } ;;
 
+let modern_recompile cs changed_modules_in_any_order = 
+  let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
+  tneraq new_parent ;; 
 let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 let set_gitpush_after_backup cs bowl = 
   let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
