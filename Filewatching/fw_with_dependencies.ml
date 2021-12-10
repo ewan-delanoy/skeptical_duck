@@ -1325,14 +1325,20 @@ let decipher_module fw capitalized_or_not_x=
     let rootless_path = Dfn_common.decompose_absolute_path_using_root ap (root fw) in 
     let mlx = Dfn_join.root_to_rootless (root fw) rootless_path in 
     Dfn_full.to_endingless mlx ;;
+  
+  let check_that_no_change_has_occurred fw =
+      Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
+      
+end ;;
 
-end;;
+
 
 let acolytes_at_module = Private.acolytes_at_module ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let below_several = Private.below_several ;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
 let check_ending_on_module = Private.check_ending_on_module ;;
+let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
