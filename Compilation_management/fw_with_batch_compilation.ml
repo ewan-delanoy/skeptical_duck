@@ -418,7 +418,10 @@ module Private = struct
           let old_parent = parent fw in 
           let new_parent = Fw_with_dependencies.reflect_latest_changes_in_github old_parent opt_msg in 
           set_parent fw new_parent ;;       
-        
+  
+  let modules_using_value fw module_name =
+        Fw_with_dependencies.modules_using_value (parent fw) module_name;;       
+
   end ;;
   
 
@@ -432,6 +435,7 @@ let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
+let modules_using_value = Private.modules_using_value ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
