@@ -263,6 +263,8 @@ module Private = struct
 
       };; 
 
+      let recompute_mtime fw rootless = File_watcher.recompute_mtime (parent fw) rootless ;;   
+
 end ;;
 
 let compute_all_small_details = Private.compute_all_small_details ;;
@@ -298,6 +300,8 @@ let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 
 let partition_for_singles = Private.canonical_tripartition ;; 
+
+let recompute_mtime = Private.recompute_mtime ;; 
 
 let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
 
