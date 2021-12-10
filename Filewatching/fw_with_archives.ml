@@ -262,9 +262,13 @@ module Private = struct
          subdirs_for_archived_mlx_files = subdirs;
 
       };; 
-
+     
+   let check_that_no_change_has_occurred fw =
+      File_watcher.check_that_no_change_has_occurred (parent fw) ;; 
       
 end ;;
+
+let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 
 let compute_all_small_details = Private.compute_all_small_details ;;
 
