@@ -25,6 +25,7 @@ let forget_modules cs mods =
 let inspect_and_update cs  = 
     let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (qarent cs)  in 
     (tneraq new_parent,changed_usual_compilables) ;;   
+let latest_changes fw = Fw_with_batch_compilation.latest_changes (qarent fw)  ;;      
 let modern_recompile cs changed_modules_in_any_order = 
   let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
   tneraq new_parent ;; 
@@ -872,18 +873,6 @@ let check_for_possible_change cs mn=
    )   
   ;;
   
-
-
-let latest_changes cs = 
-  let fw = Automatic.frontier_with_unix_world cs in 
-  let par1 = fw.Fw_with_dependencies_t.parent in 
-  let par2 = par1.Fw_with_small_details_t.parent in 
-  let par3 = par2.Fw_with_archives_t.parent in 
-  let (_,changed_files) = File_watcher.inspect_and_update ~verbose:false par3 in 
-  let (a_files,u_files,nc_files) = Fw_with_archives.partition_for_singles par2 changed_files in 
-  let im = Image.image Dfn_rootless.to_line in 
-  (im a_files,im u_files,im nc_files);;
-
 
 
 let printer_equipped_types_from_data cs=
