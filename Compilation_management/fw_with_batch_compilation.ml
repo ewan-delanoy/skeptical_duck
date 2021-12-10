@@ -422,6 +422,8 @@ module Private = struct
   let modules_using_value fw module_name =
         Fw_with_dependencies.modules_using_value (parent fw) module_name;;       
 
+  let latest_changes fw = Fw_with_dependencies.latest_changes (parent fw)  ;;   
+
   end ;;
   
 
@@ -433,6 +435,7 @@ let clean_exec_dir = Private.clean_exec_dir;;
 let default_constructor = Private.default_constructor ;;
 let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
+let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
 let modules_using_value = Private.modules_using_value ;;
