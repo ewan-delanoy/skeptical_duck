@@ -317,19 +317,21 @@ module Private = struct
       let (new_parent,((changed_archived_compilables,changed_usual_compilables),_))
          =Fw_with_dependencies.inspect_and_update (parent fw) in   
       (set_parent fw new_parent,changed_usual_compilables);;
-   
+
+   let default_constructor fw = {
+    Fw_with_batch_compilation_t.parent = fw ;
+    last_compilation_result_for_module = Image.image (
+        fun mn -> (mn,false)
+    ) (Fw_with_dependencies.dep_ordered_modules fw);
+   };;   
+
    let of_configuration config =
       let root = config.Fw_configuration_t.root in 
       let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
       let initial_parent = Fw_with_dependencies.of_configuration config in 
-      {
-       Fw_with_batch_compilation_t.parent = initial_parent ;
-       last_compilation_result_for_module = Image.image (
-           fun mn -> (mn,false)
-       ) (Fw_with_dependencies.dep_ordered_modules initial_parent);
-      };;
+      default_constructor initial_parent;;
       
    
    let register_rootless_paths fw rps=
@@ -425,6 +427,7 @@ let all_subdirectories = Private.all_subdirectories ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
+let default_constructor = Private.default_constructor ;;
 let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let list_values_from_module = Private.list_values_from_module ;;

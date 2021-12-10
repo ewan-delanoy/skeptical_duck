@@ -18,6 +18,7 @@ let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
+let default_constructor = tneraq ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (qarent cs) mods in 
   tneraq new_parent ;; 
@@ -60,6 +61,17 @@ let start_executing cs short_path = Fw_with_batch_compilation.start_executing (q
 let usual_batch cs modnames = 
   let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (qarent cs) modnames in 
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
+
+
+  let passive_constructor fw = 
+    let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
+    {
+     Coma_state_t.frontier_with_unix_world= fw;
+     last_compilation_result_for_module = Image.image (
+                            fun mn -> (mn,false) 
+                        ) modules_in_order  ;
+    };;
+
 
 
 module Automatic = struct 
@@ -198,14 +210,7 @@ module Automatic = struct
   });;
   
   
-  let passive_constructor fw = 
-      let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
-      to_t({
-       Coma_state_t.frontier_with_unix_world= fw;
-       last_compilation_result_for_module = Image.image (
-                              fun mn -> (mn,false) 
-                          ) modules_in_order  ;
-  });;
+  
   
 
   let change_one_module_name wrapped_cs old_mn new_mn=
@@ -962,11 +967,11 @@ exception FileWithDependencies of
 Dfn_full_t.t*(Dfa_module_t.t list);;
 
 let read_persistent_version x=
-        let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
-        let ap= Dfn_full.to_absolute_path full_path in
-        let the_archive=Io.read_whole_file ap in
-        let archived_object = Crobj_parsing.parse the_archive in 
-        Automatic.of_concrete_object archived_object;;      
+  let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
+  let ap= Dfn_full.to_absolute_path full_path in
+  let the_archive=Io.read_whole_file ap in
+  let archived_object = Crobj_parsing.parse the_archive in 
+  Automatic.of_concrete_object archived_object;;      
 
 module Try_to_register=struct
 
@@ -1205,14 +1210,5 @@ let choose_automatic_if_possible cs modulename =
     then auto_version
     else modulename ;;      
 
-let passive_constructor = Automatic.passive_constructor ;;
 
-let below_several cs mods = 
-  let all_mods_in_order = dep_ordered_modules cs in 
-  let below_module = (fun mn->below cs (endingless_at_module cs mn)) in 
-  let temp1 = List.flatten(mods :: (Image.image below_module mods)) in
-  let all_deps = List.filter (fun mn->List.mem mn temp1) all_mods_in_order in 
-  let (mods_in_order,new_deps) = List.partition (fun mn->List.mem mn mods) all_deps in 
-  (all_deps,new_deps,mods_in_order) ;;
-    
 
