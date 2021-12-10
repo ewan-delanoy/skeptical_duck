@@ -36,10 +36,12 @@ module Private = struct
       let old_parent = parent fw in 
       let (new_parent,file_exists) = File_watcher.overwrite_file_if_it_exists old_parent rl new_content in 
       (update_parent fw new_parent,file_exists);;
+
    let reflect_latest_changes_in_github fw opt_msg = 
       let old_parent = parent fw in 
       let new_parent = File_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
       update_parent fw new_parent ;; 
+      
    let register_rootless_paths fw rls = 
       let old_parent = parent fw in 
       let new_parent = File_watcher.register_rootless_paths old_parent rls in 

@@ -30,6 +30,9 @@ let modern_recompile cs changed_modules_in_any_order =
 let of_configuration config = 
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     tneraq new_parent ;;   
+let reflect_latest_changes_in_github cs opt_msg=
+    let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (qarent cs) opt_msg in 
+    tneraq new_parent ;;   
 let register_rootless_paths cs mod_names = 
     let (new_parent,uc_paths) = Fw_with_batch_compilation.register_rootless_paths (qarent cs) mod_names in 
     (tneraq new_parent,uc_paths) ;;      
@@ -1156,10 +1159,7 @@ let census_of_foreigners cs=
    List.filter (test_for_foreign the_root) list1;;
 
 
-let reflect_latest_changes_in_github cs opt_msg=
-  let old_fw = cs.Coma_state_t.frontier_with_unix_world in 
-  let new_fw = Fw_with_dependencies.reflect_latest_changes_in_github old_fw opt_msg in 
-  {cs with Coma_state_t.frontier_with_unix_world = new_fw} ;;
+
 
 let check_module_sequence_for_forgettability cs l=
   let modules_below = List.filter (
