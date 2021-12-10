@@ -1134,40 +1134,6 @@ end;;
 
 
 
-module Recent_changes = struct
-           
-    exception Recompilation_needed of Dfa_module_t.t list;;       
-
-            let check_for_change_at_module_and_ending cs mn edg=
-               let hm=endingless_at_module cs mn in 
-               (md_recompute_modification_time hm edg)
-               <>(get_modification_time cs mn edg);;
-
-            let check_for_change_at_module  cs mn=
-               let pr_ending = principal_ending_for_module cs mn in 
-               let endings = (
-                   if mli_presence_for_module cs mn 
-                   then  [Dfa_ocaml_ending_t.Mli;pr_ending]
-                   else [pr_ending]
-               ) in 
-            List.exists (check_for_change_at_module_and_ending cs mn) endings ;;
-          
-
-            let detect_changes cs =
-            Option.filter_and_unpack (
-               fun mn->
-               if check_for_change_at_module cs mn 
-               then Some(mn)
-               else None
-            ) (dep_ordered_modules cs);;
-
-            let check_for_changes cs = 
-            let changes = detect_changes cs in 
-            if changes<>[]
-            then raise(Recompilation_needed(changes))
-            else ();;
-
-end;;    
 
 let test_for_foreign root ap =
    match (
