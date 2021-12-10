@@ -351,7 +351,11 @@ let compute_changes_and_announce_them fw ~verbose=
                ~printer:Dfn_rootless.to_line ~items:changed_files 
                ~separator: ", "
    ) in
-   (new_files,changed_files);;     
+   (new_files,changed_files);;   
+   
+let latest_changes fw =
+   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose:false  in 
+   changed_files ;;
 
 let inspect_and_update fw ~verbose = 
     let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
@@ -526,6 +530,8 @@ let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if
 let inspect_and_update = Private.inspect_and_update;;
 
 let last_noticed_changes = Automatic.last_noticed_changes ;;
+
+let latest_changes = Private.latest_changes ;;
 
 let of_concrete_object = Automatic.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;

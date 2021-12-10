@@ -28,6 +28,8 @@ let inspect_and_update cs  =
 let modern_recompile cs changed_modules_in_any_order = 
   let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
   tneraq new_parent ;; 
+let modules_using_value cs module_name =
+    Fw_with_batch_compilation.modules_using_value (qarent cs) module_name ;;  
 let of_configuration config = 
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     tneraq new_parent ;;   
@@ -831,16 +833,6 @@ Option.filter_and_unpack (fun mn->
   Some(Dfn_full.to_absolute_path mlx)
 ) (dep_ordered_modules cs);;
 
-let modules_using_value cs value_name =
-  Option.filter_and_unpack (fun mn->
-  let eless=endingless_at_module cs mn
-  and pr_end=principal_ending_for_module cs mn in
-  let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
-   let ap=Dfn_full.to_absolute_path mlx in
-   if Substring.is_a_substring_of 
-       value_name (Io.read_whole_file ap)
-   then Some eless
-   else None ) (dep_ordered_modules cs);;
 
 
 
