@@ -408,13 +408,16 @@ module Private = struct
       ) in 
       let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
       (set_parent fw new_parent,changed_modules_in_any_order);;       
-   
-       
-
-
+  
+  let check_that_no_change_has_occurred fw =
+        Fw_with_dependencies.check_that_no_change_has_occurred (parent fw) ;; 
+        
   end ;;
   
+
+  
 let all_subdirectories = Private.all_subdirectories ;;
+let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let forget_modules = Private.forget_modules ;;
