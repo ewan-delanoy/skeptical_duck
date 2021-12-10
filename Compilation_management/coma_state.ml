@@ -14,6 +14,8 @@ let tneraq fw = {
    last_compilation_result_for_module = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;
 } ;;
 
+let check_that_no_change_has_occurred cs =
+  Fw_with_batch_compilation.check_that_no_change_has_occurred (qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
 let forget_modules cs mods = 
