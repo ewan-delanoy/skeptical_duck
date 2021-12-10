@@ -107,11 +107,11 @@ module Physical_followed_by_internal = struct
    module After_checking = struct
    
          let forget_modules cs mod_names=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.forget_modules cs mod_names;; 
    
          let forget_nonmodular_rootlesses cs rootless_paths=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.forget_nonmodular_rootlesses cs rootless_paths;;    
    
          (* No check needed before recompiling *)
@@ -120,23 +120,23 @@ module Physical_followed_by_internal = struct
          (* No check needed before refreshing *)
    
          let register_rootless_paths cs rootless_paths=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.register_rootless_paths cs rootless_paths;; 
    
          let relocate_module_to cs old_module new_subdir=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
    
          let rename_subdirectory  cs old_subdir new_subdir=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.rename_subdirectory  cs old_subdir new_subdir;; 
    
          let rename_module cs old_middle_name new_nonslashed_name=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.rename_module cs old_middle_name new_nonslashed_name;; 
    
          let rename_string_or_value cs old_sov new_sov=
-            let _=Coma_state.Recent_changes.check_for_changes cs in 
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
             Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
    
    end;;
