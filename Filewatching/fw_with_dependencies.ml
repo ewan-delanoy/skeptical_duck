@@ -1342,10 +1342,9 @@ let decipher_module fw capitalized_or_not_x=
       else None ) (Order.get fw);;
           
    
-  let latest_changes fw = Fw_with_archives.latest_changes (parent fw)  ;;    
+  let latest_changes fw = Fw_with_small_details.latest_changes (parent fw)  ;;    
 
 end ;;
-
 
 
 let acolytes_at_module = Private.acolytes_at_module ;;
