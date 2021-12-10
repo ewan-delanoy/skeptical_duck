@@ -353,8 +353,8 @@ let compute_changes_and_announce_them fw ~verbose=
    ) in
    (new_files,changed_files);;   
    
-let latest_changes fw =
-   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose:false  in 
+let latest_changes fw ~verbose =
+   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
    changed_files ;;
 
 let inspect_and_update fw ~verbose = 

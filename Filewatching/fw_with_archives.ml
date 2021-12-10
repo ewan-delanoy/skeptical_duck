@@ -41,7 +41,7 @@ module Private = struct
       let old_parent = parent fw in 
       let new_parent = File_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
       update_parent fw new_parent ;; 
-      
+
    let register_rootless_paths fw rls = 
       let old_parent = parent fw in 
       let new_parent = File_watcher.register_rootless_paths old_parent rls in 
@@ -110,6 +110,24 @@ module Private = struct
       let old_parent = parent fw in    
       let new_parent = File_watcher.remove_files old_parent the_files in 
       update_parent fw new_parent ;;      
+   
+   
+   let announce_changes fw changed_files=    
+         let (a_files,u_files,nc_files) = 
+            canonical_tripartition fw changed_files in 
+         let announce = (fun trail files ->
+            Strung.announce 
+               ~trailer: trail
+                  ~printer:Dfn_rootless.to_line ~items:files 
+                  ~separator: "\n"
+         ) in
+         let _ = (
+            announce "The following noncompilables have been changed :" nc_files;
+            announce "The following archived files have been changed :" a_files;
+            announce "The following usual compilables have been changed :" u_files;
+         ) in
+         (a_files,u_files,nc_files) ;;   
+
 
    let inspect_and_update old_fw = 
       let old_parent = parent old_fw in    
@@ -117,20 +135,12 @@ module Private = struct
           File_watcher.inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
-      let (a_files,u_files,nc_files) = 
-         canonical_tripartition new_fw changed_files in 
-      let announce = (fun trail files ->
-         Strung.announce 
-            ~trailer: trail
-               ~printer:Dfn_rootless.to_line ~items:files 
-               ~separator: "\n"
-      ) in
-      let _ = (
-         announce "The following noncompilables have been changed :" nc_files;
-         announce "The following archived files have been changed :" a_files;
-         announce "The following usual compilables have been changed :" u_files;
-      ) in
+      let (a_files,u_files,nc_files) = announce_changes new_fw changed_files in 
       (new_fw,changed_files,(a_files,u_files)) ;;   
+
+   let latest_changes fw = 
+      let changed_files = File_watcher.latest_changes (parent fw) in 
+      announce_changes fw changed_files ;;
 
    let noncompilable_files fw  =
       let all_files = Image.image fst (watched_files fw) in 
@@ -293,6 +303,8 @@ let get_mtime_or_zero_if_file_is_nonregistered = Private.get_mtime_or_zero_if_fi
 let inspect_and_update = Private.inspect_and_update ;;
 
 let last_noticed_changes = Private.last_noticed_changes ;;
+
+let latest_changes = Private.latest_changes ;;
 
 let noncompilable_files = Private.noncompilable_files ;;
 
