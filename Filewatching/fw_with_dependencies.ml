@@ -1328,6 +1328,19 @@ let decipher_module fw capitalized_or_not_x=
   
   let check_that_no_change_has_occurred fw =
       Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
+
+
+  let modules_using_value fw value_name =
+    Option.filter_and_unpack (fun (mn,_)->
+      let eless=endingless_at_module fw mn
+      and pr_end=Fw_module_small_details.principal_ending (details_for_module fw mn) in
+      let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
+      let ap=Dfn_full.to_absolute_path mlx in
+      if Substring.is_a_substring_of 
+             value_name (Io.read_whole_file ap)
+      then Some eless
+      else None ) (Order.get fw);;
+          
       
 end ;;
 
@@ -1355,6 +1368,7 @@ let list_values_from_module = Private.list_values_from_module ;;
 let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
                               None -> "0." |Some(fl)->fl ;;
 let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
+let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;

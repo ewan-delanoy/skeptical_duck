@@ -63,17 +63,6 @@ let usual_batch cs modnames =
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
 
 
-  let passive_constructor fw = 
-    let modules_in_order = Fw_with_dependencies.dep_ordered_modules fw in 
-    {
-     Coma_state_t.frontier_with_unix_world= fw;
-     last_compilation_result_for_module = Image.image (
-                            fun mn -> (mn,false) 
-                        ) modules_in_order  ;
-    };;
-
-
-
 module Automatic = struct 
 
   exception Module_not_found of Dfa_module_t.t ;;
