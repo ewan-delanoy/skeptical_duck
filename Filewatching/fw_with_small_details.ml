@@ -313,7 +313,12 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
       small_details_in_files = new_details;
    },List.rev(!accu));;     
 
-end;;
+   let check_that_no_change_has_occurred fw =
+      Fw_with_archives.check_that_no_change_has_occurred (Automatic.parent fw) ;; 
+      
+end ;;
+
+let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 
 let configuration = Automatic.configuration ;;
 
