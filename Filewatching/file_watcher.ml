@@ -6,6 +6,7 @@
 
 exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
+exception Change_has_occurred ;;
 
 module Automatic = struct 
 
@@ -339,23 +340,34 @@ let helper2_during_inspection fw accu l_pairs =
    let new_l_pairs = Image.image (helper1_during_inspection fw accu) good_pairs in 
    (new_l_pairs,List.rev(!accu));;
 
+let compute_changes_and_announce_them fw ~verbose=
+   let ref_for_files=ref[]  in 
+   let (new_files,changed_files)=
+       helper2_during_inspection fw ref_for_files fw.File_watcher_t.watched_files in 
+   let _ = (
+     if verbose 
+     then Strung.announce 
+            ~trailer:"The following files have been changed :"
+               ~printer:Dfn_rootless.to_line ~items:changed_files 
+               ~separator: ", "
+   ) in
+   (new_files,changed_files);;     
+
 let inspect_and_update fw ~verbose = 
-    let ref_for_files=ref[]  in 
-    let (new_files,changed_files)=
-        helper2_during_inspection fw ref_for_files fw.File_watcher_t.watched_files in 
+    let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
     let fw2 ={
        fw with
        File_watcher_t.watched_files         = new_files ;
     }  in 
     let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
-    let _ = (
-      if verbose 
-      then Strung.announce 
-             ~trailer:"The following files have been changed :"
-                ~printer:Dfn_rootless.to_line ~items:changed_files 
-                ~separator: ", "
-    ) in
     (new_fw,changed_files);;         
+
+let check_that_no_change_has_occurred fw =
+   let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
+   if changed_files <> []
+   then raise(Change_has_occurred)
+   else () ;;       
+
 
 let adhoc_membership path selected_files_opt=
    match selected_files_opt with 
@@ -497,6 +509,7 @@ let apply_text_transformation_on_some_files = Private.apply_text_transformation_
 
 let configuration = Automatic.configuration ;;
 
+let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
 
 let empty_one config= {
    File_watcher_t.configuration = config;
@@ -519,8 +532,6 @@ let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
-let recompute_mtime = Private.recompute_mtime ;;
 
 let reflect_latest_changes_in_github fw opt_msg=
    let config = fw.File_watcher_t.configuration in 
