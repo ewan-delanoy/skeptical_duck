@@ -316,7 +316,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let check_that_no_change_has_occurred fw =
       Fw_with_archives.check_that_no_change_has_occurred (Automatic.parent fw) ;; 
 
-   let latest_changes fw = Fw_with_archives.latest_changes (parent fw) ;;   
+   let latest_changes fw = Fw_with_archives.latest_changes (Automatic.parent fw) ;;   
       
 end ;;
 

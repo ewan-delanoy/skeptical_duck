@@ -1341,7 +1341,9 @@ let decipher_module fw capitalized_or_not_x=
       then Some eless
       else None ) (Order.get fw);;
           
-      
+   
+  let latest_changes fw = Fw_with_archives.latest_changes (parent fw)  ;;    
+
 end ;;
 
 
@@ -1364,6 +1366,7 @@ let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;
 let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
 let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;
+let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;; 
 let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
                               None -> "0." |Some(fl)->fl ;;
