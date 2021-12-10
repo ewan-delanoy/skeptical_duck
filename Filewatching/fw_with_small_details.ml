@@ -315,6 +315,8 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
 
    let check_that_no_change_has_occurred fw =
       Fw_with_archives.check_that_no_change_has_occurred (Automatic.parent fw) ;; 
+
+   let latest_changes fw = Fw_with_archives.latest_changes (parent fw) ;;   
       
 end ;;
 
@@ -340,6 +342,8 @@ let get_mtime_or_zero_if_file_is_nonregistered = Automatic.get_mtime_or_zero_if_
 let inspect_and_update = Private.inspect_and_update;;
 
 let last_noticed_changes = Automatic.last_noticed_changes ;;
+
+let latest_changes = Private.latest_changes ;;
 
 let noncompilable_files fw = Fw_with_archives.noncompilable_files (Automatic.parent fw) ;;
 

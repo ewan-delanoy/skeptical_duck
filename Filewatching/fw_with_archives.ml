@@ -139,7 +139,7 @@ module Private = struct
       (new_fw,changed_files,(a_files,u_files)) ;;   
 
    let latest_changes fw = 
-      let changed_files = File_watcher.latest_changes (parent fw) in 
+      let changed_files = File_watcher.latest_changes (parent fw) ~verbose:false in 
       announce_changes fw changed_files ;;
 
    let noncompilable_files fw  =
