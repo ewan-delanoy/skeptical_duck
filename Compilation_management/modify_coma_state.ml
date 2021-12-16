@@ -10,16 +10,6 @@
    
 module Internal = struct
       
-   let refresh cs = 
-      let fw = cs.Coma_state_t.frontier_with_unix_world in 
-      let mods = Fw_with_dependencies.dep_ordered_modules fw in 
-      let (cs2,rejected_pairs,accepted_pairs)=
-         Coma_state.usual_batch cs mods in 
-      let cmpl_results = Image.image (
-        fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
-      ) mods in 
-      {cs2 with Coma_state_t.last_compilation_result_for_module = cmpl_results  };;
-   
    
    let register_rootless_paths cs uc_paths =
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
@@ -68,7 +58,15 @@ module Physical_followed_by_internal = struct
      
    let refresh cs =
       let cs2=Coma_state.of_configuration (Coma_state.configuration cs)  in
-      Internal.refresh cs2;;
+      let fw = cs2.Coma_state_t.frontier_with_unix_world in 
+      let mods = Fw_with_dependencies.dep_ordered_modules fw in 
+      let (cs3,rejected_pairs,accepted_pairs)=
+            Coma_state.usual_batch cs mods in 
+      let cmpl_results = Image.image (
+           fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
+         ) mods in 
+      {cs3 with Coma_state_t.last_compilation_result_for_module = cmpl_results  };;
+
    
    let register_rootless_paths cs rootless_paths= 
       let (cs2,triple)=Coma_state.register_rootless_paths cs rootless_paths in
