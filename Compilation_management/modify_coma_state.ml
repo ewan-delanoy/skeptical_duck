@@ -57,7 +57,7 @@ module Physical_followed_by_internal = struct
      Coma_state.modern_recompile cs2 unordered_mods ;;
      
    let refresh cs =
-      let cs2=Coma_state.of_configuration (Coma_state.configuration cs)  in
+      let cs2=Coma_state.uv_configuration (Coma_state.configuration cs)  in
       let fw = cs2.Coma_state_t.frontier_with_unix_world in 
       let mods = Fw_with_dependencies.dep_ordered_modules fw in 
       let (cs3,rejected_pairs,accepted_pairs)=
