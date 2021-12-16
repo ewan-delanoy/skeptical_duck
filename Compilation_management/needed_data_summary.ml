@@ -16,8 +16,7 @@ let compute_all_needed_elesses cs needed_modules needed_subdirs =
     else None) all_elesses in
     let step2_modules = needed_modules@step1_modules in 
     let modules_above=List.flatten (Image.image (fun nm->
-       Coma_state.above cs 
-       (Coma_state.endingless_at_module cs nm)
+       Coma_state.ancestors_for_module cs nm
     ) step2_modules)  in 
     let list_of_modules_with_nonstandard_ordering = 
           Ordered.sort Total_ordering.standard (modules_above@step2_modules) in 
