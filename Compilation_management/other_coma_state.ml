@@ -51,13 +51,11 @@ let force_compute_unofficial_changes ()=
 
 end;;
 
-let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;;
+let above modname=Coma_state.ancestors_for_module (!(Private.main_ref)) modname;;
 
 
-let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
+let below modname=Coma_state.below (!(Private.main_ref)) modname;;
 
-
-let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref)) modname;;
 
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
