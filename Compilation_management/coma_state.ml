@@ -14,11 +14,13 @@ let tneraq fw = {
    last_compilation_result_for_module = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;
 } ;;
 
+let below cs mn = Fw_with_batch_compilation.below (qarent cs) mn ;;
 let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
 let default_constructor = tneraq ;;
+let directly_below cs mn = Fw_with_batch_compilation.directly_below (qarent cs) mn ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (qarent cs) mods in 
   tneraq new_parent ;; 
@@ -719,24 +721,11 @@ let above cs eless=
  
 let below_module cs mn0 =
   List.filter(fun mn->List.mem mn0 (ancestors_for_module cs mn)) (dep_ordered_modules cs);; 
-
-let below cs eless=
-        let mn0=Dfn_endingless.to_module eless  in
-        Option.filter_and_unpack(fun mn->
-            if List.mem mn0 (ancestors_for_module cs mn)
-            then Some(mn)
-            else None) (dep_ordered_modules cs);;    
+   
 
 let directly_above cs eless=
     let nm=Dfn_endingless.to_module eless in
-     direct_fathers_for_module cs nm;;     
-
-let directly_below cs eless=
-        let mn0=Dfn_endingless.to_module eless  in
-        Option.filter_and_unpack(fun mn->
-            if List.mem mn0 (direct_fathers_for_module cs mn)
-            then Some(mn)
-            else None) (dep_ordered_modules cs);;        
+     direct_fathers_for_module cs nm;;           
 
 let ordered_as_in_coma_state cs l=
    List.filter (fun x->List.mem x l) (dep_ordered_modules cs);;
@@ -1082,30 +1071,35 @@ let local_above cs capitalized_or_not_module_name=
   (above cs endingless);;
 
 
-let local_below cs capitalized_or_not_module_name=
+let local_below cs capitalized_or_not_module_name= failwith("gaa") ;;
+ (*
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in  
   Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (below cs endingless);;
+  *)
 
-let local_directly_above cs capitalized_or_not_module_name=
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+let local_directly_above cs capitalized_or_not_module_name= failwith"gbb" ;;
+
+ (*  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (directly_above cs endingless);;
+  *)
 
-let local_directly_below cs capitalized_or_not_module_name=
+let local_directly_below cs capitalized_or_not_module_name= failwith"gbb" ;;
+(*
   let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let endingless = endingless_at_module cs mn in   
   Image.image (fun nm-> 
     let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
     Dfa_module.to_line mname )
   (directly_below cs endingless);; 
-
+*)
 
 end;; 
 

@@ -99,3 +99,24 @@ let show_value_occurrences_in_modulesystem module_name=
 
 let start_debugging ()=Coma_state.start_debugging (!(Private.main_ref));;
 let start_executing short_path= Coma_state.start_executing (!(Private.main_ref)) short_path;;
+
+
+let sugared_above capitalized_or_not_module_name=
+  let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  Image.image Dfa_module.to_line
+  (Coma_state.ancestors_for_module (!(Private.main_ref)) mn0);;
+
+let sugared_below capitalized_or_not_module_name=
+  let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  Image.image Dfa_module.to_line
+  (Coma_state.below (!(Private.main_ref)) mn0);;
+
+let sugared_directly_above capitalized_or_not_module_name=
+  let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  Image.image Dfa_module.to_line
+  (Coma_state.direct_fathers_for_module (!(Private.main_ref)) mn0);;
+
+let sugared_directly_below capitalized_or_not_module_name=
+let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+Image.image Dfa_module.to_line
+(Coma_state.directly_below (!(Private.main_ref)) mn0);;
