@@ -70,6 +70,33 @@ let usual_batch cs modnames =
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
 
 
+  let salt = "Coma_"^"state_field.";;
+  
+  let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
+  let last_compilation_result_for_module_label = salt ^ "last_compilation_result_for_module";;
+  
+  let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
+  let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
+  
+
+  let of_concrete_object ccrt_obj = 
+     let g=Concrete_object.get_record ccrt_obj in
+     {
+        Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
+        last_compilation_result_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g last_compilation_result_for_module_label);
+     };; 
+  
+  let to_concrete_object cs=
+     let items= 
+     [
+      frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
+      last_compilation_result_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.last_compilation_result_for_module;    
+     ]  in
+     Concrete_object_t.Record items;;
+  
+    
+
+
 (*  
 module Automatic = struct 
 
@@ -296,41 +323,6 @@ module Automatic = struct
            Some(eless)
       else None
     ) modules_field;;    
- 
-  
-module Esterhazy = struct 
-  
-  let salt = "Coma_"^"state_field.";;
-  
-  let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
-  let last_compilation_result_for_module_label = salt ^ "last_compilation_result_for_module";;
-  
-  let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
-  let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
-  
-
-  let of_concrete_object ccrt_obj = 
-     let g=Concrete_object.get_record ccrt_obj in
-     {
-        Coma_state_t.frontier_with_unix_world = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
-        last_compilation_result_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g last_compilation_result_for_module_label);
-     };; 
-  
-  let to_concrete_object cs=
-     let items= 
-     [
-      frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object cs.Coma_state_t.frontier_with_unix_world;
-      last_compilation_result_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object cs.Coma_state_t.last_compilation_result_for_module;    
-     ]  in
-     Concrete_object_t.Record items;;
-  
-  
-  end ;;
-  
-  let of_concrete_object = Esterhazy.of_concrete_object;;
-  let to_concrete_object = Esterhazy.to_concrete_object;;
-  
-  
   
 
 end ;;  
@@ -1125,5 +1117,7 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
+let of_concrete_object = Private.of_concrete_object ;;
+let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses cs = 
   Fw_with_batch_compilation.up_to_date_elesses (Private.qarent cs) ;; 
