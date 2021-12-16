@@ -4,11 +4,11 @@
 
 *)
 
-let abo = Usual_coma_state.above;; 
+let abo = Usual_coma_state.sugared_above;; 
 
 let ae = Usual_coma_state.all_endinglesses;;
 
-let bel = Usual_coma_state.below;;
+let bel = Usual_coma_state.sugared_below;;
 
 let cdd ()=Usual_coma_state.clean_debug_dir ();;
 
@@ -18,9 +18,9 @@ let cod ()=Check_ocaml_dircopy.check (Coma_state.configuration (!(Usual_coma_sta
 
 let cof = Usual_coma_state.census_of_foreigners;;
 
-let dabo = Usual_coma_state.directly_above;;
+let dabo = Usual_coma_state.sugared_directly_above;;
 
-let dbel = Usual_coma_state.directly_below;;
+let dbel = Usual_coma_state.sugared_directly_below;;
 
 let dm = Usual_coma_state.duplicate_module;;
 

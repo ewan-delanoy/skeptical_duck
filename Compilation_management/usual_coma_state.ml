@@ -16,21 +16,13 @@ let main_ref=
   ref(Coma_state.empty_one  config);;
 end;;
 
-let above modname=Coma_state.Almost_concrete.local_above (!(Private.main_ref)) modname;; 
-
-
 let all_endinglesses ()=Coma_state.all_endinglesses (!(Private.main_ref)) ;; 
 let all_principals ()=Coma_state.all_principals (!(Private.main_ref)) ;; 
-
-let below modname=Coma_state.Almost_concrete.local_below (!(Private.main_ref)) modname;;
 
 let census_of_foreigners ()= Coma_state.census_of_foreigners (!(Private.main_ref));;
 
 let clean_debug_dir ()=Coma_state.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
-
-let directly_above modname=Coma_state.Almost_concrete.local_directly_above (!(Private.main_ref)) modname;;
-let directly_below modname=Coma_state.Almost_concrete.local_directly_below (!(Private.main_ref)) modname;;
 
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
