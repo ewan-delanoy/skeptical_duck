@@ -1326,7 +1326,11 @@ let decipher_module fw capitalized_or_not_x=
     let mlx = Dfn_join.root_to_rootless (root fw) rootless_path in 
     Dfn_full.to_endingless mlx ;;
   
-  let check_that_no_change_has_occurred fw =
+  let above fw eless=
+      let mn=Dfn_endingless.to_module eless in
+      snd (List.assoc mn (Order.get fw));;
+
+    let check_that_no_change_has_occurred fw =
       Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
 
 
@@ -1346,7 +1350,7 @@ let decipher_module fw capitalized_or_not_x=
 
 end ;;
 
-
+let above = Private.above ;;
 let acolytes_at_module = Private.acolytes_at_module ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let below_several = Private.below_several ;;
