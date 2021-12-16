@@ -380,7 +380,7 @@ module Private = struct
        else None
    ) (Fw_with_dependencies.dep_ordered_modules old_parent) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
-     let (new_parent,extra) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
+     let (new_parent,changes) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
       old_parent (old_nm,new_nm,all_acolytes_below) in 
     let old_list_of_cmpl_results= fw.Fw_with_batch_compilation_t.last_compilation_result_for_module in 
     let new_list_of_cmpl_results = Image.image (
@@ -390,10 +390,22 @@ module Private = struct
            then (new_nm,false)
            else old_pair    
       ) old_list_of_cmpl_results in   
-      ({ 
+      let fw2 = { 
         Fw_with_batch_compilation_t.parent = new_parent ;
         last_compilation_result_for_module = new_list_of_cmpl_results;
-      },extra);;
+      } in 
+      let root_dir=root fw in 
+      let s_root=Dfa_root.connectable_to_subpath root_dir in   
+      let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
+      let _=Unix_command.uc
+             ("rm -f "^s_root^s_build_dir^
+             (Dfa_module.to_line old_nm)^
+             ".cm* ") in            
+      let fw3=modern_recompile fw2 [new_nm] in 
+      (fw3,changes) ;;
+      
+    
+    ;;
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,_)=Fw_with_dependencies.rename_subdirectory_as 

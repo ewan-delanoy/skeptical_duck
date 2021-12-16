@@ -4,31 +4,6 @@
 
 *)
 
-
-
-
-   
-module Internal = struct
-
-
-   let rename_module cs old_middle_name new_nonslashed_name (cs2,changes) =
-     let root_dir=Coma_state.root cs in 
-     let old_nm=Dfn_middle.to_module old_middle_name in 
-     let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in 
-     let s_root=Dfa_root.connectable_to_subpath root_dir in   
-     let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
-     let _=Unix_command.uc
-         ("rm -f "^s_root^s_build_dir^
-         (Dfa_module.to_line old_nm)^
-         ".cm* ") in            
-     let cs3=Coma_state.modern_recompile cs2 [new_nm] in 
-     cs3;;
-   
-   
-   let rename_string_or_value cs changed_modules_in_any_order = 
-      Coma_state.modern_recompile cs changed_modules_in_any_order ;; 
-   
-   end;;
    
 module Physical_followed_by_internal = struct
    
@@ -63,15 +38,15 @@ module Physical_followed_by_internal = struct
    
    
    let rename_module cs old_middle_name new_nonslashed_name=
-      let (cs2,changes)=Coma_state.rename_module cs old_middle_name new_nonslashed_name in
-      Internal.rename_module cs old_middle_name new_nonslashed_name (cs2,changes);;
-   
+      fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name);;
+
+
    let rename_subdirectory cs old_subdir new_subdir=
       Coma_state.rename_subdirectory_as cs (old_subdir,new_subdir) ;;
    
    let rename_string_or_value cs old_sov new_sov =
       let (cs2,changed_modules_in_any_order)=Coma_state.rename_string_or_value cs old_sov new_sov in
-      Internal.rename_string_or_value cs2 changed_modules_in_any_order;;
+      Coma_state.modern_recompile  cs2 changed_modules_in_any_order;;
    
    end;;
    
