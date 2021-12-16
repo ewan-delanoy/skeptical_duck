@@ -456,6 +456,7 @@ module Private = struct
 
   
 let all_subdirectories = Private.all_subdirectories ;;
+let ancestors_for_module = Private.ancestors_for_module ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
