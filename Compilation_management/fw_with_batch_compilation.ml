@@ -357,13 +357,14 @@ module Private = struct
           None -> (mn,false)
           |Some(old_res) -> (mn,old_res)
      ) (Fw_with_dependencies.dep_ordered_modules new_parent) in 
-     let cs2 = { 
+     let fw2 = { 
       Fw_with_batch_compilation_t.parent = new_parent ;
        last_compilation_result_for_module = new_list_of_cmpl_results
      } in 
-      (cs2,uc_paths) ;;
+     let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in  
+     modern_recompile  fw2 unordered_mods;;
    
-
+  
    let relocate_module_to fw mod_name new_subdir=
       let (new_parent,_)=Fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
       set_parent fw new_parent ;;

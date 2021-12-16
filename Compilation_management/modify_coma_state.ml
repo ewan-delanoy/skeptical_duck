@@ -55,9 +55,7 @@ module Physical_followed_by_internal = struct
 
 
    let register_rootless_paths cs rootless_paths= 
-      let (cs2,rls)=Coma_state.register_rootless_paths cs rootless_paths in 
-      let unordered_mods = Image.image Dfn_rootless.to_module rls in  
-      Coma_state.modern_recompile  cs2 unordered_mods;;
+   Coma_state.register_rootless_paths cs rootless_paths ;;
    
 
    let relocate_module_to cs mod_name new_subdir= 
