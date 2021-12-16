@@ -38,8 +38,8 @@ let reflect_latest_changes_in_github cs opt_msg=
     let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (qarent cs) opt_msg in 
     tneraq new_parent ;;   
 let register_rootless_paths cs mod_names = 
-    let (new_parent,uc_paths) = Fw_with_batch_compilation.register_rootless_paths (qarent cs) mod_names in 
-    (tneraq new_parent,uc_paths) ;;      
+    let new_parent = Fw_with_batch_compilation.register_rootless_paths (qarent cs) mod_names in 
+    tneraq new_parent ;;      
 let relocate_module_to cs mod_name new_subdir = 
     let new_parent = Fw_with_batch_compilation.relocate_module_to (qarent cs) mod_name new_subdir in 
     tneraq new_parent ;;  
