@@ -9,17 +9,6 @@
 
    
 module Internal = struct
-   
-   let forget_modules cs mns =
-     let temp1 = Image.image Dfa_module.to_line mns in 
-     let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
-     let _=Image.image
-                  (fun (mname,edg)->
-                   let cmd="rm -f _build/"^mname^edg in
-                   Unix_command.uc(cmd))
-                  temp2 in
-     cs;;    
-   
       
    let refresh cs = 
       let fw = cs.Coma_state_t.frontier_with_unix_world in 
@@ -65,9 +54,16 @@ module Physical_followed_by_internal = struct
      if check <> []
      then raise(Forget_modules_exn(check))
      else 
-     let cs2=Coma_state.forget_modules cs mod_names  in
-     Internal.forget_modules cs2 mod_names ;;
-   
+     let cs2=Coma_state.forget_modules cs mod_names  in 
+     let temp1 = Image.image Dfa_module.to_line mod_names in 
+     let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
+     let _=Image.image
+                      (fun (mname,edg)->
+                       let cmd="rm -f _build/"^mname^edg in
+                       Unix_command.uc(cmd))
+                      temp2 in
+      cs2;;    
+        
    exception Forget_rootless_paths_exn of Dfa_module_t.t list ;;
    
    let forget_nonmodular_rootlesses cs rootless_paths= 
