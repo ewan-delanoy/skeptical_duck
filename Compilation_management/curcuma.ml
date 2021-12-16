@@ -4,6 +4,8 @@
 
 *)
 
+module Private = struct
+
 let qarent cs = {
    Fw_with_batch_compilation_t.parent = cs.Coma_state_t.frontier_with_unix_world ;
    last_compilation_result_for_module = cs.Coma_state_t.last_compilation_result_for_module;
@@ -68,6 +70,7 @@ let usual_batch cs modnames =
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
 
 
+(*  
 module Automatic = struct 
 
   exception Module_not_found of Dfa_module_t.t ;;
@@ -1119,6 +1122,7 @@ let choose_automatic_if_possible cs modulename =
     if List.mem auto_version list_of_modules
     then auto_version
     else modulename ;;      
+*)
 
-
+end ;; 
 
