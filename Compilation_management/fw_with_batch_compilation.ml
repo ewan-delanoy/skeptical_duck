@@ -23,6 +23,7 @@ module Private = struct
     Fw_with_batch_compilation_t.parent = new_parent ;
   } ;;  
 
+  let above fw eless = Fw_with_dependencies.above (parent fw) eless ;;
   let ancestors_for_module fw mn = Fw_with_dependencies.ancestors_for_module (parent fw) mn ;;
   let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
   let printer_equipped_types fw = Fw_with_dependencies.printer_equipped_types (parent fw) ;;   
