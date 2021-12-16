@@ -9,12 +9,7 @@
 
    
 module Internal = struct
-      
-   
-   let register_rootless_paths cs uc_paths =
-     let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in    
-     Coma_state.modern_recompile cs unordered_mods ;;
-   
+
 
    let rename_module cs old_middle_name new_nonslashed_name (cs2,changes) =
      let root_dir=Coma_state.root cs in 
@@ -58,11 +53,13 @@ module Physical_followed_by_internal = struct
      
    let refresh cs = Coma_state.of_configuration (Coma_state.configuration cs)  ;;
 
-   
+
    let register_rootless_paths cs rootless_paths= 
-      let (cs2,triple)=Coma_state.register_rootless_paths cs rootless_paths in
-      Internal.register_rootless_paths cs2 triple;;
+      let (cs2,rls)=Coma_state.register_rootless_paths cs rootless_paths in 
+      let unordered_mods = Image.image Dfn_rootless.to_module rls in  
+      Coma_state.modern_recompile  cs2 unordered_mods;;
    
+
    let relocate_module_to cs mod_name new_subdir= 
      Coma_state.relocate_module_to cs mod_name  new_subdir ;;
    
