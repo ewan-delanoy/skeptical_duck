@@ -1059,54 +1059,6 @@ let duplicate_module cs old_t1 old_t2=
    Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
 
 
-module Almost_concrete = struct 
-
-
-let local_above cs capitalized_or_not_module_name=
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let endingless = endingless_at_module cs mn in  
-  Image.image (fun nm-> 
-    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
-    Dfa_module.to_line mname )
-  (above cs endingless);;
-
-
-let local_below cs capitalized_or_not_module_name= failwith("gaa") ;;
- (*
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let endingless = endingless_at_module cs mn in  
-  Image.image (fun nm-> 
-    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
-    Dfa_module.to_line mname )
-  (below cs endingless);;
-  *)
-
-let local_directly_above cs capitalized_or_not_module_name= failwith"gbb" ;;
-
- (*  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let endingless = endingless_at_module cs mn in   
-  Image.image (fun nm-> 
-    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
-    Dfa_module.to_line mname )
-  (directly_above cs endingless);;
-  *)
-
-let local_directly_below cs capitalized_or_not_module_name= failwith"gbb" ;;
-(*
-  let mn = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let endingless = endingless_at_module cs mn in   
-  Image.image (fun nm-> 
-    let mname = Dfn_endingless.to_module (endingless_at_module cs nm) in 
-    Dfa_module.to_line mname )
-  (directly_below cs endingless);; 
-*)
-
-end;; 
-
-
-
-
-
 let test_for_foreign root ap =
    match (
      try Some(Dfn_common.decompose_absolute_path_using_root ap root) with 
@@ -1126,9 +1078,6 @@ let census_of_foreigners cs=
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
    List.filter (test_for_foreign the_root) list1;;
-
-
-
 
 let check_module_sequence_for_forgettability cs l=
   let modules_below = List.filter (

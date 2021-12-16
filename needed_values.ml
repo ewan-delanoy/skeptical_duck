@@ -10,10 +10,6 @@ let ae = Usual_coma_state.all_endinglesses;;
 
 let bel = Usual_coma_state.sugared_below;;
 
-let cdd ()=Usual_coma_state.clean_debug_dir ();;
-
-let ced ()=Usual_coma_state.clean_exec_dir ();;
-
 let cod ()=Check_ocaml_dircopy.check (Coma_state.configuration (!(Usual_coma_state.main_ref)));;
 
 let cof = Usual_coma_state.census_of_foreigners;;
@@ -27,8 +23,6 @@ let dm = Usual_coma_state.duplicate_module;;
 let fg = Usual_coma_state.forget_one;;
 
 let fgs = Usual_coma_state.forget_several;;
-
-let fl = Usual_coma_state.fix_lag;;
 
 let hi = List.length ;; 
 
@@ -70,7 +64,6 @@ let ruco () = Other_coma_state.recompile None ;;
 
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
-let ri () = Listennou.redundant_indices (Coma_state.dep_ordered_modules (!Usual_coma_state.main_ref));;
 
 let rsh = Usual_coma_state.refresh;;
 
