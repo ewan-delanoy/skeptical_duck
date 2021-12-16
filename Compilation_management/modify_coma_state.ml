@@ -54,15 +54,7 @@ module Physical_followed_by_internal = struct
      if check <> []
      then raise(Forget_modules_exn(check))
      else 
-     let cs2=Coma_state.forget_modules cs mod_names  in 
-     let temp1 = Image.image Dfa_module.to_line mod_names in 
-     let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
-     let _=Image.image
-                      (fun (mname,edg)->
-                       let cmd="rm -f _build/"^mname^edg in
-                       Unix_command.uc(cmd))
-                      temp2 in
-      cs2;;    
+     Coma_state.forget_modules cs mod_names  ;;    
         
    exception Forget_rootless_paths_exn of Dfa_module_t.t list ;;
    
