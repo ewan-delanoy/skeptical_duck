@@ -439,8 +439,7 @@ let all_rootlesses cs =
    List.flatten(Image.image (rootless_paths_at_module cs) (dep_ordered_modules cs));;
 
 
-let up_to_date_elesses cs = 
-  Fw_with_batch_compilation.up_to_date_elesses (qarent cs) ;; 
+
 
 let preq_types_with_extra_info cs = 
     Fw_with_batch_compilation.preq_types_with_extra_info (qarent cs) ;; 
@@ -1126,3 +1125,5 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
+let up_to_date_elesses cs = 
+  Fw_with_batch_compilation.up_to_date_elesses (Private.qarent cs) ;; 
