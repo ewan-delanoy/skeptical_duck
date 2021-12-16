@@ -31,7 +31,7 @@ let modern_recompile cs changed_modules_in_any_order =
   tneraq new_parent ;; 
 let modules_using_value cs module_name =
     Fw_with_batch_compilation.modules_using_value (qarent cs) module_name ;;  
-let uv_configuration config = 
+let of_configuration config = 
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     tneraq new_parent ;;   
 let reflect_latest_changes_in_github cs opt_msg=

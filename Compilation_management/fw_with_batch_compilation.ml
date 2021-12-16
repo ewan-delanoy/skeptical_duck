@@ -338,8 +338,14 @@ module Private = struct
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
       let initial_parent = Fw_with_dependencies.of_configuration config in 
-      default_constructor initial_parent;;
-      
+      let fw = default_constructor initial_parent in 
+      let mods = Fw_with_dependencies.dep_ordered_modules initial_parent in 
+      let (fw2,rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
+        let cmpl_results = Image.image (
+             fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
+           ) mods in 
+      {fw2 with Fw_with_batch_compilation_t.last_compilation_result_for_module = cmpl_results  };;
+  
    
    let register_rootless_paths fw rps=
       let (new_parent,((ac_paths,uc_paths,nc_paths),_))=
