@@ -23,46 +23,7 @@ let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
 let default_constructor = tneraq ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (qarent cs) mn ;;
-let forget_modules cs mods = 
-  let new_parent = Fw_with_batch_compilation.forget_modules (qarent cs) mods in 
-  tneraq new_parent ;; 
-let inspect_and_update cs  = 
-    let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (qarent cs)  in 
-    (tneraq new_parent,changed_usual_compilables) ;;   
-let latest_changes fw = Fw_with_batch_compilation.latest_changes (qarent fw)  ;;      
-let modern_recompile cs changed_modules_in_any_order = 
-  let new_parent = Fw_with_batch_compilation.modern_recompile (qarent cs) changed_modules_in_any_order in 
-  tneraq new_parent ;; 
-let modules_using_value cs module_name =
-    Fw_with_batch_compilation.modules_using_value (qarent cs) module_name ;;  
-let of_configuration config = 
-    let new_parent = Fw_with_batch_compilation.of_configuration config in 
-    tneraq new_parent ;;   
-let reflect_latest_changes_in_github cs opt_msg=
-    let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (qarent cs) opt_msg in 
-    tneraq new_parent ;;   
-let register_rootless_paths cs mod_names = 
-    let new_parent = Fw_with_batch_compilation.register_rootless_paths (qarent cs) mod_names in 
-    tneraq new_parent ;;      
-let relocate_module_to cs mod_name new_subdir = 
-    let new_parent = Fw_with_batch_compilation.relocate_module_to (qarent cs) mod_name new_subdir in 
-    tneraq new_parent ;;  
-let remove_files cs rps = 
-    let new_parent = Fw_with_batch_compilation.remove_files (qarent cs) rps in 
-    tneraq new_parent ;;        
-let rename_module cs old_middle_name new_nonslashed_name = 
-    let (new_parent,extra) = Fw_with_batch_compilation.rename_module (qarent cs) old_middle_name new_nonslashed_name in 
-    (tneraq new_parent,extra) ;;   
-let rename_string_or_value cs old_sov new_sov = 
-    let (new_parent,changed_modules_in_any_order) = Fw_with_batch_compilation.rename_string_or_value (qarent cs) old_sov new_sov  in 
-    (tneraq new_parent,changed_modules_in_any_order) ;; 
-let rename_subdirectory_as cs (old_subdir,new_subdir) = 
-    let new_parent = Fw_with_batch_compilation.rename_subdirectory_as (qarent cs) (old_subdir,new_subdir) in 
-    tneraq new_parent ;;      
-let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
-let set_gitpush_after_backup cs bowl = 
-  let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
-  tneraq new_parent ;; 
+
 let usual_batch cs modnames = 
   let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (qarent cs) modnames in 
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
@@ -1020,13 +981,7 @@ let rename_value_inside_module cs old_name new_name=
 
 
 
-end;;
-
-let list_values_from_module cs mn = 
-  Fw_with_batch_compilation.list_values_from_module  (qarent cs) mn ;;
-
-let show_value_occurrences cs t = 
-  Fw_with_batch_compilation.show_value_occurrences  (qarent cs) t ;;   
+end;; 
 
 exception Module_already_exists of string;;
 
@@ -1115,7 +1070,50 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
-let of_concrete_object = Private.of_concrete_object ;;
+
+
+let forget_modules cs mods = 
+  let new_parent = Fw_with_batch_compilation.forget_modules (Private.qarent cs) mods in 
+  Private.tneraq new_parent ;; 
+let inspect_and_update cs  = 
+    let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (Private.qarent cs)  in 
+    (Private.tneraq new_parent,changed_usual_compilables) ;;   
+let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.qarent fw)  ;;      
+let list_values_from_module cs mn = 
+  Fw_with_batch_compilation.list_values_from_module  (Private.qarent cs) mn ;;
+let modern_recompile cs changed_modules_in_any_order = 
+  let new_parent = Fw_with_batch_compilation.modern_recompile (Private.qarent cs) changed_modules_in_any_order in 
+  Private.tneraq new_parent ;; 
+let modules_using_value cs module_name =
+    Fw_with_batch_compilation.modules_using_value (Private.qarent cs) module_name ;;  
+let of_configuration config = 
+    let new_parent = Fw_with_batch_compilation.of_configuration config in 
+    Private.tneraq new_parent ;;   
+let of_concrete_object = Private.of_concrete_object ;;    
+let reflect_latest_changes_in_github cs opt_msg=
+    let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (Private.qarent cs) opt_msg in 
+    Private.tneraq new_parent ;;   
+let register_rootless_paths cs mod_names = 
+    let new_parent = Fw_with_batch_compilation.register_rootless_paths (Private.qarent cs) mod_names in 
+    Private.tneraq new_parent ;;      
+let relocate_module_to cs mod_name new_subdir = 
+    let new_parent = Fw_with_batch_compilation.relocate_module_to (Private.qarent cs) mod_name new_subdir in 
+    Private.tneraq new_parent ;;  
+let remove_files cs rps = 
+    let new_parent = Fw_with_batch_compilation.remove_files (Private.qarent cs) rps in 
+    Private.tneraq new_parent ;;        
+let rename_module cs old_middle_name new_nonslashed_name = 
+    let (new_parent,extra) = Fw_with_batch_compilation.rename_module (Private.qarent cs) old_middle_name new_nonslashed_name in 
+    (Private.tneraq new_parent,extra) ;;   
+let rename_string_or_value cs old_sov new_sov = 
+    let (new_parent,changed_modules_in_any_order) = Fw_with_batch_compilation.rename_string_or_value (Private.qarent cs) old_sov new_sov  in 
+    (Private.tneraq new_parent,changed_modules_in_any_order) ;; 
+let rename_subdirectory_as cs (old_subdir,new_subdir) = 
+    let new_parent = Fw_with_batch_compilation.rename_subdirectory_as (Private.qarent cs) (old_subdir,new_subdir) in 
+    Private.tneraq new_parent ;;      
+let root cs = Fw_with_batch_compilation.root (Private.qarent cs) ;;
+let show_value_occurrences cs t = 
+  Fw_with_batch_compilation.show_value_occurrences  (Private.qarent cs) t ;;  
 let start_debugging cs = Fw_with_batch_compilation.start_debugging (Private.qarent cs) ;; 
 let start_executing cs short_path = Fw_with_batch_compilation.start_executing (Private.qarent cs) short_path;;  
 let to_concrete_object = Private.to_concrete_object ;;
