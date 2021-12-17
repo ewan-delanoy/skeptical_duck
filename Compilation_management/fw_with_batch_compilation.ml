@@ -453,6 +453,8 @@ module Private = struct
 
   let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
+  let configuration fw mn = Fw_with_dependencies.configuration (parent fw) ;;
+
   let directly_below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
   end ;;
@@ -465,6 +467,7 @@ let below = Private.below ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
+let configuration = Private.configuration ;;
 let default_constructor = Private.default_constructor ;;
 let directly_below = Private.directly_below ;;
 let forget_modules = Private.forget_modules ;;

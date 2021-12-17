@@ -17,12 +17,9 @@ let tneraq fw = {
 } ;;
 
 let below cs mn = Fw_with_batch_compilation.below (qarent cs) mn ;;
-let check_that_no_change_has_occurred cs =
-  Fw_with_batch_compilation.check_that_no_change_has_occurred (qarent cs) ;; 
-let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
-let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
 let default_constructor = tneraq ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (qarent cs) mn ;;
+let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 
 let usual_batch cs modnames = 
   let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (qarent cs) modnames in 
@@ -875,12 +872,16 @@ let register_mlx_file_on_monitored_modules cs rless =
 exception FileWithDependencies of 
 Dfn_full_t.t*(Dfa_module_t.t list);;
 
+*)
+
 let read_persistent_version x=
   let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
   let ap= Dfn_full.to_absolute_path full_path in
   let the_archive=Io.read_whole_file ap in
   let archived_object = Crobj_parsing.parse the_archive in 
-  Automatic.of_concrete_object archived_object;;      
+  of_concrete_object archived_object;;      
+
+(*
 
 module Try_to_register=struct
 
@@ -1070,11 +1071,15 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
-
-
+let check_that_no_change_has_occurred cs =
+  Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.qarent cs) ;; 
+let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
+let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
+let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (Private.qarent cs) mods in 
   Private.tneraq new_parent ;; 
+let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
 let inspect_and_update cs  = 
     let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (Private.qarent cs)  in 
     (Private.tneraq new_parent,changed_usual_compilables) ;;   
@@ -1086,10 +1091,14 @@ let modern_recompile cs changed_modules_in_any_order =
   Private.tneraq new_parent ;; 
 let modules_using_value cs module_name =
     Fw_with_batch_compilation.modules_using_value (Private.qarent cs) module_name ;;  
+let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.qarent fw) ;;    
 let of_configuration config = 
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     Private.tneraq new_parent ;;   
 let of_concrete_object = Private.of_concrete_object ;;    
+let preq_types_with_extra_info cs = 
+  Fw_with_batch_compilation.preq_types_with_extra_info (Private.qarent cs) ;; 
+let read_persistent_version = Private.read_persistent_version ;;
 let reflect_latest_changes_in_github cs opt_msg=
     let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (Private.qarent cs) opt_msg in 
     Private.tneraq new_parent ;;   
@@ -1111,7 +1120,10 @@ let rename_string_or_value cs old_sov new_sov =
 let rename_subdirectory_as cs (old_subdir,new_subdir) = 
     let new_parent = Fw_with_batch_compilation.rename_subdirectory_as (Private.qarent cs) (old_subdir,new_subdir) in 
     Private.tneraq new_parent ;;      
-let root cs = Fw_with_batch_compilation.root (Private.qarent cs) ;;
+let root = Private.root ;;
+let set_gitpush_after_backup cs bowl = 
+  let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (Private.qarent cs) bowl in 
+  Private.tneraq new_parent ;;   
 let show_value_occurrences cs t = 
   Fw_with_batch_compilation.show_value_occurrences  (Private.qarent cs) t ;;  
 let start_debugging cs = Fw_with_batch_compilation.start_debugging (Private.qarent cs) ;; 
