@@ -63,8 +63,6 @@ let root cs = Fw_with_batch_compilation.root (qarent cs) ;;
 let set_gitpush_after_backup cs bowl = 
   let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (qarent cs) bowl in 
   tneraq new_parent ;; 
-let start_debugging cs = Fw_with_batch_compilation.start_debugging (qarent cs) ;; 
-let start_executing cs short_path = Fw_with_batch_compilation.start_executing (qarent cs) short_path;;  
 let usual_batch cs modnames = 
   let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (qarent cs) modnames in 
   (tneraq new_parent,rejected_ones,accepted_ones) ;; 
@@ -1118,6 +1116,8 @@ let choose_automatic_if_possible cs modulename =
 end ;; 
 
 let of_concrete_object = Private.of_concrete_object ;;
+let start_debugging cs = Fw_with_batch_compilation.start_debugging (Private.qarent cs) ;; 
+let start_executing cs short_path = Fw_with_batch_compilation.start_executing (Private.qarent cs) short_path;;  
 let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses cs = 
   Fw_with_batch_compilation.up_to_date_elesses (Private.qarent cs) ;; 
