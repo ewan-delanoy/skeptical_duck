@@ -453,7 +453,7 @@ module Private = struct
 
   let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
-  let configuration fw mn = Fw_with_dependencies.configuration (parent fw) ;;
+  let configuration fw = Fw_with_dependencies.configuration (parent fw) ;;
 
   let directly_below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
