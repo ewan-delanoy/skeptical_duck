@@ -1072,11 +1072,14 @@ let choose_automatic_if_possible cs modulename =
 end ;; 
 
 
+let below cs mn = Fw_with_batch_compilation.below cs mn ;;
 let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
+let directly_below cs mn = Fw_with_batch_compilation.directly_below cs mn ;;
+let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module cs mn ;;
 let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.qarent cs) ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (Private.qarent cs) mods in 

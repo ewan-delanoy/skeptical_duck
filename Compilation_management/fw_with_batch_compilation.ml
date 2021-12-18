@@ -457,6 +457,8 @@ module Private = struct
 
   let directly_below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
+  let direct_fathers_for_module fw mn = Fw_with_dependencies.direct_fathers_for_module (parent fw) mn ;;
+
   let endingless_at_module fw mn = Fw_with_dependencies.endingless_at_module (parent fw) mn ;;
 
   let find_subdir_from_suffix fw suffix =
@@ -474,6 +476,7 @@ let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let configuration = Private.configuration ;;
 let default_constructor = Private.default_constructor ;;
+let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
