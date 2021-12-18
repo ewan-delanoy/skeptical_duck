@@ -1077,6 +1077,7 @@ let check_that_no_change_has_occurred cs =
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
+let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.qarent cs) ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (Private.qarent cs) mods in 
   Private.tneraq new_parent ;; 
