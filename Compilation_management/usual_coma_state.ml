@@ -27,8 +27,9 @@ let clean_exec_dir ()=Coma_state.clean_exec_dir (!(Private.main_ref));;
 let duplicate_module old_t1 old_t2=
   Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
-let find_endingless modname= 
-  Coma_state.endingless_from_mildly_capitalized_module_name (!(Private.main_ref)) modname;;
+let find_endingless modname = 
+  Coma_state.endingless_at_module
+   (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
 
