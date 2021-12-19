@@ -12264,7 +12264,7 @@ Snippet 49 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let sd = Dfa_subdirectory.of_line "Old_Van_der_Waerden";;
+let sd = Dfa_subdirectory.of_line "Van_der_Waerden";;
 let z1 = ae () ;;
 let z2 = List.filter (
   fun (Dfn_endingless_t.J(r,s,m)) ->
