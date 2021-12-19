@@ -320,6 +320,7 @@ let lex_for_strings = Private.lex_for_strings ;;
 let product = Private.product ;;
 let silex_compare = Private.silex_compare ;;
 let silex_for_strings = Private.silex_for_strings ;;
+let silex_for_intlists = Private.silex_compare for_integers ;;
 let standard = Private.standard ;;
 let standard2 = Private.standard2 ;;
 
