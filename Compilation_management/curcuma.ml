@@ -181,16 +181,16 @@ module Automatic = struct
   
   (* End of adhoc setters *)
   
-  
+*)  
   
   let empty_one config=
-      to_t({
-       Coma_state_t.frontier_with_unix_world= Fw_with_dependencies.empty_one config;
-       last_compilation_result_for_module = [];
-  });;
+    {
+      Coma_state_t.frontier_with_unix_world= Fw_with_dependencies.empty_one config;
+      last_compilation_result_for_module = [];
+    };;
   
   
-  
+(*  
   
 
   let change_one_module_name wrapped_cs old_mn new_mn=
@@ -1071,14 +1071,16 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
-
+let ancestors_for_module cs mn = Fw_with_batch_compilation.ancestors_for_module cs mn ;;
 let below cs mn = Fw_with_batch_compilation.below cs mn ;;
 let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
+let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module cs mn ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below cs mn ;;
+let empty_one = Private.empty_one ;;
 let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module cs mn ;;
 let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.qarent cs) ;;
 let forget_modules cs mods = 
