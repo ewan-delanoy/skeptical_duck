@@ -6,6 +6,8 @@
 
 
 type t={
-     frontier_with_unix_world : Fw_with_dependencies_t.t;
-     last_compilation_result_for_module : (Dfa_module_t.t * bool) list;
+     parent : Fw_with_batch_compilation_t.t;
+     dir_for_backup : Dfa_root_t.t;
+     gitpush_after_backup : bool;
+     github_url : string;
 };;

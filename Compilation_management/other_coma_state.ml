@@ -2,6 +2,7 @@
 #use"Compilation_management/other_coma_state.ml";;
 *)
 
+
 exception No_module_with_name of string;;
 
 module Private = struct 
@@ -10,7 +11,7 @@ let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple 
   and url=Coma_big_constant.github_url in  
   let config = Fw_configuration.constructor (root,backup_dir,githubbing,url,[]) in 
-  ref(Coma_state.empty_one  config);;
+  ref(Coma_state.empty_one  config backup_dir githubbing url);;
 
 let ref_for_unofficial_changes = ref(None : (string list) option) ;;  
 

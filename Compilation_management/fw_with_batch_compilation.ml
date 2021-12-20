@@ -483,6 +483,10 @@ module Private = struct
   
   let usual_compilable_files fw = Fw_with_dependencies.usual_compilable_files (parent fw) ;;   
 
+  let empty_one config = {
+     Fw_with_batch_compilation_t.parent = Fw_with_dependencies.empty_one config ;
+     last_compilation_result_for_module = [] ;
+  } ;;
 
   end ;;
   
@@ -502,6 +506,7 @@ let dep_ordered_modules = Private.dep_ordered_modules ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
 let duplicate_module = Private.duplicate_module ;;
+let empty_one = Private.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;

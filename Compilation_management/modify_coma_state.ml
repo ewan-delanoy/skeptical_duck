@@ -42,7 +42,11 @@ module Physical_followed_by_internal = struct
      let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
      Coma_state.modern_recompile cs2 unordered_mods ;;
      
-   let refresh cs = Coma_state.of_configuration (Coma_state.configuration cs)  ;;
+   let refresh cs = Coma_state.of_configuration 
+    (Coma_state.configuration cs) 
+      (cs.Coma_state_t.dir_for_backup) 
+        (cs.Coma_state_t.gitpush_after_backup) 
+          (cs.Coma_state_t.github_url);;
 
 
    let register_rootless_paths cs rootless_paths= 
