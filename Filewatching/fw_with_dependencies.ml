@@ -1410,11 +1410,16 @@ let decipher_module fw capitalized_or_not_x=
           Some(Dfn_full.to_absolute_path mlx)
         ) (Order.get fw);;
 
+    let all_mlx_files fw=
+        let mods=Image.image fst (Order.get fw) in
+        List.flatten(Image.image(acolytes_at_module fw) mods);;    
+
 end ;;
 
 let above = Private.above ;;
 let acolytes_at_module = Private.acolytes_at_module ;;
 let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;
+let all_mlx_files = Private.all_mlx_files ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let below = Private.below ;;
 let below_several = Private.below_several ;;
