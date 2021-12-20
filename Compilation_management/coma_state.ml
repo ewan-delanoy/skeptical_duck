@@ -19,7 +19,7 @@ let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (qarent cs) ;;
-let default_constructor = tneraq ;;
+let of_fw_with_batch_compilation = tneraq ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (qarent cs) mn ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (qarent cs) mods in 

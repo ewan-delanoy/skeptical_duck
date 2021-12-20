@@ -1060,11 +1060,11 @@ let check_that_no_change_has_occurred cs =
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
-let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module cs mn ;;
+let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module (Private.qarent cs) mn ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (Private.qarent cs) mn ;;
 let duplicate_module cs  vague_mname1 vague_mname2 = Fw_with_batch_compilation.duplicate_module (Private.qarent cs) vague_mname1 vague_mname2 ;;
 let empty_one = Private.empty_one ;;
-let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module cs mn ;;
+let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module (Private.qarent cs) mn ;;
 let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.qarent cs) ;;
 let forget_modules cs mods = 
   let new_parent = Fw_with_batch_compilation.forget_modules (Private.qarent cs) mods in 
@@ -1085,7 +1085,8 @@ let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.
 let of_configuration config = 
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     Private.tneraq new_parent ;;   
-let of_concrete_object = Private.of_concrete_object ;;    
+let of_concrete_object = Private.of_concrete_object ;;  
+let of_fw_with_batch_compilation = Private.of_fw_with_batch_compilation ;;    
 let preq_types_with_extra_info cs = 
   Fw_with_batch_compilation.preq_types_with_extra_info (Private.qarent cs) ;; 
 let read_persistent_version = Private.read_persistent_version ;;
