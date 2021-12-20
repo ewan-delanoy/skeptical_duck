@@ -983,25 +983,7 @@ let rename_value_inside_module cs old_name new_name=
 
 
 end;; 
-
-exception Module_already_exists of string;;
-
-let duplicate_module cs old_t1 old_t2=
-   let t1=String.uncapitalize_ascii old_t1
-   and t2=String.uncapitalize_ascii old_t2 in 
-   let ap1=decipher_path cs t1 in
-   let s_ap1=Absolute_path.to_string ap1 in
-   let s_ending = Cull_string.after_rightmost s_ap1 '.' in 
-   let s_ap2=(Cull_string.before_rightmost_possibly_all s_ap1 '/')^"/"^t2^"."^s_ending in
-   if Sys.file_exists s_ap2
-   then raise(Module_already_exists(t2))
-   else 
-   let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
-   let ap2=Absolute_path.of_string s_ap2 in
-   let _ =  (
-     if s_ending = "ml"
-     then Put_use_directive_in_initial_comment.put_usual (root cs) ap2) in 
-   Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;             
+             
 
 
 let test_for_foreign root ap =
@@ -1071,15 +1053,16 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
-let ancestors_for_module cs mn = Fw_with_batch_compilation.ancestors_for_module cs mn ;;
-let below cs mn = Fw_with_batch_compilation.below cs mn ;;
+let ancestors_for_module cs mn = Fw_with_batch_compilation.ancestors_for_module (Private.qarent cs) mn ;;
+let below cs mn = Fw_with_batch_compilation.below (Private.qarent cs) mn ;;
 let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
 let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module cs mn ;;
-let directly_below cs mn = Fw_with_batch_compilation.directly_below cs mn ;;
+let directly_below cs mn = Fw_with_batch_compilation.directly_below (Private.qarent cs) mn ;;
+let duplicate_module cs  vague_mname1 vague_mname2 = Fw_with_batch_compilation.duplicate_module (Private.qarent cs) vague_mname1 vague_mname2 ;;
 let empty_one = Private.empty_one ;;
 let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module cs mn ;;
 let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.qarent cs) ;;

@@ -464,6 +464,9 @@ module Private = struct
   let find_subdir_from_suffix fw suffix =
     Fw_with_dependencies.find_subdir_from_suffix (parent fw) suffix;; 
 
+  let duplicate_module fw vague_mname1 vague_mname2 = 
+    Fw_with_dependencies.duplicate_module (parent fw) vague_mname1 vague_mname2 ;;
+
   end ;;
   
 
@@ -478,6 +481,7 @@ let configuration = Private.configuration ;;
 let default_constructor = Private.default_constructor ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
+let duplicate_module = Private.duplicate_module ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
