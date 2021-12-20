@@ -471,10 +471,13 @@ module Private = struct
 
   let all_ml_absolute_paths fw = Fw_with_dependencies.all_ml_absolute_paths (parent fw) ;;
 
+  let all_mlx_files fw = Fw_with_dependencies.all_mlx_files (parent fw) ;;
+
   end ;;
   
 
 let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;  
+let all_mlx_files = Private.all_mlx_files ;;
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;

@@ -1414,10 +1414,14 @@ let decipher_module fw capitalized_or_not_x=
         let mods=Image.image fst (Order.get fw) in
         List.flatten(Image.image(acolytes_at_module fw) mods);;    
 
+    let all_endinglesses fw=
+        Image.image (fun (mn,_)->endingless_at_module fw mn) (Order.get fw);;     
+
 end ;;
 
 let above = Private.above ;;
 let acolytes_at_module = Private.acolytes_at_module ;;
+let all_endinglesses = Private.all_endinglesses ;;
 let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;
 let all_mlx_files = Private.all_mlx_files ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
