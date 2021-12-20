@@ -570,3 +570,13 @@ let to_concrete_object = Automatic.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
 
 let watched_files = Automatic.watched_files ;;
+
+
+let z_inspect_and_update fw ~verbose = 
+   let (new_files,changed_files)= Private.compute_changes_and_announce_them fw ~verbose in
+   let fw2 ={
+      fw with
+      File_watcher_t.watched_files         = new_files ;
+   }  in 
+   let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
+   (new_fw,changed_files);;

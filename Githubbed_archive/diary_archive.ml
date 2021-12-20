@@ -1,11 +1,11 @@
 (************************************************************************************************************************
-Snippet 89 : 
+Snippet 85 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 88 : Musings on the Szemeredi problem 
+Snippet 84 : Musings on the Szemeredi problem 
 ************************************************************************************************************************)
 open Needed_values ;;
 module L3 = struct
@@ -231,7 +231,7 @@ module L3 = struct
    
 
 (************************************************************************************************************************
-Snippet 87 : 
+Snippet 83 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 let mixer (a,b,ll)= Image.image (fun l->a@(Image.image (fun t->t+b) l)) ll;;
@@ -348,7 +348,7 @@ let check_sizes = (sizes = [1; 2; 6; 12; 20; 34; 56; 88; 136; 208; 314; 470; 700
 3330; 4896; 7192; 10558; 15492; 22724; 33324; 48860; 71630]) ;;
 
 (************************************************************************************************************************
-Snippet 86 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2, chapter III
+Snippet 82 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2, chapter III
 ************************************************************************************************************************)
 open Needed_values ;;
 let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
@@ -505,7 +505,7 @@ eu_case2 3 main 5 ;;
 
 
 (************************************************************************************************************************
-Snippet 85 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2 
+Snippet 81 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2 
 ************************************************************************************************************************)
 open Needed_values ;;
 let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
@@ -628,7 +628,7 @@ let zz n=(na n,nb n,nc n,nd n,nk n,ne n);;
 
 
 (************************************************************************************************************************
-Snippet 83 : Musings on the Van der Warden problem
+Snippet 80 : Musings on the Van der Warden problem
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -737,7 +737,7 @@ let check = List.filter (fun (n,(m,_))->m <>
 
 
 (************************************************************************************************************************
-Snippet 82 : Rename scanned files
+Snippet 79 : Rename scanned files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -759,7 +759,7 @@ Coherent_pdf.workspace_directory := s_ap1 ;;
 Coherent_pdf.implode ("p","") ;;
 
 (************************************************************************************************************************
-Snippet 81 : Write repetitive code for PARI-GP
+Snippet 78 : Write repetitive code for PARI-GP
 ************************************************************************************************************************)
 let s_ap = home^
 "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp" ;;
@@ -793,14 +793,14 @@ let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
 *)
 
 (************************************************************************************************************************
-Snippet 80 : A useful shortcut using Lines_in_string.remove_interval_in_file 
+Snippet 77 : A useful shortcut using Lines_in_string.remove_interval_in_file 
 ************************************************************************************************************************)
 let ri fn x y =
      Lines_in_string.remove_interval_in_file 
       (Absolute_path.of_string fn) x y ;;
 
 (************************************************************************************************************************
-Snippet 79 : Test the prepare_fw_with_dependencies.ml file
+Snippet 76 : Test the prepare_fw_with_dependencies.ml file
 ************************************************************************************************************************)
 let the_other_one = 
    Absolute_path.of_string "../Idaho/Filewatching/fw_with_dependencies.ml" ;;
@@ -810,7 +810,7 @@ let the_other_one =
  write_all_to_file the_other_one ;;  *)
 
 (************************************************************************************************************************
-Snippet 78 : Typical use of marked comments
+Snippet 75 : Typical use of marked comments
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -824,7 +824,7 @@ let act2 () = Shorten_long_blank_intervals.in_file dest1 ;;
 
 
 (************************************************************************************************************************
-Snippet 77 : Replacements on several files
+Snippet 74 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -954,7 +954,7 @@ rep ("Afd_sybdirectoru.","Dfa_subdirectory.")   ;;
 
 
 (************************************************************************************************************************
-Snippet 76 : Extract a line interval from a file and treat it
+Snippet 73 : Extract a line interval from a file and treat it
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -982,7 +982,7 @@ let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
 let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
-Snippet 75 : Musings on the Vand der Waerden problem, version 22 : computing 
+Snippet 72 : Musings on the Vand der Waerden problem, version 22 : computing 
 some statement levels
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1350,7 +1350,7 @@ let u1 = List.filter (fun (St(n,_,_))->n mod 9=7) (level 3) ;;
 
 
 (************************************************************************************************************************
-Snippet 74 : Musings on the Vand der Waerden problem, version 21 : add
+Snippet 71 : Musings on the Vand der Waerden problem, version 21 : add
 StatSys submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1633,7 +1633,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 73 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 70 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.optimize and Statement submodule
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -1887,7 +1887,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 72 : Musings on the Vand der Waerden problem, version 20 : add
+Snippet 69 : Musings on the Vand der Waerden problem, version 20 : add
 Constraint.analyze_shadow, and start using it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2239,7 +2239,7 @@ Ordered_misc.reorder_list_of_pairs_using_list_of_singles ;;
 
 
 (************************************************************************************************************************
-Snippet 71 : Musings on the Vand der Waerden problem, version 19 : add 
+Snippet 68 : Musings on the Vand der Waerden problem, version 19 : add 
 Constraint submodule, and start testing it
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2534,7 +2534,7 @@ let gg r=
 
 
 (************************************************************************************************************************
-Snippet 70 : Musings on the Vand der Waerden problem, version 18 : starting 
+Snippet 67 : Musings on the Vand der Waerden problem, version 18 : starting 
 a different approach
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -2719,7 +2719,7 @@ let z5 = List.filter (fun (n,a,b)->a<>b) z4 ;;
 
 
 (************************************************************************************************************************
-Snippet 69 : Musings on the Vand der Waerden problem, version 17 : adding the
+Snippet 66 : Musings on the Vand der Waerden problem, version 17 : adding the
 I variant, and oslo_compute 33 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -3473,7 +3473,7 @@ let upp l=List.filter(fun (x,(i,j))->
 *)
 
 (************************************************************************************************************************
-Snippet 68 : Musings on the Vand der Waerden problem, version 16 : adding the
+Snippet 65 : Musings on the Vand der Waerden problem, version 16 : adding the
 H variant, and oslo_compute 26 0 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4179,7 +4179,7 @@ let upp l=List.filter(fun (x,(i,j))->
 
 
 (************************************************************************************************************************
-Snippet 67 : Musings on the Vand der Waerden problem, version 15 : working
+Snippet 64 : Musings on the Vand der Waerden problem, version 15 : working
 Eisenhower.determine_next_special_expansion, and oslo_compute 25 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -4885,7 +4885,7 @@ let h13 = Expansion.allowed_substitution_by_in (n0-7,d0) h12;;
 
 
 (************************************************************************************************************************
-Snippet 66 : Musings on the Vand der Waerden problem, version 15 : debug 
+Snippet 63 : Musings on the Vand der Waerden problem, version 15 : debug 
 Eisenhower.determine_next_special_expansion
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -5571,7 +5571,7 @@ let next_u = (n0,d0,(n1-n0,d1-d0)::treated,temp3) ;;
 
 
 (************************************************************************************************************************
-Snippet 65 : Musings on the Vand der Waerden problem, version 14 : add 
+Snippet 62 : Musings on the Vand der Waerden problem, version 14 : add 
 Current_partition_watcher.ugly_part , oslo_compute 24 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -6164,7 +6164,7 @@ let h9 = Expansion.allowed_substitution_by_in (n0-6,d0+1) h8;;
 
 
 (************************************************************************************************************************
-Snippet 64 : Musings on the Vand der Waerden problem, version 13 : add
+Snippet 61 : Musings on the Vand der Waerden problem, version 13 : add
 Current_partition_watcher.ugly_part and Marshall_plan.compute_from_scratch,
 oslo_compute 21 0 has no D or E component
 ************************************************************************************************************************)
@@ -6718,7 +6718,7 @@ let h3 = Expansion.allowed_substitution_by_in (n0-2,d0+1) h2;;
 
 
 (************************************************************************************************************************
-Snippet 63 : Musings on the Vand der Waerden problem, version 12 : painfully long
+Snippet 60 : Musings on the Vand der Waerden problem, version 12 : painfully long
 computation of oslo_compute 21 0
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -7576,7 +7576,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 62 : Musings on the Van der Waerden problem, version 11 : add the Expansion
+Snippet 59 : Musings on the Van der Waerden problem, version 11 : add the Expansion
 submodule and use it to avoid the D variant in the computation of
 oslo_compute 18 1, and E variant and compute up to oslo_compute 20 0
 ************************************************************************************************************************)
@@ -8182,7 +8182,7 @@ let z3 = List.filter (fun (x,y)->
 *)
 
 (************************************************************************************************************************
-Snippet 61 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
+Snippet 58 : Musings on the Van der Waerden problem, version 10 : add back D variant in the definition of the 
 colored_variable type, and add Partition_watcher.decompose and 
 Current_partition_watcher.decompose
 ************************************************************************************************************************)
@@ -8700,7 +8700,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.write_partition_commands 18 1 ;;
 
 (************************************************************************************************************************
-Snippet 60 : Musings on the Van der Waerden problem, version 9 : add lmea and
+Snippet 57 : Musings on the Van der Waerden problem, version 9 : add lmea and
 remove D variant in the definition of the colored_variable type
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9178,7 +9178,7 @@ let z1 = Oslo.needed_intermediaries 19 0 ;;
 let z2 = Marshall_plan.detect_missing_affinities 19 0 ;;
 
 (************************************************************************************************************************
-Snippet 59 : Musings on the Van der Waerden problem, version 8 : adding
+Snippet 56 : Musings on the Van der Waerden problem, version 8 : adding
 Marshall_plan.write_partition_commands
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -9690,7 +9690,7 @@ let z1 = Marshall_plan.write_partition_commands 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 58 : Musings on the Van der Waerden problem, version 7 : adding 
+Snippet 55 : Musings on the Van der Waerden problem, version 7 : adding 
 Colored.order{_for_pairs} and using it in Affinity.analyse_combination 
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -10174,7 +10174,7 @@ oslo_compute 18 1 ;;
 let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 (************************************************************************************************************************
-Snippet 57 : Musings on the Van der Waerden problem, version 6 : adding
+Snippet 54 : Musings on the Van der Waerden problem, version 6 : adding
 Marshall_plan.detect_missing_affinities
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -10643,7 +10643,7 @@ let z1 = Marshall_plan.detect_missing_affinities 18 1;;
 
 
 (************************************************************************************************************************
-Snippet 56 : Musings on the Van der Waerden problem, version 5 : adding 
+Snippet 53 : Musings on the Van der Waerden problem, version 5 : adding 
 Oslo.needed_intermediaries, and display partitions as they are made
 
 ************************************************************************************************************************)
@@ -11065,7 +11065,7 @@ oslo_compute 18 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 55 : Musings on the Van der Waerden problem, version 4 : adding 
+Snippet 52 : Musings on the Van der Waerden problem, version 4 : adding 
 the Affinity submodule and make each part in a partition inherit the affinities
 of the whole
 ************************************************************************************************************************)
@@ -11450,7 +11450,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 54 : Musings on the Van der Waerden problem, version 3 : adding
+Snippet 51 : Musings on the Van der Waerden problem, version 3 : adding
 affinities and memorize each partition made in the partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -11802,7 +11802,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 53 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
+Snippet 50 : Musings on the Van der Waerden problem, version 2 : adding a partition watcher
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12096,7 +12096,7 @@ oslo_compute 17 0 ;;
 
 
 (************************************************************************************************************************
-Snippet 52 : Musings on the Van der Waerden problem, version 2 : adding colored variables
+Snippet 49 : Musings on the Van der Waerden problem, version 2 : adding colored variables
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12268,7 +12268,7 @@ let check3 = Colored.check_partitioning [
 
 
 (************************************************************************************************************************
-Snippet 51 : Musings on the Van der Waerden problem  
+Snippet 48 : Musings on the Van der Waerden problem  
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12395,7 +12395,7 @@ let check4 = check_correct_partitioning [
 *)
 
 (************************************************************************************************************************
-Snippet 50 : Compute summaries for levels, in a Van der Waerden context
+Snippet 47 : Compute summaries for levels, in a Van der Waerden context
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12486,7 +12486,7 @@ let result2= [[10; 11; 13; 14];[10; 12; 13; 15]; [10; 11; 14; 15]; [11; 12; 14; 
 
 
 (************************************************************************************************************************
-Snippet 49 : Remove all modules in a subdirectory
+Snippet 46 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12503,7 +12503,7 @@ let z3 = Image.image (
 let act () = fgs z3 ;;  
 
 (************************************************************************************************************************
-Snippet 48 : Replacing a long interval in a file with another
+Snippet 45 : Replacing a long interval in a file with another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12517,7 +12517,7 @@ let replacement = Lines_in_string.interval towards_complement 9 240 ;;
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
-Snippet 47 : Visualize Git tree
+Snippet 44 : Visualize Git tree
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12542,7 +12542,7 @@ let cmds3 = cmds1 @ cmds2 ;;
 let anse1 = Image.image Sys.command cmds3 ;;
 
 (************************************************************************************************************************
-Snippet 46 : Miscellaneous tests on compilation management
+Snippet 43 : Miscellaneous tests on compilation management
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12586,7 +12586,7 @@ reco "1";;
 fgs ["tf_one";"tf_two";"tf_three";"tf_four";"tf_five"] ;;
 
 (************************************************************************************************************************
-Snippet 45 : Extracting lines from a file and modifying them
+Snippet 42 : Extracting lines from a file and modifying them
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12623,7 +12623,7 @@ let z7 = "\n\n\n" ^(String.concat "\n" (Image.image write2 z4)) ^ "\n\n\n";;
 let z8 () = print_string z7 ;;
 
 (************************************************************************************************************************
-Snippet 44 : Get a list of value names from an interval of lines in a file
+Snippet 41 : Get a list of value names from an interval of lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12641,7 +12641,7 @@ let compute_names = Image.image (
 
 
 (************************************************************************************************************************
-Snippet 43 : Using intervals of line indices to extract values from a module
+Snippet 40 : Using intervals of line indices to extract values from a module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12762,37 +12762,7 @@ main ((1842,1874),"Try_to_register") Curcuma;;
 *)
 
 (************************************************************************************************************************
-Snippet 42 : Test the Detect_printer_declaration_in_text.detect function
-************************************************************************************************************************)
-open Needed_values ;;
-
-let z1 = ae () ;;
-let z2 = Image.image (
-  fun el->
-    let full = Dfn_join.to_ending el Dfa_ending.ml in 
-    let ap = Dfn_full.to_absolute_path full in 
-    (el,ap)
-) z1;;
-let (z3,z4) = List.partition (fun (el,ap)->
-  Sys.file_exists (Absolute_path.to_string ap)
-  ) z2 ;;
-let z5 = Explicit.image (
-  fun (el,ap)->(el,Io.read_whole_file ap)
-) z3 ;; 
-let z6 = Option.filter_and_unpack (
-  fun (el,text) -> 
-    let temp1 = Outside_comments_and_strings.good_substrings text in 
-    if List.exists (fun (i,j,subtext)->
-      (Detect_printer_declaration_in_text.detect subtext)<>None 
-      ) temp1 
-    then Some (Dfn_endingless.to_module el)
-    else None  
-) z5 ;;
-let z7 = Image.image Dfn_endingless.to_module (Coma_state.printer_equipped_types_from_data (!ucs)) ;;
-let check = (z6 = z7) ;;
-
-(************************************************************************************************************************
-Snippet 41 : Old version of a Van der Waerden-related module
+Snippet 39 : Old version of a Van der Waerden-related module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12879,7 +12849,7 @@ let act1 () =
 
 
 (************************************************************************************************************************
-Snippet 40 : Remove all snippets containing a given substring (todo : integrate it
+Snippet 38 : Remove all snippets containing a given substring (todo : integrate it
 into the Manage_diary module directly)
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -12893,7 +12863,7 @@ let act1 () = Manage_diary.remove_snippets g5;;
 
 
 (************************************************************************************************************************
-Snippet 39 : Search/replace following some module refactoring
+Snippet 37 : Search/replace following some module refactoring
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12919,7 +12889,7 @@ let act1 () = List.iter
      (!list_for_reps)) (!aps);
 
 (************************************************************************************************************************
-Snippet 38 : Extracting modules in a subdirectory
+Snippet 36 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12937,7 +12907,7 @@ let u3 = Image.image (
 ) u2 ;;
 
 (************************************************************************************************************************
-Snippet 37 : Remove all "automatic" modules 
+Snippet 35 : Remove all "automatic" modules 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12967,7 +12937,7 @@ let h3 = List.iter (
 
 
 (************************************************************************************************************************
-Snippet 36 : Typical use of the Manage_diary module
+Snippet 34 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
 let act1 () = Manage_diary.fix_indexation ();;
 
@@ -12979,7 +12949,7 @@ let diary_text = Io.read_whole_file ap_for_diary ;;
 let (g1,g2) =  Manage_diary.Private.read_and_parse ap_for_diary ;;
 
 (************************************************************************************************************************
-Snippet  35 : Deduce the lower measure from the usual measure (related to Vdw)
+Snippet  33 : Deduce the lower measure from the usual measure (related to Vdw)
 ************************************************************************************************************************)
 let measure n =
   if n<1 then 0 else 
@@ -13016,417 +12986,6 @@ let lower_measure n =
 let compute_lower_measure n = 
   let tempf = (fun t->measure(n+t)-measure(t)) in 
   snd(Min.minimize_it tempf (Ennig.ennig 1 20)) ;;   
-
-
-(************************************************************************************************************************
-Snippet  34 : Unfinished attempt for automated Crobj converters writing
-************************************************************************************************************************)
-open Needed_values ;;
-
-module Common = struct 
-
-    let add_indentation k lines =
-        let indent = String.make k ' ' in 
-        Image.image (fun line->indent^line) lines ;;
-
-    let broken_module_name modname =
-        let n = String.length modname in 
-        let j = (if n<3 then 1 else 3) in 
-        let left_part = Cull_string.beginning j modname 
-        and right_part = Cull_string.cobeginning j modname  in 
-        "\""^left_part ^ "\" ^ \""^right_part ^ ".\"" ;;    
-
-    let concat_paragraphs pars=
-        let temp1 = Image.image (String.concat "\n") pars in 
-        String.concat "\n\n\n" temp1 ;;    
-
-    let remove_last_element_if_blank l =
-        let (a,b) = Listennou.ht (List.rev l) in 
-        if (Cull_string.trim_spaces a) = ""
-        then List.rev b 
-        else l  ;; 
-
-    let wrap_in_parentheses_if_needed typename =
-        if (String.contains typename ' ')||(String.contains typename '*')
-        then "( "^typename^" )"
-        else  typename ;;         
-    
-    let unwrap_parentheses_if_needed typename =
-            if Supstring.begins_with typename "("
-            then let n = String.length typename in
-                 Cull_string.interval typename 2 (n-1)
-            else  typename ;;   
-
-    let listify is_a_list name =
-        if not(is_a_list) 
-        then name 
-        else (wrap_in_parentheses_if_needed name)^" list" ;;  
-    
-    exception Arguments_in_input_exn of int * int ;;
-
-    let arguments_in_input argname selected_nbr total_nbr =
-        if selected_nbr > total_nbr 
-        then raise(Arguments_in_input_exn(selected_nbr,total_nbr))
-        else let temp1 = Ennig.doyle (fun k->
-              if k<=selected_nbr then argname^(string_of_int k) else "_") 1 total_nbr in 
-             "(" ^ (String.concat "," temp1) ^ ")" ;;         
-    
-    let max_number_of_arguments = 7;;         
-
-    let counter_for_converters = ref 0 ;;   
-    let accu_for_helpers = ref [] ;; 
-
-end ;;    
-
-module Level_four = struct 
-
-    type t = 
-       Int 
-      |Bool 
-      |String
-      |Modular of string * string
-      |Preregistered of string ;;
-
-    exception Constructor_exn of string ;;  
-
-    let module_for_preregistering = "Crobj_converter." ;;
-
-    let constructor cs s = 
-        if Supstring.ends_with s "_t.t"
-        then let mname = Cull_string.coending 4 s in 
-             let modn = Dfa_module.of_line mname in
-             let preferred_modn = Coma_state.choose_automatic_if_possible cs modn in
-             Modular (mname,String.capitalize_ascii (Dfa_module.to_line preferred_modn))
-        else 
-        if Supstring.begins_with s module_for_preregistering
-        then Preregistered (Cull_string.two_sided_cutting (module_for_preregistering,"") s)
-        else   
-        match List.assoc_opt s ["bool",Bool;"int",Int;"string",String] with 
-        Some(answer) -> answer
-        | _ -> raise (Constructor_exn(s)) ;;             
-
-
-    
-    let definition = function 
-         Int -> "int"
-        |Bool -> "bool"
-        |String -> "string"
-        |Modular(mname,preferred_mname)->mname^"_t.t"
-        |Preregistered(tname)-> module_for_preregistering ^ tname;;
-
-    let get_converters = function 
-        Int -> (module_for_preregistering ^ "int_of_concrete_object",
-                module_for_preregistering ^ "int_to_concrete_object")
-       |Bool -> (module_for_preregistering ^ "bool_of_concrete_object",
-                 module_for_preregistering ^ "bool_to_concrete_object")
-       |String -> (module_for_preregistering ^ "string_of_concrete_object",
-                   module_for_preregistering ^ "string_to_concrete_object")
-       |Modular(mname,preferred_mname)->
-                        (preferred_mname^".of_concrete_object",
-                         preferred_mname^".to_concrete_object")
-       |Preregistered(tname)-> (module_for_preregistering ^ tname ^ "of_concrete_object",
-                                module_for_preregistering ^ tname ^ "to_concrete_object");;     
-
-    
-
-end ;;    
-
-module Level_three = struct 
-
-
-    type t = L3 of bool * Level_four.t ;;
-
-    let constructor is_listy l4_t = L3(is_listy,l4_t) ;;
-
-    let definition (L3 (is_listy,l4_t)) = Common.listify is_listy (Level_four.definition l4_t) ;;
-
-    let get_converters (L3 (is_listy,l2_t)) =
-        let  (cv_of,cv_to) = Level_four.get_converters l2_t in 
-        if is_listy 
-        then ("Crobj_converter_combinator.to_list "^cv_of,
-              "Crobj_converter_combinator.of_list "^cv_to)   
-        else (cv_of,cv_to) ;;     
-
-end ;;
-
-module Level_two = struct 
-
-    type t = L2 of Level_three.t list ;;
-    
-    let constructor l = L2(l) ;;
-    
-    let definition (L2 (l)) = String.concat " * " 
-          (Image.image (fun l3_t -> 
-            Common.wrap_in_parentheses_if_needed
-             (Level_three.definition l3_t)) l) ;;
-
-    let new_converter k (L2(l)) = 
-       let d = List.length l in 
-       let args1 = Common.arguments_in_input "arg" d Common.max_number_of_arguments 
-       and args2 = Common.arguments_in_input "x" d d 
-       and uple1 = String.concat "," (Image.image (fun (idx,l3_t)->
-           let (cv_of,cv_to) = Level_three.get_converters l3_t in 
-           cv_of^" arg"^(string_of_int idx) 
-        ) (Ennig.index_everything l)) 
-       and uple2 = String.concat ";" (Image.image (fun (idx,l3_t)->
-            let (cv_of,cv_to) = Level_three.get_converters l3_t in 
-            cv_to^" x"^(string_of_int idx) 
-       ) (Ennig.index_everything l)) in 
-       let sk = string_of_int k in 
-        (["let pcv"^sk^"_of_crobj ccrt_obj = "]@
-         (
-            Common.add_indentation 2 (
-              ["let "^args1^" = Concrete_object_automatic.unwrap_bounded_uple ccrt_obj in ";
-              "("^uple1^") ;;"]
-            )
-         )@ 
-         ["let pcv"^sk^"_to_crobj "^args2^" = "]@
-         (
-            Common.add_indentation 2 (
-              [" Concrete_object_t.Uple ["^uple2^"] ;;"]
-            )
-         ),
-         ("pcv"^sk^"_of_crobj","pcv"^sk^"_to_crobj")) ;;
-    
-    let accu_for_converters = ref [] ;;
-    
-    let get_converters l2_t = 
-        let (L2 l) = l2_t in
-        if List.length l = 1 
-        then Level_three.get_converters (List.hd l)
-        else         
-        match List.assoc_opt l2_t (!accu_for_converters) with 
-        Some(cv_of,cv_to)->(cv_of,cv_to)
-        |None -> (* the step below is to insure the converters count
-                    will be done in the correct order, so that when we
-                    modify Common.counter_for_converters all the preliminary
-                    subcomputations have already been carried through *)
-                 let _ = Image.image Level_three.get_converters l in 
-                 let count = (!(Common.counter_for_converters))+1 in 
-                 let (new_helpers,(cv_of,cv_to)) = new_converter count l2_t in 
-                 let _ = (
-                    Common.counter_for_converters := count ;
-                    Common.accu_for_helpers := (!(Common.accu_for_helpers)) @ new_helpers ;
-                    accu_for_converters := (l2_t,(cv_of,cv_to)):: (!accu_for_converters) ;
-                 ) in 
-                 (cv_of,cv_to) ;;
-    
-end ;;    
-    
-
-module Level_one = struct 
-
-    type t = L1 of bool * Level_two.t ;;
-
-    let constructor is_listy l2_t = L1(is_listy,l2_t) ;;
-
-    let definition (L1 (is_listy,l2_t)) = Common.listify is_listy (Level_two.definition l2_t) ;;
-
-    let get_converters (L1 (is_listy,l2_t)) =
-        let  (cv_of,cv_to) = Level_two.get_converters l2_t in 
-        if is_listy 
-        then ("Crobj_converter_combinator.to_list "^cv_of,
-              "Crobj_converter_combinator.of_list "^cv_to)   
-        else (cv_of,cv_to) ;;
-
-end ;;    
-
-
-module Reasonable_record = struct 
-
-type t = RR of string * ((string * Level_one.t) list) ;;
-
-
-let indented_definition k (RR (module_name,l))=
-    let indent =  String.make (k+2) ' ' in 
-    (
-   "{" ::
-   (Image.image (fun (field_name,field_type)->
-       indent ^ field_name ^ " : " ^ (Level_one.definition field_type) ^ " ;"
-    ) l)
-   @["}"]);;
-
-let label_definitions (RR (module_name,l))= 
-   ("let salt = " ^ (Common.broken_module_name module_name)^ " ;;") ::
-   ( Strung.reposition_left_hand_side_according_to_separator "="
-  (Image.image (fun (field_name,field_type)->
-    "let " ^ (String.lowercase_ascii field_name) ^ "_label = salt ^ \"" ^ field_name ^ "\" ;;"
-   ) l))
-;; 
-
-
-
-let converter_of_crobj reasonable_record =
-    let (RR (module_name,l)) = reasonable_record in 
-    let converters = Image.image (fun pair->
-        let (field_name,field_type) = pair in 
-        (pair,Level_one.get_converters field_type) ) l in 
-    (
-      "let of_concrete_object ccrt_obj = " ::
-      (Common.add_indentation 2
-        ( "let g = Concrete_object_automatic.get_record ccrt_obj in" ::
-          "{"::
-           (
-            Common.add_indentation 2 
-            (
-               Image.image (
-                fun ((field_name,field_type),(of_crobj,to_crobj))->
-                    module_name^"."^field_name ^ " = " ^ 
-                    of_crobj^" (g "^(String.lowercase_ascii field_name)^"_label) ;"
-               ) converters
-            )
-           )@
-           ["} ;;"]
-        )
-      )
-    );;
-
-let converter_to_crobj reasonable_record =
-    let (RR (module_name,l)) = reasonable_record in 
-    let converters = Image.image (fun pair->
-        let (field_name,field_type) = pair in 
-        (pair,Level_one.get_converters field_type) ) l in 
-    (
-      "let to_concrete_object x = " ::
-      (Common.add_indentation 2
-        ( "Concrete_object_t.Record [" ::
-           (
-            Common.add_indentation 2 
-            (
-               Image.image (
-                fun ((field_name,field_type),(of_crobj,to_crobj))->
-                    (String.lowercase_ascii field_name)^"_label, "^
-                    to_crobj^" x."^module_name^"."^field_name^" ;"
-               ) converters
-            )
-           )@
-           ["] ;;"]
-        )
-      )
-    );;
-
-let whole rr =
-    let (RR (module_name,l)) = rr in 
-    let rr_of_crobj = converter_of_crobj rr 
-    and rr_to_crobj = converter_to_crobj rr in 
-    Common.concat_paragraphs
-    [
-        ["module "^module_name^"=struct \n type t=\n"]
-        @(indented_definition 2 rr)@[" ;;\n end;;"];
-        label_definitions rr;
-        (!(Common.accu_for_helpers));
-        rr_of_crobj;
-        rr_to_crobj;
-
-    ] ;;
-
-end ;;    
-
-module Parsing = struct 
-
-    exception Analize_record_item_exn of string ;;
-
-    let listy_decomposition line =
-        if not(Supstring.ends_with line "list")
-        then (false,line)
-        else 
-        let temp1 = Cull_string.trim_spaces (Cull_string.coending 4 line) in 
-        if not(Supstring.ends_with temp1 ")")
-        then (true,temp1)
-        else 
-        let temp2 = Cull_string.two_sided_cutting ("(",")") temp1 in 
-        (true,Cull_string.trim_spaces temp2) ;;          
-
-    let analize_record_item cs line =
-        let j = Substring.leftmost_index_of_in ":" line in 
-        if j<0 then raise(Analize_record_item_exn line) else 
-        let field_type = Cull_string.trim_spaces (Cull_string.cobeginning j line) in 
-        let (is_listy,comp_type2) = listy_decomposition field_type in
-        let elements_in_product = Str.split (Str.regexp_string "*") comp_type2 in 
-        let elts = Image.image (fun untrimmed_s->
-            let pre_s = Cull_string.trim_spaces untrimmed_s in 
-            let s = Common.unwrap_parentheses_if_needed pre_s in
-            let (is_listy2,comp_type4) = listy_decomposition  s in 
-            Level_three.constructor is_listy2 (Level_four.constructor cs comp_type4)) elements_in_product in 
-        let comp_type1 = Level_one.constructor is_listy (Level_two.constructor elts) in 
-        (Cull_string.trim_spaces (Cull_string.beginning (j-1) line),comp_type1 ) ;;
-     
-    let parse_record_type_declaration cs text=
-       let i1 = (String.index text '{')+1
-       and i2 = (String.index text '}')+1 in 
-       let temp1 = Cull_string.interval text (i1+1) (i2-1) in 
-       let temp2 = Str.split (Str.regexp_string ";") temp1 in 
-       let temp3 = Common.remove_last_element_if_blank temp2 in 
-       let temp4 = Image.image (analize_record_item cs) temp3 in 
-       temp4 ;;  
-    
-end ;;    
-
-let u1 = rf "Compilation_management/coma_state_t.ml";;
-let u2 = Lines_in_string.interval u1 8 23 ;;
-let u3 = Parsing.parse_record_type_declaration (!ucs) u2 ;;    
-
-
-let rr1 = Reasonable_record.RR ("Zorglub", u3);;
-
-let text1 =  "\n\n\n " ^ (Reasonable_record.whole rr1) ^ "\n\n\n" ;;
-
-let ap_for_writing = Absolute_path.of_string "Fads/nap.ml" ;; 
-
-let write () = 
-     Replace_inside.overwrite_between_markers_inside_file 
-       (Overwriter.of_string text1)
-     ("(* Beginning *)","(* End *)") ap_for_writing ;;
-
-(*     
-let line = "needed_dirs_for_module : (Dfa_module_t.t * (Dfa_subdirectory_t.t list)) list" ;;
-let j = Substring.leftmost_index_of_in ":" line ;;
-let field_type = Cull_string.trim_spaces (Cull_string.cobeginning j line) ;;
-let (is_listy,comp_type2) = Parsing.listy_decomposition field_type ;;
-let elements_in_product = Str.split (Str.regexp_string "*") comp_type2 ;;
-
-
-        let elements_in_product = Str.split (Str.regexp_string "*") comp_type2 in 
-        let elts = Image.image (fun untrimmed_s->
-            let s = Cull_string.trim_spaces untrimmed_s in 
-            let (is_listy2,comp_type4) = listy_decomposition  s in 
-            Level_three.constructor is_listy2 (Level_four.constructor comp_type4)) elements_in_product in 
-        let comp_type1 = Level_one.constructor is_listy (Level_two.constructor elts) in 
-        (Cull_string.trim_spaces (Cull_string.beginning (j-1) line),comp_type1 ) ;;
-     
-*)
-
-(************************************************************************************************************************
-Snippet  33 : Check and fix initial comments in files
-************************************************************************************************************************)
-open Needed_values ;;
-
-let z1 = Usual_coma_state.all_principals () ;;
-let z2 = Image.image (fun full->
-  let rl = Dfn_rootless.to_line (Dfn_full.to_rootless full) in 
-  (rl,Dfn_full.to_absolute_path full)) z1 ;;
-let z3 = Explicit.image (
-   fun (rl,ap) -> 
-    try (rl,ap,Put_use_directive_in_initial_comment.detect_initial_comment_in_file ap) with 
-    _ ->(rl,ap,None)
-) z2 ;;
-let z4 = Option.filter_and_unpack (fun (rl,_,opt)->
-   if opt = None then Some rl else None
-  ) z3;;
-let z4 = List.filter (fun s->Supstring.begins_with s "Compi") z4;;  
-let z5 = "\n\n\n" ^ (String.concat " "("vopen"::z4)) ^ "\n\n\n";;
-let root = Coma_state.root (!ucs) ;;
-let z6 = Image.image (
-  fun (rl,ap,opt) ->
-    let (_,line,_) = Option.unpack opt in 
-    (rl,ap,line,Put_use_directive_in_initial_comment.usual root ap)
-) z3;;
-let z7 = List.filter (
-  fun (rl,ap,line1,line2) -> line1 <> line2
-) z6;;
-let z8 () = Explicit.image (
-  fun (rl,ap,line1,line2) -> Put_use_directive_in_initial_comment.put_usual root ap
-) z7 ;;
 
 
 (************************************************************************************************************************
