@@ -1034,6 +1034,8 @@ let all_mlx_files cs = Fw_with_batch_compilation.all_mlx_files (Private.qarent c
 let all_subdirectories cs = Fw_with_batch_compilation.all_subdirectories (Private.qarent cs) ;;
 let ancestors_for_module cs mn = Fw_with_batch_compilation.ancestors_for_module (Private.qarent cs) mn ;;
 let below cs mn = Fw_with_batch_compilation.below (Private.qarent cs) mn ;;
+let census_of_foreigners cs = Fw_with_batch_compilation.census_of_foreigners (Private.qarent cs) ;;
+let check_module_sequence_for_forgettability cs = Fw_with_batch_compilation.check_module_sequence_for_forgettability (Private.qarent cs) ;;
 let check_that_no_change_has_occurred cs =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.qarent cs) ;; 
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
