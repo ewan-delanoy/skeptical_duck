@@ -749,20 +749,6 @@ let find_value_definition cs s=
   ) temp1;;
      
 
-let all_ml_absolute_paths cs=  
-Option.filter_and_unpack (fun mn->
-  if not(check_ending_in_at_module Dfa_ocaml_ending_t.Ml cs mn)
-  then None
-  else 
-  let hm=endingless_at_module cs mn in
-  let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
-  Some(Dfn_full.to_absolute_path mlx)
-) (dep_ordered_modules cs);;
-
-
-
-
-
      
 let md_recompute_modification_time eless edg=
   let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg) in
