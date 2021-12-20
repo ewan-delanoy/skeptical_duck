@@ -413,18 +413,7 @@ let find_subdir_from_suffix cs possibly_slashed_suffix =
        let j1 = Substring.leftmost_index_of_in suffix container in 
        let j2 = j1 + (String.length suffix) -1 in 
        Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
-  
-let compute_long_subdir_name cs old_subdir new_subdir_short_name =
-   let temp1 =  Cull_string.trim_slashes_on_the_right new_subdir_short_name in
-   let long_name = (
-   if String.contains temp1 '/'
-   then temp1 
-   else let old_subdir_name = Dfa_subdirectory.without_trailing_slash old_subdir in 
-        let father_name = Cull_string.before_rightmost old_subdir_name '/' in 
-        if father_name = ""
-        then temp1
-        else father_name^"/"^temp1 ) in 
-   Dfa_subdirectory.of_line long_name ;;       
+    
 
 
 let find_needed_data_for_file cs fn=
@@ -1060,6 +1049,7 @@ let check_that_no_change_has_occurred cs =
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
+let dep_ordered_modules cs mn = Fw_with_batch_compilation.dep_ordered_modules (Private.qarent cs) ;;
 let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module (Private.qarent cs) mn ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (Private.qarent cs) mn ;;
 let duplicate_module cs  vague_mname1 vague_mname2 = Fw_with_batch_compilation.duplicate_module (Private.qarent cs) vague_mname1 vague_mname2 ;;

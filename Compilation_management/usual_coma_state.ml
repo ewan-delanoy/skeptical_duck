@@ -17,7 +17,6 @@ let main_ref=
 end;;
 
 let all_endinglesses ()=Coma_state.all_endinglesses (!(Private.main_ref)) ;; 
-let all_principals ()=Coma_state.all_principals (!(Private.main_ref)) ;; 
 
 let census_of_foreigners ()= Coma_state.census_of_foreigners (!(Private.main_ref));;
 
