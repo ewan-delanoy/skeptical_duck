@@ -1028,6 +1028,7 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
+let all_endinglesses cs = Fw_with_batch_compilation.all_endinglesses (Private.qarent cs) ;;
 let all_ml_absolute_paths cs = Fw_with_batch_compilation.all_ml_absolute_paths (Private.qarent cs) ;;
 let all_mlx_files cs = Fw_with_batch_compilation.all_mlx_files (Private.qarent cs) ;;
 let all_subdirectories cs = Fw_with_batch_compilation.all_subdirectories (Private.qarent cs) ;;
