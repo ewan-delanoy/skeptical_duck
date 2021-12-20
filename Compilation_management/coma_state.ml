@@ -85,7 +85,7 @@ let check_that_no_change_has_occurred cs =
 let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.qarent cs) ;;
 let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.qarent cs) ;;
 let configuration cs= Fw_with_batch_compilation.configuration (Private.qarent cs) ;;
-let dep_ordered_modules cs mn = Fw_with_batch_compilation.dep_ordered_modules (Private.qarent cs) ;;
+let dep_ordered_modules cs = Fw_with_batch_compilation.dep_ordered_modules (Private.qarent cs) ;;
 let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module (Private.qarent cs) mn ;;
 let directly_below cs mn = Fw_with_batch_compilation.directly_below (Private.qarent cs) mn ;;
 let duplicate_module cs  vague_mname1 vague_mname2 = Fw_with_batch_compilation.duplicate_module (Private.qarent cs) vague_mname1 vague_mname2 ;;
@@ -149,4 +149,3 @@ let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses cs = 
   Fw_with_batch_compilation.up_to_date_elesses (Private.qarent cs) ;; 
 
-  

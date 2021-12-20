@@ -77,8 +77,6 @@ module Private = struct
       (modules_in_good_order,faraway_fw);; 
 
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
-      failwith("aaa") ;;
-      (*
       let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
       let faraway_cs1 = Coma_state.of_fw_with_batch_compilation 
                           (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) in 
@@ -86,7 +84,7 @@ module Private = struct
       let faraway_cs2 = Coma_state.modern_recompile faraway_cs1 all_modules in 
       let _=Save_coma_state.save faraway_cs2 in   
       faraway_cs2;;                      
-      *)
+      
 
     let unfreeze_copy cs destroot =
         let old_config = Coma_state.configuration cs in 
