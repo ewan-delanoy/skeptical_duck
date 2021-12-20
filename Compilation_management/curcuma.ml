@@ -1086,7 +1086,7 @@ let of_configuration config =
     let new_parent = Fw_with_batch_compilation.of_configuration config in 
     Private.tneraq new_parent ;;   
 let of_concrete_object = Private.of_concrete_object ;;  
-let of_fw_with_batch_compilation = Private.of_fw_with_batch_compilation ;;    
+let of_fw_with_batch_compilation = Private.tneraq ;;    
 let preq_types_with_extra_info cs = 
   Fw_with_batch_compilation.preq_types_with_extra_info (Private.qarent cs) ;; 
 let read_persistent_version = Private.read_persistent_version ;;
