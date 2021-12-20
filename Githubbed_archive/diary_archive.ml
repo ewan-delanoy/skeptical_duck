@@ -1,8 +1,234 @@
 (************************************************************************************************************************
-Snippet 88 : 
+Snippet 89 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 88 : Musings on the Szemeredi problem 
+************************************************************************************************************************)
+open Needed_values ;;
+module L3 = struct
+
+   let current_width = 3 ;; 
+   
+   let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+   let i_merge = Ordered.merge Total_ordering.for_integers ;;
+   let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+   let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+   let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+   let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+   
+   let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+   let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+   
+   let hashtbl_for_main = Hashtbl.create 100 ;;
+   
+   let main_in_easy_case (n,avoided_elts) =
+      let temp1 = Sz_preliminaries.restricted_power_set 
+          (Sz_max_width_t.MW current_width,Ennig.ennig 1 n) in 
+      let temp2 = List.filter (
+        fun y->i_does_not_intersect avoided_elts y
+      ) temp1 in 
+      Max.maximize_it_with_care List.length temp2 ;;
+   
+   let translate1 t = Image.image (fun x->x+t) ;;
+   let translate2 t = Image.image (translate1 t) ;;
+   
+   let first_break_without_1 avoided_elts =
+      [(false,Option.filter_and_unpack 
+       (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
+   let first_break_with_1 avoided_elts = 
+      if Listennou.extends avoided_elts [1] then None else 
+      Some(Image.image ( fun x->
+         (true,translate1 (-1) (i_merge avoided_elts x))
+       ) tag2) ;;  
+   
+   let first_break avoided_elts = 
+      let part1 = first_break_without_1 avoided_elts in 
+      match first_break_with_1 avoided_elts with 
+      None -> part1 
+      |Some(part2) -> part1 @ part2 ;;
+   
+   let main_pusher old_f (n,avoided_elts) =
+      if n<=15 
+      then main_in_easy_case (n,avoided_elts) 
+      else 
+      let cases = first_break avoided_elts in 
+      let temp1 = Image.image (
+        fun (head_needed,new_avoided_elts) ->
+           let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
+           let sols3 = translate2 1 sols2 in 
+           if head_needed 
+           then (m2+1,Image.image (fun x->1::x) sols3) 
+           else (m2,sols3)   
+      ) cases in 
+      let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
+      (final_m,il_fold_merge (Image.image snd temp2)) ;;
+   
+   exception Impatient_exn of int * (int list) ;;
+   
+   let impatient_main (n,avoided_elts) =
+      match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
+      Some res -> res 
+      | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
+   
+   
+   let main pair =
+     match Hashtbl.find_opt hashtbl_for_main pair with 
+      Some old_answer -> old_answer 
+     | None -> 
+       let answer = main_pusher impatient_main pair in 
+       let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
+       answer ;; 
+   
+   let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
+   
+   let iterator (already_treated,to_be_treated) =
+      let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
+      let new_ones = List.filter (
+        fun x->not(il_mem  x already_treated)
+      ) temp1 in 
+      (il_merge already_treated new_ones,new_ones) ;;
+   
+   let rec computer pair =
+      if snd pair = [] then fst pair else 
+      computer(iterator pair) ;; 
+   
+   let all_helpers = computer ([],[[]]) ;;   
+   
+   let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
+   
+   let lm n = 
+      let _ = linear_main n in 
+      let (m,sols)=main (n,[]) in 
+       (m,List.hd sols) ;;
+   
+   let computation = Image.image (fun x->(x,lm x)) (Ennig.ennig 15 50);;
+   
+   
+   let check = List.filter (fun (n,(m,_))->m <> 
+     Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
+   
+   
+   end ;;
+   
+   
+   
+   module L4 = struct
+   
+     let current_width = 4 ;; 
+     
+     let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+     let i_merge = Ordered.merge Total_ordering.for_integers ;;
+     let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+     let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+     let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+     let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+     
+     let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+     let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+     
+     let hashtbl_for_main = Hashtbl.create 100 ;;
+     
+     let main_in_easy_case (n,avoided_elts) =
+        let temp1 = Sz_preliminaries.restricted_power_set 
+            (Sz_max_width_t.MW current_width,Ennig.ennig 1 n) in 
+        let temp2 = List.filter (
+          fun y->i_does_not_intersect avoided_elts y
+        ) temp1 in 
+        Max.maximize_it_with_care List.length temp2 ;;
+     
+     let translate1 t = Image.image (fun x->x+t) ;;
+     let translate2 t = Image.image (translate1 t) ;;
+     
+     let first_break_without_1 avoided_elts =
+        [(false,Option.filter_and_unpack 
+         (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
+     let first_break_with_1 avoided_elts = 
+        if Listennou.extends avoided_elts [1] then None else 
+        Some(Image.image ( fun x->
+           (true,translate1 (-1) (i_merge avoided_elts x))
+         ) tag2) ;;  
+     
+     let first_break avoided_elts = 
+        let part1 = first_break_without_1 avoided_elts in 
+        match first_break_with_1 avoided_elts with 
+        None -> part1 
+        |Some(part2) -> part1 @ part2 ;;
+     
+     let main_pusher old_f (n,avoided_elts) =
+        if n<=15 
+        then main_in_easy_case (n,avoided_elts) 
+        else 
+        let cases = first_break avoided_elts in 
+        let temp1 = Image.image (
+          fun (head_needed,new_avoided_elts) ->
+             let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
+             let sols3 = translate2 1 sols2 in 
+             if head_needed 
+             then (m2+1,Image.image (fun x->1::x) sols3) 
+             else (m2,sols3)   
+        ) cases in 
+        let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
+        (final_m,il_fold_merge (Image.image snd temp2)) ;;
+     
+     exception Impatient_exn of int * (int list) ;;
+     
+     let impatient_main (n,avoided_elts) =
+        match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
+        Some res -> res 
+        | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
+     
+     
+     let main pair =
+       match Hashtbl.find_opt hashtbl_for_main pair with 
+        Some old_answer -> old_answer 
+       | None -> 
+         let answer = main_pusher impatient_main pair in 
+         let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
+         answer ;; 
+     
+     let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
+     
+     let iterator (already_treated,to_be_treated) =
+        let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
+        let new_ones = List.filter (
+          fun x->not(il_mem  x already_treated)
+        ) temp1 in 
+        (il_merge already_treated new_ones,new_ones) ;;
+     
+     let rec computer pair =
+        if snd pair = [] then fst pair else 
+        computer(iterator pair) ;; 
+     
+     let all_helpers = computer ([],[[]]) ;;   
+     
+     let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
+     
+     let lm n = 
+        let _ = linear_main n in 
+        let (m,sols)=main (n,[]) in 
+         (m,List.hd sols) ;;
+     
+     let computation = Image.image (fun x->(x,lm x)) (Ennig.ennig 15 50);;
+     
+     let check = List.filter (fun (n,(m,_))->m <> 
+       Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
+     
+     end ;;
+   
+   
+   let z1 =  List.filter (fun x->
+     let m3 = Sz_precomputed.measure (Sz_max_width_t.MW 3) x 
+     and m4 = Sz_precomputed.measure (Sz_max_width_t.MW 4) x in 
+     m3<>m4) (Ennig.ennig 1 25);; 
+   
+   let g1 = L3.main (10,[]) ;;  
+   let g2 = L4.main (10,[]) ;; 
+   
+   let h1 = L3.il_sort (Ordered_misc.minimal_transversals [[1;5;9];[2;6;10]]) ;;
+   
 
 (************************************************************************************************************************
 Snippet 87 : 

@@ -5,8 +5,7 @@
 *)
 
 exception Absent_module of string;;
-
-
+exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 
 module Private = struct
@@ -1384,6 +1383,23 @@ let decipher_module fw capitalized_or_not_x=
          let j2 = j1 + (String.length suffix) -1 in 
         Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
 
+    let duplicate_module fw old_t1 old_t2=
+        let t1=String.uncapitalize_ascii old_t1
+        and t2=String.uncapitalize_ascii old_t2 in 
+        let ap1=decipher_path fw t1 in
+        let s_ap1=Absolute_path.to_string ap1 in
+        let s_ending = Cull_string.after_rightmost s_ap1 '.' in 
+        let s_ap2=(Cull_string.before_rightmost_possibly_all s_ap1 '/')^"/"^t2^"."^s_ending in
+        if Sys.file_exists s_ap2
+        then raise(Duplicate_module_already_exists(t2))
+        else 
+        let _=Unix_command.uc ("cp "^s_ap1^" "^s_ap2) in
+        let ap2=Absolute_path.of_string s_ap2 in
+        let _ =  (
+          if s_ending = "ml"
+          then Put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
+        Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;      
+
 end ;;
 
 let above = Private.above ;;
@@ -1400,6 +1416,7 @@ let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let directly_below fw mn = Private.directly_below fw mn ;;
+let duplicate_module = Private.duplicate_module ;;
 let empty_one = Private.Exit.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
