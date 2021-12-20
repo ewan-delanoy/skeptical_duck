@@ -467,17 +467,7 @@ let find_subdir_from_suffix cs possibly_slashed_suffix =
        let j2 = j1 + (String.length suffix) -1 in 
        Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
   
-let compute_long_subdir_name cs old_subdir new_subdir_short_name =
-   let temp1 =  Cull_string.trim_slashes_on_the_right new_subdir_short_name in
-   let long_name = (
-   if String.contains temp1 '/'
-   then temp1 
-   else let old_subdir_name = Dfa_subdirectory.without_trailing_slash old_subdir in 
-        let father_name = Cull_string.before_rightmost old_subdir_name '/' in 
-        if father_name = ""
-        then temp1
-        else father_name^"/"^temp1 ) in 
-   Dfa_subdirectory.of_line long_name ;;       
+     
 
 
 let find_needed_data_for_file cs fn=
