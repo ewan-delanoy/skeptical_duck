@@ -479,6 +479,10 @@ module Private = struct
 
   let check_module_sequence_for_forgettability fw = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
   
+  let noncompilable_files fw = Fw_with_dependencies.noncompilable_files (parent fw) ;;
+  
+  let usual_compilable_files fw = Fw_with_dependencies.usual_compilable_files (parent fw) ;;   
+
 
   end ;;
   
@@ -506,6 +510,7 @@ let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
 let modules_using_value = Private.modules_using_value ;;
+let noncompilable_files = Private.noncompilable_files ;;  
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
@@ -526,7 +531,7 @@ let start_executing = Private.start_executing ;;
 let to_concrete_object = Private.to_concrete_object ;;  
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
-  
+let usual_compilable_files = Private.usual_compilable_files ;;  
   
   
   
