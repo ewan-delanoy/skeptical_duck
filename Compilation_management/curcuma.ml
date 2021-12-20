@@ -1028,6 +1028,7 @@ let choose_automatic_if_possible cs modulename =
 
 end ;; 
 
+let all_subdirectories cs mn = Fw_with_batch_compilation.all_subdirectories (Private.qarent cs) mn ;;
 let ancestors_for_module cs mn = Fw_with_batch_compilation.ancestors_for_module (Private.qarent cs) mn ;;
 let below cs mn = Fw_with_batch_compilation.below (Private.qarent cs) mn ;;
 let check_that_no_change_has_occurred cs =

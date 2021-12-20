@@ -469,10 +469,12 @@ module Private = struct
 
   let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
 
+  let all_ml_absolute_paths fw = Fw_with_dependencies.all_ml_absolute_paths (parent fw) ;;
+
   end ;;
   
 
-  
+let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;  
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
