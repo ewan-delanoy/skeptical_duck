@@ -475,6 +475,11 @@ module Private = struct
 
   let all_endinglesses fw = Fw_with_dependencies.all_endinglesses (parent fw) ;;
 
+  let census_of_foreigners fw = Fw_with_dependencies.census_of_foreigners (parent fw) ;;
+
+  let check_module_sequence_for_forgettability fw = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
+  
+
   end ;;
   
 let all_endinglesses = Private.all_endinglesses ;;  
@@ -483,6 +488,8 @@ let all_mlx_files = Private.all_mlx_files ;;
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
+let census_of_foreigners = Private.census_of_foreigners ;;
+let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
