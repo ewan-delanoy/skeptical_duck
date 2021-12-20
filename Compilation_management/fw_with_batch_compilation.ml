@@ -473,9 +473,11 @@ module Private = struct
 
   let all_mlx_files fw = Fw_with_dependencies.all_mlx_files (parent fw) ;;
 
+  let all_endinglesses fw = Fw_with_dependencies.all_endinglesses (parent fw) ;;
+
   end ;;
   
-
+let all_endinglesses = Private.all_endinglesses ;;  
 let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;  
 let all_mlx_files = Private.all_mlx_files ;;
 let all_subdirectories = Private.all_subdirectories ;;
