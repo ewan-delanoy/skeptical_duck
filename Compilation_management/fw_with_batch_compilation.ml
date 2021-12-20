@@ -467,6 +467,8 @@ module Private = struct
   let duplicate_module fw vague_mname1 vague_mname2 = 
     Fw_with_dependencies.duplicate_module (parent fw) vague_mname1 vague_mname2 ;;
 
+  let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
+
   end ;;
   
 
@@ -478,6 +480,7 @@ let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurre
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let configuration = Private.configuration ;;
+let dep_ordered_modules = Private.dep_ordered_modules ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
 let duplicate_module = Private.duplicate_module ;;
