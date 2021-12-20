@@ -326,7 +326,7 @@ module Private = struct
          =Fw_with_dependencies.inspect_and_update (parent fw) in   
       (set_parent fw new_parent,changed_usual_compilables);;
 
-   let default_constructor fw = {
+   let of_fw_with_dependencies fw = {
     Fw_with_batch_compilation_t.parent = fw ;
     last_compilation_result_for_module = Image.image (
         fun mn -> (mn,false)
@@ -339,7 +339,7 @@ module Private = struct
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
       let initial_parent = Fw_with_dependencies.of_configuration config in 
-      let fw = default_constructor initial_parent in 
+      let fw = of_fw_with_dependencies initial_parent in 
       let mods = Fw_with_dependencies.dep_ordered_modules initial_parent in 
       let (fw2,rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
         let cmpl_results = Image.image (
@@ -478,7 +478,6 @@ let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurre
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let configuration = Private.configuration ;;
-let default_constructor = Private.default_constructor ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
 let duplicate_module = Private.duplicate_module ;;
@@ -493,6 +492,7 @@ let modules_using_value = Private.modules_using_value ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
+let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
 let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.register_rootless_paths ;;
