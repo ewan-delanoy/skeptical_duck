@@ -527,7 +527,7 @@ let get_content = Automatic.get_content ;;
 let get_mtime   = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
-let inspect_and_update = Private.inspect_and_update;;
+(* let inspect_and_update = Private.inspect_and_update;; *)
 
 let last_noticed_changes = Automatic.last_noticed_changes ;;
 

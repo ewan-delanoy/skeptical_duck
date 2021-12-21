@@ -44,7 +44,7 @@ let refresh () =
 
 let update opt_msg =
     let old_fw = (!watcher_ref) in 
-    let (fw2,_) = File_watcher.inspect_and_update old_fw true in 
+    let (fw2,_) = File_watcher.z_inspect_and_update old_fw true in 
     let fw3 = File_watcher.reflect_latest_changes_in_github fw2 opt_msg in 
     let _=(watcher_ref:=fw3) in fw3;;
    

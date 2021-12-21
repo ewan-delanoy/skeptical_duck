@@ -132,7 +132,7 @@ module Private = struct
    let inspect_and_update old_fw = 
       let old_parent = parent old_fw in    
       let (new_parent,changed_files) = 
-          File_watcher.inspect_and_update old_parent
+          File_watcher.z_inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
       let (a_files,u_files,nc_files) = announce_changes new_fw changed_files in 
