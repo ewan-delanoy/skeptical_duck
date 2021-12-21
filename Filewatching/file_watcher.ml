@@ -363,8 +363,7 @@ let inspect_and_update fw ~verbose =
        fw with
        File_watcher_t.watched_files         = new_files ;
     }  in 
-    let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
-    (new_fw,changed_files);;         
+    (fw2,changed_files);;         
 
 let check_that_no_change_has_occurred fw =
    let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
@@ -527,7 +526,7 @@ let get_content = Automatic.get_content ;;
 let get_mtime   = Automatic.get_mtime ;;
 let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
 
-(* let inspect_and_update = Private.inspect_and_update;; *)
+let inspect_and_update = Private.inspect_and_update;; 
 
 let last_noticed_changes = Automatic.last_noticed_changes ;;
 
