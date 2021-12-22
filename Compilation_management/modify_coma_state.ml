@@ -46,7 +46,8 @@ module Physical_followed_by_internal = struct
     (Coma_state.configuration cs) 
       (cs.Coma_state_t.dir_for_backup) 
         (cs.Coma_state_t.gitpush_after_backup) 
-          (cs.Coma_state_t.github_url);;
+          (cs.Coma_state_t.github_url)
+          (cs.Coma_state_t.encoding_protected_files);;
 
 
    let register_rootless_paths cs rootless_paths= 

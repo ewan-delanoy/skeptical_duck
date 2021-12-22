@@ -13,7 +13,7 @@ let main_ref=
   and url=Coma_big_constant.github_url in 
   let config = Fw_configuration.constructor 
    (root,backup_dir,githubbing,url,[]) in 
-  ref(Coma_state.empty_one  config backup_dir githubbing url);;
+  ref(Coma_state.empty_one  config backup_dir githubbing url []);;
 end;;
 
 let all_endinglesses ()=Coma_state.all_endinglesses (!(Private.main_ref)) ;; 

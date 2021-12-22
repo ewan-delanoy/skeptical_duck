@@ -28,6 +28,8 @@ let parent_label                         = salt ^ "parent";;
 let dir_for_backup_label                 = salt ^ "dir_for_backup";;
 let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
 let github_url_label                     = salt ^ "github_url";;
+let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
+
 
 let of_concrete_object ccrt_obj = 
    let g=Concrete_object.get_record ccrt_obj in
@@ -36,6 +38,7 @@ let of_concrete_object ccrt_obj =
       dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
       gitpush_after_backup = Crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
       github_url = Crobj_converter.string_of_concrete_object (g github_url_label);
+      encoding_protected_files = Dfn_rootless.pair_list_of_concrete_object (g encoding_protected_files_label);
    };; 
 
 let to_concrete_object cs=
@@ -45,6 +48,7 @@ let to_concrete_object cs=
     dir_for_backup_label, Dfa_root.to_concrete_object cs.Coma_state_t.dir_for_backup;
     gitpush_after_backup_label, Crobj_converter.bool_to_concrete_object  cs.Coma_state_t.gitpush_after_backup;
     github_url_label, Crobj_converter.string_to_concrete_object cs.Coma_state_t.github_url;
+    encoding_protected_files_label, Dfn_rootless.pair_list_to_concrete_object cs.Coma_state_t.encoding_protected_files;
    ]  in
    Concrete_object_t.Record items;;
 
@@ -52,12 +56,14 @@ let to_concrete_object cs=
 
 
   
-  let empty_one config backup_dir gab git_url=
+  let empty_one config backup_dir gab git_url enc_files=
     {
       Coma_state_t.parent = Fw_with_batch_compilation.empty_one config;
       dir_for_backup = backup_dir;
       gitpush_after_backup = gab;
       github_url = git_url;
+      encoding_protected_files = enc_files;
+
     };;
   
   
@@ -110,21 +116,23 @@ let modules_using_value cs module_name =
 let noncompilable_files cs = 
     Fw_with_batch_compilation.noncompilable_files (Private.parent cs) ;; 
 let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
-let of_configuration config backup_dir gab git_url = 
+let of_configuration config backup_dir gab git_url enc_files = 
   {
     Coma_state_t.parent = Fw_with_batch_compilation.of_configuration config;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
+    encoding_protected_files = enc_files;
   };;
 
 let of_concrete_object = Private.of_concrete_object ;;  
-let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url = 
+let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url enc_files = 
   {
     Coma_state_t.parent = batch_compiler ;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
+    encoding_protected_files = enc_files;
   };;
   
 let preq_types_with_extra_info cs = 
