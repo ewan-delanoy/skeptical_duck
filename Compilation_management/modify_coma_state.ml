@@ -19,68 +19,24 @@ module Tools = struct
       Dfa_subdirectory.of_line long_name ;;    
 
 end ;;   
-
-   
-module Physical_followed_by_internal = struct
-   
-   exception Forget_modules_exn of Dfa_module_t.t  list ;;
-   
-   let forget_modules cs mod_names= 
-     let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
-     if check <> []
-     then raise(Forget_modules_exn(check))
-     else 
-     Coma_state.forget_modules cs mod_names  ;;    
-        
-   exception Forget_rootless_paths_exn of Dfa_module_t.t list ;;
-   
-   let forget_nonmodular_rootlesses cs rootless_paths= 
-     Coma_state.remove_files cs rootless_paths  ;;
-   
-   let recompile cs = 
-     let (cs2,changed_uc)=Coma_state.inspect_and_update cs  in 
-     let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
-     Coma_state.modern_recompile cs2 unordered_mods ;;
-     
-   let refresh cs = Coma_state.of_configuration 
-    (Coma_state.configuration cs) 
-      (cs.Coma_state_t.dir_for_backup) 
-        (cs.Coma_state_t.gitpush_after_backup) 
-          (cs.Coma_state_t.github_url)
-          (cs.Coma_state_t.encoding_protected_files);;
-
-
-   let register_rootless_paths cs rootless_paths= 
-   Coma_state.register_rootless_paths cs rootless_paths ;;
-   
-
-   let relocate_module_to cs mod_name new_subdir= 
-     Coma_state.relocate_module_to cs mod_name  new_subdir ;;
-   
-   
-   let rename_module cs old_middle_name new_nonslashed_name=
-      fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name);;
-
-
-   let rename_subdirectory cs old_subdir new_subdir=
-      Coma_state.rename_subdirectory_as cs (old_subdir,new_subdir) ;;
-   
-   let rename_string_or_value cs old_sov new_sov =
-      let (cs2,changed_modules_in_any_order)=Coma_state.rename_string_or_value cs old_sov new_sov in
-      Coma_state.modern_recompile  cs2 changed_modules_in_any_order;;
-   
-   end;;
    
    
    module After_checking = struct
    
+      exception Forget_modules_exn of Dfa_module_t.t  list ;; 
+
          let forget_modules cs mod_names=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.forget_modules cs mod_names;; 
+            let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
+             if check <> []
+            then raise(Forget_modules_exn(check))
+            else Coma_state.forget_modules cs mod_names;; 
    
+
+
          let forget_nonmodular_rootlesses cs rootless_paths=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.forget_nonmodular_rootlesses cs rootless_paths;;    
+            Coma_state.remove_files cs rootless_paths;;    
    
          (* No check needed before recompiling *)
    
@@ -89,23 +45,25 @@ module Physical_followed_by_internal = struct
    
          let register_rootless_paths cs rootless_paths=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.register_rootless_paths cs rootless_paths;; 
+            Coma_state.register_rootless_paths cs rootless_paths;; 
    
          let relocate_module_to cs old_module new_subdir=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
-   
-         let rename_subdirectory  cs old_subdir new_subdir=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_subdirectory  cs old_subdir new_subdir;; 
-   
+            Coma_state.relocate_module_to cs old_module  new_subdir ;;
+
          let rename_module cs old_middle_name new_nonslashed_name=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_module cs old_middle_name new_nonslashed_name;; 
+            fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name);; 
    
+
+         let rename_subdirectory  cs old_subdir new_subdir=
+            let _=Coma_state.check_that_no_change_has_occurred cs in 
+            Coma_state.rename_subdirectory_as cs (old_subdir,new_subdir) ;;
+         
          let rename_string_or_value cs old_sov new_sov=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
+            let (cs2,changed_modules_in_any_order)=Coma_state.rename_string_or_value cs old_sov new_sov in
+            Coma_state.modern_recompile  cs2 changed_modules_in_any_order;;   
    
    end;;
    
@@ -131,10 +89,13 @@ module Physical_followed_by_internal = struct
             Coma_state.reflect_latest_changes_in_github cs2 None ;; 
    
    
-         let recompile cs opt_comment=
-            let cs2=Physical_followed_by_internal.recompile cs  in 
-            Coma_state.reflect_latest_changes_in_github cs2 opt_comment ;; 
-   
+         let recompile cs opt_comment = 
+            let (cs2,changed_uc)=Coma_state.inspect_and_update cs  in 
+            let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
+            let cs3=Coma_state.modern_recompile cs2 unordered_mods  in 
+            Coma_state.reflect_latest_changes_in_github cs3 opt_comment ;; 
+          
+
          (* No backup during refresh *)   
    
          let register_rootless_paths cs rootless_paths=
@@ -194,10 +155,15 @@ module Physical_followed_by_internal = struct
          
    
          let refresh cs =
-            let cs2=Physical_followed_by_internal.refresh cs  in 
+            let cs2= Coma_state.of_configuration 
+            (Coma_state.configuration cs) 
+              (cs.Coma_state_t.dir_for_backup) 
+                (cs.Coma_state_t.gitpush_after_backup) 
+                  (cs.Coma_state_t.github_url)
+                  (cs.Coma_state_t.encoding_protected_files)  in 
             let _=Save_coma_state.save cs2 in 
-            cs2;;  
-   
+            cs2;;       
+
          let register_rootless_paths cs rootless_path=
             let cs2=And_backup.register_rootless_paths cs rootless_path in 
             let _=Save_coma_state.save cs2 in 
