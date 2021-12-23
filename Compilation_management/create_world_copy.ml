@@ -96,7 +96,13 @@ module Private = struct
            gitpush_after_backup = false ; 
         } in 
         let remote_cs = Coma_state.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
-        let remote_cs2 =Modify_coma_state.Physical_followed_by_internal.refresh remote_cs in 
+        let remote_cs2 =
+           Coma_state.of_configuration 
+            (Coma_state.configuration remote_cs) 
+              (remote_cs.Coma_state_t.dir_for_backup) 
+                (remote_cs.Coma_state_t.gitpush_after_backup) 
+                  (remote_cs.Coma_state_t.github_url)
+                  (remote_cs.Coma_state_t.encoding_protected_files) in 
         let _ = Save_coma_state.save remote_cs2 in 
         remote_cs2;;    
         
