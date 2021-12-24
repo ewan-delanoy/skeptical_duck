@@ -66,6 +66,23 @@ module Private = struct
   
       };;
     
+  exception Forget_modules_exn of Dfa_module_t.t  list ;;     
+
+  let forget_modules cs mods = 
+    let check = Fw_with_batch_compilation.check_module_sequence_for_forgettability (parent cs) mods in 
+    if check <> []
+    then raise(Forget_modules_exn(check))
+    else
+    let parent1 = Fw_with_batch_compilation.forget_modules (parent cs) mods in 
+    let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+              parent1 None in  
+      set_parent cs parent2 ;;      
+
+  let forget_nonmodular_rootlesses cs rootless_paths=
+      let parent1 = Fw_with_batch_compilation.remove_files (parent cs) rootless_paths in 
+      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+              parent1 None in  
+      set_parent cs parent2 ;;     
     
   
   let read_persistent_version x=
@@ -75,6 +92,31 @@ module Private = struct
     let archived_object = Crobj_parsing.parse the_archive in 
     of_concrete_object archived_object;;      
   
+  let register_rootless_paths cs mod_names = 
+      let parent1 = Fw_with_batch_compilation.register_rootless_paths (parent cs) mod_names in 
+      let descr = String.concat " , " (Image.image Dfn_rootless.to_line mod_names) in 
+      let msg="register "^descr in 
+      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+              parent1 (Some msg) in  
+      set_parent cs parent2 ;;  
+
+   
+
+  let relocate_module_to cs mod_name new_subdir = 
+      let parent1 = Fw_with_batch_compilation.relocate_module_to (parent cs) mod_name new_subdir in 
+      let msg="move "^(Dfa_module.to_line mod_name)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+              parent1 (Some msg) in  
+      set_parent cs parent2 ;;  
+
+  let rename_module cs old_middle_name new_nonslashed_name = 
+      let (parent1,extra) = Fw_with_batch_compilation.rename_module (parent cs) old_middle_name new_nonslashed_name in 
+      let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
+              " as "^(No_slashes.to_string new_nonslashed_name) in       
+      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+              parent1 (Some msg) in     
+      (set_parent cs parent2,extra) ;; 
+
   let rename_string_or_value cs old_sov new_sov = 
       let (parent1,changed_modules_in_any_order) = 
       Fw_with_batch_compilation.rename_string_or_value (parent cs) old_sov new_sov  in 
@@ -83,8 +125,26 @@ module Private = struct
       let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
         parent2 (Some msg) in 
       set_parent cs parent3 ;;      
-  
-  end ;; 
+
+  let rename_subdirectory_as cs (old_subdir,new_subdir) = 
+    let parent1 = Fw_with_batch_compilation.rename_subdirectory_as 
+          (parent cs) (old_subdir,new_subdir) in 
+    let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
+          " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+    let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+       parent1 (Some msg) in 
+    set_parent cs parent2 ;; 
+
+  let usual_recompile cs opt_comment = 
+    let (parent1,changed_uc) = Fw_with_batch_compilation.inspect_and_update (parent cs)  in 
+    let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
+    let parent2 = Fw_with_batch_compilation.modern_recompile parent1 unordered_mods  in 
+    let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+      parent2 opt_comment in 
+    set_parent cs parent3 ;;   
+
+end;;  
+        
   
   let all_endinglesses cs = Fw_with_batch_compilation.all_endinglesses (Private.parent cs) ;;
   let all_ml_absolute_paths cs = Fw_with_batch_compilation.all_ml_absolute_paths (Private.parent cs) ;;
@@ -106,9 +166,8 @@ module Private = struct
   let empty_one = Private.empty_one ;;
   let endingless_at_module cs mn = Fw_with_batch_compilation.endingless_at_module (Private.parent cs) mn ;;
   let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.parent cs) ;;
-  let forget_modules cs mods = 
-    let new_parent = Fw_with_batch_compilation.forget_modules (Private.parent cs) mods in 
-    Private.set_parent cs new_parent ;; 
+  let forget_modules = Private.forget_modules ;; 
+  let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
   let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
   let inspect_and_update cs  = 
       let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (Private.parent cs)  in 
@@ -149,22 +208,14 @@ module Private = struct
   let reflect_latest_changes_in_github cs opt_msg=
       let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (Private.parent cs) opt_msg in 
       Private.set_parent cs new_parent ;;   
-  let register_rootless_paths cs mod_names = 
-      let new_parent = Fw_with_batch_compilation.register_rootless_paths (Private.parent cs) mod_names in 
-      Private.set_parent cs new_parent ;;      
-  let relocate_module_to cs mod_name new_subdir = 
-      let new_parent = Fw_with_batch_compilation.relocate_module_to (Private.parent cs) mod_name new_subdir in 
-      Private.set_parent cs new_parent ;;  
+  let register_rootless_paths = Private.register_rootless_paths ;;      
+  let relocate_module_to  = Private.relocate_module_to ;;  
   let remove_files cs rps = 
       let new_parent = Fw_with_batch_compilation.remove_files (Private.parent cs) rps in 
       Private.set_parent cs new_parent ;;        
-  let rename_module cs old_middle_name new_nonslashed_name = 
-      let (new_parent,extra) = Fw_with_batch_compilation.rename_module (Private.parent cs) old_middle_name new_nonslashed_name in 
-      (Private.set_parent cs new_parent,extra) ;;   
+  let rename_module = Private.rename_module ;;   
   let rename_string_or_value = Private.rename_string_or_value ;;
-  let rename_subdirectory_as cs (old_subdir,new_subdir) = 
-      let new_parent = Fw_with_batch_compilation.rename_subdirectory_as (Private.parent cs) (old_subdir,new_subdir) in 
-      Private.set_parent cs new_parent ;;      
+  let rename_subdirectory_as = Private.rename_subdirectory_as ;;      
   let root = Private.root ;;
   let set_gitpush_after_backup cs bowl = 
     let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (Private.parent cs) bowl in 
@@ -178,4 +229,4 @@ module Private = struct
     Fw_with_batch_compilation.up_to_date_elesses (Private.parent cs) ;; 
   let usual_compilable_files cs = 
       Fw_with_batch_compilation.usual_compilable_files (Private.parent cs) ;; 
-  
+  let usual_recompile = Private.usual_recompile ;;

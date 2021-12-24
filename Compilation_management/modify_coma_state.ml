@@ -20,80 +20,16 @@ module Tools = struct
 
 end ;;   
 
-module And_backup = struct
-   
-   module Private = struct
-
-         let backup cs diff opt= 
-         if not(Dircopy_diff.is_empty diff) 
-         then Reflect_change_in_github.backup
-               (Coma_state.configuration cs) 
-               diff opt
-         else (print_string "No recent changes to commit ...";flush stdout);;
-
-   end;;    
-
-   exception Forget_modules_exn of Dfa_module_t.t  list ;; 
-
-   let forget_modules cs mod_names=
-      let check = Coma_state.check_module_sequence_for_forgettability cs mod_names in 
-      if check <> []
-      then raise(Forget_modules_exn(check))
-      else let  cs2=Coma_state.forget_modules cs mod_names in 
-           Coma_state.reflect_latest_changes_in_github cs2 None;; 
-
-   let forget_nonmodular_rootlesses cs rootless_paths=
-      let cs2= Coma_state.remove_files cs rootless_paths in 
-      Coma_state.reflect_latest_changes_in_github cs2 None ;; 
-
-
-   let recompile cs opt_comment = 
-      let (cs2,changed_uc)=Coma_state.inspect_and_update cs  in 
-      let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
-      let cs3=Coma_state.modern_recompile cs2 unordered_mods  in 
-      Coma_state.reflect_latest_changes_in_github cs3 opt_comment ;; 
-    
-   (* No backup during refresh *)   
-
-   let register_rootless_paths cs rootless_paths=
-      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
-      let cs2= Coma_state.register_rootless_paths cs rootless_paths  in 
-      let msg="register "^descr in 
-      Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-
-
-   let relocate_module_to cs old_module new_subdir=
-      let cs2= Coma_state.relocate_module_to cs old_module new_subdir  in
-      let msg="move "^(Dfa_module.to_line old_module)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-      Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-
-
-   let rename_module cs old_middle_name new_nonslashed_name=
-      let cs2= fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name)  in 
-      let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
-              " as "^(No_slashes.to_string new_nonslashed_name) in       
-      Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-
-
-   let rename_subdirectory  cs old_subdir new_subdir= 
-      let cs2= Coma_state.rename_subdirectory_as  cs (old_subdir,new_subdir)  in 
-      let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
-                 " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-      Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-      
-
-end;;
-
    
    module After_checking = struct
 
          let forget_modules cs mod_names=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.forget_modules cs mod_names ;; 
+            Coma_state.forget_modules cs mod_names ;; 
    
          let forget_nonmodular_rootlesses cs rootless_paths=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.forget_nonmodular_rootlesses cs rootless_paths ;; 
+            Coma_state.forget_nonmodular_rootlesses cs rootless_paths ;; 
 
          (* No check needed before recompiling *)
          
@@ -101,22 +37,22 @@ end;;
    
          let register_rootless_paths cs rootless_paths=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.register_rootless_paths cs rootless_paths ;; 
+            Coma_state.register_rootless_paths cs rootless_paths ;; 
    
 
          let relocate_module_to cs old_module new_subdir=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.relocate_module_to cs old_module new_subdir ;; 
+            Coma_state.relocate_module_to cs old_module new_subdir ;; 
    
 
          let rename_module cs old_middle_name new_nonslashed_name=
             let _=Coma_state.check_that_no_change_has_occurred cs in  
-            And_backup.rename_module cs old_middle_name new_nonslashed_name ;; 
+            fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name);; 
 
 
          let rename_subdirectory  cs old_subdir new_subdir= 
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.rename_subdirectory  cs old_subdir new_subdir ;; 
+            Coma_state.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
 
          let rename_string_or_value cs old_sov new_sov=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
@@ -144,11 +80,11 @@ end;;
             cs2;;
          
          let recompile cs opt_comment=
-            let cs2=And_backup.recompile cs opt_comment in 
+            let cs2= Coma_state.usual_recompile cs opt_comment in 
             let _=Save_coma_state.save cs2 in 
             cs2;;
          
-   
+
          let refresh cs =
             let cs2= Coma_state.of_configuration 
             (Coma_state.configuration cs) 
