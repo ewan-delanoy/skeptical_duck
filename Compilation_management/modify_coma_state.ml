@@ -80,12 +80,7 @@ module And_backup = struct
       let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
                  " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
       Coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-
-   let rename_string_or_value cs old_sov new_sov=
-      let (cs2,changed_modules_in_any_order)=Coma_state.rename_string_or_value cs old_sov new_sov in
-      let cs3 = Coma_state.modern_recompile  cs2 changed_modules_in_any_order in 
-      let msg="rename "^old_sov^" as "^new_sov in 
-      Coma_state.reflect_latest_changes_in_github cs3 (Some msg) ;;      
+      
 
 end;;
 
@@ -125,7 +120,7 @@ end;;
 
          let rename_string_or_value cs old_sov new_sov=
             let _=Coma_state.check_that_no_change_has_occurred cs in 
-            And_backup.rename_string_or_value cs old_sov new_sov ;;      
+            Coma_state.rename_string_or_value cs old_sov new_sov ;;      
    
    end;;
    
