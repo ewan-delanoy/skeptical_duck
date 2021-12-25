@@ -204,10 +204,7 @@ end;;
     
   let preq_types_with_extra_info cs = 
     Fw_with_batch_compilation.preq_types_with_extra_info (Private.parent cs) ;; 
-  let read_persistent_version = Private.read_persistent_version ;;
-  let reflect_latest_changes_in_github cs opt_msg=
-      let new_parent = Fw_with_batch_compilation.reflect_latest_changes_in_github (Private.parent cs) opt_msg in 
-      Private.set_parent cs new_parent ;;   
+  let read_persistent_version = Private.read_persistent_version ;;  
   let register_rootless_paths = Private.register_rootless_paths ;;      
   let relocate_module_to  = Private.relocate_module_to ;;  
   let remove_files cs rps = 
