@@ -21,7 +21,15 @@ module Private = struct
     let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (parent cs) modnames in 
     (set_parent cs new_parent,rejected_ones,accepted_ones) ;; 
   
-  
+  let github_config cs = 
+     {Github_configuration_t.root = root cs;
+       dir_for_backup = cs.Coma_state_t.dir_for_backup ;
+       gitpush_after_backup = cs.Coma_state_t.gitpush_after_backup ;
+       github_url = cs.Coma_state_t.github_url ;
+       encoding_protected_files = cs.Coma_state_t.encoding_protected_files ;
+       } ;;
+
+
   let salt = "Coma_"^"state.";;
     
   let parent_label                         = salt ^ "parent";;
@@ -136,11 +144,10 @@ module Private = struct
     set_parent cs parent2 ;; 
 
   let usual_recompile cs opt_comment = 
-    let (parent1,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent cs)  in 
-
-    let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-      parent1 opt_comment in 
-    set_parent cs parent2 ;;   
+    let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent cs)  in 
+    let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
+    let _ = Transmit_change_to_github.backup (github_config cs) diff opt_comment in 
+    set_parent cs new_parent ;;   
 
 end;;  
       
