@@ -249,7 +249,7 @@ let inspect_and_update old_fw  =
  let visible = Cached.inspect_and_update old_fw  in 
  let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
- let ((a_files,u_files),changed_u_files) = extra in 
+ let ((a_files,u_files),changed_u_files,changed_files) = extra in 
  let tempf = (
    fun old_pair ->
     let (mn,details) = old_pair in 

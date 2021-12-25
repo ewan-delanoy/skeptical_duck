@@ -8,7 +8,6 @@
 exception Rename_string_or_value_exn of string ;;
 
 module Private = struct 
-
   
   let ocamldebug_printersfile_path root= 
              (Dfa_root.connectable_to_subpath root)^
@@ -322,9 +321,9 @@ module Private = struct
       set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
-      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_))
+      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_,changed_files))
          =Fw_with_dependencies.inspect_and_update (parent fw) in   
-      (set_parent fw new_parent,changed_usual_compilables);;
+      (set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
    let of_fw_with_dependencies fw = {
     Fw_with_batch_compilation_t.parent = fw ;

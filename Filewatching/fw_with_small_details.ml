@@ -131,7 +131,7 @@ let inspect_and_update fw  =
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_small_details;
    },
-   ((a_files,u_files),!changed_details_ref));;
+   ((a_files,u_files),!changed_details_ref,changed_files));;
 
 let of_configuration config =   
     let mother = Fw_with_archives.of_configuration config in 

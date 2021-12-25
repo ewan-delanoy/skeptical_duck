@@ -136,7 +136,7 @@ module Private = struct
     set_parent cs parent2 ;; 
 
   let usual_recompile cs opt_comment = 
-    let (parent1,changed_uc) = Fw_with_batch_compilation.inspect_and_update (parent cs)  in 
+    let (parent1,(changed_uc,changed_files)) = Fw_with_batch_compilation.inspect_and_update (parent cs)  in 
     let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
     let parent2 = Fw_with_batch_compilation.modern_recompile parent1 unordered_mods  in 
     let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
