@@ -135,13 +135,13 @@ module Private = struct
       set_parent cs parent3 ;;      
 
   let rename_subdirectory_as cs (old_subdir,new_subdir) = 
-    let parent1 = Fw_with_batch_compilation.rename_subdirectory_as 
+    let (new_parent,(_,original_reps)) = Fw_with_batch_compilation.rename_subdirectory_as 
           (parent cs) (old_subdir,new_subdir) in 
     let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
           " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-    let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-       parent1 (Some msg) in 
-    set_parent cs parent2 ;; 
+    let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
+    let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
+    set_parent cs new_parent ;; 
 
   let usual_recompile cs opt_comment = 
     let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent cs)  in 

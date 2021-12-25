@@ -408,9 +408,9 @@ module Private = struct
     ;;
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
-      let (new_parent,_)=Fw_with_dependencies.rename_subdirectory_as 
+      let (new_parent,extra)=Fw_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
-         set_parent fw new_parent ;;
+         (set_parent fw new_parent,extra) ;;
    
    let rename_string_or_value fw old_sov new_sov =
       let old_parent = parent fw in 
