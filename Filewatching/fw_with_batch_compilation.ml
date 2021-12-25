@@ -1,6 +1,6 @@
 (* 
 
-#use"Filewatching/fw_with_batch_compilation.ml";;
+#use"Compilation_management/fw_with_batch_compilation.ml";;
 
 *)
 
@@ -8,6 +8,7 @@
 exception Rename_string_or_value_exn of string ;;
 
 module Private = struct 
+
   
   let ocamldebug_printersfile_path root= 
              (Dfa_root.connectable_to_subpath root)^
@@ -482,10 +483,10 @@ module Private = struct
   
   let usual_compilable_files fw = Fw_with_dependencies.usual_compilable_files (parent fw) ;;   
 
-  let empty_one config = {
-     Fw_with_batch_compilation_t.parent = Fw_with_dependencies.empty_one config ;
-     last_compilation_result_for_module = [] ;
-  } ;;
+  let usual_recompile fw = 
+    let (fw1,extra) = inspect_and_update fw  in 
+    let unordered_mods = Image.image Dfn_rootless.to_module (fst extra) in  
+    (modern_recompile fw1 unordered_mods,extra) ;;   
 
   end ;;
   
@@ -505,7 +506,6 @@ let dep_ordered_modules = Private.dep_ordered_modules ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
 let duplicate_module = Private.duplicate_module ;;
-let empty_one = Private.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
@@ -536,7 +536,6 @@ let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
 let usual_compilable_files = Private.usual_compilable_files ;;  
-  
-  
+let usual_recompile = Private.usual_recompile ;;  
   
   
