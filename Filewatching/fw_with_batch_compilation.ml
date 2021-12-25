@@ -487,6 +487,12 @@ module Private = struct
      last_compilation_result_for_module = [] ;
   } ;;
 
+  let usual_recompile fw = 
+    let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
+    let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
+    let fw2 = modern_recompile fw1 unordered_mods  in 
+    (fw2,(changed_uc,changed_files)) ;;   
+
   end ;;
   
 let all_endinglesses = Private.all_endinglesses ;;  
@@ -536,7 +542,7 @@ let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
 let usual_compilable_files = Private.usual_compilable_files ;;  
-  
+let usual_recompile = Private.usual_recompile ;;  
   
   
   
