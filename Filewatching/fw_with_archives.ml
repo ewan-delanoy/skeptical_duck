@@ -52,8 +52,8 @@ module Private = struct
       update_parent fw new_parent ;;               
    let rename_subdirectory_as fw sd_pair = 
       let old_parent = parent fw in 
-      let new_parent = File_watcher.rename_subdirectory_as old_parent sd_pair in 
-      update_parent fw new_parent ;;  
+      let (new_parent,extra) = File_watcher.rename_subdirectory_as old_parent sd_pair in 
+      (update_parent fw new_parent,extra) ;;  
    let set_gitpush_after_backup fw g = 
       let old_parent = parent fw in 
       let new_parent = File_watcher.set_gitpush_after_backup old_parent g in 

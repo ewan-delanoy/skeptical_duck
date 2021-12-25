@@ -256,7 +256,7 @@ let remove_files fw removed_rootless_paths=
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Fw_with_archives.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
+   let (new_parent,original_reps) = Fw_with_archives.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
    let accu = ref [] in
    let new_details = Image.image (
       fun old_pair->
@@ -271,7 +271,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
    ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_details ;
-   },List.rev(!accu)) ;;   
+   },(List.rev(!accu),original_reps)) ;;   
 
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw 

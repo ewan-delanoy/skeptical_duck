@@ -387,7 +387,21 @@ mod_details "rename_module_on_filename_level_and_in_files" ([
    "  ) answer in ";
 ],"changed_modules") ;;
 
-mod_details "rename_subdirectory_as" (mod_details_usual_preliminary,"") ;;
+mod_details "rename_subdirectory_as" ([
+   " let old_val = get old_fw in ";
+   " let tempf = (";
+   "   fun old_pair -> ";
+   "     let (mn,details) = old_pair in ";
+   "     let temp1 = List.filter (fun (rl,new_pair_for_rl)->";
+   "        (Dfn_rootless.to_module rl)= mn";
+   "       ) (fst extra) in";
+   "     if temp1 <> []";
+   "     then let new_parent = parent new_fw in ";
+   "          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "     else old_pair ";
+   " ) in ";
+   " let answer = Image.image tempf old_val in ";
+],"") ;;
 
 mod_details "replace_string" (mod_details_usual_preliminary,"") ;;
 

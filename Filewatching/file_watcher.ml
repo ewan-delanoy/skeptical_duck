@@ -305,7 +305,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
       fw with
       File_watcher_t.watched_files = files  ;
    } in 
-   Automatic.reflect_replacements_in_diff fw2 reps;;   
+   (fw2,reps);;   
 
 let message_about_missing_files missing_files=
    let temp1=Image.image Dfn_rootless.to_line missing_files in
