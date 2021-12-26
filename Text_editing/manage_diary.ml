@@ -113,7 +113,6 @@ module Private = struct
       |Some(text1,text2,other_lines) -> get_all_chunks ((text1,text2)::treated_chunks,other_lines) ;; 
   
 
-
   let parse text =
     let lines = Lines_in_string.indexed_lines text in 
     let lines2 = Image.image (fun (linedex,line)->((linedex,line),compute_kind line)) lines in 
@@ -162,7 +161,7 @@ module Private = struct
      let sn_descr = "Snippet "^(string_of_int n)^" : " in 
      D(older_snippets @ [sn_descr,prologue]);; 
 
-     
+   let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
 
   
     let read_and_parse fn = parse (Io.read_whole_file fn) ;;
@@ -172,6 +171,12 @@ module Private = struct
       let (prologue,old_pairs) = read_and_parse fn in 
       let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
       unparse_and_write_to new_pairs fn ;;   
+
+    let extract_and_append_to_file dy k fn =
+       let snippet = extract dy k in 
+       let old_text = Io.read_whole_file fn in 
+       let new_text = old_text ^ snippet in 
+       Io.overwrite_with fn new_text ;;
 
     let fix_indexation_in_file fn =
       let (_,old_pairs) = read_and_parse fn in 
@@ -183,6 +188,8 @@ module Private = struct
       let new_pairs = remove_snippets old_pairs indices in 
       unparse_and_write_to new_pairs fn ;;  
 
+  
+
     let usual_path = 
         Absolute_path.of_string(
         Dfn_common.recompose_potential_absolute_path 
@@ -191,6 +198,10 @@ module Private = struct
   end ;; 
   
   
+  let extract_at_index_and_append_to_file idx fn =
+     let the_diary = snd(Private.read_and_parse Private.usual_path) in 
+     Private.extract_and_append_to_file the_diary idx fn;;
+
   let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
   let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
   
