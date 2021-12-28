@@ -12862,6 +12862,12 @@ let g5 = Image.image fst g4 ;;
 let act1 () = Manage_diary.remove_snippets g5;;
 
 
+let ap_for_writing = Absolute_path.of_string "Fads/cloth.ml" ;;
+let act1 () = Manage_diary.extract_at_index_and_append_to_file 
+   84 ap_for_writing ;;
+
+
+
 (************************************************************************************************************************
 Snippet 37 : Search/replace following some module refactoring
 ************************************************************************************************************************)

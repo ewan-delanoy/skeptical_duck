@@ -73,3 +73,4 @@ end ;;
 
 let force_subset_in_interval = Private.force_subset_in_interval ;;
 let restricted_power_set = Private.restricted_power_set ;;
+let test_for_admissibility = Private.test_for_admissibility ;;
