@@ -1,8 +1,575 @@
 (************************************************************************************************************************
-Snippet 85 : 
+Snippet 87 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 86 : Musings on the Szemeredi problem, chapter III
+************************************************************************************************************************)
+open Needed_values ;;
+
+let current_width = 3 ;; 
+let max_width = Sz_max_width_t.MW current_width ;;
+
+
+let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
+let i_merge = Ordered.merge Total_ordering.for_integers ;;
+let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
+let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+
+let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+
+let hashtbl_for_main = Hashtbl.create 100 ;;
+
+let main_in_easy_case (n,avoided_elts) =
+   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Ennig.ennig 1 n) in 
+   let temp2 = List.filter (
+     fun y->i_does_not_intersect avoided_elts y
+   ) temp1 in 
+   Max.maximize_it_with_care List.length temp2 ;;
+
+let translate1 t = Image.image (fun x->x+t) ;;
+let translate2 t = Image.image (translate1 t) ;;
+
+let first_break_without_1 avoided_elts =
+   [(false,Option.filter_and_unpack 
+    (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
+let first_break_with_1 avoided_elts = 
+   if Listennou.extends avoided_elts [1] then None else 
+   Some(Image.image ( fun x->
+      (true,translate1 (-1) (i_merge avoided_elts x))
+    ) tag2) ;;  
+
+let first_break avoided_elts = 
+   let part1 = first_break_without_1 avoided_elts in 
+   match first_break_with_1 avoided_elts with 
+   None -> part1 
+   |Some(part2) -> part1 @ part2 ;;
+
+let main_pusher old_f (n,avoided_elts) =
+   if n<=15 
+   then main_in_easy_case (n,avoided_elts) 
+   else 
+   let cases = first_break avoided_elts in 
+   let temp1 = Image.image (
+     fun (head_needed,new_avoided_elts) ->
+        let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
+        let sols3 = translate2 1 sols2 in 
+        if head_needed 
+        then (m2+1,Image.image (fun x->1::x) sols3) 
+        else (m2,sols3)   
+   ) cases in 
+   let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
+   (final_m,il_fold_merge (Image.image snd temp2)) ;;
+
+exception Impatient_exn of int * (int list) ;;
+
+let impatient_main (n,avoided_elts) =
+   match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
+   Some res -> res 
+   | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
+
+
+let main pair =
+  match Hashtbl.find_opt hashtbl_for_main pair with 
+   Some old_answer -> old_answer 
+  | None -> 
+    let answer = main_pusher impatient_main pair in 
+    let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
+    answer ;; 
+
+let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
+
+let iterator (already_treated,to_be_treated) =
+   let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
+   let new_ones = List.filter (
+     fun x->not(il_mem  x already_treated)
+   ) temp1 in 
+   (il_merge already_treated new_ones,new_ones) ;;
+
+let rec computer pair =
+   if snd pair = [] then fst pair else 
+   computer(iterator pair) ;; 
+
+let all_helpers = computer ([],[[]]) ;;   
+
+let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
+
+let lm n = 
+   let _ = linear_main n in 
+   let (m,sols)=main (n,[]) in 
+    (m,List.hd sols) ;;
+
+let computation = Image.image (fun x->(x,lm x)) (Ennig.ennig 15 50);;
+
+
+let check = List.filter (fun (n,(m,_))->m <> 
+  Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
+
+let easy_selector = Memoized.make(fun (n,k) ->
+List.filter (fun x->List.length(x)=k) (Sz_preliminaries.restricted_power_set 
+(Sz_max_width_t.MW current_width,Ennig.ennig 1 n))
+) ;;  
+
+
+let original_minimal_carriers carriers sols =
+ let indexed_carriers = Ennig.index_everything carriers in 
+ let shadow = (
+     fun sol ->
+       Option.filter_and_unpack (
+         fun (idx,carrier) -> 
+            if i_is_included_in carrier sol 
+            then Some idx 
+           else None 
+       ) indexed_carriers 
+ )  in     
+ let all_shadows = Image.image shadow sols in 
+ Ordered_misc.minimal_transversals all_shadows ;;
+
+exception Nonunique_set_of_minimal_carriers ;;
+
+let set_of_minimal_carriers carriers sols =
+let version1 = original_minimal_carriers carriers sols in 
+let m = List.length(List.hd version1) in 
+let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+if (List.length version2)<>1
+then raise Nonunique_set_of_minimal_carriers 
+else 
+Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
+;;
+
+let original_carriers n = 
+let temp = Ennig.doyle (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
+List.filter (fun l->List.hd(l)>0) temp;;  
+
+let new_carriers_in_hard_case n carriers = 
+let (temp1,temp2) = List.partition (fun l->List.mem n l) carriers in 
+let temp3 = Image.image (i_outsert n) temp1 in 
+let whole1 = temp2@temp3@(original_carriers n) in 
+let whole2 = Ordered_misc.minimal_elts_wrt_inclusion whole1 in 
+il_sort whole2 ;;
+
+let easy_case (n,k,carriers) = 
+(n-1,k,set_of_minimal_carriers carriers (easy_selector (n-1,k)));;
+
+let hard_case (n,k,carriers) = 
+let new_carriers = new_carriers_in_hard_case n carriers in 
+(n-1,k-1,set_of_minimal_carriers new_carriers (easy_selector (n-1,k-1)));;  
+
+let milton_product carriers1 carriers2 =
+let temp1 = Cartesian.product carriers1 carriers2 in 
+let temp2 = Image.image (fun (x,y)->i_merge x y) temp1 in 
+let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+il_sort temp3 ;;
+
+let tf1 n = 
+let sols = snd(main(n,[])) in  
+set_of_minimal_carriers (original_carriers (n+1)) sols ;;   
+
+let push (n,m,data) = 
+if data = []
+then (n+1,m+1,[0,Sz_spray.constructor [[n+1]]])
+else   
+let old_get = (fun j->List.assoc j data) in 
+let enhance = (fun spr -> Sz_spray.join_carefully max_width spr [n+1]) in
+let reunite = (fun spr1 spr2 ->Sz_spray.merge spr1 (enhance spr2) ) in  
+let usual_reunite = (fun j->reunite (old_get(j-1)) (old_get(j))) in 
+let r = (List.length data) -1 in 
+(n+1,m+1,(0,enhance(old_get 0)) ::
+  (Ennig.doyle (fun j->(j,usual_reunite j)) 1 r) 
+  @ [r+1,Sz_spray.merge (old_get(r)) (Sz_spray.constructor [[n+1]])]) ;;
+
+let stagnate (n,m,data) =
+   let old_get = (fun j->List.assoc j data) in 
+   let enhance = (fun spr -> Sz_spray.join_carefully max_width spr [n+1]) in
+   let reunite = (fun spr1 spr2 ->Sz_spray.merge spr1 (enhance spr2) ) in  
+   let usual_reunite = (fun j->reunite (old_get(j-1)) (old_get(j))) in 
+   let r = (List.length data) -1 in 
+   (n+1,m,(Ennig.doyle (fun j->(j,usual_reunite (j+1))) 0 (r-1))) ;;
+
+let push_is_possible (n,m,data)=
+if data = []
+then true
+else  
+let (Sz_spray_t.Sp head) = List.assoc 0 data in 
+List.exists (fun ray -> 
+  Sz_preliminaries.test_for_admissibility max_width (i_merge ray [n+1])
+ ) head ;;
+
+let next_triple triple =
+if push_is_possible triple 
+then push triple 
+else stagnate triple ;; 
+
+let tf2 = Memoized.recursive (fun old_f n->
+if n = 8 then (8,4,[]) else next_triple(old_f(n-1))
+) ;;
+
+let res_4 = [(4,3,[[1,4]])] ;;
+let res_5 = [(5,3,[[1;4];[2;5]]);(5,4,[[1;2;4;5]])] ;;  
+let res_6 = [(6,4,[[1;4;6];[2;5;6];[1;2;4;5]])] ;;
+let res_7 = [(7,4,[[2;5];[4;6];[6;7]])] ;;
+let res_9 = [(9,5,[[9]])] ;;
+let res_10 = [(10,5,[[9];[10]]);(10,6,[[9;10]])] ;;
+let res_11 = [(11,5,[[9];[10];[11]]);(11,6,[[9;10];[9;11];[10;11]])] ;;
+let res_12 = [(12,6,[[10];[9;11];[9;12];[11;12]]);(12,7,[[9;12]])] ;;
+let res_13 = [(13,7,[[9;12];[10;13]]);(13,8,[[9;12;13]])] ;;
+let res_14 = [(14,8,[[9;12;14];[10;13;14];[9;10;12;13]])] ;;
+let res_15 = [(15,8,[[10;13];[12;14];[14;15]])] ;;
+
+(*
+let triple = (10, 6, [(0, Sz_spray_t.Sp [[9; 10]]); (1, Sz_spray_t.Sp [[9]; [10]])]) ;;
+
+let bad1 = stagnate triple ;;
+
+let (n,m,data) = triple ;;
+let old_get = (fun j->List.assoc j data) ;;
+let enhance = (fun spr -> Sz_spray.join_carefully max_width spr [n+1]) ;;
+let reunite = (fun spr1 spr2 ->Sz_spray.merge spr1 (enhance spr2) ) ;;  
+let usual_reunite = (fun j->reunite (old_get(j-1)) (old_get(j))) ;;
+let r = (List.length data) -1 ;;
+(n+1,m,(Ennig.doyle (fun j->(j,usual_reunite j)) 0 (r-1))) ;;
+*)
+
+
+let g37 = (11,5,[[9];[10];[11]]) ;;
+let g38 = easy_case g37 ;; 
+let g39 = hard_case g37 ;; 
+
+
+(************************************************************************************************************************
+Snippet 85 : Musings on the Szemeredi problem, chapter II
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+
+
+   let current_width = 3 ;; 
+   let max_width = Sz_max_width_t.MW current_width ;;
+   
+
+   let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+   let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
+   let i_merge = Ordered.merge Total_ordering.for_integers ;;
+   let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
+   let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+   let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+   let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+   let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+   
+   let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+   let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+   
+   let hashtbl_for_main = Hashtbl.create 100 ;;
+   
+   let main_in_easy_case (n,avoided_elts) =
+      let temp1 = Sz_preliminaries.restricted_power_set (max_width,Ennig.ennig 1 n) in 
+      let temp2 = List.filter (
+        fun y->i_does_not_intersect avoided_elts y
+      ) temp1 in 
+      Max.maximize_it_with_care List.length temp2 ;;
+   
+   let translate1 t = Image.image (fun x->x+t) ;;
+   let translate2 t = Image.image (translate1 t) ;;
+   
+   let first_break_without_1 avoided_elts =
+      [(false,Option.filter_and_unpack 
+       (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
+   let first_break_with_1 avoided_elts = 
+      if Listennou.extends avoided_elts [1] then None else 
+      Some(Image.image ( fun x->
+         (true,translate1 (-1) (i_merge avoided_elts x))
+       ) tag2) ;;  
+   
+   let first_break avoided_elts = 
+      let part1 = first_break_without_1 avoided_elts in 
+      match first_break_with_1 avoided_elts with 
+      None -> part1 
+      |Some(part2) -> part1 @ part2 ;;
+   
+   let main_pusher old_f (n,avoided_elts) =
+      if n<=15 
+      then main_in_easy_case (n,avoided_elts) 
+      else 
+      let cases = first_break avoided_elts in 
+      let temp1 = Image.image (
+        fun (head_needed,new_avoided_elts) ->
+           let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
+           let sols3 = translate2 1 sols2 in 
+           if head_needed 
+           then (m2+1,Image.image (fun x->1::x) sols3) 
+           else (m2,sols3)   
+      ) cases in 
+      let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
+      (final_m,il_fold_merge (Image.image snd temp2)) ;;
+   
+   exception Impatient_exn of int * (int list) ;;
+   
+   let impatient_main (n,avoided_elts) =
+      match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
+      Some res -> res 
+      | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
+   
+   
+   let main pair =
+     match Hashtbl.find_opt hashtbl_for_main pair with 
+      Some old_answer -> old_answer 
+     | None -> 
+       let answer = main_pusher impatient_main pair in 
+       let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
+       answer ;; 
+   
+   let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
+   
+   let iterator (already_treated,to_be_treated) =
+      let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
+      let new_ones = List.filter (
+        fun x->not(il_mem  x already_treated)
+      ) temp1 in 
+      (il_merge already_treated new_ones,new_ones) ;;
+   
+   let rec computer pair =
+      if snd pair = [] then fst pair else 
+      computer(iterator pair) ;; 
+   
+   let all_helpers = computer ([],[[]]) ;;   
+   
+   let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
+   
+   let lm n = 
+      let _ = linear_main n in 
+      let (m,sols)=main (n,[]) in 
+       (m,List.hd sols) ;;
+   
+   let computation = Image.image (fun x->(x,lm x)) (Ennig.ennig 15 50);;
+   
+   
+   let check = List.filter (fun (n,(m,_))->m <> 
+     Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
+   
+let easy_selector = Memoized.make(fun (n,k) ->
+  List.filter (fun x->List.length(x)=k) (Sz_preliminaries.restricted_power_set 
+  (Sz_max_width_t.MW current_width,Ennig.ennig 1 n))
+) ;;  
+
+   
+let original_minimal_carriers carriers sols =
+    let indexed_carriers = Ennig.index_everything carriers in 
+    let shadow = (
+        fun sol ->
+          Option.filter_and_unpack (
+            fun (idx,carrier) -> 
+               if i_is_included_in carrier sol 
+               then Some idx 
+              else None 
+          ) indexed_carriers 
+    )  in     
+    let all_shadows = Image.image shadow sols in 
+    Ordered_misc.minimal_transversals all_shadows ;;
+
+exception Nonunique_set_of_minimal_carriers ;;
+
+let set_of_minimal_carriers carriers sols =
+  let version1 = original_minimal_carriers carriers sols in 
+  let m = List.length(List.hd version1) in 
+  let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+  if (List.length version2)<>1
+  then raise Nonunique_set_of_minimal_carriers 
+  else 
+  Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
+  ;;
+
+let original_carriers n = 
+   let temp = Ennig.doyle (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
+   List.filter (fun l->List.hd(l)>0) temp;;  
+
+let new_carriers_in_hard_case n carriers = 
+  let (temp1,temp2) = List.partition (fun l->List.mem n l) carriers in 
+  let temp3 = Image.image (i_outsert n) temp1 in 
+  let whole1 = temp2@temp3@(original_carriers n) in 
+  let whole2 = Ordered_misc.minimal_elts_wrt_inclusion whole1 in 
+  il_sort whole2 ;;
+
+let easy_case (n,k,carriers) = 
+  (n-1,k,set_of_minimal_carriers carriers (easy_selector (n-1,k)));;
+
+let hard_case (n,k,carriers) = 
+  let new_carriers = new_carriers_in_hard_case n carriers in 
+  (n-1,k-1,set_of_minimal_carriers new_carriers (easy_selector (n-1,k-1)));;  
+
+let milton_product carriers1 carriers2 =
+   let temp1 = Cartesian.product carriers1 carriers2 in 
+   let temp2 = Image.image (fun (x,y)->i_merge x y) temp1 in 
+   let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+  il_sort temp3 ;;
+
+let tf1 n = 
+  let sols = snd(main(n,[])) in  
+  set_of_minimal_carriers (original_carriers (n+1)) sols ;;   
+
+let push (n,m,data) = 
+   if data = []
+   then (n+1,m+1,[0,Sz_spray.constructor [[n+1]]])
+   else   
+   let old_get = (fun j->List.assoc j data) in 
+   let enhance = (fun spr -> Sz_spray.join_carefully max_width spr [n+1]) in
+   let reunite = (fun spr1 spr2 ->Sz_spray.merge spr1 (enhance spr2) ) in  
+   let usual_reunite = (fun j->reunite (old_get(j-1)) (old_get(j))) in 
+   let r = (List.length data) -1 in 
+   (n+1,m+1,(0,enhance(old_get 0)) ::
+     (Ennig.doyle (fun j->(j,usual_reunite j)) 1 r) 
+     @ [r+1,Sz_spray.merge (old_get(r)) (Sz_spray.constructor [[n+1]])]) ;;
+
+let stagnate (n,m,data) =
+      let old_get = (fun j->List.assoc j data) in 
+      let enhance = (fun spr -> Sz_spray.join_carefully max_width spr [n+1]) in
+      let reunite = (fun spr1 spr2 ->Sz_spray.merge spr1 (enhance spr2) ) in  
+      let usual_reunite = (fun j->reunite (old_get(j-1)) (old_get(j))) in 
+      let r = (List.length data) -1 in 
+      (n+1,m,(Ennig.doyle (fun j->(j,usual_reunite j)) 0 (r-1))) ;;
+
+let push_is_possible (n,m,data)=
+  if data = []
+  then true
+  else  
+  let (Sz_spray_t.Sp head) = List.assoc 0 data in 
+  List.exists (fun ray -> 
+     Sz_preliminaries.test_for_admissibility max_width (i_merge ray [n+1])
+    ) head ;;
+
+let next_triple triple =
+   if push_is_possible triple 
+   then push triple 
+  else stagnate triple ;; 
+
+let tf2 = Memoized.recursive (fun old_f n->
+   if n = 8 then (8,4,[]) else next_triple(old_f(n-1))
+  ) ;;
+
+let res_4 = [(4,3,[[1,4]])] ;;
+let res_5 = [(5,3,[[1;4];[2;5]]);(5,4,[[1;2;4;5]])] ;;  
+let res_6 = [(6,4,[[1;4;6];[2;5;6];[1;2;4;5]])] ;;
+let res_7 = [(7,4,[[2;5];[4;6];[6;7]])] ;;
+let res_9 = [(9,5,[[9]])] ;;
+let res_10 = [(10,5,[[9];[10]]);(10,6,[[9;10]])] ;;
+let res_11 = [(11,5,[[9];[10];[11]]);(11,6,[[9;10];[9;11];[10;11]])] ;;
+let res_12 = [(12,6,[[10];[9;11];[9;12];[11;12]]);(12,7,[[9;12]])] ;;
+let res_13 = [(13,7,[[9;12];[10;13]]);(13,8,[[9;12;13]])] ;;
+let res_14 = [(14,8,[[9;12;14];[10;13;14];[9;10;12;13]])] ;;
+let res_15 = [(15,8,[[10;13];[12;14];[14;15]])] ;;
+
+
+
+
+(*
+
+let g37 = (13,8,[[10]]) ;;
+let g38 = easy_case g37 ;; 
+let g39 = hard_case g37 ;; 
+
+
+
+
+let g34 = (12,6,[[10];[9;11];[9;12];[11;12]]) ;;
+let g35 = easy_case g34 ;; 
+let g36 = hard_case g34 ;;
+
+let (_,_,nr12) = List.nth res_12 0;;
+let (_,_,ng33) = g33 ;;
+let car5 = milton_product nr12 ng33 ;;
+let car6 = set_of_minimal_carriers car5 (easy_selector(12,6)) ;;
+
+let g31 = (13,7,[[9;12];[10;13]]) ;;
+let g32 = easy_case g31 ;; 
+let g33 = hard_case g32 ;; 
+
+let g28 = (14,8,[[9;12;14];[10;13;14];[9;10;12;13]]) ;;
+let g29 = easy_case g28 ;; 
+let g30 = hard_case g28 ;; (* (13, 7, [[9; 12]; [10; 13]]) *)
+
+let g25 = (12,6,[[10];[12];[9;11]]) ;;
+let g26 = easy_case g25 ;; 
+let g27 = hard_case g25 ;;
+
+
+let g22 = (13,7,[[12];[10;13]]) ;;
+let g23 = easy_case g22 ;; 
+let g24 = hard_case g22 ;;
+
+
+let (_,_,ng20) = g20 ;;
+let car5 = milton_product (tf1 14) ng20 ;;
+let car6 = set_of_minimal_carriers car5 (easy_selector(14,8)) ;;
+
+let g19 = (15,8,[[10;13];[12;14];[14;15]]) ;;
+let g20 = easy_case g19 ;; 
+let g21 = hard_case g20 ;;
+
+let g16 = (11,6,[[9];[10;11]]) ;;
+let g17 = easy_case g16 ;; 
+let g18 = hard_case g16 ;;
+
+let g13 = (12,7,[[9]]) ;;
+let g14 = easy_case g13 ;; (* impossible *)
+let g15 = hard_case g13 ;;
+
+let g10 = (14,8,tf1 14) ;;
+let g11 = easy_case g10 ;;
+let g12 = hard_case g11 ;;
+
+let g7 = (10,6,tf1 10) ;;
+let g8 = easy_case g7 ;;
+let g9 = hard_case g7 ;;
+
+let g4 = (8,4,tf1 7) ;;
+let g5 = easy_case g4 ;;
+let g6 = hard_case g4 ;;
+
+let g1 = (7,4,tf1 7) ;;
+let g2 = easy_case g1 ;;
+let g3 = hard_case g2 ;;
+
+let (_,_,nr5) = List.nth res_5 0;;
+let (_,_,ng3) = g3 ;;
+let car3 = milton_product nr5 ng3 ;;
+let car4 = set_of_minimal_carriers car3 (easy_selector(5,3)) ;;
+
+let (_,_,nr6) = List.hd res_6 ;;
+let (_,_,ng2) = g2 ;;
+let car1 = milton_product nr6 ng2 ;;
+let car2 = set_of_minimal_carriers car1 (easy_selector(6,4)) ;;
+
+*)
+
+
+(*
+let sols = easy_selector()
+
+let easy_case (n,k,carriers) = 
+  (n-1,k,set_of_minimal_carriers carriers (easy_selector (n-1,k)));;
+
+
+
+let sols = snd(main(12,[])) ;;
+let draft_carriers = ([10]::(original_carriers 13)) ;;
+let carriers = Ordered_misc.minimal_elts_wrt_inclusion draft_carriers ;;
+let cars = set_of_minimal_carriers carriers sols ;;   
+let version1 = original_minimal_carriers carriers sols ;;
+  let m = List.length(List.hd version1) in 
+  let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+  if (List.length version2)<>1
+  then raise Nonunique_set_of_minimal_carriers 
+  else 
+  Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
+  ;;
+*)
 
 (************************************************************************************************************************
 Snippet 84 : Musings on the Szemeredi problem 

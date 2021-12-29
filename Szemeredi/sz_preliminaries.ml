@@ -67,7 +67,7 @@ let force_subset_in_interval (Sz_max_width_t.MW width) subset interval =
         then None 
         else Some new_obstruction  
     ) old_obses in 
-    il_sort new_obses ;;
+    Ordered_misc.minimal_elts_wrt_inclusion (il_sort new_obses);;
 
 end ;;
 
