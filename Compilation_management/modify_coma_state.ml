@@ -243,7 +243,7 @@ end ;;
       let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
       Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
    
-   (*   
+   
    exception Rename_string_or_value_exn of string ;;
 
    let rename_string_or_value cs_ref old_sov new_sov =
@@ -263,7 +263,6 @@ end ;;
                            Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
          ) temp2 in
          Reference.replace_value cs_ref ((preceding_files,path),(old_sov,new_sov)) ;;       
-   *)  
 
    let rename_subdirectory cs_ref old_subdirname new_subdir_short_name=
        let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname  in
