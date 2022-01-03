@@ -71,7 +71,7 @@ let rename_module old_name new_name=
 
 
 let rename_string_or_value old_name new_name=
-   Modify_coma_state.Reference.rename_string_or_value
+   Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;

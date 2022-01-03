@@ -64,7 +64,7 @@ let duplicate_module old_t1 old_t2=
   let find_endingless modname = 
    Coma_state.endingless_at_module
     (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
-    
+
 let forget_one modname=
   let _ = (Private.ref_for_unofficial_changes:=None) in 
   Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
@@ -111,7 +111,7 @@ let rename_module old_name new_name=
 
 let rename_string_or_value old_name new_name=
 let _ = (Private.ref_for_unofficial_changes:=None) in 
-   Modify_coma_state.Reference.rename_string_or_value
+   Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let repopulate summary=
