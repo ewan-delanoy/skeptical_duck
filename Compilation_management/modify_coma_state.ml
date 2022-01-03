@@ -53,10 +53,7 @@ end ;;
          let rename_subdirectory  cs old_subdir new_subdir= 
             let _=Coma_state.check_that_no_change_has_occurred cs in 
             Coma_state.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
-
-         let rename_string_or_value cs old_sov new_sov=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.rename_string_or_value cs old_sov new_sov ;;      
+  
    
          let replace_string cs old_s new_s =
             let _=Coma_state.check_that_no_change_has_occurred cs in 
@@ -123,12 +120,7 @@ end ;;
             let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name in 
             let _=Save_coma_state.save cs2 in 
             cs2;;  
-   
-   
-         let rename_string_or_value cs old_sov new_sov=
-            let cs2=After_checking.rename_string_or_value cs old_sov new_sov in 
-            let _=Save_coma_state.save cs2 in 
-            cs2;;  
+
 
          let replace_string cs old_s new_s=
             let cs2=After_checking.replace_string cs old_s new_s in 
@@ -190,11 +182,6 @@ end ;;
    
          let rename_module pcs old_middle_name new_nonslashed_name=
             let new_cs = And_save.rename_module (!pcs) old_middle_name new_nonslashed_name in 
-            pcs:=new_cs;;
-   
-   
-         let rename_string_or_value pcs old_sov new_sov=
-            let new_cs = And_save.rename_string_or_value (!pcs) old_sov new_sov in 
             pcs:=new_cs;;
    
          let replace_string pcs old_s new_s=
