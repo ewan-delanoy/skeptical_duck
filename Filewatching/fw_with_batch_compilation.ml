@@ -437,6 +437,24 @@ module Private = struct
       let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
       (set_parent fw new_parent,changed_modules_in_any_order);;       
   
+  
+   
+    let replace_string fw old_s new_s =
+         let old_parent = parent fw in 
+         let (new_parent,changes1) = Fw_with_dependencies.replace_string old_parent (old_s,new_s) in 
+         let changed_rootlesses = Image.image fst changes1 in 
+         let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+         (set_parent fw new_parent,changed_modules_in_any_order);; 
+    
+    
+    let replace_value fw ((preceding_files,path),(old_v,new_v)) =
+          let old_parent = parent fw in 
+          let (new_parent,changes1) = Fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
+          let changed_rootlesses = Image.image fst changes1 in 
+          let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+          (set_parent fw new_parent,changed_modules_in_any_order);;      
+
+
   let check_that_no_change_has_occurred fw =
         Fw_with_dependencies.check_that_no_change_has_occurred (parent fw) ;; 
 
@@ -533,6 +551,8 @@ let remove_files = Private.remove_files ;;
 let rename_module = Private.rename_module ;;
 let rename_string_or_value = Private.rename_string_or_value ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
+let replace_string = Private.replace_string ;;
+let replace_value = Private.replace_value ;;
 let root = Private.root ;;
 let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let show_value_occurrences = Private.show_value_occurrences ;;

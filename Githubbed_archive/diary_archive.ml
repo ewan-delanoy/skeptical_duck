@@ -1,8 +1,220 @@
 (************************************************************************************************************************
-Snippet 87 : 
+Snippet 88 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 87 : Musings on the Szemeredi problem, chapter IV
+************************************************************************************************************************)
+open Needed_values ;;
+
+
+let current_width = 3 ;; 
+let max_width = Sz_max_width_t.MW current_width ;;
+
+
+let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
+let i_merge = Ordered.merge Total_ordering.for_integers ;;
+let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
+let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+
+let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+
+let hashtbl_for_main = Hashtbl.create 100 ;;
+
+let main_in_easy_case (n,avoided_elts) =
+   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Ennig.ennig 1 n) in 
+   let temp2 = List.filter (
+     fun y->i_does_not_intersect avoided_elts y
+   ) temp1 in 
+   Max.maximize_it_with_care List.length temp2 ;;
+
+let translate1 t = Image.image (fun x->x+t) ;;
+let translate2 t = Image.image (translate1 t) ;;
+
+let first_break_without_1 avoided_elts =
+   [(false,Option.filter_and_unpack 
+    (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
+let first_break_with_1 avoided_elts = 
+   if Listennou.extends avoided_elts [1] then None else 
+   Some(Image.image ( fun x->
+      (true,translate1 (-1) (i_merge avoided_elts x))
+    ) tag2) ;;  
+
+let first_break avoided_elts = 
+   let part1 = first_break_without_1 avoided_elts in 
+   match first_break_with_1 avoided_elts with 
+   None -> part1 
+   |Some(part2) -> part1 @ part2 ;;
+
+let main_pusher old_f (n,avoided_elts) =
+   if n<=15 
+   then main_in_easy_case (n,avoided_elts) 
+   else 
+   let cases = first_break avoided_elts in 
+   let temp1 = Image.image (
+     fun (head_needed,new_avoided_elts) ->
+        let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
+        let sols3 = translate2 1 sols2 in 
+        if head_needed 
+        then (m2+1,Image.image (fun x->1::x) sols3) 
+        else (m2,sols3)   
+   ) cases in 
+   let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
+   (final_m,il_fold_merge (Image.image snd temp2)) ;;
+
+exception Impatient_exn of int * (int list) ;;
+
+let impatient_main (n,avoided_elts) =
+   match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
+   Some res -> res 
+   | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
+
+
+let main pair =
+  match Hashtbl.find_opt hashtbl_for_main pair with 
+   Some old_answer -> old_answer 
+  | None -> 
+    let answer = main_pusher impatient_main pair in 
+    let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
+    answer ;; 
+
+let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
+
+let iterator (already_treated,to_be_treated) =
+   let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
+   let new_ones = List.filter (
+     fun x->not(il_mem  x already_treated)
+   ) temp1 in 
+   (il_merge already_treated new_ones,new_ones) ;;
+
+let rec computer pair =
+   if snd pair = [] then fst pair else 
+   computer(iterator pair) ;; 
+
+let all_helpers = computer ([],[[]]) ;;   
+
+let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
+
+let lm n = 
+   let _ = linear_main n in 
+   let (m,sols)=main (n,[]) in 
+    (m,List.hd sols) ;;
+
+let computation = Image.image (fun x->(x,lm x)) (Ennig.ennig 15 50);;
+
+
+let check = List.filter (fun (n,(m,_))->m <> 
+  Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
+
+let easy_selector = Memoized.make(fun (n,k) ->
+List.filter (fun x->List.length(x)=k) (Sz_preliminaries.restricted_power_set 
+(Sz_max_width_t.MW current_width,Ennig.ennig 1 n))
+) ;;  
+
+
+let original_minimal_carriers carriers sols =
+ let indexed_carriers = Ennig.index_everything carriers in 
+ let shadow = (
+     fun sol ->
+        Option.filter_and_unpack (
+         fun (idx,carrier) -> 
+            if i_is_included_in carrier sol 
+            then Some idx 
+           else None 
+       ) indexed_carriers 
+ )  in     
+ let all_shadows = Image.image shadow sols in 
+ Ordered_misc.minimal_transversals all_shadows ;;
+
+exception Nonunique_set_of_minimal_carriers ;;
+
+let set_of_minimal_carriers carriers sols =
+let version1 = original_minimal_carriers carriers sols in 
+let m = List.length(List.hd version1) in 
+let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+if (List.length version2)<>1
+then raise Nonunique_set_of_minimal_carriers 
+else 
+Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
+;;
+
+let set_of_minimal_carriers_with_extra carriers sols =
+try (Some(set_of_minimal_carriers carriers sols),None) with 
+_ -> (None, Some carriers)   ;;
+
+let original_carriers n = 
+let temp = Ennig.doyle (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
+List.filter (fun l->List.hd(l)>0) temp;;  
+
+let new_carriers_in_hard_case n carriers = 
+let (temp1,temp2) = List.partition (fun l->List.mem n l) carriers in 
+let temp3 = Image.image (i_outsert n) temp1 in 
+let whole1 = temp2@temp3@(original_carriers n) in 
+let whole2 = Ordered_misc.minimal_elts_wrt_inclusion whole1 in 
+il_sort whole2 ;;
+
+let easy_case (n,k,carriers) = 
+(n-1,k,set_of_minimal_carriers carriers (easy_selector (n-1,k)));;
+
+let hard_case (n,k,carriers) = 
+let new_carriers = new_carriers_in_hard_case n carriers in 
+(n-1,k-1,set_of_minimal_carriers new_carriers (easy_selector (n-1,k-1)));;  
+
+let milton_product carriers1 carriers2 =
+let temp1 = Cartesian.product carriers1 carriers2 in 
+let temp2 = Image.image (fun (x,y)->i_merge x y) temp1 in 
+let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+il_sort temp3 ;;
+
+let fold_milton = function 
+[] -> []
+| a :: b -> List.fold_left milton_product a b ;;
+
+let meas = Sz_precomputed.measure max_width ;;  
+let sample_size = 15 ;;
+let current_a = 7 ;;
+let base1 = Ennig.ennig 3 (meas current_a) ;;
+let base2 = Cartesian.product base1 (Ennig.ennig 1 sample_size) ;;
+let base3 = List.flatten(Image.image (
+fun (sa,b) -> 
+   Ennig.doyle (fun sb->(sa,b,sb)) (meas(current_a+b)-sa+1) (meas b)
+) base2);;
+let base4 = List.flatten(Image.image (
+fun (sa,b,sb) -> 
+   Option.filter_and_unpack (
+      fun zb -> 
+        if List.length(zb) = sb 
+        then Some(sa,Image.image (fun t->current_a+t) zb) 
+        else None
+   ) (Sz_preliminaries.restricted_power_set(max_width,Ennig.ennig 1 b))
+) base3);;
+
+let current_sa = 4 ;;
+let current_left_component =
+ List.filter (fun z->List.length(z)=current_sa) 
+ (Sz_preliminaries.restricted_power_set(max_width,Ennig.ennig 1 current_a)) ;; 
+let base5 = Option.filter_and_unpack (
+fun (sa,zb) -> if sa = current_sa then Some zb else None
+) base4 ;;
+let base6 = Ordered_misc.minimal_elts_wrt_inclusion(il_sort base5) ;;
+let base7 = Image.image (fun z->
+let temp1 = Sz_preliminaries.force_subset_in_interval max_width z (1,List.hd(List.rev z)) in 
+List.filter (fun l->Max.list(l)<=current_a) temp1
+) base6 ;;
+let base8 = Image.image (fun l->(l,
+set_of_minimal_carriers_with_extra l current_left_component) 
+) base7 ;;
+let (first_half,other_half) = List.partition (fun (l,(opt1,opt2))->opt2=None) base8 ;;
+let base9 = Image.image (fun (l,(opt1,opt2))->Option.unpack opt1) first_half ;;
+let base10 = Image.image (fun (l,(opt1,opt2))->Option.unpack opt2) other_half ;;
+let res1 = fold_milton base9 ;;
 
 (************************************************************************************************************************
 Snippet 86 : Musings on the Szemeredi problem, chapter III
