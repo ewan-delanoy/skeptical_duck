@@ -511,6 +511,11 @@ module Private = struct
     let fw2 = modern_recompile fw1 unordered_mods  in 
     (fw2,(changed_uc,changed_files)) ;;   
 
+  
+  let decipher_module fw = Fw_with_dependencies.decipher_module (parent fw) ;;  
+
+  let decipher_path fw = Fw_with_dependencies.decipher_path (parent fw) ;;  
+
   end ;;
   
 let all_endinglesses = Private.all_endinglesses ;;  
@@ -525,6 +530,8 @@ let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurre
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let configuration = Private.configuration ;;
+let decipher_module = Private.decipher_module ;;
+let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules = Private.dep_ordered_modules ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
