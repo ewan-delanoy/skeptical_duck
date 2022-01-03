@@ -184,6 +184,8 @@ end;;
   let clean_debug_dir cs = Fw_with_batch_compilation.clean_debug_dir (Private.parent cs) ;;
   let clean_exec_dir cs = Fw_with_batch_compilation.clean_exec_dir (Private.parent cs) ;;
   let configuration cs= Fw_with_batch_compilation.configuration (Private.parent cs) ;;
+  let decipher_module cs = Fw_with_batch_compilation.decipher_module (Private.parent cs);;
+  let decipher_path cs = Fw_with_batch_compilation.decipher_path (Private.parent cs);;
   let dep_ordered_modules cs = Fw_with_batch_compilation.dep_ordered_modules (Private.parent cs) ;;
   let direct_fathers_for_module cs mn = Fw_with_batch_compilation.direct_fathers_for_module (Private.parent cs) mn ;;
   let directly_below cs mn = Fw_with_batch_compilation.directly_below (Private.parent cs) mn ;;
