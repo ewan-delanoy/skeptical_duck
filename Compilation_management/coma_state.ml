@@ -143,6 +143,25 @@ module Private = struct
     let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
     set_parent cs new_parent ;; 
 
+  
+  let replace_string cs old_s new_s = 
+      let (parent1,changed_modules_in_any_order) = 
+      Fw_with_batch_compilation.replace_string (parent cs) old_s new_s  in 
+      let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+      let msg="rename "^old_s^" as "^new_s in 
+      let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+        parent2 (Some msg) in 
+      set_parent cs parent3 ;;
+
+  let replace_value cs ((preceding_files,path),(old_v,new_v)) = 
+        let (parent1,changed_modules_in_any_order) = 
+        Fw_with_batch_compilation.replace_value (parent cs) ((preceding_files,path),(old_v,new_v))  in 
+        let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+        let msg="rename "^old_v^" as "^new_v in 
+        let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
+          parent2 (Some msg) in 
+        set_parent cs parent3 ;;    
+
   let usual_recompile cs opt_comment = 
     let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent cs)  in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
@@ -218,7 +237,9 @@ end;;
       Private.set_parent cs new_parent ;;        
   let rename_module = Private.rename_module ;;   
   let rename_string_or_value = Private.rename_string_or_value ;;
-  let rename_subdirectory_as = Private.rename_subdirectory_as ;;      
+  let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
+  let replace_string = Private.replace_string ;;  
+  let replace_value = Private.replace_value ;;   
   let root = Private.root ;;
   let set_gitpush_after_backup cs bowl = 
     let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (Private.parent cs) bowl in 
