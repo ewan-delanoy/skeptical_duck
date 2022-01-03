@@ -123,16 +123,7 @@ module Private = struct
               " as "^(No_slashes.to_string new_nonslashed_name) in       
       let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
               parent1 (Some msg) in     
-      (set_parent cs parent2,extra) ;; 
-
-  let rename_string_or_value cs old_sov new_sov = 
-      let (parent1,changed_modules_in_any_order) = 
-      Fw_with_batch_compilation.rename_string_or_value (parent cs) old_sov new_sov  in 
-      let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
-      let msg="rename "^old_sov^" as "^new_sov in 
-      let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-        parent2 (Some msg) in 
-      set_parent cs parent3 ;;      
+      (set_parent cs parent2,extra) ;;     
 
   let rename_subdirectory_as cs (old_subdir,new_subdir) = 
     let (new_parent,(_,original_reps)) = Fw_with_batch_compilation.rename_subdirectory_as 
@@ -238,7 +229,6 @@ end;;
       let new_parent = Fw_with_batch_compilation.remove_files (Private.parent cs) rps in 
       Private.set_parent cs new_parent ;;        
   let rename_module = Private.rename_module ;;   
-  let rename_string_or_value = Private.rename_string_or_value ;;
   let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
   let replace_string = Private.replace_string ;;  
   let replace_value = Private.replace_value ;;   
