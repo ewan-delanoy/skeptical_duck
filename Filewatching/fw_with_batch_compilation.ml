@@ -412,33 +412,6 @@ module Private = struct
          (parent fw) (old_subdir,new_subdir) in   
          (set_parent fw new_parent,extra) ;;
    
-   let rename_string_or_value fw old_sov new_sov =
-      let old_parent = parent fw in 
-      let (new_parent,changed_rootlesses)=(
-         if not(String.contains old_sov '.')
-         then let (parent1,changes1) = Fw_with_dependencies.replace_string old_parent (old_sov,new_sov) in 
-              (parent1,Image.image fst changes1)
-         else 
-              let j=Substring.leftmost_index_of_in "." old_sov in
-              if j<0 
-              then raise(Rename_string_or_value_exn(old_sov))
-              else let module_name=Cull_string.beginning (j-1) old_sov in
-                   let endingless=Fw_with_dependencies.decipher_module old_parent  module_name 
-                   and path=Fw_with_dependencies.decipher_path old_parent  module_name in 
-                   let nm=Dfn_endingless.to_module endingless in
-                   let pre_temp2=(Fw_with_dependencies.ancestors_for_module old_parent nm)@[nm] in
-                   let temp2=Image.image (Fw_with_dependencies.endingless_at_module old_parent) pre_temp2 in
-                   let preceding_files=Image.image  (fun eless2->
-                        Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
-                   ) temp2 in
-                   let (parent2,changes2) = Fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_sov,new_sov)) in 
-                   (parent2,Image.image fst changes2) 
-      ) in 
-      let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-      (set_parent fw new_parent,changed_modules_in_any_order);;       
-  
-  
-   
     let replace_string fw old_s new_s =
          let old_parent = parent fw in 
          let (new_parent,changes1) = Fw_with_dependencies.replace_string old_parent (old_s,new_s) in 
@@ -556,7 +529,6 @@ let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
 let remove_files = Private.remove_files ;;
 let rename_module = Private.rename_module ;;
-let rename_string_or_value = Private.rename_string_or_value ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string ;;
 let replace_value = Private.replace_value ;;
