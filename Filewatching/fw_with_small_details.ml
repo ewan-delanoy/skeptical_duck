@@ -295,7 +295,7 @@ let replace_string fw (replacee,replacer)=
 let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,(_,changed_files)) = 
+   let (new_parent,(all_changes,changed_files)) = 
         Fw_with_archives.replace_value 
          old_parent (preceding_files,path) (replacee,pre_replacer) in
    let accu = ref [] in 
@@ -311,7 +311,7 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_details;
-   },List.rev(!accu));;     
+   },(List.rev(!accu),all_changes));;     
 
    let check_that_no_change_has_occurred fw =
       Fw_with_archives.check_that_no_change_has_occurred (Automatic.parent fw) ;; 

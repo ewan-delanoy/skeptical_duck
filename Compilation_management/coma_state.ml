@@ -145,14 +145,15 @@ module Private = struct
       set_parent cs parent3 ;;
 
   let replace_value cs ((preceding_files,path),(old_v,new_v)) = 
-        let (parent1,changed_modules_in_any_order) = 
+        let (parent1,(changed_modules_in_any_order,all_changes)) = 
         Fw_with_batch_compilation.replace_value (parent cs) ((preceding_files,path),(old_v,new_v))  in 
         let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
         let msg="rename "^old_v^" as "^new_v in 
-        let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-          parent2 (Some msg) in 
-        set_parent cs parent3 ;;    
-
+        let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changes in 
+        let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in 
+        set_parent cs parent2 ;; 
+ 
+   
   let usual_recompile cs opt_comment = 
     let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent cs)  in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 

@@ -13640,10 +13640,15 @@ let g4 = List.filter (fun (j,(x,y))->Substring.is_a_substring_of "Vdw_" y) g3 ;;
 let g5 = Image.image fst g4 ;;
 let act1 () = Manage_diary.remove_snippets g5;;
 
-
-let ap_for_writing = Absolute_path.of_string "Fads/cloth.ml" ;;
+let ap1 = Absolute_path.of_string "Fads/cloth.ml" ;;
 let act1 () = Manage_diary.extract_at_index_and_append_to_file 
-   84 ap_for_writing ;;
+   84 ap1 ;;
+
+
+let ap1 = Manage_diary.Private.usual_path ;;
+let (prologue,diary1) = Manage_diary.Private.read_and_parse ap1 ;;
+let (Manage_diary.Private.D l_diary1) = diary1 ;;
+let z1 = List.nth l_diary1 (84-1) ;;
 
 
 

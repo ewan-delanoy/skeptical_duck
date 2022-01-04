@@ -447,7 +447,7 @@ let replace_value old_fw pair =
      let (mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Dfn_rootless.to_module rl)= mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)

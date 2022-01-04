@@ -422,10 +422,10 @@ module Private = struct
     
     let replace_value fw ((preceding_files,path),(old_v,new_v)) =
           let old_parent = parent fw in 
-          let (new_parent,changes1) = Fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
-          let changed_rootlesses = Image.image fst changes1 in 
+          let (new_parent,(u_changes,all_changes)) = Fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
+          let changed_rootlesses = Image.image fst u_changes in 
           let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-          (set_parent fw new_parent,changed_modules_in_any_order);;      
+          (set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
 
 
   let check_that_no_change_has_occurred fw =

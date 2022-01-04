@@ -231,9 +231,8 @@ module Private = struct
       let par2= File_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 
-      let par4 = File_watcher.Automatic.reflect_changes_in_diff 
-        (parent fw3) (changed_a_files@rootless::changed_u_files) in         
-      (update_parent fw2 par4,(changed_a_files,rootless::changed_u_files));;
+      let all_changes = changed_a_files@rootless::changed_u_files in       
+      (fw3,(all_changes,rootless::changed_u_files));;
 
    let usual_compilable_files fw  =
       let all_files = Image.image fst (watched_files fw) in 
