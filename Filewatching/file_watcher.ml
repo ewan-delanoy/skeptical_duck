@@ -413,8 +413,6 @@ let apply_text_transformation_on_some_files fw tr l=
 
 let apply_text_transformation_on_all_files fw tr =
    apply_text_transformation_on_adhoc_option fw tr None ;;
-                
-
 
 let replace_string fw (replacee,replacer) =
    apply_text_transformation_on_all_files fw (
@@ -570,6 +568,19 @@ let to_concrete_object = Automatic.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
 
 let watched_files = Automatic.watched_files ;;
+
+
+let z_apply_text_transformation_on_some_files fw tr l=
+   let changed_files_ref=ref[]  in 
+   let new_files = Image.image (
+      Private.apply_text_transformation_on_pair fw tr changed_files_ref (Some l)
+   )  fw.File_watcher_t.watched_files  in 
+   let fw2 ={
+      fw with
+      File_watcher_t.watched_files = new_files;
+   } in 
+   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
+   (fw3,!changed_files_ref);;   
 
 
 let z_inspect_and_update fw ~verbose = 
