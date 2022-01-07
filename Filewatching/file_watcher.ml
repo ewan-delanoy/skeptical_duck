@@ -411,8 +411,10 @@ let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
 let apply_text_transformation_on_some_files fw tr l=
       apply_text_transformation_on_adhoc_option fw tr (Some l) ;;   
 
+(*      
 let apply_text_transformation_on_all_files fw tr =
    apply_text_transformation_on_adhoc_option fw tr None ;;
+*)
 
 let replace_string fw (replacee,replacer) =
    apply_text_transformation_on_all_files fw (
@@ -504,7 +506,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
      
 end;;
 
-let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;
+
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
 
 
