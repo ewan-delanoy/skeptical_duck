@@ -88,7 +88,9 @@ let main_ref=Private.main_ref;;
 let officialize_changes () =
    let temp1 = Private.see_yet_unofficial_changes () in 
    let cmds = Private.commands_for_change_officialization temp1 in
-   Unix_command.conditional_multiple_uc cmds;;
+   let answer = Unix_command.conditional_multiple_uc cmds in 
+   let _ = Private.ref_for_unofficial_changes:=None in 
+   answer ;;
 
 
 
