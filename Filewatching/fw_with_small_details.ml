@@ -105,13 +105,13 @@ module Private = struct
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Fw_with_archives.forget_modules old_parent mod_names in
-   {
+   let (new_parent,removed_files) = Fw_with_archives.forget_modules old_parent mod_names in
+   ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = List.filter (
         fun (rl,_)->not(List.mem (Dfn_rootless.to_module rl) mod_names)
       ) old_details;
-   } ;;  
+   },removed_files) ;;  
 
 let inspect_and_update fw  =
    let old_parent = Automatic.parent fw 

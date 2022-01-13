@@ -109,7 +109,7 @@ module Private = struct
          ) u_files in  
       let old_parent = parent fw in    
       let new_parent = File_watcher.remove_files old_parent the_files in 
-      update_parent fw new_parent ;;      
+      (update_parent fw new_parent,the_files) ;;      
    
    
    let announce_changes fw changed_files=    

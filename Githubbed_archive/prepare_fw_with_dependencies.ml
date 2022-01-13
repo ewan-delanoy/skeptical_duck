@@ -34,7 +34,7 @@ submodule).
 
 let methods = [
    "empty_one",false,["config"],None;
-   "forget_modules",true,["mods_to_be_erased"],None;
+   "forget_modules",true,["mods_to_be_erased"],Some "extra";
    "inspect_and_update",true,[],Some "extra";
    "of_concrete_object",false,["crobj"],None;
    "of_configuration",false,["config"],None;

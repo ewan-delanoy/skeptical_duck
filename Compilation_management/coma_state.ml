@@ -81,16 +81,20 @@ module Private = struct
     if check <> []
     then raise(Forget_modules_exn(check))
     else
-    let parent1 = Fw_with_batch_compilation.forget_modules (parent cs) mods in 
-    let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-              parent1 None in  
-      set_parent cs parent2 ;;      
+    let (new_parent,removed_files) = Fw_with_batch_compilation.forget_modules (parent cs) mods in 
+    let descr = String.concat " , " (Image.image Dfa_module.to_line mods) in 
+    let msg="delete "^descr in 
+    let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
+    let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
+    set_parent cs new_parent ;;     
 
   let forget_nonmodular_rootlesses cs rootless_paths=
-      let parent1 = Fw_with_batch_compilation.remove_files (parent cs) rootless_paths in 
-      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-              parent1 None in  
-      set_parent cs parent2 ;;     
+      let new_parent = Fw_with_batch_compilation.remove_files (parent cs) rootless_paths in 
+      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+      let msg="delete "^descr in 
+      let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
+      let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
+      set_parent cs new_parent ;;     
     
   
   let read_persistent_version x=

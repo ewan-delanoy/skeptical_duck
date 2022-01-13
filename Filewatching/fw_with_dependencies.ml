@@ -66,13 +66,13 @@ let empty_one config =
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_parent = parent old_fw in 
- let new_parent = Entrance.forget_modules old_parent mods_to_be_erased in 
+ let (new_parent,extra) = Entrance.forget_modules old_parent mods_to_be_erased in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- { 
+ ({ 
    Fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
- } ;; 
+ },extra ) ;; 
 
 let inspect_and_update old_fw  =  
  let old_parent = parent old_fw in 
@@ -239,11 +239,12 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Cached.forget_modules old_fw mods_to_be_erased in 
+ let visible = Cached.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Cached.inspect_and_update old_fw  in 
@@ -487,11 +488,12 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Modularized_details.forget_modules old_fw mods_to_be_erased in 
+ let visible = Modularized_details.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Modularized_details.inspect_and_update old_fw  in 
@@ -651,10 +653,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Order.forget_modules old_fw mods_to_be_erased in 
+ let visible = Order.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Order.inspect_and_update old_fw  in 
@@ -795,10 +798,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
+ let visible = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_dirs.inspect_and_update old_fw  in 
@@ -929,10 +933,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Needed_libs.forget_modules old_fw mods_to_be_erased in 
+ let visible = Needed_libs.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_libs.inspect_and_update old_fw  in 
@@ -1078,12 +1083,13 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
+ let visible = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun middle->
     not(List.mem (Dfn_middle.to_module middle) mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = All_subdirectories.inspect_and_update old_fw  in 

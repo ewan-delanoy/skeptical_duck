@@ -306,7 +306,7 @@ module Private = struct
       fw2 ;;
 
    let forget_modules fw mod_names=
-      let new_parent = Fw_with_dependencies.forget_modules (parent fw) mod_names in  
+      let (new_parent,removed_files) = Fw_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Image.image Dfa_module.to_line mod_names in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
      let _=Image.image
@@ -314,7 +314,7 @@ module Private = struct
                        let cmd="rm -f _build/"^mname^edg in
                        Unix_command.uc(cmd))
                       temp2 in
-      set_parent fw new_parent;;
+      (set_parent fw new_parent,removed_files);;
    
    let remove_files fw rootless_paths=
       let (new_parent,_)=Fw_with_dependencies.remove_files (parent fw) rootless_paths in   
