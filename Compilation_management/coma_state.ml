@@ -111,11 +111,11 @@ module Private = struct
    
 
   let relocate_module_to cs mod_name new_subdir = 
-      let parent1 = Fw_with_batch_compilation.relocate_module_to (parent cs) mod_name new_subdir in 
+      let (new_parent,(_,replacements)) = Fw_with_batch_compilation.relocate_module_to (parent cs) mod_name new_subdir in 
       let msg="move "^(Dfa_module.to_line mod_name)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-              parent1 (Some msg) in  
-      set_parent cs parent2 ;;  
+      let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
+      let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
+      set_parent cs new_parent ;; 
 
   let rename_module cs old_middle_name new_nonslashed_name = 
       let (new_parent,(_,(file_renamings,changed_files))) = Fw_with_batch_compilation.rename_module (parent cs) old_middle_name new_nonslashed_name in 

@@ -154,8 +154,11 @@ module Private = struct
                   fun path-> (Dfn_rootless.to_module path)=mod_name 
       ) u_files in 
       let old_parent = parent fw in    
-      let new_parent = File_watcher.relocate_files_to old_parent the_files new_subdir in 
-      update_parent fw new_parent  ;;
+      let replacements = Image.image (fun path->
+         (path,Dfn_rootless.relocate_to path new_subdir)
+       ) the_files in 
+      let new_parent = File_watcher.rename_files old_parent replacements in 
+      (update_parent fw new_parent,replacements)  ;;
          
    let rename_module_on_filename_level old_fw (old_module,new_module) = 
       let all_files = Image.image fst (watched_files old_fw) in 

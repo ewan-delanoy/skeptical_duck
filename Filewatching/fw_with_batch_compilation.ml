@@ -366,8 +366,8 @@ module Private = struct
    
   
    let relocate_module_to fw mod_name new_subdir=
-      let (new_parent,_)=Fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
-      set_parent fw new_parent ;;
+      let (new_parent,replacements)=Fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
+      (set_parent fw new_parent,replacements) ;;
    
    let rename_module fw old_middle_name new_nonslashed_name=
      let old_nm=Dfn_middle.to_module old_middle_name in

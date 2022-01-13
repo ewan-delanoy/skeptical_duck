@@ -191,7 +191,7 @@ let register_rootless_paths fw rootless_paths=
 let relocate_module_to fw (mod_name,new_subdir)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Fw_with_archives.relocate_module_to 
+   let (new_parent,replacements) = Fw_with_archives.relocate_module_to 
         old_parent mod_name new_subdir in 
    let accu = ref [] in      
    let new_small_details = Image.image (
@@ -208,7 +208,7 @@ let relocate_module_to fw (mod_name,new_subdir)=
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_small_details;
    } in 
-   (new_fw,!accu);;  
+   (new_fw,(!accu,replacements));;  
 
 let remove_files fw removed_rootless_paths=   
    let old_parent = Automatic.parent fw 

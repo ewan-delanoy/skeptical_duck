@@ -360,7 +360,21 @@ let mod_details_usual_preliminary = [
 ] ;;
 
 
-mod_details "relocate_module_to" (mod_details_usual_preliminary,"") ;;
+mod_details "relocate_module_to" ([
+   " let old_val = get old_fw in ";
+   " let tempf = (";
+   "   fun old_pair -> ";
+   "     let (mn,details) = old_pair in ";
+   "     let temp1 = List.filter (fun (rl,new_pair_for_rl)->";
+   "        (Dfn_rootless.to_module rl)= mn";
+   "       ) (fst extra) in";
+   "     if temp1 <> []";
+   "     then let new_parent = parent new_fw in ";
+   "          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)";
+   "     else old_pair ";
+   " ) in ";
+   " let answer = Image.image tempf old_val in ";
+],"") ;;
 
 mod_details "remove_files" (mod_details_usual_preliminary,"") ;;
 
