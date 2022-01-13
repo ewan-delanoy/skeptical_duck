@@ -172,7 +172,7 @@ module Private = struct
                
    let rename_module_on_content_level old_fw (old_module,new_module) files_to_be_rewritten =
       let apply = (fun par files->
-         File_watcher.z_apply_text_transformation_on_some_files par 
+         File_watcher.apply_text_transformation_on_some_files par 
          (Look_for_module_names.change_module_name_in_ml_ocamlcode  
          old_module new_module) files
       ) in 
