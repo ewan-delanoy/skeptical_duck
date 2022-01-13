@@ -404,8 +404,6 @@ module Private = struct
       let fw3=modern_recompile fw2 [new_nm] in 
       (fw3,changes) ;;
       
-    
-    ;;
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,extra)=Fw_with_dependencies.rename_subdirectory_as 

@@ -482,7 +482,8 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
            | None -> pair)
         ) (fw.File_watcher_t.watched_files)  
      } in 
-     Automatic.reflect_replacements_in_diff fw2 renaming_schemes ;;
+     (*Automatic.reflect_replacements_in_diff fw2 renaming_schemes *)
+     fw2;;
 
    let relocate_files_to fw rootless_paths new_subdir=
      let renaming_schemes = Image.image (fun path->

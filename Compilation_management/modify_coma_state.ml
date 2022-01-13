@@ -47,7 +47,7 @@ end ;;
 
          let rename_module cs old_middle_name new_nonslashed_name=
             let _=Coma_state.check_that_no_change_has_occurred cs in  
-            fst(Coma_state.rename_module cs old_middle_name new_nonslashed_name);; 
+            Coma_state.rename_module cs old_middle_name new_nonslashed_name;; 
 
 
          let rename_subdirectory  cs old_subdir new_subdir= 

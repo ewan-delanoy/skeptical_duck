@@ -118,12 +118,13 @@ module Private = struct
       set_parent cs parent2 ;;  
 
   let rename_module cs old_middle_name new_nonslashed_name = 
-      let (parent1,extra) = Fw_with_batch_compilation.rename_module (parent cs) old_middle_name new_nonslashed_name in 
+      let (new_parent,(_,(file_renamings,changed_files))) = Fw_with_batch_compilation.rename_module (parent cs) old_middle_name new_nonslashed_name in 
       let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
               " as "^(No_slashes.to_string new_nonslashed_name) in       
-      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-              parent1 (Some msg) in     
-      (set_parent cs parent2,extra) ;;     
+      let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
+      let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
+      let _ = Transmit_change_to_github.backup (github_config cs) diff2 (Some msg) in     
+      set_parent cs new_parent ;;    
 
   let rename_subdirectory_as cs (old_subdir,new_subdir) = 
     let (new_parent,(_,original_reps)) = Fw_with_batch_compilation.rename_subdirectory_as 

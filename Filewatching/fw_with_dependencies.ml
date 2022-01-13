@@ -384,7 +384,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      let (pre_mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Dfn_rootless.to_module rl)= pre_mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
@@ -392,13 +392,8 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
- let changed_modules_in_any_order = Option.filter_and_unpack (fun (_,opt)->match opt with 
- None -> None |(Some(new_rl,_))->Some (Dfn_rootless.to_module new_rl)) extra in 
- let changed_modules = Option.filter_and_unpack (fun (mn,_)->
- if List.mem mn changed_modules_in_any_order then Some mn else None
-  ) answer in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- (new_fw,changed_modules) ;;
+ (new_fw,extra) ;;
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Cached.rename_subdirectory_as old_fw pair in 

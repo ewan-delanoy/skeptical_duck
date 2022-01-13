@@ -226,13 +226,14 @@ let remove_files fw removed_rootless_paths=
    let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
       let old_parent = Automatic.parent fw 
       and old_details = Automatic.small_details_in_files fw  in 
-      let (new_parent,file_renamings,u_files,a_files) = Fw_with_archives.rename_module_on_filename_level_and_in_files 
+      let (new_parent,file_renamings,changed_u_files,changed_a_files) = 
+          Fw_with_archives.rename_module_on_filename_level_and_in_files 
         old_parent (old_module,new_module,files_to_be_rewritten) in 
       let optional_new_rl = (fun rl->
          match List.assoc_opt rl file_renamings with 
             Some(new_rl) -> Some(new_rl) 
             | None ->
-               if List.mem rl u_files
+               if List.mem rl changed_u_files
                then Some rl 
                else None
       ) in 
@@ -250,7 +251,7 @@ let remove_files fw removed_rootless_paths=
       ({
          Fw_with_small_details_t.parent = new_parent ;
          small_details_in_files = new_details;
-       },List.rev(!accu)) ;;  
+       },(List.rev(!accu),(file_renamings,changed_u_files@changed_a_files))) ;;  
 
 
 let rename_subdirectory_as fw (old_subdir,new_subdir)=   

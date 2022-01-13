@@ -194,8 +194,8 @@ module Private = struct
                   
    let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten)=
       let (fw2,file_renamings) = rename_module_on_filename_level fw (old_module,new_module) in 
-      let (fw3,u_files,a_files) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
-      (fw3,file_renamings,u_files,a_files) ;;   
+      let (fw3,changed_u_files,changed_a_files) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
+      (fw3,file_renamings,changed_u_files,changed_a_files) ;;   
    
       
    let replace_string old_fw (replacee,replacer) = 
