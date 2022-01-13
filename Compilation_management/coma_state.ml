@@ -136,13 +136,13 @@ module Private = struct
 
   
   let replace_string cs old_s new_s = 
-      let (parent1,changed_modules_in_any_order) = 
+      let (parent1,(changed_modules_in_any_order,all_changed_files)) = 
       Fw_with_batch_compilation.replace_string (parent cs) old_s new_s  in 
       let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
       let msg="rename "^old_s^" as "^new_s in 
-      let parent3 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-        parent2 (Some msg) in 
-      set_parent cs parent3 ;;
+      let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changed_files in 
+      let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in 
+      set_parent cs parent2 ;;
 
   let replace_value cs ((preceding_files,path),(old_v,new_v)) = 
         let (parent1,(changed_modules_in_any_order,all_changes)) = 

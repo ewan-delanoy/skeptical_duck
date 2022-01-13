@@ -276,12 +276,12 @@ let rename_subdirectory_as fw (old_subdir,new_subdir)=
 let replace_string fw (replacee,replacer)=
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,(_,changed_files)) = Fw_with_archives.replace_string old_parent (replacee,replacer) in
+   let (new_parent,(changed_a_files,changed_u_files)) = Fw_with_archives.replace_string old_parent (replacee,replacer) in
    let accu = ref [] in 
    let new_details = Image.image (
       fun old_pair->
       let rl = fst old_pair in
-      if List.mem rl changed_files
+      if List.mem rl changed_u_files
       then let new_pair = (rl,Fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
            let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
            new_pair 
@@ -290,7 +290,7 @@ let replace_string fw (replacee,replacer)=
    ({
       Fw_with_small_details_t.parent = new_parent ;
       small_details_in_files = new_details;
-   },List.rev(!accu));;   
+   },(List.rev(!accu),changed_a_files@changed_u_files));;   
 
 let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
    let old_parent = Automatic.parent fw 
