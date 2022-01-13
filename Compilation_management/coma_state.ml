@@ -100,13 +100,13 @@ module Private = struct
     let archived_object = Crobj_parsing.parse the_archive in 
     of_concrete_object archived_object;;      
   
-  let register_rootless_paths cs mod_names = 
-      let parent1 = Fw_with_batch_compilation.register_rootless_paths (parent cs) mod_names in 
-      let descr = String.concat " , " (Image.image Dfn_rootless.to_line mod_names) in 
+  let register_rootless_paths cs rootless_paths = 
+      let new_parent = Fw_with_batch_compilation.register_rootless_paths (parent cs) rootless_paths in 
+      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
       let msg="register "^descr in 
-      let parent2 = Fw_with_batch_compilation.reflect_latest_changes_in_github 
-              parent1 (Some msg) in  
-      set_parent cs parent2 ;;  
+      let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
+      let _ = Transmit_change_to_github.backup (github_config cs) diff (Some msg) in     
+      set_parent cs new_parent ;;  
 
    
 

@@ -212,7 +212,8 @@ let register_rootless_paths fw rootless_paths=
         old_watched_files@
           (Image.image (recompute_all_info fw) rootless_paths)  ;
     }  in 
-    Automatic.reflect_creations_in_diff fw2 rootless_paths;;
+    (*Automatic.reflect_creations_in_diff fw2 rootless_paths *)
+    fw2 ;;
 
 let deal_with_initial_comment_if_needed fw rless =
    if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
