@@ -13385,6 +13385,8 @@ let w2 = Image.image fst (vfm "File_watcher") ;;
 let z1 = rf "Filewatching/file_watcher.ml";;
 let z2 = Lines_in_string.interval z1 526 549 ;;
 
+let w2 = Image.image fst (vfm "Fw_configuration") ;;
+
 let z3 = Lines_in_string.lines z2 ;;
 let z4 = Image.image (
   fun line->
@@ -13921,6 +13923,8 @@ Snippet  27 : Typical use of the Other_coma_state module
 let act1 () = 
    Other_coma_state.repopulate 
    (Needed_data_summary_t.Everything);;
+
+(* or Other_coma_state.initialize () ;; *)   
 
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
