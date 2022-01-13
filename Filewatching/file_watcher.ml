@@ -409,17 +409,36 @@ let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
    (fw3,!changed_files_ref);;    
 
 let apply_text_transformation_on_some_files fw tr l=
-      apply_text_transformation_on_adhoc_option fw tr (Some l) ;;   
+   let changed_files_ref=ref[]  in 
+   let new_files = Image.image (
+      apply_text_transformation_on_pair fw tr changed_files_ref (Some l)
+   )  fw.File_watcher_t.watched_files  in 
+   let fw2 ={
+      fw with
+      File_watcher_t.watched_files = new_files;
+   } in
+  (fw2,!changed_files_ref);;  
 
-(*      
+
 let apply_text_transformation_on_all_files fw tr =
    apply_text_transformation_on_adhoc_option fw tr None ;;
-*)
+
 
 let replace_string fw (replacee,replacer) =
-   apply_text_transformation_on_all_files fw (
-      Replace_inside.replace_inside_string (replacee,replacer)
-   ) ;;
+   let tr = Replace_inside.replace_inside_string (replacee,replacer) in 
+   let changed_files_ref=ref[]  in 
+   let new_files = Image.image (
+      apply_text_transformation_on_pair fw tr changed_files_ref None
+   )  fw.File_watcher_t.watched_files  in 
+   let fw2 ={
+      fw with
+      File_watcher_t.watched_files = new_files;
+   } in 
+   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
+   (fw3,!changed_files_ref);;    
+
+
+
 
 let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
