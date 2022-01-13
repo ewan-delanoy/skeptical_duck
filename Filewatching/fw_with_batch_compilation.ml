@@ -287,10 +287,6 @@ module Private = struct
 
   let number_of_modules fw = Fw_with_dependencies.number_of_modules (parent fw) ;;  
   
-  let set_gitpush_after_backup fw bowl = 
-    let new_parent = Fw_with_dependencies.set_gitpush_after_backup (parent fw) bowl in 
-    {fw with Fw_with_batch_compilation_t.parent = new_parent} ;; 
-
   
   let modern_recompile fw changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then fw else
@@ -428,11 +424,7 @@ module Private = struct
 
   let check_that_no_change_has_occurred fw =
         Fw_with_dependencies.check_that_no_change_has_occurred (parent fw) ;; 
-
-        let reflect_latest_changes_in_github fw opt_msg = 
-          let old_parent = parent fw in 
-          let new_parent = Fw_with_dependencies.reflect_latest_changes_in_github old_parent opt_msg in 
-          set_parent fw new_parent ;;       
+    
   
   let modules_using_value fw module_name =
         Fw_with_dependencies.modules_using_value (parent fw) module_name;;       
@@ -456,8 +448,6 @@ module Private = struct
     Fw_with_dependencies.duplicate_module (parent fw) vague_mname1 vague_mname2 ;;
 
   let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
-
-  let all_ml_absolute_paths fw = Fw_with_dependencies.all_ml_absolute_paths (parent fw) ;;
 
   let all_mlx_files fw = Fw_with_dependencies.all_mlx_files (parent fw) ;;
 
@@ -487,11 +477,14 @@ module Private = struct
 
   let decipher_path fw = Fw_with_dependencies.decipher_path (parent fw) ;;  
 
+  
+  let all_ml_absolute_paths fw = Fw_with_dependencies.all_ml_absolute_paths (parent fw) ;; 
+
   end ;;
   
-let all_endinglesses = Private.all_endinglesses ;;  
-let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;  
+let all_endinglesses = Private.all_endinglesses ;;   
 let all_mlx_files = Private.all_mlx_files ;;
+let all_ml_absolute_paths = Private.all_ml_absolute_paths ;; 
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
@@ -511,7 +504,6 @@ let empty_one = Private.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
-let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
@@ -522,7 +514,6 @@ let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
 let remove_files = Private.remove_files ;;
@@ -531,7 +522,6 @@ let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string ;;
 let replace_value = Private.replace_value ;;
 let root = Private.root ;;
-let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;

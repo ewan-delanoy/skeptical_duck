@@ -33,8 +33,6 @@ let of_configuration_and_list = Fw_with_small_details.of_configuration_and_list 
 
 let overwrite_file_if_it_exists = Fw_with_small_details.overwrite_file_if_it_exists ;;
 
-let reflect_latest_changes_in_github = Fw_with_small_details.reflect_latest_changes_in_github ;;
-
 let register_rootless_paths = Fw_with_small_details.register_rootless_paths ;;
 
 let relocate_module_to = Fw_with_small_details.relocate_module_to ;;
@@ -47,11 +45,7 @@ let rename_subdirectory_as = Fw_with_small_details.rename_subdirectory_as ;;
 
 let replace_string = Fw_with_small_details.replace_string ;;
 
-let replace_value = Fw_with_small_details.replace_value ;;
-
-let set_gitpush_after_backup = Fw_with_small_details.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Fw_with_small_details.set_last_noticed_changes ;;end ;;
+let replace_value = Fw_with_small_details.replace_value ;;end ;;
 
 
 module Cached = struct 
@@ -117,16 +111,6 @@ let overwrite_file_if_it_exists old_fw pair =
    Fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
  },extra ) ;; 
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.reflect_latest_changes_in_github old_parent opt_msg in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Fw_indexer.push_state instance_idx in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
 
 let register_rootless_paths old_fw rootlesses =  
  let old_parent = parent old_fw in 
@@ -196,27 +180,7 @@ let replace_value old_fw pair =
  ({ 
    Fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.set_gitpush_after_backup old_parent yes_or_no in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Fw_indexer.push_state instance_idx in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
-
-let set_last_noticed_changes old_fw diff =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.set_last_noticed_changes old_parent diff in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Fw_indexer.push_state instance_idx in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; end ;;
+ },extra ) ;; end ;;
 
 
 module Modularized_details = struct 
@@ -304,12 +268,6 @@ let overwrite_file_if_it_exists old_fw pair =
  Image.image tempf old_val) in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Cached.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
@@ -453,18 +411,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Cached.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Cached.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 end ;;
 
 
@@ -535,12 +481,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Modularized_details.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = Modularized_details.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -609,18 +549,6 @@ let replace_value old_fw pair =
  let answer = Fw_determine_order.main  details_in_old_order in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Modularized_details.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Modularized_details.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -691,12 +619,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Order.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = Order.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -754,18 +676,6 @@ let replace_value old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Order.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Order.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -836,12 +746,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Needed_dirs.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_dirs.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -893,18 +797,6 @@ let replace_value old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Needed_dirs.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Needed_dirs.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -971,12 +863,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Needed_libs.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_libs.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -1035,18 +921,6 @@ let replace_value old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Needed_libs.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Needed_libs.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -1123,12 +997,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = All_subdirectories.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = All_subdirectories.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -1184,18 +1052,6 @@ let replace_value old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = All_subdirectories.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = All_subdirectories.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -1343,13 +1199,6 @@ let decipher_module fw capitalized_or_not_x=
       Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
 
   
-  let directly_below fw mn0=
-    let ordered_data = Order.get fw in  
-    Option.filter_and_unpack(fun (mn,_)->
-      let fathers_for_mn = fst (List.assoc mn ordered_data) in 
-      if List.mem mn0 fathers_for_mn
-      then Some(mn)
-      else None) ordered_data;;      
 
   let modules_using_value fw value_name =
     Option.filter_and_unpack (fun (mn,_)->
@@ -1470,24 +1319,16 @@ let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
-let directly_below fw mn = Private.directly_below fw mn ;;
 let duplicate_module = Private.duplicate_module ;;
 let empty_one = Private.Exit.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.Exit.forget_modules ;;
-let get_mtime fw rl = Fw_with_small_details.get_mtime (Private.parent fw) rl ;;
-let get_mtime_or_zero_if_file_is_nonregistered fw rl = Fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
-let last_noticed_changes fw = Fw_with_small_details.last_noticed_changes (Private.parent fw) ;;
 let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;; 
-let mli_mt_for_module fw mn = match Fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
-                              None -> "0." |Some(fl)->fl ;;
-let mli_presence_for_module fw mn = Fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
 let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
-let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;
 let number_of_modules = Private.number_of_modules ;;
@@ -1495,10 +1336,7 @@ let of_concrete_object = Private.Exit.of_concrete_object ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
-let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
-let principal_mt_for_module fw mn = Fw_module_small_details.principal_modification_time (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
-let reflect_latest_changes_in_github = Private.Exit.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.Exit.register_rootless_paths ;;
 let relocate_module_to = Private.Exit.relocate_module_to ;;
 let remove_files = Private.Exit.remove_files ;;
@@ -1507,8 +1345,6 @@ let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
 let root fw = Fw_with_small_details.root (Private.parent fw);;
-let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
-let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;

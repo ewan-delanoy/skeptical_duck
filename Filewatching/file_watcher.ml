@@ -35,14 +35,12 @@ module Automatic = struct
    
    let configuration_label        = salt ^ "configuration";;
    let watched_files_label        = salt ^ "watched_files";;
-   let last_noticed_changes_label = salt ^ "last_noticed_changes";;
    
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
          File_watcher_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
          watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
-         last_noticed_changes = Dircopy_diff.of_concrete_object (g last_noticed_changes_label);
       };; 
    
    let to_concrete_object fw=
@@ -50,7 +48,6 @@ module Automatic = struct
       [
        configuration_label, Fw_configuration.to_concrete_object fw.File_watcher_t.configuration;
        watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.File_watcher_t.watched_files;
-       last_noticed_changes_label, Dircopy_diff.to_concrete_object fw.File_watcher_t.last_noticed_changes
       ]  in
       Concrete_object_t.Record items;;
    
@@ -58,77 +55,11 @@ module Automatic = struct
    end ;;
    
    let configuration fw = fw.File_watcher_t.configuration ;;
-   
-   let get_content fw rootless = 
-       let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
-       let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
-       Io.read_whole_file(Absolute_path.of_string s_ap);;     
-           
-   let get_mtime_or_zero_if_file_is_nonregistered fw rootless =
-      match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-       (fw.File_watcher_t.watched_files) with 
-      None -> "0."
-     |Some(_,mtime)-> mtime  ;; 
-   
-       
-   
-   let get_mtime fw rootless  =
-     match Option.seek (fun (rootless1,_)->rootless1=rootless) 
-     (fw.File_watcher_t.watched_files) with 
-      None -> raise (Rootless_not_found(rootless))
-     |Some(_,mtime)-> mtime  ;; 
-   
-   let last_noticed_changes fw = fw.File_watcher_t.last_noticed_changes ;;
-
    let of_concrete_object = Private.of_concrete_object;;
   
-   let reflect_changes_in_diff fw l= {
-      fw with 
-      File_watcher_t.last_noticed_changes = 
-        Dircopy_diff.add_changes 
-          (fw.File_watcher_t.last_noticed_changes) l
-   } ;;
-
-   let reflect_creations_in_diff fw created_ones= {
-      fw with 
-      File_watcher_t.last_noticed_changes = 
-        Dircopy_diff.create 
-          (fw.File_watcher_t.last_noticed_changes) created_ones
-   } ;;
    
-   
-   let reflect_destructions_in_diff fw destroyed_ones = {
-      fw with 
-      File_watcher_t.last_noticed_changes = 
-        Dircopy_diff.destroy  
-          (fw.File_watcher_t.last_noticed_changes) destroyed_ones 
-   } ;;
-   
-   
-   let reflect_replacements_in_diff fw reps= {
-      fw with 
-      File_watcher_t.last_noticed_changes = 
-        Dircopy_diff.replace 
-          (fw.File_watcher_t.last_noticed_changes) reps
-   } ;;
    
    let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
-
-   let set_gitpush_after_backup fw new_gab = 
-      let old_config = fw.File_watcher_t.configuration in 
-      let new_config = {
-         old_config with 
-         Fw_configuration_t.gitpush_after_backup = new_gab
-      } in
-      {
-      fw with 
-       File_watcher_t.configuration = new_config ;
-   } ;;
-
-   let set_last_noticed_changes fw new_lnc = {
-      fw with 
-       File_watcher_t.last_noticed_changes = new_lnc ;
-   } ;;
 
    let to_concrete_object = Private.to_concrete_object;;
    
@@ -138,6 +69,12 @@ module Automatic = struct
 end ;;   
 
 module Private = struct
+
+let get_content fw rootless = 
+   let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+   let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
+   Io.read_whole_file(Absolute_path.of_string s_ap);;     
+     
 
 let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
 
@@ -233,7 +170,7 @@ let helper_during_string_replacement fw (old_string,new_string) accu old_list=
     let new_list =Image.image (
        fun pair->
          let (old_path,_)=pair in 
-         if not(Supstring.contains (Automatic.get_content fw old_path) old_string)
+         if not(Supstring.contains (get_content fw old_path) old_string)
          then pair 
          else 
             let ap = Dfn_full.to_absolute_path (Dfn_join.root_to_rootless (Automatic.root fw) old_path) in 
@@ -383,7 +320,7 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    if not(adhoc_membership path selected_files_opt)
    then pair 
    else    
-   let old_content = Automatic.get_content fw path in 
+   let old_content = get_content fw path in 
    let new_content = tr old_content in
    if new_content = old_content   
    then pair 
@@ -406,8 +343,7 @@ let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
       fw with
       File_watcher_t.watched_files = new_files;
    } in 
-   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
-   (fw3,!changed_files_ref);;    
+   (fw2,!changed_files_ref);;    
 
 let apply_text_transformation_on_some_files fw tr l=
    let changed_files_ref=ref[]  in 
@@ -435,8 +371,7 @@ let replace_string fw (replacee,replacer) =
       fw with
       File_watcher_t.watched_files = new_files;
    } in 
-   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
-   (fw3,!changed_files_ref);;    
+   (fw2,!changed_files_ref);;    
 
 
 
@@ -448,8 +383,7 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
     let rootless = Dfn_common.decompose_absolute_path_using_root path (Automatic.root fw)  in 
     let fw2= update_some_files fw [rootless] in 
     let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
-    let fw4 =  Automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
-    (fw4,(rootless::changed_files));;
+    (fw3,rootless::changed_files);;
 
    let overwrite_file_if_it_exists fw rootless new_content =
       let root = Automatic.root fw in 
@@ -512,95 +446,34 @@ let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
              {
                File_watcher_t.configuration = config;
                watched_files = Image.image compute_info to_be_watched;
-               last_noticed_changes = Dircopy_diff.empty_one;
              };;
       
          let of_configuration config = 
                let to_be_watched = first_init config in 
                of_configuration_and_list config to_be_watched ;;
-
+               let empty_one config= {
+                  File_watcher_t.configuration = config;
+                  watched_files = [];
+               } ;;  
      
 end;;
 
 
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
-
-
 let configuration = Automatic.configuration ;;
-
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
-
-let empty_one config= {
-   File_watcher_t.configuration = config;
-   watched_files = [];
-   last_noticed_changes = Dircopy_diff.empty_one;
-};; 
-
-
-
-let get_content = Automatic.get_content ;;
-let get_mtime   = Automatic.get_mtime ;;
-let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
-
+let empty_one = Private.empty_one ;;
 let inspect_and_update = Private.inspect_and_update;; 
-
-let last_noticed_changes = Automatic.last_noticed_changes ;;
-
 let latest_changes = Private.latest_changes ;;
-
 let of_concrete_object = Automatic.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
-
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
-
-let reflect_latest_changes_in_github fw opt_msg=
-   let config = fw.File_watcher_t.configuration in 
-   let _= Reflect_change_in_github.backup config fw.File_watcher_t.last_noticed_changes opt_msg in 
-   {fw with File_watcher_t.last_noticed_changes = Dircopy_diff.empty_one} ;; 
-
-
 let register_rootless_paths = Private.register_rootless_paths;;
-
-
 let remove_files = Private.remove_files;;
-
 let rename_files = Private.rename_files;;
-
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-
 let root = Automatic.root ;;
-
-let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
-
 let to_concrete_object = Automatic.to_concrete_object ;;
-
 let update_some_files = Private.update_some_files ;; 
-
 let watched_files = Automatic.watched_files ;;
-
-
-let z_apply_text_transformation_on_some_files fw tr l=
-   let changed_files_ref=ref[]  in 
-   let new_files = Image.image (
-      Private.apply_text_transformation_on_pair fw tr changed_files_ref (Some l)
-   )  fw.File_watcher_t.watched_files  in 
-   let fw2 ={
-      fw with
-      File_watcher_t.watched_files = new_files;
-   } in 
-   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
-   (fw3,!changed_files_ref);;   
-
-
-let z_inspect_and_update fw ~verbose = 
-   let (new_files,changed_files)= Private.compute_changes_and_announce_them fw ~verbose in
-   let fw2 ={
-      fw with
-      File_watcher_t.watched_files         = new_files ;
-   }  in 
-   let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
-   (new_fw,changed_files);;

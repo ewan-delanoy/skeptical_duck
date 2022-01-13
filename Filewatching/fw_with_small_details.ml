@@ -60,35 +60,11 @@ module Automatic = struct
    end ;;
 
    let configuration      = Private.configuration ;;
-   let constructor        = Private.constructor ;;
-   let get_content fw     = Fw_with_archives.get_content 
-                                  (Private.parent fw) ;;
-   let get_mtime fw       = Fw_with_archives.get_mtime 
-                                  (Private.parent fw) ;; 
-   let get_mtime_or_zero_if_file_is_nonregistered fw  = 
-                       Fw_with_archives.get_mtime_or_zero_if_file_is_nonregistered
-                                  (Private.parent fw) ;;     
-   let last_noticed_changes fw = Fw_with_archives.last_noticed_changes
-                                  (Private.parent fw) ;;                                                                                                                     
+   let constructor        = Private.constructor ;;                                                                                                                    
    let of_concrete_object = Private.of_concrete_object;;
    let parent             = Private.parent ;;
    let root fw     = Fw_with_archives.root (Private.parent fw) ;;
-   let set_gitpush_after_backup fw new_gab = 
-      let old_nonmodular = fw.Fw_with_small_details_t.parent in 
-      let new_nonmodular = Fw_with_archives.set_gitpush_after_backup 
-            old_nonmodular new_gab in 
-      {
-          fw with  
-         Fw_with_small_details_t.parent = new_nonmodular ;
-      } ;;
-      
-   let set_last_noticed_changes fw new_config = 
-      let old_parent = fw.Fw_with_small_details_t.parent in
-      let new_parent = Fw_with_archives.set_last_noticed_changes old_parent new_config in 
-      {
-      fw with 
-       Fw_with_small_details_t.parent = new_parent;
-      } ;;
+   
    let small_details_in_files fw = fw.Fw_with_small_details_t.small_details_in_files ;;   
    let to_concrete_object = Private.to_concrete_object;;
    
@@ -166,13 +142,6 @@ let overwrite_file_if_it_exists fw (rootless,new_content) =
       }
    else fw ) in (new_fw,!accu);;           
 
-let reflect_latest_changes_in_github fw opt_msg=  
-   let old_parent = Automatic.parent fw in 
-   let new_parent = Fw_with_archives.reflect_latest_changes_in_github old_parent opt_msg in 
-   {
-      fw with 
-       Fw_with_small_details_t.parent = new_parent;
-   } ;;  
 
 let register_rootless_paths fw rootless_paths= 
    let old_parent = Automatic.parent fw 
@@ -322,62 +291,23 @@ let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
 end ;;
 
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-
 let configuration = Automatic.configuration ;;
-
-
-
-let empty_one config= {
-   Fw_with_small_details_t.parent = Fw_with_archives.empty_one config;
-   small_details_in_files = [];
-};; 
-
+let empty_one config= { Fw_with_small_details_t.parent = Fw_with_archives.empty_one config;small_details_in_files = [];} ;; 
 let forget_modules = Private.forget_modules ;;
-
-let get_content = Automatic.get_content ;;
-
-let get_mtime = Automatic.get_mtime ;;
-
-let get_mtime_or_zero_if_file_is_nonregistered = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
-
 let inspect_and_update = Private.inspect_and_update;;
-
-let last_noticed_changes = Automatic.last_noticed_changes ;;
-
 let latest_changes = Private.latest_changes ;;
-
 let noncompilable_files fw = Fw_with_archives.noncompilable_files (Automatic.parent fw) ;;
-
 let of_concrete_object = Automatic.of_concrete_object ;;
-
 let of_configuration = Private.of_configuration ;;
-
 let of_configuration_and_list = Private.of_configuration_and_list ;;
-
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
-
 let register_rootless_paths = Private.register_rootless_paths;;
-
 let relocate_module_to = Private.relocate_module_to;;
-
 let remove_files = Private.remove_files;;
-
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
-
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-
 let replace_string = Private.replace_string;;
-
 let replace_value = Private.replace_value;;
-
 let root = Automatic.root ;;
-
-let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
-
 let to_concrete_object = Automatic.to_concrete_object ;;
-
 let usual_compilable_files fw = Fw_with_archives.usual_compilable_files (Automatic.parent fw) ;;

@@ -11,10 +11,7 @@ module Private = struct
    (* Inherited methods *)
 
    let configuration fw = File_watcher.configuration (parent fw) ;;
-   let get_content fw rl = File_watcher.get_content (parent fw) rl ;;
-   let get_mtime fw rl = File_watcher.get_mtime (parent fw) rl ;;
-   let get_mtime_or_zero_if_file_is_nonregistered fw rl = File_watcher.get_mtime_or_zero_if_file_is_nonregistered (parent fw) rl ;;
-   let last_noticed_changes fw = File_watcher.last_noticed_changes (parent fw);;
+
    let root fw = File_watcher.root (parent fw) ;;
    let update_parent fw new_parent = {fw with Fw_with_archives_t.parent = new_parent} ;;
    let watched_files fw = File_watcher.watched_files (parent fw) ;;
@@ -36,12 +33,6 @@ module Private = struct
       let old_parent = parent fw in 
       let (new_parent,file_exists) = File_watcher.overwrite_file_if_it_exists old_parent rl new_content in 
       (update_parent fw new_parent,file_exists);;
-
-   let reflect_latest_changes_in_github fw opt_msg = 
-      let old_parent = parent fw in 
-      let new_parent = File_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
-      update_parent fw new_parent ;; 
-
    let register_rootless_paths fw rls = 
       let old_parent = parent fw in 
       let new_parent = File_watcher.register_rootless_paths old_parent rls in 
@@ -54,14 +45,7 @@ module Private = struct
       let old_parent = parent fw in 
       let (new_parent,extra) = File_watcher.rename_subdirectory_as old_parent sd_pair in 
       (update_parent fw new_parent,extra) ;;  
-   let set_gitpush_after_backup fw g = 
-      let old_parent = parent fw in 
-      let new_parent = File_watcher.set_gitpush_after_backup old_parent g in 
-      update_parent fw new_parent ;;
-   let set_last_noticed_changes fw l = 
-      let old_parent = parent fw in 
-      let new_parent = File_watcher.set_last_noticed_changes old_parent l in 
-      update_parent fw new_parent ;;       
+     
 
    (* End of inherited constructors *)  
       
@@ -132,7 +116,7 @@ module Private = struct
    let inspect_and_update old_fw = 
       let old_parent = parent old_fw in    
       let (new_parent,changed_files) = 
-          File_watcher.z_inspect_and_update old_parent
+          File_watcher.inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
       let (a_files,u_files,nc_files) = announce_changes new_fw changed_files in 
@@ -283,68 +267,28 @@ module Private = struct
 end ;;
 
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-
 let compute_all_small_details = Private.compute_all_small_details ;;
-
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
-
 let configuration = Private.configuration ;;
-
-let constructor = Private.constructor ;;
-
 let empty_one = Private.empty_one ;;
-
 let forget_modules = Private.forget_modules ;;
-
-let get_content = Private.get_content ;;
-
-let get_mtime = Private.get_mtime ;;
-
-let get_mtime_or_zero_if_file_is_nonregistered = Private.get_mtime_or_zero_if_file_is_nonregistered ;;
-
 let inspect_and_update = Private.inspect_and_update ;;
-
-let last_noticed_changes = Private.last_noticed_changes ;;
-
 let latest_changes = Private.latest_changes ;;
-
 let noncompilable_files = Private.noncompilable_files ;;
-
 let of_concrete_object = Private.of_concrete_object ;;
-
 let of_configuration = Private.of_configuration ;;
-
 let of_configuration_and_list = Private.of_configuration_and_list ;;
-
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
 let partition_for_singles = Private.canonical_tripartition ;; 
-
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
-
 let register_rootless_paths = Private.register_rootless_paths ;; 
-
 let remove_files = Private.remove_files ;; 
-
 let rename_subdirectory_as = Private.rename_subdirectory_as ;; 
-
 let relocate_module_to = Private.relocate_module_to ;;
-
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
-
 let replace_string = Private.replace_string;;
-
 let replace_value = Private.replace_value;;
-
 let root = Private.root ;; 
-
-let set_gitpush_after_backup = Private.set_gitpush_after_backup ;; 
-
-let set_last_noticed_changes = Private.set_last_noticed_changes ;; 
-
 let to_concrete_object = Private.to_concrete_object ;;
-
 let usual_compilable_files = Private.usual_compilable_files ;;
-
 let watched_files = Private.watched_files ;;
 

@@ -192,10 +192,7 @@ end;;
   let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.parent cs) ;;
   let forget_modules = Private.forget_modules ;; 
   let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-  let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;   
-  let inspect_and_update cs  = 
-      let (new_parent,changed_usual_compilables) = Fw_with_batch_compilation.inspect_and_update (Private.parent cs)  in 
-      (Private.set_parent cs new_parent,changed_usual_compilables) ;;   
+  let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;     
   let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
   let list_values_from_module cs mn = 
     Fw_with_batch_compilation.list_values_from_module  (Private.parent cs) mn ;;
@@ -240,8 +237,10 @@ end;;
   let replace_value = Private.replace_value ;;   
   let root = Private.root ;;
   let set_gitpush_after_backup cs bowl = 
-    let new_parent = Fw_with_batch_compilation.set_gitpush_after_backup (Private.parent cs) bowl in 
-    Private.set_parent cs new_parent ;;   
+    {
+      cs with
+      Coma_state_t.gitpush_after_backup = bowl;
+    };;   
   let show_value_occurrences cs t = 
     Fw_with_batch_compilation.show_value_occurrences  (Private.parent cs) t ;;  
   let start_debugging cs = Fw_with_batch_compilation.start_debugging (Private.parent cs) ;; 
