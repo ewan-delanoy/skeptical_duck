@@ -184,7 +184,7 @@ let remove_files fw rootless_paths=
          not(List.mem path rootless_paths)
       ) (fw.File_watcher_t.watched_files)  ;
    } in 
-   Automatic.reflect_destructions_in_diff fw2 rootless_paths ;;
+   fw2 ;;
 
 
 let register_rootless_paths fw rootless_paths= 
