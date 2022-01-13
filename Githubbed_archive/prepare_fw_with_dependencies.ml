@@ -40,7 +40,6 @@ let methods = [
    "of_configuration",false,["config"],None;
    "of_configuration_and_list",false,["pair"],None;
    "overwrite_file_if_it_exists",true,["pair"],Some "extra";
-   "reflect_latest_changes_in_github",true,["opt_msg"],None;
    "register_rootless_paths",true,["rootlesses"],Some "extra";
    "relocate_module_to",true,["pair"],Some "extra";
    "remove_files",true,["files_to_be_removed"],Some "extra";
@@ -48,8 +47,6 @@ let methods = [
    "rename_subdirectory_as",true,["pair"],Some "extra";
    "replace_string",true,["pair"],Some "extra";
    "replace_value",true,["pair"],Some "extra";
-   "set_gitpush_after_backup",true,["yes_or_no"],None;
-   "set_last_noticed_changes",true,["diff"],None;
 ] ;;
 
 module Common = struct 
@@ -315,9 +312,6 @@ mod_details "overwrite_file_if_it_exists" ([
    " Image.image tempf old_val) in ";
 ],"") ;;
 
-mod_details "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 mod_details "register_rootless_paths" ([
    "  let old_val = get old_fw in ";
@@ -444,13 +438,6 @@ mod_details "replace_value" ([
    " let answer = Image.image tempf old_val in ";
 ],"") ;;
 
-mod_details "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-mod_details "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 
 add_to_ghetto
@@ -490,9 +477,6 @@ order "of_configuration_and_list" ([
 
 order "overwrite_file_if_it_exists" (order_usual_preliminary,"") ;;
 
-order "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 order "register_rootless_paths" ([
    " let old_val = get old_fw in ";
@@ -530,13 +514,7 @@ order "replace_string" (order_usual_preliminary,"") ;;
 
 order "replace_value" (order_usual_preliminary,"") ;;
 
-order "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
-order "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
  add_to_ghetto
    "Needed_dirs" 
@@ -579,9 +557,6 @@ needed_dirs "overwrite_file_if_it_exists" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_dirs "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 needed_dirs "register_rootless_paths" ([
   " let answer = force_get new_fw in "
@@ -618,14 +593,6 @@ needed_dirs "replace_string" ([
 
 needed_dirs "replace_value" ([
   " let answer = force_get new_fw in "
-],"") ;;
-
-needed_dirs "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-needed_dirs "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
 ],"") ;;
 
 
@@ -673,9 +640,6 @@ needed_libs "overwrite_file_if_it_exists" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_libs "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 needed_libs "register_rootless_paths" ([
   " let answer = force_get new_fw in "
@@ -708,13 +672,6 @@ needed_libs "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_libs "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-needed_libs "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 
 add_to_ghetto
@@ -755,10 +712,6 @@ all_subdirectories "overwrite_file_if_it_exists" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_subdirectories "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
 all_subdirectories "register_rootless_paths" ([
   " let old_val = get old_fw in ";
   " let (_,novelties) = extra in ";
@@ -797,13 +750,6 @@ all_subdirectories "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_subdirectories "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-all_subdirectories "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
  add_to_ghetto
     "All_printables"
@@ -853,10 +799,6 @@ all_printables "overwrite_file_if_it_exists" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_printables "reflect_latest_changes_in_github" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
 all_printables "register_rootless_paths" ([
   " let answer = force_get new_fw in "
 ],"") ;;
@@ -892,13 +834,6 @@ all_printables "replace_value" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_printables "set_gitpush_after_backup" ([
-   "  let answer = get old_fw in "
-],"") ;;
-
-all_printables "set_last_noticed_changes" ([
-   "  let answer = get old_fw in "
-],"") ;;
 
 let text_for_submodule sumo =      
    String.concat "\n" 

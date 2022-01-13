@@ -13369,18 +13369,39 @@ Snippet 42 : Extracting lines from a file and modifying them
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let z1 = rf "Fads/sirloin.ml" ;;
-let z2 = Lines_in_string.interval z1 60 75 ;;
+let w2 = Image.image fst (vfm "Fw_with_dependencies") ;;
+let z1 = rf "Filewatching/fw_with_dependencies.ml";;
+let z2 = Lines_in_string.interval z1 1304 1351 ;;
+
+let w2 = Image.image fst (vfm "Fw_with_small_details") ;;
+let z1 = rf "Filewatching/fw_with_small_details.ml";;
+let z2 = Lines_in_string.interval z1 309 334 ;;
+
+let w2 = Image.image fst (vfm "Fw_with_archives") ;;
+let z1 = rf "Filewatching/fw_with_archives.ml";;
+let z2 = Lines_in_string.interval z1 285 317 ;;
+
+let w2 = Image.image fst (vfm "File_watcher") ;;
+let z1 = rf "Filewatching/file_watcher.ml";;
+let z2 = Lines_in_string.interval z1 526 549 ;;
+
 let z3 = Lines_in_string.lines z2 ;;
 let z4 = Image.image (
   fun line->
-    let j1=String.index_from line 8 ' ' 
+    let j1=(try String.index_from line 1 ' ' with _->0)
     and j2=String.index line '=' in 
-    let j3=String.index_from line (j2+2) ' ' in 
-    (Cull_string.interval line 9 j1,
-     Cull_string.interval line (j2+3) j3)
+    Cull_string.trim_spaces (Cull_string.interval line (j1+1) (j2-1)) 
 ) z3 ;;
+let z5 = Image.image (
+  fun line->
+       if not(String.contains line ' ')
+       then line 
+       else let j3 =  String.index line ' ' in 
+             Cull_string.beginning j3 line
+) z4 ;;
+let bad_in_z5=List.filter (fun x->not(List.mem x w2)) z5;;
 
+let z4=[];;
 let check_z4 = Ordered.sort Total_ordering.lex_for_strings (Image.image snd z4) ;;
 
 let write (fun_name,lbl)=
