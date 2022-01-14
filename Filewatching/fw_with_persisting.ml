@@ -115,5 +115,5 @@ module Private=struct
 
 end;;  
 
-let save = Private.save_all;;
+let persist = Private.save_all;;
 

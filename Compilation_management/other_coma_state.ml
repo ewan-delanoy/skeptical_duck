@@ -123,7 +123,7 @@ let repopulate summary=
   (!Usual_coma_state.main_ref) summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
   in 
-  (Private.main_ref := cs ;Fw_with_persisting.save cs) ;; 
+  (Private.main_ref := cs ;Fw_with_persisting.persist cs) ;; 
 
 let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 

@@ -71,22 +71,22 @@ end ;;
    
          let forget_modules cs mod_names=
             let cs2=After_checking.forget_modules cs mod_names in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;
    
          let forget_nonmodular_rootlesses cs rootless_paths=
             let cs2=After_checking.forget_nonmodular_rootlesses cs rootless_paths in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;
    
          let internet_access cs bowl=   
             let cs2=Fw_with_githubbing.set_gitpush_after_backup cs bowl in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;
          
          let recompile cs opt_comment=
             let cs2= Fw_with_githubbing.usual_recompile cs opt_comment in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;
          
 
@@ -97,39 +97,39 @@ end ;;
                 (cs.Fw_with_githubbing_t.gitpush_after_backup) 
                   (cs.Fw_with_githubbing_t.github_url)
                   (cs.Fw_with_githubbing_t.encoding_protected_files)  in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;       
 
          let register_rootless_paths cs rootless_path=
             let cs2=After_checking.register_rootless_paths cs rootless_path in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;  
    
          let relocate_module_to cs old_module new_subdir=
          let cs2 = After_checking.relocate_module_to cs old_module new_subdir in 
-         let _=Fw_with_persisting.save cs2 in 
+         let _=Fw_with_persisting.persist cs2 in 
          cs2;;   
    
          let rename_subdirectory cs old_subdir new_subdir=
             let cs2=After_checking.rename_subdirectory cs old_subdir new_subdir in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;  
    
    
          let rename_module cs old_middle_name new_nonslashed_name=
             let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;  
 
 
          let replace_string cs old_s new_s=
             let cs2=After_checking.replace_string cs old_s new_s in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;     
          
          let replace_value cs ((preceding_files,path),(old_v,new_v))=
             let cs2=After_checking.replace_value cs ((preceding_files,path),(old_v,new_v)) in 
-            let _=Fw_with_persisting.save cs2 in 
+            let _=Fw_with_persisting.persist cs2 in 
             cs2;;        
    
    end ;;
