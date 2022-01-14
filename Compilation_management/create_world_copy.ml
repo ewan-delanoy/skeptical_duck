@@ -35,7 +35,7 @@ module Private = struct
      ];;
   
     let commands_for_copying cs rootlesses destination=
-       let s_old_root=Dfa_root.connectable_to_subpath(Coma_state.root cs) 
+       let s_old_root=Dfa_root.connectable_to_subpath(Fw_with_githubbing.root cs) 
        and s_new_root=Dfa_root.connectable_to_subpath destination in 
        let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
        let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
@@ -77,29 +77,29 @@ module Private = struct
 
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
       let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
-      let faraway_cs1 = Coma_state.of_fw_with_batch_compilation 
+      let faraway_cs1 = Fw_with_githubbing.of_fw_with_batch_compilation 
                           (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
                              destbackupdir destgab Coma_big_constant.github_url [] in 
-      let all_modules = Coma_state.dep_ordered_modules faraway_cs1 in 
-      let faraway_cs2 = Coma_state.modern_recompile faraway_cs1 all_modules in 
+      let all_modules = Fw_with_githubbing.dep_ordered_modules faraway_cs1 in 
+      let faraway_cs2 = Fw_with_githubbing.modern_recompile faraway_cs1 all_modules in 
       let _=Save_coma_state.save faraway_cs2 in   
       faraway_cs2;;                      
       
 
     let unfreeze_copy cs destroot =
-        let old_config = Coma_state.configuration cs in 
+        let old_config = Fw_with_githubbing.configuration cs in 
         let remote_config = {
            old_config with 
            Fw_configuration_t.root = destroot ;
         } in 
-        let remote_cs = Coma_state.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
+        let remote_cs = Fw_with_githubbing.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
         let remote_cs2 =
-           Coma_state.of_configuration 
-            (Coma_state.configuration remote_cs) 
-              (remote_cs.Coma_state_t.dir_for_backup) 
-                (remote_cs.Coma_state_t.gitpush_after_backup) 
-                  (remote_cs.Coma_state_t.github_url)
-                  (remote_cs.Coma_state_t.encoding_protected_files) in 
+           Fw_with_githubbing.of_configuration 
+            (Fw_with_githubbing.configuration remote_cs) 
+              (remote_cs.Fw_with_githubbing_t.dir_for_backup) 
+                (remote_cs.Fw_with_githubbing_t.gitpush_after_backup) 
+                  (remote_cs.Fw_with_githubbing_t.github_url)
+                  (remote_cs.Fw_with_githubbing_t.encoding_protected_files) in 
         let _ = Save_coma_state.save remote_cs2 in 
         remote_cs2;;    
         

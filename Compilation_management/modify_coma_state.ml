@@ -24,44 +24,44 @@ end ;;
    module After_checking = struct
 
          let forget_modules cs mod_names=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.forget_modules cs mod_names ;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.forget_modules cs mod_names ;; 
    
          let forget_nonmodular_rootlesses cs rootless_paths=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.forget_nonmodular_rootlesses cs rootless_paths ;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.forget_nonmodular_rootlesses cs rootless_paths ;; 
 
          (* No check needed before recompiling *)
          
          (* No check needed before refreshing *)   
    
          let register_rootless_paths cs rootless_paths=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.register_rootless_paths cs rootless_paths ;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.register_rootless_paths cs rootless_paths ;; 
    
 
          let relocate_module_to cs old_module new_subdir=
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.relocate_module_to cs old_module new_subdir ;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.relocate_module_to cs old_module new_subdir ;; 
    
 
          let rename_module cs old_middle_name new_nonslashed_name=
-            let _=Coma_state.check_that_no_change_has_occurred cs in  
-            Coma_state.rename_module cs old_middle_name new_nonslashed_name;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in  
+            Fw_with_githubbing.rename_module cs old_middle_name new_nonslashed_name;; 
 
 
          let rename_subdirectory  cs old_subdir new_subdir= 
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
   
    
          let replace_string cs old_s new_s =
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.replace_string cs old_s new_s ;;
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.replace_string cs old_s new_s ;;
 
          let replace_value cs ((preceding_files,path),(old_v,new_v)) =
-            let _=Coma_state.check_that_no_change_has_occurred cs in 
-            Coma_state.replace_value cs ((preceding_files,path),(old_v,new_v)) ;;   
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Fw_with_githubbing.replace_value cs ((preceding_files,path),(old_v,new_v)) ;;   
 
    end;;
    
@@ -80,23 +80,23 @@ end ;;
             cs2;;
    
          let internet_access cs bowl=   
-            let cs2=Coma_state.set_gitpush_after_backup cs bowl in 
+            let cs2=Fw_with_githubbing.set_gitpush_after_backup cs bowl in 
             let _=Save_coma_state.save cs2 in 
             cs2;;
          
          let recompile cs opt_comment=
-            let cs2= Coma_state.usual_recompile cs opt_comment in 
+            let cs2= Fw_with_githubbing.usual_recompile cs opt_comment in 
             let _=Save_coma_state.save cs2 in 
             cs2;;
          
 
          let refresh cs =
-            let cs2= Coma_state.of_configuration 
-            (Coma_state.configuration cs) 
-              (cs.Coma_state_t.dir_for_backup) 
-                (cs.Coma_state_t.gitpush_after_backup) 
-                  (cs.Coma_state_t.github_url)
-                  (cs.Coma_state_t.encoding_protected_files)  in 
+            let cs2= Fw_with_githubbing.of_configuration 
+            (Fw_with_githubbing.configuration cs) 
+              (cs.Fw_with_githubbing_t.dir_for_backup) 
+                (cs.Fw_with_githubbing_t.gitpush_after_backup) 
+                  (cs.Fw_with_githubbing_t.github_url)
+                  (cs.Fw_with_githubbing_t.encoding_protected_files)  in 
             let _=Save_coma_state.save cs2 in 
             cs2;;       
 
@@ -145,11 +145,11 @@ end ;;
             pcs:=new_cs;; 
    
          let initialize pcs =
-         let new_cs = Coma_state.read_persistent_version (!pcs) in 
+         let new_cs = Fw_with_githubbing.read_persistent_version (!pcs) in 
          pcs:=new_cs;;
 
          let initialize_if_empty pcs =
-            if Coma_state.number_of_modules (!pcs) = 0 
+            if Fw_with_githubbing.number_of_modules (!pcs) = 0 
             then initialize pcs;;
    
          let internet_access pcs bowl=
@@ -225,7 +225,7 @@ end ;;
    
    let rename_module cs_ref old_module_name new_name=
       let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-      let old_eless = Coma_state.endingless_at_module (!cs_ref) mn in
+      let old_eless = Fw_with_githubbing.endingless_at_module (!cs_ref) mn in
       let old_middle_name = Dfn_endingless.to_middle old_eless in    
       let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
       Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
@@ -241,18 +241,18 @@ end ;;
          if j<0 
          then raise(Rename_string_or_value_exn(old_sov))
          else let module_name=Cull_string.beginning (j-1) old_sov in
-         let endingless= Coma_state.decipher_module (!cs_ref)  module_name 
-         and path= Coma_state.decipher_path (!cs_ref)  module_name in 
+         let endingless= Fw_with_githubbing.decipher_module (!cs_ref)  module_name 
+         and path= Fw_with_githubbing.decipher_path (!cs_ref)  module_name in 
          let nm=Dfn_endingless.to_module endingless in
-         let pre_temp2=(Coma_state.ancestors_for_module (!cs_ref) nm)@[nm] in
-         let temp2=Image.image (Coma_state.endingless_at_module (!cs_ref)) pre_temp2 in
+         let pre_temp2=(Fw_with_githubbing.ancestors_for_module (!cs_ref) nm)@[nm] in
+         let temp2=Image.image (Fw_with_githubbing.endingless_at_module (!cs_ref)) pre_temp2 in
          let preceding_files=Image.image  (fun eless2->
                            Dfn_full.to_absolute_path(Dfn_join.to_ending eless2 Dfa_ending.ml)
          ) temp2 in
          Reference.replace_value cs_ref ((preceding_files,path),(old_sov,new_sov)) ;;       
 
    let rename_subdirectory cs_ref old_subdirname new_subdir_short_name=
-       let old_subdir = Coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname  in
+       let old_subdir = Fw_with_githubbing.find_subdir_from_suffix (!cs_ref) old_subdirname  in
        let new_subdir = Tools.compute_long_subdir_name old_subdir new_subdir_short_name  in 
        Reference.rename_subdirectory cs_ref old_subdir new_subdir ;;
    

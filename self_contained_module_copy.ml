@@ -22,10 +22,10 @@ let unsharped_content hm=
 let self_contained_module_copy prefix hm=
    let cs=(!(Usual_coma_state.main_ref)) in 
    let nm=Dfn_endingless.to_module hm in
-   let those_above=(Coma_state.ancestors_for_module cs nm)@[nm] in
+   let those_above=(Fw_with_githubbing.ancestors_for_module cs nm)@[nm] in
    let temp1=Image.image (
        fun nm2->
-         let hm2=Coma_state.endingless_at_module cs nm2 in
+         let hm2=Fw_with_githubbing.endingless_at_module cs nm2 in
          let mlx=Dfn_join.to_ending hm2 Dfa_ending.ml in
          let ap=Dfn_full.to_absolute_path mlx in
          let naked_name=Modularize.module_name_from_path ap in

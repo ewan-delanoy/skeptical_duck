@@ -1,8 +1,27 @@
 (************************************************************************************************************************
-Snippet 89 : 
+Snippet 90 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 89 : Removes unnecessary blanks at the beginning of lines in an interval
+************************************************************************************************************************)
+open Needed_values ;;
+
+
+let ap = Absolute_path.of_string "Filewatching/fw_with_githubbing.ml";;
+let old_text = Io.read_whole_file ap ;;
+
+let part1= Lines_in_string.interval old_text 1 171 ;;
+let part2= Lines_in_string.interval old_text 172 254;;
+
+let lines1 = Lines_in_string.lines part2 ;;
+let lines2 = Image.image (Cull_string.cobeginning 5) lines1 ;;
+let new_part2 = String.concat "\n" lines2 ;;
+let new_text = part1 ^ "\n" ^ new_part2 ;;
+
+Io.overwrite_with ap new_text ;;
 
 (************************************************************************************************************************
 Snippet 88 : Find all modules whose ml file contains a certain substring

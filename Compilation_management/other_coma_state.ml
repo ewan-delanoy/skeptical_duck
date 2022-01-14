@@ -11,12 +11,12 @@ let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple 
   and url=Coma_big_constant.github_url in  
   let config = Fw_configuration.of_root root in 
-  ref(Coma_state.empty_one  config backup_dir githubbing url []);;
+  ref(Fw_with_githubbing.empty_one  config backup_dir githubbing url []);;
 
 let ref_for_unofficial_changes = ref(None : (string list) option) ;;  
 
 let force_compute_unofficial_changes ()=
-   let temp1=Coma_state.all_mlx_files (!main_ref) in 
+   let temp1=Fw_with_githubbing.all_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    let temp2=Explicit.filter (
@@ -52,17 +52,17 @@ let force_compute_unofficial_changes ()=
 
 end;;
 
-let above modname=Coma_state.ancestors_for_module (!(Private.main_ref)) modname;;
+let above modname=Fw_with_githubbing.ancestors_for_module (!(Private.main_ref)) modname;;
 
 
-let below modname=Coma_state.below (!(Private.main_ref)) modname;;
+let below modname=Fw_with_githubbing.below (!(Private.main_ref)) modname;;
 
 
 let duplicate_module old_t1 old_t2=
-  Coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+  Fw_with_githubbing.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
   let find_endingless modname = 
-   Coma_state.endingless_at_module
+   Fw_with_githubbing.endingless_at_module
     (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=
@@ -79,7 +79,7 @@ let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;;
 let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
-   Coma_state.list_values_from_module (!(Private.main_ref)) module_name;;
+   Fw_with_githubbing.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
@@ -128,7 +128,7 @@ let repopulate summary=
 let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
-   Coma_state.show_value_occurrences
+   Fw_with_githubbing.show_value_occurrences
    (!(Private.main_ref)) module_name;;
 
 
