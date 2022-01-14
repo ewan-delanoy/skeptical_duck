@@ -7,11 +7,11 @@
 
 module Private = struct
 
-     let parent fw = fw.Coma_state_t.parent ;; 
+     let parent fw = fw.Fw_with_githubbing_t.parent ;; 
      
      let set_parent fw batch_compiler = { 
         fw with 
-        Coma_state_t.parent = batch_compiler ;
+        Fw_with_githubbing_t.parent = batch_compiler ;
      } ;;
      
      let below fw mn = Fw_with_batch_compilation.below (parent fw) mn ;;
@@ -24,10 +24,10 @@ module Private = struct
      
      let github_config fw = 
         {Github_configuration_t.root = root fw;
-          dir_for_backup = fw.Coma_state_t.dir_for_backup ;
-          gitpush_after_backup = fw.Coma_state_t.gitpush_after_backup ;
-          github_url = fw.Coma_state_t.github_url ;
-          encoding_protected_files = fw.Coma_state_t.encoding_protected_files ;
+          dir_for_backup = fw.Fw_with_githubbing_t.dir_for_backup ;
+          gitpush_after_backup = fw.Fw_with_githubbing_t.gitpush_after_backup ;
+          github_url = fw.Fw_with_githubbing_t.github_url ;
+          encoding_protected_files = fw.Fw_with_githubbing_t.encoding_protected_files ;
           } ;;
    
    
@@ -43,7 +43,7 @@ module Private = struct
      let of_concrete_object ccrt_obj = 
         let g=Concrete_object.get_record ccrt_obj in
         {
-           Coma_state_t.parent = Fw_with_batch_compilation.of_concrete_object(g parent_label);
+           Fw_with_githubbing_t.parent = Fw_with_batch_compilation.of_concrete_object(g parent_label);
            dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
            gitpush_after_backup = Crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
            github_url = Crobj_converter.string_of_concrete_object (g github_url_label);
@@ -54,10 +54,10 @@ module Private = struct
         let items= 
         [
          parent_label, Fw_with_batch_compilation.to_concrete_object (parent fw);
-         dir_for_backup_label, Dfa_root.to_concrete_object fw.Coma_state_t.dir_for_backup;
-         gitpush_after_backup_label, Crobj_converter.bool_to_concrete_object  fw.Coma_state_t.gitpush_after_backup;
-         github_url_label, Crobj_converter.string_to_concrete_object fw.Coma_state_t.github_url;
-         encoding_protected_files_label, Dfn_rootless.pair_list_to_concrete_object fw.Coma_state_t.encoding_protected_files;
+         dir_for_backup_label, Dfa_root.to_concrete_object fw.Fw_with_githubbing_t.dir_for_backup;
+         gitpush_after_backup_label, Crobj_converter.bool_to_concrete_object  fw.Fw_with_githubbing_t.gitpush_after_backup;
+         github_url_label, Crobj_converter.string_to_concrete_object fw.Fw_with_githubbing_t.github_url;
+         encoding_protected_files_label, Dfn_rootless.pair_list_to_concrete_object fw.Fw_with_githubbing_t.encoding_protected_files;
         ]  in
         Concrete_object_t.Record items;;
      
@@ -67,7 +67,7 @@ module Private = struct
        
        let empty_one config backup_dir gab git_url enc_files=
          {
-           Coma_state_t.parent = Fw_with_batch_compilation.empty_one config;
+           Fw_with_githubbing_t.parent = Fw_with_batch_compilation.empty_one config;
            dir_for_backup = backup_dir;
            gitpush_after_backup = gab;
            github_url = git_url;
@@ -193,7 +193,7 @@ let endingless_at_module fw mn = Fw_with_batch_compilation.endingless_at_module 
 let find_subdir_from_suffix fw = Fw_with_batch_compilation.find_subdir_from_suffix (Private.parent fw) ;;
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-let gitpush_after_backup fw= fw.Coma_state_t.gitpush_after_backup;;     
+let gitpush_after_backup fw= fw.Fw_with_githubbing_t.gitpush_after_backup;;     
 let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
 let list_values_from_module fw mn = 
   Fw_with_batch_compilation.list_values_from_module  (Private.parent fw) mn ;;
@@ -207,7 +207,7 @@ let noncompilable_files fw =
 let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
 let of_configuration config backup_dir gab git_url enc_files = 
   {
-    Coma_state_t.parent = Fw_with_batch_compilation.of_configuration config;
+    Fw_with_githubbing_t.parent = Fw_with_batch_compilation.of_configuration config;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
@@ -217,7 +217,7 @@ let of_configuration config backup_dir gab git_url enc_files =
 let of_concrete_object = Private.of_concrete_object ;;  
 let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url enc_files = 
   {
-    Coma_state_t.parent = batch_compiler ;
+    Fw_with_githubbing_t.parent = batch_compiler ;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
@@ -240,7 +240,7 @@ let root = Private.root ;;
 let set_gitpush_after_backup fw bowl = 
   {
     fw with
-    Coma_state_t.gitpush_after_backup = bowl;
+    Fw_with_githubbing_t.gitpush_after_backup = bowl;
   };;   
 let show_value_occurrences fw t = 
   Fw_with_batch_compilation.show_value_occurrences  (Private.parent fw) t ;;  
