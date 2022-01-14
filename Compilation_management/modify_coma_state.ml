@@ -21,61 +21,18 @@ module Tools = struct
 end ;;   
 
    
-   module After_checking = struct
-
-         let forget_modules cs mod_names=
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.forget_modules cs mod_names ;; 
-   
-         let forget_nonmodular_rootlesses cs rootless_paths=
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.forget_nonmodular_rootlesses cs rootless_paths ;; 
-
-         (* No check needed before recompiling *)
-         
-         (* No check needed before refreshing *)   
-   
-         let register_rootless_paths cs rootless_paths=
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.register_rootless_paths cs rootless_paths ;; 
-   
-
-         let relocate_module_to cs old_module new_subdir=
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.relocate_module_to cs old_module new_subdir ;; 
-   
-
-         let rename_module cs old_middle_name new_nonslashed_name=
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in  
-            Fw_with_githubbing.rename_module cs old_middle_name new_nonslashed_name;; 
-
-
-         let rename_subdirectory  cs old_subdir new_subdir= 
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
-  
-   
-         let replace_string cs old_s new_s =
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.replace_string cs old_s new_s ;;
-
-         let replace_value cs ((preceding_files,path),(old_v,new_v)) =
-            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
-            Fw_with_githubbing.replace_value cs ((preceding_files,path),(old_v,new_v)) ;;   
-
-   end;;
-   
-   
    
    module And_save = struct 
    
          let forget_modules cs mod_names=
-            let cs2=After_checking.forget_modules cs mod_names in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2 = Fw_with_githubbing.forget_modules cs mod_names in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;
    
          let forget_nonmodular_rootlesses cs rootless_paths=
-            let cs2=After_checking.forget_nonmodular_rootlesses cs rootless_paths in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2 = Fw_with_githubbing.forget_nonmodular_rootlesses cs rootless_paths in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;
    
@@ -101,34 +58,40 @@ end ;;
             cs2;;       
 
          let register_rootless_paths cs rootless_path=
-            let cs2=After_checking.register_rootless_paths cs rootless_path in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2 = Fw_with_githubbing.register_rootless_paths cs rootless_path in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;  
    
          let relocate_module_to cs old_module new_subdir=
-         let cs2 = After_checking.relocate_module_to cs old_module new_subdir in 
-         let _=Fw_with_persisting.persist cs2 in 
-         cs2;;   
-   
-         let rename_subdirectory cs old_subdir new_subdir=
-            let cs2=After_checking.rename_subdirectory cs old_subdir new_subdir in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2 = Fw_with_githubbing.relocate_module_to cs old_module new_subdir in 
             let _=Fw_with_persisting.persist cs2 in 
-            cs2;;  
-   
+            cs2;;   
    
          let rename_module cs old_middle_name new_nonslashed_name=
-            let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2=Fw_with_githubbing.rename_module cs old_middle_name new_nonslashed_name in 
+            let _=Fw_with_persisting.persist cs2 in 
+            cs2;;  
+
+         let rename_subdirectory cs old_subdir new_subdir=
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2=Fw_with_githubbing.rename_subdirectory_as cs (old_subdir,new_subdir) in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;  
 
 
          let replace_string cs old_s new_s=
-            let cs2=After_checking.replace_string cs old_s new_s in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2=Fw_with_githubbing.replace_string cs old_s new_s in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;     
+    
          
          let replace_value cs ((preceding_files,path),(old_v,new_v))=
-            let cs2=After_checking.replace_value cs ((preceding_files,path),(old_v,new_v)) in 
+            let _=Fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            let cs2= Fw_with_githubbing.replace_value cs ((preceding_files,path),(old_v,new_v)) in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;        
    
