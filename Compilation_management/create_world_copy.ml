@@ -53,7 +53,6 @@ module Private = struct
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
 
   let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false)  summary =
-      let url=Coma_big_constant.github_url in 
       let (conv_files,needed_dirs) = (
         if Needed_data_summary.is_everything summary
         then (Coma_constant.conventional_files_with_full_content,
@@ -69,7 +68,7 @@ module Private = struct
           Needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
        (commands_for_copying cs (compilables@noncompilables) destination) in
-      let faraway_config = Fw_configuration.constructor (destination,destbackupdir,destgab,url,[]) in 
+      let faraway_config = Fw_configuration.of_root destination in 
       let faraway_fw1 = Fw_with_dependencies.of_configuration_and_list (faraway_config,compilables@noncompilables) in  
       let (faraway_fw,_) =Fw_with_dependencies.overwrite_file_if_it_exists faraway_fw1 
                      (Coma_constant.rootless_path_for_parametersfile, 
@@ -92,8 +91,6 @@ module Private = struct
         let remote_config = {
            old_config with 
            Fw_configuration_t.root = destroot ;
-           dir_for_backup =  default_backup_dir ;
-           gitpush_after_backup = false ; 
         } in 
         let remote_cs = Coma_state.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
         let remote_cs2 =

@@ -192,7 +192,7 @@ end;;
   let find_subdir_from_suffix cs = Fw_with_batch_compilation.find_subdir_from_suffix (Private.parent cs) ;;
   let forget_modules = Private.forget_modules ;; 
   let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-  let gitpush_after_backup cs=(configuration cs).Fw_configuration_t.gitpush_after_backup;;     
+  let gitpush_after_backup cs= cs.Coma_state_t.gitpush_after_backup;;     
   let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
   let list_values_from_module cs mn = 
     Fw_with_batch_compilation.list_values_from_module  (Private.parent cs) mn ;;

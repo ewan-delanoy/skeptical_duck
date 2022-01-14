@@ -28,7 +28,7 @@ let commands_for_confidentiality encoding_protected_files =
    ) encoding_protected_files ;;
 
 
-let check data =
+let check fw_data github_data =
   let name_of_clone_directory = Fw_constant.clone_download_location in 
   let i=(
     if Sys.file_exists(name_of_clone_directory)
@@ -42,17 +42,17 @@ let check data =
   let remotedir=Dfa_root.of_line name_of_clone_directory in
   let full_clone_command=
     "git clone "^
-    (data.Fw_configuration_t.github_url)^" "^
+    (github_data.Github_configuration_t.github_url)^" "^
     name_of_clone_directory in 
   let j=Unix_command.uc full_clone_command in
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
-  let cmds = commands_for_confidentiality data.Fw_configuration_t.encoding_protected_files in 
+  let cmds = commands_for_confidentiality github_data.Github_configuration_t.encoding_protected_files in 
   let _= Unix_command.conditional_multiple_uc cmds in 
-  let root_dir = data.Fw_configuration_t.root in 
+  let root_dir = github_data.Github_configuration_t.root in 
   let diff1=Prepare_dircopy_update.compute_restricted_diff
-     root_dir remotedir (data.Fw_configuration_t.ignored_subdirectories,
-        (Image.image Dfn_rootless.to_line data.Fw_configuration_t.ignored_files) ) in
-  filter_diff_according_to_admissibility  data diff1;;
+     root_dir remotedir (fw_data.Fw_configuration_t.ignored_subdirectories,
+        (Image.image Dfn_rootless.to_line fw_data.Fw_configuration_t.ignored_files) ) in
+  filter_diff_according_to_admissibility fw_data diff1;;
           
