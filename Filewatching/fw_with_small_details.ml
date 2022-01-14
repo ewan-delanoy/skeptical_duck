@@ -78,6 +78,9 @@ end ;;
 module Private = struct
 
 
+let small_details_in_files fw = fw.Fw_with_small_details_t.small_details_in_files ;;  
+
+
 let forget_modules fw mod_names =
    let old_parent = Automatic.parent fw 
    and old_details = Automatic.small_details_in_files fw  in 
@@ -309,5 +312,6 @@ let rename_subdirectory_as = Private.rename_subdirectory_as;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
 let root = Automatic.root ;;
+let small_details_in_files = Private.small_details_in_files ;;
 let to_concrete_object = Automatic.to_concrete_object ;;
 let usual_compilable_files fw = Fw_with_archives.usual_compilable_files (Automatic.parent fw) ;;
