@@ -1,8 +1,22 @@
 (************************************************************************************************************************
-Snippet 88 : 
+Snippet 89 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 88 : Find all modules whose ml file contains a certain substring
+************************************************************************************************************************)
+open Needed_values ;;
+
+let z1 = Coma_state.all_mlx_files (!ucs) ;;
+let z2 = List.filter (fun mlx -> (Dfn_full.to_ending mlx)= Dfa_ending.ml ) z1 ;;
+let z3 = Explicit.filter (
+   fun mlx -> 
+    let ap = Dfn_full.to_absolute_path mlx in 
+    let text = Io.read_whole_file ap in 
+    Substring.is_a_substring_of "Automatic" text
+) z2 ;;
 
 (************************************************************************************************************************
 Snippet 87 : Musings on the Szemeredi problem, chapter IV

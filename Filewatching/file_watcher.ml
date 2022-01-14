@@ -8,14 +8,12 @@ exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
 
-module Automatic = struct 
 
-   exception Rootless_not_found of Dfn_rootless_t.t;;
+module Private = struct
 
+(* Start of crobj level  *)
 
-   module Private = struct 
-   
-   let pair_of_crobj crobj=
+let pair_of_crobj crobj=
       let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
      (
        Dfn_rootless.of_concrete_object arg1,
@@ -51,199 +49,18 @@ module Automatic = struct
       ]  in
       Concrete_object_t.Record items;;
    
-   
-   end ;;
-   
-   let configuration fw = fw.File_watcher_t.configuration ;;
-   let of_concrete_object = Private.of_concrete_object;;
+
+(* End of crobj level  *)
+
+
+(* Start of level 4 *)
+
   
-   
-   
-   let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
+let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
 
-   let to_concrete_object = Private.to_concrete_object;;
-   
-  
-   let watched_files fw = fw.File_watcher_t.watched_files ;;
+(* End of level 4 *)
 
-end ;;   
-
-module Private = struct
-
-let get_content fw rootless = 
-   let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
-   let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
-   Io.read_whole_file(Absolute_path.of_string s_ap);;     
-     
-
-let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
-
-let recompute_mtime fw path =
-     let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
-     and s_path=Dfn_rootless.to_line path in 
-     let file = s_root^s_path in 
-     mtime file;;
-
-let recompute_mtime_opt fw path =
-    try Some(recompute_mtime fw path) with _ -> None ;;
-
-let recompute_all_info fw path =
-     let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
-     and s_path=Dfn_rootless.to_line path in 
-     let file = s_root^s_path in 
-     (path,mtime file);;
-
-let update_in_list_of_pairs fw  to_be_updated pairs  =
-   Image.image (
-      fun pair -> 
-        let (rootless,mtime)=pair in 
-        if List.mem rootless to_be_updated 
-        then recompute_all_info fw rootless 
-        else pair
-   ) pairs;;
-
-let update_some_files fw w_files = {
-    fw with 
-      File_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
-      (fw.File_watcher_t.watched_files) ;
-} ;;
-
-
-let remove_files fw rootless_paths=
-    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in 
-    let removals_to_be_made = Image.image (
-      fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
-    ) rootless_paths in 
-    let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
-    let fw2 ={
-      fw with 
-      File_watcher_t.watched_files = List.filter (fun (path,_)->
-         not(List.mem path rootless_paths)
-      ) (fw.File_watcher_t.watched_files)  ;
-   } in 
-   fw2 ;;
-
-
-let register_rootless_paths fw rootless_paths= 
-   let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) in
-   let nonexistent_paths = Option.filter_and_unpack (
-     fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
-     if not(Sys.file_exists s_full_path)
-     then Some(s_full_path)
-     else None
-   ) rootless_paths in 
-   if nonexistent_paths<>[]
-   then raise(Register_rootless_path_exn(nonexistent_paths))
-   else 
-   let old_watched_files = fw.File_watcher_t.watched_files in    
-   let redundant_paths = List.filter (
-         fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
-   ) rootless_paths in 
-   if redundant_paths<>[]
-   then raise(Already_registered_rootless_paths_exn
-          (Image.image Dfn_rootless.to_line redundant_paths))
-   else    
-   let fw2=  {
-      fw with 
-      File_watcher_t.watched_files =  
-        old_watched_files@
-          (Image.image (recompute_all_info fw) rootless_paths)  ;
-    }  in 
-    (*Automatic.reflect_creations_in_diff fw2 rootless_paths *)
-    fw2 ;;
-
-let deal_with_initial_comment_if_needed fw rless =
-   if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
-   then ()
-   else
-      let root = Automatic.root fw in 
-      let full = Dfn_join.root_to_rootless root rless in 
-      let ap = Dfn_full.to_absolute_path full in 
-      Put_use_directive_in_initial_comment.put_usual root ap
-   ;;    
-
-
-
-
-
-let helper_during_string_replacement fw (old_string,new_string) accu old_list=
-    let new_list =Image.image (
-       fun pair->
-         let (old_path,_)=pair in 
-         if not(Supstring.contains (get_content fw old_path) old_string)
-         then pair 
-         else 
-            let ap = Dfn_full.to_absolute_path (Dfn_join.root_to_rootless (Automatic.root fw) old_path) in 
-            let _=(
-             Replace_inside.replace_inside_file (old_string,new_string) ap;
-             accu:=old_path::(!accu)
-            ) in 
-            recompute_all_info fw old_path 
-         ) old_list in 
-    (new_list,List.rev(!accu));;
-
-let replace_string fw (old_string,new_string)=
-    let ref_for_changed_files=ref[]  in 
-    let (new_files,changed_files)=
-        helper_during_string_replacement 
-           fw (old_string,new_string) ref_for_changed_files fw.File_watcher_t.watched_files in 
-    let new_fw ={
-       fw with
-       File_watcher_t.watched_files = new_files ;
-    }  in 
-    (new_fw,changed_files);;         
-       
-let rename_value_inside_rootless fw (old_name,new_name) preceding_files rootless_path=
-   let full_path = Dfn_join.root_to_rootless (Automatic.root fw) rootless_path in 
-   let absolute_path=Dfn_full.to_absolute_path  full_path in 
-   let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
-      preceding_files old_name new_name absolute_path in 
-   let new_watched_files =Image.image (
-       fun pair->
-         let (path,_)=pair in 
-         if path = rootless_path 
-         then recompute_all_info fw path
-         else pair 
-   ) (fw.File_watcher_t.watched_files) in 
-   {
-      fw with 
-       File_watcher_t.watched_files = new_watched_files
-   };;  
-
-let ref_for_subdirectory_renaming = ref [];;
-
-let remember_during_subdirectory_renaming pair =
-   (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
-
-let rename_subdirectory_on_pair fw (old_subdir,new_subdir) pair=
-   let (rootless_path,_)=pair in 
-   match Dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
-   Some(new_rootless_path) -> 
-        let _=(
-           remember_during_subdirectory_renaming (rootless_path,new_rootless_path)
-        ) in 
-        recompute_all_info fw new_rootless_path
-   |None -> pair;;
-
-let rename_subdirectory_on_pairs fw (old_subdir,new_subdir) l_pairs =
-     let _=(ref_for_subdirectory_renaming := []) in 
-     let comp=Image.image (rename_subdirectory_on_pair fw (old_subdir,new_subdir)) l_pairs in 
-     (comp,List.rev(!ref_for_subdirectory_renaming));;
-
-let rename_subdirectory_as fw (old_subdir,new_subdir)=
-    let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw)  in 
-    let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
-    and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
-    let old_full_path = s_root^s_old_subdir 
-    and new_full_path = s_root^s_new_subdir in 
-    let cmd=" mv "^old_full_path^" "^new_full_path in 
-        let _=Unix_command.hardcore_uc cmd in 
-    let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.File_watcher_t.watched_files) in 
-   let fw2 = {
-      fw with
-      File_watcher_t.watched_files = files  ;
-   } in 
-   (fw2,reps);;   
+(* Start of level 3 *)
 
 let message_about_missing_files missing_files=
    let temp1=Image.image Dfn_rootless.to_line missing_files in
@@ -252,6 +69,25 @@ let message_about_missing_files missing_files=
    (String.concat "\n" temp1)^
    "\n\n"
  ;;    
+
+let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
+
+let recompute_mtime fw path =
+      let s_root = Dfa_root.connectable_to_subpath (root fw) 
+      and s_path=Dfn_rootless.to_line path in 
+      let file = s_root^s_path in 
+      mtime file;;
+ 
+let recompute_mtime_opt fw path =
+     try Some(recompute_mtime fw path) with _ -> None ;;
+ 
+
+
+(* End of level 3 *)
+
+
+(* Start of level 2 *)
+
 
 let announce_missing_files missing_files=
      if missing_files=[]
@@ -278,6 +114,18 @@ let helper2_during_inspection fw accu l_pairs =
    let new_l_pairs = Image.image (helper1_during_inspection fw accu) good_pairs in 
    (new_l_pairs,List.rev(!accu));;
 
+  let recompute_all_info fw path =
+    let s_root = Dfa_root.connectable_to_subpath (root fw) 
+    and s_path=Dfn_rootless.to_line path in 
+    let file = s_root^s_path in 
+    (path,mtime file);;
+
+
+(* End of level 2 *)
+
+
+(* Start of level 1 *)
+
 let compute_changes_and_announce_them fw ~verbose=
    let ref_for_files=ref[]  in 
    let (new_files,changed_files)=
@@ -290,24 +138,72 @@ let compute_changes_and_announce_them fw ~verbose=
                ~separator: ", "
    ) in
    (new_files,changed_files);;   
+
+let configuration fw = fw.File_watcher_t.configuration ;;
+
+let get_content fw rootless = 
+  let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+  let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
+  Io.read_whole_file(Absolute_path.of_string s_ap);;     
+    
+
+let of_configuration_and_list config to_be_watched =
+  let the_root = config.Fw_configuration_t.root in  
+  let compute_info=( fun path->
+    let s_root = Dfa_root.connectable_to_subpath the_root
+    and s_path=Dfn_rootless.to_line path in 
+    let file = s_root^s_path in 
+    let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
+    (path,mtime)
+ ) in 
+   {
+     File_watcher_t.configuration = config;
+     watched_files = Image.image compute_info to_be_watched;
+   };;
+ 
+
+   let ref_for_subdirectory_renaming = ref [];;
+
+   let remember_during_subdirectory_renaming pair =
+      (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
    
-let latest_changes fw ~verbose =
-   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
-   changed_files ;;
+   let rename_subdirectory_on_pair fw (old_subdir,new_subdir) pair=
+      let (rootless_path,_)=pair in 
+      match Dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
+      Some(new_rootless_path) -> 
+           let _=(
+              remember_during_subdirectory_renaming (rootless_path,new_rootless_path)
+           ) in 
+           recompute_all_info fw new_rootless_path
+      |None -> pair;;
+   
+   let rename_subdirectory_on_pairs fw (old_subdir,new_subdir) l_pairs =
+        let _=(ref_for_subdirectory_renaming := []) in 
+        let comp=Image.image (rename_subdirectory_on_pair fw (old_subdir,new_subdir)) l_pairs in 
+        (comp,List.rev(!ref_for_subdirectory_renaming));;
+   
+   
 
-let inspect_and_update fw ~verbose = 
-    let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
-    let fw2 ={
-       fw with
-       File_watcher_t.watched_files         = new_files ;
-    }  in 
-    (fw2,changed_files);;         
+let update_in_list_of_pairs fw  to_be_updated pairs  =
+Image.image (
+   fun pair -> 
+     let (rootless,mtime)=pair in 
+     if List.mem rootless to_be_updated 
+     then recompute_all_info fw rootless 
+     else pair
+) pairs;;
 
-let check_that_no_change_has_occurred fw =
-   let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
-   if changed_files <> []
-   then raise(Change_has_occurred)
-   else () ;;       
+let update_some_files fw w_files = {
+ fw with 
+   File_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
+   (fw.File_watcher_t.watched_files) ;
+} ;;
+
+
+   
+
+(* End of level 1 *)
+
 
 
 let adhoc_membership path selected_files_opt=
@@ -326,7 +222,7 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    then pair 
    else 
    let _=(changed_files_ref:= path:: (!changed_files_ref)) in 
-   let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw) 
+   let s_root = Dfa_root.connectable_to_subpath (root fw) 
    and s_path=Dfn_rootless.to_line path in 
    let file = s_root^s_path in  
    let ap=Absolute_path.of_string file in 
@@ -334,16 +230,6 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    recompute_all_info fw path ;;
 
 
-let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
-   let changed_files_ref=ref[]  in 
-   let new_files = Image.image (
-      apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
-   )  fw.File_watcher_t.watched_files  in 
-   let fw2 ={
-      fw with
-      File_watcher_t.watched_files = new_files;
-   } in 
-   (fw2,!changed_files_ref);;    
 
 let apply_text_transformation_on_some_files fw tr l=
    let changed_files_ref=ref[]  in 
@@ -357,115 +243,177 @@ let apply_text_transformation_on_some_files fw tr l=
   (fw2,!changed_files_ref);;  
 
 
-let apply_text_transformation_on_all_files fw tr =
-   apply_text_transformation_on_adhoc_option fw tr None ;;
-
-
-let replace_string fw (replacee,replacer) =
-   let tr = Replace_inside.replace_inside_string (replacee,replacer) in 
-   let changed_files_ref=ref[]  in 
-   let new_files = Image.image (
-      apply_text_transformation_on_pair fw tr changed_files_ref None
-   )  fw.File_watcher_t.watched_files  in 
-   let fw2 ={
-      fw with
-      File_watcher_t.watched_files = new_files;
-   } in 
-   (fw2,!changed_files_ref);;    
-
-
-
-
-let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
-    let replacer=(Cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
-    let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
-      preceding_files replacee (Overwriter.of_string pre_replacer) path in 
-    let rootless = Dfn_common.decompose_absolute_path_using_root path (Automatic.root fw)  in 
-    let fw2= update_some_files fw [rootless] in 
-    let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
-    (fw3,rootless::changed_files);;
-
-   let overwrite_file_if_it_exists fw rootless new_content =
-      let root = Automatic.root fw in 
-      if List.exists ( fun (r,_)->r=rootless ) fw.File_watcher_t.watched_files 
-      then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
-           let _=Io.overwrite_with ap new_content in 
-           ({
-              fw with 
-              File_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.File_watcher_t.watched_files);
-           },true)
-      else (fw,false);;
-
-   let rename_files fw renaming_schemes =
-      let s_root = Dfa_root.connectable_to_subpath (Automatic.root fw)  in 
-      let displacements_to_be_made = Image.image (
-        fun (path1,path2)->" mv "^s_root^(Dfn_rootless.to_line path1)^" "^
-        s_root^(Dfn_rootless.to_line path2)
-      ) renaming_schemes in 
-      let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
-      let fw2 = {
-        fw with 
-        File_watcher_t.watched_files = Image.image (fun pair->
-           let (path,_)=pair in 
-           (match List.assoc_opt path renaming_schemes with
-           Some(new_path) -> 
-                let _ = (
-                  if  (Dfn_rootless.to_ending new_path) = Dfa_ending.ml
-                  then deal_with_initial_comment_if_needed fw new_path
-                ) in 
-                (new_path,recompute_mtime fw new_path)
-           | None -> pair)
-        ) (fw.File_watcher_t.watched_files)  
-     } in 
-     fw2;;
 
    
+let check_that_no_change_has_occurred fw =
+  let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
+  if changed_files <> []
+  then raise(Change_has_occurred)
+  else () ;;       
 
-   
+  let deal_with_initial_comment_if_needed fw rless =
+    if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
+    then ()
+    else
+       let root = root fw in 
+       let full = Dfn_join.root_to_rootless root rless in 
+       let ap = Dfn_full.to_absolute_path full in 
+       Put_use_directive_in_initial_comment.put_usual root ap
+    ;;    
+         
         
+        
+        let empty_one config= {
+            File_watcher_t.configuration = config;
+            watched_files = [];
+         } ;; 
+
         let first_init config =
-           let the_root = config.Fw_configuration_t.root in 
-           let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-           let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
-           let list2 = Option.filter_and_unpack(
-             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
-                      _->None 
-           ) list1 in
-           List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
-        
-        
-        let of_configuration_and_list config to_be_watched =
-            let the_root = config.Fw_configuration_t.root in  
-            let compute_info=( fun path->
-              let s_root = Dfa_root.connectable_to_subpath the_root
-              and s_path=Dfn_rootless.to_line path in 
-              let file = s_root^s_path in 
-              let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
-              (path,mtime)
-           ) in 
-             {
-               File_watcher_t.configuration = config;
-               watched_files = Image.image compute_info to_be_watched;
-             };;
+          let the_root = config.Fw_configuration_t.root in 
+          let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
+          let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
+          let list2 = Option.filter_and_unpack(
+            fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
+                     _->None 
+          ) list1 in
+          List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
       
+
+          let inspect_and_update fw ~verbose = 
+            let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
+            let fw2 ={
+               fw with
+               File_watcher_t.watched_files         = new_files ;
+            }  in 
+            (fw2,changed_files);;         
+        
+
+          let latest_changes fw ~verbose =
+            let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
+            changed_files ;;
+         
+        
+
+
          let of_configuration config = 
                let to_be_watched = first_init config in 
                of_configuration_and_list config to_be_watched ;;
-               let empty_one config= {
-                  File_watcher_t.configuration = config;
-                  watched_files = [];
-               } ;;  
+        
+         
+   let overwrite_file_if_it_exists fw rootless new_content =
+    let root = root fw in 
+    if List.exists ( fun (r,_)->r=rootless ) fw.File_watcher_t.watched_files 
+    then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
+         let _=Io.overwrite_with ap new_content in 
+         ({
+            fw with 
+            File_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.File_watcher_t.watched_files);
+         },true)
+    else (fw,false);;
+
+
+let register_rootless_paths fw rootless_paths= 
+let s_root = Dfa_root.connectable_to_subpath (root fw) in
+let nonexistent_paths = Option.filter_and_unpack (
+  fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
+  if not(Sys.file_exists s_full_path)
+  then Some(s_full_path)
+  else None
+) rootless_paths in 
+if nonexistent_paths<>[]
+then raise(Register_rootless_path_exn(nonexistent_paths))
+else 
+let old_watched_files = fw.File_watcher_t.watched_files in    
+let redundant_paths = List.filter (
+      fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
+) rootless_paths in 
+if redundant_paths<>[]
+then raise(Already_registered_rootless_paths_exn
+       (Image.image Dfn_rootless.to_line redundant_paths))
+else    
+let fw2=  {
+   fw with 
+   File_watcher_t.watched_files =  
+     old_watched_files@
+       (Image.image (recompute_all_info fw) rootless_paths)  ;
+ }  in 
+ fw2 ;;
+
+
+
+ let remove_files fw rootless_paths=
+ let s_root = Dfa_root.connectable_to_subpath (root fw) in 
+ let removals_to_be_made = Image.image (
+   fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
+ ) rootless_paths in 
+ let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
+ let fw2 ={
+   fw with 
+   File_watcher_t.watched_files = List.filter (fun (path,_)->
+      not(List.mem path rootless_paths)
+   ) (fw.File_watcher_t.watched_files)  ;
+} in 
+fw2 ;;
+
+    
+
+
+   let rename_files fw renaming_schemes =
+    let s_root = Dfa_root.connectable_to_subpath (root fw)  in 
+    let displacements_to_be_made = Image.image (
+      fun (path1,path2)->" mv "^s_root^(Dfn_rootless.to_line path1)^" "^
+      s_root^(Dfn_rootless.to_line path2)
+    ) renaming_schemes in 
+    let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
+    let fw2 = {
+      fw with 
+      File_watcher_t.watched_files = Image.image (fun pair->
+         let (path,_)=pair in 
+         (match List.assoc_opt path renaming_schemes with
+         Some(new_path) -> 
+              let _ = (
+                if  (Dfn_rootless.to_ending new_path) = Dfa_ending.ml
+                then deal_with_initial_comment_if_needed fw new_path
+              ) in 
+              (new_path,recompute_mtime fw new_path)
+         | None -> pair)
+      ) (fw.File_watcher_t.watched_files)  
+   } in 
+   fw2;;
+
+
+
+
+  let rename_subdirectory_as fw (old_subdir,new_subdir)=
+  let s_root = Dfa_root.connectable_to_subpath (root fw)  in 
+  let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
+  and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
+  let old_full_path = s_root^s_old_subdir 
+  and new_full_path = s_root^s_new_subdir in 
+  let cmd=" mv "^old_full_path^" "^new_full_path in 
+      let _=Unix_command.hardcore_uc cmd in 
+  let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.File_watcher_t.watched_files) in 
+ let fw2 = {
+    fw with
+    File_watcher_t.watched_files = files  ;
+ } in 
+ (fw2,reps);;   
+
+
+        
+               
+        let watched_files fw = fw.File_watcher_t.watched_files ;;               
      
 end;;
 
 
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
-let configuration = Automatic.configuration ;;
+let configuration = Private.configuration ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
 let empty_one = Private.empty_one ;;
 let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
-let of_concrete_object = Automatic.of_concrete_object ;;
+let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -473,7 +421,7 @@ let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-let root = Automatic.root ;;
-let to_concrete_object = Automatic.to_concrete_object ;;
+let root = Private.root ;;
+let to_concrete_object = Private.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
-let watched_files = Automatic.watched_files ;;
+let watched_files = Private.watched_files ;;
