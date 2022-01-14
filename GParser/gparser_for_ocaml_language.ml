@@ -205,6 +205,7 @@ let prsr_for_specialities=Gparser.Chain
    [
      prsr_for_special_names;
      Gparser.Enclosure ("",double_semicolon);
+     Gparser.Constant "module Exit = All_printables ;;";
    ];;   
 
 let index_for_value=1;;
