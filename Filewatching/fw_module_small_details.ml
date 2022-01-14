@@ -98,7 +98,7 @@ let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
    let extra_data = List.filter (
           fun (rl,_) ->
           ((Dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
-      ) ( Fw_with_small_details.Automatic.small_details_in_files fw) in 
+      ) ( Fw_with_small_details.small_details_in_files fw) in 
       compute_details_from_acolytes_list_for_one_module ((Option.filter_and_unpack snd l)@extra_data) ;;     
 
 
