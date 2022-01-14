@@ -82,7 +82,7 @@ module Private = struct
                              destbackupdir destgab Coma_big_constant.github_url [] in 
       let all_modules = Fw_with_githubbing.dep_ordered_modules faraway_cs1 in 
       let faraway_cs2 = Fw_with_githubbing.modern_recompile faraway_cs1 all_modules in 
-      let _=Save_coma_state.save faraway_cs2 in   
+      let _=Fw_with_persisting.save faraway_cs2 in   
       faraway_cs2;;                      
       
 
@@ -100,7 +100,7 @@ module Private = struct
                 (remote_cs.Fw_with_githubbing_t.gitpush_after_backup) 
                   (remote_cs.Fw_with_githubbing_t.github_url)
                   (remote_cs.Fw_with_githubbing_t.encoding_protected_files) in 
-        let _ = Save_coma_state.save remote_cs2 in 
+        let _ = Fw_with_persisting.save remote_cs2 in 
         remote_cs2;;    
         
 
