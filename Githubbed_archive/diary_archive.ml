@@ -1,7 +1,469 @@
 (************************************************************************************************************************
-Snippet 90 : 
+Snippet 93 : 
+************************************************************************************************************************)
+
+(************************************************************************************************************************
+Snippet 92 : Musings on the Szemeredi problem, chapter IV
+************************************************************************************************************************)
+
+let current_width = 3 ;; 
+let max_width = Sz_max_width_t.MW current_width ;;
+let is_admissible = Sz_preliminaries.test_for_admissibility max_width ;;
+let is_not_admissible x= (not(is_admissible x));;
+
+let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
+let i_merge = Ordered.merge Total_ordering.for_integers ;;
+let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
+let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+
+let uncurried_sl  = Memoized.make (fun (n,k)->
+   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Ennig.ennig 1 n) in 
+   List.filter (fun z->List.length z=k) temp1 
+) ;;  
+let sl n k = uncurried_sl (n,k) ;;
+
+let original_minimal_carriers carriers sols =
+  let indexed_carriers = Ennig.index_everything carriers in 
+  let shadow = (
+      fun sol ->
+         Option.filter_and_unpack (
+          fun (idx,carrier) -> 
+             if i_is_included_in carrier sol 
+             then Some idx 
+            else None 
+        ) indexed_carriers 
+  )  in     
+  let all_shadows = Image.image shadow sols in 
+  Ordered_misc.minimal_transversals all_shadows ;;
+ 
+exception Nonunique_set_of_minimal_carriers ;;
+ 
+let set_of_minimal_carriers carriers sols =
+ let version1 = original_minimal_carriers carriers sols in 
+ let m = List.length(List.hd version1) in 
+ let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+ if (List.length version2)<>1
+ then raise Nonunique_set_of_minimal_carriers 
+ else 
+ Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
+ ;;
+ 
+let set_of_minimal_carriers_with_extra carriers sols =
+ try (Some(set_of_minimal_carriers carriers sols),None) with 
+ _ -> (None, Some carriers)   ;;
+
+
+let tag1 = Ennig.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
+
+module ConstraintList = struct 
+
+type t = CL of (int * ((int list) list) ) list ;;
+
+exception Constraint_already_present of (int list) * int ;; 
+
+let helper_for_adding (x,j,cstr_for_xj) cl_content=
+   let rec tempf = (fun (above_j,to_be_treated) ->
+   match to_be_treated with 
+     [] -> List.rev ((j,cstr_for_xj)::above_j) 
+     |k_pair :: others ->
+        let (k,cstr_for_k) = k_pair in 
+        (match Total_ordering.for_integers j k with 
+         Total_ordering_result_t.Lower->tempf(k_pair::above_j,others)
+        |Greater-> 
+          List.rev_append ((j,cstr_for_xj)::above_j) to_be_treated
+        |Equal -> raise (Constraint_already_present(x,j))
+        )
+   ) in
+   tempf([],cl_content) ;;
+
+let add (x,j,cstr_for_xj) (CL cl_content) = 
+    CL (helper_for_adding (x,j,cstr_for_xj) cl_content) ;;
+let at_index (CL cl_content) idx = List.assoc_opt idx cl_content ;;    
+let empty_one = CL [] ;;
+
+end ;;  
+
+
+module Oar = struct 
+
+type t = {
+  solution : (int list) ;
+  constraints : ConstraintList.t ;
+} ;;
+
+let add_constraint (x,j,cstr_for_xj) oar ={
+   oar with constraints = ConstraintList.add (x,j,cstr_for_xj) oar.constraints ;
+} ;;
+
+let extract_constraint oar j = ConstraintList.at_index oar.constraints j ;;
+let extract_solution oar = oar.solution ;;
+
+let of_solution sol = {
+  solution = sol ;
+  constraints = ConstraintList.empty_one ;
+} ;;
+
+end ;;
+
+module Boat = struct 
+
+type t = B of ((int list) * Oar.t) list ;;
+
+let empty_one = B [] ;;
+
+exception Solution_already_present of int list ;; 
+
+let helper_for_solution_adding (x,sol_for_x) boat_content=
+   let rec tempf = (fun (above_x,to_be_treated) ->
+   match to_be_treated with 
+     [] -> let oar_for_x = Oar.of_solution sol_for_x in 
+            List.rev ((x,oar_for_x)::above_x) 
+     |y_pair :: others ->
+        let (y,data_for_y) = y_pair in 
+        (match Total_ordering.silex_for_intlists x y with 
+         Total_ordering_result_t.Lower->tempf(y_pair::above_x,others)
+        |Greater-> 
+          let oar_for_x = Oar.of_solution sol_for_x in 
+          List.rev_append ((x,oar_for_x)::above_x) to_be_treated
+        |Equal -> raise (Solution_already_present x)
+        )
+   ) in
+   tempf([],boat_content) ;;
+
+let add_solution (B l) (x,sol_for_x) = 
+   B(helper_for_solution_adding (x,sol_for_x) l) ;; 
+
+exception Solution_not_found of int list ;;
+
+let helper_for_constraint_adding (x,j,cstr_for_xj) boat_content=
+      let rec tempf = (fun (above_x,to_be_treated) ->
+      match to_be_treated with 
+        [] -> raise(Solution_not_found x)
+        |y_pair :: others -> 
+           let (y,data_for_y) = y_pair in 
+           (match Total_ordering.silex_for_intlists x y with 
+            Total_ordering_result_t.Lower->tempf(y_pair::above_x,others)
+           |Greater-> raise(Solution_not_found x)
+           |Equal -> 
+              let new_data_for_y = Oar.add_constraint (x,j,cstr_for_xj) data_for_y in 
+              List.rev_append above_x ((y,new_data_for_y)::others)
+           )
+      ) in
+      tempf([],boat_content) ;;
+   
+let add_constraint (B l) (x,j,constr_for_xj) = 
+      B(helper_for_constraint_adding (x,j,constr_for_xj) l) ;;   
+
+let get_opt (B l) x = List.assoc_opt x l ;;
+
+end ;;  
+
+
+module ThisBoat = struct 
+
+let main_ref = ref Boat.empty_one ;; 
+
+let add_constraint cstr = (main_ref:= Boat.add_constraint (!main_ref) cstr) ;;
+let add_solution sol = (main_ref:= Boat.add_solution (!main_ref) sol) ;;
+let get_opt x = Boat.get_opt (!main_ref) x ;;
+
+end ;;
+
+exception Missing_constraints of int list * int list;; 
+
+
+let induction_step_in_partial_case old_f (x,treated) = (
+  if List.length(x)<3 
+  then Oar.of_solution(x@treated) 
+  else
+  let (n,ry) = Listennou.ht(List.rev x) in 
+  let y = List.rev ry in 
+  if is_not_admissible(n::treated)
+  then old_f(false,y,treated)  
+  else 
+  let answer_for_y = old_f(true,y,[]) in 
+  let soly = Oar.extract_solution answer_for_y in 
+  let my = List.length soly in 
+  match Oar.extract_constraint answer_for_y my with 
+   None -> Oar.of_solution(soly @ [n]) 
+  |Some (constraints) ->
+    if List.for_all (fun z->is_not_admissible(z@[n])) constraints
+    then Oar.of_solution(soly)
+    else Oar.of_solution(soly@[n]) 
+  ) ;;    
+
+let induction_in_full_case old_f x =
+    match ThisBoat.get_opt x with 
+       Some(old_answer) -> old_answer 
+     | None -> 
+    let sol_for_x = (
+      if List.length(x)<3 
+      then x  
+      else Oar.extract_solution(old_f(false,x,[]))) in 
+    if is_not_admissible sol_for_x 
+    then raise (Missing_constraints (x,sol_for_x))
+    else   
+    let _ = ThisBoat.add_solution (x,sol_for_x) in 
+    Oar.of_solution sol_for_x ;;
+
+let rec helper_for_solving (is_full,x,treated) =
+   if is_full 
+   then induction_in_full_case         helper_for_solving x 
+   else induction_step_in_partial_case helper_for_solving (x,treated)  ;; 
+
+let solve x = helper_for_solving (true,x,[]) ;;   
+
+let ff n = solve (Ennig.ennig 1 n) ;;
+
+ff 1 ;;
+ff 2 ;;
+ThisBoat.add_constraint ([1;2],2,[[1;2]]) ;;
+ff 3 ;;
+ff 4 ;;
+ff 5 ;;
+ThisBoat.add_constraint (Ennig.ennig 1 5,4,[[1;2;4;5]]) ;;
+ff 6 ;;
+
+let z1 = set_of_minimal_carriers [[5;6];[3;5];[1;4]] (sl 8 4);;
+let z1 = set_of_minimal_carriers_with_extra [[5;6];[3;5];[1;4]] (sl 8 4);;
+
+(************************************************************************************************************************
+Snippet 91 : Musings on the 1234 problem, chapter II
+************************************************************************************************************************)
+
+let original_seed =
+   [2; 3; 5; 7; 11; 13; 14; 15; 17; 19; 23; 27; 29; 31; 35; 37; 38] ;;
+   
+   let seed =
+   [2; 3; 5; 6; 7; 10; 11; 13; 14; 15; 17; 19; 22; 23; 26; 27; 29; 30; 31; 33;
+      34; 35; 37; 38] ;;
+   
+   let seed = 
+     [2; 3; 5; 6; 7; 9; 10; 11; 13; 14; 15; 17; 19; 21; 22; 23; 25; 26; 27; 29;
+      30; 31; 33; 34; 35; 37; 38] ;;
+   
+   let seed =    
+   [2; 3; 5; 6; 7; 9; 10; 11; 13; 14; 15; 17; 18; 19; 21; 22; 23; 25; 26; 27;
+      29; 30; 31; 33; 34; 35; 37; 38] ;;
+   
+   let oi = Total_ordering.for_integers ;;
+   let oi2 = Total_ordering.product oi oi ;; 
+   
+   let reorder pairs =
+      let temp1 = Listennou.partition_according_to_fst pairs in 
+      let temp2 = Image.image (fun (x,ll)->
+          (x,Ordered.safe_set oi2 (List.flatten ll))
+         ) temp1 in 
+      let temp3 = Ordered.sort Total_ordering.for_integers (Image.image fst temp2) in 
+      Image.image (fun x->(x,List.assoc x temp2)) temp3 ;;
+   
+   let new_elts l=
+     let temp1 = Uple.inclusive_list_of_pairs l in 
+     let temp2 = Option.filter_and_unpack (
+       fun (a,b)->
+         if not(Ordered.mem oi (a+b) l) then None else
+         let c= a*b  in 
+         if Ordered.mem oi c l then None else Some(c,[a,b])
+     ) temp1 in 
+     reorder temp2 ;;
+   
+   let generic_push (old_state,old_explanations)=
+      let temp1 = new_elts old_state in 
+      let temp2 = Image.image fst temp1 in 
+      ((Ordered.merge oi old_state temp2,old_explanations@temp1),temp1) ;;
+   
+   let walker = ref (seed,[]) ;;
+   
+   let push () = 
+      let (new_state,explanations) = generic_push (!walker) in 
+      let _ = (walker := new_state) in 
+      explanations ;;
+   
+   let z1 = push () ;;
+   let level2 = Image.image fst z1 ;;
+   let z2 = List.filter (fun x->x<=38) level2 ;;
+   let new_seed = Ordered.merge oi seed z2 ;;
+   
+   
+   
+
+(************************************************************************************************************************
+Snippet 90 : Musings on the 1234 problem
 ************************************************************************************************************************)
 open Needed_values ;;
+
+type sensitive_t = {
+   unsorted : (int * (int * int) list) list;
+   sorted : int list ;
+}  ;;  
+
+type increase_t = 
+    Inertia of int 
+   |Forced of int * ((int*int) list)
+   |Redundancy of int * ((int*int) list) 
+   |Pass of int * (int list);;
+
+
+let oi = Total_ordering.for_integers ;;
+let oi2 = Total_ordering.product oi oi ;; 
+
+let reorder pairs =
+   let temp1 = Listennou.partition_according_to_fst pairs in 
+   let temp2 = Image.image (fun (x,ll)->
+       (x,Ordered.safe_set oi2 (List.flatten ll))
+      ) temp1 in 
+   let temp3 = Ordered.sort Total_ordering.for_integers (Image.image fst temp2) in 
+   Image.image (fun x->(x,List.assoc x temp2)) temp3 ;;
+
+exception Sore_wound of int list * int * sensitive_t;;
+
+let special_obstructions =
+   [
+     [2;3;6;8;9]; (* because of [3; 6; 9; 12=2*6] *)
+   ]
+   @
+   (Image.image (fun j->
+      [2;j;2*j;2*j+2;3*j] (* because of [j; 2*j; 3*j; 4*j=2*2*j] *)
+      
+      ) [ 7;11;15]) ;;
+
+let find_initial_obstruction_opt sorted_l =
+     let a =List.hd sorted_l and b = List.hd(List.rev sorted_l) in 
+     match Option.seek (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
+        (Ennig.ennig a (b/4)) with 
+     None -> Option.seek (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
+     |Some(j) -> Some [j;2*j;3*j;4*j];;   
+
+
+
+module Sensitive = struct 
+ 
+   let check_before_adding x stv = 
+      let new_sorted = Ordered.insert oi x stv.sorted in   
+      match  find_initial_obstruction_opt new_sorted with 
+      None -> (None,Some new_sorted) 
+      |Some obstr -> (Some obstr,None) ;;
+
+   let add (x,data_for_x) stv = 
+     let (opt_bad,opt_good) = check_before_adding x stv in 
+     match opt_bad with 
+     Some obstr ->  raise( Sore_wound(obstr,x,stv))
+      |None ->
+     let new_sorted = Option.unpack opt_good in   
+   {
+      unsorted = (x,data_for_x) :: stv.unsorted;
+      sorted = new_sorted ;
+   }   ;;
+
+   let coming_from_last_element stv last_elt =
+       let temp1 = Option.filter_and_unpack (fun (x,_)-> 
+         let y= last_elt -x in 
+         if (x>1)&&(x<=y)&&(List.exists (fun (z,_)->z=y) stv.unsorted) 
+         then Some(x*y,[x,y])
+         else None   
+         ) stv.unsorted in 
+         reorder temp1 ;; 
+    
+   let default_increase stv forbidden_indices =
+         let part = Ordered.merge oi stv.sorted (Image.image fst forbidden_indices) in 
+         let max_val = (if part=[] then 1 else 1+(List.hd(List.rev part))) in 
+         let whole = Ennig.ennig 1 max_val in  
+         let possibilities = Ordered.setminus oi whole part in 
+         List.hd possibilities ;;   
+   
+   let empty_one = {unsorted =[] ; sorted =[]} ;;      
+
+   let has_index idx stv= Ordered.mem oi idx stv.sorted ;;
+
+   let incorporate_redundancy (idx,new_decompositions) stv = 
+      let new_unsorted = (Image.image (
+                  fun old_pair ->
+                     let (z,ll) = old_pair in 
+                     if z = idx 
+                     then (z,ll@new_decompositions)
+                     else old_pair   
+               ) stv.unsorted ) in 
+      {stv with unsorted = new_unsorted ;};;
+
+
+end ;;   
+
+
+module Increase = struct 
+
+   type t = increase_t ;;
+
+   
+
+   let string_of_int_pair (x,y)= "("^(string_of_int x)^","^(string_of_int y)^")";;
+   let string_of_int_list l =
+      "[" ^ (String.concat ";" (Image.image string_of_int l)) ^ "]" ;;
+   let string_of_ipair_list l =
+      "[" ^ (String.concat ";" (Image.image string_of_int_pair l)) ^ "]" ;;
+   
+   let message = function 
+      Inertia (new_val) -> (string_of_int new_val)^" added by inertia"
+      |Forced(new_val,l) -> (string_of_int new_val)^" forced by "^(string_of_ipair_list l)
+      |Redundancy(new_val,l) -> "Redundancy : "^(string_of_int new_val)^", with "^(string_of_ipair_list l) 
+      |Pass(new_val,l) -> (string_of_int new_val)^" refused because of "^(string_of_int_list l);;
+   
+   let next (treated,forbidden_indices,to_be_treated)=
+      match to_be_treated with 
+      [] -> let new_val = Sensitive.default_increase treated forbidden_indices in 
+            let (opt_bad,opt_good) = Sensitive.check_before_adding new_val treated in 
+            (match opt_bad with 
+            Some obstr -> (Pass(new_val,obstr),(treated,forbidden_indices@[new_val,obstr],[])) 
+            |None ->   
+             (Inertia(new_val),(Sensitive.add (new_val,[]) treated,forbidden_indices,
+                     Sensitive.coming_from_last_element treated new_val))) 
+      |(new_x,ll) :: others ->
+          if Sensitive.has_index new_x treated 
+          then let treated2 = Sensitive.incorporate_redundancy (new_x,ll)  treated in 
+               (Redundancy(new_x,ll),(treated2,forbidden_indices,others))
+          else let addenda = Sensitive.coming_from_last_element treated new_x in 
+               (Forced(new_x,ll),(Sensitive.add (new_x,ll) treated,
+               forbidden_indices,reorder(others@addenda)));;            
+
+end ;;   
+
+   
+
+let walker = ref (Sensitive.empty_one,[],[]) ;; 
+
+let push () =
+    let (incr,next_state) = Increase.next (!walker) in 
+    let msg = (Increase.message incr)^"\n" in 
+    let _ = (print_string msg;flush stdout) in 
+    let _ = (walker:=next_state) in 
+    next_state ;;
+
+for j= 1 to 1000 do let _ = push () in () done ;;
+
+let (a,b,c) = (!walker) ;;
+
+let d = List.rev (Option.filter_and_unpack (fun (x,l)->
+    if l=[] then Some x else None) a.unsorted);;
+
+
+(*
+walker:=([],[]) ;;
+for j= 1 to 10 do let _ = push () in () done ;;
+let z1 = fst (!walker) ;;
+let z2 = Option.filter_and_unpack 
+(fun (x,ll)->if ll=[] then Some x else None) z1;;
+let z3 = Ordered.safe_set oi z2 ;;
+let z4 = Basic.delta_list z3 ;;
+let meas n = let q = (n/3) and r=(n mod 3) in 2*q+r ;;
+let z5 = Image.image meas z3 ;;
+let z6 = Basic.delta_list z5 ;;
+
+walker:=([],[]) ;;
+*)
 
 
 (************************************************************************************************************************

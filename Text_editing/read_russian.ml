@@ -12,6 +12,7 @@ let ref_for_main_list = ref [
    "\""; (* ascii 34 *)
    "(";  (* ascii 40 *)
    ")";  (* ascii 41 *)
+   "*";  (* ascii 42 *)
    ",";  (* ascii 44 *)
    "-";  (* ascii 45 *)
    ".";  (* ascii 44 *)
