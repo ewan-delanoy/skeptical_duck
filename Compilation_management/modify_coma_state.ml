@@ -178,9 +178,16 @@ end ;;
    
    let register_several cs_ref lines =
       let rootless_paths = Image.image Dfn_rootless.of_line lines in 
-      Reference.register_rootless_paths cs_ref  rootless_paths ;;
+      let _ = Reference.register_rootless_paths cs_ref  rootless_paths in 
+      let number_of_modules = List.length(Fw_with_githubbing.all_endinglesses (!cs_ref)) in 
+      let msg = "There are now "^(string_of_int number_of_modules)^" defined " in 
+      (print_string msg;flush stdout) ;;
    
-   let register_one cs_ref line = register_several cs_ref [line];;
+   let register_one cs_ref line = 
+      let _ = register_several cs_ref [line] in 
+      let number_of_modules = List.length(Fw_with_githubbing.all_endinglesses (!cs_ref)) in 
+      let msg = "There are now "^(string_of_int number_of_modules)^" defined " in 
+      (print_string msg;flush stdout) ;;
    
    let relocate_module_to cs_ref old_module_name new_subdir=
        let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
