@@ -18,5 +18,7 @@ type instance_t = {
 type t = {
    fields : field_t list ;
    instances : instance_t list ;
+   interface_file : Absolute_path.t ;
+   implementation_file : Absolute_path.t ;
 } ;;
 
