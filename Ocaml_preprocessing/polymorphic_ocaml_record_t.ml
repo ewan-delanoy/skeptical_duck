@@ -16,6 +16,7 @@ type instance_t = {
 } ;;
 
 type t = {
+   main_name : string ;
    fields : field_t list ;
    instances : instance_t list ;
    interface_file : Absolute_path.t ;

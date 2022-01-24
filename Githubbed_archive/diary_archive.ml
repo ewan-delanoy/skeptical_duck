@@ -1,6 +1,44 @@
 (************************************************************************************************************************
-Snippet 94 : 
+Snippet 95 : 
 ************************************************************************************************************************)
+
+(************************************************************************************************************************
+Snippet 94 : Visualize hierarchy of types in a poly-record class
+************************************************************************************************************************)
+
+
+type t1 = Fw_configuration_t.t = {
+   root : Dfa_root_t.t;
+   ignored_subdirectories : Dfa_subdirectory_t.t list;
+   ignored_files : Dfn_rootless_t.t list;
+};;
+type t2 = File_watcher_t.t = {
+   configuration : Fw_configuration_t.t ;
+   watched_files : (Dfn_rootless_t.t * string) list;
+};;
+type t3 = Fw_with_archives_t.t = {
+   parent : File_watcher_t.t;
+   subdirs_for_archived_mlx_files : Dfa_subdirectory_t.t list;
+ };;
+type t4 = Fw_with_small_details_t.t = {
+   parent : Fw_with_archives_t.t;
+   small_details_in_files : (Dfn_rootless_t.t * Fw_file_small_details_t.t) list;
+ };;
+type t5 = Fw_with_dependencies_t.t = {
+   parent : Fw_with_small_details_t.t;
+   index_for_caching : Fw_instance_index_t.t * Fw_state_index_t.t;
+ };;
+type t6 = Fw_with_batch_compilation_t.t = {
+   parent : Fw_with_dependencies_t.t;
+   last_compilation_result_for_module : (Dfa_module_t.t * bool) list;
+ };;
+type t7 = Fw_with_githubbing_t.t =  {
+   parent : Fw_with_batch_compilation_t.t;
+   dir_for_backup : Dfa_root_t.t;
+   gitpush_after_backup : bool;
+   github_url : string;
+   encoding_protected_files : (Dfn_rootless_t.t * Dfn_rootless_t.t) list;
+ };;
 
 (************************************************************************************************************************
 Snippet 93 : Musings on the Szemeredi problem, chapter V
