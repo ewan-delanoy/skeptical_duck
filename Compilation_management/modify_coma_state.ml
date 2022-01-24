@@ -162,7 +162,7 @@ end ;;
    
    let display_number_of_modules cs_ref =
       let number_of_modules = List.length(Fw_with_githubbing.all_endinglesses (!cs_ref)) in 
-      let msg = "\nThere are now "^(string_of_int number_of_modules)^" defined.\n" in 
+      let msg = "\nThere are now "^(string_of_int number_of_modules)^" modules defined.\n" in 
       (print_string msg;flush stdout) ;; 
 
    let forget cs_ref data = 
