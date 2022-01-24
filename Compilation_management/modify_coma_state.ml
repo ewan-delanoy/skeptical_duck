@@ -160,6 +160,11 @@ end ;;
    
    module Syntactic_sugar = struct 
    
+   let display_number_of_modules cs_ref =
+      let number_of_modules = List.length(Fw_with_githubbing.all_endinglesses (!cs_ref)) in 
+      let msg = "\nThere are now "^(string_of_int number_of_modules)^" defined.\n" in 
+      (print_string msg;flush stdout) ;; 
+
    let forget cs_ref data = 
       let ref_for_modules = ref []
       and ref_for_paths = ref [] in 
@@ -173,15 +178,13 @@ end ;;
       and all_modules =  List.rev(!ref_for_modules) in 
       let _=(if all_paths=[] then () else Reference.forget_nonmodular_rootlesses cs_ref all_paths) in 
       let _=(if all_modules=[] then () else Reference.forget_modules cs_ref all_modules) in 
-      ();;
+      display_number_of_modules cs_ref;;
    
    
    let register_several cs_ref lines =
       let rootless_paths = Image.image Dfn_rootless.of_line lines in 
       let _ = Reference.register_rootless_paths cs_ref  rootless_paths in 
-      let number_of_modules = List.length(Fw_with_githubbing.all_endinglesses (!cs_ref)) in 
-      let msg = "\nThere are now "^(string_of_int number_of_modules)^" defined.\n" in 
-      (print_string msg;flush stdout) ;;
+      display_number_of_modules cs_ref ;;
    
    let register_one cs_ref line = 
       register_several cs_ref [line]  ;;
