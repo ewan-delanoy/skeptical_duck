@@ -1,6 +1,484 @@
 (************************************************************************************************************************
-Snippet 93 : 
+Snippet 94 : 
 ************************************************************************************************************************)
+
+(************************************************************************************************************************
+Snippet 93 : Musings on the Szemeredi problem, chapter V
+************************************************************************************************************************)
+
+let current_width = 3 ;; 
+let max_width = Sz_max_width_t.MW current_width ;;
+let is_admissible = Sz_preliminaries.test_for_admissibility max_width ;;
+let is_not_admissible x= (not(is_admissible x));;
+let uncurried_sl  = Memoized.make (fun (x,k)->
+  let temp1 = Sz_preliminaries.restricted_power_set (max_width,x) in 
+  List.filter (fun z->List.length z=k) temp1 
+) ;;  
+let sl x k = uncurried_sl (x,k) ;;
+let isl n k = uncurried_sl (Ennig.ennig 1 n,k) ;; 
+let meas = Sz_precomputed.measure max_width ;;
+
+
+let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
+let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
+let i_merge = Ordered.merge Total_ordering.for_integers ;;
+let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
+let i_fold_intersect = Ordered.fold_intersect Total_ordering.for_integers ;;
+let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
+
+
+
+let original_minimal_carriers carriers sols =
+  let indexed_carriers = Ennig.index_everything carriers in 
+  let shadow = (
+      fun sol ->
+         Option.filter_and_unpack (
+          fun (idx,carrier) -> 
+             if i_is_included_in carrier sol 
+             then Some idx 
+            else None 
+        ) indexed_carriers 
+  )  in     
+  let all_shadows = Image.image shadow sols in 
+  Ordered_misc.minimal_transversals all_shadows ;;
+ 
+let u_product sheaf1 sheaf2 = 
+    let temp1 = Cartesian.product sheaf1 sheaf2 in 
+    let temp2 = Image.image (fun (x,y)->i_merge x y) temp1 in 
+    let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+    il_sort temp3 ;;
+
+ 
+let fold_u_product = function 
+  [] -> []
+  | sheaf :: other_sheaves -> List.fold_left  u_product sheaf other_sheaves ;;   
+   
+
+exception Nonunique_set_of_minimal_carriers of int list list list ;;
+ 
+let set_of_minimal_carriers carriers sols =
+ let version1 = original_minimal_carriers carriers sols in 
+ let m = List.length(List.hd version1) in 
+ let version2 = List.filter (fun x->List.length(x)=m) version1 in 
+ let visualize = Image.image (fun idx->List.nth carriers (idx-1)) in 
+ let version3 = Image.image visualize version2 in 
+ if (List.length version3)<>1
+ then raise (Nonunique_set_of_minimal_carriers version3)
+ else List.hd version3;;
+ 
+let set_of_minimal_carriers_with_extra carriers sols =
+ try (Some(set_of_minimal_carriers carriers sols),None) with 
+ Nonunique_set_of_minimal_carriers(nonunique) -> (None, Some nonunique)   ;;
+
+let remains_of_obstructions_in_positing_case x=
+  Option.filter_and_unpack (fun j->
+      let k=(current_width+1)-j in 
+      if x>2*k 
+      then  Some [x-2*k;x-k]
+      else None
+  ) (Ennig.ennig 1 current_width) ;;
+
+  
+
+let analize_sheaf1 (left,bound,right) =
+    let m = List.hd(List.rev right) in 
+    let carriers = Sz_preliminaries.force_subset_in_interval    
+      max_width right (1,m) in 
+      set_of_minimal_carriers_with_extra carriers (sl left bound);;
+
+let ref_for_missing_sheaves = ref [] ;;
+
+exception Troublesome_aftersheaf of int list * int * int list * (int list list list);;
+exception Missing_sheaves of (int list * int *  (int list list)) list ;;
+  
+let analize_sheaf2 (left,bound,right) =
+  let (good_opt,bad_opt) = analize_sheaf1(left,bound,right) in 
+  (
+    match good_opt with 
+     None -> raise(Troublesome_aftersheaf(left,bound,right,Option.unpack bad_opt)) 
+    |Some usual -> 
+      let _ = (ref_for_missing_sheaves:=[left,bound,usual]) in
+      raise(Missing_sheaves [left,bound,usual])
+  ) ;;    
+
+let carrier_is_stronger_than_another carrier1 carrier2 =
+   List.for_all (fun c1 -> 
+    List.exists (fun c2 -> i_is_included_in c2 c1) carrier2) carrier1 ;;
+
+exception Two_carriers_exn of 
+  (int list) * int * (int list list) * (int list list) * (int list list list);;
+
+let add_carrier_to_another (x,bound) carrier old_carrier =
+   if carrier_is_stronger_than_another carrier old_carrier 
+   then [carrier]
+   else 
+   let carrier2 = u_product carrier old_carrier in 
+   let (good_opt,bad_opt) = set_of_minimal_carriers_with_extra carrier2 (sl x bound) in 
+   if good_opt<>None
+   then [Option.unpack good_opt]
+   else raise (Two_carriers_exn(x,bound,carrier,old_carrier,Option.unpack bad_opt));; 
+
+exception Add_carrier_exn of (int list) * int * (int list list) * (int list list list) ;;
+
+let add_carrier (x,bound) carrier old_list = 
+   match List.length old_list with 
+    0 -> [carrier] 
+   | 1 -> add_carrier_to_another (x,bound) carrier (List.hd old_list) 
+   | _ -> raise (Add_carrier_exn(x,bound,carrier,old_list));;
+
+
+let hashtbl_for_sheaves = ((Hashtbl.create 100): 
+   ((int list) * int, int list list list) Hashtbl.t) ;;
+
+
+let add_sheaf (x,bound) carrier =
+  let new_val = (
+   match Hashtbl.find_opt hashtbl_for_sheaves (x,bound)  with 
+    Some (old_val) -> add_carrier (x,bound) carrier  old_val
+   | None -> [carrier]
+   ) in 
+   Hashtbl.replace hashtbl_for_sheaves (x,bound) new_val ;;
+   
+let consult_sheaves (left,bound,right) =
+  match Hashtbl.find_opt hashtbl_for_sheaves (left,bound)  with 
+     None -> None
+   | Some (sheaves) -> 
+     Option.seek (fun sheaf->
+       List.for_all (fun z->is_not_admissible (z@right)) sheaf
+      ) sheaves
+  ;;        
+
+let sheaf_compare new_ll old_ll  =
+    List.for_all (fun old_l-> List.exists 
+    (fun new_l->i_is_included_in new_l old_l) new_ll ) old_ll  ;;
+
+let sheaf_compare2 new_ll old_lls =
+    List.exists (sheaf_compare new_ll) old_lls ;;
+       
+let sheaf_is_not_already_known_by_sheaves_hashtbl (left,bound,right) = 
+  match Hashtbl.find_opt hashtbl_for_sheaves (left,bound)  with 
+  None -> true
+| Some (old_sheaves)  -> not(sheaf_compare2 right old_sheaves)  ;;       
+
+let hashtbl_for_pre_measure = ((Hashtbl.create 100) :
+(int list ,int list) Hashtbl.t) ;;
+
+let sheaf_is_not_already_known_by_measures_hashtbl (left,bound,right) = 
+  match Hashtbl.find_opt hashtbl_for_pre_measure left  with 
+  None -> if is_admissible left 
+          then (List.length left) >= bound
+          else true
+| Some (old_sol)  -> (List.length old_sol) >= bound  ;;   
+
+let sheaf_is_not_already_known triple = 
+   if sheaf_is_not_already_known_by_measures_hashtbl triple 
+   then  sheaf_is_not_already_known_by_sheaves_hashtbl triple 
+   else false ;; 
+
+exception Borderline_case of ((int list) * int * ((int list) list)) list ;;
+
+let commonest_decomposition (x,bound,carriers) =
+    let (m,ry) = Listennou.ht(List.rev x) in 
+    let y = List.rev ry in 
+   let rem_obstr1 = remains_of_obstructions_in_positing_case m 
+   and (pre_rem_obstr3,rem_obstr2) = List.partition (fun z->List.mem m z) carriers in    
+   let rem_obstr3 = Image.image (i_outsert m) pre_rem_obstr3 in       
+   let temp = (if List.mem [m] carriers then [] else 
+    [
+     (y,bound-1,il_fold_merge [rem_obstr1;rem_obstr2;rem_obstr3]);
+    ])
+   @ 
+    [(y,bound,rem_obstr2)] in 
+  let (cleaned_temp,dirty_temp) = List.partition sheaf_is_not_already_known_by_measures_hashtbl temp in    
+  let (temp_good,temp_bad) = List.partition (fun (_,_,obstr2)->obstr2<>[]) cleaned_temp in   
+  if temp_bad <> [] 
+  then raise(Borderline_case(temp_bad)) 
+  else    
+  let temp3 = Image.image (
+    fun tr3 ->
+       let (y3,bound3,obstr3) = tr3 in 
+       (tr3,set_of_minimal_carriers_with_extra obstr3 (sl y3 bound3))
+  ) temp_good in 
+  let (temp3_good,temp3_bad) = List.partition (fun 
+    (_,(good_opt,bad_opt)) -> good_opt <> None
+  ) temp3 in 
+  (
+    Image.image (fun ((y,bound,_),(good_opt,bad_opt))->(y,bound,Option.unpack good_opt) ) temp3_good,
+    Image.image (fun (tr,(good_opt,bad_opt))->tr ) temp3_bad,
+    dirty_temp
+  );;   
+
+
+
+let enhanced_commonest_decomposition triple =
+  let (temp1,temp2,temp3) = commonest_decomposition triple in 
+  (List.filter sheaf_is_not_already_known temp1, 
+   List.filter sheaf_is_not_already_known temp2,
+   temp3);;   
+
+exception Add_sheaf_carefully_exn of (int list * int * int list list) list ;;
+
+let add_sheaf_carefully (x,bound) carrier =
+  let (temp1,temp2,_) = enhanced_commonest_decomposition (x,bound,carrier) in 
+  let temp3 = temp1 @ temp2 in 
+  if temp3 <> []
+  then raise(Add_sheaf_carefully_exn(temp3))     
+  else add_sheaf (x,bound) carrier ;;
+
+let consult_sheaves_and_double_check (left,bound,right) =
+  match consult_sheaves (left,bound,right) with 
+    Some obstr -> Some obstr 
+   | None ->
+     let sols = sl left bound in 
+     if List.for_all (fun z->is_not_admissible (z@right)) sols
+     then analize_sheaf2(left,bound,right) 
+     else None ;;
+     
+
+
+let analize_missing_sheaves ()=
+  let triple = List.hd(!ref_for_missing_sheaves) in 
+  let (temp1,temp2,temp3) = enhanced_commonest_decomposition triple in 
+  let _= (ref_for_missing_sheaves:=temp1@temp2) in 
+  (temp1,temp2,temp3);;
+
+let default_string_of_intlist l=  
+  "["^(String.concat ";" 
+  (Image.image string_of_int l)
+  )^"]";;  
+
+  let ennified_string_of_intlist l=
+    let a = List.hd(l) and b = List.hd(List.rev l) in 
+    if (l=Ennig.ennig a b)
+    then  "Ennig.ennig "^(string_of_int a)^" "^(string_of_int b)    
+  else default_string_of_intlist l;;
+
+let string_of_intlistlist ll=  
+"["^(String.concat ";" 
+(Image.image default_string_of_intlist ll)
+)^"]";;
+
+let message_for_newcomer (x,bound,carriers) =
+ "asc ("^(ennified_string_of_intlist x)^","^(string_of_int bound)^") "^
+  (string_of_intlistlist carriers)^" ;;" 
+ ;;
+
+let message_for_newcomers l= 
+  "\n\n\n"^(String.concat "\n" 
+  (Image.image message_for_newcomer l)
+  )^"\n\n\n";;
+
+let analize_repeatedly initial_triple =
+   let triple1 = enhanced_commonest_decomposition initial_triple in  
+   let (bt1,bt2,_) = triple1 in 
+   if (bt1,bt2) = ([],[]) 
+   then let msg = "\n\n\n"^(message_for_newcomer initial_triple)^"\n\n\n" in 
+        let _= (print_string msg;flush stdout) in 
+        (initial_triple,triple1)
+   else  
+    let rec tempf = (fun (t1,t2,t3)->
+      let (nt1,nt2,nt3) = enhanced_commonest_decomposition (List.hd(t1@t2)) in 
+      if (nt1,nt2) = ([],[])
+      then let msg = message_for_newcomers (t1@t2) in 
+           let _= (print_string msg;flush stdout) in 
+           (initial_triple,(t1,t2,t3))  
+      else tempf(nt1,nt2,nt3)
+    ) in 
+    tempf triple1 ;;  
+    
+
+let hashtbl_for_solving = ((Hashtbl.create 100) :
+(int list * int * int list, int list) Hashtbl.t) ;;
+
+
+
+let solve_in_easy_case (left,bound,right) = 
+  let p = List.length left in 
+  if p < bound 
+  then Some None 
+  else 
+  if p = bound 
+  then let unique = left @ right in 
+       if is_admissible unique 
+       then Some (Some unique)
+       else Some None  
+  else None ;;
+
+let quick_way_out1 (left,bound,right) =
+    if bound<>List.length(left) then false else 
+    not(is_admissible(left@right)) ;;  
+
+let pre_measure_arg whole              = (false,whole,0,[]) ;;
+let solve_arg   (left,bound,right) = (true,left,bound,right) ;;
+let pre_measure_ret m = (m,None) ;;
+let solve_ret opt= ([],opt) ;;
+
+
+let induction_in_solve_case old_f triple = 
+  match solve_in_easy_case triple with 
+   Some easy_answer -> solve_ret easy_answer 
+   | None ->
+  (
+   match Hashtbl.find_opt hashtbl_for_solving triple with 
+   Some old_answer -> solve_ret (Some old_answer) 
+   | None ->
+    let old_solve = (fun tr -> snd (old_f(solve_arg(tr)))) in 
+    let opt_sol = (
+      let (left,bound,right) = triple in  
+      let (m,ry) = Listennou.ht(List.rev left) in 
+      let y = List.rev ry in 
+      if is_not_admissible (m::right)
+      then old_solve(y,bound,right)
+      else     
+      let temp1 = [(y,bound-1,m::right);(y,bound,right)] in 
+      let my = List.length(fst (old_f (pre_measure_arg(y)))) in 
+      let temp2 = List.filter (fun (y2,bound2,_)->bound2<=my) temp1 in 
+      let temp3 = List.filter (fun tr->not(quick_way_out1 tr)) temp2 in 
+      let temp4 = List.filter (
+          fun tr -> (consult_sheaves_and_double_check tr) = None
+      )  temp3 in  
+      let temp5 = Option.filter_and_unpack old_solve temp4 in 
+      if temp5 = []
+      then None  
+      else Some(List.hd(List.rev temp5))
+    ) in 
+    let _ = (if opt_sol <>None 
+      then Hashtbl.add hashtbl_for_solving triple (Option.unpack opt_sol)) in 
+    solve_ret opt_sol
+  );;
+
+let induction_in_pre_measure_case old_f whole = 
+   if is_admissible whole 
+   then pre_measure_ret(whole) 
+   else 
+   match Hashtbl.find_opt hashtbl_for_pre_measure whole with 
+    Some old_answer -> pre_measure_ret(old_answer) 
+   |None -> 
+   let new_answer = (
+    let (m,ry) = Listennou.ht(List.rev whole) in 
+   let y = List.rev ry in  
+   let sy = fst(old_f(false,y,0,[])) in 
+   if is_admissible(sy@[m])
+   then  pre_measure_ret(sy@[m])
+   else   
+   (
+     match snd(old_f(true,y,List.length sy,[m])) with 
+     None -> pre_measure_ret(sy)
+     |Some fitting_one -> pre_measure_ret(fitting_one@[m])
+   )) in 
+  let _ = Hashtbl.add hashtbl_for_pre_measure whole (fst new_answer) in 
+  new_answer;;
+   
+
+let rec main_iterator (case,left,bound,right) =
+  if case 
+  then induction_in_solve_case main_iterator (left,bound,right) 
+  else induction_in_pre_measure_case main_iterator left ;;  
+
+
+let pre_measure whole            = fst(main_iterator(pre_measure_arg(whole))) ;; 
+let solve (left,bound,right) = snd(main_iterator(solve_arg(left,bound,right))) ;;  
+
+let clear_hashtables () = (
+    Hashtbl.clear hashtbl_for_sheaves  ;
+    Hashtbl.clear hashtbl_for_solving  ;
+    Hashtbl.clear hashtbl_for_pre_measure  ;
+) ;;
+
+exception FF_exn of (( int list * int * int list list) *
+((int list * int * int list list) list *
+(int list * int * int list list) list *
+(int list * int * int list list) list)) ;;
+
+let ff n = 
+  try pre_measure (Ennig.ennig 1 n) with 
+  Missing_sheaves(l) ->
+    let (t1,t2,t3) = List.hd l in 
+    let (a,b) = analize_repeatedly(t1,t2,t3) in 
+    raise(FF_exn(a,b)) ;;
+
+
+let ams = analize_missing_sheaves;;
+let asc = add_sheaf_carefully ;;
+
+let comp1 = Ennig.doyle ff 1 5 ;;
+
+asc (Ennig.ennig 1 4,3) [[4]] ;; 
+ff 6;;
+asc (Ennig.ennig 1 1,1) [[1]] ;; 
+asc (Ennig.ennig 1 2,1) [[1];[2]] ;; 
+asc (Ennig.ennig 1 2,2) [[1]] ;; 
+asc (Ennig.ennig 1 3,2) [[1];[2;3]] ;;
+asc (Ennig.ennig 1 4,3) [[1;4]] ;; 
+asc (Ennig.ennig 1 5,3) [[5];[1;4]] ;;
+asc (Ennig.ennig 1 5,4) [[1;4]] ;;
+ff 7;;
+asc (Ennig.ennig 1 2,2) [[2]] ;; 
+asc (Ennig.ennig 1 3,1) [[1];[2];[3]] ;;
+asc (Ennig.ennig 1 3,2) [[2];[1;3]] ;;
+asc (Ennig.ennig 1 4,2) [[2];[1;3];[1;4];[3;4]] ;;
+asc (Ennig.ennig 1 4,3) [[2];[1;3];[3;4]] ;;
+asc (Ennig.ennig 1 5,3) [[1;4];[2;5]] ;;
+asc (Ennig.ennig 1 5,4) [[2;5]] ;;
+asc (Ennig.ennig 1 6,3) [[6];[1;4];[2;5]] ;;
+asc (Ennig.ennig 1 6,4) [[2;5];[4;6]] ;;
+Ennig.doyle ff 8 10;;
+asc (Ennig.ennig 1 9,5) [[9]] ;; 
+Ennig.doyle ff 11 13;;
+asc (Ennig.ennig 1 12,7) [[12]] ;; 
+ff 14;;
+asc (Ennig.ennig 1 10,5) [[9];[10]] ;;
+asc (Ennig.ennig 1 10,6) [[9]] ;;
+asc (Ennig.ennig 1 11,6) [[9];[10;11]] ;;
+asc (Ennig.ennig 1 12,7) [[9;12]] ;;
+asc (Ennig.ennig 1 13,7) [[13];[9;12]] ;;
+asc (Ennig.ennig 1 13,8) [[9;12]] ;;
+ff 15;;
+asc (Ennig.ennig 1 10,6) [[10]] ;;
+asc (Ennig.ennig 1 11,5) [[9];[10];[11]] ;;
+asc (Ennig.ennig 1 11,6) [[10];[9;11]] ;;
+asc (Ennig.ennig 1 12,6) [[10];[9;11];[9;12];[11;12]] ;;
+asc (Ennig.ennig 1 12,7) [[10];[7;10];[9;11];[11;12]] ;;
+asc (Ennig.ennig 1 13,7) [[9;12];[10;13]] ;;
+asc (Ennig.ennig 1 13,8) [[10;13]] ;;
+asc (Ennig.ennig 1 14,7) [[14];[9;12];[10;13]] ;;
+asc (Ennig.ennig 1 14,8) [[10;13];[12;14]] ;;
+Ennig.doyle ff 16 18;;
+asc (Ennig.ennig 1 17,9) [[17]] ;;
+Ennig.doyle ff 19 21;;
+asc (Ennig.ennig 1 20,11) [[20]] ;;
+
+(*
+
+
+let l =  [[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13], 7, [[13]; [9; 12]]] ;;
+let (bt1,bt2,bt3) = List.hd l ;;
+let (a,b) = analize_repeatedly(bt1,bt2,bt3) ;;
+let triple0 = enhanced_commonest_decomposition (bt1,bt2,bt3) ;;    
+
+let analize_repeatedly (x,bound,carriers) =
+   let triple0 = enhanced_commonest_decomposition (x,bound,carriers) in  
+    let rec tempf = (fun (t1,t2,t3)->
+      let (nt1,nt2,nt3) = enhanced_commonest_decomposition (List.hd(t1@t2)) in 
+      if (nt1,nt2) = ([],[])
+      then let msg = message_for_newcomers (t1@t2) in 
+           let _= (print_string msg;flush stdout) in 
+           (triple0,(t1,t2,t3))  
+      else tempf(nt1,nt2,nt3)
+    ) in 
+    tempf triple0 ;;  
+
+
+asc (Ennig.ennig 1 10,5) [[9];[10]] ;; 
+asc (Ennig.ennig 1 5,4) [[2;5]] ;;
+
+let g1 = Hashtbl.find hashtbl_for_sheaves (Ennig.ennig 1 4,3) ;;
+asc (Ennig.ennig 1 4, 3)  [[2]; [1; 3]; [3; 4]] ;;
+
+*)
 
 (************************************************************************************************************************
 Snippet 92 : Musings on the Szemeredi problem, chapter IV
