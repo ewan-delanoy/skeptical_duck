@@ -57,6 +57,14 @@ module Polymorphic_ocaml_record_t = struct
        and file = por.Polymorphic_ocaml_record_t.type_signature_file in 
        Io.overwrite_with file text ;;
    
+   
+   let write_field_getter 
+     (por:Polymorphic_ocaml_record_t.t) 
+       (field:Polymorphic_ocaml_record_t.field_t) =
+     ""  
+          
+
+
    let field_list_constructor l = Image.image (
       fun (a,b,c) -> {
        Polymorphic_ocaml_record_t.field_name = a ;
