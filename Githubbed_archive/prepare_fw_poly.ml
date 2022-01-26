@@ -16,11 +16,13 @@ module Polymorphic_ocaml_record_t = struct
    } ;;
    
    type instance_t = {
+      instance_name : string ;
       fields : string list ;
    } ;;
    
    type t = {
-      main_name : string ;
+      main_type_name : string ;
+      module_name : string ;
       fields : field_t list ;
       instances : instance_t list ;
       type_signature_file : Absolute_path.t ;
@@ -45,10 +47,10 @@ module Polymorphic_ocaml_record_t = struct
    
    let text_for_type_signature_file (por:Polymorphic_ocaml_record_t.t) = 
      let pairs = 
-       ((String.make 3 ' ')^"place_in_hierarchy : string ;")::
+       ((String.make 3 ' ')^"subtype_name : string ;")::
        (Image.image pair_for_field por.Polymorphic_ocaml_record_t.fields) in 
      (initial_comment_in_type_signature_file por)^
-     "type "^(por.Polymorphic_ocaml_record_t.main_name)^" = { \n"^ 
+     "type "^(por.Polymorphic_ocaml_record_t.main_type_name)^" = { \n"^ 
      (String.concat "\n" pairs) ^ 
      "\n} ;;" ;;
    
@@ -58,12 +60,45 @@ module Polymorphic_ocaml_record_t = struct
        Io.overwrite_with file text ;;
    
    
-   let write_field_getter 
+   let text_for_field_getter 
      (por:Polymorphic_ocaml_record_t.t) 
        (field:Polymorphic_ocaml_record_t.field_t) =
-     ""  
+       let fn = field.Polymorphic_ocaml_record_t.field_name in 
+     "let "^fn^" x = x."^
+     (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+     "_t."^fn^" ;;" ;;
           
+   let text_for_field_setter 
+     (por:Polymorphic_ocaml_record_t.t) 
+       (field:Polymorphic_ocaml_record_t.field_t) =
+       let fn = field.Polymorphic_ocaml_record_t.field_name 
+       and vn = field.Polymorphic_ocaml_record_t.var_name in 
+     "let set_"^fn^" x "^vn^" = { x with "^
+     (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+     "_t."^fn^" = "^vn^"} ;;" ;;  
 
+   let initial_comment_in_implementation_file por =
+      let ap = por.Polymorphic_ocaml_record_t.implementation_file 
+      and root = Coma_big_constant.This_World.root in 
+      let s_ap=Absolute_path.to_string ap in 
+      let s_cdir=Dfa_root.connectable_to_subpath root in 
+      let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
+      "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
+   
+   let text_for_getters por = String.concat "\n" (Image.image (text_for_field_getter por)
+     por.Polymorphic_ocaml_record_t.fields) ;;
+   let text_for_setters por = String.concat "\n" (Image.image (text_for_field_setter por)
+     por.Polymorphic_ocaml_record_t.fields) ;;
+
+   let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
+      (initial_comment_in_implementation_file por)^
+      (text_for_getters por)^"\n\n\n"^
+      (text_for_setters por) ;;
+    
+   let write_to_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
+      let text = text_for_implementation_file por 
+      and file = por.Polymorphic_ocaml_record_t.implementation_file in 
+      Io.overwrite_with file text ;;
 
    let field_list_constructor l = Image.image (
       fun (a,b,c) -> {
@@ -116,19 +151,27 @@ module Polymorphic_ocaml_record_t = struct
      fields_for_fw_with_githubbing ;
    ] ;;
    
-   
+   let field_order = ((fun fld1 fld2 ->
+      let trial1 = Total_ordering.lex_for_strings 
+         fld1.Polymorphic_ocaml_record_t.field_name fld2.Polymorphic_ocaml_record_t.field_name in 
+      if trial1<> Total_ordering_result_t.Equal then trial1 else
+         Total_ordering.standard fld1 fld2         
+   ) : Polymorphic_ocaml_record_t.field_t Total_ordering_t.t);;
    
    let example = 
       let home = Sys.getenv "HOME" in 
       let file_there = (fun s-> 
         Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/Ordinary/Filewatching/"^s^".ml")) in 
      {
-       Polymorphic_ocaml_record_t.main_name = "t" ;
-       fields = all_fields ;
+       Polymorphic_ocaml_record_t.main_type_name = "t" ;
+       module_name = "fw_poly" ;
+       fields = Ordered.sort field_order all_fields ;
        instances = [] ;
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
     } ;;
    
+    let act () = write_to_implementation_file example ;;
+   (*  
    let act () = write_to_type_signature_file example ;;
-
+   *)
