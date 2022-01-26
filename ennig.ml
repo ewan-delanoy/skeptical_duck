@@ -11,6 +11,9 @@
 	else let _=(accu:=f(j)::(!accu)) in doyle0(j-1)
  ) in
  doyle0 b;;
+
+ let rev_doyle f b a =
+   doyle (fun x->f(a+b-x)) a b ;; 
  
  let slow_doyle f a b=
  let accu=ref([]) in
