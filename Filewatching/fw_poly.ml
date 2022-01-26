@@ -5,6 +5,25 @@
 *)
 
 
+module Private = struct 
+let origin = {
+   Fw_poly_t.type_name = "" ;
+   dir_for_backup = Dfa_root.of_line "" ;
+   encoding_protected_files = [] ;
+   github_url = "" ;
+   gitpush_after_backup = false ;
+   ignored_files = [] ;
+   ignored_subdirectories = [] ;
+   index_for_caching = (Fw_instance_index_t.I(0),Fw_state_index_t.I(0)) ;
+   last_compilation_result_for_module = [] ;
+   root = Dfa_root.of_line "" ;
+   small_details_in_files = [] ;
+   subdirs_for_archived_mlx_files = [] ;
+   watched_files = [] ;
+} ;;
+end;; 
+
+
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
 let github_url x = x.Fw_poly_t.github_url ;;

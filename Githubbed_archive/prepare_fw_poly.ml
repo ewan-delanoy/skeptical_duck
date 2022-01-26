@@ -13,6 +13,7 @@ module Polymorphic_ocaml_record_t = struct
       field_name : string ;
       field_type : string ;
       var_name : string ;
+      default_value : string ;
    } ;;
    
    type instance_t = {
@@ -77,6 +78,21 @@ module Polymorphic_ocaml_record_t = struct
      (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
      "_t."^fn^" = "^vn^"} ;;"])) ;;  
 
+   
+   let annotated_text_for_origin_element 
+     (por:Polymorphic_ocaml_record_t.t) 
+      (field:Polymorphic_ocaml_record_t.field_t) = 
+      (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
+      (field.Polymorphic_ocaml_record_t.default_value)^" ;" ;;
+   
+   let  annotated_text_for_origin_element por =
+     let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
+                 "_t.type_name = \"\" ;" 
+     and temp2 = Image.image (annotated_text_for_origin_element por) por.Polymorphic_ocaml_record_t.fields in 
+     ("origin",(true,["let origin = {";]@
+     ( temp1 :: temp2 )
+     @["} ;;"])) ;;  
+
    let initial_comment_in_implementation_file por =
       let ap = por.Polymorphic_ocaml_record_t.implementation_file 
       and root = Coma_big_constant.This_World.root in 
@@ -120,15 +136,16 @@ module Polymorphic_ocaml_record_t = struct
          else   
          "module Private = struct \n"^
          (expand_privatized_text private_component)^
-         "end;; \n\n\n"
+         "\nend;; \n\n\n"
       ) in 
       private_text^  
       (expand_privatized_text public_component) ;;
 
    let full_annotated_text por = 
       expand_annotated_text (
-         (annotated_text_for_getters por)@
-         (annotated_text_for_setters por)
+         annotated_text_for_origin_element por :: 
+         ((annotated_text_for_getters por)@
+         (annotated_text_for_setters por))
       ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
@@ -141,44 +158,45 @@ module Polymorphic_ocaml_record_t = struct
       Io.overwrite_with file text ;;
 
    let field_list_constructor l = Image.image (
-      fun (a,b,c) -> {
+      fun (a,b,c,d) -> {
        Polymorphic_ocaml_record_t.field_name = a ;
        field_type = b ;
        var_name =c ;
+       default_value = d ;
     }
    ) l;;
    
    let fields_for_fw_configuration = field_list_constructor [
-     "root","Dfa_root_t.t","r";
-     "ignored_subdirectories","Dfa_subdirectory_t.t list","ign_subdirs";
-     "ignored_files","Dfn_rootless_t.t list","ign_files";
+     "root","Dfa_root_t.t","r","Dfa_root.of_line \"\"";
+     "ignored_subdirectories","Dfa_subdirectory_t.t list","ign_subdirs","[]";
+     "ignored_files","Dfn_rootless_t.t list","ign_files","[]";
    ] ;; 
    
    let fields_for_file_watcher = field_list_constructor [
-     "watched_files", "(Dfn_rootless_t.t * string) list","files";
+     "watched_files", "(Dfn_rootless_t.t * string) list","files","[]";
    ] ;; 
    
    let fields_for_fw_with_archives = field_list_constructor [
-     "subdirs_for_archived_mlx_files","Dfa_subdirectory_t.t list","archives_subdirs";
+     "subdirs_for_archived_mlx_files","Dfa_subdirectory_t.t list","archives_subdirs","[]";
    ] ;; 
    
    let fields_for_fw_with_small_details = field_list_constructor [
-     "small_details_in_files","(Dfn_rootless_t.t * Fw_file_small_details_t.t) list","small_details";
+     "small_details_in_files","(Dfn_rootless_t.t * Fw_file_small_details_t.t) list","small_details","[]";
    ] ;; 
    
    let fields_for_fw_with_dependencies = field_list_constructor [
-     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx";
+     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_instance_index_t.I(0),Fw_state_index_t.I(0))";
    ] ;; 
    
    let fields_for_fw_with_batch_compilation = field_list_constructor [
-     "last_compilation_result_for_module","(Dfa_module_t.t * bool) list","compilation_results";
+     "last_compilation_result_for_module","(Dfa_module_t.t * bool) list","compilation_results","[]";
    ] ;; 
    
    let fields_for_fw_with_githubbing = field_list_constructor [
-     "dir_for_backup","Dfa_root_t.t","backup_dir";
-     "gitpush_after_backup","bool","gab";
-     "github_url","string","url";
-     "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs";
+     "dir_for_backup","Dfa_root_t.t","backup_dir","Dfa_root.of_line \"\"";
+     "gitpush_after_backup","bool","gab","false";
+     "github_url","string","url","\"\"";
+     "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]";
    ] ;; 
    
    let all_fields = List.flatten [
