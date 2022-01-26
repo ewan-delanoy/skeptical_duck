@@ -60,22 +60,22 @@ module Polymorphic_ocaml_record_t = struct
        Io.overwrite_with file text ;;
    
    
-   let text_for_field_getter 
+   let annotated_text_for_field_getter 
      (por:Polymorphic_ocaml_record_t.t) 
        (field:Polymorphic_ocaml_record_t.field_t) =
        let fn = field.Polymorphic_ocaml_record_t.field_name in 
-     "let "^fn^" x = x."^
+     (fn,(false,["let "^fn^" x = x."^
      (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
-     "_t."^fn^" ;;" ;;
+     "_t."^fn^" ;;"])) ;;
           
-   let text_for_field_setter 
+   let annotated_text_for_field_setter 
      (por:Polymorphic_ocaml_record_t.t) 
        (field:Polymorphic_ocaml_record_t.field_t) =
        let fn = field.Polymorphic_ocaml_record_t.field_name 
        and vn = field.Polymorphic_ocaml_record_t.var_name in 
-     "let set_"^fn^" x "^vn^" = { x with "^
+     ("set_"^fn,(false,["let set_"^fn^" x "^vn^" = { x with "^
      (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
-     "_t."^fn^" = "^vn^"} ;;" ;;  
+     "_t."^fn^" = "^vn^"} ;;"])) ;;  
 
    let initial_comment_in_implementation_file por =
       let ap = por.Polymorphic_ocaml_record_t.implementation_file 
@@ -85,15 +85,55 @@ module Polymorphic_ocaml_record_t = struct
       let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
       "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
    
-   let text_for_getters por = String.concat "\n" (Image.image (text_for_field_getter por)
-     por.Polymorphic_ocaml_record_t.fields) ;;
-   let text_for_setters por = String.concat "\n" (Image.image (text_for_field_setter por)
-     por.Polymorphic_ocaml_record_t.fields) ;;
+   let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
+     por.Polymorphic_ocaml_record_t.fields ;;
+   let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
+     por.Polymorphic_ocaml_record_t.fields ;;
+
+   let expand_text_element
+     (val_name,(is_private,lines)) =
+        String.concat "\n" lines ;;
+
+   let order_for_annotated_elements = ((fun elt1 elt2 ->
+     let  (val_name1,(is_private1,lines1)) = elt1 
+     and  (val_name2,(is_private2,lines2)) = elt2 in 
+     let trial1 = Total_ordering.standard is_private2 is_private1 in 
+     if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+     let trial2 = Total_ordering.lex_for_strings val_name1 val_name2 in 
+     if trial2 <> Total_ordering_result_t.Equal then trial2 else    
+      Total_ordering.standard elt1 elt2 
+   ) :> (string * (bool * (string list))) Total_ordering_t.t ) ;;   
+     
+
+   let expand_privatized_text l =
+      let temp1 = Ordered.sort order_for_annotated_elements l in 
+      String.concat "\n" (Image.image expand_text_element temp1) ;;
+      
+   let expand_annotated_text l =   
+      let (private_component,public_component) =
+         List.partition (
+           fun (_,(is_private,_)) -> is_private 
+      ) l in 
+      let private_text = (
+         if private_component = []
+         then ""
+         else   
+         "module Private = struct \n"^
+         (expand_privatized_text private_component)^
+         "end;; \n\n\n"
+      ) in 
+      private_text^  
+      (expand_privatized_text public_component) ;;
+
+   let full_annotated_text por = 
+      expand_annotated_text (
+         (annotated_text_for_getters por)@
+         (annotated_text_for_setters por)
+      ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
       (initial_comment_in_implementation_file por)^
-      (text_for_getters por)^"\n\n\n"^
-      (text_for_setters por) ;;
+      (full_annotated_text por) ;;
     
    let write_to_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
       let text = text_for_implementation_file por 
