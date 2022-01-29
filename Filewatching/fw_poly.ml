@@ -9,7 +9,7 @@
 module Private = struct 
 let origin = {
    Fw_poly_t.type_name = "" ;
-   dir_for_backup = Dfa_root.of_line "" ;
+   dir_for_backup = Dfa_root.of_line "dummy_root" ;
    encoding_protected_files = [] ;
    github_url = "" ;
    gitpush_after_backup = false ;
@@ -17,7 +17,7 @@ let origin = {
    ignored_subdirectories = [] ;
    index_for_caching = (Fw_instance_index_t.I(0),Fw_state_index_t.I(0)) ;
    last_compilation_result_for_module = [] ;
-   root = Dfa_root.of_line "" ;
+   root = Dfa_root.of_line "dummy_root" ;
    small_details_in_files = [] ;
    subdirs_for_archived_mlx_files = [] ;
    watched_files = [] ;
