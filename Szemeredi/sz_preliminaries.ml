@@ -29,6 +29,7 @@ module Private = struct
     List.rev(List.flatten(Ennig.doyle 
     (look_for_arithmetic_progressions_in_with_width_equal_to soi) 1 max_width));;
     
+
   let test_for_admissibility max_width soi = 
       ((look_for_arithmetic_progressions_in_with_width_up_to max_width soi) = [])
   
@@ -83,6 +84,8 @@ module Private = struct
   
   end ;;
   
+
+  let contained_arithmetic_progressions = Private.look_for_arithmetic_progressions_in_with_width_up_to ;;
   let force_subset_in_arbitrary_set = Private.force_subset_in_arbitrary_set ;;
   let force_subset_in_interval = Private.force_subset_in_interval ;;
   let restricted_power_set = Private.restricted_power_set ;;
