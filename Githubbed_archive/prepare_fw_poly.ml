@@ -28,6 +28,8 @@ module Polymorphic_ocaml_record_t = struct
       instances : instance_t list ;
       type_signature_file : Absolute_path.t ;
       implementation_file : Absolute_path.t ;
+      has_crobj_conversion : bool ;
+
    } ;;
    
    end ;;
@@ -106,6 +108,30 @@ module Polymorphic_ocaml_record_t = struct
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
      por.Polymorphic_ocaml_record_t.fields ;;
 
+  let simple_text_for_label 
+     (por:Polymorphic_ocaml_record_t.t) 
+       max_namesize
+      (field:Polymorphic_ocaml_record_t.field_t) = 
+      let fn = field.Polymorphic_ocaml_record_t.field_name in 
+      let offset = String.make (max_namesize-String.length fn) ' ' in 
+      "let label_for_"^fn^offset^" = salt ^ \""^fn^"\" ;;" ;;
+   
+  let simple_text_for_all_labels por =
+    let all_fields = por.Polymorphic_ocaml_record_t.fields in 
+    let max_namesize = snd (Max.maximize_it (fun fd->
+      String.length(fd.Polymorphic_ocaml_record_t.field_name)) all_fields) in 
+    String.concat "\n"
+      ("let salt = \"Fw_poly_t.\" ;;" ::
+    (Image.image (simple_text_for_label por max_namesize) all_fields)) ;;  
+   
+  let simple_text_for_crobj_related_code por =
+    if not(por.Polymorphic_ocaml_record_t.has_crobj_conversion)
+    then ""  
+    else
+    "module Crobj = struct \n"^
+    (simple_text_for_all_labels por)^
+    "\nend;; \n\n\n"
+
    let expand_text_element
      (val_name,(is_private,lines)) =
         String.concat "\n" lines ;;
@@ -125,7 +151,7 @@ module Polymorphic_ocaml_record_t = struct
       let temp1 = Ordered.sort order_for_annotated_elements l in 
       String.concat "\n" (Image.image expand_text_element temp1) ;;
       
-   let expand_annotated_text l =   
+   let expand_annotated_text por l =   
       let (private_component,public_component) =
          List.partition (
            fun (_,(is_private,_)) -> is_private 
@@ -135,6 +161,7 @@ module Polymorphic_ocaml_record_t = struct
          then ""
          else   
          "module Private = struct \n"^
+         (simple_text_for_crobj_related_code por)^
          (expand_privatized_text private_component)^
          "\nend;; \n\n\n"
       ) in 
@@ -142,7 +169,7 @@ module Polymorphic_ocaml_record_t = struct
       (expand_privatized_text public_component) ;;
 
    let full_annotated_text por = 
-      expand_annotated_text (
+      expand_annotated_text por (
          annotated_text_for_origin_element por :: 
          ((annotated_text_for_getters por)@
          (annotated_text_for_setters por))
@@ -227,6 +254,7 @@ module Polymorphic_ocaml_record_t = struct
        instances = [] ;
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
+       has_crobj_conversion = true ;
     } ;;
    
     let act () = write_to_implementation_file example ;;

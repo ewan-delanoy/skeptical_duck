@@ -5,11 +5,27 @@
 *)
 
 
-
 module Private = struct 
+module Crobj = struct 
+let salt = "Fw_poly_t." ;;
+let label_for_dir_for_backup                     = salt ^ "dir_for_backup" ;;
+let label_for_encoding_protected_files           = salt ^ "encoding_protected_files" ;;
+let label_for_github_url                         = salt ^ "github_url" ;;
+let label_for_gitpush_after_backup               = salt ^ "gitpush_after_backup" ;;
+let label_for_ignored_files                      = salt ^ "ignored_files" ;;
+let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
+let label_for_index_for_caching                  = salt ^ "index_for_caching" ;;
+let label_for_last_compilation_result_for_module = salt ^ "last_compilation_result_for_module" ;;
+let label_for_root                               = salt ^ "root" ;;
+let label_for_small_details_in_files             = salt ^ "small_details_in_files" ;;
+let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
+let label_for_watched_files                      = salt ^ "watched_files" ;;
+end;; 
+
+
 let origin = {
    Fw_poly_t.type_name = "" ;
-   dir_for_backup = Dfa_root.of_line "dummy_root" ;
+   dir_for_backup = Dfa_root.of_line "" ;
    encoding_protected_files = [] ;
    github_url = "" ;
    gitpush_after_backup = false ;
@@ -17,7 +33,7 @@ let origin = {
    ignored_subdirectories = [] ;
    index_for_caching = (Fw_instance_index_t.I(0),Fw_state_index_t.I(0)) ;
    last_compilation_result_for_module = [] ;
-   root = Dfa_root.of_line "dummy_root" ;
+   root = Dfa_root.of_line "" ;
    small_details_in_files = [] ;
    subdirs_for_archived_mlx_files = [] ;
    watched_files = [] ;
