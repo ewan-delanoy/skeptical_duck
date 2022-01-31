@@ -194,7 +194,7 @@ module Polymorphic_ocaml_record_t = struct
    ) l;;
    
    let fields_for_fw_configuration = field_list_constructor [
-     "root","Dfa_root_t.t","r","Dfa_root.of_line \"\"";
+     "root","Dfa_root_t.t","r","Dfa_root.of_line \"dummy\"";
      "ignored_subdirectories","Dfa_subdirectory_t.t list","ign_subdirs","[]";
      "ignored_files","Dfn_rootless_t.t list","ign_files","[]";
    ] ;; 
@@ -220,7 +220,7 @@ module Polymorphic_ocaml_record_t = struct
    ] ;; 
    
    let fields_for_fw_with_githubbing = field_list_constructor [
-     "dir_for_backup","Dfa_root_t.t","backup_dir","Dfa_root.of_line \"\"";
+     "dir_for_backup","Dfa_root_t.t","backup_dir","Dfa_root.of_line \"dummy\"";
      "gitpush_after_backup","bool","gab","false";
      "github_url","string","url","\"\"";
      "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]";
