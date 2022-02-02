@@ -37,15 +37,3 @@ let frac_ceiling a b=
 let power a b = Private.helper_for_power (a,b,1) ;;
 
 let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
-
-
-let delta_list l=
-let rec sub_f=
-(function (accu,a,rl)->match rl with
-[]->List.rev(accu)
-|b::x->sub_f((b-a)::accu,b,x)
-) in
-match l with
-[]->[]
-|u::v->sub_f([],u,v);;
-           
