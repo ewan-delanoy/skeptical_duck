@@ -14,6 +14,7 @@ module Polymorphic_ocaml_record_t = struct
       field_type : string ;
       var_name : string ;
       default_value : string ;
+      crobj_converters : (string * string) option ;
    } ;;
    
    type instance_t = {
@@ -107,6 +108,9 @@ module Polymorphic_ocaml_record_t = struct
      por.Polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
      por.Polymorphic_ocaml_record_t.fields ;;
+   let annotated_text_for_crobj_symlinks por = [
+     ("of_concrete_object",(false,["let of_concrete_object = Private.Crobj.of_concrete_object ;;"]))
+   ] ;; 
 
   let simple_text_for_label 
      (por:Polymorphic_ocaml_record_t.t) 
@@ -116,20 +120,67 @@ module Polymorphic_ocaml_record_t = struct
       let offset = String.make (max_namesize-String.length fn) ' ' in 
       "let label_for_"^fn^offset^" = salt ^ \""^fn^"\" ;;" ;;
    
+
+  let fields_with_crobj_conversion por =
+      Option.filter_and_unpack (
+        fun fld ->
+         match fld.Polymorphic_ocaml_record_t.crobj_converters with 
+         None -> None 
+         |Some(of_crobj,to_crobj) -> Some(fld,(of_crobj,to_crobj))
+      ) por.Polymorphic_ocaml_record_t.fields  ;;
+
+  let special_type_name_field = {
+         Polymorphic_ocaml_record_t.field_name = "type_name" ;
+         field_type = "" ;
+         var_name = "" ;
+         default_value = "" ;
+         crobj_converters = None ;
+      } ;;
+
   let simple_text_for_all_labels por =
-    let all_fields = por.Polymorphic_ocaml_record_t.fields in 
+    let crobjed_fields = special_type_name_field ::(Image.image fst (fields_with_crobj_conversion por)) in 
     let max_namesize = snd (Max.maximize_it (fun fd->
-      String.length(fd.Polymorphic_ocaml_record_t.field_name)) all_fields) in 
+      String.length(fd.Polymorphic_ocaml_record_t.field_name)) crobjed_fields) in 
     String.concat "\n"
       ("let salt = \"Fw_poly_t.\" ;;" ::
-    (Image.image (simple_text_for_label por max_namesize) all_fields)) ;;  
+    (Image.image (simple_text_for_label por max_namesize) crobjed_fields)) ;;  
    
+  let simple_text_for_ofcrobj_element 
+    (por:Polymorphic_ocaml_record_t.t) 
+    fld = 
+    let vowel = (
+      match fld.Polymorphic_ocaml_record_t.crobj_converters with 
+      None ->  (fld.Polymorphic_ocaml_record_t.default_value) 
+    | Some(of_crobj,to_crobj) ->
+        of_crobj^" (g label_for_"^(fld.Polymorphic_ocaml_record_t.field_name)^") "
+    ) in 
+        (String.make 3 ' ')^(fld.Polymorphic_ocaml_record_t.field_name)^" = "^
+        vowel^" ;" ;;
+
+  let simple_text_for_ofcrobj_converter por = 
+    let all_fields = por.Polymorphic_ocaml_record_t.fields in 
+    let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
+    "_t.type_name = Crobj_converter.string_of_concrete_object (g label_for_type_name) ;" 
+    and temp2 = Image.image (simple_text_for_ofcrobj_element por) all_fields in 
+    String.concat "\n"
+    ( 
+    [ "let of_concrete_object ccrt_obj = ";
+      " let g=Concrete_object.get_record ccrt_obj in ";
+      " {"
+     ]@
+     (temp1::temp2)
+     @
+     [
+       "} ;;"
+      ]) ;;
+
   let simple_text_for_crobj_related_code por =
     if not(por.Polymorphic_ocaml_record_t.has_crobj_conversion)
     then ""  
     else
     "module Crobj = struct \n"^
-    (simple_text_for_all_labels por)^
+    (simple_text_for_all_labels por)^"\n\n"^
+    (simple_text_for_ofcrobj_converter por)^
     "\nend;; \n\n\n"
 
    let expand_text_element
@@ -172,7 +223,8 @@ module Polymorphic_ocaml_record_t = struct
       expand_annotated_text por (
          annotated_text_for_origin_element por :: 
          ((annotated_text_for_getters por)@
-         (annotated_text_for_setters por))
+         (annotated_text_for_setters por)@
+         (annotated_text_for_crobj_symlinks por) )
       ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
@@ -184,46 +236,55 @@ module Polymorphic_ocaml_record_t = struct
       and file = por.Polymorphic_ocaml_record_t.implementation_file in 
       Io.overwrite_with file text ;;
 
+  let decode_pair_of_converters s =
+        match String.index_opt s '#' with 
+         None -> None 
+       |Some idx -> Some(Cull_string.beginning idx s,Cull_string.cobeginning (idx+1) s) ;;
+     
+   
+
    let field_list_constructor l = Image.image (
-      fun (a,b,c,d) -> {
+      fun (a,b,c,d,e) -> {
        Polymorphic_ocaml_record_t.field_name = a ;
        field_type = b ;
        var_name =c ;
        default_value = d ;
+       crobj_converters = decode_pair_of_converters e ;
     }
    ) l;;
-   
+
+  
    let fields_for_fw_configuration = field_list_constructor [
-     "root","Dfa_root_t.t","r","Dfa_root.of_line \"dummy\"";
-     "ignored_subdirectories","Dfa_subdirectory_t.t list","ign_subdirs","[]";
-     "ignored_files","Dfn_rootless_t.t list","ign_files","[]";
+     "root","Dfa_root_t.t","r","Dfa_root.of_line \"dummy\"","Dfa_root.of_concrete_object#Dfa_root.to_concrete_object";
+     "ignored_subdirectories","Dfa_subdirectory_t.t list","ign_subdirs","[]","Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object#Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object";
+     "ignored_files","Dfn_rootless_t.t list","ign_files","[]","Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object#Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object"     ;
    ] ;; 
    
    let fields_for_file_watcher = field_list_constructor [
-     "watched_files", "(Dfn_rootless_t.t * string) list","files","[]";
+     "watched_files", "(Dfn_rootless_t.t * string) list","files","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object";
    ] ;; 
    
    let fields_for_fw_with_archives = field_list_constructor [
-     "subdirs_for_archived_mlx_files","Dfa_subdirectory_t.t list","archives_subdirs","[]";
+     "subdirs_for_archived_mlx_files","Dfa_subdirectory_t.t list","archives_subdirs","[]","Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object#Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object";
    ] ;; 
    
    let fields_for_fw_with_small_details = field_list_constructor [
-     "small_details_in_files","(Dfn_rootless_t.t * Fw_file_small_details_t.t) list","small_details","[]";
+     "small_details_in_files","(Dfn_rootless_t.t * Fw_file_small_details_t.t) list","small_details","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object";
    ] ;; 
    
    let fields_for_fw_with_dependencies = field_list_constructor [
-     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_instance_index_t.I(0),Fw_state_index_t.I(0))";
+     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_instance_index_t.I(0),Fw_state_index_t.I(0))", "";
    ] ;; 
    
    let fields_for_fw_with_batch_compilation = field_list_constructor [
-     "last_compilation_result_for_module","(Dfa_module_t.t * bool) list","compilation_results","[]";
+     "last_compilation_result_for_module","(Dfa_module_t.t * bool) list","compilation_results","[]","Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object#Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object" ;
    ] ;; 
    
    let fields_for_fw_with_githubbing = field_list_constructor [
-     "dir_for_backup","Dfa_root_t.t","backup_dir","Dfa_root.of_line \"dummy\"";
-     "gitpush_after_backup","bool","gab","false";
-     "github_url","string","url","\"\"";
-     "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]";
+     "dir_for_backup","Dfa_root_t.t","backup_dir","Dfa_root.of_line \"dummy\"","Dfa_root.of_concrete_object#Dfa_root.to_concrete_object";
+     "gitpush_after_backup","bool","gab","false","Crobj_converter.bool_of_concrete_object#Crobj_converter.bool_to_concrete_object";
+     "github_url","string","url","\"\"","Crobj_converter.string_of_concrete_object#Crobj_converter.string_to_concrete_object";
+     "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object";
    ] ;; 
    
    let all_fields = List.flatten [
