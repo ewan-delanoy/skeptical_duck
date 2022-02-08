@@ -38,6 +38,25 @@ let of_concrete_object ccrt_obj =
    subdirs_for_archived_mlx_files = Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files)  ;
    watched_files = Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files)  ;
 } ;;
+
+let to_concrete_object fw = 
+ let items =  
+ [
+     label_for_dir_for_backup, Dfa_root.to_concrete_object fw.Fw_poly_t.dir_for_backup ;
+     label_for_encoding_protected_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object fw.Fw_poly_t.encoding_protected_files ;
+     label_for_github_url, Crobj_converter.string_to_concrete_object fw.Fw_poly_t.github_url ;
+     label_for_gitpush_after_backup, Crobj_converter.bool_to_concrete_object fw.Fw_poly_t.gitpush_after_backup ;
+     label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object fw.Fw_poly_t.ignored_files ;
+     label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object fw.Fw_poly_t.ignored_subdirectories ;
+     label_for_last_compilation_result_for_module, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object fw.Fw_poly_t.last_compilation_result_for_module ;
+     label_for_root, Dfa_root.to_concrete_object fw.Fw_poly_t.root ;
+     label_for_small_details_in_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object fw.Fw_poly_t.small_details_in_files ;
+     label_for_subdirs_for_archived_mlx_files, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object fw.Fw_poly_t.subdirs_for_archived_mlx_files ;
+     label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object fw.Fw_poly_t.watched_files ;
+ ] in 
+ Concrete_object_t.Record items ;;
+
+
 end;; 
 
 
@@ -83,4 +102,5 @@ let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_poly_t.s
 let set_watched_files x files = { x with Fw_poly_t.watched_files = files} ;;
 let small_details_in_files x = x.Fw_poly_t.small_details_in_files ;;
 let subdirs_for_archived_mlx_files x = x.Fw_poly_t.subdirs_for_archived_mlx_files ;;
+let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let watched_files x = x.Fw_poly_t.watched_files ;;

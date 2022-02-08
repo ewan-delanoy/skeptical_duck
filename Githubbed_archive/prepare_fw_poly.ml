@@ -109,7 +109,8 @@ module Polymorphic_ocaml_record_t = struct
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
      por.Polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_crobj_symlinks por = [
-     ("of_concrete_object",(false,["let of_concrete_object = Private.Crobj.of_concrete_object ;;"]))
+     ("of_concrete_object",(false,["let of_concrete_object = Private.Crobj.of_concrete_object ;;"])) ;
+     ("to_concrete_object",(false,["let to_concrete_object = Private.Crobj.to_concrete_object ;;"]))
    ] ;; 
 
   let simple_text_for_label 
@@ -174,13 +175,37 @@ module Polymorphic_ocaml_record_t = struct
        "} ;;"
       ]) ;;
 
+    let simple_text_for_tocrobj_element 
+      (por:Polymorphic_ocaml_record_t.t) 
+      (fld,(of_crobj,to_crobj)) = 
+      let field_name  = fld.Polymorphic_ocaml_record_t.field_name in 
+          (String.make 4 ' ')^" label_for_"^field_name^", "^ 
+          to_crobj^" fw."^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^"_t."^
+          field_name^" ;" ;;    
+
+  let simple_text_for_tocrobj_converter por = 
+    let fields_with_crobj = fields_with_crobj_conversion por  in 
+    String.concat "\n"
+    ( 
+     [ "let to_concrete_object fw = ";
+       " let items =  ";
+       " ["
+     ]@
+      (Image.image (simple_text_for_tocrobj_element por) fields_with_crobj)
+      @
+     [
+       " ] in ";
+       " Concrete_object_t.Record items ;;"
+     ]) ;;
+
   let simple_text_for_crobj_related_code por =
     if not(por.Polymorphic_ocaml_record_t.has_crobj_conversion)
     then ""  
     else
     "module Crobj = struct \n"^
     (simple_text_for_all_labels por)^"\n\n"^
-    (simple_text_for_ofcrobj_converter por)^
+    (simple_text_for_ofcrobj_converter por)^"\n\n"^
+    (simple_text_for_tocrobj_converter por)^"\n\n"^
     "\nend;; \n\n\n"
 
    let expand_text_element
