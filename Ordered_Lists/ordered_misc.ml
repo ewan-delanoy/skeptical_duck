@@ -107,12 +107,20 @@ let translate_at_level_two ll translation=
     fun l->Ordered.merge Total_ordering.for_integers l translation
   ) ll ;;
 
-(*  
+
 let underline_new_elements ord old_set possibly_new_elts =
   let new_elts = Ordered.setminus ord possibly_new_elts old_set in 
   let new_whole = Ordered.merge ord old_set new_elts in 
   let temp1 = Image.image (fun x->(x,List.mem x new_elts)) new_whole in 
-  Prepared.partition_in_two_parts snd temp1 ;;
+  let temp2 = Hurried.connected_components snd temp1 in 
+  Image.image (fun part -> (Image.image fst part,snd(List.hd part)) ) temp2;;
+
+(*
+
+underline_new_elements Total_ordering.standard 
+ [1; 2;  5; 7; 8;  11; 13; 14; 16; 17; 19; 20]
+ [3;4; 6; 9;10; 12; 15; 18; 21] ;;
+
 *)
 
 
