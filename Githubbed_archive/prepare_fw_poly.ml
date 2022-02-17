@@ -21,7 +21,9 @@ module Polymorphic_ocaml_record_t = struct
       instance_name : string ;
       fields : string list ;
    } ;;
+
    
+
    type t = {
       main_type_name : string ;
       module_name : string ;
@@ -30,11 +32,44 @@ module Polymorphic_ocaml_record_t = struct
       type_signature_file : Absolute_path.t ;
       implementation_file : Absolute_path.t ;
       has_crobj_conversion : bool ;
+      extensions : (string * string) list ;
+      restrictions : (string * string) list ; 
 
    } ;;
    
    end ;;
    
+   module Annotated_definition_t = struct 
+
+  type t = {
+      value_name : string ;
+      is_private : bool ;
+      lines_in_definition : string list ;
+   } ;;
+
+   end ;; 
+
+   module Annotated_definition = struct 
+
+    let expand anndef =
+       String.concat "\n" anndef.Annotated_definition_t.lines_in_definition ;;
+
+  let order = ((fun anndef1 anndef2 ->
+    let is_private1 = anndef1.Annotated_definition_t.is_private 
+    and is_private2 = anndef1.Annotated_definition_t.is_private in 
+    let trial1 = Total_ordering.standard is_private2 is_private1 in 
+    if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+    let val_name1 = anndef1.Annotated_definition_t.value_name 
+    and val_name2 = anndef2.Annotated_definition_t.value_name in 
+    let trial2 = Total_ordering.lex_for_strings val_name1 val_name2 in 
+    if trial2 <> Total_ordering_result_t.Equal then trial2 else    
+     Total_ordering.standard anndef1 anndef2 
+  ) :>  Annotated_definition_t.t Total_ordering_t.t ) ;;   
+      
+
+
+   end ;; 
+
    
    let pair_for_field (porf:Polymorphic_ocaml_record_t.field_t) =
      (String.make 3 ' ')^
@@ -68,21 +103,30 @@ module Polymorphic_ocaml_record_t = struct
      (por:Polymorphic_ocaml_record_t.t) 
        (field:Polymorphic_ocaml_record_t.field_t) =
        let fn = field.Polymorphic_ocaml_record_t.field_name in 
-     (fn,(false,["let "^fn^" x = x."^
-     (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
-     "_t."^fn^" ;;"])) ;;
+       {
+        Annotated_definition_t.value_name = fn ;
+        is_private = false ;
+        lines_in_definition = ["let "^fn^" x = x."^
+        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        "_t."^fn^" ;;"];
+     } ;;
           
    let annotated_text_for_field_setter 
      (por:Polymorphic_ocaml_record_t.t) 
        (field:Polymorphic_ocaml_record_t.field_t) =
        let fn = field.Polymorphic_ocaml_record_t.field_name 
        and vn = field.Polymorphic_ocaml_record_t.var_name in 
-     ("set_"^fn,(false,["let set_"^fn^" x "^vn^" = { x with "^
-     (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
-     "_t."^fn^" = "^vn^"} ;;"])) ;;  
+       {
+        Annotated_definition_t.value_name = "set_"^fn ;
+        is_private = false ;
+        lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
+        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        "_t."^fn^" = "^vn^"} ;;"];
+     } ;;
+     
 
    
-   let annotated_text_for_origin_element 
+   let snippet_for_origin_element 
      (por:Polymorphic_ocaml_record_t.t) 
       (field:Polymorphic_ocaml_record_t.field_t) = 
       (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
@@ -91,10 +135,14 @@ module Polymorphic_ocaml_record_t = struct
    let  annotated_text_for_origin_element por =
      let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
                  "_t.type_name = \"\" ;" 
-     and temp2 = Image.image (annotated_text_for_origin_element por) por.Polymorphic_ocaml_record_t.fields in 
-     ("origin",(true,["let origin = {";]@
-     ( temp1 :: temp2 )
-     @["} ;;"])) ;;  
+     and temp2 = Image.image (snippet_for_origin_element por) por.Polymorphic_ocaml_record_t.fields in 
+     {
+        Annotated_definition_t.value_name = "origin" ;
+        is_private = true ;
+        lines_in_definition = ["let origin = {";]@
+        ( temp1 :: temp2 )
+        @["} ;;"];
+      } ;;  
 
    let initial_comment_in_implementation_file por =
       let ap = por.Polymorphic_ocaml_record_t.implementation_file 
@@ -108,10 +156,21 @@ module Polymorphic_ocaml_record_t = struct
      por.Polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
      por.Polymorphic_ocaml_record_t.fields ;;
-   let annotated_text_for_crobj_symlinks por = [
-     ("of_concrete_object",(false,["let of_concrete_object = Private.Crobj.of_concrete_object ;;"])) ;
-     ("to_concrete_object",(false,["let to_concrete_object = Private.Crobj.to_concrete_object ;;"]))
-   ] ;; 
+   let annotated_text_for_crobj_symlinks por = 
+    [
+      {
+        Annotated_definition_t.value_name = "of_concrete_object" ;
+        is_private = false ;
+        lines_in_definition = ["let of_concrete_object = Private.Crobj.of_concrete_object ;;"];
+      } ;
+      {
+        Annotated_definition_t.value_name = "to_concrete_object" ;
+        is_private = false ;
+        lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
+      } ;
+    ] ;;
+    
+
 
   let simple_text_for_label 
      (por:Polymorphic_ocaml_record_t.t) 
@@ -208,29 +267,16 @@ module Polymorphic_ocaml_record_t = struct
     (simple_text_for_tocrobj_converter por)^"\n\n"^
     "\nend;; \n\n\n"
 
-   let expand_text_element
-     (val_name,(is_private,lines)) =
-        String.concat "\n" lines ;;
-
-   let order_for_annotated_elements = ((fun elt1 elt2 ->
-     let  (val_name1,(is_private1,lines1)) = elt1 
-     and  (val_name2,(is_private2,lines2)) = elt2 in 
-     let trial1 = Total_ordering.standard is_private2 is_private1 in 
-     if trial1 <> Total_ordering_result_t.Equal then trial1 else 
-     let trial2 = Total_ordering.lex_for_strings val_name1 val_name2 in 
-     if trial2 <> Total_ordering_result_t.Equal then trial2 else    
-      Total_ordering.standard elt1 elt2 
-   ) :> (string * (bool * (string list))) Total_ordering_t.t ) ;;   
-     
+   
 
    let expand_privatized_text l =
-      let temp1 = Ordered.sort order_for_annotated_elements l in 
-      String.concat "\n" (Image.image expand_text_element temp1) ;;
+      let temp1 = Ordered.sort Annotated_definition.order l in 
+      String.concat "\n" (Image.image Annotated_definition.expand temp1) ;;
       
    let expand_annotated_text por l =   
       let (private_component,public_component) =
          List.partition (
-           fun (_,(is_private,_)) -> is_private 
+           fun anndef -> anndef.Annotated_definition_t.is_private 
       ) l in 
       let private_text = (
          if private_component = []
@@ -311,17 +357,48 @@ module Polymorphic_ocaml_record_t = struct
      "github_url","string","url","\"\"","Crobj_converter.string_of_concrete_object#Crobj_converter.string_to_concrete_object";
      "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object";
    ] ;; 
+
+   let instance_list_constructor l = Image.image (
+      fun (a,b) -> {
+       Polymorphic_ocaml_record_t.instance_name = a ;
+       fields = b ;
+    }
+   ) l;;
+  
+  let first_base =  [
+    "fw_configuration",fields_for_fw_configuration ;
+    "file_watcher",fields_for_file_watcher ;
+    "fw_with_archives",fields_for_fw_with_archives ;
+    "fw_with_small_details",fields_for_fw_with_small_details ;
+    "fw_with_dependencies",fields_for_fw_with_dependencies ;
+    "fw_with_batch_compilation",fields_for_fw_with_batch_compilation ;
+    "fw_with_githubbing",fields_for_fw_with_githubbing ;
+  ] ;; 
+
+  
+
+   let all_fields = List.flatten (Image.image snd first_base) ;;
+
+   let cumulative_first_base =
+    let temp1 = Three_parts.generic first_base in 
+    List.rev_map (fun (b,a,_)->
+      let ttemp3 = List.rev_map snd (a::b) in
+      (fst a,List.flatten ttemp3) 
+      ) temp1 ;;
+
+   let second_base = [
+      "fw_with_githubbing",fields_for_fw_with_githubbing ;
+   ] ;; 
+
+   let full_base =  cumulative_first_base @ second_base ;;     
    
-   let all_fields = List.flatten [
-     fields_for_fw_configuration ;
-     fields_for_file_watcher ;
-     fields_for_fw_with_archives ;
-     fields_for_fw_with_small_details ;
-     fields_for_fw_with_dependencies ;
-     fields_for_fw_with_batch_compilation ;
-     fields_for_fw_with_githubbing ;
-   ] ;;
-   
+   let instance_list_constructor l = Image.image (
+      fun (a,b) -> {
+        Polymorphic_ocaml_record_t.instance_name = a ;
+        fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.var_name ) b ;
+      }
+   ) l;;
+
    let field_order = ((fun fld1 fld2 ->
       let trial1 = Total_ordering.lex_for_strings 
          fld1.Polymorphic_ocaml_record_t.field_name fld2.Polymorphic_ocaml_record_t.field_name in 
@@ -329,6 +406,48 @@ module Polymorphic_ocaml_record_t = struct
          Total_ordering.standard fld1 fld2         
    ) : Polymorphic_ocaml_record_t.field_t Total_ordering_t.t);;
    
+   exception Get_field_exn of string ;;
+
+   let get_field por fd_name =
+      match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.var_name = fd_name)
+         por.Polymorphic_ocaml_record_t.fields with 
+      Some answer -> answer 
+      | None -> raise ( Get_field_exn(fd_name)) ;;    
+
+    exception Get_instance_exn of string ;; 
+
+    let get_instance por inst_name =
+        match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
+           por.Polymorphic_ocaml_record_t.instances with 
+        Some answer -> answer 
+        | None -> raise ( Get_instance_exn(inst_name)) ;;    
+
+    exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
+
+    let check_inclusion small_list large_list =
+       let temp1 = List.filter (fun s->not(List.mem s large_list)) small_list in 
+       if temp1 <> []
+       then raise(Check_inclusion_exn(temp1,small_list,large_list))
+       else () ;;  
+
+
+   let annotated_definition_for_extender por (before_ext,after_ext) =
+      let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
+      let inst_before = get_instance por before_ext 
+      and inst_after = get_instance por after_ext in 
+      let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+      and field_names_after = inst_before.Polymorphic_ocaml_record_t.fields in 
+      let _ = check_inclusion field_names_before field_names_after in 
+      
+      
+      {
+        Annotated_definition_t.value_name = ext_name ;
+        is_private = false ;
+        lines_in_definition = ["let "^ext_name^" fw = {";]@
+        ( temp1 :: temp2 )
+        @["} ;;"];
+      } ;;  
+
    let example = 
       let home = Sys.getenv "HOME" in 
       let file_there = (fun s-> 
@@ -337,10 +456,12 @@ module Polymorphic_ocaml_record_t = struct
        Polymorphic_ocaml_record_t.main_type_name = "t" ;
        module_name = "fw_poly" ;
        fields = Ordered.sort field_order all_fields ;
-       instances = [] ;
+       instances = instance_list_constructor full_base ;
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
        has_crobj_conversion = true ;
+       extensions = [] ;
+       restrictions = [] ;
     } ;;
    
     let act () = write_to_implementation_file example ;;
