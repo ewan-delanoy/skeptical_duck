@@ -113,7 +113,7 @@ module Private = struct
          else if (cmod<>Compilation_mode_t.Usual)
               then raise(Failed_during_compilation(triple))
               else 
-              let triples_after=snd(Prepared.partition_in_two_parts (fun (nm2,_,_)->nm2<>nm) other_triples) in 
+              let triples_after=snd(Hurried.partition_in_two_parts (fun (nm2,_,_)->nm2<>nm) other_triples) in 
               let (rejected_siblings_as_triples,survivors)=List.partition
              (
                 fun (nm2,_,_)->
