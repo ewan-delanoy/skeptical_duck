@@ -81,3 +81,4 @@ let delta l=
   []->[]
   |u::v->sub_f([],u,v);;
            
+
