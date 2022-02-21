@@ -109,6 +109,8 @@ let test_for_interval l=
                   else None 
     )  ;;
 
+(* test_for_interval [2;3;4;5] ;; *)
+
 
 let reposition_by_putting_snd_immediately_after_fst i j t=
     if t<=i then t else
