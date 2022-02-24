@@ -2,7 +2,6 @@
 
 #use"Szemeredi/sz_preliminaries.ml";;
 
-
 *)
 
 module Private = struct
@@ -88,11 +87,14 @@ module Private = struct
       let temp1 = Image.image (fun v->(v,List.length(List.filter (fun e->List.mem v e) edges))) vertices in 
       let (_,sols) = Max.maximize_it_with_care snd temp1 in 
       fst(List.hd(List.rev sols)) ;;
+  
+  let eliminate_vertex_in v (vertices,edges) =   
+    (i_outsert v vertices,List.filter (fun e->not(i_mem v e)) edges) ;; 
 
   let rec greedy_elimination (vertices,edges) =
      if edges = [] then vertices else 
      let v = atomic_step_in_greedy_elimination (vertices,edges) in 
-     greedy_elimination (i_outsert v vertices,List.filter (fun e->not(i_mem v e)) edges) ;;
+     greedy_elimination (eliminate_vertex_in v (vertices,edges)) ;;
      
   let measure_via_greedy_elmination (vertices,edges) =
      List.length (greedy_elimination (vertices,edges)) ;;

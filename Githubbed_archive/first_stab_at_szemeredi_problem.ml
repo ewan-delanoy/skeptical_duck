@@ -480,7 +480,8 @@ let pusher_for_analysis (treated,to_be_treated) =
           |Case.Decomposable(parts)-> parts 
           |Case.Ramifiable(breakers) -> List.rev_map (fun t->i_outsert t x1) breakers
         ) in 
-    let pre_new_work = List.flatten(Image.image (transdist_components current_width) towards_new_work) in     
+    let pre_new_work = List.flatten(Image.image 
+     (Sz_preliminaries.decompose_using_translation_and_distancing current_width) towards_new_work) in     
     let new_work = List.filter (
            fun z -> impatient_measure_opt z=None  
         ) pre_new_work in 
