@@ -94,6 +94,23 @@ module Private = struct
      let v = atomic_step_in_greedy_elimination (vertices,edges) in 
      greedy_elimination (i_outsert v vertices,List.filter (fun e->not(i_mem v e)) edges) ;;
      
+  let measure_via_greedy_elmination (vertices,edges) =
+     List.length (greedy_elimination (vertices,edges)) ;;
+
+  let rec lexshorted_greedy_elimination (vertices,edges,goal) =
+     match vertices with 
+     [] -> []
+     | v :: other_vertices ->
+       let (edges_with_v,edges_without_v) = List.partition (i_mem v) edges in 
+       let new_edges = Image.image (i_outsert v) edges_with_v in 
+       let towards_new_whole = il_merge new_edges edges_without_v in  
+       let new_whole = Ordered_misc.minimal_elts_wrt_inclusion towards_new_whole in 
+       if measure_via_greedy_elmination (other_vertices,new_whole) = goal -1 
+       then let preceding_answer =
+            lexshorted_greedy_elimination  (other_vertices,new_whole,goal-1) in 
+            v :: preceding_answer
+       else lexshorted_greedy_elimination 
+            (other_vertices,List.filter (fun e->not(i_mem v e)) edges,goal) ;;  
 
   end ;;
   
@@ -102,5 +119,6 @@ module Private = struct
   let force_subset_in_arbitrary_set = Private.force_subset_in_arbitrary_set ;;
   let force_subset_in_interval = Private.force_subset_in_interval ;;
   let greedy_elimination = Private.greedy_elimination ;;
+  let lexshorted_greedy_elimination = Private.lexshorted_greedy_elimination ;;
   let restricted_power_set = Private.restricted_power_set ;;
   let test_for_admissibility = Private.test_for_admissibility ;;
