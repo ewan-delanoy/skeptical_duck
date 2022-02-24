@@ -11,6 +11,8 @@ let u1 = Ennig.doyle ff 1 25 ;;
 
 open Needed_values ;;
 
+let this_file = Absolute_path.of_string "Githubbed_archive/first_stab_at_szemeredi_problem.ml" ;;
+
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =
     if b-a<=2 then basic_string_of_il(Ennig.ennig a b) else 
@@ -147,7 +149,7 @@ let commands_for_one_lightweight_block (lvl,(l1,l2)) =
     let temp1 = Ordered.setminus order l2 l1 in 
     (String.concat "\n" (Image.image one_command  temp1))^"\n\n\n"  ;;
   
-let this_file = Absolute_path.of_string "Githubbed_archive/first_stab_at_szemeredi_problem.ml" ;;
+
 
 let markers_for_level k =
    let sk = string_of_int k in 

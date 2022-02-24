@@ -7,6 +7,8 @@
 
 module Private = struct
 
+  let i_mem = Ordered.mem Total_ordering.for_integers  ;;
+  let i_outsert = Ordered.outsert Total_ordering.for_integers  ;;
   let i_setminus = Ordered.setminus Total_ordering.for_integers  ;;  
   let i_sort = Ordered.safe_set Total_ordering.for_integers  ;;
   let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
@@ -82,11 +84,23 @@ module Private = struct
       ) old_obses in 
       Ordered_misc.minimal_elts_wrt_inclusion (il_sort new_obses);;
   
+  let atomic_step_in_greedy_elimination (vertices,edges) =
+      let temp1 = Image.image (fun v->(v,List.length(List.filter (fun e->List.mem v e) edges))) vertices in 
+      let (_,sols) = Max.maximize_it_with_care snd temp1 in 
+      fst(List.hd(List.rev sols)) ;;
+
+  let rec greedy_elimination (vertices,edges) =
+     if edges = [] then vertices else 
+     let v = atomic_step_in_greedy_elimination (vertices,edges) in 
+     greedy_elimination (i_outsert v vertices,List.filter (fun e->not(i_mem v e)) edges) ;;
+     
+
   end ;;
   
 
   let contained_arithmetic_progressions = Private.look_for_arithmetic_progressions_in_with_width_up_to ;;
   let force_subset_in_arbitrary_set = Private.force_subset_in_arbitrary_set ;;
   let force_subset_in_interval = Private.force_subset_in_interval ;;
+  let greedy_elimination = Private.greedy_elimination ;;
   let restricted_power_set = Private.restricted_power_set ;;
   let test_for_admissibility = Private.test_for_admissibility ;;
