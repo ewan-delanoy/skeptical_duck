@@ -140,7 +140,7 @@ let evaluate_using_translation_and_distancing max_dist f_opt x=
   if bad_temp1 = []
   then let full_solution = List.flatten(Image.image (fun (opt_good,_)->Option.unpack opt_good) temp1) in 
         (Some full_solution,None) 
-  else (None,Some temp1);;
+  else (None,Some (temp1,bad_temp1));;
 
   end ;;
   
