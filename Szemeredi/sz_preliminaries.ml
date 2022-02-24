@@ -146,6 +146,7 @@ let evaluate_using_translation_and_distancing max_dist f_opt x=
   
 
   let contained_arithmetic_progressions = Private.look_for_arithmetic_progressions_in_with_width_up_to ;;
+  let decompose_using_translation_and_distancing = Private.transdist_components ;;
   let evaluate_using_translation_and_distancing = Private.evaluate_using_translation_and_distancing ;;
   let force_subset_in_arbitrary_set = Private.force_subset_in_arbitrary_set ;;
   let force_subset_in_interval = Private.force_subset_in_interval ;;
