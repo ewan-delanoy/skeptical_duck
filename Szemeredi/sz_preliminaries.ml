@@ -112,10 +112,41 @@ module Private = struct
        else lexshorted_greedy_elimination 
             (other_vertices,List.filter (fun e->not(i_mem v e)) edges,goal) ;;  
 
+
+let careful_translate d x = if d=0 then x else Image.image (fun t->t+d) x ;;
+
+let translation_decomposition x = match x with 
+    [] -> (0, [])
+    | first_elt::others -> 
+        let d = (first_elt-1) in 
+        (d,careful_translate (-d) x) ;;
+
+let transdist_decomposition max_dist x =
+  let parts = Arithmetic_list.decompose_into_far_apart_components   
+  ~max_inner_distance:max_dist x in 
+  Image.image translation_decomposition  parts ;;
+
+let transdist_components max_dist x =
+    Image.image snd (transdist_decomposition max_dist x) ;;  
+
+let evaluate_using_translation_and_distancing max_dist f_opt x=
+  let temp0 = transdist_decomposition max_dist x in 
+  let temp1 = Image.image (fun (d,y)->
+    match f_opt y with 
+     None -> (None,Some y)
+    |Some sy ->(Some(careful_translate d sy),None)
+    ) temp0 in 
+  let (good_temp1,bad_temp1) = List.partition (fun (opt_good,opt_bad)->opt_bad=None) temp1 in 
+  if bad_temp1 = []
+  then let full_solution = List.flatten(Image.image (fun (opt_good,_)->Option.unpack opt_good) temp1) in 
+        (Some full_solution,None) 
+  else (None,Some temp1);;
+
   end ;;
   
 
   let contained_arithmetic_progressions = Private.look_for_arithmetic_progressions_in_with_width_up_to ;;
+  let evaluate_using_translation_and_distancing = Private.evaluate_using_translation_and_distancing ;;
   let force_subset_in_arbitrary_set = Private.force_subset_in_arbitrary_set ;;
   let force_subset_in_interval = Private.force_subset_in_interval ;;
   let greedy_elimination = Private.greedy_elimination ;;

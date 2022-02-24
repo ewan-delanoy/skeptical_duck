@@ -1,6 +1,26 @@
 (************************************************************************************************************************
-Snippet 67 : 
+Snippet 68 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 67 : Removing indentation in a paragraph in a file  
+************************************************************************************************************************)
+
+let ap1 = Absolute_path.of_string "Szemeredi/sz_preliminaries.ml" ;;
+
+let text1 = Io.read_whole_file ap1 ;; 
+
+let (before_text2,text2,after_text2) =
+  Lines_in_string.tripartition_associated_to_interval text1 115 143 ;;
+
+let old_lines_in_text2 = Lines_in_string.lines text2 ;;  
+let new_lines_in_text2 = Image.image (Cull_string.cobeginning 12) old_lines_in_text2 ;; 
+
+let new_text2 = String.concat "\n" new_lines_in_text2 ;;
+let new_text1 = String.concat "\n" [before_text2;new_text2;after_text2] ;;
+
+Io.overwrite_with ap1 new_text1 ;;
 
 (************************************************************************************************************************
 Snippet 66 : Intertwining prints for debugging purposes
