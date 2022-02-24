@@ -133,7 +133,7 @@ let evaluate_using_translation_and_distancing max_dist f_opt x=
   let temp0 = transdist_decomposition max_dist x in 
   let temp1 = Image.image (fun (d,y)->
     match f_opt y with 
-     None -> (None,Some y)
+     None -> (None,Some (d,y))
     |Some sy ->(Some(careful_translate d sy),None)
     ) temp0 in 
   let (good_temp1,bad_temp1) = List.partition (fun (opt_good,opt_bad)->opt_bad=None) temp1 in 

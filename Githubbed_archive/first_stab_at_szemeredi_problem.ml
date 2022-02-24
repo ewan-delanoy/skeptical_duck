@@ -257,12 +257,25 @@ let force_compute_patient_measure old_f x=
     
 let rec patient_measure x = 
   let (opt_good,opt_bad) =
-  evaluate_using_translation_and_distancing current_width hashtbl_for_patient_measure x in 
+  Sz_preliminaries.evaluate_using_translation_and_distancing 
+    current_width (Hashtbl.find_opt hashtbl_for_patient_measure) x in 
   match opt_good with 
    Some old_answer -> old_answer 
     |None ->
-       let answer = force_compute_patient_measure patient_measure x in 
-       let _ = Hashtbl.add hashtbl_for_patient_measure x answer in 
+       let (whole,bad_part) = Option.unpack opt_bad in 
+       let fixed_bad_part = Image.image (fun
+         (opt_good2,opt_bad2) ->
+            let y = Option.unpack opt_bad2 in 
+            let z = force_compute_patient_measure patient_measure y in 
+            let _ = Hashtbl.add hashtbl_for_patient_measure y z in 
+            (y,force_compute_patient_measure patient_measure y)
+       ) bad_part in 
+       let answer = Image.image (
+         fun (opt_good3,opt_bad3) -> match opt_good3 with 
+           Some old_answer2 -> old_answer2 
+           | None ->  
+       ) whole in 
+       
        answer ;;  
 
 
