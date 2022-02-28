@@ -267,6 +267,64 @@ module Polymorphic_ocaml_record_t = struct
     (simple_text_for_tocrobj_converter por)^"\n\n"^
     "\nend;; \n\n\n"
 
+    exception Get_field_exn of string ;;
+
+
+    let get_field por fd_name =
+       match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.field_name = fd_name)
+          por.Polymorphic_ocaml_record_t.fields with 
+       Some answer -> answer 
+       | None -> raise ( Get_field_exn(fd_name)) ;;    
+    
+     exception Get_instance_exn of string ;; 
+    
+     let get_instance por inst_name =
+         match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
+            por.Polymorphic_ocaml_record_t.instances with 
+         Some answer -> answer 
+         | None -> raise ( Get_instance_exn(inst_name)) ;;    
+    
+     exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
+    
+     let check_inclusion small_list large_list =
+        let temp1 = List.filter (fun s->not(List.mem s large_list)) small_list in 
+        if temp1 <> []
+        then raise(Check_inclusion_exn(temp1,small_list,large_list))
+        else () ;;  
+    
+     let indexed_varname_for_field (j,fd)=
+         "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
+    
+     let snippet_for_extender_element (j,fd) = 
+         let var_name  = indexed_varname_for_field (j,fd) in 
+         (String.make 3 ' ')^"Fw_poly_t."^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+         var_name^" ;" ;;
+    
+    
+    let annotated_definition_for_extender por (before_ext,after_ext) =
+       let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
+       let inst_before = get_instance por before_ext 
+       and inst_after = get_instance por after_ext  in 
+       let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+       and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+       let _ = check_inclusion field_names_before field_names_after in 
+       let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
+       let extra_fields = Image.image (get_field por) extra_field_names in 
+       let indexed_extra_fields = Ennig.index_everything extra_fields in 
+       let filling_fields = Image.image (snippet_for_extender_element) indexed_extra_fields in 
+       let vars = String.concat " " (Image.image indexed_varname_for_field indexed_extra_fields) in 
+       {
+         Annotated_definition_t.value_name = ext_name ;
+         is_private = false ;
+         lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
+         (String.make 3 ' ')^"fw with "]@
+           filling_fields
+         @["} ;;"];
+       } ;;  
+    
+    let annotated_text_for_extenders por = 
+       Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
+    ;;      
    
 
    let expand_privatized_text l =
@@ -295,7 +353,8 @@ module Polymorphic_ocaml_record_t = struct
          annotated_text_for_origin_element por :: 
          ((annotated_text_for_getters por)@
          (annotated_text_for_setters por)@
-         (annotated_text_for_crobj_symlinks por) )
+         (annotated_text_for_crobj_symlinks por)@
+         (annotated_text_for_extenders por) )
       ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
@@ -387,7 +446,7 @@ module Polymorphic_ocaml_record_t = struct
       ) temp1 ;;
 
    let second_base = [
-      "fw_with_githubbing",fields_for_fw_with_githubbing ;
+      "github_configuration",fields_for_fw_with_githubbing ;
    ] ;; 
 
    let full_base =  cumulative_first_base @ second_base ;;     
@@ -395,7 +454,7 @@ module Polymorphic_ocaml_record_t = struct
    let instance_list_constructor l = Image.image (
       fun (a,b) -> {
         Polymorphic_ocaml_record_t.instance_name = a ;
-        fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.var_name ) b ;
+        fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.field_name ) b ;
       }
    ) l;;
 
@@ -406,47 +465,10 @@ module Polymorphic_ocaml_record_t = struct
          Total_ordering.standard fld1 fld2         
    ) : Polymorphic_ocaml_record_t.field_t Total_ordering_t.t);;
    
-   exception Get_field_exn of string ;;
-
-   let get_field por fd_name =
-      match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.var_name = fd_name)
-         por.Polymorphic_ocaml_record_t.fields with 
-      Some answer -> answer 
-      | None -> raise ( Get_field_exn(fd_name)) ;;    
-
-    exception Get_instance_exn of string ;; 
-
-    let get_instance por inst_name =
-        match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
-           por.Polymorphic_ocaml_record_t.instances with 
-        Some answer -> answer 
-        | None -> raise ( Get_instance_exn(inst_name)) ;;    
-
-    exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
-
-    let check_inclusion small_list large_list =
-       let temp1 = List.filter (fun s->not(List.mem s large_list)) small_list in 
-       if temp1 <> []
-       then raise(Check_inclusion_exn(temp1,small_list,large_list))
-       else () ;;  
-
-
-   let annotated_definition_for_extender por (before_ext,after_ext) =
-      let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
-      let inst_before = get_instance por before_ext 
-      and inst_after = get_instance por after_ext in 
-      let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
-      and field_names_after = inst_before.Polymorphic_ocaml_record_t.fields in 
-      let _ = check_inclusion field_names_before field_names_after in 
+   
       
-      
-      {
-        Annotated_definition_t.value_name = ext_name ;
-        is_private = false ;
-        lines_in_definition = ["let "^ext_name^" fw = {";]@
-        ( temp1 :: temp2 )
-        @["} ;;"];
-      } ;;  
+    
+ 
 
    let example = 
       let home = Sys.getenv "HOME" in 
@@ -460,7 +482,7 @@ module Polymorphic_ocaml_record_t = struct
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
        has_crobj_conversion = true ;
-       extensions = [] ;
+       extensions = ["fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = [] ;
     } ;;
    

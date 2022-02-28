@@ -1,21 +1,134 @@
 (************************************************************************************************************************
-Snippet 68 : 
+Snippet 70 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 69 : Enumerating subgroups of S4 
+************************************************************************************************************************)
+
+
+let i_order = Total_ordering.for_integers ;;
+let i_sort  = Ordered.sort i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order;;
+
+let il_order = Total_ordering.silex_compare  Total_ordering.for_integers ;;
+let il_sort  = Ordered.sort il_order ;;
+
+let current_order = 4 ;;
+let base = Permutation.iii current_order ;;
+
+let eval_list_permutation sigma k = List.nth sigma (k-1) ;;
+
+let compose_list_permutations sigma1 sigma2 = 
+   Ennig.doyle (fun k-> eval_list_permutation sigma1 (eval_list_permutation sigma2 k)) 1 current_order ;;
+
+let uncurried_compose = Memoized.make(fun (i,j) ->
+   let sigma1 = List.nth base (i-1)   
+   and sigma2 = List.nth base (j-1) in 
+   Listennou.find_index (compose_list_permutations sigma1 sigma2) base
+);;     
+
+let compose  i j = uncurried_compose (i,j) ;;
+
+let base_size = List.length base ;;
+
+let subset_product l1 l2 =
+    let temp1 = Cartesian.product l1 l2 in 
+    let temp2 = Image.image uncurried_compose temp1 in 
+    i_sort temp2 ;; 
+
+let rec helper_for_generated_subgroup (treated,seed) = 
+      let possibly_new = subset_product treated seed in 
+      let really_new = Ordered.setminus Total_ordering.for_integers possibly_new treated in 
+      if really_new = [] 
+      then treated 
+      else let new_whole = Ordered.merge Total_ordering.for_integers really_new treated in 
+            helper_for_generated_subgroup (new_whole,seed) ;;
+        
+let generated_subgroup seed = helper_for_generated_subgroup ([1],seed) ;; 
+
+let trivial_subgroup = [1] ;;
+let full_subgroup = Ennig.ennig 1 base_size ;;
+
+let level1  = 
+  il_sort (Ennig.doyle (fun k->generated_subgroup [k]) 2 base_size) ;; 
+
+let pre_level2 = 
+    let temp1 = Uple.list_of_pairs level1 in 
+    let temp2 = Image.image (fun (a,b)->generated_subgroup(a@b)) temp1 in 
+    il_sort temp2 ;;
+
+let (next_to_level2,level2) = List.partition (fun x->List.mem x level1) pre_level2 ;;
+
+let pre_level3 = 
+  let temp1 = Cartesian.product level1 level2 in 
+  let temp2 = List.filter (fun (x,y)->not(i_is_included_in x y)) temp1 in 
+  let temp3 = Image.image (fun (a,b)->generated_subgroup(a@b)) temp2 in 
+  il_sort temp3 ;;
+
+let (next_to_level3,level3) = List.partition (fun x->List.mem x level2) pre_level3 ;;  
+
+let halves x =
+   let n = (List.length x)/2 in 
+   List.filter (fun y->((List.length y)=n)&&(i_is_included_in y x) ) (level1@level2) ;;
+
+let is_transitive sg =
+   let temp1 = Image.image (fun sigma -> 
+    eval_list_permutation sigma 1
+   ) sg in 
+   (i_sort temp1) = (Ennig.ennig 1 current_order) ;;
+   
+
+let d4 = List.hd(List.filter (fun x->List.length x=8) level2) ;; 
+let halves_for_d4 = halves d4 ;; 
+
+let a4 = List.hd(List.filter (fun x->List.length x=12) level2) ;; 
+let halves_for_a4 = halves a4 ;; 
+
+let halves_for_whole = halves full_subgroup ;;
+
+    
+
+(************************************************************************************************************************
+Snippet 68 : Finding a polynomial x^4+p*x+q with Galois group A4
+************************************************************************************************************************)
+
+let u1 = Ennig.ennig (-50) 50 ;;
+let u2 = Cartesian.square u1 ;;
+let u3 = Image.image (fun (x,y)->(max(abs x)(abs y),(x,y)) ) u2 ;;
+let u4 = Ordered.sort Total_ordering.standard2 u3 ;;
+let unchecked_u5 = Image.image snd u4 ;;
+let u5 = List.filter (fun (p,q)->List.for_all (fun z->z*z*z*z+p*z+q<>0) 
+(Ennig.ennig (-1) 1)) unchecked_u5 ;;
+
+let round x=
+  let fl = floor x in 
+  if (x -. fl) < 0.5 
+  then int_of_float fl 
+  else (int_of_float fl)+1 ;;  
+
+let is_a_square n = 
+    if n< 0 then false else
+    let m =round(sqrt(float_of_int n)) in m * m = n;;  
+
+let check = List.filter is_a_square (Ennig.ennig 0 100) ;;    
+
+let u6 = List.filter (fun (p,q)->is_a_square(-27*p*p*p*p + 256*q*q*q)) u5 ;;
 
 (************************************************************************************************************************
 Snippet 67 : Removing indentation in a paragraph in a file  
 ************************************************************************************************************************)
 
-let ap1 = Absolute_path.of_string "Szemeredi/sz_preliminaries.ml" ;;
+let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
 let text1 = Io.read_whole_file ap1 ;; 
 
 let (before_text2,text2,after_text2) =
-  Lines_in_string.tripartition_associated_to_interval text1 115 143 ;;
+  Lines_in_string.tripartition_associated_to_interval text1 11 60 ;;
 
 let old_lines_in_text2 = Lines_in_string.lines text2 ;;  
-let new_lines_in_text2 = Image.image (Cull_string.cobeginning 12) old_lines_in_text2 ;; 
+let new_lines_in_text2 = Image.image (Cull_string.cobeginning 3) old_lines_in_text2 ;; 
 
 let new_text2 = String.concat "\n" new_lines_in_text2 ;;
 let new_text1 = String.concat "\n" [before_text2;new_text2;after_text2] ;;
