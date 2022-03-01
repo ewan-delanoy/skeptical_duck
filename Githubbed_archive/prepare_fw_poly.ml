@@ -315,12 +315,13 @@ module Polymorphic_ocaml_record_t = struct
        let indexed_and_labeled = Image.image (fun (j,fd)->
           "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_extra_fields in 
        let vars = String.concat " " indexed_and_labeled in 
+       let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
        {
          Annotated_definition_t.value_name = ext_name ;
          is_private = false ;
          lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
          (String.make 3 ' ')^"fw with ";
-         (String.make 3 ' ')^"Fw_poly_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
+         (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
            filling_fields
          @["} ;;"];
        } ;;  
@@ -339,19 +340,52 @@ module Polymorphic_ocaml_record_t = struct
       let indexed_and_labeled = Image.image (fun (j,fd)->
          "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
+      let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
       {
         Annotated_definition_t.value_name = constructor_name ;
         is_private = false ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
         (String.make 3 ' ')^"Private.origin with ";
-        (String.make 3 ' ')^"Fw_poly_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
+        (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
           filling_fields
         @["} ;;"];
       } ;;  
 
     let annotated_text_for_constructors por = 
       Image.image (annotated_definition_for_constructor por) por.Polymorphic_ocaml_record_t.constructors
-   ;;      
+   ;;     
+   
+   let annotated_definition_for_restrictor por (before_restr,after_restr) =
+    let restr_name = "restrict_"^before_restr^"_to_"^after_restr in 
+    let inst_before = get_instance por before_restr 
+    and inst_after = get_instance por after_restr  in 
+    let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+    and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+    let _ = check_inclusion field_names_after field_names_before in 
+    let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
+    {
+      Annotated_definition_t.value_name = restr_name ;
+      is_private = false ;
+      lines_in_definition = ["let "^restr_name^" fw  = {";
+      (String.make 3 ' ')^"fw with ";
+      (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_restr)^"\" ;"]
+      @["} ;;"];
+    } ;;  
+
+
+   let annotated_text_for_restrictors por = 
+    Image.image (annotated_definition_for_restrictor por) por.Polymorphic_ocaml_record_t.restrictions
+ ;;     
+
+
+ let annotated_definition_for_print_out por =
+  let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+  {
+    Annotated_definition_t.value_name = "print_out" ;
+    is_private = false ;
+    lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
+    "Format.fprintf fmt \"@[%s@]\" (fw."^main_module_name^"_t.type_name) ;;";];
+  } ;;  
 
    let expand_privatized_text l =
       let temp1 = Ordered.sort Annotated_definition.order l in 
@@ -381,7 +415,9 @@ module Polymorphic_ocaml_record_t = struct
          (annotated_text_for_setters por)@
          (annotated_text_for_crobj_symlinks por)@
          (annotated_text_for_extenders por)@
-         (annotated_text_for_constructors por) )
+         (annotated_text_for_constructors por)@
+         (annotated_text_for_restrictors por)@
+         [annotated_definition_for_print_out por] )
       ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
@@ -510,7 +546,7 @@ module Polymorphic_ocaml_record_t = struct
        implementation_file = (file_there "fw_poly") ;
        has_crobj_conversion = true ;
        extensions = ["fw_with_batch_compilation","fw_with_githubbing"] ;
-       restrictions = [] ;
+       restrictions = ["fw_with_githubbing","github_configuration"] ;
        constructors = ["fw_configuration"] ;
     } ;;
    
