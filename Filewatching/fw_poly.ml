@@ -102,7 +102,7 @@ let ignored_subdirectories x = x.Fw_poly_t.ignored_subdirectories ;;
 let index_for_caching x = x.Fw_poly_t.index_for_caching ;;
 let last_compilation_result_for_module x = x.Fw_poly_t.last_compilation_result_for_module ;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
-let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" (fw.Fw_poly_t.type_name) ;;
+let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("<"^(fw.Fw_poly_t.type_name)^">") ;;
 let restrict_fw_with_githubbing_to_github_configuration fw  = {
    fw with 
    Fw_poly_t.type_name = "Github_configuration" ;
