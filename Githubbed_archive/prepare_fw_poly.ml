@@ -297,7 +297,7 @@ module Polymorphic_ocaml_record_t = struct
     
      let snippet_for_extender_element (j,fd) = 
          let var_name  = indexed_varname_for_field (j,fd) in 
-         (String.make 3 ' ')^"Fw_poly_t."^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+         (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
          var_name^" ;" ;;
     
     
@@ -312,12 +312,15 @@ module Polymorphic_ocaml_record_t = struct
        let extra_fields = Image.image (get_field por) extra_field_names in 
        let indexed_extra_fields = Ennig.index_everything extra_fields in 
        let filling_fields = Image.image (snippet_for_extender_element) indexed_extra_fields in 
-       let vars = String.concat " " (Image.image indexed_varname_for_field indexed_extra_fields) in 
+       let indexed_and_labeled = Image.image (fun (j,fd)->
+          "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+       let vars = String.concat " " indexed_and_labeled in 
        {
          Annotated_definition_t.value_name = ext_name ;
          is_private = false ;
          lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
-         (String.make 3 ' ')^"fw with "]@
+         (String.make 3 ' ')^"fw with ";
+         (String.make 3 ' ')^"Fw_poly_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
            filling_fields
          @["} ;;"];
        } ;;  

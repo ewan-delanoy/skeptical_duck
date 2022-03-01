@@ -80,12 +80,13 @@ end;;
 
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
-let extend_fw_with_batch_compilation_to_fw_with_githubbing fw v1_backup_dir v2_gab v3_url v4_protected_pairs = {
+let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
-   Fw_poly_t.dir_for_backup = v1_backup_dir ;
-   Fw_poly_t.gitpush_after_backup = v2_gab ;
-   Fw_poly_t.github_url = v3_url ;
-   Fw_poly_t.encoding_protected_files = v4_protected_pairs ;
+   Fw_poly_t.type_name = "Fw_with_githubbing" ;
+   dir_for_backup = v1_backup_dir ;
+   gitpush_after_backup = v2_gab ;
+   github_url = v3_url ;
+   encoding_protected_files = v4_protected_pairs ;
 } ;;
 let github_url x = x.Fw_poly_t.github_url ;;
 let gitpush_after_backup x = x.Fw_poly_t.gitpush_after_backup ;;
