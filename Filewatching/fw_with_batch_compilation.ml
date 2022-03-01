@@ -250,7 +250,8 @@ module Private = struct
     let dbgbuild_path =  Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir) in 
     let msg=(
       if answer
-      then "\n\n Now, start \n\nocamldebug "^dbgbuild_path^name_element_for_debugged_file^
+      then "\n\n The debugging-friendly executable has been created. \n"^
+          "Now, go to "^dbgbuild_path^" and start \n\nocamldebug "^name_element_for_debugged_file^
            ".ocaml_debuggable\n\nin another terminal.\n\n"^
            "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
            "source "^ppodbg_path^" \n\n"
