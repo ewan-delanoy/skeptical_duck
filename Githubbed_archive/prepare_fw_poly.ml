@@ -34,7 +34,7 @@ module Polymorphic_ocaml_record_t = struct
       has_crobj_conversion : bool ;
       extensions : (string * string) list ;
       restrictions : (string * string) list ; 
-
+      constructors : string list ;
    } ;;
    
    end ;;
@@ -329,6 +329,29 @@ module Polymorphic_ocaml_record_t = struct
        Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
     ;;      
    
+    let annotated_definition_for_constructor por constructed_instance =
+      let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
+      let full_instance = get_instance por constructed_instance  in 
+      let field_names = full_instance.Polymorphic_ocaml_record_t.fields in 
+      let fields = Image.image (get_field por)field_names in 
+      let indexed_fields = Ennig.index_everything fields in 
+      let filling_fields = Image.image (snippet_for_extender_element) indexed_fields in 
+      let indexed_and_labeled = Image.image (fun (j,fd)->
+         "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_fields in 
+      let vars = String.concat " " indexed_and_labeled in 
+      {
+        Annotated_definition_t.value_name = constructor_name ;
+        is_private = false ;
+        lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
+        (String.make 3 ' ')^"Private.origin with ";
+        (String.make 3 ' ')^"Fw_poly_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
+          filling_fields
+        @["} ;;"];
+      } ;;  
+
+    let annotated_text_for_constructors por = 
+      Image.image (annotated_definition_for_constructor por) por.Polymorphic_ocaml_record_t.constructors
+   ;;      
 
    let expand_privatized_text l =
       let temp1 = Ordered.sort Annotated_definition.order l in 
@@ -357,7 +380,8 @@ module Polymorphic_ocaml_record_t = struct
          ((annotated_text_for_getters por)@
          (annotated_text_for_setters por)@
          (annotated_text_for_crobj_symlinks por)@
-         (annotated_text_for_extenders por) )
+         (annotated_text_for_extenders por)@
+         (annotated_text_for_constructors por) )
       ) ;;
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
@@ -487,6 +511,7 @@ module Polymorphic_ocaml_record_t = struct
        has_crobj_conversion = true ;
        extensions = ["fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = [] ;
+       constructors = ["fw_configuration"] ;
     } ;;
    
     let act () = write_to_implementation_file example ;;
