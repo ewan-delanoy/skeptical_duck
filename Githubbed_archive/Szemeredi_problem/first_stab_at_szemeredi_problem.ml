@@ -11,7 +11,7 @@ let u1 = Ennig.doyle ff 1 25 ;;
 
 open Needed_values ;;
 
-let this_file = Absolute_path.of_string "Githubbed_archive/first_stab_at_szemeredi_problem.ml" ;;
+let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/first_stab_at_szemeredi_problem.ml" ;;
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =
