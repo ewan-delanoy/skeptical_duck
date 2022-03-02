@@ -10,7 +10,11 @@ let ae = Usual_coma_state.all_endinglesses;;
 
 let bel = Usual_coma_state.sugared_below;;
 
-let cod ()=Check_ocaml_dircopy.check (Fw_with_githubbing.configuration (!(Usual_coma_state.main_ref)));;
+let cod ()=
+   let ucs = (!(Usual_coma_state.main_ref)) in 
+   Check_ocaml_dircopy.check 
+     (Fw_with_githubbing.configuration ucs) 
+        (Fw_with_githubbing.github_configuration ucs);;
 
 let cof = Usual_coma_state.census_of_foreigners;;
 
