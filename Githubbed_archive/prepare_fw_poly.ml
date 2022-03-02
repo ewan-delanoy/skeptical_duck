@@ -508,8 +508,12 @@ module Polymorphic_ocaml_record_t = struct
       (fst a,List.flatten ttemp3) 
       ) temp1 ;;
 
+  let root_field = Listennou.force_find (fun fd->
+      fd.Polymorphic_ocaml_record_t.field_name = "root"
+    ) fields_for_fw_configuration ;;
+
    let second_base = [
-      "github_configuration",fields_for_fw_with_githubbing ;
+      "github_configuration",root_field :: fields_for_fw_with_githubbing ;
    ] ;; 
 
    let full_base =  cumulative_first_base @ second_base ;;     
@@ -547,7 +551,7 @@ module Polymorphic_ocaml_record_t = struct
        has_crobj_conversion = true ;
        extensions = ["fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = ["fw_with_githubbing","github_configuration"] ;
-       constructors = ["fw_configuration"] ;
+       constructors = ["fw_configuration";"github_configuration"] ;
     } ;;
    
     let act () = write_to_implementation_file example ;;

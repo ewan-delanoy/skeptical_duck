@@ -85,6 +85,15 @@ let construct_fw_configuration ~root:v1_r ~ignored_subdirectories:v2_ign_subdirs
    ignored_subdirectories = v2_ign_subdirs ;
    ignored_files = v3_ign_files ;
 } ;;
+let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~gitpush_after_backup:v3_gab ~github_url:v4_url ~encoding_protected_files:v5_protected_pairs = {
+   Private.origin with 
+   Fw_poly_t.type_name = "Github_configuration" ;
+   root = v1_r ;
+   dir_for_backup = v2_backup_dir ;
+   gitpush_after_backup = v3_gab ;
+   github_url = v4_url ;
+   encoding_protected_files = v5_protected_pairs ;
+} ;;
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
 let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {

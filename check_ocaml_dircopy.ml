@@ -42,15 +42,15 @@ let check fw_data github_data =
   let remotedir=Dfa_root.of_line name_of_clone_directory in
   let full_clone_command=
     "git clone "^
-    (github_data.Github_configuration_t.github_url)^" "^
+    (Fw_poly.github_url github_data)^" "^
     name_of_clone_directory in 
   let j=Unix_command.uc full_clone_command in
   if j<>0
   then raise(Failure_during_github_cloning)
   else 
-  let cmds = commands_for_confidentiality github_data.Github_configuration_t.encoding_protected_files in 
+  let cmds = commands_for_confidentiality (Fw_poly.encoding_protected_files github_data) in 
   let _= Unix_command.conditional_multiple_uc cmds in 
-  let root_dir = github_data.Github_configuration_t.root in 
+  let root_dir = Fw_poly.root github_data in 
   let diff1=Prepare_dircopy_update.compute_restricted_diff
      root_dir remotedir (fw_data.Fw_configuration_t.ignored_subdirectories,
         (Image.image Dfn_rootless.to_line fw_data.Fw_configuration_t.ignored_files) ) in

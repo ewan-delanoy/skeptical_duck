@@ -10,8 +10,8 @@ let commands_for_backup config diff=
    if Dircopy_diff.is_empty diff
    then ([],[])
    else 
-   let source_dir = config.Github_configuration_t.root 
-   and destination_dir = config.Github_configuration_t.dir_for_backup in 
+   let source_dir = Fw_poly.root config 
+   and destination_dir = Fw_poly.dir_for_backup config in 
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Image.image Dfn_rootless.to_line (Dircopy_diff.recently_created diff) in
    let temp2=Option.filter_and_unpack
@@ -47,16 +47,16 @@ let commands_for_backup config diff=
        and s_backup_dir = Dfa_root.connectable_to_subpath destination_dir in 
        let s_full_path = s_backup_dir^(Dfn_rootless.to_line replacee) in 
        Unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
-   ) config.Github_configuration_t.encoding_protected_files in 
+   ) (Fw_poly.encoding_protected_files config) in 
    (temp3@temp4@temp5@temp8,temp6@temp7);;
 
 let backup_with_message config  diff msg=
-  let destination_dir = config.Github_configuration_t.dir_for_backup in 
+  let destination_dir = Fw_poly.dir_for_backup config in 
   let (nongit_cmds,git_cmds)=commands_for_backup config diff in
   let s_destination=Dfa_root.connectable_to_subpath destination_dir in
   let _=Image.image Unix_command.uc nongit_cmds in
   let _=(
-  if config.Github_configuration_t.gitpush_after_backup
+  if Fw_poly.gitpush_after_backup config
   then let cwd=Sys.getcwd() in
        Image.image Unix_command.uc
        (

@@ -23,13 +23,13 @@ module Private = struct
        (set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
      
      let github_config fw = 
-        {Github_configuration_t.root = root fw;
-          dir_for_backup = fw.Fw_with_githubbing_t.dir_for_backup ;
-          gitpush_after_backup = fw.Fw_with_githubbing_t.gitpush_after_backup ;
-          github_url = fw.Fw_with_githubbing_t.github_url ;
-          encoding_protected_files = fw.Fw_with_githubbing_t.encoding_protected_files ;
-          } ;;
-   
+      Fw_poly.construct_github_configuration
+      ~root:(root fw)
+      ~dir_for_backup:fw.Fw_with_githubbing_t.dir_for_backup 
+      ~gitpush_after_backup:fw.Fw_with_githubbing_t.gitpush_after_backup
+      ~github_url:fw.Fw_with_githubbing_t.github_url
+      ~encoding_protected_files:fw.Fw_with_githubbing_t.encoding_protected_files ;;
+
    
      let salt = "Coma_"^"state.";;
        
