@@ -193,6 +193,7 @@ let endingless_at_module fw mn = Fw_with_batch_compilation.endingless_at_module 
 let find_subdir_from_suffix fw = Fw_with_batch_compilation.find_subdir_from_suffix (Private.parent fw) ;;
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
+let github_configuration = Private.github_config ;;
 let gitpush_after_backup fw= fw.Fw_with_githubbing_t.gitpush_after_backup;;     
 let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
 let list_values_from_module fw mn = 
