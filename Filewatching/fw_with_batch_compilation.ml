@@ -438,7 +438,7 @@ module Private = struct
 
   let configuration fw = Fw_with_dependencies.configuration (parent fw) ;;
 
-  let directly_below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
+  let directly_below fw mn = Fw_with_dependencies.directly_below (parent fw) mn ;;
 
   let direct_fathers_for_module fw mn = Fw_with_dependencies.direct_fathers_for_module (parent fw) mn ;;
 
