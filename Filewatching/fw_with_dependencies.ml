@@ -1194,6 +1194,15 @@ let decipher_module fw capitalized_or_not_x=
             if List.mem mn0 ancestors_for_mn
             then Some(mn)
             else None) ordered_data;;  
+   
+  let directly_below fw mn0 =
+    let ordered_data = Order.get fw in 
+    Option.filter_and_unpack(fun (mn,_)->
+      let fathers_for_mn = fst (List.assoc mn ordered_data) in 
+        if List.mem mn0 fathers_for_mn
+        then Some(mn)
+        else None) ordered_data;;  
+
 
     let check_that_no_change_has_occurred fw =
       Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
@@ -1297,7 +1306,7 @@ let check_module_sequence_for_forgettability fw l=
     then Some mn 
     else None 
  )(Order.get fw) in 
- List.filter (fun mn->not(List.mem mn l)) modules_below;;    
+ List.filter (fun mn->not(List.mem mn l)) modules_below;;      
 
 end ;;
 
@@ -1318,6 +1327,7 @@ let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
+let directly_below = Private.directly_below ;;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let duplicate_module = Private.duplicate_module ;;
 let empty_one = Private.Exit.empty_one ;;
