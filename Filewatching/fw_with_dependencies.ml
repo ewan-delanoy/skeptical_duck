@@ -1292,9 +1292,9 @@ let test_for_foreign root ap =
 
 let census_of_foreigners fw=
   let config = Fw_with_small_details.configuration (parent fw) in 
-  let  the_root = config.Fw_configuration_t.root in 
+  let  the_root = Fw_poly.root config in 
   let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-  let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
+  let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
   List.filter (test_for_foreign the_root) list1;;
 
 let check_module_sequence_for_forgettability fw l=

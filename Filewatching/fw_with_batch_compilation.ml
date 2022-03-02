@@ -332,7 +332,7 @@ module Private = struct
    };;   
 
    let of_configuration config =
-      let root = config.Fw_configuration_t.root in 
+      let root = Fw_poly.root config in 
       let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 

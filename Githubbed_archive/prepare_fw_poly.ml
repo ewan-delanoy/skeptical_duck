@@ -156,7 +156,7 @@ module Polymorphic_ocaml_record_t = struct
      por.Polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
      por.Polymorphic_ocaml_record_t.fields ;;
-   let annotated_text_for_crobj_symlinks por = 
+   let annotated_text_for_crobj_symlinks  = 
     [
       {
         Annotated_definition_t.value_name = "of_concrete_object" ;
@@ -244,13 +244,17 @@ module Polymorphic_ocaml_record_t = struct
 
   let simple_text_for_tocrobj_converter por = 
     let fields_with_crobj = fields_with_crobj_conversion por  in 
+    let temp1 = (String.make 4 ' ')^" label_for_type_name,"^ 
+    " Crobj_converter.string_to_concrete_object fw."^
+     (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^"_t.type_name ;"
+    and temp2 = Image.image (simple_text_for_tocrobj_element por) fields_with_crobj in 
     String.concat "\n"
     ( 
      [ "let to_concrete_object fw = ";
        " let items =  ";
        " ["
      ]@
-      (Image.image (simple_text_for_tocrobj_element por) fields_with_crobj)
+      (temp1 :: temp2)
       @
      [
        " ] in ";
@@ -413,7 +417,7 @@ module Polymorphic_ocaml_record_t = struct
          annotated_text_for_origin_element por :: 
          ((annotated_text_for_getters por)@
          (annotated_text_for_setters por)@
-         (annotated_text_for_crobj_symlinks por)@
+         (annotated_text_for_crobj_symlinks)@
          (annotated_text_for_extenders por)@
          (annotated_text_for_constructors por)@
          (annotated_text_for_restrictors por)@
@@ -549,7 +553,8 @@ module Polymorphic_ocaml_record_t = struct
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
        has_crobj_conversion = true ;
-       extensions = ["fw_with_batch_compilation","fw_with_githubbing"] ;
+       extensions = ["fw_configuration","file_watcher";
+                     "fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = ["fw_with_githubbing","github_configuration"] ;
        constructors = ["fw_configuration";"github_configuration"] ;
     } ;;

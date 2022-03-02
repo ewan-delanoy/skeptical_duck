@@ -12,19 +12,16 @@ let compact_replacer =
 
 let fw_config = 
   let home = Sys.getenv "HOME" in 
- {Fw_configuration_t.root =
-    Dfa_root_t.R (home^"/Teuliou/Sites/Gwerzher_Leoriou");
-   ignored_subdirectories =
-    [
-     Dfa_subdirectory_t.SD "images"; 
-     Dfa_subdirectory_t.SD "node_modules"
-    ];
-   ignored_files =
-    [Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "package-lock",
-      Dfa_ending_t.E "json");
-     Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "deizlevr",
-      Dfa_ending_t.E "txt")];
-   } ;;
+  Fw_poly.construct_fw_configuration 
+  ~root:(Dfa_root_t.R (home^"/Teuliou/Sites/Gwerzher_Leoriou"))
+  ~ignored_subdirectories:[
+    Dfa_subdirectory_t.SD "images"; 
+    Dfa_subdirectory_t.SD "node_modules"
+   ]
+  ~ignored_files:[Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "package-lock",
+  Dfa_ending_t.E "json");
+ Dfn_rootless_t.J (Dfa_subdirectory_t.SD "", Dfa_module_t.M "deizlevr",
+  Dfa_ending_t.E "txt")] ;;
 
    let github_config = 
     let home = Sys.getenv "HOME" in 

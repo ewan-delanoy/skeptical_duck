@@ -88,10 +88,7 @@ module Private = struct
 
     let unfreeze_copy cs destroot =
         let old_config = Fw_with_githubbing.configuration cs in 
-        let remote_config = {
-           old_config with 
-           Fw_configuration_t.root = destroot ;
-        } in 
+        let remote_config = Fw_poly.set_root old_config  destroot in   
         let remote_cs = Fw_with_githubbing.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
         let remote_cs2 =
            Fw_with_githubbing.of_configuration 

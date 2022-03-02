@@ -42,6 +42,7 @@ let of_concrete_object ccrt_obj =
 let to_concrete_object fw = 
  let items =  
  [
+     label_for_type_name, Crobj_converter.string_to_concrete_object fw.Fw_poly_t.type_name ;
      label_for_dir_for_backup, Dfa_root.to_concrete_object fw.Fw_poly_t.dir_for_backup ;
      label_for_encoding_protected_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object fw.Fw_poly_t.encoding_protected_files ;
      label_for_github_url, Crobj_converter.string_to_concrete_object fw.Fw_poly_t.github_url ;
@@ -96,6 +97,11 @@ let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~git
 } ;;
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
+let extend_fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
+   fw with 
+   Fw_poly_t.type_name = "File_watcher" ;
+   watched_files = v1_files ;
+} ;;
 let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
    Fw_poly_t.type_name = "Fw_with_githubbing" ;

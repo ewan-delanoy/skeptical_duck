@@ -37,14 +37,14 @@ let pair_of_crobj crobj=
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
-         File_watcher_t.configuration = Fw_configuration.of_concrete_object(g configuration_label);
+         File_watcher_t.configuration = Fw_poly.of_concrete_object(g configuration_label);
          watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
       };; 
    
    let to_concrete_object fw=
       let items= 
       [
-       configuration_label, Fw_configuration.to_concrete_object fw.File_watcher_t.configuration;
+       configuration_label, Fw_poly.to_concrete_object fw.File_watcher_t.configuration;
        watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.File_watcher_t.watched_files;
       ]  in
       Concrete_object_t.Record items;;
@@ -56,7 +56,7 @@ let pair_of_crobj crobj=
 (* Start of level 4 *)
 
   
-let root fw = Fw_configuration.root (fw.File_watcher_t.configuration);;
+let root fw = Fw_poly.root (fw.File_watcher_t.configuration);;
 
 (* End of level 4 *)
 
@@ -142,13 +142,13 @@ let compute_changes_and_announce_them fw ~verbose=
 let configuration fw = fw.File_watcher_t.configuration ;;
 
 let get_content fw rootless = 
-  let root = Fw_configuration.root (fw.File_watcher_t.configuration) in 
+  let root = Fw_poly.root (fw.File_watcher_t.configuration) in 
   let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
   Io.read_whole_file(Absolute_path.of_string s_ap);;     
     
 
 let of_configuration_and_list config to_be_watched =
-  let the_root = config.Fw_configuration_t.root in  
+  let the_root = Fw_poly.root config in  
   let compute_info=( fun path->
     let s_root = Dfa_root.connectable_to_subpath the_root
     and s_path=Dfn_rootless.to_line path in 
@@ -261,17 +261,11 @@ let check_that_no_change_has_occurred fw =
        Put_use_directive_in_initial_comment.put_usual root ap
     ;;    
          
-        
-        
-        let empty_one config= {
-            File_watcher_t.configuration = config;
-            watched_files = [];
-         } ;; 
 
         let first_init config =
-          let the_root = config.Fw_configuration_t.root in 
+          let the_root = Fw_poly.root config in 
           let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-          let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir config.Fw_configuration_t.ignored_subdirectories false in 
+          let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
           let list2 = Option.filter_and_unpack(
             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 
@@ -404,6 +398,11 @@ fw2 ;;
                
         let watched_files fw = fw.File_watcher_t.watched_files ;;               
      
+        let empty_one config= {
+         File_watcher_t.configuration = config;
+         watched_files = [];
+      } ;; 
+
 end;;
 
 
@@ -417,6 +416,7 @@ let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
+let plunge_configuration = Fw_poly.extend_fw_configuration_to_file_watcher ~watched_files:[];;
 let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;

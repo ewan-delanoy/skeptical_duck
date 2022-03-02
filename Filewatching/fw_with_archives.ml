@@ -72,7 +72,7 @@ module Private = struct
       )  (watched_files fw) ;;
       
    let compute_small_details_on_one_file fw rl=
-      let root = Fw_configuration.root (configuration fw) in 
+      let root = Fw_poly.root (configuration fw) in 
       let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
       let ap = Absolute_path.of_string s_ap in 
       Fw_file_small_details.compute ap ;;
