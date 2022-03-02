@@ -4,7 +4,6 @@
 
 *)
 
-let root config = config.Fw_configuration_t.root;;
 
 let of_root root_dir = 
     Fw_poly.construct_fw_configuration 
