@@ -384,7 +384,7 @@ module Polymorphic_ocaml_record_t = struct
     Annotated_definition_t.value_name = "print_out" ;
     is_private = false ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
-    "Format.fprintf fmt \"@[%s@]\" (\"<\"^(fw."^main_module_name^"_t.type_name)^\">\") ;;";];
+    "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
   } ;;  
 
    let expand_privatized_text l =
