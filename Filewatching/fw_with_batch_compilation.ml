@@ -306,9 +306,10 @@ module Private = struct
       let (new_parent,removed_files) = Fw_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Image.image Dfa_module.to_line mod_names in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
+     let s_build_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.usual_build_subdir)) in 
      let _=Image.image
                       (fun (mname,edg)->
-                       let cmd="rm -f _build/"^mname^edg in
+                       let cmd="rm -f "^s_build_dir^mname^edg in
                        Unix_command.uc(cmd))
                       temp2 in
       (set_parent fw new_parent,removed_files);;
