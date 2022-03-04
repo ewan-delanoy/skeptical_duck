@@ -50,9 +50,18 @@ module Private = struct
         lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
       } ;
     ] ;;
-    
+    let annotated_text_for_extender_symlinks por=
+      Image.image (
+          fun (before_ext,after_ext) ->
+            let ext_name = before_ext^"_to_"^after_ext in 
+            {
+        Por_public_definition_t.value_name = ext_name ;
+        lines_in_definition = ["let extend_"^ext_name^"  = Private.Extender."^ext_name^" ;;"];
+      } 
+      ) por.Polymorphic_ocaml_record_t.extensions ;;
+     
+     
 
-    
      let indexed_varname_for_field (j,fd)=
          "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
     
@@ -85,6 +94,8 @@ module Private = struct
            filling_fields
          @["} ;;"];
        } ;;  
+
+
     
     let annotated_text_for_extenders por = 
        Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
@@ -151,7 +162,7 @@ let main por =
           (Private.annotated_text_for_getters por)@
           (Private.annotated_text_for_setters por)@
           (Private.annotated_text_for_crobj_symlinks)@
-          (Private.annotated_text_for_extenders por)@
+          (Private.annotated_text_for_extender_symlinks por)@
           (Private.annotated_text_for_constructors por)@
           (Private.annotated_text_for_restrictors por)@
           [Private.annotated_definition_for_print_out por] );;   

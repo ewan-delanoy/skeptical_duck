@@ -160,9 +160,9 @@ let text_for_extender por (before_ext,after_ext) =
       if l = []
       then ""  
       else
-      "module Extender = struct \n"^
-      (String.concat "\n" (Image.image (text_for_extender por) l))^"\n\n"^
-      "\nend;; \n\n\n"     ;; 
+      "module Extender = struct \n\n"^
+      (String.concat "\n" (Image.image (text_for_extender por) l))^
+      "\nend;;"     ;; 
 
 end ;;      
 
@@ -230,9 +230,9 @@ end ;;
 
    
 let main por =   
-      "module Private = struct \n"^
-           (Private.Crobj.full_text por)^
-           (Private.Extender.full_text por)^
-           (Private.Parent.full_text por)^
-           (Private.Origin.text por)^
+      "module Private = struct \n\n"^
+           (Private.Crobj.full_text por)^"\n\n"^
+           (Private.Extender.full_text por)^"\n\n"^
+           (Private.Parent.full_text por)^"\n\n"^
+           (Private.Origin.text por)^"\n\n"^
            "\nend;; \n\n\n" ;;
