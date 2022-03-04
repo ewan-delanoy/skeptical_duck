@@ -60,7 +60,6 @@ module Private = struct
       } 
       ) por.Polymorphic_ocaml_record_t.extensions ;;
      
-     
 
    
     let annotated_definition_for_constructor por constructed_instance =

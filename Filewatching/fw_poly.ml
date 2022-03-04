@@ -66,12 +66,12 @@ end;;
 
 module Extender = struct 
 
-let extend_fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
+let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
    Fw_poly_t.type_name = "File_watcher" ;
    watched_files = v1_files ;
 } ;;
-let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
+let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
    Fw_poly_t.type_name = "Fw_with_githubbing" ;
    dir_for_backup = v1_backup_dir ;
@@ -79,7 +79,7 @@ let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1
    github_url = v3_url ;
    encoding_protected_files = v4_protected_pairs ;
 } ;;
-let extend_file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
+let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
    fw with 
    Fw_poly_t.type_name = "Fw_with_archives" ;
    subdirs_for_archived_mlx_files = v1_archives_subdirs ;
