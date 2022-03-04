@@ -35,8 +35,3 @@ let get_instance por inst_name =
     Some answer -> answer 
   | None -> raise ( Get_instance_exn(inst_name)) ;;    
     
-     
-let snippet_for_extender_element (j,fd) = 
-    let var_name  = indexed_varname_for_field (j,fd) in 
-    (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
-    var_name^" ;" ;;     

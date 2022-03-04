@@ -60,7 +60,10 @@ module Private = struct
       } 
       ) por.Polymorphic_ocaml_record_t.extensions ;;
      
-
+      let snippet_for_constructor_element (j,fd) = 
+        let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
+        (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+        var_name^" ;" ;;     
    
     let annotated_definition_for_constructor por constructed_instance =
       let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
@@ -68,7 +71,7 @@ module Private = struct
       let field_names = full_instance.Polymorphic_ocaml_record_t.fields in 
       let fields = Image.image (Por_common.get_field por)field_names in 
       let indexed_fields = Ennig.index_everything fields in 
-      let filling_fields = Image.image (Por_common.snippet_for_extender_element) indexed_fields in 
+      let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
          "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 

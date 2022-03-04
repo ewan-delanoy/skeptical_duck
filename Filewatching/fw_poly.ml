@@ -99,6 +99,11 @@ let get_parent_name fw =
   Some(answer) ->answer
  |None -> raise (No_designated_parent(name)) ;;
 
+let sp_for_fw_with_archives ~child ~new_parent = 
+ Extender.file_watcher_to_fw_with_archives new_parent 
+   ~subdirs_for_archived_mlx_files:(child.Fw_poly_t.subdirs_for_archived_mlx_files)
+ ;;
+
 
 end;; 
 
