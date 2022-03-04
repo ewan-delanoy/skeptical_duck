@@ -1,6 +1,229 @@
 (************************************************************************************************************************
-Snippet 70 : 
+Snippet 71 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 70 : Add painful debugging session on  initialize_toplevel
+************************************************************************************************************************)
+
+let bad1 = Needed_values.initialize_toplevel () ;; *)
+
+let ucs_ref = Usual_coma_state. Private.main_ref ;; 
+
+(* let bad2 = Modify_coma_state.Reference.initialize_if_empty ucs_ref ;; 
+
+let bad3 = Modify_coma_state.Reference.initialize ucs_ref ;;  *)
+
+let ucs0 = (!ucs_ref) ;;
+
+(* let bad4 = Fw_with_githubbing.read_persistent_version ucs0 ;; *)
+
+let full_path=Dfn_join.root_to_rootless (Fw_with_githubbing.root ucs0)  
+       Coma_constant.rootless_path_for_targetfile ;;
+let ap= Dfn_full.to_absolute_path full_path ;;
+let the_archive=Io.read_whole_file ap  ;;
+let archived_object = Crobj_parsing.parse the_archive ;;
+
+(* let bad5 = Fw_with_githubbing.of_concrete_object archived_object;;  *)
+let g=Concrete_object.get_record archived_object;;      
+
+module Pri = Fw_with_githubbing.Private ;;
+
+let crobj1 = g Pri.parent_label ;;
+let fld2 = Dfa_root.of_concrete_object(g Pri.dir_for_backup_label) ;;
+let fld3 = Crobj_converter.bool_of_concrete_object (g Pri.gitpush_after_backup_label) ;;
+let fld4 = Crobj_converter.string_of_concrete_object (g Pri.github_url_label) ;;
+let fld5 = Dfn_rootless.pair_list_of_concrete_object (g Pri.encoding_protected_files_label) ;;
+
+(* 
+
+let bad6 = {
+  Fw_with_githubbing_t.parent = Fw_with_batch_compilation.of_concrete_object crobj1;
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
+
+*)
+
+let h = Concrete_object.get_record crobj1 ;; 
+
+module Pra = Fw_with_batch_compilation.Private ;;
+
+let crobj2 = h Pra.frontier_with_unix_world_label ;; 
+let fld6 = Pra.cr_to_pair Crobj_converter.bool_of_concrete_object (h Pra.last_compilation_result_for_module_label) ;;
+
+(*
+let bad7 = {
+  Fw_with_githubbing_t.parent = {
+    Fw_with_batch_compilation_t.parent = Fw_with_dependencies.of_concrete_object crobj2;
+    last_compilation_result_for_module = fld6;
+  };
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
+*)
+
+let fld7 = Fw_with_dependencies.Private.expand_index ( Fw_indexer.create_new_instance ());;
+
+(*
+
+let bad8 = {
+  Fw_with_githubbing_t.parent = {
+    Fw_with_batch_compilation_t.parent = {
+      Fw_with_dependencies_t.parent = Fw_with_small_details.of_concrete_object crobj2 ;
+      index_for_caching = fld7 ;
+    };
+    last_compilation_result_for_module = fld6;
+  };
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
+
+*)
+
+let k =Concrete_object.get_record crobj2 ;;
+module Pru = Fw_with_small_details.Private ;;
+let crobj3 = k Pru.parent_label ;;
+let fld8 = Pru.cr_to_pair_list Fw_file_small_details.of_concrete_object (k Pru.small_details_in_files_label);;
+
+
+
+(*
+
+
+
+let bad9 = {
+  Fw_with_githubbing_t.parent = {
+    Fw_with_batch_compilation_t.parent = {
+      Fw_with_dependencies_t.parent = {
+        Fw_with_small_details_t.parent = Fw_with_archives.of_concrete_object crobj3;
+        small_details_in_files = fld8;
+      } ;
+      index_for_caching = fld7 ;
+    };
+    last_compilation_result_for_module = fld6;
+  };
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
+
+*)
+
+let l =Concrete_object.get_record crobj3 ;;
+module Pro = Fw_with_archives.Private ;;
+let crobj4 = l Pro.parent_label ;;
+let fld9 = Pro.cr_to_list (l Pro.subdirs_for_archived_mlx_files_label);;
+
+(*
+
+let bad10 = {
+  Fw_with_githubbing_t.parent = {
+    Fw_with_batch_compilation_t.parent = {
+      Fw_with_dependencies_t.parent = {
+        Fw_with_small_details_t.parent = {
+          Fw_with_archives_t.parent = File_watcher.of_concrete_object crobj4;
+          subdirs_for_archived_mlx_files = fld9;
+        };
+        small_details_in_files = fld8;
+      } ;
+      index_for_caching = fld7 ;
+    };
+    last_compilation_result_for_module = fld6;
+  };
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
+
+*)
+
+let gg =Concrete_object.get_record crobj4 ;;
+module Prii = File_watcher.Private ;;
+let crobj5 = gg Prii.configuration_label ;;
+let fld10 = Crobj_converter_combinator.to_list Prii.pair_of_crobj (gg Prii.watched_files_label);;
+ 
+(*
+let bad11 = {
+    Fw_with_githubbing_t.parent = {
+      Fw_with_batch_compilation_t.parent = {
+        Fw_with_dependencies_t.parent = {
+          Fw_with_small_details_t.parent = {
+            Fw_with_archives_t.parent = {
+              File_watcher_t.configuration = Fw_poly.of_concrete_object crobj5;
+              watched_files = fld10;
+            };
+            subdirs_for_archived_mlx_files = fld9;
+          };
+          small_details_in_files = fld8;
+        } ;
+        index_for_caching = fld7 ;
+      };
+      last_compilation_result_for_module = fld6;
+    };
+    dir_for_backup = fld2 ;
+    gitpush_after_backup = fld3 ;
+    github_url = fld4 ;
+    encoding_protected_files = fld5;
+};; 
+*)
+
+let g =Concrete_object.get_record crobj4 ;;
+module Pri = Fw_poly.Private.Crobj ;;
+
+let fld11 = try Crobj_converter.string_of_concrete_object (g Pri.label_for_type_name) with  
+_ -> "Fw_configuration";;
+let fld12 =  try Dfa_root.of_concrete_object (g Pri.label_for_root) with 
+_ -> Coma_big_constant.This_World.root;;
+let fld13 = try Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g Pri.label_for_ignored_files) with 
+_ -> [];;
+let fld14 = try Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g Pri.label_for_ignored_subdirectories) with 
+_ -> [Dfa_subdirectory_t.SD "Utility_files"; Dfa_subdirectory_t.SD "_build";
+Dfa_subdirectory_t.SD "Fads"];;
+
+let reconstructed_config =
+{
+    Fw_poly.Private.origin with 
+    Fw_poly_t.type_name = fld11 ;
+    ignored_files = fld13  ;
+    ignored_subdirectories = fld14  ;
+    root = fld12  ;
+ } ;;
+
+let crubj = Fw_poly.to_concrete_object reconstructed_config ;;
+
+
+ let bad11 = {
+  Fw_with_githubbing_t.parent = {
+    Fw_with_batch_compilation_t.parent = {
+      Fw_with_dependencies_t.parent = {
+        Fw_with_small_details_t.parent = {
+          Fw_with_archives_t.parent = {
+            File_watcher_t.configuration = Fw_poly.of_concrete_object crobj5;
+            watched_files = fld10;
+          };
+          subdirs_for_archived_mlx_files = fld9;
+        };
+        small_details_in_files = fld8;
+      } ;
+      index_for_caching = fld7 ;
+    };
+    last_compilation_result_for_module = fld6;
+  };
+  dir_for_backup = fld2 ;
+  gitpush_after_backup = fld3 ;
+  github_url = fld4 ;
+  encoding_protected_files = fld5;
+};; 
 
 
 (************************************************************************************************************************

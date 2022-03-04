@@ -70,7 +70,41 @@ let patient_measure1 =Memoized.recursive(fun old_f (prelude,x) ->
       max (old_f(Prelude.concat prelude1 "0",shortened_x1))
           (1+old_f(Prelude.concat prelude1 "1",shortened_x1))       
 ) ;;  
+
+let data_for_case1 = [(Prelude.P "0000", (1, 2)); (Prelude.P "0001", (1, 1));
+(Prelude.P "0010", (1, 2)); (Prelude.P "0011", (0, 1));
+(Prelude.P "0100", (1, 2)); (Prelude.P "0101", (1, 1));
+(Prelude.P "0110", (1, 2)); (Prelude.P "1000", (1, 2));
+(Prelude.P "1001", (1, 1)); (Prelude.P "1010", (0, 1));
+(Prelude.P "1011", (0, 1)); (Prelude.P "1100", (1, 2));
+(Prelude.P "1101", (1, 1))] ;;
+
+let formula_for_case1 prelude n =
+    let (a,b) = List.assoc prelude data_for_case1 in 
+    let q = (n mod 3) in 
+    (2*q)+(List.assoc (n mod 3) [0,0;1,a;2,b]) ;;
+
+let case1_biopt s =
+    let n = String.length s in 
+    match Option.seek (fun j->String.get s (j-1)<>'F') (Ennig.ennig 1 n) with 
+     None ->(Some n,None)
+    |Some (j1) -> (None,Some j1) ;;
+
+let impatient_measure1 (prelude,body) =  ;;
+
+
+
+
+
    
 let tf1 n = patient_measure1 (Prelude.of_string "0000",String.make n 'F') ;;
 
 let u1 = Ennig.doyle tf1 1 30 ;; 
+
+let short_measure prelude =
+    let tempf = (fun j->patient_measure1 (prelude,String.make j 'F')) in 
+    (tempf(4)-tempf(3),tempf(5)-tempf(3)) ;;
+
+let z1 = Image.image (fun prelude->(prelude,short_measure prelude)) Prelude.base ;;
+
+
