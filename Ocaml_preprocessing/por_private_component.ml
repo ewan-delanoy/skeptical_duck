@@ -117,16 +117,16 @@ end ;;
 module Extender = struct 
 
    
-      let indexed_varname_for_field (j,fd)=
+let indexed_varname_for_field (j,fd)=
       "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
  
-  let snippet_for_extender_element (j,fd) = 
+let snippet_for_extender_element (j,fd) = 
       let var_name  = indexed_varname_for_field (j,fd) in 
       (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
       var_name^" ;" ;;
  
  
- let annotated_definition_for_extender por (before_ext,after_ext) =
+let text_for_extender por (before_ext,after_ext) =
     let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
     let inst_before = Por_common.get_instance por before_ext 
     and inst_after = Por_common.get_instance por after_ext  in 
@@ -141,19 +141,28 @@ module Extender = struct
        "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_extra_fields in 
     let vars = String.concat " " indexed_and_labeled in 
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
-    {
-      Por_public_definition_t.value_name = ext_name ;
-      lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
+    String.concat "\n" (["let "^ext_name^" fw "^vars^" = {";
       (String.make 3 ' ')^"fw with ";
       (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
         filling_fields
-      @["} ;;"];
-    } ;;  
+      @["} ;;"]);;  
  
- let annotated_text_for_extenders por = 
-    Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
+ let full_text por = 
+    String.concat "\n" (Image.image (text_for_extender por) por.Polymorphic_ocaml_record_t.extensions)
  ;;      
+
+ let needed_extensions por =
+      por.Polymorphic_ocaml_record_t.extensions @
+      (Image.image (fun (x,y)->(y,x)) por.Polymorphic_ocaml_record_t.designated_parents) ;;   
       
+ let full_text por =
+      let l = needed_extensions por in 
+      if l = []
+      then ""  
+      else
+      "module Extender = struct \n"^
+      (String.concat "\n" (Image.image (text_for_extender por) l))^"\n\n"^
+      "\nend;; \n\n\n"     ;; 
 
 end ;;      
 
@@ -192,7 +201,7 @@ let full_text por =
       (text_for_main_list por)^"\n\n"^
       (text_for_exceptions)^"\n\n"^
       (text_for_get_parent_name por)^"\n\n"^
-      "\nend;; \n\n\n"      
+      "\nend;; \n\n\n"     ;; 
 
 end ;;      
 
@@ -223,6 +232,7 @@ end ;;
 let main por =   
       "module Private = struct \n"^
            (Private.Crobj.full_text por)^
+           (Private.Extender.full_text por)^
            (Private.Parent.full_text por)^
            (Private.Origin.text por)^
            "\nend;; \n\n\n" ;;
