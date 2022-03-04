@@ -41,7 +41,7 @@ open Needed_values ;;
        (field:Polymorphic_ocaml_record_t.field_t) =
        let fn = field.Polymorphic_ocaml_record_t.field_name in 
        {
-        Annotated_definition_t.value_name = fn ;
+        Por_public_definition_t.value_name = fn ;
         lines_in_definition = ["let "^fn^" x = x."^
         (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" ;;"];
@@ -53,7 +53,7 @@ open Needed_values ;;
        let fn = field.Polymorphic_ocaml_record_t.field_name 
        and vn = field.Polymorphic_ocaml_record_t.var_name in 
        {
-        Annotated_definition_t.value_name = "set_"^fn ;
+        Por_public_definition_t.value_name = "set_"^fn ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
         (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" = "^vn^"} ;;"];
@@ -84,11 +84,11 @@ open Needed_values ;;
    let annotated_text_for_crobj_symlinks  = 
     [
       {
-        Annotated_definition_t.value_name = "of_concrete_object" ;
+        Por_public_definition_t.value_name = "of_concrete_object" ;
         lines_in_definition = ["let of_concrete_object = Private.Crobj.of_concrete_object ;;"];
       } ;
       {
-        Annotated_definition_t.value_name = "to_concrete_object" ;
+        Por_public_definition_t.value_name = "to_concrete_object" ;
         lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
       } ;
     ] ;;
@@ -244,7 +244,7 @@ open Needed_values ;;
        let vars = String.concat " " indexed_and_labeled in 
        let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
        {
-         Annotated_definition_t.value_name = ext_name ;
+         Por_public_definition_t.value_name = ext_name ;
          lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
          (String.make 3 ' ')^"fw with ";
          (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
@@ -268,7 +268,7 @@ open Needed_values ;;
       let vars = String.concat " " indexed_and_labeled in 
       let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
       {
-        Annotated_definition_t.value_name = constructor_name ;
+        Por_public_definition_t.value_name = constructor_name ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
         (String.make 3 ' ')^"Private.origin with ";
         (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
@@ -289,7 +289,7 @@ open Needed_values ;;
     let _ = check_inclusion field_names_after field_names_before in 
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
     {
-      Annotated_definition_t.value_name = restr_name ;
+      Por_public_definition_t.value_name = restr_name ;
       lines_in_definition = ["let "^restr_name^" fw  = {";
       (String.make 3 ' ')^"fw with ";
       (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_restr)^"\" ;"]
@@ -305,7 +305,7 @@ open Needed_values ;;
  let annotated_definition_for_print_out por =
   let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
   {
-    Annotated_definition_t.value_name = "print_out" ;
+    Por_public_definition_t.value_name = "print_out" ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
     "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
   } ;;  
