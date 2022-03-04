@@ -1,0 +1,186 @@
+(*
+
+#use"Ocaml_preprocessing/por_public_component.ml";;
+
+*)
+
+
+module Private = struct 
+
+
+  let annotated_text_for_field_getter 
+     (por:Polymorphic_ocaml_record_t.t) 
+       (field:Polymorphic_ocaml_record_t.field_t) =
+       let fn = field.Polymorphic_ocaml_record_t.field_name in 
+       {
+        Por_public_definition_t.value_name = fn ;
+        lines_in_definition = ["let "^fn^" x = x."^
+        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        "_t."^fn^" ;;"];
+     } ;;
+          
+   let annotated_text_for_field_setter 
+     (por:Polymorphic_ocaml_record_t.t) 
+       (field:Polymorphic_ocaml_record_t.field_t) =
+       let fn = field.Polymorphic_ocaml_record_t.field_name 
+       and vn = field.Polymorphic_ocaml_record_t.var_name in 
+       {
+        Por_public_definition_t.value_name = "set_"^fn ;
+        lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
+        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        "_t."^fn^" = "^vn^"} ;;"];
+     } ;;
+     
+
+   
+   
+   
+   let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
+     por.Polymorphic_ocaml_record_t.fields ;;
+   let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
+     por.Polymorphic_ocaml_record_t.fields ;;
+   let annotated_text_for_crobj_symlinks  = 
+    [
+      {
+        Por_public_definition_t.value_name = "of_concrete_object" ;
+        lines_in_definition = ["let of_concrete_object = Private.Crobj.of_concrete_object ;;"];
+      } ;
+      {
+        Por_public_definition_t.value_name = "to_concrete_object" ;
+        lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
+      } ;
+    ] ;;
+    
+
+
+ 
+    exception Get_field_exn of string ;;
+
+
+    let get_field por fd_name =
+       match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.field_name = fd_name)
+          por.Polymorphic_ocaml_record_t.fields with 
+       Some answer -> answer 
+       | None -> raise ( Get_field_exn(fd_name)) ;;    
+    
+     exception Get_instance_exn of string ;; 
+    
+     let get_instance por inst_name =
+         match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
+            por.Polymorphic_ocaml_record_t.instances with 
+         Some answer -> answer 
+         | None -> raise ( Get_instance_exn(inst_name)) ;;    
+    
+     exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
+    
+     let check_inclusion small_list large_list =
+        let temp1 = List.filter (fun s->not(List.mem s large_list)) small_list in 
+        if temp1 <> []
+        then raise(Check_inclusion_exn(temp1,small_list,large_list))
+        else () ;;  
+    
+     let indexed_varname_for_field (j,fd)=
+         "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
+    
+     let snippet_for_extender_element (j,fd) = 
+         let var_name  = indexed_varname_for_field (j,fd) in 
+         (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+         var_name^" ;" ;;
+    
+    
+    let annotated_definition_for_extender por (before_ext,after_ext) =
+       let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
+       let inst_before = get_instance por before_ext 
+       and inst_after = get_instance por after_ext  in 
+       let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+       and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+       let _ = check_inclusion field_names_before field_names_after in 
+       let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
+       let extra_fields = Image.image (get_field por) extra_field_names in 
+       let indexed_extra_fields = Ennig.index_everything extra_fields in 
+       let filling_fields = Image.image (snippet_for_extender_element) indexed_extra_fields in 
+       let indexed_and_labeled = Image.image (fun (j,fd)->
+          "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+       let vars = String.concat " " indexed_and_labeled in 
+       let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+       {
+         Por_public_definition_t.value_name = ext_name ;
+         lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
+         (String.make 3 ' ')^"fw with ";
+         (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
+           filling_fields
+         @["} ;;"];
+       } ;;  
+    
+    let annotated_text_for_extenders por = 
+       Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
+    ;;      
+   
+    let annotated_definition_for_constructor por constructed_instance =
+      let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
+      let full_instance = get_instance por constructed_instance  in 
+      let field_names = full_instance.Polymorphic_ocaml_record_t.fields in 
+      let fields = Image.image (get_field por)field_names in 
+      let indexed_fields = Ennig.index_everything fields in 
+      let filling_fields = Image.image (snippet_for_extender_element) indexed_fields in 
+      let indexed_and_labeled = Image.image (fun (j,fd)->
+         "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_fields in 
+      let vars = String.concat " " indexed_and_labeled in 
+      let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
+      {
+        Por_public_definition_t.value_name = constructor_name ;
+        lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
+        (String.make 3 ' ')^"Private.origin with ";
+        (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
+          filling_fields
+        @["} ;;"];
+      } ;;  
+
+    let annotated_text_for_constructors por = 
+      Image.image (annotated_definition_for_constructor por) por.Polymorphic_ocaml_record_t.constructors
+   ;;     
+   
+   let annotated_definition_for_restrictor por (before_restr,after_restr) =
+    let restr_name = "restrict_"^before_restr^"_to_"^after_restr in 
+    let inst_before = get_instance por before_restr 
+    and inst_after = get_instance por after_restr  in 
+    let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+    and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+    let _ = check_inclusion field_names_after field_names_before in 
+    let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
+    {
+      Por_public_definition_t.value_name = restr_name ;
+      lines_in_definition = ["let "^restr_name^" fw  = {";
+      (String.make 3 ' ')^"fw with ";
+      (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_restr)^"\" ;"]
+      @["} ;;"];
+    } ;;  
+
+
+   let annotated_text_for_restrictors por = 
+    Image.image (annotated_definition_for_restrictor por) por.Polymorphic_ocaml_record_t.restrictions
+ ;;     
+
+
+ let annotated_definition_for_print_out por =
+  let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+  {
+    Por_public_definition_t.value_name = "print_out" ;
+    lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
+    "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
+  } ;;  
+
+end ;;
+
+let main por = 
+        Annotated_definition.expand_list (
+          (Private.annotated_text_for_getters por)@
+          (Private.annotated_text_for_setters por)@
+          (Private.annotated_text_for_crobj_symlinks)@
+          (Private.annotated_text_for_extenders por)@
+          (Private.annotated_text_for_constructors por)@
+          (Private.annotated_text_for_restrictors por)@
+          [Private.annotated_definition_for_print_out por] );;   
+
+     
+
