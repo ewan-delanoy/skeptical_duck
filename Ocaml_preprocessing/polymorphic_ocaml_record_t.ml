@@ -5,21 +5,30 @@
 *)
 
 type field_t = {
-   field_name : string ;
-   field_type : string ;
-   var_name : string ;
-
+      field_name : string ;
+      field_type : string ;
+      var_name : string ;
+      default_value : string ;
+      crobj_converters : (string * string) option ;
 } ;;
-
+   
 type instance_t = {
-   fields : string list ;
+      instance_name : string ;
+      fields : string list ;
 } ;;
+   
 
 type t = {
-   main_name : string ;
-   fields : field_t list ;
-   instances : instance_t list ;
-   interface_file : Absolute_path.t ;
-   implementation_file : Absolute_path.t ;
+      main_type_name : string ;
+      module_name : string ;
+      fields : field_t list ;
+      instances : instance_t list ;
+      type_signature_file : Absolute_path.t ;
+      implementation_file : Absolute_path.t ;
+      has_crobj_conversion : bool ;
+      extensions : (string * string) list ;
+      restrictions : (string * string) list ; 
+      constructors : string list ;
+      designated_parents : (string * string) list ; 
 } ;;
-
+   

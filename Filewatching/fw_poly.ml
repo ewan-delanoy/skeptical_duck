@@ -61,6 +61,23 @@ let to_concrete_object fw =
 end;; 
 
 
+module Parent = struct 
+let designated_parents = [
+    "fw_with_archives" , "file_watcher" ;
+] ;;
+
+exception No_designated_parent of string ;; 
+
+let get_parent_name fw = 
+ let name = fw.Fw_poly_t.type_name in 
+ match List.assoc_opt name designated_parents with 
+  Some(answer) ->answer
+ |None -> raise (No_designated_parent(name)) ;;
+
+
+end;; 
+
+
 let origin = {
    Fw_poly_t.type_name = "" ;
    dir_for_backup = Dfa_root.of_line "dummy" ;

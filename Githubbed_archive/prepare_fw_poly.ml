@@ -35,6 +35,7 @@ module Polymorphic_ocaml_record_t = struct
       extensions : (string * string) list ;
       restrictions : (string * string) list ; 
       constructors : string list ;
+      designated_parents : (string * string) list ; 
    } ;;
    
    end ;;
@@ -391,6 +392,41 @@ module Polymorphic_ocaml_record_t = struct
     "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
   } ;;  
 
+  let simple_text_for_parenting_list por =
+    let l = por.Polymorphic_ocaml_record_t.designated_parents in 
+    let temp1 = Image.image (fun (s,t)->
+      (String.make 4 ' ')^(Strung.enclose s)^" , "^(Strung.enclose t)^" ;"
+    ) l in 
+    String.concat "\n"
+    ("let designated_parents = ["::
+     (temp1@
+     ["] ;;"]));;
+
+  let simple_text_for_parenting_exceptions =
+     "exception No_designated_parent of string ;; " ;; 
+
+  let simple_text_for_get_parent_name por = 
+    let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+      String.concat "\n"
+      ([
+        "let get_parent_name fw = ";
+        " let name = fw."^main_module_name^"_t.type_name in ";
+        " match List.assoc_opt name designated_parents with ";
+        "  Some(answer) ->answer";
+        " |None -> raise (No_designated_parent(name)) ;;"
+      ]);;
+
+  let simple_text_for_parent_related_code por =
+    if por.Polymorphic_ocaml_record_t.designated_parents = []
+    then ""  
+    else
+    "module Parent = struct \n"^
+    (simple_text_for_parenting_list por)^"\n\n"^
+    (simple_text_for_parenting_exceptions)^"\n\n"^
+    (simple_text_for_get_parent_name por)^"\n\n"^
+    "\nend;; \n\n\n"
+
+
    let expand_privatized_text l =
       let temp1 = Ordered.sort Annotated_definition.order l in 
       String.concat "\n" (Image.image Annotated_definition.expand temp1) ;;
@@ -406,6 +442,7 @@ module Polymorphic_ocaml_record_t = struct
          else   
          "module Private = struct \n"^
          (simple_text_for_crobj_related_code por)^
+         (simple_text_for_parent_related_code por)^
          (expand_privatized_text private_component)^
          "\nend;; \n\n\n"
       ) in 
@@ -557,6 +594,7 @@ module Polymorphic_ocaml_record_t = struct
                      "fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = ["fw_with_githubbing","github_configuration"] ;
        constructors = ["fw_configuration";"github_configuration"] ;
+       designated_parents = ["fw_with_archives","file_watcher"] ;
     } ;;
    
     let act () = write_to_implementation_file example ;;
