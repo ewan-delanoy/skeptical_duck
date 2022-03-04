@@ -6,6 +6,7 @@
 
 
 module Private = struct 
+
 module Crobj = struct 
 let salt = "Fw_poly_t." ;;
 let label_for_type_name                          = salt ^ "type_name" ;;
@@ -61,7 +62,10 @@ let to_concrete_object fw =
 end;; 
 
 
+
+
 module Extender = struct 
+
 let extend_fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
    Fw_poly_t.type_name = "File_watcher" ;
@@ -80,10 +84,7 @@ let extend_file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v
    Fw_poly_t.type_name = "Fw_with_archives" ;
    subdirs_for_archived_mlx_files = v1_archives_subdirs ;
 } ;;
-
-
-end;; 
-
+end;;
 
 module Parent = struct 
 let designated_parents = [
@@ -102,6 +103,8 @@ let get_parent_name fw =
 end;; 
 
 
+
+
 let origin = {
    Fw_poly_t.type_name = "" ;
    dir_for_backup = Dfa_root.of_line "dummy" ;
@@ -117,6 +120,8 @@ let origin = {
    subdirs_for_archived_mlx_files = [] ;
    watched_files = [] ;
 } ;;
+
+
 end;; 
 
 
@@ -140,19 +145,8 @@ let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~git
 } ;;
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
-let extend_fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
-   fw with 
-   Fw_poly_t.type_name = "File_watcher" ;
-   watched_files = v1_files ;
-} ;;
-let extend_fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
-   fw with 
-   Fw_poly_t.type_name = "Fw_with_githubbing" ;
-   dir_for_backup = v1_backup_dir ;
-   gitpush_after_backup = v2_gab ;
-   github_url = v3_url ;
-   encoding_protected_files = v4_protected_pairs ;
-} ;;
+let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
+let extend_fw_with_batch_compilation_to_fw_with_githubbing  = Private.Extender.fw_with_batch_compilation_to_fw_with_githubbing ;;
 let github_url x = x.Fw_poly_t.github_url ;;
 let gitpush_after_backup x = x.Fw_poly_t.gitpush_after_backup ;;
 let ignored_files x = x.Fw_poly_t.ignored_files ;;

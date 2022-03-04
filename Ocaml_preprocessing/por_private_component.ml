@@ -127,7 +127,7 @@ let snippet_for_extender_element (j,fd) =
  
  
 let text_for_extender por (before_ext,after_ext) =
-    let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
+    let ext_name = Por_common.extender_name (before_ext,after_ext) in 
     let inst_before = Por_common.get_instance por before_ext 
     and inst_after = Por_common.get_instance por after_ext  in 
     let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
