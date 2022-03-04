@@ -195,11 +195,11 @@ module Private = struct
          
       let text_for_parent_setter por (sibling,parent) =   
             let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) 
-            and (ext_name,indexed_and_labeled) = Extender.extender_data por (sibling,parent) in   
+            and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in   
             String.concat "\n"
             ([
                   "let sp_for_"^sibling^" ~child ~new_parent = ";
-                  " Extender."^(Por_common.extender_name (sibling,parent))^" new_parent ";
+                  " Extender."^ext_name^" new_parent ";
             ]@(   
                Image.image (fun (field_name,indexed_varname)->
                  (String.make 3 ' ')^"~"^field_name^":(child."^main_module_name^"_t."^field_name^")" ) indexed_and_labeled    
