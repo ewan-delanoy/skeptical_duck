@@ -42,6 +42,7 @@ open Needed_values ;;
       (Por_private_component.main por)^"\n\n"^
       (Por_public_component.main por)  ;;
 
+      
       let initial_comment_in_implementation_file por =
         let ap = por.Polymorphic_ocaml_record_t.implementation_file 
         and root = Coma_big_constant.This_World.root in 
