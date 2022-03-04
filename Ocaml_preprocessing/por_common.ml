@@ -22,6 +22,12 @@ let check_inclusion small_list large_list =
 
 let extender_name (before_ext,after_ext) = before_ext^"_to_"^after_ext ;;
 
+let extensions_from_different_sources por =
+   let lfs = Total_ordering.lex_for_strings in 
+  Ordered.sort (Total_ordering.product lfs lfs)
+  (por.Polymorphic_ocaml_record_t.extensions @
+  (Image.image (fun (x,y)->(y,x)) por.Polymorphic_ocaml_record_t.designated_parents)) ;; 
+
 let get_field por fd_name =
   match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.field_name = fd_name)
           por.Polymorphic_ocaml_record_t.fields with 
