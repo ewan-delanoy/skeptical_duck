@@ -180,7 +180,11 @@ module Private = struct
             ["] ;;"]));;
               
       let text_for_exceptions =
-            "exception No_designated_parent of string ;; " ;; 
+            String.concat "\n"
+           [ 
+             "exception No_designated_parent of string ;; ";
+             "exception Set_parent_exn of string ;; ";
+            ] ;; 
               
       let text_for_get_parent_name por = 
             let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
@@ -198,18 +202,36 @@ module Private = struct
             and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in   
             String.concat "\n"
             ([
-                  "let sp_for_"^sibling^" ~child ~new_parent = ";
+                  "let sp_for_"^sibling^" child new_parent = ";
                   " Extender."^ext_name^" new_parent ";
             ]@(   
                Image.image (fun (field_name,indexed_varname)->
                  (String.make 3 ' ')^"~"^field_name^":(child."^main_module_name^"_t."^field_name^")" ) indexed_and_labeled    
             )@[" ;;"
-            ])
+            ]) ;; 
       
       let text_for_parent_setters por = 
          String.concat "\n"   
         (Image.image (text_for_parent_setter por) por.Polymorphic_ocaml_record_t.designated_parents);;
       
+      let text_for_main_parent_setter por = 
+            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in   
+            String.concat "\n"
+            ([
+                  "let set_parent ~child ~new_parent = ";
+                  " let name = child."^main_module_name^"_t.type_name in ";
+                  " match List.assoc_opt name ["
+            ]@(   
+               Image.image (fun (sibling,parent)->
+                 (Strung.enclose sibling)^" , sp_for_"^sibling^" child new_parent ;" ) 
+                 por.Polymorphic_ocaml_record_t.designated_parents
+            )@[
+               "] with "; 
+               "  Some(answer) ->answer";
+               " |None -> raise (Set_parent_exn(name)) ;;"
+      
+            ]) ;;   
+
       let full_text por =
             if por.Polymorphic_ocaml_record_t.designated_parents = []
             then ""  
