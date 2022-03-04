@@ -7,17 +7,6 @@
 open Needed_values ;;
 
 
-   
-   module Annotated_definition_t = struct 
-
-  type t = {
-      value_name : string ;
-      is_private : bool ;
-      lines_in_definition : string list ;
-   } ;;
-
-   end ;; 
-
    module Annotated_definition = struct 
 
     let expand anndef =
