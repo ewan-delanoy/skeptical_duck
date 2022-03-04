@@ -92,6 +92,7 @@ let designated_parents = [
 ] ;;
 
 exception No_designated_parent of string ;; 
+exception Set_parent_exn of string ;; 
 
 let get_parent_name fw = 
  let name = fw.Fw_poly_t.type_name in 
@@ -99,10 +100,18 @@ let get_parent_name fw =
   Some(answer) ->answer
  |None -> raise (No_designated_parent(name)) ;;
 
-let sp_for_fw_with_archives ~child ~new_parent = 
+let sp_for_fw_with_archives child new_parent = 
  Extender.file_watcher_to_fw_with_archives new_parent 
    ~subdirs_for_archived_mlx_files:(child.Fw_poly_t.subdirs_for_archived_mlx_files)
  ;;
+
+let set_parent ~child ~new_parent = 
+ let name = child.Fw_poly_t.type_name in 
+ match List.assoc_opt name [
+"fw_with_archives" , sp_for_fw_with_archives child new_parent ;
+] with 
+  Some(answer) ->answer
+ |None -> raise (Set_parent_exn(name)) ;;
 
 
 end;; 

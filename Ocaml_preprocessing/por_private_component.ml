@@ -218,19 +218,28 @@ module Private = struct
             let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in   
             String.concat "\n"
             ([
-                  "let set_parent ~child ~new_parent = ";
+                  "let set ~child ~new_parent = ";
                   " let name = child."^main_module_name^"_t.type_name in ";
                   " match List.assoc_opt name ["
             ]@(   
                Image.image (fun (sibling,parent)->
-                 (Strung.enclose sibling)^" , sp_for_"^sibling^" child new_parent ;" ) 
+                 (String.make 3 ' ')^(Strung.enclose sibling)^" , sp_for_"^sibling^" child new_parent ;" ) 
                  por.Polymorphic_ocaml_record_t.designated_parents
             )@[
-               "] with "; 
+               " ] with "; 
                "  Some(answer) ->answer";
                " |None -> raise (Set_parent_exn(name)) ;;"
       
             ]) ;;   
+
+      let text_for_main_parent_getter por = 
+            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in   
+            String.concat "\n"
+            ([
+                  "let get child = ";
+                  " let parent_name = get_parent_name child in ";
+                  " { child with "^main_module_name^"_t.type_name = parent_name } ;;"
+            ]) ;;         
 
       let full_text por =
             if por.Polymorphic_ocaml_record_t.designated_parents = []
@@ -242,7 +251,8 @@ module Private = struct
             (text_for_get_parent_name por)^"\n\n"^
             (text_for_parent_setters por)^"\n\n"^
             (text_for_main_parent_setter por)^"\n\n"^
-            "\nend;; \n\n\n"     ;; 
+            (text_for_main_parent_getter por)^"\n\n"^
+            "end;; \n\n\n"     ;; 
       
       end ;;      
       

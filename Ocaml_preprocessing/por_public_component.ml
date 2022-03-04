@@ -59,6 +59,18 @@ module Private = struct
         lines_in_definition = ["let extend_"^ext_name^"  = Private.Extender."^ext_name^" ;;"];
       } 
       ) por.Polymorphic_ocaml_record_t.extensions ;;
+
+      let annotated_text_for_parenting_symlinks por=
+      [
+        {
+          Por_public_definition_t.value_name = "parent" ;
+          lines_in_definition = ["parent  = Private.Parent.get ;;"];
+        } ;
+        {
+          Por_public_definition_t.value_name = "set_parent" ;
+          lines_in_definition = ["let set_parent  = Private.Parent.set ;;"];
+        } ;
+       ] ;; 
      
       let snippet_for_constructor_element (j,fd) = 
         let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
