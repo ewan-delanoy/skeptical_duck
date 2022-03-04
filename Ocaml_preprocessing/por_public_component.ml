@@ -52,32 +52,6 @@ module Private = struct
     ] ;;
     
 
-
- 
-    exception Get_field_exn of string ;;
-
-
-    let get_field por fd_name =
-       match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.field_name = fd_name)
-          por.Polymorphic_ocaml_record_t.fields with 
-       Some answer -> answer 
-       | None -> raise ( Get_field_exn(fd_name)) ;;    
-    
-     exception Get_instance_exn of string ;; 
-    
-     let get_instance por inst_name =
-         match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
-            por.Polymorphic_ocaml_record_t.instances with 
-         Some answer -> answer 
-         | None -> raise ( Get_instance_exn(inst_name)) ;;    
-    
-     exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
-    
-     let check_inclusion small_list large_list =
-        let temp1 = List.filter (fun s->not(List.mem s large_list)) small_list in 
-        if temp1 <> []
-        then raise(Check_inclusion_exn(temp1,small_list,large_list))
-        else () ;;  
     
      let indexed_varname_for_field (j,fd)=
          "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
@@ -90,13 +64,13 @@ module Private = struct
     
     let annotated_definition_for_extender por (before_ext,after_ext) =
        let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
-       let inst_before = get_instance por before_ext 
-       and inst_after = get_instance por after_ext  in 
+       let inst_before = Por_common.get_instance por before_ext 
+       and inst_after = Por_common.get_instance por after_ext  in 
        let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
        and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
-       let _ = check_inclusion field_names_before field_names_after in 
+       let _ = Por_common.check_inclusion field_names_before field_names_after in 
        let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
-       let extra_fields = Image.image (get_field por) extra_field_names in 
+       let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
        let indexed_extra_fields = Ennig.index_everything extra_fields in 
        let filling_fields = Image.image (snippet_for_extender_element) indexed_extra_fields in 
        let indexed_and_labeled = Image.image (fun (j,fd)->
@@ -118,9 +92,9 @@ module Private = struct
    
     let annotated_definition_for_constructor por constructed_instance =
       let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
-      let full_instance = get_instance por constructed_instance  in 
+      let full_instance = Por_common.get_instance por constructed_instance  in 
       let field_names = full_instance.Polymorphic_ocaml_record_t.fields in 
-      let fields = Image.image (get_field por)field_names in 
+      let fields = Image.image (Por_common.get_field por)field_names in 
       let indexed_fields = Ennig.index_everything fields in 
       let filling_fields = Image.image (snippet_for_extender_element) indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
@@ -142,11 +116,11 @@ module Private = struct
    
    let annotated_definition_for_restrictor por (before_restr,after_restr) =
     let restr_name = "restrict_"^before_restr^"_to_"^after_restr in 
-    let inst_before = get_instance por before_restr 
-    and inst_after = get_instance por after_restr  in 
+    let inst_before = Por_common.get_instance por before_restr 
+    and inst_after = Por_common.get_instance por after_restr  in 
     let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
     and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
-    let _ = check_inclusion field_names_after field_names_before in 
+    let _ = Por_common.check_inclusion field_names_after field_names_before in 
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
     {
       Por_public_definition_t.value_name = restr_name ;
