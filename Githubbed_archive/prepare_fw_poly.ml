@@ -69,25 +69,15 @@ open Needed_values ;;
       (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
       (field.Polymorphic_ocaml_record_t.default_value)^" ;" ;;
    
-   let  annotated_text_for_origin_element por =
+   let  simple_text_for_origin_element por =
      let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
                  "_t.type_name = \"\" ;" 
      and temp2 = Image.image (snippet_for_origin_element por) por.Polymorphic_ocaml_record_t.fields in 
-     {
-        Annotated_definition_t.value_name = "origin" ;
-        is_private = true ;
-        lines_in_definition = ["let origin = {";]@
+      (String.concat "\n" 
+      (["let origin = {";]@
         ( temp1 :: temp2 )
-        @["} ;;"];
-      } ;;  
-
-   let initial_comment_in_implementation_file por =
-      let ap = por.Polymorphic_ocaml_record_t.implementation_file 
-      and root = Coma_big_constant.This_World.root in 
-      let s_ap=Absolute_path.to_string ap in 
-      let s_cdir=Dfa_root.connectable_to_subpath root in 
-      let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
-      "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
+        @["} ;;"])
+      );;  
    
    let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
      por.Polymorphic_ocaml_record_t.fields ;;
@@ -362,10 +352,6 @@ open Needed_values ;;
     (simple_text_for_get_parent_name por)^"\n\n"^
     "\nend;; \n\n\n"
 
-
-   let expand_privatized_text l =
-      let temp1 = Ordered.sort Annotated_definition.order l in 
-      String.concat "\n" (Image.image Annotated_definition.expand temp1) ;;
       
    let expand_annotated_text por l =   
       let (private_component,public_component) =
@@ -379,27 +365,47 @@ open Needed_values ;;
          "module Private = struct \n"^
          (simple_text_for_crobj_related_code por)^
          (simple_text_for_parent_related_code por)^
-         (expand_privatized_text private_component)^
+         (simple_text_for_origin_element por)^
+         (Annotated_definition.expand_list private_component)^
          "\nend;; \n\n\n"
       ) in 
       private_text^  
-      (expand_privatized_text public_component) ;;
+      (Annotated_definition.expand_list public_component) ;;
+   
+    let private_component por =   
+      "module Private = struct \n"^
+           (simple_text_for_crobj_related_code por)^
+           (simple_text_for_parent_related_code por)^
+           (simple_text_for_origin_element por)^
+           "\nend;; \n\n\n" ;;
+    
+    let public_component por = 
+        Annotated_definition.expand_list (
+          (annotated_text_for_getters por)@
+          (annotated_text_for_setters por)@
+          (annotated_text_for_crobj_symlinks)@
+          (annotated_text_for_extenders por)@
+          (annotated_text_for_constructors por)@
+          (annotated_text_for_restrictors por)@
+          [annotated_definition_for_print_out por] );;   
 
-   let full_annotated_text por = 
-      expand_annotated_text por (
-         annotated_text_for_origin_element por :: 
-         ((annotated_text_for_getters por)@
-         (annotated_text_for_setters por)@
-         (annotated_text_for_crobj_symlinks)@
-         (annotated_text_for_extenders por)@
-         (annotated_text_for_constructors por)@
-         (annotated_text_for_restrictors por)@
-         [annotated_definition_for_print_out por] )
-      ) ;;
+
+
+   let private_followed_by_public por = 
+      (private_component por)^"\n\n"^
+      (public_component por)  ;;
+
+      let initial_comment_in_implementation_file por =
+        let ap = por.Polymorphic_ocaml_record_t.implementation_file 
+        and root = Coma_big_constant.This_World.root in 
+        let s_ap=Absolute_path.to_string ap in 
+        let s_cdir=Dfa_root.connectable_to_subpath root in 
+        let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
+        "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
 
    let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
       (initial_comment_in_implementation_file por)^
-      (full_annotated_text por) ;;
+      (private_followed_by_public por) ;;
     
    let write_to_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
       let text = text_for_implementation_file por 
