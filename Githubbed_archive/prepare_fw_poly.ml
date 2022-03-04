@@ -34,7 +34,7 @@ open Needed_values ;;
        let text = text_for_type_signature_file por 
        and file = por.Polymorphic_ocaml_record_t.type_signature_file in 
        Io.overwrite_with file text ;;
-   
+  
    
    let annotated_text_for_field_getter 
      (por:Polymorphic_ocaml_record_t.t) 
@@ -61,21 +61,7 @@ open Needed_values ;;
      
 
    
-   let snippet_for_origin_element 
-     (por:Polymorphic_ocaml_record_t.t) 
-      (field:Polymorphic_ocaml_record_t.field_t) = 
-      (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
-      (field.Polymorphic_ocaml_record_t.default_value)^" ;" ;;
    
-   let  simple_text_for_origin_element por =
-     let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
-                 "_t.type_name = \"\" ;" 
-     and temp2 = Image.image (snippet_for_origin_element por) por.Polymorphic_ocaml_record_t.fields in 
-      (String.concat "\n" 
-      (["let origin = {";]@
-        ( temp1 :: temp2 )
-        @["} ;;"])
-      );;  
    
    let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
      por.Polymorphic_ocaml_record_t.fields ;;
@@ -344,14 +330,15 @@ open Needed_values ;;
     (simple_text_for_get_parent_name por)^"\n\n"^
     "\nend;; \n\n\n"
 
-   
+   (*
     let private_component por =   
       "module Private = struct \n"^
            (simple_text_for_crobj_related_code por)^
            (simple_text_for_parent_related_code por)^
            (simple_text_for_origin_element por)^
            "\nend;; \n\n\n" ;;
-    
+    *)
+
     let public_component por = 
         Annotated_definition.expand_list (
           (annotated_text_for_getters por)@
