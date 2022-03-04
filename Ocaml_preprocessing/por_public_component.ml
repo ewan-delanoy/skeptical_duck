@@ -58,7 +58,7 @@ module Private = struct
         Por_public_definition_t.value_name = ext_name ;
         lines_in_definition = ["let extend_"^ext_name^"  = Private.Extender."^ext_name^" ;;"];
       } 
-      ) por.Polymorphic_ocaml_record_t.extensions ;;
+      ) (Por_common.extensions_from_different_sources por) ;;
 
       let annotated_text_for_parenting_symlinks por=
       [

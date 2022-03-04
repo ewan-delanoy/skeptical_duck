@@ -149,14 +149,10 @@ module Private = struct
        
        let full_text por = 
           String.concat "\n" (Image.image (text_for_extender por) por.Polymorphic_ocaml_record_t.extensions)
-       ;;      
-      
-       let needed_extensions por =
-            por.Polymorphic_ocaml_record_t.extensions @
-            (Image.image (fun (x,y)->(y,x)) por.Polymorphic_ocaml_record_t.designated_parents) ;;   
+       ;;       
             
        let full_text por =
-            let l = needed_extensions por in 
+            let l = Por_common.extensions_from_different_sources por in 
             if l = []
             then ""  
             else
