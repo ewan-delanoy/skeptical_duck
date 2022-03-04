@@ -2860,11 +2860,31 @@ let act1 () =
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
 
+
+
+
 Other_coma_state.Private.ref_for_unofficial_changes :=
 (
    Some [ ]
 )
 ;;
+
+Other_coma_state.Private.ref_for_unofficial_changes :=
+(
+   Some ["Filewatching/file_watcher.ml"; "Filewatching/fw_with_archives_t.ml";
+   "Filewatching/fw_with_archives.ml";
+   "Filewatching/fw_with_small_details_t.ml";
+   "Filewatching/fw_with_small_details.ml";
+   "Filewatching/fw_with_dependencies.ml";
+   "Filewatching/fw_with_batch_compilation.ml";
+   "Filewatching/fw_with_githubbing.ml";
+   "Compilation_management/usual_coma_state.ml"; "needed_values.ml";
+   "node_project.ml"]
+)
+;;
+
+
+
 
 (************************************************************************************************************************
 Snippet  26 : Testing freezing and unfreezing of world copies

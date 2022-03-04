@@ -13,13 +13,13 @@ module Private = struct
  
    (* Start of level 1 *)
  
-   let configuration fw = Fw_with_archives.configuration (parent fw) ;;
+   
    let constructor mother =
      {
         Fw_with_small_details_t.parent = mother ;
         small_details_in_files = Fw_with_archives.compute_all_small_details mother;
      } ;;  
-   let root fw     = Fw_with_archives.root (parent fw) ;;  
+   let root fw     = Fw_poly.root (parent fw) ;;  
    let small_details_in_files fw = fw.Fw_with_small_details_t.small_details_in_files ;;  
    
    (* End of level 1 *)
@@ -38,7 +38,7 @@ module Private = struct
    let of_concrete_object ccrt_obj = 
       let g=Concrete_object.get_record ccrt_obj in
       {
-         Fw_with_small_details_t.parent = Fw_with_archives.of_concrete_object(g parent_label);
+         Fw_with_small_details_t.parent = Fw_poly.of_concrete_object(g parent_label);
          small_details_in_files = cr_to_pair_list Fw_file_small_details.of_concrete_object (g small_details_in_files_label);
  
       };; 
@@ -47,7 +47,7 @@ module Private = struct
    let to_concrete_object fw=
       let items= 
       [
-        parent_label, Fw_with_archives.to_concrete_object fw.Fw_with_small_details_t.parent;
+        parent_label, Fw_poly.to_concrete_object fw.Fw_with_small_details_t.parent;
         small_details_in_files_label, cr_of_pair_list  Fw_file_small_details.to_concrete_object (fw.Fw_with_small_details_t.small_details_in_files);
       
       ]  in
@@ -269,8 +269,7 @@ module Private = struct
    end ;;
    
    let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-   let configuration = Private.configuration ;;
-   let empty_one config= { Fw_with_small_details_t.parent = Fw_with_archives.empty_one config;small_details_in_files = [];} ;; 
+   let empty_one config= { Fw_with_small_details_t.parent = Fw_with_archives.plunge_fw_configuration config;small_details_in_files = [];} ;; 
    let forget_modules = Private.forget_modules ;;
    let inspect_and_update = Private.inspect_and_update;;
    let latest_changes = Private.latest_changes ;;

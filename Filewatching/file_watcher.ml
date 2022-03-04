@@ -11,52 +11,10 @@ exception Change_has_occurred ;;
 
 module Private = struct
 
-(* Start of crobj level  *)
-
-let pair_of_crobj crobj=
-      let (_,(arg1,arg2,_,_,_,_,_))=Concrete_object.unwrap_bounded_variant crobj in 
-     (
-       Dfn_rootless.of_concrete_object arg1,
-       Crobj_converter.string_of_concrete_object arg2
-     );;
-   
-   let pair_to_crobj (watched_file,modif_date)=
-     Concrete_object_t.Variant("Dfn_"^"rootless.J",
-        [
-           
-           Dfn_rootless.to_concrete_object watched_file;
-           Crobj_converter.string_to_concrete_object(modif_date);
-        ]
-      ) ;;
-   
-   let salt = "Fw_"^"nonmodular_wrapper_t.";;
-   
-   let configuration_label        = salt ^ "configuration";;
-   let watched_files_label        = salt ^ "watched_files";;
-   
-   let of_concrete_object ccrt_obj = 
-      let g=Concrete_object.get_record ccrt_obj in
-      {
-         File_watcher_t.configuration = Fw_poly.of_concrete_object(g configuration_label);
-         watched_files = Crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
-      };; 
-   
-   let to_concrete_object fw=
-      let items= 
-      [
-       configuration_label, Fw_poly.to_concrete_object fw.File_watcher_t.configuration;
-       watched_files_label, Crobj_converter_combinator.of_list pair_to_crobj fw.File_watcher_t.watched_files;
-      ]  in
-      Concrete_object_t.Record items;;
-   
-
-(* End of crobj level  *)
-
 
 (* Start of level 4 *)
 
   
-let root fw = Fw_poly.root (fw.File_watcher_t.configuration);;
 
 (* End of level 4 *)
 
@@ -73,7 +31,7 @@ let message_about_missing_files missing_files=
 let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
 
 let recompute_mtime fw path =
-      let s_root = Dfa_root.connectable_to_subpath (root fw) 
+      let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) 
       and s_path=Dfn_rootless.to_line path in 
       let file = s_root^s_path in 
       mtime file;;
@@ -115,7 +73,7 @@ let helper2_during_inspection fw accu l_pairs =
    (new_l_pairs,List.rev(!accu));;
 
   let recompute_all_info fw path =
-    let s_root = Dfa_root.connectable_to_subpath (root fw) 
+    let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) 
     and s_path=Dfn_rootless.to_line path in 
     let file = s_root^s_path in 
     (path,mtime file);;
@@ -129,7 +87,7 @@ let helper2_during_inspection fw accu l_pairs =
 let compute_changes_and_announce_them fw ~verbose=
    let ref_for_files=ref[]  in 
    let (new_files,changed_files)=
-       helper2_during_inspection fw ref_for_files fw.File_watcher_t.watched_files in 
+       helper2_during_inspection fw ref_for_files (Fw_poly.watched_files fw) in 
    let _ = (
      if verbose 
      then Strung.announce 
@@ -139,10 +97,10 @@ let compute_changes_and_announce_them fw ~verbose=
    ) in
    (new_files,changed_files);;   
 
-let configuration fw = fw.File_watcher_t.configuration ;;
+(* let configuration fw = fw.File_watcher_t.configuration ;; *)
 
 let get_content fw rootless = 
-  let root = Fw_poly.root (fw.File_watcher_t.configuration) in 
+  let root = Fw_poly.root fw in 
   let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
   Io.read_whole_file(Absolute_path.of_string s_ap);;     
     
@@ -156,10 +114,8 @@ let of_configuration_and_list config to_be_watched =
     let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
     (path,mtime)
  ) in 
-   {
-     File_watcher_t.configuration = config;
-     watched_files = Image.image compute_info to_be_watched;
-   };;
+ Fw_poly.extend_fw_configuration_to_file_watcher config 
+ ~watched_files:(Image.image compute_info to_be_watched) ;;
  
 
    let ref_for_subdirectory_renaming = ref [];;
@@ -193,12 +149,10 @@ Image.image (
      else pair
 ) pairs;;
 
-let update_some_files fw w_files = {
- fw with 
-   File_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
-   (fw.File_watcher_t.watched_files) ;
-} ;;
-
+let update_some_files fw w_files = 
+   let new_watched_files = update_in_list_of_pairs fw w_files 
+   (Fw_poly.watched_files fw) in 
+   Fw_poly.set_watched_files fw new_watched_files ;;
 
    
 
@@ -222,7 +176,7 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    then pair 
    else 
    let _=(changed_files_ref:= path:: (!changed_files_ref)) in 
-   let s_root = Dfa_root.connectable_to_subpath (root fw) 
+   let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) 
    and s_path=Dfn_rootless.to_line path in 
    let file = s_root^s_path in  
    let ap=Absolute_path.of_string file in 
@@ -235,11 +189,8 @@ let apply_text_transformation_on_some_files fw tr l=
    let changed_files_ref=ref[]  in 
    let new_files = Image.image (
       apply_text_transformation_on_pair fw tr changed_files_ref (Some l)
-   )  fw.File_watcher_t.watched_files  in 
-   let fw2 ={
-      fw with
-      File_watcher_t.watched_files = new_files;
-   } in
+   )  (Fw_poly.watched_files fw)  in 
+   let fw2 = Fw_poly.set_watched_files fw new_files in 
   (fw2,!changed_files_ref);;  
 
 
@@ -255,173 +206,135 @@ let check_that_no_change_has_occurred fw =
     if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
     then ()
     else
-       let root = root fw in 
+       let root = Fw_poly.root fw in 
        let full = Dfn_join.root_to_rootless root rless in 
        let ap = Dfn_full.to_absolute_path full in 
        Put_use_directive_in_initial_comment.put_usual root ap
     ;;    
          
 
-        let first_init config =
-          let the_root = Fw_poly.root config in 
-          let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-          let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
-          let list2 = Option.filter_and_unpack(
+let first_init config =
+   let the_root = Fw_poly.root config in 
+   let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
+   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
+   let list2 = Option.filter_and_unpack(
             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 
-          ) list1 in
-          List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
+   ) list1 in
+   List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
       
-
-          let inspect_and_update fw ~verbose = 
-            let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
-            let fw2 ={
-               fw with
-               File_watcher_t.watched_files         = new_files ;
-            }  in 
-            (fw2,changed_files);;         
+let inspect_and_update fw ~verbose = 
+   let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in 
+   let fw2 = Fw_poly.set_watched_files fw new_files in
+   (fw2,changed_files);;         
         
-
-          let latest_changes fw ~verbose =
-            let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
-            changed_files ;;
+let latest_changes fw ~verbose =
+   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
+   changed_files ;;
          
-        
-
-
-         let of_configuration config = 
-               let to_be_watched = first_init config in 
-               of_configuration_and_list config to_be_watched ;;
+let of_configuration config = 
+   let to_be_watched = first_init config in 
+   of_configuration_and_list config to_be_watched ;;
         
          
-   let overwrite_file_if_it_exists fw rootless new_content =
-    let root = root fw in 
-    if List.exists ( fun (r,_)->r=rootless ) fw.File_watcher_t.watched_files 
-    then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
+let overwrite_file_if_it_exists fw rootless new_content =
+   let root = Fw_poly.root fw in 
+   if List.exists ( fun (r,_)->r=rootless ) (Fw_poly.watched_files fw)
+   then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
          let _=Io.overwrite_with ap new_content in 
-         ({
-            fw with 
-            File_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.File_watcher_t.watched_files);
-         },true)
-    else (fw,false);;
+         let new_watched_files = update_in_list_of_pairs fw [rootless] (Fw_poly.watched_files fw) in 
+         (Fw_poly.set_watched_files fw new_watched_files,true)
+   else (fw,false);;
 
 
 let register_rootless_paths fw rootless_paths= 
-let s_root = Dfa_root.connectable_to_subpath (root fw) in
-let nonexistent_paths = Option.filter_and_unpack (
-  fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
-  if not(Sys.file_exists s_full_path)
-  then Some(s_full_path)
-  else None
-) rootless_paths in 
-if nonexistent_paths<>[]
-then raise(Register_rootless_path_exn(nonexistent_paths))
-else 
-let old_watched_files = fw.File_watcher_t.watched_files in    
-let redundant_paths = List.filter (
+   let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) in
+   let nonexistent_paths = Option.filter_and_unpack (
+      fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
+      if not(Sys.file_exists s_full_path)
+      then Some(s_full_path)
+      else None
+   ) rootless_paths in 
+   if nonexistent_paths<>[]
+   then raise(Register_rootless_path_exn(nonexistent_paths))
+   else 
+   let old_watched_files = Fw_poly.watched_files fw in    
+   let redundant_paths = List.filter (
       fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
-) rootless_paths in 
-if redundant_paths<>[]
-then raise(Already_registered_rootless_paths_exn
+   ) rootless_paths in 
+   if redundant_paths<>[]
+   then raise(Already_registered_rootless_paths_exn
        (Image.image Dfn_rootless.to_line redundant_paths))
-else    
-let fw2=  {
-   fw with 
-   File_watcher_t.watched_files =  
-     old_watched_files@
-       (Image.image (recompute_all_info fw) rootless_paths)  ;
- }  in 
- fw2 ;;
+   else    
+   Fw_poly.set_watched_files fw (
+      old_watched_files@
+       (Image.image (recompute_all_info fw) rootless_paths)
+   ) ;;
 
 
 
- let remove_files fw rootless_paths=
- let s_root = Dfa_root.connectable_to_subpath (root fw) in 
+let remove_files fw rootless_paths=
+ let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) in 
  let removals_to_be_made = Image.image (
    fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
  ) rootless_paths in 
  let _=Unix_command.conditional_multiple_uc removals_to_be_made in 
- let fw2 ={
-   fw with 
-   File_watcher_t.watched_files = List.filter (fun (path,_)->
+ Fw_poly.set_watched_files fw (
+   List.filter (fun (path,_)->
       not(List.mem path rootless_paths)
-   ) (fw.File_watcher_t.watched_files)  ;
-} in 
-fw2 ;;
+   ) (Fw_poly.watched_files fw)
+ ) ;;
 
-    
-
-
-   let rename_files fw renaming_schemes =
-    let s_root = Dfa_root.connectable_to_subpath (root fw)  in 
+let rename_files fw renaming_schemes =
+    let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw)  in 
     let displacements_to_be_made = Image.image (
       fun (path1,path2)->" mv "^s_root^(Dfn_rootless.to_line path1)^" "^
       s_root^(Dfn_rootless.to_line path2)
     ) renaming_schemes in 
     let _=Unix_command.conditional_multiple_uc displacements_to_be_made in 
-    let fw2 = {
-      fw with 
-      File_watcher_t.watched_files = Image.image (fun pair->
-         let (path,_)=pair in 
-         (match List.assoc_opt path renaming_schemes with
-         Some(new_path) -> 
-              let _ = (
-                if  (Dfn_rootless.to_ending new_path) = Dfa_ending.ml
-                then deal_with_initial_comment_if_needed fw new_path
-              ) in 
-              (new_path,recompute_mtime fw new_path)
-         | None -> pair)
-      ) (fw.File_watcher_t.watched_files)  
-   } in 
-   fw2;;
-
-
-
+    let new_watched_files = Image.image (fun pair->
+      let (path,_)=pair in 
+      (match List.assoc_opt path renaming_schemes with
+      Some(new_path) -> 
+           let _ = (
+             if  (Dfn_rootless.to_ending new_path) = Dfa_ending.ml
+             then deal_with_initial_comment_if_needed fw new_path
+           ) in 
+           (new_path,recompute_mtime fw new_path)
+      | None -> pair)
+   ) (Fw_poly.watched_files fw)   in 
+   Fw_poly.set_watched_files fw  new_watched_files ;;
 
   let rename_subdirectory_as fw (old_subdir,new_subdir)=
-  let s_root = Dfa_root.connectable_to_subpath (root fw)  in 
+  let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw)  in 
   let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
   and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
   let old_full_path = s_root^s_old_subdir 
   and new_full_path = s_root^s_new_subdir in 
   let cmd=" mv "^old_full_path^" "^new_full_path in 
       let _=Unix_command.hardcore_uc cmd in 
-  let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.File_watcher_t.watched_files) in 
- let fw2 = {
-    fw with
-    File_watcher_t.watched_files = files  ;
- } in 
- (fw2,reps);;   
-
-
-        
-               
-        let watched_files fw = fw.File_watcher_t.watched_files ;;               
+  let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) 
+     (Fw_poly.watched_files fw) in 
+  (Fw_poly.set_watched_files fw files,reps);;   
+          
      
-        let empty_one config= {
-         File_watcher_t.configuration = config;
-         watched_files = [];
-      } ;; 
-
+let plunge_fw_configuration config= 
+   Fw_poly.extend_fw_configuration_to_file_watcher config 
+   ~watched_files:[] ;;
+ 
 end;;
 
 
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
-let configuration = Private.configuration ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
-let empty_one = Private.empty_one ;;
 let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
-let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-let plunge_configuration = Fw_poly.extend_fw_configuration_to_file_watcher ~watched_files:[];;
+let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-let root = Private.root ;;
-let to_concrete_object = Private.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
-let watched_files = Private.watched_files ;;

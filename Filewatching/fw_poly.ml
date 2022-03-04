@@ -88,7 +88,7 @@ end;;
 
 module Parent = struct 
 let designated_parents = [
-    "fw_with_archives" , "file_watcher" ;
+    "Fw_with_archives" , "File_watcher" ;
 ] ;;
 
 exception No_designated_parent of string ;; 
@@ -108,7 +108,7 @@ let sp_for_fw_with_archives child new_parent =
 let set ~child ~new_parent = 
  let name = child.Fw_poly_t.type_name in 
  match List.assoc_opt name [
-   "fw_with_archives" , sp_for_fw_with_archives child new_parent ;
+   "Fw_with_archives" , sp_for_fw_with_archives child new_parent ;
  ] with 
   Some(answer) ->answer
  |None -> raise (Set_parent_exn(name)) ;;

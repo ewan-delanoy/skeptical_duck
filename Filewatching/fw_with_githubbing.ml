@@ -166,6 +166,15 @@ module Private = struct
        let _ = Transmit_change_to_github.backup (github_config fw) diff opt_comment in 
        set_parent fw new_parent ;;   
    
+     let shrinkable_config fw =
+       let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
+       let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
+       let fw_with_sd = fw_with_deps.Fw_with_dependencies_t.parent in 
+       let fw_poly = fw_with_sd.Fw_with_small_details_t.parent in 
+       {
+         fw_poly with Fw_poly_t.type_name = "fw_configuration";
+       } ;;
+
    end;;  
          
      
@@ -175,13 +184,12 @@ let all_mlx_files fw = Fw_with_batch_compilation.all_mlx_files (Private.parent f
 let all_subdirectories fw = Fw_with_batch_compilation.all_subdirectories (Private.parent fw) ;;
 let ancestors_for_module fw mn = Fw_with_batch_compilation.ancestors_for_module (Private.parent fw) mn ;;
 let below fw mn = Fw_with_batch_compilation.below (Private.parent fw) mn ;;
-let census_of_foreigners fw = Fw_with_batch_compilation.census_of_foreigners (Private.parent fw) ;;
 let check_module_sequence_for_forgettability fw = Fw_with_batch_compilation.check_module_sequence_for_forgettability (Private.parent fw) ;;
 let check_that_no_change_has_occurred fw =
   Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.parent fw) ;; 
 let clean_debug_dir fw = Fw_with_batch_compilation.clean_debug_dir (Private.parent fw) ;;
 let clean_exec_dir fw = Fw_with_batch_compilation.clean_exec_dir (Private.parent fw) ;;
-let configuration fw= Fw_with_batch_compilation.configuration (Private.parent fw) ;;
+let configuration fw = Private.shrinkable_config fw ;;
 let decipher_module fw = Fw_with_batch_compilation.decipher_module (Private.parent fw);;
 let decipher_path fw = Fw_with_batch_compilation.decipher_path (Private.parent fw);;
 let dep_ordered_modules fw = Fw_with_batch_compilation.dep_ordered_modules (Private.parent fw) ;;

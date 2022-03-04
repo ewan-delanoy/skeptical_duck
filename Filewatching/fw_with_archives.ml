@@ -6,27 +6,25 @@
 
 module Private = struct
 
-   let parent fw = fw.Fw_with_archives_t.parent ;;
+   let parent fw = Fw_poly.parent fw ;;
    
    (* Inherited methods *)
 
-   let configuration fw = File_watcher.configuration (parent fw) ;;
+   (* let configuration fw = File_watcher.configuration (parent fw) ;;*)
 
-   let root fw = File_watcher.root (parent fw) ;;
-   let update_parent fw new_parent = {fw with Fw_with_archives_t.parent = new_parent} ;;
-   let watched_files fw = File_watcher.watched_files (parent fw) ;;
+   let root fw = Fw_poly.root fw ;;
+   let update_parent fw new_parent = Fw_poly.set_parent fw new_parent ;;
+   let watched_files fw = Fw_poly.watched_files fw ;;
    
    (* End of inherited methods *)  
    (* Inherited constructors *)
 
    let constructor par opt_subdirs= 
       let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.githubbed_archive_subdir]) in    
-      {
-         Fw_with_archives_t.parent = par;
-         subdirs_for_archived_mlx_files = subdirs;
-
-      };; 
-   let empty_one config = constructor(File_watcher.empty_one config) None ;;
+      Fw_poly.extend_file_watcher_to_fw_with_archives
+        par ~subdirs_for_archived_mlx_files:subdirs ;;
+      
+   let plunge_fw_configuration config = constructor(File_watcher.plunge_fw_configuration config) None ;;
    let of_configuration config = constructor(File_watcher.of_configuration config) None ;;
    let of_configuration_and_list config l = constructor (File_watcher.of_configuration_and_list config l) None;;
    let overwrite_file_if_it_exists fw rl new_content = 
@@ -54,7 +52,7 @@ module Private = struct
                 fun rl->
                   Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
       )  all_files in 
-      let archived_subdirs = fw.Fw_with_archives_t.subdirs_for_archived_mlx_files in 
+      let archived_subdirs = Fw_poly.subdirs_for_archived_mlx_files fw in 
       let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
       let (a_files,u_files) = List.partition is_archived  c_files in 
       (a_files,u_files,nc_files) ;;     
@@ -72,7 +70,7 @@ module Private = struct
       )  (watched_files fw) ;;
       
    let compute_small_details_on_one_file fw rl=
-      let root = Fw_poly.root (configuration fw) in 
+      let root = Fw_poly.root fw in 
       let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
       let ap = Absolute_path.of_string s_ap in 
       Fw_file_small_details.compute ap ;;
@@ -214,7 +212,7 @@ module Private = struct
            path in 
       let old_parent = parent old_fw in   
       let rootless = Dfn_common.decompose_absolute_path_using_root path 
-        (File_watcher.root old_parent)  in 
+        (Fw_poly.root old_parent)  in 
       let par2= File_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 
@@ -226,40 +224,6 @@ module Private = struct
       let (_,u_files,_) = canonical_tripartition fw all_files in 
       u_files ;;        
 
-   let cr_of_list l= Crobj_converter_combinator.of_list  Dfa_subdirectory.to_concrete_object  l;;
-   let cr_to_list crobj= Crobj_converter_combinator.to_list  Dfa_subdirectory.of_concrete_object crobj;;
-         
-   let salt = "Fw_"^"with_archives_t.";;
-      
-   let parent_label                   = salt ^ "parent";;
-   let subdirs_for_archived_mlx_files_label = salt ^ "subdirs_for_archived_mlx_files";;
-      
-      
-   let of_concrete_object ccrt_obj = 
-      let g=Concrete_object.get_record ccrt_obj in
-      {
-         Fw_with_archives_t.parent = File_watcher.of_concrete_object(g parent_label);
-         subdirs_for_archived_mlx_files = cr_to_list (g subdirs_for_archived_mlx_files_label);
-
-      };; 
-      
-   
-   let to_concrete_object fw=
-      let items= 
-      [
-           parent_label, File_watcher.to_concrete_object fw.Fw_with_archives_t.parent;
-           subdirs_for_archived_mlx_files_label, cr_of_list   (fw.Fw_with_archives_t.subdirs_for_archived_mlx_files);
-         
-      ]  in
-      Concrete_object_t.Record items;;   
-
-   let constructor par opt_subdirs= 
-      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.githubbed_archive_subdir]) in    
-      {
-         Fw_with_archives_t.parent = par;
-         subdirs_for_archived_mlx_files = subdirs;
-
-      };; 
      
    let check_that_no_change_has_occurred fw =
       File_watcher.check_that_no_change_has_occurred (parent fw) ;; 
@@ -269,26 +233,22 @@ end ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let compute_all_small_details = Private.compute_all_small_details ;;
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
-let configuration = Private.configuration ;;
-let empty_one = Private.empty_one ;;
 let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let noncompilable_files = Private.noncompilable_files ;;
-let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 let partition_for_singles = Private.canonical_tripartition ;; 
+let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let register_rootless_paths = Private.register_rootless_paths ;; 
-let remove_files = Private.remove_files ;; 
-let rename_subdirectory_as = Private.rename_subdirectory_as ;; 
 let relocate_module_to = Private.relocate_module_to ;;
+let remove_files = Private.remove_files ;;  
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
+let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
-let root = Private.root ;; 
-let to_concrete_object = Private.to_concrete_object ;;
 let usual_compilable_files = Private.usual_compilable_files ;;
-let watched_files = Private.watched_files ;;
+
 

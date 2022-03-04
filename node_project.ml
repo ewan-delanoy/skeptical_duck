@@ -37,7 +37,7 @@ let fw_config =
 
 
 
-let watcher_ref = ref (File_watcher.empty_one fw_config);;
+let watcher_ref = ref (File_watcher.plunge_fw_configuration fw_config);;
 
 
 let refresh () =

@@ -16,8 +16,6 @@ let cod ()=
      (Fw_with_githubbing.configuration ucs) 
         (Fw_with_githubbing.github_configuration ucs);;
 
-let cof = Usual_coma_state.census_of_foreigners;;
-
 let dabo = Usual_coma_state.sugared_directly_above;;
 
 let dbel = Usual_coma_state.sugared_directly_below;;
@@ -81,4 +79,3 @@ let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;
 let ucs=Usual_coma_state.main_ref;;   
 
 let vfm modname =Usual_coma_state.list_values_from_module_in_modulesystem modname ;;
-

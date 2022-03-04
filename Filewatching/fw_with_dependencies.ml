@@ -1290,12 +1290,6 @@ let test_for_foreign root ap =
      )
      ;;
 
-let census_of_foreigners fw=
-  let config = Fw_with_small_details.configuration (parent fw) in 
-  let  the_root = Fw_poly.root config in 
-  let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-  let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
-  List.filter (test_for_foreign the_root) list1;;
 
 let check_module_sequence_for_forgettability fw l=
  let modules_below = Option.filter_and_unpack (
@@ -1319,11 +1313,9 @@ let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
 let below = Private.below ;;
 let below_several = Private.below_several ;;
-let census_of_foreigners = Private.census_of_foreigners ;;
 let check_ending_on_module = Private.check_ending_on_module ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-let configuration fw = Fw_with_small_details.configuration (Private.parent fw) ;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;

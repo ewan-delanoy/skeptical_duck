@@ -436,8 +436,6 @@ module Private = struct
 
   let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
-  let configuration fw = Fw_with_dependencies.configuration (parent fw) ;;
-
   let directly_below fw mn = Fw_with_dependencies.directly_below (parent fw) mn ;;
 
   let direct_fathers_for_module fw mn = Fw_with_dependencies.direct_fathers_for_module (parent fw) mn ;;
@@ -455,8 +453,6 @@ module Private = struct
   let all_mlx_files fw = Fw_with_dependencies.all_mlx_files (parent fw) ;;
 
   let all_endinglesses fw = Fw_with_dependencies.all_endinglesses (parent fw) ;;
-
-  let census_of_foreigners fw = Fw_with_dependencies.census_of_foreigners (parent fw) ;;
 
   let check_module_sequence_for_forgettability fw = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
   
@@ -491,12 +487,10 @@ let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
-let census_of_foreigners = Private.census_of_foreigners ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
-let configuration = Private.configuration ;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules = Private.dep_ordered_modules ;;

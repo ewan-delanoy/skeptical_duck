@@ -17,8 +17,6 @@ end;;
 
 let all_endinglesses ()=Fw_with_githubbing.all_endinglesses (!(Private.main_ref)) ;; 
 
-let census_of_foreigners ()= Fw_with_githubbing.census_of_foreigners (!(Private.main_ref));;
-
 let clean_debug_dir ()=Fw_with_githubbing.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Fw_with_githubbing.clean_exec_dir (!(Private.main_ref));;
 
