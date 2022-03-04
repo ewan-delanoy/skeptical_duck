@@ -7,7 +7,7 @@
 open Needed_values ;;
 
 
-   
+  
    let pair_for_field (porf:Polymorphic_ocaml_record_t.field_t) =
      (String.make 3 ' ')^
      porf.Polymorphic_ocaml_record_t.field_name^" : "^
@@ -42,7 +42,6 @@ open Needed_values ;;
        let fn = field.Polymorphic_ocaml_record_t.field_name in 
        {
         Annotated_definition_t.value_name = fn ;
-        is_private = false ;
         lines_in_definition = ["let "^fn^" x = x."^
         (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" ;;"];
@@ -55,7 +54,6 @@ open Needed_values ;;
        and vn = field.Polymorphic_ocaml_record_t.var_name in 
        {
         Annotated_definition_t.value_name = "set_"^fn ;
-        is_private = false ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
         (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" = "^vn^"} ;;"];
@@ -87,12 +85,10 @@ open Needed_values ;;
     [
       {
         Annotated_definition_t.value_name = "of_concrete_object" ;
-        is_private = false ;
         lines_in_definition = ["let of_concrete_object = Private.Crobj.of_concrete_object ;;"];
       } ;
       {
         Annotated_definition_t.value_name = "to_concrete_object" ;
-        is_private = false ;
         lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
       } ;
     ] ;;
@@ -249,7 +245,6 @@ open Needed_values ;;
        let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
        {
          Annotated_definition_t.value_name = ext_name ;
-         is_private = false ;
          lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
          (String.make 3 ' ')^"fw with ";
          (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
@@ -274,7 +269,6 @@ open Needed_values ;;
       let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
       {
         Annotated_definition_t.value_name = constructor_name ;
-        is_private = false ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
         (String.make 3 ' ')^"Private.origin with ";
         (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
@@ -296,7 +290,6 @@ open Needed_values ;;
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
     {
       Annotated_definition_t.value_name = restr_name ;
-      is_private = false ;
       lines_in_definition = ["let "^restr_name^" fw  = {";
       (String.make 3 ' ')^"fw with ";
       (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_restr)^"\" ;"]
@@ -313,7 +306,6 @@ open Needed_values ;;
   let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
   {
     Annotated_definition_t.value_name = "print_out" ;
-    is_private = false ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
     "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
   } ;;  
@@ -352,25 +344,6 @@ open Needed_values ;;
     (simple_text_for_get_parent_name por)^"\n\n"^
     "\nend;; \n\n\n"
 
-      
-   let expand_annotated_text por l =   
-      let (private_component,public_component) =
-         List.partition (
-           fun anndef -> anndef.Annotated_definition_t.is_private 
-      ) l in 
-      let private_text = (
-         if private_component = []
-         then ""
-         else   
-         "module Private = struct \n"^
-         (simple_text_for_crobj_related_code por)^
-         (simple_text_for_parent_related_code por)^
-         (simple_text_for_origin_element por)^
-         (Annotated_definition.expand_list private_component)^
-         "\nend;; \n\n\n"
-      ) in 
-      private_text^  
-      (Annotated_definition.expand_list public_component) ;;
    
     let private_component por =   
       "module Private = struct \n"^
