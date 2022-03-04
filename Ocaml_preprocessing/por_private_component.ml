@@ -241,6 +241,7 @@ module Private = struct
             (text_for_exceptions)^"\n\n"^
             (text_for_get_parent_name por)^"\n\n"^
             (text_for_parent_setters por)^"\n\n"^
+            (text_for_main_parent_setter por)^"\n\n"^
             "\nend;; \n\n\n"     ;; 
       
       end ;;      
