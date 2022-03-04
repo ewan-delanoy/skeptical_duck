@@ -171,6 +171,7 @@ let ignored_subdirectories x = x.Fw_poly_t.ignored_subdirectories ;;
 let index_for_caching x = x.Fw_poly_t.index_for_caching ;;
 let last_compilation_result_for_module x = x.Fw_poly_t.last_compilation_result_for_module ;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
+let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(fw.Fw_poly_t.type_name)^" >") ;;
 let restrict_fw_with_githubbing_to_github_configuration fw  = {
    fw with 
@@ -185,6 +186,7 @@ let set_ignored_files x ign_files = { x with Fw_poly_t.ignored_files = ign_files
 let set_ignored_subdirectories x ign_subdirs = { x with Fw_poly_t.ignored_subdirectories = ign_subdirs} ;;
 let set_index_for_caching x cache_idx = { x with Fw_poly_t.index_for_caching = cache_idx} ;;
 let set_last_compilation_result_for_module x compilation_results = { x with Fw_poly_t.last_compilation_result_for_module = compilation_results} ;;
+let set_parent  = Private.Parent.set ;;
 let set_root x r = { x with Fw_poly_t.root = r} ;;
 let set_small_details_in_files x small_details = { x with Fw_poly_t.small_details_in_files = small_details} ;;
 let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_poly_t.subdirs_for_archived_mlx_files = archives_subdirs} ;;

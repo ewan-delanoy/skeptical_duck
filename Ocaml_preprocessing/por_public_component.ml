@@ -64,7 +64,7 @@ module Private = struct
       [
         {
           Por_public_definition_t.value_name = "parent" ;
-          lines_in_definition = ["parent  = Private.Parent.get ;;"];
+          lines_in_definition = ["let parent  = Private.Parent.get ;;"];
         } ;
         {
           Por_public_definition_t.value_name = "set_parent" ;
