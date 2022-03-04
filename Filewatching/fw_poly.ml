@@ -66,6 +66,11 @@ end;;
 
 module Extender = struct 
 
+let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
+   fw with 
+   Fw_poly_t.type_name = "Fw_with_archives" ;
+   subdirs_for_archived_mlx_files = v1_archives_subdirs ;
+} ;;
 let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
    Fw_poly_t.type_name = "File_watcher" ;
@@ -78,11 +83,6 @@ let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup
    gitpush_after_backup = v2_gab ;
    github_url = v3_url ;
    encoding_protected_files = v4_protected_pairs ;
-} ;;
-let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
-   fw with 
-   Fw_poly_t.type_name = "Fw_with_archives" ;
-   subdirs_for_archived_mlx_files = v1_archives_subdirs ;
 } ;;
 end;;
 
@@ -162,6 +162,7 @@ let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~git
 } ;;
 let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
+let extend_file_watcher_to_fw_with_archives  = Private.Extender.file_watcher_to_fw_with_archives ;;
 let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
 let extend_fw_with_batch_compilation_to_fw_with_githubbing  = Private.Extender.fw_with_batch_compilation_to_fw_with_githubbing ;;
 let github_url x = x.Fw_poly_t.github_url ;;
