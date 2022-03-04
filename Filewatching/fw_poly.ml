@@ -105,14 +105,17 @@ let sp_for_fw_with_archives child new_parent =
    ~subdirs_for_archived_mlx_files:(child.Fw_poly_t.subdirs_for_archived_mlx_files)
  ;;
 
-let set_parent ~child ~new_parent = 
+let set ~child ~new_parent = 
  let name = child.Fw_poly_t.type_name in 
  match List.assoc_opt name [
-"fw_with_archives" , sp_for_fw_with_archives child new_parent ;
-] with 
+   "fw_with_archives" , sp_for_fw_with_archives child new_parent ;
+ ] with 
   Some(answer) ->answer
  |None -> raise (Set_parent_exn(name)) ;;
 
+let get child = 
+ let parent_name = get_parent_name child in 
+ { child with Fw_poly_t.type_name = parent_name } ;;
 
 end;; 
 

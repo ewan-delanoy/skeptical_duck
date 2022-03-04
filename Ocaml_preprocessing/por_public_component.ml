@@ -139,6 +139,7 @@ let main por =
           (Private.annotated_text_for_setters por)@
           (Private.annotated_text_for_crobj_symlinks)@
           (Private.annotated_text_for_extender_symlinks por)@
+          (Private.annotated_text_for_parenting_symlinks por)@
           (Private.annotated_text_for_constructors por)@
           (Private.annotated_text_for_restrictors por)@
           [Private.annotated_definition_for_print_out por] );;   
