@@ -116,6 +116,44 @@ end ;;
 
 module Extender = struct 
 
+   
+      let indexed_varname_for_field (j,fd)=
+      "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
+ 
+  let snippet_for_extender_element (j,fd) = 
+      let var_name  = indexed_varname_for_field (j,fd) in 
+      (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+      var_name^" ;" ;;
+ 
+ 
+ let annotated_definition_for_extender por (before_ext,after_ext) =
+    let ext_name = "extend_"^before_ext^"_to_"^after_ext in 
+    let inst_before = Por_common.get_instance por before_ext 
+    and inst_after = Por_common.get_instance por after_ext  in 
+    let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
+    and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+    let _ = Por_common.check_inclusion field_names_before field_names_after in 
+    let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
+    let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
+    let indexed_extra_fields = Ennig.index_everything extra_fields in 
+    let filling_fields = Image.image (snippet_for_extender_element) indexed_extra_fields in 
+    let indexed_and_labeled = Image.image (fun (j,fd)->
+       "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+    let vars = String.concat " " indexed_and_labeled in 
+    let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+    {
+      Por_public_definition_t.value_name = ext_name ;
+      lines_in_definition = ["let "^ext_name^" fw "^vars^" = {";
+      (String.make 3 ' ')^"fw with ";
+      (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
+        filling_fields
+      @["} ;;"];
+    } ;;  
+ 
+ let annotated_text_for_extenders por = 
+    Image.image (annotated_definition_for_extender por) por.Polymorphic_ocaml_record_t.extensions
+ ;;      
+      
 
 end ;;      
 
