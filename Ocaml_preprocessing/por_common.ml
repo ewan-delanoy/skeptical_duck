@@ -20,7 +20,7 @@ let check_inclusion small_list large_list =
   "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
 
 
-let extender_name (before_ext,after_ext) = before_ext^"_to_"^after_ext ;;
+let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext)^"_to_"^(String.uncapitalize_ascii after_ext) ;;
 
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 

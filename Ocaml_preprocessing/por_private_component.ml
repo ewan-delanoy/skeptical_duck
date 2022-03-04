@@ -167,8 +167,9 @@ module Private = struct
       
       let text_for_main_list por =
             let l = por.Polymorphic_ocaml_record_t.designated_parents in 
+            let tempf = (fun r-> Strung.enclose(String.capitalize_ascii r)) in 
             let temp1 = Image.image (fun (s,t)->
-                  (String.make 4 ' ')^(Strung.enclose s)^" , "^(Strung.enclose t)^" ;"
+                  (String.make 4 ' ')^(tempf s)^" , "^(tempf t)^" ;"
             ) l in 
             String.concat "\n"
             ("let designated_parents = ["::
@@ -195,10 +196,11 @@ module Private = struct
          
       let text_for_parent_setter por (sibling,parent) =   
             let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) 
-            and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in   
+            and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in  
+            let uc_sibling = String.uncapitalize_ascii sibling in  
             String.concat "\n"
             ([
-                  "let sp_for_"^sibling^" child new_parent = ";
+                  "let sp_for_"^uc_sibling^" child new_parent = ";
                   " Extender."^ext_name^" new_parent ";
             ]@(   
                Image.image (fun (field_name,indexed_varname)->
@@ -219,7 +221,9 @@ module Private = struct
                   " match List.assoc_opt name ["
             ]@(   
                Image.image (fun (sibling,parent)->
-                 (String.make 3 ' ')^(Strung.enclose sibling)^" , sp_for_"^sibling^" child new_parent ;" ) 
+                  let c_sibling = String.capitalize_ascii sibling 
+                  and uc_sibling = String.uncapitalize_ascii sibling in 
+                 (String.make 3 ' ')^(Strung.enclose c_sibling)^" , sp_for_"^uc_sibling^" child new_parent ;" ) 
                  por.Polymorphic_ocaml_record_t.designated_parents
             )@[
                " ] with "; 
