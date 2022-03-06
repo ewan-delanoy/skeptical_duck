@@ -4,10 +4,444 @@ Snippet 71 :
 
 
 (************************************************************************************************************************
-Snippet 70 : Add painful debugging session on  initialize_toplevel
+Snippet 70 : Exercise on flexible transitive permutation groups, version 1
 ************************************************************************************************************************)
 
+let i_order = Total_ordering.for_integers ;;
+let s_order = Total_ordering.lex_for_strings ;;
+let si_order = Total_ordering.product s_order i_order ;;
+let p_order = Total_ordering.product si_order i_order ;;
 
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let p_insert = Ordered.insert p_order ;;
+let p_is_included_in = Ordered.is_included_in p_order ;;
+let p_mem = Ordered.mem p_order ;;
+let p_sort = Ordered.sort p_order ;;
+
+let s_sort = Ordered.sort s_order ;;
+
+
+module Initial_data = struct 
+
+   let current_size = 3 ;;
+   let base = Ennig.doyle (fun t->
+          let c= char_of_int (64+t) in 
+          ((String.make 1 c,t),current_size+t)
+         ) 1 current_size ;; 
+   let basic_vars = Ennig.doyle (fun t->
+      String.make 1 (char_of_int (64+t))
+     ) 1 current_size ;;        
+   let sphere = Memoized.recursive (fun old_f j->
+      if j=0 then [""] else 
+      let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
+      Image.image (fun (x,y)->x^y) temp1
+   ) ;;
+   let vars = List.flatten (Ennig.doyle sphere 1 5) ;;
+   
+end ;;    
+
+module Bough = struct 
+
+type t = {
+   size : int ;
+   points : ((string * int) * int) list ;
+   history : ((string * int) * int) list ;
+} ;; 
+
+let insert_point point bough =
+   let ((s,i),j) = point in 
+   {
+      size = max (bough.size) (max i j);
+      points = p_insert point (bough.points);
+      history = point :: (bough.history);
+   }
+
+exception Already_assigned of string * int ;;
+
+let expand bough (s0,i0) =
+   let unordered_temp1 = Option.filter_and_unpack (
+        fun ((s,i),j)->
+          if s=s0 
+          then (if i=i0 
+               then raise(Already_assigned(s0,i0))
+               else Some j) 
+          else None    
+   ) bough.points in 
+   let already_reached = i_sort unordered_temp1 
+   and new_whole = Ennig.ennig 1 (bough.size+1) in 
+   let exits = i_setminus new_whole already_reached in 
+   Image.image (
+       fun j -> insert_point ((s0,i0),j) bough
+   ) exits ;;
+
+let eval_list bough =
+    let rec tempf=( fun (l,i0) -> match l with 
+      [] -> (Some i0,None)
+     |s0::others ->
+       match Option.seek (
+       fun (pair,j)-> pair = (s0,i0)
+       ) bough.points with 
+       Some(_,j0) -> tempf(others,j0)
+       |None -> (None,Some(s0,i0))
+    ) in 
+    tempf ;; 
+
+let expand_long_string long_string =
+   let n = String.length long_string in 
+  Ennig.doyle (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
+
+let eval bough long_string i =
+    let l = expand_long_string long_string in 
+    eval_list bough (l,i) ;;
+    
+let force_eval bough long_string i =
+     let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
+
+let full_shadow bough long_string =
+     let temp1 = Ennig.doyle (
+        fun j->(j,eval bough long_string j)
+     ) 1 Initial_data.current_size in 
+     let (good_temp1,bad_temp1) = List.partition (
+        fun (j,(opt_good,opt_bad)) -> opt_bad = None 
+     ) temp1 in 
+     (Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_good) ) good_temp1,
+     Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_bad) ) bad_temp1 );;
+
+   ;;
+
+let to_string bough =
+    let all_points = bough.points in 
+    let vars_involved = s_sort (Image.image (fun (pair,_)->fst pair) all_points) in 
+    let temp1 = Image.image (
+      fun s0->(s0,Option.filter_and_unpack (
+          fun ((s,i),j)->
+              if s=s0 then Some(i,j) else None
+      ) all_points) 
+    ) vars_involved in
+    let temp2 = Image.image (
+      fun (s,l)->(String.make 4 ' ')^ s^" : "^(String.concat ", " (Image.image (fun (i,j)->Printf.sprintf "%i -> %i" i j) l))
+    )  temp1 in 
+    String.concat "\n" temp2 ;;
+
+let constructor l = {
+   size = snd (Max.maximize_it  (fun ((s,i),j)-> max i j ) l) ;
+   points = l ;
+   history = [] ;
+} ;;
+
+let is_stronger_than bough conditions =
+   let conditions_in_order = p_sort conditions in 
+   p_is_included_in  conditions_in_order bough.points ;;  
+
+let find_chair_opt bough indexed_list =
+   match Option.seek (fun (idx,conditions)->is_stronger_than bough conditions ) indexed_list with 
+    None -> None
+    |Some(idx0,_) -> Some idx0 ;;
+
+exception Compute_long_chain_exn of (string * int) list ;;
+
+let compute_long_chain bough long_string =
+   let rec tempf=( fun (treated,to_be_treated,slice) -> match to_be_treated with 
+   [] -> List.rev treated 
+  |s0::others -> 
+     let temp1 = Image.image (eval bough s0) slice in 
+     let (good_temp1,bad_temp1) = List.partition (fun (good_opt,bad_opt)->good_opt<>None) temp1 in 
+     if bad_temp1 <> []
+     then let temp2 = Image.image (fun (good_opt,bad_opt)->Option.unpack bad_opt) bad_temp1 in 
+          raise(Compute_long_chain_exn (temp2))
+     else  
+     let new_slice = Image.image (fun (good_opt,bad_opt)->Option.unpack good_opt) good_temp1 in 
+     tempf(((s0,new_slice)::treated,others,new_slice))
+ ) in 
+ tempf(["Z",[1;2;3]],expand_long_string long_string,[1;2;3]) ;; 
+
+let compute_long_snake bough long_string =
+     let temp1 = compute_long_chain bough long_string in 
+     let temp2 = Listennou.universal_delta_list temp1 in 
+     let temp3 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->(actor2,acted1) ) temp2 in 
+     let temp4 = List.flatten (Image.image (fun (s,l)->Image.image (fun i->(s,i)) l) temp3) in 
+     let temp5 = Image.image (fun (s,i)->((s,i),force_eval bough s i) ) temp4 in
+     p_sort temp5 ;; 
+
+let snake_history bough long_string =
+  let temp1 = compute_long_snake bough long_string 
+  and bare_history = List.rev (bough.history) in
+  List.filter (fun p->p_mem p temp1) bare_history ;; 
+  
+
+
+end ;;
+
+module Special_reductions = struct 
+
+   let main_list = [
+      [
+      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+      (("C", 2), 2); (("B", 4), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 4);
+       (* in this case ABBC is a solution *)
+      ];
+      [
+         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+         (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
+         (("B", 6), 4); (("C", 4), 3); 
+         (* in this case ACBB is a solution *)
+      ];
+      [
+         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+         (("C", 2), 2);  (("A", 3), 5); (("B", 3), 6); (("C", 4), 4); (("C", 5), 3); 
+         (* in this case CAB is a solution *)
+      ];
+      [
+         (* (("B", 1), 1); (("C", 1), 1); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
+         (("C", 5), 5); (("A", 6), 6); (("C", 6), 3) *)
+         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+         (("C", 2), 2); (("B", 4), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
+         (("B", 6), 4); (("C", 4), 4); (("C", 5), 5)
+       (* in this case ABCB is a solution *)
+      ];
+      [
+         (("B", 1), 1); (("A", 5), 3); (("B", 3), 6); (("C", 4), 4); (("A", 6), 6);
+         (("C", 6), 7) 
+         (* in this case CAB is a solution *)
+      ];
+   ]  ;; 
+   
+   let indexed_main_list = Ennig.index_everything main_list ;;
+
+   end ;;   
+
+
+module Analysis_on_bough = struct 
+
+type result_on_var = 
+   Uunfinished of string *int 
+  |Finnished_well of  ((int*int) list) 
+  |Finnished_with_a_jump of int
+  |Finished_badly of  int * int ;;  
+
+let analize_var bough long_string = 
+   match Bough.find_chair_opt bough Special_reductions.indexed_main_list with
+   Some(idx0) -> Finnished_with_a_jump(idx0)
+   |None ->   
+   let (dead,alive) = Bough.full_shadow bough long_string in 
+   (match Option.seek (fun (i,j)->j<=Initial_data.current_size) dead with 
+    (Some(i0,j0)) -> Finished_badly (i0,j0)
+   |None ->
+      (
+         match alive with 
+         [] -> Finnished_well(dead)
+         |(_,(s1,i1)) :: _ -> Uunfinished(s1,i1) 
+      )) ;;
+     
+type result_on_vars =
+   Unfinished of string * int 
+  |Finished_well of string * ((int*int) list)
+  |Finished_with_a_jump of int
+  |Inconclusive of (string * int * int) list ;;
+
+let analize_vars bough vars=
+     let rec tempf =(
+        fun (treated,to_be_treated) -> match to_be_treated with 
+        [] -> Inconclusive (List.rev treated)
+        | long_string :: others -> 
+          (match analize_var bough long_string with
+         Uunfinished (s,i) ->  Unfinished (s,i)
+        |Finnished_well (explanation) -> Finished_well (long_string,explanation)
+        |Finnished_with_a_jump idx -> Finished_with_a_jump idx
+        |Finished_badly (i,j) -> tempf((long_string,i,j)::treated,others)
+          )
+     )  in 
+     tempf ([],vars) ;;
+
+type check_result =
+     Usual of ((int*int) list)
+    |Special of int  ;; 
+
+
+exception Unhappy_ending of string * result_on_var ;;
+
+let check_happy_ending bough var = match analize_var bough var with 
+     Finnished_well(explanation) -> Usual(explanation) 
+   | other -> raise (Unhappy_ending(var,other)) ;;
+
+exception Not_a_jump of result_on_var ;;
+exception Jump_index_mismatch of int * int ;;
+
+let check_jump bough jump_idx= match analize_var bough "" with 
+   Finnished_with_a_jump idx -> if idx=jump_idx 
+                                then Special(idx) 
+                                else raise(Jump_index_mismatch(jump_idx,idx)) 
+ | other -> raise (Not_a_jump(other)) ;;   
+
+
+end ;;   
+
+
+
+module Bough_list = struct 
+
+let to_string l = 
+   let temp1 = Ennig.index_everything l in 
+   let temp2 = List.rev_map (fun (idx,bough)->"\nCase "^(string_of_int idx)^".\n"^(Bough.to_string bough)) temp1 in 
+   let sn = string_of_int(List.length l) in 
+   (String.concat "\n" temp2)^"\n "^sn^" cases." ;;
+
+let analize l vars = Analysis_on_bough.analize_vars (List.hd l) vars ;;
+
+end ;;   
+
+
+
+
+
+module Walker = struct 
+   
+type t = W of ((Bough.t * (string * Analysis_on_bough.check_result )) list) * (Bough.t list) ;;
+
+let expand (W(dead,alive)) (b_idx0,s0,i_idx0)=
+  let temp1 = Ennig.index_everything alive in 
+  let temp2 = Image.image (
+     fun (b_idx,bough) -> 
+       if b_idx = b_idx0 
+       then Bough.expand bough (s0,i_idx0)
+       else [bough]    
+  ) temp1 in 
+  W(dead,List.flatten temp2) ;;
+
+let kill  (W(dead,alive)) b_idx0 long_string =
+   let temp1 = Ennig.index_everything alive in 
+   let (the_one,others) = List.partition (fun (b_idx,bough)->b_idx = b_idx0) temp1 in 
+   let (_,dead_bough) = List.hd the_one in  
+   let explanation = Analysis_on_bough.check_happy_ending dead_bough long_string in 
+   (W((dead_bough,(long_string,explanation))::dead,Image.image snd others)) ;;   
+
+let jump  (W(dead,alive)) b_idx0 jump_idx=
+   let temp1 = Ennig.index_everything alive in 
+   let (the_one,others) = List.partition (fun (b_idx,bough)->b_idx = b_idx0) temp1 in 
+   let (_,dead_bough) = List.hd the_one in  
+   let explanation = Analysis_on_bough.check_jump dead_bough jump_idx in 
+   (W((dead_bough,("",explanation))::dead,Image.image snd others)) ;;  
+
+
+let to_string (W(dead,alive)) = Bough_list.to_string alive ;;
+
+let print_out  (fmt:Format.formatter) w = Format.fprintf fmt "@[%s@]" (to_string w);; 
+
+let constructor l = W([],[Bough.constructor l]) ;;
+
+let analize (W(dead,alive)) vars = Bough_list.analize alive vars ;; 
+
+let starting_point = constructor Initial_data.base ;;
+
+let alcove (W(dead,alive)) = dead ;;
+
+end ;;   
+
+module This_walker = struct 
+
+let main_ref = ref (Walker.starting_point) ;;
+
+let initialize () = let _ =(main_ref := Walker.starting_point )  in Walker.starting_point;;
+
+let expand (s,i) = 
+   let new_w = Walker.expand (!main_ref) (1,s,i) in 
+   let _ = (main_ref := new_w) in 
+   new_w ;;
+     
+let kill long_string = 
+   let new_w = Walker.kill (!main_ref) 1 long_string in 
+   let _ = (main_ref := new_w) in 
+   new_w ;;     
+
+let jump jump_idx = 
+   let new_w = Walker.jump (!main_ref) 1 jump_idx in 
+   let _ = (main_ref := new_w) in 
+   new_w ;;     
+           
+   
+
+let analize () = Walker.analize (!main_ref) Initial_data.vars ;;
+
+let alcove () = Walker.alcove (!main_ref) ;;
+
+let expand_and_analize pair = let next_state = expand pair in (next_state,analize ()) ;;
+let kill_and_analize data = let next_state = kill data in (next_state,analize ()) ;;
+let jump_and_analize jump_idx = let next_state = jump jump_idx in (next_state,analize ()) ;;
+
+end ;;   
+
+(* #install_printer Walker.print_out ;; *)
+
+This_walker.initialize () ;;
+
+
+let ea = This_walker.expand_and_analize  ;;
+let ka = This_walker.kill_and_analize ;;
+let ja = This_walker.jump_and_analize ;;
+
+ea("A",2);;
+ea("B",1);;
+ea("C",1);;
+ea("A",4);;
+ea("A",5);;
+ea("C",2);;
+ea("B",4);;
+ea("B",5);;
+ea("A",3);;
+ea("B",3);;
+ja 1;;
+ea("B",6);;
+ea("C",4);;
+ja 2;;
+ea("C",5);;
+ja 3;;
+ea("A",6);;
+ea("C",6);;
+ja 4;;
+ja 4;;
+ja 4;;
+ea("A",7);;
+ea("C",6);;
+ka "ACB" ;;
+ea("A",6);;
+ea("C",7);;
+ea("B",7);;
+ka "ABCB" ;;
+ea("A",8);;
+
+
+(*
+
+ja 5;;
+ea("C",7);;
+ea("C",6);;
+ea("B",7);;
+ea("A",7);;
+*)
+
+
+(*
+let (Walker.W(dead1,alive1))=(!(This_walker.main_ref)) ;;
+let bough1 = List.hd alive1 ;;
+let history1= List.rev(bough1.Bough.history) ;;
+let lc1 = Bough.compute_long_chain bough1 "ABCB" ;;
+let ls1 = Bough.snake_history bough1 "ABCB" ;;
+
+
+let g1_acb = [(("B", 1), 1); (("C", 1), 1); (("A", 3), 5); (("B", 3), 6); (("C", 5), 7);
+   (("A", 7), 6); (("C", 6), 3)] ;;
+let g2_abcb = [(("B", 1), 1); (("C", 1), 1); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
+   (("C", 5), 7); (("A", 7), 6); (("C", 6), 5); (("B", 7), 7)] ;;
+
+
+
+
+
+This_walker.analize () ;;
+
+*)
 
 
 
@@ -206,14 +640,7 @@ let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max
 Snippet 64 : Visualize hierarchy of types in a poly-record class
 ************************************************************************************************************************)
 
-type t3 = Fw_with_archives_t.t = {
-   parent : File_watcher_t.t;
-   subdirs_for_archived_mlx_files : Dfa_subdirectory_t.t list;
- };;
-type t4 = Fw_with_small_details_t.t = {
-   parent : Fw_with_archives_t.t;
-   small_details_in_files : (Dfn_rootless_t.t * Fw_file_small_details_t.t) list;
- };;
+
 type t5 = Fw_with_dependencies_t.t = {
    parent : Fw_with_small_details_t.t;
    index_for_caching : Fw_instance_index_t.t * Fw_state_index_t.t;
