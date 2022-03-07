@@ -168,28 +168,24 @@ module Private = struct
    
       let shrinkable_check_that_no_change_has_occurred fw =
         let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
-        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
-        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        let fw_poly = fw_with_bc.Fw_with_batch_compilation_t.parent in 
         Fw_with_archives.check_that_no_change_has_occurred fw_poly ;; 
 
      let shrinkable_config fw =
        let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
-       let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
-       let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+       let fw_poly = fw_with_bc.Fw_with_batch_compilation_t.parent in 
        {
          fw_poly with Fw_poly_t.type_name = "fw_configuration";
        } ;;
 
        let shrinkable_latest_changes fw =
         let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
-        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
-        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        let fw_poly = fw_with_bc.Fw_with_batch_compilation_t.parent in 
         Fw_with_archives.latest_changes fw_poly ;;  
 
       let shrinkable_noncompilable_files fw =
         let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
-        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
-        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        let fw_poly = fw_with_bc.Fw_with_batch_compilation_t.parent in 
         Fw_with_archives.noncompilable_files fw_poly ;;   
 
    end;;  

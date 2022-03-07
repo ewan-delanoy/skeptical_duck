@@ -11,8 +11,8 @@ exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 module Private = struct
 
  let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
- let index fw = fw.Fw_with_dependencies_t.index_for_caching ;; 
- let parent fw = fw.Fw_with_dependencies_t.parent ;;
+ let index fw = Fw_poly.index_for_caching fw ;; 
+ let parent fw = Fw_poly.parent fw ;;
 
 (* Pre-processed text starts here *)
 
@@ -24,8 +24,6 @@ module Entrance = struct
 let forget_modules = Fw_with_small_details.forget_modules ;;
 
 let inspect_and_update = Fw_with_small_details.inspect_and_update ;;
-
-let of_concrete_object = Fw_poly.of_concrete_object ;;
 
 let of_configuration = Fw_with_small_details.of_configuration ;;
 
@@ -55,134 +53,116 @@ module Cached = struct
 let plunge_fw_configuration config =  
  let new_parent = Entrance.plunge_fw_configuration config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
+ Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+   new_parent 
+     ~index_for_caching:(expand_index instance_idx)
+ ;; 
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.forget_modules old_parent mods_to_be_erased in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+
+ (  Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let inspect_and_update old_fw  =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.inspect_and_update old_parent  in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
-let of_concrete_object crobj =  
- let new_parent = Entrance.of_concrete_object crobj in 
- let instance_idx = Fw_indexer.create_new_instance () in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
 
 let of_configuration config =  
  let new_parent = Entrance.of_configuration config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
+ Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx);; 
 
 let of_configuration_and_list pair =  
  let new_parent = Entrance.of_configuration_and_list pair in 
  let instance_idx = Fw_indexer.create_new_instance () in 
- { 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
+ Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx);; 
 
 let overwrite_file_if_it_exists old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.overwrite_file_if_it_exists old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let register_rootless_paths old_fw rootlesses =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.register_rootless_paths old_parent rootlesses in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let relocate_module_to old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.relocate_module_to old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let remove_files old_fw files_to_be_removed =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.remove_files old_parent files_to_be_removed in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.rename_module_on_filename_level_and_in_files old_parent triple in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let rename_subdirectory_as old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.rename_subdirectory_as old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let replace_string old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.replace_string old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
 
 let replace_value old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.replace_value old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- ({ 
-   Fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- },extra ) ;; end ;;
+ (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+ new_parent 
+   ~index_for_caching:(expand_index instance_idx),extra ) ;; end ;;
 
 
 module Modularized_details = struct 
@@ -231,11 +211,7 @@ let inspect_and_update old_fw  =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let of_concrete_object crobj =  
- let new_fw = Cached.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+
 
 let of_configuration config =  
  let new_fw = Cached.of_configuration config in 
@@ -454,12 +430,6 @@ let inspect_and_update old_fw  =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let of_concrete_object crobj =  
- let new_fw = Modularized_details.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let of_configuration config =  
  let new_fw = Modularized_details.of_configuration config in 
  let answer = force_get new_fw in 
@@ -596,11 +566,6 @@ let inspect_and_update old_fw  =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let of_concrete_object crobj =  
- let new_fw = Order.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let of_configuration config =  
  let new_fw = Order.of_configuration config in 
@@ -723,12 +688,6 @@ let inspect_and_update old_fw  =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let of_concrete_object crobj =  
- let new_fw = Needed_dirs.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let of_configuration config =  
  let new_fw = Needed_dirs.of_configuration config in 
  let answer = force_get new_fw in 
@@ -840,11 +799,6 @@ let inspect_and_update old_fw  =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let of_concrete_object crobj =  
- let new_fw = Needed_libs.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let of_configuration config =  
  let new_fw = Needed_libs.of_configuration config in 
@@ -973,12 +927,6 @@ let inspect_and_update old_fw  =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let of_concrete_object crobj =  
- let new_fw = All_subdirectories.of_concrete_object crobj in 
- let answer = force_get new_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let of_configuration config =  
  let new_fw = All_subdirectories.of_configuration config in 
@@ -1325,7 +1273,11 @@ let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let number_of_modules = Private.number_of_modules ;;
-let of_concrete_object = Private.Exit.of_concrete_object ;;
+let of_concrete_object crobj = 
+    let instance_idx = Fw_indexer.create_new_instance () in   
+    Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+      (Fw_poly.of_concrete_object crobj) 
+      ~index_for_caching:(Private.expand_index instance_idx) ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
@@ -1343,4 +1295,3 @@ let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object fw = Fw_poly.to_concrete_object (Private.parent fw) ;;
 let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;
-
