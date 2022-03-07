@@ -180,12 +180,14 @@ open Needed_values ;;
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;
        has_crobj_conversion = true ;
-       extensions = ["fw_configuration","file_watcher";
-                     "fw_with_batch_compilation","fw_with_githubbing"] ;
+       extensions = ["fw_configuration","file_watcher"] ;
        restrictions = ["fw_with_githubbing","github_configuration"] ;
        constructors = ["fw_configuration";"github_configuration"] ;
        designated_parents = ["fw_with_archives","file_watcher";
+                             "fw_with_small_details","fw_with_archives";                       
                              "fw_with_dependencies","fw_with_small_details";
+                             "fw_with_batch_compilation","fw_with_dependencies";
+                             "fw_with_githubbing","fw_with_batch_compilation"
                              ] ;
     } ;;
    

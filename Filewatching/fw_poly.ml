@@ -76,6 +76,11 @@ let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    Fw_poly_t.type_name = "File_watcher" ;
    watched_files = v1_files ;
 } ;;
+let fw_with_archives_to_fw_with_small_details fw ~small_details_in_files:v1_small_details = {
+   fw with 
+   Fw_poly_t.type_name = "Fw_with_small_details" ;
+   small_details_in_files = v1_small_details ;
+} ;;
 let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
    Fw_poly_t.type_name = "Fw_with_githubbing" ;
@@ -83,6 +88,11 @@ let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup
    gitpush_after_backup = v2_gab ;
    github_url = v3_url ;
    encoding_protected_files = v4_protected_pairs ;
+} ;;
+let fw_with_dependencies_to_fw_with_batch_compilation fw ~last_compilation_result_for_module:v1_compilation_results = {
+   fw with 
+   Fw_poly_t.type_name = "Fw_with_batch_compilation" ;
+   last_compilation_result_for_module = v1_compilation_results ;
 } ;;
 let fw_with_small_details_to_fw_with_dependencies fw ~index_for_caching:v1_cache_idx = {
    fw with 
@@ -94,7 +104,10 @@ end;;
 module Parent = struct 
 let designated_parents = [
     "Fw_with_archives" , "File_watcher" ;
+    "Fw_with_small_details" , "Fw_with_archives" ;
     "Fw_with_dependencies" , "Fw_with_small_details" ;
+    "Fw_with_batch_compilation" , "Fw_with_dependencies" ;
+    "Fw_with_githubbing" , "Fw_with_batch_compilation" ;
 ] ;;
 
 exception No_designated_parent of string ;; 
@@ -110,16 +123,34 @@ let sp_for_fw_with_archives child new_parent =
  Extender.file_watcher_to_fw_with_archives new_parent 
    ~subdirs_for_archived_mlx_files:(child.Fw_poly_t.subdirs_for_archived_mlx_files)
  ;;
+let sp_for_fw_with_small_details child new_parent = 
+ Extender.fw_with_archives_to_fw_with_small_details new_parent 
+   ~small_details_in_files:(child.Fw_poly_t.small_details_in_files)
+ ;;
 let sp_for_fw_with_dependencies child new_parent = 
  Extender.fw_with_small_details_to_fw_with_dependencies new_parent 
    ~index_for_caching:(child.Fw_poly_t.index_for_caching)
+ ;;
+let sp_for_fw_with_batch_compilation child new_parent = 
+ Extender.fw_with_dependencies_to_fw_with_batch_compilation new_parent 
+   ~last_compilation_result_for_module:(child.Fw_poly_t.last_compilation_result_for_module)
+ ;;
+let sp_for_fw_with_githubbing child new_parent = 
+ Extender.fw_with_batch_compilation_to_fw_with_githubbing new_parent 
+   ~dir_for_backup:(child.Fw_poly_t.dir_for_backup)
+   ~gitpush_after_backup:(child.Fw_poly_t.gitpush_after_backup)
+   ~github_url:(child.Fw_poly_t.github_url)
+   ~encoding_protected_files:(child.Fw_poly_t.encoding_protected_files)
  ;;
 
 let set ~child ~new_parent = 
  let name = child.Fw_poly_t.type_name in 
  match List.assoc_opt name [
    "Fw_with_archives" , sp_for_fw_with_archives child new_parent ;
+   "Fw_with_small_details" , sp_for_fw_with_small_details child new_parent ;
    "Fw_with_dependencies" , sp_for_fw_with_dependencies child new_parent ;
+   "Fw_with_batch_compilation" , sp_for_fw_with_batch_compilation child new_parent ;
+   "Fw_with_githubbing" , sp_for_fw_with_githubbing child new_parent ;
  ] with 
   Some(answer) ->answer
  |None -> raise (Set_parent_exn(name)) ;;
@@ -175,7 +206,9 @@ let dir_for_backup x = x.Fw_poly_t.dir_for_backup ;;
 let encoding_protected_files x = x.Fw_poly_t.encoding_protected_files ;;
 let extend_file_watcher_to_fw_with_archives  = Private.Extender.file_watcher_to_fw_with_archives ;;
 let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
+let extend_fw_with_archives_to_fw_with_small_details  = Private.Extender.fw_with_archives_to_fw_with_small_details ;;
 let extend_fw_with_batch_compilation_to_fw_with_githubbing  = Private.Extender.fw_with_batch_compilation_to_fw_with_githubbing ;;
+let extend_fw_with_dependencies_to_fw_with_batch_compilation  = Private.Extender.fw_with_dependencies_to_fw_with_batch_compilation ;;
 let extend_fw_with_small_details_to_fw_with_dependencies  = Private.Extender.fw_with_small_details_to_fw_with_dependencies ;;
 let github_url x = x.Fw_poly_t.github_url ;;
 let gitpush_after_backup x = x.Fw_poly_t.gitpush_after_backup ;;
