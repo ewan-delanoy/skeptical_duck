@@ -33,13 +33,14 @@ submodule).
 
 
 let methods = [
-   "empty_one",false,["config"],None;
+   
    "forget_modules",true,["mods_to_be_erased"],Some "extra";
    "inspect_and_update",true,[],Some "extra";
    "of_concrete_object",false,["crobj"],None;
    "of_configuration",false,["config"],None;
    "of_configuration_and_list",false,["pair"],None;
    "overwrite_file_if_it_exists",true,["pair"],Some "extra";
+   "plunge_fw_configuration",false,["config"],None;
    "register_rootless_paths",true,["rootlesses"],Some "extra";
    "relocate_module_to",true,["pair"],Some "extra";
    "remove_files",true,["files_to_be_removed"],Some "extra";

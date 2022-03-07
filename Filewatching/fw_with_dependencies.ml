@@ -13,6 +13,11 @@ module Private = struct
  let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
  let index fw = Fw_poly.index_for_caching fw ;; 
  let parent fw = Fw_poly.parent fw ;;
+ let usual_extension fw_parent instance_idx = 
+    Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
+      fw_parent 
+       ~index_for_caching:(expand_index instance_idx) ;;
+
 
 (* Pre-processed text starts here *)
 
