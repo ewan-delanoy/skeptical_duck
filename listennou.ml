@@ -408,3 +408,17 @@ let complement_of_singleton l k =
 
 (* complement_of_singleton (Ennig.ennig 1 7) 3 ;; *)
 
+let minimal_element_in_unpwards_filter f l =
+     let rec tempf = (
+        fun (treated,to_be_treated) -> match to_be_treated with 
+          [] -> List.rev treated 
+          | x :: others ->
+          if f(List.rev_append treated others)
+          then tempf(treated,others)
+          else tempf(x::treated,others)
+     ) in 
+     tempf([],l) ;;
+
+(*  (minimal_element_in_unpwards_filter (fun x->Basic.fold_sum(x)>=10) [6;2;5;1;1]) = [6;5] ;; *)
+
+
