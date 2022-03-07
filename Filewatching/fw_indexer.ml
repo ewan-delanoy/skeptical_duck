@@ -27,6 +27,10 @@ let get_state (Fw_instance_index_t.I ii) =
   try List.nth (!(Private.main_ref)) (ii-1) with 
   _ -> raise (Invalid_instance_index(ii)) ;;
   
+let make_full_instance () = 
+   let idx = create_new_instance () in 
+   (idx,get_state idx) ;;
+
 let push_state instance =
   let raf = Private.main_ref in 
   let (Fw_state_index_t.I old_state) = get_state instance 

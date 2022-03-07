@@ -97,7 +97,7 @@ open Needed_values ;;
    ] ;; 
    
    let fields_for_fw_with_dependencies = field_list_constructor [
-     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_instance_index_t.I(0),Fw_state_index_t.I(0))", "";
+     "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_indexer.make_full_instance ())", "";
    ] ;; 
    
    let fields_for_fw_with_batch_compilation = field_list_constructor [

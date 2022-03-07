@@ -13,25 +13,22 @@ module Private = struct
              (Dfa_root.connectable_to_subpath root)^
              (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir)) ^
                "cmos_for_ocamldebug.txt";;
-  let parent fw = fw.Fw_with_batch_compilation_t.parent ;;
-  let get_cmpl_results fw = fw.Fw_with_batch_compilation_t.last_compilation_result_for_module ;;
-  let set_cmpl_results fw new_list = {fw with 
-    Fw_with_batch_compilation_t.last_compilation_result_for_module = new_list ;
-  } ;; 
-  let set_parent fw new_parent = {fw with 
-    Fw_with_batch_compilation_t.parent = new_parent ;
-  } ;;  
-
-  let above fw mn = Fw_with_dependencies.above (parent fw) mn ;;
-  let ancestors_for_module fw mn = Fw_with_dependencies.ancestors_for_module (parent fw) mn ;;
-  let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
-  let printer_equipped_types fw = Fw_with_dependencies.printer_equipped_types (parent fw) ;;   
+  let parent fw = Fw_poly.parent fw;;
+  let get_cmpl_results fw = Fw_poly.last_compilation_result_for_module fw ;;
+  let set_cmpl_results fw new_list = 
+    Fw_poly.set_last_compilation_result_for_module fw new_list ;; 
+  let set_parent fw new_parent = 
+      Fw_poly.set_parent ~child:fw ~new_parent:new_parent ;;
+  let usual_extension fw cmpl_results =
+      Fw_poly.extend_fw_with_dependencies_to_fw_with_batch_compilation    
+       fw ~last_compilation_result_for_module:cmpl_results ;;
+     
   let last_compilation_result_for_module fw mn = 
     List.assoc mn (get_cmpl_results fw) ;;
   let modules_with_their_ancestors fw l=
     Fw_with_dependencies.modules_with_their_ancestors
      (parent fw) l ;;
-  let root fw = Fw_with_dependencies.root (parent fw) ;;   
+  let root fw = Fw_poly.root (parent fw) ;;   
   let set_cmpl_result_at_module fw mn0 new_res = 
     let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Image.image (
@@ -42,44 +39,13 @@ module Private = struct
         else old_pair  
     ) old_list_of_cmpl_results in 
     set_cmpl_results fw new_list_of_cmpl_results ;;
-  let subdir_for_module fw mn= Fw_with_dependencies.subdir_for_module (parent fw) mn ;;  
-  
-  let endingless_at_module fw mn=
-    Dfn_endingless_t.J(root fw,subdir_for_module fw mn,mn);;
-  
   
   let preq_types_with_extra_info fw =
       let root = root fw  in 
       Image.image (fun middle->
        let mn = Dfn_middle.to_module middle in 
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
-      ) (printer_equipped_types fw) ;;
-
-  let all_subdirectories fw = Fw_with_dependencies.all_subdirectories (parent fw) ;;    
-  
-  let salt = "Fw_"^"with_batch_compilation.";;
-    
-  let frontier_with_unix_world_label      = salt ^ "frontier_with_unix_world";;
-  let last_compilation_result_for_module_label = salt ^ "last_compilation_result_for_module";;
-      
-  let cr_of_pair f l= Crobj_converter_combinator.of_pair_list  Dfa_module.to_concrete_object f l;;
-  let cr_to_pair f crobj= Crobj_converter_combinator.to_pair_list  Dfa_module.of_concrete_object f crobj;;
-      
-    
-  let of_concrete_object ccrt_obj = 
-    let g=Concrete_object.get_record ccrt_obj in
-    {
-      Fw_with_batch_compilation_t.parent = Fw_with_dependencies.of_concrete_object (g frontier_with_unix_world_label);
-      last_compilation_result_for_module = cr_to_pair Crobj_converter.bool_of_concrete_object (g last_compilation_result_for_module_label);
-    };; 
-      
-  let to_concrete_object fw=
-    let items= 
-    [
-      frontier_with_unix_world_label, Fw_with_dependencies.to_concrete_object fw.Fw_with_batch_compilation_t.parent;
-      last_compilation_result_for_module_label, cr_of_pair Crobj_converter.bool_to_concrete_object fw.Fw_with_batch_compilation_t.last_compilation_result_for_module;    
-    ]  in
-    Concrete_object_t.Record items;;
+      ) (Fw_with_dependencies.printer_equipped_types fw) ;;  
   
   
   module Command = struct 
@@ -117,7 +83,7 @@ module Private = struct
               let (rejected_siblings_as_triples,survivors)=List.partition
              (
                 fun (nm2,_,_)->
-                  List.mem nm (ancestors_for_module fw nm2)
+                  List.mem nm (Fw_with_dependencies.ancestors_for_module fw nm2)
              ) triples_after in 
              let rejected_siblings_with_redundancies =  
                 Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
@@ -143,7 +109,7 @@ module Private = struct
     ) deps) 
     and printer_equipped_types = preq_types_with_extra_info fw  in 
     let printable_deps = List.filter (
-      fun mn -> let eless = endingless_at_module fw mn in 
+      fun mn -> let eless = Fw_with_dependencies.endingless_at_module fw mn in 
       List.mem (eless,true) printer_equipped_types
     ) deps in 
     let temp2 = Image.image (fun mname->
@@ -162,7 +128,7 @@ module Private = struct
           (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
          let nm_deps=modules_with_their_ancestors fw nm_direct_deps in 
-         let deps =List.filter (fun mn->List.mem mn nm_deps) (dep_ordered_modules fw) in 
+         let deps =List.filter (fun mn->List.mem mn nm_deps) (Fw_with_dependencies.dep_ordered_modules fw) in 
          let _=(if cmod = Compilation_mode_t.Debug 
                 then prepare_pretty_printers_for_ocamldebug fw deps) in 
          deps;;
@@ -170,9 +136,9 @@ module Private = struct
   let list_of_commands_for_shaft_part_of_feydeau cmod fw (opt_modulenames,opt_rootless_path)=
      let l=dependencies_inside_shaft cmod fw (opt_modulenames,opt_rootless_path) in 
      let temp1=Image.image (fun mn->
-       let eless=endingless_at_module fw mn in 
+       let eless=Fw_with_dependencies.endingless_at_module fw mn in 
        let cmds=Command.module_separate_compilation cmod fw eless in 
-      Image.image (fun cmd->(mn,endingless_at_module fw mn,cmd) ) cmds ) l in 
+      Image.image (fun cmd->(mn,Fw_with_dependencies.endingless_at_module fw mn,cmd) ) cmds ) l in 
       List.flatten temp1;;
   
   let list_of_commands_for_connecting_part_of_feydeau cmod fw (_,opt_rootless_path)=
@@ -282,9 +248,9 @@ module Private = struct
     Option.filter_and_unpack (
       fun mn->
         if last_compilation_result_for_module fw mn
-        then Some(endingless_at_module fw mn)
+        then Some(Fw_with_dependencies.endingless_at_module fw mn)
         else None
-    )(dep_ordered_modules fw);;
+    )(Fw_with_dependencies.dep_ordered_modules fw);;
 
   let number_of_modules fw = Fw_with_dependencies.number_of_modules (parent fw) ;;  
   
@@ -324,12 +290,10 @@ module Private = struct
          =Fw_with_dependencies.inspect_and_update (parent fw) in   
       (set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
-   let of_fw_with_dependencies fw = {
-    Fw_with_batch_compilation_t.parent = fw ;
-    last_compilation_result_for_module = Image.image (
+   let of_fw_with_dependencies fw = usual_extension fw 
+    (Image.image (
         fun mn -> (mn,false)
-    ) (Fw_with_dependencies.dep_ordered_modules fw);
-   };;   
+    ) (Fw_with_dependencies.dep_ordered_modules fw));;   
 
    let of_configuration config =
       let root = Fw_poly.root config in 
@@ -343,23 +307,19 @@ module Private = struct
         let cmpl_results = Image.image (
              fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
            ) mods in 
-      {fw2 with Fw_with_batch_compilation_t.last_compilation_result_for_module = cmpl_results  };;
-  
+      set_cmpl_results fw2 cmpl_results ;; 
    
    let register_rootless_paths fw rps=
       let (new_parent,((ac_paths,uc_paths,nc_paths),_))=
        Fw_with_dependencies.register_rootless_paths (parent fw) rps in   
-      let old_list_of_cmpl_results= fw.Fw_with_batch_compilation_t.last_compilation_result_for_module in 
+      let old_list_of_cmpl_results= get_cmpl_results fw in 
      let new_list_of_cmpl_results = Image.image (
         fun mn -> 
           match List.assoc_opt mn old_list_of_cmpl_results with 
           None -> (mn,false)
           |Some(old_res) -> (mn,old_res)
      ) (Fw_with_dependencies.dep_ordered_modules new_parent) in 
-     let fw2 = { 
-      Fw_with_batch_compilation_t.parent = new_parent ;
-       last_compilation_result_for_module = new_list_of_cmpl_results
-     } in 
+     let fw2 = usual_extension new_parent new_list_of_cmpl_results in 
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in  
      modern_recompile  fw2 unordered_mods;;
    
@@ -381,7 +341,7 @@ module Private = struct
      let all_acolytes_below=List.flatten separated_acolytes_below in
      let (new_parent,changes) = Fw_with_dependencies.rename_module_on_filename_level_and_in_files 
       old_parent (old_nm,new_nm,all_acolytes_below) in 
-    let old_list_of_cmpl_results= fw.Fw_with_batch_compilation_t.last_compilation_result_for_module in 
+    let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Image.image (
          fun old_pair -> 
            let (mn,cmpl_result) = old_pair in 
@@ -389,10 +349,7 @@ module Private = struct
            then (new_nm,false)
            else old_pair    
       ) old_list_of_cmpl_results in   
-      let fw2 = { 
-        Fw_with_batch_compilation_t.parent = new_parent ;
-        last_compilation_result_for_module = new_list_of_cmpl_results;
-      } in 
+      let fw2 = usual_extension new_parent new_list_of_cmpl_results in 
       let root_dir=root fw in 
       let s_root=Dfa_root.connectable_to_subpath root_dir in   
       let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
@@ -425,43 +382,10 @@ module Private = struct
           (set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
 
 
-    
-  
-  let modules_using_value fw module_name =
-        Fw_with_dependencies.modules_using_value (parent fw) module_name;;       
+     
 
-  
-
-  let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
-
-  let directly_below fw mn = Fw_with_dependencies.directly_below (parent fw) mn ;;
-
-  let direct_fathers_for_module fw mn = Fw_with_dependencies.direct_fathers_for_module (parent fw) mn ;;
-
-  let endingless_at_module fw mn = Fw_with_dependencies.endingless_at_module (parent fw) mn ;;
-
-  let find_subdir_from_suffix fw suffix =
-    Fw_with_dependencies.find_subdir_from_suffix (parent fw) suffix;; 
-
-  let duplicate_module fw vague_mname1 vague_mname2 = 
-    Fw_with_dependencies.duplicate_module (parent fw) vague_mname1 vague_mname2 ;;
-
-  let dep_ordered_modules fw = Fw_with_dependencies.dep_ordered_modules (parent fw) ;;
-
-  let all_mlx_files fw = Fw_with_dependencies.all_mlx_files (parent fw) ;;
-
-  let all_endinglesses fw = Fw_with_dependencies.all_endinglesses (parent fw) ;;
-
-  let check_module_sequence_for_forgettability fw = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
-  
-  
-  
-  let usual_compilable_files fw = Fw_with_dependencies.usual_compilable_files (parent fw) ;;   
-
-  let empty_one config = {
-     Fw_with_batch_compilation_t.parent = Fw_with_dependencies.plunge_fw_configuration config ;
-     last_compilation_result_for_module = [] ;
-  } ;;
+  let plunge_fw_configuration config = 
+    usual_extension (Fw_with_dependencies.plunge_fw_configuration config) [];;
 
   let usual_recompile fw = 
     let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
@@ -470,41 +394,19 @@ module Private = struct
     (fw2,(changed_uc,changed_files)) ;;   
 
   
-  let decipher_module fw = Fw_with_dependencies.decipher_module (parent fw) ;;  
-
-  let decipher_path fw = Fw_with_dependencies.decipher_path (parent fw) ;;  
-
-  
-  let all_ml_absolute_paths fw = Fw_with_dependencies.all_ml_absolute_paths (parent fw) ;; 
 
   end ;;
   
-let all_endinglesses = Private.all_endinglesses ;;   
-let all_mlx_files = Private.all_mlx_files ;;
-let all_ml_absolute_paths = Private.all_ml_absolute_paths ;; 
-let all_subdirectories = Private.all_subdirectories ;;
-let ancestors_for_module = Private.ancestors_for_module ;;
-let below = Private.below ;;
-let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
+
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
-let decipher_module = Private.decipher_module ;;
-let decipher_path = Private.decipher_path ;;
-let dep_ordered_modules = Private.dep_ordered_modules ;;
-let direct_fathers_for_module = Private.direct_fathers_for_module ;;
-let directly_below = Private.directly_below ;;
-let duplicate_module = Private.duplicate_module ;;
-let empty_one = Private.empty_one ;;
-let endingless_at_module = Private.endingless_at_module ;;
-let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
-let modules_using_value = Private.modules_using_value ;;
 let number_of_modules = Private.number_of_modules ;;
-let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
+let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
 let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
@@ -517,10 +419,8 @@ let root = Private.root ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
-let to_concrete_object = Private.to_concrete_object ;;  
 let up_to_date_elesses = Private.up_to_date_elesses ;;
-let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
-let usual_compilable_files = Private.usual_compilable_files ;;  
+let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 
 let usual_recompile = Private.usual_recompile ;;  
   
   

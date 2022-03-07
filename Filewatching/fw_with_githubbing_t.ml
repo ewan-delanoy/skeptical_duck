@@ -6,7 +6,7 @@
 
 
 type t={
-     parent : Fw_with_batch_compilation_t.t;
+     parent : Fw_poly_t.t;
      dir_for_backup : Dfa_root_t.t;
      gitpush_after_backup : bool;
      github_url : string;
