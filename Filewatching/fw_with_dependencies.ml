@@ -24,8 +24,6 @@ module Private = struct
 
 module Entrance = struct 
 
-
-
 let forget_modules = Fw_with_small_details.forget_modules ;;
 
 let inspect_and_update = Fw_with_small_details.inspect_and_update ;;
@@ -55,119 +53,90 @@ let replace_value = Fw_with_small_details.replace_value ;;end ;;
 
 module Cached = struct 
 
-let plunge_fw_configuration config =  
- let new_parent = Entrance.plunge_fw_configuration config in 
- let instance_idx = Fw_indexer.create_new_instance () in 
- Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
-   new_parent 
-     ~index_for_caching:(expand_index instance_idx)
- ;; 
-
 let forget_modules old_fw mods_to_be_erased =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.forget_modules old_parent mods_to_be_erased in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
-
- (  Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let inspect_and_update old_fw  =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.inspect_and_update old_parent  in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
-
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let of_configuration config =  
  let new_parent = Entrance.of_configuration config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
- Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx);; 
+  usual_extension new_parent instance_idx  ;; 
 
 let of_configuration_and_list pair =  
  let new_parent = Entrance.of_configuration_and_list pair in 
  let instance_idx = Fw_indexer.create_new_instance () in 
- Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx);; 
+  usual_extension new_parent instance_idx  ;; 
 
 let overwrite_file_if_it_exists old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.overwrite_file_if_it_exists old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
+
+let plunge_fw_configuration config =  
+ let new_parent = Entrance.plunge_fw_configuration config in 
+ let instance_idx = Fw_indexer.create_new_instance () in 
+  usual_extension new_parent instance_idx  ;; 
 
 let register_rootless_paths old_fw rootlesses =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.register_rootless_paths old_parent rootlesses in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let relocate_module_to old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.relocate_module_to old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let remove_files old_fw files_to_be_removed =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.remove_files old_parent files_to_be_removed in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.rename_module_on_filename_level_and_in_files old_parent triple in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let rename_subdirectory_as old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.rename_subdirectory_as old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let replace_string old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.replace_string old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; 
+ ( usual_extension new_parent instance_idx ,extra ) ;; 
 
 let replace_value old_fw pair =  
  let old_parent = parent old_fw in 
  let (new_parent,extra) = Entrance.replace_value old_parent pair in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Fw_indexer.push_state instance_idx in 
- (Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
- new_parent 
-   ~index_for_caching:(expand_index instance_idx),extra ) ;; end ;;
+ ( usual_extension new_parent instance_idx ,extra ) ;; end ;;
 
 
 module Modularized_details = struct 
@@ -182,12 +151,6 @@ module Modularized_details = struct
    let answer = force_get fw in 
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
-
-let plunge_fw_configuration config =  
- let new_fw = Cached.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Cached.forget_modules old_fw mods_to_be_erased in 
@@ -215,8 +178,6 @@ let inspect_and_update old_fw  =
  let answer = Image.image tempf old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-
 
 let of_configuration config =  
  let new_fw = Cached.of_configuration config in 
@@ -251,6 +212,12 @@ let overwrite_file_if_it_exists old_fw pair =
  Image.image tempf old_val) in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = Cached.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
@@ -410,12 +377,6 @@ module Order = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let plunge_fw_configuration config =  
- let new_fw = Modularized_details.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Modularized_details.forget_modules old_fw mods_to_be_erased in 
  let (new_fw,extra) = visible in 
@@ -457,6 +418,12 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = Fw_determine_order.main  details_in_old_order in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = Modularized_details.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Modularized_details.register_rootless_paths old_fw rootlesses in 
@@ -551,12 +518,6 @@ module Needed_dirs = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let plunge_fw_configuration config =  
- let new_fw = Order.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Order.forget_modules old_fw mods_to_be_erased in 
  let (new_fw,extra) = visible in 
@@ -570,7 +531,6 @@ let inspect_and_update old_fw  =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
 
 let of_configuration config =  
  let new_fw = Order.of_configuration config in 
@@ -590,6 +550,12 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = Order.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Order.register_rootless_paths old_fw rootlesses in 
@@ -673,12 +639,6 @@ module Needed_libs = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let plunge_fw_configuration config =  
- let new_fw = Needed_dirs.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
  let (new_fw,extra) = visible in 
@@ -711,6 +671,12 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = Needed_dirs.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_dirs.register_rootless_paths old_fw rootlesses in 
@@ -784,12 +750,6 @@ module All_subdirectories = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let plunge_fw_configuration config =  
- let new_fw = Needed_libs.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_libs.forget_modules old_fw mods_to_be_erased in 
  let (new_fw,extra) = visible in 
@@ -803,7 +763,6 @@ let inspect_and_update old_fw  =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
 
 let of_configuration config =  
  let new_fw = Needed_libs.of_configuration config in 
@@ -823,6 +782,12 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = Needed_libs.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_libs.register_rootless_paths old_fw rootlesses in 
@@ -911,12 +876,6 @@ module All_printables = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let plunge_fw_configuration config =  
- let new_fw = All_subdirectories.plunge_fw_configuration config in 
- let answer = [] in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let forget_modules old_fw mods_to_be_erased =  
  let visible = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
  let (new_fw,extra) = visible in 
@@ -951,6 +910,12 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
+
+let plunge_fw_configuration config =  
+ let new_fw = All_subdirectories.plunge_fw_configuration config in 
+ let answer = [] in 
+ let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
+ new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = All_subdirectories.register_rootless_paths old_fw rootlesses in 

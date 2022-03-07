@@ -36,7 +36,7 @@ let methods = [
    
    "forget_modules",true,["mods_to_be_erased"],Some "extra";
    "inspect_and_update",true,[],Some "extra";
-   "of_concrete_object",false,["crobj"],None;
+   (* "of_concrete_object",false,["crobj"],None; *)
    "of_configuration",false,["config"],None;
    "of_configuration_and_list",false,["pair"],None;
    "overwrite_file_if_it_exists",true,["pair"],Some "extra";
@@ -104,10 +104,10 @@ let optional_line_for_old_parent meth_uple =
 
 let data_from_opt_extra opt_extra new_fw_name=
    match opt_extra with 
-    None -> (" { "," } ;; ",new_fw_name)
+    None -> ("  ","  ;; ",new_fw_name)
    |Some(pre_extra) -> 
        let extra = Common.extract_initial_plus_symbol_if_present pre_extra in 
-       (" ({ "," },"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
+       (" ( "," ,"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
 
 let index_determination meth_uple =
    let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
@@ -138,10 +138,7 @@ let text_for_method meth_uple =
    ]
    @(index_determination meth_uple)
    @[   
-      left;
-      "   Fw_with_dependencies_t.parent = new_parent ;";
-      "   index_for_caching = expand_index instance_idx ;";
-      right
+      left^"usual_extension new_parent instance_idx"^right
    ]) ;;   
 
    let full_text () =
@@ -259,7 +256,7 @@ add_to_ghetto
  
 let mod_details = add_to_cartesian "Modularized_details";;
 
-mod_details "empty_one" ([" let answer = [] in "],"") ;;
+mod_details "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 mod_details "forget_modules" ([
    " let old_val = get old_fw in ";
@@ -282,9 +279,6 @@ mod_details "inspect_and_update" ([
    " let answer = Image.image tempf old_val in "
 ],"") ;;
 
-mod_details "of_concrete_object" ([
-   " let answer = force_get new_fw in "
-],"") ;;
 
 mod_details "of_configuration" ([
    " let answer = force_get new_fw in "
@@ -447,7 +441,7 @@ add_to_ghetto
  
 let order = add_to_cartesian "Order";;
 
-order "empty_one" ([" let answer = [] in "],"") ;;
+order "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 order "forget_modules" ([
    " let old_val = get old_fw in ";
@@ -464,9 +458,6 @@ let order_usual_preliminary = [
 
 order "inspect_and_update" (order_usual_preliminary,"") ;;
 
-order "of_concrete_object" ([
-   " let answer = force_get new_fw in "
-],"") ;;
 
 order "of_configuration" ([
    " let answer = force_get new_fw in "
@@ -531,7 +522,7 @@ order "replace_value" (order_usual_preliminary,"") ;;
  
 let needed_dirs = add_to_cartesian "Needed_dirs";;
 
-needed_dirs "empty_one" ([" let answer = [] in "],"") ;;
+needed_dirs "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 needed_dirs "forget_modules" ([
   " let answer = force_get new_fw in "
@@ -540,10 +531,6 @@ needed_dirs "forget_modules" ([
 
 needed_dirs "inspect_and_update" ([
   " let answer = force_get new_fw in "
-],"") ;;
-
-needed_dirs "of_concrete_object" ([
-   " let answer = force_get new_fw in "
 ],"") ;;
 
 needed_dirs "of_configuration" ([
@@ -611,7 +598,7 @@ needed_dirs "replace_value" ([
 
 let needed_libs = add_to_cartesian "Needed_libs";;     
 
-needed_libs "empty_one" ([" let answer = [] in "],"") ;;
+needed_libs "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 needed_libs "forget_modules" ([
   " let answer = force_get new_fw in "
@@ -625,9 +612,6 @@ needed_libs "inspect_and_update" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-needed_libs "of_concrete_object" ([
-   " let answer = force_get new_fw in "
-],"") ;;
 
 needed_libs "of_configuration" ([
    " let answer = force_get new_fw in "
@@ -687,7 +671,7 @@ add_to_ghetto
  
 let all_subdirectories = add_to_cartesian "All_subdirectories";;     
 
-all_subdirectories "empty_one" ([" let answer = [] in "],"") ;;
+all_subdirectories "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 all_subdirectories "forget_modules" ([
   " let answer = force_get new_fw in "
@@ -697,9 +681,6 @@ all_subdirectories "inspect_and_update" ([
   " let answer = force_get new_fw in "
 ],"") ;;
 
-all_subdirectories "of_concrete_object" ([
-   " let answer = force_get new_fw in "
-],"") ;;
 
 all_subdirectories "of_configuration" ([
    " let answer = force_get new_fw in "
@@ -772,7 +753,7 @@ all_subdirectories "replace_value" ([
   
 let all_printables = add_to_cartesian "All_printables";;
 
-all_printables "empty_one" ([" let answer = [] in "],"") ;;
+all_printables "plunge_fw_configuration" ([" let answer = [] in "],"") ;;
 
 all_printables "forget_modules" ([
   " let old_val = get old_fw in ";
@@ -782,10 +763,6 @@ all_printables "forget_modules" ([
 
 all_printables "inspect_and_update" ([
   " let answer = force_get new_fw in "
-],"") ;;
-
-all_printables "of_concrete_object" ([
-   " let answer = force_get new_fw in "
 ],"") ;;
 
 all_printables "of_configuration" ([
