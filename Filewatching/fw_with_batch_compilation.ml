@@ -425,14 +425,12 @@ module Private = struct
           (set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
 
 
-  let check_that_no_change_has_occurred fw =
-        Fw_with_dependencies.check_that_no_change_has_occurred (parent fw) ;; 
     
   
   let modules_using_value fw module_name =
         Fw_with_dependencies.modules_using_value (parent fw) module_name;;       
 
-  let latest_changes fw = Fw_with_dependencies.latest_changes (parent fw)  ;;   
+  
 
   let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
 
@@ -456,12 +454,12 @@ module Private = struct
 
   let check_module_sequence_for_forgettability fw = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
   
-  let noncompilable_files fw = Fw_with_dependencies.noncompilable_files (parent fw) ;;
+  
   
   let usual_compilable_files fw = Fw_with_dependencies.usual_compilable_files (parent fw) ;;   
 
   let empty_one config = {
-     Fw_with_batch_compilation_t.parent = Fw_with_dependencies.empty_one config ;
+     Fw_with_batch_compilation_t.parent = Fw_with_dependencies.plunge_fw_configuration config ;
      last_compilation_result_for_module = [] ;
   } ;;
 
@@ -488,7 +486,6 @@ let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
-let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let decipher_module = Private.decipher_module ;;
@@ -501,11 +498,9 @@ let empty_one = Private.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
-let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
 let modules_using_value = Private.modules_using_value ;;
-let noncompilable_files = Private.noncompilable_files ;;  
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;

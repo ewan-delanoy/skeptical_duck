@@ -115,7 +115,7 @@ let compute_details_from_acolytes_list_for_several_modules = Private.compute_det
 let modularize_details fw  = 
    let u_files=Fw_with_small_details.usual_compilable_files fw in 
    let temp1=List.filter (fun (rl,_)->List.mem rl u_files)
-      (fw.Fw_with_small_details_t.small_details_in_files)  in
+      (Fw_poly.small_details_in_files fw)  in
    Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;
 
 
@@ -128,4 +128,3 @@ let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;
 let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;  
 let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
 
-    

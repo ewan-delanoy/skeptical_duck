@@ -166,14 +166,31 @@ module Private = struct
        let _ = Transmit_change_to_github.backup (github_config fw) diff opt_comment in 
        set_parent fw new_parent ;;   
    
+      let shrinkable_check_that_no_change_has_occurred fw =
+        let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
+        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
+        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        Fw_with_archives.check_that_no_change_has_occurred fw_poly ;; 
+
      let shrinkable_config fw =
        let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
-       let fw_with_sd = fw_with_deps.Fw_with_dependencies_t.parent in 
-       let fw_poly = fw_with_sd.Fw_with_small_details_t.parent in 
+       let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
        {
          fw_poly with Fw_poly_t.type_name = "fw_configuration";
        } ;;
+
+       let shrinkable_latest_changes fw =
+        let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
+        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
+        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        Fw_with_archives.latest_changes fw_poly ;;  
+
+      let shrinkable_noncompilable_files fw =
+        let fw_with_bc = fw.Fw_with_githubbing_t.parent in 
+        let fw_with_deps = fw_with_bc.Fw_with_batch_compilation_t.parent in 
+        let fw_poly = fw_with_deps.Fw_with_dependencies_t.parent in 
+        Fw_with_archives.noncompilable_files fw_poly ;;   
 
    end;;  
          
@@ -185,8 +202,7 @@ let all_subdirectories fw = Fw_with_batch_compilation.all_subdirectories (Privat
 let ancestors_for_module fw mn = Fw_with_batch_compilation.ancestors_for_module (Private.parent fw) mn ;;
 let below fw mn = Fw_with_batch_compilation.below (Private.parent fw) mn ;;
 let check_module_sequence_for_forgettability fw = Fw_with_batch_compilation.check_module_sequence_for_forgettability (Private.parent fw) ;;
-let check_that_no_change_has_occurred fw =
-  Fw_with_batch_compilation.check_that_no_change_has_occurred (Private.parent fw) ;; 
+let check_that_no_change_has_occurred = Private.shrinkable_check_that_no_change_has_occurred ;;
 let clean_debug_dir fw = Fw_with_batch_compilation.clean_debug_dir (Private.parent fw) ;;
 let clean_exec_dir fw = Fw_with_batch_compilation.clean_exec_dir (Private.parent fw) ;;
 let configuration fw = Private.shrinkable_config fw ;;
@@ -203,7 +219,7 @@ let forget_modules = Private.forget_modules ;;
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
 let github_configuration = Private.github_config ;;
 let gitpush_after_backup fw= fw.Fw_with_githubbing_t.gitpush_after_backup;;     
-let latest_changes fw = Fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
+let latest_changes = Private.shrinkable_latest_changes ;;     
 let list_values_from_module fw mn = 
   Fw_with_batch_compilation.list_values_from_module  (Private.parent fw) mn ;;
 let modern_recompile fw changed_modules_in_any_order = 
@@ -211,8 +227,7 @@ let modern_recompile fw changed_modules_in_any_order =
   Private.set_parent fw new_parent ;; 
 let modules_using_value fw module_name =
     Fw_with_batch_compilation.modules_using_value (Private.parent fw) module_name ;;  
-let noncompilable_files fw = 
-    Fw_with_batch_compilation.noncompilable_files (Private.parent fw) ;; 
+let noncompilable_files = Private.shrinkable_noncompilable_files ;;    
 let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
 let of_configuration config backup_dir gab git_url enc_files = 
   {

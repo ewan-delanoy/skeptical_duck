@@ -187,7 +187,7 @@ open Needed_values ;;
                              "fw_with_small_details","fw_with_archives";                       
                              "fw_with_dependencies","fw_with_small_details";
                              "fw_with_batch_compilation","fw_with_dependencies";
-                             "fw_with_githubbing","fw_with_batch_compilation"
+                             "fw_with_githubbing","fw_with_batch_compilation";
                              ] ;
     } ;;
    

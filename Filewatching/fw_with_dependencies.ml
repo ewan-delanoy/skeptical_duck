@@ -19,19 +19,21 @@ module Private = struct
 
 module Entrance = struct 
 
-let empty_one = Fw_with_small_details.empty_one ;;
+
 
 let forget_modules = Fw_with_small_details.forget_modules ;;
 
 let inspect_and_update = Fw_with_small_details.inspect_and_update ;;
 
-let of_concrete_object = Fw_with_small_details.of_concrete_object ;;
+let of_concrete_object = Fw_poly.of_concrete_object ;;
 
 let of_configuration = Fw_with_small_details.of_configuration ;;
 
 let of_configuration_and_list = Fw_with_small_details.of_configuration_and_list ;;
 
 let overwrite_file_if_it_exists = Fw_with_small_details.overwrite_file_if_it_exists ;;
+
+let plunge_fw_configuration = Fw_with_small_details.plunge_fw_configuration ;;
 
 let register_rootless_paths = Fw_with_small_details.register_rootless_paths ;;
 
@@ -50,8 +52,8 @@ let replace_value = Fw_with_small_details.replace_value ;;end ;;
 
 module Cached = struct 
 
-let empty_one config =  
- let new_parent = Entrance.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_parent = Entrance.plunge_fw_configuration config in 
  let instance_idx = Fw_indexer.create_new_instance () in 
  { 
    Fw_with_dependencies_t.parent = new_parent ;
@@ -196,8 +198,8 @@ module Modularized_details = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = Cached.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = Cached.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -427,8 +429,8 @@ module Order = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = Modularized_details.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = Modularized_details.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -574,8 +576,8 @@ module Needed_dirs = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = Order.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = Order.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -701,8 +703,8 @@ module Needed_libs = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = Needed_dirs.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = Needed_dirs.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -818,8 +820,8 @@ module All_subdirectories = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = Needed_libs.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = Needed_libs.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -950,8 +952,8 @@ module All_printables = struct
    let _ = (Hashtbl.add the_hashtbl idx answer) in 
    answer ;; 
 
-let empty_one config =  
- let new_fw = All_subdirectories.empty_one config in 
+let plunge_fw_configuration config =  
+ let new_fw = All_subdirectories.plunge_fw_configuration config in 
  let answer = [] in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  new_fw ;;
@@ -1083,7 +1085,7 @@ end ;;
    let temp3=List.flatten temp2 in 
    Listennou.nonredundant_version temp3;;
   
-  let root fw = Fw_with_small_details.root (parent fw) ;;
+  let root fw = Fw_poly.root  (parent fw) ;;
 
   let subdir_for_module fw mn =Fw_module_small_details.subdirectory (details_for_module fw mn) ;;
 
@@ -1204,11 +1206,6 @@ let decipher_module fw capitalized_or_not_x=
         else None) ordered_data;;  
 
 
-    let check_that_no_change_has_occurred fw =
-      Fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
-
-  
-
   let modules_using_value fw value_name =
     Option.filter_and_unpack (fun (mn,_)->
       let eless=endingless_at_module fw mn
@@ -1220,8 +1217,6 @@ let decipher_module fw capitalized_or_not_x=
       then Some eless
       else None ) (Order.get fw);;
           
-   
-  let latest_changes fw = Fw_with_small_details.latest_changes (parent fw)  ;;  
   
   let find_subdir_from_suffix fw possibly_slashed_suffix =
     let suffix = Cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
@@ -1315,29 +1310,26 @@ let below = Private.below ;;
 let below_several = Private.below_several ;;
 let check_ending_on_module = Private.check_ending_on_module ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
-let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Image.image fst (Private.Order.get fw);;
 let directly_below = Private.directly_below ;;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
 let duplicate_module = Private.duplicate_module ;;
-let empty_one = Private.Exit.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.Exit.forget_modules ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
-let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;; 
 let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
-let noncompilable_files fw = Fw_with_small_details.noncompilable_files (Private.parent fw) ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_concrete_object = Private.Exit.of_concrete_object ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
+let plunge_fw_configuration = Private.Exit.plunge_fw_configuration ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
 let register_rootless_paths = Private.Exit.register_rootless_paths ;;
 let relocate_module_to = Private.Exit.relocate_module_to ;;
@@ -1346,9 +1338,9 @@ let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on
 let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
-let root fw = Fw_with_small_details.root (Private.parent fw);;
+let root fw = Fw_poly.root (Private.parent fw) ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
-let to_concrete_object fw = Fw_with_small_details.to_concrete_object (Private.parent fw) ;;
+let to_concrete_object fw = Fw_poly.to_concrete_object (Private.parent fw) ;;
 let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;
 

@@ -8,6 +8,6 @@ the dependencies layer with its associated caching.
 *)
 
 type t ={
-  parent : Fw_with_small_details_t.t ;
+  parent : Fw_poly_t.t ;
   index_for_caching : Fw_instance_index_t.t * Fw_state_index_t.t ; 
 };;
