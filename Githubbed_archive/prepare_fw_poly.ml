@@ -184,7 +184,9 @@ open Needed_values ;;
                      "fw_with_batch_compilation","fw_with_githubbing"] ;
        restrictions = ["fw_with_githubbing","github_configuration"] ;
        constructors = ["fw_configuration";"github_configuration"] ;
-       designated_parents = ["fw_with_archives","file_watcher"] ;
+       designated_parents = ["fw_with_archives","file_watcher";
+                             "fw_with_dependencies","fw_with_small_details";
+                             ] ;
     } ;;
    
     let act () = write_to_implementation_file example ;;
