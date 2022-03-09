@@ -32,7 +32,7 @@ let of_concrete_object ccrt_obj =
    gitpush_after_backup = Crobj_converter.bool_of_concrete_object (g label_for_gitpush_after_backup)  ;
    ignored_files = Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files)  ;
    ignored_subdirectories = Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories)  ;
-   index_for_caching = Fw_indexer.make_full_instance () ;
+   index_for_caching = (Fw_indexer.make_full_instance ()) ;
    last_compilation_result_for_module = Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object (g label_for_last_compilation_result_for_module)  ;
    root = Dfa_root.of_concrete_object (g label_for_root)  ;
    small_details_in_files = Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files)  ;
@@ -172,7 +172,7 @@ let origin = {
    gitpush_after_backup = false ;
    ignored_files = [] ;
    ignored_subdirectories = [] ;
-   index_for_caching = (Fw_instance_index_t.I(0),Fw_state_index_t.I(0)) ;
+   index_for_caching = (Fw_indexer.make_full_instance ()) ;
    last_compilation_result_for_module = [] ;
    root = Dfa_root.of_line "dummy" ;
    small_details_in_files = [] ;
@@ -219,6 +219,10 @@ let last_compilation_result_for_module x = x.Fw_poly_t.last_compilation_result_f
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(fw.Fw_poly_t.type_name)^" >") ;;
+let restrict_fw_with_githubbing_to_fw_configuration fw  = {
+   fw with 
+   Fw_poly_t.type_name = "Fw_configuration" ;
+} ;;
 let restrict_fw_with_githubbing_to_github_configuration fw  = {
    fw with 
    Fw_poly_t.type_name = "Github_configuration" ;

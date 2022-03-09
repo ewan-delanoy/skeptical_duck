@@ -1,12 +1,24 @@
 (************************************************************************************************************************
-Snippet 71 : 
+Snippet 71 : Modifying line intervals in a file
 ************************************************************************************************************************)
-
 
 (************************************************************************************************************************
-Snippet 70 : Exercise on flexible transitive permutation groups, version 1
+Snippet 70 : Modifying line intervals in a file
 ************************************************************************************************************************)
+let ap1 = Absolute_path.of_string "../Idaho/Filewatching/fw_with_githubbing.ml" ;;
+let text1 = Io.read_whole_file ap1 ;;
+let (before1,old_center1,after1) = Lines_in_string.tripartition_associated_to_interval 
+    text1 257 336 ;;
+let new_center1 = Lines_in_string.remove_lines_containing_substring_in_string
+  "shrinkable" old_center1 ;;
+let new_text1 = String.concat "\n" [before1;new_center1;after1] ;;  
+Io.overwrite_with ap1 new_text1 ;;
 
+Lines_in_string.remove_interval_in_file ap1 169 253 ;;
+
+(************************************************************************************************************************
+Snippet 69 : Exercise on flexible transitive permutation groups, version 1
+************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let s_order = Total_ordering.lex_for_strings ;;
 let si_order = Total_ordering.product s_order i_order ;;
@@ -446,10 +458,8 @@ This_walker.analize () ;;
 
 
 (************************************************************************************************************************
-Snippet 69 : Enumerating subgroups of S4 
+Snippet 68 : Enumerating subgroups of S4 
 ************************************************************************************************************************)
-
-
 let i_order = Total_ordering.for_integers ;;
 let i_sort  = Ordered.sort i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order;;
@@ -533,9 +543,8 @@ let halves_for_whole = halves full_subgroup ;;
     
 
 (************************************************************************************************************************
-Snippet 68 : Finding a polynomial x^4+p*x+q with Galois group A4
+Snippet 67 : Finding a polynomial x^4+p*x+q with Galois group A4
 ************************************************************************************************************************)
-
 let u1 = Ennig.ennig (-50) 50 ;;
 let u2 = Cartesian.square u1 ;;
 let u3 = Image.image (fun (x,y)->(max(abs x)(abs y),(x,y)) ) u2 ;;
@@ -559,9 +568,8 @@ let check = List.filter is_a_square (Ennig.ennig 0 100) ;;
 let u6 = List.filter (fun (p,q)->is_a_square(-27*p*p*p*p + 256*q*q*q)) u5 ;;
 
 (************************************************************************************************************************
-Snippet 67 : Removing indentation in a paragraph in a file  
+Snippet 66 : Removing indentation in a paragraph in a file  
 ************************************************************************************************************************)
-
 let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
 let text1 = Io.read_whole_file ap1 ;; 
@@ -578,9 +586,8 @@ let new_text1 = String.concat "\n" [before_text2;new_text2;after_text2] ;;
 Io.overwrite_with ap1 new_text1 ;;
 
 (************************************************************************************************************************
-Snippet 66 : Intertwining prints for debugging purposes
+Snippet 65 : Intertwining prints for debugging purposes
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let z1 = rf "Fads/pan.ml" ;;
@@ -596,7 +603,7 @@ let z6 = Image.image (
 let z7 = "\n\n\n" ^ (String.concat "\n" z6) ^ "\n\n\n" ;;  
 
 (************************************************************************************************************************
-Snippet 65 : Problem involving periodicity
+Snippet 64 : Problem involving periodicity
 ************************************************************************************************************************)
 let find_periodicity l= 
   let rl = List.rev l in 
@@ -635,27 +642,6 @@ let (max_dg,dg_sols) = Min.minimize_it_with_care dg (Ennig.ennig 1 current_r) ;;
 let largest_in_motif = Max.list motif ;;
 let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max_dg);;
 
-
-(************************************************************************************************************************
-Snippet 64 : Visualize hierarchy of types in a poly-record class
-************************************************************************************************************************)
-
-
-type t5 = Fw_with_dependencies_t.t = {
-   parent : Fw_with_small_details_t.t;
-   index_for_caching : Fw_instance_index_t.t * Fw_state_index_t.t;
- };;
-type t6 = Fw_with_batch_compilation_t.t = {
-   parent : Fw_with_dependencies_t.t;
-   last_compilation_result_for_module : (Dfa_module_t.t * bool) list;
- };;
-type t7 = Fw_with_githubbing_t.t =  {
-   parent : Fw_with_batch_compilation_t.t;
-   dir_for_backup : Dfa_root_t.t;
-   gitpush_after_backup : bool;
-   github_url : string;
-   encoding_protected_files : (Dfn_rootless_t.t * Dfn_rootless_t.t) list;
- };;
 
 (************************************************************************************************************************
 Snippet 63 : Musings on the Szemeredi problem, chapter V
