@@ -23,8 +23,8 @@ end;;
 
 let all_endinglesses ()=Fw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
 
-let clean_debug_dir ()=Fw_with_githubbing.clean_debug_dir (!(Private.main_ref));;
-let clean_exec_dir ()=Fw_with_githubbing.clean_exec_dir (!(Private.main_ref));;
+let clean_debug_dir ()=Fw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
+let clean_exec_dir ()=Fw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;
 
 let duplicate_module old_t1 old_t2=
   Fw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
@@ -48,7 +48,7 @@ let internet_access () = Fw_poly.gitpush_after_backup (!(Private.main_ref)) ;;
 let latest_changes ()=Fw_with_archives.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
-   Fw_with_githubbing.list_values_from_module (!(Private.main_ref)) module_name;;
+   Fw_with_dependencies.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
@@ -81,10 +81,10 @@ let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private
 
 
 let show_value_occurrences_in_modulesystem module_name=
-   Fw_with_githubbing.show_value_occurrences (!(Private.main_ref)) module_name;;
+   Fw_with_batch_compilation.show_value_occurrences (!(Private.main_ref)) module_name;;
 
-let start_debugging ()=Fw_with_githubbing.start_debugging (!(Private.main_ref));;
-let start_executing short_path= Fw_with_githubbing.start_executing (!(Private.main_ref)) short_path;;
+let start_debugging ()=Fw_with_batch_compilation.start_debugging (!(Private.main_ref));;
+let start_executing short_path= Fw_with_batch_compilation.start_executing (!(Private.main_ref)) short_path;;
 
 
 let sugared_above capitalized_or_not_module_name=

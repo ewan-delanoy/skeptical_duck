@@ -81,7 +81,7 @@ module Private = struct
                           (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
                              destbackupdir destgab Coma_big_constant.github_url [] in 
       let all_modules = Fw_with_dependencies.dep_ordered_modules faraway_cs1 in 
-      let faraway_cs2 = Fw_with_githubbing.modern_recompile faraway_cs1 all_modules in 
+      let faraway_cs2 = Fw_with_batch_compilation.modern_recompile faraway_cs1 all_modules in 
       let _=Fw_with_persisting.persist faraway_cs2 in   
       faraway_cs2;;                      
       

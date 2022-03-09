@@ -1,6 +1,59 @@
 (************************************************************************************************************************
-Snippet 71 : Modifying line intervals in a file
+Snippet 72 : Modifying line intervals in a file
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 71 : Find and replace on several files 
+************************************************************************************************************************)
+
+let reps_ref = ref [ ];;
+
+reps_ref := [
+  "Fw_with_githubbing.all_endinglesses","Fw_with_dependencies.all_endinglesses";
+  "Fw_with_githubbing.all_ml_absolute_paths","Fw_with_dependencies.all_ml_absolute_paths";
+  "Fw_with_githubbing.all_mlx_files","Fw_with_dependencies.all_mlx_files";
+  "Fw_with_githubbing.ancestors_for_module","Fw_with_dependencies.ancestors_for_module";
+  "Fw_with_githubbing.all_subdirectories","Fw_with_dependencies.all_subdirectories";
+  "Fw_with_githubbing.below","Fw_with_dependencies.below";
+  "Fw_with_githubbing.check_that_no_change_has_occurred","Fw_with_archives.check_that_no_change_has_occurred";
+  "Fw_with_githubbing.configuration","Fw_with_githubbing.to_fw_configuration";
+  "Fw_with_githubbing.decipher_module","Fw_with_dependencies.decipher_module";
+  "Fw_with_githubbing.decipher_path","Fw_with_dependencies.decipher_path";
+  "Fw_with_githubbing.dep_ordered_modules","Fw_with_dependencies.dep_ordered_modules";
+  "Fw_with_githubbing.direct_fathers_for_module","Fw_with_dependencies.direct_fathers_for_module";
+  "Fw_with_githubbing.directly_below","Fw_with_dependencies.directly_below";
+  "Fw_with_githubbing.duplicate_module","Fw_with_dependencies.duplicate_module";
+  "Fw_with_githubbing.endingless_at_module","Fw_with_dependencies.endingless_at_module";
+  "Fw_with_githubbing.find_subdir_from_suffix","Fw_with_dependencies.find_subdir_from_suffix";
+  "Fw_with_githubbing.gitpush_after_backup","Fw_poly.gitpush_after_backup";
+  "Fw_with_githubbing.latest_changes","Fw_with_archives.latest_changes";
+  "Fw_with_githubbing.modules_using_value","Fw_with_dependencies.modules_using_value";
+  "Fw_with_githubbing.noncompilable_files","Fw_with_archives.noncompilable_files";
+  "Fw_with_githubbing.of_concrete_object","Fw_poly.of_concrete_object";
+  "Fw_with_githubbing.root","Fw_poly.root";
+  "Fw_with_githubbing.set_gitpush_after_backup","Fw_poly.set_gitpush_after_backup";
+  "Fw_with_githubbing.to_concrete_object","Fw_poly.to_concrete_object";
+  "Fw_with_githubbing.usual_compilable_files","Fw_with_archives.usual_compilable_files";
+] ;;
+
+let files_ref = ref [] ;;
+
+files_ref := [
+  "Compilation_management/create_world_copy.ml";
+  "Compilation_management/modify_coma_state.ml";
+  "Compilation_management/needed_data_summary.ml";  
+  "Compilation_management/usual_coma_state.ml";
+  "Compilation_management/other_coma_state.ml";
+  "Filewatching/fw_with_persisting.ml";
+  "Ocaml_analysis/compute_all_ocaml_items.ml";
+  "Ocaml_analysis/read_needed_ocaml_files.ml";
+  "self_contained_module_copy.ml";
+] ;;
+
+let tr x = Replace_inside.replace_several_inside_file (!reps_ref) (Absolute_path.of_string( "../Idaho/"^x)) ;;
+
+let act () = List.iter tr (!files_ref) ;;
 
 (************************************************************************************************************************
 Snippet 70 : Modifying line intervals in a file
@@ -3272,9 +3325,6 @@ let act1 () =
 
 let see = Other_coma_state.see_yet_unofficial_changes ();; 
 let act2 () = Other_coma_state.officialize_changes ();;
-
-
-
 
 Other_coma_state.Private.ref_for_unofficial_changes :=
 (

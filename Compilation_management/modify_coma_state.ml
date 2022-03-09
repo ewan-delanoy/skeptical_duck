@@ -90,11 +90,11 @@
             pcs:=new_cs;; 
    
          let initialize pcs =
-         let new_cs = Fw_with_githubbing.read_persistent_version (!pcs) in 
+         let new_cs = Fw_with_persisting.read_persistent_version (!pcs) in 
          pcs:=new_cs;;
 
          let initialize_if_empty pcs =
-            if Fw_with_githubbing.number_of_modules (!pcs) = 0 
+            if Fw_with_dependencies.number_of_modules (!pcs) = 0 
             then initialize pcs;;
    
          let internet_access pcs bowl=

@@ -98,10 +98,10 @@ module Private=struct
 
     let save_all cs=
       let root_dir = Fw_poly.root cs 
-      and elesses = Fw_with_githubbing.up_to_date_elesses cs
+      and elesses = Fw_with_batch_compilation.up_to_date_elesses cs
       and crobj_form = Fw_poly.to_concrete_object cs 
       and directories = Fw_with_dependencies.all_subdirectories cs 
-      and printer_equipped_types = Fw_with_githubbing.preq_types_with_extra_info cs 
+      and printer_equipped_types = Fw_with_batch_compilation.preq_types_with_extra_info cs 
         in
        write_all 
       (
@@ -113,7 +113,15 @@ module Private=struct
 	      (root_dir,elesses,crobj_form,directories,printer_equipped_types)
       ;;
 
+    let read_persistent_version fw=
+      let full_path=Dfn_join.root_to_rootless (Fw_poly.root fw)  Coma_constant.rootless_path_for_targetfile in
+      let ap= Dfn_full.to_absolute_path full_path in
+      let the_archive=Io.read_whole_file ap in
+      let archived_object = Crobj_parsing.parse the_archive in 
+      Fw_poly.of_concrete_object archived_object;;   
+
 end;;  
 
 let persist = Private.save_all;;
+let read_persistent_version = Private.read_persistent_version ;;
 

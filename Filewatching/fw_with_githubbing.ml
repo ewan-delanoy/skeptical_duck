@@ -66,13 +66,6 @@ module Private = struct
       set_parent fw new_parent ;;     
     
   
-  let read_persistent_version x=
-    let full_path=Dfn_join.root_to_rootless (Fw_poly.root x)  Coma_constant.rootless_path_for_targetfile in
-    let ap= Dfn_full.to_absolute_path full_path in
-    let the_archive=Io.read_whole_file ap in
-    let archived_object = Crobj_parsing.parse the_archive in 
-    Fw_poly.of_concrete_object archived_object;;      
-  
   let register_rootless_paths fw rootless_paths = 
       let new_parent = Fw_with_batch_compilation.register_rootless_paths (parent fw) rootless_paths in 
       let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
@@ -138,39 +131,18 @@ module Private = struct
 end;;  
       
 
-let clean_debug_dir fw = Fw_with_batch_compilation.clean_debug_dir (Private.parent fw) ;;
-let clean_exec_dir fw = Fw_with_batch_compilation.clean_exec_dir (Private.parent fw) ;;
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-let github_configuration = Private.github_config ;;
-let gitpush_after_backup fw= fw.Fw_with_githubbing_t.gitpush_after_backup;;     
-let list_values_from_module fw mn = 
-Fw_with_batch_compilation.list_values_from_module  (Private.parent fw) mn ;;
-let modern_recompile fw changed_modules_in_any_order = 
-let new_parent = Fw_with_batch_compilation.modern_recompile (Private.parent fw) changed_modules_in_any_order in 
-Private.set_parent fw new_parent ;; 
-let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
+let github_configuration = Private.github_config ;;     
 let of_fw_with_batch_compilation =Private.usual_extension ;;
 let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
-let preq_types_with_extra_info fw = 
-Fw_with_batch_compilation.preq_types_with_extra_info (Private.parent fw) ;; 
-let read_persistent_version = Private.read_persistent_version ;;  
 let register_rootless_paths = Private.register_rootless_paths ;;      
-let relocate_module_to  = Private.relocate_module_to ;;  
-let remove_files fw rps = 
- let new_parent = Fw_with_batch_compilation.remove_files (Private.parent fw) rps in 
- Private.set_parent fw new_parent ;;        
+let relocate_module_to  = Private.relocate_module_to ;;         
 let rename_module = Private.rename_module ;;   
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
-let replace_value = Private.replace_value ;;   
-let show_value_occurrences fw t = 
-Fw_with_batch_compilation.show_value_occurrences  (Private.parent fw) t ;;  
-let start_debugging fw = Fw_with_batch_compilation.start_debugging (Private.parent fw) ;; 
-let start_executing fw short_path = Fw_with_batch_compilation.start_executing (Private.parent fw) short_path;;  
+let replace_value = Private.replace_value ;;    
 let to_fw_configuration = Fw_poly.restrict_fw_with_githubbing_to_fw_configuration ;;
-let up_to_date_elesses fw = 
-Fw_with_batch_compilation.up_to_date_elesses (Private.parent fw) ;; 
 let usual_recompile = Private.usual_recompile ;;
 
