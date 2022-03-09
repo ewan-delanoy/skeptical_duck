@@ -7,73 +7,41 @@
 
 module Private = struct
 
-  let parent fw = fw.Fw_with_githubbing_t.parent ;; 
+  let parent = Fw_poly.parent ;; 
   
-  let set_parent fw batch_compiler = { 
-     fw with 
-     Fw_with_githubbing_t.parent = batch_compiler ;
-  } ;;
+  let set_parent = Fw_poly.set_parent ;;
   
-  let below fw mn = Fw_with_dependencies.below (parent fw) mn ;;
-  let directly_below fw mn = Fw_with_dependencies.directly_below (parent fw) mn ;;
-  let root fw = Fw_with_dependencies.root (parent fw) ;;
   
   let usual_batch fw modnames = 
     let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (parent fw) modnames in 
     (set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
   
-  let github_config fw = 
-   Fw_poly.construct_github_configuration
-   ~root:(root fw)
-   ~dir_for_backup:fw.Fw_with_githubbing_t.dir_for_backup 
-   ~gitpush_after_backup:fw.Fw_with_githubbing_t.gitpush_after_backup
-   ~github_url:fw.Fw_with_githubbing_t.github_url
-   ~encoding_protected_files:fw.Fw_with_githubbing_t.encoding_protected_files ;;
+  let usual_extension fw_batch backup_dir gab git_url enc_files = 
+      Fw_poly.extend_fw_with_batch_compilation_to_fw_with_githubbing 
+      fw_batch
+      ~dir_for_backup:backup_dir 
+      ~gitpush_after_backup:gab
+      ~github_url:git_url
+      ~encoding_protected_files:enc_files ;;
+
+  let github_config = 
+    Fw_poly.restrict_fw_with_githubbing_to_github_configuration ;;
+
+  
+  let of_fw_config_and_github_config fw_config github_config = usual_extension 
+    (Fw_with_batch_compilation.of_configuration fw_config)
+    (Fw_poly.dir_for_backup github_config) 
+    (Fw_poly.gitpush_after_backup github_config) 
+    (Fw_poly.github_url github_config)
+    (Fw_poly.encoding_protected_files github_config);;
 
 
-  let salt = "Coma_"^"state.";;
-    
-  let parent_label                         = salt ^ "parent";;
-  let dir_for_backup_label                 = salt ^ "dir_for_backup";;
-  let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
-  let github_url_label                     = salt ^ "github_url";;
-  let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
-  
-  
-  let of_concrete_object ccrt_obj = 
-     let g=Concrete_object.get_record ccrt_obj in
-     {
-        Fw_with_githubbing_t.parent = Fw_poly.of_concrete_object(g parent_label);
-        dir_for_backup = Dfa_root.of_concrete_object(g dir_for_backup_label);
-        gitpush_after_backup = Crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
-        github_url = Crobj_converter.string_of_concrete_object (g github_url_label);
-        encoding_protected_files = Dfn_rootless.pair_list_of_concrete_object (g encoding_protected_files_label);
-     };; 
-  
-  let to_concrete_object fw=
-     let items= 
-     [
-      parent_label, Fw_poly.to_concrete_object (parent fw);
-      dir_for_backup_label, Dfa_root.to_concrete_object fw.Fw_with_githubbing_t.dir_for_backup;
-      gitpush_after_backup_label, Crobj_converter.bool_to_concrete_object  fw.Fw_with_githubbing_t.gitpush_after_backup;
-      github_url_label, Crobj_converter.string_to_concrete_object fw.Fw_with_githubbing_t.github_url;
-      encoding_protected_files_label, Dfn_rootless.pair_list_to_concrete_object fw.Fw_with_githubbing_t.encoding_protected_files;
-     ]  in
-     Concrete_object_t.Record items;;
-  
-  
-  
-  
-    
-    let empty_one config backup_dir gab git_url enc_files=
-      {
-        Fw_with_githubbing_t.parent = Fw_with_batch_compilation.plunge_fw_configuration config;
-        dir_for_backup = backup_dir;
-        gitpush_after_backup = gab;
-        github_url = git_url;
-        encoding_protected_files = enc_files;
-  
-      };;
+  let plunge_fw_config_with_github_config fw_config github_config= usual_extension 
+      (Fw_with_batch_compilation.plunge_fw_configuration fw_config)
+      (Fw_poly.dir_for_backup github_config) 
+      (Fw_poly.gitpush_after_backup github_config) 
+      (Fw_poly.github_url github_config)
+      (Fw_poly.encoding_protected_files github_config);;
     
   exception Forget_modules_exn of Dfa_module_t.t  list ;;     
 
@@ -99,11 +67,11 @@ module Private = struct
     
   
   let read_persistent_version x=
-    let full_path=Dfn_join.root_to_rootless (root x)  Coma_constant.rootless_path_for_targetfile in
+    let full_path=Dfn_join.root_to_rootless (Fw_poly.root x)  Coma_constant.rootless_path_for_targetfile in
     let ap= Dfn_full.to_absolute_path full_path in
     let the_archive=Io.read_whole_file ap in
     let archived_object = Crobj_parsing.parse the_archive in 
-    of_concrete_object archived_object;;      
+    Fw_poly.of_concrete_object archived_object;;      
   
   let register_rootless_paths fw rootless_paths = 
       let new_parent = Fw_with_batch_compilation.register_rootless_paths (parent fw) rootless_paths in 
@@ -166,146 +134,25 @@ module Private = struct
     let _ = Transmit_change_to_github.backup (github_config fw) diff opt_comment in 
     set_parent fw new_parent ;;
     
-    let shrinkable_above fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.above fw_poly ;;   
-
-   let shrinkable_all_endinglesses fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.all_endinglesses fw_poly ;;  
-
-   let shrinkable_all_ml_absolute_paths fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_dependencies.all_ml_absolute_paths fw_poly ;; 
-       
-   let shrinkable_all_mlx_files fw =
-        let fw_poly = fw.Fw_with_githubbing_t.parent in 
-        Fw_with_dependencies.all_mlx_files fw_poly ;;     
-
-   let shrinkable_all_subdirectories fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.all_subdirectories fw_poly ;;  
-
-   let shrinkable_ancestors_for_module fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.ancestors_for_module fw_poly ;;    
-
-   let shrinkable_below fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_dependencies.below fw_poly ;;  
-       
-   let shrinkable_directly_below fw =
-         let fw_poly = fw.Fw_with_githubbing_t.parent in 
-         Fw_with_dependencies.directly_below fw_poly ;;      
-
-   let shrinkable_check_that_no_change_has_occurred fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_archives.check_that_no_change_has_occurred fw_poly ;; 
-
-  let shrinkable_config fw =
-    let fw_poly = fw.Fw_with_githubbing_t.parent in 
-    {
-      fw_poly with Fw_poly_t.type_name = "fw_configuration";
-    } ;;
-
-   let shrinkable_decipher_module fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.decipher_module fw_poly ;;  
-
-   let shrinkable_decipher_path fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.decipher_path fw_poly ;;    
-
-   let shrinkable_dep_ordered_modules fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_dependencies.dep_ordered_modules fw_poly ;; 
-       
-    let shrinkable_direct_fathers_for_module fw =
-        let fw_poly = fw.Fw_with_githubbing_t.parent in 
-        Fw_with_dependencies.direct_fathers_for_module fw_poly ;;     
-
-   let shrinkable_duplicate_module fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_dependencies.duplicate_module fw_poly ;;  
-
-   let shrinkable_endingless_at_module fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.endingless_at_module fw_poly ;;  
-
-   let shrinkable_find_subdir_from_suffix fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_dependencies.find_subdir_from_suffix fw_poly ;;  
-
-    let shrinkable_latest_changes fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_archives.latest_changes fw_poly ;;  
-
-   let shrinkable_modules_using_value fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_dependencies.modules_using_value fw_poly ;;    
-
-   let shrinkable_noncompilable_files fw =
-     let fw_poly = fw.Fw_with_githubbing_t.parent in 
-     Fw_with_archives.noncompilable_files fw_poly ;;   
-
-   let shrinkable_usual_compilable_files fw =
-       let fw_poly = fw.Fw_with_githubbing_t.parent in 
-       Fw_with_archives.usual_compilable_files fw_poly ;;     
 
 end;;  
       
-let above fw = Private.shrinkable_above fw ;;   
-let all_endinglesses fw = Private.shrinkable_all_endinglesses fw ;;
-let all_ml_absolute_paths fw = Private.shrinkable_all_ml_absolute_paths fw ;;
-let all_mlx_files fw = Private.shrinkable_all_mlx_files fw ;;
-let all_subdirectories fw = Private.shrinkable_all_subdirectories fw ;;
-let below fw = Private.shrinkable_below fw ;; 
-let directly_below fw = Private.shrinkable_directly_below fw ;; 
-let ancestors_for_module fw mn = Private.shrinkable_ancestors_for_module fw mn ;;
-let check_that_no_change_has_occurred = Private.shrinkable_check_that_no_change_has_occurred ;;
+
 let clean_debug_dir fw = Fw_with_batch_compilation.clean_debug_dir (Private.parent fw) ;;
 let clean_exec_dir fw = Fw_with_batch_compilation.clean_exec_dir (Private.parent fw) ;;
-let configuration fw = Private.shrinkable_config fw ;;
-let decipher_path fw = Private.shrinkable_decipher_path fw ;; 
-let decipher_module fw = Private.shrinkable_decipher_module fw ;; 
-let dep_ordered_modules fw = Private.shrinkable_dep_ordered_modules fw ;;  
-let direct_fathers_for_module fw = Private.shrinkable_direct_fathers_for_module fw ;;
-let duplicate_module fw = Private.shrinkable_duplicate_module fw ;; 
-let empty_one = Private.empty_one ;;
-let endingless_at_module = Private.shrinkable_endingless_at_module ;;   
-let find_subdir_from_suffix fw = Private.shrinkable_find_subdir_from_suffix fw ;; 
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
 let github_configuration = Private.github_config ;;
 let gitpush_after_backup fw= fw.Fw_with_githubbing_t.gitpush_after_backup;;     
-let latest_changes = Private.shrinkable_latest_changes ;;     
 let list_values_from_module fw mn = 
 Fw_with_batch_compilation.list_values_from_module  (Private.parent fw) mn ;;
 let modern_recompile fw changed_modules_in_any_order = 
 let new_parent = Fw_with_batch_compilation.modern_recompile (Private.parent fw) changed_modules_in_any_order in 
 Private.set_parent fw new_parent ;; 
-let modules_using_value = Private.shrinkable_modules_using_value ;;     
-let noncompilable_files = Private.shrinkable_noncompilable_files ;;    
 let number_of_modules fw = Fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
-let of_configuration config backup_dir gab git_url enc_files = 
-{
- Fw_with_githubbing_t.parent = Fw_with_batch_compilation.of_configuration config;
- dir_for_backup = backup_dir;
- gitpush_after_backup = gab;
- github_url = git_url;
- encoding_protected_files = enc_files;
-};;
-
-let of_concrete_object = Private.of_concrete_object ;;  
-let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url enc_files = 
-{
- Fw_with_githubbing_t.parent = batch_compiler ;
- dir_for_backup = backup_dir;
- gitpush_after_backup = gab;
- github_url = git_url;
- encoding_protected_files = enc_files;
-};;
-
+let of_fw_with_batch_compilation =Private.usual_extension ;;
+let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
+let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let preq_types_with_extra_info fw = 
 Fw_with_batch_compilation.preq_types_with_extra_info (Private.parent fw) ;; 
 let read_persistent_version = Private.read_persistent_version ;;  
@@ -318,19 +165,12 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;   
-let root = Private.root ;;
-let set_gitpush_after_backup fw bowl = 
-{
- fw with
- Fw_with_githubbing_t.gitpush_after_backup = bowl;
-};;   
 let show_value_occurrences fw t = 
 Fw_with_batch_compilation.show_value_occurrences  (Private.parent fw) t ;;  
 let start_debugging fw = Fw_with_batch_compilation.start_debugging (Private.parent fw) ;; 
 let start_executing fw short_path = Fw_with_batch_compilation.start_executing (Private.parent fw) short_path;;  
-let to_concrete_object = Private.to_concrete_object ;;
+let to_fw_configuration = Fw_poly.restrict_fw_with_githubbing_to_fw_configuration ;;
 let up_to_date_elesses fw = 
 Fw_with_batch_compilation.up_to_date_elesses (Private.parent fw) ;; 
-let all_endinglesses fw = Private.shrinkable_all_endinglesses fw ;;  
-let usual_compilable_files fw = Private.shrinkable_usual_compilable_files fw ;;  
 let usual_recompile = Private.usual_recompile ;;
+

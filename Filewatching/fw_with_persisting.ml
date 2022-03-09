@@ -97,10 +97,10 @@ module Private=struct
       
 
     let save_all cs=
-      let root_dir = Fw_with_githubbing.root cs 
+      let root_dir = Fw_poly.root cs 
       and elesses = Fw_with_githubbing.up_to_date_elesses cs
-      and crobj_form = Fw_with_githubbing.to_concrete_object cs 
-      and directories = Fw_with_githubbing.all_subdirectories cs 
+      and crobj_form = Fw_poly.to_concrete_object cs 
+      and directories = Fw_with_dependencies.all_subdirectories cs 
       and printer_equipped_types = Fw_with_githubbing.preq_types_with_extra_info cs 
         in
        write_all 

@@ -35,7 +35,7 @@ module Private = struct
      ];;
   
     let commands_for_copying cs rootlesses destination=
-       let s_old_root=Dfa_root.connectable_to_subpath(Fw_with_githubbing.root cs) 
+       let s_old_root=Dfa_root.connectable_to_subpath(Fw_poly.root cs) 
        and s_new_root=Dfa_root.connectable_to_subpath destination in 
        let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
        let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
@@ -80,25 +80,24 @@ module Private = struct
       let faraway_cs1 = Fw_with_githubbing.of_fw_with_batch_compilation 
                           (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
                              destbackupdir destgab Coma_big_constant.github_url [] in 
-      let all_modules = Fw_with_githubbing.dep_ordered_modules faraway_cs1 in 
+      let all_modules = Fw_with_dependencies.dep_ordered_modules faraway_cs1 in 
       let faraway_cs2 = Fw_with_githubbing.modern_recompile faraway_cs1 all_modules in 
       let _=Fw_with_persisting.persist faraway_cs2 in   
       faraway_cs2;;                      
       
 
     let unfreeze_copy cs destroot =
-        let old_config = Fw_with_githubbing.configuration cs in 
-        let remote_config = Fw_poly.set_root old_config  destroot in   
-        let remote_cs = Fw_with_githubbing.empty_one remote_config default_backup_dir false Coma_big_constant.github_url [] in 
-        let remote_cs2 =
-           Fw_with_githubbing.of_configuration 
-            (Fw_with_githubbing.configuration remote_cs) 
-              (remote_cs.Fw_with_githubbing_t.dir_for_backup) 
-                (remote_cs.Fw_with_githubbing_t.gitpush_after_backup) 
-                  (remote_cs.Fw_with_githubbing_t.github_url)
-                  (remote_cs.Fw_with_githubbing_t.encoding_protected_files) in 
-        let _ = Fw_with_persisting.persist remote_cs2 in 
-        remote_cs2;;    
+        let old_fw_config = Fw_with_githubbing.to_fw_configuration cs in 
+        let remote_fw_config = Fw_poly.set_root old_fw_config  destroot in   
+        let remote_github_config = Fw_poly.construct_github_configuration 
+        ~root:destroot
+        ~dir_for_backup:default_backup_dir
+        ~gitpush_after_backup:false
+        ~github_url:Coma_big_constant.github_url
+        ~encoding_protected_files:[] in 
+        let remote_cs = Fw_with_githubbing.of_fw_config_and_github_config remote_fw_config remote_github_config in 
+        let _ = Fw_with_persisting.persist remote_cs in 
+        remote_cs;;    
         
 
 

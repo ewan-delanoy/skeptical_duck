@@ -3284,15 +3284,17 @@ Other_coma_state.Private.ref_for_unofficial_changes :=
 
 Other_coma_state.Private.ref_for_unofficial_changes :=
 (
-   Some ["Filewatching/file_watcher.ml"; "Filewatching/fw_with_archives_t.ml";
-   "Filewatching/fw_with_archives.ml";
-   "Filewatching/fw_with_small_details_t.ml";
-   "Filewatching/fw_with_small_details.ml";
-   "Filewatching/fw_with_dependencies.ml";
+   Some ["Decomposed_filename/dfa_subdirectory.ml";
    "Filewatching/fw_with_batch_compilation.ml";
-   "Filewatching/fw_with_githubbing.ml";
-   "Compilation_management/usual_coma_state.ml"; "needed_values.ml";
-   "node_project.ml"]
+   "Filewatching/fw_with_githubbing.ml"; "Filewatching/fw_with_persisting.ml";
+   "Compilation_management/modify_coma_state.ml";
+   "Compilation_management/usual_coma_state.ml";
+   "Ocaml_analysis/read_needed_ocaml_files.ml";
+   "Ocaml_analysis/compute_all_ocaml_items.ml";
+   "Compilation_management/needed_data_summary.ml";
+   "Compilation_management/create_world_copy.ml";
+   "Compilation_management/other_coma_state.ml"; "needed_values.ml";
+   "self_contained_module_copy.ml"]
 )
 ;;
 

@@ -13,7 +13,7 @@ let bel = Usual_coma_state.sugared_below;;
 let cod ()=
    let ucs = (!(Usual_coma_state.main_ref)) in 
    Check_ocaml_dircopy.check 
-     (Fw_with_githubbing.configuration ucs) 
+     (Fw_with_githubbing.to_fw_configuration ucs) 
         (Fw_with_githubbing.github_configuration ucs);;
 
 let dabo = Usual_coma_state.sugared_directly_above;;

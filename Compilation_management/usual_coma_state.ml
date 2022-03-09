@@ -9,22 +9,28 @@ exception No_module_with_name of string;;
 module Private = struct 
 
 let main_ref=
-  let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple 
-  and url=Coma_big_constant.github_url in 
-  let config = Fw_configuration.of_root root in 
-  ref(Fw_with_githubbing.empty_one  config backup_dir githubbing url []);;
+  let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple in 
+  let fw_config = Fw_configuration.of_root root 
+  and github_config = Fw_poly.construct_github_configuration 
+  ~root:root
+  ~dir_for_backup:backup_dir
+  ~gitpush_after_backup:githubbing
+  ~github_url:Coma_big_constant.github_url
+  ~encoding_protected_files:[]
+  in 
+  ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
 end;;
 
-let all_endinglesses ()=Fw_with_githubbing.all_endinglesses (!(Private.main_ref)) ;; 
+let all_endinglesses ()=Fw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
 
 let clean_debug_dir ()=Fw_with_githubbing.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Fw_with_githubbing.clean_exec_dir (!(Private.main_ref));;
 
 let duplicate_module old_t1 old_t2=
-  Fw_with_githubbing.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+  Fw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
 let find_endingless modname = 
-  Fw_with_githubbing.endingless_at_module
+  Fw_with_dependencies.endingless_at_module
    (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
@@ -37,16 +43,16 @@ let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Priva
 
 let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let internet_access () = Fw_with_githubbing.gitpush_after_backup (!(Private.main_ref)) ;;
+let internet_access () = Fw_poly.gitpush_after_backup (!(Private.main_ref)) ;;
 
-let latest_changes ()=Fw_with_githubbing.latest_changes (!(Private.main_ref));;
+let latest_changes ()=Fw_with_archives.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
    Fw_with_githubbing.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
-let modules_using_value x=Fw_with_githubbing.modules_using_value (!(Private.main_ref)) x;;
+let modules_using_value x=Fw_with_dependencies.modules_using_value (!(Private.main_ref)) x;;
 
 let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
@@ -84,19 +90,19 @@ let start_executing short_path= Fw_with_githubbing.start_executing (!(Private.ma
 let sugared_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_githubbing.ancestors_for_module (!(Private.main_ref)) mn0);;
+  (Fw_with_dependencies.ancestors_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_below capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_githubbing.below (!(Private.main_ref)) mn0);;
+  (Fw_with_dependencies.below (!(Private.main_ref)) mn0);;
 
 let sugared_directly_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_githubbing.direct_fathers_for_module (!(Private.main_ref)) mn0);;
+  (Fw_with_dependencies.direct_fathers_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_directly_below capitalized_or_not_module_name=
 let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
 Image.image Dfa_module.to_line
-(Fw_with_githubbing.directly_below (!(Private.main_ref)) mn0);;
+(Fw_with_dependencies.directly_below (!(Private.main_ref)) mn0);;

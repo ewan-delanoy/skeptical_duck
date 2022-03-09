@@ -8,15 +8,21 @@ exception No_module_with_name of string;;
 module Private = struct 
 
 let main_ref=
-  let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple 
-  and url=Coma_big_constant.github_url in  
-  let config = Fw_configuration.of_root root in 
-  ref(Fw_with_githubbing.empty_one  config backup_dir githubbing url []);;
+  let (root,backup_dir,githubbing)=Coma_big_constant.Next_World.triple in 
+  let fw_config = Fw_configuration.of_root root 
+  and github_config = Fw_poly.construct_github_configuration 
+  ~root:root
+  ~dir_for_backup:backup_dir
+  ~gitpush_after_backup:githubbing
+  ~github_url:Coma_big_constant.github_url
+  ~encoding_protected_files:[]
+  in 
+  ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
 
 let ref_for_unofficial_changes = ref(None : (string list) option) ;;  
 
 let force_compute_unofficial_changes ()=
-   let temp1=Fw_with_githubbing.all_mlx_files (!main_ref) in 
+   let temp1=Fw_with_dependencies.all_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    let temp2=Explicit.filter (
@@ -52,17 +58,17 @@ let force_compute_unofficial_changes ()=
 
 end;;
 
-let above modname=Fw_with_githubbing.ancestors_for_module (!(Private.main_ref)) modname;;
+let above modname=Fw_with_dependencies.ancestors_for_module (!(Private.main_ref)) modname;;
 
 
-let below modname=Fw_with_githubbing.below (!(Private.main_ref)) modname;;
+let below modname=Fw_with_dependencies.below (!(Private.main_ref)) modname;;
 
 
 let duplicate_module old_t1 old_t2=
-  Fw_with_githubbing.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+  Fw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
   let find_endingless modname = 
-   Fw_with_githubbing.endingless_at_module
+   Fw_with_dependencies.endingless_at_module
     (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=
