@@ -1,6 +1,492 @@
 (************************************************************************************************************************
-Snippet 73 : 
+Snippet 74 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 73 : Research of flexible permutation groups
+************************************************************************************************************************)
+
+
+let i_order = Total_ordering.for_integers ;;
+
+let s_order = Total_ordering.lex_for_strings ;;
+let si_order = Total_ordering.product s_order i_order ;;
+let p_order = Total_ordering.product si_order i_order ;;
+let o_order = Total_ordering.silex_compare p_order ;;
+
+let i_insert = Ordered.insert i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let o_merge = Ordered.merge o_order ;;
+
+let p_insert = Ordered.insert p_order ;;
+let p_is_included_in = Ordered.is_included_in p_order ;;
+let p_mem = Ordered.mem p_order ;;
+let p_sort = Ordered.sort p_order ;;
+
+let s_sort = Ordered.sort s_order ;;
+
+
+module Initial_data = struct 
+
+   let current_size = 3 ;;
+   let base = Ennig.doyle (fun t->
+          let c= char_of_int (64+t) in 
+          ((String.make 1 c,t),current_size+t)
+         ) 1 current_size ;; 
+   let basic_vars = Ennig.doyle (fun t->
+      String.make 1 (char_of_int (64+t))
+     ) 1 current_size ;;        
+   let sphere = Memoized.recursive (fun old_f j->
+      if j=0 then [""] else 
+      let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
+      Image.image (fun (x,y)->x^y) temp1
+   ) ;;
+   let vars = List.flatten (Ennig.doyle sphere 1 5) ;;
+   
+end ;;    
+
+module Obstruction_list = struct 
+
+type t = OL of (((string * int) * int) list) list ;; 
+
+let reunite shortened same_length = 
+  let temp1 = List.filter (fun y->
+     List.for_all (fun x->not(p_is_included_in x y)) shortened) same_length in 
+  o_merge shortened temp1 ;;
+
+let take_note_of_new_condition (OL l) point =
+   let ((s,i),j) = point in 
+   let rec tempf = (fun (same_length,shortened,to_be_treated)->
+      match to_be_treated with 
+      [] -> OL(reunite (List.rev shortened) (List.rev same_length)) 
+      | obstr :: other_obstrs ->
+         let (temp1,temp2) = List.partition (fun (pair,_)->pair=(s,i) ) obstr in
+         if temp1 = []
+         then tempf(obstr::same_length,shortened,other_obstrs)    
+         else 
+         let j1 = snd(List.hd temp1) in 
+         if j1 =j 
+         then tempf(same_length,temp2::shortened,other_obstrs)     
+         else tempf(same_length,shortened,other_obstrs)   
+   ) in 
+   tempf([],[],l) ;;
+
+let singletons (OL l)= 
+   Option.filter_and_unpack (fun obstr -> 
+        if List.length obstr =1 
+        then Some(List.hd obstr)
+      else None
+   ) l;;
+
+let removables (OL l) y= List.filter (p_is_included_in y) l ;;
+
+let main_list = OL [ 
+
+   [
+      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+      (("C", 2), 2); (("B", 4), 2); (("B", 5), 3);  (("B", 3), 4)
+      (* makes ABBC win *)
+   ];
+   [
+      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
+      (("C", 2), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6); (("B", 6), 4); 
+      (("C", 4), 3); (("C", 5), 4); (("C", 6), 5)
+      (* makes ACBB win *)
+   ];
+   
+   [
+      (("A", 2), 1); (("B", 1), 1); (("A", 4), 2); (("A", 5), 3);
+      (("A", 3), 5); (("B", 3), 6); (("C", 4), 3); (("A", 6), 6); (("C", 6), 7);
+      (* makes ACAB win *)
+   ];   
+
+] ;;
+
+end ;;    
+
+
+
+
+
+module Bough = struct 
+
+type t = {
+   size : int ;
+   points : ((string * int) * int) list ;
+   history : ((string * int) * int) list ;
+   forbidden : Obstruction_list.t ;
+} ;; 
+
+exception Forbidden_insertion of (string * int) * int ;;
+
+let insert_point bough point =
+   let ((s,i),j) = point in 
+   let old_constraints = bough.forbidden in 
+   let immediate_constraints = Obstruction_list.singletons old_constraints in 
+   if List.mem point immediate_constraints 
+   then raise(Forbidden_insertion((s,i),j))   
+   else  
+   {
+      size = max (bough.size) (max i j);
+      points = p_insert point (bough.points);
+      history = point :: (bough.history);
+      forbidden = Obstruction_list.take_note_of_new_condition old_constraints point ;
+   }
+
+exception Already_assigned of string * int ;;
+
+let expand bough (s0,i0) =
+   let unordered_temp1 = Option.filter_and_unpack (
+        fun ((s,i),j)->
+          if s=s0 
+          then (if i=i0 
+               then raise(Already_assigned(s0,i0))
+               else Some j) 
+          else None    
+   ) bough.points in 
+   let already_reached1 = i_sort unordered_temp1 
+   and immediate_constraints = Obstruction_list.singletons bough.forbidden in 
+   let useful_immediate_constraints = i_sort(Option.filter_and_unpack 
+    (fun (pair,j)->if pair=(s0,i0) then Some j else None) immediate_constraints)  in 
+   let already_reached = i_merge already_reached1 useful_immediate_constraints 
+   and new_whole = Ennig.ennig 1 (bough.size+1) in 
+   let exits = i_setminus new_whole already_reached in 
+   Image.image (
+       fun j -> insert_point bough ((s0,i0),j) 
+   ) exits ;;
+
+let smooth_expand bough (s0,i0) = try expand bough (s0,i0) with
+   Already_assigned(_,_) -> [bough] ;;
+
+let eval_list bough =
+    let rec tempf=( fun (l,i0) -> match l with 
+      [] -> (Some i0,None)
+     |s0::others ->
+       match Option.seek (
+       fun (pair,j)-> pair = (s0,i0)
+       ) bough.points with 
+       Some(_,j0) -> tempf(others,j0)
+       |None -> (None,Some(s0,i0))
+    ) in 
+    tempf ;; 
+
+let expand_long_string long_string =
+   let n = String.length long_string in 
+  Ennig.doyle (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
+
+let eval bough long_string i =
+    let l = expand_long_string long_string in 
+    eval_list bough (l,i) ;;
+    
+let force_eval bough long_string i =
+     let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
+
+let full_shadow bough long_string =
+     let temp1 = Ennig.doyle (
+        fun j->(j,eval bough long_string j)
+     ) 1 Initial_data.current_size in 
+     let (good_temp1,bad_temp1) = List.partition (
+        fun (j,(opt_good,opt_bad)) -> opt_bad = None 
+     ) temp1 in 
+     (Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_good) ) good_temp1,
+     Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_bad) ) bad_temp1 );;
+
+   ;;
+
+let to_string bough =
+    let all_points = bough.points in 
+    let vars_involved = s_sort (Image.image (fun (pair,_)->fst pair) all_points) in 
+    let temp1 = Image.image (
+      fun s0->(s0,Option.filter_and_unpack (
+          fun ((s,i),j)->
+              if s=s0 then Some(i,j) else None
+      ) all_points) 
+    ) vars_involved in
+    let temp2 = Image.image (
+      fun (s,l)->(String.make 4 ' ')^ s^" : "^(String.concat ", " (Image.image (fun (i,j)->Printf.sprintf "%i -> %i" i j) l))
+    )  temp1 in 
+    String.concat "\n" temp2 ;;
+
+let constructor l = {
+   size = snd (Max.maximize_it  (fun ((s,i),j)-> max i j ) l) ;
+   points = l ;
+   history = [] ;
+   forbidden = Obstruction_list.main_list ;
+} ;;
+
+let starting_point = constructor Initial_data.base ;;
+
+let fold_construct l = List.fold_left insert_point starting_point l ;;
+
+
+let is_stronger_than bough conditions =
+   let conditions_in_order = p_sort conditions in 
+   p_is_included_in  conditions_in_order bough.points ;;  
+
+let find_chair_opt bough indexed_list =
+   match Option.seek (fun (idx,conditions)->is_stronger_than bough conditions ) indexed_list with 
+    None -> None
+    |Some(idx0,_) -> Some idx0 ;;
+
+exception Compute_long_chain_exn of (string * int) list ;;
+
+let compute_long_chain bough long_string =
+   let rec tempf=( fun (treated,to_be_treated,slice) -> match to_be_treated with 
+   [] -> List.rev treated 
+  |s0::others -> 
+     let temp1 = Image.image (eval bough s0) slice in 
+     let (good_temp1,bad_temp1) = List.partition (fun (good_opt,bad_opt)->good_opt<>None) temp1 in 
+     if bad_temp1 <> []
+     then let temp2 = Image.image (fun (good_opt,bad_opt)->Option.unpack bad_opt) bad_temp1 in 
+          raise(Compute_long_chain_exn (temp2))
+     else  
+     let new_slice = Image.image (fun (good_opt,bad_opt)->Option.unpack good_opt) good_temp1 in 
+     tempf(((s0,new_slice)::treated,others,new_slice))
+ ) in 
+ tempf(["Z",[1;2;3]],expand_long_string long_string,[1;2;3]) ;; 
+
+let deduce_long_snake_from_long_chain bough long_chain =
+   let temp2 = Listennou.universal_delta_list long_chain in 
+   let temp3 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->(actor2,acted1) ) temp2 in 
+   let temp4 = List.flatten (Image.image (fun (s,l)->Image.image (fun i->(s,i)) l) temp3) in 
+   let temp5 = Image.image (fun (s,i)->((s,i),force_eval bough s i) ) temp4 in
+   p_sort temp5 ;; 
+
+let compute_long_snake bough long_string =
+     let long_chain = compute_long_chain bough long_string in 
+     deduce_long_snake_from_long_chain bough long_chain ;;
+
+let snake_history bough long_string =
+  let temp1 = compute_long_snake bough long_string 
+  and bare_history = List.rev (bough.history) in
+  List.filter (fun p->p_mem p temp1) bare_history ;; 
+  
+let cut_long_chain_in_one_place bough long_chain =
+   let (_,final_result) = List.hd(List.rev long_chain) in 
+   let idx_for_max = Listennou.find_index (Max.list final_result) final_result in 
+   let part1 = Image.image (fun (actor,acted)->
+        (actor,Listennou.complement_of_singleton acted idx_for_max)) long_chain
+   and temp1 = Image.image (fun (actor,acted)->
+      (actor,List.nth acted (idx_for_max-1))) long_chain in
+   let temp2 = Listennou.universal_delta_list temp1 in 
+   let part2 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->((actor2,acted1),acted2) ) temp2 in    
+   (idx_for_max,deduce_long_snake_from_long_chain bough part1,part2) ;;
+
+end ;;
+
+
+
+module Analysis_on_bough = struct 
+
+type result_on_var = 
+   Uunfinished of string *int 
+  |Finnished_well of  ((int*int) list) 
+  |Finished_badly of  int * int ;;  
+
+let analize_var bough long_string = 
+   let (dead,alive) = Bough.full_shadow bough long_string in 
+   (match Option.seek (fun (i,j)->j<=Initial_data.current_size) dead with 
+    (Some(i0,j0)) -> Finished_badly (i0,j0)
+   |None ->
+      (
+         match alive with 
+         [] -> Finnished_well(dead)
+         |(_,(s1,i1)) :: _ -> Uunfinished(s1,i1) 
+      )) ;;
+     
+type result_on_vars =
+   Unfinished of string * int 
+  |Finished_well of string * ((int*int) list)
+  |Inconclusive of (string * int * int) list ;;
+
+let analize_vars bough vars=
+     let rec tempf =(
+        fun (treated,to_be_treated) -> match to_be_treated with 
+        [] -> Inconclusive (List.rev treated)
+        | long_string :: others -> 
+          (match analize_var bough long_string with
+         Uunfinished (s,i) ->  Unfinished (s,i)
+        |Finnished_well (explanation) -> Finished_well (long_string,explanation)
+        |Finished_badly (i,j) -> tempf((long_string,i,j)::treated,others)
+          )
+     )  in 
+     tempf ([],vars) ;;
+
+type check_result =
+     Usual of ((int*int) list)
+    |Special of int  ;; 
+
+
+exception Unhappy_ending of string * result_on_var ;;
+
+let check_happy_ending bough var = match analize_var bough var with 
+     Finnished_well(explanation) -> Usual(explanation) 
+   | other -> raise (Unhappy_ending(var,other)) ;;
+
+end ;;   
+
+
+
+module Bough_list = struct 
+
+let analize l vars = Analysis_on_bough.analize_vars (List.hd l) vars ;;
+
+let expand boughs (b_idx0,s0,i_idx0)=
+  let indexed_boughs = Ennig.index_everything boughs in 
+  let temp2 = Image.image (
+     fun (b_idx,bough) -> 
+       if b_idx = b_idx0 
+       then Bough.expand bough (s0,i_idx0)
+       else [bough]    
+  ) indexed_boughs in 
+  List.flatten temp2 ;;
+
+let to_string l = 
+   let temp1 = Ennig.index_everything l in 
+   let temp2 = List.rev_map (fun (idx,bough)->"\nCase "^(string_of_int idx)^".\n"^(Bough.to_string bough)) temp1 in 
+   let sn = string_of_int(List.length l) in 
+   (String.concat "\n" temp2)^"\n "^sn^" cases." ;;
+
+
+let expand_all_using_delayed_expression boughs (s1,delayer,i1) =
+   let temp1 = Image.image (
+      fun bough -> let i2=Bough.force_eval bough delayer i1  in 
+                   Bough.smooth_expand bough (s1,i2)   
+   ) boughs in 
+   List.flatten temp1 ;;      
+
+
+let expand_long_string long_string =
+      let n = String.length long_string in 
+     Ennig.doyle (fun j->
+      let ck = String.get long_string (n-j) in 
+      (String.make 1  ck,Cull_string.ending (j-1) long_string) ) 1 n ;;
+       
+
+let expand_following_long_chain boughs (long_string,i1)  = 
+  let expansions = Image.image (fun (s1,delayer)->
+   (s1,delayer,i1) ) (expand_long_string long_string) in 
+  List.fold_left expand_all_using_delayed_expression boughs expansions ;;    
+
+let shadow boughs (long_string,i1)  = 
+   let temp1 =  expand_following_long_chain boughs (long_string,i1)  in 
+   let temp2 = Image.image (fun bough->Bough.force_eval bough long_string i1) temp1 in 
+   i_sort temp2 ;;
+
+let seek_overture (long_string,i1) l=
+   let bough0 = Bough.fold_construct l in 
+   let temp1 =  expand_following_long_chain [bough0] (long_string,i1)  in 
+   Option.find_and_stop (fun bough->
+       let t = Bough.force_eval bough long_string i1 in 
+       if t > Initial_data.current_size 
+       then Some(l,t)  
+       else None   
+   ) temp1 ;;  
+ 
+let is_closed pair l = (seek_overture pair l=None) ;;
+
+let minimal_version pair bough = 
+   Listennou.minimal_element_in_unpwards_filter 
+     (is_closed pair) (bough.Bough.history) ;;
+
+end ;;   
+
+
+module Seek_minimal_obstruction = struct 
+   
+
+end ;;   
+
+
+
+
+module Walker = struct 
+   
+type t = W of ((string*int) list)*(Bough.t list) ;;
+
+let expand (W(expansion_history,boughs)) triple = 
+   let (b_idx,s,i) = triple in   
+   W((s,i)::expansion_history,Bough_list.expand boughs triple) ;;
+
+   let analize (W(_,boughs)) vars = Bough_list.analize boughs vars ;; 
+
+exception Iter_expand_exn ;;
+
+let rec iter_expand w vars =
+   match analize w vars with 
+   Analysis_on_bough.Finished_well(long_string,explanation) -> (w,long_string,explanation)
+   |Unfinished(s,i) -> let new_w = expand w (1,s,i) in 
+                       iter_expand new_w vars
+   |Inconclusive(_) -> raise (Iter_expand_exn);; 
+
+
+let to_string (W(expansion_history,boughs)) = Bough_list.to_string boughs ;;
+
+let print_out  (fmt:Format.formatter) w = Format.fprintf fmt "@[%s@]" (to_string w);; 
+
+let constructor l = W([],[Bough.constructor l]) ;;
+
+
+
+let starting_point = constructor Initial_data.base ;;
+
+
+end ;;   
+
+module This_walker = struct 
+
+let main_ref = ref (Walker.starting_point) ;;
+
+let initialize () = let _ =(main_ref := Walker.starting_point )  in Walker.starting_point;;
+
+let expand (s,i) = 
+   let new_w = Walker.expand (!main_ref) (1,s,i) in 
+   let _ = (main_ref := new_w) in 
+   new_w ;;
+
+let analize () = Walker.analize (!main_ref) Initial_data.vars ;;
+
+let rec iter_expand () = 
+   let (new_w,long_string,explanation) = Walker.iter_expand (!main_ref) Initial_data.vars  in 
+   let _ = (main_ref := new_w) in 
+   (new_w,long_string,explanation) ;;
+
+let expand_and_analize pair = let next_state = expand pair in (next_state,analize ()) ;;
+
+
+end ;;   
+
+(* #install_printer Walker.print_out ;; *)
+
+This_walker.initialize () ;;
+
+
+let ie = This_walker.iter_expand  ;;
+
+
+(*
+ie();;
+let (current_solver,end_result) = (match This_walker.analize () with 
+Analysis_on_bough.Finished_well (x, y) -> (x,y) 
+| _-> failwith("aaa")
+);;
+let (Walker.W(_,alive1))=(!(This_walker.main_ref)) ;;
+let bough1 = List.hd alive1 ;;
+let history1= List.rev(bough1.Bough.history) ;;
+let lc1 = Bough.compute_long_chain bough1 current_solver ;;
+let ls1 = Bough.snake_history bough1 current_solver ;;
+let (idx1,unquestioned,questioned) =
+   Bough.cut_long_chain_in_one_place bough1 lc1 ;;
+let im1 = Bough_list.minimal_version (current_solver,idx1) bough1 ;;
+
+#use"Fads/cloth.ml";;
+
+*)
+
 
 
 (************************************************************************************************************************

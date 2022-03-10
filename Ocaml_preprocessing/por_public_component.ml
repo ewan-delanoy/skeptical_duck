@@ -109,7 +109,7 @@ module Private = struct
       Image.image (annotated_definition_for_constructor por) por.Polymorphic_ocaml_record_t.constructors
    ;;     
    
-   let annotated_definition_for_restrictor por (before_restr,after_restr) =
+   let annotated_definition_for_restrictor por after_restr =
     let restr_name = "to_"^after_restr in 
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
     {
@@ -152,4 +152,5 @@ let main por =
           [Private.annotated_definition_for_print_out por] );;   
 
      
+
 
