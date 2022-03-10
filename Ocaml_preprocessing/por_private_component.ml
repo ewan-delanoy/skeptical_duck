@@ -358,8 +358,10 @@ module Private = struct
                   "let check_inclusion inst1 inst2 = "
                 ]@(
                    Image.image (fun line->(String.make 3 ' ')^line) [
-                        "let fields1 = get_fields_from_name inst1";
-                        "and fields2 = get_fields_from_name inst2 in";
+                        "let cinst1 = String.capitalize_ascii inst1";
+                        "and cinst2 = String.capitalize_ascii inst2 in"; 
+                        "let fields1 = get_fields_from_name cinst1";
+                        "and fields2 = get_fields_from_name cinst2 in";
                         "let nonincluded_fields = List.filter (fun x->not(List.mem x fields2)) fields1 in";
                         "let n = List.length nonincluded_fields in";
                         "if n = 0";
@@ -368,9 +370,9 @@ module Private = struct
                         "let (left,right)= (if n>1 then (\"s\",\" are \") else (\"\",\" is \") ) in";
                         "let fld_list = String.concat \" , \" nonincluded_fields in";
                         "let msg = \" The field \" ^ left ^ fld_list ^ right ^ \" in \" ^";
-                        "(String.capitalize_ascii inst1) ^ \"but not in \" ^";
-                        "(String.capitalize_ascii inst2) ^ \".\" in";
-                        "let _ = print_string (\"\n\n\"^msg^\"\n\n\") in";
+                        "cinst1 ^ \"but not in \" ^";
+                        "cinst2 ^ \".\" in";
+                        "let _ = print_string (\"\\n\\n\"^msg^\"\\n\\n\") in";
                         "false ;;"
                    ]
                 )@["exception Check_inclusion_exn ;;\n";

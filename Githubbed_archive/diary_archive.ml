@@ -4,9 +4,16 @@ Snippet 73 :
 
 
 (************************************************************************************************************************
-Snippet 72 : Exercise on flexible transitive permutation groups, version 1
+Snippet 72 : Transform a text in an Ocaml string 
 ************************************************************************************************************************)
 
+let z1 = Needed_values.rf "Fads/nap.ml"  ;;
+let z2 = Lines_in_string.interval z1 12 25 ;;
+let z3 = Replace_inside.replace_inside_string ("\"","\\\"") z2;;
+let z4 = Lines_in_string.lines z3 ;;
+let z5 = Image.image (fun line -> "\"" ^ (Cull_string.trim_spaces line) ^ "\"") z4 ;; 
+let z6 = "\n\n\n" ^ (String.concat ";\n" z5) ^ "\n\n\n" ;;
+let z7 () = print_string z6 ;;
 
 (************************************************************************************************************************
 Snippet 71 : Find and replace on several files 
