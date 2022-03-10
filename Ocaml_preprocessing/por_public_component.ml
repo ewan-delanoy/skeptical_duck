@@ -71,6 +71,14 @@ module Private = struct
           lines_in_definition = ["let set_parent  = Private.Parent.set ;;"];
         } ;
        ] ;; 
+
+       let annotated_text_for_typeinfo_symlinks por=
+       [
+         {
+           Por_public_definition_t.value_name = "show_fields" ;
+           lines_in_definition = ["let show_fields  = Private.Type_information.show_fields ;;"];
+         } ;
+        ] ;;  
      
       let snippet_for_constructor_element (j,fd) = 
         let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
@@ -102,16 +110,14 @@ module Private = struct
    ;;     
    
    let annotated_definition_for_restrictor por (before_restr,after_restr) =
-    let restr_name = "restrict_"^before_restr^"_to_"^after_restr in 
-    let inst_before = Por_common.get_instance por before_restr 
-    and inst_after = Por_common.get_instance por after_restr  in 
-    let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
-    and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
-    let _ = Por_common.check_inclusion field_names_after field_names_before in 
+    let restr_name = "to_"^after_restr in 
     let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
     {
       Por_public_definition_t.value_name = restr_name ;
-      lines_in_definition = ["let "^restr_name^" fw  = {";
+      lines_in_definition = ["let "^restr_name^" fw  = ";
+      (String.make 2 ' ')^"let tname = fw."^main_module_name^"_t.type_name in ";
+      (String.make 2 ' ')^"let _ = Private.Type_information.check_inclusion \""^after_restr^"\" tname in ";
+      (String.make 3 ' ')^"{";
       (String.make 3 ' ')^"fw with ";
       (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_restr)^"\" ;"]
       @["} ;;"];
@@ -140,6 +146,7 @@ let main por =
           (Private.annotated_text_for_crobj_symlinks)@
           (Private.annotated_text_for_extender_symlinks por)@
           (Private.annotated_text_for_parenting_symlinks por)@
+          (Private.annotated_text_for_typeinfo_symlinks por)@
           (Private.annotated_text_for_constructors por)@
           (Private.annotated_text_for_restrictors por)@
           [Private.annotated_definition_for_print_out por] );;   
