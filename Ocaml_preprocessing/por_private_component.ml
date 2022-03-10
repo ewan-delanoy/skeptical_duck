@@ -288,10 +288,10 @@ module Private = struct
                   inst.Polymorphic_ocaml_record_t.fields)
             ) por.Polymorphic_ocaml_record_t.instances in 
             
-             (String.concat "\n" 
-             (["let fields_for_instances = [";]@
-               ( Image.image element_in_fields_for_instances temp1 )
-               @["] ;;"])
+             (
+             "let fields_for_instances = [\n"^
+               ( String.concat ";\n" (Image.image element_in_fields_for_instances temp1 ))
+               ^"\n] ;;"
              );;            
 
       let full_text por =
