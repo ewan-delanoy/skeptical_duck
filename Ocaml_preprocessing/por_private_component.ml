@@ -328,20 +328,25 @@ module Private = struct
             [
               "exception Get_field_data_exn of string ;;\n";
               "let get_field_data field_name = ";
-              "   try List.assoc field_name data_for_fields with";
+              "   try (field_name,List.assoc field_name data_for_fields) with";
               "    _ -> raise(Get_field_data_exn(field_name)) ;;"
             ]  
             )
       ;;
 
+     
+      
+
       let  text_for_show_fields por =
             let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in  
               ( String.concat "\n"
-              ["let show_fields fw = ";
+              [
+               "let element_in_show_fields (fd_name,fd_type) = fd_name ^ \" : \" ^ fd_type ;;";
+                "let show_fields fw = ";
                 " let fields = get_fields fw in ";
                 " let data = Image.image get_field_data fields in ";
                 " let msg = \" \"^ (fw."^module_name^"_t.type_name) ^ \" : {\" ^ ";
-                " (String.concat \"\\n\" (Image.image (fun (fd_name,fd_type) -> fd_name ^ \" : \" ^ fd_type data))";
+                " (String.concat \"\\n\" (Image.image element_in_show_fields data))";
                 " ^ \" } \" in";
                 " print_string (\"\\n\\n\"^msg^\"\\n\\n\");;"
               ]  
