@@ -295,14 +295,14 @@ module Private = struct
              );;      
       
       let text_for_get_fields por = 
-            let module_name = por.Polymorphic_ocaml_record_t.module_name in 
+            let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in 
             ( String.concat "\n"
             [
               "exception Get_fields_exn of string ;;\n";
               "let get_fields fw = ";
               "   let tname = fw."^module_name^"_t.type_name in ";
               "   try List.assoc_opt tname fields_for_instances with";
-              "    _ -> raise(Get_fields_exn(tname) ;;"
+              "    _ -> raise(Get_fields_exn(tname)) ;;"
             ]  
             )
       ;;
