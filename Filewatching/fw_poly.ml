@@ -226,9 +226,9 @@ let element_in_show_fields (fd_name,fd_type) = fd_name ^ " : " ^ fd_type ;;
 let show_fields fw = 
  let fields = get_fields fw in 
  let data = Image.image get_field_data fields in 
- let msg = " "^ (fw.Fw_poly_t.type_name) ^ " : {" ^ 
+ let msg = " "^ (fw.Fw_poly_t.type_name) ^ " : {\n" ^ 
  (String.concat "\n" (Image.image element_in_show_fields data))
- ^ " } " in
+ ^ " \n } " in
  print_string ("\n\n"^msg^"\n\n");;
 
 let check_inclusion inst1 inst2 = 
