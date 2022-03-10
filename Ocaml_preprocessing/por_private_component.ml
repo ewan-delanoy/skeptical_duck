@@ -299,14 +299,13 @@ module Private = struct
             ( String.concat "\n"
             [
               "exception Get_fields_exn of string ;;\n";
-              "let get_fields fw = ";
-              "   let tname = fw."^module_name^"_t.type_name in ";
+              "let get_fields_from_name tname = ";
               "   try List.assoc tname fields_for_instances with";
-              "    _ -> raise(Get_fields_exn(tname)) ;;"
+              "    _ -> raise(Get_fields_exn(tname)) ;;\n";
+              "let get_fields fw = get_fields_from_name fw."^module_name^"_t.type_name ;; ";
             ]  
             )
       ;;
-
 
       let element_in_data_for_fields (fd_name,fd_type)=
             "   \"" ^ fd_name ^ "\" , \"" ^ fd_type ^ "\"";;
@@ -341,7 +340,7 @@ module Private = struct
             let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in  
               ( String.concat "\n"
               [
-               "let element_in_show_fields (fd_name,fd_type) = fd_name ^ \" : \" ^ fd_type ;;";
+               "let element_in_show_fields (fd_name,fd_type) = fd_name ^ \" : \" ^ fd_type ;;\n";
                 "let show_fields fw = ";
                 " let fields = get_fields fw in ";
                 " let data = Image.image get_field_data fields in ";
@@ -352,6 +351,34 @@ module Private = struct
               ]  
               );;                  
 
+      
+      let  text_for_check_inclusion = 
+                ( String.concat "\n"
+                ([
+                  "let check_inclusion inst1 inst2 = "
+                ]@(
+                   Image.image (fun line->(String.make 3 ' ')^line) [
+                        "let fields1 = get_fields_from_name inst1";
+                        "and fields2 = get_fields_from_name inst2 in";
+                        "let nonincluded_fields = List.filter (fun x->not(List.mem x fields2)) fields1 in";
+                        "let n = List.length nonincluded_fields in";
+                        "if n = 0";
+                        "then true";
+                        "else";
+                        "let (left,right)= (if n>1 then (\"s\",\" are \") else (\"\",\" is \") ) in";
+                        "let fld_list = String.concat \" , \" nonincluded_fields in";
+                        "let msg = \" The field \" ^ left ^ fld_list ^ right ^ \" in \" ^";
+                        "(String.capitalize_ascii inst1) ^ \"but not in \" ^";
+                        "(String.capitalize_ascii inst2) ^ \".\" in";
+                        "let _ = print_string (\"\n\n\"^msg^\"\n\n\") in";
+                        "false ;;"
+                   ]
+                )@["exception Check_inclusion_exn ;;\n";
+                  "let check_inclusion_forcefully inst1 inst2 = ";
+                  "   if (not(check_inclusion inst1 inst2)) then raise(Check_inclusion_exn) ;;"
+                ])  
+                );;                  
+  
       let full_text por =
             "module Type_information = struct \n"^
             (text_for_fields_for_instances por)^"\n\n"^
@@ -359,6 +386,7 @@ module Private = struct
             (text_for_data_for_fields por)^"\n\n"^
             (text_for_get_field_data por)^"\n\n"^
             (text_for_show_fields por)^"\n\n"^
+            (text_for_check_inclusion)^"\n\n"
             "end;; \n\n\n"   
 
       end ;;      

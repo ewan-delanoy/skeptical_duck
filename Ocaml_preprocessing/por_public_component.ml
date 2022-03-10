@@ -71,6 +71,14 @@ module Private = struct
           lines_in_definition = ["let set_parent  = Private.Parent.set ;;"];
         } ;
        ] ;; 
+
+       let annotated_text_for_typeinfo_symlinks por=
+       [
+         {
+           Por_public_definition_t.value_name = "show_fields" ;
+           lines_in_definition = ["let show_fields  = Private.Type_information.show_fields ;;"];
+         } ;
+        ] ;;  
      
       let snippet_for_constructor_element (j,fd) = 
         let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
