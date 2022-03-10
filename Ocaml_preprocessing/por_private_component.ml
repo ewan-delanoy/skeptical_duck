@@ -386,7 +386,7 @@ module Private = struct
             (text_for_data_for_fields por)^"\n\n"^
             (text_for_get_field_data por)^"\n\n"^
             (text_for_show_fields por)^"\n\n"^
-            (text_for_check_inclusion)^"\n\n"
+            (text_for_check_inclusion)^"\n\n"^
             "end;; \n\n\n"   
 
       end ;;      
