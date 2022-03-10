@@ -301,7 +301,7 @@ module Private = struct
               "exception Get_fields_exn of string ;;\n";
               "let get_fields fw = ";
               "   let tname = fw."^module_name^"_t.type_name in ";
-              "   try List.assoc_opt tname fields_for_instances with";
+              "   try List.assoc tname fields_for_instances with";
               "    _ -> raise(Get_fields_exn(tname)) ;;"
             ]  
             )
@@ -328,7 +328,7 @@ module Private = struct
             [
               "exception Get_field_data_exn of string ;;\n";
               "let get_field_data field_name = ";
-              "   try List.assoc_opt field_name data_for_fields with";
+              "   try List.assoc field_name data_for_fields with";
               "    _ -> raise(Get_field_data_exn(field_name)) ;;"
             ]  
             )
