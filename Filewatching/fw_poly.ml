@@ -221,7 +221,7 @@ let get_field_data field_name =
    try (field_name,List.assoc field_name data_for_fields) with
     _ -> raise(Get_field_data_exn(field_name)) ;;
 
-let element_in_show_fields (fd_name,fd_type) = fd_name ^ " : " ^ fd_type ;;
+let element_in_show_fields (fd_name,fd_type) = (String.make 3 ' ') ^ fd_name ^ " : " ^ fd_type ;;
 
 let show_fields fw = 
  let fields = get_fields fw in 
