@@ -276,6 +276,29 @@ module Private = struct
       
       end ;;      
       
+      module Type_information = struct
+
+      let element_in_fields_for_instances (inst_name,inst_fields)=
+         let temp1 = Image.image Strung.enclose inst_fields in 
+         (Strung.enclose inst_name)^" , ["^(String.concat ";" temp1)^"]" ;;
+
+      let  text_for_fields_for_instances por =
+            let temp1 = Image.image (fun 
+              inst -> (inst.Polymorphic_ocaml_record_t.instance_name,
+                  inst.Polymorphic_ocaml_record_t.fields)
+            ) por.Polymorphic_ocaml_record_t.instances in 
+            
+             (String.concat "\n" 
+             (["let fields_for_instances = [";]@
+               ( Image.image element_in_fields_for_instances temp1 )
+               @["] ;;"])
+             );;            
+
+      let full_text por =
+          (text_for_fields_for_instances por )   
+
+      end ;;      
+
       end ;;      
       
       
@@ -286,4 +309,5 @@ module Private = struct
                  (Private.Extender.full_text por)^"\n\n"^
                  (Private.Parent.full_text por)^"\n\n"^
                  (Private.Origin.text por)^"\n\n"^
+                 (Private.Type_information.full_text por)^"\n\n"^
                  "\nend;; \n\n\n" ;;

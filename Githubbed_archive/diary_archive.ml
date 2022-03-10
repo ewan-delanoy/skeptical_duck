@@ -1,5 +1,10 @@
 (************************************************************************************************************************
-Snippet 72 : Modifying line intervals in a file
+Snippet 73 : 
+************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 72 : Exercise on flexible transitive permutation groups, version 1
 ************************************************************************************************************************)
 
 
@@ -1659,7 +1664,7 @@ Snippet 58 : Find all modules whose ml file contains a certain substring
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let z1 = Fw_with_githubbing.all_mlx_files (!ucs) ;;
+let z1 = Fw_with_dependencies.all_mlx_files (!ucs) ;;
 let z2 = List.filter (fun mlx -> (Dfn_full.to_ending mlx)= Dfa_ending.ml ) z1 ;;
 let z3 = Explicit.filter (
    fun mlx -> 
