@@ -280,7 +280,7 @@ module Private = struct
 
       let element_in_fields_for_instances (inst_name,inst_fields)=
          let temp1 = Image.image Strung.enclose inst_fields in 
-         (Strung.enclose inst_name)^" , ["^(String.concat ";" temp1)^"]" ;;
+         (Strung.enclose (String.capitalize_ascii inst_name))^" , ["^(String.concat ";" temp1)^"]" ;;
 
       let  text_for_fields_for_instances por =
             let temp1 = Image.image (fun 
