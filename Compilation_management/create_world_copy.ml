@@ -87,7 +87,7 @@ module Private = struct
       
 
     let unfreeze_copy cs destroot =
-        let old_fw_config = Fw_with_githubbing.to_fw_configuration cs in 
+        let old_fw_config = Fw_poly.to_fw_configuration cs in 
         let remote_fw_config = Fw_poly.set_root old_fw_config  destroot in   
         let remote_github_config = Fw_poly.construct_github_configuration 
         ~root:destroot

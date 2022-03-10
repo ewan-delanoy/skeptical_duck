@@ -34,8 +34,8 @@
 
          let refresh cs =
             let cs2= Fw_with_githubbing.of_fw_config_and_github_config 
-            (Fw_with_githubbing.to_fw_configuration cs) 
-            (Fw_with_githubbing.github_configuration cs)  in 
+            (Fw_poly.to_fw_configuration cs) 
+            (Fw_poly.to_github_configuration cs)  in 
             let _=Fw_with_persisting.persist cs2 in 
             cs2;;       
 

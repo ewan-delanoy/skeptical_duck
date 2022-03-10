@@ -180,6 +180,84 @@ let origin = {
    watched_files = [] ;
 } ;;
 
+module Type_information = struct 
+let fields_for_instances = [
+"Fw_configuration" , ["root";"ignored_subdirectories";"ignored_files"];
+"File_watcher" , ["root";"ignored_subdirectories";"ignored_files";"watched_files"];
+"Fw_with_archives" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files"];
+"Fw_with_small_details" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files"];
+"Fw_with_dependencies" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching"];
+"Fw_with_batch_compilation" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching";"last_compilation_result_for_module"];
+"Fw_with_githubbing" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching";"last_compilation_result_for_module";"dir_for_backup";"gitpush_after_backup";"github_url";"encoding_protected_files"];
+"Github_configuration" , ["root";"dir_for_backup";"gitpush_after_backup";"github_url";"encoding_protected_files"]
+] ;;
+
+exception Get_fields_exn of string ;;
+
+let get_fields_from_name tname = 
+   try List.assoc tname fields_for_instances with
+    _ -> raise(Get_fields_exn(tname)) ;;
+
+let get_fields fw = get_fields_from_name fw.Fw_poly_t.type_name ;; 
+
+let data_for_fields = [
+   "dir_for_backup" , "Dfa_root_t.t";
+   "encoding_protected_files" , "(Dfn_rootless_t.t * Dfn_rootless_t.t) list";
+   "github_url" , "string";
+   "gitpush_after_backup" , "bool";
+   "ignored_files" , "Dfn_rootless_t.t list";
+   "ignored_subdirectories" , "Dfa_subdirectory_t.t list";
+   "index_for_caching" , "Fw_instance_index_t.t * Fw_state_index_t.t";
+   "last_compilation_result_for_module" , "(Dfa_module_t.t * bool) list";
+   "root" , "Dfa_root_t.t";
+   "small_details_in_files" , "(Dfn_rootless_t.t * Fw_file_small_details_t.t) list";
+   "subdirs_for_archived_mlx_files" , "Dfa_subdirectory_t.t list";
+   "watched_files" , "(Dfn_rootless_t.t * string) list"
+] ;;
+
+exception Get_field_data_exn of string ;;
+
+let get_field_data field_name = 
+   try (field_name,List.assoc field_name data_for_fields) with
+    _ -> raise(Get_field_data_exn(field_name)) ;;
+
+let element_in_show_fields (fd_name,fd_type) = fd_name ^ " : " ^ fd_type ;;
+
+let show_fields fw = 
+ let fields = get_fields fw in 
+ let data = Image.image get_field_data fields in 
+ let msg = " "^ (fw.Fw_poly_t.type_name) ^ " : {" ^ 
+ (String.concat "\n" (Image.image element_in_show_fields data))
+ ^ " } " in
+ print_string ("\n\n"^msg^"\n\n");;
+
+let check_inclusion inst1 inst2 = 
+   let cinst1 = String.capitalize_ascii inst1
+   and cinst2 = String.capitalize_ascii inst2 in
+   let fields1 = get_fields_from_name cinst1
+   and fields2 = get_fields_from_name cinst2 in
+   let nonincluded_fields = List.filter (fun x->not(List.mem x fields2)) fields1 in
+   let n = List.length nonincluded_fields in
+   if n = 0
+   then true
+   else
+   let (left,right)= (if n>1 then ("s"," are ") else (""," is ") ) in
+   let fld_list = String.concat " , " nonincluded_fields in
+   let msg = " The field " ^ left ^ fld_list ^ right ^ " in " ^
+   cinst1 ^ "but not in " ^
+   cinst2 ^ "." in
+   let _ = print_string ("\n\n"^msg^"\n\n") in
+   false ;;
+exception Check_inclusion_exn ;;
+
+let check_inclusion_forcefully inst1 inst2 = 
+   if (not(check_inclusion inst1 inst2)) then raise(Check_inclusion_exn) ;;
+
+end;; 
+
+
+
+
 
 end;; 
 
@@ -219,14 +297,6 @@ let last_compilation_result_for_module x = x.Fw_poly_t.last_compilation_result_f
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(fw.Fw_poly_t.type_name)^" >") ;;
-let restrict_fw_with_githubbing_to_fw_configuration fw  = {
-   fw with 
-   Fw_poly_t.type_name = "Fw_configuration" ;
-} ;;
-let restrict_fw_with_githubbing_to_github_configuration fw  = {
-   fw with 
-   Fw_poly_t.type_name = "Github_configuration" ;
-} ;;
 let root x = x.Fw_poly_t.root ;;
 let set_dir_for_backup x backup_dir = { x with Fw_poly_t.dir_for_backup = backup_dir} ;;
 let set_encoding_protected_files x protected_pairs = { x with Fw_poly_t.encoding_protected_files = protected_pairs} ;;
@@ -241,7 +311,22 @@ let set_root x r = { x with Fw_poly_t.root = r} ;;
 let set_small_details_in_files x small_details = { x with Fw_poly_t.small_details_in_files = small_details} ;;
 let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_poly_t.subdirs_for_archived_mlx_files = archives_subdirs} ;;
 let set_watched_files x files = { x with Fw_poly_t.watched_files = files} ;;
+let show_fields  = Private.Type_information.show_fields ;;
 let small_details_in_files x = x.Fw_poly_t.small_details_in_files ;;
 let subdirs_for_archived_mlx_files x = x.Fw_poly_t.subdirs_for_archived_mlx_files ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
+let to_fw_configuration fw  = 
+  let tname = fw.Fw_poly_t.type_name in 
+  let _ = Private.Type_information.check_inclusion "fw_configuration" tname in 
+   {
+   fw with 
+   Fw_poly_t.type_name = "Fw_configuration" ;
+} ;;
+let to_github_configuration fw  = 
+  let tname = fw.Fw_poly_t.type_name in 
+  let _ = Private.Type_information.check_inclusion "github_configuration" tname in 
+   {
+   fw with 
+   Fw_poly_t.type_name = "Github_configuration" ;
+} ;;
 let watched_files x = x.Fw_poly_t.watched_files ;;
