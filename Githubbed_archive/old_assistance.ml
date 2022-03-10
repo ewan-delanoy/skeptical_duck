@@ -15,6 +15,137 @@ Assistance_usual_coma_state.refresh() )
 
 
 
+module Assistance_dfa_root_t=struct
+
+(*
+
+Does not end with a slash.
+
+#use"Decomposed_filename/dfa_root_t.ml";;
+
+*)
+
+type t=R of string;;           
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_ending_t=struct
+
+(*
+
+#use"Decomposed_filename/dfa_ending_t.ml";;
+
+Does not contain a dot.
+
+*)
+
+type t=E of string;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_module_t=struct
+
+(*
+
+#use"Decomposed_filename/dfa_module_t.ml";;
+
+A module name, or a candidate for one. Uncapitalized. 
+Should contain no slashes.
+
+*)
+
+type t=M of string;;
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_subdirectory_t=struct
+
+(*
+
+Subdirectories name, with the trailing slash removed.
+
+#use"Decomposed_filename/dfa_subdirectory_t.ml";;
+
+*)
+
+type t=SD of string;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_rootless_t=struct
+
+(*
+
+#use"Decomposed_filename/dfn_rootless_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t ;;
+          
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_github_configuration_t=struct
+
+(*
+
+#use"Githubbing/github_configuration_t.ml";;
+
+
+In the encoding_protected_files field, the list elements are pair of files ;
+the first elt of the pair contains the encoding, and the second elt is the
+encoded file. This allows you to vary the encoding depending on the file.
+
+*)
+
+type t ={
+  root : Assistance_dfa_root_t.t ;
+  dir_for_backup : Assistance_dfa_root_t.t;
+  gitpush_after_backup : bool;
+  github_url : string;
+  encoding_protected_files : ( Assistance_dfn_rootless_t.t * Assistance_dfn_rootless_t.t) list;
+};;
+
+end;;
+
+
+
+
+
+
 module Assistance_ennig=struct
 
 (*
@@ -600,94 +731,6 @@ end;;
 
 
 
-module Assistance_memoized=struct
-
-(*
-
-#use"memoized.ml";;
-
-*) 
-type ('a,'b) map=('a->'b);;
-
-let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let y=f(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  (memoized_f:>('a,'b) map);;
-
-let make (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  make_from f a_hashtbl_for_f;;
-  
-let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
-  let rec memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let mf=(memoized_f:>('a->'b)) in
-          let y=big_f(mf)(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
-
-let recursive (big_f:('a->'b)->'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  recursive_from big_f a_hashtbl_for_f;;
-
-let small f initial_value=
-  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
-  
-let reversible (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) 
-  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
-  and irreducibles=ref([]) 
-  and minimal_reductions=ref([]) in
-  let compute_f=(fun x accu->
-     let y=f(x) in
-     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
-      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
-     else     
-     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
-          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
-          minimal_reductions:=(x,old_x)::(!minimal_reductions))
-     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
-            irreducibles:=x::(!irreducibles))
-     
-  ) in
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let accu=ref([]) in
-          let _=compute_f(x)(accu) in
-          List.hd(!accu)
-  ) 
-  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
-  let memoized_projector=(fun x->
-    let ()=compute_f(x)(ref[]) in
-    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
-    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
-    else x
-    ) in
-  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
-           
-
-end;;
-
-
-
-
-
-
 module Assistance_option=struct
 
 (*
@@ -747,898 +790,6 @@ let unpack x =Private.unpack_with_error_message "void is not unpackable" x;;
 
  
 
-
-end;;
-
-
-
-
-
-
-module Assistance_total_ordering_result_t=struct
-
-(*
-
-#use"Ordered_Lists/total_ordering_result_t.ml";;
-
-*)
-
-type t =
-   Lower 
- | Equal 
- | Greater ;;
-
-
- 
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_total_ordering_t=struct
-
-(*
-
-#use"Ordered_Lists/total_ordering_t.ml";;
-
-*)
-
-
-
-type 'a t = ( 'a -> 'a ->Assistance_total_ordering_result_t.t ) ;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_ordered=struct
-
-(*
- 
-#use"ordered.ml";;
-
-*)
-
-module Private = struct 
-
-  let intersect (cmpr:'a Assistance_total_ordering_t.t) ox oy=
-      let rec tempf=(function (u,v,accu)->
-        if u=[] then (List.rev(accu)) else
-        if v=[] then (List.rev(accu)) else
-        let xu=List.hd(u) and yu=List.tl(u) 
-        and xv=List.hd(v) and yv=List.tl(v) in
-        match cmpr(xu)(xv) with
-         Assistance_total_ordering_result_t.Lower->tempf(yu,v,accu)
-        |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
-        |Assistance_total_ordering_result_t.Greater->tempf(u,yv,accu)
-      ) in
-      tempf(ox,oy,[]);;
-  
-  let is_increasing (cmpr:'a Assistance_total_ordering_t.t) l=
-    if List.length(l)<2 then true else
-    let rec tempf=(function
-    (a,to_be_treated)->match to_be_treated with
-     []->true
-     |b::others->if (cmpr(a)(b)=Assistance_total_ordering_result_t.Lower)
-                   then tempf(b,others)
-                   else false
-    ) in
-    tempf(List.hd l,List.tl l);;
-    
-  
-  let merge (cmpr:'a Assistance_total_ordering_t.t) ox oy=
-      let rec tempf=(function (u,v,accu)->
-        if u=[] then (List.rev_append(accu)(v)) else
-        if v=[] then (List.rev_append(accu)(u)) else
-        let xu=List.hd(u) and yu=List.tl(u) 
-        and xv=List.hd(v) and yv=List.tl(v) in
-      match cmpr(xu)(xv) with
-        Assistance_total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
-      |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
-      |Assistance_total_ordering_result_t.Greater->tempf(u,yv,xv::accu)
-      ) in
-      tempf(ox,oy,[]);;
-  
-  
-  let setminus (cmpr:'a Assistance_total_ordering_t.t) ox oy=
-      let rec tempf=
-      (function (u,v,accu)->
-        if u=[] then (List.rev(accu)) else
-        if v=[] then (List.rev_append(accu)(u)) else
-        let xu=List.hd(u) and yu=List.tl(u) 
-        and xv=List.hd(v) and yv=List.tl(v) in
-        match cmpr(xu)(xv) with
-           Assistance_total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
-          |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,accu)
-          |Assistance_total_ordering_result_t.Greater->tempf(u,yv,accu)
-     ) in
-     tempf(ox,oy,[]);;
-  
-  let rec sort (cmpr:'a Assistance_total_ordering_t.t) x=
-    if List.length(x)<2
-    then x
-    else let temp1=Assistance_listennou.split_list_in_half(x) in
-         let y1=sort(cmpr)(fst temp1)
-         and y2=sort(cmpr)(snd temp1) in
-         merge cmpr y1 y2;;
-  
-  let is_included_in (cmpr:'a Assistance_total_ordering_t.t) ox oy=
-         let rec tempf=(function (u,v)->
-           if u=[] then true else
-           if v=[] then false else
-           let xu=List.hd(u) and yu=List.tl(u) 
-           and xv=List.hd(v) and yv=List.tl(v) in
-           match cmpr(xu)(xv) with
-             Assistance_total_ordering_result_t.Lower->false
-           |Assistance_total_ordering_result_t.Equal->tempf(yu,yv)
-           |Assistance_total_ordering_result_t.Greater->tempf(u,yv)
-         ) in
-         tempf(ox,oy);;       
-  
-  let helper1_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  
-         comparator =
-         let rec tempf = (fun
-         (treated,to_be_treated) -> match to_be_treated with 
-         [] -> (None,List.rev treated) 
-        |new_item :: others ->
-           if new_item = comparator 
-           then (* ignore and continue *) tempf (treated,others)
-           else       
-           if is_included_in cmpr new_item comparator
-           then (* finish *)  (Some new_item,[])
-           else 
-           if is_included_in cmpr comparator new_item
-           then tempf (treated,others)
-           else tempf (new_item::treated,others)  
-         ) in tempf ;;    
-       
-  let rec helper2_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  =
-          let rec tempf = (fun 
-         (treated,to_be_treated) -> match to_be_treated with 
-          [] -> List.rev treated 
-         |new_item :: others ->
-           let (opt,checked_subset) = 
-             helper1_for_minimal_elements_selection cmpr new_item ([],others) in 
-           if opt<>None 
-           then tempf(treated,others) 
-           else tempf(new_item::treated,checked_subset)) in   
-         tempf ;;
-           
-  let select_minimal_elements_for_inclusion tr ll=
-         helper2_for_minimal_elements_selection tr ([],ll) ;;
-    
-  
-  end;;
-  
-  
-  let diff (cmpr: 'a Assistance_total_ordering_t.t) =
-            let rec tempf=(fun
-              (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
-                match to_be_treated1 with
-                []->(treated_bc,treated_b,List.rev_append treated_c to_be_treated2)
-                |(a1,b1)::others1->
-                (
-                  match to_be_treated2 with
-                []->(treated_bc,List.rev_append treated_b to_be_treated1,treated_c)     
-                |(a2,c2)::others2->
-                  (
-                    match cmpr a1 a2 with
-                    Assistance_total_ordering_result_t.Lower->
-                      tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
-                    |Assistance_total_ordering_result_t.Greater->
-                    tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
-                    |Assistance_total_ordering_result_t.Equal->
-                    tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
-                  )
-                )      
-            ) in
-            tempf;;   
-  
-  let does_not_intersect (cmpr:'a Assistance_total_ordering_t.t) ox oy=
-      let rec tempf=(function (u,v)->
-          if (u=[])||(v=[]) then true else
-          let xu=List.hd(u) and yu=List.tl(u) 
-          and xv=List.hd(v) and yv=List.tl(v) in
-          match cmpr(xu)(xv) with
-            Assistance_total_ordering_result_t.Lower->tempf(yu,v)
-          |Assistance_total_ordering_result_t.Equal->false
-          |Assistance_total_ordering_result_t.Greater->tempf(u,yv)
-      ) in
-      tempf(ox,oy);;
-  
-  exception Empty_intersection_undefined;;    
-  
-  let fold_intersect cmpr=function
-     []->raise(Empty_intersection_undefined)
-    |a::b->List.fold_left(Private.intersect cmpr)(a)(b);;
-  
-  let fold_merge cmpr l=
-     let rec tempf=(function
-        (already_treated,to_be_treated)->match to_be_treated with 
-        []->already_treated
-        |a::b->tempf(Private.merge cmpr a already_treated,b)
-     ) in 
-     tempf([],l);;    
-  
-  let insert cmpr x oy=Private.merge cmpr [x] oy;; 
-  
-  let intersect = Private.intersect;;
-  
-  let intersects cmpr ox oy = not(does_not_intersect cmpr ox oy);;
-  
-  let is_included_in = Private.is_included_in ;;
-  
-  let rec mem (cmpr:'a Assistance_total_ordering_t.t) x ol=
-     let rec tempf=(function
-      []->false
-      |a::others->match cmpr(x)(a) with
-         Assistance_total_ordering_result_t.Lower->false
-         |Assistance_total_ordering_result_t.Equal->true
-         |Assistance_total_ordering_result_t.Greater->tempf others
-     )  in
-     tempf ol;;    
-  
-  let merge = Private.merge;;
-  
-  let outsert cmpr x oy=Private.setminus cmpr oy [x];;
-  
-  let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
-                       then ox 
-                       else Private.sort cmpr ox;;
-  
-  let select_minimal_elements_for_inclusion = Private.select_minimal_elements_for_inclusion;;
-  
-  let setminus = Private.setminus;;
-  
-  let sort = Private.sort;;
-
-  let symmetric_difference cmpr x y =
-    merge cmpr (setminus cmpr x y) (setminus cmpr y x) ;;
-  
-  
-  
-
-end;;
-
-
-
-
-
-
-module Assistance_total_ordering=struct
-
-(*
-
-#use"Ordered_Lists/total_ordering.ml";;
-
-*)
-
-
-module Private = struct
-let leq (computer:'a Assistance_total_ordering_t.t) x y=
-   let v=computer(x)(y) in
-   (v=Assistance_total_ordering_result_t.Lower)||(v=Assistance_total_ordering_result_t.Equal);;
-   
- let lt (computer:'a Assistance_total_ordering_t.t) x y=(computer(x)(y)=Assistance_total_ordering_result_t.Lower);;   
- 
- let geq (computer:'a Assistance_total_ordering_t.t) x y=
-   let v=computer(x)(y) in
-   (v=Assistance_total_ordering_result_t.Lower)||(v=Assistance_total_ordering_result_t.Equal);;
-   
- let gt (computer:'a Assistance_total_ordering_t.t) x y=(computer(x)(y)=Assistance_total_ordering_result_t.Greater);;   
- 
- let from_lt f=
-   let temp1=(fun x y->
-     if f(x)(y)
-     then Assistance_total_ordering_result_t.Lower
-     else if f(y)(x)
-          then Assistance_total_ordering_result_t.Greater
-          else Assistance_total_ordering_result_t.Equal
-   ) in
-   (temp1:'a Assistance_total_ordering_t.t);;
- 
- let standard_completion f g=
-  let answer=(fun x y->
-   if f(y)(x)
-   then Assistance_total_ordering_result_t.Greater
-   else if f(x)(y)
-        then Assistance_total_ordering_result_t.Lower
-        else if g(x)(y)
-             then Assistance_total_ordering_result_t.Equal
-             else if x<y
-                  then Assistance_total_ordering_result_t.Lower
-                  else Assistance_total_ordering_result_t.Greater
-  ) in
-  (answer: 'a Assistance_total_ordering_t.t);;
- 
- let standard=((fun x y->
-    if x=y
-    then Assistance_total_ordering_result_t.Equal
-    else if x<y
-         then Assistance_total_ordering_result_t.Lower
-         else Assistance_total_ordering_result_t.Greater
- ): 'a Assistance_total_ordering_t.t);;
- 
-let standard2=((fun (x1,y1) (x2,y2)->
-    let t1=standard x1 x2 in 
-    if t1<> Assistance_total_ordering_result_t.Equal 
-    then t1
-    else standard y1 y2
- ): ('a * 'b) Assistance_total_ordering_t.t);;
-
- let completion f (g:'a Assistance_total_ordering_t.t)=
-  let answer=(fun x y->
-   if f(y)(x)
-   then Assistance_total_ordering_result_t.Greater
-   else if f(x)(y)
-        then Assistance_total_ordering_result_t.Lower
-         else g(x)(y)
-  ) in
-  (answer: 'a Assistance_total_ordering_t.t);;
- 
-let combine=((fun ~tried_first ~tried_second->
-  (fun x y->
-   let first_trial = tried_first x y in 
-   if first_trial <> Assistance_total_ordering_result_t.Equal 
-   then first_trial
-   else tried_second x y
-  ) ): 
-    tried_first:('a Assistance_total_ordering_t.t) -> tried_second:('a Assistance_total_ordering_t.t) -> ('a Assistance_total_ordering_t.t)
-  );;
-
- let product (f:'a Assistance_total_ordering_t.t) (g:'b Assistance_total_ordering_t.t)=
-  ((fun (x1,y1) (x2,y2)->
-     let t=f(x1)(x2) in
-     if t<>Assistance_total_ordering_result_t.Equal 
-     then t
-     else g y1 y2
- ): ('a*'b) Assistance_total_ordering_t.t);;
- 
- let triple_product (f:'a Assistance_total_ordering_t.t) (g:'b Assistance_total_ordering_t.t) (h:'c Assistance_total_ordering_t.t)=
-  ((fun (x1,y1,z1) (x2,y2,z2)->
-     let tx=f(x1)(x2) in
-     if tx<>Assistance_total_ordering_result_t.Equal 
-     then tx
-     else let ty=g(y1)(y2) in
-          if ty<>Assistance_total_ordering_result_t.Equal 
-          then ty
-          else h z1 z2
- ): ('a*'b*'c) Assistance_total_ordering_t.t);;
- 
- let rec lex_compare (f:'a Assistance_total_ordering_t.t)=
-  let rec tempf=(
-    fun l1 l2->
-     match l1 with 
-     []->(if l2=[] then Assistance_total_ordering_result_t.Equal else Assistance_total_ordering_result_t.Lower)
-     |a1::b1->
-      (
-        match l2 with 
-        []->Assistance_total_ordering_result_t.Greater
-        |a2::b2->
-          let t=f(a1)(a2) in
-           if t<>Assistance_total_ordering_result_t.Equal then t else
-           tempf b1 b2
-      )) in
-     (tempf:>( ('a list) Assistance_total_ordering_t.t));;
- 
-
-
-let silex_compare (f:'a Assistance_total_ordering_t.t)=
-  let tempf=(
-    fun l1 l2->
-     let t=standard(List.length l1)(List.length l2) in
-     if t<>Assistance_total_ordering_result_t.Equal then t else
-     lex_compare f l1 l2
-  ) in
-   (tempf:>( ('a list) Assistance_total_ordering_t.t));;
- 
-
-let from_list (l:'a list)=
-  let tempc=(fun x y->
-  let rec tempf=(function
-   []->(x<y)
-   |u::peurrest->if u=x then List.mem(y)(peurrest)
-                 else if u=y then false
-                 else tempf(peurrest)
-  ) in
-  tempf l) in
-  from_lt tempc;;
-
-let min (f:'a Assistance_total_ordering_t.t)=function
- []->failwith("Min of the empty set is undefined")
- |a::b->
-   let rec tempf=(fun
-    (candidate,l)->match l with
-      []->candidate
-      |c::peurrest->if f(c)(candidate)=Assistance_total_ordering_result_t.Lower
-                    then tempf(c,peurrest)
-                    else tempf(candidate,peurrest)
-   ) in
-   tempf(a,b);;
-
-let max (f:'a Assistance_total_ordering_t.t)=function
- []->failwith("Max of the empty set is undefined")
- |a::b->
-   let rec tempf=(fun
-    (candidate,l)->match l with
-      []->candidate
-      |c::peurrest->if f(c)(candidate)=Assistance_total_ordering_result_t.Greater
-                    then tempf(c,peurrest)
-                    else tempf(candidate,peurrest)
-   ) in
-   tempf(a,b);;
-   
-let minimize_it_with_care (cf:'a Assistance_total_ordering_t.t) 
-   f=function
-[]->failwith("careful min on empty set undefined")
-|x::y->
- let rec minimize_it_with_care0=(function
-  (current_candidates,current_value,da_ober)->match da_ober with
-  []->(current_value,List.rev(current_candidates))
-  |a::peurrest->let va=f(a) in
-                let howl=cf(va)(current_value) in
-                if howl=Assistance_total_ordering_result_t.Lower
-				then minimize_it_with_care0([a],va,peurrest)
-				else if howl=Assistance_total_ordering_result_t.Equal
-				     then minimize_it_with_care0(a::current_candidates,current_value,peurrest)
-					 else minimize_it_with_care0(current_candidates,current_value,peurrest)
- ) 
-in
- minimize_it_with_care0([x],f(x),y);;
-
-
-let maximize_it_with_care (cf:'a Assistance_total_ordering_t.t) 
-   f=function
-[]->failwith("careful max on empty set undefined")
-|x::y->
- let rec maximize_it_with_care0=(function
-  (current_candidates,current_value,da_ober)->match da_ober with
-  []->(current_value,List.rev(current_candidates))
-  |a::peurrest->let va=f(a) in
-                let howl=cf(va)(current_value) in
-                if howl=Assistance_total_ordering_result_t.Greater
-				then maximize_it_with_care0([a],va,peurrest)
-				else if howl=Assistance_total_ordering_result_t.Equal
-				     then maximize_it_with_care0(a::current_candidates,current_value,peurrest)
-					 else maximize_it_with_care0(current_candidates,current_value,peurrest)
- ) 
-in
- maximize_it_with_care0([x],f(x),y);;
-
-let modify_locally (f:'a Assistance_total_ordering_t.t) l=
-  let big_m=max(f)(l) in
-  let tempf=(fun x y->
-    if List.mem(x)(l)
-    then if List.mem(y)(l)
-         then if x=y
-              then Assistance_total_ordering_result_t.Equal
-              else (from_list l x y)
-         else f big_m y
-    else if List.mem(y)(l)
-         then f x big_m
-         else f x y
-  
-  ) in
-  (tempf:>( 'a Assistance_total_ordering_t.t));;
-
-let list_for_dictionary_order=
-  [97; 65; 98; 66; 99; 67; 100; 68; 101; 69; 102; 70; 103; 71; 104; 72; 105;
-  73; 106; 74; 107; 75; 108; 76; 109; 77; 110; 78; 111; 79; 112; 80; 113; 81;
-  114; 82; 115; 83; 116; 84; 117; 85; 118; 86; 119; 87; 120; 88; 121; 89;
-  122; 90; 91; 92; 93; 94; 95; 96];;  
-
-let reindexer_for_dictionary_order i=
-    if (i<65)||(i>122) 
-    then i 
-    else 64+(Assistance_listennou.find_index i list_for_dictionary_order);;
-
-
-let for_characters=let tempf=(fun x y->
-  standard 
-        (reindexer_for_dictionary_order(int_of_char x))
-        (reindexer_for_dictionary_order(int_of_char y))
-  ) in (tempf:>char Assistance_total_ordering_t.t);;
-
-let for_integers=let tempf=(fun (x:int) (y:int)-> standard x y 
-    ) in (tempf:>int Assistance_total_ordering_t.t);;  
-
-let lex_for_strings=
-    ((fun s1 s2->
-      let m1=String.length s1
-      and m2=String.length s2
-      in
-      let m=Stdlib.min(m1)(m2) in
-      match Assistance_option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_ennig.ennig 0 (m-1)) with
-      None->standard m1 m2
-      |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
-    ) : string Assistance_total_ordering_t.t);;
-
-let silex_for_strings=
-      ((fun s1 s2->
-        let m1=String.length s1
-        and m2=String.length s2
-        in
-        let first_try=standard(m1)(m2) in
-        if first_try<>Assistance_total_ordering_result_t.Equal
-        then first_try
-        else lex_for_strings s1 s2
-      ) : string Assistance_total_ordering_t.t);;    
-
-let lex_for_string_lists=
-  ((fun l1 l2->
-      let (_,left_part,right_part)=Assistance_listennou.factor (l1,l2) in
-      if left_part=[] 
-      then (if right_part=[] 
-           then Assistance_total_ordering_result_t.Equal 
-           else Assistance_total_ordering_result_t.Lower)
-      else if right_part=[] 
-           then Assistance_total_ordering_result_t.Greater 
-           else lex_for_strings (List.hd left_part) (List.hd right_part)  
-  ) : (string list) Assistance_total_ordering_t.t);;
-
-let for_longest_match=  
-    ((fun s1 s2->
-      let m1=String.length s1
-      and m2=String.length s2 in
-      if (
-          if m1>m2 then false else
-          (String.sub s2 0 m1)=s1
-      ) then Assistance_total_ordering_result_t.Greater else
-      if (
-          if m2>m1 then false else
-          (String.sub s1 0 m2)=s2
-      ) then Assistance_total_ordering_result_t.Lower else
-      lex_for_strings s1 s2
-     ): string Assistance_total_ordering_t.t);;
-
-
-let for_longest_match_pairs=  
-((fun (s1,v1) (s2,v2)->
-  let first_try=silex_for_strings(s2)(s1) in
-  if first_try<>Assistance_total_ordering_result_t.Equal 
-  then first_try
-  else standard v1 v2
- ): (string*'b) Assistance_total_ordering_t.t);;
- 
-let from_snd (f:'b Assistance_total_ordering_t.t)=((fun (x1,y1) (x2,y2)->
-  let first_try=f y1 y2 in
-  if first_try<>Assistance_total_ordering_result_t.Equal 
-  then first_try
-  else standard x1 x2
-): ('a*'b) Assistance_total_ordering_t.t );;
-
-let cardinality_then_diameter =((fun l1 l2->
-  let first_try=standard (List.length l1) (List.length l2) in
-  if first_try<>Assistance_total_ordering_result_t.Equal 
-  then first_try
-  else 
-  let diam1 = List.hd(List.rev l1) - (List.hd l1)
-  and diam2 = List.hd(List.rev l2) - (List.hd l2) in 
-  let second_try=standard diam1 diam2 in
-  if second_try<>Assistance_total_ordering_result_t.Equal 
-  then second_try
-  else lex_compare for_integers l1 l2
-): (int list) Assistance_total_ordering_t.t );;
-
-end ;;
-
-let cardinality_then_diameter = Private.cardinality_then_diameter ;;
-let for_integers = Private.for_integers ;;
-let lex_compare = Private.lex_compare ;;
-let lex_for_strings = Private.lex_for_strings ;;
-let product = Private.product ;;
-let silex_compare = Private.silex_compare ;;
-let silex_for_strings = Private.silex_for_strings ;;
-let silex_for_intlists = Private.silex_compare for_integers ;;
-let standard = Private.standard ;;
-let standard2 = Private.standard2 ;;
-
- 
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_ocaml_ending_t=struct
-
-(*
-
-#use"Decomposed_filename/dfa_ocaml_ending_t.ml";;
-
-*)
-
-type t=Ml |Mli |Mll |Mly;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_ending_t=struct
-
-(*
-
-#use"Decomposed_filename/dfa_ending_t.ml";;
-
-Does not contain a dot.
-
-*)
-
-type t=E of string;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_module_t=struct
-
-(*
-
-#use"Decomposed_filename/dfa_module_t.ml";;
-
-A module name, or a candidate for one. Uncapitalized. 
-Should contain no slashes.
-
-*)
-
-type t=M of string;;
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_root_t=struct
-
-(*
-
-Does not end with a slash.
-
-#use"Decomposed_filename/dfa_root_t.ml";;
-
-*)
-
-type t=R of string;;           
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_subdirectory_t=struct
-
-(*
-
-Subdirectories name, with the trailing slash removed.
-
-#use"Decomposed_filename/dfa_subdirectory_t.ml";;
-
-*)
-
-type t=SD of string;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_full_t=struct
-
-(*
-
-#use"Decomposed_filename/dfn_full_t.ml";;
-
-*)
-
-
-type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_tools_for_absolute_path=struct
-
-(*
-
-#use"tools_for_absolute_path.ml";;
-
-Standardize filename path. Non-directories never 
-end with /, directories always do (exceptions : the iterated_container 
-functions below, note that 
-Sys.getcwd() does not follow this convention ).
-
-
-*)
-
-let remove_trailing_slash s=
-    let n=String.length(s) in
-    if ((String.get s (n-1))='/')
-    then String.sub s 0 (n-1)
-    else s;;
-
-exception Number_of_double_points_exn;;
-
-let number_of_double_points s=
-  let n=String.length(s) in
-  let rec tempf=(fun j->
-     let k=(3*j) in
-     if (n<k+2) then j else
-     if (String.get s k='.')&&(String.get s (k+1)='.')
-     then if n=(k+2) then j+1 else
-          if (String.get s (k+2)='/') 
-          then tempf(j+1)
-          else raise(Number_of_double_points_exn)
-     else j
-  ) in
-  tempf(0);;
-  
-  
-let helper_for_iterated_container j0 s=
-   let rec tempf=(fun (j,k)->
-     if j<1 then (String.sub s 0 k) else
-     let i=String.rindex_from(s)(k-1)('/') in
-     tempf(j-1,i)
-     ) in
-    tempf (j0,String.length s);;
- 
-exception Too_many_double_points;;  
- 
- let iterated_container j0 s=try helper_for_iterated_container j0 s with
-   any_exn->raise(Too_many_double_points);;
-
-exception Blank_filename;;
-
-let delete_left_blanks s=
-  let n=String.length(s) in
-  let rec tempf=(fun j->
-    if j>=n then raise(Blank_filename) else
-    if String.get(s)(j)=' '
-    then tempf(j+1)
-    else j
-  ) in
-  let j0=tempf 0 in
-  String.sub s j0 (n-j0);;
-
-let parse_unix_filename_shortcuts_from_dir dir s0=
-  let dir_without_the_slash = remove_trailing_slash dir in  
-  let s1=delete_left_blanks(s0) in
-  let dp1=number_of_double_points(s1) in
-  if (dp1>0) 
-  then  let smaller_pwd=iterated_container dp1 dir_without_the_slash in
-        let j1=(3*dp1)-1 in 
-         smaller_pwd^(String.sub s1 j1 ((String.length s1)-j1) )    
-  else
-  if s1="/" then "/" else
-  match String.get(s1)(0) with
-  '/'->s1
-  |'~'->(Sys.getenv "HOME")^(String.sub s1 1 (String.length(s1)-1))
-  |'.'->if s1="." 
-        then dir_without_the_slash
-        else dir^(String.sub s1 2 (String.length(s1)-2))
-  |arall->dir^s1;;
-
-let parse_unix_filename_shortcuts =
-  parse_unix_filename_shortcuts_from_dir ((Sys.getcwd())^"/");;
-  
- 
-  
- exception Inexistent_file of string;; 
-  
- let opt_of_string s=
-  let s0=parse_unix_filename_shortcuts(s) in
-  if Sys.file_exists(s0)
-  then if s0="/" then Some s0 else
-       let s1=remove_trailing_slash s0 in
-       if Sys.is_directory s1
-       then Some(s1^"/")
-       else Some s1
-  else None;;
-  
- let of_string s=
-   match opt_of_string s with 
-   Some result -> result  
-   |None -> raise(Inexistent_file(s));; 
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_absolute_path=struct
-
-(*
-
-#use"absolute_path.ml";;
-
-*)
-
-type t=AP of string;;
-
-let of_string s=AP(Assistance_tools_for_absolute_path.of_string s);;
-
-
-let to_string (AP s)=s;;
-
-let ocaml_name ap=
- let s=to_string ap in
-"Absolute"^"_path"^"."^"of_string(\""^s^"\"";;
-
-let test_equal_paths s1 s2=
-((of_string s1)=(of_string s2));;
-
-exception Error_during_file_creation;;
-exception Error_during_unix_command of string;;
-
-let uc cmd = 
-   let i= Sys.command cmd in 
-   if i<>0 then raise(Error_during_unix_command cmd) else ();;
-
-
-let create_file_if_absent w=
-    let cr=(fun w->
-      let ld=Unix.openfile w [Unix.O_RDWR;Unix.O_CREAT;Unix.O_EXCL] 0o666 in
-       Unix.close ld
-    ) in
-    if Sys.file_exists w then of_string w else
-    if (not(String.contains w '/'))
-    then (cr w;of_string w)
-    else 
-    let i=String.rindex w '/' in
-    let basedir=String.sub w 0 i
-    and filename=String.sub w (i+1) ((String.length w)-(i+1)) in
-    let g1="jnoxgghg_"^filename in
-    let _=(uc ("mkdir -p "^basedir);
-           uc ("touch "^g1); 
-           uc ("mv "^g1^" "^w);
-           uc ("rm -f "^g1)) in 
-    of_string w;;
-    
-let print_out (fmt:Format.formatter) ap=
-   Format.fprintf fmt "@[%s@]" (to_string ap);;
-
-           
 
 end;;
 
@@ -2306,6 +1457,179 @@ end;;
 
 
 
+module Assistance_tools_for_absolute_path=struct
+
+(*
+
+#use"tools_for_absolute_path.ml";;
+
+Standardize filename path. Non-directories never 
+end with /, directories always do (exceptions : the iterated_container 
+functions below, note that 
+Sys.getcwd() does not follow this convention ).
+
+
+*)
+
+let remove_trailing_slash s=
+    let n=String.length(s) in
+    if ((String.get s (n-1))='/')
+    then String.sub s 0 (n-1)
+    else s;;
+
+exception Number_of_double_points_exn;;
+
+let number_of_double_points s=
+  let n=String.length(s) in
+  let rec tempf=(fun j->
+     let k=(3*j) in
+     if (n<k+2) then j else
+     if (String.get s k='.')&&(String.get s (k+1)='.')
+     then if n=(k+2) then j+1 else
+          if (String.get s (k+2)='/') 
+          then tempf(j+1)
+          else raise(Number_of_double_points_exn)
+     else j
+  ) in
+  tempf(0);;
+  
+  
+let helper_for_iterated_container j0 s=
+   let rec tempf=(fun (j,k)->
+     if j<1 then (String.sub s 0 k) else
+     let i=String.rindex_from(s)(k-1)('/') in
+     tempf(j-1,i)
+     ) in
+    tempf (j0,String.length s);;
+ 
+exception Too_many_double_points;;  
+ 
+ let iterated_container j0 s=try helper_for_iterated_container j0 s with
+   any_exn->raise(Too_many_double_points);;
+
+exception Blank_filename;;
+
+let delete_left_blanks s=
+  let n=String.length(s) in
+  let rec tempf=(fun j->
+    if j>=n then raise(Blank_filename) else
+    if String.get(s)(j)=' '
+    then tempf(j+1)
+    else j
+  ) in
+  let j0=tempf 0 in
+  String.sub s j0 (n-j0);;
+
+let parse_unix_filename_shortcuts_from_dir dir s0=
+  let dir_without_the_slash = remove_trailing_slash dir in  
+  let s1=delete_left_blanks(s0) in
+  let dp1=number_of_double_points(s1) in
+  if (dp1>0) 
+  then  let smaller_pwd=iterated_container dp1 dir_without_the_slash in
+        let j1=(3*dp1)-1 in 
+         smaller_pwd^(String.sub s1 j1 ((String.length s1)-j1) )    
+  else
+  if s1="/" then "/" else
+  match String.get(s1)(0) with
+  '/'->s1
+  |'~'->(Sys.getenv "HOME")^(String.sub s1 1 (String.length(s1)-1))
+  |'.'->if s1="." 
+        then dir_without_the_slash
+        else dir^(String.sub s1 2 (String.length(s1)-2))
+  |arall->dir^s1;;
+
+let parse_unix_filename_shortcuts =
+  parse_unix_filename_shortcuts_from_dir ((Sys.getcwd())^"/");;
+  
+ 
+  
+ exception Inexistent_file of string;; 
+  
+ let opt_of_string s=
+  let s0=parse_unix_filename_shortcuts(s) in
+  if Sys.file_exists(s0)
+  then if s0="/" then Some s0 else
+       let s1=remove_trailing_slash s0 in
+       if Sys.is_directory s1
+       then Some(s1^"/")
+       else Some s1
+  else None;;
+  
+ let of_string s=
+   match opt_of_string s with 
+   Some result -> result  
+   |None -> raise(Inexistent_file(s));; 
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_absolute_path=struct
+
+(*
+
+#use"absolute_path.ml";;
+
+*)
+
+type t=AP of string;;
+
+let of_string s=AP(Assistance_tools_for_absolute_path.of_string s);;
+
+
+let to_string (AP s)=s;;
+
+let ocaml_name ap=
+ let s=to_string ap in
+"Absolute"^"_path"^"."^"of_string(\""^s^"\"";;
+
+let test_equal_paths s1 s2=
+((of_string s1)=(of_string s2));;
+
+exception Error_during_file_creation;;
+exception Error_during_unix_command of string;;
+
+let uc cmd = 
+   let i= Sys.command cmd in 
+   if i<>0 then raise(Error_during_unix_command cmd) else ();;
+
+
+let create_file_if_absent w=
+    let cr=(fun w->
+      let ld=Unix.openfile w [Unix.O_RDWR;Unix.O_CREAT;Unix.O_EXCL] 0o666 in
+       Unix.close ld
+    ) in
+    if Sys.file_exists w then of_string w else
+    if (not(String.contains w '/'))
+    then (cr w;of_string w)
+    else 
+    let i=String.rindex w '/' in
+    let basedir=String.sub w 0 i
+    and filename=String.sub w (i+1) ((String.length w)-(i+1)) in
+    let g1="jnoxgghg_"^filename in
+    let _=(uc ("mkdir -p "^basedir);
+           uc ("touch "^g1); 
+           uc ("mv "^g1^" "^w);
+           uc ("rm -f "^g1)) in 
+    of_string w;;
+    
+let print_out (fmt:Format.formatter) ap=
+   Format.fprintf fmt "@[%s@]" (to_string ap);;
+
+           
+
+end;;
+
+
+
+
+
+
 module Assistance_io=struct
 
 (*
@@ -2674,89 +1998,36 @@ end;;
 
 
 
-module Assistance_dfn_rootless_t=struct
+module Assistance_crobj_converter_combinator=struct
 
-(*
+(* 
 
-#use"Decomposed_filename/dfn_rootless_t.ml";;
-
-*)
-
-type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t ;;
-          
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_common=struct
-
-(*
-
-#use"Decomposed_filename/dfn_common.ml";;
+#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
 
 *)
 
-exception No_dot_in_string_to_rootless of string;;
-exception Decompose_absolute_path_using_root_exn of Assistance_absolute_path.t * Assistance_dfa_root_t.t;;
+let of_array of_a arr= Assistance_concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
+let to_array to_a crobj= Array.map to_a (Assistance_concrete_object.unwrap_array crobj);;
 
-let string_of_sm (s,m)=
-   let (Assistance_dfa_subdirectory_t.SD sub)=s 
-   and (Assistance_dfa_module_t.M mn)=m in 
-   if sub=""
-   then mn
-   else sub^"/"^mn;;
-
-let string_to_sm s=
-   let (sub,mn)= Assistance_cull_string.split_wrt_rightmost s '/' in 
-   (Assistance_dfa_subdirectory_t.SD sub,Assistance_dfa_module_t.M mn);;     
-
-let string_to_rootless line=
-  if not(String.contains line '.')
-  then raise(No_dot_in_string_to_rootless(line)) 
-  else 
-  let (rest,ending) = Assistance_cull_string.split_wrt_rightmost line '.' in 
-  let (s,m) = string_to_sm rest in 
-  Assistance_dfn_rootless_t.J(s,m,Assistance_dfa_ending_t.E ending);;
-
+let of_list of_a l= Assistance_concrete_object_t.List(Assistance_image.image of_a l);;
+let to_list to_a crobj= Assistance_image.image to_a (Assistance_concrete_object.unwrap_list crobj);;
    
-let decompose_absolute_path_using_root ap root=
-  let s_root=Assistance_dfa_root.without_trailing_slash root  
-  and s_ap = Assistance_absolute_path.to_string ap in 
-  let ns=String.length(s_root)
-  and nw=String.length(s_ap) in
-  if (ns+1)>nw then raise(Decompose_absolute_path_using_root_exn(ap,root)) else
-  if (String.sub s_ap 0 (ns+1))<>(s_root^"/") then raise(Decompose_absolute_path_using_root_exn(ap,root)) else
-  string_to_rootless(String.sub s_ap (ns+1) (nw-ns-1));;
+   
+let of_pair of_a of_b (a,b)=Assistance_concrete_object_t.Uple[of_a a;of_b b];;
+let to_pair to_a to_b crobj=
+       let (arg1,arg2,_,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
+       (to_a arg1,to_b arg2);;
+   
+let of_triple of_a of_b of_c (a,b,c)=Assistance_concrete_object_t.Uple[of_a a;of_b b;of_c c];;
+let to_triple to_a to_b to_c crobj=
+           let (arg1,arg2,arg3,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
+           (to_a arg1,to_b arg2,to_c arg3);;
+   
 
-let recompose_potential_absolute_path root 
-      (Assistance_dfn_rootless_t.J(Assistance_dfa_subdirectory_t.SD(s),Assistance_dfa_module_t.M(m),Assistance_dfa_ending_t.E(e))) =
-    let s_subdir = (if s="" then "" else s^"/") in 
-    (Assistance_dfa_root.connectable_to_subpath root)^s_subdir^m^"."^e;;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_endingless_t=struct
-
-(*
-
-#use"Decomposed_filename/dfn_endingless_t.ml";;
-
-*)
-
-type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t  ;;
-
+let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
+let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
+   
+   
 
 
 end;;
@@ -2838,17 +2109,33 @@ end;;
 
 
 
-module Assistance_dfn_middle_t=struct
+module Assistance_dfa_module=struct
 
 (*
 
-#use"Decomposed_filename/dfn_middle_t.ml";;
+#use"Decomposed_filename/dfa_module.ml";;
+
+A module name, or a candidate for one. Uncapitalized. Should contain no slashes.
 
 *)
 
-type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t ;;
-          
 
+let of_line s=Assistance_dfa_module_t.M (String.uncapitalize_ascii s);; 
+let to_line (Assistance_dfa_module_t.M s)=s;;
+
+let add_prefix_and_capitalize prefix (Assistance_dfa_module_t.M name)=
+  Assistance_dfa_module_t.M(String.capitalize_ascii(prefix^name));;
+
+  
+let capitalized_form (Assistance_dfa_module_t.M name)= String.capitalize_ascii name;;
+
+let to_concrete_object (Assistance_dfa_module_t.M(s))=
+    Assistance_concrete_object_t.Variant("Dfa_"^"module_t.M",
+     [Assistance_crobj_converter.string_to_concrete_object(s)]);;
+
+let of_concrete_object ccrt_obj =
+   let (_,(arg1,_,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant ccrt_obj in 
+   Assistance_dfa_module_t.M(Assistance_crobj_converter.string_of_concrete_object arg1);;
 
 
 end;;
@@ -2968,6 +2255,603 @@ let minimize_it_with_care f=function
  ) 
 in
  minimize_it_with_care0([x],f(x),y);;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_total_ordering_result_t=struct
+
+(*
+
+#use"Ordered_Lists/total_ordering_result_t.ml";;
+
+*)
+
+type t =
+   Lower 
+ | Equal 
+ | Greater ;;
+
+
+ 
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_total_ordering_t=struct
+
+(*
+
+#use"Ordered_Lists/total_ordering_t.ml";;
+
+*)
+
+
+
+type 'a t = ( 'a -> 'a ->Assistance_total_ordering_result_t.t ) ;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_ordered=struct
+
+(*
+ 
+#use"ordered.ml";;
+
+*)
+
+module Private = struct 
+
+  let intersect (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+      let rec tempf=(function (u,v,accu)->
+        if u=[] then (List.rev(accu)) else
+        if v=[] then (List.rev(accu)) else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+        match cmpr(xu)(xv) with
+         Assistance_total_ordering_result_t.Lower->tempf(yu,v,accu)
+        |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
+        |Assistance_total_ordering_result_t.Greater->tempf(u,yv,accu)
+      ) in
+      tempf(ox,oy,[]);;
+  
+  let is_increasing (cmpr:'a Assistance_total_ordering_t.t) l=
+    if List.length(l)<2 then true else
+    let rec tempf=(function
+    (a,to_be_treated)->match to_be_treated with
+     []->true
+     |b::others->if (cmpr(a)(b)=Assistance_total_ordering_result_t.Lower)
+                   then tempf(b,others)
+                   else false
+    ) in
+    tempf(List.hd l,List.tl l);;
+    
+  
+  let merge (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+      let rec tempf=(function (u,v,accu)->
+        if u=[] then (List.rev_append(accu)(v)) else
+        if v=[] then (List.rev_append(accu)(u)) else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+        Assistance_total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+      |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,xu::accu)
+      |Assistance_total_ordering_result_t.Greater->tempf(u,yv,xv::accu)
+      ) in
+      tempf(ox,oy,[]);;
+  
+  
+  let setminus (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+      let rec tempf=
+      (function (u,v,accu)->
+        if u=[] then (List.rev(accu)) else
+        if v=[] then (List.rev_append(accu)(u)) else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+        match cmpr(xu)(xv) with
+           Assistance_total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+          |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,accu)
+          |Assistance_total_ordering_result_t.Greater->tempf(u,yv,accu)
+     ) in
+     tempf(ox,oy,[]);;
+  
+  let rec sort (cmpr:'a Assistance_total_ordering_t.t) x=
+    if List.length(x)<2
+    then x
+    else let temp1=Assistance_listennou.split_list_in_half(x) in
+         let y1=sort(cmpr)(fst temp1)
+         and y2=sort(cmpr)(snd temp1) in
+         merge cmpr y1 y2;;
+  
+  let is_included_in (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+         let rec tempf=(function (u,v)->
+           if u=[] then true else
+           if v=[] then false else
+           let xu=List.hd(u) and yu=List.tl(u) 
+           and xv=List.hd(v) and yv=List.tl(v) in
+           match cmpr(xu)(xv) with
+             Assistance_total_ordering_result_t.Lower->false
+           |Assistance_total_ordering_result_t.Equal->tempf(yu,yv)
+           |Assistance_total_ordering_result_t.Greater->tempf(u,yv)
+         ) in
+         tempf(ox,oy);;       
+  
+  let helper1_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  
+         comparator =
+         let rec tempf = (fun
+         (treated,to_be_treated) -> match to_be_treated with 
+         [] -> (None,List.rev treated) 
+        |new_item :: others ->
+           if new_item = comparator 
+           then (* ignore and continue *) tempf (treated,others)
+           else       
+           if is_included_in cmpr new_item comparator
+           then (* finish *)  (Some new_item,[])
+           else 
+           if is_included_in cmpr comparator new_item
+           then tempf (treated,others)
+           else tempf (new_item::treated,others)  
+         ) in tempf ;;    
+       
+  let rec helper2_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  =
+          let rec tempf = (fun 
+         (treated,to_be_treated) -> match to_be_treated with 
+          [] -> List.rev treated 
+         |new_item :: others ->
+           let (opt,checked_subset) = 
+             helper1_for_minimal_elements_selection cmpr new_item ([],others) in 
+           if opt<>None 
+           then tempf(treated,others) 
+           else tempf(new_item::treated,checked_subset)) in   
+         tempf ;;
+           
+  let select_minimal_elements_for_inclusion tr ll=
+         helper2_for_minimal_elements_selection tr ([],ll) ;;
+    
+  
+  end;;
+  
+  
+  let diff (cmpr: 'a Assistance_total_ordering_t.t) =
+            let rec tempf=(fun
+              (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
+                match to_be_treated1 with
+                []->(treated_bc,treated_b,List.rev_append treated_c to_be_treated2)
+                |(a1,b1)::others1->
+                (
+                  match to_be_treated2 with
+                []->(treated_bc,List.rev_append treated_b to_be_treated1,treated_c)     
+                |(a2,c2)::others2->
+                  (
+                    match cmpr a1 a2 with
+                    Assistance_total_ordering_result_t.Lower->
+                      tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
+                    |Assistance_total_ordering_result_t.Greater->
+                    tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
+                    |Assistance_total_ordering_result_t.Equal->
+                    tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
+                  )
+                )      
+            ) in
+            tempf;;   
+  
+  let does_not_intersect (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+      let rec tempf=(function (u,v)->
+          if (u=[])||(v=[]) then true else
+          let xu=List.hd(u) and yu=List.tl(u) 
+          and xv=List.hd(v) and yv=List.tl(v) in
+          match cmpr(xu)(xv) with
+            Assistance_total_ordering_result_t.Lower->tempf(yu,v)
+          |Assistance_total_ordering_result_t.Equal->false
+          |Assistance_total_ordering_result_t.Greater->tempf(u,yv)
+      ) in
+      tempf(ox,oy);;
+  
+  exception Empty_intersection_undefined;;    
+  
+  let fold_intersect cmpr=function
+     []->raise(Empty_intersection_undefined)
+    |a::b->List.fold_left(Private.intersect cmpr)(a)(b);;
+  
+  let fold_merge cmpr l=
+     let rec tempf=(function
+        (already_treated,to_be_treated)->match to_be_treated with 
+        []->already_treated
+        |a::b->tempf(Private.merge cmpr a already_treated,b)
+     ) in 
+     tempf([],l);;    
+  
+  let insert cmpr x oy=Private.merge cmpr [x] oy;; 
+  
+  let intersect = Private.intersect;;
+  
+  let intersects cmpr ox oy = not(does_not_intersect cmpr ox oy);;
+  
+  let is_included_in = Private.is_included_in ;;
+  
+  let rec mem (cmpr:'a Assistance_total_ordering_t.t) x ol=
+     let rec tempf=(function
+      []->false
+      |a::others->match cmpr(x)(a) with
+         Assistance_total_ordering_result_t.Lower->false
+         |Assistance_total_ordering_result_t.Equal->true
+         |Assistance_total_ordering_result_t.Greater->tempf others
+     )  in
+     tempf ol;;    
+  
+  let merge = Private.merge;;
+  
+  let outsert cmpr x oy=Private.setminus cmpr oy [x];;
+  
+  let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
+                       then ox 
+                       else Private.sort cmpr ox;;
+  
+  let select_minimal_elements_for_inclusion = Private.select_minimal_elements_for_inclusion;;
+  
+  let setminus = Private.setminus;;
+  
+  let sort = Private.sort;;
+
+  let symmetric_difference cmpr x y =
+    merge cmpr (setminus cmpr x y) (setminus cmpr y x) ;;
+  
+  
+  
+
+end;;
+
+
+
+
+
+
+module Assistance_total_ordering=struct
+
+(*
+
+#use"Ordered_Lists/total_ordering.ml";;
+
+*)
+
+
+module Private = struct
+let leq (computer:'a Assistance_total_ordering_t.t) x y=
+   let v=computer(x)(y) in
+   (v=Assistance_total_ordering_result_t.Lower)||(v=Assistance_total_ordering_result_t.Equal);;
+   
+ let lt (computer:'a Assistance_total_ordering_t.t) x y=(computer(x)(y)=Assistance_total_ordering_result_t.Lower);;   
+ 
+ let geq (computer:'a Assistance_total_ordering_t.t) x y=
+   let v=computer(x)(y) in
+   (v=Assistance_total_ordering_result_t.Lower)||(v=Assistance_total_ordering_result_t.Equal);;
+   
+ let gt (computer:'a Assistance_total_ordering_t.t) x y=(computer(x)(y)=Assistance_total_ordering_result_t.Greater);;   
+ 
+ let from_lt f=
+   let temp1=(fun x y->
+     if f(x)(y)
+     then Assistance_total_ordering_result_t.Lower
+     else if f(y)(x)
+          then Assistance_total_ordering_result_t.Greater
+          else Assistance_total_ordering_result_t.Equal
+   ) in
+   (temp1:'a Assistance_total_ordering_t.t);;
+ 
+ let standard_completion f g=
+  let answer=(fun x y->
+   if f(y)(x)
+   then Assistance_total_ordering_result_t.Greater
+   else if f(x)(y)
+        then Assistance_total_ordering_result_t.Lower
+        else if g(x)(y)
+             then Assistance_total_ordering_result_t.Equal
+             else if x<y
+                  then Assistance_total_ordering_result_t.Lower
+                  else Assistance_total_ordering_result_t.Greater
+  ) in
+  (answer: 'a Assistance_total_ordering_t.t);;
+ 
+ let standard=((fun x y->
+    if x=y
+    then Assistance_total_ordering_result_t.Equal
+    else if x<y
+         then Assistance_total_ordering_result_t.Lower
+         else Assistance_total_ordering_result_t.Greater
+ ): 'a Assistance_total_ordering_t.t);;
+ 
+let standard2=((fun (x1,y1) (x2,y2)->
+    let t1=standard x1 x2 in 
+    if t1<> Assistance_total_ordering_result_t.Equal 
+    then t1
+    else standard y1 y2
+ ): ('a * 'b) Assistance_total_ordering_t.t);;
+
+ let completion f (g:'a Assistance_total_ordering_t.t)=
+  let answer=(fun x y->
+   if f(y)(x)
+   then Assistance_total_ordering_result_t.Greater
+   else if f(x)(y)
+        then Assistance_total_ordering_result_t.Lower
+         else g(x)(y)
+  ) in
+  (answer: 'a Assistance_total_ordering_t.t);;
+ 
+let combine=((fun ~tried_first ~tried_second->
+  (fun x y->
+   let first_trial = tried_first x y in 
+   if first_trial <> Assistance_total_ordering_result_t.Equal 
+   then first_trial
+   else tried_second x y
+  ) ): 
+    tried_first:('a Assistance_total_ordering_t.t) -> tried_second:('a Assistance_total_ordering_t.t) -> ('a Assistance_total_ordering_t.t)
+  );;
+
+ let product (f:'a Assistance_total_ordering_t.t) (g:'b Assistance_total_ordering_t.t)=
+  ((fun (x1,y1) (x2,y2)->
+     let t=f(x1)(x2) in
+     if t<>Assistance_total_ordering_result_t.Equal 
+     then t
+     else g y1 y2
+ ): ('a*'b) Assistance_total_ordering_t.t);;
+ 
+ let triple_product (f:'a Assistance_total_ordering_t.t) (g:'b Assistance_total_ordering_t.t) (h:'c Assistance_total_ordering_t.t)=
+  ((fun (x1,y1,z1) (x2,y2,z2)->
+     let tx=f(x1)(x2) in
+     if tx<>Assistance_total_ordering_result_t.Equal 
+     then tx
+     else let ty=g(y1)(y2) in
+          if ty<>Assistance_total_ordering_result_t.Equal 
+          then ty
+          else h z1 z2
+ ): ('a*'b*'c) Assistance_total_ordering_t.t);;
+ 
+ let rec lex_compare (f:'a Assistance_total_ordering_t.t)=
+  let rec tempf=(
+    fun l1 l2->
+     match l1 with 
+     []->(if l2=[] then Assistance_total_ordering_result_t.Equal else Assistance_total_ordering_result_t.Lower)
+     |a1::b1->
+      (
+        match l2 with 
+        []->Assistance_total_ordering_result_t.Greater
+        |a2::b2->
+          let t=f(a1)(a2) in
+           if t<>Assistance_total_ordering_result_t.Equal then t else
+           tempf b1 b2
+      )) in
+     (tempf:>( ('a list) Assistance_total_ordering_t.t));;
+ 
+
+
+let silex_compare (f:'a Assistance_total_ordering_t.t)=
+  let tempf=(
+    fun l1 l2->
+     let t=standard(List.length l1)(List.length l2) in
+     if t<>Assistance_total_ordering_result_t.Equal then t else
+     lex_compare f l1 l2
+  ) in
+   (tempf:>( ('a list) Assistance_total_ordering_t.t));;
+ 
+
+let from_list (l:'a list)=
+  let tempc=(fun x y->
+  let rec tempf=(function
+   []->(x<y)
+   |u::peurrest->if u=x then List.mem(y)(peurrest)
+                 else if u=y then false
+                 else tempf(peurrest)
+  ) in
+  tempf l) in
+  from_lt tempc;;
+
+let min (f:'a Assistance_total_ordering_t.t)=function
+ []->failwith("Min of the empty set is undefined")
+ |a::b->
+   let rec tempf=(fun
+    (candidate,l)->match l with
+      []->candidate
+      |c::peurrest->if f(c)(candidate)=Assistance_total_ordering_result_t.Lower
+                    then tempf(c,peurrest)
+                    else tempf(candidate,peurrest)
+   ) in
+   tempf(a,b);;
+
+let max (f:'a Assistance_total_ordering_t.t)=function
+ []->failwith("Max of the empty set is undefined")
+ |a::b->
+   let rec tempf=(fun
+    (candidate,l)->match l with
+      []->candidate
+      |c::peurrest->if f(c)(candidate)=Assistance_total_ordering_result_t.Greater
+                    then tempf(c,peurrest)
+                    else tempf(candidate,peurrest)
+   ) in
+   tempf(a,b);;
+   
+let minimize_it_with_care (cf:'a Assistance_total_ordering_t.t) 
+   f=function
+[]->failwith("careful min on empty set undefined")
+|x::y->
+ let rec minimize_it_with_care0=(function
+  (current_candidates,current_value,da_ober)->match da_ober with
+  []->(current_value,List.rev(current_candidates))
+  |a::peurrest->let va=f(a) in
+                let howl=cf(va)(current_value) in
+                if howl=Assistance_total_ordering_result_t.Lower
+				then minimize_it_with_care0([a],va,peurrest)
+				else if howl=Assistance_total_ordering_result_t.Equal
+				     then minimize_it_with_care0(a::current_candidates,current_value,peurrest)
+					 else minimize_it_with_care0(current_candidates,current_value,peurrest)
+ ) 
+in
+ minimize_it_with_care0([x],f(x),y);;
+
+
+let maximize_it_with_care (cf:'a Assistance_total_ordering_t.t) 
+   f=function
+[]->failwith("careful max on empty set undefined")
+|x::y->
+ let rec maximize_it_with_care0=(function
+  (current_candidates,current_value,da_ober)->match da_ober with
+  []->(current_value,List.rev(current_candidates))
+  |a::peurrest->let va=f(a) in
+                let howl=cf(va)(current_value) in
+                if howl=Assistance_total_ordering_result_t.Greater
+				then maximize_it_with_care0([a],va,peurrest)
+				else if howl=Assistance_total_ordering_result_t.Equal
+				     then maximize_it_with_care0(a::current_candidates,current_value,peurrest)
+					 else maximize_it_with_care0(current_candidates,current_value,peurrest)
+ ) 
+in
+ maximize_it_with_care0([x],f(x),y);;
+
+let modify_locally (f:'a Assistance_total_ordering_t.t) l=
+  let big_m=max(f)(l) in
+  let tempf=(fun x y->
+    if List.mem(x)(l)
+    then if List.mem(y)(l)
+         then if x=y
+              then Assistance_total_ordering_result_t.Equal
+              else (from_list l x y)
+         else f big_m y
+    else if List.mem(y)(l)
+         then f x big_m
+         else f x y
+  
+  ) in
+  (tempf:>( 'a Assistance_total_ordering_t.t));;
+
+let list_for_dictionary_order=
+  [97; 65; 98; 66; 99; 67; 100; 68; 101; 69; 102; 70; 103; 71; 104; 72; 105;
+  73; 106; 74; 107; 75; 108; 76; 109; 77; 110; 78; 111; 79; 112; 80; 113; 81;
+  114; 82; 115; 83; 116; 84; 117; 85; 118; 86; 119; 87; 120; 88; 121; 89;
+  122; 90; 91; 92; 93; 94; 95; 96];;  
+
+let reindexer_for_dictionary_order i=
+    if (i<65)||(i>122) 
+    then i 
+    else 64+(Assistance_listennou.find_index i list_for_dictionary_order);;
+
+
+let for_characters=let tempf=(fun x y->
+  standard 
+        (reindexer_for_dictionary_order(int_of_char x))
+        (reindexer_for_dictionary_order(int_of_char y))
+  ) in (tempf:>char Assistance_total_ordering_t.t);;
+
+let for_integers=let tempf=(fun (x:int) (y:int)-> standard x y 
+    ) in (tempf:>int Assistance_total_ordering_t.t);;  
+
+let lex_for_strings=
+    ((fun s1 s2->
+      let m1=String.length s1
+      and m2=String.length s2
+      in
+      let m=Stdlib.min(m1)(m2) in
+      match Assistance_option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_ennig.ennig 0 (m-1)) with
+      None->standard m1 m2
+      |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
+    ) : string Assistance_total_ordering_t.t);;
+
+let silex_for_strings=
+      ((fun s1 s2->
+        let m1=String.length s1
+        and m2=String.length s2
+        in
+        let first_try=standard(m1)(m2) in
+        if first_try<>Assistance_total_ordering_result_t.Equal
+        then first_try
+        else lex_for_strings s1 s2
+      ) : string Assistance_total_ordering_t.t);;    
+
+let lex_for_string_lists=
+  ((fun l1 l2->
+      let (_,left_part,right_part)=Assistance_listennou.factor (l1,l2) in
+      if left_part=[] 
+      then (if right_part=[] 
+           then Assistance_total_ordering_result_t.Equal 
+           else Assistance_total_ordering_result_t.Lower)
+      else if right_part=[] 
+           then Assistance_total_ordering_result_t.Greater 
+           else lex_for_strings (List.hd left_part) (List.hd right_part)  
+  ) : (string list) Assistance_total_ordering_t.t);;
+
+let for_longest_match=  
+    ((fun s1 s2->
+      let m1=String.length s1
+      and m2=String.length s2 in
+      if (
+          if m1>m2 then false else
+          (String.sub s2 0 m1)=s1
+      ) then Assistance_total_ordering_result_t.Greater else
+      if (
+          if m2>m1 then false else
+          (String.sub s1 0 m2)=s2
+      ) then Assistance_total_ordering_result_t.Lower else
+      lex_for_strings s1 s2
+     ): string Assistance_total_ordering_t.t);;
+
+
+let for_longest_match_pairs=  
+((fun (s1,v1) (s2,v2)->
+  let first_try=silex_for_strings(s2)(s1) in
+  if first_try<>Assistance_total_ordering_result_t.Equal 
+  then first_try
+  else standard v1 v2
+ ): (string*'b) Assistance_total_ordering_t.t);;
+ 
+let from_snd (f:'b Assistance_total_ordering_t.t)=((fun (x1,y1) (x2,y2)->
+  let first_try=f y1 y2 in
+  if first_try<>Assistance_total_ordering_result_t.Equal 
+  then first_try
+  else standard x1 x2
+): ('a*'b) Assistance_total_ordering_t.t );;
+
+let cardinality_then_diameter =((fun l1 l2->
+  let first_try=standard (List.length l1) (List.length l2) in
+  if first_try<>Assistance_total_ordering_result_t.Equal 
+  then first_try
+  else 
+  let diam1 = List.hd(List.rev l1) - (List.hd l1)
+  and diam2 = List.hd(List.rev l2) - (List.hd l2) in 
+  let second_try=standard diam1 diam2 in
+  if second_try<>Assistance_total_ordering_result_t.Equal 
+  then second_try
+  else lex_compare for_integers l1 l2
+): (int list) Assistance_total_ordering_t.t );;
+
+end ;;
+
+let cardinality_then_diameter = Private.cardinality_then_diameter ;;
+let for_integers = Private.for_integers ;;
+let lex_compare = Private.lex_compare ;;
+let lex_for_strings = Private.lex_for_strings ;;
+let product = Private.product ;;
+let silex_compare = Private.silex_compare ;;
+let silex_for_strings = Private.silex_for_strings ;;
+let silex_for_intlists = Private.silex_compare for_integers ;;
+let standard = Private.standard ;;
+let standard2 = Private.standard2 ;;
+
+ 
            
 
 end;;
@@ -3446,92 +3330,70 @@ end;;
 
 
 
-module Assistance_dfn_short_t=struct
+module Assistance_dfn_common=struct
 
 (*
 
-#use"Decomposed_filename/dfn_short_t.ml";;
+#use"Decomposed_filename/dfn_common.ml";;
 
 *)
 
-type t = J of Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
+exception No_dot_in_string_to_rootless of string;;
+exception Decompose_absolute_path_using_root_exn of Assistance_absolute_path.t * Assistance_dfa_root_t.t;;
+
+let string_of_sm (s,m)=
+   let (Assistance_dfa_subdirectory_t.SD sub)=s 
+   and (Assistance_dfa_module_t.M mn)=m in 
+   if sub=""
+   then mn
+   else sub^"/"^mn;;
+
+let string_to_sm s=
+   let (sub,mn)= Assistance_cull_string.split_wrt_rightmost s '/' in 
+   (Assistance_dfa_subdirectory_t.SD sub,Assistance_dfa_module_t.M mn);;     
+
+let string_to_rootless line=
+  if not(String.contains line '.')
+  then raise(No_dot_in_string_to_rootless(line)) 
+  else 
+  let (rest,ending) = Assistance_cull_string.split_wrt_rightmost line '.' in 
+  let (s,m) = string_to_sm rest in 
+  Assistance_dfn_rootless_t.J(s,m,Assistance_dfa_ending_t.E ending);;
+
+   
+let decompose_absolute_path_using_root ap root=
+  let s_root=Assistance_dfa_root.without_trailing_slash root  
+  and s_ap = Assistance_absolute_path.to_string ap in 
+  let ns=String.length(s_root)
+  and nw=String.length(s_ap) in
+  if (ns+1)>nw then raise(Decompose_absolute_path_using_root_exn(ap,root)) else
+  if (String.sub s_ap 0 (ns+1))<>(s_root^"/") then raise(Decompose_absolute_path_using_root_exn(ap,root)) else
+  string_to_rootless(String.sub s_ap (ns+1) (nw-ns-1));;
+
+let recompose_potential_absolute_path root 
+      (Assistance_dfn_rootless_t.J(Assistance_dfa_subdirectory_t.SD(s),Assistance_dfa_module_t.M(m),Assistance_dfa_ending_t.E(e))) =
+    let s_subdir = (if s="" then "" else s^"/") in 
+    (Assistance_dfa_root.connectable_to_subpath root)^s_subdir^m^"."^e;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_middle_t=struct
+
+(*
+
+#use"Decomposed_filename/dfn_middle_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t ;;
           
 
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_converter_combinator=struct
-
-(* 
-
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
-
-*)
-
-let of_array of_a arr= Assistance_concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
-let to_array to_a crobj= Array.map to_a (Assistance_concrete_object.unwrap_array crobj);;
-
-let of_list of_a l= Assistance_concrete_object_t.List(Assistance_image.image of_a l);;
-let to_list to_a crobj= Assistance_image.image to_a (Assistance_concrete_object.unwrap_list crobj);;
-   
-   
-let of_pair of_a of_b (a,b)=Assistance_concrete_object_t.Uple[of_a a;of_b b];;
-let to_pair to_a to_b crobj=
-       let (arg1,arg2,_,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
-       (to_a arg1,to_b arg2);;
-   
-let of_triple of_a of_b of_c (a,b,c)=Assistance_concrete_object_t.Uple[of_a a;of_b b;of_c c];;
-let to_triple to_a to_b to_c crobj=
-           let (arg1,arg2,arg3,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
-           (to_a arg1,to_b arg2,to_c arg3);;
-   
-
-let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
-let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
-   
-   
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_module=struct
-
-(*
-
-#use"Decomposed_filename/dfa_module.ml";;
-
-A module name, or a candidate for one. Uncapitalized. Should contain no slashes.
-
-*)
-
-
-let of_line s=Assistance_dfa_module_t.M (String.uncapitalize_ascii s);; 
-let to_line (Assistance_dfa_module_t.M s)=s;;
-
-let add_prefix_and_capitalize prefix (Assistance_dfa_module_t.M name)=
-  Assistance_dfa_module_t.M(String.capitalize_ascii(prefix^name));;
-
-  
-let capitalized_form (Assistance_dfa_module_t.M name)= String.capitalize_ascii name;;
-
-let to_concrete_object (Assistance_dfa_module_t.M(s))=
-    Assistance_concrete_object_t.Variant("Dfa_"^"module_t.M",
-     [Assistance_crobj_converter.string_to_concrete_object(s)]);;
-
-let of_concrete_object ccrt_obj =
-   let (_,(arg1,_,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant ccrt_obj in 
-   Assistance_dfa_module_t.M(Assistance_crobj_converter.string_of_concrete_object arg1);;
 
 
 end;;
@@ -3635,6 +3497,833 @@ let to_subdirectory (Assistance_dfn_rootless_t.J(s,m,e))=s;;
 
 
     
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dircopy_diff_t=struct
+
+(*
+
+#use"dircopy_diff_t.ml";;
+
+*)
+
+type t={
+   recently_deleted : Assistance_dfn_rootless_t.t list;
+   recently_changed : Assistance_dfn_rootless_t.t list;
+   recently_created : Assistance_dfn_rootless_t.t list;
+};;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dircopy_diff=struct
+
+(*
+
+#use"dircopy_diff.ml";;
+
+*)
+
+module Private=struct
+
+let summarize_rootless_path rl=
+   if List.mem (Assistance_dfn_rootless.to_ending rl) Assistance_dfa_ending.endings_for_compilable_files
+   then String.capitalize_ascii(Assistance_cull_string.after_rightmost 
+   (Assistance_cull_string.before_rightmost_possibly_all (Assistance_dfn_rootless.to_line rl) '.') '/')
+   else Assistance_dfn_rootless.to_line rl;;
+ 
+let summarize_rootless_path_list  l=
+    let temp1=Assistance_image.image summarize_rootless_path l in
+    Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp1;;
+
+    
+
+let salt = "Dircopy_"^"diff_t.";;
+
+let recently_deleted_label = salt ^ "recently_deleted";;
+let recently_changed_label = salt ^ "recently_changed";;
+let recently_created_label = salt ^ "recently_created";;
+
+let of_concrete_object ccrt_obj = 
+   let g=Assistance_concrete_object.get_record ccrt_obj in
+   {
+      Assistance_dircopy_diff_t.recently_deleted = Assistance_dfn_rootless.list_of_concrete_object (g recently_deleted_label);
+      recently_changed = Assistance_dfn_rootless.list_of_concrete_object (g recently_changed_label);
+      recently_created = Assistance_dfn_rootless.list_of_concrete_object (g recently_created_label);
+   };; 
+
+let to_concrete_object dirdiff=
+   let items= 
+   [
+    recently_deleted_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_deleted;
+    recently_changed_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_changed;
+    recently_created_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_created;
+   ]  in
+   Assistance_concrete_object_t.Record items;;
+
+let is_empty x=
+  (x.Assistance_dircopy_diff_t.recently_deleted,x.Assistance_dircopy_diff_t.recently_created,x.Assistance_dircopy_diff_t.recently_changed)=
+   ([],[],[]);; 
+
+let to_string x=
+   if is_empty x then "{}" else 
+   let tempf=(fun msg l->
+   "\n"::msg::(Assistance_image.image(fun w->"\t\t"^(Assistance_dfn_rootless.to_line w)) l)
+   ) in
+   let temp1=tempf "Deleted : " (x.Assistance_dircopy_diff_t.recently_deleted)
+   and temp2=tempf "Created : " (x.Assistance_dircopy_diff_t.recently_created)
+   and temp3=tempf "Changed : " (x.Assistance_dircopy_diff_t.recently_changed) in
+   String.concat "\n" (temp1@temp2@temp3) ;;
+
+end;;
+
+
+
+let add_changes diff l= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_changed = (diff.Assistance_dircopy_diff_t.recently_changed)@ l;
+   };; 
+
+let constructor a b c={
+   Assistance_dircopy_diff_t.recently_deleted =a;
+   Assistance_dircopy_diff_t.recently_changed =b;
+   Assistance_dircopy_diff_t.recently_created =c;
+};;
+
+
+let create diff created_ones= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ created_ones;
+   };; 
+
+let destroy diff destroyed_ones= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ destroyed_ones;
+   };; 
+
+
+let empty_one  = 
+   {
+      Assistance_dircopy_diff_t.recently_deleted = [];
+      recently_changed = [];
+      recently_created = [];
+   };; 
+
+
+let explain  x=
+   let tempf=(fun (msg,l)->
+     if l=[]
+     then None
+     else Some(msg^" "^(String.concat "," l)^".")
+   ) in
+   let temp1=Assistance_option.filter_and_unpack tempf
+   (* we use infinitives for github format *)
+   [
+     "Delete",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_deleted);
+     "Create",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_created);
+     "Modify",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_changed);
+   ] in
+   if temp1=[] then "" else
+   let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
+   String.concat " " temp2;; 
+   
+
+
+let is_empty = Private.is_empty ;;
+
+let of_concrete_object = Private.of_concrete_object ;;
+
+let print_out (fmt:Format.formatter) x=
+   Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
+
+
+let recently_deleted x=x.Assistance_dircopy_diff_t.recently_deleted;;
+let recently_created x=x.Assistance_dircopy_diff_t.recently_created;;
+let recently_changed x=x.Assistance_dircopy_diff_t.recently_changed;;
+
+
+
+let replace diff replacements= 
+   let l_deleted = Assistance_image.image fst replacements 
+   and l_created = Assistance_image.image snd replacements  in
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ l_created;
+      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ l_deleted;
+   };; 
+
+
+let to_concrete_object = Private.to_concrete_object ;;   
+   
+   
+   
+              
+
+end;;
+
+
+
+
+
+
+module Assistance_compact_replacer_t=struct
+
+(*
+
+#use"Text_editing/compact_replacer_t.ml";;
+
+*)
+
+type t= CR of (string*string) list ;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_compact_replacer=struct
+
+(*
+
+#use"Text_editing/compact_replacer.ml";;
+
+*)
+
+
+let separator = " \205\140 ";;
+
+let unparse (Assistance_compact_replacer_t.CR(l))=
+   let temp1 = List.flatten (Assistance_image.image (fun (x,y)->[x;y]) l)  in 
+   String.concat separator temp1 ;;
+
+let parse descr =
+   let temp1 = Str.split (Str.regexp_string separator) descr in 
+   let m = (List.length temp1)/2 in
+   let tg =(fun k->List.nth temp1 (k-1)) in  
+   Assistance_compact_replacer_t.CR(Assistance_ennig.doyle (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
+
+let replace_inside_string (Assistance_compact_replacer_t.CR(l)) old_text =
+   Assistance_replace_inside.replace_several_inside_string l old_text ;;
+
+let replace_inside_file (Assistance_compact_replacer_t.CR(l)) fn =
+   Assistance_replace_inside.replace_several_inside_file l fn ;;
+
+let reverse_replace_inside_string (Assistance_compact_replacer_t.CR(old_l)) old_text =
+   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
+   Assistance_replace_inside.replace_several_inside_string l old_text ;;
+
+let reverse_replace_inside_file (Assistance_compact_replacer_t.CR(old_l)) fn =
+   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
+   Assistance_replace_inside.replace_several_inside_file l fn ;;
+
+let execute s=
+   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
+   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
+   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
+   and recipient = (List.nth temp2 1) in 
+   replace_inside_file (parse replacements) recipient ;;
+
+let reverse_execute s=
+   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
+   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
+   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
+   and recipient = (List.nth temp2 1) in 
+   reverse_replace_inside_file (parse replacements) recipient ;;   
+
+(*
+
+let z1 =  Compact_replacer_t.CR(["abc","def";"12","34"]) ;;  
+let z2 = unparse z1;;
+let z3 = parse z2;;
+let check = (z3=z1);;
+
+*)
+
+end;;
+
+
+
+
+
+
+module Assistance_unix_command=struct
+
+(*
+
+Wrapper on the Sys dot command function.
+
+#use"unix_command.ml";;
+
+*)
+
+
+exception Command_failed of string;;
+exception Command_failed_just_now ;;
+
+module Private = struct
+
+let prefix_for_changing_directories         = "cd ";;
+let prefix_for_replacing_patterns           = "rp ";;
+let prefix_for_reverse_replacing_patterns   = "rvp ";;
+
+let accu=ref([]:string list);;
+let remember_commands_mode=ref(false);;
+let hardcore_mode=ref(false);;
+
+let command cmd=
+   let cd_prefix =prefix_for_changing_directories 
+   and rp_prefix =prefix_for_replacing_patterns 
+   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
+   if Assistance_supstring.begins_with cmd cd_prefix 
+   then let  _=Sys.chdir(Assistance_cull_string.cobeginning (String.length cd_prefix) cmd) in 0
+   else 
+   if Assistance_supstring.begins_with cmd rp_prefix 
+   then let  _= Assistance_compact_replacer.execute(Assistance_cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
+   else 
+   if Assistance_supstring.begins_with cmd rvp_prefix 
+   then let  _= Assistance_compact_replacer.reverse_execute(Assistance_cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
+   else 
+   Sys.command cmd;;
+
+
+let mild_uc s=
+   let i=command s in
+   let _=(
+   if i<>0
+   then (print_string ("Failed during "^s^"\n");flush stdout)
+   else (if (!remember_commands_mode) 
+               then accu:=s::(!accu))
+   ) in
+   i;;
+
+let hardcore_uc s=
+   let i=command s in
+   if i<>0
+   then raise(Command_failed(s))
+   else let _=(if (!remember_commands_mode) 
+               then accu:=s::(!accu)) in 
+        i;;
+
+let uc s=
+   if (!hardcore_mode)
+   then hardcore_uc s
+   else mild_uc s;;
+
+let debug_individual_uc (j,s) =
+    let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
+    let _=(print_string msg;flush stdout) in
+    let i = command s in 
+    if i<>0 
+    then raise(Command_failed_just_now)
+    else (print_string "Successful.\n";flush stdout);;
+
+let rec helper_for_debug_multiple_uc (j,l)=
+   match l with 
+   [] -> () 
+   |cmd :: other_cmds ->
+     let _ = debug_individual_uc (j,cmd) in 
+     helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
+
+
+end;;
+
+let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
+
+let rec conditional_multiple_uc commands=match commands with
+  []->true
+  |cmd1::other_commands ->
+    if (Private.uc cmd1)=0
+    then conditional_multiple_uc other_commands 
+    else false;;
+           
+let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           
+
+let hardcore_uc = Private.hardcore_uc ;;
+
+let mv full_path new_location =
+   let destination_equals_source=(
+     if not(Assistance_supstring.begins_with full_path new_location) then false else 
+     let naked_name=Assistance_cull_string.two_sided_cutting (new_location,"") full_path in 
+     not(String.contains naked_name '/') 
+   ) in 
+   if destination_equals_source 
+   then None 
+   else Some("mv "^full_path^" "^new_location);;
+
+let prefix_for_replacing_patterns           = Private.prefix_for_replacing_patterns;;
+let prefix_for_reverse_replacing_patterns   = Private.prefix_for_reverse_replacing_patterns;;
+
+
+let uc = Private.uc;;
+
+
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_transmit_change_to_github=struct
+
+(* 
+
+#use"Githubbing/transmit_change_to_github.ml";;
+
+*)
+
+module Private = struct
+
+let commands_for_backup config diff=
+   if Assistance_dircopy_diff.is_empty diff
+   then ([],[])
+   else 
+   let source_dir = config.Assistance_github_configuration_t.root 
+   and destination_dir = config.Assistance_github_configuration_t.dir_for_backup in 
+   let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
+   let created_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_created diff) in
+   let temp2=Assistance_option.filter_and_unpack
+   (fun fn->
+     if String.contains fn '/'
+     then let dn=Assistance_cull_string.before_rightmost fn '/' in
+          Some("mkdir -p "^s_destination^dn)
+     else None 
+    ) created_ones in
+   let temp3=Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp2 in
+   let s_source=Assistance_dfa_root.connectable_to_subpath source_dir in
+   let temp4=Assistance_image.image(
+      fun fn->
+      "cp "^s_source^fn^" "^s_destination^(Assistance_cull_string.before_rightmost fn '/')
+   ) created_ones in
+   let changed_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_changed diff) in
+   let temp5=Assistance_image.image(
+      fun fn->
+      "cp "^s_source^fn^" "^s_destination^fn
+   ) changed_ones in
+   let temp6=Assistance_image.image(
+      fun fn->
+      "git -C "^s_destination^" add "^fn
+   ) (created_ones@changed_ones) in
+   let temp7=Assistance_image.image(
+      fun rl->
+      let fn = Assistance_dfn_rootless.to_line rl in 
+      "git -C "^s_destination^" rm "^fn
+   ) (Assistance_dircopy_diff.recently_deleted diff) in
+   let temp8= Assistance_image.image (
+     fun (replacer,replacee) ->
+       let s_replacer = Assistance_dfn_rootless.to_line  replacer 
+       and s_backup_dir = Assistance_dfa_root.connectable_to_subpath destination_dir in 
+       let s_full_path = s_backup_dir^(Assistance_dfn_rootless.to_line replacee) in 
+       Assistance_unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
+   ) config.Assistance_github_configuration_t.encoding_protected_files in 
+   (temp3@temp4@temp5@temp8,temp6@temp7);;
+
+let backup_with_message config  diff msg=
+  let destination_dir = config.Assistance_github_configuration_t.dir_for_backup in 
+  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
+  let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
+  let _=Assistance_image.image Assistance_unix_command.uc nongit_cmds in
+  let _=(
+  if config.Assistance_github_configuration_t.gitpush_after_backup
+  then let cwd=Sys.getcwd() in
+       Assistance_image.image Assistance_unix_command.uc
+       (
+       [Assistance_unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git -C "^s_destination^" commit -m \""^msg^"\"";
+         "git -C "^s_destination^" push"
+       ]@
+       [Assistance_unix_command.cd cwd]
+       ) 
+  else let cwd=Sys.getcwd() in
+       Assistance_image.image Assistance_unix_command.uc
+       (
+       [Assistance_unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git -C "^s_destination^" commit -m \""^msg^"\""
+       ]@
+       [Assistance_unix_command.cd cwd]
+       ) 
+  ) in
+  ();;
+
+let backup config diff opt_msg=
+  if Assistance_dircopy_diff.is_empty diff
+  then (print_string "No recent changes to commit ...";flush stdout) 
+  else 
+  let msg=(
+   match opt_msg with
+    None->Assistance_dircopy_diff.explain diff
+   |Some(msg0)->msg0) in
+  backup_with_message config diff msg;;
+  
+end ;; 
+
+let backup config diff opt_msg=
+  Private.backup config diff opt_msg;;
+
+  
+  
+
+end;;
+
+
+
+
+
+
+module Assistance_cartesian=struct
+
+(*
+
+#use"cartesian.ml";;
+
+*) 
+
+let product a b=
+if (a=[])||(b=[]) then [] else
+let rec sub_f=(function
+(accu,variable_a,constant_b)->match variable_a with
+[]->List.rev(accu)
+|u::v->sub_f(List.rev_append(List.rev(List.rev_map(function t->(u,t))(constant_b)))
+(accu),v,constant_b)
+) in
+sub_f([],a,b);;
+
+let square x=product x x;;
+
+let tproduct a b c=List.rev_map(function ((x,y),z)->(x,y,z))
+(List.rev(product(product(a)(b))(c)));;
+
+let pproduct a b c d=List.rev_map(function ((x,y,z),t)->(x,y,z,t))
+(List.rev(product(tproduct a b c)(d)));;
+
+let qproduct a b c d e=List.rev_map(function ((x,y,z,t),u)->(x,y,z,t,u))
+(List.rev(product(pproduct a b c d)(e)));;
+
+let cube x=tproduct x x x;;
+
+let fourth_power x=pproduct x x x x;;
+
+let fifth_power x=qproduct x x x x x;;
+
+let general_product x=
+let rec sub_f=(function
+([],accu)->accu
+|(a::b,accu)->sub_f(b,List.rev_map(function (x,l)->x::l)(List.rev(product(a)(accu)))))
+in
+sub_f(List.rev(x),[[]]);;
+
+let power x n=general_product (Assistance_ennig.doyle (fun j->x) 1 n);;
+             
+
+end;;
+
+
+
+
+
+
+module Assistance_memoized=struct
+
+(*
+
+#use"memoized.ml";;
+
+*) 
+type ('a,'b) map=('a->'b);;
+
+let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let y=f(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  (memoized_f:>('a,'b) map);;
+
+let make (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  make_from f a_hashtbl_for_f;;
+  
+let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
+  let rec memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let mf=(memoized_f:>('a->'b)) in
+          let y=big_f(mf)(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
+
+let recursive (big_f:('a->'b)->'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  recursive_from big_f a_hashtbl_for_f;;
+
+let small f initial_value=
+  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
+  
+let reversible (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) 
+  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
+  and irreducibles=ref([]) 
+  and minimal_reductions=ref([]) in
+  let compute_f=(fun x accu->
+     let y=f(x) in
+     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
+      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
+     else     
+     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
+          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
+          minimal_reductions:=(x,old_x)::(!minimal_reductions))
+     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
+            irreducibles:=x::(!irreducibles))
+     
+  ) in
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let accu=ref([]) in
+          let _=compute_f(x)(accu) in
+          List.hd(!accu)
+  ) 
+  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
+  let memoized_projector=(fun x->
+    let ()=compute_f(x)(ref[]) in
+    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
+    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
+    else x
+    ) in
+  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_ordered_misc=struct
+
+(* 
+
+#use"Ordered_Lists/ordered_misc.ml";;
+
+*)
+
+module Private = struct 
+
+  let oi = Assistance_total_ordering.for_integers ;;
+
+  let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+       if List.exists (fun b->
+         (b<>a) && ( Assistance_ordered.is_included_in oi b a) ) others
+       then helper_for_minimal_elts_wrt_inclusion (already_treated,others)
+       else 
+        let temp1 = List.filter (fun b->
+           not(Assistance_ordered.is_included_in oi a b)) others in
+        helper_for_minimal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
+
+  let rec helper_for_minimal_transversals (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+      let temp1 = Assistance_cartesian.product a already_treated in 
+      let temp2 = Assistance_image.image (fun (x,y)->Assistance_ordered.insert oi x y) temp1 in 
+      let temp3 = helper_for_minimal_elts_wrt_inclusion ([],temp2) in 
+      helper_for_minimal_transversals (temp3,others) ;;        
+
+  let power_set_for_intset x =
+     Assistance_ordered.sort (Assistance_total_ordering.silex_compare oi) (Assistance_listennou.power_set x) ;; 
+
+  let rec helper_for_int_upwards_filter (f,treated,to_be_treated) = 
+     match to_be_treated with 
+     [] -> List.rev treated 
+     | a::others ->
+         if f a 
+         then let remaining_ones = List.filter (
+                fun b->not(Assistance_ordered.is_included_in oi a b)
+              ) to_be_treated in 
+              helper_for_int_upwards_filter (f,a::treated,remaining_ones)
+         else helper_for_int_upwards_filter (f,treated,others) ;;    
+
+  let naive_minimal_elts_in_int_upwards_filter f base =
+    let pb = power_set_for_intset base in 
+    helper_for_int_upwards_filter (f,[],pb) ;;     
+
+  let minimal_elts_in_int_upwards_filter f base =
+     let indispensable_ones = List.filter (
+       fun x->(not(f(Assistance_ordered.outsert oi x base)))
+     ) base in 
+     let dispensable_ones = Assistance_ordered.setminus oi base indispensable_ones in 
+     let pullbacked_f = (fun y->f(Assistance_ordered.merge oi indispensable_ones y)) in 
+     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f dispensable_ones in 
+     Assistance_image.image (Assistance_ordered.merge oi indispensable_ones) temp1 ;;
+
+  (*   
+  let base0 = Ennig.ennig 1 5 ;;
+  let f0 y= List.exists (fun x->Ordered.is_included_in oi x y) [[1;2;3];[3;4;5]] ;;
+  let res0 = minimal_elts_in_int_upwards_filter f0 base0 ;;
+  *)
+
+  let minimal_elts_in_upwards_filter f base =
+     let get_one = (fun k->List.nth base (k-1)) in 
+     let get_several = Assistance_image.image get_one in 
+     let n = List.length base 
+     and normalized_f = (fun indices ->f(get_several indices)) in 
+     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_ennig.ennig 1 n) in 
+     Assistance_image.image get_several temp1 ;;
+
+
+end ;;        
+
+let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
+
+let minimal_elts_wrt_inclusion l= 
+  Private.helper_for_minimal_elts_wrt_inclusion ([],l) ;;
+
+  
+let minimal_transversals l= 
+  match l with 
+  [] -> []
+  | a:: others ->
+    let starter = Assistance_image.image (fun x->[x]) a in    
+  Private.helper_for_minimal_transversals (starter,others) ;;  
+  
+
+let reorder_list_of_pairs_using_list_of_singles pairs singles =
+  let idx=Assistance_memoized.make(fun x->
+     Assistance_listennou.find_index x singles   
+  ) in 
+  let ordr = (fun x1 x2 -> Assistance_total_ordering.for_integers (idx x1) (idx x2)) in 
+  let ordr2 = Assistance_total_ordering.product ordr Assistance_total_ordering.standard in 
+  Assistance_ordered.sort ordr2 pairs ;;
+
+(*
+
+reorder_list_of_pairs_using_list_of_singles (Ennig.doyle( fun t->(t,t+100)) 1 8)
+[2;5;3;6;4;7;1;8] ;;
+*)
+
+
+let translate_at_level_two ll translation=
+  Assistance_image.image (
+    fun l->Assistance_ordered.merge Assistance_total_ordering.for_integers l translation
+  ) ll ;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_ocaml_ending_t=struct
+
+(*
+
+#use"Decomposed_filename/dfa_ocaml_ending_t.ml";;
+
+*)
+
+type t=Ml |Mli |Mll |Mly;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_full_t=struct
+
+(*
+
+#use"Decomposed_filename/dfn_full_t.ml";;
+
+*)
+
+
+type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_endingless_t=struct
+
+(*
+
+#use"Decomposed_filename/dfn_endingless_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t  ;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_short_t=struct
+
+(*
+
+#use"Decomposed_filename/dfn_short_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
+          
+
 
 
 end;;
@@ -4379,58 +5068,6 @@ end;;
 
 
 
-module Assistance_cartesian=struct
-
-(*
-
-#use"cartesian.ml";;
-
-*) 
-
-let product a b=
-if (a=[])||(b=[]) then [] else
-let rec sub_f=(function
-(accu,variable_a,constant_b)->match variable_a with
-[]->List.rev(accu)
-|u::v->sub_f(List.rev_append(List.rev(List.rev_map(function t->(u,t))(constant_b)))
-(accu),v,constant_b)
-) in
-sub_f([],a,b);;
-
-let square x=product x x;;
-
-let tproduct a b c=List.rev_map(function ((x,y),z)->(x,y,z))
-(List.rev(product(product(a)(b))(c)));;
-
-let pproduct a b c d=List.rev_map(function ((x,y,z),t)->(x,y,z,t))
-(List.rev(product(tproduct a b c)(d)));;
-
-let qproduct a b c d e=List.rev_map(function ((x,y,z,t),u)->(x,y,z,t,u))
-(List.rev(product(pproduct a b c d)(e)));;
-
-let cube x=tproduct x x x;;
-
-let fourth_power x=pproduct x x x x;;
-
-let fifth_power x=qproduct x x x x x;;
-
-let general_product x=
-let rec sub_f=(function
-([],accu)->accu
-|(a::b,accu)->sub_f(b,List.rev_map(function (x,l)->x::l)(List.rev(product(a)(accu)))))
-in
-sub_f(List.rev(x),[[]]);;
-
-let power x n=general_product (Assistance_ennig.doyle (fun j->x) 1 n);;
-             
-
-end;;
-
-
-
-
-
-
 module Assistance_functor_for_sets=struct
 
 (*
@@ -4969,210 +5606,6 @@ let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill
 let is_a_directory=Private.is_a_directory;;   
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
 let simple_ls=Private.ls;;
-
-end;;
-
-
-
-
-
-
-module Assistance_compact_replacer_t=struct
-
-(*
-
-#use"Text_editing/compact_replacer_t.ml";;
-
-*)
-
-type t= CR of (string*string) list ;;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_compact_replacer=struct
-
-(*
-
-#use"Text_editing/compact_replacer.ml";;
-
-*)
-
-
-let separator = " \205\140 ";;
-
-let unparse (Assistance_compact_replacer_t.CR(l))=
-   let temp1 = List.flatten (Assistance_image.image (fun (x,y)->[x;y]) l)  in 
-   String.concat separator temp1 ;;
-
-let parse descr =
-   let temp1 = Str.split (Str.regexp_string separator) descr in 
-   let m = (List.length temp1)/2 in
-   let tg =(fun k->List.nth temp1 (k-1)) in  
-   Assistance_compact_replacer_t.CR(Assistance_ennig.doyle (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
-
-let replace_inside_string (Assistance_compact_replacer_t.CR(l)) old_text =
-   Assistance_replace_inside.replace_several_inside_string l old_text ;;
-
-let replace_inside_file (Assistance_compact_replacer_t.CR(l)) fn =
-   Assistance_replace_inside.replace_several_inside_file l fn ;;
-
-let reverse_replace_inside_string (Assistance_compact_replacer_t.CR(old_l)) old_text =
-   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
-   Assistance_replace_inside.replace_several_inside_string l old_text ;;
-
-let reverse_replace_inside_file (Assistance_compact_replacer_t.CR(old_l)) fn =
-   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
-   Assistance_replace_inside.replace_several_inside_file l fn ;;
-
-let execute s=
-   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
-   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
-   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
-   and recipient = (List.nth temp2 1) in 
-   replace_inside_file (parse replacements) recipient ;;
-
-let reverse_execute s=
-   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
-   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
-   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
-   and recipient = (List.nth temp2 1) in 
-   reverse_replace_inside_file (parse replacements) recipient ;;   
-
-(*
-
-let z1 =  Compact_replacer_t.CR(["abc","def";"12","34"]) ;;  
-let z2 = unparse z1;;
-let z3 = parse z2;;
-let check = (z3=z1);;
-
-*)
-
-end;;
-
-
-
-
-
-
-module Assistance_unix_command=struct
-
-(*
-
-Wrapper on the Sys dot command function.
-
-#use"unix_command.ml";;
-
-*)
-
-
-exception Command_failed of string;;
-exception Command_failed_just_now ;;
-
-module Private = struct
-
-let prefix_for_changing_directories         = "cd ";;
-let prefix_for_replacing_patterns           = "rp ";;
-let prefix_for_reverse_replacing_patterns   = "rvp ";;
-
-let accu=ref([]:string list);;
-let remember_commands_mode=ref(false);;
-let hardcore_mode=ref(false);;
-
-let command cmd=
-   let cd_prefix =prefix_for_changing_directories 
-   and rp_prefix =prefix_for_replacing_patterns 
-   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
-   if Assistance_supstring.begins_with cmd cd_prefix 
-   then let  _=Sys.chdir(Assistance_cull_string.cobeginning (String.length cd_prefix) cmd) in 0
-   else 
-   if Assistance_supstring.begins_with cmd rp_prefix 
-   then let  _= Assistance_compact_replacer.execute(Assistance_cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
-   else 
-   if Assistance_supstring.begins_with cmd rvp_prefix 
-   then let  _= Assistance_compact_replacer.reverse_execute(Assistance_cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
-   else 
-   Sys.command cmd;;
-
-
-let mild_uc s=
-   let i=command s in
-   let _=(
-   if i<>0
-   then (print_string ("Failed during "^s^"\n");flush stdout)
-   else (if (!remember_commands_mode) 
-               then accu:=s::(!accu))
-   ) in
-   i;;
-
-let hardcore_uc s=
-   let i=command s in
-   if i<>0
-   then raise(Command_failed(s))
-   else let _=(if (!remember_commands_mode) 
-               then accu:=s::(!accu)) in 
-        i;;
-
-let uc s=
-   if (!hardcore_mode)
-   then hardcore_uc s
-   else mild_uc s;;
-
-let debug_individual_uc (j,s) =
-    let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
-    let _=(print_string msg;flush stdout) in
-    let i = command s in 
-    if i<>0 
-    then raise(Command_failed_just_now)
-    else (print_string "Successful.\n";flush stdout);;
-
-let rec helper_for_debug_multiple_uc (j,l)=
-   match l with 
-   [] -> () 
-   |cmd :: other_cmds ->
-     let _ = debug_individual_uc (j,cmd) in 
-     helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
-
-
-end;;
-
-let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
-
-let rec conditional_multiple_uc commands=match commands with
-  []->true
-  |cmd1::other_commands ->
-    if (Private.uc cmd1)=0
-    then conditional_multiple_uc other_commands 
-    else false;;
-           
-let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           
-
-let hardcore_uc = Private.hardcore_uc ;;
-
-let mv full_path new_location =
-   let destination_equals_source=(
-     if not(Assistance_supstring.begins_with full_path new_location) then false else 
-     let naked_name=Assistance_cull_string.two_sided_cutting (new_location,"") full_path in 
-     not(String.contains naked_name '/') 
-   ) in 
-   if destination_equals_source 
-   then None 
-   else Some("mv "^full_path^" "^new_location);;
-
-let prefix_for_replacing_patterns           = Private.prefix_for_replacing_patterns;;
-let prefix_for_reverse_replacing_patterns   = Private.prefix_for_reverse_replacing_patterns;;
-
-
-let uc = Private.uc;;
-
-
-
-           
 
 end;;
 
@@ -7846,276 +8279,6 @@ end;;
 
 
 
-module Assistance_fw_instance_index_t=struct
-
-(*
-
-#use"Filewatching/fw_instance_index_t.ml";;
-
-*)
-
-type t = I of int ;;
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_state_index_t=struct
-
-(*
-
-#use"Filewatching/fw_state_index_t.ml";;
-
-*)
-
-type t = I of int ;;
-
-end;;
-
-
-
-
-
-
-module Assistance_ocaml_library_t=struct
-
-(* 
-
-#use"Compilation_management/ocaml_library_t.ml";;
-
-*)
-
-
-type t=NumLib |StrLib |UnixLib;;
-
- 
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_file_small_details_t=struct
-
-(*
-
-#use"Filewatching/fw_file_small_details_t.ml";;
-
-
-*)
-
-type t ={
-  used_modules : Assistance_dfa_module_t.t list ;
-  used_libraries : Assistance_ocaml_library_t.t list ;
-  has_printer : bool ;
-  modification_time : string ;
-};;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dircopy_diff_t=struct
-
-(*
-
-#use"dircopy_diff_t.ml";;
-
-*)
-
-type t={
-   recently_deleted : Assistance_dfn_rootless_t.t list;
-   recently_changed : Assistance_dfn_rootless_t.t list;
-   recently_created : Assistance_dfn_rootless_t.t list;
-};;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_configuration_t=struct
-
-(*
-
-#use"Filewatching/fw_configuration_t.ml";;
-
-
-In the encoding_protected_files field, the list elements are pair of files ;
-the first elt of the pair contains the encoding, and the second elt is the
-encoded file. This allows you to vary the encoding depending on the file.
-
-*)
-
-type t ={
-  root : Assistance_dfa_root_t.t ;
-  dir_for_backup : Assistance_dfa_root_t.t;
-  gitpush_after_backup : bool;
-  ignored_subdirectories : Assistance_dfa_subdirectory_t.t list;
-  ignored_files : Assistance_dfn_rootless_t.t list;
-  github_url : string;
-  encoding_protected_files : ( Assistance_dfn_rootless_t.t * Assistance_dfn_rootless_t.t) list;
-};;
-
-end;;
-
-
-
-
-
-
-module Assistance_file_watcher_t=struct
-
-(*
-
-#use"Filewatching/file_watcher_t.ml";;
-
-Acts on the physical Unix world around, within the limits
-defined in  the configuration parameter
-
-*)
-
-type t ={
-  configuration         : Assistance_fw_configuration_t.t ;
-  watched_files         : (Assistance_dfn_rootless_t.t * string ) list;
-  last_noticed_changes  : Assistance_dircopy_diff_t.t ;
-};;
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_with_archives_t=struct
-
-(*
-
-#use"Filewatching/fw_with_archives_t.ml";;
-
-*)
-
-type t ={
-  parent : Assistance_file_watcher_t.t ;
-  subdirs_for_archived_mlx_files : Assistance_dfa_subdirectory_t.t list ; 
-};;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_with_small_details_t=struct
-
-(*
-
-#use"Filewatching/fw_with_small_details_t.ml";;
-
-Stores the small details for archived or usual files (not the noncompilables).
-
-*)
-
-type t ={
-  parent : Assistance_fw_with_archives_t.t ;
-  small_details_in_files : (Assistance_dfn_rootless_t.t * Assistance_fw_file_small_details_t.t) list;
-};;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_with_dependencies_t=struct
-
-(*
-
-#use"Filewatching/fw_with_dependencies_t.ml";;
-
-Thin wrapper on Fw_with_module_linking_t.t, only adds
-the dependencies layer with its associated caching.
-
-*)
-
-type t ={
-  parent : Assistance_fw_with_small_details_t.t ;
-  index_for_caching : Assistance_fw_instance_index_t.t * Assistance_fw_state_index_t.t ; 
-};;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_with_batch_compilation_t=struct
-
-(* 
-
-#use"Compilation_management/fw_with_batch_compilation_t.ml";;
-
-*)
-
-
-type t={
-     parent : Assistance_fw_with_dependencies_t.t;
-     last_compilation_result_for_module : (Assistance_dfa_module_t.t * bool) list;
-};;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_coma_state_t=struct
-
-(* 
-
-#use"Compilation_management/coma_state_t.ml";;
-
-*)
-
-
-type t={
-     parent : Assistance_fw_with_batch_compilation_t.t;
-     dir_for_backup : Assistance_dfa_root_t.t;
-     gitpush_after_backup : bool;
-     github_url : string;
-};;
-
-
-end;;
-
-
-
-
-
-
 module Assistance_compilation_mode_t=struct
 
 (* 
@@ -8221,6 +8384,72 @@ let find_file_location dir l_subdir old_x=
   if opt=None
   then raise(No_suitable_location(dir ,l_subdir,x))
   else  Assistance_option.unpack(opt);;           
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_configuration_t=struct
+
+(*
+
+#use"Filewatching/fw_configuration_t.ml";;
+
+*)
+
+type t ={
+  root : Assistance_dfa_root_t.t ;
+  ignored_subdirectories : Assistance_dfa_subdirectory_t.t list;
+  ignored_files : Assistance_dfn_rootless_t.t list;
+};;
+
+end;;
+
+
+
+
+
+
+module Assistance_ocaml_library_t=struct
+
+(* 
+
+#use"Compilation_management/ocaml_library_t.ml";;
+
+*)
+
+
+type t=NumLib |StrLib |UnixLib;;
+
+ 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_file_small_details_t=struct
+
+(*
+
+#use"Filewatching/fw_file_small_details_t.ml";;
+
+
+*)
+
+type t ={
+  used_modules : Assistance_dfa_module_t.t list ;
+  used_libraries : Assistance_ocaml_library_t.t list ;
+  has_printer : bool ;
+  modification_time : string ;
+};;
+
 
 end;;
 
@@ -9648,151 +9877,21 @@ end;;
 
 
 
-module Assistance_dircopy_diff=struct
+module Assistance_file_watcher_t=struct
 
 (*
 
-#use"dircopy_diff.ml";;
+#use"Filewatching/file_watcher_t.ml";;
+
+Acts on the physical Unix world around, within the limits
+defined in  the configuration parameter
 
 *)
 
-module Private=struct
-
-let summarize_rootless_path rl=
-   if List.mem (Assistance_dfn_rootless.to_ending rl) Assistance_dfa_ending.endings_for_compilable_files
-   then String.capitalize_ascii(Assistance_cull_string.after_rightmost 
-   (Assistance_cull_string.before_rightmost_possibly_all (Assistance_dfn_rootless.to_line rl) '.') '/')
-   else Assistance_dfn_rootless.to_line rl;;
- 
-let summarize_rootless_path_list  l=
-    let temp1=Assistance_image.image summarize_rootless_path l in
-    Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp1;;
-
-    
-
-let salt = "Dircopy_"^"diff_t.";;
-
-let recently_deleted_label = salt ^ "recently_deleted";;
-let recently_changed_label = salt ^ "recently_changed";;
-let recently_created_label = salt ^ "recently_created";;
-
-let of_concrete_object ccrt_obj = 
-   let g=Assistance_concrete_object.get_record ccrt_obj in
-   {
-      Assistance_dircopy_diff_t.recently_deleted = Assistance_dfn_rootless.list_of_concrete_object (g recently_deleted_label);
-      recently_changed = Assistance_dfn_rootless.list_of_concrete_object (g recently_changed_label);
-      recently_created = Assistance_dfn_rootless.list_of_concrete_object (g recently_created_label);
-   };; 
-
-let to_concrete_object dirdiff=
-   let items= 
-   [
-    recently_deleted_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_deleted;
-    recently_changed_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_changed;
-    recently_created_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_created;
-   ]  in
-   Assistance_concrete_object_t.Record items;;
-
-let is_empty x=
-  (x.Assistance_dircopy_diff_t.recently_deleted,x.Assistance_dircopy_diff_t.recently_created,x.Assistance_dircopy_diff_t.recently_changed)=
-   ([],[],[]);; 
-
-let to_string x=
-   if is_empty x then "{}" else 
-   let tempf=(fun msg l->
-   "\n"::msg::(Assistance_image.image(fun w->"\t\t"^(Assistance_dfn_rootless.to_line w)) l)
-   ) in
-   let temp1=tempf "Deleted : " (x.Assistance_dircopy_diff_t.recently_deleted)
-   and temp2=tempf "Created : " (x.Assistance_dircopy_diff_t.recently_created)
-   and temp3=tempf "Changed : " (x.Assistance_dircopy_diff_t.recently_changed) in
-   String.concat "\n" (temp1@temp2@temp3) ;;
-
-end;;
-
-
-
-let add_changes diff l= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_changed = (diff.Assistance_dircopy_diff_t.recently_changed)@ l;
-   };; 
-
-let constructor a b c={
-   Assistance_dircopy_diff_t.recently_deleted =a;
-   Assistance_dircopy_diff_t.recently_changed =b;
-   Assistance_dircopy_diff_t.recently_created =c;
+type t ={
+  configuration         : Assistance_fw_configuration_t.t ;
+  watched_files         : (Assistance_dfn_rootless_t.t * string ) list;
 };;
-
-
-let create diff created_ones= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ created_ones;
-   };; 
-
-let destroy diff destroyed_ones= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ destroyed_ones;
-   };; 
-
-
-let empty_one  = 
-   {
-      Assistance_dircopy_diff_t.recently_deleted = [];
-      recently_changed = [];
-      recently_created = [];
-   };; 
-
-
-let explain  x=
-   let tempf=(fun (msg,l)->
-     if l=[]
-     then None
-     else Some(msg^" "^(String.concat "," l)^".")
-   ) in
-   let temp1=Assistance_option.filter_and_unpack tempf
-   (* we use infinitives for github format *)
-   [
-     "Delete",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_deleted);
-     "Create",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_created);
-     "Modify",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_changed);
-   ] in
-   if temp1=[] then "" else
-   let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
-   String.concat " " temp2;; 
-   
-
-
-let is_empty = Private.is_empty ;;
-
-let of_concrete_object = Private.of_concrete_object ;;
-
-let print_out (fmt:Format.formatter) x=
-   Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
-
-
-let recently_deleted x=x.Assistance_dircopy_diff_t.recently_deleted;;
-let recently_created x=x.Assistance_dircopy_diff_t.recently_created;;
-let recently_changed x=x.Assistance_dircopy_diff_t.recently_changed;;
-
-
-
-let replace diff replacements= 
-   let l_deleted = Assistance_image.image fst replacements 
-   and l_created = Assistance_image.image snd replacements  in
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ l_created;
-      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ l_deleted;
-   };; 
-
-
-let to_concrete_object = Private.to_concrete_object ;;   
-   
-   
-   
-              
 
 end;;
 
@@ -9814,35 +9913,23 @@ module Private = struct
 let salt = "Fw_"^"configuration_t.";;
 
 let root_label                           = salt ^ "root";;
-let dir_for_backup_label                 = salt ^ "dir_for_backup";;
-let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
 let ignored_subdirectories_label         = salt ^ "ignored_subdirectories";;
 let ignored_files_label                  = salt ^ "ignored_files";;
-let github_url_label                     = salt ^ "github_url";;
-let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
 
 let of_concrete_object ccrt_obj = 
    let g=Assistance_concrete_object.get_record ccrt_obj in
    {
       Assistance_fw_configuration_t.root = Assistance_dfa_root.of_concrete_object(g root_label);
-      dir_for_backup = Assistance_dfa_root.of_concrete_object(g dir_for_backup_label);
-      gitpush_after_backup = Assistance_crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
       ignored_subdirectories = Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object(g ignored_subdirectories_label);
       ignored_files = Assistance_crobj_converter_combinator.to_list Assistance_dfn_rootless.of_concrete_object (g ignored_files_label);
-      github_url = Assistance_crobj_converter.string_of_concrete_object (g github_url_label);
-      encoding_protected_files = Assistance_dfn_rootless.pair_list_of_concrete_object (g encoding_protected_files_label);
    };; 
 
 let to_concrete_object config=
    let items= 
    [
     root_label, Assistance_dfa_root.to_concrete_object config.Assistance_fw_configuration_t.root;
-    dir_for_backup_label, Assistance_dfa_root.to_concrete_object config.Assistance_fw_configuration_t.dir_for_backup;
-    gitpush_after_backup_label, Assistance_crobj_converter.bool_to_concrete_object  config.Assistance_fw_configuration_t.gitpush_after_backup;
     ignored_subdirectories_label, Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object config.Assistance_fw_configuration_t.ignored_subdirectories;
     ignored_files_label, Assistance_crobj_converter_combinator.of_list Assistance_dfn_rootless.to_concrete_object config.Assistance_fw_configuration_t.ignored_files;
-    github_url_label, Assistance_crobj_converter.string_to_concrete_object config.Assistance_fw_configuration_t.github_url;
-    encoding_protected_files_label, Assistance_dfn_rootless.pair_list_to_concrete_object config.Assistance_fw_configuration_t.encoding_protected_files;
    ]  in
    Assistance_concrete_object_t.Record items;;
 
@@ -9852,15 +9939,11 @@ let root config = config.Assistance_fw_configuration_t.root;;
 let of_concrete_object = Private.of_concrete_object;;
 let to_concrete_object = Private.to_concrete_object;;
 
-let constructor (root_dir,backup_dir,g_after_b,git_url,secret_files) = 
+let of_root root_dir = 
     {
       Assistance_fw_configuration_t.root = root_dir;
-      dir_for_backup = backup_dir ;
-      gitpush_after_backup = g_after_b ;
       ignored_subdirectories = Assistance_coma_constant.git_ignored_subdirectories;
       ignored_files = [];
-      github_url = git_url;
-      encoding_protected_files = secret_files;
     };; 
 
 
@@ -9889,116 +9972,6 @@ end;;
 
 
 
-module Assistance_reflect_change_in_github=struct
-
-(* 
-
-#use"reflect_change_in_github.ml";;
-
-*)
-
-module Private = struct
-
-let commands_for_backup config diff=
-   if Assistance_dircopy_diff.is_empty diff
-   then ([],[])
-   else 
-   let source_dir = config.Assistance_fw_configuration_t.root 
-  and destination_dir = config.Assistance_fw_configuration_t.dir_for_backup in 
-   let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
-   let created_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_created diff) in
-   let temp2=Assistance_option.filter_and_unpack
-   (fun fn->
-     if String.contains fn '/'
-     then let dn=Assistance_cull_string.before_rightmost fn '/' in
-          Some("mkdir -p "^s_destination^dn)
-     else None 
-    ) created_ones in
-   let temp3=Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp2 in
-   let s_source=Assistance_dfa_root.connectable_to_subpath source_dir in
-   let temp4=Assistance_image.image(
-      fun fn->
-      "cp "^s_source^fn^" "^s_destination^(Assistance_cull_string.before_rightmost fn '/')
-   ) created_ones in
-   let changed_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_changed diff) in
-   let temp5=Assistance_image.image(
-      fun fn->
-      "cp "^s_source^fn^" "^s_destination^fn
-   ) changed_ones in
-   let temp6=Assistance_image.image(
-      fun fn->
-      "git -C "^s_destination^" add "^fn
-   ) (created_ones@changed_ones) in
-   let temp7=Assistance_image.image(
-      fun rl->
-      let fn = Assistance_dfn_rootless.to_line rl in 
-      "git -C "^s_destination^" rm "^fn
-   ) (Assistance_dircopy_diff.recently_deleted diff) in
-   let temp8= Assistance_image.image (
-     fun (replacer,replacee) ->
-       let s_replacer = Assistance_dfn_rootless.to_line  replacer 
-       and s_backup_dir = Assistance_dfa_root.connectable_to_subpath destination_dir in 
-       let s_full_path = s_backup_dir^(Assistance_dfn_rootless.to_line replacee) in 
-       Assistance_unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
-   ) config.Assistance_fw_configuration_t.encoding_protected_files in 
-   (temp3@temp4@temp5@temp8,temp6@temp7);;
-
-let backup_with_message config  diff msg=
-  let destination_dir = config.Assistance_fw_configuration_t.dir_for_backup in 
-  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
-  let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
-  let _=Assistance_image.image Assistance_unix_command.uc nongit_cmds in
-  let _=(
-  if config.Assistance_fw_configuration_t.gitpush_after_backup
-  then let cwd=Sys.getcwd() in
-       Assistance_image.image Assistance_unix_command.uc
-       (
-       [Assistance_unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git -C "^s_destination^" commit -m \""^msg^"\"";
-         "git -C "^s_destination^" push"
-       ]@
-       [Assistance_unix_command.cd cwd]
-       ) 
-  else let cwd=Sys.getcwd() in
-       Assistance_image.image Assistance_unix_command.uc
-       (
-       [Assistance_unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git -C "^s_destination^" commit -m \""^msg^"\""
-       ]@
-       [Assistance_unix_command.cd cwd]
-       ) 
-  ) in
-  ();;
-
-let backup config diff opt_msg=
-  if Assistance_dircopy_diff.is_empty diff
-  then (print_string "No recent changes to commit ...";flush stdout) 
-  else 
-  let msg=(
-   match opt_msg with
-    None->Assistance_dircopy_diff.explain diff
-   |Some(msg0)->msg0) in
-  backup_with_message config diff msg;;
-  
-end ;; 
-
-let backup config diff opt_msg=
-  Private.backup config diff opt_msg;;
-
-  
-  
-
-end;;
-
-
-
-
-
-
 module Assistance_file_watcher=struct
 
 (*
@@ -10011,14 +9984,12 @@ exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
 
-module Automatic = struct 
 
-   exception Rootless_not_found of Assistance_dfn_rootless_t.t;;
+module Private = struct
 
+(* Start of crobj level  *)
 
-   module Private = struct 
-   
-   let pair_of_crobj crobj=
+let pair_of_crobj crobj=
       let (_,(arg1,arg2,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant crobj in 
      (
        Assistance_dfn_rootless.of_concrete_object arg1,
@@ -10038,14 +10009,12 @@ module Automatic = struct
    
    let configuration_label        = salt ^ "configuration";;
    let watched_files_label        = salt ^ "watched_files";;
-   let last_noticed_changes_label = salt ^ "last_noticed_changes";;
    
    let of_concrete_object ccrt_obj = 
       let g=Assistance_concrete_object.get_record ccrt_obj in
       {
          Assistance_file_watcher_t.configuration = Assistance_fw_configuration.of_concrete_object(g configuration_label);
          watched_files = Assistance_crobj_converter_combinator.to_list pair_of_crobj (g watched_files_label);
-         last_noticed_changes = Assistance_dircopy_diff.of_concrete_object (g last_noticed_changes_label);
       };; 
    
    let to_concrete_object fw=
@@ -10053,262 +10022,21 @@ module Automatic = struct
       [
        configuration_label, Assistance_fw_configuration.to_concrete_object fw.Assistance_file_watcher_t.configuration;
        watched_files_label, Assistance_crobj_converter_combinator.of_list pair_to_crobj fw.Assistance_file_watcher_t.watched_files;
-       last_noticed_changes_label, Assistance_dircopy_diff.to_concrete_object fw.Assistance_file_watcher_t.last_noticed_changes
       ]  in
       Assistance_concrete_object_t.Record items;;
    
-   
-   end ;;
-   
-   let configuration fw = fw.Assistance_file_watcher_t.configuration ;;
-   
-   let get_content fw rootless = 
-       let root = Assistance_fw_configuration.root (fw.Assistance_file_watcher_t.configuration) in 
-       let s_ap = Assistance_dfn_common.recompose_potential_absolute_path root rootless in 
-       Assistance_io.read_whole_file(Assistance_absolute_path.of_string s_ap);;     
-           
-   let get_mtime_or_zero_if_file_is_nonregistered fw rootless =
-      match Assistance_option.seek (fun (rootless1,_)->rootless1=rootless) 
-       (fw.Assistance_file_watcher_t.watched_files) with 
-      None -> "0."
-     |Some(_,mtime)-> mtime  ;; 
-   
-       
-   
-   let get_mtime fw rootless  =
-     match Assistance_option.seek (fun (rootless1,_)->rootless1=rootless) 
-     (fw.Assistance_file_watcher_t.watched_files) with 
-      None -> raise (Rootless_not_found(rootless))
-     |Some(_,mtime)-> mtime  ;; 
-   
-   let last_noticed_changes fw = fw.Assistance_file_watcher_t.last_noticed_changes ;;
 
-   let of_concrete_object = Private.of_concrete_object;;
+(* End of crobj level  *)
+
+
+(* Start of level 4 *)
+
   
-   let reflect_changes_in_diff fw l= {
-      fw with 
-      Assistance_file_watcher_t.last_noticed_changes = 
-        Assistance_dircopy_diff.add_changes 
-          (fw.Assistance_file_watcher_t.last_noticed_changes) l
-   } ;;
+let root fw = Assistance_fw_configuration.root (fw.Assistance_file_watcher_t.configuration);;
 
-   let reflect_creations_in_diff fw created_ones= {
-      fw with 
-      Assistance_file_watcher_t.last_noticed_changes = 
-        Assistance_dircopy_diff.create 
-          (fw.Assistance_file_watcher_t.last_noticed_changes) created_ones
-   } ;;
-   
-   
-   let reflect_destructions_in_diff fw destroyed_ones = {
-      fw with 
-      Assistance_file_watcher_t.last_noticed_changes = 
-        Assistance_dircopy_diff.destroy  
-          (fw.Assistance_file_watcher_t.last_noticed_changes) destroyed_ones 
-   } ;;
-   
-   
-   let reflect_replacements_in_diff fw reps= {
-      fw with 
-      Assistance_file_watcher_t.last_noticed_changes = 
-        Assistance_dircopy_diff.replace 
-          (fw.Assistance_file_watcher_t.last_noticed_changes) reps
-   } ;;
-   
-   let root fw = Assistance_fw_configuration.root (fw.Assistance_file_watcher_t.configuration);;
+(* End of level 4 *)
 
-   let set_gitpush_after_backup fw new_gab = 
-      let old_config = fw.Assistance_file_watcher_t.configuration in 
-      let new_config = {
-         old_config with 
-         Assistance_fw_configuration_t.gitpush_after_backup = new_gab
-      } in
-      {
-      fw with 
-       Assistance_file_watcher_t.configuration = new_config ;
-   } ;;
-
-   let set_last_noticed_changes fw new_lnc = {
-      fw with 
-       Assistance_file_watcher_t.last_noticed_changes = new_lnc ;
-   } ;;
-
-   let to_concrete_object = Private.to_concrete_object;;
-   
-  
-   let watched_files fw = fw.Assistance_file_watcher_t.watched_files ;;
-
-end ;;   
-
-module Private = struct
-
-let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
-
-let recompute_mtime fw path =
-     let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw) 
-     and s_path=Assistance_dfn_rootless.to_line path in 
-     let file = s_root^s_path in 
-     mtime file;;
-
-let recompute_mtime_opt fw path =
-    try Some(recompute_mtime fw path) with _ -> None ;;
-
-let recompute_all_info fw path =
-     let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw) 
-     and s_path=Assistance_dfn_rootless.to_line path in 
-     let file = s_root^s_path in 
-     (path,mtime file);;
-
-let update_in_list_of_pairs fw  to_be_updated pairs  =
-   Assistance_image.image (
-      fun pair -> 
-        let (rootless,mtime)=pair in 
-        if List.mem rootless to_be_updated 
-        then recompute_all_info fw rootless 
-        else pair
-   ) pairs;;
-
-let update_some_files fw w_files = {
-    fw with 
-      Assistance_file_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
-      (fw.Assistance_file_watcher_t.watched_files) ;
-} ;;
-
-
-let remove_files fw rootless_paths=
-    let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw) in 
-    let removals_to_be_made = Assistance_image.image (
-      fun path->" rm -f "^s_root^(Assistance_dfn_rootless.to_line path) 
-    ) rootless_paths in 
-    let _=Assistance_unix_command.conditional_multiple_uc removals_to_be_made in 
-    let fw2 ={
-      fw with 
-      Assistance_file_watcher_t.watched_files = List.filter (fun (path,_)->
-         not(List.mem path rootless_paths)
-      ) (fw.Assistance_file_watcher_t.watched_files)  ;
-   } in 
-   Automatic.reflect_destructions_in_diff fw2 rootless_paths ;;
-
-
-let register_rootless_paths fw rootless_paths= 
-   let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw) in
-   let nonexistent_paths = Assistance_option.filter_and_unpack (
-     fun rp-> let s_full_path = s_root^(Assistance_dfn_rootless.to_line rp)  in 
-     if not(Sys.file_exists s_full_path)
-     then Some(s_full_path)
-     else None
-   ) rootless_paths in 
-   if nonexistent_paths<>[]
-   then raise(Register_rootless_path_exn(nonexistent_paths))
-   else 
-   let old_watched_files = fw.Assistance_file_watcher_t.watched_files in    
-   let redundant_paths = List.filter (
-         fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
-   ) rootless_paths in 
-   if redundant_paths<>[]
-   then raise(Already_registered_rootless_paths_exn
-          (Assistance_image.image Assistance_dfn_rootless.to_line redundant_paths))
-   else    
-   let fw2=  {
-      fw with 
-      Assistance_file_watcher_t.watched_files =  
-        old_watched_files@
-          (Assistance_image.image (recompute_all_info fw) rootless_paths)  ;
-    }  in 
-    Automatic.reflect_creations_in_diff fw2 rootless_paths;;
-
-let deal_with_initial_comment_if_needed fw rless =
-   if (Assistance_dfn_rootless.to_ending rless)<> Assistance_dfa_ending.ml 
-   then ()
-   else
-      let root = Automatic.root fw in 
-      let full = Assistance_dfn_join.root_to_rootless root rless in 
-      let ap = Assistance_dfn_full.to_absolute_path full in 
-      Assistance_put_use_directive_in_initial_comment.put_usual root ap
-   ;;    
-
-
-
-
-
-let helper_during_string_replacement fw (old_string,new_string) accu old_list=
-    let new_list =Assistance_image.image (
-       fun pair->
-         let (old_path,_)=pair in 
-         if not(Assistance_supstring.contains (Automatic.get_content fw old_path) old_string)
-         then pair 
-         else 
-            let ap = Assistance_dfn_full.to_absolute_path (Assistance_dfn_join.root_to_rootless (Automatic.root fw) old_path) in 
-            let _=(
-             Assistance_replace_inside.replace_inside_file (old_string,new_string) ap;
-             accu:=old_path::(!accu)
-            ) in 
-            recompute_all_info fw old_path 
-         ) old_list in 
-    (new_list,List.rev(!accu));;
-
-let replace_string fw (old_string,new_string)=
-    let ref_for_changed_files=ref[]  in 
-    let (new_files,changed_files)=
-        helper_during_string_replacement 
-           fw (old_string,new_string) ref_for_changed_files fw.Assistance_file_watcher_t.watched_files in 
-    let new_fw ={
-       fw with
-       Assistance_file_watcher_t.watched_files = new_files ;
-    }  in 
-    (new_fw,changed_files);;         
-       
-let rename_value_inside_rootless fw (old_name,new_name) preceding_files rootless_path=
-   let full_path = Assistance_dfn_join.root_to_rootless (Automatic.root fw) rootless_path in 
-   let absolute_path=Assistance_dfn_full.to_absolute_path  full_path in 
-   let _=Assistance_rename_moduled_value_in_file.rename_moduled_value_in_file 
-      preceding_files old_name new_name absolute_path in 
-   let new_watched_files =Assistance_image.image (
-       fun pair->
-         let (path,_)=pair in 
-         if path = rootless_path 
-         then recompute_all_info fw path
-         else pair 
-   ) (fw.Assistance_file_watcher_t.watched_files) in 
-   {
-      fw with 
-       Assistance_file_watcher_t.watched_files = new_watched_files
-   };;  
-
-let ref_for_subdirectory_renaming = ref [];;
-
-let remember_during_subdirectory_renaming pair =
-   (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
-
-let rename_subdirectory_on_pair fw (old_subdir,new_subdir) pair=
-   let (rootless_path,_)=pair in 
-   match Assistance_dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
-   Some(new_rootless_path) -> 
-        let _=(
-           remember_during_subdirectory_renaming (rootless_path,new_rootless_path)
-        ) in 
-        recompute_all_info fw new_rootless_path
-   |None -> pair;;
-
-let rename_subdirectory_on_pairs fw (old_subdir,new_subdir) l_pairs =
-     let _=(ref_for_subdirectory_renaming := []) in 
-     let comp=Assistance_image.image (rename_subdirectory_on_pair fw (old_subdir,new_subdir)) l_pairs in 
-     (comp,List.rev(!ref_for_subdirectory_renaming));;
-
-let rename_subdirectory_as fw (old_subdir,new_subdir)=
-    let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw)  in 
-    let s_old_subdir = Assistance_dfa_subdirectory.without_trailing_slash old_subdir 
-    and s_new_subdir = Assistance_dfa_subdirectory.without_trailing_slash new_subdir in 
-    let old_full_path = s_root^s_old_subdir 
-    and new_full_path = s_root^s_new_subdir in 
-    let cmd=" mv "^old_full_path^" "^new_full_path in 
-        let _=Assistance_unix_command.hardcore_uc cmd in 
-    let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.Assistance_file_watcher_t.watched_files) in 
-   let fw2 = {
-      fw with
-      Assistance_file_watcher_t.watched_files = files  ;
-   } in 
-   Automatic.reflect_replacements_in_diff fw2 reps;;   
+(* Start of level 3 *)
 
 let message_about_missing_files missing_files=
    let temp1=Assistance_image.image Assistance_dfn_rootless.to_line missing_files in
@@ -10317,6 +10045,25 @@ let message_about_missing_files missing_files=
    (String.concat "\n" temp1)^
    "\n\n"
  ;;    
+
+let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
+
+let recompute_mtime fw path =
+      let s_root = Assistance_dfa_root.connectable_to_subpath (root fw) 
+      and s_path=Assistance_dfn_rootless.to_line path in 
+      let file = s_root^s_path in 
+      mtime file;;
+ 
+let recompute_mtime_opt fw path =
+     try Some(recompute_mtime fw path) with _ -> None ;;
+ 
+
+
+(* End of level 3 *)
+
+
+(* Start of level 2 *)
+
 
 let announce_missing_files missing_files=
      if missing_files=[]
@@ -10343,6 +10090,18 @@ let helper2_during_inspection fw accu l_pairs =
    let new_l_pairs = Assistance_image.image (helper1_during_inspection fw accu) good_pairs in 
    (new_l_pairs,List.rev(!accu));;
 
+  let recompute_all_info fw path =
+    let s_root = Assistance_dfa_root.connectable_to_subpath (root fw) 
+    and s_path=Assistance_dfn_rootless.to_line path in 
+    let file = s_root^s_path in 
+    (path,mtime file);;
+
+
+(* End of level 2 *)
+
+
+(* Start of level 1 *)
+
 let compute_changes_and_announce_them fw ~verbose=
    let ref_for_files=ref[]  in 
    let (new_files,changed_files)=
@@ -10355,25 +10114,72 @@ let compute_changes_and_announce_them fw ~verbose=
                ~separator: ", "
    ) in
    (new_files,changed_files);;   
+
+let configuration fw = fw.Assistance_file_watcher_t.configuration ;;
+
+let get_content fw rootless = 
+  let root = Assistance_fw_configuration.root (fw.Assistance_file_watcher_t.configuration) in 
+  let s_ap = Assistance_dfn_common.recompose_potential_absolute_path root rootless in 
+  Assistance_io.read_whole_file(Assistance_absolute_path.of_string s_ap);;     
+    
+
+let of_configuration_and_list config to_be_watched =
+  let the_root = config.Assistance_fw_configuration_t.root in  
+  let compute_info=( fun path->
+    let s_root = Assistance_dfa_root.connectable_to_subpath the_root
+    and s_path=Assistance_dfn_rootless.to_line path in 
+    let file = s_root^s_path in 
+    let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
+    (path,mtime)
+ ) in 
+   {
+     Assistance_file_watcher_t.configuration = config;
+     watched_files = Assistance_image.image compute_info to_be_watched;
+   };;
+ 
+
+   let ref_for_subdirectory_renaming = ref [];;
+
+   let remember_during_subdirectory_renaming pair =
+      (ref_for_subdirectory_renaming := pair :: (!ref_for_subdirectory_renaming) );;
    
-let latest_changes fw ~verbose =
-   let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
-   changed_files ;;
+   let rename_subdirectory_on_pair fw (old_subdir,new_subdir) pair=
+      let (rootless_path,_)=pair in 
+      match Assistance_dfn_rootless.soak (old_subdir,new_subdir) rootless_path with 
+      Some(new_rootless_path) -> 
+           let _=(
+              remember_during_subdirectory_renaming (rootless_path,new_rootless_path)
+           ) in 
+           recompute_all_info fw new_rootless_path
+      |None -> pair;;
+   
+   let rename_subdirectory_on_pairs fw (old_subdir,new_subdir) l_pairs =
+        let _=(ref_for_subdirectory_renaming := []) in 
+        let comp=Assistance_image.image (rename_subdirectory_on_pair fw (old_subdir,new_subdir)) l_pairs in 
+        (comp,List.rev(!ref_for_subdirectory_renaming));;
+   
+   
 
-let inspect_and_update fw ~verbose = 
-    let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
-    let fw2 ={
-       fw with
-       Assistance_file_watcher_t.watched_files         = new_files ;
-    }  in 
-    let new_fw = Automatic.reflect_changes_in_diff fw2 changed_files in 
-    (new_fw,changed_files);;         
+let update_in_list_of_pairs fw  to_be_updated pairs  =
+Assistance_image.image (
+   fun pair -> 
+     let (rootless,mtime)=pair in 
+     if List.mem rootless to_be_updated 
+     then recompute_all_info fw rootless 
+     else pair
+) pairs;;
 
-let check_that_no_change_has_occurred fw =
-   let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
-   if changed_files <> []
-   then raise(Change_has_occurred)
-   else () ;;       
+let update_some_files fw w_files = {
+ fw with 
+   Assistance_file_watcher_t.watched_files = update_in_list_of_pairs fw w_files 
+   (fw.Assistance_file_watcher_t.watched_files) ;
+} ;;
+
+
+   
+
+(* End of level 1 *)
+
 
 
 let adhoc_membership path selected_files_opt=
@@ -10386,13 +10192,13 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    if not(adhoc_membership path selected_files_opt)
    then pair 
    else    
-   let old_content = Automatic.get_content fw path in 
+   let old_content = get_content fw path in 
    let new_content = tr old_content in
    if new_content = old_content   
    then pair 
    else 
    let _=(changed_files_ref:= path:: (!changed_files_ref)) in 
-   let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw) 
+   let s_root = Assistance_dfa_root.connectable_to_subpath (root fw) 
    and s_path=Assistance_dfn_rootless.to_line path in 
    let file = s_root^s_path in  
    let ap=Assistance_absolute_path.of_string file in 
@@ -10400,179 +10206,222 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    recompute_all_info fw path ;;
 
 
-let apply_text_transformation_on_adhoc_option fw tr selected_files_opt=
+
+let apply_text_transformation_on_some_files fw tr l=
    let changed_files_ref=ref[]  in 
    let new_files = Assistance_image.image (
-      apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
+      apply_text_transformation_on_pair fw tr changed_files_ref (Some l)
    )  fw.Assistance_file_watcher_t.watched_files  in 
    let fw2 ={
       fw with
       Assistance_file_watcher_t.watched_files = new_files;
-   } in 
-   let fw3 = Automatic.reflect_changes_in_diff fw2 (!changed_files_ref) in 
-   (fw3,!changed_files_ref);;    
-
-let apply_text_transformation_on_some_files fw tr l=
-      apply_text_transformation_on_adhoc_option fw tr (Some l) ;;   
-
-let apply_text_transformation_on_all_files fw tr =
-   apply_text_transformation_on_adhoc_option fw tr None ;;
-                
+   } in
+  (fw2,!changed_files_ref);;  
 
 
-let replace_string fw (replacee,replacer) =
-   apply_text_transformation_on_all_files fw (
-      Assistance_replace_inside.replace_inside_string (replacee,replacer)
-   ) ;;
-
-let replace_value fw (preceding_files,path) (replacee,pre_replacer) =
-    let replacer=(Assistance_cull_string.before_rightmost replacee '.')^"."^pre_replacer in 
-    let _=Assistance_rename_moduled_value_in_file.rename_moduled_value_in_file 
-      preceding_files replacee (Assistance_overwriter.of_string pre_replacer) path in 
-    let rootless = Assistance_dfn_common.decompose_absolute_path_using_root path (Automatic.root fw)  in 
-    let fw2= update_some_files fw [rootless] in 
-    let (fw3,changed_files)=replace_string fw2 (replacee,replacer) in 
-    let fw4 =  Automatic.reflect_changes_in_diff fw3 (rootless::changed_files) in         
-    (fw4,(rootless::changed_files));;
-
-   let overwrite_file_if_it_exists fw rootless new_content =
-      let root = Automatic.root fw in 
-      if List.exists ( fun (r,_)->r=rootless ) fw.Assistance_file_watcher_t.watched_files 
-      then let ap = Assistance_absolute_path.of_string (Assistance_dfn_common.recompose_potential_absolute_path root rootless) in 
-           let _=Assistance_io.overwrite_with ap new_content in 
-           ({
-              fw with 
-              Assistance_file_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.Assistance_file_watcher_t.watched_files);
-           },true)
-      else (fw,false);;
-
-   let rename_files fw renaming_schemes =
-      let s_root = Assistance_dfa_root.connectable_to_subpath (Automatic.root fw)  in 
-      let displacements_to_be_made = Assistance_image.image (
-        fun (path1,path2)->" mv "^s_root^(Assistance_dfn_rootless.to_line path1)^" "^
-        s_root^(Assistance_dfn_rootless.to_line path2)
-      ) renaming_schemes in 
-      let _=Assistance_unix_command.conditional_multiple_uc displacements_to_be_made in 
-      let fw2 = {
-        fw with 
-        Assistance_file_watcher_t.watched_files = Assistance_image.image (fun pair->
-           let (path,_)=pair in 
-           (match List.assoc_opt path renaming_schemes with
-           Some(new_path) -> 
-                let _ = (
-                  if  (Assistance_dfn_rootless.to_ending new_path) = Assistance_dfa_ending.ml
-                  then deal_with_initial_comment_if_needed fw new_path
-                ) in 
-                (new_path,recompute_mtime fw new_path)
-           | None -> pair)
-        ) (fw.Assistance_file_watcher_t.watched_files)  
-     } in 
-     Automatic.reflect_replacements_in_diff fw2 renaming_schemes ;;
-
-   let relocate_files_to fw rootless_paths new_subdir=
-     let renaming_schemes = Assistance_image.image (fun path->
-       (path,Assistance_dfn_rootless.relocate_to path new_subdir)
-     ) rootless_paths in 
-     rename_files fw renaming_schemes ;;
 
    
+let check_that_no_change_has_occurred fw =
+  let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
+  if changed_files <> []
+  then raise(Change_has_occurred)
+  else () ;;       
+
+  let deal_with_initial_comment_if_needed fw rless =
+    if (Assistance_dfn_rootless.to_ending rless)<> Assistance_dfa_ending.ml 
+    then ()
+    else
+       let root = root fw in 
+       let full = Assistance_dfn_join.root_to_rootless root rless in 
+       let ap = Assistance_dfn_full.to_absolute_path full in 
+       Assistance_put_use_directive_in_initial_comment.put_usual root ap
+    ;;    
+         
         
+        
+        let empty_one config= {
+            Assistance_file_watcher_t.configuration = config;
+            watched_files = [];
+         } ;; 
+
         let first_init config =
-           let the_root = config.Assistance_fw_configuration_t.root in 
-           let the_dir =  Assistance_directory_name.of_string (Assistance_dfa_root.without_trailing_slash the_root) in 
-           let (list1,_) = Assistance_more_unix.complete_ls_with_ignored_subdirs the_dir config.Assistance_fw_configuration_t.ignored_subdirectories false in 
-           let list2 = Assistance_option.filter_and_unpack(
-             fun ap-> try Some(Assistance_dfn_common.decompose_absolute_path_using_root ap the_root) with 
-                      _->None 
-           ) list1 in
-           List.filter (Assistance_fw_configuration.test_for_admissibility config) list2 ;;
-        
-        
-        let of_configuration_and_list config to_be_watched =
-            let the_root = config.Assistance_fw_configuration_t.root in  
-            let compute_info=( fun path->
-              let s_root = Assistance_dfa_root.connectable_to_subpath the_root
-              and s_path=Assistance_dfn_rootless.to_line path in 
-              let file = s_root^s_path in 
-              let mtime = string_of_float((Unix.stat file).Unix.st_mtime) in 
-              (path,mtime)
-           ) in 
-             {
-               Assistance_file_watcher_t.configuration = config;
-               watched_files = Assistance_image.image compute_info to_be_watched;
-               last_noticed_changes = Assistance_dircopy_diff.empty_one;
-             };;
+          let the_root = config.Assistance_fw_configuration_t.root in 
+          let the_dir =  Assistance_directory_name.of_string (Assistance_dfa_root.without_trailing_slash the_root) in 
+          let (list1,_) = Assistance_more_unix.complete_ls_with_ignored_subdirs the_dir config.Assistance_fw_configuration_t.ignored_subdirectories false in 
+          let list2 = Assistance_option.filter_and_unpack(
+            fun ap-> try Some(Assistance_dfn_common.decompose_absolute_path_using_root ap the_root) with 
+                     _->None 
+          ) list1 in
+          List.filter (Assistance_fw_configuration.test_for_admissibility config) list2 ;;
       
+
+          let inspect_and_update fw ~verbose = 
+            let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in
+            let fw2 ={
+               fw with
+               Assistance_file_watcher_t.watched_files         = new_files ;
+            }  in 
+            (fw2,changed_files);;         
+        
+
+          let latest_changes fw ~verbose =
+            let (_,changed_files) = compute_changes_and_announce_them fw ~verbose  in 
+            changed_files ;;
+         
+        
+
+
          let of_configuration config = 
                let to_be_watched = first_init config in 
                of_configuration_and_list config to_be_watched ;;
+        
+         
+   let overwrite_file_if_it_exists fw rootless new_content =
+    let root = root fw in 
+    if List.exists ( fun (r,_)->r=rootless ) fw.Assistance_file_watcher_t.watched_files 
+    then let ap = Assistance_absolute_path.of_string (Assistance_dfn_common.recompose_potential_absolute_path root rootless) in 
+         let _=Assistance_io.overwrite_with ap new_content in 
+         ({
+            fw with 
+            Assistance_file_watcher_t.watched_files = update_in_list_of_pairs fw [rootless] (fw.Assistance_file_watcher_t.watched_files);
+         },true)
+    else (fw,false);;
 
+
+let register_rootless_paths fw rootless_paths= 
+let s_root = Assistance_dfa_root.connectable_to_subpath (root fw) in
+let nonexistent_paths = Assistance_option.filter_and_unpack (
+  fun rp-> let s_full_path = s_root^(Assistance_dfn_rootless.to_line rp)  in 
+  if not(Sys.file_exists s_full_path)
+  then Some(s_full_path)
+  else None
+) rootless_paths in 
+if nonexistent_paths<>[]
+then raise(Register_rootless_path_exn(nonexistent_paths))
+else 
+let old_watched_files = fw.Assistance_file_watcher_t.watched_files in    
+let redundant_paths = List.filter (
+      fun rp-> List.exists (fun (rl,_)->rl = rp) old_watched_files
+) rootless_paths in 
+if redundant_paths<>[]
+then raise(Already_registered_rootless_paths_exn
+       (Assistance_image.image Assistance_dfn_rootless.to_line redundant_paths))
+else    
+let fw2=  {
+   fw with 
+   Assistance_file_watcher_t.watched_files =  
+     old_watched_files@
+       (Assistance_image.image (recompute_all_info fw) rootless_paths)  ;
+ }  in 
+ fw2 ;;
+
+
+
+ let remove_files fw rootless_paths=
+ let s_root = Assistance_dfa_root.connectable_to_subpath (root fw) in 
+ let removals_to_be_made = Assistance_image.image (
+   fun path->" rm -f "^s_root^(Assistance_dfn_rootless.to_line path) 
+ ) rootless_paths in 
+ let _=Assistance_unix_command.conditional_multiple_uc removals_to_be_made in 
+ let fw2 ={
+   fw with 
+   Assistance_file_watcher_t.watched_files = List.filter (fun (path,_)->
+      not(List.mem path rootless_paths)
+   ) (fw.Assistance_file_watcher_t.watched_files)  ;
+} in 
+fw2 ;;
+
+    
+
+
+   let rename_files fw renaming_schemes =
+    let s_root = Assistance_dfa_root.connectable_to_subpath (root fw)  in 
+    let displacements_to_be_made = Assistance_image.image (
+      fun (path1,path2)->" mv "^s_root^(Assistance_dfn_rootless.to_line path1)^" "^
+      s_root^(Assistance_dfn_rootless.to_line path2)
+    ) renaming_schemes in 
+    let _=Assistance_unix_command.conditional_multiple_uc displacements_to_be_made in 
+    let fw2 = {
+      fw with 
+      Assistance_file_watcher_t.watched_files = Assistance_image.image (fun pair->
+         let (path,_)=pair in 
+         (match List.assoc_opt path renaming_schemes with
+         Some(new_path) -> 
+              let _ = (
+                if  (Assistance_dfn_rootless.to_ending new_path) = Assistance_dfa_ending.ml
+                then deal_with_initial_comment_if_needed fw new_path
+              ) in 
+              (new_path,recompute_mtime fw new_path)
+         | None -> pair)
+      ) (fw.Assistance_file_watcher_t.watched_files)  
+   } in 
+   fw2;;
+
+
+
+
+  let rename_subdirectory_as fw (old_subdir,new_subdir)=
+  let s_root = Assistance_dfa_root.connectable_to_subpath (root fw)  in 
+  let s_old_subdir = Assistance_dfa_subdirectory.without_trailing_slash old_subdir 
+  and s_new_subdir = Assistance_dfa_subdirectory.without_trailing_slash new_subdir in 
+  let old_full_path = s_root^s_old_subdir 
+  and new_full_path = s_root^s_new_subdir in 
+  let cmd=" mv "^old_full_path^" "^new_full_path in 
+      let _=Assistance_unix_command.hardcore_uc cmd in 
+  let (files,reps)   =  rename_subdirectory_on_pairs fw (old_subdir,new_subdir) (fw.Assistance_file_watcher_t.watched_files) in 
+ let fw2 = {
+    fw with
+    Assistance_file_watcher_t.watched_files = files  ;
+ } in 
+ (fw2,reps);;   
+
+
+        
+               
+        let watched_files fw = fw.Assistance_file_watcher_t.watched_files ;;               
      
 end;;
 
-let apply_text_transformation_on_all_files = Private.apply_text_transformation_on_all_files;;
+
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
-
-
-let configuration = Automatic.configuration ;;
-
+let configuration = Private.configuration ;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
-
-let empty_one config= {
-   Assistance_file_watcher_t.configuration = config;
-   watched_files = [];
-   last_noticed_changes = Assistance_dircopy_diff.empty_one;
-};; 
-
-
-
-let get_content = Automatic.get_content ;;
-let get_mtime   = Automatic.get_mtime ;;
-let get_mtime_or_zero_if_file_is_nonregistered  = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
-
-let inspect_and_update = Private.inspect_and_update;;
-
-let last_noticed_changes = Automatic.last_noticed_changes ;;
-
+let empty_one = Private.empty_one ;;
+let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
-
-let of_concrete_object = Automatic.of_concrete_object ;;
+let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
-
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
-let reflect_latest_changes_in_github fw opt_msg=
-   let config = fw.Assistance_file_watcher_t.configuration in 
-   let _= Assistance_reflect_change_in_github.backup config fw.Assistance_file_watcher_t.last_noticed_changes opt_msg in 
-   {fw with Assistance_file_watcher_t.last_noticed_changes = Assistance_dircopy_diff.empty_one} ;; 
-
-
 let register_rootless_paths = Private.register_rootless_paths;;
-
-let relocate_files_to = Private.relocate_files_to;;
-
-
-
 let remove_files = Private.remove_files;;
-
 let rename_files = Private.rename_files;;
-
-
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-
-
-let root = Automatic.root ;;
-
-let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
-
-let to_concrete_object = Automatic.to_concrete_object ;;
-
+let root = Private.root ;;
+let to_concrete_object = Private.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
+let watched_files = Private.watched_files ;;
 
-let watched_files = Automatic.watched_files ;;
+end;;
+
+
+
+
+
+
+module Assistance_fw_with_archives_t=struct
+
+(*
+
+#use"Filewatching/fw_with_archives_t.ml";;
+
+*)
+
+type t ={
+  parent : Assistance_file_watcher_t.t ;
+  subdirs_for_archived_mlx_files : Assistance_dfa_subdirectory_t.t list ; 
+};;
+
 
 end;;
 
@@ -10596,10 +10445,7 @@ module Private = struct
    (* Inherited methods *)
 
    let configuration fw = Assistance_file_watcher.configuration (parent fw) ;;
-   let get_content fw rl = Assistance_file_watcher.get_content (parent fw) rl ;;
-   let get_mtime fw rl = Assistance_file_watcher.get_mtime (parent fw) rl ;;
-   let get_mtime_or_zero_if_file_is_nonregistered fw rl = Assistance_file_watcher.get_mtime_or_zero_if_file_is_nonregistered (parent fw) rl ;;
-   let last_noticed_changes fw = Assistance_file_watcher.last_noticed_changes (parent fw);;
+
    let root fw = Assistance_file_watcher.root (parent fw) ;;
    let update_parent fw new_parent = {fw with Assistance_fw_with_archives_t.parent = new_parent} ;;
    let watched_files fw = Assistance_file_watcher.watched_files (parent fw) ;;
@@ -10621,12 +10467,6 @@ module Private = struct
       let old_parent = parent fw in 
       let (new_parent,file_exists) = Assistance_file_watcher.overwrite_file_if_it_exists old_parent rl new_content in 
       (update_parent fw new_parent,file_exists);;
-
-   let reflect_latest_changes_in_github fw opt_msg = 
-      let old_parent = parent fw in 
-      let new_parent = Assistance_file_watcher.reflect_latest_changes_in_github old_parent opt_msg in 
-      update_parent fw new_parent ;; 
-
    let register_rootless_paths fw rls = 
       let old_parent = parent fw in 
       let new_parent = Assistance_file_watcher.register_rootless_paths old_parent rls in 
@@ -10637,16 +10477,9 @@ module Private = struct
       update_parent fw new_parent ;;               
    let rename_subdirectory_as fw sd_pair = 
       let old_parent = parent fw in 
-      let new_parent = Assistance_file_watcher.rename_subdirectory_as old_parent sd_pair in 
-      update_parent fw new_parent ;;  
-   let set_gitpush_after_backup fw g = 
-      let old_parent = parent fw in 
-      let new_parent = Assistance_file_watcher.set_gitpush_after_backup old_parent g in 
-      update_parent fw new_parent ;;
-   let set_last_noticed_changes fw l = 
-      let old_parent = parent fw in 
-      let new_parent = Assistance_file_watcher.set_last_noticed_changes old_parent l in 
-      update_parent fw new_parent ;;       
+      let (new_parent,extra) = Assistance_file_watcher.rename_subdirectory_as old_parent sd_pair in 
+      (update_parent fw new_parent,extra) ;;  
+     
 
    (* End of inherited constructors *)  
       
@@ -10694,7 +10527,7 @@ module Private = struct
          ) u_files in  
       let old_parent = parent fw in    
       let new_parent = Assistance_file_watcher.remove_files old_parent the_files in 
-      update_parent fw new_parent ;;      
+      (update_parent fw new_parent,the_files) ;;      
    
    
    let announce_changes fw changed_files=    
@@ -10739,8 +10572,11 @@ module Private = struct
                   fun path-> (Assistance_dfn_rootless.to_module path)=mod_name 
       ) u_files in 
       let old_parent = parent fw in    
-      let new_parent = Assistance_file_watcher.relocate_files_to old_parent the_files new_subdir in 
-      update_parent fw new_parent  ;;
+      let replacements = Assistance_image.image (fun path->
+         (path,Assistance_dfn_rootless.relocate_to path new_subdir)
+       ) the_files in 
+      let new_parent = Assistance_file_watcher.rename_files old_parent replacements in 
+      (update_parent fw new_parent,replacements)  ;;
          
    let rename_module_on_filename_level old_fw (old_module,new_module) = 
       let all_files = Assistance_image.image fst (watched_files old_fw) in 
@@ -10779,8 +10615,8 @@ module Private = struct
                   
    let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten)=
       let (fw2,file_renamings) = rename_module_on_filename_level fw (old_module,new_module) in 
-      let (fw3,u_files,a_files) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
-      (fw3,file_renamings,u_files,a_files) ;;   
+      let (fw3,changed_u_files,changed_a_files) = rename_module_on_content_level fw2 (old_module,new_module) files_to_be_rewritten in 
+      (fw3,file_renamings,changed_u_files,changed_a_files) ;;   
    
       
    let replace_string old_fw (replacee,replacer) = 
@@ -10816,9 +10652,8 @@ module Private = struct
       let par2= Assistance_file_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 
-      let par4 = Assistance_file_watcher.Automatic.reflect_changes_in_diff 
-        (parent fw3) (changed_a_files@rootless::changed_u_files) in         
-      (update_parent fw2 par4,(changed_a_files,rootless::changed_u_files));;
+      let all_changes = changed_a_files@rootless::changed_u_files in       
+      (fw3,(all_changes,rootless::changed_u_files));;
 
    let usual_compilable_files fw  =
       let all_files = Assistance_image.image fst (watched_files fw) in 
@@ -10866,71 +10701,54 @@ module Private = struct
 end ;;
 
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-
 let compute_all_small_details = Private.compute_all_small_details ;;
-
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
-
 let configuration = Private.configuration ;;
-
-let constructor = Private.constructor ;;
-
 let empty_one = Private.empty_one ;;
-
 let forget_modules = Private.forget_modules ;;
-
-let get_content = Private.get_content ;;
-
-let get_mtime = Private.get_mtime ;;
-
-let get_mtime_or_zero_if_file_is_nonregistered = Private.get_mtime_or_zero_if_file_is_nonregistered ;;
-
 let inspect_and_update = Private.inspect_and_update ;;
-
-let last_noticed_changes = Private.last_noticed_changes ;;
-
 let latest_changes = Private.latest_changes ;;
-
 let noncompilable_files = Private.noncompilable_files ;;
-
 let of_concrete_object = Private.of_concrete_object ;;
-
 let of_configuration = Private.of_configuration ;;
-
 let of_configuration_and_list = Private.of_configuration_and_list ;;
-
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
 let partition_for_singles = Private.canonical_tripartition ;; 
-
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
-
 let register_rootless_paths = Private.register_rootless_paths ;; 
-
 let remove_files = Private.remove_files ;; 
-
 let rename_subdirectory_as = Private.rename_subdirectory_as ;; 
-
 let relocate_module_to = Private.relocate_module_to ;;
-
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
-
 let replace_string = Private.replace_string;;
-
 let replace_value = Private.replace_value;;
-
 let root = Private.root ;; 
-
-let set_gitpush_after_backup = Private.set_gitpush_after_backup ;; 
-
-let set_last_noticed_changes = Private.set_last_noticed_changes ;; 
-
 let to_concrete_object = Private.to_concrete_object ;;
-
 let usual_compilable_files = Private.usual_compilable_files ;;
-
 let watched_files = Private.watched_files ;;
 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_with_small_details_t=struct
+
+(*
+
+#use"Filewatching/fw_with_small_details_t.ml";;
+
+Stores the small details for archived or usual files (not the noncompilables).
+
+*)
+
+type t ={
+  parent : Assistance_fw_with_archives_t.t ;
+  small_details_in_files : (Assistance_dfn_rootless_t.t * Assistance_fw_file_small_details_t.t) list;
+};;
 
 
 end;;
@@ -10948,383 +10766,293 @@ module Assistance_fw_with_small_details=struct
 
 *)
 
-exception Register_rootless_path_exn of string list;;
-
-module Automatic = struct 
-
-   exception Rootless_not_found of Assistance_dfn_rootless_t.t;;
-
-   module Private = struct 
-   
-      let parent fw = fw.Assistance_fw_with_small_details_t.parent ;;
-
-      let cr_of_pair_list f l= Assistance_crobj_converter_combinator.of_pair_list  Assistance_dfn_rootless.to_concrete_object f l;;
-      let cr_to_pair_list f crobj= Assistance_crobj_converter_combinator.to_pair_list  Assistance_dfn_rootless.of_concrete_object f crobj;;
-         
-      let salt = "Fw_"^"with_small_details_t.";;
-      
-      let parent_label                  = salt ^ "parent";;
-      let small_details_in_files_label  = salt ^ "small_details_in_files";;
-      
-      
-      let of_concrete_object ccrt_obj = 
-         let g=Assistance_concrete_object.get_record ccrt_obj in
-         {
-            Assistance_fw_with_small_details_t.parent = Assistance_fw_with_archives.of_concrete_object(g parent_label);
-            small_details_in_files = cr_to_pair_list Assistance_fw_file_small_details.of_concrete_object (g small_details_in_files_label);
-
-         };; 
-      
-   
-      let to_concrete_object fw=
-         let items= 
-         [
-           parent_label, Assistance_fw_with_archives.to_concrete_object fw.Assistance_fw_with_small_details_t.parent;
-           small_details_in_files_label, cr_of_pair_list  Assistance_fw_file_small_details.to_concrete_object (fw.Assistance_fw_with_small_details_t.small_details_in_files);
-         
-         ]  in
-         Assistance_concrete_object_t.Record items;;
-      
-   
-   
-   let configuration fw = Assistance_fw_with_archives.configuration (parent fw) ;;
-
-   
-   let watched_files fw = Assistance_fw_with_archives.watched_files (parent fw) ;;
-
-   let constructor mother =
-   {
-      Assistance_fw_with_small_details_t.parent = mother ;
-      small_details_in_files = Assistance_fw_with_archives.compute_all_small_details mother;
-   } ;;  
-      
-      
-   let parent fw = fw.Assistance_fw_with_small_details_t.parent ;;
-
-   end ;;
-
-   let configuration      = Private.configuration ;;
-   let constructor        = Private.constructor ;;
-   let get_content fw     = Assistance_fw_with_archives.get_content 
-                                  (Private.parent fw) ;;
-   let get_mtime fw       = Assistance_fw_with_archives.get_mtime 
-                                  (Private.parent fw) ;; 
-   let get_mtime_or_zero_if_file_is_nonregistered fw  = 
-                       Assistance_fw_with_archives.get_mtime_or_zero_if_file_is_nonregistered
-                                  (Private.parent fw) ;;     
-   let last_noticed_changes fw = Assistance_fw_with_archives.last_noticed_changes
-                                  (Private.parent fw) ;;                                                                                                                     
-   let of_concrete_object = Private.of_concrete_object;;
-   let parent             = Private.parent ;;
-   let root fw     = Assistance_fw_with_archives.root (Private.parent fw) ;;
-   let set_gitpush_after_backup fw new_gab = 
-      let old_nonmodular = fw.Assistance_fw_with_small_details_t.parent in 
-      let new_nonmodular = Assistance_fw_with_archives.set_gitpush_after_backup 
-            old_nonmodular new_gab in 
-      {
-          fw with  
-         Assistance_fw_with_small_details_t.parent = new_nonmodular ;
-      } ;;
-      
-   let set_last_noticed_changes fw new_config = 
-      let old_parent = fw.Assistance_fw_with_small_details_t.parent in
-      let new_parent = Assistance_fw_with_archives.set_last_noticed_changes old_parent new_config in 
-      {
-      fw with 
-       Assistance_fw_with_small_details_t.parent = new_parent;
-      } ;;
-   let small_details_in_files fw = fw.Assistance_fw_with_small_details_t.small_details_in_files ;;   
-   let to_concrete_object = Private.to_concrete_object;;
-   
-   let watched_files      = Private.watched_files ;;
-
-end ;;   
-
-
-
 
 module Private = struct
 
-
-let forget_modules fw mod_names =
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Assistance_fw_with_archives.forget_modules old_parent mod_names in
-   {
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = List.filter (
-        fun (rl,_)->not(List.mem (Assistance_dfn_rootless.to_module rl) mod_names)
-      ) old_details;
-   } ;;  
-
-let inspect_and_update fw  =
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,changed_files,(a_files,u_files)) = Assistance_fw_with_archives.inspect_and_update old_parent in
-   let changed_details_ref = ref [] in 
-   let new_small_details = Assistance_image.image (
-      fun old_pair->
-       let rl = fst old_pair in
-       if List.mem rl changed_files 
-       then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
-            let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
-            new_pair 
-       else old_pair  
-    ) old_details in 
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_small_details;
-   },
-   ((a_files,u_files),!changed_details_ref));;
-
-let of_configuration config =   
-    let mother = Assistance_fw_with_archives.of_configuration config in 
-    Automatic.constructor mother ;;
-
-let of_configuration_and_list (config,files)=   
-   let mother = Assistance_fw_with_archives.of_configuration_and_list config files  in 
-   Automatic.constructor mother ;;
-
-let overwrite_file_if_it_exists fw (rootless,new_content) = 
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,change_made) = 
-      Assistance_fw_with_archives.overwrite_file_if_it_exists 
-        old_parent rootless new_content in 
-   let accu = ref None in      
-   let new_fw = (
-   if change_made 
-   then 
+   (* Start of level 2 *)
+   let parent fw = fw.Assistance_fw_with_small_details_t.parent ;;
+   (* End of level 2 *)
+ 
+   (* Start of level 1 *)
+ 
+   let configuration fw = Assistance_fw_with_archives.configuration (parent fw) ;;
+   let constructor mother =
+     {
+        Assistance_fw_with_small_details_t.parent = mother ;
+        small_details_in_files = Assistance_fw_with_archives.compute_all_small_details mother;
+     } ;;  
+   let root fw     = Assistance_fw_with_archives.root (parent fw) ;;  
+   let small_details_in_files fw = fw.Assistance_fw_with_small_details_t.small_details_in_files ;;  
+   
+   (* End of level 1 *)
+   
+   (* Start of crobj level *)
+ 
+   let cr_of_pair_list f l= Assistance_crobj_converter_combinator.of_pair_list  Assistance_dfn_rootless.to_concrete_object f l;;
+   let cr_to_pair_list f crobj= Assistance_crobj_converter_combinator.to_pair_list  Assistance_dfn_rootless.of_concrete_object f crobj;;
+      
+   let salt = "Fw_"^"with_small_details_t.";;
+   
+   let parent_label                  = salt ^ "parent";;
+   let small_details_in_files_label  = salt ^ "small_details_in_files";;
+   
+   
+   let of_concrete_object ccrt_obj = 
+      let g=Assistance_concrete_object.get_record ccrt_obj in
+      {
+         Assistance_fw_with_small_details_t.parent = Assistance_fw_with_archives.of_concrete_object(g parent_label);
+         small_details_in_files = cr_to_pair_list Assistance_fw_file_small_details.of_concrete_object (g small_details_in_files_label);
+ 
+      };; 
+   
+ 
+   let to_concrete_object fw=
+      let items= 
+      [
+        parent_label, Assistance_fw_with_archives.to_concrete_object fw.Assistance_fw_with_small_details_t.parent;
+        small_details_in_files_label, cr_of_pair_list  Assistance_fw_file_small_details.to_concrete_object (fw.Assistance_fw_with_small_details_t.small_details_in_files);
+      
+      ]  in
+      Assistance_concrete_object_t.Record items;;
+   
+ 
+   (* End of crobj level *)
+ 
+   let forget_modules fw mod_names =
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,removed_files) = Assistance_fw_with_archives.forget_modules old_parent mod_names in
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = List.filter (
+           fun (rl,_)->not(List.mem (Assistance_dfn_rootless.to_module rl) mod_names)
+         ) old_details;
+      },removed_files) ;;  
+   
+   let inspect_and_update fw  =
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,changed_files,(a_files,u_files)) = Assistance_fw_with_archives.inspect_and_update old_parent in
+      let changed_details_ref = ref [] in 
+      let new_small_details = Assistance_image.image (
+         fun old_pair->
+          let rl = fst old_pair in
+          if List.mem rl changed_files 
+          then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
+               let _ = (changed_details_ref:=new_pair::(!changed_details_ref) ) in 
+               new_pair 
+          else old_pair  
+       ) old_details in 
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = new_small_details;
+      },
+      ((a_files,u_files),!changed_details_ref,changed_files));;
+   
+   let of_configuration config =   
+       let mother = Assistance_fw_with_archives.of_configuration config in 
+       constructor mother ;;
+   
+   let of_configuration_and_list (config,files)=   
+      let mother = Assistance_fw_with_archives.of_configuration_and_list config files  in 
+      constructor mother ;;
+   
+   let overwrite_file_if_it_exists fw (rootless,new_content) = 
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,change_made) = 
+         Assistance_fw_with_archives.overwrite_file_if_it_exists 
+           old_parent rootless new_content in 
+      let accu = ref None in      
+      let new_fw = (
+      if change_made 
+      then 
+         let new_small_details = Assistance_image.image (
+            fun old_pair->
+            let rl = fst old_pair in
+            if rl  = rootless 
+            then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
+                 let _= (accu:=Some(rl,Some(new_pair))) in 
+                 new_pair
+            else old_pair  
+         ) old_details in 
+         {
+            Assistance_fw_with_small_details_t.parent = new_parent ;
+            small_details_in_files = new_small_details;
+         }
+      else fw ) in (new_fw,!accu);;           
+   
+   
+   let register_rootless_paths fw rootless_paths= 
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let new_parent = Assistance_fw_with_archives.register_rootless_paths 
+           old_parent rootless_paths in 
+      let new_details =    (Assistance_image.image (fun rl->
+         (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl)) 
+         rootless_paths) in 
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = old_details @ new_details ;
+      },
+      (Assistance_fw_with_archives.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
+   
+   let relocate_module_to fw (mod_name,new_subdir)=
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,replacements) = Assistance_fw_with_archives.relocate_module_to 
+           old_parent mod_name new_subdir in 
+      let accu = ref [] in      
       let new_small_details = Assistance_image.image (
          fun old_pair->
          let rl = fst old_pair in
-         if rl  = rootless 
-         then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
-              let _= (accu:=Some(rl,Some(new_pair))) in 
+         if (Assistance_dfn_rootless.to_module rl) = mod_name 
+         then let new_rl = Assistance_dfn_rootless.relocate_to rl new_subdir in 
+              let new_pair = (new_rl,snd old_pair) in 
+              let _ = (accu := (rl,Some new_pair) :: (!accu)) in
               new_pair
-         else old_pair  
+         else old_pair        
       ) old_details in 
-      {
+      let new_fw = {
          Assistance_fw_with_small_details_t.parent = new_parent ;
          small_details_in_files = new_small_details;
-      }
-   else fw ) in (new_fw,!accu);;           
-
-let reflect_latest_changes_in_github fw opt_msg=  
-   let old_parent = Automatic.parent fw in 
-   let new_parent = Assistance_fw_with_archives.reflect_latest_changes_in_github old_parent opt_msg in 
-   {
-      fw with 
-       Assistance_fw_with_small_details_t.parent = new_parent;
-   } ;;  
-
-let register_rootless_paths fw rootless_paths= 
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Assistance_fw_with_archives.register_rootless_paths 
-        old_parent rootless_paths in 
-   let new_details =    (Assistance_image.image (fun rl->
-      (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl)) 
-      rootless_paths) in 
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = old_details @ new_details ;
-   },
-   (Assistance_fw_with_archives.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
-
-let relocate_module_to fw (mod_name,new_subdir)=
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Assistance_fw_with_archives.relocate_module_to 
-        old_parent mod_name new_subdir in 
-   let accu = ref [] in      
-   let new_small_details = Assistance_image.image (
-      fun old_pair->
-      let rl = fst old_pair in
-      if (Assistance_dfn_rootless.to_module rl) = mod_name 
-      then let new_rl = Assistance_dfn_rootless.relocate_to rl new_subdir in 
-           let new_pair = (new_rl,snd old_pair) in 
-           let _ = (accu := (rl,Some new_pair) :: (!accu)) in
-           new_pair
-      else old_pair        
-   ) old_details in 
-   let new_fw = {
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_small_details;
-   } in 
-   (new_fw,!accu);;  
-
-let remove_files fw removed_rootless_paths=   
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Assistance_fw_with_archives.remove_files 
-      old_parent removed_rootless_paths in 
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = List.filter (
-         fun (rl,_)->not(List.mem rl removed_rootless_paths)
-      ) old_details;
-   },Assistance_image.image (fun rl->(rl,None)) removed_rootless_paths) ;;
-
-
-   let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
-      let old_parent = Automatic.parent fw 
-      and old_details = Automatic.small_details_in_files fw  in 
-      let (new_parent,file_renamings,u_files,a_files) = Assistance_fw_with_archives.rename_module_on_filename_level_and_in_files 
-        old_parent (old_module,new_module,files_to_be_rewritten) in 
-      let optional_new_rl = (fun rl->
-         match List.assoc_opt rl file_renamings with 
-            Some(new_rl) -> Some(new_rl) 
-            | None ->
-               if List.mem rl u_files
-               then Some rl 
-               else None
-      ) in 
+      } in 
+      (new_fw,(!accu,replacements));;  
+   
+   let remove_files fw removed_rootless_paths=   
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let new_parent = Assistance_fw_with_archives.remove_files 
+         old_parent removed_rootless_paths in 
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = List.filter (
+            fun (rl,_)->not(List.mem rl removed_rootless_paths)
+         ) old_details;
+      },Assistance_image.image (fun rl->(rl,None)) removed_rootless_paths) ;;
+   
+   
+      let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
+         let old_parent = parent fw 
+         and old_details = small_details_in_files fw  in 
+         let (new_parent,file_renamings,changed_u_files,changed_a_files) = 
+             Assistance_fw_with_archives.rename_module_on_filename_level_and_in_files 
+           old_parent (old_module,new_module,files_to_be_rewritten) in 
+         let optional_new_rl = (fun rl->
+            match List.assoc_opt rl file_renamings with 
+               Some(new_rl) -> Some(new_rl) 
+               | None ->
+                  if List.mem rl changed_u_files
+                  then Some rl 
+                  else None
+         ) in 
+         let accu = ref [] in 
+         let new_details = Assistance_image.image (
+            fun old_pair->
+              let rl = fst old_pair in 
+              match optional_new_rl rl with 
+               Some(new_rl) -> 
+              let new_pair = (new_rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent new_rl) in 
+              let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+              new_pair 
+             | None -> old_pair  
+          ) old_details in    
+         ({
+            Assistance_fw_with_small_details_t.parent = new_parent ;
+            small_details_in_files = new_details;
+          },(List.rev(!accu),(file_renamings,changed_u_files@changed_a_files))) ;;  
+   
+   
+   let rename_subdirectory_as fw (old_subdir,new_subdir)=   
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,original_reps) = Assistance_fw_with_archives.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
+      let accu = ref [] in
+      let new_details = Assistance_image.image (
+         fun old_pair->
+         let rl = fst old_pair in
+         match Assistance_dfn_rootless.soak (old_subdir,new_subdir) rl with 
+         (Some new_rl) -> 
+            let new_pair = (new_rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent new_rl) in 
+                let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+                new_pair 
+         | None -> old_pair        
+      ) old_details in 
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = new_details ;
+      },(List.rev(!accu),original_reps)) ;;   
+   
+   let replace_string fw (replacee,replacer)=
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,(changed_a_files,changed_u_files)) = Assistance_fw_with_archives.replace_string old_parent (replacee,replacer) in
       let accu = ref [] in 
       let new_details = Assistance_image.image (
          fun old_pair->
-           let rl = fst old_pair in 
-           match optional_new_rl rl with 
-            Some(new_rl) -> 
-           let new_pair = (new_rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent new_rl) in 
-           let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-           new_pair 
-          | None -> old_pair  
-       ) old_details in    
+         let rl = fst old_pair in
+         if List.mem rl changed_u_files
+         then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
+              let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+              new_pair 
+         else old_pair  
+      ) old_details in
       ({
          Assistance_fw_with_small_details_t.parent = new_parent ;
          small_details_in_files = new_details;
-       },List.rev(!accu)) ;;  
-
-
-let rename_subdirectory_as fw (old_subdir,new_subdir)=   
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let new_parent = Assistance_fw_with_archives.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
-   let accu = ref [] in
-   let new_details = Assistance_image.image (
-      fun old_pair->
-      let rl = fst old_pair in
-      match Assistance_dfn_rootless.soak (old_subdir,new_subdir) rl with 
-      (Some new_rl) -> 
-         let new_pair = (new_rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent new_rl) in 
-             let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-             new_pair 
-      | None -> old_pair        
-   ) old_details in 
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_details ;
-   },List.rev(!accu)) ;;   
-
-let replace_string fw (replacee,replacer)=
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,(_,changed_files)) = Assistance_fw_with_archives.replace_string old_parent (replacee,replacer) in
-   let accu = ref [] in 
-   let new_details = Assistance_image.image (
-      fun old_pair->
-      let rl = fst old_pair in
-      if List.mem rl changed_files
-      then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
-           let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-           new_pair 
-      else old_pair  
-   ) old_details in
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_details;
-   },List.rev(!accu));;   
-
-let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
-   let old_parent = Automatic.parent fw 
-   and old_details = Automatic.small_details_in_files fw  in 
-   let (new_parent,(_,changed_files)) = 
-        Assistance_fw_with_archives.replace_value 
-         old_parent (preceding_files,path) (replacee,pre_replacer) in
-   let accu = ref [] in 
-   let new_details = Assistance_image.image (
-      fun old_pair->
-         let rl = fst old_pair in
-         if List.mem rl changed_files
-         then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
-                 let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
-                 new_pair 
-         else old_pair  
-      ) old_details in      
-   ({
-      Assistance_fw_with_small_details_t.parent = new_parent ;
-      small_details_in_files = new_details;
-   },List.rev(!accu));;     
-
-   let check_that_no_change_has_occurred fw =
-      Assistance_fw_with_archives.check_that_no_change_has_occurred (Automatic.parent fw) ;; 
-
-   let latest_changes fw = Assistance_fw_with_archives.latest_changes (Automatic.parent fw) ;;   
-      
-end ;;
-
-let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
-
-let configuration = Automatic.configuration ;;
-
-
-
-let empty_one config= {
-   Assistance_fw_with_small_details_t.parent = Assistance_fw_with_archives.empty_one config;
-   small_details_in_files = [];
-};; 
-
-let forget_modules = Private.forget_modules ;;
-
-let get_content = Automatic.get_content ;;
-
-let get_mtime = Automatic.get_mtime ;;
-
-let get_mtime_or_zero_if_file_is_nonregistered = Automatic.get_mtime_or_zero_if_file_is_nonregistered ;;
-
-let inspect_and_update = Private.inspect_and_update;;
-
-let last_noticed_changes = Automatic.last_noticed_changes ;;
-
-let latest_changes = Private.latest_changes ;;
-
-let noncompilable_files fw = Assistance_fw_with_archives.noncompilable_files (Automatic.parent fw) ;;
-
-let of_concrete_object = Automatic.of_concrete_object ;;
-
-let of_configuration = Private.of_configuration ;;
-
-let of_configuration_and_list = Private.of_configuration_and_list ;;
-
-let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
-
-let register_rootless_paths = Private.register_rootless_paths;;
-
-let relocate_module_to = Private.relocate_module_to;;
-
-let remove_files = Private.remove_files;;
-
-let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
-
-let rename_subdirectory_as = Private.rename_subdirectory_as;;
-
-let replace_string = Private.replace_string;;
-
-let replace_value = Private.replace_value;;
-
-let root = Automatic.root ;;
-
-let set_gitpush_after_backup = Automatic.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Automatic.set_last_noticed_changes ;;
-
-let to_concrete_object = Automatic.to_concrete_object ;;
-
-let usual_compilable_files fw = Assistance_fw_with_archives.usual_compilable_files (Automatic.parent fw) ;;
-
+      },(List.rev(!accu),changed_a_files@changed_u_files));;   
+   
+   let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
+      let old_parent = parent fw 
+      and old_details = small_details_in_files fw  in 
+      let (new_parent,(all_changes,changed_files)) = 
+           Assistance_fw_with_archives.replace_value 
+            old_parent (preceding_files,path) (replacee,pre_replacer) in
+      let accu = ref [] in 
+      let new_details = Assistance_image.image (
+         fun old_pair->
+            let rl = fst old_pair in
+            if List.mem rl changed_files
+            then let new_pair = (rl,Assistance_fw_with_archives.compute_small_details_on_one_file new_parent rl) in 
+                    let _ = (accu:=(rl,Some new_pair)::(!accu)) in 
+                    new_pair 
+            else old_pair  
+         ) old_details in      
+      ({
+         Assistance_fw_with_small_details_t.parent = new_parent ;
+         small_details_in_files = new_details;
+      },(List.rev(!accu),all_changes));;     
+   
+      let check_that_no_change_has_occurred fw =
+         Assistance_fw_with_archives.check_that_no_change_has_occurred (parent fw) ;; 
+   
+      let latest_changes fw = Assistance_fw_with_archives.latest_changes (parent fw) ;;   
+         
+   end ;;
+   
+   let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
+   let configuration = Private.configuration ;;
+   let empty_one config= { Assistance_fw_with_small_details_t.parent = Assistance_fw_with_archives.empty_one config;small_details_in_files = [];} ;; 
+   let forget_modules = Private.forget_modules ;;
+   let inspect_and_update = Private.inspect_and_update;;
+   let latest_changes = Private.latest_changes ;;
+   let noncompilable_files fw = Assistance_fw_with_archives.noncompilable_files (Private.parent fw) ;;
+   let of_concrete_object = Private.of_concrete_object ;;
+   let of_configuration = Private.of_configuration ;;
+   let of_configuration_and_list = Private.of_configuration_and_list ;;
+   let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
+   let register_rootless_paths = Private.register_rootless_paths;;
+   let relocate_module_to = Private.relocate_module_to;;
+   let remove_files = Private.remove_files;;
+   let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
+   let rename_subdirectory_as = Private.rename_subdirectory_as;;
+   let replace_string = Private.replace_string;;
+   let replace_value = Private.replace_value;;
+   let root = Private.root ;;
+   let small_details_in_files = Private.small_details_in_files ;;
+   let to_concrete_object = Private.to_concrete_object ;;
+   let usual_compilable_files fw = Assistance_fw_with_archives.usual_compilable_files (Private.parent fw) ;;
+   
 
 end;;
 
@@ -11435,7 +11163,7 @@ let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
    let extra_data = List.filter (
           fun (rl,_) ->
           ((Assistance_dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
-      ) ( Assistance_fw_with_small_details.Automatic.small_details_in_files fw) in 
+      ) ( Assistance_fw_with_small_details.small_details_in_files fw) in 
       compute_details_from_acolytes_list_for_one_module ((Assistance_option.filter_and_unpack snd l)@extra_data) ;;     
 
 
@@ -11689,6 +11417,40 @@ end;;
 
 
 
+module Assistance_fw_instance_index_t=struct
+
+(*
+
+#use"Filewatching/fw_instance_index_t.ml";;
+
+*)
+
+type t = I of int ;;
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_state_index_t=struct
+
+(*
+
+#use"Filewatching/fw_state_index_t.ml";;
+
+*)
+
+type t = I of int ;;
+
+end;;
+
+
+
+
+
+
 module Assistance_fw_indexer=struct
 
 (*
@@ -11741,116 +11503,21 @@ end;;
 
 
 
-module Assistance_ordered_misc=struct
-
-(* 
-
-#use"Ordered_Lists/ordered_misc.ml";;
-
-*)
-
-module Private = struct 
-
-  let oi = Assistance_total_ordering.for_integers ;;
-
-  let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> List.rev already_treated 
-    | a :: others ->
-       if List.exists (fun b->
-         (b<>a) && ( Assistance_ordered.is_included_in oi b a) ) others
-       then helper_for_minimal_elts_wrt_inclusion (already_treated,others)
-       else 
-        let temp1 = List.filter (fun b->
-           not(Assistance_ordered.is_included_in oi a b)) others in
-        helper_for_minimal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
-
-  let rec helper_for_minimal_transversals (already_treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> List.rev already_treated 
-    | a :: others ->
-      let temp1 = Assistance_cartesian.product a already_treated in 
-      let temp2 = Assistance_image.image (fun (x,y)->Assistance_ordered.insert oi x y) temp1 in 
-      let temp3 = helper_for_minimal_elts_wrt_inclusion ([],temp2) in 
-      helper_for_minimal_transversals (temp3,others) ;;        
-
-  let power_set_for_intset x =
-     Assistance_ordered.sort (Assistance_total_ordering.silex_compare oi) (Assistance_listennou.power_set x) ;; 
-
-  let rec helper_for_int_upwards_filter (f,treated,to_be_treated) = 
-     match to_be_treated with 
-     [] -> List.rev treated 
-     | a::others ->
-         if f a 
-         then let remaining_ones = List.filter (
-                fun b->not(Assistance_ordered.is_included_in oi a b)
-              ) to_be_treated in 
-              helper_for_int_upwards_filter (f,a::treated,remaining_ones)
-         else helper_for_int_upwards_filter (f,treated,others) ;;    
-
-  let naive_minimal_elts_in_int_upwards_filter f base =
-    let pb = power_set_for_intset base in 
-    helper_for_int_upwards_filter (f,[],pb) ;;     
-
-  let minimal_elts_in_int_upwards_filter f base =
-     let indispensable_ones = List.filter (
-       fun x->(not(f(Assistance_ordered.outsert oi x base)))
-     ) base in 
-     let dispensable_ones = Assistance_ordered.setminus oi base indispensable_ones in 
-     let pullbacked_f = (fun y->f(Assistance_ordered.merge oi indispensable_ones y)) in 
-     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f dispensable_ones in 
-     Assistance_image.image (Assistance_ordered.merge oi indispensable_ones) temp1 ;;
-
-  (*   
-  let base0 = Ennig.ennig 1 5 ;;
-  let f0 y= List.exists (fun x->Ordered.is_included_in oi x y) [[1;2;3];[3;4;5]] ;;
-  let res0 = minimal_elts_in_int_upwards_filter f0 base0 ;;
-  *)
-
-  let minimal_elts_in_upwards_filter f base =
-     let get_one = (fun k->List.nth base (k-1)) in 
-     let get_several = Assistance_image.image get_one in 
-     let n = List.length base 
-     and normalized_f = (fun indices ->f(get_several indices)) in 
-     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_ennig.ennig 1 n) in 
-     Assistance_image.image get_several temp1 ;;
-
-
-end ;;        
-
-let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
-
-let minimal_elts_wrt_inclusion l= 
-  Private.helper_for_minimal_elts_wrt_inclusion ([],l) ;;
-
-  
-let minimal_transversals l= 
-  match l with 
-  [] -> []
-  | a:: others ->
-    let starter = Assistance_image.image (fun x->[x]) a in    
-  Private.helper_for_minimal_transversals (starter,others) ;;  
-  
-
-let reorder_list_of_pairs_using_list_of_singles pairs singles =
-  let idx=Assistance_memoized.make(fun x->
-     Assistance_listennou.find_index x singles   
-  ) in 
-  let ordr = (fun x1 x2 -> Assistance_total_ordering.for_integers (idx x1) (idx x2)) in 
-  let ordr2 = Assistance_total_ordering.product ordr Assistance_total_ordering.standard in 
-  Assistance_ordered.sort ordr2 pairs ;;
+module Assistance_fw_with_dependencies_t=struct
 
 (*
 
-reorder_list_of_pairs_using_list_of_singles (Ennig.doyle( fun t->(t,t+100)) 1 8)
-[2;5;3;6;4;7;1;8] ;;
+#use"Filewatching/fw_with_dependencies_t.ml";;
+
+Thin wrapper on Fw_with_module_linking_t.t, only adds
+the dependencies layer with its associated caching.
+
 *)
 
-
-let translate_at_level_two ll translation=
-  Assistance_image.image (
-    fun l->Assistance_ordered.merge Assistance_total_ordering.for_integers l translation
-  ) ll ;;
+type t ={
+  parent : Assistance_fw_with_small_details_t.t ;
+  index_for_caching : Assistance_fw_instance_index_t.t * Assistance_fw_state_index_t.t ; 
+};;
 
 
 end;;
@@ -11897,8 +11564,6 @@ let of_configuration_and_list = Assistance_fw_with_small_details.of_configuratio
 
 let overwrite_file_if_it_exists = Assistance_fw_with_small_details.overwrite_file_if_it_exists ;;
 
-let reflect_latest_changes_in_github = Assistance_fw_with_small_details.reflect_latest_changes_in_github ;;
-
 let register_rootless_paths = Assistance_fw_with_small_details.register_rootless_paths ;;
 
 let relocate_module_to = Assistance_fw_with_small_details.relocate_module_to ;;
@@ -11911,11 +11576,7 @@ let rename_subdirectory_as = Assistance_fw_with_small_details.rename_subdirector
 
 let replace_string = Assistance_fw_with_small_details.replace_string ;;
 
-let replace_value = Assistance_fw_with_small_details.replace_value ;;
-
-let set_gitpush_after_backup = Assistance_fw_with_small_details.set_gitpush_after_backup ;;
-
-let set_last_noticed_changes = Assistance_fw_with_small_details.set_last_noticed_changes ;;end ;;
+let replace_value = Assistance_fw_with_small_details.replace_value ;;end ;;
 
 
 module Cached = struct 
@@ -11930,13 +11591,13 @@ let empty_one config =
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_parent = parent old_fw in 
- let new_parent = Entrance.forget_modules old_parent mods_to_be_erased in 
+ let (new_parent,extra) = Entrance.forget_modules old_parent mods_to_be_erased in 
  let instance_idx = fst( index old_fw ) in 
  let _ = Assistance_fw_indexer.push_state instance_idx in 
- { 
+ ({ 
    Assistance_fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
- } ;; 
+ },extra ) ;; 
 
 let inspect_and_update old_fw  =  
  let old_parent = parent old_fw in 
@@ -11981,16 +11642,6 @@ let overwrite_file_if_it_exists old_fw pair =
    Assistance_fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
  },extra ) ;; 
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.reflect_latest_changes_in_github old_parent opt_msg in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Assistance_fw_indexer.push_state instance_idx in 
- { 
-   Assistance_fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
 
 let register_rootless_paths old_fw rootlesses =  
  let old_parent = parent old_fw in 
@@ -12060,27 +11711,7 @@ let replace_value old_fw pair =
  ({ 
    Assistance_fw_with_dependencies_t.parent = new_parent ;
    index_for_caching = expand_index instance_idx ;
- },extra ) ;; 
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.set_gitpush_after_backup old_parent yes_or_no in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Assistance_fw_indexer.push_state instance_idx in 
- { 
-   Assistance_fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; 
-
-let set_last_noticed_changes old_fw diff =  
- let old_parent = parent old_fw in 
- let new_parent = Entrance.set_last_noticed_changes old_parent diff in 
- let instance_idx = fst( index old_fw ) in 
- let _ = Assistance_fw_indexer.push_state instance_idx in 
- { 
-   Assistance_fw_with_dependencies_t.parent = new_parent ;
-   index_for_caching = expand_index instance_idx ;
- } ;; end ;;
+ },extra ) ;; end ;;
 
 
 module Modularized_details = struct 
@@ -12103,17 +11734,18 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Cached.forget_modules old_fw mods_to_be_erased in 
+ let visible = Cached.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Cached.inspect_and_update old_fw  in 
  let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
- let ((a_files,u_files),changed_u_files) = extra in 
+ let ((a_files,u_files),changed_u_files,changed_files) = extra in 
  let tempf = (
    fun old_pair ->
     let (mn,details) = old_pair in 
@@ -12168,12 +11800,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Cached.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 let register_rootless_paths old_fw rootlesses =  
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
@@ -12210,7 +11836,7 @@ let relocate_module_to old_fw pair =
      let (mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Assistance_dfn_rootless.to_module rl)= mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
@@ -12248,7 +11874,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      let (pre_mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Assistance_dfn_rootless.to_module rl)= pre_mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
@@ -12256,13 +11882,8 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
- let changed_modules_in_any_order = Assistance_option.filter_and_unpack (fun (_,opt)->match opt with 
- None -> None |(Some(new_rl,_))->Some (Assistance_dfn_rootless.to_module new_rl)) extra in 
- let changed_modules = Assistance_option.filter_and_unpack (fun (mn,_)->
- if List.mem mn changed_modules_in_any_order then Some mn else None
-  ) answer in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- (new_fw,changed_modules) ;;
+ (new_fw,extra) ;;
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Cached.rename_subdirectory_as old_fw pair in 
@@ -12273,7 +11894,7 @@ let rename_subdirectory_as old_fw pair =
      let (mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Assistance_dfn_rootless.to_module rl)= mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
@@ -12292,7 +11913,7 @@ let replace_string old_fw pair =
      let (mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Assistance_dfn_rootless.to_module rl)= mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
@@ -12311,7 +11932,7 @@ let replace_value old_fw pair =
      let (mn,details) = old_pair in 
      let temp1 = List.filter (fun (rl,new_pair_for_rl)->
         (Assistance_dfn_rootless.to_module rl)= mn
-       ) extra in
+       ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
           (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
@@ -12320,18 +11941,6 @@ let replace_value old_fw pair =
  let answer = Assistance_image.image tempf old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Cached.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Cached.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -12356,11 +11965,12 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Modularized_details.forget_modules old_fw mods_to_be_erased in 
+ let visible = Modularized_details.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Modularized_details.inspect_and_update old_fw  in 
@@ -12401,12 +12011,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = Assistance_fw_determine_order.main  details_in_old_order in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Modularized_details.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Modularized_details.register_rootless_paths old_fw rootlesses in 
@@ -12477,18 +12081,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Modularized_details.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Modularized_details.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 end ;;
 
 
@@ -12520,10 +12112,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Order.forget_modules old_fw mods_to_be_erased in 
+ let visible = Order.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Order.inspect_and_update old_fw  in 
@@ -12556,12 +12149,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Order.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Order.register_rootless_paths old_fw rootlesses in 
@@ -12621,18 +12208,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Order.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Order.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 end ;;
 
 
@@ -12664,10 +12239,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
+ let visible = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_dirs.inspect_and_update old_fw  in 
@@ -12700,12 +12276,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Needed_dirs.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_dirs.register_rootless_paths old_fw rootlesses in 
@@ -12759,18 +12329,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Needed_dirs.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Needed_dirs.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 end ;;
 
 
@@ -12798,10 +12356,11 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = Needed_libs.forget_modules old_fw mods_to_be_erased in 
+ let visible = Needed_libs.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_libs.inspect_and_update old_fw  in 
@@ -12834,12 +12393,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = Needed_libs.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_libs.register_rootless_paths old_fw rootlesses in 
@@ -12900,18 +12453,6 @@ let replace_value old_fw pair =
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = Needed_libs.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = Needed_libs.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
 end ;;
 
 
@@ -12947,12 +12488,13 @@ let empty_one config =
  new_fw ;;
 
 let forget_modules old_fw mods_to_be_erased =  
- let new_fw = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
+ let visible = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
+ let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun middle->
     not(List.mem (Assistance_dfn_middle.to_module middle) mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
+ visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = All_subdirectories.inspect_and_update old_fw  in 
@@ -12985,12 +12527,6 @@ let overwrite_file_if_it_exists old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let reflect_latest_changes_in_github old_fw opt_msg =  
- let new_fw = All_subdirectories.reflect_latest_changes_in_github old_fw opt_msg in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = All_subdirectories.register_rootless_paths old_fw rootlesses in 
@@ -13047,18 +12583,6 @@ let replace_value old_fw pair =
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
-
-let set_gitpush_after_backup old_fw yes_or_no =  
- let new_fw = All_subdirectories.set_gitpush_after_backup old_fw yes_or_no in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
-
-let set_last_noticed_changes old_fw diff =  
- let new_fw = All_subdirectories.set_last_noticed_changes old_fw diff in 
-  let answer = get old_fw in 
- let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
- new_fw ;;
 
 end ;;
 
@@ -13206,13 +12730,6 @@ let decipher_module fw capitalized_or_not_x=
       Assistance_fw_with_small_details.check_that_no_change_has_occurred (parent fw) ;; 
 
   
-  let directly_below fw mn0=
-    let ordered_data = Order.get fw in  
-    Assistance_option.filter_and_unpack(fun (mn,_)->
-      let fathers_for_mn = fst (List.assoc mn ordered_data) in 
-      if List.mem mn0 fathers_for_mn
-      then Some(mn)
-      else None) ordered_data;;      
 
   let modules_using_value fw value_name =
     Assistance_option.filter_and_unpack (fun (mn,_)->
@@ -13333,24 +12850,16 @@ let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules fw = Assistance_image.image fst (Private.Order.get fw);;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.Order.get fw)) ;;
-let directly_below fw mn = Private.directly_below fw mn ;;
 let duplicate_module = Private.duplicate_module ;;
 let empty_one = Private.Exit.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.Exit.forget_modules ;;
-let get_mtime fw rl = Assistance_fw_with_small_details.get_mtime (Private.parent fw) rl ;;
-let get_mtime_or_zero_if_file_is_nonregistered fw rl = Assistance_fw_with_small_details.get_mtime_or_zero_if_file_is_nonregistered (Private.parent fw) rl ;;
 let inspect_and_update = Private.Exit.inspect_and_update ;;
-let last_noticed_changes fw = Assistance_fw_with_small_details.last_noticed_changes (Private.parent fw) ;;
 let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;; 
-let mli_mt_for_module fw mn = match Assistance_fw_module_small_details.opt_mli_modification_time (Private.details_for_module fw mn) with 
-                              None -> "0." |Some(fl)->fl ;;
-let mli_presence_for_module fw mn = Assistance_fw_module_small_details.mli_present (Private.details_for_module fw mn) ;;
 let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
-let needed_dirs_for_module fw mn = List.assoc mn (Private.Needed_dirs.get fw) ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let noncompilable_files fw = Assistance_fw_with_small_details.noncompilable_files (Private.parent fw) ;;
 let number_of_modules = Private.number_of_modules ;;
@@ -13358,10 +12867,7 @@ let of_concrete_object = Private.Exit.of_concrete_object ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
-let principal_ending_for_module fw mn = Assistance_fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
-let principal_mt_for_module fw mn = Assistance_fw_module_small_details.principal_modification_time (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
-let reflect_latest_changes_in_github = Private.Exit.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.Exit.register_rootless_paths ;;
 let relocate_module_to = Private.Exit.relocate_module_to ;;
 let remove_files = Private.Exit.remove_files ;;
@@ -13370,8 +12876,6 @@ let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
 let root fw = Assistance_fw_with_small_details.root (Private.parent fw);;
-let set_gitpush_after_backup = Private.Exit.set_gitpush_after_backup ;;
-let set_last_noticed_changes = Private.Exit.set_last_noticed_changes ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Assistance_fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object fw = Assistance_fw_with_small_details.to_concrete_object (Private.parent fw) ;;
@@ -13607,6 +13111,28 @@ end;;
 
 
 
+module Assistance_fw_with_batch_compilation_t=struct
+
+(* 
+
+#use"Filewatching/fw_with_batch_compilation_t.ml";;
+
+*)
+
+
+type t={
+     parent : Assistance_fw_with_dependencies_t.t;
+     last_compilation_result_for_module : (Assistance_dfa_module_t.t * bool) list;
+};;
+
+
+end;;
+
+
+
+
+
+
 module Assistance_no_slashes=struct
 
 (*
@@ -13645,7 +13171,7 @@ module Assistance_fw_with_batch_compilation=struct
 
 (* 
 
-#use"Compilation_management/fw_with_batch_compilation.ml";;
+#use"Filewatching/fw_with_batch_compilation.ml";;
 
 *)
 
@@ -13653,7 +13179,6 @@ module Assistance_fw_with_batch_compilation=struct
 exception Rename_string_or_value_exn of string ;;
 
 module Private = struct 
-
   
   let ocamldebug_printersfile_path root= 
              (Assistance_dfa_root.connectable_to_subpath root)^
@@ -13933,10 +13458,6 @@ module Private = struct
 
   let number_of_modules fw = Assistance_fw_with_dependencies.number_of_modules (parent fw) ;;  
   
-  let set_gitpush_after_backup fw bowl = 
-    let new_parent = Assistance_fw_with_dependencies.set_gitpush_after_backup (parent fw) bowl in 
-    {fw with Assistance_fw_with_batch_compilation_t.parent = new_parent} ;; 
-
   
   let modern_recompile fw changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then fw else
@@ -13952,7 +13473,7 @@ module Private = struct
       fw2 ;;
 
    let forget_modules fw mod_names=
-      let new_parent = Assistance_fw_with_dependencies.forget_modules (parent fw) mod_names in  
+      let (new_parent,removed_files) = Assistance_fw_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Assistance_image.image Assistance_dfa_module.to_line mod_names in 
      let temp2 = Assistance_cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
      let _=Assistance_image.image
@@ -13960,16 +13481,16 @@ module Private = struct
                        let cmd="rm -f _build/"^mname^edg in
                        Assistance_unix_command.uc(cmd))
                       temp2 in
-      set_parent fw new_parent;;
+      (set_parent fw new_parent,removed_files);;
    
    let remove_files fw rootless_paths=
       let (new_parent,_)=Assistance_fw_with_dependencies.remove_files (parent fw) rootless_paths in   
       set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
-      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_))
+      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_,changed_files))
          =Assistance_fw_with_dependencies.inspect_and_update (parent fw) in   
-      (set_parent fw new_parent,changed_usual_compilables);;
+      (set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
    let of_fw_with_dependencies fw = {
     Assistance_fw_with_batch_compilation_t.parent = fw ;
@@ -14012,8 +13533,8 @@ module Private = struct
    
   
    let relocate_module_to fw mod_name new_subdir=
-      let (new_parent,_)=Assistance_fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
-      set_parent fw new_parent ;;
+      let (new_parent,replacements)=Assistance_fw_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
+      (set_parent fw new_parent,replacements) ;;
    
    let rename_module fw old_middle_name new_nonslashed_name=
      let old_nm=Assistance_dfn_middle.to_module old_middle_name in
@@ -14050,46 +13571,31 @@ module Private = struct
       let fw3=modern_recompile fw2 [new_nm] in 
       (fw3,changes) ;;
       
-    
-    ;;
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
-      let (new_parent,_)=Assistance_fw_with_dependencies.rename_subdirectory_as 
+      let (new_parent,extra)=Assistance_fw_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
-         set_parent fw new_parent ;;
+         (set_parent fw new_parent,extra) ;;
    
-   let rename_string_or_value fw old_sov new_sov =
-      let old_parent = parent fw in 
-      let (new_parent,changed_rootlesses)=(
-         if not(String.contains old_sov '.')
-         then let (parent1,changes1) = Assistance_fw_with_dependencies.replace_string old_parent (old_sov,new_sov) in 
-              (parent1,Assistance_image.image fst changes1)
-         else 
-              let j=Assistance_substring.leftmost_index_of_in "." old_sov in
-              if j<0 
-              then raise(Rename_string_or_value_exn(old_sov))
-              else let module_name=Assistance_cull_string.beginning (j-1) old_sov in
-                   let endingless=Assistance_fw_with_dependencies.decipher_module old_parent  module_name 
-                   and path=Assistance_fw_with_dependencies.decipher_path old_parent  module_name in 
-                   let nm=Assistance_dfn_endingless.to_module endingless in
-                   let pre_temp2=(Assistance_fw_with_dependencies.ancestors_for_module old_parent nm)@[nm] in
-                   let temp2=Assistance_image.image (Assistance_fw_with_dependencies.endingless_at_module old_parent) pre_temp2 in
-                   let preceding_files=Assistance_image.image  (fun eless2->
-                        Assistance_dfn_full.to_absolute_path(Assistance_dfn_join.to_ending eless2 Assistance_dfa_ending.ml)
-                   ) temp2 in
-                   let (parent2,changes2) = Assistance_fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_sov,new_sov)) in 
-                   (parent2,Assistance_image.image fst changes2) 
-      ) in 
-      let changed_modules_in_any_order = Assistance_image.image Assistance_dfn_rootless.to_module changed_rootlesses in 
-      (set_parent fw new_parent,changed_modules_in_any_order);;       
-  
+    let replace_string fw old_s new_s =
+         let old_parent = parent fw in 
+         let (new_parent,(changes1,all_changed_files)) = Assistance_fw_with_dependencies.replace_string old_parent (old_s,new_s) in 
+         let changed_rootlesses = Assistance_image.image fst changes1 in 
+         let changed_modules_in_any_order = Assistance_image.image Assistance_dfn_rootless.to_module changed_rootlesses in 
+         (set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
+    
+    
+    let replace_value fw ((preceding_files,path),(old_v,new_v)) =
+          let old_parent = parent fw in 
+          let (new_parent,(u_changes,all_changes)) = Assistance_fw_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
+          let changed_rootlesses = Assistance_image.image fst u_changes in 
+          let changed_modules_in_any_order = Assistance_image.image Assistance_dfn_rootless.to_module changed_rootlesses in 
+          (set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
+
+
   let check_that_no_change_has_occurred fw =
         Assistance_fw_with_dependencies.check_that_no_change_has_occurred (parent fw) ;; 
-
-        let reflect_latest_changes_in_github fw opt_msg = 
-          let old_parent = parent fw in 
-          let new_parent = Assistance_fw_with_dependencies.reflect_latest_changes_in_github old_parent opt_msg in 
-          set_parent fw new_parent ;;       
+    
   
   let modules_using_value fw module_name =
         Assistance_fw_with_dependencies.modules_using_value (parent fw) module_name;;       
@@ -14114,8 +13620,6 @@ module Private = struct
 
   let dep_ordered_modules fw = Assistance_fw_with_dependencies.dep_ordered_modules (parent fw) ;;
 
-  let all_ml_absolute_paths fw = Assistance_fw_with_dependencies.all_ml_absolute_paths (parent fw) ;;
-
   let all_mlx_files fw = Assistance_fw_with_dependencies.all_mlx_files (parent fw) ;;
 
   let all_endinglesses fw = Assistance_fw_with_dependencies.all_endinglesses (parent fw) ;;
@@ -14133,11 +13637,25 @@ module Private = struct
      last_compilation_result_for_module = [] ;
   } ;;
 
+  let usual_recompile fw = 
+    let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
+    let unordered_mods = Assistance_image.image Assistance_dfn_rootless.to_module changed_uc in  
+    let fw2 = modern_recompile fw1 unordered_mods  in 
+    (fw2,(changed_uc,changed_files)) ;;   
+
+  
+  let decipher_module fw = Assistance_fw_with_dependencies.decipher_module (parent fw) ;;  
+
+  let decipher_path fw = Assistance_fw_with_dependencies.decipher_path (parent fw) ;;  
+
+  
+  let all_ml_absolute_paths fw = Assistance_fw_with_dependencies.all_ml_absolute_paths (parent fw) ;; 
+
   end ;;
   
-let all_endinglesses = Private.all_endinglesses ;;  
-let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;  
+let all_endinglesses = Private.all_endinglesses ;;   
 let all_mlx_files = Private.all_mlx_files ;;
+let all_ml_absolute_paths = Private.all_ml_absolute_paths ;; 
 let all_subdirectories = Private.all_subdirectories ;;
 let ancestors_for_module = Private.ancestors_for_module ;;
 let below = Private.below ;;
@@ -14147,6 +13665,8 @@ let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurre
 let clean_debug_dir = Private.clean_debug_dir;;
 let clean_exec_dir = Private.clean_exec_dir;;
 let configuration = Private.configuration ;;
+let decipher_module = Private.decipher_module ;;
+let decipher_path = Private.decipher_path ;;
 let dep_ordered_modules = Private.dep_ordered_modules ;;
 let direct_fathers_for_module = Private.direct_fathers_for_module ;;
 let directly_below = Private.directly_below ;;
@@ -14155,7 +13675,6 @@ let empty_one = Private.empty_one ;;
 let endingless_at_module = Private.endingless_at_module ;;
 let find_subdir_from_suffix = Private.find_subdir_from_suffix ;;
 let forget_modules = Private.forget_modules ;;
-let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
@@ -14166,15 +13685,14 @@ let of_concrete_object = Private.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
-let reflect_latest_changes_in_github = Private.reflect_latest_changes_in_github ;;
 let register_rootless_paths = Private.register_rootless_paths ;;
 let relocate_module_to = Private.relocate_module_to ;;
 let remove_files = Private.remove_files ;;
 let rename_module = Private.rename_module ;;
-let rename_string_or_value = Private.rename_string_or_value ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
+let replace_string = Private.replace_string ;;
+let replace_value = Private.replace_value ;;
 let root = Private.root ;;
-let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
@@ -14182,7 +13700,7 @@ let to_concrete_object = Private.to_concrete_object ;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;;
 let usual_compilable_files = Private.usual_compilable_files ;;  
-  
+let usual_recompile = Private.usual_recompile ;;  
   
   
   
@@ -14194,175 +13712,286 @@ end;;
 
 
 
-module Assistance_coma_state=struct
+module Assistance_fw_with_githubbing_t=struct
 
 (* 
 
-#use "Compilation_management/coma_state.ml";;
+#use"Filewatching/fw_with_githubbing_t.ml";;
 
 *)
 
+
+type t={
+     parent : Assistance_fw_with_batch_compilation_t.t;
+     dir_for_backup : Assistance_dfa_root_t.t;
+     gitpush_after_backup : bool;
+     github_url : string;
+     encoding_protected_files : (Assistance_dfn_rootless_t.t * Assistance_dfn_rootless_t.t) list;
+};;
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_with_githubbing=struct
+
+(* 
+
+#use"Filewatching/fw_with_githubbing.ml";;
+
+*)
+
+
 module Private = struct
 
-let parent cs = cs.Assistance_coma_state_t.parent ;; 
-
-let set_parent fw batch_compiler = { 
-   fw with 
-   Assistance_coma_state_t.parent = batch_compiler ;
-} ;;
-
-let below cs mn = Assistance_fw_with_batch_compilation.below (parent cs) mn ;;
-let directly_below cs mn = Assistance_fw_with_batch_compilation.directly_below (parent cs) mn ;;
-let root cs = Assistance_fw_with_batch_compilation.root (parent cs) ;;
-
-let usual_batch cs modnames = 
-  let (new_parent,rejected_ones,accepted_ones) = Assistance_fw_with_batch_compilation.usual_batch (parent cs) modnames in 
-  (set_parent cs new_parent,rejected_ones,accepted_ones) ;; 
-
-
-let salt = "Coma_"^"state.";;
-  
-let parent_label                         = salt ^ "parent";;
-let dir_for_backup_label                 = salt ^ "dir_for_backup";;
-let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
-let github_url_label                     = salt ^ "github_url";;
-
-let of_concrete_object ccrt_obj = 
-   let g=Assistance_concrete_object.get_record ccrt_obj in
-   {
-      Assistance_coma_state_t.parent = Assistance_fw_with_batch_compilation.of_concrete_object(g parent_label);
-      dir_for_backup = Assistance_dfa_root.of_concrete_object(g dir_for_backup_label);
-      gitpush_after_backup = Assistance_crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
-      github_url = Assistance_crobj_converter.string_of_concrete_object (g github_url_label);
-   };; 
-
-let to_concrete_object cs=
-   let items= 
-   [
-    parent_label, Assistance_fw_with_batch_compilation.to_concrete_object (parent cs);
-    dir_for_backup_label, Assistance_dfa_root.to_concrete_object cs.Assistance_coma_state_t.dir_for_backup;
-    gitpush_after_backup_label, Assistance_crobj_converter.bool_to_concrete_object  cs.Assistance_coma_state_t.gitpush_after_backup;
-    github_url_label, Assistance_crobj_converter.string_to_concrete_object cs.Assistance_coma_state_t.github_url;
-   ]  in
-   Assistance_concrete_object_t.Record items;;
-
-
-
-
-  
-  let empty_one config backup_dir gab git_url=
-    {
-      Assistance_coma_state_t.parent = Assistance_fw_with_batch_compilation.empty_one config;
-      dir_for_backup = backup_dir;
-      gitpush_after_backup = gab;
-      github_url = git_url;
-    };;
-  
-  
-
-let read_persistent_version x=
-  let full_path=Assistance_dfn_join.root_to_rootless (root x)  Assistance_coma_constant.rootless_path_for_targetfile in
-  let ap= Assistance_dfn_full.to_absolute_path full_path in
-  let the_archive=Assistance_io.read_whole_file ap in
-  let archived_object = Assistance_crobj_parsing.parse the_archive in 
-  of_concrete_object archived_object;;      
-
-
-end ;; 
-
-let all_endinglesses cs = Assistance_fw_with_batch_compilation.all_endinglesses (Private.parent cs) ;;
-let all_ml_absolute_paths cs = Assistance_fw_with_batch_compilation.all_ml_absolute_paths (Private.parent cs) ;;
-let all_mlx_files cs = Assistance_fw_with_batch_compilation.all_mlx_files (Private.parent cs) ;;
-let all_subdirectories cs = Assistance_fw_with_batch_compilation.all_subdirectories (Private.parent cs) ;;
-let ancestors_for_module cs mn = Assistance_fw_with_batch_compilation.ancestors_for_module (Private.parent cs) mn ;;
-let below cs mn = Assistance_fw_with_batch_compilation.below (Private.parent cs) mn ;;
-let census_of_foreigners cs = Assistance_fw_with_batch_compilation.census_of_foreigners (Private.parent cs) ;;
-let check_module_sequence_for_forgettability cs = Assistance_fw_with_batch_compilation.check_module_sequence_for_forgettability (Private.parent cs) ;;
-let check_that_no_change_has_occurred cs =
-  Assistance_fw_with_batch_compilation.check_that_no_change_has_occurred (Private.parent cs) ;; 
-let clean_debug_dir cs = Assistance_fw_with_batch_compilation.clean_debug_dir (Private.parent cs) ;;
-let clean_exec_dir cs = Assistance_fw_with_batch_compilation.clean_exec_dir (Private.parent cs) ;;
-let configuration cs= Assistance_fw_with_batch_compilation.configuration (Private.parent cs) ;;
-let dep_ordered_modules cs = Assistance_fw_with_batch_compilation.dep_ordered_modules (Private.parent cs) ;;
-let direct_fathers_for_module cs mn = Assistance_fw_with_batch_compilation.direct_fathers_for_module (Private.parent cs) mn ;;
-let directly_below cs mn = Assistance_fw_with_batch_compilation.directly_below (Private.parent cs) mn ;;
-let duplicate_module cs  vague_mname1 vague_mname2 = Assistance_fw_with_batch_compilation.duplicate_module (Private.parent cs) vague_mname1 vague_mname2 ;;
+     let parent fw = fw.Assistance_fw_with_githubbing_t.parent ;; 
+     
+     let set_parent fw batch_compiler = { 
+        fw with 
+        Assistance_fw_with_githubbing_t.parent = batch_compiler ;
+     } ;;
+     
+     let below fw mn = Assistance_fw_with_batch_compilation.below (parent fw) mn ;;
+     let directly_below fw mn = Assistance_fw_with_batch_compilation.directly_below (parent fw) mn ;;
+     let root fw = Assistance_fw_with_batch_compilation.root (parent fw) ;;
+     
+     let usual_batch fw modnames = 
+       let (new_parent,rejected_ones,accepted_ones) = Assistance_fw_with_batch_compilation.usual_batch (parent fw) modnames in 
+       (set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
+     
+     let github_config fw = 
+        {Assistance_github_configuration_t.root = root fw;
+          dir_for_backup = fw.Assistance_fw_with_githubbing_t.dir_for_backup ;
+          gitpush_after_backup = fw.Assistance_fw_with_githubbing_t.gitpush_after_backup ;
+          github_url = fw.Assistance_fw_with_githubbing_t.github_url ;
+          encoding_protected_files = fw.Assistance_fw_with_githubbing_t.encoding_protected_files ;
+          } ;;
+   
+   
+     let salt = "Coma_"^"state.";;
+       
+     let parent_label                         = salt ^ "parent";;
+     let dir_for_backup_label                 = salt ^ "dir_for_backup";;
+     let gitpush_after_backup_label           = salt ^ "gitpush_after_backup";;
+     let github_url_label                     = salt ^ "github_url";;
+     let encoding_protected_files_label       = salt ^ "encoding_protected_files";;
+     
+     
+     let of_concrete_object ccrt_obj = 
+        let g=Assistance_concrete_object.get_record ccrt_obj in
+        {
+           Assistance_fw_with_githubbing_t.parent = Assistance_fw_with_batch_compilation.of_concrete_object(g parent_label);
+           dir_for_backup = Assistance_dfa_root.of_concrete_object(g dir_for_backup_label);
+           gitpush_after_backup = Assistance_crobj_converter.bool_of_concrete_object (g gitpush_after_backup_label);
+           github_url = Assistance_crobj_converter.string_of_concrete_object (g github_url_label);
+           encoding_protected_files = Assistance_dfn_rootless.pair_list_of_concrete_object (g encoding_protected_files_label);
+        };; 
+     
+     let to_concrete_object fw=
+        let items= 
+        [
+         parent_label, Assistance_fw_with_batch_compilation.to_concrete_object (parent fw);
+         dir_for_backup_label, Assistance_dfa_root.to_concrete_object fw.Assistance_fw_with_githubbing_t.dir_for_backup;
+         gitpush_after_backup_label, Assistance_crobj_converter.bool_to_concrete_object  fw.Assistance_fw_with_githubbing_t.gitpush_after_backup;
+         github_url_label, Assistance_crobj_converter.string_to_concrete_object fw.Assistance_fw_with_githubbing_t.github_url;
+         encoding_protected_files_label, Assistance_dfn_rootless.pair_list_to_concrete_object fw.Assistance_fw_with_githubbing_t.encoding_protected_files;
+        ]  in
+        Assistance_concrete_object_t.Record items;;
+     
+     
+     
+     
+       
+       let empty_one config backup_dir gab git_url enc_files=
+         {
+           Assistance_fw_with_githubbing_t.parent = Assistance_fw_with_batch_compilation.empty_one config;
+           dir_for_backup = backup_dir;
+           gitpush_after_backup = gab;
+           github_url = git_url;
+           encoding_protected_files = enc_files;
+     
+         };;
+       
+     exception Forget_modules_exn of Assistance_dfa_module_t.t  list ;;     
+   
+     let forget_modules fw mods = 
+       let check = Assistance_fw_with_batch_compilation.check_module_sequence_for_forgettability (parent fw) mods in 
+       if check <> []
+       then raise(Forget_modules_exn(check))
+       else
+       let (new_parent,removed_files) = Assistance_fw_with_batch_compilation.forget_modules (parent fw) mods in 
+       let descr = String.concat " , " (Assistance_image.image Assistance_dfa_module.to_line mods) in 
+       let msg="delete "^descr in 
+       let diff = Assistance_dircopy_diff.destroy Assistance_dircopy_diff.empty_one removed_files  in  
+       let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in     
+       set_parent fw new_parent ;;     
+   
+     let forget_nonmodular_rootlesses fw rootless_paths=
+         let new_parent = Assistance_fw_with_batch_compilation.remove_files (parent fw) rootless_paths in 
+         let descr = String.concat " , " (Assistance_image.image Assistance_dfn_rootless.to_line rootless_paths) in 
+         let msg="delete "^descr in 
+         let diff = Assistance_dircopy_diff.destroy Assistance_dircopy_diff.empty_one rootless_paths  in  
+         let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in     
+         set_parent fw new_parent ;;     
+       
+     
+     let read_persistent_version x=
+       let full_path=Assistance_dfn_join.root_to_rootless (root x)  Assistance_coma_constant.rootless_path_for_targetfile in
+       let ap= Assistance_dfn_full.to_absolute_path full_path in
+       let the_archive=Assistance_io.read_whole_file ap in
+       let archived_object = Assistance_crobj_parsing.parse the_archive in 
+       of_concrete_object archived_object;;      
+     
+     let register_rootless_paths fw rootless_paths = 
+         let new_parent = Assistance_fw_with_batch_compilation.register_rootless_paths (parent fw) rootless_paths in 
+         let descr = String.concat " , " (Assistance_image.image Assistance_dfn_rootless.to_line rootless_paths) in 
+         let msg="register "^descr in 
+         let diff = Assistance_dircopy_diff.create Assistance_dircopy_diff.empty_one rootless_paths  in  
+         let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in     
+         set_parent fw new_parent ;;  
+   
+      
+   
+     let relocate_module_to fw mod_name new_subdir = 
+         let (new_parent,(_,replacements)) = Assistance_fw_with_batch_compilation.relocate_module_to (parent fw) mod_name new_subdir in 
+         let msg="move "^(Assistance_dfa_module.to_line mod_name)^" to "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
+         let diff = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one replacements  in  
+         let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in     
+         set_parent fw new_parent ;; 
+   
+     let rename_module fw old_middle_name new_nonslashed_name = 
+         let (new_parent,(_,(file_renamings,changed_files))) = Assistance_fw_with_batch_compilation.rename_module (parent fw) old_middle_name new_nonslashed_name in 
+         let msg="rename "^(Assistance_dfa_module.to_line(Assistance_dfn_middle.to_module old_middle_name))^
+                 " as "^(Assistance_no_slashes.to_string new_nonslashed_name) in       
+         let diff1 = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one file_renamings  in  
+         let diff2 = Assistance_dircopy_diff.add_changes diff1  changed_files  in  
+         let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff2 (Some msg) in     
+         set_parent fw new_parent ;;    
+   
+     let rename_subdirectory_as fw (old_subdir,new_subdir) = 
+       let (new_parent,(_,original_reps)) = Assistance_fw_with_batch_compilation.rename_subdirectory_as 
+             (parent fw) (old_subdir,new_subdir) in 
+       let msg="rename "^(Assistance_dfa_subdirectory.connectable_to_subpath old_subdir)^
+             " as "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
+       let diff = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one original_reps in   
+       let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in     
+       set_parent fw new_parent ;; 
+   
+     
+     let replace_string fw old_s new_s = 
+         let (parent1,(changed_modules_in_any_order,all_changed_files)) = 
+         Assistance_fw_with_batch_compilation.replace_string (parent fw) old_s new_s  in 
+         let parent2 = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+         let msg="rename "^old_s^" as "^new_s in 
+         let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one all_changed_files in 
+         let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in 
+         set_parent fw parent2 ;;
+   
+     let replace_value fw ((preceding_files,path),(old_v,new_v)) = 
+           let (parent1,(changed_modules_in_any_order,all_changes)) = 
+           Assistance_fw_with_batch_compilation.replace_value (parent fw) ((preceding_files,path),(old_v,new_v))  in 
+           let parent2 = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+           let msg="rename "^old_v^" as "^new_v in 
+           let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one all_changes in 
+           let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff (Some msg) in 
+           set_parent fw parent2 ;; 
+    
+      
+     let usual_recompile fw opt_comment = 
+       let (new_parent,(changed_uc,changed_files)) = Assistance_fw_with_batch_compilation.usual_recompile (parent fw)  in 
+       let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one changed_files in 
+       let _ = Assistance_transmit_change_to_github.backup (github_config fw) diff opt_comment in 
+       set_parent fw new_parent ;;   
+   
+   end;;  
+         
+     
+let all_endinglesses fw = Assistance_fw_with_batch_compilation.all_endinglesses (Private.parent fw) ;;
+let all_ml_absolute_paths fw = Assistance_fw_with_batch_compilation.all_ml_absolute_paths (Private.parent fw) ;;
+let all_mlx_files fw = Assistance_fw_with_batch_compilation.all_mlx_files (Private.parent fw) ;;
+let all_subdirectories fw = Assistance_fw_with_batch_compilation.all_subdirectories (Private.parent fw) ;;
+let ancestors_for_module fw mn = Assistance_fw_with_batch_compilation.ancestors_for_module (Private.parent fw) mn ;;
+let below fw mn = Assistance_fw_with_batch_compilation.below (Private.parent fw) mn ;;
+let census_of_foreigners fw = Assistance_fw_with_batch_compilation.census_of_foreigners (Private.parent fw) ;;
+let check_module_sequence_for_forgettability fw = Assistance_fw_with_batch_compilation.check_module_sequence_for_forgettability (Private.parent fw) ;;
+let check_that_no_change_has_occurred fw =
+  Assistance_fw_with_batch_compilation.check_that_no_change_has_occurred (Private.parent fw) ;; 
+let clean_debug_dir fw = Assistance_fw_with_batch_compilation.clean_debug_dir (Private.parent fw) ;;
+let clean_exec_dir fw = Assistance_fw_with_batch_compilation.clean_exec_dir (Private.parent fw) ;;
+let configuration fw= Assistance_fw_with_batch_compilation.configuration (Private.parent fw) ;;
+let decipher_module fw = Assistance_fw_with_batch_compilation.decipher_module (Private.parent fw);;
+let decipher_path fw = Assistance_fw_with_batch_compilation.decipher_path (Private.parent fw);;
+let dep_ordered_modules fw = Assistance_fw_with_batch_compilation.dep_ordered_modules (Private.parent fw) ;;
+let direct_fathers_for_module fw mn = Assistance_fw_with_batch_compilation.direct_fathers_for_module (Private.parent fw) mn ;;
+let directly_below fw mn = Assistance_fw_with_batch_compilation.directly_below (Private.parent fw) mn ;;
+let duplicate_module fw  vague_mname1 vague_mname2 = Assistance_fw_with_batch_compilation.duplicate_module (Private.parent fw) vague_mname1 vague_mname2 ;;
 let empty_one = Private.empty_one ;;
-let endingless_at_module cs mn = Assistance_fw_with_batch_compilation.endingless_at_module (Private.parent cs) mn ;;
-let find_subdir_from_suffix cs = Assistance_fw_with_batch_compilation.find_subdir_from_suffix (Private.parent cs) ;;
-let forget_modules cs mods = 
-  let new_parent = Assistance_fw_with_batch_compilation.forget_modules (Private.parent cs) mods in 
-  Private.set_parent cs new_parent ;; 
-let gitpush_after_backup cs=(configuration cs).Assistance_fw_configuration_t.gitpush_after_backup;;   
-let inspect_and_update cs  = 
-    let (new_parent,changed_usual_compilables) = Assistance_fw_with_batch_compilation.inspect_and_update (Private.parent cs)  in 
-    (Private.set_parent cs new_parent,changed_usual_compilables) ;;   
+let endingless_at_module fw mn = Assistance_fw_with_batch_compilation.endingless_at_module (Private.parent fw) mn ;;
+let find_subdir_from_suffix fw = Assistance_fw_with_batch_compilation.find_subdir_from_suffix (Private.parent fw) ;;
+let forget_modules = Private.forget_modules ;; 
+let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
+let gitpush_after_backup fw= fw.Assistance_fw_with_githubbing_t.gitpush_after_backup;;     
 let latest_changes fw = Assistance_fw_with_batch_compilation.latest_changes (Private.parent fw)  ;;      
-let list_values_from_module cs mn = 
-  Assistance_fw_with_batch_compilation.list_values_from_module  (Private.parent cs) mn ;;
-let modern_recompile cs changed_modules_in_any_order = 
-  let new_parent = Assistance_fw_with_batch_compilation.modern_recompile (Private.parent cs) changed_modules_in_any_order in 
-  Private.set_parent cs new_parent ;; 
-let modules_using_value cs module_name =
-    Assistance_fw_with_batch_compilation.modules_using_value (Private.parent cs) module_name ;;  
-let noncompilable_files cs = 
-    Assistance_fw_with_batch_compilation.noncompilable_files (Private.parent cs) ;; 
+let list_values_from_module fw mn = 
+  Assistance_fw_with_batch_compilation.list_values_from_module  (Private.parent fw) mn ;;
+let modern_recompile fw changed_modules_in_any_order = 
+  let new_parent = Assistance_fw_with_batch_compilation.modern_recompile (Private.parent fw) changed_modules_in_any_order in 
+  Private.set_parent fw new_parent ;; 
+let modules_using_value fw module_name =
+    Assistance_fw_with_batch_compilation.modules_using_value (Private.parent fw) module_name ;;  
+let noncompilable_files fw = 
+    Assistance_fw_with_batch_compilation.noncompilable_files (Private.parent fw) ;; 
 let number_of_modules fw = Assistance_fw_with_batch_compilation.number_of_modules (Private.parent fw) ;;    
-let of_configuration config backup_dir gab git_url = 
+let of_configuration config backup_dir gab git_url enc_files = 
   {
-    Assistance_coma_state_t.parent = Assistance_fw_with_batch_compilation.of_configuration config;
+    Assistance_fw_with_githubbing_t.parent = Assistance_fw_with_batch_compilation.of_configuration config;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
+    encoding_protected_files = enc_files;
   };;
 
 let of_concrete_object = Private.of_concrete_object ;;  
-let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url = 
+let of_fw_with_batch_compilation batch_compiler backup_dir gab git_url enc_files = 
   {
-    Assistance_coma_state_t.parent = batch_compiler ;
+    Assistance_fw_with_githubbing_t.parent = batch_compiler ;
     dir_for_backup = backup_dir;
     gitpush_after_backup = gab;
     github_url = git_url;
+    encoding_protected_files = enc_files;
   };;
   
-let preq_types_with_extra_info cs = 
-  Assistance_fw_with_batch_compilation.preq_types_with_extra_info (Private.parent cs) ;; 
-let read_persistent_version = Private.read_persistent_version ;;
-let reflect_latest_changes_in_github cs opt_msg=
-    let new_parent = Assistance_fw_with_batch_compilation.reflect_latest_changes_in_github (Private.parent cs) opt_msg in 
-    Private.set_parent cs new_parent ;;   
-let register_rootless_paths cs mod_names = 
-    let new_parent = Assistance_fw_with_batch_compilation.register_rootless_paths (Private.parent cs) mod_names in 
-    Private.set_parent cs new_parent ;;      
-let relocate_module_to cs mod_name new_subdir = 
-    let new_parent = Assistance_fw_with_batch_compilation.relocate_module_to (Private.parent cs) mod_name new_subdir in 
-    Private.set_parent cs new_parent ;;  
-let remove_files cs rps = 
-    let new_parent = Assistance_fw_with_batch_compilation.remove_files (Private.parent cs) rps in 
-    Private.set_parent cs new_parent ;;        
-let rename_module cs old_middle_name new_nonslashed_name = 
-    let (new_parent,extra) = Assistance_fw_with_batch_compilation.rename_module (Private.parent cs) old_middle_name new_nonslashed_name in 
-    (Private.set_parent cs new_parent,extra) ;;   
-let rename_string_or_value cs old_sov new_sov = 
-    let (new_parent,changed_modules_in_any_order) = Assistance_fw_with_batch_compilation.rename_string_or_value (Private.parent cs) old_sov new_sov  in 
-    (Private.set_parent cs new_parent,changed_modules_in_any_order) ;; 
-let rename_subdirectory_as cs (old_subdir,new_subdir) = 
-    let new_parent = Assistance_fw_with_batch_compilation.rename_subdirectory_as (Private.parent cs) (old_subdir,new_subdir) in 
-    Private.set_parent cs new_parent ;;      
+let preq_types_with_extra_info fw = 
+  Assistance_fw_with_batch_compilation.preq_types_with_extra_info (Private.parent fw) ;; 
+let read_persistent_version = Private.read_persistent_version ;;  
+let register_rootless_paths = Private.register_rootless_paths ;;      
+let relocate_module_to  = Private.relocate_module_to ;;  
+let remove_files fw rps = 
+    let new_parent = Assistance_fw_with_batch_compilation.remove_files (Private.parent fw) rps in 
+    Private.set_parent fw new_parent ;;        
+let rename_module = Private.rename_module ;;   
+let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
+let replace_string = Private.replace_string ;;  
+let replace_value = Private.replace_value ;;   
 let root = Private.root ;;
-let set_gitpush_after_backup cs bowl = 
-  let new_parent = Assistance_fw_with_batch_compilation.set_gitpush_after_backup (Private.parent cs) bowl in 
-  Private.set_parent cs new_parent ;;   
-let show_value_occurrences cs t = 
-  Assistance_fw_with_batch_compilation.show_value_occurrences  (Private.parent cs) t ;;  
-let start_debugging cs = Assistance_fw_with_batch_compilation.start_debugging (Private.parent cs) ;; 
-let start_executing cs short_path = Assistance_fw_with_batch_compilation.start_executing (Private.parent cs) short_path;;  
+let set_gitpush_after_backup fw bowl = 
+  {
+    fw with
+    Assistance_fw_with_githubbing_t.gitpush_after_backup = bowl;
+  };;   
+let show_value_occurrences fw t = 
+  Assistance_fw_with_batch_compilation.show_value_occurrences  (Private.parent fw) t ;;  
+let start_debugging fw = Assistance_fw_with_batch_compilation.start_debugging (Private.parent fw) ;; 
+let start_executing fw short_path = Assistance_fw_with_batch_compilation.start_executing (Private.parent fw) short_path;;  
 let to_concrete_object = Private.to_concrete_object ;;
-let up_to_date_elesses cs = 
-  Assistance_fw_with_batch_compilation.up_to_date_elesses (Private.parent cs) ;; 
-let usual_compilable_files cs = 
-    Assistance_fw_with_batch_compilation.usual_compilable_files (Private.parent cs) ;; 
-
+let up_to_date_elesses fw = 
+  Assistance_fw_with_batch_compilation.up_to_date_elesses (Private.parent fw) ;; 
+let usual_compilable_files fw = 
+    Assistance_fw_with_batch_compilation.usual_compilable_files (Private.parent fw) ;; 
+let usual_recompile = Private.usual_recompile ;;
 
 end;;
 
@@ -14472,11 +14101,11 @@ module Private=struct
       
 
     let save_all cs=
-      let root_dir = Assistance_coma_state.root cs 
-      and elesses = Assistance_coma_state.up_to_date_elesses cs
-      and crobj_form = Assistance_coma_state.to_concrete_object cs 
-      and directories = Assistance_coma_state.all_subdirectories cs 
-      and printer_equipped_types = Assistance_coma_state.preq_types_with_extra_info cs 
+      let root_dir = Assistance_fw_with_githubbing.root cs 
+      and elesses = Assistance_fw_with_githubbing.up_to_date_elesses cs
+      and crobj_form = Assistance_fw_with_githubbing.to_concrete_object cs 
+      and directories = Assistance_fw_with_githubbing.all_subdirectories cs 
+      and printer_equipped_types = Assistance_fw_with_githubbing.preq_types_with_extra_info cs 
         in
        write_all 
       (
@@ -14526,150 +14155,48 @@ module Tools = struct
 end ;;   
 
    
-module Physical_followed_by_internal = struct
-   
-   exception Forget_modules_exn of Assistance_dfa_module_t.t  list ;;
-   
-   let forget_modules cs mod_names= 
-     let check = Assistance_coma_state.check_module_sequence_for_forgettability cs mod_names in 
-     if check <> []
-     then raise(Forget_modules_exn(check))
-     else 
-     Assistance_coma_state.forget_modules cs mod_names  ;;    
-        
-   exception Forget_rootless_paths_exn of Assistance_dfa_module_t.t list ;;
-   
-   let forget_nonmodular_rootlesses cs rootless_paths= 
-     Assistance_coma_state.remove_files cs rootless_paths  ;;
-   
-   let recompile cs = 
-     let (cs2,changed_uc)=Assistance_coma_state.inspect_and_update cs  in 
-     let unordered_mods = Assistance_image.image Assistance_dfn_rootless.to_module changed_uc in  
-     Assistance_coma_state.modern_recompile cs2 unordered_mods ;;
-     
-   let refresh cs = Assistance_coma_state.of_configuration 
-    (Assistance_coma_state.configuration cs) 
-      (cs.Assistance_coma_state_t.dir_for_backup) 
-        (cs.Assistance_coma_state_t.gitpush_after_backup) 
-          (cs.Assistance_coma_state_t.github_url);;
-
-
-   let register_rootless_paths cs rootless_paths= 
-   Assistance_coma_state.register_rootless_paths cs rootless_paths ;;
-   
-
-   let relocate_module_to cs mod_name new_subdir= 
-     Assistance_coma_state.relocate_module_to cs mod_name  new_subdir ;;
-   
-   
-   let rename_module cs old_middle_name new_nonslashed_name=
-      fst(Assistance_coma_state.rename_module cs old_middle_name new_nonslashed_name);;
-
-
-   let rename_subdirectory cs old_subdir new_subdir=
-      Assistance_coma_state.rename_subdirectory_as cs (old_subdir,new_subdir) ;;
-   
-   let rename_string_or_value cs old_sov new_sov =
-      let (cs2,changed_modules_in_any_order)=Assistance_coma_state.rename_string_or_value cs old_sov new_sov in
-      Assistance_coma_state.modern_recompile  cs2 changed_modules_in_any_order;;
-   
-   end;;
-   
-   
    module After_checking = struct
-   
+
          let forget_modules cs mod_names=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.forget_modules cs mod_names;; 
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.forget_modules cs mod_names ;; 
    
          let forget_nonmodular_rootlesses cs rootless_paths=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.forget_nonmodular_rootlesses cs rootless_paths;;    
-   
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.forget_nonmodular_rootlesses cs rootless_paths ;; 
+
          (* No check needed before recompiling *)
+         
+         (* No check needed before refreshing *)   
+   
+         let register_rootless_paths cs rootless_paths=
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.register_rootless_paths cs rootless_paths ;; 
    
 
-         (* No check needed before refreshing *)
-   
-         let register_rootless_paths cs rootless_paths=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.register_rootless_paths cs rootless_paths;; 
-   
          let relocate_module_to cs old_module new_subdir=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.relocate_module_to cs old_module new_subdir;; 
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.relocate_module_to cs old_module new_subdir ;; 
    
-         let rename_subdirectory  cs old_subdir new_subdir=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_subdirectory  cs old_subdir new_subdir;; 
-   
+
          let rename_module cs old_middle_name new_nonslashed_name=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_module cs old_middle_name new_nonslashed_name;; 
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in  
+            Assistance_fw_with_githubbing.rename_module cs old_middle_name new_nonslashed_name;; 
+
+
+         let rename_subdirectory  cs old_subdir new_subdir= 
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.rename_subdirectory_as  cs (old_subdir,new_subdir) ;; 
+  
    
-         let rename_string_or_value cs old_sov new_sov=
-            let _=Assistance_coma_state.check_that_no_change_has_occurred cs in 
-            Physical_followed_by_internal.rename_string_or_value cs old_sov new_sov;; 
-   
-   end;;
-   
-   module And_backup = struct
-   
-         module Private = struct
-   
-               let backup cs diff opt= 
-               if not(Assistance_dircopy_diff.is_empty diff) 
-               then Assistance_reflect_change_in_github.backup
-                     (Assistance_coma_state.configuration cs) 
-                     diff opt
-               else (print_string "No recent changes to commit ...";flush stdout);;
-   
-         end;;    
-   
-         let forget_modules cs mod_names=
-            let  cs2=After_checking.forget_modules cs mod_names in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 None;; 
-   
-         let forget_nonmodular_rootlesses cs rootless_paths=
-            let cs2=After_checking.forget_nonmodular_rootlesses cs rootless_paths in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 None ;; 
-   
-   
-         let recompile cs opt_comment=
-            let cs2=Physical_followed_by_internal.recompile cs  in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 opt_comment ;; 
-   
-         (* No backup during refresh *)   
-   
-         let register_rootless_paths cs rootless_paths=
-            let descr = String.concat " , " (Assistance_image.image Assistance_dfn_rootless.to_line rootless_paths) in 
-            let cs2=After_checking.register_rootless_paths cs rootless_paths  in 
-            let msg="register "^descr in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-   
-         let relocate_module_to cs old_module new_subdir=
-            let cs2=After_checking.relocate_module_to cs old_module new_subdir  in
-            let msg="move "^(Assistance_dfa_module.to_line old_module)^" to "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-   
-   
-         let rename_module cs old_middle_name new_nonslashed_name=
-            let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name  in 
-            let msg="rename "^(Assistance_dfa_module.to_line(Assistance_dfn_middle.to_module old_middle_name))^
-                    " as "^(Assistance_no_slashes.to_string new_nonslashed_name) in       
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-   
-         let rename_subdirectory  cs old_subdir new_subdir=
-            let cs2=After_checking.rename_subdirectory  cs old_subdir new_subdir  in 
-            let msg="rename "^(Assistance_dfa_subdirectory.connectable_to_subpath old_subdir)^
-                       " as "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-   
-         let rename_string_or_value cs old_sov new_sov=
-            let cs2=After_checking.rename_string_or_value cs old_sov new_sov  in 
-            let msg="rename "^old_sov^" as "^new_sov in 
-            Assistance_coma_state.reflect_latest_changes_in_github cs2 (Some msg) ;; 
-   
+         let replace_string cs old_s new_s =
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.replace_string cs old_s new_s ;;
+
+         let replace_value cs ((preceding_files,path),(old_v,new_v)) =
+            let _=Assistance_fw_with_githubbing.check_that_no_change_has_occurred cs in 
+            Assistance_fw_with_githubbing.replace_value cs ((preceding_files,path),(old_v,new_v)) ;;   
+
    end;;
    
    
@@ -14677,57 +14204,67 @@ module Physical_followed_by_internal = struct
    module And_save = struct 
    
          let forget_modules cs mod_names=
-            let cs2=And_backup.forget_modules cs mod_names in 
+            let cs2=After_checking.forget_modules cs mod_names in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;
    
          let forget_nonmodular_rootlesses cs rootless_paths=
-            let cs2=And_backup.forget_nonmodular_rootlesses cs rootless_paths in 
+            let cs2=After_checking.forget_nonmodular_rootlesses cs rootless_paths in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;
    
          let internet_access cs bowl=   
-            let cs2=Assistance_coma_state.set_gitpush_after_backup cs bowl in 
+            let cs2=Assistance_fw_with_githubbing.set_gitpush_after_backup cs bowl in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;
          
          let recompile cs opt_comment=
-            let cs2=And_backup.recompile cs opt_comment in 
+            let cs2= Assistance_fw_with_githubbing.usual_recompile cs opt_comment in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;
          
-   
+
          let refresh cs =
-            let cs2=Physical_followed_by_internal.refresh cs  in 
+            let cs2= Assistance_fw_with_githubbing.of_configuration 
+            (Assistance_fw_with_githubbing.configuration cs) 
+              (cs.Assistance_fw_with_githubbing_t.dir_for_backup) 
+                (cs.Assistance_fw_with_githubbing_t.gitpush_after_backup) 
+                  (cs.Assistance_fw_with_githubbing_t.github_url)
+                  (cs.Assistance_fw_with_githubbing_t.encoding_protected_files)  in 
             let _=Assistance_save_coma_state.save cs2 in 
-            cs2;;  
-   
+            cs2;;       
+
          let register_rootless_paths cs rootless_path=
-            let cs2=And_backup.register_rootless_paths cs rootless_path in 
+            let cs2=After_checking.register_rootless_paths cs rootless_path in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;  
    
          let relocate_module_to cs old_module new_subdir=
-         let cs2 = And_backup.relocate_module_to cs old_module new_subdir in 
+         let cs2 = After_checking.relocate_module_to cs old_module new_subdir in 
          let _=Assistance_save_coma_state.save cs2 in 
          cs2;;   
    
          let rename_subdirectory cs old_subdir new_subdir=
-            let cs2=And_backup.rename_subdirectory cs old_subdir new_subdir in 
+            let cs2=After_checking.rename_subdirectory cs old_subdir new_subdir in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;  
    
    
          let rename_module cs old_middle_name new_nonslashed_name=
-            let cs2=And_backup.rename_module cs old_middle_name new_nonslashed_name in 
+            let cs2=After_checking.rename_module cs old_middle_name new_nonslashed_name in 
             let _=Assistance_save_coma_state.save cs2 in 
             cs2;;  
-   
-   
-         let rename_string_or_value cs old_sov new_sov=
-            let cs2=And_backup.rename_string_or_value cs old_sov new_sov in 
+
+
+         let replace_string cs old_s new_s=
+            let cs2=After_checking.replace_string cs old_s new_s in 
             let _=Assistance_save_coma_state.save cs2 in 
-            cs2;;  
+            cs2;;     
+         
+         let replace_value cs ((preceding_files,path),(old_v,new_v))=
+            let cs2=After_checking.replace_value cs ((preceding_files,path),(old_v,new_v)) in 
+            let _=Assistance_save_coma_state.save cs2 in 
+            cs2;;        
    
    end ;;
    
@@ -14742,11 +14279,11 @@ module Physical_followed_by_internal = struct
             pcs:=new_cs;; 
    
          let initialize pcs =
-         let new_cs = Assistance_coma_state.read_persistent_version (!pcs) in 
+         let new_cs = Assistance_fw_with_githubbing.read_persistent_version (!pcs) in 
          pcs:=new_cs;;
 
          let initialize_if_empty pcs =
-            if Assistance_coma_state.number_of_modules (!pcs) = 0 
+            if Assistance_fw_with_githubbing.number_of_modules (!pcs) = 0 
             then initialize pcs;;
    
          let internet_access pcs bowl=
@@ -14781,11 +14318,13 @@ module Physical_followed_by_internal = struct
             let new_cs = And_save.rename_module (!pcs) old_middle_name new_nonslashed_name in 
             pcs:=new_cs;;
    
-   
-         let rename_string_or_value pcs old_sov new_sov=
-            let new_cs = And_save.rename_string_or_value (!pcs) old_sov new_sov in 
-            pcs:=new_cs;;
-   
+         let replace_string pcs old_s new_s=
+            let new_cs = And_save.replace_string (!pcs) old_s new_s in 
+            pcs:=new_cs;;   
+         
+         let replace_value pcs ((preceding_files,path),(old_v,new_v))=
+            let new_cs = And_save.replace_value (!pcs) ((preceding_files,path),(old_v,new_v)) in 
+            pcs:=new_cs;;      
    
    end ;;
    
@@ -14820,14 +14359,34 @@ module Physical_followed_by_internal = struct
    
    let rename_module cs_ref old_module_name new_name=
       let mn = Assistance_dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-      let old_eless = Assistance_coma_state.endingless_at_module (!cs_ref) mn in
+      let old_eless = Assistance_fw_with_githubbing.endingless_at_module (!cs_ref) mn in
       let old_middle_name = Assistance_dfn_endingless.to_middle old_eless in    
       let new_nonslashed_name = Assistance_no_slashes.of_string (String.uncapitalize_ascii new_name) in 
       Reference.rename_module cs_ref old_middle_name new_nonslashed_name;; 
    
    
+   exception Rename_string_or_value_exn of string ;;
+
+   let rename_string_or_value cs_ref old_sov new_sov =
+         if not(String.contains old_sov '.')
+         then Reference.replace_string cs_ref old_sov new_sov 
+         else 
+         let j=Assistance_substring.leftmost_index_of_in "." old_sov in
+         if j<0 
+         then raise(Rename_string_or_value_exn(old_sov))
+         else let module_name=Assistance_cull_string.beginning (j-1) old_sov in
+         let endingless= Assistance_fw_with_githubbing.decipher_module (!cs_ref)  module_name 
+         and path= Assistance_fw_with_githubbing.decipher_path (!cs_ref)  module_name in 
+         let nm=Assistance_dfn_endingless.to_module endingless in
+         let pre_temp2=(Assistance_fw_with_githubbing.ancestors_for_module (!cs_ref) nm)@[nm] in
+         let temp2=Assistance_image.image (Assistance_fw_with_githubbing.endingless_at_module (!cs_ref)) pre_temp2 in
+         let preceding_files=Assistance_image.image  (fun eless2->
+                           Assistance_dfn_full.to_absolute_path(Assistance_dfn_join.to_ending eless2 Assistance_dfa_ending.ml)
+         ) temp2 in
+         Reference.replace_value cs_ref ((preceding_files,path),(old_sov,new_sov)) ;;       
+
    let rename_subdirectory cs_ref old_subdirname new_subdir_short_name=
-       let old_subdir = Assistance_coma_state.find_subdir_from_suffix (!cs_ref) old_subdirname  in
+       let old_subdir = Assistance_fw_with_githubbing.find_subdir_from_suffix (!cs_ref) old_subdirname  in
        let new_subdir = Tools.compute_long_subdir_name old_subdir new_subdir_short_name  in 
        Reference.rename_subdirectory cs_ref old_subdir new_subdir ;;
    
@@ -14856,23 +14415,22 @@ module Private = struct
 let main_ref=
   let (root,backup_dir,githubbing)=Assistance_coma_big_constant.This_World.triple 
   and url=Assistance_coma_big_constant.github_url in 
-  let config = Assistance_fw_configuration.constructor 
-   (root,backup_dir,githubbing,url,[]) in 
-  ref(Assistance_coma_state.empty_one  config backup_dir githubbing url);;
+  let config = Assistance_fw_configuration.of_root root in 
+  ref(Assistance_fw_with_githubbing.empty_one  config backup_dir githubbing url []);;
 end;;
 
-let all_endinglesses ()=Assistance_coma_state.all_endinglesses (!(Private.main_ref)) ;; 
+let all_endinglesses ()=Assistance_fw_with_githubbing.all_endinglesses (!(Private.main_ref)) ;; 
 
-let census_of_foreigners ()= Assistance_coma_state.census_of_foreigners (!(Private.main_ref));;
+let census_of_foreigners ()= Assistance_fw_with_githubbing.census_of_foreigners (!(Private.main_ref));;
 
-let clean_debug_dir ()=Assistance_coma_state.clean_debug_dir (!(Private.main_ref));;
-let clean_exec_dir ()=Assistance_coma_state.clean_exec_dir (!(Private.main_ref));;
+let clean_debug_dir ()=Assistance_fw_with_githubbing.clean_debug_dir (!(Private.main_ref));;
+let clean_exec_dir ()=Assistance_fw_with_githubbing.clean_exec_dir (!(Private.main_ref));;
 
 let duplicate_module old_t1 old_t2=
-  Assistance_coma_state.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+  Assistance_fw_with_githubbing.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
 let find_endingless modname = 
-  Assistance_coma_state.endingless_at_module
+  Assistance_fw_with_githubbing.endingless_at_module
    (!(Private.main_ref)) (Assistance_dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=Assistance_modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
@@ -14885,16 +14443,16 @@ let initialize_if_empty ()=Assistance_modify_coma_state.Reference.initialize_if_
 
 let initialize ()=Assistance_modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let internet_access () = Assistance_coma_state.gitpush_after_backup (!(Private.main_ref)) ;;
+let internet_access () = Assistance_fw_with_githubbing.gitpush_after_backup (!(Private.main_ref)) ;;
 
-let latest_changes ()=Assistance_coma_state.latest_changes (!(Private.main_ref));;
+let latest_changes ()=Assistance_fw_with_githubbing.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
-   Assistance_coma_state.list_values_from_module (!(Private.main_ref)) module_name;;
+   Assistance_fw_with_githubbing.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
-let modules_using_value x=Assistance_coma_state.modules_using_value (!(Private.main_ref)) x;;
+let modules_using_value x=Assistance_fw_with_githubbing.modules_using_value (!(Private.main_ref)) x;;
 
 let recompile opt=Assistance_modify_coma_state.Reference.recompile Private.main_ref opt;;
    
@@ -14916,38 +14474,38 @@ let rename_module old_name new_name=
 
 
 let rename_string_or_value old_name new_name=
-   Assistance_modify_coma_state.Reference.rename_string_or_value
+   Assistance_modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let set_internet_access bowl=Assistance_modify_coma_state.Reference.internet_access Private.main_ref bowl;;
 
 
 let show_value_occurrences_in_modulesystem module_name=
-   Assistance_coma_state.show_value_occurrences (!(Private.main_ref)) module_name;;
+   Assistance_fw_with_githubbing.show_value_occurrences (!(Private.main_ref)) module_name;;
 
-let start_debugging ()=Assistance_coma_state.start_debugging (!(Private.main_ref));;
-let start_executing short_path= Assistance_coma_state.start_executing (!(Private.main_ref)) short_path;;
+let start_debugging ()=Assistance_fw_with_githubbing.start_debugging (!(Private.main_ref));;
+let start_executing short_path= Assistance_fw_with_githubbing.start_executing (!(Private.main_ref)) short_path;;
 
 
 let sugared_above capitalized_or_not_module_name=
   let mn0 = Assistance_dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Assistance_image.image Assistance_dfa_module.to_line
-  (Assistance_coma_state.ancestors_for_module (!(Private.main_ref)) mn0);;
+  (Assistance_fw_with_githubbing.ancestors_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_below capitalized_or_not_module_name=
   let mn0 = Assistance_dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Assistance_image.image Assistance_dfa_module.to_line
-  (Assistance_coma_state.below (!(Private.main_ref)) mn0);;
+  (Assistance_fw_with_githubbing.below (!(Private.main_ref)) mn0);;
 
 let sugared_directly_above capitalized_or_not_module_name=
   let mn0 = Assistance_dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Assistance_image.image Assistance_dfa_module.to_line
-  (Assistance_coma_state.direct_fathers_for_module (!(Private.main_ref)) mn0);;
+  (Assistance_fw_with_githubbing.direct_fathers_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_directly_below capitalized_or_not_module_name=
 let mn0 = Assistance_dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
 Assistance_image.image Assistance_dfa_module.to_line
-(Assistance_coma_state.directly_below (!(Private.main_ref)) mn0);;
+(Assistance_fw_with_githubbing.directly_below (!(Private.main_ref)) mn0);;
 
 
 end;;
