@@ -340,7 +340,7 @@ module Private = struct
             let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in  
               ( String.concat "\n"
               [
-               "let element_in_show_fields (fd_name,fd_type) = fd_name ^ \" : \" ^ fd_type ;;\n";
+               "let element_in_show_fields (fd_name,fd_type) = (String.make 3 ' ') ^ fd_name ^ \" : \" ^ fd_type ;;\n";
                 "let show_fields fw = ";
                 " let fields = get_fields fw in ";
                 " let data = Image.image get_field_data fields in ";
