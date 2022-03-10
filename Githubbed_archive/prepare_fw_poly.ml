@@ -207,6 +207,8 @@ Io.overwrite_with
     (Absolute_path.of_string "../Idaho/Filewatching/fw_poly.ml")
       (text_for_implementation_file example );;
 
+  #use "Githubbed_archive/prepare_fw_poly.ml";;
+
    *)
 
   
