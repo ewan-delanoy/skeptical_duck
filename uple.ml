@@ -64,7 +64,9 @@ let list_of_sixtuples l=
   tempf(List.length(l)-1,List.hd(l),List.tl(l),[]);;
   
 let inclusive_list_of_pairs l=
-if List.length(l)<2 then [] else
+let n = List.length l in 
+if n<1 then [] else
+if n=1 then [List.hd l,List.hd l] else  
 let rec sub_f=(function
 (accu,ll)->match ll with
 []->List.rev(accu)

@@ -1,6 +1,541 @@
+
 (************************************************************************************************************************
-Snippet 74 : 
+Snippet 78 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 77 : Third stab at boundary operator combinatorics 
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let i_order = Total_ordering.for_integers ;;
+let il_order = Total_ordering.silex_compare i_order ;;
+let j_order = Total_ordering.product i_order il_order ;;
+
+let i_fold_merge = Ordered.fold_merge i_order ;;
+let i_intersection = Ordered.intersect i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_mem = Ordered.mem i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let il_sort = Ordered.sort il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+
+
+let j_merge = Ordered.merge j_order ;;
+
+type set_index = S of int ;;
+
+let n1 = 4 ;;
+let whole = Ennig.ennig 1 n1 ;;
+let u1 = il_sort (Listennou.power_set whole) ;;
+let rtl l = List.rev (List.tl l);;
+let u2 = rtl (rtl u1);;
+let normal_form x = 
+     let cx = i_setminus whole x in 
+     if (il_order x cx)=Total_ordering_result_t.Lower 
+     then x else cx ;;
+let u3 = List.filter (fun x->normal_form(x)=x) u2;;      
+let u4 = Ennig.index_everything u3 ;;
+let u5 = Image.image (fun (j,z)->(z,S(j+2))) u4 ;;
+let u6 = Image.image (fun x->let nx=normal_form x in (x,List.assoc nx u5)) u2;;
+
+
+module Atom = struct 
+
+type t = A of int ;;
+
+let order = ((fun (A i) (A j)->Total_ordering.for_integers i j) : t Total_ordering_t.t) ;; 
+  
+let table_for_sets_containing_a_given_atom = 
+    let temp = Image.image (Image.image (fun i->S i)) 
+    (il_sort(Listennou.power_set (Ennig.ennig 1 9))) in 
+    Image.image (fun (j,l)->(A j,l)) (Ennig.index_everything temp) ;;
+let all = Image.image fst table_for_sets_containing_a_given_atom ;;
+
+let check_boolean_constraints constraints atm =
+    let associated_sets = List.assoc atm table_for_sets_containing_a_given_atom in 
+    List.for_all (fun (set,bowl)->(List.mem set associated_sets)=bowl) constraints ;;
+
+let unveil (A i) = i ;;
+
+end ;;  
+
+module Early_atom = struct 
+
+type t = EA of int ;;
+  
+let order = ((fun (EA i) (EA j)->Total_ordering.for_integers i j) : t Total_ordering_t.t) ;; 
+    
+let table_for_sets_containing_a_given_early_atom = 
+      let temp = Image.image (Image.image (fun i->S i)) 
+      (il_sort(Listennou.power_set (Ennig.ennig 1 2))) in 
+      Image.image (fun (j,l)->(EA j,l)) (Ennig.index_everything temp) ;;
+let all = Image.image fst table_for_sets_containing_a_given_early_atom ;;
+
+let to_boolean_combination atm = 
+  let associated_sets = List.assoc atm table_for_sets_containing_a_given_early_atom in 
+   Image.image (fun s->(s,List.mem s associated_sets)) [S 1;S 2] ;;
+
+let unveil (EA i) = i ;;
+
+end ;;  
+
+module Early_union = struct 
+
+let order = Total_ordering.silex_compare  Early_atom.order ;; 
+let whole = Ennig.doyle (fun j->Early_atom.EA j)  1 4;;
+let all = Image.image (Image.image (fun j->Early_atom.EA j)) u2 ;;
+let all_pairs = Uple.list_of_pairs all ;;
+let nondisjoint_pairs =
+    List.filter (fun (a,b)->
+       not(Ordered.does_not_intersect Early_atom.order a b)
+      ) all_pairs ;;
+let normal_form x = 
+    let cx = Ordered.setminus Early_atom.order whole x in 
+    if (order cx x)=Total_ordering_result_t.Lower 
+    then cx else x ;;
+let all_normal_forms = Image.image normal_form all ;;    
+let table_for_image_sets = Image.image (fun x->
+  (x,S(2+(Listennou.find_index (normal_form x) all_normal_forms))) 
+) all ;;
+let image_set x = List.assoc x table_for_image_sets ;;
+let intersection x y = Ordered.intersect Early_atom.order x y;;
+let union x y = Ordered.merge Early_atom.order x y;;
+
+let unveil l = Image.image Early_atom.unveil l;;
+
+end ;;  
+
+
+
+module Molecule = struct 
+
+type t = M of Atom.t list ;;  
+
+let fold_union pre_ll = 
+    let ll =  Image.image (fun (M m)-> m) pre_ll in 
+    M (Ordered.fold_merge Atom.order ll);;
+let intersection (M x) (M y) = M (Ordered.intersect Atom.order x y);;
+let setminus (M x) (M y) = M (Ordered.setminus Atom.order x y);;
+let union (M x) (M y) = M (Ordered.merge Atom.order x y);;
+
+
+let delta mx my = union (setminus mx my) (setminus my mx) ;; 
+
+let of_set set_idx =
+    M( Option.filter_and_unpack (
+       fun (atm_idx,l)->if List.mem set_idx l then Some atm_idx else None
+    ) Atom.table_for_sets_containing_a_given_atom ) ;;
+
+let complement_of_set set_idx = 
+  M( Option.filter_and_unpack (
+    fun (atm_idx,l)->if not(List.mem set_idx l) then Some atm_idx else None
+ ) Atom.table_for_sets_containing_a_given_atom ) ;;
+
+let of_boolean_combination constraints =
+  M(Option.filter_and_unpack (
+    fun (atm_idx,l)->if Atom.check_boolean_constraints constraints atm_idx then Some atm_idx else None
+ ) Atom.table_for_sets_containing_a_given_atom) ;;
+
+let of_early_atom eatm = 
+  of_boolean_combination (Early_atom.to_boolean_combination eatm) ;;
+
+let of_early_union eatm_l = fold_union (Image.image of_early_atom eatm_l) ;;
+    
+let of_early_union_image eatm_l = of_set (Early_union.image_set eatm_l) ;;
+
+
+let main_test (pre_a,pre_b) =
+    let a = of_early_union pre_a 
+    and b = of_early_union pre_b in 
+    let pre_c = Early_union.intersection pre_a pre_b 
+    and c = intersection a b in 
+    let hand1 = intersection c (of_early_union_image pre_c)
+    and hand2 = intersection c (union (of_early_union_image pre_a)  (of_early_union_image pre_b)) in 
+    delta hand1 hand2 ;;
+
+let unveil (M l) = Image.image Atom.unveil l ;; 
+
+end ;;  
+
+
+
+let z1 = Early_union.nondisjoint_pairs ;;
+let veiled_z2 = Image.image (fun (a,b)->((a,b),Molecule.main_test (a,b)) ) z1 ;;
+let z2 =  Image.image (fun ((a,b),m)->(Early_union.unveil a,Early_union.unveil b,Molecule.unveil m) ) veiled_z2 ;;   
+
+let aa = Image.image (fun x->Early_atom.EA x) [1;2] ;;
+let bb = Image.image (fun x->Early_atom.EA x) [1;3] ;;
+let ab = Early_union.union aa bb ;;
+
+let faa = Molecule.of_early_union_image aa ;;
+let fbb = Molecule.of_early_union_image bb ;;
+let fab = Molecule.of_early_union_image ab ;;
+
+let veiled_tab = Molecule.setminus faa (Molecule.union (Molecule.of_early_union ab) fab) ;;
+let tab = Molecule.unveil veiled_tab ;;
+let check_tab  = i_setminus tab (i_fold_merge(Image.image (fun (a,b,m)->m) z2));;
+
+let z3 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab)) z2 ;;
+let get (a0,b0) = Option.unpack(Option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
+let part1 = (get ([4],[3;4]));;
+let tab2 = i_setminus tab part1 ;;
+
+let z4 = z3 ;;
+let v1 = List.tl(il_sort(Image.image (fun (a,b,m)->m) z4)) ;;
+let v2 = List.rev v1 ;;
+
+let v3 = List.hd v2 ;;
+let v4 = Option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None) z4 ;;
+(*
+
+let veiled_tab = Molecule.setminus fab (Molecule.union faa fbb) ;;
+let tab = Molecule.unveil veiled_tab ;;
+
+let check_tab  = i_setminus tab (i_fold_merge(Image.image (fun (a,b,m)->m) z2));;
+
+let z3 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab)) z2 ;;
+let get (a0,b0) = Option.unpack(Option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
+let part1 = i_merge (get ([1;2],[1;2;3])) (get ([1;3],[1;2;3]));;
+let tab2 = i_setminus tab part1 ;;
+
+let z4 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab2)) z3 ;;
+
+let v1 = List.tl(il_sort(Image.image (fun (a,b,m)->m) z4)) ;;
+let v2 = List.rev v1 ;;
+
+let v3 = List.hd v2 ;;
+let v4 = Option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None) z4 ;;
+*)
+
+
+(************************************************************************************************************************
+Snippet 76 : Second stab at boundary operator combinatorics 
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let il_order = Total_ordering.silex_compare i_order ;;
+let j_order = Total_ordering.product i_order il_order ;;
+
+let i_fold_merge = Ordered.fold_merge i_order ;;
+let i_intersection = Ordered.intersect i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let il_sort = Ordered.sort il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+
+
+let j_merge = Ordered.merge j_order ;;
+
+let n1 = 4 ;;
+let whole = Ennig.ennig 1 n1 ;;
+let u1 = il_sort (Listennou.power_set whole) ;;
+let rtl l = List.rev (List.tl l);;
+let u2 = rtl (rtl u1);;
+let normal_form x = 
+     let cx = i_setminus whole x in 
+     if (il_order x cx)=Total_ordering_result_t.Lower 
+     then x else cx ;;
+let u3 = List.filter (fun x->normal_form(x)=x) u2;;      
+let u4 = Ennig.index_everything u3 ;;
+let u5 = Image.image (fun (j,z)->(z,[j+4])) u4 ;;
+let u6 = Image.image (fun x->let nx=normal_form x in (x,(x,List.assoc nx u5))) u2;;
+let u7 = Uple.list_of_pairs u2 ;;
+let u8 = List.filter (fun (a,b)->(i_intersection a b)<>[]) u7;;
+let u9 = Ennig.index_everything u8 ;;
+
+module Kafka = struct
+
+type t = {
+  size : int ; 
+  atoms : int list ;
+  decompositions : (int * (int list)) list ;
+  images : ((int list) * ((int list) * (int list))) list ;
+} ;;
+
+
+let share_with_foreigner kfk x = 
+   let n = kfk.size 
+   and m = List.length(kfk.atoms) in
+   let temp1 = Ennig.index_everything kfk.atoms in  
+   let decs1 = Image.image (fun (j,atm)->(atm,[n+j;n+j+m])) temp1
+   and expansion_for_x = Ennig.ennig (n+1) (n+m) in 
+   let replacer = (fun z->
+      if z=x then expansion_for_x else 
+      try List.assoc z decs1 with _ -> [z]
+    ) in 
+   let replacer2 = (fun lz->
+    i_fold_merge (Image.image replacer lz)
+    ) in  
+   let decs2 = Image.image (fun (w,old_decomposition)->
+     (w,replacer2 old_decomposition) 
+    ) kfk.decompositions in  
+   let new_atoms = Ennig.ennig (n+1) (n+2*m)
+   and new_decompositions = j_merge [x,expansion_for_x] (j_merge decs1 decs2) 
+   and new_images = Image.image (
+     fun (old_a,(a,b)) -> (old_a,(replacer2 a,replacer2 b))
+   ) kfk.images in 
+   {
+    kfk with 
+    atoms = new_atoms ;
+    decompositions = new_decompositions ;
+    images = new_images ;
+  } ;; 
+
+let start =   
+  {
+    size = 100 ;
+    atoms = [1; 2; 3; 4] ;
+    decompositions = [] ;
+    images = u6 ;
+  } ;; 
+
+  let expand kfk l = 
+    let replacer = (fun z->
+      match List.assoc_opt z kfk.decompositions with 
+      Some(old_answer) -> old_answer
+      | None -> [z]
+    ) in 
+    i_fold_merge (Image.image replacer l) ;;
+
+
+  let get_image kfk l = try snd(List.assoc l kfk.images) with _ -> [] ;;
+
+  let is_fully_decomposed kfk l = i_is_included_in l kfk.atoms ;; 
+
+  let nondecomposed_elements kfk l = i_setminus l kfk.atoms ;; 
+
+let declare_empty kfk zeroes =
+  let remaining_atoms = i_setminus kfk.atoms zeroes in 
+  let m = List.length remaining_atoms 
+  and n = kfk.size in 
+  let interval = Ennig.ennig (n+1) (n+m) in 
+  let table = List.combine remaining_atoms interval in 
+  let cleanup = (fun x->Image.image (fun t->
+      try List.assoc t table with _ ->t) (i_setminus x zeroes)) in   
+  let new_decompositions = Image.image (fun (x,dx)->(x,cleanup dx)) kfk.decompositions 
+  and new_images = Image.image (
+    fun (old_a,(a,b)) -> (old_a,(cleanup a,cleanup b))
+  ) kfk.images in 
+  {
+   kfk with 
+   atoms = interval ;
+   decompositions = new_decompositions ;
+   images = new_images ;
+ } ;; 
+ 
+
+end ;;
+
+
+module Haddock = struct 
+
+type t = 
+   S1 of int * (int list) * (int list) * (int list) * (int list) * (int list) * (int list)  
+ | S2 of int * (int list) * (int list) * (int list) * (int list) * (int list) * (int list) 
+ | S3 of int * (int list) * (int list) * (int list) * (int list) * (int list) * (int list) 
+ | S4 of int * (int list) * (int list) * (int list) * (int list) * (int list) * (int list) * (int list) * (int list)  
+
+;;  
+
+type road =
+   Decompose of (int list) * (int list)
+  |Declare_empty of (int list) * (int list) ;;
+
+let is_unfinished = function 
+ S4(idx,a,b,anb,g_anb,g_a,g_b,d1,d2) -> (d1,d2) <> ([],[])
+|_ -> true ;;
+
+let road_to_go  kfk haddock = match haddock with 
+  S1(idx,a,b,anb,f_anb,f_a,f_b) ->
+       Decompose(
+          (Kafka.nondecomposed_elements kfk anb),  
+          (Kafka.nondecomposed_elements kfk f_anb)) 
+  |S2(idx,a,b,anb,g_anb,f_a,f_b) -> 
+    Decompose(Kafka.nondecomposed_elements kfk f_a,[]) 
+  |S3(idx,a,b,anb,g_anb,g_a,f_b) -> 
+    Decompose(Kafka.nondecomposed_elements kfk f_b,[]) 
+  |S4(idx,a,b,anb,g_anb,g_a,g_b,d1,d2) -> Declare_empty(d1,d2) ;;
+
+let improve_a_little_bit  kfk haddock = match haddock with 
+  S1(idx,a,b,anb,f_anb,f_a,f_b) ->
+       if (Kafka.is_fully_decomposed kfk anb) &&  (Kafka.is_fully_decomposed kfk f_anb) 
+       then S2(idx,a,b,anb,i_intersection anb f_anb,f_a,f_b) 
+       else haddock
+  |S2(idx,a,b,anb,g_anb,f_a,f_b) -> 
+    if (Kafka.is_fully_decomposed kfk f_a) 
+      then S3(idx,a,b,anb,g_anb,i_intersection anb f_a,f_b) 
+      else haddock
+  |S3(idx,a,b,anb,g_anb,g_a,f_b) -> 
+        if (Kafka.is_fully_decomposed kfk f_b) 
+          then let g_b = i_intersection anb f_b in 
+               let g_ab = i_merge g_a g_b in 
+               S4(idx,a,b,anb,g_anb,g_a,g_b,i_setminus g_anb g_ab,i_setminus g_ab g_anb) 
+          else haddock    
+  |S4(idx,a,b,anb,g_anb,g_a,g_b,d1,d2) -> haddock ;;
+
+let improve kfk haddock = 
+    let rec tempf = (fun old_x ->
+       let new_x=improve_a_little_bit  kfk old_x in 
+       if new_x = old_x then old_x else tempf new_x
+    ) in 
+    tempf haddock ;;
+
+let initial_individual kfk (idx,(a,b)) = 
+  let c =  i_intersection a b in 
+  S1(idx,a,b,Kafka.expand kfk c,Kafka.get_image kfk c,Kafka.get_image kfk a,Kafka.get_image kfk b) ;;
+  
+let individual kfk (a,b) = 
+   let candidate = improve kfk (initial_individual kfk (a,b)) in 
+   if is_unfinished candidate 
+   then Some (candidate,road_to_go kfk candidate)
+   else None ;;
+
+let total kfk = 
+   Option.find_and_stop (individual kfk) u9 ;;
+
+
+end ;;  
+
+module This_kafka = struct 
+
+  let main_ref = ref Kafka.start ;;
+
+  let share x = 
+     let new_kafka = Kafka.share_with_foreigner (!main_ref) x in 
+     let _ = (main_ref:=new_kafka) in 
+     new_kafka ;;
+
+  let atoms () = (!main_ref).Kafka.atoms ;;
+
+  let expand  = Kafka.expand (!main_ref) ;;
+
+  let final_haddock () = Haddock.total (!main_ref) ;;
+
+  let declare_empty zeroes = 
+    let new_kafka = Kafka.declare_empty (!main_ref) zeroes in 
+    let _ = (main_ref:=new_kafka) in 
+    new_kafka ;;
+
+  let act = function 
+    Haddock.Decompose(d1,d2) -> let d = List.hd (d1@d2) in share d 
+    |Declare_empty(e1,e2) -> declare_empty (i_merge e1 e2) ;;
+
+end ;;  
+
+module That_kafka = struct 
+
+let share x = let _ = This_kafka.share x in snd(Option.unpack(This_kafka.final_haddock ())) ;;
+let declare_empty x = let _ = This_kafka.declare_empty x in snd(Option.unpack(This_kafka.final_haddock ())) ;;
+
+let act road = let _ = This_kafka.act road in  This_kafka.final_haddock () ;;
+
+end ;;  
+
+
+
+let rec iterator preceding_moves = match preceding_moves with 
+   [] -> failwith("pusher_exn") 
+  |(preceding_move,_) :: _->
+      (match That_kafka.act preceding_move with 
+      None -> List.rev preceding_moves 
+    |Some(candidate,road) -> 
+      iterator((road,!(This_kafka.main_ref))::preceding_moves) );;
+  
+let z1 = [(Haddock.Decompose([5],[])),Kafka.start]  ;;
+let z2 = iterator z1 ;;   
+let (z3,kfk1) = List.hd(List.rev z2) ;;   
+let kfk1 = (!(This_kafka.main_ref))
+let im = Kafka.get_image kfk1 ;;
+
+let v1 = Uple.list_of_pairs u2 ;;
+let v2 = List.filter (
+   fun (a,b) ->
+     let c = i_merge a b in 
+     let d = i_setminus (im c) (i_merge (im a) (im b)) in 
+     d<>[]
+) v1 ;;
+
+
+
+(************************************************************************************************************************
+Snippet 75 : First stab at boundary operator combinatorics 
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let il_order = Total_ordering.silex_compare i_order ;;
+
+let i_merge = Ordered.merge i_order ;;
+let i_intersection = Ordered.intersect i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+
+
+let il_sort = Ordered.sort il_order ;;
+
+
+let u1 = il_sort (Listennou.power_set [1;2;3]) ;;
+let u2 = Uple.list_of_pairs u1 ;;
+let u3 = List.filter (fun (x,y)->i_intersection x y <> []) u2 ;;
+
+let table_for_ff = 
+  [[],0; [1],1; [2],2; [3],3; [1; 2],3; [1; 3],2; [2; 3],1; [1; 2; 3],0] ;;
+let ff x = List.assoc x table_for_ff  ;;
+
+let u4 = Image.image (fun (a,b)->
+  let c= i_intersection a b in 
+  (a,b,(c,ff c,ff a, ff b))) u3;;
+
+let tf k = List.nth u4 (k-1) ;;  
+
+let v1 = Cartesian.cube u1 ;;
+let haddock k a b c = ((i_intersection k a) = (i_intersection k (i_merge b c)));;
+let main_test (x1,x2,x3) =
+    (haddock [1] x1 x2 x3) && (haddock [2] x2 x3 x1) && (haddock [3] x3 x1 x2) ;;      
+let v2 = List.filter main_test v1 ;;
+let v3 = List.filter (fun (x1,x2,x3) -> not(i_is_included_in x3 (i_merge x1 x2))) v2;;
+
+
+
+(************************************************************************************************************************
+Snippet 74 : Preprocess some PARI/GP code
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let n1 = 5 ;;
+let m1 = ((n1-1) * (n1-2)) / 2;;
+let u1 = Ennig.doyle (fun x->[1;0]) 1 n1 ;;
+let u2 = Cartesian.general_product u1 ;;
+let u3 = Ennig.index_everything u2 ;;
+let ts l= 
+   String.concat "+" (Image.image (fun j->"t"^(string_of_int j)) l);;
+
+let s1 i = (ts(Option.filter_and_unpack (fun (idx,l)->
+    if (List.nth l (i-1) = 1) 
+    then Some(idx)
+    else None    
+  ) u3)) ^ "-" ^(string_of_int m1);;
+let s2 (i,j) = (ts(Option.filter_and_unpack (fun (idx,l)->
+    if (List.nth l (i-1) = 1) && (List.nth l (j-1) = 1)
+    then Some(idx)
+    else None    
+) u3)) ^ "-" ^(string_of_int (n1-2));;
+
+let part1 = Ennig.doyle s1 1 n1 ;;
+let part2 = Image.image s2 (Int_uple.list_of_pairs n1);;
+let whole = "\n\n\n[" ^ (String.concat "," (part1@part2)) ^ "]\n\n\n"  ;;
+let pw () = print_string whole ;;
+
+Ordered.setminus Total_ordering.for_integers (Ennig.ennig 1 32)
+[1; 2; 3; 4; 5; 6; 7; 9; 10; 11; 13; 17; 18; 19; 21; 25; 32] ;;
 
 
 (************************************************************************************************************************
