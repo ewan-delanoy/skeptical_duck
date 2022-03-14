@@ -1,8 +1,26 @@
 
 (************************************************************************************************************************
-Snippet 78 : 
+Snippet 79 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 78 : Transfer a large snippet from one file to another
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let z1 = rf "Fads/nap.ml" ;;
+let z2 = Lines_in_string.interval z1 209 298 ;;
+let ap = Absolute_path.of_string "Fads/pan.ml" ;;
+let z3 () = Io.Private.append_string_to_file z2 ap ;;
+
+type ps = P of int list |S of int ;;
+
+let accu = ref [] ;;
+
+let simplest_case i x = (accu:=(S i)::(!accu)) ;;
+let pointed_card a b c = (accu:=(P a)::(!accu)) ;;
 
 (************************************************************************************************************************
 Snippet 77 : Third stab at boundary operator combinatorics 

@@ -73,6 +73,7 @@ let read_reasonable_command cmd =
 
 end ;; 
 
+let append_string_to_file = Private.append_string_to_file ;;
 let overwrite_with = Private.overwrite_with ;;
 let read_reasonable_command = Private.read_reasonable_command ;;
 let read_whole_file = Private.read_whole_file ;;
