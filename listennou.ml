@@ -421,4 +421,15 @@ let minimal_element_in_unpwards_filter f l =
 
 (*  (minimal_element_in_unpwards_filter (fun x->Basic.fold_sum(x)>=10) [6;2;5;1;1]) = [6;5] ;; *)
 
+let cut_into_small_parts  l ~max_part_size =
+  let rec tempf = (
+      fun (treated,to_be_treated,remaining_size) -> 
+           if remaining_size <= max_part_size 
+           then List.rev(to_be_treated::treated) 
+           else let (reversed_left,right) = big_rht max_part_size to_be_treated in 
+                let left = List.rev reversed_left in 
+                tempf(left::treated,right,remaining_size-max_part_size)
+  ) in 
+  tempf ([],l,List.length l) ;;
 
+(* cut_into_small_parts (Ennig.ennig 1 7) ~max_part_size:3 ;; *)
