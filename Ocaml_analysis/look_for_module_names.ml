@@ -24,14 +24,16 @@ let indices_in_ml_ocamlcode code=
   List.flatten temp2;;
 
 let indices_in_mli_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
+let indices_in_mll_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
+let indices_in_mly_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
   
 let indices_in_mlx_file ap=  
     let s_ap = Absolute_path.to_string ap in 
     let ending = Cull_string.after_rightmost s_ap '.' in 
     if ending = "ml"  then indices_in_ml_ocamlcode (Io.read_whole_file ap) else 
     if ending = "mli" then indices_in_mli_ocamlcode (Io.read_whole_file ap) else   
-    if ending = "mll" then raise(Change_not_implemented s_ap) else 
-    if ending = "mly" then raise(Change_not_implemented s_ap) else   
+    if ending = "mll" then indices_in_mll_ocamlcode (Io.read_whole_file ap) else 
+    if ending = "mly" then indices_in_mly_ocamlcode (Io.read_whole_file ap) else   
     raise(Unknown_ending_during_modulename_reading s_ap);;  
 
 
