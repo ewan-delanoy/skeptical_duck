@@ -18,10 +18,6 @@ module Private = struct
      String.concat " " ["";dirs;libs;""];;
   
   
-  (*
-  exception Unregistered_cmi of Dfn_endingless_t.t;;
-  exception Unregistered_cmo of Dfn_endingless_t.t;;
-  *)
   let command_for_cmi (cmod:Compilation_mode_t.t) dir fw hm=
       let nm=Dfn_endingless.to_module hm in
       let s_root=Dfa_root.connectable_to_subpath(dir) in
@@ -87,10 +83,12 @@ module Private = struct
       let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
                          then Some("mv "^s_eless^".o "^s_root^workdir) 
                          else None) in 
+      let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
       let central_cmds=
       [ 
-        (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_eless^".ml";
-        "mv "^s_eless^".cm* "^s_root^workdir
+        "ocamllex "^s_eless^".mll";
+        "mv "^s_eless^"ml "^s_root^workdir;
+        (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^ml_in_workplace;
       ] in 
       let almost_full_answer= 
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
