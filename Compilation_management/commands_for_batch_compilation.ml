@@ -87,7 +87,7 @@ module Private = struct
       let central_cmds=
       [ 
         "ocamllex "^s_eless^".mll";
-        "mv "^s_eless^"ml "^s_root^workdir;
+        "mv "^s_eless^".ml "^s_root^workdir;
         (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^ml_in_workplace;
       ] in 
       let almost_full_answer= 
@@ -143,7 +143,7 @@ module Private = struct
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
-      let co=command_for_cmo cmod dir fw eless in 
+      let co=command_for_cmo_from_mll cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
            [ci;co]
