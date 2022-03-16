@@ -96,8 +96,6 @@ module Private = struct
       else central_cmds)
       in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
   
-  exception  Unregistered_element of Dfn_endingless_t.t;;   
-  
   let command_for_module_separate_compilation cmod fw eless pr_ending =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in

@@ -117,6 +117,6 @@ let reposition_by_putting_snd_immediately_after_fst i j t=
     if t=i+1  then j else
     if t<=j  then t-1 else t;;
 
-
+let repeat n x = doyle (fun _->x) 1 n ;;
 
           
