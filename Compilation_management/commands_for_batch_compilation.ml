@@ -59,6 +59,45 @@ module Private = struct
               ) in 
               Option.add_element_on_the_right almost_full_answer opt_exec_move;;
      
+    let hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds =
+       (* 
+          in this situation the mli file exists but is not registered.
+          So the compilation manager must treat it as though it didn't
+          exist. We temporarily rename it so that ocamlc will ignore it.
+        *)
+        let dummy_mli=s_root^"uvueaoqhkt" in
+        [
+          "mv "^full_mli^" "^dummy_mli
+        ]
+        @ 
+          central_cmds
+        @ 
+        [ 
+          "mv "^dummy_mli^" "^full_mli
+        ] ;;
+
+    let command_for_cmo_from_mll (cmod:Compilation_mode_t.t) dir fw eless=
+      let nm=Dfn_endingless.to_module eless in
+      let s_root=Dfa_root.connectable_to_subpath(dir) in
+      let s_eless=Dfn_endingless.to_line eless in
+      let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+      let full_mli=s_eless^".mli" in
+      let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
+      let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
+                         then Some("mv "^s_eless^".o "^s_root^workdir) 
+                         else None) in 
+      let central_cmds=
+      [ 
+        (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^s_eless^".ml";
+        "mv "^s_eless^".cm* "^s_root^workdir
+      ] in 
+      let almost_full_answer= 
+      (if (not mli_reg) &&(Sys.file_exists(full_mli))
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
+      else central_cmds)
+      in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
     let command_for_cmo (cmod:Compilation_mode_t.t) dir fw eless=
       let nm=Dfn_endingless.to_module eless in
       let s_root=Dfa_root.connectable_to_subpath(dir) in
@@ -77,84 +116,51 @@ module Private = struct
       ] in 
       let almost_full_answer= 
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
-      then 
-            (* 
-                     in this situation the mli file exists but is not registered.
-                     So the compilation manager must treat it as though it didn't
-                     exist. We temporarily rename it so that ocamlc will ignore it.
-            *)
-                    let dummy_mli=s_root^"uvueaoqhkt" in
-                    [
-                     "mv "^full_mli^" "^dummy_mli
-                    ]
-                    @ 
-                     central_cmds
-                    @ 
-                    [ 
-                     "mv "^dummy_mli^" "^full_mli
-                    ] 
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds
       else central_cmds)
       in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+
   
 
 
   let command_for_mli_module_separate_compilation cmod fw eless =
       let dir = Fw_with_dependencies.root fw in 
-      let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
-      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
-      let temp2=(
-      let co=command_for_cmo cmod dir fw eless in 
-      if mli_reg
-      then let ci=command_for_cmi cmod dir fw eless in 
-           if ml_reg
-           then [ci;co]
-           else [ci]
-      else [co]) in 
-      List.flatten temp2;;
+      command_for_cmi cmod dir fw eless;;
 
   let command_for_ml_module_separate_compilation cmod fw eless =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
-      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
-           if ml_reg
-           then [ci;co]
-           else [ci]
+           [ci;co]
       else [co]) in 
       List.flatten temp2;;
 
   let command_for_mll_module_separate_compilation cmod fw eless =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
-      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
-           if ml_reg
-           then [ci;co]
-           else [ci]
+           [ci;co]
       else [co]) in 
       List.flatten temp2;;
 
   let command_for_mly_module_separate_compilation cmod fw eless =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
-      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
-           if ml_reg
-           then [ci;co]
-           else [ci]
+           [ci;co]
       else [co]) in 
       List.flatten temp2;;
 
@@ -163,7 +169,7 @@ module Private = struct
       Dfa_ocaml_ending_t.Mli -> command_for_mli_module_separate_compilation cmod fw eless
      |Ml -> command_for_ml_module_separate_compilation cmod fw eless
      |Mll -> command_for_mll_module_separate_compilation cmod fw eless
-     |Mly -> command_for_mll_module_separate_compilation cmod fw eless
+     |Mly -> command_for_mly_module_separate_compilation cmod fw eless
     ;;
 
 
