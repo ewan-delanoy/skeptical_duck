@@ -1252,6 +1252,7 @@ let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
 let plunge_fw_configuration = Private.Exit.plunge_fw_configuration ;;
+let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
 let register_rootless_paths = Private.Exit.register_rootless_paths ;;
 let relocate_module_to = Private.Exit.relocate_module_to ;;
