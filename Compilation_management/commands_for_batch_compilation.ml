@@ -96,7 +96,9 @@ module Private = struct
       else central_cmds)
       in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
   
-  let command_for_module_separate_compilation cmod fw eless pr_ending =
+
+
+  let command_for_mli_module_separate_compilation cmod fw eless =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
@@ -110,6 +112,61 @@ module Private = struct
            else [ci]
       else [co]) in 
       List.flatten temp2;;
+
+  let command_for_ml_module_separate_compilation cmod fw eless =
+      let dir = Fw_with_dependencies.root fw in 
+      let nm=Dfn_endingless.to_module eless in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
+      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let temp2=(
+      let co=command_for_cmo cmod dir fw eless in 
+      if mli_reg
+      then let ci=command_for_cmi cmod dir fw eless in 
+           if ml_reg
+           then [ci;co]
+           else [ci]
+      else [co]) in 
+      List.flatten temp2;;
+
+  let command_for_mll_module_separate_compilation cmod fw eless =
+      let dir = Fw_with_dependencies.root fw in 
+      let nm=Dfn_endingless.to_module eless in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
+      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let temp2=(
+      let co=command_for_cmo cmod dir fw eless in 
+      if mli_reg
+      then let ci=command_for_cmi cmod dir fw eless in 
+           if ml_reg
+           then [ci;co]
+           else [ci]
+      else [co]) in 
+      List.flatten temp2;;
+
+  let command_for_mly_module_separate_compilation cmod fw eless =
+      let dir = Fw_with_dependencies.root fw in 
+      let nm=Dfn_endingless.to_module eless in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
+      and ml_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Ml nm in
+      let temp2=(
+      let co=command_for_cmo cmod dir fw eless in 
+      if mli_reg
+      then let ci=command_for_cmi cmod dir fw eless in 
+           if ml_reg
+           then [ci;co]
+           else [ci]
+      else [co]) in 
+      List.flatten temp2;;
+
+  let command_for_module_separate_compilation cmod fw eless pr_ending = 
+     match pr_ending with 
+      Dfa_ocaml_ending_t.Mli -> command_for_mli_module_separate_compilation cmod fw eless
+     |Ml -> command_for_ml_module_separate_compilation cmod fw eless
+     |Mll -> command_for_mll_module_separate_compilation cmod fw eless
+     |Mly -> command_for_mll_module_separate_compilation cmod fw eless
+    ;;
+
+
   
   exception  Command_for_predebuggable_or_preexecutable_exn;;
   
