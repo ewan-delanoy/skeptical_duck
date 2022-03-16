@@ -50,9 +50,9 @@ module Private = struct
   
   module Command = struct 
   
-      let module_separate_compilation cmod fw eless =
+      let module_separate_compilation cmod fw eless pr_ending=
        Commands_for_batch_compilation.module_separate_compilation 
-         cmod (parent fw) eless;;
+         cmod (parent fw) eless pr_ending;;
       
       let predebuggable fw short_path =
         Commands_for_batch_compilation.predebuggable 
@@ -136,8 +136,9 @@ module Private = struct
   let list_of_commands_for_shaft_part_of_feydeau cmod fw (opt_modulenames,opt_rootless_path)=
      let l=dependencies_inside_shaft cmod fw (opt_modulenames,opt_rootless_path) in 
      let temp1=Image.image (fun mn->
-       let eless=Fw_with_dependencies.endingless_at_module fw mn in 
-       let cmds=Command.module_separate_compilation cmod fw eless in 
+       let eless=Fw_with_dependencies.endingless_at_module fw mn 
+       and pr_ending = Fw_with_dependencies.principal_ending_for_module fw mn in 
+       let cmds=Command.module_separate_compilation cmod fw eless pr_ending in 
       Image.image (fun cmd->(mn,Fw_with_dependencies.endingless_at_module fw mn,cmd) ) cmds ) l in 
       List.flatten temp1;;
   

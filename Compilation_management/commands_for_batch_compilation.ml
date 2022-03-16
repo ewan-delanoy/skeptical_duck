@@ -98,7 +98,7 @@ module Private = struct
   
   exception  Unregistered_element of Dfn_endingless_t.t;;   
   
-  let command_for_module_separate_compilation cmod fw eless=
+  let command_for_module_separate_compilation cmod fw eless pr_ending =
       let dir = Fw_with_dependencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm
