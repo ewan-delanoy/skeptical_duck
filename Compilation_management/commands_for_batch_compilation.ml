@@ -72,6 +72,8 @@ module Private = struct
           "mv "^dummy_mli^" "^full_mli
         ] ;;
 
+
+
     let command_for_cmo_from_mll (cmod:Compilation_mode_t.t) dir fw eless=
       let nm=Dfn_endingless.to_module eless in
       let s_root=Dfa_root.connectable_to_subpath(dir) in
@@ -95,6 +97,32 @@ module Private = struct
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
       else central_cmds)
       in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+    let command_for_cmo_from_mly (cmod:Compilation_mode_t.t) dir fw eless=
+      let nm=Dfn_endingless.to_module eless in
+      let s_root=Dfa_root.connectable_to_subpath(dir) in
+      let s_eless=Dfn_endingless.to_line eless in
+      let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
+      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+      let full_mli=s_eless^".mli" in
+      let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
+      let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
+                         then Some("mv "^s_eless^".o "^s_root^workdir) 
+                         else None) in 
+      let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
+      let central_cmds=
+      [ 
+        "ocamlyacc "^s_eless^".mly";
+        "mv "^s_eless^".ml "^s_root^workdir;
+        (Compilation_mode.executioner cmod)^dir_and_libs^" -c "^ml_in_workplace;
+      ] in 
+      let almost_full_answer= 
+      (if (not mli_reg) &&(Sys.file_exists(full_mli))
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
+      else central_cmds)
+      in Option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+
 
     let command_for_cmo (cmod:Compilation_mode_t.t) dir fw eless=
       let nm=Dfn_endingless.to_module eless in
@@ -155,7 +183,7 @@ module Private = struct
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
-      let co=command_for_cmo cmod dir fw eless in 
+      let co=command_for_cmo_from_mly cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
            [ci;co]
