@@ -436,7 +436,7 @@ let cut_into_small_parts  l ~max_part_size =
 
 let project l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
 
-(* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; * )
+(* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
 
 
 
