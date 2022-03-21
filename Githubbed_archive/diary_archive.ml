@@ -1,7 +1,139 @@
 (************************************************************************************************************************
-Snippet 80 : 
+Snippet 82 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 81 : Debugging compiling of mll and mly files
+************************************************************************************************************************)
+
+let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
+let fw_config = Fw_configuration.of_root root ;;
+let github_config = Fw_poly.construct_github_configuration 
+  ~root:root
+  ~dir_for_backup:backup_dir
+  ~gitpush_after_backup:githubbing
+  ~github_url:Coma_big_constant.github_url
+  ~encoding_protected_files:[] ;;
+let cs_ref=ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
+let s_root = Dfa_root.connectable_to_subpath root ;;
+let s_above_root = Cull_string.before_rightmost (Dfa_root.without_trailing_slash root) '/';;
+
+let a1 =(More_unix.create_subdirs_and_fill_files_if_necessary root
+       Coma_constant.minimal_set_of_needed_dirs 
+           Coma_constant.conventional_files_with_minimal_content) ;;
+
+
+
+let a1 =(More_unix.create_subdirs_and_fill_files_if_necessary root
+       Coma_constant.minimal_set_of_needed_dirs 
+           Coma_constant.conventional_files_with_minimal_content) ;;
+
+let a2 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "cherokee_token.ml";;
+
+let lines = ["cherokee_lexer.mll"];;
+
+let bad1 () = Modify_coma_state.Syntactic_sugar.register_several cs_ref lines ;;
+
+let rootless_paths = Image.image Dfn_rootless.of_line lines ;;
+
+let bad2 () = Modify_coma_state.Reference.register_rootless_paths cs_ref rootless_paths ;;
+
+let cs = (!cs_ref) ;;
+
+let bad3 () = Modify_coma_state.And_save.register_rootless_paths cs rootless_paths ;;
+
+let bad4 () = Fw_with_githubbing.register_rootless_paths cs rootless_paths ;;
+
+let fw_with_bc = Fw_poly.parent cs ;;
+
+let bad5 () = Fw_with_batch_compilation.register_rootless_paths fw_with_bc rootless_paths ;;
+
+let old_fw_with_deps = Fw_poly.parent  fw_with_bc ;;
+
+let (new_fw_with_deps,((ac_paths,uc_paths,nc_paths),_))=
+       Fw_with_dependencies.register_rootless_paths old_fw_with_deps rootless_paths ;;
+
+module BCPri = Fw_with_batch_compilation.Private ;;       
+
+let old_list_of_cmpl_results = BCPri.get_cmpl_results fw_with_bc ;; 
+
+let new_list_of_cmpl_results = Image.image (
+        fun mn -> 
+          match List.assoc_opt mn old_list_of_cmpl_results with 
+          None -> (mn,false)
+          |Some(old_res) -> (mn,old_res)
+     ) (Fw_with_dependencies.dep_ordered_modules new_fw_with_deps) ;; 
+
+let fw_with_bc2 = BCPri.usual_extension new_fw_with_deps new_list_of_cmpl_results ;;    
+
+let unordered_mods = Image.image Dfn_rootless.to_module uc_paths ;;
+
+let bad6 () = BCPri.modern_recompile fw_with_bc2 unordered_mods;;
+
+module BCOtm = BCPri.Ocaml_target_making ;;
+
+let (all_deps,new_deps,changed_modules) = 
+        Fw_with_dependencies.below_several new_fw_with_deps unordered_mods ;;
+let bad7 ()=
+        BCOtm.usual_feydeau fw_with_bc2 all_deps ;;
+
+let cmod = Compilation_mode_t.Usual ;;
+
+let (opt_modnames,opt_rootless_path)= (Some(all_deps),None);;
+
+let bad8 ()=
+   BCOtm.feydeau cmod fw_with_bc2 (opt_modnames,opt_rootless_path);;
+
+let bad9 ()=
+   BCOtm.shaft_part_of_feydeau cmod fw_with_bc2 (opt_modnames,opt_rootless_path);;   
+
+let bad10 () =
+   BCOtm.list_of_commands_for_shaft_part_of_feydeau cmod fw_with_bc2 (opt_modnames,opt_rootless_path) ;;
+
+let l=BCOtm.dependencies_inside_shaft cmod fw_with_bc2 (opt_modnames,opt_rootless_path) ;;
+
+let mn0 = List.hd l ;;
+
+let eless0=Fw_with_dependencies.endingless_at_module fw_with_bc2 mn0 ;;
+
+module BCCmd = BCPri.Command ;;
+
+let bad11 () = BCCmd.module_separate_compilation cmod fw_with_bc2 eless0 ;;
+
+let bad12 () = Commands_for_batch_compilation.module_separate_compilation cmod new_fw_with_deps eless0 ;;
+
+let check = 
+   Commands_for_batch_compilation.Private.command_for_cmo_from_mll cmod root fw_with_bc2 eless0;;
+
+
+(*
+
+let a0 = 
+   let i1 = Sys.command ("rm -rf "^s_root^"*") in
+   let i2 = Sys.command ("cp "^s_above_root^"/Wyoming/* "^s_root) in 
+   (i1,i2) ;; 
+
+#use"Fads/cloth.ml";;   
+
+
+
+*)
+
+(************************************************************************************************************************
+Snippet 80 : Duplicating a paragraph in a file 
+************************************************************************************************************************)
+
+
+let ap1 = Absolute_path.of_string  
+   "Compilation_management/commands_for_batch_compilation.ml" ;;
+let text1 = Io.read_whole_file ap1 ;;
+
+let (a,b,c) = Lines_in_string.tripartition_associated_to_interval text1 75 97 ;;
+
+let text2 = String.concat "\n\n" [a;b;b;c] ;;
+
+Io.overwrite_with ap1 text2 ;;
 
 
 (************************************************************************************************************************
