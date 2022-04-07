@@ -438,5 +438,20 @@ let project l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
 
 (* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
 
+let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
+  let (part1,temp1) = big_rht (idx1-1) l in 
+  let (part2,part3) = big_rht (idx2-idx1) temp1 in 
+  List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
+  
+(* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
 
+(*
+let extend_total_ordering_by_adding_two_elements old_total_order elt1 elt2 = 
+  let n = (List.length old_total_order)+1 in 
+  Image.image (
+   insert_two_elements_at_indices old_total_order (elt1,elt2)
+  ) (Uple.inclusive_list_of_pairs(Ennig.ennig 1 n)) ;; 
+*)
+
+(* extend_total_ordering_by_adding_two_elements  [1; 2; 3; 4; 5; 6] 25 35 ;; *)
 

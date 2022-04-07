@@ -1,7 +1,271 @@
 (************************************************************************************************************************
-Snippet 82 : 
+Snippet 86 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 85 : Reindex pages of a book for printing
+************************************************************************************************************************)
+
+let ap1 = Absolute_path.of_string (Needed_values.home^"/Downloads/Gwenn/");;
+let s_ap1 = Absolute_path.to_string ap1 ;;
+
+Coherent_pdf.workspace_directory := s_ap1 ;;
+Coherent_pdf.explode ("p","") 248;;
+
+let print_transform n =
+    let pre_q=(n/8) in 
+    let pre_r= n-8*pre_q in 
+    let (q,old_r)=(if pre_r=0 then (pre_q-1,8) else (pre_q,pre_r) ) in 
+    let new_r = List.nth [4;1;8;5;2;3;6;7] (old_r-1) in 
+    8*q+new_r ;; 
+
+let command_for_index i =
+    let j = print_transform i in 
+    let si = string_of_int i 
+    and sj = string_of_int j in 
+    "mv "^s_ap1^"p"^sj^".pdf "^s_ap1^"q"^si^".pdf" ;;
+
+let number_of_chunks = 31 ;;
+let reindexing_commands = Ennig.doyle command_for_index 1 (8*number_of_chunks) ;;
+let act () = Image.image Sys.command reindexing_commands ;;
+
+Coherent_pdf.implode ("q","") ;;
+
+(************************************************************************************************************************
+Snippet 84 : Musing on Steinhaus triangles
+************************************************************************************************************************)
+
+let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
+let il_sort = Ordered.sort Total_ordering.silex_for_intlists ;;
+
+let index_from_x unadbridged_x_form =
+    let x_form = Cull_string.trim_spaces unadbridged_x_form in 
+    if not(Supstring.begins_with x_form "x") 
+    then None 
+    else
+    Some(int_of_string(Cull_string.cobeginning 1 x_form));;     
+
+let indices_from_xlist xlist =
+  let parts = Str.split (Str.regexp_string "+") xlist in  
+  i_sort(Option.filter_and_unpack index_from_x parts);;
+
+let temporary_store=Absolute_path.of_string (Needed_values.home^"/Downloads/temp.txt") ;;
+let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
+
+let act () = 
+  let stored_text = Io.read_whole_file temporary_store in 
+  let temp1 = Replace_inside.replace_several_inside_string 
+   ["[","";"]","";"(","";")",""] stored_text in
+  let xsums = Str.split (Str.regexp_string ",") temp1 in 
+  let dim_after = List.length xsums in  
+  let indices = i_fold_merge (Image.image indices_from_xlist xsums) in 
+  let ocamlese_before = String.concat "," (Image.image ( fun i->
+   "x"^(string_of_int i)
+  ) indices) in
+  let ocamlese_after = String.concat ";" xsums in 
+  let ocamlese_uple = String.concat "," (Ennig.doyle ( fun i->
+  "tf "^(string_of_int i)
+  ) 1 (List.length indices))  in 
+  let lines_in_preproduced_text =
+  [ 
+   "let dim_before = "^(string_of_int (List.length indices))^" ;;";
+   "let dim_after = "^(string_of_int dim_after)^" ;;";
+   "let to_long_list ("^ocamlese_before^") ="; "    Image.image (fun t-> t mod 2)";
+   "    [";
+   "      "^ocamlese_after;
+   "    ] ;;"; "let to_uple l ="; "    let tf = (fun k->List.nth l (k-1)) in ";
+   "    ("^ocamlese_uple^") ;;  "; ] in 
+  let preproduced_text = "\n\n\n"^(String.concat "\n" lines_in_preproduced_text)^"\n\n\n" in 
+  Replace_inside.overwrite_between_markers_inside_file 
+      (Overwriter.of_string preproduced_text)
+      ("(* Pre-"^"processed part starts here *)","(* Pre-"^"processed part ends here *)")
+      transmitter_file ;;
+
+
+(* Pre-processed part starts here *)
+
+
+let dim_before = 4 ;;
+let dim_after = 36 ;;
+let to_long_list (x2,x4,x5,x6) =
+    Image.image (fun t-> t mod 2)
+    [
+      0; x2; x2; 1; x2 + 1; 1; x4; x4 + 1; x2 + x4; x2 + x4 + 1; x5; x4 + x5; x5 + 1; x2 + x4 + x5 + 1; x5; x6; x5 + x6; x4 + x6; x4 + x5 + x6 + 1; x2 + x6; x2 + x5 + x6; x2 + x4 + x5 + x6 + 1; x2 + x4 + x5 + 1; x2 + x4 + x6 + 1; x2 + 1; x2 + x4 + x5 + x6; x4 + x5; x2 + x4 + x6; x5 + 1; x2 + x4 + x6; x5 + x6 + 1; x2 + x4 + x5; x4 + x5 + 1; x2 + x6 + 1; x2 + x4 + x5 + x6 + 1; x5 + 1
+    ] ;;
+let to_uple l =
+    let tf = (fun k->List.nth l (k-1)) in 
+    (tf 1,tf 2,tf 3,tf 4) ;;  
+
+
+(* Pre-processed part ends here *)
+
+
+let test uple =
+  let l = to_long_list uple in
+  let n = (List.length l)/2 in 
+    let l2 = List.filter (fun y->y = 0) l in 
+    (List.length l2)=n ;;
+  
+
+
+let test2 l = test (to_uple l) ;;  
+  
+let base1 = Ennig.doyle (fun _->[0;1]) 1 dim_before ;;    
+let base2 = Cartesian.general_product base1 ;;
+let base3 = List.filter test2 base2 ;; 
+let base4 = Image.image (fun u->(u,to_long_list(to_uple u))) base3 ;;
+
+let nonzero_linear_forms = List.tl(Cartesian.product [0;1] base2) ;;
+let eval_linear_form (const_part,linear_part) x=
+  let temp1 = List.combine (const_part::linear_part) (1::x) in 
+  let temp2 = Image.image (fun (a,b)->a*b) temp1 in 
+  abs((Basic.fold_sum temp2) mod 2) ;;
+let kernel_of_linear_form = Memoized.make(fun lf ->
+    List.filter (fun x->eval_linear_form lf x = 0) base3 ) ;;   
+let kernel_size = Memoized.make(fun lf->
+    List.length(kernel_of_linear_form lf)
+  ) ;;
+let computation1 = Explicit.image kernel_size nonzero_linear_forms ;;
+
+let res1 = Max.maximize_it_with_care kernel_size nonzero_linear_forms ;;
+
+let defect_at_index =Memoized.make(fun idx -> 
+    let (a,b) = List.partition (fun l->List.nth l (idx-1)=0) base3 in 
+    (abs(List.length(b)-List.length(a))) );; 
+
+let minimal_defects =
+    Min.minimize_it_with_care  defect_at_index 
+      (Ennig.ennig 1 dim_before) ;;   
+
+let big_proj shadow = il_sort(Image.image (fun l->Listennou.project l shadow) base3) ;;  
+let shadows = il_sort (Listennou.power_set (Ennig.ennig 1 dim_before)) ;;     
+let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh)) shadows ;;
+
+
+
+
+(************************************************************************************************************************
+Snippet 83 : Draft to preprocess a file using data from PARI-GP
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
+
+let index_from_x unadbridged_x_form =
+    let x_form = Cull_string.trim_spaces unadbridged_x_form in 
+    if not(Supstring.begins_with x_form "x") 
+    then None 
+    else
+    Some(int_of_string(Cull_string.cobeginning 1 x_form));;     
+
+let indices_from_xlist xlist =
+  let parts = Str.split (Str.regexp_string "+") xlist in  
+  i_sort(Option.filter_and_unpack index_from_x parts);;
+
+let temporary_store=Absolute_path.of_string (home^"/Downloads/temp.txt") ;;
+let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
+
+
+let stored_text = Io.read_whole_file temporary_store ;;
+let temp1 = Replace_inside.replace_several_inside_string 
+  ["[","";"]","";"(","";")",""] stored_text ;;
+let xsums = Str.split (Str.regexp_string ",") temp1 ;;
+let dim_after = List.length xsums ;;
+let indices = i_fold_merge (Image.image indices_from_xlist xsums) ;;
+let dim_before = List.length indices ;;
+let ocamlese_before = String.concat "," (Image.image ( fun i->
+   "x"^(string_of_int i)
+) indices) ;;
+let ocamlese_after = String.concat ";" xsums ;;
+let ocamlese_uple = String.concat "," (Image.image ( fun i->
+  "tf "^(string_of_int i)
+) indices) ;;
+
+
+let lines_in_preproduced_text =
+[ "let max_idx = "^(string_of_int dim_after)^" ;;";
+   "let to_long_list ("^ocamlese_before^") ="; "    Image.image (fun t-> t mod 2)";
+   "    [";
+   "      "^ocamlese_after;
+   "    ] ;;"; "let to_uple l ="; "    let tf = (fun k->List.nth l (k-1)) in ";
+   "    ("^ocamlese_uple^") ;;  "; ] ;;
+
+let preproduced_text = "\n\n\n"^(String.concat "\n" lines_in_preproduced_text)^"\n\n\n" ;;
+
+let prprpr () = 
+    Replace_inside.overwrite_between_markers_inside_file 
+      (Overwriter.of_string preproduced_text)
+      ("(* Pre-"^"processed part starts here *)","(* Pre-"^"processed part ends here *)")
+      transmitter_file ;;
+
+
+(************************************************************************************************************************
+Snippet 82 : Lower bounds on linear recurrent sequences of order 2
+************************************************************************************************************************)
+
+let nachste (x,y) = (y,4*y-5*x) ;;
+
+let nachstee (x,y,l) = (y,4*y-5*x,x::l) ;; 
+
+let precision = ref 1000 ;;
+
+let measure (x,y) =
+    let opt_example = ref None 
+    and walker = ref (x,y) 
+    and bound=abs(x) in 
+    for k = 1 to (!precision) 
+    do 
+       walker := (nachste(!walker));
+       if abs(fst(!walker)) <= bound 
+       then opt_example := Some k 
+    done;
+    match (!opt_example) with 
+    None -> 2
+   |Some kmax -> (kmax)+1 ;;  
+
+let see_measure (x,y) = 
+    let n = measure(x,y) 
+    and walker = ref (x,y,[]) in
+    for k = 3 to n 
+    do 
+        walker := nachstee (!walker)
+    done;
+    let (a,b,l)=(!walker) in 
+    List.rev(b::a::l) ;;
+    
+let base1 =Memoized.make(fun n -> List.filter (fun (x,y)->
+    let mx = abs x and my =abs y in 
+    ((x,y)<>(0,-1)) &&
+    (x>=0)&&((Gcd.gcd x y)=1) && (mx<=my) && (max mx my=n)
+  ) (Cartesian.square (Ennig.ennig (-n) n))) ;;
+
+let base_image1 = Memoized.make (fun n->
+    Max.maximize_it_with_care measure 
+    (base1 n)
+) ;;
+
+let rec breaker_tester bound candidate =
+  if fst(base_image1 candidate) >= bound 
+  then  candidate 
+  else  breaker_tester bound (candidate+1) ;;
+
+let next_breaker = Memoized.recursive (fun old_f bound -> 
+     if bound<=3 then (1,(3,[1; 1; -1],[])) else 
+     let m = breaker_tester bound (fst(old_f(bound-1))) in 
+     let (_,l) = base_image1 m in 
+     let (a,others) = Listennou.ht l in 
+     let sol = see_measure a in 
+     (m,(List.length sol,sol,others))
+  ) ;;
+
+
+let bi = base_image1 ;;
+let sm = see_measure ;;
+let nb = next_breaker ;;
 
 (************************************************************************************************************************
 Snippet 81 : Debugging compiling of mll and mly files

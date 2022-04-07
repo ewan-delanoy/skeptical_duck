@@ -13,6 +13,11 @@ let next_pair (i,j)=
 if i+1<j then (i+1,j) else
 (1,i+2);;
 
+let next_inclusive_pair (i,j)=
+if i+1<=j then (i+1,j) else
+(1,i+2);;
+
+
 let next_triple (i,j,k)=
 if i+1<j then (i+1,j,k) else
 if i+2<k then (1,i+2,k) else
@@ -38,6 +43,17 @@ if x3+1<x4 then (1,2,  x3+1,x4,x5,x6) else
 if x4+1<x5 then (1,2,3,   x4+1,x5,x6) else
 if x5+1<x6 then (1,2,3,4,    x5+1,x6) else
 (1,2,3,4,5,x6+1);;
+
+
+let inclusive_list_of_pairs=Memoized.make(function n->
+        if n<2 then [] else
+        let accu=ref([],(1,1))
+        and number_of_iterations=(n*(n-1))/2 
+        and iterator=(function (l,c)->(c::l,next_inclusive_pair(c)) ) in
+        let _=(for k=1 to number_of_iterations do
+        accu:=iterator(!accu)
+        done) in
+        List.rev(fst (!accu)));;
 
 let list_of_pairs=Memoized.make(function n->
 if n<2 then [] else
