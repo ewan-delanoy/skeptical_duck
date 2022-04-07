@@ -15,7 +15,7 @@ if i+1<j then (i+1,j) else
 
 let next_inclusive_pair (i,j)=
 if i+1<=j then (i+1,j) else
-(1,i+2);;
+(1,j+1);;
 
 
 let next_triple (i,j,k)=
