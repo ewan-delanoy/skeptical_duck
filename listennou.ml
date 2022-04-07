@@ -445,13 +445,13 @@ let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) =
   
 (* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
 
-(*
+
 let extend_total_ordering_by_adding_two_elements old_total_order elt1 elt2 = 
   let n = (List.length old_total_order)+1 in 
   Image.image (
    insert_two_elements_at_indices old_total_order (elt1,elt2)
-  ) (Uple.inclusive_list_of_pairs(Ennig.ennig 1 n)) ;; 
-*)
+  ) (Int_uple.inclusive_list_of_pairs n) ;; 
+
 
 (* extend_total_ordering_by_adding_two_elements  [1; 2; 3; 4; 5; 6] 25 35 ;; *)
 

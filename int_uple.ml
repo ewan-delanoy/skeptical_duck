@@ -46,7 +46,8 @@ if x5+1<x6 then (1,2,3,4,    x5+1,x6) else
 
 
 let inclusive_list_of_pairs=Memoized.make(function n->
-        if n<2 then [] else
+        if n<1 then [] else
+        if n=1 then [1,1] else        
         let accu=ref([],(1,1))
         and number_of_iterations=(n*(n+1))/2 
         and iterator=(function (l,c)->(c::l,next_inclusive_pair(c)) ) in
