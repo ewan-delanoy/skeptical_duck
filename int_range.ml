@@ -25,7 +25,7 @@ j->if j>b
 slow_doyle0 a;;
 
 
-let doyle_for_delta f n u0=
+let scale_for_delta f n u0=
 let accu=ref([u0]) and traveler=ref(u0) in
 let rec doyle0=(function
 da_ober->if da_ober<1
