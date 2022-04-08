@@ -75,7 +75,7 @@ let compute_factorized_term l=
 
 let list_of_divisors=Memoized.make(fun n->
   let (Multiset.M(temp1))=multiset_factorization n in
-  let temp2=Image.image (fun (a,ea)->Int_range.doyle (fun j->(a,j)) 0 ea ) temp1 in
+  let temp2=Image.image (fun (a,ea)->Int_range.scale (fun j->(a,j)) 0 ea ) temp1 in
   let temp3=Cartesian.general_product temp2 in
   let temp4=Image.image compute_factorized_term temp3 in
   let temp5=Set_of_integers.sort temp4 in

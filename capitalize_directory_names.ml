@@ -19,7 +19,7 @@ let cdn s=
     then String.capitalize_ascii t
     else t
   ) in
-  let temp3=Int_range.doyle tempf 0 (n-1) in
+  let temp3=Int_range.scale tempf 0 (n-1) in
   String.concat "" temp3;;
 
 (*

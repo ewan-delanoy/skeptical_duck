@@ -28,7 +28,7 @@ module Helper = struct
 
   let small_pieces (i,j) max_piece_size=
          let num_of_pieces = Basic.frac_ceiling (j-i+1) max_piece_size in 
-         Int_range.doyle (
+         Int_range.scale (
             fun k->
             let start=i+(k-1)*max_piece_size in
             let ending=min j (start+max_piece_size-1) in 
@@ -38,11 +38,11 @@ module Helper = struct
   let intertwining_decomposition num_odd num_even =
     let min_num=min num_odd num_even 
     and max_num=max num_odd num_even in 
-    let common_part=List.flatten(Int_range.doyle (
+    let common_part=List.flatten(Int_range.scale (
        fun k->[(true,k);(false,k)]
     ) 1 min_num) 
     and comparison=num_odd>num_even in 
-    let last_part=Int_range.doyle (
+    let last_part=Int_range.scale (
         fun k->(comparison,k)
     ) (min_num+1) max_num in 
     common_part@last_part;;
@@ -88,7 +88,7 @@ module Bare = struct
   let explode (pdf_name_start,pdf_name_end) num_of_pages=
     let full_name=pdf_name_start^pdf_name_end 
     and ending=pdf_name_end^".pdf" in 
-    Int_range.doyle(
+    Int_range.scale(
        fun i->
        let si=string_of_int i in 
        Helper.cpdf^full_name^".pdf "^si^"-"^si^" -o "^pdf_name_start^si^ending;
@@ -419,7 +419,7 @@ module Bare = struct
   
 
   let append_blank r =
-     List.flatten(Int_range.doyle (
+     List.flatten(Int_range.scale (
       fun _->[
           Helper.cpdf^walker_name^".pdf "^blank_name^".pdf -o wghartnjklmiopfwhhokuuu.pdf";
           "mv wghartnjklmiopfwhhokuuu.pdf "^walker_name^".pdf" ;
@@ -529,7 +529,7 @@ let make_booklet_naively first_arg =
   let _ = create_blank_page_with_prescribed_size (width,height) in 
   let acts2 = Image.image Unix_command.uc 
   (Command.Walker.init_append_and_explode  old_name rounded_offset rounded_nbr_of_pages) in 
-  let special_order = Int_range.doyle (
+  let special_order = Int_range.scale (
     fun j->let k=(j/4)in  match (j mod 4) with 
       0 -> rounded_nbr_of_pages-2*k+1 
     |1 ->  rounded_nbr_of_pages-2*k

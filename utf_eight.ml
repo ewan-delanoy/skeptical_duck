@@ -120,12 +120,12 @@ let encode_as_string u=
             
 let unicode_point s=
    let n=String.length(s) in
-   let temp1=Int_range.doyle (fun j->Char.code(String.get s j)) 0 (n-1) in
+   let temp1=Int_range.scale (fun j->Char.code(String.get s j)) 0 (n-1) in
    Printf.sprintf "%X" (fst(pusher_for_decoding (temp1,0)));;             
             
 let decompose s=
    let n=String.length(s) in
-   let temp1=Int_range.doyle (fun j->Char.code(String.get s j)) 0 (n-1) in
+   let temp1=Int_range.scale (fun j->Char.code(String.get s j)) 0 (n-1) in
    let temp2=decode temp1 in
    Image.image encode_as_string temp2;;           
             

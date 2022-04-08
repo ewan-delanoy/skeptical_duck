@@ -19,7 +19,7 @@ let inside_string replacings s=
   let xy_substring=(fun j->
     Cull_string.interval s (x_coord j) (y_coord j)
   ) in
-  let all_parts=Int_range.doyle (
+  let all_parts=Int_range.scale (
     fun j->
       if (j mod 2)=1
       then xy_substring j

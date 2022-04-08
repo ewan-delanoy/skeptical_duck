@@ -23,7 +23,7 @@ let implode l=
     
 let explode s=
     let n=String.length s in
-    Int_range.doyle (String.get s) 0 (n-1);;
+    Int_range.scale (String.get s) 0 (n-1);;
     
  
 let char_finder_from f s w0=
@@ -45,7 +45,7 @@ let backwards_char_finder f s =
  
 let show_indices s=
   let n=String.length s in
-  Int_range.doyle (fun i->(i,String.get s (i-1)) ) 1 n;;   
+  Int_range.scale (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
 let number_of_lines_before = Substring.Friend.number_of_lines_before;;
 

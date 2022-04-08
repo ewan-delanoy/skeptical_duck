@@ -16,7 +16,7 @@ module Private = struct
 
 let blanks= [' ';'\n';'\r';'\t'];;
 
-let digits = Int_range.doyle char_of_int 48 57;;
+let digits = Int_range.scale char_of_int 48 57;;
 
 
 let seek_html_footnote_at_index text i0=

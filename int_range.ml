@@ -3,7 +3,7 @@
 #use"int_range.ml";;
 
 *) 
-let doyle f a b=
+let scale f a b=
 let accu=ref([]) in
 let rec doyle0=(function
 j->if j<a
@@ -13,7 +13,7 @@ j->if j<a
 doyle0 b;;
 
 let descending_scale f b a =
-  doyle (fun x->f(a+b-x)) a b ;; 
+  scale (fun x->f(a+b-x)) a b ;; 
 
 let slow_scale f a b=
 let accu=ref([]) in
@@ -36,7 +36,7 @@ da_ober->if da_ober<1
 doyle0 n;;
  
 
-let ennig a b=doyle (function x->x) a b;; 
+let ennig a b=scale (function x->x) a b;; 
 
 let index_everything l=
  let rec tempf=
@@ -81,7 +81,7 @@ let rec find_and_stop0=(function
 ) in
 find_and_stop0 a;;
 
-let constant_list n x=doyle (function j->x) 1 n;;
+let constant_list n x=scale (function j->x) 1 n;;
 
 let describe_fibers_as_intervals f a b=
  if (a>b) then [] else
@@ -117,6 +117,6 @@ let reposition_by_putting_snd_immediately_after_fst i j t=
     if t=i+1  then j else
     if t<=j  then t-1 else t;;
 
-let repeat n x = doyle (fun _->x) 1 n ;;
+let repeat n x = scale (fun _->x) 1 n ;;
 
 (* repeat 3 "a" ;; *)          

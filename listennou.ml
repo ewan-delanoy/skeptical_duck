@@ -339,7 +339,7 @@ let extract_successive_pairs_from_even_list l=
    let m1 =(List.length l) in 
    if (m1 mod 2)<>0 then raise(Extract_successive_pairs_exn(m1)) else 
    let m2=m1/2 in 
-   Int_range.doyle (fun j->
+   Int_range.scale (fun j->
       (List.nth l (2*j-2),List.nth l (2*j-1)) 
    ) 1 m2;;
 

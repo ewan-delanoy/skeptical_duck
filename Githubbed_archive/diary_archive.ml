@@ -133,7 +133,7 @@ let command_for_index i =
     "mv "^s_ap1^"p"^sj^".pdf "^s_ap1^"q"^si^".pdf" ;;
 
 let number_of_chunks = 31 ;;
-let reindexing_commands = Int_range.doyle command_for_index 1 (8*number_of_chunks) ;;
+let reindexing_commands = Int_range.scale command_for_index 1 (8*number_of_chunks) ;;
 let act () = Image.image Sys.command reindexing_commands ;;
 
 Coherent_pdf.implode ("q","") ;;
@@ -171,7 +171,7 @@ let act () =
    "x"^(string_of_int i)
   ) indices) in
   let ocamlese_after = String.concat ";" xsums in 
-  let ocamlese_uple = String.concat "," (Int_range.doyle ( fun i->
+  let ocamlese_uple = String.concat "," (Int_range.scale ( fun i->
   "tf "^(string_of_int i)
   ) 1 (List.length indices))  in 
   let lines_in_preproduced_text =
@@ -218,7 +218,7 @@ let test uple =
 
 let test2 l = test (to_uple l) ;;  
   
-let base1 = Int_range.doyle (fun _->[0;1]) 1 dim_before ;;    
+let base1 = Int_range.scale (fun _->[0;1]) 1 dim_before ;;    
 let base2 = Cartesian.general_product base1 ;;
 let base3 = List.filter test2 base2 ;; 
 let base4 = Image.image (fun u->(u,to_long_list(to_uple u))) base3 ;;
@@ -522,7 +522,7 @@ let i_sort = Ordered.sort i_order ;;
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_sort = Ordered.sort il_order ;;
 
-let decompositions n = Int_range.doyle (fun j->(j,n-j)) 1 (n/2) ;;
+let decompositions n = Int_range.scale (fun j->(j,n-j)) 1 (n/2) ;;
 
 let try_easier_path old_f l = 
     if List.length (l) < 2 then None else 
@@ -997,7 +997,7 @@ end ;;
 module Early_union = struct 
 
 let order = Total_ordering.silex_compare  Early_atom.order ;; 
-let whole = Int_range.doyle (fun j->Early_atom.EA j)  1 4;;
+let whole = Int_range.scale (fun j->Early_atom.EA j)  1 4;;
 let all = Image.image (Image.image (fun j->Early_atom.EA j)) u2 ;;
 let all_pairs = Uple.list_of_pairs all ;;
 let nondisjoint_pairs =
@@ -1421,7 +1421,7 @@ open Needed_values ;;
 
 let n1 = 5 ;;
 let m1 = ((n1-1) * (n1-2)) / 2;;
-let u1 = Int_range.doyle (fun x->[1;0]) 1 n1 ;;
+let u1 = Int_range.scale (fun x->[1;0]) 1 n1 ;;
 let u2 = Cartesian.general_product u1 ;;
 let u3 = Int_range.index_everything u2 ;;
 let ts l= 
@@ -1438,7 +1438,7 @@ let s2 (i,j) = (ts(Option.filter_and_unpack (fun (idx,l)->
     else None    
 ) u3)) ^ "-" ^(string_of_int (n1-2));;
 
-let part1 = Int_range.doyle s1 1 n1 ;;
+let part1 = Int_range.scale s1 1 n1 ;;
 let part2 = Image.image s2 (Int_uple.list_of_pairs n1);;
 let whole = "\n\n\n[" ^ (String.concat "," (part1@part2)) ^ "]\n\n\n"  ;;
 let pw () = print_string whole ;;
@@ -1477,11 +1477,11 @@ let s_sort = Ordered.sort s_order ;;
 module Initial_data = struct 
 
    let current_size = 3 ;;
-   let base = Int_range.doyle (fun t->
+   let base = Int_range.scale (fun t->
           let c= char_of_int (64+t) in 
           ((String.make 1 c,t),current_size+t)
          ) 1 current_size ;; 
-   let basic_vars = Int_range.doyle (fun t->
+   let basic_vars = Int_range.scale (fun t->
       String.make 1 (char_of_int (64+t))
      ) 1 current_size ;;        
    let sphere = Memoized.recursive (fun old_f j->
@@ -1489,7 +1489,7 @@ module Initial_data = struct
       let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
       Image.image (fun (x,y)->x^y) temp1
    ) ;;
-   let vars = List.flatten (Int_range.doyle sphere 1 5) ;;
+   let vars = List.flatten (Int_range.scale sphere 1 5) ;;
    
 end ;;    
 
@@ -1620,7 +1620,7 @@ let eval_list bough =
 
 let expand_long_string long_string =
    let n = String.length long_string in 
-  Int_range.doyle (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
+  Int_range.scale (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
 
 let eval bough long_string i =
     let l = expand_long_string long_string in 
@@ -1630,7 +1630,7 @@ let force_eval bough long_string i =
      let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
 
 let full_shadow bough long_string =
-     let temp1 = Int_range.doyle (
+     let temp1 = Int_range.scale (
         fun j->(j,eval bough long_string j)
      ) 1 Initial_data.current_size in 
      let (good_temp1,bad_temp1) = List.partition (
@@ -1806,7 +1806,7 @@ let expand_all_using_delayed_expression boughs (s1,delayer,i1) =
 
 let expand_long_string long_string =
       let n = String.length long_string in 
-     Int_range.doyle (fun j->
+     Int_range.scale (fun j->
       let ck = String.get long_string (n-j) in 
       (String.make 1  ck,Cull_string.ending (j-1) long_string) ) 1 n ;;
        
@@ -2033,11 +2033,11 @@ let s_sort = Ordered.sort s_order ;;
 module Initial_data = struct 
 
    let current_size = 3 ;;
-   let base = Int_range.doyle (fun t->
+   let base = Int_range.scale (fun t->
           let c= char_of_int (64+t) in 
           ((String.make 1 c,t),current_size+t)
          ) 1 current_size ;; 
-   let basic_vars = Int_range.doyle (fun t->
+   let basic_vars = Int_range.scale (fun t->
       String.make 1 (char_of_int (64+t))
      ) 1 current_size ;;        
    let sphere = Memoized.recursive (fun old_f j->
@@ -2045,7 +2045,7 @@ module Initial_data = struct
       let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
       Image.image (fun (x,y)->x^y) temp1
    ) ;;
-   let vars = List.flatten (Int_range.doyle sphere 1 5) ;;
+   let vars = List.flatten (Int_range.scale sphere 1 5) ;;
    
 end ;;    
 
@@ -2097,7 +2097,7 @@ let eval_list bough =
 
 let expand_long_string long_string =
    let n = String.length long_string in 
-  Int_range.doyle (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
+  Int_range.scale (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
 
 let eval bough long_string i =
     let l = expand_long_string long_string in 
@@ -2107,7 +2107,7 @@ let force_eval bough long_string i =
      let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
 
 let full_shadow bough long_string =
-     let temp1 = Int_range.doyle (
+     let temp1 = Int_range.scale (
         fun j->(j,eval bough long_string j)
      ) 1 Initial_data.current_size in 
      let (good_temp1,bad_temp1) = List.partition (
@@ -2468,7 +2468,7 @@ let base = Permutation.iii current_order ;;
 let eval_list_permutation sigma k = List.nth sigma (k-1) ;;
 
 let compose_list_permutations sigma1 sigma2 = 
-   Int_range.doyle (fun k-> eval_list_permutation sigma1 (eval_list_permutation sigma2 k)) 1 current_order ;;
+   Int_range.scale (fun k-> eval_list_permutation sigma1 (eval_list_permutation sigma2 k)) 1 current_order ;;
 
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
@@ -2499,7 +2499,7 @@ let trivial_subgroup = [1] ;;
 let full_subgroup = Int_range.ennig 1 base_size ;;
 
 let level1  = 
-  il_sort (Int_range.doyle (fun k->generated_subgroup [k]) 2 base_size) ;; 
+  il_sort (Int_range.scale (fun k->generated_subgroup [k]) 2 base_size) ;; 
 
 let pre_level2 = 
     let temp1 = Uple.list_of_pairs level1 in 
@@ -2628,11 +2628,11 @@ let pusher old_f n =
 
 let ff = Memoized.recursive (fun old_f n->if n<2 then 1 else pusher old_f n) ;;
 
-let z1 = Int_range.doyle ff 1 200 ;;
+let z1 = Int_range.scale ff 1 200 ;;
 let (period,motif) = find_periodicity z1 ;;
 let last_in_motif = List.nth motif (period-1) ;;
 let gg n = let r = n mod period in if r = 0 then last_in_motif else List.nth motif (r-1) ;;
-let dg t = Min.list (Int_range.doyle (fun k->(abs(gg(k+t)-gg(k)))*t ) 1 period) ;;
+let dg t = Min.list (Int_range.scale (fun k->(abs(gg(k+t)-gg(k)))*t ) 1 period) ;;
 let (max_dg,dg_sols) = Min.minimize_it_with_care dg (Int_range.ennig 1 current_r) ;;
 let largest_in_motif = Max.list motif ;;
 let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max_dg);;
@@ -3039,7 +3039,7 @@ let ff n =
 let ams = analize_missing_sheaves;;
 let asc = add_sheaf_carefully ;;
 
-let comp1 = Int_range.doyle ff 1 5 ;;
+let comp1 = Int_range.scale ff 1 5 ;;
 
 asc (Int_range.ennig 1 4,3) [[4]] ;; 
 ff 6;;
@@ -3060,9 +3060,9 @@ asc (Int_range.ennig 1 5,3) [[1;4];[2;5]] ;;
 asc (Int_range.ennig 1 5,4) [[2;5]] ;;
 asc (Int_range.ennig 1 6,3) [[6];[1;4];[2;5]] ;;
 asc (Int_range.ennig 1 6,4) [[2;5];[4;6]] ;;
-Int_range.doyle ff 8 10;;
+Int_range.scale ff 8 10;;
 asc (Int_range.ennig 1 9,5) [[9]] ;; 
-Int_range.doyle ff 11 13;;
+Int_range.scale ff 11 13;;
 asc (Int_range.ennig 1 12,7) [[12]] ;; 
 ff 14;;
 asc (Int_range.ennig 1 10,5) [[9];[10]] ;;
@@ -3081,9 +3081,9 @@ asc (Int_range.ennig 1 13,7) [[9;12];[10;13]] ;;
 asc (Int_range.ennig 1 13,8) [[10;13]] ;;
 asc (Int_range.ennig 1 14,7) [[14];[9;12];[10;13]] ;;
 asc (Int_range.ennig 1 14,8) [[10;13];[12;14]] ;;
-Int_range.doyle ff 16 18;;
+Int_range.scale ff 16 18;;
 asc (Int_range.ennig 1 17,9) [[17]] ;;
-Int_range.doyle ff 19 21;;
+Int_range.scale ff 19 21;;
 asc (Int_range.ennig 1 20,11) [[20]] ;;
 
 (*
@@ -3169,7 +3169,7 @@ let set_of_minimal_carriers_with_extra carriers sols =
  _ -> (None, Some carriers)   ;;
 
 
-let tag1 = Int_range.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
 let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
 
 module ConstraintList = struct 
@@ -3629,7 +3629,7 @@ let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
 let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
 let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
 
-let tag1 = Int_range.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
 let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
 
 let hashtbl_for_main = Hashtbl.create 100 ;;
@@ -3756,7 +3756,7 @@ try (Some(set_of_minimal_carriers carriers sols),None) with
 _ -> (None, Some carriers)   ;;
 
 let original_carriers n = 
-let temp = Int_range.doyle (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
+let temp = Int_range.scale (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
 List.filter (fun l->List.hd(l)>0) temp;;  
 
 let new_carriers_in_hard_case n carriers = 
@@ -3790,7 +3790,7 @@ let base1 = Int_range.ennig 3 (meas current_a) ;;
 let base2 = Cartesian.product base1 (Int_range.ennig 1 sample_size) ;;
 let base3 = List.flatten(Image.image (
 fun (sa,b) -> 
-   Int_range.doyle (fun sb->(sa,b,sb)) (meas(current_a+b)-sa+1) (meas b)
+   Int_range.scale (fun sb->(sa,b,sb)) (meas(current_a+b)-sa+1) (meas b)
 ) base2);;
 let base4 = List.flatten(Image.image (
 fun (sa,b,sb) -> 
@@ -3837,7 +3837,7 @@ module L3 = struct
    let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
    let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
    
-   let tag1 = Int_range.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+   let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
    let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
    
    let hashtbl_for_main = Hashtbl.create 100 ;;
@@ -3944,7 +3944,7 @@ module L3 = struct
      let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
      let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
      
-     let tag1 = Int_range.doyle (fun x->[x;2*x-1]) 2 (1+current_width) ;;
+     let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
      let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
      
      let hashtbl_for_main = Hashtbl.create 100 ;;
@@ -4059,14 +4059,14 @@ let upwards_hat (a,n,b) =
   let central_move = (if (n-a) mod 2 = 0 then -1 else 1) in 
   let new_beginning = (a+2*q1)+central_move in 
   let q2 = (new_beginning-b)/2 in 
-  (Int_range.doyle (fun t->a+2*t) 0 q1)@(Int_range.doyle (fun t->new_beginning-2*t) 0 q2) ;;
+  (Int_range.scale (fun t->a+2*t) 0 q1)@(Int_range.scale (fun t->new_beginning-2*t) 0 q2) ;;
 
 let downwards_hat (a,n,b) =  
   let q1 = (a-n)/2 in 
   let central_move = (if (a-n) mod 2 = 0 then 1 else -1) in 
   let new_beginning = (a-2*q1)+central_move in 
   let q2 = (b-new_beginning)/2 in 
-  (Int_range.doyle (fun t->a-2*t) 0 q1)@(Int_range.doyle (fun t->new_beginning+2*t) 0 q2) ;;
+  (Int_range.scale (fun t->a-2*t) 0 q1)@(Int_range.scale (fun t->new_beginning+2*t) 0 q2) ;;
 
 exception Hat_definition_exn of int * int * int ;;
 
@@ -4106,7 +4106,7 @@ let main_base n =
     )  
     @
     (List.flatten(
-      Int_range.doyle (fun x->
+      Int_range.scale (fun x->
         List.filter (fun (l,f)->(List.for_all(fun j->j>0)l)&&(List.hd(List.rev l)<= n)) [
           [x;x-2],eu_case1 x;
           [x;x+2],eu_case4 x; 
@@ -4151,17 +4151,17 @@ let main = Memoized.recursive (fun old_f (n,i1)->
      List.flatten temp2 
 ) ;;
 
-let goal = List.flatten(Int_range.doyle (fun m->(Int_range.doyle (fun j->(m,j)) 1 m)) 1 25);;
+let goal = List.flatten(Int_range.scale (fun m->(Int_range.scale (fun j->(m,j)) 1 m)) 1 25);;
 exception Haddock of int * int ;;
 let computation = Image.image (fun (n,i)-> try main(n,i) with _->raise(Haddock(n,i))) goal ;;
 
 let whole = Memoized.make (fun n->
-    List.flatten (Int_range.doyle (fun j->main(n,j)) 1 n)
+    List.flatten (Int_range.scale (fun j->main(n,j)) 1 n)
 ) ;;
 
 let sizes = 
   let _ = whole 15 in 
-  Int_range.doyle (fun n->List.length(whole n)) 1 25;;
+  Int_range.scale (fun n->List.length(whole n)) 1 25;;
 let check_sizes = (sizes = [1; 2; 6; 12; 20; 34; 56; 88; 136; 208; 314; 470; 700; 1038; 1534; 2262;
 3330; 4896; 7192; 10558; 15492; 22724; 33324; 48860; 71630]) ;;
 
@@ -4198,7 +4198,7 @@ let selector = Memoized.make(fun (n,beginning)->
 let old_sel beg n = List.length (selector (n-1,beg)) ;;
 
 let sel beg = 
-    let temp1 = Image.image string_of_int (Int_range.doyle (old_sel beg) 1 18) in 
+    let temp1 = Image.image string_of_int (Int_range.scale (old_sel beg) 1 18) in 
     let temp2 = String.concat "," temp1 in 
     let temp3 = "\n\n\n["^temp2^"]\n\n\n" in 
     print_string temp3;;
@@ -4210,14 +4210,14 @@ let upwards_hat (a,n,b) =
   let central_move = (if (n-a) mod 2 = 0 then -1 else 1) in 
   let new_beginning = (a+2*q1)+central_move in 
   let q2 = (new_beginning-b)/2 in 
-  (Int_range.doyle (fun t->a+2*t) 0 q1)@(Int_range.doyle (fun t->new_beginning-2*t) 0 q2) ;;
+  (Int_range.scale (fun t->a+2*t) 0 q1)@(Int_range.scale (fun t->new_beginning-2*t) 0 q2) ;;
 
 let downwards_hat (a,n,b) =  
   let q1 = (a-n)/2 in 
   let central_move = (if (a-n) mod 2 = 0 then 1 else -1) in 
   let new_beginning = (a-2*q1)+central_move in 
   let q2 = (b-new_beginning)/2 in 
-  (Int_range.doyle (fun t->a-2*t) 0 q1)@(Int_range.doyle (fun t->new_beginning+2*t) 0 q2) ;;
+  (Int_range.scale (fun t->a-2*t) 0 q1)@(Int_range.scale (fun t->new_beginning+2*t) 0 q2) ;;
 
 exception Hat_definition_exn of int * int * int ;;
 
@@ -4268,7 +4268,7 @@ let main_base n =
     )  
     @
     (List.flatten(
-      Int_range.doyle (fun x->
+      Int_range.scale (fun x->
         List.filter (fun (l,f)->(List.for_all(fun j->j>0)l)&&(List.hd(List.rev l)<= n)) [
           [x;x-2],eu_case1 x;
           [x;x-1],eu_case2 x;
@@ -4307,7 +4307,7 @@ let main = Memoized.recursive (fun old_f (n,i1)->
      List.flatten temp2 
 ) ;;
 
-let support = List.flatten (Int_range.doyle (fun m->Int_range.doyle(fun j->(m,j)) 1 m) 1 18);;
+let support = List.flatten (Int_range.scale (fun m->Int_range.scale(fun j->(m,j)) 1 m) 1 18);;
 let check = List.filter (
   fun (n,i1) -> (main (n,i1)) <> selector (n-1,[i1])
 ) support ;;
@@ -4431,7 +4431,7 @@ let cc = Memoized.make (fun n->selector(n,3)) ;;
 let dd = Memoized.make (fun n->selector(n,4)) ;;
 let ee = Memoized.make (fun n->selector(n,5)) ;;
 
-let peggy n = Int_range.doyle (fun j->List.length(selector(n,j))) 1 n ;;
+let peggy n = Int_range.scale (fun j->List.length(selector(n,j))) 1 n ;;
 
 
 let na n = List.length(aa n);;
@@ -5195,7 +5195,7 @@ let max_nbr_of_arguments = 7 ;;
 let arguments_in_input argname n=
     if n> max_nbr_of_arguments 
     then raise(Too_many_arguments(n))
-    else let temp1 = Int_range.doyle (fun k->
+    else let temp1 = Int_range.scale (fun k->
           if k<=n then argname^(string_of_int k) else "_") 1 max_nbr_of_arguments in 
          "(" ^ (String.concat "," temp1) ^ ")" ;;       
 
@@ -5219,7 +5219,7 @@ let hamming_distance perm1 perm2 =
 
 let generic_translate n t  = (Int_range.ennig t n) @ (Int_range.ennig 1 (t-1))  ;;
 
-let all_translates =Memoized.make (fun n -> Int_range.doyle (generic_translate n) 1 n);;
+let all_translates =Memoized.make (fun n -> Int_range.scale (generic_translate n) 1 n);;
 
 let measure n perm = snd(Min.minimize_it (hamming_distance perm) (all_translates n)) ;;
 
@@ -5237,7 +5237,7 @@ let gg n = Chronometer.it ff n;;
 
 let hh n = (measure n (List.hd(ff n)));;
 
-Int_range.doyle (fun x->(x,hh x)) 3 10;;
+Int_range.scale (fun x->(x,hh x)) 3 10;;
 
 let hf n = List.hd(ff n) ;;
 
@@ -5430,7 +5430,7 @@ let write1 k=
   let sk = string_of_int k in 
   "\n[b][color=blue]("^sk^")[/color][/b]\n" ;;
 
-let reps = Int_range.doyle (fun j->(write1 j,"")) 1 43  ;;
+let reps = Int_range.scale (fun j->(write1 j,"")) 1 43  ;;
 
 let dir = (Sys.getenv "HOME")^"/Teuliou/html_files/Translations/";;  
 let ap1 =   Absolute_path.create_file_if_absent (dir^"/notes_to_dot.txt") ;;
@@ -5633,7 +5633,7 @@ let write1 k=
 let dir = (Sys.getenv "HOME")^"/Teuliou/html_files/Fortescue";;  
 let ap =   Absolute_path.create_file_if_absent (dir^"/pra_filled.html") ;;
 
-let memo = String.concat "\n\n" (Int_range.doyle write1 121 170) ;;
+let memo = String.concat "\n\n" (Int_range.scale write1 121 170) ;;
 
 Io.overwrite_with ap memo ;; 
 
@@ -5673,7 +5673,7 @@ let act1 () = Image.image Sys.command cmds1 ;;
 
 let reached_page_numbers = Ordered.sort Total_ordering.for_integers (Image.image snd u3) ;; 
 
-let u4 = Int_range.doyle (
+let u4 = Int_range.scale (
    fun p->(p,Option.filter_and_unpack (fun (s,q)->if q=p then Some s else None) u3)
 ) min_pageNumber max_pageNumber;;
 
@@ -5789,7 +5789,7 @@ let eval_at_one pattern =
 
 let enforce_conditions pattern = 
     let m = String.length pattern in 
-    let temp2 = Int_range.doyle (fun j->
+    let temp2 = Int_range.scale (fun j->
         if (j<5)&&(j<>2) then "N" else 
         if j>m then "F" else Cull_string.interval pattern j j) 1 (max 4 m) in 
     String.concat "" temp2;;     
@@ -5876,7 +5876,7 @@ consider "" 4;;
 for k=3 to 30 do let _ = consider "FNN" k in ();let _=consider "" (k+2) in () done ;;
 
 
-let res1 = Int_range.doyle (fun x->fst(ff x)) 1 30;;
+let res1 = Int_range.scale (fun x->fst(ff x)) 1 30;;
 
 
 
@@ -6068,7 +6068,7 @@ let home = Sys.getenv "HOME" ;;
 let dirname = "Lossky";;
 let num_of_pages = 196 ;;    
 
-let partial_texts = Int_range.doyle (fun k->
+let partial_texts = Int_range.scale (fun k->
     let sk = string_of_int k in 
     let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
     let prelude="% Beginning of page "^sk^"\n"
@@ -6126,7 +6126,7 @@ let write1 k=
 let dir = (Sys.getenv "HOME")^"/Teuliou/html_files/Translations";;  
 let ap =   Absolute_path.create_file_if_absent (dir^"/temp.txt") ;;
 
-let memo = String.concat "\n\n" (Int_range.doyle write1 1 5) ;;
+let memo = String.concat "\n\n" (Int_range.scale write1 1 5) ;;
 
 Io.overwrite_with ap memo ;; 
 
@@ -6300,12 +6300,12 @@ let num_of_pages = 326 ;;
 
 let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
 
-let text1 = "\n\n\n"^(String.concat "\n" (Int_range.doyle write1 1 num_of_pages))^"\n\n\n" ;;   
+let text1 = "\n\n\n"^(String.concat "\n" (Int_range.scale write1 1 num_of_pages))^"\n\n\n" ;;   
     
 Io.overwrite_with ap1 text1;;
 
 
-let partial_texts = Int_range.doyle (fun k->
+let partial_texts = Int_range.scale (fun k->
   let sk = string_of_int k in 
   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
   "%\n% Page "^sk^" \n%\n"^(rf fn))  7 num_of_pages ;;
@@ -6338,11 +6338,11 @@ let num_of_pages = 15 ;;
 
 let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
 
-let text1 = "\n\n\n"^(String.concat "\n" (Int_range.doyle write1 1 num_of_pages))^"\n\n\n" ;;   
+let text1 = "\n\n\n"^(String.concat "\n" (Int_range.scale write1 1 num_of_pages))^"\n\n\n" ;;   
  
 Io.overwrite_with ap1 text1;;
 
-let partial_texts = Int_range.doyle (fun j->
+let partial_texts = Int_range.scale (fun j->
 let k =List.nth main_list (j-1) in   
 let sk = string_of_int k in 
 let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
@@ -6381,7 +6381,7 @@ let peggy j =
    let sj=string_of_int j in 
    "<span id=\""^"ln"^sj^"\"><a href=\"#n"^sj^"\">("^sj^")</a></span>";;
  
- let u1 = Int_range.doyle peggy 3 43;;  
+ let u1 = Int_range.scale peggy 3 43;;  
  
  let u2 ="\n\n\n"^(String.concat "\n\n" u1) ^"\n\n\n";;
  
@@ -6390,7 +6390,7 @@ let peggy j =
    let sj=string_of_int j in 
    "<div id=\""^"n"^sj^"\"><a href=\"#ln"^sj^"\">("^sj^")</a> <i> </i>  </div>";;
  
- let u1 = Int_range.doyle peggy 3 43;;  
+ let u1 = Int_range.scale peggy 3 43;;  
  
  let u2 ="\n\n\n"^(String.concat "\n\n" u1) ^"\n\n\n";;
  
