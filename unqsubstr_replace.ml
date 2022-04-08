@@ -16,7 +16,7 @@ let left_helper s i j=
    then Unqsubstr_helper.of_string ""
    else 
    let bad_ones=List.filter (fun t->t<>i) temp in
-   let bounds=Int_range.ennig 1 (i-1) in
+   let bounds=Int_range.range 1 (i-1) in
    let measure=(
        fun t->match Option.seek(
          fun d->(String.get s (i-d-1))<>(String.get s (t-d-1))

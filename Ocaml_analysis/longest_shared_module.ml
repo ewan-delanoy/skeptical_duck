@@ -14,7 +14,7 @@ let lsm name1 name2=
   let m=min(String.length name1)(String.length name2) in
   let opt=Option.seek(fun k->
      (Strung.get name1 k)<>(Strung.get name2 k)
-  )(Int_range.ennig 1 m) in
+  )(Int_range.range 1 m) in
   let j1=(fun ()->if opt=None then m else (Option.unpack opt)-1)() in
   let shared_part=Cull_string.beginning j1 name1 in
   let p1=Substring.rightmost_index_of_in "." shared_part in

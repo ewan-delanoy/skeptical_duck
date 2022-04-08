@@ -77,7 +77,7 @@ module Private = struct
    let number_of_lines_in_char_interval s  i j=
      try (List.length(List.filter (fun k->
          String.get s (k-1)='\n'
-     ) (Int_range.ennig i j))) with
+     ) (Int_range.range i j))) with
      _->raise(Lines_in_char_range_exn(i,j));;    
   
   end ;;   

@@ -16,7 +16,7 @@ let in_string text =
         let num_of_linebreaks = 
           List.length(
             List.filter (fun k->String.get d k='\n') 
-              (Int_range.ennig 0 (m-1))
+              (Int_range.range 0 (m-1))
           ) in 
         if num_of_linebreaks > 4
         then "\n\n"

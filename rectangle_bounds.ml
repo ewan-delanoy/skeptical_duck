@@ -14,7 +14,7 @@ let combine
         min ymax1 ymax2)) ;;
 
 let enumerate (Rectangle_bounds_t.B(xmin,xmax,ymin,ymax)) = 
-     Cartesian.product (Int_range.ennig xmin xmax) (Int_range.ennig ymin ymax) ;; 
+     Cartesian.product (Int_range.range xmin xmax) (Int_range.range ymin ymax) ;; 
 
 let test  (Rectangle_bounds_t.B(xmin,xmax,ymin,ymax)) (x,y)=
   (xmin<=x) && (x<=xmax) && (ymin <=y) && (y<= ymax) ;;

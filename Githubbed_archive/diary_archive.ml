@@ -102,7 +102,7 @@ let order_for_triples = ((
 let orbit (x1,x2,x3) = Ordered.sort order_for_triples 
    [ (x1,x2,x3);(x1,x3,x2);(x2,x1,x3);(x2,x3,x1);(x3,x1,x2);(x3,x2,x1); ] ;;
 
-let u1 = Ordered.sort order_for_triples  (Cartesian.cube (Int_range.ennig 0 8)) ;;   
+let u1 = Ordered.sort order_for_triples  (Cartesian.cube (Int_range.range 0 8)) ;;   
 
 let u2 = Explicit.image (fun tr->(tr,orbit tr)) u1 ;;
 let u3 = List.filter (fun (tr,l)->tr=List.hd l) u2 ;; 
@@ -243,10 +243,10 @@ let defect_at_index =Memoized.make(fun idx ->
 
 let minimal_defects =
     Min.minimize_it_with_care  defect_at_index 
-      (Int_range.ennig 1 dim_before) ;;   
+      (Int_range.range 1 dim_before) ;;   
 
 let big_proj shadow = il_sort(Image.image (fun l->Listennou.project l shadow) base3) ;;  
-let shadows = il_sort (Listennou.power_set (Int_range.ennig 1 dim_before)) ;;     
+let shadows = il_sort (Listennou.power_set (Int_range.range 1 dim_before)) ;;     
 let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh)) shadows ;;
 
 
@@ -347,7 +347,7 @@ let base1 =Memoized.make(fun n -> List.filter (fun (x,y)->
     let mx = abs x and my =abs y in 
     ((x,y)<>(0,-1)) &&
     (x>=0)&&((Gcd.gcd x y)=1) && (mx<=my) && (max mx my=n)
-  ) (Cartesian.square (Int_range.ennig (-n) n))) ;;
+  ) (Cartesian.square (Int_range.range (-n) n))) ;;
 
 let base_image1 = Memoized.make (fun n->
     Max.maximize_it_with_care measure 
@@ -940,7 +940,7 @@ let j_merge = Ordered.merge j_order ;;
 type set_index = S of int ;;
 
 let n1 = 4 ;;
-let whole = Int_range.ennig 1 n1 ;;
+let whole = Int_range.range 1 n1 ;;
 let u1 = il_sort (Listennou.power_set whole) ;;
 let rtl l = List.rev (List.tl l);;
 let u2 = rtl (rtl u1);;
@@ -962,7 +962,7 @@ let order = ((fun (A i) (A j)->Total_ordering.for_integers i j) : t Total_orderi
   
 let table_for_sets_containing_a_given_atom = 
     let temp = Image.image (Image.image (fun i->S i)) 
-    (il_sort(Listennou.power_set (Int_range.ennig 1 9))) in 
+    (il_sort(Listennou.power_set (Int_range.range 1 9))) in 
     Image.image (fun (j,l)->(A j,l)) (Int_range.index_everything temp) ;;
 let all = Image.image fst table_for_sets_containing_a_given_atom ;;
 
@@ -982,7 +982,7 @@ let order = ((fun (EA i) (EA j)->Total_ordering.for_integers i j) : t Total_orde
     
 let table_for_sets_containing_a_given_early_atom = 
       let temp = Image.image (Image.image (fun i->S i)) 
-      (il_sort(Listennou.power_set (Int_range.ennig 1 2))) in 
+      (il_sort(Listennou.power_set (Int_range.range 1 2))) in 
       Image.image (fun (j,l)->(EA j,l)) (Int_range.index_everything temp) ;;
 let all = Image.image fst table_for_sets_containing_a_given_early_atom ;;
 
@@ -1145,7 +1145,7 @@ let il_setminus = Ordered.setminus il_order ;;
 let j_merge = Ordered.merge j_order ;;
 
 let n1 = 4 ;;
-let whole = Int_range.ennig 1 n1 ;;
+let whole = Int_range.range 1 n1 ;;
 let u1 = il_sort (Listennou.power_set whole) ;;
 let rtl l = List.rev (List.tl l);;
 let u2 = rtl (rtl u1);;
@@ -1176,7 +1176,7 @@ let share_with_foreigner kfk x =
    and m = List.length(kfk.atoms) in
    let temp1 = Int_range.index_everything kfk.atoms in  
    let decs1 = Image.image (fun (j,atm)->(atm,[n+j;n+j+m])) temp1
-   and expansion_for_x = Int_range.ennig (n+1) (n+m) in 
+   and expansion_for_x = Int_range.range (n+1) (n+m) in 
    let replacer = (fun z->
       if z=x then expansion_for_x else 
       try List.assoc z decs1 with _ -> [z]
@@ -1187,7 +1187,7 @@ let share_with_foreigner kfk x =
    let decs2 = Image.image (fun (w,old_decomposition)->
      (w,replacer2 old_decomposition) 
     ) kfk.decompositions in  
-   let new_atoms = Int_range.ennig (n+1) (n+2*m)
+   let new_atoms = Int_range.range (n+1) (n+2*m)
    and new_decompositions = j_merge [x,expansion_for_x] (j_merge decs1 decs2) 
    and new_images = Image.image (
      fun (old_a,(a,b)) -> (old_a,(replacer2 a,replacer2 b))
@@ -1226,7 +1226,7 @@ let declare_empty kfk zeroes =
   let remaining_atoms = i_setminus kfk.atoms zeroes in 
   let m = List.length remaining_atoms 
   and n = kfk.size in 
-  let interval = Int_range.ennig (n+1) (n+m) in 
+  let interval = Int_range.range (n+1) (n+m) in 
   let table = List.combine remaining_atoms interval in 
   let cleanup = (fun x->Image.image (fun t->
       try List.assoc t table with _ ->t) (i_setminus x zeroes)) in   
@@ -1443,7 +1443,7 @@ let part2 = Image.image s2 (Int_uple.list_of_pairs n1);;
 let whole = "\n\n\n[" ^ (String.concat "," (part1@part2)) ^ "]\n\n\n"  ;;
 let pw () = print_string whole ;;
 
-Ordered.setminus Total_ordering.for_integers (Int_range.ennig 1 32)
+Ordered.setminus Total_ordering.for_integers (Int_range.range 1 32)
 [1; 2; 3; 4; 5; 6; 7; 9; 10; 11; 13; 17; 18; 19; 21; 25; 32] ;;
 
 
@@ -1597,7 +1597,7 @@ let expand bough (s0,i0) =
    let useful_immediate_constraints = i_sort(Option.filter_and_unpack 
     (fun (pair,j)->if pair=(s0,i0) then Some j else None) immediate_constraints)  in 
    let already_reached = i_merge already_reached1 useful_immediate_constraints 
-   and new_whole = Int_range.ennig 1 (bough.size+1) in 
+   and new_whole = Int_range.range 1 (bough.size+1) in 
    let exits = i_setminus new_whole already_reached in 
    Image.image (
        fun j -> insert_point bough ((s0,i0),j) 
@@ -2077,7 +2077,7 @@ let expand bough (s0,i0) =
           else None    
    ) bough.points in 
    let already_reached = i_sort unordered_temp1 
-   and new_whole = Int_range.ennig 1 (bough.size+1) in 
+   and new_whole = Int_range.range 1 (bough.size+1) in 
    let exits = i_setminus new_whole already_reached in 
    Image.image (
        fun j -> insert_point ((s0,i0),j) bough
@@ -2496,7 +2496,7 @@ let rec helper_for_generated_subgroup (treated,seed) =
 let generated_subgroup seed = helper_for_generated_subgroup ([1],seed) ;; 
 
 let trivial_subgroup = [1] ;;
-let full_subgroup = Int_range.ennig 1 base_size ;;
+let full_subgroup = Int_range.range 1 base_size ;;
 
 let level1  = 
   il_sort (Int_range.scale (fun k->generated_subgroup [k]) 2 base_size) ;; 
@@ -2524,7 +2524,7 @@ let is_transitive sg =
    let temp1 = Image.image (fun sigma -> 
     eval_list_permutation sigma 1
    ) sg in 
-   (i_sort temp1) = (Int_range.ennig 1 current_order) ;;
+   (i_sort temp1) = (Int_range.range 1 current_order) ;;
    
 
 let d4 = List.hd(List.filter (fun x->List.length x=8) level2) ;; 
@@ -2540,13 +2540,13 @@ let halves_for_whole = halves full_subgroup ;;
 (************************************************************************************************************************
 Snippet 67 : Finding a polynomial x^4+p*x+q with Galois group A4
 ************************************************************************************************************************)
-let u1 = Int_range.ennig (-50) 50 ;;
+let u1 = Int_range.range (-50) 50 ;;
 let u2 = Cartesian.square u1 ;;
 let u3 = Image.image (fun (x,y)->(max(abs x)(abs y),(x,y)) ) u2 ;;
 let u4 = Ordered.sort Total_ordering.standard2 u3 ;;
 let unchecked_u5 = Image.image snd u4 ;;
 let u5 = List.filter (fun (p,q)->List.for_all (fun z->z*z*z*z+p*z+q<>0) 
-(Int_range.ennig (-1) 1)) unchecked_u5 ;;
+(Int_range.range (-1) 1)) unchecked_u5 ;;
 
 let round x=
   let fl = floor x in 
@@ -2558,7 +2558,7 @@ let is_a_square n =
     if n< 0 then false else
     let m =round(sqrt(float_of_int n)) in m * m = n;;  
 
-let check = List.filter is_a_square (Int_range.ennig 0 100) ;;    
+let check = List.filter is_a_square (Int_range.range 0 100) ;;    
 
 let u6 = List.filter (fun (p,q)->is_a_square(-27*p*p*p*p + 256*q*q*q)) u5 ;;
 
@@ -2615,11 +2615,11 @@ let find_periodicity l=
 
 
 let current_r = 5 ;;
-let current_m = Gcd.lcm_for_many (Int_range.ennig 2 current_r) ;;
+let current_m = Gcd.lcm_for_many (Int_range.range 2 current_r) ;;
 
 let pusher old_f n = 
   let lower_bound = max 1 (n-current_r) in  
-  let temp1 = Int_range.ennig lower_bound (n-1) in 
+  let temp1 = Int_range.range lower_bound (n-1) in 
   let temp2 = Image.image (fun m->(old_f m)-(current_m/(n-m))) temp1 in 
   let first_trial = Min.list temp2 in 
   if first_trial > 0 then first_trial else 
@@ -2633,7 +2633,7 @@ let (period,motif) = find_periodicity z1 ;;
 let last_in_motif = List.nth motif (period-1) ;;
 let gg n = let r = n mod period in if r = 0 then last_in_motif else List.nth motif (r-1) ;;
 let dg t = Min.list (Int_range.scale (fun k->(abs(gg(k+t)-gg(k)))*t ) 1 period) ;;
-let (max_dg,dg_sols) = Min.minimize_it_with_care dg (Int_range.ennig 1 current_r) ;;
+let (max_dg,dg_sols) = Min.minimize_it_with_care dg (Int_range.range 1 current_r) ;;
 let largest_in_motif = Max.list motif ;;
 let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max_dg);;
 
@@ -2650,7 +2650,7 @@ let uncurried_sl  = Memoized.make (fun (x,k)->
   List.filter (fun z->List.length z=k) temp1 
 ) ;;  
 let sl x k = uncurried_sl (x,k) ;;
-let isl n k = uncurried_sl (Int_range.ennig 1 n,k) ;; 
+let isl n k = uncurried_sl (Int_range.range 1 n,k) ;; 
 let meas = Sz_precomputed.measure max_width ;;
 
 
@@ -2714,7 +2714,7 @@ let remains_of_obstructions_in_positing_case x=
       if x>2*k 
       then  Some [x-2*k;x-k]
       else None
-  ) (Int_range.ennig 1 current_width) ;;
+  ) (Int_range.range 1 current_width) ;;
 
   
 
@@ -2887,7 +2887,7 @@ let default_string_of_intlist l=
 
   let ennified_string_of_intlist l=
     let a = List.hd(l) and b = List.hd(List.rev l) in 
-    if (l=Int_range.ennig a b)
+    if (l=Int_range.range a b)
     then  "Ennig.ennig "^(string_of_int a)^" "^(string_of_int b)    
   else default_string_of_intlist l;;
 
@@ -3029,7 +3029,7 @@ exception FF_exn of (( int list * int * int list list) *
 (int list * int * int list list) list)) ;;
 
 let ff n = 
-  try pre_measure (Int_range.ennig 1 n) with 
+  try pre_measure (Int_range.range 1 n) with 
   Missing_sheaves(l) ->
     let (t1,t2,t3) = List.hd l in 
     let (a,b) = analize_repeatedly(t1,t2,t3) in 
@@ -3041,50 +3041,50 @@ let asc = add_sheaf_carefully ;;
 
 let comp1 = Int_range.scale ff 1 5 ;;
 
-asc (Int_range.ennig 1 4,3) [[4]] ;; 
+asc (Int_range.range 1 4,3) [[4]] ;; 
 ff 6;;
-asc (Int_range.ennig 1 1,1) [[1]] ;; 
-asc (Int_range.ennig 1 2,1) [[1];[2]] ;; 
-asc (Int_range.ennig 1 2,2) [[1]] ;; 
-asc (Int_range.ennig 1 3,2) [[1];[2;3]] ;;
-asc (Int_range.ennig 1 4,3) [[1;4]] ;; 
-asc (Int_range.ennig 1 5,3) [[5];[1;4]] ;;
-asc (Int_range.ennig 1 5,4) [[1;4]] ;;
+asc (Int_range.range 1 1,1) [[1]] ;; 
+asc (Int_range.range 1 2,1) [[1];[2]] ;; 
+asc (Int_range.range 1 2,2) [[1]] ;; 
+asc (Int_range.range 1 3,2) [[1];[2;3]] ;;
+asc (Int_range.range 1 4,3) [[1;4]] ;; 
+asc (Int_range.range 1 5,3) [[5];[1;4]] ;;
+asc (Int_range.range 1 5,4) [[1;4]] ;;
 ff 7;;
-asc (Int_range.ennig 1 2,2) [[2]] ;; 
-asc (Int_range.ennig 1 3,1) [[1];[2];[3]] ;;
-asc (Int_range.ennig 1 3,2) [[2];[1;3]] ;;
-asc (Int_range.ennig 1 4,2) [[2];[1;3];[1;4];[3;4]] ;;
-asc (Int_range.ennig 1 4,3) [[2];[1;3];[3;4]] ;;
-asc (Int_range.ennig 1 5,3) [[1;4];[2;5]] ;;
-asc (Int_range.ennig 1 5,4) [[2;5]] ;;
-asc (Int_range.ennig 1 6,3) [[6];[1;4];[2;5]] ;;
-asc (Int_range.ennig 1 6,4) [[2;5];[4;6]] ;;
+asc (Int_range.range 1 2,2) [[2]] ;; 
+asc (Int_range.range 1 3,1) [[1];[2];[3]] ;;
+asc (Int_range.range 1 3,2) [[2];[1;3]] ;;
+asc (Int_range.range 1 4,2) [[2];[1;3];[1;4];[3;4]] ;;
+asc (Int_range.range 1 4,3) [[2];[1;3];[3;4]] ;;
+asc (Int_range.range 1 5,3) [[1;4];[2;5]] ;;
+asc (Int_range.range 1 5,4) [[2;5]] ;;
+asc (Int_range.range 1 6,3) [[6];[1;4];[2;5]] ;;
+asc (Int_range.range 1 6,4) [[2;5];[4;6]] ;;
 Int_range.scale ff 8 10;;
-asc (Int_range.ennig 1 9,5) [[9]] ;; 
+asc (Int_range.range 1 9,5) [[9]] ;; 
 Int_range.scale ff 11 13;;
-asc (Int_range.ennig 1 12,7) [[12]] ;; 
+asc (Int_range.range 1 12,7) [[12]] ;; 
 ff 14;;
-asc (Int_range.ennig 1 10,5) [[9];[10]] ;;
-asc (Int_range.ennig 1 10,6) [[9]] ;;
-asc (Int_range.ennig 1 11,6) [[9];[10;11]] ;;
-asc (Int_range.ennig 1 12,7) [[9;12]] ;;
-asc (Int_range.ennig 1 13,7) [[13];[9;12]] ;;
-asc (Int_range.ennig 1 13,8) [[9;12]] ;;
+asc (Int_range.range 1 10,5) [[9];[10]] ;;
+asc (Int_range.range 1 10,6) [[9]] ;;
+asc (Int_range.range 1 11,6) [[9];[10;11]] ;;
+asc (Int_range.range 1 12,7) [[9;12]] ;;
+asc (Int_range.range 1 13,7) [[13];[9;12]] ;;
+asc (Int_range.range 1 13,8) [[9;12]] ;;
 ff 15;;
-asc (Int_range.ennig 1 10,6) [[10]] ;;
-asc (Int_range.ennig 1 11,5) [[9];[10];[11]] ;;
-asc (Int_range.ennig 1 11,6) [[10];[9;11]] ;;
-asc (Int_range.ennig 1 12,6) [[10];[9;11];[9;12];[11;12]] ;;
-asc (Int_range.ennig 1 12,7) [[10];[7;10];[9;11];[11;12]] ;;
-asc (Int_range.ennig 1 13,7) [[9;12];[10;13]] ;;
-asc (Int_range.ennig 1 13,8) [[10;13]] ;;
-asc (Int_range.ennig 1 14,7) [[14];[9;12];[10;13]] ;;
-asc (Int_range.ennig 1 14,8) [[10;13];[12;14]] ;;
+asc (Int_range.range 1 10,6) [[10]] ;;
+asc (Int_range.range 1 11,5) [[9];[10];[11]] ;;
+asc (Int_range.range 1 11,6) [[10];[9;11]] ;;
+asc (Int_range.range 1 12,6) [[10];[9;11];[9;12];[11;12]] ;;
+asc (Int_range.range 1 12,7) [[10];[7;10];[9;11];[11;12]] ;;
+asc (Int_range.range 1 13,7) [[9;12];[10;13]] ;;
+asc (Int_range.range 1 13,8) [[10;13]] ;;
+asc (Int_range.range 1 14,7) [[14];[9;12];[10;13]] ;;
+asc (Int_range.range 1 14,8) [[10;13];[12;14]] ;;
 Int_range.scale ff 16 18;;
-asc (Int_range.ennig 1 17,9) [[17]] ;;
+asc (Int_range.range 1 17,9) [[17]] ;;
 Int_range.scale ff 19 21;;
-asc (Int_range.ennig 1 20,11) [[20]] ;;
+asc (Int_range.range 1 20,11) [[20]] ;;
 
 (*
 
@@ -3133,7 +3133,7 @@ let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
 let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
 
 let uncurried_sl  = Memoized.make (fun (n,k)->
-   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.ennig 1 n) in 
+   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.range 1 n) in 
    List.filter (fun z->List.length z=k) temp1 
 ) ;;  
 let sl n k = uncurried_sl (n,k) ;;
@@ -3330,7 +3330,7 @@ let rec helper_for_solving (is_full,x,treated) =
 
 let solve x = helper_for_solving (true,x,[]) ;;   
 
-let ff n = solve (Int_range.ennig 1 n) ;;
+let ff n = solve (Int_range.range 1 n) ;;
 
 ff 1 ;;
 ff 2 ;;
@@ -3338,7 +3338,7 @@ ThisBoat.add_constraint ([1;2],2,[[1;2]]) ;;
 ff 3 ;;
 ff 4 ;;
 ff 5 ;;
-ThisBoat.add_constraint (Int_range.ennig 1 5,4,[[1;2;4;5]]) ;;
+ThisBoat.add_constraint (Int_range.range 1 5,4,[[1;2;4;5]]) ;;
 ff 6 ;;
 
 let z1 = set_of_minimal_carriers [[5;6];[3;5];[1;4]] (sl 8 4);;
@@ -3446,7 +3446,7 @@ let special_obstructions =
 let find_initial_obstruction_opt sorted_l =
      let a =List.hd sorted_l and b = List.hd(List.rev sorted_l) in 
      match Option.seek (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
-        (Int_range.ennig a (b/4)) with 
+        (Int_range.range a (b/4)) with 
      None -> Option.seek (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
      |Some(j) -> Some [j;2*j;3*j;4*j];;   
 
@@ -3483,7 +3483,7 @@ module Sensitive = struct
    let default_increase stv forbidden_indices =
          let part = Ordered.merge oi stv.sorted (Image.image fst forbidden_indices) in 
          let max_val = (if part=[] then 1 else 1+(List.hd(List.rev part))) in 
-         let whole = Int_range.ennig 1 max_val in  
+         let whole = Int_range.range 1 max_val in  
          let possibilities = Ordered.setminus oi whole part in 
          List.hd possibilities ;;   
    
@@ -3635,7 +3635,7 @@ let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
 let hashtbl_for_main = Hashtbl.create 100 ;;
 
 let main_in_easy_case (n,avoided_elts) =
-   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.ennig 1 n) in 
+   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.range 1 n) in 
    let temp2 = List.filter (
      fun y->i_does_not_intersect avoided_elts y
    ) temp1 in 
@@ -3713,7 +3713,7 @@ let lm n =
    let (m,sols)=main (n,[]) in 
     (m,List.hd sols) ;;
 
-let computation = Image.image (fun x->(x,lm x)) (Int_range.ennig 15 50);;
+let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
 
 
 let check = List.filter (fun (n,(m,_))->m <> 
@@ -3721,7 +3721,7 @@ let check = List.filter (fun (n,(m,_))->m <>
 
 let easy_selector = Memoized.make(fun (n,k) ->
 List.filter (fun x->List.length(x)=k) (Sz_preliminaries.restricted_power_set 
-(Sz_max_width_t.MW current_width,Int_range.ennig 1 n))
+(Sz_max_width_t.MW current_width,Int_range.range 1 n))
 ) ;;  
 
 
@@ -3786,8 +3786,8 @@ let fold_milton = function
 let meas = Sz_precomputed.measure max_width ;;  
 let sample_size = 15 ;;
 let current_a = 7 ;;
-let base1 = Int_range.ennig 3 (meas current_a) ;;
-let base2 = Cartesian.product base1 (Int_range.ennig 1 sample_size) ;;
+let base1 = Int_range.range 3 (meas current_a) ;;
+let base2 = Cartesian.product base1 (Int_range.range 1 sample_size) ;;
 let base3 = List.flatten(Image.image (
 fun (sa,b) -> 
    Int_range.scale (fun sb->(sa,b,sb)) (meas(current_a+b)-sa+1) (meas b)
@@ -3799,13 +3799,13 @@ fun (sa,b,sb) ->
         if List.length(zb) = sb 
         then Some(sa,Image.image (fun t->current_a+t) zb) 
         else None
-   ) (Sz_preliminaries.restricted_power_set(max_width,Int_range.ennig 1 b))
+   ) (Sz_preliminaries.restricted_power_set(max_width,Int_range.range 1 b))
 ) base3);;
 
 let current_sa = 4 ;;
 let current_left_component =
  List.filter (fun z->List.length(z)=current_sa) 
- (Sz_preliminaries.restricted_power_set(max_width,Int_range.ennig 1 current_a)) ;; 
+ (Sz_preliminaries.restricted_power_set(max_width,Int_range.range 1 current_a)) ;; 
 let base5 = Option.filter_and_unpack (
 fun (sa,zb) -> if sa = current_sa then Some zb else None
 ) base4 ;;
@@ -3844,7 +3844,7 @@ module L3 = struct
    
    let main_in_easy_case (n,avoided_elts) =
       let temp1 = Sz_preliminaries.restricted_power_set 
-          (Sz_max_width_t.MW current_width,Int_range.ennig 1 n) in 
+          (Sz_max_width_t.MW current_width,Int_range.range 1 n) in 
       let temp2 = List.filter (
         fun y->i_does_not_intersect avoided_elts y
       ) temp1 in 
@@ -3922,7 +3922,7 @@ module L3 = struct
       let (m,sols)=main (n,[]) in 
        (m,List.hd sols) ;;
    
-   let computation = Image.image (fun x->(x,lm x)) (Int_range.ennig 15 50);;
+   let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
    
    
    let check = List.filter (fun (n,(m,_))->m <> 
@@ -3951,7 +3951,7 @@ module L3 = struct
      
      let main_in_easy_case (n,avoided_elts) =
         let temp1 = Sz_preliminaries.restricted_power_set 
-            (Sz_max_width_t.MW current_width,Int_range.ennig 1 n) in 
+            (Sz_max_width_t.MW current_width,Int_range.range 1 n) in 
         let temp2 = List.filter (
           fun y->i_does_not_intersect avoided_elts y
         ) temp1 in 
@@ -4029,7 +4029,7 @@ module L3 = struct
         let (m,sols)=main (n,[]) in 
          (m,List.hd sols) ;;
      
-     let computation = Image.image (fun x->(x,lm x)) (Int_range.ennig 15 50);;
+     let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
      
      let check = List.filter (fun (n,(m,_))->m <> 
        Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
@@ -4040,7 +4040,7 @@ module L3 = struct
    let z1 =  List.filter (fun x->
      let m3 = Sz_precomputed.measure (Sz_max_width_t.MW 3) x 
      and m4 = Sz_precomputed.measure (Sz_max_width_t.MW 4) x in 
-     m3<>m4) (Int_range.ennig 1 25);; 
+     m3<>m4) (Int_range.range 1 25);; 
    
    let g1 = L3.main (10,[]) ;;  
    let g2 = L4.main (10,[]) ;; 
@@ -4172,7 +4172,7 @@ open Needed_values ;;
 let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
 
 let extensions1 n l = match l with 
-    [] -> Int_range.ennig 1 n 
+    [] -> Int_range.range 1 n 
    | a :: others ->
       List.filter (fun x->(x>0)&&(x<=n)&&(not(List.mem x l))) [a-2;a-1;a+1;a+2] ;;
 
@@ -4329,7 +4329,7 @@ open Needed_values ;;
 let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
 
 let extensions1 n l = match l with 
-    [] -> Int_range.ennig 1 n 
+    [] -> Int_range.range 1 n 
    | a :: others ->
       List.filter (fun x->(x>0)&&(x<=n)&&(not(List.mem x l))) [a-2;a-1;a+1;a+2] ;;
 
@@ -4486,7 +4486,7 @@ let gtext t1 t2 =
  "listput(accu,[[c_fa,c_t1],around_t2])";
  "printf(Str(c_fa,\",\"c_t1,\" done\\n\"))"] ;;
 
-let u1 = Cartesian.product (Int_range.ennig 11 50) (Int_range.ennig 101 140) ;;
+let u1 = Cartesian.product (Int_range.range 11 50) (Int_range.range 101 140) ;;
 let u2 = Image.image (fun (t1,t2)->gtext t1 t2) u1 ;; 
 let u3 = String.concat "\n\n\n" u2 ;;
 
@@ -5137,7 +5137,7 @@ let lower_measure n =
 
 let compute_lower_measure n = 
   let tempf = (fun t->measure(n+t)-measure(t)) in 
-  snd(Min.minimize_it tempf (Int_range.ennig 1 20)) ;;   
+  snd(Min.minimize_it tempf (Int_range.range 1 20)) ;;   
 
 
 (************************************************************************************************************************
@@ -5217,7 +5217,7 @@ let hamming_distance perm1 perm2 =
   let temp1 = List.combine perm1 perm2 in 
   List.length(List.filter (fun (x,y)->x<>y) temp1);;
 
-let generic_translate n t  = (Int_range.ennig t n) @ (Int_range.ennig 1 (t-1))  ;;
+let generic_translate n t  = (Int_range.range t n) @ (Int_range.range 1 (t-1))  ;;
 
 let all_translates =Memoized.make (fun n -> Int_range.scale (generic_translate n) 1 n);;
 
@@ -5584,7 +5584,7 @@ let old_text = Io.read_whole_file ap1 ;;
 let v1 = Enumerate_html_footnotes.main old_text ;;
 let see = Image.image (fun ((i_start,i_end),_)->
     Cull_string.interval old_text i_start i_end) v1 ;;   
-let good_indices = List.filter (fun k->not(List.mem k bad_indices )) (Int_range.ennig 1 (List.length v1));;
+let good_indices = List.filter (fun k->not(List.mem k bad_indices )) (Int_range.range 1 (List.length v1));;
 let reindexation = Image.image (fun (i,j)->(j,i)) (Int_range.index_everything good_indices) ;;
 let v2 = Image.image (
   fun ((footnote_idx,html_content),(i_start,i_end))->
@@ -5865,7 +5865,7 @@ let consider pattern n=
 
 let ff n = eval_slowly "" n;;
 
-let bf n = Image.image ff (Int_range.ennig 1 n);;
+let bf n = Image.image ff (Int_range.range 1 n);;
 
 
 
@@ -6138,7 +6138,7 @@ open Needed_values ;;
 
 let small_n=1;;
 
-let u1 = Cartesian.fifth_power (Int_range.ennig 0 small_n);;
+let u1 = Cartesian.fifth_power (Int_range.range 0 small_n);;
 
 let u2 = Option.filter_and_unpack (
   fun (a1,a2,a3,a4,a5)->
@@ -6448,7 +6448,7 @@ let act12 () =
       let j = phoebe k in 
       Coherent_pdf.rename 
       ("p"^(string_of_int k)) ("q"^(string_of_int j))
-   ) (Int_range.ennig 1 260) ;;
+   ) (Int_range.range 1 260) ;;
 
 let act13 ()= Coherent_pdf.implode ("q","") ;; 
 

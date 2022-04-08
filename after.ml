@@ -187,7 +187,7 @@ let after_classlike_declaration s i=
      fun j->not(List.mem 
          (String.get s (j-1)) Charset.classlike_declaration_chars
      )
-    )(Int_range.ennig i (String.length s));;
+    )(Int_range.range i (String.length s));;
 
 
 let after_abstract_class s i0=
@@ -294,7 +294,7 @@ let after_classlike_block_with_linebreak s i=
   let i1=Option.unpack opt1 in
   let opt2=Option.seek(fun j->
      not(List.mem (Strung.get s j) [' ';'\r';'\t']) )
-  (Int_range.ennig i1 n) in
+  (Int_range.range i1 n) in
   if opt2=None then None else
   let i2=Option.unpack opt2 in
   if Strung.get s i2='\n'

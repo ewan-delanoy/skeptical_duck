@@ -40,7 +40,7 @@ let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/fir
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =
-    if b-a<=2 then basic_string_of_il(Int_range.ennig a b) else 
+    if b-a<=2 then basic_string_of_il(Int_range.range a b) else 
     "(Ennig.ennig "^(string_of_int a)^" "^(string_of_int b)^")" ;;
 let string_of_il l =
      if List.length(l)<=3 then basic_string_of_il l else 
@@ -407,7 +407,7 @@ let start_decomposing  x =
        let size_left  = List.length(patient_measure left)
        and size_right = List.length(patient_measure right) in 
        m = size_left + size_right  
-  ) (Int_range.ennig 1 (n-1)) ;;
+  ) (Int_range.range 1 (n-1)) ;;
 
 let pusher_for_full_decomposition  (treated,to_be_treated) = 
        match to_be_treated with 
@@ -458,7 +458,7 @@ let compute_ramification x=
     fun k->
        let limited_obses = Listennou.big_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m
-  )(Int_range.ennig 1 n) with 
+  )(Int_range.range 1 n) with 
   Some k0 -> List.nth obses (k0-1)
   | None -> raise (Compute_ramification_exn(current_level,x)) ;;
 
@@ -540,7 +540,7 @@ module Level_one = struct
     let temp2 = Image.image (
        fun (a,b) -> List.filter (fun x->
          ((x-a) mod 3)<2
-        ) (Int_range.ennig a b)) temp1 in 
+        ) (Int_range.range a b)) temp1 in 
     List.flatten temp2 ;;      
   
   let patient_measure = impatient_measure ;;
@@ -603,9 +603,9 @@ let a3 l = Level_three.analize [l] ;;
 let a4 l = Level_four.analize [l] ;;
 let sc = Detailed_solution.show_lightweight_commands ;;
 let zc = Detailed_solution.show_lightweight_commands_without_reacting ;;
-let sa n = sc  (a4 (Int_range.ennig 1 n)) ;; 
+let sa n = sc  (a4 (Int_range.range 1 n)) ;; 
 
-for k = 1 to small_n do g_add_compatible 2 (Int_range.ennig 1 k) None done ;;
+for k = 1 to small_n do g_add_compatible 2 (Int_range.range 1 k) None done ;;
 
 (* Beginnning of precomputed data for level 2 *)
 
@@ -614,11 +614,11 @@ g_add_compatible 2 [1;3] None ;;
 (* new *) g_add_compatible 2 [1;3;4] None ;;
 g_add_compatible 2 ([1;2;3]@[5]) None ;;
 g_add_compatible 2 ([1]@[3;4;5]) None ;;
-g_add_compatible 2 ((Int_range.ennig 1 4)@[6]) (Some(([1]@[3;4]@[6]))) ;;
+g_add_compatible 2 ((Int_range.range 1 4)@[6]) (Some(([1]@[3;4]@[6]))) ;;
 g_add_compatible 2 ([1;2;3]@[5;6]) None ;;
 g_add_compatible 2 ([1;2;3]@[5]@[7]) None ;;
 g_add_compatible 2 ([1;2]@[4;5;6]) None ;;
-g_add_compatible 2 ([1]@(Int_range.ennig 3 6)) None ;;
+g_add_compatible 2 ([1]@(Int_range.range 3 6)) None ;;
 g_add_compatible 2 ([1]@[3]@[5;6;7]) (Some(([1]@[3]@[6;7]))) ;;
 g_add_compatible 2 ([1;2;3]@[5;6;7]) None ;;
 g_add_compatible 2 ([1;2;3]@[6;7;8]) None ;;
@@ -628,14 +628,14 @@ g_add_decomposable 2 ([1]@[3]@[5]@[7]) [[1];[3;5;7]] [1;3;7] ;;
 g_add_decomposable 2 ([1]@[3;4]@[6]@[8]) [[1];[3];[4;6;8]] ([1]@[3;4]@[6]) ;;
 g_add_decomposable 2 ([1]@[3]@[5;6]@[8]) [[1;3;5];[6];[8]] ([1]@[3]@[6]@[8]) ;;
 g_add_decomposable 2 ([1]@[3]@[5]@[7;8]) [[1];[3;5;7];[8]] ([1]@[3]@[7;8]) ;;
-g_add_decomposable 2 ((Int_range.ennig 1 4)@[6]@[8]) [[1;2;3];[4;6;8]] ([1;2]@[4]@[8]) ;;
+g_add_decomposable 2 ((Int_range.range 1 4)@[6]@[8]) [[1;2;3];[4;6;8]] ([1;2]@[4]@[8]) ;;
 g_add_decomposable 2 ([1;2;3]@[5]@[7]@[9]) [[1;2;3];[5;7;9]] ([1;2]@[5]@[7]) ;;
-g_add_ramification 2 ([1]@(Int_range.ennig 3 6)@[8]) [4;6;8] ;;
-g_add_decomposable 2 ([1]@[3]@(Int_range.ennig 5 8)) [[1;3;5];[6;7;8]] ([1]@[3]@[6;7]) ;;
+g_add_ramification 2 ([1]@(Int_range.range 3 6)@[8]) [4;6;8] ;;
+g_add_decomposable 2 ([1]@[3]@(Int_range.range 5 8)) [[1;3;5];[6;7;8]] ([1]@[3]@[6;7]) ;;
 g_add_decomposable 2 ([1]@[3]@[5]@[7;8;9]) [[1;3;5];[7;8;9]] ([1]@[3]@[7;8]) ;;
 g_add_decomposable 2 ([1;2]@[4]@[6;7]@[9]@[11]) [[1];[2;4;6];[7;9;11]] ([1;2]@[4]@[7]@[9]) ;;
-g_add_decomposable 2 ([1]@[3]@(Int_range.ennig 5 8)@[10]@[12]@[14]) [[1;3;5];[6;7;8];[10;12;14]] ([1]@[3]@[6;7]@[10]@[12]) ;;
-g_add_decomposable 2 ([1]@[3]@[5]@(Int_range.ennig 7 10)@[12]@[14]) [[1;3;5];[7;8;9];[10;12;14]] ([1]@[3]@[7;8]@[10]@[14]) ;;
+g_add_decomposable 2 ([1]@[3]@(Int_range.range 5 8)@[10]@[12]@[14]) [[1;3;5];[6;7;8];[10;12;14]] ([1]@[3]@[6;7]@[10]@[12]) ;;
+g_add_decomposable 2 ([1]@[3]@[5]@(Int_range.range 7 10)@[12]@[14]) [[1;3;5];[7;8;9];[10;12;14]] ([1]@[3]@[7;8]@[10]@[14]) ;;
 
 
 (* End of precomputed data for level 2 *)

@@ -24,7 +24,7 @@ let in_string text =
           (getchar(j+1)='\n')
           &&
           (Private.is_a_lowercase_letter(getchar(j+2)))
-    ) (Int_range.ennig 2 n) in 
+    ) (Int_range.range 2 n) in 
     let replacements =Image.image (fun j->((j,j+1),"")) dashes in 
     Strung.replace_ranges_in replacements text;;
 

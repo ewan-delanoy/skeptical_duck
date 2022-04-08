@@ -92,7 +92,7 @@ let of_in substr s=
        if main_test k
        then Some(k,k+l_substr-1)
        else None
-  ) (Int_range.ennig 1 (n+1-l_substr));;
+  ) (Int_range.range 1 (n+1-l_substr));;
 
    
 (*   

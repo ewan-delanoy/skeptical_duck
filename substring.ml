@@ -27,7 +27,7 @@
   let rightmost_index_of_in x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 
-      and temp1=List.rev(Int_range.ennig(0)(String.length(y)-lx)) in
+      and temp1=List.rev(Int_range.range(0)(String.length(y)-lx)) in
       try ((Listennou.force_find tester temp1)+1) with
       _->(-1);;
   
@@ -43,7 +43,7 @@ module Friend = struct
 let number_of_lines_before s i=
    if i<1 then 0 else
    let m=min i (String.length s) in
-   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Int_range.ennig 1 m));;
+   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Int_range.range 1 m));;
 
 
 end;;
@@ -71,7 +71,7 @@ let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=
            then Some(patt_nbr,idx)
            else None
        ) temp1) in
-    Option.find_and_stop tester (Int_range.ennig start_idx n);;          
+    Option.find_and_stop tester (Int_range.range start_idx n);;          
       
 (*
 

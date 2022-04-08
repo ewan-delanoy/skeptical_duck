@@ -67,7 +67,7 @@ module Private = struct
      let get_several = Image.image get_one in 
      let n = List.length base 
      and normalized_f = (fun indices ->f(get_several indices)) in 
-     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Int_range.ennig 1 n) in 
+     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Int_range.range 1 n) in 
      Image.image get_several temp1 ;;
 
 

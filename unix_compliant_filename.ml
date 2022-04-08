@@ -71,12 +71,12 @@ let is_an_uppercase_letter c=List.mem c uppercase_letters;;
 let string_is_alphanumeric s=
    List.for_all (fun j->
      character_is_alphanumeric(String.get s j)
-   ) (Int_range.ennig 0 (String.length(s)-1));;  
+   ) (Int_range.range 0 (String.length(s)-1));;  
   
 let is_unix_filename_admissible s=
    List.for_all (fun j->
      List.mem (String.get s j) unix_filename_admissible_characters
-   ) (Int_range.ennig 0 (String.length(s)-1));;  
+   ) (Int_range.range 0 (String.length(s)-1));;  
 
 exception Unix_rewrite_exn of char;;
 
@@ -110,7 +110,7 @@ exception Unix_unknown of char*string;;
 let make_unix_compliant s=
    try String.concat "" (Image.image (fun j->
      unix_rewrite_char(String.get s j)
-   ) (Int_range.ennig 0 (String.length(s)-1))) with
+   ) (Int_range.range 0 (String.length(s)-1))) with
    Unix_rewrite_exn(c)->raise(Unix_unknown(c,s));;  
   
   

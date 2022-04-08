@@ -9,7 +9,7 @@ let cdn s=
   let n=String.length(s) in
   let temp1=List.filter(
      fun j->(String.get s j)='/'
-  )(Int_range.ennig 0 (n-1)) in
+  )(Int_range.range 0 (n-1)) in
   if temp1=[] then s else
   let temp4=List.rev(List.tl(List.rev temp1)) in
   let temp2=0::(Image.image (fun j->j+1) temp4) in

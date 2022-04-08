@@ -239,7 +239,7 @@ let lex_for_strings=
       and m2=String.length s2
       in
       let m=Stdlib.min(m1)(m2) in
-      match Option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Int_range.ennig 0 (m-1)) with
+      match Option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Int_range.range 0 (m-1)) with
       None->standard m1 m2
       |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
     ) : string Total_ordering_t.t);;

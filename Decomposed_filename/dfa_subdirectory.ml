@@ -11,7 +11,7 @@ module Private = struct
 
    let of_line s=
       let n = String.length s in 
-      let indices = List.rev(Int_range.ennig 1 n) in 
+      let indices = List.rev(Int_range.range 1 n) in 
       let limit_idx=(match Option.seek(fun j->(Strung.get s j)<>'/')(indices) with 
          None -> 0 |Some(j)->j
       ) in 

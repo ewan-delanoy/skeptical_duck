@@ -36,7 +36,7 @@ da_ober->if da_ober<1
 doyle0 n;;
  
 
-let ennig a b=scale (function x->x) a b;; 
+let range a b=scale (function x->x) a b;; 
 
 let index_everything l=
  let rec tempf=
@@ -104,7 +104,7 @@ let test_for_interval l=
     (
       match List.rev others with 
        [] -> Some(a,a)
-       | b :: _-> if l = ennig a b 
+       | b :: _-> if l = range a b 
                   then Some(a,b)
                   else None 
     )  ;;

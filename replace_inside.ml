@@ -14,7 +14,7 @@ let replace_several_inside_string l t=List.fold_left
 let replace_inside_file (a,b) fn=
     let s1=Io.read_whole_file fn in
     let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.ennig 0 ((String.length s1)-la))
+    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
     then let s2=replace_inside_string (a,b) s1 in
          Io.overwrite_with fn s2
     else ();; 
