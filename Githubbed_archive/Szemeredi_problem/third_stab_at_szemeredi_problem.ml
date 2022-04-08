@@ -664,8 +664,8 @@ let typical_question = Memoized.make (
 let current_width = 2 ;; 
 let current_maxwidth = Sz_max_width_t.MW current_width ;;
 let constraints_on_the_left n =
-     let bound = (n+1)/2 in 
-      bound ;;
+     let bound = (n-1)/2 in 
+     Ennig.descending_doyle (fun j->[n-2*j;n-j]) bound 1;;
 
 
 
