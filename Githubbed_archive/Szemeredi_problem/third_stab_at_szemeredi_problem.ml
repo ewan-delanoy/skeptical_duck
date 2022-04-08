@@ -667,28 +667,99 @@ let constraints_on_the_left n =
      let bound = (n-1)/2 in 
      Int_range.descending_scale (fun j->[n-2*j;n-j]) bound 1;;
 
-
-
-
+let behead initial_set= 
+ let (n,reversed_and_beheaded) = Listennou.ht(List.rev initial_set) in 
+ (List.rev reversed_and_beheaded,n) ;;
 
 let derivation_for_easy_case (base_set,size,constraints)= 
-   let (n,temp1) = Listennou.ht(List.rev base_set) in 
-   let new_base_set = List.rev temp1 
-   and new_constraints = List.filter (fun constr->not(i_mem n constr)) constraints in 
+   let (new_base_set,n) = behead base_set in
+   let new_constraints = List.filter (fun constr->not(i_mem n constr)) constraints in 
    (new_base_set,size,new_constraints) ;;
+
+exception Hard_case_exn of  int list * int * int list list ;;
 
 let derivation_for_hard_case (base_set,size,constraints)= 
-   let (n,temp1) = Listennou.ht(List.rev base_set) in 
-   let new_base_set = List.rev temp1 
-   and new_constraints = List.filter (fun constr->not(i_mem n constr)) constraints in 
-   (new_base_set,size,new_constraints) ;;
+    let (new_base_set,n) = behead base_set in
+    if List.mem [n] constraints 
+    then raise(Hard_case_exn(base_set,size,constraints))
+    else
+    let cstr1 = constraints_on_the_left n  
+    and cstr2 = Image.image (fun constr->i_setminus constr [n]) constraints in 
+    let cstr3 = il_sort (cstr1@cstr2) in 
+    let cstr4 = Ordered_misc.minimal_elts_wrt_inclusion cstr3 in 
+   (new_base_set,size,cstr4) ;;
 
-type t = 
+type node_t = 
     Embrace of int list 
    |Local_branch of (int list) * int * ((int list) list) ;;
 
-let order_for_local_branches (base_set1,size1,constraints1) (base_set1,size1,constraints2) =
-      
-Total_ordering.product ;; 
+let local_branch (base_set,size,constraints) = Local_branch (base_set,size,constraints) ;;
 
+let cmp_embrace x1 = function 
+   Embrace(x2) -> il_order x1 x2 
+   |Local_branch(_,_,_) -> Total_ordering_result_t.Lower ;;
+
+let cmp_local_branch (base_set1,size1,constraints1) = function 
+   Embrace(x2) -> Total_ordering_result_t.Greater
+   |Local_branch(base_set2,size2,constraints2) -> 
+      Total_ordering.triple_product il_order i_order Total_ordering.standard 
+      (base_set1,size1,constraints1) (base_set2,size2,constraints2);;   
+
+let order_for_nodes = ((
+      function
+    Embrace(x1) -> cmp_embrace x1
+   |Local_branch(base_set1,size1,constraints1) -> cmp_local_branch (base_set1,size1,constraints1)
+) : node_t Total_ordering_t.t) ;;
+
+let n_insert = Ordered.insert order_for_nodes ;;
+let n_setminus = Ordered.setminus order_for_nodes ;;
+let n_sort = Ordered.sort order_for_nodes ;;
+
+let immediate_ancestors_for_embrace_node x =
+    if List.length(x)<3 then [] else 
+    let (y,n) = behead x in 
+    let mx = List.length(measure x)
+    and my = List.length(measure y) in 
+    let (base_set1,size1,constraints1) =
+    (
+        if mx = my 
+        then derivation_for_hard_case (x,mx+1,[])
+        else
+        (* if we get here, mx = my + 1 *)  
+            derivation_for_easy_case (x,mx,[])
+    ) in 
+    [Embrace y;Local_branch(base_set1,size1,constraints1)] ;;     
+    
+let immediate_ancestors_for_local_branch_node triple =
+    let (x,size,constraints) = triple in 
+    if List.length(x)<3 then [] else 
+    if size=0 then [] else
+    let easy_triple = derivation_for_easy_case triple in    
+    let easy_branch = local_branch easy_triple in 
+    if (typical_question easy_triple)<>None 
+    then [easy_branch]
+    else 
+    let hard_triple = derivation_for_hard_case triple in 
+    let hard_branch = local_branch hard_triple in 
+    if (typical_question hard_triple)<>None 
+    then [hard_branch]
+    else [easy_branch;hard_branch] ;;
+
+let immediate_ancestors_for_node = function 
+Embrace(x1) -> immediate_ancestors_for_embrace_node x1 
+|Local_branch(base_set1,size1,constraints1) -> 
+     immediate_ancestors_for_local_branch_node (base_set1,size1,constraints1);;
+
+let rec helper_for_node_ancestry (treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> treated 
+    | node1 :: other_nodes ->
+        let possibly_new_nodes = n_sort(immediate_ancestors_for_node node1) in 
+        let new_nodes = n_setminus possibly_new_nodes treated in 
+        helper_for_node_ancestry (n_insert node1 treated,new_nodes@other_nodes) ;;
+
+let ancestors_for_node node = helper_for_node_ancestry ([],[node]) ;; 
+
+
+let ff n = ancestors_for_node (Embrace(Int_range.range 1 n)) ;;
 
