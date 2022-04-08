@@ -667,7 +667,7 @@ let constraints_on_the_left n =
      let bound = (n-1)/2 in 
      Int_range.descending_scale (fun j->[n-2*j;n-j]) bound 1;;
 
-     
+
 
 
 
@@ -682,3 +682,13 @@ let derivation_for_hard_case (base_set,size,constraints)=
    let new_base_set = List.rev temp1 
    and new_constraints = List.filter (fun constr->not(i_mem n constr)) constraints in 
    (new_base_set,size,new_constraints) ;;
+
+type t = 
+    Embrace of int list 
+   |Local_branch of (int list) * int * ((int list) list) ;;
+
+let order_for_local_branches (base_set1,size1,constraints1) (base_set1,size1,constraints2) =
+      
+Total_ordering.product ;; 
+
+

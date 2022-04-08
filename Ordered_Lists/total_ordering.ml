@@ -323,6 +323,6 @@ let silex_for_strings = Private.silex_for_strings ;;
 let silex_for_intlists = Private.silex_compare for_integers ;;
 let standard = Private.standard ;;
 let standard2 = Private.standard2 ;;
-
+let triple_product = Private.triple_product ;;
  
            
