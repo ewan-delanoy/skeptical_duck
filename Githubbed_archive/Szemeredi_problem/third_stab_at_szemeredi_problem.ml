@@ -665,7 +665,7 @@ let current_width = 2 ;;
 let current_maxwidth = Sz_max_width_t.MW current_width ;;
 let constraints_on_the_left n =
      let bound = (n-1)/2 in 
-     Int_range.descending_doyle (fun j->[n-2*j;n-j]) bound 1;;
+     Int_range.descending_scale (fun j->[n-2*j;n-j]) bound 1;;
 
 
      
