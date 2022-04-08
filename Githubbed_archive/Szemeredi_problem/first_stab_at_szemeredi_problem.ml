@@ -804,7 +804,7 @@ let dc3 n =
   |6 -> [[1;2;3];[4;5;6]] | 0 -> [Ennig.ennig 1 8] | _ -> [Ennig.ennig 1 r] ;;
 let parts3 n=
   let q = (n-1)/8 in
-  (dc3 n) @ (Ennig.rev_doyle (fun j->Ennig.ennig (n-8*j-7) (n-8*j) ) (q-1) 0) ;;
+  (dc3 n) @ (Ennig.descending_doyle (fun j->Ennig.ennig (n-8*j-7) (n-8*j) ) (q-1) 0) ;;
 for k = 9 to small_n do 
      g_add_decomposable 3 (Ennig.ennig 1 k) (parts3 k) (fl3 k) 
 done ;;

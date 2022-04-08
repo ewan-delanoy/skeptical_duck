@@ -12,7 +12,7 @@ j->if j<a
 ) in
 doyle0 b;;
 
-let rev_doyle f b a =
+let descending_doyle f b a =
   doyle (fun x->f(a+b-x)) a b ;; 
 
 let slow_doyle f a b=
