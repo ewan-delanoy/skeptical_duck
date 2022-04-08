@@ -1,6 +1,112 @@
 (************************************************************************************************************************
-Snippet 86 : 
+Snippet 88 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 87 : Exercise related to Cantor set 
+************************************************************************************************************************)
+
+
+let read_fraction s = 
+  let (a,b) = Cull_string.split_wrt_rightmost s '/' in 
+  (int_of_string a,int_of_string b) ;;
+
+let interval_size_is_smaller_than frac1 frac2 (p,q) =
+  let (a1,b1) = read_fraction frac1 
+  and (a2,b2) = read_fraction frac2 in 
+  q * (a2*b1-a1*b2) < p * (b1*b2)  ;;
+
+let interval_size_is_larger_than frac1 frac2 (p,q) =
+   let (a1,b1) = read_fraction frac1 
+   and (a2,b2) = read_fraction frac2 in 
+   q * (a2*b1-a1*b2) > p * (b1*b2)  ;;
+
+let minmax_using_tor total_ordering x y =
+if (Listennou.find_index x total_ordering) < (Listennou.find_index y total_ordering) 
+then (x,y)
+else (y,x) ;;  
+
+let possibly_empty_interval_using_tor total_ordering a b =
+  if minmax_using_tor total_ordering a b = (a,b)
+  then Some(a,b)
+  else None ;;  
+
+let interval_intersection_using_tor total_ordering (a1,b1) (a2,b2) =
+  let (_,a3) = minmax_using_tor total_ordering  a1 a2 
+  and (b3,_) = minmax_using_tor total_ordering  b1 b2 in 
+  possibly_empty_interval_using_tor total_ordering  a3 b3;; 
+
+
+let current_k = 3 ;; 
+
+let outer_interval_is_too_small  total_ordering =
+ let n = List.length total_ordering in 
+ let ia = Listennou.find_index "a" total_ordering 
+ and ib = Listennou.find_index "b" total_ordering in 
+ if List.mem (ia,ib) [1,2;n-1,n] then true else
+ if (ia<2)||(ib>=n) then false else 
+ let just_below_a = List.nth total_ordering (ia-2) 
+ and just_above_b = List.nth total_ordering ib in 
+ interval_size_is_smaller_than just_below_a just_above_b (4,Basic.power 3 current_k) ;; 
+
+let inner_interval_is_too_large  total_ordering =
+ let ia = Listennou.find_index "a" total_ordering 
+ and ib = Listennou.find_index "b" total_ordering in 
+ if ib=ia+1 then false else 
+ let just_above_a = List.nth total_ordering ia 
+ and just_below_b = List.nth total_ordering (ib-2) in 
+ interval_size_is_larger_than just_above_a just_below_b (8,Basic.power 3 current_k) ;; 
+
+
+let intervals_outside = 
+[
+  "1/9","2/9";"1/3","2/3";"7/9","8/9"
+] ;;
+
+let base1 = List.flatten(Image.image (fun (x,y)->[x;y]) intervals_outside);;
+
+let base2 = Listennou.extend_total_ordering_by_adding_two_elements 
+  base1 "a" "b" ;;
+
+let (bad1,good1) = List.partition inner_interval_is_too_large base2 ;; 
+let (bad2,good2) = List.partition outer_interval_is_too_small good1 ;; 
+
+let u1 = Image.image (
+ fun total_ordering ->
+   (Image.image (interval_intersection_using_tor total_ordering ("a","b")) 
+   intervals_outside,total_ordering)
+) good2 ;;
+
+let u2 = Listennou.partition_according_to_fst u1 ;; 
+let tf k = List.nth u2 (k-1) ;; 
+
+(************************************************************************************************************************
+Snippet 86 : Enumeration of multi-degrees related to symmetric polynomials
+************************************************************************************************************************)
+
+
+let order_for_triples = ((
+  fun (x1,x2,x3) (y1,y2,y3) ->
+    let sx = x1+x2+x3
+    and sy =y1+y2+y3 in 
+    let trial1 = Total_ordering.standard sx sy in 
+    if trial1 <> Total_ordering_result_t.Equal then trial1 else   
+    let mx = Max.list [x1;x2;x3] 
+      and my = Max.list [y1;y2;y3] in 
+      let trial2 = Total_ordering.standard mx my in 
+      if trial2 <> Total_ordering_result_t.Equal then trial2 else 
+      Total_ordering.silex_for_intlists [x1;x2;x3] [y1;y2;y3] 
+) :> (int*int*int) Total_ordering_t.t );;
+
+let orbit (x1,x2,x3) = Ordered.sort order_for_triples 
+   [ (x1,x2,x3);(x1,x3,x2);(x2,x1,x3);(x2,x3,x1);(x3,x1,x2);(x3,x2,x1); ] ;;
+
+let u1 = Ordered.sort order_for_triples  (Cartesian.cube (Ennig.ennig 0 8)) ;;   
+
+let u2 = Explicit.image (fun tr->(tr,orbit tr)) u1 ;;
+let u3 = List.filter (fun (tr,l)->tr=List.hd l) u2 ;; 
+let tf k = List.nth u3 (k-1) ;;
 
 
 (************************************************************************************************************************
