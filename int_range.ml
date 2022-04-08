@@ -15,7 +15,7 @@ doyle0 b;;
 let descending_doyle f b a =
   doyle (fun x->f(a+b-x)) a b ;; 
 
-let slow_doyle f a b=
+let slow_scale f a b=
 let accu=ref([]) in
 let rec slow_doyle0=(function
 j->if j>b
