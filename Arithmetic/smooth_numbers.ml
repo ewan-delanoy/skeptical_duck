@@ -14,7 +14,7 @@ let rec helper_for_decomposition (exponents,bases,to_be_treated) =
        helper_for_decomposition (new_exponents,bases,to_be_treated/p0);;
 
 let decompose n bases =
-   let temp1 = Ennig.index_everything  bases in 
+   let temp1 = Int_range.index_everything  bases in 
    let zeroes = Image.image (fun (j,_)->(j,0)) temp1 in 
    helper_for_decomposition (zeroes,temp1,n);;
 

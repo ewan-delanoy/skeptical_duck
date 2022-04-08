@@ -14,7 +14,7 @@ module Private = struct
      Str.split (Str.regexp_string "\n") s ;;
 
   let indexed_lines text=
-     Ennig.index_everything (lines text);;
+     Int_range.index_everything (lines text);;
   
   let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
        match lines with 
@@ -77,7 +77,7 @@ module Private = struct
    let number_of_lines_in_char_interval s  i j=
      try (List.length(List.filter (fun k->
          String.get s (k-1)='\n'
-     ) (Ennig.ennig i j))) with
+     ) (Int_range.ennig i j))) with
      _->raise(Lines_in_char_range_exn(i,j));;    
   
   end ;;   

@@ -298,7 +298,7 @@ complement_union_of_ranges [1,7;8,30] 30;;
 
 
 let split_list_in_half l=
-   let temp1=Ennig.index_everything(l) in 
+   let temp1=Int_range.index_everything(l) in 
    let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
    (Image.image snd temp2,Image.image snd temp3);;
 
@@ -339,7 +339,7 @@ let extract_successive_pairs_from_even_list l=
    let m1 =(List.length l) in 
    if (m1 mod 2)<>0 then raise(Extract_successive_pairs_exn(m1)) else 
    let m2=m1/2 in 
-   Ennig.doyle (fun j->
+   Int_range.doyle (fun j->
       (List.nth l (2*j-2),List.nth l (2*j-1)) 
    ) 1 m2;;
 
@@ -403,7 +403,7 @@ let replace_if_possible l x=
   |Some y -> y ;;
 
 let complement_of_singleton l k = 
-     let temp1 = Ennig.index_everything l in 
+     let temp1 = Int_range.index_everything l in 
      Option.filter_and_unpack (fun (j,x)->if j=k then None else Some x) temp1 ;;
 
 (* complement_of_singleton (Ennig.ennig 1 7) 3 ;; *)

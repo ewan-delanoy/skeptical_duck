@@ -60,7 +60,7 @@ let permutations l =
    Private.helper_for_enumeration (initial_item,[]);;   
 
 let iii (* meaning, integer initial interval *) n = 
-   Private.helper_for_enumeration (Ennig.ennig 1 n,[]);;
+   Private.helper_for_enumeration (Int_range.ennig 1 n,[]);;
 
    
       

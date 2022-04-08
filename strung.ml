@@ -23,7 +23,7 @@ let implode l=
     
 let explode s=
     let n=String.length s in
-    Ennig.doyle (String.get s) 0 (n-1);;
+    Int_range.doyle (String.get s) 0 (n-1);;
     
  
 let char_finder_from f s w0=
@@ -45,7 +45,7 @@ let backwards_char_finder f s =
  
 let show_indices s=
   let n=String.length s in
-  Ennig.doyle (fun i->(i,String.get s (i-1)) ) 1 n;;   
+  Int_range.doyle (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
 let number_of_lines_before = Substring.Friend.number_of_lines_before;;
 
@@ -85,7 +85,7 @@ let find_one_of_several_in_from_idx candidates s idx =
   let n=String.length s in 
   Option.find_and_stop (
     find_one_of_several_in_at_idx candidates s
-  ) (Ennig.ennig idx n);;
+  ) (Int_range.ennig idx n);;
 
 (*
 
@@ -108,16 +108,16 @@ let find_successively_in_from patterns_in_order s start_idx=
          match  find_one_of_several_in_from_idx patt s idx with 
          None->raise(Not_found_during_succession)
          |Some(idx2,candidate)->
-          let temp1=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx (idx2-1)) in 
+          let temp1=List.filter(fun k->(get s k)='\n')(Int_range.ennig idx (idx2-1)) in 
           let line_idx_for_idx2=line_idx+List.length(temp1) in 
           let msg="Found "^(remove_newlines candidate)^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
           let _=(print_string msg;flush stdout) in 
           let idx3=idx2+(String.length candidate) in  
-          let temp2=List.filter(fun k->(get s k)='\n')(Ennig.ennig idx2 (idx3-1)) in 
+          let temp2=List.filter(fun k->(get s k)='\n')(Int_range.ennig idx2 (idx3-1)) in 
           let line_idx_for_idx3=line_idx_for_idx2+List.length(temp2) in 
           tempf((idx2,idx3-1)::treated,other_patts,idx3,line_idx_for_idx3)    
   ) in 
-  let temp3=List.filter(fun k->(get s k)='\n')(Ennig.ennig 1 (start_idx-1)) in 
+  let temp3=List.filter(fun k->(get s k)='\n')(Int_range.ennig 1 (start_idx-1)) in 
   let start_line_idx = 1+(List.length(temp3)) in 
   tempf([],patterns_in_order,start_idx,start_line_idx);;
 
@@ -205,7 +205,7 @@ let leftmost_difference s1 s2=
    let n=min(n1)(n2) in 
    match Option.seek(fun j->
       (get s1 j)<>(get s2 j)
-   )(Ennig.ennig 1 n) with 
+   )(Int_range.ennig 1 n) with 
    None->None 
    |Some(j0)->
       let common_part=String.sub s1 0 (j0-1) 

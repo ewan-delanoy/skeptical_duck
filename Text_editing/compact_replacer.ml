@@ -15,7 +15,7 @@ let parse descr =
    let temp1 = Str.split (Str.regexp_string separator) descr in 
    let m = (List.length temp1)/2 in
    let tg =(fun k->List.nth temp1 (k-1)) in  
-   Compact_replacer_t.CR(Ennig.doyle (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
+   Compact_replacer_t.CR(Int_range.doyle (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
 
 let replace_inside_string (Compact_replacer_t.CR(l)) old_text =
    Replace_inside.replace_several_inside_string l old_text ;;

@@ -12,7 +12,7 @@ module Private = struct
 
 let blanks= [' ';'\n';'\r';'\t'];;
 
-let digits = Ennig.doyle char_of_int 48 57;;
+let digits = Int_range.doyle char_of_int 48 57;;
 
 
 let seek_html_link_to_footnote_at_index text i0=

@@ -26,7 +26,7 @@ module Private = struct
     String.concat "" temp2;;
 
   let deal_with_link_to_footnotes_in_page preceding_count page ranges=
-  let temp1 = Ennig.index_everything ranges in 
+  let temp1 = Int_range.index_everything ranges in 
   let temp2 = Image.image (fun (k,(i,j))->
     let sk = string_of_int(k+preceding_count) in 
     let msg = "<span id=\""^"ln"^sk^"\"><a href=\"#n"^sk^"\">("^sk^")</a></span>" in 
@@ -34,7 +34,7 @@ module Private = struct
   Strung.replace_ranges_in temp2 page ;;      
 
   let deal_with_footnotes_in_page preceding_count page ranges=
-    let temp1 = Ennig.index_everything ranges in 
+    let temp1 = Int_range.index_everything ranges in 
     let temp2 = Image.image (fun (k,(i,j))->
       let sk = string_of_int(k+preceding_count) in 
       let left = (if k=1 then "" else "\n</div>\n")

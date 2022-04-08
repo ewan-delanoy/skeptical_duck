@@ -14,7 +14,7 @@ the disadvantage of applying certain transforms to the replacement string.
 
 let single_char_special_case (single_c,b) s=
     let n=String.length(s) in
-    let temp1=Ennig.doyle (
+    let temp1=Int_range.doyle (
        fun j->let c=String.get s j in
               if c=single_c
               then b
@@ -38,7 +38,7 @@ let my_global_replace (a,b) s=
   let m=List.length indices in 
   let lower_end=(fun j->if j=0 then 1 else List.nth indices (j-1)+na) 
   and upper_end=(fun j->if j=m then n else (List.nth indices (j))-1) in 
-  let unchanged_intervals = Ennig.doyle (fun j->(lower_end j,upper_end j)) 0 m in 
+  let unchanged_intervals = Int_range.doyle (fun j->(lower_end j,upper_end j)) 0 m in 
   let unchanged_substrings=Image.image 
      (fun (x,y)->if x>y then "" else Cull_string.interval s x y) unchanged_intervals in
   String.concat b unchanged_substrings;;

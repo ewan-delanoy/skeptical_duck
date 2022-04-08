@@ -125,7 +125,7 @@ module Private = struct
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
-            let indexed_extra_fields = Ennig.index_everything extra_fields in 
+            let indexed_extra_fields = Int_range.index_everything extra_fields in 
             let indexed_and_labeled = Image.image (fun (j,fd)->
                      (fd.Polymorphic_ocaml_record_t.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
             (ext_name,indexed_and_labeled);;   

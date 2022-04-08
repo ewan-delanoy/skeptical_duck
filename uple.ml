@@ -90,7 +90,7 @@ sub_f([],l);;
   tempf(List.length(l)-1,List.hd(l),List.tl(l),[]);;
   
  let cumulative_partial_power_set l k=
-   let temp1=Ennig.doyle(fun j->partial_power_set j l)(0)(k) in
+   let temp1=Int_range.doyle(fun j->partial_power_set j l)(0)(k) in
    List.flatten temp1;;
  
   let rec l_naive_combinations k l=

@@ -9,7 +9,7 @@ let cdn s=
   let n=String.length(s) in
   let temp1=List.filter(
      fun j->(String.get s j)='/'
-  )(Ennig.ennig 0 (n-1)) in
+  )(Int_range.ennig 0 (n-1)) in
   if temp1=[] then s else
   let temp4=List.rev(List.tl(List.rev temp1)) in
   let temp2=0::(Image.image (fun j->j+1) temp4) in
@@ -19,7 +19,7 @@ let cdn s=
     then String.capitalize_ascii t
     else t
   ) in
-  let temp3=Ennig.doyle tempf 0 (n-1) in
+  let temp3=Int_range.doyle tempf 0 (n-1) in
   String.concat "" temp3;;
 
 (*

@@ -38,5 +38,5 @@ let rec sub_f=(function
 in
 sub_f(List.rev(x),[[]]);;
 
-let power x n=general_product (Ennig.doyle (fun j->x) 1 n);;
+let power x n=general_product (Int_range.doyle (fun j->x) 1 n);;
              

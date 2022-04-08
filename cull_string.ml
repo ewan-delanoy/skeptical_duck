@@ -77,7 +77,7 @@ let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
       match Option.seek(fun j->
           not(List.mem (String.get s (j-1)) l)
-      )(Ennig.ennig 1 n) with
+      )(Int_range.ennig 1 n) with
       None->""
       |Some(d)->cobeginning (d-1) s;;
 
@@ -85,7 +85,7 @@ let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
       match Option.seek(fun j->
           not(List.mem (String.get s (n-j)) l)
-      )(Ennig.ennig 1 n) with
+      )(Int_range.ennig 1 n) with
       None->""
       |Some(d)->coending (d-1) s;;
 
@@ -99,10 +99,10 @@ let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
 
  let trim_spaces s=
    let n=String.length s in
-   let opt1=Option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in
+   let opt1=Option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.ennig 1 n) in
    if opt1=None then "" else
    let i1=Option.unpack opt1 in
-   let k1=Listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Ennig.ennig 1 n) in 
+   let k1=Listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Int_range.ennig 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
 
@@ -125,7 +125,7 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 
  let closeup_around_index s j=
    let n=String.length s in
-   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Ennig.ennig 1 n) in
+   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Int_range.ennig 1 n) in
    let (temp2,temp3)=Hurried.partition_in_two_parts(fun k->k<j) temp1 in
    let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
    and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
@@ -177,7 +177,7 @@ let shorten_blanks s=
        let d = String.get s (j-2)  in  
        not(List.mem d blanks) 
       ) in 
-   let temp1 = List.filter test_idx (Ennig.ennig 1 n) in 
+   let temp1 = List.filter test_idx (Int_range.ennig 1 n) in 
    let temp2 = Image.image (fun j->String.make 1 (String.get s (j-1))) temp1 in 
    let temp3 = String.concat "" temp2 in 
    trim_spaces temp3 ;;

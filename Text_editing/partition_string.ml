@@ -94,7 +94,7 @@ module Private = struct
       let temp2 = standardize_beginning_and_end temp1 in 
       let n = (List.length temp2)/2 
       and elt = (fun j->List.nth temp2 (j-1)) in 
-      Ennig.doyle (fun k->(unwrap_text(elt (2*k-1)),unwrap_delim(elt (2*k)))) 1 n;;
+      Int_range.doyle (fun k->(unwrap_text(elt (2*k-1)),unwrap_delim(elt (2*k)))) 1 n;;
     
     (*
     

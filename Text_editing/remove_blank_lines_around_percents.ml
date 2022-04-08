@@ -31,7 +31,7 @@ module Private = struct
     and is_bad3 =  (fun j->if j<=1 then false else (line_starts_with_percent(j-1)) && (line_is_boink j)) in 
     let bad_linedices = List.filter (fun j->
         (is_bad1 j)||(is_bad2 j)||(is_bad3 j)
-      ) (Ennig.ennig 1 m) in 
+      ) (Int_range.ennig 1 m) in 
    let good_lines = Option.filter_and_unpack (fun (linedex,line)->
      if List.mem linedex bad_linedices then None else Some line
     ) indexed_lines  in 

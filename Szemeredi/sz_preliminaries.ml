@@ -27,7 +27,7 @@ module Private = struct
   let look_for_arithmetic_progressions_in_with_width_up_to 
     (Sz_max_width_t.MW width) soi=
     let max_width = (if width<1 then ((diameter soi)-1)/2 else width) in 
-    List.rev(List.flatten(Ennig.doyle 
+    List.rev(List.flatten(Int_range.doyle 
     (look_for_arithmetic_progressions_in_with_width_equal_to soi) 1 max_width));;
     
 
@@ -50,13 +50,13 @@ module Private = struct
   );;
   
   let arithmetic_progressions_in_interval_with_width_equal_to (a,b) width  =
-    Ennig.doyle (fun x->[x;x+width;x+2*width]) a (b-2*width)  ;; 
+    Int_range.doyle (fun x->[x;x+width;x+2*width]) a (b-2*width)  ;; 
   
   let arithmetic_progressions_with_width_up_to_in_interval 
     interval (Sz_max_width_t.MW width)  = 
     let (a,b) = interval in 
     let max_width = (if width<1 then (b-a)/2 else width) in 
-    List.rev(List.flatten(Ennig.doyle 
+    List.rev(List.flatten(Int_range.doyle 
     (arithmetic_progressions_in_interval_with_width_equal_to interval) 1 max_width));;  ;;   
   
   let force_subset_in_arbitrary_set (Sz_max_width_t.MW width) subset soi =

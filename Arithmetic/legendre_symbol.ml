@@ -64,7 +64,7 @@ let phi_set nn=
 let n=abs(nn) in
 let temp1=Primes.factor(n) in
 let temp2=Multiset.to_list(temp1) in
-let temp3=Ennig.ennig(1)(n-1) in
+let temp3=Int_range.ennig(1)(n-1) in
 List.filter(function x->List.filter(function p->(x mod p)=0)(temp2)=[])(temp3);;
 
 let find_one_prime_equivalent m a=
@@ -81,7 +81,7 @@ let temp1=Primes.factor(aa) in
 let temp2=Multiset.filter_odd_multiplicities(temp1) in
 let ka=ea*fold_product(temp2) in
 let big_a=4*abs(ka) in
-let temp3=Ennig.ennig(1)(big_a-1) in
+let temp3=Int_range.ennig(1)(big_a-1) in
 let temp4=List.filter(function x->List.filter(function p->(x mod p)=0)(2::temp2)=[])(temp3) in
 let temp5=find_many_prime_equivalents(big_a)(temp4) in
 let temp6=List.filter(function (z,pz)->naive_legendre_symbol(a)(pz)=1)(temp5) in
@@ -102,7 +102,7 @@ tempf(1,1);;
 let enumerate_reduced_forms dd=
 let r=(dd mod 4) in
 if ((r=1)||(r=2)) then ([],[]) else
-let temp1=Ennig.ennig(0)(isqrt(dd/3)) in
+let temp1=Int_range.ennig(0)(isqrt(dd/3)) in
 let temp2=List.filter(function x->(x mod 2)=r)(temp1) in
 let temp3=List.flatten(Image.image(function b->let m=(b*b+dd)/4 in
 Image.image(function a->(a,b,m/a) )(Set_of_integers.forget_order(Primes.divisors(m))) )(temp2)) in

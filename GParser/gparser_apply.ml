@@ -233,7 +233,7 @@ let debugful_detailed_chain l=
   main_f;;
 
 let disjunction l=
-   let indexed_l=Ennig.index_everything l in   
+   let indexed_l=Int_range.index_everything l in   
    let rec tempf=(fun
    (da_ober,s,i0)->
       match da_ober with

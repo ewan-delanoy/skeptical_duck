@@ -132,7 +132,7 @@ module Private = struct
       (sn_descr,sn_content)->
         (sn_descr,sn_content,snippet_analysis sn_descr)
       ) pairs in 
-      let temp2 = Ennig.index_everything temp1 in 
+      let temp2 = Int_range.index_everything temp1 in 
       let replacements = Option.filter_and_unpack (
         fun (absolute_idx,(sn_descr,sn_content,sn_indices)) ->
            match sn_indices with 
@@ -149,7 +149,7 @@ module Private = struct
       ) temp2) ;;
   
   let remove_snippets (D pairs) indices=
-    let temp1 = Ennig.index_everything pairs in 
+    let temp1 = Int_range.index_everything pairs in 
     let pairs2 = Option.filter_and_unpack (fun 
        (idx,pair) -> 
         if List.mem idx indices then None else Some pair

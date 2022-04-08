@@ -15,7 +15,7 @@ let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/fir
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =
-    if b-a<=2 then basic_string_of_il(Ennig.ennig a b) else 
+    if b-a<=2 then basic_string_of_il(Int_range.ennig a b) else 
     "(Ennig.ennig "^(string_of_int a)^" "^(string_of_int b)^")" ;;
 let string_of_il l =
      if List.length(l)<=3 then basic_string_of_il l else 
@@ -113,7 +113,7 @@ let one_command dsol  =
    raise(Order_exn(dsol1,dsol2)) ;; 
 
 let is_suitable_for_display dsol =
-    match Ennig.test_for_interval dsol.argument with
+    match Int_range.test_for_interval dsol.argument with
     None -> true 
     | Some(a0,b0) ->
       let (L i_level) = dsol.level 
@@ -399,7 +399,7 @@ let start_decomposing  x =
        let size_left  = List.length(patient_measure left)
        and size_right = List.length(patient_measure right) in 
        m = size_left + size_right  
-  ) (Ennig.ennig 1 (n-1)) ;;
+  ) (Int_range.ennig 1 (n-1)) ;;
 
 let pusher_for_full_decomposition  (treated,to_be_treated) = 
        match to_be_treated with 
@@ -450,7 +450,7 @@ let compute_ramification x=
     fun k->
        let limited_obses = Listennou.big_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m
-  )(Ennig.ennig 1 n) with 
+  )(Int_range.ennig 1 n) with 
   Some k0 -> List.nth obses (k0-1)
   | None -> raise (Compute_ramification_exn(current_level,x)) ;;
 
@@ -532,7 +532,7 @@ module Level_one = struct
     let temp2 = Image.image (
        fun (a,b) -> List.filter (fun x->
          ((x-a) mod 3)<2
-        ) (Ennig.ennig a b)) temp1 in 
+        ) (Int_range.ennig a b)) temp1 in 
     List.flatten temp2 ;;      
   
   let patient_measure = impatient_measure ;;
@@ -595,9 +595,9 @@ let a3 l = Level_three.analize [l] ;;
 let a4 l = Level_four.analize [l] ;;
 let sc = Detailed_solution.show_lightweight_commands ;;
 let zc = Detailed_solution.show_lightweight_commands_without_reacting ;;
-let sa n = sc  (a4 (Ennig.ennig 1 n)) ;; 
+let sa n = sc  (a4 (Int_range.ennig 1 n)) ;; 
 
-for k = 1 to small_n do g_add_compatible 2 (Ennig.ennig 1 k) None done ;;
+for k = 1 to small_n do g_add_compatible 2 (Int_range.ennig 1 k) None done ;;
 
 (* Beginnning of precomputed data for level 2 *)
 
@@ -606,11 +606,11 @@ g_add_compatible 2 [1;3] None ;;
 (* new *) g_add_compatible 2 [1;3;4] None ;;
 g_add_compatible 2 ([1;2;3]@[5]) None ;;
 g_add_compatible 2 ([1]@[3;4;5]) None ;;
-g_add_compatible 2 ((Ennig.ennig 1 4)@[6]) (Some(([1]@[3;4]@[6]))) ;;
+g_add_compatible 2 ((Int_range.ennig 1 4)@[6]) (Some(([1]@[3;4]@[6]))) ;;
 g_add_compatible 2 ([1;2;3]@[5;6]) None ;;
 g_add_compatible 2 ([1;2;3]@[5]@[7]) None ;;
 g_add_compatible 2 ([1;2]@[4;5;6]) None ;;
-g_add_compatible 2 ([1]@(Ennig.ennig 3 6)) None ;;
+g_add_compatible 2 ([1]@(Int_range.ennig 3 6)) None ;;
 g_add_compatible 2 ([1]@[3]@[5;6;7]) (Some(([1]@[3]@[6;7]))) ;;
 g_add_compatible 2 ([1;2;3]@[5;6;7]) None ;;
 g_add_compatible 2 ([1;2;3]@[6;7;8]) None ;;
@@ -620,19 +620,19 @@ g_add_decomposable 2 ([1]@[3]@[5]@[7]) [[1];[3;5;7]] [1;3;7] ;;
 g_add_decomposable 2 ([1]@[3;4]@[6]@[8]) [[1];[3];[4;6;8]] ([1]@[3;4]@[6]) ;;
 g_add_decomposable 2 ([1]@[3]@[5;6]@[8]) [[1;3;5];[6];[8]] ([1]@[3]@[6]@[8]) ;;
 g_add_decomposable 2 ([1]@[3]@[5]@[7;8]) [[1];[3;5;7];[8]] ([1]@[3]@[7;8]) ;;
-g_add_decomposable 2 ((Ennig.ennig 1 4)@[6]@[8]) [[1;2;3];[4;6;8]] ([1;2]@[4]@[8]) ;;
+g_add_decomposable 2 ((Int_range.ennig 1 4)@[6]@[8]) [[1;2;3];[4;6;8]] ([1;2]@[4]@[8]) ;;
 g_add_decomposable 2 ([1;2;3]@[5]@[7]@[9]) [[1;2;3];[5;7;9]] ([1;2]@[5]@[7]) ;;
-g_add_ramification 2 ([1]@(Ennig.ennig 3 6)@[8]) [4;6;8] ;;
-g_add_decomposable 2 ([1]@[3]@(Ennig.ennig 5 8)) [[1;3;5];[6;7;8]] ([1]@[3]@[6;7]) ;;
+g_add_ramification 2 ([1]@(Int_range.ennig 3 6)@[8]) [4;6;8] ;;
+g_add_decomposable 2 ([1]@[3]@(Int_range.ennig 5 8)) [[1;3;5];[6;7;8]] ([1]@[3]@[6;7]) ;;
 g_add_decomposable 2 ([1]@[3]@[5]@[7;8;9]) [[1;3;5];[7;8;9]] ([1]@[3]@[7;8]) ;;
 g_add_decomposable 2 ([1;2]@[4]@[6;7]@[9]@[11]) [[1];[2;4;6];[7;9;11]] ([1;2]@[4]@[7]@[9]) ;;
-g_add_decomposable 2 ([1]@[3]@(Ennig.ennig 5 8)@[10]@[12]@[14]) [[1;3;5];[6;7;8];[10;12;14]] ([1]@[3]@[6;7]@[10]@[12]) ;;
-g_add_decomposable 2 ([1]@[3]@[5]@(Ennig.ennig 7 10)@[12]@[14]) [[1;3;5];[7;8;9];[10;12;14]] ([1]@[3]@[7;8]@[10]@[14]) ;;
+g_add_decomposable 2 ([1]@[3]@(Int_range.ennig 5 8)@[10]@[12]@[14]) [[1;3;5];[6;7;8];[10;12;14]] ([1]@[3]@[6;7]@[10]@[12]) ;;
+g_add_decomposable 2 ([1]@[3]@[5]@(Int_range.ennig 7 10)@[12]@[14]) [[1;3;5];[7;8;9];[10;12;14]] ([1]@[3]@[7;8]@[10]@[14]) ;;
 
 
 (* End of precomputed data for level 2 *)
 
-for k = 1 to 6 do g_add_compatible 3 (Ennig.ennig 1 k) None done ;; 
+for k = 1 to 6 do g_add_compatible 3 (Int_range.ennig 1 k) None done ;; 
 
 
 (* Beginnning of precomputed data for level 3 *)
@@ -648,7 +648,7 @@ g_add_compatible 3 ([1]@[3]@[5]@[7]) None ;;
 (* new *) g_add_compatible 3 ([1]@[3]@[5]@[8]) None ;;
 g_add_compatible 3 ([1]@[4;5;6]) None ;;
 g_add_compatible 3 ([1]@[4]@[6]@[8]) None ;;
-g_add_compatible 3 ((Ennig.ennig 1 4)@[6]) None ;;
+g_add_compatible 3 ((Int_range.ennig 1 4)@[6]) None ;;
 g_add_compatible 3 ([1;2;3]@[5;6]) None ;;
 g_add_compatible 3 ([1;2;3]@[5]@[7]) None ;;
 g_add_compatible 3 ([1;2;3]@[6;7]) None ;;
@@ -656,265 +656,265 @@ g_add_compatible 3 ([1;2;3]@[6;7]) None ;;
 g_add_compatible 3 ([1;2]@[4;5;6]) None ;;
 (* new *) g_add_compatible 3 ([1;2]@[4]@[6]@[8]) None ;;
 g_add_compatible 3 ([1;2]@[5;6;7]) None ;;
-g_add_compatible 3 ([1]@(Ennig.ennig 3 6)) None ;;
+g_add_compatible 3 ([1]@(Int_range.ennig 3 6)) None ;;
 g_add_compatible 3 ([1]@[3;4]@[6]@[8]) None ;;
 g_add_compatible 3 ([1]@[3]@[5;6;7]) None ;;
 (* new *) g_add_compatible 3 ([1]@[3]@[5;6]@[8]) None ;;
 g_add_compatible 3 ([1]@[3]@[5]@[7;8]) None ;;
 g_add_compatible 3 ([1]@[3]@[6;7;8]) None ;;
-g_add_compatible 3 ((Ennig.ennig 1 4)@[6]@[8]) None ;;
+g_add_compatible 3 ((Int_range.ennig 1 4)@[6]@[8]) None ;;
 g_add_compatible 3 ([1;2;3]@[5;6;7]) None ;;
 g_add_compatible 3 ([1;2;3]@[5]@[7]@[9]) None ;;
 g_add_compatible 3 ([1;2;3]@[6;7;8]) None ;;
-g_add_compatible 3 ([1]@(Ennig.ennig 3 6)@[8]) None ;;
-g_add_compatible 3 ([1]@[3]@(Ennig.ennig 5 8)) None ;;
+g_add_compatible 3 ([1]@(Int_range.ennig 3 6)@[8]) None ;;
+g_add_compatible 3 ([1]@[3]@(Int_range.ennig 5 8)) None ;;
 g_add_compatible 3 ([1]@[3]@[5]@[7;8;9]) None ;;
-g_add_compatible 3 ((Ennig.ennig 1 4)@[7]@[9]@[11]) (Some(([1;2]@[4]@[9]@[11]))) ;;
+g_add_compatible 3 ((Int_range.ennig 1 4)@[7]@[9]@[11]) (Some(([1;2]@[4]@[9]@[11]))) ;;
 g_add_compatible 3 ([1;2]@[4]@[6;7]@[9]@[11]) (Some(([1;2]@[4]@[9]@[11]))) ;;
-g_add_compatible 3 ([1]@[3]@(Ennig.ennig 5 8)@[10]@[12]@[14]) None ;;
-g_add_compatible 3 ([1]@[3]@[5]@(Ennig.ennig 7 10)@[12]@[14]) None ;;
+g_add_compatible 3 ([1]@[3]@(Int_range.ennig 5 8)@[10]@[12]@[14]) None ;;
+g_add_compatible 3 ([1]@[3]@[5]@(Int_range.ennig 7 10)@[12]@[14]) None ;;
 (* new *) g_add_ramification 3 ([1]@[4]@[6;7]) [1;4;7] ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[7]) [1;4;7] ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[7]) [1;4;7] ;;
 (* new *) g_add_ramification 3 ([1;2;3]@[5]@[8]) [2;5;8] ;;
 g_add_ramification 3 ([1]@[3;4;5]@[7]) [1;4;7] ;;
-g_add_ramification 3 ([1]@(Ennig.ennig 4 7)) [1;4;7] ;;
+g_add_ramification 3 ([1]@(Int_range.ennig 4 7)) [1;4;7] ;;
 g_add_ramification 3 ([1]@[4]@[6;7;8]) [1;4;7] ;;
-g_add_ramification 3 ((Ennig.ennig 1 5)@[7]) [1;4;7] ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]) [1;4;7] ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[7;8]) [((Ennig.ennig 1 4)@[7]);[8]] ([1;2]@[4]@[8]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[7]@[9]) [((Ennig.ennig 1 4)@[7]);[9]] ([1;2]@[4]@[9]) ;;
+g_add_ramification 3 ((Int_range.ennig 1 5)@[7]) [1;4;7] ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]) [1;4;7] ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[7;8]) [((Int_range.ennig 1 4)@[7]);[8]] ([1;2]@[4]@[8]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[7]@[9]) [((Int_range.ennig 1 4)@[7]);[9]] ([1;2]@[4]@[9]) ;;
 (* new *) g_add_ramification 3 ([1;2;3]@[5;6]@[8]) [2;5;8] ;;
 g_add_ramification 3 ([1;2;3]@[5]@[7;8]) [2;5;8] ;;
-g_add_ramification 3 ([1;2]@(Ennig.ennig 4 7)) [1;4;7] ;;
+g_add_ramification 3 ([1;2]@(Int_range.ennig 4 7)) [1;4;7] ;;
 (* new *) g_add_ramification 3 ([1;2]@[4]@[6;7;8]) [1;4;7] ;;
-g_add_ramification 3 ([1]@(Ennig.ennig 3 7)) [1;4;7] ;;
+g_add_ramification 3 ([1]@(Int_range.ennig 3 7)) [1;4;7] ;;
 g_add_decomposable 3 ([1]@[3;4;5]@[7;8]) [([1]@[3;4;5]@[7]);[8]] ([1]@[3;4]@[8]) ;;
 g_add_decomposable 3 ([1]@[3;4;5]@[7]@[9]) [([1]@[3;4;5]@[7]);[9]] ([1]@[3;4]@[9]) ;;
 g_add_ramification 3 ([1]@[3;4]@[6;7;8]) [1;4;7] ;;
-(* new *) g_add_decomposable 3 ([1]@(Ennig.ennig 4 8)) [([1]@(Ennig.ennig 4 7));[8]] ([1]@[4;5]@[8]) ;;
-g_add_decomposable 3 ([1]@(Ennig.ennig 4 7)@[9]) [([1]@(Ennig.ennig 4 7));[9]] ([1]@[4;5]@[9]) ;;
-g_add_ramification 3 (Ennig.ennig 1 7) [1;4;7] ;;
-(* new *) g_add_ramification 3 ((Ennig.ennig 1 6)@[8]) [2;5;8] ;;
-g_add_ramification 3 ((Ennig.ennig 1 5)@[7;8]) [2;5;8] ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7;8]) [1;4;7] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]) [[1];([2;3;4]@[6;7]@[9])] ([1;2]@[6;7]@[9]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[7]@[9]@[12]) [((Ennig.ennig 1 4)@[7]);[9];[12]] ([1;2]@[4]@[9]@[12]) ;;
-g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 8)) [2;5;8] ;;
+(* new *) g_add_decomposable 3 ([1]@(Int_range.ennig 4 8)) [([1]@(Int_range.ennig 4 7));[8]] ([1]@[4;5]@[8]) ;;
+g_add_decomposable 3 ([1]@(Int_range.ennig 4 7)@[9]) [([1]@(Int_range.ennig 4 7));[9]] ([1]@[4;5]@[9]) ;;
+g_add_ramification 3 (Int_range.ennig 1 7) [1;4;7] ;;
+(* new *) g_add_ramification 3 ((Int_range.ennig 1 6)@[8]) [2;5;8] ;;
+g_add_ramification 3 ((Int_range.ennig 1 5)@[7;8]) [2;5;8] ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7;8]) [1;4;7] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]) [[1];([2;3;4]@[6;7]@[9])] ([1;2]@[6;7]@[9]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[7]@[9]@[12]) [((Int_range.ennig 1 4)@[7]);[9];[12]] ([1;2]@[4]@[9]@[12]) ;;
+g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 8)) [2;5;8] ;;
 g_add_ramification 3 ([1;2;3]@[5]@[7;8;9]) [2;5;8] ;;
-(* new *) g_add_ramification 3 ([1;2]@(Ennig.ennig 4 8)) [2;5;8] ;;
-g_add_ramification 3 ([1]@(Ennig.ennig 3 8)) [1;4;7] ;;
-g_add_ramification 3 ([1]@(Ennig.ennig 3 7)@[9]) [3;6;9] ;;
-g_add_ramification 3 (Ennig.ennig 1 8) [2;5;8] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 6)@[8]@[10]) [((Ennig.ennig 1 6)@[8]);[10]] ([1;2]@[4;5]@[10]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 5)@[7;8]@[10]) [((Ennig.ennig 1 5)@[7;8]);[10]] ([1;2]@[4;5]@[10]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@(Ennig.ennig 6 9)) [[1];([2;3;4]@(Ennig.ennig 6 9))] ([1;2]@[4]@[8;9]) ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11]) [3;6;9] ;;
-(* new *) g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[12]) [6;9;12] ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@(Ennig.ennig 7 10)) [[1;2;3];([4]@(Ennig.ennig 7 10))] ([1;2]@[4]@[8;9]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)) [[1];([2;3]@(Ennig.ennig 5 9))] ([1;2]@[5;6]@[9]) ;;
+(* new *) g_add_ramification 3 ([1;2]@(Int_range.ennig 4 8)) [2;5;8] ;;
+g_add_ramification 3 ([1]@(Int_range.ennig 3 8)) [1;4;7] ;;
+g_add_ramification 3 ([1]@(Int_range.ennig 3 7)@[9]) [3;6;9] ;;
+g_add_ramification 3 (Int_range.ennig 1 8) [2;5;8] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 6)@[8]@[10]) [((Int_range.ennig 1 6)@[8]);[10]] ([1;2]@[4;5]@[10]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 5)@[7;8]@[10]) [((Int_range.ennig 1 5)@[7;8]);[10]] ([1;2]@[4;5]@[10]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@(Int_range.ennig 6 9)) [[1];([2;3;4]@(Int_range.ennig 6 9))] ([1;2]@[4]@[8;9]) ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11]) [3;6;9] ;;
+(* new *) g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[12]) [6;9;12] ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@(Int_range.ennig 7 10)) [[1;2;3];([4]@(Int_range.ennig 7 10))] ([1;2]@[4]@[8;9]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)) [[1];([2;3]@(Int_range.ennig 5 9))] ([1;2]@[5;6]@[9]) ;;
 (* new *) g_add_decomposable 3 ([1;2;3]@[5]@[7;8;9]@[12]) [([1;2;3]@[5]@[7;8;9]);[12]] ([1;2]@[5]@[7]@[12]) ;;
-g_add_decomposable 3 ([1]@[3]@(Ennig.ennig 5 10)) [[1];([3]@(Ennig.ennig 5 10))] ([1]@[3]@[6;7]@[10]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9;10;11]) [[1;2;3];([4]@[6;7]@[9;10;11])] ([1;2]@[6;7]@[9;10]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]) [((Ennig.ennig 1 4)@[6;7]@[9]@[11]);[12]] ([1;2]@[4]@[9]@[11;12]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11]@[13]) [((Ennig.ennig 1 4)@[6;7]);[9;11;13]] ([1;2]@[6;7]@[9]@[13]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[10;11;12]) [((Ennig.ennig 1 4)@[6;7]);[10;11;12]] ([1;2]@[6;7]@[10;11]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[7]@(Ennig.ennig 9 12)) [[1;2;3];([4]@[7]@[9;10;11]);[12]] ([1;2]@[4]@[9;10]@[12]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[7]@[9]@[11;12;13]) [((Ennig.ennig 1 4)@[7]);[9];[11;12;13]] ([1;2]@[4]@[9]@[11;12]) ;;
-(* new *) g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 9)@[12]) [6;9;12] ;;
+g_add_decomposable 3 ([1]@[3]@(Int_range.ennig 5 10)) [[1];([3]@(Int_range.ennig 5 10))] ([1]@[3]@[6;7]@[10]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9;10;11]) [[1;2;3];([4]@[6;7]@[9;10;11])] ([1;2]@[6;7]@[9;10]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]) [((Int_range.ennig 1 4)@[6;7]@[9]@[11]);[12]] ([1;2]@[4]@[9]@[11;12]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11]@[13]) [((Int_range.ennig 1 4)@[6;7]);[9;11;13]] ([1;2]@[6;7]@[9]@[13]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[10;11;12]) [((Int_range.ennig 1 4)@[6;7]);[10;11;12]] ([1;2]@[6;7]@[10;11]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[7]@(Int_range.ennig 9 12)) [[1;2;3];([4]@[7]@[9;10;11]);[12]] ([1;2]@[4]@[9;10]@[12]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[7]@[9]@[11;12;13]) [((Int_range.ennig 1 4)@[7]);[9];[11;12;13]] ([1;2]@[4]@[9]@[11;12]) ;;
+(* new *) g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 9)@[12]) [6;9;12] ;;
 g_add_decomposable 3 ([1;2;3]@[5]@[7;8]@[10;11;12]) [[1;2;3];([5]@[7;8]@[10;11;12])] ([1;2]@[5]@[7]@[10;11]) ;;
 (* new *) g_add_decomposable 3 ([1;2;3]@[5]@[7;8]@[10]@[12]@[14]) [([1;2;3]@[5]@[7;8]);[10;12;14]] ([1;2]@[5]@[7]@[10]@[12]) ;;
 g_add_decomposable 3 ([1;2;3]@[5]@[7;8]@[11;12;13]) [([1;2;3]@[5]@[7;8]);[11;12;13]] ([1;2]@[5]@[7]@[11;12]) ;;
-g_add_decomposable 3 ([1;2;3]@[5]@[8]@(Ennig.ennig 10 13)) [[1;2;3];([5]@[8]@[10;11;12]);[13]] ([1;2]@[5]@[10;11]@[13]) ;;
+g_add_decomposable 3 ([1;2;3]@[5]@[8]@(Int_range.ennig 10 13)) [[1;2;3];([5]@[8]@[10;11;12]);[13]] ([1;2]@[5]@[10;11]@[13]) ;;
 (* new *) g_add_decomposable 3 ([1;2;3]@[5]@[8]@[10]@[12;13;14]) [([1;2;3]@[5]@[8]);[10];[12;13;14]] ([1;2]@[5]@[10]@[12;13]) ;;
-g_add_decomposable 3 ([1]@(Ennig.ennig 3 10)) [[1];(Ennig.ennig 3 10)] ([1]@[3;4]@[6]@[10]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 7)@[10;11;12]) [(Ennig.ennig 1 7);[10;11;12]] ([1;2]@[4;5]@[10;11]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 6)@(Ennig.ennig 8 11)) [[1;2;3];([4;5;6]@(Ennig.ennig 8 11))] ([1;2]@[4;5]@[9;10]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 6)@[8]@[10;11;12]) [[1;2;3];([4;5;6]@[8]@[10;11;12])] ([1;2]@[4;5]@[10;11]) ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 12)) [6;9;12] ;;
-(* new *) g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12;13]) [6;9;12] ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]) [[1;2;3];((Ennig.ennig 5 9)@[11;12])] ([1;2]@[5;6]@[9]@[11]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11]@[13]) [([1;2;3]@(Ennig.ennig 5 8));[9;11;13]] ([1;2]@[5;6]@[9]@[11]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 8)@[11;12;13]) [([1;2;3]@(Ennig.ennig 5 8));[11;12;13]] ([1;2]@[5;6]@[11;12]) ;;
+g_add_decomposable 3 ([1]@(Int_range.ennig 3 10)) [[1];(Int_range.ennig 3 10)] ([1]@[3;4]@[6]@[10]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 7)@[10;11;12]) [(Int_range.ennig 1 7);[10;11;12]] ([1;2]@[4;5]@[10;11]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 6)@(Int_range.ennig 8 11)) [[1;2;3];([4;5;6]@(Int_range.ennig 8 11))] ([1;2]@[4;5]@[9;10]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 6)@[8]@[10;11;12]) [[1;2;3];([4;5;6]@[8]@[10;11;12])] ([1;2]@[4;5]@[10;11]) ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 12)) [6;9;12] ;;
+(* new *) g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12;13]) [6;9;12] ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]) [[1;2;3];((Int_range.ennig 5 9)@[11;12])] ([1;2]@[5;6]@[9]@[11]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11]@[13]) [([1;2;3]@(Int_range.ennig 5 8));[9;11;13]] ([1;2]@[5;6]@[9]@[11]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 8)@[11;12;13]) [([1;2;3]@(Int_range.ennig 5 8));[11;12;13]] ([1;2]@[5;6]@[11;12]) ;;
 (* new *) g_add_decomposable 3 ([1;2;3]@[5]@[7;8;9]@[11;12;13]) [([1;2;3]@[5]@[7;8;9]);[11;12;13]] ([1;2]@[5]@[7]@[11;12]) ;;
-g_add_ramification 3 ([1;2;3]@[5]@[7;8]@(Ennig.ennig 10 13)) [7;10;13] ;;
+g_add_ramification 3 ([1;2;3]@[5]@[7;8]@(Int_range.ennig 10 13)) [7;10;13] ;;
 (* new *) g_add_ramification 3 ([1;2;3]@[5]@[7;8]@[10]@[12;13;14]) [7;10;13] ;;
-g_add_ramification 3 ([1]@[3]@(Ennig.ennig 5 10)@[12]@[14]) [6;9;12] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 9)@[11]@[13]) [(Ennig.ennig 1 8);[9;11;13]] ([1;2]@[4;5]@[9]@[11]) ;;
-g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 12)) [[1;2;3];(Ennig.ennig 5 12)] ([1;2]@[5;6]@[9;10]) ;;
-(* new *) g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12;13]) [6;9;12] ;;
-(* new *) g_add_decomposable 3 ([1]@(Ennig.ennig 3 10)@[12]@[14]) [[1];(Ennig.ennig 3 9);[10;12;14]] ([1]@[3;4]@[8;9]@[12]@[14]) ;;
-(* new *) g_add_decomposable 3 ([1]@(Ennig.ennig 3 8)@[10]@[12]@[14;15]) [([1]@(Ennig.ennig 3 8));[10;12;14];[15]] ([1]@[3;4]@[6]@[10]@[12]@[15]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@[14;15;16]) [((Ennig.ennig 1 4)@[6;7]);([9]@[11;12]@[14;15;16])] ([1;2]@[6;7]@[11;12]@[14;15]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16]@[18]) [((Ennig.ennig 1 4)@[6;7]@[9]@[11]);[12];[14;16;18]] ([1;2]@[4]@[9]@[11;12]@[14]@[18]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@[15;16;17]) [((Ennig.ennig 1 4)@[6;7]@[9]@[11]);[12];[15;16;17]] ([1;2]@[4]@[9]@[11;12]@[16;17]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[12]@(Ennig.ennig 14 17)) [((Ennig.ennig 1 4)@[6;7]);([9]@[12]@[14;15;16]);[17]] ([1;2]@[6;7]@[9]@[14;15]@[17]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[12]@[14]@[16;17;18]) [((Ennig.ennig 1 4)@[6;7]@[9]@[12]);[14];[16;17;18]] ([1;2]@[4]@[9]@[12]@[14]@[17;18]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16]) [[1];[2];([3]@(Ennig.ennig 5 9)@[11]);[12;14;16]] ([1;2]@[5;6]@[9]@[11]@[14]@[16]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[12]@[14]@[16;17]) [[1];([2;3]@(Ennig.ennig 5 9));[12;14;16];[17]] ([1;2]@[5;6]@[9]@[14]@[16;17]) ;;
-(* new *) g_add_ramification 3 ([1]@(Ennig.ennig 3 10)@[12]@[14;15]) [9;12;15] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 7)@[11;12]@[14]@[16;17;18]) [(Ennig.ennig 1 7);([11;12]@[14]@[16;17;18])] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 6)@[8]@[10;11]@(Ennig.ennig 13 16)) [[1;2;3];([4;5;6]@[8]@[10;11]@(Ennig.ennig 13 16))] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 6)@[8]@[10;11]@[13]@[15;16;17]) [[1;2;3];([4;5;6]@[8]@[10;11]@[13]@[15;16;17])] ([1;2]@[4;5]@[10;11]@[13]@[17]) ;;
-g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@(Ennig.ennig 14 17)) [11;14;17] ;;
-(* new *) g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16;17;18]) [11;14;17] ;;
-g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14;15;16]) [[1;2;3];((Ennig.ennig 5 9)@[11;12]);[14;15;16]] ([1;2]@[5;6]@[9]@[11]@[14;15]) ;;
-(* new *) g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16;17]) [11;14;17] ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16]@[18]) [[1;2;3];((Ennig.ennig 5 9)@[11;12]);[14;16;18]] ([1;2]@[5;6]@[9]@[11]@[14]@[16]) ;;
-g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[15;16;17]) [[1;2;3];((Ennig.ennig 5 9)@[11;12]);[15;16;17]] ([1;2]@[5;6]@[9]@[11]@[15;16]) ;;
-g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[12]@(Ennig.ennig 14 17)) [([1;2;3]@(Ennig.ennig 5 8));([9]@[12]@[14;15;16]);[17]] ([1;2]@[5;6]@[9]@[14;15]@[17]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 9)@[12]@[14]@[16;17;18]) [([1;2;3]@(Ennig.ennig 5 9)@[12]);[14];[16;17;18]] ([1;2]@[5;6]@[9]@[14]@[16;17]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@[5]@(Ennig.ennig 7 12)@[14]@[16;17]) [([1;2;3]@[5]@[7;8;9]);([10;11;12]@[14]@[16;17])] ([1;2]@[5]@[7]@[10;11]@[14]@[16]) ;;
-(* new *) g_add_decomposable 3 ([1]@(Ennig.ennig 3 7)@(Ennig.ennig 9 12)@[14]@[16;17]) [([1]@(Ennig.ennig 3 7)@[9]);([10;11;12]@[14]@[16;17])] ([1]@[3;4]@[6]@[10;11]@[14]@[16]) ;;
-g_add_decomposable 3 ([1]@[3]@(Ennig.ennig 5 12)@[14;15;16]) [[1];[3];(Ennig.ennig 5 12);[14;15;16]] ([1]@[3]@[6;7]@[10;11]@[14;15]) ;;
-(* new *) g_add_decomposable 3 ([1]@[3]@(Ennig.ennig 5 12)@[14]@[16;17]) [[1];([3]@(Ennig.ennig 5 12)@[14]@[16;17])] ([1]@[3]@[6;7]@[10;11]@[14]@[16]) ;;
-g_add_decomposable 3 ([1]@[3]@(Ennig.ennig 5 12)@[15;16;17]) [[1];[3];(Ennig.ennig 5 12);[15;16;17]] ([1]@[3]@[6;7]@[10;11]@[15;16]) ;;
-g_add_decomposable 3 ([1]@[3]@(Ennig.ennig 5 10)@[12]@(Ennig.ennig 14 17)) [([1]@[3]@(Ennig.ennig 5 10)@[12]@[14]);[15;16;17]] ([1]@[3]@[6;7]@[10]@[12]@[15;16]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 9)@[11]@[14]@[16;17;18]) [[1];(Ennig.ennig 2 9);([11]@[14]@[16;17;18])] ([1;2]@[4;5]@[9]@[11]@[14]@[16]) ;;
-g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@(Ennig.ennig 14 17)) [11;14;17] ;;
-(* new *) g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16;17;18]) [11;14;17] ;;
-g_add_decomposable 3 ([1;2;3]@[5]@(Ennig.ennig 7 12)@(Ennig.ennig 14 17)) [([1;2;3]@[5]@[7;8;9]);([10;11;12]@(Ennig.ennig 14 17))] ([1;2]@[5]@[7]@[10;11]@[14;15]) ;;
-g_add_decomposable 3 ([1]@(Ennig.ennig 3 7)@(Ennig.ennig 9 12)@(Ennig.ennig 14 17)) [([1]@(Ennig.ennig 3 7)@[9]);([10;11;12]@(Ennig.ennig 14 17))] ([1]@[3;4]@[6]@[10;11]@[14;15]) ;;
-g_add_ramification 3 ([1]@[3]@(Ennig.ennig 5 12)@(Ennig.ennig 14 17)) [11;14;17] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 14)@[16]) [(Ennig.ennig 1 8);((Ennig.ennig 9 14)@[16])] ([1;2]@[4;5]@[9;10]@[12;13]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 8)@(Ennig.ennig 10 14)@[16;17]) [(Ennig.ennig 1 8);((Ennig.ennig 10 14)@[16;17])] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 8)@(Ennig.ennig 11 14)@[16;17;18]) [(Ennig.ennig 1 8);((Ennig.ennig 11 14)@[16;17;18])] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
-g_add_decomposable 3 ((Ennig.ennig 1 8)@(Ennig.ennig 10 17)) [(Ennig.ennig 1 8);(Ennig.ennig 10 17)] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 13)@[15;16]@[18;19;20]) [((Ennig.ennig 1 4)@[6;7]);((Ennig.ennig 9 13)@[15;16]);[18;19;20]] ([1;2]@[6;7]@[9;10]@[15;16]@[18;19]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 13)@[15;16]@[19;20;21]) [((Ennig.ennig 1 4)@[6;7]);((Ennig.ennig 9 13)@[15;16]);[19;20;21]] ([1;2]@[6;7]@[9;10]@[15;16]@[19;20]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 13)@[16]@(Ennig.ennig 18 21)) [((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 12));([13]@[16]@[18;19;20]);[21]] ([1;2]@[4]@[9;10]@[12;13]@[18;19]@[21]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 7)@(Ennig.ennig 10 13)@[15;16]@(Ennig.ennig 18 21)) [(Ennig.ennig 1 7);((Ennig.ennig 10 13)@[15;16]@(Ennig.ennig 18 21))] ([1;2]@[4;5]@[10;11]@[13]@[18;19]@[21]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 6)@(Ennig.ennig 8 12)@[14;15]@(Ennig.ennig 17 20)) [[1;2;3];([4;5;6]@(Ennig.ennig 8 12)@[14;15]@(Ennig.ennig 17 20))] ([1;2]@[4;5]@[9;10]@[12]@[17;18]@[20]) ;;
-(* new *) g_add_ramification 3 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 13)@[15;16]@(Ennig.ennig 18 21)) [15;18;21] ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 13)@[15;16]@[18;19;20]) [[1;2;3];(Ennig.ennig 5 12);([13]@[15;16]@[18;19;20])] ([1;2]@[5;6]@[9;10]@[13]@[15]@[18;19]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 13)@[15;16]@[19;20;21]) [([1;2;3]@(Ennig.ennig 5 8));((Ennig.ennig 9 13)@[15;16]);[19;20;21]] ([1;2]@[5;6]@[9;10]@[13]@[15]@[19;20]) ;;
-(* new *) g_add_decomposable 3 ([1;2;3]@(Ennig.ennig 5 13)@[16]@(Ennig.ennig 18 21)) [[1;2;3];(Ennig.ennig 5 12);([13]@[16]@[18;19;20]);[21]] ([1;2]@[5;6]@[9;10]@[13]@[18;19]@[21]) ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 11)@[13]@[15;16]@(Ennig.ennig 18 21)) [(Ennig.ennig 1 8);([9;10;11]@[13]@[15;16]@(Ennig.ennig 18 21))] ([1;2]@[4;5]@[9;10]@[13]@[15]@[18;19]) ;;
-(* new *) g_add_ramification 3 ([1;2;3]@(Ennig.ennig 5 13)@[15;16]@(Ennig.ennig 18 21)) [15;18;21] ;;
-(* new *) g_add_decomposable 3 ((Ennig.ennig 1 16)@[19;20;21]) [(Ennig.ennig 1 8);(Ennig.ennig 9 16);[19;20;21]] ([1;2]@[4;5]@[9;10]@[12;13]@[19;20]) ;;
+g_add_ramification 3 ([1]@[3]@(Int_range.ennig 5 10)@[12]@[14]) [6;9;12] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 9)@[11]@[13]) [(Int_range.ennig 1 8);[9;11;13]] ([1;2]@[4;5]@[9]@[11]) ;;
+g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 12)) [[1;2;3];(Int_range.ennig 5 12)] ([1;2]@[5;6]@[9;10]) ;;
+(* new *) g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12;13]) [6;9;12] ;;
+(* new *) g_add_decomposable 3 ([1]@(Int_range.ennig 3 10)@[12]@[14]) [[1];(Int_range.ennig 3 9);[10;12;14]] ([1]@[3;4]@[8;9]@[12]@[14]) ;;
+(* new *) g_add_decomposable 3 ([1]@(Int_range.ennig 3 8)@[10]@[12]@[14;15]) [([1]@(Int_range.ennig 3 8));[10;12;14];[15]] ([1]@[3;4]@[6]@[10]@[12]@[15]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@[14;15;16]) [((Int_range.ennig 1 4)@[6;7]);([9]@[11;12]@[14;15;16])] ([1;2]@[6;7]@[11;12]@[14;15]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16]@[18]) [((Int_range.ennig 1 4)@[6;7]@[9]@[11]);[12];[14;16;18]] ([1;2]@[4]@[9]@[11;12]@[14]@[18]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@[15;16;17]) [((Int_range.ennig 1 4)@[6;7]@[9]@[11]);[12];[15;16;17]] ([1;2]@[4]@[9]@[11;12]@[16;17]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[12]@(Int_range.ennig 14 17)) [((Int_range.ennig 1 4)@[6;7]);([9]@[12]@[14;15;16]);[17]] ([1;2]@[6;7]@[9]@[14;15]@[17]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[12]@[14]@[16;17;18]) [((Int_range.ennig 1 4)@[6;7]@[9]@[12]);[14];[16;17;18]] ([1;2]@[4]@[9]@[12]@[14]@[17;18]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16]) [[1];[2];([3]@(Int_range.ennig 5 9)@[11]);[12;14;16]] ([1;2]@[5;6]@[9]@[11]@[14]@[16]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[12]@[14]@[16;17]) [[1];([2;3]@(Int_range.ennig 5 9));[12;14;16];[17]] ([1;2]@[5;6]@[9]@[14]@[16;17]) ;;
+(* new *) g_add_ramification 3 ([1]@(Int_range.ennig 3 10)@[12]@[14;15]) [9;12;15] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 7)@[11;12]@[14]@[16;17;18]) [(Int_range.ennig 1 7);([11;12]@[14]@[16;17;18])] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 6)@[8]@[10;11]@(Int_range.ennig 13 16)) [[1;2;3];([4;5;6]@[8]@[10;11]@(Int_range.ennig 13 16))] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 6)@[8]@[10;11]@[13]@[15;16;17]) [[1;2;3];([4;5;6]@[8]@[10;11]@[13]@[15;16;17])] ([1;2]@[4;5]@[10;11]@[13]@[17]) ;;
+g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@(Int_range.ennig 14 17)) [11;14;17] ;;
+(* new *) g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16;17;18]) [11;14;17] ;;
+g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14;15;16]) [[1;2;3];((Int_range.ennig 5 9)@[11;12]);[14;15;16]] ([1;2]@[5;6]@[9]@[11]@[14;15]) ;;
+(* new *) g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16;17]) [11;14;17] ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16]@[18]) [[1;2;3];((Int_range.ennig 5 9)@[11;12]);[14;16;18]] ([1;2]@[5;6]@[9]@[11]@[14]@[16]) ;;
+g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[15;16;17]) [[1;2;3];((Int_range.ennig 5 9)@[11;12]);[15;16;17]] ([1;2]@[5;6]@[9]@[11]@[15;16]) ;;
+g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[12]@(Int_range.ennig 14 17)) [([1;2;3]@(Int_range.ennig 5 8));([9]@[12]@[14;15;16]);[17]] ([1;2]@[5;6]@[9]@[14;15]@[17]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 9)@[12]@[14]@[16;17;18]) [([1;2;3]@(Int_range.ennig 5 9)@[12]);[14];[16;17;18]] ([1;2]@[5;6]@[9]@[14]@[16;17]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@[5]@(Int_range.ennig 7 12)@[14]@[16;17]) [([1;2;3]@[5]@[7;8;9]);([10;11;12]@[14]@[16;17])] ([1;2]@[5]@[7]@[10;11]@[14]@[16]) ;;
+(* new *) g_add_decomposable 3 ([1]@(Int_range.ennig 3 7)@(Int_range.ennig 9 12)@[14]@[16;17]) [([1]@(Int_range.ennig 3 7)@[9]);([10;11;12]@[14]@[16;17])] ([1]@[3;4]@[6]@[10;11]@[14]@[16]) ;;
+g_add_decomposable 3 ([1]@[3]@(Int_range.ennig 5 12)@[14;15;16]) [[1];[3];(Int_range.ennig 5 12);[14;15;16]] ([1]@[3]@[6;7]@[10;11]@[14;15]) ;;
+(* new *) g_add_decomposable 3 ([1]@[3]@(Int_range.ennig 5 12)@[14]@[16;17]) [[1];([3]@(Int_range.ennig 5 12)@[14]@[16;17])] ([1]@[3]@[6;7]@[10;11]@[14]@[16]) ;;
+g_add_decomposable 3 ([1]@[3]@(Int_range.ennig 5 12)@[15;16;17]) [[1];[3];(Int_range.ennig 5 12);[15;16;17]] ([1]@[3]@[6;7]@[10;11]@[15;16]) ;;
+g_add_decomposable 3 ([1]@[3]@(Int_range.ennig 5 10)@[12]@(Int_range.ennig 14 17)) [([1]@[3]@(Int_range.ennig 5 10)@[12]@[14]);[15;16;17]] ([1]@[3]@[6;7]@[10]@[12]@[15;16]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 9)@[11]@[14]@[16;17;18]) [[1];(Int_range.ennig 2 9);([11]@[14]@[16;17;18])] ([1;2]@[4;5]@[9]@[11]@[14]@[16]) ;;
+g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@(Int_range.ennig 14 17)) [11;14;17] ;;
+(* new *) g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16;17;18]) [11;14;17] ;;
+g_add_decomposable 3 ([1;2;3]@[5]@(Int_range.ennig 7 12)@(Int_range.ennig 14 17)) [([1;2;3]@[5]@[7;8;9]);([10;11;12]@(Int_range.ennig 14 17))] ([1;2]@[5]@[7]@[10;11]@[14;15]) ;;
+g_add_decomposable 3 ([1]@(Int_range.ennig 3 7)@(Int_range.ennig 9 12)@(Int_range.ennig 14 17)) [([1]@(Int_range.ennig 3 7)@[9]);([10;11;12]@(Int_range.ennig 14 17))] ([1]@[3;4]@[6]@[10;11]@[14;15]) ;;
+g_add_ramification 3 ([1]@[3]@(Int_range.ennig 5 12)@(Int_range.ennig 14 17)) [11;14;17] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 14)@[16]) [(Int_range.ennig 1 8);((Int_range.ennig 9 14)@[16])] ([1;2]@[4;5]@[9;10]@[12;13]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 8)@(Int_range.ennig 10 14)@[16;17]) [(Int_range.ennig 1 8);((Int_range.ennig 10 14)@[16;17])] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 8)@(Int_range.ennig 11 14)@[16;17;18]) [(Int_range.ennig 1 8);((Int_range.ennig 11 14)@[16;17;18])] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
+g_add_decomposable 3 ((Int_range.ennig 1 8)@(Int_range.ennig 10 17)) [(Int_range.ennig 1 8);(Int_range.ennig 10 17)] ([1;2]@[4;5]@[10;11]@[13;14]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 13)@[15;16]@[18;19;20]) [((Int_range.ennig 1 4)@[6;7]);((Int_range.ennig 9 13)@[15;16]);[18;19;20]] ([1;2]@[6;7]@[9;10]@[15;16]@[18;19]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 13)@[15;16]@[19;20;21]) [((Int_range.ennig 1 4)@[6;7]);((Int_range.ennig 9 13)@[15;16]);[19;20;21]] ([1;2]@[6;7]@[9;10]@[15;16]@[19;20]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 13)@[16]@(Int_range.ennig 18 21)) [((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 12));([13]@[16]@[18;19;20]);[21]] ([1;2]@[4]@[9;10]@[12;13]@[18;19]@[21]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 7)@(Int_range.ennig 10 13)@[15;16]@(Int_range.ennig 18 21)) [(Int_range.ennig 1 7);((Int_range.ennig 10 13)@[15;16]@(Int_range.ennig 18 21))] ([1;2]@[4;5]@[10;11]@[13]@[18;19]@[21]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 6)@(Int_range.ennig 8 12)@[14;15]@(Int_range.ennig 17 20)) [[1;2;3];([4;5;6]@(Int_range.ennig 8 12)@[14;15]@(Int_range.ennig 17 20))] ([1;2]@[4;5]@[9;10]@[12]@[17;18]@[20]) ;;
+(* new *) g_add_ramification 3 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 13)@[15;16]@(Int_range.ennig 18 21)) [15;18;21] ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 13)@[15;16]@[18;19;20]) [[1;2;3];(Int_range.ennig 5 12);([13]@[15;16]@[18;19;20])] ([1;2]@[5;6]@[9;10]@[13]@[15]@[18;19]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 13)@[15;16]@[19;20;21]) [([1;2;3]@(Int_range.ennig 5 8));((Int_range.ennig 9 13)@[15;16]);[19;20;21]] ([1;2]@[5;6]@[9;10]@[13]@[15]@[19;20]) ;;
+(* new *) g_add_decomposable 3 ([1;2;3]@(Int_range.ennig 5 13)@[16]@(Int_range.ennig 18 21)) [[1;2;3];(Int_range.ennig 5 12);([13]@[16]@[18;19;20]);[21]] ([1;2]@[5;6]@[9;10]@[13]@[18;19]@[21]) ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 11)@[13]@[15;16]@(Int_range.ennig 18 21)) [(Int_range.ennig 1 8);([9;10;11]@[13]@[15;16]@(Int_range.ennig 18 21))] ([1;2]@[4;5]@[9;10]@[13]@[15]@[18;19]) ;;
+(* new *) g_add_ramification 3 ([1;2;3]@(Int_range.ennig 5 13)@[15;16]@(Int_range.ennig 18 21)) [15;18;21] ;;
+(* new *) g_add_decomposable 3 ((Int_range.ennig 1 16)@[19;20;21]) [(Int_range.ennig 1 8);(Int_range.ennig 9 16);[19;20;21]] ([1;2]@[4;5]@[9;10]@[12;13]@[19;20]) ;;
 
 
 (* End of precomputed data for level 3 *)
 
 
-let fl3 n = List.filter (fun x->List.mem (x mod 8) [1;2;4;5]) (Ennig.ennig 1 n) ;;
+let fl3 n = List.filter (fun x->List.mem (x mod 8) [1;2;4;5]) (Int_range.ennig 1 n) ;;
 let dc3 n = 
   let r = n mod 8 in 
   match r with 
   1 -> [[1]] | 2-> [[1];[2]] |4->[[1];[2;3;4]] |5->[[1];[2];[3;4;5]]
-  |6 -> [[1;2;3];[4;5;6]] | 0 -> [Ennig.ennig 1 8] | _ -> [Ennig.ennig 1 r] ;;
+  |6 -> [[1;2;3];[4;5;6]] | 0 -> [Int_range.ennig 1 8] | _ -> [Int_range.ennig 1 r] ;;
 let parts3 n=
   let q = (n-1)/8 in
-  (dc3 n) @ (Ennig.descending_doyle (fun j->Ennig.ennig (n-8*j-7) (n-8*j) ) (q-1) 0) ;;
+  (dc3 n) @ (Int_range.descending_doyle (fun j->Int_range.ennig (n-8*j-7) (n-8*j) ) (q-1) 0) ;;
 for k = 9 to small_n do 
-     g_add_decomposable 3 (Ennig.ennig 1 k) (parts3 k) (fl3 k) 
+     g_add_decomposable 3 (Int_range.ennig 1 k) (parts3 k) (fl3 k) 
 done ;;
 
 
-for k = 1 to 8 do g_add_compatible 4 (Ennig.ennig 1 k) None done ;;
+for k = 1 to 8 do g_add_compatible 4 (Int_range.ennig 1 k) None done ;;
 
 (* Beginnning of precomputed data for level 4 *)
 
 
 g_add_compatible 4 [1;3;5] None ;;
 g_add_compatible 4 ([1]@[4]@[6;7]) None ;;
-g_add_compatible 4 ([1]@(Ennig.ennig 4 7)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 5)@[7]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6]@[8]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[7]@[9]) None ;;
+g_add_compatible 4 ([1]@(Int_range.ennig 4 7)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 5)@[7]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6]@[8]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[7]@[9]) None ;;
 g_add_compatible 4 ([1;2;3]@[5]@[7;8]) None ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 8)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@[11]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@[8]@[10]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 5)@[7;8]@[10]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@(Ennig.ennig 6 9)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@[9]@[11]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@(Ennig.ennig 7 10)) None ;;
-g_add_compatible 4 (Ennig.ennig 1 9) (Some(([1;2]@[4]@[8;9]))) ;;
-g_add_compatible 4 ([1]@(Ennig.ennig 3 10)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@[10;11;12]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@[11;12;13]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@(Ennig.ennig 8 11)) (Some(([1;2]@[4;5]@[10;11]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@[8]@[10;11;12]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 12)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12;13]) None ;;
-g_add_compatible 4 (Ennig.ennig 1 11) (Some(([1;2]@[4;5]@[10;11]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 9)@[11]@[13]) (Some(([1;2]@[4;5]@[11]@[13]))) ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 12)) (Some(([1;2]@[5;6]@[11;12]))) ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 9)@[11;12;13]) (Some(([1;2]@[5;6]@[11;12]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@[11;12]@(Ennig.ennig 14 17)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@[11;12]@[14]@[16;17;18]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@[8]@[10;11]@(Ennig.ennig 13 16)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@[8]@[10;11]@[13]@[15;16;17]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@(Ennig.ennig 14 17)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16;17;18]) None ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16;17]) (Some(([1;2]@[5;6]@[11;12]@[16;17]))) ;;
-g_add_compatible 4 ([1;2;3]@[5]@(Ennig.ennig 7 12)@[14]@[16;17]) None ;;
-g_add_compatible 4 ([1]@(Ennig.ennig 3 7)@(Ennig.ennig 9 12)@[14]@[16;17]) (Some(([1]@[3;4]@[6]@[10;11]@[16;17]))) ;;
-g_add_compatible 4 ([1]@[3]@(Ennig.ennig 5 12)@[14]@[16;17]) (Some(([1]@[3]@[6;7]@[10]@[12]@[16;17]))) ;;
-g_add_compatible 4 (Ennig.ennig 1 14) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 9)@[11]@[14]@[16;17;18]) (Some(([1;2]@[4]@[8;9]@[11]@[16;17]))) ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@(Ennig.ennig 14 17)) (Some(([1;2]@[5;6]@[11;12]@[14;15]))) ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 9)@[11;12]@[14]@[16;17;18]) (Some(([1;2]@[5;6]@[11;12]@[14]@[18]))) ;;
-g_add_compatible 4 ([1;2;3]@[5]@(Ennig.ennig 7 12)@(Ennig.ennig 14 17)) (Some(([1;2]@[5]@[7]@[10;11]@[14]@[16]))) ;;
-g_add_compatible 4 ([1]@(Ennig.ennig 3 7)@(Ennig.ennig 9 12)@(Ennig.ennig 14 17)) (Some(([1]@[3;4]@[6]@[10;11]@[15;16]))) ;;
-g_add_compatible 4 ([1]@[3]@(Ennig.ennig 5 12)@(Ennig.ennig 14 17)) (Some(([1]@[3]@[6;7]@[10]@[12]@[15;16]))) ;;
-g_add_compatible 4 (Ennig.ennig 1 15) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 14)@[16]) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 8)@(Ennig.ennig 10 14)@[16;17]) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 8)@(Ennig.ennig 11 14)@[16;17;18]) None ;;
-g_add_compatible 4 (Ennig.ennig 1 16) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 8)@(Ennig.ennig 10 17)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 7)@(Ennig.ennig 10 13)@[15;16]@(Ennig.ennig 18 21)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 6)@(Ennig.ennig 8 12)@[14;15]@(Ennig.ennig 17 20)) (Some(([1;2]@[4;5]@[10;11]@[15]@[17;18]@[20]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 4)@[6;7]@(Ennig.ennig 9 13)@[15;16]@(Ennig.ennig 18 21)) None ;;
-g_add_compatible 4 ((Ennig.ennig 1 11)@[13]@[15;16]@(Ennig.ennig 18 21)) (Some(([1;2]@[4;5]@[10;11]@[13]@[18;19]@[21]))) ;;
-g_add_compatible 4 ([1;2;3]@(Ennig.ennig 5 13)@[15;16]@(Ennig.ennig 18 21)) (Some(([1;2]@[5;6]@[11;12]@[16]@[18;19]@[21]))) ;;
-g_add_compatible 4 ((Ennig.ennig 1 16)@[19;20;21]) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]))) ;;
-g_add_compatible 4 (Ennig.ennig 1 23) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]))) ;;
-g_add_compatible 4 (Ennig.ennig 1 24) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]))) ;;
-g_add_ramification 4 ((Ennig.ennig 1 5)@[7]@[9]) [1;5;9] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@[9]@[11]) [1;5;9] ;;
-g_add_ramification 4 ((Ennig.ennig 1 5)@(Ennig.ennig 7 10)) [1;5;9] ;;
-g_add_ramification 4 (Ennig.ennig 1 10) [2;6;10] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@(Ennig.ennig 9 12)) [1;5;9] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@[9]@[11;12;13]) [1;5;9] ;;
-g_add_ramification 4 (Ennig.ennig 1 12) [4;8;12] ;;
-g_add_ramification 4 ((Ennig.ennig 1 9)@[11;12;13]) [4;8;12] ;;
-g_add_decomposable 4 (Ennig.ennig 1 13) [[1];(Ennig.ennig 2 13)] ([1;2]@[4;5]@[10;11]@[13]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 7)@[9]@[11;12]@[14]@[16;17]) [((Ennig.ennig 1 7)@[9]@[11]);[12;14;16];[17]] ([1;2]@[4;5]@[11;12]@[16;17]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 5)@[7]@(Ennig.ennig 9 12)@[14]@[16;17]) [((Ennig.ennig 1 5)@[7]@[9]);([10;11;12]@[14]@[16;17])] ([1;2]@[4;5]@[10;11]@[14]@[16]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 11)@[14]@[16;17]) [(Ennig.ennig 1 10);([11]@[14]@[16;17])] ([1;2]@[4;5]@[10;11]@[14]@[16]) ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@(Ennig.ennig 9 12)@[14]@[16;17]) [2;6;10] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@[9]@[11;12]@(Ennig.ennig 14 17)) [1;5;9] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@[9]@[11;12]@[14]@[16;17;18]) [1;5;9] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 5)@[7]@(Ennig.ennig 9 12)@(Ennig.ennig 14 17)) [((Ennig.ennig 1 5)@[7]@[9]);([10;11;12]@(Ennig.ennig 14 17))] ([1;2]@[4;5]@[10;11]@[14;15]) ;;
-g_add_ramification 4 ([1;2;3]@(Ennig.ennig 5 12)@[14]@[16;17]) [2;6;10] ;;
-g_add_ramification 4 ((Ennig.ennig 1 12)@[14]@[16;17]) [4;8;12] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 11)@(Ennig.ennig 14 17)) [(Ennig.ennig 1 10);([11]@(Ennig.ennig 14 17))] ([1;2]@[4;5]@[10;11]@[14;15]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 9)@(Ennig.ennig 11 14)@[16]@[18]) [((Ennig.ennig 1 9)@[11;12;13]);[14;16;18]] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
-g_add_ramification 4 ((Ennig.ennig 1 9)@[11;12]@[14]@[16;17;18]) [4;8;12] ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@(Ennig.ennig 9 12)@(Ennig.ennig 14 17)) [2;6;10] ;;
-g_add_ramification 4 ([1;2;3]@(Ennig.ennig 5 12)@(Ennig.ennig 14 17)) [2;6;10] ;;
-g_add_ramification 4 ((Ennig.ennig 1 14)@[16;17]) [9;13;17] ;;
-g_add_ramification 4 ((Ennig.ennig 1 12)@(Ennig.ennig 14 17)) [4;8;12] ;;
-g_add_ramification 4 ((Ennig.ennig 1 9)@(Ennig.ennig 11 14)@[16;17;18]) [9;13;17] ;;
-g_add_ramification 4 (Ennig.ennig 1 17) [9;13;17] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 14)@[16;17]@[19]) [((Ennig.ennig 1 14)@[16;17]);[19]] ([1;2]@[4;5]@[10;11]@[13;14]@[19]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 13)@(Ennig.ennig 16 19)) [(Ennig.ennig 1 12);([13]@(Ennig.ennig 16 19))] ([1;2]@[4;5]@[10;11]@[13]@[17;18]) ;;
-g_add_decomposable 4 ((Ennig.ennig 1 9)@(Ennig.ennig 11 14)@(Ennig.ennig 16 19)) [((Ennig.ennig 1 9)@(Ennig.ennig 11 14)@[16;17;18]);[19]] ([1;2]@[4;5]@[11;12]@[14]@[18;19]) ;;
-g_add_decomposable 4 (Ennig.ennig 1 18) [[1];(Ennig.ennig 2 18)] ([1;2]@[4;5]@[10;11]@[13]@[17;18]) ;;
-g_add_ramification 4 ((Ennig.ennig 1 14)@(Ennig.ennig 16 19)) [10;14;18] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 10)@(Ennig.ennig 12 19)) [(Ennig.ennig 1 10);(Ennig.ennig 12 19)] ([1;2]@[4;5]@[10]@[12;13]@[15]@[19]) ;;
-g_add_ramification 4 ((Ennig.ennig 1 7)@(Ennig.ennig 9 13)@[15;16]@(Ennig.ennig 18 21)) [1;5;9] ;;
-g_add_ramification 4 (Ennig.ennig 1 19) [11;15;19] ;;
-g_add_ramification 4 ((Ennig.ennig 1 13)@[15;16]@(Ennig.ennig 18 21)) [4;8;12] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 9)@(Ennig.ennig 11 16)@(Ennig.ennig 18 21)) [((Ennig.ennig 1 9)@[11;12;13]);([14;15;16]@(Ennig.ennig 18 21))] ([1;2]@[4;5]@[11;12]@[14;15]@[20;21]) ;;
-g_add_decomposable 4 (Ennig.ennig 1 20) [[1];(Ennig.ennig 2 20)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]) ;;
-g_add_ramification 4 ((Ennig.ennig 1 16)@(Ennig.ennig 18 21)) [10;14;18] ;;
-g_add_decomposable 4 ((Ennig.ennig 1 12)@(Ennig.ennig 14 21)) [(Ennig.ennig 1 12);(Ennig.ennig 14 21)] ([1;2]@[4;5]@[10;11]@[14;15]@[20;21]) ;;
-g_add_ramification 4 (Ennig.ennig 1 21) [13;17;21] ;;
-g_add_decomposable 4 (Ennig.ennig 1 22) [[1];(Ennig.ennig 2 22)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22]) ;;
-(* new *) g_add_decomposable 4 (Ennig.ennig 1 25) [(Ennig.ennig 1 8);(Ennig.ennig 9 25)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 8)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@[11]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@[8]@[10]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 5)@[7;8]@[10]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@(Int_range.ennig 6 9)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@[9]@[11]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@(Int_range.ennig 7 10)) None ;;
+g_add_compatible 4 (Int_range.ennig 1 9) (Some(([1;2]@[4]@[8;9]))) ;;
+g_add_compatible 4 ([1]@(Int_range.ennig 3 10)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@[10;11;12]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@[11;12;13]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@(Int_range.ennig 8 11)) (Some(([1;2]@[4;5]@[10;11]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@[8]@[10;11;12]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 12)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12;13]) None ;;
+g_add_compatible 4 (Int_range.ennig 1 11) (Some(([1;2]@[4;5]@[10;11]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 9)@[11]@[13]) (Some(([1;2]@[4;5]@[11]@[13]))) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 12)) (Some(([1;2]@[5;6]@[11;12]))) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 9)@[11;12;13]) (Some(([1;2]@[5;6]@[11;12]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@[11;12]@(Int_range.ennig 14 17)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@[11;12]@[14]@[16;17;18]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@[8]@[10;11]@(Int_range.ennig 13 16)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@[8]@[10;11]@[13]@[15;16;17]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@(Int_range.ennig 14 17)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@[9]@[11;12]@[14]@[16;17;18]) None ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16;17]) (Some(([1;2]@[5;6]@[11;12]@[16;17]))) ;;
+g_add_compatible 4 ([1;2;3]@[5]@(Int_range.ennig 7 12)@[14]@[16;17]) None ;;
+g_add_compatible 4 ([1]@(Int_range.ennig 3 7)@(Int_range.ennig 9 12)@[14]@[16;17]) (Some(([1]@[3;4]@[6]@[10;11]@[16;17]))) ;;
+g_add_compatible 4 ([1]@[3]@(Int_range.ennig 5 12)@[14]@[16;17]) (Some(([1]@[3]@[6;7]@[10]@[12]@[16;17]))) ;;
+g_add_compatible 4 (Int_range.ennig 1 14) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 9)@[11]@[14]@[16;17;18]) (Some(([1;2]@[4]@[8;9]@[11]@[16;17]))) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@(Int_range.ennig 14 17)) (Some(([1;2]@[5;6]@[11;12]@[14;15]))) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 9)@[11;12]@[14]@[16;17;18]) (Some(([1;2]@[5;6]@[11;12]@[14]@[18]))) ;;
+g_add_compatible 4 ([1;2;3]@[5]@(Int_range.ennig 7 12)@(Int_range.ennig 14 17)) (Some(([1;2]@[5]@[7]@[10;11]@[14]@[16]))) ;;
+g_add_compatible 4 ([1]@(Int_range.ennig 3 7)@(Int_range.ennig 9 12)@(Int_range.ennig 14 17)) (Some(([1]@[3;4]@[6]@[10;11]@[15;16]))) ;;
+g_add_compatible 4 ([1]@[3]@(Int_range.ennig 5 12)@(Int_range.ennig 14 17)) (Some(([1]@[3]@[6;7]@[10]@[12]@[15;16]))) ;;
+g_add_compatible 4 (Int_range.ennig 1 15) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 14)@[16]) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 8)@(Int_range.ennig 10 14)@[16;17]) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 8)@(Int_range.ennig 11 14)@[16;17;18]) None ;;
+g_add_compatible 4 (Int_range.ennig 1 16) (Some(([1;2]@[4;5]@[10;11]@[13;14]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 8)@(Int_range.ennig 10 17)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 7)@(Int_range.ennig 10 13)@[15;16]@(Int_range.ennig 18 21)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 6)@(Int_range.ennig 8 12)@[14;15]@(Int_range.ennig 17 20)) (Some(([1;2]@[4;5]@[10;11]@[15]@[17;18]@[20]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 4)@[6;7]@(Int_range.ennig 9 13)@[15;16]@(Int_range.ennig 18 21)) None ;;
+g_add_compatible 4 ((Int_range.ennig 1 11)@[13]@[15;16]@(Int_range.ennig 18 21)) (Some(([1;2]@[4;5]@[10;11]@[13]@[18;19]@[21]))) ;;
+g_add_compatible 4 ([1;2;3]@(Int_range.ennig 5 13)@[15;16]@(Int_range.ennig 18 21)) (Some(([1;2]@[5;6]@[11;12]@[16]@[18;19]@[21]))) ;;
+g_add_compatible 4 ((Int_range.ennig 1 16)@[19;20;21]) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]))) ;;
+g_add_compatible 4 (Int_range.ennig 1 23) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]))) ;;
+g_add_compatible 4 (Int_range.ennig 1 24) (Some(([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]))) ;;
+g_add_ramification 4 ((Int_range.ennig 1 5)@[7]@[9]) [1;5;9] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@[9]@[11]) [1;5;9] ;;
+g_add_ramification 4 ((Int_range.ennig 1 5)@(Int_range.ennig 7 10)) [1;5;9] ;;
+g_add_ramification 4 (Int_range.ennig 1 10) [2;6;10] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@(Int_range.ennig 9 12)) [1;5;9] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@[9]@[11;12;13]) [1;5;9] ;;
+g_add_ramification 4 (Int_range.ennig 1 12) [4;8;12] ;;
+g_add_ramification 4 ((Int_range.ennig 1 9)@[11;12;13]) [4;8;12] ;;
+g_add_decomposable 4 (Int_range.ennig 1 13) [[1];(Int_range.ennig 2 13)] ([1;2]@[4;5]@[10;11]@[13]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 7)@[9]@[11;12]@[14]@[16;17]) [((Int_range.ennig 1 7)@[9]@[11]);[12;14;16];[17]] ([1;2]@[4;5]@[11;12]@[16;17]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 5)@[7]@(Int_range.ennig 9 12)@[14]@[16;17]) [((Int_range.ennig 1 5)@[7]@[9]);([10;11;12]@[14]@[16;17])] ([1;2]@[4;5]@[10;11]@[14]@[16]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 11)@[14]@[16;17]) [(Int_range.ennig 1 10);([11]@[14]@[16;17])] ([1;2]@[4;5]@[10;11]@[14]@[16]) ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@(Int_range.ennig 9 12)@[14]@[16;17]) [2;6;10] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@[9]@[11;12]@(Int_range.ennig 14 17)) [1;5;9] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@[9]@[11;12]@[14]@[16;17;18]) [1;5;9] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 5)@[7]@(Int_range.ennig 9 12)@(Int_range.ennig 14 17)) [((Int_range.ennig 1 5)@[7]@[9]);([10;11;12]@(Int_range.ennig 14 17))] ([1;2]@[4;5]@[10;11]@[14;15]) ;;
+g_add_ramification 4 ([1;2;3]@(Int_range.ennig 5 12)@[14]@[16;17]) [2;6;10] ;;
+g_add_ramification 4 ((Int_range.ennig 1 12)@[14]@[16;17]) [4;8;12] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 11)@(Int_range.ennig 14 17)) [(Int_range.ennig 1 10);([11]@(Int_range.ennig 14 17))] ([1;2]@[4;5]@[10;11]@[14;15]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 9)@(Int_range.ennig 11 14)@[16]@[18]) [((Int_range.ennig 1 9)@[11;12;13]);[14;16;18]] ([1;2]@[4;5]@[11;12]@[14]@[18]) ;;
+g_add_ramification 4 ((Int_range.ennig 1 9)@[11;12]@[14]@[16;17;18]) [4;8;12] ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@(Int_range.ennig 9 12)@(Int_range.ennig 14 17)) [2;6;10] ;;
+g_add_ramification 4 ([1;2;3]@(Int_range.ennig 5 12)@(Int_range.ennig 14 17)) [2;6;10] ;;
+g_add_ramification 4 ((Int_range.ennig 1 14)@[16;17]) [9;13;17] ;;
+g_add_ramification 4 ((Int_range.ennig 1 12)@(Int_range.ennig 14 17)) [4;8;12] ;;
+g_add_ramification 4 ((Int_range.ennig 1 9)@(Int_range.ennig 11 14)@[16;17;18]) [9;13;17] ;;
+g_add_ramification 4 (Int_range.ennig 1 17) [9;13;17] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 14)@[16;17]@[19]) [((Int_range.ennig 1 14)@[16;17]);[19]] ([1;2]@[4;5]@[10;11]@[13;14]@[19]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 13)@(Int_range.ennig 16 19)) [(Int_range.ennig 1 12);([13]@(Int_range.ennig 16 19))] ([1;2]@[4;5]@[10;11]@[13]@[17;18]) ;;
+g_add_decomposable 4 ((Int_range.ennig 1 9)@(Int_range.ennig 11 14)@(Int_range.ennig 16 19)) [((Int_range.ennig 1 9)@(Int_range.ennig 11 14)@[16;17;18]);[19]] ([1;2]@[4;5]@[11;12]@[14]@[18;19]) ;;
+g_add_decomposable 4 (Int_range.ennig 1 18) [[1];(Int_range.ennig 2 18)] ([1;2]@[4;5]@[10;11]@[13]@[17;18]) ;;
+g_add_ramification 4 ((Int_range.ennig 1 14)@(Int_range.ennig 16 19)) [10;14;18] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 10)@(Int_range.ennig 12 19)) [(Int_range.ennig 1 10);(Int_range.ennig 12 19)] ([1;2]@[4;5]@[10]@[12;13]@[15]@[19]) ;;
+g_add_ramification 4 ((Int_range.ennig 1 7)@(Int_range.ennig 9 13)@[15;16]@(Int_range.ennig 18 21)) [1;5;9] ;;
+g_add_ramification 4 (Int_range.ennig 1 19) [11;15;19] ;;
+g_add_ramification 4 ((Int_range.ennig 1 13)@[15;16]@(Int_range.ennig 18 21)) [4;8;12] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 9)@(Int_range.ennig 11 16)@(Int_range.ennig 18 21)) [((Int_range.ennig 1 9)@[11;12;13]);([14;15;16]@(Int_range.ennig 18 21))] ([1;2]@[4;5]@[11;12]@[14;15]@[20;21]) ;;
+g_add_decomposable 4 (Int_range.ennig 1 20) [[1];(Int_range.ennig 2 20)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]) ;;
+g_add_ramification 4 ((Int_range.ennig 1 16)@(Int_range.ennig 18 21)) [10;14;18] ;;
+g_add_decomposable 4 ((Int_range.ennig 1 12)@(Int_range.ennig 14 21)) [(Int_range.ennig 1 12);(Int_range.ennig 14 21)] ([1;2]@[4;5]@[10;11]@[14;15]@[20;21]) ;;
+g_add_ramification 4 (Int_range.ennig 1 21) [13;17;21] ;;
+g_add_decomposable 4 (Int_range.ennig 1 22) [[1];(Int_range.ennig 2 22)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22]) ;;
+(* new *) g_add_decomposable 4 (Int_range.ennig 1 25) [(Int_range.ennig 1 8);(Int_range.ennig 9 25)] ([1;2]@[4;5]@[10;11]@[13;14]@[19;20]@[22;23]) ;;
 
 
 (* End of precomputed data for level 4 *)
