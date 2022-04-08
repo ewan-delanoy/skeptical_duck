@@ -668,6 +668,7 @@ let constraints_on_the_left n =
      Int_range.descending_doyle (fun j->[n-2*j;n-j]) bound 1;;
 
 
+     
 
 let derivation_for_easy_case (base_set,size,constraints)= 
    let (n,temp1) = Listennou.ht(List.rev base_set) in 
