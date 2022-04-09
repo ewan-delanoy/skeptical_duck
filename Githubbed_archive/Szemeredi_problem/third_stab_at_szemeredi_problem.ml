@@ -687,7 +687,7 @@ let derivation_for_hard_case (base_set,size,constraints)=
     and cstr2 = Image.image (fun constr->i_setminus constr [n]) constraints in 
     let cstr3 = il_sort (cstr1@cstr2) in 
     let cstr4 = Ordered_misc.minimal_elts_wrt_inclusion cstr3 in 
-   (new_base_set,size,cstr4) ;;
+   (new_base_set,size-1,cstr4) ;;
 
 type node_t = 
     Embrace of int list 
@@ -712,54 +712,67 @@ let order_for_nodes = ((
 ) : node_t Total_ordering_t.t) ;;
 
 let n_insert = Ordered.insert order_for_nodes ;;
+let n_mem = Ordered.mem order_for_nodes ;;
 let n_setminus = Ordered.setminus order_for_nodes ;;
 let n_sort = Ordered.sort order_for_nodes ;;
 
 let immediate_ancestors_for_embrace_node x =
-    if List.length(x)<3 then [] else 
+    if List.length(x)<3 then ("Small",[]) else 
     let (y,n) = behead x in 
     let mx = List.length(measure x)
     and my = List.length(measure y) in 
-    let (base_set1,size1,constraints1) =
+    let (msg,(base_set1,size1,constraints1)) =
     (
         if mx = my 
-        then derivation_for_hard_case (x,mx+1,[])
+        then ("Passive",derivation_for_hard_case (x,mx+1,[]))
         else
         (* if we get here, mx = my + 1 *)  
-            derivation_for_easy_case (x,mx,[])
+            ("Active",derivation_for_easy_case (x,mx,[]))
     ) in 
-    [Embrace y;Local_branch(base_set1,size1,constraints1)] ;;     
+    (msg,[Embrace y;Local_branch(base_set1,size1,constraints1)]) ;;     
     
 let immediate_ancestors_for_local_branch_node triple =
     let (x,size,constraints) = triple in 
-    if List.length(x)<3 then [] else 
-    if size=0 then [] else
+    if List.length(x)<3 then ("Small",[]) else 
+    if size=0 then ("Small",[]) else
     let easy_triple = derivation_for_easy_case triple in    
     let easy_branch = local_branch easy_triple in 
     if (typical_question easy_triple)<>None 
-    then [easy_branch]
+    then ("Passive_positive",[easy_branch])
     else 
     let hard_triple = derivation_for_hard_case triple in 
     let hard_branch = local_branch hard_triple in 
     if (typical_question hard_triple)<>None 
-    then [hard_branch]
-    else [easy_branch;hard_branch] ;;
+    then ("Active_positive",[hard_branch])
+    else ("Double_negative",[easy_branch;hard_branch]) ;;
 
 let immediate_ancestors_for_node = function 
 Embrace(x1) -> immediate_ancestors_for_embrace_node x1 
 |Local_branch(base_set1,size1,constraints1) -> 
      immediate_ancestors_for_local_branch_node (base_set1,size1,constraints1);;
 
-let rec helper_for_node_ancestry (treated,to_be_treated) =
+let rec helper_for_node_ancestry (treated,treated_and_ordered,to_be_treated) =
     match to_be_treated with 
-    [] -> treated 
+    [] -> (treated,treated_and_ordered) 
     | node1 :: other_nodes ->
-        let possibly_new_nodes = n_sort(immediate_ancestors_for_node node1) in 
-        let new_nodes = n_setminus possibly_new_nodes treated in 
-        helper_for_node_ancestry (n_insert node1 treated,new_nodes@other_nodes) ;;
+        let pair = immediate_ancestors_for_node node1 in 
+        let possibly_new_nodes = n_sort(snd pair) in 
+        let new_nodes = n_setminus possibly_new_nodes treated_and_ordered in 
+        helper_for_node_ancestry ((node1,pair)::treated,n_insert node1 treated_and_ordered,new_nodes@other_nodes) ;;
 
-let ancestors_for_node node = helper_for_node_ancestry ([],[node]) ;; 
+let ancestors_for_node node = helper_for_node_ancestry ([],[],[node]) ;; 
 
+let starter n = ancestors_for_node (Embrace(Int_range.range 1 n)) ;;
 
-let ff n = ancestors_for_node (Embrace(Int_range.range 1 n)) ;;
+let ff n =
+     let (treated1,treated_and_ordered1) = starter (n-1) 
+     and (treated2,treated_and_ordered2) = starter n in 
+     List.filter (fun (node,_)->not(n_mem node treated_and_ordered1)) treated2 ;; 
+
+(*
+
+#use "Githubbed_archive/Szemeredi_problem/third_stab_at_szemeredi_problem.ml" ;;
+
+*)
+
 
