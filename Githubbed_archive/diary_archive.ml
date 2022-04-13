@@ -1,7 +1,35 @@
 (************************************************************************************************************************
-Snippet 88 : 
+Snippet 89 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 88 : Short code related to similar matrices exercise
+************************************************************************************************************************)
+
+let test1 n = List.exists (fun a->((a*(4-a)+1) mod n)= 0) (Int_range.range 0 (n-1)) ;;
+    
+let v1 = List.filter test1 (Int_range.range 3 50) ;;
+
+let see1 n = List.filter (fun a->((a*(4-a)+1) mod n)= 0) (Int_range.range 0 (n-1)) ;;
+
+let u1 = Cartesian.square (Int_range.range (-50) 50) ;;
+let sign_condition (x,y) =
+    if x<0 then false else 
+    if x=0 then y>0 else true ;;
+let u2 = List.filter (fun (x,y)->(sign_condition (x,y))&&(Gcd.gcd x y=1)) u1 ;;
+let u3 = Image.image (fun (x,y)->(max (abs x) (abs y),(x,y)) ) u2 ;;
+let (Set_of_poly_pairs_t.S u4) = Set_of_poly_pairs.sort u3 ;;
+let u5 = Image.image snd u4 ;;
+
+let tf1 (a,b) = Listennou.force_find (fun (z2,z4)->
+  abs((a*a-4*a-1)*(z2*z2)+2*(a-2)*b*z2*z4+(b*b)*(z4*z4))<b*b 
+  ) u5 ;;
+
+let current_b = 29 ;;  
+let abs_b = abs current_b ;;
+let good_moduli = see1 abs_b ;;
+let ff a = tf1(a,current_b) ;;
 
 (************************************************************************************************************************
 Snippet 87 : Exercise related to Cantor set 

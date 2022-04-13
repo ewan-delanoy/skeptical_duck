@@ -32,6 +32,8 @@ let ref_for_main_list = ref [
    "=";  (* ascii 61 *)
    ">";  (* ascii 62 *)
    "?";  (* ascii 63 *)
+   "I";  (* ascii 73 *)
+   "N";  (* ascii 78 *)
    "\208\144"; (* A character *)
    "\208\145"; (* B character *)
    "\208\146"; (* V character *)
