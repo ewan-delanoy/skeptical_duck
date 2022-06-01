@@ -49,6 +49,16 @@ let show_indices s=
    
 let number_of_lines_before = Substring.Friend.number_of_lines_before;;
 
+let number_of_linebreaks s =
+    let n = String.length s 
+    and counter = ref 0 in
+    for k = 0 to (n-1) 
+    do 
+       if (String.get s k='\n') then counter:=(!counter)+1
+    done; (!counter) ;; 
+
+(* number_of_linebreaks "3\n\n\n4\n\n\n\nhum";; *)    
+
 exception Negative_offset_for_string;; 
 
 let insert_repetitive_offset_on_the_left c l_max str=
