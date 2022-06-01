@@ -153,6 +153,19 @@ let interval = Private.interval ;;
        let new_text=remove_lines_containing_substring_in_string pattern old_text  in
       Io.overwrite_with fn new_text;;   
   
+let findreplace_in_interval (x,y) s i j=
+      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+      let new_part2 = Replace_inside.replace_inside_string (x,y) old_part2 in 
+      part1^new_part2^part3 ;; 
+
+let findreplace_in_interval_in_file (x,y) fn i j=
+      let s1=Io.read_whole_file fn in
+      let s2=findreplace_in_interval (x,y) s1 i j  in
+      Io.overwrite_with fn s2;;     
+  
+
+(* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
 let suppress_linebreaks_in_interval s i j=
     let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
     let new_part2 = String.concat "" (lines old_part2) in 

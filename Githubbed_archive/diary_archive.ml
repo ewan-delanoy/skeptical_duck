@@ -1,6 +1,221 @@
 (************************************************************************************************************************
-Snippet 89 : 
+Snippet 93 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 92 : Absorbing code from Y. Padioleau's codebase
+************************************************************************************************************************)
+
+let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
+let fw_config = Fw_configuration.of_root root ;;
+let github_config = Fw_poly.construct_github_configuration 
+  ~root:root
+  ~dir_for_backup:backup_dir
+  ~gitpush_after_backup:githubbing
+  ~github_url:Coma_big_constant.github_url
+  ~encoding_protected_files:[] ;;
+let cs_ref=ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
+let s_root = Dfa_root.connectable_to_subpath root ;;
+let s_above_root = Cull_string.before_rightmost (Dfa_root.without_trailing_slash root) '/';;
+
+let a1 =(More_unix.create_subdirs_and_fill_files_if_necessary root
+       Coma_constant.minimal_set_of_needed_dirs 
+           Coma_constant.conventional_files_with_minimal_content) ;;
+
+let a2 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "common.ml";;
+let a3 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "common2.ml";;
+(* let a4 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "ocaml.ml";; *)
+let a5 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "parse_info.ml";;
+let a6 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "flag_parsing_js.ml";;
+let a7 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "ast_js.ml";;
+let a8 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "parser_js.mly";;
+let a9 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "lexer_js.mll";;
+(* let a10 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "visitor_js.ml";; *)
+let a11 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "token_helpers_js.ml";;
+let a12 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "parsing_hacks_js.ml";;
+let a13 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "parse_js.ml";;
+let a14 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "tools_for_absolute_path.ml";;
+let a15 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "absolute_path.ml";;
+let a16 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "io.ml";;
+
+let raco () = Modify_coma_state.Reference.recompile cs_ref (Some "aaa");;
+
+let v1 = Fw_with_dependencies.list_values_from_module (!cs_ref) "common" ;;
+
+Needed_values.vfm ;;
+
+let z1 = Fw_with_dependencies.all_endinglesses (!cs_ref) ;;
+
+let fg1 = Modify_coma_state.Syntactic_sugar.forget cs_ref ["common2"] ;;
+
+let current_module = ref ("parse_info") ;;
+let ap1() = Absolute_path.of_string ("../Cherokee/old_"^(!current_module)^".ml") ;;
+let ap2() = Absolute_path.of_string ("../Cherokee/"^(!current_module)^".ml") ;;
+
+let ci i j= Lines_in_string.copy_interval_from_file_to_file (i,j) (ap1()) (ap2()) ;;
+let ri i j = Lines_in_string.remove_interval_in_file (ap2()) i j ;;
+
+let act1 () = Replace_inside.replace_several_inside_file 
+ [("PI.","Parse_info.")] (ap2()) ;;
+
+
+
+
+let r1 = [("T.","Parser_js.");("TH.","Token_helpers_js.");("Ast.","Ast_js.")]
+
+
+let (a,b,c) = Lines_in_string.tripartition_associated_to_interval "" 79 123 ;;
+let new_b = Replace_inside.replace_inside_string ("-> T","-> Parser_js.T") b ;;
+let text2 = String.concat "\n" [a;new_b;c] ;;
+
+
+
+(************************************************************************************************************************
+Snippet 91 : Code to OCR-size PDF's into .txt 
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let lag = (6) ;;
+let num_of_pages = 10 ;;
+let dirname = "Building_site/";;
+let first_treated_page = 3 ;;
+
+let bare_filename = "crtwo.pdf"
+let write1 k =
+   let sk = string_of_int k 
+   and sj = string_of_int (k+lag) in 
+   "pdftoppm "^bare_filename^" p"^sk^" -png -f "^sj^" -singlefile\n"^
+   "tesseract -l eng p"^sk^".png p"^sk^"\n"^
+   "mv p"^sk^".txt /media/sf_Downloads/"^dirname^" \n"^
+   "echo "^sk;;
+
+
+let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
+
+let last_treated_page = (first_treated_page-1) + num_of_pages ;;
+
+let text1 = "\n\n\n"^(String.concat "\n" 
+ (Int_range.scale write1 first_treated_page last_treated_page))^"\n\n\n" ;;   
+   
+Io.overwrite_with ap1 text1;;
+
+let partial_texts = Int_range.scale (fun k->
+   let sk = string_of_int k in 
+   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
+   "%\n% Page "^sk^" \n%\n"^(rf fn))  first_treated_page last_treated_page ;;
+ 
+ 
+ let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/full.txt");;  
+ 
+ let full_text = String.concat "\n" partial_texts ;;
+ 
+ 
+ Io.overwrite_with full_ap full_text;;
+
+
+
+(************************************************************************************************************************
+Snippet 90 : Musing on Egyptian fractions
+************************************************************************************************************************)
+
+
+let rec next_gcd_correct_index (l,walker) = 
+  if List.for_all (fun t->(Gcd.gcd t walker) =1) l
+  then walker
+  else next_gcd_correct_index (l,walker+1) ;;  
+
+let reduce_fraction old_a old_b =
+  if old_a = 0 
+  then (0,1) 
+  else let g = Gcd.gcd old_a old_b in 
+       (old_a/g,old_b/g) ;; 
+
+let next_state (l,a,b,walker) = 
+  (* it is assume a /b >= 1/walker *)
+  let i1 = next_gcd_correct_index (l,walker) in 
+  let (small_a,small_b)=reduce_fraction (a*i1-b) (b*i1) in 
+  (i1::l,small_a,small_b,Basic.frac_ceiling small_b small_a) ;;
+
+let rec finish_solving old_uple =
+ let (l,a,b,walker) = old_uple in 
+ if a = 1 
+ then (List.rev l,b)
+ else 
+ finish_solving (next_state old_uple) ;;
+
+let solve a b =   finish_solving([],a,b,Basic.frac_ceiling b a) ;;
+
+let v0 = ([],3,7,Basic.frac_ceiling 7 3) ;;
+let ff = Memoized.small next_state v0 ;;
+
+
+
+(************************************************************************************************************************
+Snippet 89 : Linear algebra on variables indexed by Z^2
+************************************************************************************************************************)
+
+let w1 n =Int_range.scale (fun y->(n,y-1)) 1 (n+1) ;;
+let w2 n =Int_range.scale (fun x->(n-x,n)) 1 (2*n) ;;
+let w3 n =Int_range.scale (fun y->(-n,n-y)) 1 (2*n) ;;
+let w4 n =Int_range.scale (fun x->(-n+x,-n)) 1 (2*n) ;;
+let w5 n =Int_range.scale (fun y->(n,-n+y)) 1 (n-1) ;;
+let ww n =
+    if n = 0 then [0,0] else 
+    List.flatten (Image.image (fun w->w n) [w1;w2;w3;w4;w5]) ;;  
+
+let small_size = 2 ;;    
+let base1 = List.flatten (Int_range.scale ww 0 (2*small_size));;
+let b_index pair = Listennou.find_index pair base1  ;;
+
+let for_two =((fun pair1 pair2 ->
+  Total_ordering.for_integers 
+  (b_index pair1) (b_index pair2) ): (int *int) Total_ordering_t.t);;
+
+let for_ttwo = Total_ordering.product for_two for_two ;;
+
+let for_four =((fun 
+   (p1,p2)
+   (q1,q2)
+   -> 
+    let mp = max (b_index p1) (b_index p2) 
+    and mq = max (b_index q1) (b_index q2)  in
+    let trial1 = Total_ordering.standard mp mq in 
+    if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+      for_ttwo  (p1,p2) (q1,q2)
+): ((int *int)*(int *int)) Total_ordering_t.t ) ;;
+
+let m_index l = Max.list (Image.image b_index l) ;; 
+
+let for_list =((fun 
+   l1 l2
+   -> 
+    let trial1 = Total_ordering.standard (m_index l1) (m_index l2) in 
+    if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+      Total_ordering.standard l1 l2
+): ((int *int) list) Total_ordering_t.t ) ;;
+
+
+let unchecked_base2= Cartesian.square(Cartesian.square(Int_range.range (-small_size) small_size)) ;;
+let check_pair (c,d) = if c=0 then d>0 else c>0 ;;
+let check_double_pair ((a,b),(c,d)) =
+  ((a,b)<>(0,0)) && (check_pair(c,d)) ;;
+let base2 = List.filter check_double_pair unchecked_base2 ;;
+let base3 = Image.image (fun ((a,b),(c,d))->
+  [(a+c,b+d);(a-c,b-d);(a,b);(c,d)]
+  ) base2 ;;
+let base4 = Ordered.sort for_list base3 ;;
+let standardize_pair (x,y)= if x<0 then (-x,-y) else (x,y) ;;
+let mima (a,b) = if (for_two a b)=Total_ordering_result_t.Lower then (b,a) else (a,b) ;;
+let standardize_list l=
+   let temp1 = Image.image standardize_pair l in 
+   let tempf = (fun k->List.nth temp1 (k-1)) in 
+   (mima (tempf 1,tempf 2),mima (tempf 3,tempf 4)) ;;
+let base5 = Image.image standardize_list base4 ;;
+let base6 = Listennou.nonredundant_version base5 ;;
+
+let ff k = List.nth base6 (k-1) ;;
 
 
 (************************************************************************************************************************
