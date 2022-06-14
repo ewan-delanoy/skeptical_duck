@@ -186,7 +186,7 @@ module Private = struct
    let replace_string old_fw (replacee,replacer) = 
       let apply = (fun par files->
          File_watcher.apply_text_transformation_on_some_files par 
-         (Replace_inside.replace_inside_string (replacee,replacer)) files
+         (Replace_inside.replace_inside_string_without_printing_count (replacee,replacer)) files
       ) in 
       let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
       let old_parent = parent old_fw in    
