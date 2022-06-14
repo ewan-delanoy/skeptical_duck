@@ -53,7 +53,7 @@ let my_global_replace ?(display_number_of_matches=true) (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
-      then print_string("\n"^(text_for_number_of_replacements count)^"\n"); 
+      then print_string("\n"^(text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
            flush stdout 
    ) in 
    new_s ;; 
