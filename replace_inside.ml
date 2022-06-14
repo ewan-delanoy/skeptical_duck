@@ -4,12 +4,80 @@
 
 *)
 
+exception Ambiguity of string*int*int;;
+
+module Private = struct 
+
+(*
+
+The my_global_replace function below is a replacement for Ocaml's Str.global_replace which has
+the disadvantage of applying certain transforms to the replacement string.
+
+*)
+
+  let single_char_special_case (single_c,b) s=
+  let n=String.length(s) and counter=ref(0) in
+  let temp1=Int_range.scale (
+     fun j->let c=String.get s j in
+            if c=single_c
+            then let _=(counter:=(!counter)+1) in b
+            else String.make 1 c 
+  ) 0 (n-1) in
+  (String.concat "" temp1,!counter);;
+
+let global_replace_with_number_of_matches (a,b) s=
+let n=String.length(s) and na=String.length(a) in
+if na=1 then single_char_special_case (String.get a 0,b) s else
+let indices=Substring.occurrences_of_in a s in
+if indices=[] then (s,0) else
+let delta_indices = Listennou.universal_delta_list indices in 
+let opt_ambiguity=Option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
+if  opt_ambiguity<>None
+then let (start1,start2)=Option.unpack opt_ambiguity in 
+     raise(Ambiguity(a,start1,start2))
+else  
+let m=List.length indices in 
+let lower_end=(fun j->if j=0 then 1 else List.nth indices (j-1)+na) 
+and upper_end=(fun j->if j=m then n else (List.nth indices (j))-1) in 
+let unchanged_intervals = Int_range.scale (fun j->(lower_end j,upper_end j)) 0 m in 
+let unchanged_substrings=Image.image 
+   (fun (x,y)->if x>y then "" else Cull_string.interval s x y) unchanged_intervals in
+(String.concat b unchanged_substrings,m);;
+
+let text_for_number_of_replacements k=
+  if k = 0 then "No replacement made" else
+  if k = 1 then "1 replacement made" else 
+  (string_of_int k)^" replacements made" ;;   
+
+let my_global_replace (a,b) old_s ?(display_number_of_matches=true) =
+   let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
+   let _ =(
+      if display_number_of_matches 
+      then print_string("\n"^(text_for_number_of_replacements count)^"\n"); 
+           flush stdout 
+   ) in 
+   new_s ;; 
+
+(*  
+my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679";; 
+my_global_replace ("ab","cd") "ab12345ab6ab78cd91234ab679";; 
+my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679ab";;
+my_global_replace ("1111","") "abc1111111111def";;
+my_global_replace ("ab","cd") "xyz";;
+my_global_replace ("a","b") "1aa2";; 
+my_global_replace ("uv","w") "1uvuv2";; 
+
+*)  
+
+end ;;
+
+
 
 let replace_inside_string (a,b) s=
-  Alternative_global_replace.my_global_replace (a,b) s;;
+  Private.my_global_replace (a,b) s ~display_number_of_matches:true;;
  
 let replace_several_inside_string l t=List.fold_left 
-(fun s (a,b)->replace_inside_string (a,b) s) t l;;  
+(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches:false) t l;;  
  
 let replace_inside_file (a,b) fn=
     let s1=Io.read_whole_file fn in

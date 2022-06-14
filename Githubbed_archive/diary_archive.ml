@@ -1,6 +1,84 @@
 (************************************************************************************************************************
-Snippet 93 : 
+Snippet 95 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 94 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
+************************************************************************************************************************)
+
+open Needed_values ;; 
+
+let lag = (0) ;;
+let num_of_pages = 15 ;;
+let dirname = "Building_site/";;
+let first_treated_page = 1 ;;
+
+let bare_filename = "brit.pdf"
+let write1 k =
+   let sk = string_of_int k 
+   and sj = string_of_int (k+lag) 
+   and sn = string_of_int num_of_pages in 
+   "pdftoppm "^bare_filename^" p"^sk^" -png -f "^sj^" -singlefile\n"^
+   "tesseract -l eng p"^sk^".png p"^sk^"\n"^
+   "mv p"^sk^".txt /media/sf_Downloads/"^dirname^" \n"^
+   "echo "^sk^" of "^sn;;
+
+
+let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
+
+let last_treated_page = (first_treated_page-1) + num_of_pages ;;
+
+let text1 = "\n\n\n"^(String.concat "\n" 
+ (Int_range.scale write1 first_treated_page last_treated_page))^"\n\n\n" ;;   
+   
+Io.overwrite_with ap1 text1;;
+
+let partial_texts_for_html = Int_range.scale (fun k->
+   let sk = string_of_int k in 
+   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
+  let uncompressed_pagetext = rf fn in 
+  let pagetext = Make_paragraphs_one_lined.in_string 
+  (Remove_hyphens.in_string uncompressed_pagetext) in  
+  pagetext)  first_treated_page last_treated_page ;;
+ 
+ 
+ let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"full.html");;  
+ 
+let html_beginning = String.concat "\n"
+ ["<!DOCTYPE html>"; "<html>"; "<head>";
+ "\t<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
+ "\t<title> Title  </title>"; "</head>";
+ "<body background=\"bg03.gif\">"; "<center>";
+ "\t<h1> TITLE </h1>"; "</center>"] ;;
+
+let html_ending = String.concat "\n"
+ ["</body>"; "</html>"] ;;
+
+ let html_full_text = 
+   String.concat "\n"
+   [html_beginning;Htmlize.pages partial_texts_for_html;html_ending] ;;
+ 
+  Io.overwrite_with full_ap html_full_text;;
+
+
+(************************************************************************************************************************
+Snippet 93 : Code using the Parse_js module 
+************************************************************************************************************************)
+
+
+(*
+
+let ap1 = Absolute_path.of_string 
+ (home^"/Teuliou/Sites/Gwerzher_Leoriou/node_modules/async/lib/async.js") ;;
+let text1 = Io.read_whole_file ap1 ;; 
+
+let g1 = Parse_js.tokens text1 ;;
+let res1 = Parse_js.parse_string text1 ;;
+let res2 = Parse_js.parse_program text1 ;;
+let res3 = Parse_js.program_of_string text1 ;;
+
+*)
 
 
 (************************************************************************************************************************
@@ -77,12 +155,12 @@ Snippet 91 : Code to OCR-size PDF's into .txt
 
 open Needed_values ;;
 
-let lag = (6) ;;
-let num_of_pages = 10 ;;
+let lag = (0) ;;
+let num_of_pages = 12 ;;
 let dirname = "Building_site/";;
-let first_treated_page = 3 ;;
+let first_treated_page = 1 ;;
 
-let bare_filename = "crtwo.pdf"
+let bare_filename = "brit.pdf"
 let write1 k =
    let sk = string_of_int k 
    and sj = string_of_int (k+lag) in 
@@ -101,18 +179,32 @@ let text1 = "\n\n\n"^(String.concat "\n"
    
 Io.overwrite_with ap1 text1;;
 
-let partial_texts = Int_range.scale (fun k->
+let partial_texts_for_txt = Int_range.scale (fun k->
+  let sk = string_of_int k in 
+  let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
+  let announcer = "%\n% Page "^sk^" \n%\n" in 
+ let uncompressed_pagetext = rf fn in 
+ let pagetext = Make_paragraphs_one_lined.in_string 
+ (Remove_hyphens.in_string uncompressed_pagetext) in  
+ announcer^pagetext)  first_treated_page last_treated_page ;;
+
+
+let partial_texts_for_html = Int_range.scale (fun k->
    let sk = string_of_int k in 
    let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
-   "%\n% Page "^sk^" \n%\n"^(rf fn))  first_treated_page last_treated_page ;;
+  let uncompressed_pagetext = rf fn in 
+  let pagetext = Make_paragraphs_one_lined.in_string 
+  (Remove_hyphens.in_string uncompressed_pagetext) in  
+  pagetext)  first_treated_page last_treated_page ;;
  
  
- let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/full.txt");;  
+ let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"full.txt");;  
  
- let full_text = String.concat "\n" partial_texts ;;
+ let txt_full_text = String.concat "\n" partial_texts_for_txt ;;
+ let html_full_text = Htmlize.pages partial_texts_for_html ;;
  
- 
- Io.overwrite_with full_ap full_text;;
+ Io.overwrite_with full_ap txt_full_text;;
+ Io.overwrite_with full_ap html_full_text;;
 
 
 
@@ -6585,18 +6677,23 @@ let text1 = "\n\n\n"^(String.concat "\n" (Int_range.scale write1 1 num_of_pages)
  
 Io.overwrite_with ap1 text1;;
 
-let partial_texts = Int_range.scale (fun j->
-let k =List.nth main_list (j-1) in   
-let sk = string_of_int k in 
-let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
-let announcer = "%\n% Page "^sk^" \n%\n" in 
-(announcer,announcer^(rf fn)))  1 num_of_pages ;;
+let partial_texts = Int_range.scale (fun k->
+  let sk = string_of_int k in 
+  let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
+  let announcer = "%\n% Page "^sk^" \n%\n" in 
+  let uncompressed_pagetext = rf fn in 
+  let pagetext = Make_paragraphs_one_lined.in_string 
+  (Remove_hyphens.in_string uncompressed_pagetext) in  
+  announcer^pagetext)  1 num_of_pages ;;
 
-let end_ap = Absolute_path.of_string 
- (home^"/Teuliou/html_files/PDF_files/Printable/Preparation/end_of_text.txt");; 
+let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/full.txt");;  
 
-let act () = Replace_inside.replace_several_inside_file 
- partial_texts end_ap;;  
+let full_text = String.concat "\n" partial_texts ;;
+let full_text = Htmlize.pages partial_texts ;;
+
+Io.overwrite_with full_ap full_text;;
+
+
 
 
 (************************************************************************************************************************
@@ -6643,6 +6740,8 @@ Snippet  1 : Typical use of the Coherent_pdf module on a freshly scanned doc
 ************************************************************************************************************************)
 let home = Sys.getenv "HOME" ;;
 let workdir = home^"/Downloads/Building_Site";;
+
+let workdir = home^"/Downloads/Arno/Towards";;
 
 Coherent_pdf.workspace_directory := workdir ;;
 
