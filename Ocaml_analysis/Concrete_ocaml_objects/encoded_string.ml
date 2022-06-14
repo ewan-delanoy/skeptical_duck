@@ -21,7 +21,7 @@ let decode (Encoded_string_t.E(encoded_s))=
 let encode s=
    if Substring.is_a_substring_of replacement_salt s 
    then raise(Forbidden_substring)
-   else let encoded_s=Replace_inside.replace_inside_string (salt,replacement_salt) s in 
+   else let encoded_s=Replace_inside.silently_replace_inside_string (salt,replacement_salt) s in 
         if  Substring.is_a_substring_of salt encoded_s 
         then raise(Forbidden_substring)
         else Encoded_string_t.E(encoded_s);;
