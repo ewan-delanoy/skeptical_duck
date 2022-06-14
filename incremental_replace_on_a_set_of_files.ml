@@ -9,7 +9,7 @@ exception Markers_undefined ;;
 
 module Private = struct 
 
-let ocamlese_for_rep (a,b) = "(\""^a^"\",\""^b^"\")" ;; 
+let ocamlese_for_rep (a,b) = "(\""^(String.escaped a)^"\",\""^(String.escaped b)^"\")" ;; 
 
 let ocamlese_for_replist l = 
   let lines = Image.image (fun rep->(ocamlese_for_rep rep)) l in 
