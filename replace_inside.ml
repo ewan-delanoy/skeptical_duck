@@ -90,7 +90,7 @@ let replace_inside_file (a,b) fn=
          Io.overwrite_with fn s2
     else ();; 
     
-let replace_inside_file_without_printing_count (a,b) fn=
+let silently_replace_inside_file (a,b) fn=
     let s1=Io.read_whole_file fn in
     let la=String.length(a) in
     if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
