@@ -76,6 +76,9 @@ end ;;
 let replace_inside_string (a,b) s=
   Private.my_global_replace (a,b) s ~display_number_of_matches:true;;
  
+let replace_inside_string_without_printing_count (a,b) s=
+  Private.my_global_replace (a,b) s ~display_number_of_matches:false;;
+
 let replace_several_inside_string l t=List.fold_left 
 (fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches:false) t l;;  
  
@@ -87,6 +90,15 @@ let replace_inside_file (a,b) fn=
          Io.overwrite_with fn s2
     else ();; 
     
+let replace_inside_file_without_printing_count (a,b) fn=
+    let s1=Io.read_whole_file fn in
+    let la=String.length(a) in
+    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
+    then let s2=replace_inside_string_without_printing_count (a,b) s1 in
+         Io.overwrite_with fn s2
+    else ();; 
+
+
 let replace_several_inside_file l fn=
     let s1=Io.read_whole_file fn in
     let s2=replace_several_inside_string l s1  in
