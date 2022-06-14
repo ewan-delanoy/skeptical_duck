@@ -49,7 +49,7 @@ let text_for_number_of_replacements k=
   if k = 1 then "1 replacement made" else 
   (string_of_int k)^" replacements made" ;;   
 
-let my_global_replace (a,b) old_s ?(display_number_of_matches=true) =
+let my_global_replace ?(display_number_of_matches=true) (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
