@@ -9,30 +9,31 @@ Snippet 94 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of
 
 open Needed_values ;; 
 
-let lag = (0) ;;
-let num_of_pages = 15 ;;
 let dirname = "Building_site/";;
-let first_treated_page = 1 ;;
 
-let bare_filename = "brit.pdf"
-let write1 k =
-   let sk = string_of_int k 
-   and sj = string_of_int (k+lag) 
-   and sn = string_of_int num_of_pages in 
-   "pdftoppm "^bare_filename^" p"^sk^" -png -f "^sj^" -singlefile\n"^
-   "tesseract -l eng p"^sk^".png p"^sk^"\n"^
-   "mv p"^sk^".txt /media/sf_Downloads/"^dirname^" \n"^
-   "echo "^sk^" of "^sn;;
-
-
-let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
-
+let first_treated_page = 16 ;;
+let num_of_pages = 3 ;;
 let last_treated_page = (first_treated_page-1) + num_of_pages ;;
 
-let text1 = "\n\n\n"^(String.concat "\n" 
+
+let bare_filename = "bot.pdf"
+let write1 k =
+   let sk = string_of_int k 
+   and sj = string_of_int (k-first_treated_page+1)
+   and sn = string_of_int num_of_pages in 
+   "pdftoppm "^bare_filename^" p"^sk^" -png -f "^sk^" -singlefile\n"^
+   "tesseract -l eng p"^sk^".png p"^sk^"\n"^
+   "mv p"^sk^".txt /media/sf_Downloads/"^dirname^" \n"^
+   "echo \""^sk^" : "^sj^" of "^sn^"\"";;
+
+
+let ap_for_script1 = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/script.sh");;
+
+
+let script1 = "\n\n\n"^(String.concat "\n" 
  (Int_range.scale write1 first_treated_page last_treated_page))^"\n\n\n" ;;   
    
-Io.overwrite_with ap1 text1;;
+Io.overwrite_with ap_for_script1 script1;;
 
 let partial_texts_for_html = Int_range.scale (fun k->
    let sk = string_of_int k in 
@@ -43,7 +44,7 @@ let partial_texts_for_html = Int_range.scale (fun k->
   pagetext)  first_treated_page last_treated_page ;;
  
  
- let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"full.html");;  
+let full_html_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"full.html");;  
  
 let html_beginning = String.concat "\n"
  ["<!DOCTYPE html>"; "<html>"; "<head>";
@@ -59,7 +60,7 @@ let html_ending = String.concat "\n"
    String.concat "\n"
    [html_beginning;Htmlize.pages partial_texts_for_html;html_ending] ;;
  
-  Io.overwrite_with full_ap html_full_text;;
+  Io.overwrite_with full_html_ap html_full_text;;
 
 
 (************************************************************************************************************************
@@ -188,24 +189,13 @@ let partial_texts_for_txt = Int_range.scale (fun k->
  (Remove_hyphens.in_string uncompressed_pagetext) in  
  announcer^pagetext)  first_treated_page last_treated_page ;;
 
-
-let partial_texts_for_html = Int_range.scale (fun k->
-   let sk = string_of_int k in 
-   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
-  let uncompressed_pagetext = rf fn in 
-  let pagetext = Make_paragraphs_one_lined.in_string 
-  (Remove_hyphens.in_string uncompressed_pagetext) in  
-  pagetext)  first_treated_page last_treated_page ;;
- 
  
  let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"full.txt");;  
  
  let txt_full_text = String.concat "\n" partial_texts_for_txt ;;
- let html_full_text = Htmlize.pages partial_texts_for_html ;;
  
  Io.overwrite_with full_ap txt_full_text;;
- Io.overwrite_with full_ap html_full_text;;
-
+ 
 
 
 (************************************************************************************************************************
