@@ -1,7 +1,178 @@
 (************************************************************************************************************************
-Snippet 95 : 
+Snippet 96 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 95 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let building_site = home^"/Teuliou/html_files/Translations/Originals//Building_site/";;
+
+let emptiable_ap = Absolute_path.of_string (building_site^"emptiable_evmist.txt") ;;
+let polished_ap = Absolute_path.of_string (building_site^"polished_evmist.txt") ;;
+let walker_ap = Absolute_path.of_string (building_site^"walker_evmist.txt") ;;
+
+let put_first_page_on_walker ()=
+  let text1 = Io.read_whole_file emptiable_ap in 
+  let (first_page,new_text1) = Check_polished_ocr.extract_first_page_and_remerge text1 in 
+  (
+    Io.overwrite_with emptiable_ap new_text1 ;
+    Io.overwrite_with walker_ap first_page
+  ) ;;
+   
+let officialize () =
+  let walker_text = Io.read_whole_file walker_ap in 
+  let new_polished_text = (Io.read_whole_file polished_ap) ^ "\n\n" ^ walker_text  in 
+  (
+    Io.overwrite_with polished_ap new_polished_text
+  ) ;;
+
+let compress_paragraph_in_walker_interval i j=
+   Lines_in_string.findreplace_in_interval_in_file ("\n"," ") walker_ap  i j ;; 
+
+let this_ap = Absolute_path.of_string (home^"/Teuliou/OCaml/Ordinary/fads/cloth.ml") ;;
+
+Incremental_replace_on_a_set_of_files.set_replacements_datafile  this_ap ;;
+
+let beginning_marker = "(" ^ "* Replacements begin here *)" ;; 
+let end_marker = "(" ^ "* Replacements end here *)" ;; 
+Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker ;;
+Incremental_replace_on_a_set_of_files.set_receiving_files [emptiable_ap;walker_ap] ;;
+
+let check_pages_and_footnotes () = Check_polished_ocr.check (Io.read_whole_file polished_ap) ;;
+
+(* Replacements begin here *)
+
+
+let replacements = [
+   ("\012","");
+   (" /n"," In");
+   (" <e"," se");
+   (" 1. "," l. ");
+   (" 1s"," Is");
+   (" cl "," el ");
+   (" cn "," en ");
+   (" cs "," es ");
+   (" ct "," et ");
+   (" Ja "," la ");
+   (" mo "," no ");
+   (" sc "," se ");
+   ("nucv","nuev");
+   (" cra "," era ");
+   (" Cf, "," Cf. ");
+   (" e. "," c. ");
+   (" dcbe"," debe");
+   (" elc."," etc.");
+   (" ficl"," fiel");
+   (" Jas "," las ");
+   (" quc "," que ");
+   (" sca "," sea ");
+   ("(1s. ","(Is. ");
+   ("cnerg","energ");
+   ("mcdio","medio");
+   ("mcter","meter");
+   ("tcolo","teolo");
+   (" clla "," ella ");
+   (" cllas"," ellas");
+   (" cstas"," estas");
+   (" C\195\173. "," Cf. ");
+   (" Mer. "," Mgr. ");
+   ("cterna","eterna");
+   ("cucrpo","cuerpo");
+   ("vuclve","vuelve");
+   (" alina "," alma ");
+   (" clerna"," eterna");
+   (" cllos "," ellos ");
+   (" cxiste"," existe");
+   (" desco "," deseo ");
+   (" eloria"," gloria");
+   (" elorio"," glorio");
+   (" mucve "," mueve ");
+   ("/nstitu","Institu");
+   ("inanera","manera");
+   ("lelesia","Iglesia");
+   ("picrden","pierden");
+   ("S, TH.,","S. TH.,");
+   ("S. Ti.,","S. TH.,");
+   ("virlude","virtude");
+   (" anmento"," aumento");
+   (" eloria "," gloria ");
+   ("Acust\195\173n","Agust\195\173n");
+   ("nucstros","nuestros");
+   ("S, Tit.,","S. TH.,");
+   (" descar\194\187"," desear\194\187");
+   (" eristian"," cristian");
+   (" misinas "," mismas ");
+   ("maturales","naturales");
+   (" eriaturas"," criaturas");
+   ("Jesueristo","Jesucristo");
+   (" eristianos"," cristianos");
+   (" estc "," este ");
+   (" fu\195\169 "," fue ");
+   (" To. "," Io. ");
+   (" ul "," ut ");
+   ("$","\\$");
+   ("$","\194\167");
+   ("(1 lo. ","(1 Io. ");
+   ("(1o. ","(Io. ");
+   ("(lo. ","(Io. ");
+   ("(Lo. ","(Io. ");
+   ("(To. ","(Io. ");
+   ("/nstitu","Institu");
+   ("1%","1\194\176");
+   ("2%","2\194\176");
+   ("3%","3\194\176");
+   ("4%","4\194\176");
+   ("a El","a \195\137l");
+   ("como El","como \195\137l");
+   ("con El","con \195\137l");
+   ("C\194\163. ","Cf.");
+   ("de El","de \195\137l");
+   ("en El","en \195\137l");
+   ("inficles","infieles");
+   ("In loan.","In Ioan.");
+   ("mosotros","nostros");
+   ("o\\ve","owe");
+   ("para El","para \195\137l");
+   ("peeadores","pecadores");
+   ("por El","por \195\137l");
+   ("que El","que \195\137l");
+   ("sin El","sin \195\137l");
+   ("S. Ac.","S. AG.");
+   ("S. Tit.,","S. TH.,");
+   ("y El","y \195\137l");
+   ("\194\176","\\textdegree");
+   ("totalinente","totalmente");
+];;
+
+
+(* Replacements end here *)
+
+Incremental_replace_on_a_set_of_files.initialize_replacements replacements ;; 
+
+
+
+let p = put_first_page_on_walker ;;
+
+let o = officialize ;;
+
+let c = compress_paragraph_in_walker_interval ;;
+
+let r (a,b) = Incremental_replace_on_a_set_of_files.add_new_replacement (a,b) ;; 
+
+let f =  check_pages_and_footnotes ;;
+
+
+(*
+let text1 = Io.read_whole_file polished_ap ;;
+let u1 = Check_polished_ocr.Private.extract_all_pages text1 ;;
+let u2 = Check_polished_ocr.Private.footnote_inconsistencies u1;;
+let u3 = Image.image (fun (i,_,_)->(i,i+36)) u2;;
+
+*)
 
 (************************************************************************************************************************
 Snippet 94 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
