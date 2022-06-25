@@ -241,7 +241,7 @@ let message_for_refs_notes_without_refs notes_without_refs =
   "The following footnotes are not referenced anywhere : \n"^missing_descr^"\n" ;;   
 
 
-let check_footnote_numbering page_number refs_without_notes notes_without_refs =
+let print_inconsistency (page_number,refs_without_notes,notes_without_refs) =
     if (refs_without_notes,notes_without_refs)=([],[])
     then ()
     else
@@ -250,18 +250,25 @@ let check_footnote_numbering page_number refs_without_notes notes_without_refs =
                (message_for_refs_notes_without_refs notes_without_refs)^"\n" in  
       print_string msg;flush stdout ;;  
 
+let footnote_inconsistencies numbered_pages = 
+  Option.filter_and_unpack (
+    fun (page_number,page_content) ->
+       let (unordered_refs,unordered_notes) = collect_footnotes page_content in 
+       let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
+       and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
+       let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
+       and notes_without_refs = Ordered.setminus Total_ordering.for_integers notes refs in  
+       if (refs_without_notes,notes_without_refs)=([],[])
+       then None 
+       else Some(page_number,refs_without_notes,notes_without_refs)   
+ ) numbered_pages ;;
+
 let check_all text =
-    let temp1 = extract_all_pages text in 
-    let _ = check_range_completeness (Image.image fst temp1) in 
-    List.iter (
-       fun (page_number,page_content) ->
-          let (unordered_refs,unordered_notes) = collect_footnotes page_content in 
-          let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
-          and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
-          let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
-          and notes_without_refs = Ordered.setminus Total_ordering.for_integers notes refs in  
-          check_footnote_numbering page_number refs_without_notes notes_without_refs
-    ) temp1 ;;
+    let numbered_pages = extract_all_pages text in 
+    let _ = check_range_completeness (Image.image fst numbered_pages) in 
+    let inconsistencies = footnote_inconsistencies numbered_pages in 
+    Image.image print_inconsistency inconsistencies ;; 
+    
 
 
 (*    
