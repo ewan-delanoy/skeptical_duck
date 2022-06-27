@@ -11,6 +11,7 @@ A footnote has format [size=90][b][color=blue](<Number>)[/color][/b]<Text>[/size
 
 exception No_pages_to_extract ;; 
 exception No_percent_block_present ;; 
+exception Footnote_inconsistency ;;
 
 
 module Private = struct 
@@ -174,6 +175,25 @@ extract_first_page_and_remerge "A\n%\n%1\n%\nB\n%\n%2\n%\nC\n%\n%3\n%\nD";;
 
 *)
 
+let extract_page_number_from_percent_block three_lines =
+  let (_,line_containing_pagenumber) = List.nth three_lines 1 in        
+  int_of_string(Cull_string.two_sided_cutting ("% Page "," ") line_containing_pagenumber);;  
+
+
+let read_page_number text =
+  let indexed_lines = Lines_in_string.indexed_lines text in 
+  let (before_block1,block1,lines_in_page1,lines_after_page1) = 
+    towards_first_page_extraction indexed_lines in 
+    extract_page_number_from_percent_block block1 ;;  
+
+
+(*    
+ 
+read_page_number
+"A\n%\n% Page 7 \n%\nB\nC\nD\n%\n% Page 8 \n%\nE\nF\nG\n%\n% Page 9 \n%\nH\nI\nJ";;
+
+*)
+
 let rec helper_for_page_extraction (treated,current_percent_block,to_be_treated) = 
   match seek_next_percent_block ([],to_be_treated) with 
   None -> List.rev((current_percent_block,to_be_treated)::treated)
@@ -194,10 +214,6 @@ extract_all_pages_in_lined_form
 "A\n%\n% Page 1\n%\nB\nC\nD\n%\n% Page 2\n%\nE\nF\nG\n%\n% Page 3\n%\nH\nI\nJ";;
 
 *)
-
-let extract_page_number_from_percent_block three_lines =
-    let (_,line_containing_pagenumber) = List.nth three_lines 1 in        
-    int_of_string(Cull_string.two_sided_cutting ("% Page "," ") line_containing_pagenumber);;  
 
 
 let extract_all_pages text =
@@ -267,9 +283,13 @@ let check_all text =
     let numbered_pages = extract_all_pages text in 
     let _ = check_range_completeness (Image.image fst numbered_pages) in 
     let inconsistencies = footnote_inconsistencies numbered_pages in 
-    Image.image print_inconsistency inconsistencies ;; 
+    List.iter print_inconsistency inconsistencies ;; 
     
-
+let check_footnotes_on_page text = 
+  let inconsistencies = footnote_inconsistencies [(read_page_number text),text] in 
+  let _ = List.iter print_inconsistency inconsistencies in 
+  if inconsistencies <> [] 
+  then raise Footnote_inconsistency;;  
 
 (*    
  
@@ -289,6 +309,7 @@ check_all
 
 end ;;
 
-let check = Private.check_all ;;
+let check_footnotes_on_page = Private.check_footnotes_on_page ;;
+let check_pages_and_footnotes = Private.check_all ;;
 let extract_first_page_and_remerge = Private.extract_first_page_and_remerge ;; 
 
