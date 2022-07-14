@@ -1,8 +1,266 @@
 (************************************************************************************************************************
-Snippet 96 : 
+Snippet 98 : 
 ************************************************************************************************************************)
 
 
+
+(************************************************************************************************************************
+Snippet 97 : Code that lead to the discovery of a linear algorithm to compute, given any
+finite set X of integers, the largest subset Y of X, containing no AP of length 3 and
+width <=2. The algorithm uses an automaton with 8 states where the transitions are
+the successive differences in Y.
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let i_order = Total_ordering.for_integers ;;
+let i_setminus = Ordered.setminus i_order ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge il_order ;;
+let il_sort = Ordered.sort il_order ;;
+let careful_merge x y = Ordered_misc.minimal_elts_wrt_inclusion (il_merge x y) ;;
+
+let current_width = 2 ;;
+
+let is_admissible = Sz_preliminaries.test_for_admissibility 
+      (Sz_max_width_t.MW current_width) ;;
+
+let force_insert_in m old_data = Option.filter_and_unpack (
+        fun old_elt ->
+          let new_elt = old_elt @ [m] in 
+          if is_admissible new_elt 
+          then Some new_elt 
+          else None 
+    ) old_data ;;   
+  
+exception Middleman_exn of int list ;; 
+
+let middleman = Memoized.recursive (fun old_f x-> 
+  match List.rev x with 
+  [] -> ([[]],[[]],[],[[]])
+  | m :: other_than_m ->
+     if other_than_m = [] 
+     then ([[m]],[[m]],[[]],[[]])
+     else   
+     let y = List.rev other_than_m in 
+     let (old_sols,old_rules,old_sols1,old_rules1) = old_f y in 
+     let trial1 = force_insert_in m old_sols 
+     and trial2 = force_insert_in m old_rules in 
+     if trial1 <> [] 
+     then  (trial1,trial2,
+            il_merge (force_insert_in m old_sols1) old_sols,
+            careful_merge (force_insert_in m old_rules1) old_rules )
+     else
+     if trial2 = [] 
+     then (il_merge (force_insert_in m old_sols1) old_sols,
+           careful_merge (force_insert_in m old_rules1) old_rules,
+           old_sols1,[[]]) 
+     else  raise (Middleman_exn(x))
+) ;;
+
+let measure x =  
+    let (sols,rules,_,_) = middleman x in 
+    List.hd sols;;      
+
+ 
+
+let syndectical_power_set x = 
+  let temp1 = Listennou.power_set x in 
+  let temp2 = List.filter (fun z->
+     if z = [] then false else
+     let ttemp3 = (List.hd z) :: (Arithmetic_list.delta z) in 
+  List.for_all (fun t->t<=2) ttemp3) temp1 in 
+  il_sort temp2 ;;  
+
+let sps = Memoized.make (fun n->syndectical_power_set(Int_range.range 1 n)) ;;
+
+let syndectical_merger x y = 
+  let m = List.hd (List.rev x) in 
+  x @ (Image.image (fun t->m+t) y) ;;
+
+let relative_measure x small_part_of_x =
+    let cropped_x = i_setminus x small_part_of_x in 
+    (List.length(measure x)) - (List.length(measure cropped_x)) ;;
+
+(*    
+  let d_measure x =
+    let almost_x = List.rev(List.tl(List.rev x)) in 
+    (List.length(measure x)) - (List.length(measure almost_x)) ;;
+*)
+
+module First_attempt = struct 
+
+let d_measure x = 
+  let m = List.hd (List.rev x) in 
+  relative_measure x [m] ;;
+
+let diff x y = d_measure (syndectical_merger x y) ;; 
+
+let left_base = sps 12 ;;
+
+let small_n = 4 ;;
+let right_base = sps small_n ;;
+let shadow x = Image.image (diff x) right_base ;;
+      
+let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
+let u4 = Listennou.partition_according_to_fst u3 ;;
+
+let bigger_n = small_n+1 ;;
+let bigger_right_base = sps bigger_n ;;
+let bigger_shadow x = Image.image (diff x) bigger_right_base ;;
+let u5 = Image.image (fun (_,l)->(l,
+   Ordered.sort Total_ordering.standard (Image.image bigger_shadow l)
+) ) u4;;
+let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
+
+let u6 = Int_range.index_everything (Image.image snd u4) ;;
+exception Doherty_exn of int list ;;
+let doherty_index =Memoized.make(fun x ->
+    try fst(Listennou.force_find (fun (idx,y)->List.mem x y) u6)  with 
+    _ -> raise (Doherty_exn(x))
+)  ;;   
+let waters_index x=
+    let tempf = (fun j->doherty_index(syndectical_merger x [j])) in 
+    (tempf 1,tempf 2) ;;
+let u7 = Image.image (fun (_,l)->
+   List.filter (fun z->Max.list(z)<=10) l
+  ) u4;;
+let u8 = Int_range.index_everything u7 ;;  
+
+let u9 = Image.image (fun (idx,l)->(idx,
+    Ordered.sort Total_ordering.standard (Image.image waters_index l)
+ ) ) u8;;
+
+let check_u9 = (u9 = [(1, [(2, 3)]); (2, [(4, 3)]); (3, [(5, 4)]); (4, [(1, 1)]); (5, [(6, 3)]);
+(6, [(3, 1)])])
+;; 
+  
+let representatives = Image.image (fun (idx,l)->(idx,List.hd l)) u8 ;;
+
+end ;;  
+
+let d_measure x = 
+  let m = List.hd (List.rev x) in 
+  let y = i_setminus x [m] in 
+  (relative_measure x [m],relative_measure y [m-2],relative_measure y [m-4;m-1]) ;;
+
+let diff x y = d_measure (syndectical_merger x y) ;; 
+
+let left_base = sps 12 ;;
+
+let small_n = 2 ;;
+let right_base = sps small_n ;;
+let shadow x = Image.image (diff x) right_base ;;
+      
+let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
+let u4 = Listennou.partition_according_to_fst u3 ;;
+
+let bigger_n = small_n+1 ;;
+let bigger_right_base = sps bigger_n ;;
+let bigger_shadow x = Image.image (diff x) bigger_right_base ;;
+let u5 = Image.image (fun (_,l)->(l,
+   Ordered.sort Total_ordering.standard (Image.image bigger_shadow l)
+) ) u4;;
+let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
+
+
+let u6 = Int_range.index_everything (Image.image snd u4) ;;
+exception Doherty_exn of int list ;;
+let doherty_index =Memoized.make(fun x ->
+    try fst(Listennou.force_find (fun (idx,y)->List.mem x y) u6)  with 
+    _ -> raise (Doherty_exn(x))
+)  ;;   
+let waters_index x=
+    let tempf = (fun j->doherty_index(syndectical_merger x [j])) in 
+    (tempf 1,tempf 2) ;;
+let u7 = Image.image (fun (_,l)->
+   List.filter (fun z->Max.list(z)<=10) l
+  ) u4;;
+let u8 = Int_range.index_everything u7 ;;  
+
+let u9 = Image.image (fun (idx,l)->(idx,
+    Ordered.sort Total_ordering.standard (Image.image waters_index l)
+ ) ) u8;;
+
+let check_u9 = (u9 = [(1, [(2, 3)]); (2, [(4, 5)]); (3, [(6, 4)]); (4, [(1, 1)]); (5, [(6, 4)]);
+(6, [(7, 5)]); (7, [(3, 8)]); (8, [(2, 3)])])
+;; 
+
+
+let representatives = Image.image (fun (idx,l)->(idx,List.hd l)) u8 ;;
+
+let big_representatives = Image.image (fun (idx,l)->
+  let temp1 = List.hd (List.rev l) in 
+  let a = List.hd temp1 in 
+  (idx,Image.image (fun t->t-a+1) temp1)
+) u8 ;;
+
+let dougherty_table = [(1, [2; 3]); (2, [4; 5]); (3, [6; 4]); (4, [1; 1]); (5, [6; 4]); (6, [7; 5]);
+(7, [3; 8]); (8, [2; 3])] ;;
+
+exception Bad_dougherty_jump of int * int ;; 
+
+let dougherty_jump transition state = 
+  if transition >2 then 1 else
+  try List.nth (List.assoc state dougherty_table) (transition-1) with 
+   _ -> raise (Bad_dougherty_jump(transition,state)) ;;
+  
+let rec dougherty_iterator (to_be_treated,state) =
+   match to_be_treated with 
+    [] -> state 
+   | transition :: others -> 
+    dougherty_iterator (others,dougherty_jump transition state) ;;
+
+let dougherty_index z =
+    let temp1 = Arithmetic_list.delta (0::z) in 
+    dougherty_iterator (temp1,4) ;;
+
+let rec dougherty_helper (to_be_treated,treated) =
+  if List.length(to_be_treated)<3 then to_be_treated@treated else 
+  let di = dougherty_index to_be_treated 
+  and m = List.hd (List.rev to_be_treated) in 
+  if List.mem di [1;2;6;8] 
+  then  dougherty_helper ((i_setminus to_be_treated [m-2;m]),m::treated)
+  else   
+  if List.mem di [3;5] 
+  then  dougherty_helper ((i_setminus to_be_treated [m-4;m-1;m]),m::treated)
+  else  dougherty_helper ((i_setminus to_be_treated [m]),treated)  ;;
+      
+
+(************************************************************************************************************************
+Snippet 96 : Compare two copies of the same directory
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let select = List.filter(
+  fun s-> (not(List.mem s ["";".gitignore"]))
+    &&(not(Supstring.ends_with s ".json"))
+    &&(not(Supstring.ends_with s "/"))
+    &&(not(Supstring.begins_with s "node_modules/"))
+) ;;
+ 
+let dir1 = home^"/Downloads/YC" ;;
+let dir2 = home^"/Teuliou/Sites/Mongoose_example/Current_app" ;;
+
+let read_both x = (x,(rf(dir1^"/"^x),rf(dir2^"/"^x) )) ;;
+
+let v1 = 
+  Ordered.sort Total_ordering.lex_for_strings
+  (select(More_unix.quick_beheaded_complete_ls dir1));;
+
+let v2 = 
+    Ordered.sort Total_ordering.lex_for_strings
+    (select(More_unix.quick_beheaded_complete_ls dir2));;  
+
+let v12 =  Ordered.setminus Total_ordering.lex_for_strings v1 v2 ;;   
+let v21 =  Ordered.setminus Total_ordering.lex_for_strings v2 v1 ;;  
+
+
+let u1 = Image.image read_both v1 ;;
+let u2 = List.filter (fun (fn,(x,y))-> x<>y) u1;;
+let u3 = Image.image fst u2 ;;
 (************************************************************************************************************************
 Snippet 95 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
 ************************************************************************************************************************)
@@ -25,6 +283,7 @@ let put_first_page_on_walker ()=
    
 let officialize () =
   let walker_text = Io.read_whole_file walker_ap in 
+  let _ = Check_polished_ocr.check_footnotes_on_page walker_text in 
   let new_polished_text = (Io.read_whole_file polished_ap) ^ "\n\n" ^ walker_text  in 
   (
     Io.overwrite_with polished_ap new_polished_text
@@ -42,7 +301,7 @@ let end_marker = "(" ^ "* Replacements end here *)" ;;
 Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker ;;
 Incremental_replace_on_a_set_of_files.set_receiving_files [emptiable_ap;walker_ap] ;;
 
-let check_pages_and_footnotes () = Check_polished_ocr.check (Io.read_whole_file polished_ap) ;;
+let check_pages_and_footnotes () = Check_polished_ocr.check_pages_and_footnotes (Io.read_whole_file polished_ap) ;;
 
 (* Replacements begin here *)
 
@@ -170,7 +429,10 @@ let f =  check_pages_and_footnotes ;;
 let text1 = Io.read_whole_file polished_ap ;;
 let u1 = Check_polished_ocr.Private.extract_all_pages text1 ;;
 let u2 = Check_polished_ocr.Private.footnote_inconsistencies u1;;
-let u3 = Image.image (fun (i,_,_)->(i,i+36)) u2;;
+let u3 = Image.image (fun (i,a,b)->(i,i+36,a,b)) u2;;
+
+let text2 = Io.read_whole_file walker_ap ;;
+let u4 = Check_polished_ocr.check_footnotes_on_page text2 ;;
 
 *)
 
