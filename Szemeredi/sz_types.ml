@@ -9,7 +9,7 @@ type increment_in_knowledge =
    | Passive_repeat  
    | Fork ;;
 
-type uniform_parametrized_subrange = {
+type parametrized_uniform_subrange = {
       positive_exceptions : int list ;
       negative_exceptions : int list ;
       modulus : int ;
@@ -18,7 +18,7 @@ type uniform_parametrized_subrange = {
 
 type  parametrized_subrange = {
    ps_exceptions : (int * (int list)) list ;
-   ps_usual : uniform_parametrized_subrange ; 
+   ps_usual : parametrized_uniform_subrange ; 
 } ;; 
 
 type parametrized_ps_list = {
