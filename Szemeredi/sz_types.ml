@@ -22,17 +22,7 @@ type  parametrized_subrange = {
 } ;; 
 
 type parametrized_ps_list = {
-   pl_exceptions : ((int * (int list list)) list ;
+   pl_exceptions : (int * (int list list)) list ;
    pl_usual : parametrized_subrange list ;
 } ;; 
    
-
-
-(*
-
-type 'a standardized_parametrized_set = {
-   exceptions : ((int * 'a) list) ;
-   usual : 
-}
-
-*)
