@@ -4,17 +4,17 @@
 
 *)
 
-type increment_in_knowledge = 
+type hook_in_knowledge = 
     Boundary_increment
    | Passive_repeat  
    | Fork ;;
 
 type parametrized_uniform_subrange = {
-      positive_exceptions : int list ;
-      negative_exceptions : int list ;
-      modulus : int ;
-      usual :  int list ;
-   } ;; 
+   usr_positive_exceptions : int list ;
+   usr_negative_exceptions : int list ;
+   usr_modulus : int ;
+   usr_usual :  int list ;
+} ;; 
 
 type  parametrized_subrange = {
    ps_exceptions : (int * (int list)) list ;
@@ -25,4 +25,11 @@ type parametrized_ps_list = {
    pl_exceptions : (int * (int list list)) list ;
    pl_usual : parametrized_subrange list ;
 } ;; 
+
+type parametrized_hook_map = {
+   uhm_modulus : int ;
+   uhm_usual :  ((int list)* hook_in_knowledge) list ;
+} ;; 
+
+
    
