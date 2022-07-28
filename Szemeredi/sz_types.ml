@@ -26,7 +26,7 @@ type parametrized_ps_list = {
    pl_usual : parametrized_subrange list ;
 } ;; 
 
-type level_two_t = Quick ;; 
+type level_two_t = Quick of int list ;; 
   
 
    
