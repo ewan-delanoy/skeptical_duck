@@ -9,6 +9,11 @@ type hook_in_knowledge =
    | Passive_repeat  
    | Fork ;;
 
+type selector_for_hook = 
+  Boundary_increment_selector of int 
+| Passive_repeat_selector of int list  
+| Fork_selector ;;
+
 type parametrized_uniform_subrange = {
    usr_positive_exceptions : int list ;
    usr_negative_exceptions : int list ;
@@ -26,9 +31,13 @@ type parametrized_ps_list = {
    pl_usual : parametrized_subrange list ;
 } ;; 
 
-type level_two_t = Quick of int list ;; 
-  
 type hungarian_adjuster =
      Leave_unchanged 
     |Adjust of int list ;; 
    
+
+       
+
+type level_two_t = Quick of int list ;; 
+  
+
