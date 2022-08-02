@@ -10,7 +10,7 @@ type hook_in_knowledge =
    | Fork ;;
 
 type selector_for_hook = 
-  Boundary_increment_selector of int 
+  Boundary_increment_selector of int * int * int 
 | Passive_repeat_selector of int list  
 | Fork_selector ;;
 
