@@ -11,7 +11,7 @@ type hook_in_knowledge =
 
 type selector_for_hook = 
   Boundary_increment_selector of int * int * int 
-| Passive_repeat_selector of int list  
+| Passive_repeat_selector of int * int  
 | Fork_selector ;;
 
 type parametrized_uniform_subrange = {
