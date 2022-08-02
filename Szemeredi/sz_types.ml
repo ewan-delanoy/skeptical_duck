@@ -28,5 +28,7 @@ type parametrized_ps_list = {
 
 type level_two_t = Quick of int list ;; 
   
-
+type hungarian_adjuster =
+     Leave_unchanged 
+    |Adjust of int list ;; 
    
