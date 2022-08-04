@@ -1,6 +1,1380 @@
 (************************************************************************************************************************
-Snippet 98 : 
+Snippet 100 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 99 : An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. (Version 2)
+************************************************************************************************************************)
+
+open Needed_values ;;
+module Sz_types = struct 
+  type hook_in_knowledge = 
+    Boundary_increment
+   | Passive_repeat  
+   | Fork ;;
+
+type selector_for_hook = 
+  Boundary_increment_selector of int * int * int 
+| Passive_repeat_selector of int * int  
+| Fork_selector ;;
+
+type parametrized_uniform_subrange = {
+   usr_positive_exceptions : int list ;
+   usr_negative_exceptions : int list ;
+   usr_modulus : int ;
+   usr_usual :  int list ;
+} ;; 
+
+type  parametrized_subrange = {
+   ps_exceptions : (int * (int list)) list ;
+   ps_usual : parametrized_uniform_subrange ; 
+} ;; 
+
+type parametrized_ps_list = {
+   pl_exceptions : (int * (int list list)) list ;
+   pl_usual : parametrized_subrange list ;
+} ;; 
+
+type hungarian_adjuster =
+     Leave_unchanged 
+    |Adjust of int list ;; 
+   
+
+       
+
+type level_two_t = Quick of int list ;; 
+end ;;  
+
+let i_order = Total_ordering.for_integers ;;
+let i_insert = Ordered.insert i_order ;;
+let i_mem = Ordered.mem i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let t_order = Total_ordering.triple_product 
+   i_order i_order (Total_ordering.silex_for_intlists) ;;
+
+let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+
+let test_for_admissibility_up_to_max_with max_width z =
+  if max_width<1 then true else 
+  Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
+
+let test_for_admissiblity width breadth z =
+   (test_for_admissibility_up_to_max_with (width-1) z)
+   &&
+   (List.for_all (fun t->
+    not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
+
+let remove_one_element (n,scrappers) k=
+  let new_scrappers = i_insert k scrappers in 
+  if k <> n then (n,new_scrappers) else 
+  let new_z =  concretize (n,new_scrappers) in 
+  let new_max = List.hd(List.rev new_z) in 
+  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
+
+
+
+(*
+
+remove_one_element (10,[3;7;8;9]) 10 ;;
+
+*)
+
+module Hungarian = struct 
+
+module Breadth_reduction = struct 
+
+let test_for_automatic_treatment width scrappers b = 
+  List.exists(fun t->List.mem t scrappers) 
+  [b;b+width;b+2*width] ;;
+
+let rec effective_breadth (width,scrappers,b) =
+   if (test_for_automatic_treatment width scrappers b)&&(b>0) 
+   then effective_breadth (width,scrappers,b-1)
+   else b ;;
+
+end ;;  
+
+let normalized_adjust adj =
+    if adj = [] 
+    then Leave_unchanged 
+    else Adjust adj ;;
+
+let short_adjust old_result adjustment =
+      match adjustment with 
+      Leave_unchanged -> old_result 
+      |Adjust extra -> Image.image (fun z->i_setminus z extra) old_result;;
+  
+let adjust result_opt adjustment=
+    match result_opt with 
+    None -> None 
+    | Some old_result ->  
+    Some(short_adjust old_result adjustment) ;; 
+
+let merge_adjustments adj1 adj2 =
+  (
+    match adj1 with 
+      Leave_unchanged -> adj2 
+     |Adjust content1 -> 
+      (
+      match adj2 with 
+      Leave_unchanged -> adj1 
+     |Adjust content2 -> Adjust(i_merge content1 content2) 
+      
+  )
+  ) ;;
+
+let first_step_in_decomposition (width,breadth,scrappers) =
+     let bound = breadth+2*width in 
+     let (below,above) = (if width<>1
+      then (scrappers,[])
+      else List.partition (fun t->t<=bound) scrappers) in 
+     ((width,Breadth_reduction.effective_breadth (width,scrappers,breadth),below),
+       normalized_adjust above) ;;     
+
+let pusher_for_decomposition (triple,adj)= 
+      let (triple2,adj2) = first_step_in_decomposition triple in 
+      (triple2,merge_adjustments adj adj2) ;;
+
+let rec iterator_for_decomposition  pair =
+   let next_pair = pusher_for_decomposition pair in 
+   if next_pair = pair 
+   then pair 
+   else iterator_for_decomposition next_pair ;;
+
+let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;  
+
+(* Example : decompose (1,18,[8;11;14;17;20]);; *)
+
+end ;;  
+
+module Selector_for_hook = struct 
+
+let of_hook (width,breadth,n) = function   
+    Passive_repeat -> Passive_repeat_selector(width,breadth)
+  | Boundary_increment -> Boundary_increment_selector(width,breadth,n) 
+  | Fork -> Fork_selector  ;;
+
+let eval selector l =  
+     match selector with 
+     Passive_repeat_selector(width,b) -> 
+      List.filter (fun z->
+        not(i_is_included_in [b;b+width;b+2*width] z) 
+    )  (List.hd l)
+     | Boundary_increment_selector(width,breadth,n) ->
+     Option.filter_and_unpack (fun z->
+            let new_z = z @ [n] in 
+            if test_for_admissiblity width breadth new_z 
+             then Some new_z
+             else None
+         )  (List.hd l)
+      | Fork_selector ->     
+        let (_,temp1) = Max.maximize_it_with_care 
+         List.length (List.flatten l) in 
+        il_sort temp1 ;;
+
+end ;;  
+
+module Parametrized = struct 
+
+let eval_uniform_subrange usr n =
+  List.filter (
+     fun k->
+      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
+      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
+      i_mem (k mod usr.Sz_types.usr_modulus)
+      usr.Sz_types.usr_usual
+  ) (Int_range.range 1 n) ;; 
+
+let eval_subrange sr n =
+   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
+   Some answer -> answer 
+   | None ->
+    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+
+let eval_ps_list psl n =
+  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
+  Some answer -> answer 
+  | None ->
+   Image.image (fun sr->eval_subrange sr n) 
+   psl.Sz_types.pl_usual ;;    
+
+let eval_level_two (Quick l) scrappers n =
+  let z = concretize (n,scrappers) in 
+  if (not(i_is_included_in l z))  
+  then [z] 
+  else 
+  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
+  il_sort temp1 ;;     
+
+end ;;   
+
+
+module Parametrized_Example = struct 
+
+  let uniform_subrange pe ne mdl usu = {
+    Sz_types.usr_positive_exceptions = pe ;
+    usr_negative_exceptions = ne ; 
+    usr_modulus = mdl;
+    usr_usual = usu ;
+  };; 
+  
+  let subrange (sr_exns,pe,ne,mdl,usu) = {
+    Sz_types.ps_exceptions = sr_exns ;
+    ps_usual = uniform_subrange pe ne mdl usu ;
+  };; 
+  
+  let ps_list psl_exns psl_usu = {
+    Sz_types.pl_exceptions = psl_exns ;
+    pl_usual = Image.image subrange psl_usu ;
+  };; 
+
+  let example1 = Quick [1;2;3] ;;
+
+  let example2 (* for (1,2,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+      ([],[],[2],1,[0]);
+     ] ;;  
+     
+  let example3 (* for (1,3,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+     ] ;;    
+
+  let example4 (* for (1,2,[4]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2];[1;3];[2;3]];
+     ]
+     [
+      ([],[],[3;4],1,[0]);
+      ([],[],[2;4],1,[0]);
+      ([],[],[1;4],1,[0]);
+     ] ;;   
+
+  let example5 (* for (1,2,[5]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;  
+     
+  let example6 (* for (1,4,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[3;4],1,[0]);
+      ([],[],[2;5],1,[0]);
+      ([],[],[2;4],1,[0]);
+      ([],[],[1;4],1,[0]);
+     ] ;;   
+     
+   let example7 (* for (1,5,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;      
+
+    let example8 (* for (1,6,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
+       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+     ] ;;    
+
+     let example9 (* for (1,2,[7]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;  
+     
+
+  end ;;   
+  
+
+
+let rose_hashtbl = Hashtbl.create 50 ;;
+let medium_hashtbl = Hashtbl.create 50 ;;
+let low_hashtbl = Hashtbl.create 50 ;;
+
+
+let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) = 
+    let z = concretize (n,scrappers) in 
+    if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+    then Some [z] 
+    else 
+    match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+    Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
+    | None ->  
+    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+     Some summary -> Some (Parametrized.eval_ps_list summary n)
+     | None -> old_getter (width,breadth,n,scrappers)) ;;   
+
+let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
+  let ((width2,breadth2,scrappers2),adj) = 
+    Hungarian.decompose (width,breadth,scrappers) in 
+  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
+    Hungarian.adjust res_opt adj;;
+
+let low_getter = Hashtbl.find_opt low_hashtbl ;;    
+let access = hungarian_enhance_getter low_getter ;;   
+
+let descendants_for_tool (width,breadth,n,scrappers) tool = 
+       match tool with 
+       Passive_repeat -> [(width,breadth-1,n,scrappers)]     
+      | Boundary_increment ->
+       let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
+       [width,breadth,m,new_scrappers]
+      | Fork ->     
+          Int_range.scale (fun k->
+             let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
+             (width,breadth-1,m,scr)
+           ) 0 2 ;;
+
+
+let try_tool_quickly old_getter width breadth (n,scrappers) tool = 
+   let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
+   let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
+   and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
+   let hungarian_descendants = Image.image (
+      fun (w,b,m,s) ->
+        let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
+        ((w2,b2,m,s2),adj)
+    ) descendants in 
+   let temp1 = Image.image (fun (uple,adj)->
+      let (w,b,m,s) = uple in 
+      (uple,Hungarian.adjust (nh_enhanced_getter w b (m,s)) adj)
+  ) hungarian_descendants in   
+  let (failures,successes) = List.partition (
+          fun (_,opt) -> opt = None
+  ) temp1 in 
+  let missing_data = Image.image fst failures in 
+  if missing_data <> [] then (missing_data,[]) else 
+  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
+  ([],Selector_for_hook.eval selector args) ;;  
+
+
+exception Compute_from_below_exn of int * int * int * (int list) ;;  
+
+let compute_from_below old_getter (width,breadth,n,scrappers) tool =
+   let (missing_data,result_opt) = 
+     try_tool_quickly old_getter width breadth (n,scrappers) tool in 
+   if result_opt = []
+   then raise (Compute_from_below_exn(width,breadth,n,scrappers)) 
+   else result_opt ;; 
+
+let low_add (width,breadth,n,scrappers,tool) =
+   let finder = Hashtbl.find_opt low_hashtbl in  
+   let res = compute_from_below finder (width,breadth,n,scrappers) tool in  
+   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
+   res ;;
+
+let med_add (width,breadth,scrappers) summary = 
+  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
+
+let rose_add (width,breadth) summary = 
+    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
+ 
+
+let find_remote_stumbling_block_or_immediate_working_tool 
+       old_getter width breadth (n,scrappers) = 
+   let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
+   match hg_enhanced_getter width breadth (n,scrappers) with 
+    Some old_answer -> ([],None) 
+    | None ->
+   let (missing_data1,result_opt1) = 
+    try_tool_quickly old_getter width breadth (n,scrappers) Passive_repeat in 
+   if result_opt1<>[] then ([], Some Passive_repeat) else  
+   if missing_data1<>[] then (missing_data1,None) else  
+   let (missing_data2,result_opt2) = 
+    try_tool_quickly old_getter width breadth (n,scrappers) Boundary_increment in 
+   if result_opt2<>[] then ([], Some Boundary_increment) else  
+   if missing_data2<>[] then (missing_data2,None) else  
+   let (missing_data3,result_opt3) = 
+    try_tool_quickly old_getter width breadth (n,scrappers) Fork in 
+   if result_opt3<>[] then ([], Some Fork) else  
+    (missing_data3,None) ;;
+    
+
+let carrier_get carrier (width,breadth,n,scrappers) = match 
+  Hashtbl.find_opt low_hashtbl  (width,breadth,n,scrappers) with
+  Some old_answer -> Some old_answer 
+  | None -> List.assoc_opt  
+      (width,breadth,n,scrappers) carrier ;;
+     
+let carrier_add carrier (width,breadth,n,scrappers,tool) =
+    let res = compute_from_below (carrier_get carrier) (width,breadth,n,scrappers) tool in  
+    ((width,breadth,n,scrappers),res) :: carrier  ;;
+
+exception Pusher_exn of ((int * int * int * int list) * int list list) list;;
+
+let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
+    match to_be_treated with 
+    [] -> raise(Pusher_exn(carrier))
+    | uple :: others -> 
+       let (width,breadth,n,scrappers) = uple in 
+       let (missing_data,opt_res) =
+      find_remote_stumbling_block_or_immediate_working_tool 
+      (carrier_get carrier) width breadth (n,scrappers) in 
+      match opt_res with 
+       Some tool ->
+           let new_carrier = carrier_add carrier (width,breadth,n,scrappers,tool) in 
+           (new_carrier,others)
+       | None -> 
+         if missing_data = [] 
+         then (carrier,others) 
+         else (carrier,missing_data @ (uple::others)) 
+      ;;      
+         
+let rec born_to_fail_for_recursive_computation walker=
+  born_to_fail_for_recursive_computation
+  (pusher_for_recursive_computation walker)  ;;     
+
+let  needed_subcomputations_for_several_computations uples = 
+  try born_to_fail_for_recursive_computation ([],uples) with 
+  Pusher_exn(carrier) -> carrier ;; 
+
+let needed_subcomputations_for_single_computation uple = 
+  needed_subcomputations_for_several_computations [uple] ;; 
+
+
+let compute_recursively width breadth (n,scrappers) = 
+  let uple = (width,breadth,n,scrappers) in 
+  let needed_carrier = needed_subcomputations_for_single_computation uple in 
+  let answer = List.assoc_opt uple needed_carrier in 
+  (answer,needed_carrier) 
+;;  
+
+
+
+
+let feel_new_line (width,breadth,scrappers) =
+  let temp1 = Int_range.scale 
+    (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
+  let temp2 = needed_subcomputations_for_several_computations temp1 in 
+  let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
+  Ordered.sort t_order temp3 ;; 
+
+let exhaust_new_line (width,breadth,scrappers) =
+    let temp1 = Int_range.scale 
+      (fun n->(width,breadth,n,scrappers)) 1  30 in 
+    let carrier = needed_subcomputations_for_several_computations temp1 in 
+    let temp2 = Image.image (fun (w,b,n,s)-> 
+      let mutilated_carrier = List.filter (
+        fun p->fst(p)<>(w,b,n,s)
+      ) carrier in 
+      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
+      (carrier_get mutilated_carrier) w b (n,s) in 
+      (n,hook_opt)
+    ) temp1 in 
+    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
+      None -> None |Some pair ->Some(n,pair)) l) in 
+    let temp3 = selector temp2 in 
+    let temp4 = Int_range.scale (fun n->
+      (n, hungarian_enhance_getter
+      (carrier_get carrier) width breadth (n,scrappers)))  1 30  in 
+    let temp5 = selector temp4 in 
+    (temp3,temp5) ;;   
+
+
+
+
+rose_add (1,1) Parametrized_Example.example1 ;; 
+
+
+med_add (1,2,[]) Parametrized_Example.example2 ;; 
+med_add (1,3,[]) Parametrized_Example.example3 ;; 
+
+med_add (1,2,[4]) Parametrized_Example.example4 ;; 
+med_add (1,3,[4]) Parametrized_Example.example4 ;; 
+med_add (1,4,[4]) Parametrized_Example.example4 ;; 
+
+(*
+med_add (1,2,[5])  Parametrized_Example.example5 ;; 
+med_add (1,3,[5])  Parametrized_Example.example5 ;; 
+med_add (1,4,[5])  Parametrized_Example.example5 ;; 
+*)
+
+med_add (1,4,[])  Parametrized_Example.example6 ;; 
+med_add (1,5,[])  Parametrized_Example.example7 ;; 
+med_add (1,6,[])  Parametrized_Example.example8 ;; 
+
+
+(*
+let z1 = feel_new_line (1,2,[5]) ;;
+let just_computed_z1 = 
+  [(1, 2, [7]); (1, 2, [8]); (1, 3, [7]); (1, 3, [8]); (1, 4, [7]);
+   (1, 4, [8]); (1, 5, [7]); (1, 5, [8]); (1, 6, [7]); (1, 6, [8]); 
+   (1, 7, [])] ;;
+let (z2,z3) = exhaust_new_line (1,2,[7]) ;;
+
+*)
+
+(*
+
+let (z2,z3) = exhaust_new_line (1,2,[5]) ;;
+let z4 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example5 n
+) z3 ;; 
+
+let (z5,z6) = exhaust_new_line (1,3,[5]) ;;
+let z7 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example5 n
+) z6 ;; 
+
+let (z8,z9) = exhaust_new_line (1,4,[5]) ;;
+let z10 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example5 n
+) z9 ;; 
+
+
+let (z2,z3) = exhaust_new_line (1,2,[4]) ;;
+let z4 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example4 n
+) z3 ;; 
+
+let (z5,z6) = exhaust_new_line (1,3,[4]) ;;
+let z7 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example4 n
+) z6 ;; 
+
+let (z8,z9) = exhaust_new_line (1,4,[4]) ;;
+let z10 = List.filter (
+  fun (n,l)->l <> Parametrized.eval_ps_list Parametrized_Example.example4 n
+) z9 ;; 
+
+
+
+*)
+
+(*
+let bad1 = access 1 3 (3,[5]);; 
+let width=1 and breadth=3 and (n,scrappers) = (3,[5]);;
+let bad2 = hungarian_enhance_getter low_getter width breadth (n,scrappers);; 
+let ((width2,breadth2,scrappers2),adj) = 
+    Hungarian.decompose (width,breadth,scrappers) ;;
+
+let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
+  let ((width2,breadth2,scrappers2),adj) = 
+    Hungarian.decompose (width,breadth,scrappers) in 
+  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
+    Hungarian.adjust res_opt adj;;
+*)
+
+(*
+   
+
+*)
+
+(*
+let uple0= (1,2,5,[5]) ;;
+let bad1 = needed_subcomputations_for_several_computations [uple0] ;;
+let v0 = ([],[uple0]) ;;
+let bad2 = pusher_for_recursive_computation v0 ;;
+let (width,breadth,n,scrappers) = uple0 ;;
+let old_getter = carrier_get [] ;;
+let bad3 = find_remote_stumbling_block_or_immediate_working_tool 
+      old_getter width breadth (n,scrappers) ;;
+let enhanced_getter = enhance_getter old_getter ;;
+let tt1 = enhanced_getter width breadth (n,scrappers) ;;
+let tool = Passive_repeat ;;
+let bad4 = try_tool_quickly old_getter width breadth (n,scrappers) tool ;;
+let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
+and selector = Selector_for_hook.of_hook (width,breadth,n) tool ;;
+let hungarian_descendants = Image.image (
+     fun (w,b,m,s) ->
+       let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
+       ((w2,b2,m,s2),adj)
+   ) descendants ;;
+let temp1 = Image.image (fun (uple,adj)->
+    let (w,b,m,s) = uple in 
+    (uple,Hungarian.adjust enhanced_getter (w,b,m,s))
+) hungarian_descendants ;;   
+let uple1 = fst(List.hd hungarian_descendants) ;;  
+let (width1,breadth1,n1,scrappers1) = uple1 ;; 
+let see1 =  enhanced_getter width1 breadth1 (n1,scrappers1);; 
+let bad5 = Hungarian.adjust enhanced_getter uple1;; 
+
+Hungarian.decompose (1,1,[5]) ;;
+*)   
+
+(************************************************************************************************************************
+Snippet 98 : An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. (Version 1)
+************************************************************************************************************************)
+
+open Needed_values ;;
+module Sz_types = struct 
+  
+  type hook_in_knowledge = 
+  Boundary_increment
+ | Passive_repeat  
+ | Fork ;;
+
+type parametrized_uniform_subrange = {
+ usr_positive_exceptions : int list ;
+ usr_negative_exceptions : int list ;
+ usr_modulus : int ;
+ usr_usual :  int list ;
+} ;; 
+
+type  parametrized_subrange = {
+ ps_exceptions : (int * (int list)) list ;
+ ps_usual : parametrized_uniform_subrange ; 
+} ;; 
+
+type parametrized_ps_list = {
+ pl_exceptions : (int * (int list list)) list ;
+ pl_usual : parametrized_subrange list ;
+} ;; 
+
+type level_two_t = Quick of int list ;;   
+
+end ;;
+
+open Sz_types ;;
+
+let i_order = Total_ordering.for_integers ;;
+let i_insert = Ordered.insert i_order ;;
+let i_mem = Ordered.mem i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_merge = Ordered.merge il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+
+let test_for_admissibility_up_to_max_with max_width z =
+  if max_width<1 then true else 
+  Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
+
+let test_for_admissiblity width breadth z =
+   (test_for_admissibility_up_to_max_with (width-1) z)
+   &&
+   (List.for_all (fun t->
+    not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
+
+let remove_one_element (n,scrappers) k=
+  let new_scrappers = i_insert k scrappers in 
+  if k <> n then (n,i_insert k scrappers) else 
+  let new_z =  concretize (n,new_scrappers) in 
+  let new_max = List.hd(List.rev new_z) in 
+  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
+
+
+
+(*
+
+remove_one_element (10,[3;7;8;9]) 10 ;;
+
+*)
+
+module Parametrized = struct 
+
+let eval_uniform_subrange usr n =
+  List.filter (
+     fun k->
+      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
+      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
+      i_mem (k mod usr.Sz_types.usr_modulus)
+      usr.Sz_types.usr_usual
+  ) (Int_range.range 1 n) ;; 
+
+let eval_subrange sr n =
+   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
+   Some answer -> answer 
+   | None ->
+    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+
+let eval_ps_list psl n =
+  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
+  Some answer -> answer 
+  | None ->
+   Image.image (fun sr->eval_subrange sr n) 
+   psl.Sz_types.pl_usual ;;    
+
+let eval_level_two (Quick l) scrappers n =
+  let z = concretize (n,scrappers) in 
+  if (not(i_is_included_in l z))  
+  then [z] 
+  else 
+  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
+  il_sort temp1 ;;     
+
+end ;;   
+
+
+module Parametrized_Example = struct 
+
+  let uniform_subrange pe ne mdl usu = {
+    Sz_types.usr_positive_exceptions = pe ;
+    usr_negative_exceptions = ne ; 
+    usr_modulus = mdl;
+    usr_usual = usu ;
+  };; 
+  
+  let subrange (sr_exns,pe,ne,mdl,usu) = {
+    Sz_types.ps_exceptions = sr_exns ;
+    ps_usual = uniform_subrange pe ne mdl usu ;
+  };; 
+  
+  let ps_list psl_exns psl_usu = {
+    Sz_types.pl_exceptions = psl_exns ;
+    pl_usual = Image.image subrange psl_usu ;
+  };; 
+
+  (*
+  let example1 = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+      ([],[],[2],1,[0]);
+      ([],[],[1],1,[0]);
+     ] ;;
+  *)   
+
+  let example1 = Quick [1;2;3] ;;
+
+  let example2 (* for (1,2,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+      ([],[],[2],1,[0]);
+     ] ;;  
+     
+  let example3 (* for (1,3,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+     ] ;;    
+
+  let example4 (* for (1,2,[4]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2];[1;3];[2;3]];
+     ]
+     [
+      ([],[],[3;4],1,[0]);
+      ([],[],[2;4],1,[0]);
+      ([],[],[1;4],1,[0]);
+     ] ;;   
+
+  let example5 (* for (1,2,[5]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;  
+     
+  let example6 (* for (1,4,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[3;4],1,[0]);
+      ([],[],[2;5],1,[0]);
+      ([],[],[2;4],1,[0]);
+      ([],[],[1;4],1,[0]);
+     ] ;;   
+     
+   let example7 (* for (1,5,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;      
+
+    let example8 (* for (1,6,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
+       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+     ] ;;    
+
+  end ;;   
+  
+
+
+let rose_hashtbl = Hashtbl.create 50 ;;
+let medium_hashtbl = Hashtbl.create 50 ;;
+let low_hashtbl = Hashtbl.create 50 ;;
+
+let access width breadth (n,scrappers) = 
+  let z = concretize (n,scrappers) in 
+  if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+  then Some [z] 
+  else 
+  match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+  Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
+  | None ->  
+  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+   Some summary -> Some (Parametrized.eval_ps_list summary n)
+   | None -> Hashtbl.find_opt low_hashtbl (width,breadth,n,scrappers)) ;;
+
+exception Boundary_increment_exn1 of int * int * int * (int list) ;;  
+exception Boundary_increment_exn2 of int * int * int * (int list) ;; 
+exception Boundary_increment_exn3 of int * int * int * (int list) ;; 
+
+exception Passive_repeat_exn1 of int * int * int * (int list) ;; 
+exception Passive_repeat_exn2 of int * int * int * (int list) ;; 
+
+exception Fork_exn1 of int * int * int * (int list) ;; 
+exception Fork_exn2 of int * int * int * (int list) ;; 
+exception Fork_exn3 of int * int * int * (int list) ;; 
+  
+let compute_from_below (width,breadth,n,scrappers) tool =
+     match tool with 
+     Boundary_increment -> 
+      let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
+      if opt1 = None then raise(Boundary_increment_exn1(width,breadth,n,scrappers)) else  
+      let pre1 = Option.unpack opt1 in 
+      if List.mem n scrappers then raise(Boundary_increment_exn2(width,breadth,n,scrappers)) else
+      let temp1 = Option.filter_and_unpack (fun z->
+         let new_z = z @ [n] in 
+         if test_for_admissiblity width breadth new_z 
+          then Some new_z
+          else None
+      )  pre1 in 
+      if temp1=[]  then raise(Boundary_increment_exn3(width,breadth,n,scrappers)) else 
+      temp1  
+      | Passive_repeat ->
+        let opt5 = access width (breadth-1) (n,scrappers)  in 
+        if opt5 = None then raise(Passive_repeat_exn1(width,breadth,n,scrappers)) else     
+        let pre5 = Option.unpack opt5 and b = breadth in   
+        let temp5 = List.filter (fun z->
+          not(i_is_included_in [b;b+width;b+2*width] z) 
+       )  pre5 in 
+       if temp5=[]  then raise(Boundary_increment_exn2(width,breadth,n,scrappers)) else 
+       temp5  
+      | Fork -> 
+      let tempf = (fun k->
+        remove_one_element  (n,scrappers)  (breadth+k*width) 
+        )  and tempf2 = access width breadth in 
+      let (m0,scr0) = tempf 0 and (m1,scr1) =  tempf 1 and (m2,scr2) =  tempf 2 in 
+      let opt2 = tempf2 (m0,scr0)  
+      and opt3 = tempf2 (m1,scr1) 
+      and opt4 = tempf2 (m2,scr2) in 
+      if opt2 = None then raise(Fork_exn1(width,breadth,n,scrappers)) else  
+      if opt3 = None then raise(Fork_exn2(width,breadth,n,scrappers)) else    
+      if opt4 = None then raise(Fork_exn3(width,breadth,n,scrappers)) else   
+      let temp3 = List.flatten (Image.image Option.unpack [opt2;opt3;opt4]) in 
+      let (_,temp4) = Max.maximize_it_with_care List.length temp3 in 
+      il_sort temp4 ;; 
+
+
+let low_add (width,breadth,n,scrappers,tool) =
+   let res = compute_from_below (width,breadth,n,scrappers) tool in  
+   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
+   res ;;
+
+let med_add (width,breadth,scrappers) summary = 
+  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
+
+let rose_add (width,breadth) summary = 
+    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
+ 
+
+let find_remote_stumbling_block_or_immediate_working_tool width breadth (n,scrappers) = 
+  let opt5 = access width (breadth-1) (n,scrappers)  in 
+  if opt5 = None then (Some(width,breadth-1,n,scrappers),None) else     
+  let pre5 = Option.unpack opt5 and b = breadth in   
+  let temp5 = List.filter (fun z->
+      not(i_is_included_in [b;b+width;b+2*width] z) 
+  )  pre5 in 
+  if temp5<>[]  then (None, Some Passive_repeat) else 
+
+    match access width breadth (n,scrappers) with 
+    Some old_answer -> (None,None) 
+    | None -> 
+      let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
+      if opt1 = None then (Some(width,breadth,n-1,scrappers),None) else  
+      let pre1 = Option.unpack opt1 in 
+      let temp1 = Option.filter_and_unpack (fun z->
+         let new_z = z @ [n] in 
+         if test_for_admissiblity width breadth new_z 
+          then Some new_z
+          else None
+      )  pre1 in 
+      if temp1<>[]  then (None,Some Boundary_increment) else 
+      let tempf = (fun k->
+        remove_one_element  (n,scrappers)  (breadth+k*width) 
+      )  in 
+      let (m0,scr0) = tempf 0 and (m1,scr1) =  tempf 1 and (m2,scr2) =  tempf 2 in 
+      let tempf2 = access width breadth in 
+      let opt2 = tempf2 (m0,scr0)  
+      and opt3 = tempf2 (m1,scr1) 
+      and opt4 = tempf2 (m2,scr2) in 
+      if opt2 = None then (Some(width,breadth,m0,scr0),None) else  
+      if opt3 = None then (Some(width,breadth,m1,scr1),None) else    
+      if opt4 = None then (Some(width,breadth,m2,scr2),None) else   
+      (*
+      let temp3 = List.flatten (Image.image Option.unpack [opt2;opt3;opt4]) in 
+      let (_,temp4) = Max.maximize_it_with_care List.length temp3 in 
+      *)
+      (None,Some Fork) ;;
+
+let rec first_needed_step_in_solution_opt (width,breadth,m0,scr0) =
+    let (opt_stumbling_block,opt_tool) = 
+    find_remote_stumbling_block_or_immediate_working_tool width breadth (m0,scr0) in 
+    match opt_tool with 
+    Some(tool) ->Some (width,breadth,m0,scr0,tool)
+    | None -> (match opt_stumbling_block with 
+                Some block ->first_needed_step_in_solution_opt(block) 
+                |None -> None 
+               )   ;; 
+    
+exception Quick_compute_exn of int * int * int * (int list) ;; 
+
+let force_access width breadth (n,scrappers) = 
+   match access width breadth (n,scrappers) with 
+    None -> raise (Quick_compute_exn(width,breadth,n,scrappers)) 
+   | Some answer -> answer;;
+
+  
+rose_add (1,1) Parametrized_Example.example1 ;; 
+
+
+med_add (1,2,[]) Parametrized_Example.example2 ;; 
+med_add (1,3,[]) Parametrized_Example.example3 ;; 
+
+med_add (1,2,[4]) Parametrized_Example.example4 ;; 
+med_add (1,3,[4]) Parametrized_Example.example4 ;; 
+med_add (1,4,[4]) Parametrized_Example.example4 ;; 
+
+med_add (1,2,[5]) Parametrized_Example.example5 ;; 
+med_add (1,3,[5]) Parametrized_Example.example5 ;; 
+med_add (1,4,[5]) Parametrized_Example.example5 ;; 
+
+med_add (1,4,[])  Parametrized_Example.example6 ;; 
+med_add (1,5,[])  Parametrized_Example.example7 ;; 
+med_add (1,6,[])  Parametrized_Example.example8 ;; 
+
+(*    
+
+#use "Githubbed_archive/Szemeredi_problem/03_third_stab_at_szemeredi_problem.ml" ;;
+
+
+*)
+
+(*    
+
+STEP 15+N : 
+
+let (c_width,c_breadth,c_strappers) = (1,7,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;  
+for k = 1 to 8 do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example8 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+(*    
+
+STEP 14 : 
+
+let (c_width,c_breadth,c_strappers) = (1,6,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;  
+for k = 1 to 8 do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example8 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+(*    
+
+STEP 13 : 
+
+let (c_width,c_breadth,c_strappers) = (1,5,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;  
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example7 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+(*    
+
+STEP 12 : 
+
+let (c_width,c_breadth,c_strappers) = (1,4,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;  
+for k = 1 to 5 do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+low_add (1, 4, 6, [], Fork) ;;
+for k = 7 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Boundary_increment) in ()
+done ;;  
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example6 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 10: 
+
+let (c_width,c_breadth,c_strappers) = (1,4,[5]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example5 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+
+(*    
+
+STEP 9: 
+
+let (c_width,c_breadth,c_strappers) = (1,3,[5]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example5 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 8: 
+
+let (c_width,c_breadth,c_strappers) = (1,2,[5]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example5 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+
+(*    
+
+STEP 7: 
+
+let (c_width,c_breadth,c_strappers) = (1,4,[4]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example4 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 6: 
+
+let (c_width,c_breadth,c_strappers) = (1,4,[4]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example4 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+
+(*    
+
+STEP 5: 
+
+let (c_width,c_breadth,c_strappers) = (1,3,[4]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example4 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 4 : 
+
+let (c_width,c_breadth,c_strappers) = (1,2,[4]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example4 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+
+(*    
+
+STEP 3 : 
+
+let (c_width,c_breadth,c_strappers) = (1,3,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (c_width, c_breadth, k, c_strappers, Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example3 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 2 : 
+
+let (c_width,c_breadth,c_strappers) = (1,2,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+let bound = 20 ;;
+for k = 1 to bound do 
+  let _ = low_add (1, 2, k, [], Passive_repeat) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example2 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
+
+(*    
+
+STEP 1 :
+
+let (c_width,c_breadth,c_strappers) = (1,1,[]) ;;
+let ff n = first_needed_step_in_solution_opt 
+     (c_width,c_breadth,n,c_strappers) ;;    
+let gg n = force_access  c_width c_breadth (n,c_strappers) ;; 
+
+low_add (1, 1, 3, [], Fork) ;; 
+let bound = 20 ;;
+for k = 4 to bound do 
+  let _ = low_add (1, 1, k, [], Boundary_increment) in ()
+done ;;   
+
+let u1 = Int_range.scale (fun k->(k,gg k,
+  Parametrized.eval_ps_list 
+     Parametrized_Example.example1 k
+)) 1 bound ;;
+let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
+
+*)
+
 
 
 

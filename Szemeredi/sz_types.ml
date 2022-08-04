@@ -14,6 +14,12 @@ type selector_for_hook =
 | Passive_repeat_selector of int * int  
 | Fork_selector ;;
 
+type rubber_core_list = L of int ;;
+
+type rubber_list =
+     Short_list of int list list 
+    |Rubber of rubber_core_list * (int list) ;;
+
 type parametrized_uniform_subrange = {
    usr_positive_exceptions : int list ;
    usr_negative_exceptions : int list ;
