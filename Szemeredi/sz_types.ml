@@ -20,6 +20,11 @@ type rubber_list =
      Short_list of int list list 
     |Rubber of rubber_core_list * (int list) ;;
 
+type rubber_definition = 
+     Constraining of rubber_core_list * (int list list) 
+    |Merger of (int list list) * (rubber_core_list list)
+    |Short_name of int list list ;;
+
 type parametrized_uniform_subrange = {
    usr_positive_exceptions : int list ;
    usr_negative_exceptions : int list ;
