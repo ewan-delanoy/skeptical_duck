@@ -47,6 +47,8 @@ type hungarian_adjuster =
 type level_two_t = Quick of int list ;; 
 end ;;  
 
+open Sz_types ;;
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -102,6 +104,8 @@ let rec effective_breadth (width,scrappers,b) =
    else b ;;
 
 end ;;  
+
+
 
 let normalized_adjust adj =
     if adj = [] 

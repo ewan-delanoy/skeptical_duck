@@ -22,7 +22,7 @@ type rubber_list =
 
 type rubber_definition = 
      Constraining of rubber_core_list * (int list list) 
-    |Merger of (int list list) * (rubber_core_list list)
+    |Merger of (int list list) * ((rubber_core_list * (int list)) list)
     |Short_name of int list list ;;
 
 type parametrized_uniform_subrange = {
