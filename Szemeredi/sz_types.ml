@@ -16,7 +16,7 @@ type selector_for_hook =
 | Fork_selector 
 | Jump_selector ;;
 
-type rubber_core_list = L of int ;;
+type rubber_core_list = L of string ;;
 
 type rubber_list =
      Short_list of int list list 
