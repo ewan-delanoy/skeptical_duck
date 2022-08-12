@@ -7,12 +7,14 @@
 type hook_in_knowledge = 
     Boundary_increment
    | Passive_repeat  
-   | Fork ;;
+   | Fork 
+   | Jump ;;
 
 type selector_for_hook = 
   Boundary_increment_selector of int * int * int 
 | Passive_repeat_selector of int * int  
-| Fork_selector ;;
+| Fork_selector 
+| Jump_selector ;;
 
 type rubber_core_list = L of int ;;
 
