@@ -55,12 +55,17 @@ let rec helper_for_enumeration (item,already_treated) =
 
 end ;; 
 
+let iii (* meaning, integer initial interval *) n = 
+   Private.helper_for_enumeration (Int_range.range 1 n,[]);;
+
 let permutations l =
    let initial_item = Ordered.sort Total_ordering.standard l in 
    Private.helper_for_enumeration (initial_item,[]);;   
 
-let iii (* meaning, integer initial interval *) n = 
-   Private.helper_for_enumeration (Int_range.range 1 n,[]);;
+let product sigma1 sigma2 =
+    Image.image (fun s2->List.nth sigma1 (s2-1)) sigma2 ;;
+
+
 
    
       
