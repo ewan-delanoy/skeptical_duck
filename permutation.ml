@@ -65,7 +65,9 @@ let permutations l =
 let product sigma1 sigma2 =
     Image.image (fun s2->List.nth sigma1 (s2-1)) sigma2 ;;
 
-
+let inverse sigma = 
+   let n = List.length sigma in 
+   Int_range.scale (fun y->Listennou.find_index y sigma) 1 n ;;
 
    
       
