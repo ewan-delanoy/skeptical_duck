@@ -180,12 +180,44 @@ module Private = struct
        if cycles = [] then 1 else 
        Gcd.lcm_for_many (Image.image List.length cycles) ;;  
 
+   (*
+   
+   order [2;3;4;5;1] ;;
+   
+   *)
+
+   let product sigma1 sigma2 =
+      Image.image (fun s2->List.nth sigma1 (s2-1)) sigma2 ;;
+
+
+   let cyclic_subgroup perm =
+       let w = order perm in 
+       if w=1 then [perm] else
+       let walker = ref (perm,[]) in 
+       let _ =for k=1 to w do
+         let (to_be_treated,treated) = (!walker) in 
+         let new_val = product perm to_be_treated in 
+         walker:=(new_val,to_be_treated::treated)
+       done in 
+       let (last_perm,other_perms) = (!walker) in 
+       Ordered.sort Total_ordering.silex_for_intlists (last_perm::other_perms)
+      ;;  
+
+   (*
+   
+   cyclic_subgroup [2;3;4;5;1] ;;
+   
+   *)
+
+
    end ;; 
    
 let alternating_group  = Memoized.make(fun n->
       List.filter (fun perm->Private.signature perm=1) 
       (Private.integer_initial_interval n)  );;   
    
+let cyclic_subgroup = Private.cyclic_subgroup ;;
+
 let decompose_into_disjoint_cycles =  Private.decompose_into_disjoint_cycles ;;    
    
 let iii (* meaning, integer initial interval *) 
@@ -196,8 +228,7 @@ let permutations l =
       let initial_item = Ordered.sort Total_ordering.standard l in 
       Private.helper_for_enumeration (initial_item,[]);;   
    
-let product sigma1 sigma2 =
-       Image.image (fun s2->List.nth sigma1 (s2-1)) sigma2 ;;
+let product = Private.product ;;
    
 let product_of_cycles = Private.product_of_cycles ;;     
        
