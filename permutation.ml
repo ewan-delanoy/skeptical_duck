@@ -175,6 +175,10 @@ module Private = struct
 
    *)    
  
+   let order perm =
+       let cycles = decompose_into_disjoint_cycles perm in 
+       if cycles = [] then 1 else 
+       Gcd.lcm_for_many (Image.image List.length cycles) ;;  
 
    end ;; 
    
@@ -201,6 +205,8 @@ let inverse sigma =
       let n = List.length sigma in 
       Int_range.scale (fun y->Listennou.find_index y sigma) 1 n ;;
    
+let order = Private.order ;;      
+
 let signature = Private.signature ;;   
          
    
