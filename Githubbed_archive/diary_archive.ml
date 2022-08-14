@@ -1,6 +1,78 @@
 (************************************************************************************************************************
-Snippet 103 : Define a cycle from list of successive elts
+Snippet 104 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 103 : Musing on the simplicity of An
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let i_sort = Ordered.sort i_order ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.sort il_order ;;
+
+
+let pr = Permutation.product ;;
+let iv = Permutation.inverse ;;
+let conj x g = pr g (pr x (iv g)) ;;
+let cube x = pr x (pr x x) ;;
+let nonfixed_items perm = 
+    let temp1 = Int_range.index_everything perm in 
+    Option.filter_and_unpack (fun (x,y)->if x=y then None else Some x)temp1 ;;
+let is_good x= 
+ (nonfixed_items(cube x)=[]) && (List.length(nonfixed_items x)=3) ;;
+
+
+
+let n0 = 7 ;;
+let main = Permutation.alternating_group n0 ;;
+let conjugates x = il_sort( Image.image (conj x) main) ;; 
+let pikaboo x =
+  let temp1 = Permutation.cyclic_subgroup x in 
+  let temp2 = Image.image conjugates temp1 in 
+  il_fold_merge temp2 ;;
+
+let pookabi = Memoized.make(fun x ->
+   let temp1 = pikaboo x in 
+   let temp2 = Image.image (Listennou.big_head 3) temp1 in 
+   il_sort temp2 );;
+
+let measure z = List.length(List.filter (fun x->x>3) z);;
+
+let test_for_normal_form z =
+    let temp1 = List.filter (fun x->x>3) z in 
+    let m = List.length temp1 in 
+    temp1 = Int_range.range 4 (m+3) ;; 
+
+let prettify_atomic_result z =
+  let temp1 = Image.image (fun i->if i<4 then string_of_int i else "*") z in 
+   String.concat "" temp1 ;; 
+
+let prettify_individual_result m ll =
+  let temp1 =List.filter(fun z->(measure z=m)&&(test_for_normal_form z)) ll in 
+  Image.image prettify_atomic_result temp1;;  
+
+let expand_pookabi_result ll = 
+  let temp1 = i_sort(Image.image measure ll) in 
+  Image.image (fun m->(m,
+  prettify_individual_result m ll)) temp1;;
+
+let u1 = Image.image pookabi main ;;   
+
+let boehme_order = Total_ordering.silex_compare Total_ordering.silex_for_intlists ;;
+let u2 = Ordered.sort boehme_order u1 ;;
+let u3 = Image.image (
+  fun y->(y,List.filter (fun x->pookabi x=y) main)
+) u2 ;;
+let u4 = Image.image (fun (_,z)->List.length z) u3;;
+let v1 = List.nth u2 5 ;;
+let v2 = expand_pookabi_result v1;;
+
+
+
 
 
 (************************************************************************************************************************
