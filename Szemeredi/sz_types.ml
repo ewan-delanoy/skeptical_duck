@@ -47,10 +47,11 @@ type parametrized_ps_list = {
 type hungarian_adjuster =
      Leave_unchanged 
     |Adjust of int list ;; 
-   
-
-       
 
 type level_two_t = Quick of int list ;; 
   
+type sycomore_list = 
+   Singleton of int list 
+   | Breakpoint of int * int * int * (int list) ;;
 
+   
