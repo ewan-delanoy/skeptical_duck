@@ -49,9 +49,11 @@ type hungarian_adjuster =
     |Adjust of int list ;; 
 
 type level_two_t = Quick of int list ;; 
-  
+
+type point = P of int * int * int * (int list) ;;
+
 type sycomore_list = 
    Singleton of int list 
-   | Breakpoint of int * int * int * (int list) ;;
+   | Breakpoint of point ;;
 
-   
+
