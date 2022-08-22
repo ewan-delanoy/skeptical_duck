@@ -54,6 +54,6 @@ type point = P of int * int * int * (int list) ;;
 
 type sycomore_list = 
    Singleton of int list 
-   | Breakpoint of point ;;
+   | Breakpoint_with_extensions of point * ((int list) list) * (int list);;
 
 
