@@ -57,3 +57,8 @@ type sycomore_list =
    | Breakpoint_with_extensions of point * ((int list) list) * (int list);;
 
 
+type for_width_one = FW1 of ((int * sycomore_list) list) ;;
+
+type function_of_size = 
+  Width_one of for_width_one 
+  |Usual of (int -> sycomore_list) list ;; 
