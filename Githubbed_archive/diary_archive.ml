@@ -1,6 +1,129 @@
 (************************************************************************************************************************
-Snippet 104 : 
+Snippet 106 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 105 : Musing on the Alon-Knuth theorem (episode 2)
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let i_fold_intersect = Ordered.fold_intersect i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.sort il_order ;;
+
+let p_order = Total_ordering.product i_order il_order ;;
+let p_sort = Ordered.sort p_order ;;
+
+let u1 = Int_range.scale (fun t->[0;1;2]) 1 3 ;;
+let u2 = Cartesian.general_product u1 ;;
+let u3 = Image.image (fun l->(Basic.fold_sum l,l)) u2 ;;
+let u4 = p_sort (List.filter (fun (s,l)->s<=2) u3) ;; 
+let u5 = List.rev(Image.image snd (List.tl u4)) ;;
+let u6 = Image.image (Image.image (fun t->2*t)) u5;;
+
+let tf1 (a1,a2,a3,b1,b2,b3) =
+  (b3*a2 + b2*a3, b3*a1 + b1*a3, b2*a1 + b1*a2) ;;
+
+let tf2 uple =
+   let (u,v,w) = tf1 uple in (u*u,v*v,w*w) ;;
+
+let u1 = Int_range.scale (fun t->[-1;1]) 1 6 ;;
+let u2 = Cartesian.general_product u1 ;;
+let u3 = Image.image (
+     fun l->
+      let nth = (fun k->List.nth l (k-1)) in 
+      (nth 1,nth 2,nth 3,nth 4,nth 5,nth 6)
+  ) u2 ;;
+let u4 = Image.image tf1 u3 ;; 
+let u5 = Image.image (fun (a,b,c)->[a;b;c]) u4 ;;
+let zero_vector = [0;0;0] ;;
+let whole = il_sort (zero_vector::u5) ;; 
+let shadow j = i_sort(Image.image (fun l->List.nth l (j-1)) whole) ;;
+let shadows = Int_range.scale shadow 1 3 ;;
+let base = Cartesian.general_product shadows ;;
+let unattended = List.filter (fun z->not(List.mem z whole)) base ;;
+let u6 = Int_range.index_everything unattended 
+
+
+
+
+(************************************************************************************************************************
+Snippet 104 : Musing on the Alon-Knuth theorem
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let i_fold_intersect = Ordered.fold_intersect i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.sort il_order ;;
+
+let u1 = Int_range.scale (fun t->[-1;1]) 1 3 ;;
+let u2 = Cartesian.general_product u1 ;;
+let u3 = Image.image (
+   fun l->
+    let nth = (fun k->List.nth l (k-1)) in 
+    (1,nth 1,nth 2,nth 3)
+) u2 ;;
+let u4 = Int_range.index_everything u3 ;; 
+let sp (a1,a2,a3,a4) (b1,b2,b3,b4) = a1*b1 + a2*b2 + a3*b3 + a4 * b4 ;;
+
+let ker uple =
+    Option.filter_and_unpack (
+     fun (j,uple2) -> if sp uple uple2 = 0 then Some j else None
+    ) u4;; 
+
+let i_ker k = ker (List.nth u3 (k-1)) ;;      
+let i_ker_for_several l =
+    let temp1 = Image.image i_ker l in 
+    i_fold_intersect temp1 ;;
+              
+let unexpanded_data = 
+   Image.image (fun (j,uple)->(j,ker uple)) u4 ;;
+
+let elementary_extension l j = 
+    let new_idx = (List.length l)+1 in 
+    let naive_possibilities_for_j = List.assoc new_idx unexpanded_data  in 
+    if j= new_idx
+    then Some(l @ [j,naive_possibilities_for_j])
+    else 
+    let possibilities_for_j = i_fold_intersect (naive_possibilities_for_j::(Option.filter_and_unpack (
+      fun (k,vals) -> if k=j then Some vals else None
+     ) l)) in 
+    if possibilities_for_j = [] then None else 
+    let new_l = Image.image (fun 
+    (k,vals)->if k=j then (k,possibilities_for_j) else (k,vals)) l in 
+    Some(new_l @ [j,possibilities_for_j]) ;;     
+
+let all_elementary_extensions  l = 
+   let older_indices = i_sort(Image.image fst l) in      
+   Option.filter_and_unpack (
+    elementary_extension l
+   ) (older_indices@[ (List.length l)+1]) ;;
+
+let involved_possibilities l = 
+  let involved_indices = i_sort(Image.image fst l) in  
+  Cartesian.general_product (Image.image (fun j->List.assoc j l) involved_indices) ;;
+
+let ff = Memoized.recursive (
+   fun old_f d->if d<2 then [[List.hd unexpanded_data]] else 
+    List.flatten(Image.image all_elementary_extensions (old_f (d-1)))
+)  ;;  
+
+let z1 = List.filter (
+   fun l->
+    let older_indices = i_sort(Image.image fst l) in    
+    List.length(older_indices)<=3
+) (ff 7) ;;
+let z2 = 
+  il_sort(Image.image i_sort
+  (List.flatten(Image.image involved_possibilities z1)));;
+
 
 
 (************************************************************************************************************************

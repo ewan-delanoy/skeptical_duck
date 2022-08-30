@@ -8,6 +8,18 @@ module Private = struct
 
   let oi = Total_ordering.for_integers ;;
 
+  let rec helper_for_maximal_elts_wrt_inclusion (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+       if List.exists (fun b->
+         (b<>a) && ( Ordered.is_included_in oi a b) ) others
+       then helper_for_maximal_elts_wrt_inclusion (already_treated,others)
+       else 
+        let temp1 = List.filter (fun b->
+           not(Ordered.is_included_in oi b a)) others in
+        helper_for_maximal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
+
   let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
     match to_be_treated with 
     [] -> List.rev already_treated 
@@ -72,6 +84,9 @@ module Private = struct
 
 
 end ;;        
+
+let maximal_elts_wrt_inclusion l= 
+  Private.helper_for_maximal_elts_wrt_inclusion ([],l) ;;
 
 let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
 
