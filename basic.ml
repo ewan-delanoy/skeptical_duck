@@ -22,6 +22,9 @@ let rec helper_for_power (a,b,accu) =
 
 end ;;  
 
+let fold_prod=function
+[]->1
+|a::b->List.fold_left(*)(a)(b);;
 
 let fold_sum=function
 []->0
