@@ -82,8 +82,31 @@ module Private = struct
      let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Int_range.range 1 n) in 
      Image.image get_several temp1 ;;
 
+let commonest_elements ll = 
+  let temp1 = Ordered.fold_merge oi ll in 
+  let (_,temp2) = Max.maximize_it_with_care (
+    fun y->List.length(List.filter (Ordered.mem oi y) ll)
+  ) temp1 in 
+  temp2;; 
 
+let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
+   if to_be_treated = [] 
+   then (List.rev history,treated)
+   else
+   let temp1 = commonest_elements to_be_treated in 
+   let a = List.hd temp1 in 
+   helper_for_greedy_transversal(temp1::history,Ordered.insert oi a treated,
+     List.filter (fun x->not(Ordered.mem oi a x)) to_be_treated) ;;  
+
+ let greedy_transversal ll =
+  helper_for_greedy_transversal ([],[],ll) ;;
+   
 end ;;        
+
+
+let commonest_elements = Private.commonest_elements ;;
+
+let greedy_transversal = Private.greedy_transversal ;;
 
 let maximal_elts_wrt_inclusion l= 
   Private.helper_for_maximal_elts_wrt_inclusion ([],l) ;;

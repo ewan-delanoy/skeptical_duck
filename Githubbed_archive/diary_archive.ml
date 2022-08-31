@@ -1,7 +1,194 @@
 (************************************************************************************************************************
-Snippet 106 : 
+Snippet 107 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 106 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 
+to compute the maximal elts in an upwards filter and the minimal elts outside
+it (see the "butterfly" function). It should work even for a filter on a large
+base set, as long as the minimal and maximal elts have small size and are not
+too numerous.
+************************************************************************************************************************)
+
+let i_order = Total_ordering.for_integers ;;
+let i_fold_intersect = Ordered.fold_intersect i_order ;;
+let i_intersects = Ordered.intersects i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_fold_merge = Ordered.fold_merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let u1 = Int_range.scale (fun t->[-1;1]) 1 5 ;;
+let u2 = Cartesian.general_product u1 ;;
+let base = Image.image (fun l-> 1 :: l) u2 ;;
+let indexed_base = Int_range.index_everything base ;; 
+let sp l1 l2 =
+   let temp1 = List.combine l1 l2 in 
+   Basic.fold_sum(Image.image (fun (x,y)->x*y) temp1) ;;
+   
+
+let ker uple =
+    Option.filter_and_unpack (
+     fun (j,uple2) -> if sp uple uple2 = 0 then Some j else None
+    ) indexed_base;; 
+
+let i_ker_for_individual k = ker (List.nth base (k-1)) ;;      
+let i_ker l =
+    let temp1 = Image.image i_ker_for_individual l in 
+    i_fold_intersect temp1 ;;
+              
+let unexpanded_data = 
+   Image.image (fun (j,uple)->(j,ker uple)) indexed_base ;;
+
+let all_complements n ll=
+Image.image (fun z->i_setminus (Int_range.range 1 n) z)  ll ;;
+
+let merged_power_sets ll=
+  let temp1 = Image.image (fun l->il_sort(Listennou.power_set l)) ll in 
+  il_fold_merge temp1 ;; 
+
+let butterfly_operation ll addedum = 
+   let test_f = (
+    fun x->let enhanced_x = i_sort (x@addedum) in 
+    i_ker (enhanced_x) <> []
+   ) in   
+  let (inert,ramified) = List.partition test_f ll in 
+    let below_ramified = merged_power_sets ramified in 
+    let temp4 = List.filter test_f   below_ramified in 
+    let temp5 = Ordered_misc.maximal_elts_wrt_inclusion temp4 in  
+    let temp6 = Image.image (fun x->i_sort (x@addedum) ) inert 
+    and temp7 = Image.image (fun x->i_sort (x@addedum) ) temp5 in 
+    let temp8 = List.filter (fun x->not(test_f x))  below_ramified in 
+    let temp9 = Ordered_misc.minimal_elts_wrt_inclusion temp8 in  
+    let temp10 = Image.image (fun x->i_sort (x@addedum) ) temp9 in 
+    let pre_whole = il_sort(ramified@temp6@temp7) in 
+    (
+      ramified,temp6,temp7, 
+      Ordered_misc.maximal_elts_wrt_inclusion pre_whole,
+      temp10
+    ) ;;
+
+let tt n = List.filter (fun k->i_ker [k;n]=[]) (Int_range.range 1 (n-1)) ;; 
+
+
+let g_10_part1=[[1;4;6;10];[1;4;7;10];[1;6;7;10];[4;6;7;10]] ;;
+let g_10_part2=[[2;3;5;9];[2;3;8;9];[2;5;8;9];[3;5;8;9]] ;;
+let g_10 = il_sort(g_10_part1 @ g_10_part2) ;;
+
+let b_10_part1 = Image.image (fun (a,b)->[a;b]) 
+(Cartesian.product [1;4;6;7;10] [2;3;5;8;9]) ;;
+let b_10_part2 = [[1;4;6;7];[2;3;5;8]] ;;
+let b_10 = il_sort(b_10_part1 @ b_10_part2) ;;
+
+let t_10_1 = Ordered_misc.minimal_transversals b_10 ;;
+let check_gb_10 = (il_sort(all_complements 10 t_10_1))=g_10 ;;  
+
+butterfly_operation g_10_part1 [11];;
+
+let g_11_part1=[[1;4;6;10];[1;4;6;11];[1;4;7;10];[1;4;7;11];
+[1;6;7;10;11];[4;6;7;10;11]] ;;
+let g_11_part2=[[2;3;5;9];[2;3;8;9];[2;5;8;9];[3;5;8;9]] ;;
+let g_11 = il_sort(g_11_part1 @ g_11_part2) ;;
+
+let b_11_part1 = Image.image (fun (a,b)->i_sort[a;b]) 
+(Cartesian.product [1;4;6;7;10;11] [2;3;5;8;9]) ;;
+let b_11_part2 = [[1;4;6;7];[2;3;5;8];[1;4;10;11]] ;;
+let b_11 = il_sort(b_11_part1 @ b_11_part2) ;;
+
+let t_11_1 = Ordered_misc.minimal_transversals b_11 ;;
+let check_gb_11 = (il_sort(all_complements 11 t_11_1))=g_11 ;; 
+
+butterfly_operation g_11_part2 [12];;
+
+let g_12_part1=[[1;4;6;10];[1;4;6;11];[1;4;7;10];[1;4;7;11];
+[1;6;7;10;11];[4;6;7;10;11]] ;;
+let g_12_part2=[[2;3;5;9];[2;3;5;12];[2;3;8;9];[2;3;8;12];[2;5;8;9;12];[3;5;8;9;12]] ;;
+let g_12 = il_sort(g_12_part1 @ g_12_part2) ;;
+
+let b_12_part1 = Image.image (fun (a,b)->i_sort [a;b]) 
+(Cartesian.product [1;4;6;7;10;11] [2;3;5;8;9;12]) ;;
+let b_12_part2 = [[1;4;6;7];[2;3;5;8];[2;3;9;12];[1;4;10;11]] ;;
+let b_12 = il_sort(b_12_part1 @ b_12_part2) ;;
+
+let t_12_1 = Ordered_misc.minimal_transversals b_12 ;;
+let check_gb_12 = (il_sort(all_complements 12 t_12_1))=g_12 ;; 
+
+butterfly_operation g_12_part1 [13];;
+
+let g_13_part1=[[1; 4; 6; 10]; [1; 4; 7; 11]; [1; 6; 7; 13]; [1; 10; 11; 13];
+[1; 4; 6; 11; 13]; [1; 4; 7; 10; 13]; [1; 6; 7; 10; 11];
+[4; 6; 7; 10; 11; 13]] ;;
+let g_13_part2=[[2;3;5;9];[2;3;5;12];[2;3;8;9];[2;3;8;12];[2;5;8;9;12];[3;5;8;9;12]] ;;
+let g_13 = il_sort(g_13_part1 @ g_13_part2) ;;
+
+let b_13_part1 = Image.image (fun (a,b)->i_sort [a;b]) 
+(Cartesian.product [1;4;6;7;10;11;13] [2;3;5;8;9;12]) ;;
+let b_13_part2 = [[1;4;6;7];[1;4;10;11];[1;6;10;13];[1;7;11;13];
+[2;3;5;8];[2;3;9;12]] ;;
+let b_13 = il_sort(b_13_part1 @ b_13_part2) ;;
+
+let t_13_1 = Ordered_misc.minimal_transversals b_13 ;;
+let check_gb_13 = (il_sort(all_complements 13 t_13_1))=g_13 ;; 
+
+let (_,_,_,r_14_good,r_14_bad) = butterfly_operation g_13_part2 [14];;
+
+let g_14_part1= g_13_part1 ;;
+let g_14_part2= r_14_good ;;
+let g_14 = il_sort(g_14_part1 @ g_14_part2) ;;
+
+let b_14_part1 = Image.image (fun (a,b)->i_sort [a;b]) 
+(Cartesian.product [1;4;6;7;10;11;13] [2;3;5;8;9;12;14]) ;;
+let b_14_part2 = il_sort (b_13_part2 @ r_14_bad) ;;
+let b_14 = il_sort(b_14_part1 @ b_14_part2) ;;
+
+let t_14_1 = Ordered_misc.minimal_transversals b_14 ;;
+let check_gb_14 = (il_sort(all_complements 14 t_14_1))=g_14 ;; 
+
+
+(*
+
+let h1 = il_sort(all_complements 13 t_13_1) ;;
+let see1 = il_setminus h1 g_13 ;;
+let see2 = il_setminus g_13 h1;;
+
+let good1 = [1;6;7;13] ;;
+let c_good1 = i_setminus (Int_range.range 1 13) good1 ;; 
+let see3 = List.filter (
+   fun z-> not(i_intersects z c_good1)
+) b_13 ;;
+let see4 = List.filter (fun t->i_is_included_in t c_good1) t_13_1 ;; 
+
+let ll = g_12_part1 
+and addendum = [13] ;;
+
+
+let test_f = (
+   fun x->let enhanced_x = i_sort (x@addendum) in 
+   i_ker (enhanced_x) <> []
+) ;;
+let (inert,ramified) = List.partition test_f ll ;;
+let below_ramified = merged_power_sets ramified ;;
+let temp4 = List.filter test_f   below_ramified ;;
+let temp5 = Ordered_misc.maximal_elts_wrt_inclusion temp4 ;; 
+let temp6 = Image.image (fun x->i_sort (x@addendum) ) inert 
+and temp7 = Image.image (fun x->i_sort (x@addendum) ) temp5 ;; 
+   let temp8 = List.filter (fun x->not(test_f x))  below_ramified in 
+   let temp9 = Ordered_misc.minimal_elts_wrt_inclusion temp8 in  
+   let temp10 = Image.image (fun x->i_sort (x@addendum) ) temp9 in 
+   let pre_whole = il_sort(ramified@temp6@temp7) in 
+   (
+     ramified,temp6,temp7, 
+     Ordered_misc.maximal_elts_wrt_inclusion pre_whole,
+     temp10
+   ) ;;
+
+*)   
 
 (************************************************************************************************************************
 Snippet 105 : Musing on the Alon-Knuth theorem (episode 2)
