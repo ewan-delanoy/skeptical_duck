@@ -24,7 +24,7 @@ end ;;
 
 let fold_prod=function
 []->1
-|a::b->List.fold_left(*)(a)(b);;
+|a::b->List.fold_left( * )(a)(b);;
 
 let fold_sum=function
 []->0
