@@ -502,7 +502,8 @@ let medium_hashtbl = Hashtbl.create 50 ;;
 let low_hashtbl = Hashtbl.create 50 ;;
 
 
-let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) = 
+let nonhungarian_enhance_getter old_getter pt =
+    let (width,breadth,n,scrappers) = Point.unveil pt in  
     let z = concretize (n,scrappers) in 
     if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
     then Some (Short_list[z]) 
@@ -512,43 +513,47 @@ let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) =
     | None ->  
     (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
      Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> old_getter (width,breadth,n,scrappers)) ;;   
+     | None -> old_getter pt) ;;   
 
-let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
+let hungarian_enhance_getter old_getter pt = 
+  let (width,breadth,n,scrappers) = Point.unveil pt in  
   let ((width2,breadth2,scrappers2),adj) = 
     Hungarian.decompose (width,breadth,scrappers) in 
-  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
+  let pt2 = P(width2,breadth2,n,scrappers2) in   
+  let res_opt = nonhungarian_enhance_getter old_getter pt2 in  
     Hungarian.adjust res_opt adj;;
 
 let low_getter = Hashtbl.find_opt low_hashtbl ;;    
 let access = hungarian_enhance_getter low_getter ;;   
 
-let descendants_for_tool (width,breadth,n,scrappers) tool = 
+let descendants_for_tool pt tool = 
+       let (width,breadth,n,scrappers) = Point.unveil pt in  
        match tool with 
-       Passive_repeat -> [(width,breadth-1,n,scrappers)]     
+       Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
       | Boundary_increment ->
        let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-       [width,breadth,m,new_scrappers]
+       [P(width,breadth,m,new_scrappers)]
       | Fork ->     
           Int_range.scale (fun k->
              let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-             (width,breadth-1,m,scr)
+             P(width,breadth-1,m,scr)
            ) 0 2 
-      | Jump -> [(width-1,n-2*(width-1),n,scrappers)] ;;
+      | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 
-let try_tool_quickly old_getter width breadth (n,scrappers) tool = 
+let try_tool_quickly old_getter pt tool = 
+   let (width,breadth,n,scrappers) = Point.unveil pt in  
    let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
-   let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
+   let descendants = descendants_for_tool pt tool 
    and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
    let hungarian_descendants = Image.image (
-      fun (w,b,m,s) ->
+      fun pt1  ->
+        let (w,b,m,s) = Point.unveil pt1 in  
         let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
-        ((w2,b2,m,s2),adj)
+        (P(w2,b2,m,s2),adj)
     ) descendants in 
-   let temp1 = Image.image (fun (uple,adj)->
-      let (w,b,m,s) = uple in 
-      (uple,Hungarian.adjust (nh_enhanced_getter w b (m,s)) adj)
+   let temp1 = Image.image (fun (pt3,adj)->
+      (pt3,Hungarian.adjust (nh_enhanced_getter pt3) adj)
   ) hungarian_descendants in   
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
@@ -559,19 +564,19 @@ let try_tool_quickly old_getter width breadth (n,scrappers) tool =
   ([],Selector_for_hook.eval selector args) ;;  
 
 
-exception Compute_from_below_exn of int * int * int * (int list) ;;  
+exception Compute_from_below_exn of point ;;  
 
-let compute_from_below old_getter (width,breadth,n,scrappers) tool =
+let compute_from_below old_getter pt tool =
    let (missing_data,result) = 
-     try_tool_quickly old_getter width breadth (n,scrappers) tool in 
+     try_tool_quickly old_getter pt tool in 
    if result = Short_list [] 
-   then raise(Compute_from_below_exn(width,breadth,n,scrappers)) 
+   then raise(Compute_from_below_exn(pt)) 
    else  result ;; 
 
-let low_add (width,breadth,n,scrappers,tool) =
+let low_add pt tool =
    let finder = Hashtbl.find_opt low_hashtbl in  
-   let res = compute_from_below finder (width,breadth,n,scrappers) tool in  
-   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
+   let res = compute_from_below finder pt tool in  
+   let _ = Hashtbl.replace low_hashtbl pt res in 
    res ;;
 
 let med_add (width,breadth,scrappers) summary = 
@@ -582,61 +587,60 @@ let rose_add (width,breadth) summary =
  
 
 let find_remote_stumbling_block_or_immediate_working_tool 
-       old_getter width breadth (n,scrappers) = 
+       old_getter pt = 
    let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
-   match hg_enhanced_getter width breadth (n,scrappers) with 
+   match hg_enhanced_getter pt with 
     Some old_answer -> ([],None) 
     | None ->
+   let (width,breadth,n,scrappers) = Point.unveil pt in     
    if breadth=0 
    then let (missing_data0,result_opt0) = 
-        try_tool_quickly old_getter width breadth (n,scrappers) Jump in 
+        try_tool_quickly old_getter pt Jump in 
         if result_opt0<>(Short_list [])
         then ([],Some Jump)
         else (missing_data0,None)    
    else      
    let (missing_data1,result_opt1) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Passive_repeat in 
+    try_tool_quickly old_getter pt Passive_repeat in 
    if result_opt1<>(Short_list []) then ([], Some Passive_repeat) else  
    if missing_data1<>[] then (missing_data1,None) else  
    let (missing_data2,result_opt2) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Boundary_increment in 
+    try_tool_quickly old_getter pt Boundary_increment in 
    if result_opt2<>(Short_list []) then ([], Some Boundary_increment) else  
    if missing_data2<>[] then (missing_data2,None) else  
    let (missing_data3,result_opt3) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Fork in 
+    try_tool_quickly old_getter pt Fork in 
    if result_opt3<>(Short_list []) then ([], Some Fork) else  
     (missing_data3,None) ;;
     
 
-let carrier_get carrier (width,breadth,n,scrappers) = match 
-  Hashtbl.find_opt low_hashtbl  (width,breadth,n,scrappers) with
+let carrier_get carrier pt = match 
+  Hashtbl.find_opt low_hashtbl pt with
   Some old_answer -> Some old_answer 
-  | None -> List.assoc_opt  
-      (width,breadth,n,scrappers) carrier ;;
+  | None -> List.assoc_opt pt carrier ;;
      
-let carrier_add carrier (width,breadth,n,scrappers,tool) =
-    let res = compute_from_below (carrier_get carrier) (width,breadth,n,scrappers) tool in  
-    ((width,breadth,n,scrappers),res) :: carrier  ;;
+let carrier_add carrier (pt,tool) =
+    let res = compute_from_below (carrier_get carrier) pt tool in  
+    (pt,res) :: carrier  ;;
 
   
-exception Pusher_exn of ((int * int * int * int list) * rubber_list) list;;
+exception Pusher_exn of (point * rubber_list) list;;
 
 let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
     match to_be_treated with 
     [] -> raise(Pusher_exn(carrier))
-    | uple :: others -> 
-       let (width,breadth,n,scrappers) = uple in 
+    | pt :: others -> 
        let (missing_data,opt_res) =
       find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get carrier) width breadth (n,scrappers) in 
+      (carrier_get carrier) pt in 
       match opt_res with 
        Some tool ->
-           let new_carrier = carrier_add carrier (width,breadth,n,scrappers,tool) in 
+           let new_carrier = carrier_add carrier (pt,tool) in 
            (new_carrier,others)
        | None -> 
          if missing_data = [] 
          then (carrier,others) 
-         else (carrier,missing_data @ (uple::others)) 
+         else (carrier,missing_data @ (pt::others)) 
       ;;      
          
 let rec born_to_fail_for_recursive_computation walker=
@@ -647,12 +651,12 @@ let  needed_subcomputations_for_several_computations uples =
   try born_to_fail_for_recursive_computation ([],uples) with 
   Pusher_exn(carrier) -> carrier ;; 
 
-let needed_subcomputations_for_single_computation uple = 
-  needed_subcomputations_for_several_computations [uple] ;; 
+let needed_subcomputations_for_single_computation pt = 
+  needed_subcomputations_for_several_computations [pt] ;; 
 
 
 let compute_recursively width breadth (n,scrappers) = 
-  let uple = (width,breadth,n,scrappers) in 
+  let uple = P(width,breadth,n,scrappers) in 
   let needed_carrier = needed_subcomputations_for_single_computation uple in 
   let answer = List.assoc_opt uple needed_carrier in 
   (answer,needed_carrier) 
@@ -663,29 +667,30 @@ let compute_recursively width breadth (n,scrappers) =
 
 let feel_new_line (width,breadth,scrappers) =
   let temp1 = Int_range.scale 
-    (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
+    (fun n->P(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
   let temp2 = needed_subcomputations_for_several_computations temp1 in 
-  let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
+  let temp3 = Image.image (fun (P(w,b,n,s),_)->(w,b,s)) temp2 in 
   Ordered.sort t_order temp3 ;; 
 
 let exhaust_new_line (width,breadth,scrappers) =
     let temp1 = Int_range.scale 
-      (fun n->(width,breadth,n,scrappers)) 1  30 in 
+      (fun n->P(width,breadth,n,scrappers)) 1  30 in 
     let carrier = needed_subcomputations_for_several_computations temp1 in 
-    let temp2 = Image.image (fun (w,b,n,s)-> 
+    let temp2 = Image.image (fun pt-> 
       let mutilated_carrier = List.filter (
-        fun p->fst(p)<>(w,b,n,s)
+        fun p->fst(p)<>pt
       ) carrier in 
       let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get mutilated_carrier) w b (n,s) in 
-      (n,hook_opt)
+      (carrier_get mutilated_carrier) pt in 
+      (Point.size pt,hook_opt)
     ) temp1 in 
     let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
       None -> None |Some pair ->Some(n,pair)) l) in 
     let temp3 = selector temp2 in 
-    let temp4 = Int_range.scale (fun n->
+    let temp4 = Int_range.scale (fun n-> 
+       let pt2 = P(width,breadth,n,scrappers) in 
       (n, hungarian_enhance_getter
-      (carrier_get carrier) width breadth (n,scrappers)))  1 30  in 
+      (carrier_get carrier) pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
@@ -706,6 +711,6 @@ med_add (1,6,[])  Parametrized_Example.example6 ;;
 (*
 
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
-let g1 = needed_subcomputations_for_single_computation (4,0,8,[]) ;;
+let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 *)
