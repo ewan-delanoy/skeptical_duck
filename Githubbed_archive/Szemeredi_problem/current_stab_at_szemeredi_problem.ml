@@ -73,6 +73,9 @@ let satisfied_by_individual l_constr l =
 let satisfied_by_all_in_list l_constr ll=
   List.for_all (satisfied_by_individual l_constr) ll ;;
 
+let merge_constraints l_constr1 l_constr2 =
+    Ordered_misc.minimal_elts_wrt_inclusion (il_merge l_constr1 l_constr2) ;;
+
 end ;;  
 
 module Rubber_definition = struct 
