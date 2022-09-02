@@ -55,17 +55,19 @@ let remove_one_element (n,scrappers) k=
 remove_one_element (10,[3;7;8;9]) 10 ;;
 
 *)
-let extra_constraints_from_boundary_increment width breadth n =
-   let mainstream = Int_range.scale (fun j->
-       let k = width-j in [n-2*k;n-k]
-    ) 1 (width-1) in
-    let lower_end = n-2*width in 
-    if (lower_end>=1) && (lower_end<=breadth) 
-    then [lower_end;lower_end+width]::mainstream 
-    else mainstream ;;   
+
 
 
 module Constraint = struct
+
+let extra_constraints_from_boundary_increment width breadth n =
+    let mainstream = Int_range.scale (fun j->
+        let k = width-j in [n-2*k;n-k]
+     ) 1 (width-1) in
+     let lower_end = n-2*width in 
+     if (lower_end>=1) && (lower_end<=breadth) 
+     then [lower_end;lower_end+width]::mainstream 
+     else mainstream ;;   
 
 let satisfied_by_individual l_constr l =
   List.for_all (fun constr->not(i_is_included_in constr l)) l_constr
@@ -222,7 +224,7 @@ module Selector_for_hook = struct
      
      
     let apply_boundary_increment width breadth n rl = 
-      let new_constraints = extra_constraints_from_boundary_increment width breadth n in 
+      let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
      match rl with 
     (Short_list small_list) -> 
       let new_small_list = Option.filter_and_unpack (fun z->
