@@ -211,6 +211,21 @@ module Rubber_list = struct
 
   end ;; 
 
+
+module Point = struct 
+    
+    let width (P(w,b,n,s)) = w ;;
+    let breadth (P(w,b,n,s)) = b ;;
+    let size (P(w,b,n,s)) = n ;;
+    let scrappers (P(w,b,n,s)) = s ;;
+    let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
+    
+    
+end ;;  
+    
+    
+
+
 module Selector_for_hook = struct 
 
   let of_hook (width,breadth,n) = function   
