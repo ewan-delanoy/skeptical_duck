@@ -558,7 +558,7 @@ module Parametrized_Example = struct
 
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
-let low_hashtbl = Hashtbl.create 50 ;;
+
 
 
 let nonhungarian_enhance_getter old_getter pt =
@@ -582,7 +582,7 @@ let hungarian_enhance_getter old_getter pt =
   let res_opt = nonhungarian_enhance_getter old_getter pt2 in  
     Hungarian.adjust res_opt adj;;
 
-let low_getter = Hashtbl.find_opt low_hashtbl ;;    
+let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl None ;;    
 let access = hungarian_enhance_getter low_getter ;;   
 
 let descendants_for_tool pt tool = 
@@ -633,9 +633,9 @@ let compute_from_below old_getter pt tool =
    else  result ;; 
 
 let low_add pt tool =
-   let finder = Hashtbl.find_opt low_hashtbl in  
+   let finder = Accumulator_with_optional_anticipator.get_from_low_hashtbl None in  
    let res = compute_from_below finder pt tool in  
-   let _ = Hashtbl.replace low_hashtbl pt res in 
+   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl None pt res in 
    res ;;
 
 let med_add (width,breadth,scrappers) summary = 
@@ -674,7 +674,7 @@ let find_remote_stumbling_block_or_immediate_working_tool
     
 
 let carrier_get carrier pt = match 
-  Hashtbl.find_opt low_hashtbl pt with
+  Accumulator_with_optional_anticipator.get_from_low_hashtbl None pt with
   Some old_answer -> Some old_answer 
   | None -> List.assoc_opt pt carrier ;;
      
