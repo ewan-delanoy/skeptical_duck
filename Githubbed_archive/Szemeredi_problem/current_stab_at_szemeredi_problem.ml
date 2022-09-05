@@ -523,7 +523,7 @@ let medium_hashtbl = Hashtbl.create 50 ;;
 
 
 
-let nonhungarian_enhance_getter old_getter pt =
+let nonhungarian_enhance_getter ~with_anticipation pt =
     let (width,breadth,n,scrappers) = Point.unveil pt in  
     let z = concretize (n,scrappers) in 
     if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
@@ -534,19 +534,19 @@ let nonhungarian_enhance_getter old_getter pt =
     | None ->  
     (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
      Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> old_getter pt) ;;   
+     | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
-let hungarian_enhance_getter old_getter pt = 
+let hungarian_enhance_getter ~with_anticipation pt = 
   let (width,breadth,n,scrappers) = Point.unveil pt in  
   let ((width2,breadth2,scrappers2),adj) = 
     Hungarian.decompose (width,breadth,scrappers) in 
   let pt2 = P(width2,breadth2,n,scrappers2) in   
-  let res_opt = nonhungarian_enhance_getter old_getter pt2 in  
+  let res_opt = nonhungarian_enhance_getter ~with_anticipation pt2 in  
     Hungarian.adjust res_opt adj;;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
   ~with_anticipation:false ;;    
-let access = hungarian_enhance_getter low_getter ;;   
+let access = hungarian_enhance_getter ~with_anticipation:false ;;   
 
 let descendants_for_tool pt tool = 
        let (width,breadth,n,scrappers) = Point.unveil pt in  
@@ -563,9 +563,9 @@ let descendants_for_tool pt tool =
       | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 
-let try_tool_quickly old_getter pt tool = 
+let try_tool_quickly ~with_anticipation pt tool = 
    let (width,breadth,n,scrappers) = Point.unveil pt in  
-   let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
+   let nh_enhanced_getter = nonhungarian_enhance_getter ~with_anticipation in 
    let descendants = descendants_for_tool pt tool 
    and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
    let hungarian_descendants = Image.image (
@@ -588,16 +588,15 @@ let try_tool_quickly old_getter pt tool =
 
 exception Compute_from_below_exn of point ;;  
 
-let compute_from_below old_getter pt tool =
+let compute_from_below ~with_anticipation pt tool =
    let (missing_data,result) = 
-     try_tool_quickly old_getter pt tool in 
+     try_tool_quickly ~with_anticipation pt tool in 
    if result = Short_list [] 
    then raise(Compute_from_below_exn(pt)) 
    else  result ;; 
 
 let low_add pt tool =
-   let finder = Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation:false in  
-   let res = compute_from_below finder pt tool in  
+   let res = compute_from_below ~with_anticipation:false pt tool in  
    let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  ~with_anticipation:false pt res in 
    res ;;
 
@@ -609,29 +608,29 @@ let rose_add (width,breadth) summary =
  
 
 let find_remote_stumbling_block_or_immediate_working_tool 
-       old_getter pt = 
-   let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
+~with_anticipation pt = 
+   let hg_enhanced_getter = hungarian_enhance_getter ~with_anticipation in     
    match hg_enhanced_getter pt with 
     Some old_answer -> ([],None) 
     | None ->
    let (width,breadth,n,scrappers) = Point.unveil pt in     
    if breadth=0 
    then let (missing_data0,result_opt0) = 
-        try_tool_quickly old_getter pt Jump in 
+        try_tool_quickly ~with_anticipation pt Jump in 
         if result_opt0<>(Short_list [])
         then ([],Some Jump)
         else (missing_data0,None)    
    else      
    let (missing_data1,result_opt1) = 
-    try_tool_quickly old_getter pt Passive_repeat in 
+    try_tool_quickly ~with_anticipation pt Passive_repeat in 
    if result_opt1<>(Short_list []) then ([], Some Passive_repeat) else  
    if missing_data1<>[] then (missing_data1,None) else  
    let (missing_data2,result_opt2) = 
-    try_tool_quickly old_getter pt Boundary_increment in 
+    try_tool_quickly ~with_anticipation pt Boundary_increment in 
    if result_opt2<>(Short_list []) then ([], Some Boundary_increment) else  
    if missing_data2<>[] then (missing_data2,None) else  
    let (missing_data3,result_opt3) = 
-    try_tool_quickly old_getter pt Fork in 
+    try_tool_quickly ~with_anticipation pt Fork in 
    if result_opt3<>(Short_list []) then ([], Some Fork) else  
     (missing_data3,None) ;;
     
@@ -641,20 +640,17 @@ let find_remote_stumbling_block_or_immediate_working_tool
 exception Pusher_exn ;;
 
 let rec pusher_for_recursive_computation to_be_treated= 
-   let carrier_get = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
-   ~with_anticipation:true in 
     match to_be_treated with 
     [] -> raise(Pusher_exn)
     | pt :: others -> 
        let (missing_data,opt_res) =
       find_remote_stumbling_block_or_immediate_working_tool 
-      carrier_get pt in 
+      ~with_anticipation:true pt in 
       match opt_res with 
        Some tool ->
-           (*
+           let res = compute_from_below ~with_anticipation:true pt tool in  
            let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl
-           ~with_anticipation:true pt tool in 
-           *)
+           ~with_anticipation:true pt res in 
            others
        | None -> 
          if missing_data = [] 
@@ -693,8 +689,6 @@ let feel_new_line (width,breadth,scrappers) =
   Ordered.sort t_order temp3 ;; 
 
 let exhaust_new_line (width,breadth,scrappers) = 
-  let carrier_get = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
-  ~with_anticipation:true in 
     let temp1 = Int_range.scale 
       (fun n->P(width,breadth,n,scrappers)) 1  30 in 
     let carrier = needed_subcomputations_for_several_computations temp1 in 
@@ -703,7 +697,7 @@ let exhaust_new_line (width,breadth,scrappers) =
         fun p->fst(p)<>pt
       ) carrier in 
       let _ = ( Accumulator_with_optional_anticipator.low_anticipator:=mutilated_carrier) in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool carrier_get pt in 
+      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
     let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
@@ -712,7 +706,7 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
        let _ = ( Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
-      (n, hungarian_enhance_getter carrier_get pt2 ))  1 30  in 
+      (n, hungarian_enhance_getter ~with_anticipation:true pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
