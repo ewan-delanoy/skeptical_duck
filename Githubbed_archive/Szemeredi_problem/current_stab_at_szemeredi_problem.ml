@@ -128,6 +128,24 @@ let set_representative opt_anticipator pt vaal=
     None -> Hashtbl.replace hashtbl_for_representatives pt vaal
    | Some anticipator -> (
                   anticipator := (pt,vaal) :: (!anticipator) 
+    ) ;;     
+
+let hashtbl_for_forced_data = Hashtbl.create 50 ;;
+
+let get_forced_data opt_anticipator pt =
+    match opt_anticipator with 
+     None -> Hashtbl.find_opt hashtbl_for_forced_data pt 
+   | Some anticipator -> (
+      match List.assoc_opt pt (!anticipator) with 
+        Some helped_answer -> Some helped_answer 
+      | None -> Hashtbl.find_opt hashtbl_for_forced_data pt 
+    ) ;;
+       
+let set_forced_data opt_anticipator pt vaal=
+    match opt_anticipator with 
+    None -> Hashtbl.replace hashtbl_for_forced_data pt vaal
+   | Some anticipator -> (
+                  anticipator := (pt,vaal) :: (!anticipator) 
     ) ;;       
      
 
