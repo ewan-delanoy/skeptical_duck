@@ -79,12 +79,26 @@ module Private = struct
          String.get s (k-1)='\n'
      ) (Int_range.range i j))) with
      _->raise(Lines_in_char_range_exn(i,j));;    
+
+   let duplicate_interval_in_string (i,j) s = 
+     let (before,itv,after) = tripartition_associated_to_interval s i j in 
+     before^itv^"\n"^itv^after ;;
+
+  (* duplicate_interval_in_string (2,4) "1\n2\n3\n4\n5\n";; *)
+
+   let duplicate_interval_in_file (i,j) src_file  =
+     let old_text = Io.read_whole_file src_file  in 
+     let new_text = duplicate_interval_in_string (i,j) old_text in 
+     Io.overwrite_with src_file new_text ;; 
+
   
   end ;;   
   
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
   let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
 
+  let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
+  let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
 
   let indexed_lines = Private.indexed_lines ;;
   

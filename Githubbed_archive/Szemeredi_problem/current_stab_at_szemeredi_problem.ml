@@ -80,6 +80,60 @@ let merge_constraints l_constr1 l_constr2 =
 
 end ;;  
 
+
+module Point = struct 
+    
+  let width (P(w,b,n,s)) = w ;;
+  let breadth (P(w,b,n,s)) = b ;;
+  let size (P(w,b,n,s)) = n ;;
+  let scrappers (P(w,b,n,s)) = s ;;
+  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
+  
+  
+end ;;  
+  
+module Accumulator_with_optional_anticipator = struct 
+
+let low_hashtbl = Hashtbl.create 50 ;;
+
+let get_from_low_hashtbl opt_anticipator pt =
+    match opt_anticipator with 
+     None -> Hashtbl.find_opt low_hashtbl pt 
+     | Some anticipator -> (
+        match List.assoc_opt pt (!anticipator) with 
+        Some helped_answer -> Some helped_answer 
+        | None -> Hashtbl.find_opt low_hashtbl pt 
+     ) ;;
+
+let add_to_low_hashtbl opt_anticipator pt vaal=
+      match opt_anticipator with 
+       None -> Hashtbl.replace low_hashtbl pt vaal
+       | Some anticipator -> (
+           anticipator := (pt,vaal) :: (!anticipator) 
+       ) ;;
+  
+let hashtbl_for_representatives = Hashtbl.create 50 ;;
+
+let get_representative opt_anticipator pt =
+    match opt_anticipator with 
+     None -> Hashtbl.find_opt hashtbl_for_representatives pt 
+   | Some anticipator -> (
+      match List.assoc_opt pt (!anticipator) with 
+        Some helped_answer -> Some helped_answer 
+      | None -> Hashtbl.find_opt hashtbl_for_representatives pt 
+    ) ;;
+       
+let set_representative opt_anticipator pt vaal=
+    match opt_anticipator with 
+    None -> Hashtbl.replace hashtbl_for_representatives pt vaal
+   | Some anticipator -> (
+                  anticipator := (pt,vaal) :: (!anticipator) 
+    ) ;;       
+     
+
+end ;;   
+
+
 module Rubber_definition = struct 
 
 let check_constraints constraints = function 
@@ -211,19 +265,6 @@ module Rubber_list = struct
 
   end ;; 
 
-
-module Point = struct 
-    
-    let width (P(w,b,n,s)) = w ;;
-    let breadth (P(w,b,n,s)) = b ;;
-    let size (P(w,b,n,s)) = n ;;
-    let scrappers (P(w,b,n,s)) = s ;;
-    let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
-    
-    
-end ;;  
-    
-    
 
 
 module Selector_for_hook = struct 
