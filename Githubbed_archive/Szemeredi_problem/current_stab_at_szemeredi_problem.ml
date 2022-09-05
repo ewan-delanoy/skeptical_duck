@@ -672,34 +672,34 @@ let find_remote_stumbling_block_or_immediate_working_tool
    if result_opt3<>(Short_list []) then ([], Some Fork) else  
     (missing_data3,None) ;;
     
+let low_anticipator = ref [] ;;    
 
-let carrier_get carrier pt = match 
+let carrier_get pt = match 
   Accumulator_with_optional_anticipator.get_from_low_hashtbl None pt with
   Some old_answer -> Some old_answer 
-  | None -> List.assoc_opt pt carrier ;;
+  | None -> List.assoc_opt pt (!low_anticipator) ;;
      
-let carrier_add carrier (pt,tool) =
-    let res = compute_from_below (carrier_get carrier) pt tool in  
-    (pt,res) :: carrier  ;;
+let carrier_add (pt,tool) =
+    let res = compute_from_below carrier_get  pt tool in  
+    (low_anticipator:=(pt,res) :: (!low_anticipator))  ;;
 
   
 exception Pusher_exn of (point * rubber_list) list;;
 
-let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
+let rec pusher_for_recursive_computation to_be_treated= 
     match to_be_treated with 
-    [] -> raise(Pusher_exn(carrier))
+    [] -> raise(Pusher_exn(!low_anticipator))
     | pt :: others -> 
        let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get carrier) pt in 
+      find_remote_stumbling_block_or_immediate_working_tool carrier_get pt in 
       match opt_res with 
        Some tool ->
-           let new_carrier = carrier_add carrier (pt,tool) in 
-           (new_carrier,others)
+           let _ = carrier_add (pt,tool) in 
+           others
        | None -> 
          if missing_data = [] 
-         then (carrier,others) 
-         else (carrier,missing_data @ (pt::others)) 
+         then others 
+         else missing_data @ (pt::others) 
       ;;      
          
 let rec born_to_fail_for_recursive_computation walker=
@@ -707,8 +707,9 @@ let rec born_to_fail_for_recursive_computation walker=
   (pusher_for_recursive_computation walker)  ;;     
 
 let  needed_subcomputations_for_several_computations uples = 
-  try born_to_fail_for_recursive_computation ([],uples) with 
-  Pusher_exn(carrier) -> carrier ;; 
+  let _ = (low_anticipator:=[]) in  
+  try born_to_fail_for_recursive_computation uples with 
+  Pusher_exn(carrier) -> !low_anticipator ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
@@ -739,8 +740,8 @@ let exhaust_new_line (width,breadth,scrappers) =
       let mutilated_carrier = List.filter (
         fun p->fst(p)<>pt
       ) carrier in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get mutilated_carrier) pt in 
+      let _ = (low_anticipator:=mutilated_carrier) in 
+      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool carrier_get pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
     let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
@@ -748,8 +749,8 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp3 = selector temp2 in 
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
-      (n, hungarian_enhance_getter
-      (carrier_get carrier) pt2 ))  1 30  in 
+       let _ = (low_anticipator:=carrier) in 
+      (n, hungarian_enhance_getter carrier_get pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
