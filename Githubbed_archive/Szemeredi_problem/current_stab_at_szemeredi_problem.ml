@@ -390,7 +390,7 @@ module Selector_for_hook = struct
     | Jump -> Jump_selector ;;
   
     let apply_passive_repeat width b rl =
-      Rubber_list.apply_new_constraints [[b;b+width;b+2*width]] rl ;; 
+      Rubber_list.optionize(Rubber_list.apply_new_constraints [[b;b+width;b+2*width]] rl) ;; 
      
      
     let apply_boundary_increment width breadth n rl = 
@@ -402,15 +402,15 @@ module Selector_for_hook = struct
         not(i_is_included_in new_constraint z))  new_constraints 
         then Some(z@[n])
         else None
-    )  small_list in 
-      Rubber_list.of_list new_small_list 
+    )  small_list in
+    Rubber_list.optionize(Rubber_list.of_list new_small_list) 
      |Rubber(rcl,common) -> 
         let cleaned_constraints = Option.filter_and_unpack (
           Rubber_list.remaining_part_of_constraint rcl common
         ) new_constraints in 
         match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-         None -> (Rubber_list.of_list [])
-         | Some new_rcl -> Rubber(new_rcl,i_insert n common) ;;
+         None -> None
+         | Some new_rcl -> Some(Rubber(new_rcl,i_insert n common)) ;;
   
     let apply_fork ll =
       let (_,temp1) = Max.maximize_it_with_care Rubber_list.common_length ll in  
@@ -420,10 +420,10 @@ module Selector_for_hook = struct
       and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
       let full_list = il_fold_merge small_lists in 
       if increased_lists = [] 
-      then Rubber_list.of_list full_list 
+      then Rubber_list.optionize(Rubber_list.of_list full_list) 
       else   
       let defn =  Merger (full_list,increased_lists) in 
-      Rubber(Rubber_core_list.find_from_definition defn,[])  ;; 
+      (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
   
     let eval selector l =  
           match selector with 
@@ -433,7 +433,7 @@ module Selector_for_hook = struct
             apply_boundary_increment width breadth n (List.hd l)
            | Fork_selector ->     
             apply_fork l 
-           | Jump_selector -> List.hd l;;
+           | Jump_selector -> Some(List.hd l);;
   
   end ;;  
   
@@ -715,7 +715,7 @@ let try_tool_quickly ~with_anticipation pt tool =
           fun (_,opt) -> opt = None
   ) temp1 in 
   let missing_data = Image.image fst failures in 
-  if missing_data <> [] then (missing_data,Short_list []) else 
+  if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
   ([],Selector_for_hook.eval selector args) ;;  
 
@@ -723,11 +723,11 @@ let try_tool_quickly ~with_anticipation pt tool =
 exception Compute_from_below_exn of point ;;  
 
 let compute_from_below ~with_anticipation pt tool =
-   let (missing_data,result) = 
+   let (missing_data,result_opt) = 
      try_tool_quickly ~with_anticipation pt tool in 
-   if result = Short_list [] 
-   then raise(Compute_from_below_exn(pt)) 
-   else  result ;; 
+   match  result_opt with 
+   None ->raise(Compute_from_below_exn(pt)) 
+   | Some result -> result ;; 
 
 let low_add pt tool =
    let res = compute_from_below ~with_anticipation:false pt tool in  
@@ -751,21 +751,21 @@ let find_remote_stumbling_block_or_immediate_working_tool
    if breadth=0 
    then let (missing_data0,result_opt0) = 
         try_tool_quickly ~with_anticipation pt Jump in 
-        if result_opt0<>(Short_list [])
+        if result_opt0<>None
         then ([],Some Jump)
         else (missing_data0,None)    
    else      
    let (missing_data1,result_opt1) = 
     try_tool_quickly ~with_anticipation pt Passive_repeat in 
-   if result_opt1<>(Short_list []) then ([], Some Passive_repeat) else  
+   if result_opt1<>None then ([], Some Passive_repeat) else  
    if missing_data1<>[] then (missing_data1,None) else  
    let (missing_data2,result_opt2) = 
     try_tool_quickly ~with_anticipation pt Boundary_increment in 
-   if result_opt2<>(Short_list []) then ([], Some Boundary_increment) else  
+   if result_opt2<>None then ([], Some Boundary_increment) else  
    if missing_data2<>[] then (missing_data2,None) else  
    let (missing_data3,result_opt3) = 
     try_tool_quickly ~with_anticipation pt Fork in 
-   if result_opt3<>(Short_list []) then ([], Some Fork) else  
+   if result_opt3<>None then ([], Some Fork) else  
     (missing_data3,None) ;;
     
 
