@@ -17,6 +17,7 @@ let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_merge = Ordered.merge i_order ;;
+let i_intersects = Ordered.intersects i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
 
@@ -181,6 +182,65 @@ let test_for_possible_refinement ~with_anticipation pt new_constraints=
     (Accumulator_with_optional_anticipator.get_forced_data ~with_anticipation pt)
    then false 
    else raise (Test_for_possible_refinement_exn(pt)) ;; 
+
+let common_length_for_bare_point ~with_anticipation pt = 
+   List.length (List.hd (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)) ;; 
+
+
+module Sycomore_list = struct 
+  
+let get_representatives ~with_anticipation = function 
+   Singleton(l) -> [l]
+   | Breakpoint_with_extensions(pt,_,extension) -> Image.image (i_merge extension) 
+      (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)  ;;       
+
+let remaining_part_of_constraint pt extension new_constraint = 
+    let n = Point.size pt in 
+    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
+    if not(i_is_included_in above extension)
+    then None 
+    else if i_intersects below (Point.scrappers pt) 
+         then None 
+         else Some below ;;
+
+let refinement_opt ~with_anticipation new_constraints = function 
+  Singleton(l) ->  if Constraint.satisfied_by_individual new_constraints l 
+                 then Some(Singleton l)
+                 else None 
+  | Breakpoint_with_extensions(pt,old_constraints,extension) ->
+    let cleaned_constraints = Option.filter_and_unpack (
+      remaining_part_of_constraint pt extension 
+    )  new_constraints in 
+    let final_constraints = Constraint.merge_constraints cleaned_constraints old_constraints in 
+    if test_for_possible_refinement ~with_anticipation pt final_constraints 
+    then  Some(Breakpoint_with_extensions(pt,final_constraints,extension))  
+    else  None   ;;
+
+  exception Remove_fixed_part_on_all of sycomore_list * (int list) ;; 
+
+  let remove_fixed_part_on_all to_be_removed sycom_l= match sycom_l with 
+    Singleton(l) -> Singleton(i_setminus l to_be_removed)
+    | Breakpoint_with_extensions(pt,old_constraints,extension) -> 
+       let n =  Point.size pt in 
+       if List.exists (fun t->t<=n) to_be_removed 
+       then raise(Remove_fixed_part_on_all(sycom_l,to_be_removed))
+       else Breakpoint_with_extensions(pt,old_constraints,extension) ;;         
+
+  
+
+  let common_length ~with_anticipation = function 
+  Singleton(l) -> List.length l
+  | Breakpoint_with_extensions(pt,old_constraints,extension) -> 
+     (common_length_for_bare_point ~with_anticipation pt)+List.length extension   ;;
+
+  let extend_with sycom extension = match sycom with 
+  Singleton(l) -> Singleton(i_merge l extension)
+  | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
+    Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
+
+
+end ;;  
+
 
 module Rubber_definition = struct 
 
