@@ -374,8 +374,9 @@ module Rubber_list = struct
       then None 
       else Some rl  
     |_ -> Some rl ;;   
-    
 
+  let refinement_opt new_constraints rl =  
+    optionize(apply_new_constraints new_constraints rl) ;; 
 
   end ;; 
 
@@ -386,7 +387,7 @@ module Selector_for_hook = struct
 
     let apply_passive_repeat pt rl =
       let (width,b,_,_) = Point.unveil pt in 
-      Rubber_list.optionize(Rubber_list.apply_new_constraints [[b;b+width;b+2*width]] rl) ;; 
+      Rubber_list.refinement_opt [[b;b+width;b+2*width]] rl ;; 
      
      
     let apply_boundary_increment pt rl = 
