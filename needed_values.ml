@@ -52,6 +52,8 @@ let ovfm modname =Other_coma_state.list_values_from_module_in_modulesystem modna
 
 let reco msg=Usual_coma_state.recompile (Some msg);; 
 
+let rsp msg = Usual_coma_state.recompile (Some (msg^"in Szemeredi problem"));; 
+
 let regi rootless_line=Usual_coma_state.register_rootless_line rootless_line;;
 
 let regis rootless_lines=Usual_coma_state.register_rootless_lines rootless_lines;;

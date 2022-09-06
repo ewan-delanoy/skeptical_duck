@@ -368,7 +368,13 @@ module Rubber_list = struct
       else       
       Rubber(rcl,i_setminus common extra) ;;
 
-         
+  let optionize rl = match rl with 
+   (Short_list small_list) -> 
+      if small_list = [] 
+      then None 
+      else Some rl  
+    |_ -> Some rl ;;   
+    
 
 
   end ;; 
