@@ -382,7 +382,8 @@ module Rubber_list = struct
       else Some rl  
     |_ -> Some rl ;;   
 
-  let refinement_opt new_constraints rl =  
+  let refinement_opt ~with_anticipation:bowl new_constraints rl =  
+    let _ = if bowl then 1 else 0 in  
     optionize(apply_new_constraints new_constraints rl) ;; 
 
   let enforce_boundary_increment n rl = 
@@ -408,27 +409,29 @@ module Rubber_list = struct
   end ;; 
 
 
+(* module Rubber_list = Sycomore_list ;; *)
+
 
 module Selector_for_hook = struct 
 
 
-    let apply_passive_repeat pt rl =
+    let apply_passive_repeat ~with_anticipation pt rl =
       let (width,b,_,_) = Point.unveil pt in 
-      Rubber_list.refinement_opt [[b;b+width;b+2*width]] rl ;; 
+      Rubber_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] rl ;; 
      
-    let apply_boundary_increment pt sycom = 
+    let apply_boundary_increment ~with_anticipation pt sycom = 
         let (width,breadth,n,_) = Point.unveil pt in 
         let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-        match Rubber_list.refinement_opt new_constraints sycom with 
+        match Rubber_list.refinement_opt ~with_anticipation new_constraints sycom with 
           None -> None 
           |Some new_sycom -> Some(Rubber_list.enforce_boundary_increment n new_sycom) ;;
   
-    let eval pt hook ll =  
+    let eval ~with_anticipation pt hook ll =  
           match hook with 
           Passive_repeat -> 
-            apply_passive_repeat pt (List.hd ll)
+            apply_passive_repeat ~with_anticipation pt (List.hd ll)
           | Boundary_increment ->
-            apply_boundary_increment pt (List.hd ll)
+            apply_boundary_increment ~with_anticipation pt (List.hd ll)
            | Fork ->  Rubber_list.apply_fork pt ll 
            | Jump -> Some(List.hd ll);;
   
@@ -712,7 +715,7 @@ let try_tool_quickly ~with_anticipation pt hook =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval pt hook args) ;;  
+  ([],Selector_for_hook.eval ~with_anticipation pt hook args) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
