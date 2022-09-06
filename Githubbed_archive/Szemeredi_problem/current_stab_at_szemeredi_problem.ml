@@ -239,6 +239,11 @@ let refinement_opt ~with_anticipation new_constraints = function
     Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
 
 
+   let enforce_boundary_increment n = function 
+        (Singleton l) -> Some(Singleton(l@[n]))
+        | Breakpoint_with_extensions(pt2,old_constraints,extension)  -> 
+          Some(Breakpoint_with_extensions(pt2,old_constraints,i_insert n extension)) ;;
+
 end ;;  
 
 
@@ -377,6 +382,23 @@ module Rubber_list = struct
 
   let refinement_opt new_constraints rl =  
     optionize(apply_new_constraints new_constraints rl) ;; 
+
+(*    
+  let enforce_boundary_increment pt rl = 
+    let (width,breadth,n,_) = Point.unveil pt in 
+    let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
+   match rl with 
+  (Short_list small_list) -> 
+    let new_small_list = Image.image (fun z->z@[n])  small_list in
+  Rubber_list.optionize(Rubber_list.of_list new_small_list) 
+   |Rubber(rcl,common) -> 
+      let cleaned_constraints = Option.filter_and_unpack (
+        Rubber_list.remaining_part_of_constraint rcl common
+      ) new_constraints in 
+      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
+       None -> None
+       | Some new_rcl -> Some(Rubber(new_rcl,i_insert n common)) ;;
+*)
 
   end ;; 
 
