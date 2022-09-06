@@ -114,13 +114,20 @@ let add_to_low_hashtbl ~with_anticipation pt vaal=
 let representatives_hashtbl = Hashtbl.create 50 ;;
 let representatives_anticipator = ref [] ;; 
 
-let get_representative ~with_anticipation pt =
+let get_representatives_opt ~with_anticipation pt =
     if not(with_anticipation)
     then  Hashtbl.find_opt representatives_hashtbl pt 
     else
         match List.assoc_opt pt (!representatives_anticipator) with 
         Some anticiped_answer -> Some anticiped_answer 
         | None -> Hashtbl.find_opt representatives_hashtbl pt  ;;
+
+exception Get_representatives_exn of point ;;        
+
+let get_representatives ~with_anticipation pt = 
+    match get_representatives_opt ~with_anticipation pt  with 
+     Some answer -> answer 
+     | None -> raise (Get_representatives_exn(pt)) ;;
 
 let add_to_representatives_hashtbl ~with_anticipation pt vaal=
   if not(with_anticipation)
@@ -131,13 +138,22 @@ let add_to_representatives_hashtbl ~with_anticipation pt vaal=
 let forced_data_hashtbl = Hashtbl.create 50 ;;
 let forced_data_anticipator = ref [] ;; 
 
-let get_forced_data ~with_anticipation pt =
+let get_forced_data_opt ~with_anticipation pt =
     if not(with_anticipation)
     then  Hashtbl.find_opt forced_data_hashtbl pt 
     else
         match List.assoc_opt pt (!forced_data_anticipator) with 
         Some anticiped_answer -> Some anticiped_answer 
         | None -> Hashtbl.find_opt forced_data_hashtbl pt  ;;
+
+
+exception Get_forced_data_exn of point ;;        
+
+let get_forced_data ~with_anticipation pt = 
+    match get_forced_data_opt ~with_anticipation pt  with 
+      Some answer -> answer 
+    | None -> raise (Get_forced_data_exn(pt)) ;;
+        
 
 let add_to_forced_data_hashtbl ~with_anticipation pt vaal=
   if not(with_anticipation)
@@ -147,6 +163,24 @@ let add_to_forced_data_hashtbl ~with_anticipation pt vaal=
 
 end ;;   
 
+module Forced_data = struct 
+
+(* dummy and empty for now, to be filled later *)  
+let test_for_possible_obstruction new_constraints () = false;;
+
+end ;;   
+
+exception Test_for_possible_refinement_exn of point ;;
+
+let test_for_possible_refinement ~with_anticipation pt new_constraints= 
+   if List.exists (Constraint.satisfied_by_individual new_constraints) 
+       (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt) 
+   then true 
+   else   
+   if Forced_data.test_for_possible_obstruction new_constraints 
+    (Accumulator_with_optional_anticipator.get_forced_data ~with_anticipation pt)
+   then false 
+   else raise (Test_for_possible_refinement_exn(pt)) ;; 
 
 module Rubber_definition = struct 
 
