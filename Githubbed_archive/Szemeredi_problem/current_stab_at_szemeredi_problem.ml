@@ -244,6 +244,8 @@ let refinement_opt ~with_anticipation new_constraints = function
         | Breakpoint_with_extensions(pt2,old_constraints,extension)  -> 
           Breakpoint_with_extensions(pt2,old_constraints,i_insert n extension) ;;
 
+   let apply_fork pt ll = Some(Breakpoint_with_extensions(pt,[],[])) ;; 
+
 end ;;  
 
 
@@ -390,6 +392,18 @@ module Rubber_list = struct
      of_list new_small_list
    |Rubber(rcl,common) ->Rubber(rcl,i_insert n common) ;;
 
+   let apply_fork pt ll =
+    let (_,temp1) = Max.maximize_it_with_care common_length ll in  
+    let temp2 = Image.image unveil temp1 in 
+    let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
+    let small_lists = Image.image (fun (opt1,opt2)->Option.unpack opt1) temp3 
+    and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
+    let full_list = il_fold_merge small_lists in 
+    if increased_lists = [] 
+    then optionize(of_list full_list) 
+    else   
+    let defn =  Merger (full_list,increased_lists) in 
+    (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
 
   end ;; 
 
@@ -402,49 +416,21 @@ module Selector_for_hook = struct
       let (width,b,_,_) = Point.unveil pt in 
       Rubber_list.refinement_opt [[b;b+width;b+2*width]] rl ;; 
      
-     
-    let apply_boundary_increment pt rl = 
-      let (width,breadth,n,_) = Point.unveil pt in 
-      let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-     match rl with 
-    (Short_list small_list) -> 
-      let new_small_list = Option.filter_and_unpack (fun z->
-        if List.for_all (fun new_constraint ->
-        not(i_is_included_in new_constraint z))  new_constraints 
-        then Some(z@[n])
-        else None
-    )  small_list in
-    Rubber_list.optionize(Rubber_list.of_list new_small_list) 
-     |Rubber(rcl,common) -> 
-        let cleaned_constraints = Option.filter_and_unpack (
-          Rubber_list.remaining_part_of_constraint rcl common
-        ) new_constraints in 
-        match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-         None -> None
-         | Some new_rcl -> Some(Rubber(new_rcl,i_insert n common)) ;;
+    let apply_boundary_increment pt sycom = 
+        let (width,breadth,n,_) = Point.unveil pt in 
+        let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
+        match Rubber_list.refinement_opt new_constraints sycom with 
+          None -> None 
+          |Some new_sycom -> Some(Rubber_list.enforce_boundary_increment n new_sycom) ;;
   
-    let apply_fork pt ll =
-      let (_,temp1) = Max.maximize_it_with_care Rubber_list.common_length ll in  
-      let temp2 = Image.image Rubber_list.unveil temp1 in 
-      let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
-      let small_lists = Image.image (fun (opt1,opt2)->Option.unpack opt1) temp3 
-      and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
-      let full_list = il_fold_merge small_lists in 
-      if increased_lists = [] 
-      then Rubber_list.optionize(Rubber_list.of_list full_list) 
-      else   
-      let defn =  Merger (full_list,increased_lists) in 
-      (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
-  
-    let eval pt hook l =  
+    let eval pt hook ll =  
           match hook with 
           Passive_repeat -> 
-            apply_passive_repeat pt (List.hd l)
+            apply_passive_repeat pt (List.hd ll)
           | Boundary_increment ->
-            apply_boundary_increment pt (List.hd l)
-           | Fork ->     
-            apply_fork pt l 
-           | Jump -> Some(List.hd l);;
+            apply_boundary_increment pt (List.hd ll)
+           | Fork ->  Rubber_list.apply_fork pt ll 
+           | Jump -> Some(List.hd ll);;
   
   end ;;  
   
