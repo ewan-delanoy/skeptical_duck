@@ -383,17 +383,14 @@ module Rubber_list = struct
 
 module Selector_for_hook = struct 
 
-  let of_hook (width,breadth,n) = function   
-      Passive_repeat -> Passive_repeat_selector(width,breadth)
-    | Boundary_increment -> Boundary_increment_selector(width,breadth,n) 
-    | Fork -> Fork_selector  
-    | Jump -> Jump_selector ;;
-  
-    let apply_passive_repeat width b rl =
+
+    let apply_passive_repeat pt rl =
+      let (width,b,_,_) = Point.unveil pt in 
       Rubber_list.optionize(Rubber_list.apply_new_constraints [[b;b+width;b+2*width]] rl) ;; 
      
      
-    let apply_boundary_increment width breadth n rl = 
+    let apply_boundary_increment pt rl = 
+      let (width,breadth,n,_) = Point.unveil pt in 
       let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
      match rl with 
     (Short_list small_list) -> 
@@ -412,7 +409,7 @@ module Selector_for_hook = struct
          None -> None
          | Some new_rcl -> Some(Rubber(new_rcl,i_insert n common)) ;;
   
-    let apply_fork ll =
+    let apply_fork pt ll =
       let (_,temp1) = Max.maximize_it_with_care Rubber_list.common_length ll in  
       let temp2 = Image.image Rubber_list.unveil temp1 in 
       let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
@@ -425,15 +422,15 @@ module Selector_for_hook = struct
       let defn =  Merger (full_list,increased_lists) in 
       (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
   
-    let eval selector l =  
-          match selector with 
-          Passive_repeat_selector(width,b) -> 
-            apply_passive_repeat width b (List.hd l)
-          | Boundary_increment_selector(width,breadth,n) ->
-            apply_boundary_increment width breadth n (List.hd l)
-           | Fork_selector ->     
-            apply_fork l 
-           | Jump_selector -> Some(List.hd l);;
+    let eval pt hook l =  
+          match hook with 
+          Passive_repeat -> 
+            apply_passive_repeat pt (List.hd l)
+          | Boundary_increment ->
+            apply_boundary_increment pt (List.hd l)
+           | Fork ->     
+            apply_fork pt l 
+           | Jump -> Some(List.hd l);;
   
   end ;;  
   
@@ -697,11 +694,9 @@ let descendants_for_tool pt tool =
       | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 
-let try_tool_quickly ~with_anticipation pt tool = 
-   let (width,breadth,n,scrappers) = Point.unveil pt in  
+let try_tool_quickly ~with_anticipation pt hook =  
    let nh_enhanced_getter = nonhungarian_enhance_getter ~with_anticipation in 
-   let descendants = descendants_for_tool pt tool 
-   and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
+   let descendants = descendants_for_tool pt hook in  
    let hungarian_descendants = Image.image (
       fun pt1  ->
         let (w,b,m,s) = Point.unveil pt1 in  
@@ -717,7 +712,7 @@ let try_tool_quickly ~with_anticipation pt tool =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval selector args) ;;  
+  ([],Selector_for_hook.eval pt hook args) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
