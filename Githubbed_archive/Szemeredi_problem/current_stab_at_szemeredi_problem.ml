@@ -541,6 +541,22 @@ let eval_level_two (Quick l) scrappers n =
   let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
   Short_list(il_sort temp1) ;;     
 
+
+let eval_fw1 (FW1 l) n =
+    let (m,final_case) = List.hd(List.rev l) in 
+    if n < m 
+    then List.assoc n l 
+    else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
+
+let eval_fos fos n =
+   match fos with 
+     Width_one fw1 -> eval_fw1 fw1 n 
+    | Usual_fos f -> f n ;; 
+
+let eval_foscras foscras scrappers n = 
+  match foscras with 
+   Usual_foscras f -> f scrappers n ;;  
+
 end ;;   
 
 
