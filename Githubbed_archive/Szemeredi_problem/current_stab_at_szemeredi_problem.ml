@@ -641,8 +641,6 @@ let find_remote_stumbling_block_or_immediate_working_tool
    if result_opt3<>None then ([], Some Fork) else  
     (missing_data3,None) ;;
     
-
-
   
 exception Pusher_exn ;;
 
