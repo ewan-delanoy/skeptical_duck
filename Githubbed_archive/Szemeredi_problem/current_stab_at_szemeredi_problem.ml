@@ -95,10 +95,8 @@ end ;;
   
 module Accumulator_with_optional_anticipator = struct 
 
-let low_hashtbl = Hashtbl.create 50 ;;
-let low_anticipator = ref [] ;; 
 
-let get_from_low_hashtbl ~with_anticipation pt =
+let get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt =
     if not(with_anticipation)
     then  Hashtbl.find_opt low_hashtbl pt 
     else
@@ -106,7 +104,7 @@ let get_from_low_hashtbl ~with_anticipation pt =
         Some anticiped_answer -> Some anticiped_answer 
         | None -> Hashtbl.find_opt low_hashtbl pt  ;;
 
-let add_to_low_hashtbl ~with_anticipation pt vaal=
+let add_to_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt vaal=
   if not(with_anticipation)
   then   Hashtbl.replace low_hashtbl pt vaal
   else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
@@ -218,27 +216,7 @@ let eval_level_two (Quick l) scrappers n =
   let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
   Short_list(il_sort temp1) ;;     
 
-  let extend_sycom_with sycom extension = match sycom with 
-  Singleton(l) -> Singleton(i_merge l extension)
-  | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
-    Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
-
-
-
-let eval_fw1 (FW1 l) n =
-    let (m,final_case) = List.hd(List.rev l) in 
-    if n < m 
-    then List.assoc n l 
-    else extend_sycom_with final_case (Int_range.range (m+1) n) ;;   
-
-let eval_fos fos n =
-   match fos with 
-     Width_one fw1 -> eval_fw1 fw1 n 
-    | Usual_fos f -> f n ;; 
-
-let eval_foscras foscras scrappers n = 
-  match foscras with 
-   Usual_foscras f -> f scrappers n ;;  
+ 
    
 
 end ;;   
@@ -416,19 +394,47 @@ let refinement_opt ~with_anticipation new_constraints = function
 
    let apply_fork pt ll = Some(Breakpoint_with_extensions(pt,[],[])) ;; 
 
-       
-let nonhungarian_getter (gen_rose_hashtbl,gen_medium_hashtbl) old_getter pt = 
+   let extend_sycom_with sycom extension = match sycom with 
+  Singleton(l) -> Singleton(i_merge l extension)
+  | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
+    Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
+
+
+
+let eval_fw1 (FW1 l) n =
+    let (m,final_case) = List.hd(List.rev l) in 
+    if n < m 
+    then List.assoc n l 
+    else extend_with final_case (Int_range.range (m+1) n) ;;   
+
+let eval_fos fos n =
+   match fos with 
+     Width_one fw1 -> eval_fw1 fw1 n 
+    | Usual_fos f -> f n ;; 
+
+let eval_foscras foscras scrappers n = 
+  match foscras with 
+   Usual_foscras f -> f scrappers n ;;  
+
+   let low_hashtbl = Hashtbl.create 50 ;;
+   let low_anticipator = ref [] ;; 
+   
+
+   let rose_hashtbl = Hashtbl.create 50 ;;
+   let medium_hashtbl = Hashtbl.create 50 ;;       
+
+let nonhungarian_getter  ~with_anticipation pt = 
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let z = concretize (n,scrappers) in 
   if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
   then Some (Singleton z) 
   else 
-  match Hashtbl.find_opt gen_rose_hashtbl (width,breadth) with 
-  Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
+  match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+  Some summary -> Some (eval_foscras summary scrappers n)
   | None ->  
-    (match Hashtbl.find_opt gen_medium_hashtbl (width,breadth,scrappers) with 
-      Some summary -> Some (Parametrized.eval_fos summary n)
-    | None -> old_getter pt) ;;   
+    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+      Some summary -> Some (eval_fos summary n)
+    | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt) ;;   
 
 
 
@@ -592,19 +598,25 @@ module Rubber_list = struct
     let defn =  Merger (full_list,increased_lists) in 
     (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
 
+    let low_hashtbl = Hashtbl.create 50 ;;
+    let low_anticipator = ref [] ;; 
+
+    let rose_hashtbl = Hashtbl.create 50 ;;
+    let medium_hashtbl = Hashtbl.create 50 ;;       
+   
     
-    let nonhungarian_getter ~with_anticipation (gen_rose_hashtbl,gen_medium_hashtbl) pt =
+    let nonhungarian_getter ~with_anticipation  pt =
       let (width,breadth,n,scrappers) = Point.unveil pt in  
       let z = concretize (n,scrappers) in 
       if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
       then Some (Short_list[z]) 
       else 
-      match Hashtbl.find_opt gen_rose_hashtbl (width,breadth) with 
+      match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
       Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
       | None ->  
-      (match Hashtbl.find_opt gen_medium_hashtbl (width,breadth,scrappers) with 
+      (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
        Some summary -> Some (Parametrized.eval_ps_list summary n)
-       | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;; 
+       | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt) ;; 
 
 
   end ;; 
@@ -712,31 +724,19 @@ end ;;
 
 
 
+   
 
-let nonhungarian_enhance_getter ~with_anticipation pt =
-    let (width,breadth,n,scrappers) = Point.unveil pt in  
-    let z = concretize (n,scrappers) in 
-    if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-    then Some (Short_list[z]) 
-    else 
-    match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-    Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
-    | None ->  
-    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-     Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
-
-let hungarian_enhance_getter ~with_anticipation pt = 
+let hungarian_getter ~with_anticipation pt = 
   let (width,breadth,n,scrappers) = Point.unveil pt in  
   let ((width2,breadth2,scrappers2),adj) = 
     Hungarian.decompose (width,breadth,scrappers) in 
   let pt2 = P(width2,breadth2,n,scrappers2) in   
-  let res_opt = nonhungarian_enhance_getter ~with_anticipation pt2 in  
+  let res_opt = Rubber_list.nonhungarian_getter  ~with_anticipation pt2 in  
     Hungarian.adjust res_opt adj;;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
   ~with_anticipation:false ;;    
-let access = hungarian_enhance_getter ~with_anticipation:false ;;   
+let access = hungarian_getter ~with_anticipation:false ;;   
 
 let descendants_for_tool pt tool = 
        let (width,breadth,n,scrappers) = Point.unveil pt in  
@@ -754,7 +754,7 @@ let descendants_for_tool pt tool =
 
 
 let try_tool_quickly ~with_anticipation pt hook =  
-   let nh_enhanced_getter = nonhungarian_enhance_getter ~with_anticipation in 
+   let nh_enhanced_getter = Rubber_list.nonhungarian_getter ~with_anticipation in 
    let descendants = descendants_for_tool pt hook in  
    let hungarian_descendants = Image.image (
       fun pt1  ->
@@ -785,7 +785,8 @@ let compute_from_below ~with_anticipation pt tool =
 
 let low_add pt tool =
    let res = compute_from_below ~with_anticipation:false pt tool in  
-   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  ~with_anticipation:false pt res in 
+   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
+             (Rubber_list.low_hashtbl,Rubber_list.low_anticipator) ~with_anticipation:false pt res in 
    res ;;
 
 let med_add (width,breadth,scrappers) summary = 
@@ -797,7 +798,7 @@ let rose_add (width,breadth) summary =
 
 let find_remote_stumbling_block_or_immediate_working_tool 
 ~with_anticipation pt = 
-   let hg_enhanced_getter = hungarian_enhance_getter ~with_anticipation in     
+   let hg_enhanced_getter = hungarian_getter ~with_anticipation in     
    match hg_enhanced_getter pt with 
     Some old_answer -> ([],None) 
     | None ->
@@ -837,7 +838,8 @@ let rec pusher_for_recursive_computation to_be_treated=
       match opt_res with 
        Some tool ->
            let res = compute_from_below ~with_anticipation:true pt tool in  
-           let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl
+           let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl 
+           (Rubber_list.low_hashtbl,Rubber_list.low_anticipator)
            ~with_anticipation:true pt res in 
            others
        | None -> 
@@ -851,9 +853,9 @@ let rec born_to_fail_for_recursive_computation walker=
   (pusher_for_recursive_computation walker)  ;;     
 
 let  needed_subcomputations_for_several_computations uples = 
-  let _ = ( Accumulator_with_optional_anticipator.low_anticipator:=[]) in  
+  let _ = ( Rubber_list.low_anticipator:=[]) in  
   try born_to_fail_for_recursive_computation uples with 
-  Pusher_exn -> !( Accumulator_with_optional_anticipator.low_anticipator) ;; 
+  Pusher_exn -> !( Rubber_list.low_anticipator) ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
@@ -884,7 +886,7 @@ let exhaust_new_line (width,breadth,scrappers) =
       let mutilated_carrier = List.filter (
         fun p->fst(p)<>pt
       ) carrier in 
-      let _ = ( Accumulator_with_optional_anticipator.low_anticipator:=mutilated_carrier) in 
+      let _ = ( Rubber_list.low_anticipator:=mutilated_carrier) in 
       let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
@@ -893,8 +895,8 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp3 = selector temp2 in 
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
-       let _ = ( Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
-      (n, hungarian_enhance_getter ~with_anticipation:true pt2 ))  1 30  in 
+       let _ = ( Rubber_list.low_anticipator:=carrier) in 
+      (n, hungarian_getter ~with_anticipation:true pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
