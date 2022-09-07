@@ -630,14 +630,14 @@ module Selector_for_hook = struct
 
     let apply_passive_repeat ~with_anticipation pt rl =
       let (width,b,_,_) = Point.unveil pt in 
-      Rubber_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] rl ;; 
+      Sycomore_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] rl ;; 
      
     let apply_boundary_increment ~with_anticipation pt sycom = 
         let (width,breadth,n,_) = Point.unveil pt in 
         let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-        match Rubber_list.refinement_opt ~with_anticipation new_constraints sycom with 
+        match Sycomore_list.refinement_opt ~with_anticipation new_constraints sycom with 
           None -> None 
-          |Some new_sycom -> Some(Rubber_list.enforce_boundary_increment n new_sycom) ;;
+          |Some new_sycom -> Some(Sycomore_list.enforce_boundary_increment n new_sycom) ;;
   
     let eval ~with_anticipation pt hook ll =  
           match hook with 
@@ -645,7 +645,7 @@ module Selector_for_hook = struct
             apply_passive_repeat ~with_anticipation pt (List.hd ll)
           | Boundary_increment ->
             apply_boundary_increment ~with_anticipation pt (List.hd ll)
-           | Fork ->  Rubber_list.apply_fork pt ll 
+           | Fork ->  Sycomore_list.apply_fork pt ll 
            | Jump -> Some(List.hd ll);;
   
   end ;;  
@@ -676,7 +676,7 @@ let normalized_adjust adj =
 let short_adjust old_result adjustment =
       match adjustment with 
       Leave_unchanged -> old_result 
-      |Adjust extra -> Rubber_list.remove_fixed_part_on_all extra old_result;;
+      |Adjust extra -> Sycomore_list.remove_fixed_part_on_all extra old_result;;
   
 let adjust result_opt adjustment=
     match result_opt with 
@@ -731,7 +731,7 @@ let hungarian_getter ~with_anticipation pt =
   let ((width2,breadth2,scrappers2),adj) = 
     Hungarian.decompose (width,breadth,scrappers) in 
   let pt2 = P(width2,breadth2,n,scrappers2) in   
-  let res_opt = Rubber_list.nonhungarian_getter  ~with_anticipation pt2 in  
+  let res_opt = Sycomore_list.nonhungarian_getter  ~with_anticipation pt2 in  
     Hungarian.adjust res_opt adj;;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
@@ -754,7 +754,7 @@ let descendants_for_tool pt tool =
 
 
 let try_tool_quickly ~with_anticipation pt hook =  
-   let nh_enhanced_getter = Rubber_list.nonhungarian_getter ~with_anticipation in 
+   let nh_enhanced_getter = Sycomore_list.nonhungarian_getter ~with_anticipation in 
    let descendants = descendants_for_tool pt hook in  
    let hungarian_descendants = Image.image (
       fun pt1  ->
@@ -786,7 +786,7 @@ let compute_from_below ~with_anticipation pt tool =
 let low_add pt tool =
    let res = compute_from_below ~with_anticipation:false pt tool in  
    let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
-             (Rubber_list.low_hashtbl,Rubber_list.low_anticipator) ~with_anticipation:false pt res in 
+             (Sycomore_list.low_hashtbl,Sycomore_list.low_anticipator) ~with_anticipation:false pt res in 
    res ;;
 
 let med_add (width,breadth,scrappers) summary = 
@@ -839,7 +839,7 @@ let rec pusher_for_recursive_computation to_be_treated=
        Some tool ->
            let res = compute_from_below ~with_anticipation:true pt tool in  
            let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl 
-           (Rubber_list.low_hashtbl,Rubber_list.low_anticipator)
+           (Sycomore_list.low_hashtbl,Sycomore_list.low_anticipator)
            ~with_anticipation:true pt res in 
            others
        | None -> 
@@ -853,9 +853,9 @@ let rec born_to_fail_for_recursive_computation walker=
   (pusher_for_recursive_computation walker)  ;;     
 
 let  needed_subcomputations_for_several_computations uples = 
-  let _ = ( Rubber_list.low_anticipator:=[]) in  
+  let _ = ( Sycomore_list.low_anticipator:=[]) in  
   try born_to_fail_for_recursive_computation uples with 
-  Pusher_exn -> !( Rubber_list.low_anticipator) ;; 
+  Pusher_exn -> !( Sycomore_list.low_anticipator) ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
@@ -886,7 +886,7 @@ let exhaust_new_line (width,breadth,scrappers) =
       let mutilated_carrier = List.filter (
         fun p->fst(p)<>pt
       ) carrier in 
-      let _ = ( Rubber_list.low_anticipator:=mutilated_carrier) in 
+      let _ = ( Sycomore_list.low_anticipator:=mutilated_carrier) in 
       let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
@@ -895,7 +895,7 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp3 = selector temp2 in 
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
-       let _ = ( Rubber_list.low_anticipator:=carrier) in 
+       let _ = ( Sycomore_list.low_anticipator:=carrier) in 
       (n, hungarian_getter ~with_anticipation:true pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
