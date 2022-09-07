@@ -188,6 +188,12 @@ let test_for_possible_refinement ~with_anticipation pt new_constraints=
 let common_length_for_bare_point ~with_anticipation pt = 
    List.length (List.hd (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)) ;; 
 
+let extend_sycomore_with sycom extension = match sycom with 
+   Singleton(l) -> Singleton(i_merge l extension)
+   | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
+     Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
+ 
+
 
 module Parametrized = struct 
 
@@ -205,6 +211,23 @@ let eval_subrange sr n =
    Some answer -> answer 
    | None ->
     eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+
+    let eval_fw1 (FW1 l) n =
+      let (m,final_case) = List.hd(List.rev l) in 
+      if n < m 
+      then List.assoc n l 
+      else extend_sycomore_with final_case (Int_range.range (m+1) n) ;;   
+  
+  let eval_fos fos n =
+     match fos with 
+       Width_one fw1 -> eval_fw1 fw1 n 
+      | Usual_fos f -> f n ;; 
+  
+  let eval_foscras foscras scrappers n = 
+    match foscras with 
+     Usual_foscras f -> f scrappers n ;;  
+  
+
 
 (*    
 let eval_ps_list psl n =
@@ -399,37 +422,8 @@ let refinement_opt ~with_anticipation new_constraints = function
 
    let apply_fork pt ll = Some(Breakpoint_with_extensions(pt,[],[])) ;; 
 
-let eval_fw1 (FW1 l) n =
-    let (m,final_case) = List.hd(List.rev l) in 
-    if n < m 
-    then List.assoc n l 
-    else extend_with final_case (Int_range.range (m+1) n) ;;   
 
-let eval_fos fos n =
-   match fos with 
-     Width_one fw1 -> eval_fw1 fw1 n 
-    | Usual_fos f -> f n ;; 
-
-let eval_foscras foscras scrappers n = 
-  match foscras with 
-   Usual_foscras f -> f scrappers n ;;  
-
-   
-   let rose_hashtbl = Hashtbl.create 50 ;;
-   let medium_hashtbl = Hashtbl.create 50 ;;       
-
-let nonhungarian_getter  ~with_anticipation pt = 
-  let (width,breadth,n,scrappers) = Point.unveil pt in 
-  let z = concretize (n,scrappers) in 
-  if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-  then Some (Singleton z) 
-  else 
-  match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-  Some summary -> Some (eval_foscras summary scrappers n)
-  | None ->  
-    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-      Some summary -> Some (eval_fos summary n)
-    | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
+ 
 
 
 
@@ -535,7 +529,22 @@ let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;
 end ;;  
 
 
+  
+let rose_hashtbl = Hashtbl.create 50 ;;
+let medium_hashtbl = Hashtbl.create 50 ;;       
 
+let nonhungarian_getter  ~with_anticipation pt = 
+let (width,breadth,n,scrappers) = Point.unveil pt in 
+let z = concretize (n,scrappers) in 
+if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+then Some (Singleton z) 
+else 
+match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
+| None ->  
+ (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+   Some summary -> Some (Parametrized.eval_fos summary n)
+ | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
    
 
@@ -544,7 +553,7 @@ let hungarian_getter ~with_anticipation pt =
   let ((width2,breadth2,scrappers2),adj) = 
     Hungarian.decompose (width,breadth,scrappers) in 
   let pt2 = P(width2,breadth2,n,scrappers2) in   
-  let res_opt = Sycomore_list.nonhungarian_getter  ~with_anticipation pt2 in  
+  let res_opt = nonhungarian_getter  ~with_anticipation pt2 in  
     Hungarian.adjust res_opt adj;;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
@@ -567,7 +576,7 @@ let descendants_for_tool pt tool =
 
 
 let try_tool_quickly ~with_anticipation pt hook =  
-   let nh_enhanced_getter = Sycomore_list.nonhungarian_getter ~with_anticipation in 
+   let nh_enhanced_getter = nonhungarian_getter ~with_anticipation in 
    let descendants = descendants_for_tool pt hook in  
    let hungarian_descendants = Image.image (
       fun pt1  ->
@@ -712,7 +721,7 @@ let exhaust_new_line (width,breadth,scrappers) =
 
 
 
-
+(*
 rose_add (1,1) Parametrized_Example.example1 ;; 
 
 
@@ -723,6 +732,7 @@ med_add (1,3,[]) Parametrized_Example.example3 ;;
 med_add (1,4,[])  Parametrized_Example.example4 ;; 
 med_add (1,5,[])  Parametrized_Example.example5 ;; 
 med_add (1,6,[])  Parametrized_Example.example6 ;; 
+*)
 
 (*
 
