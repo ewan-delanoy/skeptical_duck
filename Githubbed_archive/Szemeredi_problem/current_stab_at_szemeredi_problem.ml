@@ -218,13 +218,18 @@ let eval_level_two (Quick l) scrappers n =
   let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
   Short_list(il_sort temp1) ;;     
 
+  let extend_sycom_with sycom extension = match sycom with 
+  Singleton(l) -> Singleton(i_merge l extension)
+  | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
+    Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
 
-(*  
+
+
 let eval_fw1 (FW1 l) n =
     let (m,final_case) = List.hd(List.rev l) in 
     if n < m 
     then List.assoc n l 
-    else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
+    else extend_sycom_with final_case (Int_range.range (m+1) n) ;;   
 
 let eval_fos fos n =
    match fos with 
@@ -234,7 +239,7 @@ let eval_fos fos n =
 let eval_foscras foscras scrappers n = 
   match foscras with 
    Usual_foscras f -> f scrappers n ;;  
-*)   
+   
 
 end ;;   
 
@@ -411,6 +416,22 @@ let refinement_opt ~with_anticipation new_constraints = function
 
    let apply_fork pt ll = Some(Breakpoint_with_extensions(pt,[],[])) ;; 
 
+       
+let nonhungarian_getter (gen_rose_hashtbl,gen_medium_hashtbl) old_getter pt = 
+  let (width,breadth,n,scrappers) = Point.unveil pt in 
+  let z = concretize (n,scrappers) in 
+  if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+  then Some (Singleton z) 
+  else 
+  match Hashtbl.find_opt gen_rose_hashtbl (width,breadth) with 
+  Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
+  | None ->  
+    (match Hashtbl.find_opt gen_medium_hashtbl (width,breadth,scrappers) with 
+      Some summary -> Some (Parametrized.eval_fos summary n)
+    | None -> old_getter pt) ;;   
+
+
+
 end ;;  
 
 
@@ -572,16 +593,16 @@ module Rubber_list = struct
     (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
 
     
-    let nonhungarian_getter ~with_anticipation pt =
+    let nonhungarian_getter ~with_anticipation (gen_rose_hashtbl,gen_medium_hashtbl) pt =
       let (width,breadth,n,scrappers) = Point.unveil pt in  
       let z = concretize (n,scrappers) in 
       if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
       then Some (Short_list[z]) 
       else 
-      match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+      match Hashtbl.find_opt gen_rose_hashtbl (width,breadth) with 
       Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
       | None ->  
-      (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+      (match Hashtbl.find_opt gen_medium_hashtbl (width,breadth,scrappers) with 
        Some summary -> Some (Parametrized.eval_ps_list summary n)
        | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;; 
 
