@@ -95,8 +95,12 @@ end ;;
   
 module Accumulator_with_optional_anticipator = struct 
 
+  let low_hashtbl = Hashtbl.create 50 ;;
+  let low_anticipator = ref [] ;; 
+  
 
-let get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt =
+
+let get_from_low_hashtbl ~with_anticipation pt =
     if not(with_anticipation)
     then  Hashtbl.find_opt low_hashtbl pt 
     else
@@ -104,7 +108,7 @@ let get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt =
         Some anticiped_answer -> Some anticiped_answer 
         | None -> Hashtbl.find_opt low_hashtbl pt  ;;
 
-let add_to_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt vaal=
+let add_to_low_hashtbl  ~with_anticipation pt vaal=
   if not(with_anticipation)
   then   Hashtbl.replace low_hashtbl pt vaal
   else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
@@ -202,6 +206,7 @@ let eval_subrange sr n =
    | None ->
     eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
 
+(*    
 let eval_ps_list psl n =
   match List.assoc_opt n psl.Sz_types.pl_exceptions with 
   Some answer -> Short_list(answer) 
@@ -215,7 +220,7 @@ let eval_level_two (Quick l) scrappers n =
   else 
   let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
   Short_list(il_sort temp1) ;;     
-
+*)
  
    
 
@@ -394,13 +399,6 @@ let refinement_opt ~with_anticipation new_constraints = function
 
    let apply_fork pt ll = Some(Breakpoint_with_extensions(pt,[],[])) ;; 
 
-   let extend_sycom_with sycom extension = match sycom with 
-  Singleton(l) -> Singleton(i_merge l extension)
-  | Breakpoint_with_extensions(pt,old_constraints,extension2) -> 
-    Breakpoint_with_extensions(pt,old_constraints,i_merge extension extension2)   ;;
-
-
-
 let eval_fw1 (FW1 l) n =
     let (m,final_case) = List.hd(List.rev l) in 
     if n < m 
@@ -416,10 +414,7 @@ let eval_foscras foscras scrappers n =
   match foscras with 
    Usual_foscras f -> f scrappers n ;;  
 
-   let low_hashtbl = Hashtbl.create 50 ;;
-   let low_anticipator = ref [] ;; 
    
-
    let rose_hashtbl = Hashtbl.create 50 ;;
    let medium_hashtbl = Hashtbl.create 50 ;;       
 
@@ -434,7 +429,7 @@ let nonhungarian_getter  ~with_anticipation pt =
   | None ->  
     (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
       Some summary -> Some (eval_fos summary n)
-    | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl (low_hashtbl,low_anticipator) ~with_anticipation pt) ;;   
+    | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
 
 
@@ -604,7 +599,7 @@ let compute_from_below ~with_anticipation pt tool =
 let low_add pt tool =
    let res = compute_from_below ~with_anticipation:false pt tool in  
    let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
-             (Sycomore_list.low_hashtbl,Sycomore_list.low_anticipator) ~with_anticipation:false pt res in 
+             ~with_anticipation:false pt res in 
    res ;;
 
 let med_add (width,breadth,scrappers) summary = 
@@ -655,7 +650,6 @@ let rec pusher_for_recursive_computation to_be_treated=
        Some tool ->
            let res = compute_from_below ~with_anticipation:true pt tool in  
            let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl 
-           (Sycomore_list.low_hashtbl,Sycomore_list.low_anticipator)
            ~with_anticipation:true pt res in 
            others
        | None -> 
@@ -669,9 +663,9 @@ let rec born_to_fail_for_recursive_computation walker=
   (pusher_for_recursive_computation walker)  ;;     
 
 let  needed_subcomputations_for_several_computations uples = 
-  let _ = ( Sycomore_list.low_anticipator:=[]) in  
+  let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=[]) in  
   try born_to_fail_for_recursive_computation uples with 
-  Pusher_exn -> !( Sycomore_list.low_anticipator) ;; 
+  Pusher_exn -> !(  Accumulator_with_optional_anticipator.low_anticipator) ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
@@ -702,7 +696,7 @@ let exhaust_new_line (width,breadth,scrappers) =
       let mutilated_carrier = List.filter (
         fun p->fst(p)<>pt
       ) carrier in 
-      let _ = ( Sycomore_list.low_anticipator:=mutilated_carrier) in 
+      let _ = ( Accumulator_with_optional_anticipator.low_anticipator :=mutilated_carrier) in 
       let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
@@ -711,7 +705,7 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp3 = selector temp2 in 
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
-       let _ = ( Sycomore_list.low_anticipator:=carrier) in 
+       let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
       (n, hungarian_getter ~with_anticipation:true pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
