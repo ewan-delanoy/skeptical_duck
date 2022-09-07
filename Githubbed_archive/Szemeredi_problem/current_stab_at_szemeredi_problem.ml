@@ -187,6 +187,171 @@ let common_length_for_bare_point ~with_anticipation pt =
    List.length (List.hd (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)) ;; 
 
 
+module Parametrized = struct 
+
+let eval_uniform_subrange usr n =
+  List.filter (
+     fun k->
+      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
+      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
+      i_mem (k mod usr.Sz_types.usr_modulus)
+      usr.Sz_types.usr_usual
+  ) (Int_range.range 1 n) ;; 
+
+let eval_subrange sr n =
+   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
+   Some answer -> answer 
+   | None ->
+    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+
+let eval_ps_list psl n =
+  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
+  Some answer -> Short_list(answer) 
+  | None ->
+   Short_list(Image.image (fun sr->eval_subrange sr n) psl.Sz_types.pl_usual) ;;    
+
+let eval_level_two (Quick l) scrappers n =
+  let z = concretize (n,scrappers) in 
+  if (not(i_is_included_in l z))  
+  then Short_list([z]) 
+  else 
+  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
+  Short_list(il_sort temp1) ;;     
+
+
+(*  
+let eval_fw1 (FW1 l) n =
+    let (m,final_case) = List.hd(List.rev l) in 
+    if n < m 
+    then List.assoc n l 
+    else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
+
+let eval_fos fos n =
+   match fos with 
+     Width_one fw1 -> eval_fw1 fw1 n 
+    | Usual_fos f -> f n ;; 
+
+let eval_foscras foscras scrappers n = 
+  match foscras with 
+   Usual_foscras f -> f scrappers n ;;  
+*)   
+
+end ;;   
+
+
+module Parametrized_Example = struct 
+
+  let uniform_subrange pe ne mdl usu = {
+    Sz_types.usr_positive_exceptions = pe ;
+    usr_negative_exceptions = ne ; 
+    usr_modulus = mdl;
+    usr_usual = usu ;
+  };; 
+  
+  let subrange (sr_exns,pe,ne,mdl,usu) = {
+    Sz_types.ps_exceptions = sr_exns ;
+    ps_usual = uniform_subrange pe ne mdl usu ;
+  };; 
+  
+  let ps_list psl_exns psl_usu = {
+    Sz_types.pl_exceptions = psl_exns ;
+    pl_usual = Image.image subrange psl_usu ;
+  };; 
+
+  let example1 = Quick [1;2;3] ;;
+
+  let example2 (* for (1,2,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+      ([],[],[2],1,[0]);
+     ] ;;  
+     
+  let example3 (* for (1,3,[]) *) = ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3],1,[0]);
+     ] ;;    
+     
+  let example4 (* for (1,4,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[3;4],1,[0]);
+      ([],[],[2;5],1,[0]);
+      ([],[],[2;4],1,[0]);
+      ([],[],[1;4],1,[0]);
+     ] ;;   
+     
+   let example5 (* for (1,5,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;      
+
+    let example6 (* for (1,6,[]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+       5,[[1;2;4;5]];
+       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
+          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
+       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
+     ]
+     [
+      ([],[],[3;6],1,[0]);
+     ] ;;    
+
+     let example9 (* for (1,2,[7]) *)= ps_list 
+     [
+       1,[[1]];
+       2,[[1;2]];
+       3,[[1;2];[1;3];[2;3]];
+       4,[[1;2;4];[1;3;4]];
+     ]
+     [
+      ([],[],[3;5],1,[0]);
+      ([],[],[2;5],1,[0]);
+     ] ;;  
+     
+
+end ;;   
+  
+
+
+let rose_hashtbl = Hashtbl.create 50 ;;
+let medium_hashtbl = Hashtbl.create 50 ;;
+
+
+
 module Sycomore_list = struct 
   
 let get_representatives ~with_anticipation = function 
@@ -406,6 +571,21 @@ module Rubber_list = struct
     let defn =  Merger (full_list,increased_lists) in 
     (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
 
+    (*
+    let nonhungarian_getter ~with_anticipation pt =
+      let (width,breadth,n,scrappers) = Point.unveil pt in  
+      let z = concretize (n,scrappers) in 
+      if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+      then Some (Short_list[z]) 
+      else 
+      match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
+      Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
+      | None ->  
+      (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+       Some summary -> Some (Parametrized.eval_ps_list summary n)
+       | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;; 
+     *)
+
   end ;; 
 
 
@@ -509,167 +689,6 @@ let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;
 end ;;  
 
 
-
-module Parametrized = struct 
-
-let eval_uniform_subrange usr n =
-  List.filter (
-     fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
-  ) (Int_range.range 1 n) ;; 
-
-let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
-   Some answer -> answer 
-   | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
-
-let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
-  Some answer -> Short_list(answer) 
-  | None ->
-   Short_list(Image.image (fun sr->eval_subrange sr n) psl.Sz_types.pl_usual) ;;    
-
-let eval_level_two (Quick l) scrappers n =
-  let z = concretize (n,scrappers) in 
-  if (not(i_is_included_in l z))  
-  then Short_list([z]) 
-  else 
-  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
-  Short_list(il_sort temp1) ;;     
-
-
-let eval_fw1 (FW1 l) n =
-    let (m,final_case) = List.hd(List.rev l) in 
-    if n < m 
-    then List.assoc n l 
-    else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
-
-let eval_fos fos n =
-   match fos with 
-     Width_one fw1 -> eval_fw1 fw1 n 
-    | Usual_fos f -> f n ;; 
-
-let eval_foscras foscras scrappers n = 
-  match foscras with 
-   Usual_foscras f -> f scrappers n ;;  
-
-end ;;   
-
-
-module Parametrized_Example = struct 
-
-  let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
-    usr_negative_exceptions = ne ; 
-    usr_modulus = mdl;
-    usr_usual = usu ;
-  };; 
-  
-  let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
-    ps_usual = uniform_subrange pe ne mdl usu ;
-  };; 
-  
-  let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
-    pl_usual = Image.image subrange psl_usu ;
-  };; 
-
-  let example1 = Quick [1;2;3] ;;
-
-  let example2 (* for (1,2,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-      ([],[],[2],1,[0]);
-     ] ;;  
-     
-  let example3 (* for (1,3,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-     ] ;;    
-     
-  let example4 (* for (1,4,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[3;4],1,[0]);
-      ([],[],[2;5],1,[0]);
-      ([],[],[2;4],1,[0]);
-      ([],[],[1;4],1,[0]);
-     ] ;;   
-     
-   let example5 (* for (1,5,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;      
-
-    let example6 (* for (1,6,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
-       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-     ] ;;    
-
-     let example9 (* for (1,2,[7]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;  
-     
-
-  end ;;   
-  
-
-
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;
 
 
 
