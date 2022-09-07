@@ -571,7 +571,7 @@ module Rubber_list = struct
     let defn =  Merger (full_list,increased_lists) in 
     (Some(Rubber(Rubber_core_list.find_from_definition defn,[])))  ;; 
 
-    (*
+    
     let nonhungarian_getter ~with_anticipation pt =
       let (width,breadth,n,scrappers) = Point.unveil pt in  
       let z = concretize (n,scrappers) in 
@@ -584,7 +584,7 @@ module Rubber_list = struct
       (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
        Some summary -> Some (Parametrized.eval_ps_list summary n)
        | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;; 
-     *)
+
 
   end ;; 
 
