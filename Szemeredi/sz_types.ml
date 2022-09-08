@@ -29,3 +29,5 @@ type function_of_size =
 
 type function_of_scrappers_and_size = 
   Usual_foscras of ( (int list) -> int -> sycomore_list) ;;
+
+type forced_data = FD of ((int list) list) * ( (point * ((int list) list) * (int list)) list) ;;
