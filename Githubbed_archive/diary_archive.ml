@@ -1,7 +1,30 @@
 (************************************************************************************************************************
-Snippet 107 : 
+Snippet 108 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 107 : Read a file and remove tabs in each line
+************************************************************************************************************************)
+
+
+let ap3 = Absolute_path.of_string "Fads/pan.ml" ;;
+let z4 = Io.read_whole_file ap3 ;;
+let z5 = Lines_in_string.interval z4 9 21 ;;
+let z6 = Lines_in_string.lines z5 ;; 
+let z7 = Image.image String.lowercase_ascii z6 ;;
+let z8 = Ordered.sort Total_ordering.lex_for_strings z7 ;;
+let z9 = Image.image (Str.split (Str.regexp_string "\t")) z6;;
+let z10 = Image.image (
+   fun l -> let nth  = (fun k->Cull_string.trim_spaces(List.nth l (k-1))) in 
+   (int_of_string(nth 1),nth 2)
+) z9 ;; 
+let z10 = [(53, "Veni de Libano"); (55, "Paulus"); (56, "Pitra"); (57, "Fulgurator");
+(59, "Florent-Jean"); (71, "Comte Bavon"); (69, "Charles"); (64, "Francis");
+(67, "Amos"); (68, "chaussis"); (79, "HALLELUIA"); (75, "luern");
+(80, "Adeodato")] ;;
+
+let z11 = String.concat "," (Image.image snd z10) ;;
 
 (************************************************************************************************************************
 Snippet 106 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 

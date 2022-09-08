@@ -197,20 +197,6 @@ let extend_sycomore_with sycom extension = match sycom with
 
 module Parametrized = struct 
 
-let eval_uniform_subrange usr n =
-  List.filter (
-     fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
-  ) (Int_range.range 1 n) ;; 
-
-let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
-   Some answer -> answer 
-   | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
 
     let eval_fw1 (FW1 l) n =
       let (m,final_case) = List.hd(List.rev l) in 
@@ -226,25 +212,7 @@ let eval_subrange sr n =
   let eval_foscras foscras scrappers n = 
     match foscras with 
      Usual_foscras f -> f scrappers n ;;  
-  
 
-
-(*    
-let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
-  Some answer -> Short_list(answer) 
-  | None ->
-   Short_list(Image.image (fun sr->eval_subrange sr n) psl.Sz_types.pl_usual) ;;    
-
-let eval_level_two (Quick l) scrappers n =
-  let z = concretize (n,scrappers) in 
-  if (not(i_is_included_in l z))  
-  then Short_list([z]) 
-  else 
-  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
-  Short_list(il_sort temp1) ;;     
-*)
- 
    
 
 end ;;   
@@ -252,107 +220,7 @@ end ;;
 
 module Parametrized_Example = struct 
 
-  let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
-    usr_negative_exceptions = ne ; 
-    usr_modulus = mdl;
-    usr_usual = usu ;
-  };; 
   
-  let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
-    ps_usual = uniform_subrange pe ne mdl usu ;
-  };; 
-  
-  let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
-    pl_usual = Image.image subrange psl_usu ;
-  };; 
-
-  let example1 = Quick [1;2;3] ;;
-
-  let example2 (* for (1,2,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-      ([],[],[2],1,[0]);
-     ] ;;  
-     
-  let example3 (* for (1,3,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-     ] ;;    
-     
-  let example4 (* for (1,4,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[3;4],1,[0]);
-      ([],[],[2;5],1,[0]);
-      ([],[],[2;4],1,[0]);
-      ([],[],[1;4],1,[0]);
-     ] ;;   
-     
-   let example5 (* for (1,5,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;      
-
-    let example6 (* for (1,6,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
-       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-     ] ;;    
-
-     let example9 (* for (1,2,[7]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;  
-     
 
 end ;;   
   
@@ -719,20 +587,6 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
-
-
-(*
-rose_add (1,1) Parametrized_Example.example1 ;; 
-
-
-med_add (1,2,[]) Parametrized_Example.example2 ;; 
-med_add (1,3,[]) Parametrized_Example.example3 ;; 
-
-
-med_add (1,4,[])  Parametrized_Example.example4 ;; 
-med_add (1,5,[])  Parametrized_Example.example5 ;; 
-med_add (1,6,[])  Parametrized_Example.example6 ;; 
-*)
 
 (*
 
