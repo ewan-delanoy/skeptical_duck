@@ -10,28 +10,9 @@ type hook_in_knowledge =
    | Fork 
    | Jump ;;
 
-type parametrized_uniform_subrange = {
-   usr_positive_exceptions : int list ;
-   usr_negative_exceptions : int list ;
-   usr_modulus : int ;
-   usr_usual :  int list ;
-} ;; 
-
-type  parametrized_subrange = {
-   ps_exceptions : (int * (int list)) list ;
-   ps_usual : parametrized_uniform_subrange ; 
-} ;; 
-
-type parametrized_ps_list = {
-   pl_exceptions : (int * (int list list)) list ;
-   pl_usual : parametrized_subrange list ;
-} ;; 
-
 type hungarian_adjuster =
      Leave_unchanged 
     |Adjust of int list ;; 
-
-type level_two_t = Quick of int list ;; 
 
 type point = P of int * int * int * (int list) ;;
 
