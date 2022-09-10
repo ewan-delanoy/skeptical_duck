@@ -20,7 +20,7 @@ type qualified_point = Q of point * ((int list) list) * (int list);;
 
 type sycomore_list = 
    Singleton of int list 
-   | Breakpoint_with_extensions of point * ((int list) list) * (int list);;
+   | Breakpoint_with_extensions of qualified_point ;;
 
 
 type for_width_one = FW1 of ((int * sycomore_list) list) ;;
