@@ -16,6 +16,8 @@ type hungarian_adjuster =
 
 type point = P of int * int * int * (int list) ;;
 
+type qualified_point = point * ((int list) list) * (int list);;
+
 type sycomore_list = 
    Singleton of int list 
    | Breakpoint_with_extensions of point * ((int list) list) * (int list);;
