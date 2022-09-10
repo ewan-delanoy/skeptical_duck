@@ -16,7 +16,7 @@ type hungarian_adjuster =
 
 type point = P of int * int * int * (int list) ;;
 
-type qualified_point = point * ((int list) list) * (int list);;
+type qualified_point = Q of point * ((int list) list) * (int list);;
 
 type sycomore_list = 
    Singleton of int list 
@@ -32,4 +32,4 @@ type function_of_size =
 type function_of_scrappers_and_size = 
   Usual_foscras of ( (int list) -> int -> sycomore_list) ;;
 
-type forced_data = FD of ((int list) list) * ( (point * ((int list) list) * (int list)) list) ;;
+type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
