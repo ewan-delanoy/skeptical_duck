@@ -278,7 +278,7 @@ module Parametrized = struct
       let (m,final_case) = List.hd(List.rev l) in 
       if n < m 
       then List.assoc n l 
-      else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
+      else Bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
   
   let eval_fos fos n =
      match fos with 
@@ -443,7 +443,7 @@ let nonhungarian_getter  ~with_anticipation pt =
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
 if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-then Some (Singleton z) 
+then Some (BR(Singleton z)) 
 else 
 match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
 Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
@@ -466,7 +466,7 @@ let hungarian_getter ~with_anticipation pt =
     Hungarian.decompose (width,breadth,scrappers) in 
   let pt2 = P(width2,breadth2,n,scrappers2) in   
   let res_opt = nonhungarian_getter  ~with_anticipation pt2 in  
-    Hungarian.adjust res_opt adj;;
+    hungarian_adjust_bulk_result res_opt adj;;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
   ~with_anticipation:false ;;    
@@ -497,7 +497,7 @@ let try_tool_quickly ~with_anticipation pt hook =
         (P(w2,b2,m,s2),adj)
     ) descendants in 
    let temp1 = Image.image (fun (pt3,adj)->
-      (pt3,Hungarian.adjust (nh_enhanced_getter pt3) adj)
+      (pt3,hungarian_adjust_bulk_result (nh_enhanced_getter pt3) adj)
   ) hungarian_descendants in   
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
@@ -505,7 +505,7 @@ let try_tool_quickly ~with_anticipation pt hook =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval ~with_anticipation pt hook args) ;;  
+  ([],apply_hook_on_bulk_result ~with_anticipation pt hook args) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
