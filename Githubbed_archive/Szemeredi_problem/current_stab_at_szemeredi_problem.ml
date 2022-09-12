@@ -90,6 +90,15 @@ module Point = struct
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
   
+  let remaining_part_of_constraint pt extension new_constraint = 
+    let n = size pt in 
+    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
+    if not(i_is_included_in above extension)
+    then None 
+    else if i_intersects below (scrappers pt) 
+         then None 
+         else Some below ;;
+
   
 end ;;  
   
@@ -204,14 +213,6 @@ module Sycomore_list = struct
          | Breakpoint_with_extensions(Q(pt,_,extension)) -> Image.image (i_merge extension) 
             (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)  ;;       
       
-      let remaining_part_of_constraint pt extension new_constraint = 
-          let n = Point.size pt in 
-          let (below,above) = List.partition (fun t->t<=n) new_constraint in 
-          if not(i_is_included_in above extension)
-          then None 
-          else if i_intersects below (Point.scrappers pt) 
-               then None 
-               else Some below ;;
       
       let refinement_opt ~with_anticipation new_constraints = function 
         Singleton(l) ->  if Constraint.satisfied_by_individual new_constraints l 
@@ -219,7 +220,7 @@ module Sycomore_list = struct
                        else None 
         | Breakpoint_with_extensions(Q(pt,old_constraints,extension)) ->
           let cleaned_constraints = Option.filter_and_unpack (
-            remaining_part_of_constraint pt extension 
+            Point.remaining_part_of_constraint pt extension 
           )  new_constraints in 
           let final_constraints = Constraint.merge_constraints cleaned_constraints old_constraints in 
           if test_for_possible_refinement ~with_anticipation pt final_constraints 
