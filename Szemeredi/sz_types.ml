@@ -16,6 +16,8 @@ type hungarian_adjuster =
 
 type point = P of int * int * int * (int list) ;;
 
+type cons_traint = C of int ;; 
+
 type qualified_point = Q of point * ((int list) list) * (int list);;
 
 type sycomore_list = 
