@@ -265,6 +265,9 @@ end ;;
 
 module Bulk_result = struct 
 
+let extend_with (BR(sycom)) extension =
+    BR(Sycomore_list.extend_with sycom extension);;
+
 end ;;   
 
 
