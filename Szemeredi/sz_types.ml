@@ -22,6 +22,7 @@ type sycomore_list =
    Singleton of int list 
    | Breakpoint_with_extensions of qualified_point ;;
 
+type bulk_result = BR of sycomore_list ;;  
 
 type for_width_one = FW1 of ((int * sycomore_list) list) ;;
 
