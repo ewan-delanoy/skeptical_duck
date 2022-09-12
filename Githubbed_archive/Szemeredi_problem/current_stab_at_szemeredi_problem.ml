@@ -296,47 +296,11 @@ end ;;
 
 module Parametrized_Example = struct 
 
-  
 
 end ;;   
   
-
-
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
-
-
-
-
-
-
-
-
-module Selector_for_hook = struct 
-
-
-    let apply_passive_repeat ~with_anticipation pt rl =
-      let (width,b,_,_) = Point.unveil pt in 
-      Sycomore_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] rl ;; 
-     
-    let apply_boundary_increment ~with_anticipation pt sycom = 
-        let (width,breadth,n,_) = Point.unveil pt in 
-        let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-        match Sycomore_list.refinement_opt ~with_anticipation new_constraints sycom with 
-          None -> None 
-          |Some new_sycom -> Some(Sycomore_list.enforce_boundary_increment n new_sycom) ;;
-  
-    let eval ~with_anticipation pt hook ll =  
-          match hook with 
-          Passive_repeat -> 
-            apply_passive_repeat ~with_anticipation pt (List.hd ll)
-          | Boundary_increment ->
-            apply_boundary_increment ~with_anticipation pt (List.hd ll)
-           | Fork ->  Sycomore_list.apply_fork pt ll 
-           | Jump -> Some(List.hd ll);;
-  
-  end ;;  
-  
   
 let apply_passive_repeat_on_bulk_result ~with_anticipation pt (BR(sycom)) =
   let (width,b,_,_) = Point.unveil pt in 
