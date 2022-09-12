@@ -338,6 +338,32 @@ module Selector_for_hook = struct
   end ;;  
   
   
+let apply_passive_repeat_on_bulk_result ~with_anticipation pt (BR(sycom)) =
+  let (width,b,_,_) = Point.unveil pt in 
+   match Sycomore_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] sycom with 
+   None -> None 
+   |Some new_sycom -> Some(BR(new_sycom)) ;;  
+
+let apply_boundary_increment_on_bulk_result ~with_anticipation pt (BR(sycom)) = 
+  let (width,breadth,n,_) = Point.unveil pt in 
+  let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
+  match Sycomore_list.refinement_opt ~with_anticipation new_constraints sycom with 
+   None -> None 
+  |Some new_sycom -> Some(BR(Sycomore_list.enforce_boundary_increment n new_sycom)) ;;
+
+let apply_fork_on_bulk_result pt ll = 
+     match Sycomore_list.apply_fork pt (Image.image (fun (BR syc)->syc) ll) with 
+      None -> None 
+      | Some new_sycom -> Some(BR(new_sycom)) ;;  
+
+let apply_hook_on_bulk_result ~with_anticipation pt hook ll =  
+    match hook with 
+   Passive_repeat -> apply_passive_repeat_on_bulk_result ~with_anticipation pt (List.hd ll)
+ | Boundary_increment -> apply_boundary_increment_on_bulk_result ~with_anticipation pt (List.hd ll)
+ | Fork ->  apply_fork_on_bulk_result pt ll 
+ | Jump -> Some(List.hd ll);;
+
+
 
 module Hungarian = struct 
 
