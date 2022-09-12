@@ -197,12 +197,6 @@ let extend_with qp extension =
 
 end ;;  
 
-let extend_sycomore_with sycom extension = match sycom with 
-   Singleton(l) -> Singleton(i_merge l extension)
-   | Breakpoint_with_extensions(qp) -> 
-     Breakpoint_with_extensions(Qualified_point.extend_with qp extension)   ;;
- 
-
 module Sycomore_list = struct 
   
       let get_representatives ~with_anticipation = function 
@@ -265,6 +259,14 @@ module Sycomore_list = struct
       
 end ;;  
 
+module Forced_data = struct 
+
+end ;;
+
+module Bulk_result = struct 
+
+end ;;   
+
 
 module Parametrized = struct 
 
@@ -273,7 +275,7 @@ module Parametrized = struct
       let (m,final_case) = List.hd(List.rev l) in 
       if n < m 
       then List.assoc n l 
-      else extend_sycomore_with final_case (Int_range.range (m+1) n) ;;   
+      else Sycomore_list.extend_with final_case (Int_range.range (m+1) n) ;;   
   
   let eval_fos fos n =
      match fos with 
