@@ -261,6 +261,16 @@ end ;;
 
 module Forced_data = struct 
 
+(* it is assumed that compatibility has already been checked *)   
+let extend_with (FD(offshoots,qpoints)) extension =
+  FD(Image.image (i_merge extension) offshoots,
+  Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
+  ) ;;  
+
+(*  
+let refinement_opt extra_constraints (FD(offshoots,qpoints)) =
+*)    
+
 end ;;
 
 module Bulk_result = struct 
