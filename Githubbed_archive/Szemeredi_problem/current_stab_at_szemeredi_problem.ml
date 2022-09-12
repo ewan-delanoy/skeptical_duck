@@ -426,6 +426,12 @@ Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
    Some summary -> Some (Parametrized.eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
+let hungarian_adjust_bulk_result bres_opt adj =
+  match bres_opt with 
+   None -> None 
+   |Some (BR(sycom)) -> Some(BR(Hungarian.short_adjust sycom adj)) ;;
+
+
    
 
 let hungarian_getter ~with_anticipation pt = 
