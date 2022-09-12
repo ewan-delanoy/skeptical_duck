@@ -22,17 +22,14 @@ type sycomore_list =
    Singleton of int list 
    | Breakpoint_with_extensions of qualified_point ;;
 
-type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
 
-type bulk_result = BR of sycomore_list * ((int list) list) * forced_data ;;
-
-type for_width_one = FW1 of ((int * bulk_result) list) ;;
+type for_width_one = FW1 of ((int * sycomore_list) list) ;;
 
 type function_of_size = 
   Width_one of for_width_one 
-  |Usual_fos of (int -> bulk_result ) ;; 
+  |Usual_fos of (int -> sycomore_list) ;; 
 
 type function_of_scrappers_and_size = 
-  Usual_foscras of ( (int list) -> int -> bulk_result ) ;;
+  Usual_foscras of ( (int list) -> int -> sycomore_list) ;;
 
-
+type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
