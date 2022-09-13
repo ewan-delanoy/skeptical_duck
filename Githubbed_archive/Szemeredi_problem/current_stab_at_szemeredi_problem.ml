@@ -178,12 +178,12 @@ let add_to_forced_data_hashtbl ~with_anticipation pt vaal=
 
 end ;;   
 
-module Forced_data = struct 
+
 
 (* dummy and empty for now, to be filled later *)  
-let test_for_possible_obstruction new_constraints () = false;;
+let test_forced_data_for_possible_obstruction new_constraints () = false;;
 
-end ;;   
+
 
 exception Test_for_possible_refinement_exn of point ;;
 
@@ -192,7 +192,7 @@ let test_for_possible_refinement ~with_anticipation pt new_constraints=
        (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt) 
    then true 
    else   
-   if Forced_data.test_for_possible_obstruction new_constraints 
+   if test_forced_data_for_possible_obstruction new_constraints 
     (Accumulator_with_optional_anticipator.get_forced_data ~with_anticipation pt)
    then false 
    else raise (Test_for_possible_refinement_exn(pt)) ;; 
