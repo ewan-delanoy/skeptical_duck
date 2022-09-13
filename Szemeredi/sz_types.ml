@@ -16,7 +16,7 @@ type hungarian_adjuster =
 
 type point = P of int * int * int * (int list) ;;
 
-type constraint_t = C of int ;; 
+type constraint_t = C of int list ;; 
 
 type qualified_point = Q of point * (constraint_t list) * (int list);;
 

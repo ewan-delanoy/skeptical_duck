@@ -9,8 +9,6 @@ any value of the Szemeredi function.
 *)
 
 open Needed_values ;;
-
-
 open Sz_types ;; 
 
 let i_order = Total_ordering.for_integers ;;
@@ -30,6 +28,8 @@ let il_sort = Ordered.sort il_order ;;
 
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
+
+let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
 let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
 
@@ -63,21 +63,24 @@ module Constraint = struct
 
 let extra_constraints_from_boundary_increment width breadth n =
     let mainstream = Int_range.scale (fun j->
-        let k = width-j in [n-2*k;n-k]
+        let k = width-j in C[n-2*k;n-k]
      ) 1 (width-1) in
      let lower_end = n-2*width in 
      if (lower_end>=1) && (lower_end<=breadth) 
-     then [lower_end;lower_end+width]::mainstream 
+     then (C[lower_end;lower_end+width])::mainstream 
      else mainstream ;;   
 
 let satisfied_by_individual l_constr l =
-  List.for_all (fun constr->not(i_is_included_in constr l)) l_constr
+  List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
 
 let satisfied_by_all_in_list l_constr ll=
   List.for_all (satisfied_by_individual l_constr) ll ;;
 
-let merge_constraints l_constr1 l_constr2 =
-    Ordered_misc.minimal_elts_wrt_inclusion (il_merge l_constr1 l_constr2) ;;
+let merge_constraints l_constr1 l_constr2 = 
+    let simplifier = Image.image (fun (C x)->x) in
+    Image.image (fun x->C x)
+    (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
+     (simplifier l_constr1) (simplifier l_constr2))) ;;
 
 end ;;  
 
@@ -90,14 +93,14 @@ module Point = struct
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
   
-  let remaining_part_of_constraint pt extension new_constraint = 
+  let remaining_part_of_constraint pt extension (C new_constraint) = 
     let n = size pt in 
     let (below,above) = List.partition (fun t->t<=n) new_constraint in 
     if not(i_is_included_in above extension)
     then None 
     else if i_intersects below (scrappers pt) 
          then None 
-         else Some below ;;
+         else Some (C below) ;;
 
   
 end ;;  
@@ -315,7 +318,7 @@ let medium_hashtbl = Hashtbl.create 50 ;;
   
 let apply_passive_repeat_on_bulk_result ~with_anticipation pt (BR(sycom)) =
   let (width,b,_,_) = Point.unveil pt in 
-   match Sycomore_list.refinement_opt ~with_anticipation [[b;b+width;b+2*width]] sycom with 
+   match Sycomore_list.refinement_opt ~with_anticipation [C[b;b+width;b+2*width]] sycom with 
    None -> None 
    |Some new_sycom -> Some(BR(new_sycom)) ;;  
 
