@@ -232,7 +232,7 @@ let extend_with qp extension =
   Q(pt,old_constraints,extension2) -> 
   Q(pt,old_constraints,i_merge extension extension2)   ;;
 
-let insert_several_constraints (Q(pt,old_constraints,extension)) new_constraints =
+let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
   let n = Point.size pt and scrappers = Point.scrappers pt in 
   match Constraint.insert_several (n,scrappers) (old_constraints,extension) new_constraints 
   with
@@ -307,7 +307,7 @@ let extend_with (FD(offshoots,qpoints)) extension =
 let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) = 
   FD(List.filter (Constraint.satisfied_by_individual extra_constraints) offshoots,
      Option.filter_and_unpack (
-      fun qp->Qualified_point.insert_several_constraints qp extra_constraints
+      Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
     
 
@@ -319,6 +319,7 @@ let extend_with (BR(sycom)) extension =
     BR(Sycomore_list.extend_with sycom extension);;
 
 end ;;   
+
 
 
 module Parametrized = struct 
