@@ -303,9 +303,13 @@ let extend_with (FD(offshoots,qpoints)) extension =
   Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
   ) ;;  
 
-(*  
-let refinement_opt extra_constraints (FD(offshoots,qpoints)) =
-*)    
+
+let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) = 
+  FD(List.filter (Constraint.satisfied_by_individual extra_constraints) offshoots,
+     Option.filter_and_unpack (
+      fun qp->Qualified_point.insert_several_constraints qp extra_constraints
+     ) qpoints) ;; 
+    
 
 end ;;
 
