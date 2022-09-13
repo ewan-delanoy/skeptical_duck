@@ -117,7 +117,7 @@ module Point = struct
   let size (P(w,b,n,s)) = n ;;
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
-  
+
   let remaining_part_of_constraint pt extension (C new_constraint) = 
     let n = size pt in 
     let (below,above) = List.partition (fun t->t<=n) new_constraint in 
@@ -291,8 +291,23 @@ module Sycomore_list = struct
                 Breakpoint_with_extensions(Q(pt2,old_constraints,i_insert n extension)) ;;
       
          let apply_fork pt ll = Some(Breakpoint_with_extensions(Q(pt,[],[]))) ;; 
+
+         let insert_several_constraints extra_constraints sycom =
+            match sycom with 
+             (Singleton l) -> if Constraint.satisfied_by_individual extra_constraints l 
+              then Some(Singleton l)
+              else None 
+             | _ -> Some sycom ;; 
       
-      
+         let extract_singleton_opt = function 
+           (Singleton l) -> Some l | _ -> None ;;
+
+        exception Extract_qualified_point_exn of sycomore_list ;; 
+
+         let extract_qualified_point sycom = match sycom with 
+           (Breakpoint_with_extensions(qp)) -> qp 
+           | _ -> raise(Extract_qualified_point_exn(sycom)) ;;  
+
 end ;;  
 
 module Forced_data = struct 
@@ -320,6 +335,61 @@ let extend_with (BR(sycom)) extension =
 
 end ;;   
 
+module Enhanced_bulk_result = struct 
+
+let common_length (EBR(sycom,representatives,forced_data)) =
+    List.length(List.hd representatives);;
+
+
+let extend_with (EBR(sycom,representatives,forced_data)) extension =
+    EBR(Sycomore_list.extend_with sycom extension,
+      Image.image (i_merge extension) representatives,
+      Forced_data.extend_with forced_data extension
+    );;
+
+let insert_several_constraints extra_constraints 
+  (EBR(sycom,representatives,forced_data)) = 
+   match Sycomore_list.insert_several_constraints extra_constraints sycom with 
+   None -> None 
+  | Some new_sycom -> 
+     let new_forced_data = Forced_data.insert_several_constraints extra_constraints forced_data in 
+     if new_forced_data = FD([],[])
+     then None 
+     else   
+     Some(EBR(new_sycom,
+      List.filter (Constraint.satisfied_by_individual extra_constraints) representatives,
+      Forced_data.insert_several_constraints extra_constraints forced_data
+     )) ;;
+    
+let apply_passive_repeat  pt bres =
+    let (width,b,_,_) = Point.unveil pt in 
+    insert_several_constraints [C[b;b+width;b+2*width]] bres ;;
+  
+let apply_boundary_increment pt bres = 
+    let (width,breadth,n,_) = Point.unveil pt in 
+    let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
+    match insert_several_constraints new_constraints bres with 
+     None -> None 
+    |Some new_bres -> Some(extend_with new_bres [n]) ;;
+
+    
+let apply_fork pt ll =
+   let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
+   let new_representatives = (fun (EBR(_,r,_))->r) (List.hd(List.rev(temp1))) in 
+   let temp2 = Image.image (fun ebr -> let (EBR(sycom,_,_)) = ebr in 
+        (ebr,Sycomore_list.extract_singleton_opt sycom ) ) temp1 in 
+   let (temp3,temp4) = List.partition (fun (_,opt_singleton)->opt_singleton=None) temp2 in 
+   let new_forced_data = FD(
+    il_sort(Image.image (fun (_,opt_singleton)->Option.unpack opt_singleton) temp4),
+    Image.image (fun (ebr,_)->
+      let (EBR(sycom,_,_)) = ebr in 
+         Sycomore_list.extract_qualified_point sycom 
+    ) temp3 
+   ) in 
+   EBR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data) ;; 
+
+
+end ;;  
 
 
 module Parametrized = struct 
