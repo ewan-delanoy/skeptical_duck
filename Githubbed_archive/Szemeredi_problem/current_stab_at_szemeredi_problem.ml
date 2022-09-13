@@ -232,6 +232,13 @@ let extend_with qp extension =
   Q(pt,old_constraints,extension2) -> 
   Q(pt,old_constraints,i_merge extension extension2)   ;;
 
+let insert_several_constraints (Q(pt,old_constraints,extension)) new_constraints =
+  let n = Point.size pt and scrappers = Point.scrappers pt in 
+  match Constraint.insert_several (n,scrappers) (old_constraints,extension) new_constraints 
+  with
+    None -> None 
+   |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension))) ;; 
+
 end ;;  
 
 module Sycomore_list = struct 
