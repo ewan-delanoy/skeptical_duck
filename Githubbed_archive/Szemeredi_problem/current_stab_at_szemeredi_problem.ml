@@ -82,15 +82,30 @@ let merge_constraints l_constr1 l_constr2 =
     (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
      (simplifier l_constr1) (simplifier l_constr2))) ;;
 
-let insert_new n (old_constraints,extension) (C new_constraint)= 
+let insert_new (n,scrappers) (old_constraints,extension) (C new_constraint)= 
+  let whole = concretize (n,scrappers) in 
   let remaining_constraint = i_setminus new_constraint extension in 
   if remaining_constraint = [] 
   then None 
   else 
-  if List.exists (fun t->t>n) remaining_constraint 
+  if (i_setminus remaining_constraint whole)<>[] 
   then Some (old_constraints)    
-  else Some (merge_constraints [C new_constraint] old_constraints) ;;  
+  else Some (merge_constraints [C remaining_constraint] old_constraints) ;;  
    
+let insert_several  (n,scrappers) (old_constraints,extension) new_constraints =
+   let rec tempf = (
+      fun (constraints_walker,to_be_treated) ->
+         match to_be_treated with 
+         [] -> Some constraints_walker 
+         | new_constraint :: others ->  
+        (match  insert_new (n,scrappers) (constraints_walker,extension) new_constraint with    
+           None -> None 
+          | Some new_walker -> tempf(new_walker,others) 
+        )
+   ) in 
+   tempf(old_constraints,new_constraints);;
+   
+
 
 end ;;  
 
