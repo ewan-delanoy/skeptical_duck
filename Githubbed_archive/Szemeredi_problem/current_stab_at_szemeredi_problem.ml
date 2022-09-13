@@ -82,6 +82,16 @@ let merge_constraints l_constr1 l_constr2 =
     (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
      (simplifier l_constr1) (simplifier l_constr2))) ;;
 
+let insert_new n (old_constraints,extension) (C new_constraint)= 
+  let remaining_constraint = i_setminus new_constraint extension in 
+  if remaining_constraint = [] 
+  then None 
+  else 
+  if List.exists (fun t->t>n) remaining_constraint 
+  then Some (old_constraints)    
+  else Some (merge_constraints [C new_constraint] old_constraints) ;;  
+   
+
 end ;;  
 
 
