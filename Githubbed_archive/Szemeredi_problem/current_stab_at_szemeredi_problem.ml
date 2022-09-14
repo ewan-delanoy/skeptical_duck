@@ -173,56 +173,6 @@ let add_to_low_hashtbl  ~with_anticipation pt vaal=
   else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
 
 
-let representatives_hashtbl = Hashtbl.create 50 ;;
-let representatives_anticipator = ref [] ;; 
-
-let get_representatives_opt ~with_anticipation pt =
-    if not(with_anticipation)
-    then  Hashtbl.find_opt representatives_hashtbl pt 
-    else
-        match List.assoc_opt pt (!representatives_anticipator) with 
-        Some anticiped_answer -> Some anticiped_answer 
-        | None -> Hashtbl.find_opt representatives_hashtbl pt  ;;
-
-exception Get_representatives_exn of point ;;        
-
-let get_representatives ~with_anticipation pt = 
-    match get_representatives_opt ~with_anticipation pt  with 
-     Some answer -> answer 
-     | None -> raise (Get_representatives_exn(pt)) ;;
-
-let add_to_representatives_hashtbl ~with_anticipation pt vaal=
-  if not(with_anticipation)
-  then   Hashtbl.replace representatives_hashtbl pt vaal
-  else representatives_anticipator := (pt,vaal) :: (!representatives_anticipator)  ;;
-  
-
-let forced_data_hashtbl = Hashtbl.create 50 ;;
-let forced_data_anticipator = ref [] ;; 
-
-let get_forced_data_opt ~with_anticipation pt =
-    if not(with_anticipation)
-    then  Hashtbl.find_opt forced_data_hashtbl pt 
-    else
-        match List.assoc_opt pt (!forced_data_anticipator) with 
-        Some anticiped_answer -> Some anticiped_answer 
-        | None -> Hashtbl.find_opt forced_data_hashtbl pt  ;;
-
-
-exception Get_forced_data_exn of point ;;        
-
-let get_forced_data ~with_anticipation pt = 
-    match get_forced_data_opt ~with_anticipation pt  with 
-      Some answer -> answer 
-    | None -> raise (Get_forced_data_exn(pt)) ;;
-        
-
-let add_to_forced_data_hashtbl ~with_anticipation pt vaal=
-  if not(with_anticipation)
-  then   Hashtbl.replace forced_data_hashtbl pt vaal
-  else forced_data_anticipator := (pt,vaal) :: (!forced_data_anticipator)  ;;
-  
-
 end ;;   
 
 
