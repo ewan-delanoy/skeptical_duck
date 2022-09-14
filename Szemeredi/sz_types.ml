@@ -26,12 +26,12 @@ type bulk_result = BR of sycomore_list ;;
 
 type enhanced_bulk_result = EBR of sycomore_list * ((int list) list) * forced_data ;;  
 
-type for_width_one = FW1 of ((int * bulk_result) list) ;;
+type for_width_one = FW1 of ((int * enhanced_bulk_result) list) ;;
 
 type function_of_size = 
-  Width_one of for_width_one 
-  |Usual_fos of (int -> bulk_result) ;; 
+Width_one of for_width_one 
+|Usual_fos of (int -> enhanced_bulk_result) ;; 
 
 type function_of_scrappers_and_size = 
-  Usual_foscras of ( (int list) -> int -> bulk_result) ;;
+Usual_foscras of ( (int list) -> int -> enhanced_bulk_result) ;;
 
