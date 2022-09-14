@@ -10,10 +10,6 @@ type hook_in_knowledge =
    | Fork 
    | Jump ;;
 
-type hungarian_adjuster =
-     Leave_unchanged 
-    |Adjust of int list ;; 
-
 type point = P of int * int * int * (int list) ;;
 
 type constraint_t = C of int list ;; 
