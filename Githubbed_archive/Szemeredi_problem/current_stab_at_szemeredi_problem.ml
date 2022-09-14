@@ -226,27 +226,6 @@ let add_to_forced_data_hashtbl ~with_anticipation pt vaal=
 end ;;   
 
 
-
-(* dummy and empty for now, to be filled later *)  
-let test_forced_data_for_possible_obstruction new_constraints () = false;;
-
-
-
-exception Test_for_possible_refinement_exn of point ;;
-
-let test_for_possible_refinement ~with_anticipation pt new_constraints= 
-   if List.exists (Constraint.satisfied_by_individual new_constraints) 
-       (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt) 
-   then true 
-   else   
-   if test_forced_data_for_possible_obstruction new_constraints 
-    (Accumulator_with_optional_anticipator.get_forced_data ~with_anticipation pt)
-   then false 
-   else raise (Test_for_possible_refinement_exn(pt)) ;; 
-
-let common_length_for_bare_point ~with_anticipation pt = 
-   List.length (List.hd (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)) ;; 
-
 module Qualified_point = struct 
 
 let extend_with qp extension =  
@@ -265,54 +244,11 @@ end ;;
 
 module Sycomore_list = struct 
   
-      let get_representatives ~with_anticipation = function 
-         Singleton(l) -> [l]
-         | Breakpoint_with_extensions(Q(pt,_,extension)) -> Image.image (i_merge extension) 
-            (Accumulator_with_optional_anticipator.get_representatives ~with_anticipation pt)  ;;       
-      
-      
-      let refinement_opt ~with_anticipation new_constraints = function 
-        Singleton(l) ->  if Constraint.satisfied_by_individual new_constraints l 
-                       then Some(Singleton l)
-                       else None 
-        | Breakpoint_with_extensions(Q(pt,old_constraints,extension)) ->
-          let cleaned_constraints = Option.filter_and_unpack (
-            Point.remaining_part_of_constraint pt extension 
-          )  new_constraints in 
-          let final_constraints = Constraint.merge_constraints cleaned_constraints old_constraints in 
-          if test_for_possible_refinement ~with_anticipation pt final_constraints 
-          then  Some(Breakpoint_with_extensions(Q(pt,final_constraints,extension)))  
-          else  None   ;;
-      
-        exception Remove_fixed_part_on_all of sycomore_list * (int list) ;; 
-      
-        let remove_fixed_part_on_all to_be_removed sycom_l= match sycom_l with 
-          Singleton(l) -> Singleton(i_setminus l to_be_removed)
-          | Breakpoint_with_extensions(Q(pt,old_constraints,extension)) -> 
-             let n =  Point.size pt in 
-             if List.exists (fun t->t<=n) to_be_removed 
-             then raise(Remove_fixed_part_on_all(sycom_l,to_be_removed))
-             else Breakpoint_with_extensions(Q(pt,old_constraints,extension)) ;;         
-      
-        
-      
-        let common_length ~with_anticipation = function 
-        Singleton(l) -> List.length l
-        | Breakpoint_with_extensions(Q(pt,old_constraints,extension)) -> 
-           (common_length_for_bare_point ~with_anticipation pt)+List.length extension   ;;
-      
         let extend_with sycom extension = match sycom with 
         Singleton(l) -> Singleton(i_merge l extension)
         | Breakpoint_with_extensions(Q(pt,old_constraints,extension2)) -> 
-          Breakpoint_with_extensions(Q(pt,old_constraints,i_merge extension extension2))   ;;
-      
-      
-         let enforce_boundary_increment n = function 
-              (Singleton l) -> Singleton(l@[n])
-              | Breakpoint_with_extensions(Q(pt2,old_constraints,extension))  -> 
-                Breakpoint_with_extensions(Q(pt2,old_constraints,i_insert n extension)) ;;
-      
-         let apply_fork pt ll = Some(Breakpoint_with_extensions(Q(pt,[],[]))) ;; 
+          Breakpoint_with_extensions(Q(pt,old_constraints,i_merge extension extension2))   ;;    
+
 
          let insert_several_constraints extra_constraints sycom =
             match sycom with 
