@@ -8,7 +8,7 @@ any value of the Szemeredi function.
 
 *)
 
-open Needed_values ;;
+open Needed_values ;; 
 open Sz_types ;; 
 
 let i_order = Total_ordering.for_integers ;;
@@ -349,12 +349,7 @@ let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) =
 
 end ;;
 
-module Bulk_result = struct 
-
-let extend_with (BR(sycom)) extension =
-    BR(Sycomore_list.extend_with sycom extension);;
-
-end ;;   
+ 
 
 module Enhanced_bulk_result = struct 
 
@@ -420,7 +415,7 @@ module Parametrized = struct
       let (m,final_case) = List.hd(List.rev l) in 
       if n < m 
       then List.assoc n l 
-      else Bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
+      else Enhanced_bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
   
   let eval_fos fos n =
      match fos with 
@@ -443,31 +438,6 @@ end ;;
   
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
-  
-let apply_passive_repeat_on_bulk_result ~with_anticipation pt (BR(sycom)) =
-  let (width,b,_,_) = Point.unveil pt in 
-   match Sycomore_list.refinement_opt ~with_anticipation [C[b;b+width;b+2*width]] sycom with 
-   None -> None 
-   |Some new_sycom -> Some(BR(new_sycom)) ;;  
-
-let apply_boundary_increment_on_bulk_result ~with_anticipation pt (BR(sycom)) = 
-  let (width,breadth,n,_) = Point.unveil pt in 
-  let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-  match Sycomore_list.refinement_opt ~with_anticipation new_constraints sycom with 
-   None -> None 
-  |Some new_sycom -> Some(BR(Sycomore_list.enforce_boundary_increment n new_sycom)) ;;
-
-let apply_fork_on_bulk_result pt ll = 
-     match Sycomore_list.apply_fork pt (Image.image (fun (BR syc)->syc) ll) with 
-      None -> None 
-      | Some new_sycom -> Some(BR(new_sycom)) ;;  
-
-let apply_hook_on_bulk_result ~with_anticipation pt hook ll =  
-    match hook with 
-   Passive_repeat -> apply_passive_repeat_on_bulk_result ~with_anticipation pt (List.hd ll)
- | Boundary_increment -> apply_boundary_increment_on_bulk_result ~with_anticipation pt (List.hd ll)
- | Fork ->  apply_fork_on_bulk_result pt ll 
- | Jump -> Some(List.hd ll);;
 
 let polish_fork ~with_anticipation pt unpolished_result =
     Some unpolished_result ;; 
@@ -553,7 +523,7 @@ let nonbulgarian_getter  ~with_anticipation pt =
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
 if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-then Some (BR(Singleton z)) 
+then Some (EBR(Singleton z,[z],FD([z],[]))) 
 else 
 match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
 Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
@@ -569,7 +539,7 @@ let bulgarian_getter ~with_anticipation pt =
   |Some(pt2,adj) -> 
     (match nonbulgarian_getter  ~with_anticipation pt2 with
       None -> None 
-      |Some bres -> Some(Bulk_result.extend_with bres adj)
+      |Some bres -> Some(Enhanced_bulk_result.extend_with bres adj)
     );;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
@@ -602,7 +572,7 @@ let try_hook_quickly ~with_anticipation pt hook =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],apply_hook_on_bulk_result ~with_anticipation pt hook args) ;;  
+  ([],apply_hook ~with_anticipation pt hook args) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
