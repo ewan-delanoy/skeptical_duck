@@ -11,6 +11,7 @@ any value of the Szemeredi function.
 open Needed_values ;; 
 open Sz_types ;; 
 
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -351,20 +352,20 @@ end ;;
 
  
 
-module Enhanced_bulk_result = struct 
+module Bulk_result = struct 
 
-let common_length (EBR(sycom,representatives,forced_data)) =
+let common_length (BR(sycom,representatives,forced_data)) =
     List.length(List.hd representatives);;
 
 
-let extend_with (EBR(sycom,representatives,forced_data)) extension =
-    EBR(Sycomore_list.extend_with sycom extension,
+let extend_with (BR(sycom,representatives,forced_data)) extension =
+    BR(Sycomore_list.extend_with sycom extension,
       Image.image (i_merge extension) representatives,
       Forced_data.extend_with forced_data extension
     );;
 
 let insert_several_constraints extra_constraints 
-  (EBR(sycom,representatives,forced_data)) = 
+  (BR(sycom,representatives,forced_data)) = 
    match Sycomore_list.insert_several_constraints extra_constraints sycom with 
    None -> None 
   | Some new_sycom -> 
@@ -372,7 +373,7 @@ let insert_several_constraints extra_constraints
      if new_forced_data = FD([],[])
      then None 
      else   
-     Some(EBR(new_sycom,
+     Some(BR(new_sycom,
       List.filter (Constraint.satisfied_by_individual extra_constraints) representatives,
       Forced_data.insert_several_constraints extra_constraints forced_data
      )) ;;
@@ -391,18 +392,18 @@ let apply_boundary_increment pt bres =
     
 let apply_fork pt ll =
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
-   let new_representatives = (fun (EBR(_,r,_))->r) (List.hd(List.rev(temp1))) in 
-   let temp2 = Image.image (fun ebr -> let (EBR(sycom,_,_)) = ebr in 
+   let new_representatives = (fun (BR(_,r,_))->r) (List.hd(List.rev(temp1))) in 
+   let temp2 = Image.image (fun ebr -> let (BR(sycom,_,_)) = ebr in 
         (ebr,Sycomore_list.extract_singleton_opt sycom ) ) temp1 in 
    let (temp3,temp4) = List.partition (fun (_,opt_singleton)->opt_singleton=None) temp2 in 
    let new_forced_data = FD(
     il_sort(Image.image (fun (_,opt_singleton)->Option.unpack opt_singleton) temp4),
     Image.image (fun (ebr,_)->
-      let (EBR(sycom,_,_)) = ebr in 
+      let (BR(sycom,_,_)) = ebr in 
          Sycomore_list.extract_qualified_point sycom 
     ) temp3 
    ) in 
-   EBR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data) ;; 
+   BR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data) ;; 
 
 
 end ;;  
@@ -415,7 +416,7 @@ module Parametrized = struct
       let (m,final_case) = List.hd(List.rev l) in 
       if n < m 
       then List.assoc n l 
-      else Enhanced_bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
+      else Bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
   
   let eval_fos fos n =
      match fos with 
@@ -444,9 +445,9 @@ let polish_fork ~with_anticipation pt unpolished_result =
 
 let apply_hook_naively ~with_anticipation pt hook ll =  
   match hook with 
-  Passive_repeat -> Enhanced_bulk_result.apply_passive_repeat pt (List.hd ll)
-| Boundary_increment -> Enhanced_bulk_result.apply_boundary_increment pt (List.hd ll)
-| Fork ->  polish_fork ~with_anticipation pt (Enhanced_bulk_result.apply_fork pt ll)
+  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
+| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
+| Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
 | Jump -> Some(List.hd ll);; 
 
 exception Apply_hook_exn of point * hook_in_knowledge ;;
@@ -456,7 +457,7 @@ let apply_hook ~with_anticipation pt hook ll =
    match apply_hook_naively ~with_anticipation pt hook ll with 
    None -> None 
     |Some bres ->
-       let (EBR(_,reps,_)) = bres in 
+       let (BR(_,reps,_)) = bres in 
        if reps = []
        then raise (Apply_hook_exn(pt,hook)) 
        else Some bres ;;
@@ -523,7 +524,7 @@ let nonbulgarian_getter  ~with_anticipation pt =
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
 if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-then Some (EBR(Singleton z,[z],FD([z],[]))) 
+then Some (BR(Singleton z,[z],FD([z],[]))) 
 else 
 match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
 Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
@@ -539,7 +540,7 @@ let bulgarian_getter ~with_anticipation pt =
   |Some(pt2,adj) -> 
     (match nonbulgarian_getter  ~with_anticipation pt2 with
       None -> None 
-      |Some bres -> Some(Enhanced_bulk_result.extend_with bres adj)
+      |Some bres -> Some(Bulk_result.extend_with bres adj)
     );;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
