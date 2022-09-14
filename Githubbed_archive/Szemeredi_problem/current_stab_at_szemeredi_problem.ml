@@ -524,12 +524,27 @@ let detach width domain = iterator_for_detachment (width,domain,[],List.rev doma
 
 end ;;
 
-let decompose (old_width,old_breadth) domain =
-   match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
-   None -> None 
-   | Some (width,breadth) -> Some ((width,breadth),Private.detach width domain);;
+let decompose (old_width,old_breadth) domain = 
+  match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
+    None -> None 
+    | Some (width,breadth) -> Some ((width,breadth),Private.detach width domain);;  
+
 
 end ;;  
+
+module Bulgarian = struct 
+
+  let decompose pt =
+      let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
+      let domain = concretize (n,scrappers) in 
+       match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with 
+       None -> None 
+       | Some ((new_width,new_breadth),(new_domain,adjustment)) -> 
+          let (new_n,new_scrappers) = abstractize new_domain in 
+        Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+    
+end ;;   
+
 
 module Hungarian = struct 
 
