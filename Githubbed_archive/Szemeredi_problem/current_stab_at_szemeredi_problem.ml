@@ -33,6 +33,13 @@ let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t
 
 let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
 
+exception Cannot_abstractize_empty_set ;;
+
+let abstractize domain =
+   if domain = [] then raise(Cannot_abstractize_empty_set) else 
+   let n = List.hd(List.rev domain) in 
+   (n,i_setminus (Int_range.range 1 n) domain) ;;   
+
 module Parameter_pair_for_obstruction = struct 
 
 let predecessor max_in_set (width,breadth) = 
