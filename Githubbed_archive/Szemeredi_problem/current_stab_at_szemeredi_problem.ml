@@ -621,7 +621,7 @@ end ;;
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;       
 
-let nonhungarian_getter  ~with_anticipation pt = 
+let nonbulgarian_getter  ~with_anticipation pt = 
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
 if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
@@ -634,25 +634,19 @@ Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
    Some summary -> Some (Parametrized.eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
-let hungarian_adjust_bulk_result bres_opt adj =
-  match bres_opt with 
-   None -> None 
-   |Some (BR(sycom)) -> Some(BR(Hungarian.short_adjust sycom adj)) ;;
 
-
-   
-
-let hungarian_getter ~with_anticipation pt = 
-  let (width,breadth,n,scrappers) = Point.unveil pt in  
-  let ((width2,breadth2,scrappers2),adj) = 
-    Hungarian.decompose (width,breadth,scrappers) in 
-  let pt2 = P(width2,breadth2,n,scrappers2) in   
-  let res_opt = nonhungarian_getter  ~with_anticipation pt2 in  
-    hungarian_adjust_bulk_result res_opt adj;;
+let bulgarian_getter ~with_anticipation pt = 
+  match Bulgarian.decompose pt  with 
+  None -> nonbulgarian_getter  ~with_anticipation pt
+  |Some(pt2,adj) -> 
+    (match nonbulgarian_getter  ~with_anticipation pt2 with
+      None -> None 
+      |Some bres -> Some(Bulk_result.extend_with bres adj)
+    );;
 
 let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
   ~with_anticipation:false ;;    
-let access = hungarian_getter ~with_anticipation:false ;;   
+let access = bulgarian_getter ~with_anticipation:false ;;   
 
 let descendants_for_hook pt hook = 
        let (width,breadth,n,scrappers) = Point.unveil pt in  
@@ -670,20 +664,13 @@ let descendants_for_hook pt hook =
 
 
 let try_hook_quickly ~with_anticipation pt hook =  
-   let nh_enhanced_getter = nonhungarian_getter ~with_anticipation in 
    let descendants = descendants_for_hook pt hook in  
-   let hungarian_descendants = Image.image (
-      fun pt1  ->
-        let (w,b,m,s) = Point.unveil pt1 in  
-        let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
-        (P(w2,b2,m,s2),adj)
-    ) descendants in 
-   let temp1 = Image.image (fun (pt3,adj)->
-      (pt3,hungarian_adjust_bulk_result (nh_enhanced_getter pt3) adj)
-  ) hungarian_descendants in   
+   let descendants_with_their_images = Image.image (
+      fun pt  -> (pt,bulgarian_getter ~with_anticipation pt)
+    ) descendants in  
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
-  ) temp1 in 
+  ) descendants_with_their_images in 
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
@@ -714,7 +701,7 @@ let rose_add (width,breadth) summary =
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt = 
-   let hg_enhanced_getter = hungarian_getter ~with_anticipation in     
+   let hg_enhanced_getter = bulgarian_getter ~with_anticipation in     
    match hg_enhanced_getter pt with 
     Some old_answer -> ([],None) 
     | None ->
@@ -809,7 +796,7 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
        let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
-      (n, hungarian_getter ~with_anticipation:true pt2 ))  1 30  in 
+      (n, bulgarian_getter ~with_anticipation:true pt2 ))  1 30  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
