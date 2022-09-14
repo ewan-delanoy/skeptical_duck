@@ -491,6 +491,46 @@ let apply_hook ~with_anticipation pt hook ll =
        then raise (Apply_hook_exn(pt,hook)) 
        else Some bres ;;
 
+
+module Bulgarian_for_nonparametrized_sets = struct 
+
+module Private = struct 
+
+let rec iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) =
+  if Parameter_pair_for_obstruction.check_for_meaningful_obstruction (w,b) domain 
+  then Some(w,b)
+  else
+  match Parameter_pair_for_obstruction.predecessor max_in_domain (w,b) with 
+   None -> None  
+   |Some(new_w,new_b) -> iterator_for_meaningful_obstruction (domain,max_in_domain,new_w,new_b) ;;
+
+let find_meaningful_obstruction (w,b) domain = 
+   let max_in_domain = List.hd(List.rev domain) in 
+   iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
+   
+let test_for_detachability width domain x = 
+  let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
+    List.for_all (fun w->not(i_is_included_in [x-2*w;x-w] domain)) idx_range ;;
+          
+let rec iterator_for_detachment (width,domain,treated,to_be_treated) = 
+    match to_be_treated with 
+     [] -> ([],treated)
+    | x :: others -> 
+       if test_for_detachability width domain x 
+       then (List.rev to_be_treated,treated)
+       else iterator_for_detachment (width,domain,x::treated,others) ;;    
+
+let detach width domain = iterator_for_detachment (width,domain,[],List.rev domain) ;;
+
+end ;;
+
+let decompose (old_width,old_breadth) domain =
+   match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
+   None -> None 
+   | Some (width,breadth) -> Some ((width,breadth),Private.detach width domain);;
+
+end ;;  
+
 module Hungarian = struct 
 
 module Breadth_reduction = struct 
