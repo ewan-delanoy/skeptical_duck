@@ -448,7 +448,27 @@ let apply_hook_on_bulk_result ~with_anticipation pt hook ll =
  | Fork ->  apply_fork_on_bulk_result pt ll 
  | Jump -> Some(List.hd ll);;
 
+let polish_fork ~with_anticipation pt unpolished_result =
+    Some unpolished_result ;; 
 
+let apply_hook_naively ~with_anticipation pt hook ll =  
+  match hook with 
+  Passive_repeat -> Enhanced_bulk_result.apply_passive_repeat pt (List.hd ll)
+| Boundary_increment -> Enhanced_bulk_result.apply_boundary_increment pt (List.hd ll)
+| Fork ->  polish_fork ~with_anticipation pt (Enhanced_bulk_result.apply_fork pt ll)
+| Jump -> Some(List.hd ll);; 
+
+exception Apply_hook_exn of point * hook_in_knowledge ;;
+
+
+let apply_hook ~with_anticipation pt hook ll = 
+   match apply_hook_naively ~with_anticipation pt hook ll with 
+   None -> None 
+    |Some bres ->
+       let (EBR(_,reps,_)) = bres in 
+       if reps = []
+       then raise (Apply_hook_exn(pt,hook)) 
+       else Some bres ;;
 
 module Hungarian = struct 
 

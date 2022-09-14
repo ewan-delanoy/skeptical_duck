@@ -1,7 +1,82 @@
 (************************************************************************************************************************
-Snippet 108 : 
+Snippet 109 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 108 : Musings on a random walk
+************************************************************************************************************************)
+
+type dyadic = D of int * int ;; 
+type linear_combination = LC of (dyadic * int ) list ;;
+
+let rec helper_for_nuu (expo,walker) =
+    if walker mod 2 = 1 
+    then (expo,walker)
+    else helper_for_nuu (expo+1,walker/2) ;;   
+
+let nuu n = helper_for_nuu (0,n) ;;
+
+
+module Dyadic = struct 
+
+let frac x ex = let (d,new_x) = nuu x in D(new_x,d+ex) ;;   
+
+let sum_in_prepared_case (D(a,ea)) (D(b,eb))=  
+  (* we assume ea < eb *)
+  let new_a = (Basic.power 2 (eb-ea)) * a  in 
+  frac (new_a+b) eb ;;
+
+let sum dya dyb =
+  let (D(a,ea))=dya and (D(b,eb))=dyb in    
+  if ea = eb then frac (a+b) ea else 
+  if ea < eb 
+  then sum_in_prepared_case dya dyb 
+  else sum_in_prepared_case dyb dya ;;
+  
+let prod (D(a,ea)) (D(b,eb))= D(a*b,ea+eb) ;;      
+let half (D(x,ex)) = D(x,ex+1) ;; 
+
+let fold_sum l = List.fold_left sum (D(0,1)) l ;;  
+
+
+end ;;
+
+module Linear_Combination = struct 
+
+let rec helper_for_sum (treated,to_be_treated1,to_be_treated2) =
+  match to_be_treated1 with 
+  [] -> List.rev(List.rev_append to_be_treated2 treated)
+  | (d1,idx1) :: others1 -> 
+     (
+      match to_be_treated2 with 
+      [] -> List.rev(List.rev_append to_be_treated1 treated)
+      | (d2,idx2) :: others2 -> 
+          if idx1<idx2 then helper_for_sum ((d1,idx1) ::treated,others1,to_be_treated2) else 
+          if idx2<idx1 then helper_for_sum ((d2,idx2) ::treated,to_be_treated1,others2) else   
+            helper_for_sum ((Dyadic.sum d1 d2,idx1) ::treated,others1,others2) 
+     ) ;;
+
+let sum (LC l1) (LC l2) = (LC(helper_for_sum([],l1,l2))) ;;
+let zero = LC [] ;;
+let fold_sum l = List.fold_left sum zero l ;;  
+
+end ;;  
+
+let peggy_transform (LC l) = 
+  Linear_Combination.fold_sum (Image.image (fun (d,idx)->
+      if idx = 0 then LC[d,idx] else 
+       LC[Dyadic.half d,idx-1;Dyadic.half d,idx+2] 
+    ) l) ;;
+
+let ff = Memoized.small peggy_transform (LC[D(1,0),1]) ;;   
+
+let gg = Memoized.make (fun n->
+   let (LC temp1) = ff n in 
+   let dys = Dyadic.fold_sum(Image.image fst (List.tl temp1)) in 
+   let (D(s,es)) = dys in
+   (dys,(float_of_int(s))*.(0.5**(float_of_int es))) 
+  ) ;; 
 
 (************************************************************************************************************************
 Snippet 107 : Read a file and remove tabs in each line
