@@ -33,6 +33,20 @@ let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t
 
 let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
 
+module Parameter_pair_for_obstruction = struct 
+
+let predecessor max_in_set (width,breadth) = 
+  if breadth < 1 
+  then (if width < 2 then None else Some(width-1,max_in_set-2*(width-1)) )  
+  else (Some(width,breadth-1)) ;;
+  
+let check_for_meaningful_obstruction (width,breadth) domain =
+   if breadth < 1 
+   then false 
+   else i_is_included_in [breadth;breadth+width;breadth+2*width] domain ;;  
+
+end ;;  
+
 let test_for_admissibility_up_to_max_with max_width z =
   if max_width<1 then true else 
   Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
@@ -538,6 +552,7 @@ let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;
 (* Example : decompose (1,18,[8;11;14;17;20]);; *)
 
 end ;;  
+
 
 
   
