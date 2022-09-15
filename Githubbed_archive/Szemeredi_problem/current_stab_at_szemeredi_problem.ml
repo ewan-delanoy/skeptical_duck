@@ -138,16 +138,6 @@ module Point = struct
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
 
-  let remaining_part_of_constraint pt extension (C new_constraint) = 
-    let n = size pt in 
-    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
-    if not(i_is_included_in above extension)
-    then None 
-    else if i_intersects below (scrappers pt) 
-         then None 
-         else Some (C below) ;;
-
-  
 end ;;  
   
 module Accumulator_with_optional_anticipator = struct 
