@@ -34,10 +34,8 @@ let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t
 
 let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
 
-exception Cannot_abstractize_empty_set ;;
-
 let abstractize domain =
-   if domain = [] then raise(Cannot_abstractize_empty_set) else 
+   if domain = [] then (0,[]) else 
    let n = List.hd(List.rev domain) in 
    (n,i_setminus (Int_range.range 1 n) domain) ;;   
 
@@ -463,6 +461,10 @@ let descendants_for_hook pt hook =
 
 
 let try_hook_quickly ~with_anticipation pt hook =  
+   (* 
+   let nonbulgarian_descendants = descendants_for_hook pt hook in  
+   let descendants = Image.image Bulgarian.decompose nonbulgarian_descendants in 
+   *)
    let descendants = descendants_for_hook pt hook in  
    let descendants_with_their_images = Image.image (
       fun pt  -> (pt,bulgarian_getter ~with_anticipation pt)
