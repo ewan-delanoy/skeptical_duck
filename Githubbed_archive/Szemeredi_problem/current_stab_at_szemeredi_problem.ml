@@ -445,14 +445,15 @@ let descendants_for_hook pt hook =
       | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 
-let try_hook_quickly ~with_anticipation pt hook =  
-   (* 
+let try_hook_quickly ~with_anticipation pt hook = 
    let nonbulgarian_descendants = descendants_for_hook pt hook in  
    let descendants = Image.image Bulgarian.decompose nonbulgarian_descendants in 
-   *)
-   let descendants = descendants_for_hook pt hook in  
    let descendants_with_their_images = Image.image (
-      fun pt  -> (pt,bulgarian_getter ~with_anticipation pt)
+      fun (pt2,adj)  -> 
+       match  nonbulgarian_getter ~with_anticipation pt2 with 
+       None -> (pt2,None)
+       |Some interm_result ->
+        (pt2,Some(Bulk_result.extend_with interm_result adj))
     ) descendants in  
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
