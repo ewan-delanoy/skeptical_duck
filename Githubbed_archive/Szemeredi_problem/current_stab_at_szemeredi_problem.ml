@@ -425,9 +425,7 @@ let bulgarian_getter ~with_anticipation pt =
       None -> None 
       |Some bres -> Some(Bulk_result.extend_with bres adj)
     );;
-
-let low_getter = Accumulator_with_optional_anticipator.get_from_low_hashtbl 
-  ~with_anticipation:false ;;    
+   
 let access = bulgarian_getter ~with_anticipation:false ;;   
 
 let descendants_for_hook pt hook = 
