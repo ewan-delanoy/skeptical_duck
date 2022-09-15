@@ -366,7 +366,7 @@ module Bulgarian_for_nonparametrized_sets = struct
          let ((new_width,new_breadth),(new_domain,adjustment)) =
          Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain in 
          let (new_n,new_scrappers) = abstractize new_domain in 
-          Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+          (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
       
   (*
      
@@ -419,11 +419,8 @@ Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
    Some summary -> Some (Parametrized.eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
 
-
 let bulgarian_getter ~with_anticipation pt = 
-  match Bulgarian.decompose pt  with 
-  None -> nonbulgarian_getter  ~with_anticipation pt
-  |Some(pt2,adj) -> 
+  let (pt2,adj)= Bulgarian.decompose pt  in 
     (match nonbulgarian_getter  ~with_anticipation pt2 with
       None -> None 
       |Some bres -> Some(Bulk_result.extend_with bres adj)
