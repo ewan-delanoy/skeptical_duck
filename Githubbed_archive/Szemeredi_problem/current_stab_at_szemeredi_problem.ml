@@ -310,7 +310,76 @@ module Parametrized_Example = struct
 
 
 end ;;   
+
+module Bulgarian_for_nonparametrized_sets = struct 
+
+  module Private = struct 
   
+  let rec iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) =
+    if Parameter_pair_for_obstruction.check_for_meaningful_obstruction (w,b) domain 
+    then Some(w,b)
+    else
+    match Parameter_pair_for_obstruction.predecessor max_in_domain (w,b) with 
+     None -> None  
+     |Some(new_w,new_b) -> iterator_for_meaningful_obstruction (domain,max_in_domain,new_w,new_b) ;;
+  
+  let find_meaningful_obstruction (w,b) domain = 
+     let max_in_domain = List.hd(List.rev domain) in 
+     iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
+  
+  let inner_test_for_detachability width breadth domain x w = 
+      if not(i_is_included_in [x-2*w;x-w] domain)
+      then true
+      else if w<width 
+           then false
+           else breadth < (x-2*w)  ;;   
+  
+  let test_for_detachability width breadth domain x = 
+    let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
+      List.for_all (inner_test_for_detachability width breadth domain x) idx_range ;;
+            
+  let rec iterator_for_detachment (width,breadth,domain,treated,to_be_treated) = 
+      match to_be_treated with 
+       [] -> ([],treated)
+      | x :: others -> 
+         if test_for_detachability width breadth domain x 
+         then iterator_for_detachment (width,breadth,domain,x::treated,others)
+         else (List.rev to_be_treated,treated);;    
+  
+  let detach (width,breadth) domain = iterator_for_detachment (width,breadth,domain,[],List.rev domain) ;;
+  
+  end ;;
+  
+  let decompose (old_width,old_breadth) domain = 
+    match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
+      None -> None 
+      | Some (width,breadth) -> Some ((width,breadth),Private.detach (width,breadth) domain);;  
+  
+  
+  end ;;  
+  
+  module Bulgarian = struct 
+  
+    let decompose pt =
+        let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
+        let domain = concretize (n,scrappers) in 
+         match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with 
+         None -> None 
+         | Some ((new_width,new_breadth),(new_domain,adjustment)) -> 
+            let (new_n,new_scrappers) = abstractize new_domain in 
+          Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+      
+  (*
+     
+  let check1 = (decompose (P(1,4,6,[])) =  Some (P (1, 4, 6, []), [])) ;;
+  let check2 = (decompose (P(1,3,6,[])) =  Some (P (1, 3, 5, []), [6])) ;;
+  
+  *)
+  
+  end ;;   
+  
+
+
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
@@ -337,72 +406,6 @@ let apply_hook ~with_anticipation pt hook ll =
        else Some bres ;;
 
 
-module Bulgarian_for_nonparametrized_sets = struct 
-
-module Private = struct 
-
-let rec iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) =
-  if Parameter_pair_for_obstruction.check_for_meaningful_obstruction (w,b) domain 
-  then Some(w,b)
-  else
-  match Parameter_pair_for_obstruction.predecessor max_in_domain (w,b) with 
-   None -> None  
-   |Some(new_w,new_b) -> iterator_for_meaningful_obstruction (domain,max_in_domain,new_w,new_b) ;;
-
-let find_meaningful_obstruction (w,b) domain = 
-   let max_in_domain = List.hd(List.rev domain) in 
-   iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
-
-let inner_test_for_detachability width breadth domain x w = 
-    if not(i_is_included_in [x-2*w;x-w] domain)
-    then true
-    else if w<width 
-         then false
-         else breadth < (x-2*w)  ;;   
-
-let test_for_detachability width breadth domain x = 
-  let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
-    List.for_all (inner_test_for_detachability width breadth domain x) idx_range ;;
-          
-let rec iterator_for_detachment (width,breadth,domain,treated,to_be_treated) = 
-    match to_be_treated with 
-     [] -> ([],treated)
-    | x :: others -> 
-       if test_for_detachability width breadth domain x 
-       then iterator_for_detachment (width,breadth,domain,x::treated,others)
-       else (List.rev to_be_treated,treated);;    
-
-let detach (width,breadth) domain = iterator_for_detachment (width,breadth,domain,[],List.rev domain) ;;
-
-end ;;
-
-let decompose (old_width,old_breadth) domain = 
-  match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
-    None -> None 
-    | Some (width,breadth) -> Some ((width,breadth),Private.detach (width,breadth) domain);;  
-
-
-end ;;  
-
-module Bulgarian = struct 
-
-  let decompose pt =
-      let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
-      let domain = concretize (n,scrappers) in 
-       match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with 
-       None -> None 
-       | Some ((new_width,new_breadth),(new_domain,adjustment)) -> 
-          let (new_n,new_scrappers) = abstractize new_domain in 
-        Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
-    
-(*
-   
-let check1 = (decompose (P(1,4,6,[])) =  Some (P (1, 4, 6, []), [])) ;;
-let check2 = (decompose (P(1,3,6,[])) =  Some (P (1, 3, 5, []), [6])) ;;
-
-*)
-
-end ;;   
 
   
 let rose_hashtbl = Hashtbl.create 50 ;;
