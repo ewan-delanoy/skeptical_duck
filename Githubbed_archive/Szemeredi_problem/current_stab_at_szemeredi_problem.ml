@@ -252,6 +252,14 @@ let insert_several_constraints extra_constraints
       Forced_data.insert_several_constraints extra_constraints forced_data
      )) ;;
     
+let easy_polish bres = 
+  let (BR(sycom,representatives,forced_data)) = bres in 
+  let (FD(direct,indirect)) = forced_data in 
+  if (indirect = [])&&(List.length(direct)=1)
+  then let new_sycom = Singleton (List.hd direct) in 
+       BR(new_sycom,representatives,forced_data)     
+  else bres ;;      
+
 let apply_passive_repeat  pt bres =
     let (width,b,_,_) = Point.unveil pt in 
     insert_several_constraints [C[b;b+width;b+2*width]] bres ;;
@@ -308,7 +316,29 @@ end ;;
 
 module Parametrized_Example = struct 
 
+let bres1 = BR (Singleton [1], [[1]], FD ([[1]], [])) ;;
+let bres2 = BR (Singleton [1; 2], [[1; 2]], FD ([[1; 2]], [])) ;;
+let bres3 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2]],
+FD ([[1; 2]; [1; 3]; [2; 3]], [])) ;; 
+let bres4 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [4])), [[1; 2; 4]],
+     FD ([[1; 2; 4]; [1; 3; 4]], [])) ;;
 
+
+let example1 =   
+  Width_one(FW1(
+ [(1, bres1);
+  (2, bres2);
+  (3, bres3)])) ;;
+
+let example2 =   
+  Width_one(FW1(
+ [(1, bres1);
+  (2, bres2);
+  (3, bres3);
+  (4, bres4)])) ;;
+
+
+    
 end ;;   
 
 module Bulgarian_for_nonparametrized_sets = struct 
@@ -588,55 +618,48 @@ let exhaust_new_line (width,breadth,scrappers) =
     (temp3,temp5) ;;   
 
 
+med_add (1,1,[]) Parametrized_Example.example1 ;; 
+med_add (1,2,[]) Parametrized_Example.example2 ;;    
+
+(*
+let current_width = 1 
+and current_breadth = 1 
+and current_strappers = [] ;;
+let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+
+let check_g2 = List.filter (
+  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example1 n
+) g2 ;;
+
+
+let current_width = 1 
+and current_breadth = 2 
+and current_strappers = [] ;;
+let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+
+let check_g2 = List.filter (
+  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example2 n
+) g2 ;;
+
+let current_width = 1 
+and current_breadth = 3 
+and current_strappers = [] ;;
+let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+
+let check_g2 = List.filter (
+  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example2 n
+) g2 ;;
+
+*)
+
+
 (*
 
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 *)
 
-
-
-(*
-let pt1 = P(1,4,6,[]) ;;       
-let g1 = needed_subcomputations_for_single_computation (pt1) ;;
-let g2 = needed_subcomputations_for_several_computations [pt1] ;;
-let state0 = [pt1] ;; 
-Accumulator_with_optional_anticipator.low_anticipator:=[] ;;
-let ff = Memoized.small pusher_for_recursive_computation state0 ;;
-let bad1 = pusher_for_recursive_computation state0 ;;
-let (pt,others) = Listennou.ht state0 ;; 
-let bad2 =
-      find_remote_stumbling_block_or_immediate_working_hook 
-      ~with_anticipation:true pt ;;
-let hg_enhanced_getter = bulgarian_getter ~with_anticipation:true ;; 
-let bad3 = hg_enhanced_getter pt ;; 
-let bad4 = bulgarian_getter ~with_anticipation:true pt ;; 
-let bad5 = Bulgarian.decompose pt ;; 
-
-(* let pt= P(1,3,6,[]) ;; *)
-let (old_width,old_breadth,n,scrappers) = Point.unveil pt ;;
-let domain = concretize (n,scrappers) ;;
-let bad6 = Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain ;; 
-module Pri = Bulgarian_for_nonparametrized_sets.Private ;; 
-let opt1 = Pri.find_meaningful_obstruction (old_width,old_breadth) domain ;;  
-let (width,breadth) = Option.unpack opt1 ;; 
-let bad2 = Pri.detach width domain ;; 
-let bad3 = Pri.iterator_for_detachment (width,domain,[],List.rev domain) ;;
-
-let x= 6 ;;
-let bad4 = Pri.test_for_detachability width domain x ;; 
-let test_for_detachability width domain x = 
-  let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
-    List.for_all (fun w->not(i_is_included_in [x-2*w;x-w] domain)) idx_range ;;
-      
-
-
-
-let h1 = try_hook_quickly ~with_anticipation:false 
-       (P(1,1,3,[])) Fork ;; 
-
-
-*)
 
 
