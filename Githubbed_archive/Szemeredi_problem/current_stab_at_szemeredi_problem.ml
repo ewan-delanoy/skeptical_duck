@@ -260,9 +260,13 @@ let easy_polish bres =
        BR(new_sycom,representatives,forced_data)     
   else bres ;;      
 
+let easy_polish_opt = function 
+   None -> None 
+   | Some bres -> Some(easy_polish bres) ;;   
+
 let apply_passive_repeat  pt bres =
     let (width,b,_,_) = Point.unveil pt in 
-    insert_several_constraints [C[b;b+width;b+2*width]] bres ;;
+    insert_several_constraints [C[b;b+width;b+2*width]] bres;;
   
 let apply_boundary_increment pt bres = 
     let (width,breadth,n,_) = Point.unveil pt in 
