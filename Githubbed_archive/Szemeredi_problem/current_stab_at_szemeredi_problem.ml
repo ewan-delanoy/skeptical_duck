@@ -266,14 +266,14 @@ let easy_polish_opt = function
 
 let apply_passive_repeat  pt bres =
     let (width,b,_,_) = Point.unveil pt in 
-    insert_several_constraints [C[b;b+width;b+2*width]] bres;;
+    easy_polish_opt(insert_several_constraints [C[b;b+width;b+2*width]] bres);;
   
 let apply_boundary_increment pt bres = 
     let (width,breadth,n,_) = Point.unveil pt in 
     let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
     match insert_several_constraints new_constraints bres with 
      None -> None 
-    |Some new_bres -> Some(extend_with new_bres [n]) ;;
+    |Some new_bres -> Some(easy_polish(extend_with new_bres [n])) ;;
 
     
 let apply_fork pt ll =
@@ -289,7 +289,8 @@ let apply_fork pt ll =
          Sycomore_list.extract_qualified_point sycom 
     ) temp3 
    ) in 
-   BR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data) ;; 
+   easy_polish(
+   BR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data)) ;; 
 
 
 end ;;  
