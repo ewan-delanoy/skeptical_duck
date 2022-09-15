@@ -374,8 +374,8 @@ let rec iterator_for_detachment (width,domain,treated,to_be_treated) =
      [] -> ([],treated)
     | x :: others -> 
        if test_for_detachability width domain x 
-       then (List.rev to_be_treated,treated)
-       else iterator_for_detachment (width,domain,x::treated,others) ;;    
+       then iterator_for_detachment (width,domain,x::treated,others)
+       else (List.rev to_be_treated,treated);;    
 
 let detach width domain = iterator_for_detachment (width,domain,[],List.rev domain) ;;
 
@@ -592,3 +592,46 @@ let exhaust_new_line (width,breadth,scrappers) =
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 *)
+
+
+(*
+let h1 = try_hook_quickly ~with_anticipation:false 
+       (P(1,1,3,[])) Fork ;; 
+
+
+let pt1 = P(1,4,6,[]) ;;       
+let g1 = needed_subcomputations_for_single_computation (pt1) ;;
+let g2 = needed_subcomputations_for_several_computations [pt1] ;;
+let state0 = [pt1] ;; 
+let bad1 = pusher_for_recursive_computation state0 ;;
+let (pt,others) = Listennou.ht state0 ;; 
+let bad2 =
+      find_remote_stumbling_block_or_immediate_working_hook 
+      ~with_anticipation:true pt ;;
+let hg_enhanced_getter = bulgarian_getter ~with_anticipation:true ;; 
+let bad3 = hg_enhanced_getter pt ;; 
+let bad4 = bulgarian_getter ~with_anticipation:true pt ;; 
+let bad5 = Bulgarian.decompose pt ;; 
+
+(* let pt= P(1,4,6,[]) ;; *)
+let (old_width,old_breadth,n,scrappers) = Point.unveil pt ;;
+let domain = concretize (n,scrappers) ;;
+let bad6 = Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain ;; 
+module Pri = Bulgarian_for_nonparametrized_sets.Private ;; 
+let opt1 = Pri.find_meaningful_obstruction (old_width,old_breadth) domain ;;  
+let (width,breadth) = Option.unpack opt1 ;; 
+let bad2 = Pri.detach width domain ;; 
+let bad3 = Pri.iterator_for_detachment (width,domain,[],List.rev domain) ;;
+
+let x= 6 ;;
+let bad4 = Pri.test_for_detachability width domain x ;; 
+let test_for_detachability width domain x = 
+  let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
+    List.for_all (fun w->not(i_is_included_in [x-2*w;x-w] domain)) idx_range ;;
+      
+
+
+let ff = Memoized.small pusher_for_recursive_computation state0 ;;
+*)
+
+

@@ -1,6 +1,46 @@
 (************************************************************************************************************************
-Snippet 109 : 
+Snippet 110 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 109 : Musings on a random walk (version 2, with stopping times)
+************************************************************************************************************************)
+
+let first_base = Memoized.make (fun n->Cartesian.general_product 
+ (Int_range.scale (fun k->[-2;1]) 1 n)
+) ;;
+
+let rec helper_for_stopping_time (threshhold,current_sum,to_be_treated) = 
+   match to_be_treated with 
+    [] -> 0
+   | (idx,x) :: others ->
+      let new_sum = current_sum + x in 
+      if new_sum >= threshhold 
+      then idx 
+      else helper_for_stopping_time (threshhold,new_sum,others) ;;   
+
+let compute_stopping_time  threshhold l =
+  helper_for_stopping_time (threshhold,0,Int_range.index_everything l) ;;     
+
+let admissible_cases = Memoized.make(fun n->
+    List.filter (fun l->(compute_stopping_time 1 l)=n) (first_base n)
+) ;;  
+
+let measure n = 
+    let p1 = List.length(admissible_cases n) in 
+    ((p1,Basic.power 2 n),(float_of_int p1)*.(0.5**(float_of_int n))) ;; 
+
+let float_fold_sum = List.fold_left (fun x y -> x+.y) (0.) ;;     
+
+let u1 = Int_range.scale (fun j->3*j-2) 1 6 ;;
+let u2 = Image.image (fun x->snd(measure x)) u1 ;;
+let u3 = Int_range.scale (fun j->float_fold_sum(Listennou.big_head j u2)) 1 6 ;;
+let u4 = Image.image (fun x->fst(measure x)) u1 ;;
+let u5 = Image.image (fun (a,b)->let g=Gcd.gcd a b in (a/g,b/g)) u4 ;; 
+
+
+let ac = admissible_cases ;; 
 
 
 (************************************************************************************************************************
