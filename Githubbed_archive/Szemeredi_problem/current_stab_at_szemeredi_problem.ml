@@ -382,28 +382,6 @@ module Bulgarian_for_nonparametrized_sets = struct
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
-let polish_fork ~with_anticipation pt unpolished_result =
-    Some unpolished_result ;; 
-
-let apply_hook_naively ~with_anticipation pt hook ll =  
-  match hook with 
-  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
-| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
-| Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
-| Jump -> Some(List.hd ll);; 
-
-exception Apply_hook_exn of point * hook_in_knowledge ;;
-
-
-let apply_hook ~with_anticipation pt hook ll = 
-   match apply_hook_naively ~with_anticipation pt hook ll with 
-   None -> None 
-    |Some bres ->
-       let (BR(_,reps,_)) = bres in 
-       if reps = []
-       then raise (Apply_hook_exn(pt,hook)) 
-       else Some bres ;;
-
 let nonbulgarian_getter  ~with_anticipation pt = 
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
@@ -427,6 +405,30 @@ let bulgarian_getter ~with_anticipation pt =
     );;
    
 let access = bulgarian_getter ~with_anticipation:false ;;   
+
+let polish_fork ~with_anticipation pt unpolished_result =
+    Some unpolished_result ;; 
+
+let apply_hook_naively ~with_anticipation pt hook ll =  
+  match hook with 
+  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
+| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
+| Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
+| Jump -> Some(List.hd ll);; 
+
+exception Apply_hook_exn of point * hook_in_knowledge ;;
+
+
+let apply_hook ~with_anticipation pt hook ll = 
+   match apply_hook_naively ~with_anticipation pt hook ll with 
+   None -> None 
+    |Some bres ->
+       let (BR(_,reps,_)) = bres in 
+       if reps = []
+       then raise (Apply_hook_exn(pt,hook)) 
+       else Some bres ;;
+
+
 
 let descendants_for_hook pt hook = 
        let (width,breadth,n,scrappers) = Point.unveil pt in  
