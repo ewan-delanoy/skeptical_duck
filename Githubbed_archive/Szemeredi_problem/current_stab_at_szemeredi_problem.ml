@@ -352,8 +352,8 @@ module Bulgarian_for_nonparametrized_sets = struct
   
   let decompose (old_width,old_breadth) domain = 
     match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
-      None -> None 
-      | Some (width,breadth) -> Some ((width,breadth),Private.detach (width,breadth) domain);;  
+      None -> ((old_width,old_breadth),([],domain)) 
+      | Some (width,breadth) -> ((width,breadth),Private.detach (width,breadth) domain);;  
   
   
   end ;;  
@@ -363,16 +363,15 @@ module Bulgarian_for_nonparametrized_sets = struct
     let decompose pt =
         let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
         let domain = concretize (n,scrappers) in 
-         match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with 
-         None -> None 
-         | Some ((new_width,new_breadth),(new_domain,adjustment)) -> 
-            let (new_n,new_scrappers) = abstractize new_domain in 
+         let ((new_width,new_breadth),(new_domain,adjustment)) =
+         Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain in 
+         let (new_n,new_scrappers) = abstractize new_domain in 
           Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
       
   (*
      
-  let check1 = (decompose (P(1,4,6,[])) =  Some (P (1, 4, 6, []), [])) ;;
-  let check2 = (decompose (P(1,3,6,[])) =  Some (P (1, 3, 5, []), [6])) ;;
+  let check1 = (decompose (P(1,4,6,[])) =  (P (1, 4, 6, []), [])) ;;
+  let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
   
   *)
   
@@ -405,16 +404,12 @@ let apply_hook ~with_anticipation pt hook ll =
        then raise (Apply_hook_exn(pt,hook)) 
        else Some bres ;;
 
-
-
-  
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;       
-
 let nonbulgarian_getter  ~with_anticipation pt = 
 let (width,breadth,n,scrappers) = Point.unveil pt in 
 let z = concretize (n,scrappers) in 
-if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
+if ((List.length z)<3)||
+    ((width,breadth)=(1,0))||
+    (test_for_admissiblity width breadth z) 
 then Some (BR(Singleton z,[z],FD([z],[]))) 
 else 
 match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
