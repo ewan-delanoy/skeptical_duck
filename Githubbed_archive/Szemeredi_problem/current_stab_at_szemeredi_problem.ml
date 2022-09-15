@@ -364,27 +364,34 @@ let rec iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) =
 let find_meaningful_obstruction (w,b) domain = 
    let max_in_domain = List.hd(List.rev domain) in 
    iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
-   
-let test_for_detachability width domain x = 
+
+let inner_test_for_detachability width breadth domain x w = 
+    if not(i_is_included_in [x-2*w;x-w] domain)
+    then true
+    else if w<width 
+         then false
+         else breadth < (x-2*w)  ;;   
+
+let test_for_detachability width breadth domain x = 
   let idx_range = Int_range.range 1 (min (width)((x-1)/2))  in 
-    List.for_all (fun w->not(i_is_included_in [x-2*w;x-w] domain)) idx_range ;;
+    List.for_all (inner_test_for_detachability width breadth domain x) idx_range ;;
           
-let rec iterator_for_detachment (width,domain,treated,to_be_treated) = 
+let rec iterator_for_detachment (width,breadth,domain,treated,to_be_treated) = 
     match to_be_treated with 
      [] -> ([],treated)
     | x :: others -> 
-       if test_for_detachability width domain x 
-       then iterator_for_detachment (width,domain,x::treated,others)
+       if test_for_detachability width breadth domain x 
+       then iterator_for_detachment (width,breadth,domain,x::treated,others)
        else (List.rev to_be_treated,treated);;    
 
-let detach width domain = iterator_for_detachment (width,domain,[],List.rev domain) ;;
+let detach (width,breadth) domain = iterator_for_detachment (width,breadth,domain,[],List.rev domain) ;;
 
 end ;;
 
 let decompose (old_width,old_breadth) domain = 
   match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
     None -> None 
-    | Some (width,breadth) -> Some ((width,breadth),Private.detach width domain);;  
+    | Some (width,breadth) -> Some ((width,breadth),Private.detach (width,breadth) domain);;  
 
 
 end ;;  
@@ -400,6 +407,13 @@ module Bulgarian = struct
           let (new_n,new_scrappers) = abstractize new_domain in 
         Some (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
     
+(*
+   
+let check1 = (decompose (P(1,4,6,[])) =  Some (P (1, 4, 6, []), [])) ;;
+let check2 = (decompose (P(1,3,6,[])) =  Some (P (1, 3, 5, []), [6])) ;;
+
+*)
+
 end ;;   
 
   
@@ -594,15 +608,14 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 *)
 
 
+
 (*
-let h1 = try_hook_quickly ~with_anticipation:false 
-       (P(1,1,3,[])) Fork ;; 
-
-
 let pt1 = P(1,4,6,[]) ;;       
 let g1 = needed_subcomputations_for_single_computation (pt1) ;;
 let g2 = needed_subcomputations_for_several_computations [pt1] ;;
 let state0 = [pt1] ;; 
+Accumulator_with_optional_anticipator.low_anticipator:=[] ;;
+let ff = Memoized.small pusher_for_recursive_computation state0 ;;
 let bad1 = pusher_for_recursive_computation state0 ;;
 let (pt,others) = Listennou.ht state0 ;; 
 let bad2 =
@@ -613,7 +626,7 @@ let bad3 = hg_enhanced_getter pt ;;
 let bad4 = bulgarian_getter ~with_anticipation:true pt ;; 
 let bad5 = Bulgarian.decompose pt ;; 
 
-(* let pt= P(1,4,6,[]) ;; *)
+(* let pt= P(1,3,6,[]) ;; *)
 let (old_width,old_breadth,n,scrappers) = Point.unveil pt ;;
 let domain = concretize (n,scrappers) ;;
 let bad6 = Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain ;; 
@@ -631,7 +644,11 @@ let test_for_detachability width domain x =
       
 
 
-let ff = Memoized.small pusher_for_recursive_computation state0 ;;
+
+let h1 = try_hook_quickly ~with_anticipation:false 
+       (P(1,1,3,[])) Fork ;; 
+
+
 *)
 
 
