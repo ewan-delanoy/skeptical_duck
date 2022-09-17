@@ -77,7 +77,15 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 
 *)
 
+module Point = struct 
+    
+  let width (P(w,b,n,s)) = w ;;
+  let breadth (P(w,b,n,s)) = b ;;
+  let size (P(w,b,n,s)) = n ;;
+  let scrappers (P(w,b,n,s)) = s ;;
+  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
 
+end ;;  
 
 module Constraint = struct
 
@@ -89,6 +97,38 @@ let extra_constraints_from_boundary_increment width breadth n =
      if (lower_end>=1) && (lower_end<=breadth) 
      then (C[lower_end;lower_end+width])::mainstream 
      else mainstream ;;   
+
+let check_if_obstruction_is_included pt (a1,a2,a3) =
+   (*
+   It is assumed that (w>=1)||(w <= Point.width pt)  has already been checked,
+   as is the case with the extra_obstructions_from_increment below 
+   *)
+   if (a1<1)||(a3 > Point.size pt) then false else 
+   let w = a2-a1 in 
+   if (w<1)||(w > Point.width pt) then false else 
+   if w = Point.width pt then a1<=Point.breadth pt else true ;; 
+   
+let extra_obstructions_from_increment pt pivot = 
+    let max_width = Point.width pt in 
+    let temp1 = Int_range.scale (fun w->
+       ((pivot-2*w,pivot-w,pivot),[pivot-2*w;pivot-w])  
+    ) 1 max_width   
+    and temp2 = Int_range.scale (fun w->
+      ((pivot-w,pivot,pivot+w),[pivot-w;pivot+w])  
+    ) 1 max_width  
+    and temp3 = Int_range.scale (fun w->
+      ((pivot,pivot+w,pivot+2*w),[pivot+w;pivot+2*w])  
+    ) 1 max_width in 
+    let temp4 = Option.filter_and_unpack (
+       fun (triple,remains) ->
+        if check_if_obstruction_is_included pt triple 
+        then Some remains 
+        else None   
+    ) (temp1@temp2@temp3) in 
+    Image.image (fun x->C x)(il_sort temp4) ;;
+
+
+
 
 let satisfied_by_individual l_constr l =
   List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
@@ -130,15 +170,7 @@ let insert_several  (n,scrappers) (old_constraints,extension) new_constraints =
 end ;;  
 
 
-module Point = struct 
-    
-  let width (P(w,b,n,s)) = w ;;
-  let breadth (P(w,b,n,s)) = b ;;
-  let size (P(w,b,n,s)) = n ;;
-  let scrappers (P(w,b,n,s)) = s ;;
-  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
 
-end ;;  
   
 module Accumulator_with_optional_anticipator = struct 
 
