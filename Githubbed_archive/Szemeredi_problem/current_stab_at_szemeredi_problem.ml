@@ -238,6 +238,10 @@ let extend_with (BR(sycom,representatives,forced_data)) extension =
       Forced_data.extend_with forced_data extension
     );;
 
+let extend_with_opt bres_opt extension = match bres_opt with 
+  None -> None 
+  |Some bres -> Some (extend_with bres extension) ;;     
+
 let insert_several_constraints extra_constraints 
   (BR(sycom,representatives,forced_data)) = 
    match Sycomore_list.insert_several_constraints extra_constraints sycom with 
@@ -327,7 +331,7 @@ let bres3 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2
 FD ([[1; 2]; [1; 3]; [2; 3]], [])) ;; 
 let bres4 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [4])), [[1; 2; 4]],
      FD ([[1; 2; 4]; [1; 3; 4]], [])) ;;
-
+let bres5 = BR (Singleton [1; 2; 4; 5], [[1; 2; 4; 5]], FD ([[1; 2; 4; 5]], [])) ;; 
 
 let example1 =   
   Width_one(FW1(
@@ -341,6 +345,14 @@ let example2 =
   (2, bres2);
   (3, bres3);
   (4, bres4)])) ;;
+
+let example3 =   
+  Width_one(FW1(
+ [(1, bres1);
+  (2, bres2);
+  (3, bres3);
+  (4, bres4);
+  (5, bres5)])) ;;
 
 
     
@@ -434,10 +446,8 @@ Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
 
 let bulgarian_getter ~with_anticipation pt = 
   let (pt2,adj)= Bulgarian.decompose pt  in 
-    (match nonbulgarian_getter  ~with_anticipation pt2 with
-      None -> None 
-      |Some bres -> Some(Bulk_result.extend_with bres adj)
-    );;
+  Bulk_result.extend_with_opt ( nonbulgarian_getter  ~with_anticipation pt2) adj ;;
+
    
 let access = bulgarian_getter ~with_anticipation:false ;;   
 
@@ -484,11 +494,7 @@ let try_hook_quickly ~with_anticipation pt hook =
    let nonbulgarian_descendants = descendants_for_hook pt hook in  
    let descendants = Image.image Bulgarian.decompose nonbulgarian_descendants in 
    let descendants_with_their_images = Image.image (
-      fun (pt2,adj)  -> 
-       match  nonbulgarian_getter ~with_anticipation pt2 with 
-       None -> (pt2,None)
-       |Some interm_result ->
-        (pt2,Some(Bulk_result.extend_with interm_result adj))
+      fun (pt2,adj)  -> (pt2,Bulk_result.extend_with_opt (nonbulgarian_getter ~with_anticipation pt2) adj)
     ) descendants in  
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
@@ -522,9 +528,8 @@ let rose_add (width,breadth) summary =
  
 
 let find_remote_stumbling_block_or_immediate_working_hook 
-~with_anticipation pt = 
-   let hg_enhanced_getter = bulgarian_getter ~with_anticipation in     
-   match hg_enhanced_getter pt with 
+~with_anticipation pt =      
+   match bulgarian_getter ~with_anticipation pt with 
     Some old_answer -> ([],None) 
     | None ->
    let (width,breadth,n,scrappers) = Point.unveil pt in     
@@ -555,14 +560,15 @@ let rec pusher_for_recursive_computation to_be_treated=
     match to_be_treated with 
     [] -> raise(Pusher_exn)
     | pt :: others -> 
+       let (pt2,adj) = Bulgarian.decompose pt in 
        let (missing_data,opt_res) =
       find_remote_stumbling_block_or_immediate_working_hook 
-      ~with_anticipation:true pt in 
+      ~with_anticipation:true pt2 in 
       match opt_res with 
        Some hook ->
-           let res = compute_from_below ~with_anticipation:true pt hook in  
+           let res = compute_from_below ~with_anticipation:true pt2 hook in  
            let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl 
-           ~with_anticipation:true pt res in 
+           ~with_anticipation:true pt2 res in 
            others
        | None -> 
          if missing_data = [] 
