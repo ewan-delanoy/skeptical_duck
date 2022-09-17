@@ -311,6 +311,15 @@ let apply_boundary_increment pt bres =
      None -> None 
     |Some new_bres -> Some(easy_polish(extend_with new_bres [n])) ;;
 
+let apply_upper_increment pt pivot_idx bres = 
+    let (width,breadth,n,_) = Point.unveil pt in
+    let pivot = n-(pivot_idx-1)*width in  
+    let new_constraints = Constraint.extra_obstructions_from_increment pt pivot in 
+    match insert_several_constraints new_constraints bres with 
+     None -> None 
+    |Some new_bres -> Some(easy_polish(extend_with new_bres [pivot])) ;;
+
+ 
     
 let apply_fork pt ll =
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
