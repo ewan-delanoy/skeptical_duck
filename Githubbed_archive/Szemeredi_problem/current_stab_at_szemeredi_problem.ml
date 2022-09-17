@@ -171,6 +171,11 @@ let extend_with qp extension =
   Q(pt,old_constraints,extension2) -> 
   Q(pt,old_constraints,i_merge extension extension2)   ;;
 
+let fragile_extend_with qp extension =  
+    match qp with 
+    Q(pt,old_constraints,extension2) -> 
+    Q(pt,old_constraints,extension2@extension)   ;;  
+
 let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
   let n = Point.size pt and scrappers = Point.scrappers pt in 
   match Constraint.insert_several (n,scrappers) (old_constraints,extension) new_constraints 
@@ -186,6 +191,12 @@ module Sycomore_list = struct
         Singleton(l) -> Singleton(i_merge l extension)
         | Breakpoint_with_extensions(Q(pt,old_constraints,extension2)) -> 
           Breakpoint_with_extensions(Q(pt,old_constraints,i_merge extension extension2))   ;;    
+
+        let fragile_extend_with sycom extension = match sycom with 
+        Singleton(l) -> Singleton(l@extension)
+        | Breakpoint_with_extensions(Q(pt,old_constraints,extension2)) -> 
+          Breakpoint_with_extensions(Q(pt,old_constraints,extension2@extension))   ;;    
+
 
 
          let insert_several_constraints extra_constraints sycom =
@@ -214,6 +225,11 @@ let extend_with (FD(offshoots,qpoints)) extension =
   Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
   ) ;;  
 
+let fragile_extend_with (FD(offshoots,qpoints)) extension =
+    FD(Image.image (fun x->x@extension) offshoots,
+    Image.image (fun qpoint->Qualified_point.fragile_extend_with qpoint extension) qpoints
+    ) ;;  
+  
 
 let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) = 
   FD(List.filter (Constraint.satisfied_by_individual extra_constraints) offshoots,
@@ -237,6 +253,12 @@ let extend_with (BR(sycom,representatives,forced_data)) extension =
       Image.image (i_merge extension) representatives,
       Forced_data.extend_with forced_data extension
     );;
+
+let fragile_extend_with (BR(sycom,representatives,forced_data)) extension =
+  BR(Sycomore_list.fragile_extend_with sycom extension,
+        Image.image (fun x->x@extension) representatives,
+        Forced_data.fragile_extend_with forced_data extension
+  );;    
 
 let extend_with_opt bres_opt extension = match bres_opt with 
   None -> None 
@@ -324,6 +346,76 @@ end ;;
 
 
 module Parametrized_Example = struct 
+
+let brf1 n =
+    let main = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) in 
+    let q = (n/3) in 
+    let pt1 = P (1, 3*q-5, 3*q-3, []) 
+    and pt2 = P (1, 3*q-2, 3*q, []) in 
+    let qp1 = (fun l->Q (pt1, [], l)) in 
+    match (n mod 3) with 
+     0 ->  
+      let brp1 = Breakpoint_with_extensions (Q (pt2, [], []))  in 
+      if n=3 then BR (brp1,[main],FD([[1;2]; [1;3]; [2;3]],[])) 
+             else BR (brp1,[main],FD ([main],[qp1([3*q-1; 3*q]);qp1([3*q-2; 3*q])]))
+    |1 ->  
+      let brp2 = Breakpoint_with_extensions (Q (pt2, [], [3*q+1])) in 
+      if n=1 then BR (Singleton main,[main],FD ([main],[])) else
+      if n=4 then BR (brp2,[main],FD ([main;[1;3;4]],[]))  else     
+                  BR (brp2,[main],FD ([main],[qp1([3*q-2; 3*q;3*q+1])]))   
+    |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
+    |_ -> failwith("impossible remainder") ;; 
+
+let brf2 breadth n =
+    let main = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 (breadth+2)) in 
+    let q = ((breadth+2)/3) in 
+    let pt1 = P (1, 3*q-5, 3*q-3, []) 
+    and pt2 = P (1, 3*q-2, 3*q, []) in 
+    let qp1 = (fun l->Q (pt1, [], l)) in 
+    let extra =  Int_range.range (breadth+3) n in 
+    match ((breadth+2) mod 3) with 
+     0 ->  
+      let brp1 = Breakpoint_with_extensions (Q (pt2, [], extra))  in 
+      if n=3 then BR (brp1,[main@extra],FD([[1;2]; [1;3]; [2;3]],[])) 
+             else BR (brp1,[main@extra],FD ([main@extra],[qp1([3*q-1; 3*q]);qp1([3*q-2; 3*q])]))
+    |1 ->  
+      let brp2 = Breakpoint_with_extensions (Q (pt2, [], [3*q+1])) in 
+      if n=1 then BR (Singleton main,[main],FD ([main],[])) else
+      if n=4 then BR (brp2,[main],FD ([main;[1;3;4]],[]))  else     
+                  BR (brp2,[main],FD ([main],[qp1([3*q-2; 3*q;3*q+1])]))   
+    |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
+    |_ -> failwith("impossible remainder") ;; 
+
+let brf2 breadth n = 
+  (* only use this function when n >(breadth+2) *)
+  Bulk_result.extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;;
+
+
+
+
+let brf3 breadth n = 
+   if n<=(breadth+2) 
+   then brf1 n
+   else brf2 breadth n ;; 
+
+(*
+
+To test brf3 : 
+
+let u1 = Cartesian.product (Int_range.range 1 15)(Int_range.range 1 30) ;;
+let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
+let u3 = needed_subcomputations_for_several_computations u2 ;; 
+let u4 = Image.image (
+  fun (breadth,n)->let p = P(1,breadth,n,[]) in 
+  ((breadth,n),access ~with_anticipation:true p,brf2 breadth n)
+) u1;;
+let u5 = List.filter (
+  fun (pair,sol1,sol2)->sol1<>sol2
+) u4;;
+
+
+*)
+
 
 let bres1 = BR (Singleton [1], [[1]], FD ([[1]], [])) ;;
 let bres2 = BR (Singleton [1; 2], [[1; 2]], FD ([[1; 2]], [])) ;;
@@ -450,7 +542,8 @@ let bulgarian_getter ~with_anticipation pt =
   Bulk_result.extend_with_opt ( nonbulgarian_getter  ~with_anticipation pt2) adj ;;
 
    
-let access = bulgarian_getter ~with_anticipation:false ;;   
+let access ~with_anticipation pt = 
+   Option.unpack(bulgarian_getter ~with_anticipation pt) ;;   
 
 let polish_fork ~with_anticipation pt unpolished_result =
     Some unpolished_result ;; 
@@ -654,7 +747,7 @@ let check_g2 = List.filter (
 ) g2 ;;
 
 let current_width = 1 
-and current_breadth = 3
+and current_breadth = 16
 and current_strappers = [] ;;
 let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 
@@ -664,6 +757,18 @@ let check_g2 = List.filter (
 
 *)
 
+open Parametrized_Example ;; 
+let u1 = Cartesian.product (Int_range.range 1 15)(Int_range.range 1 30) ;;
+let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
+let u3 = needed_subcomputations_for_several_computations u2 ;; 
+let u4 = Image.image (
+  fun (breadth,n)->let p = P(1,breadth,n,[]) in 
+  ((breadth,n),access ~with_anticipation:true p,brf3 breadth n)
+) u1;;
+let u5 = List.filter (
+  fun (pair,sol1,sol2)->sol1<>sol2
+) u4;;
+let u6 = List.filter (fun ((breadth,n),_,_)->breadth=12) u5 ;;
 
 (*
 
