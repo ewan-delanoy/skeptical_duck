@@ -371,6 +371,7 @@ module Bulgarian_for_nonparametrized_sets = struct
      |Some(new_w,new_b) -> iterator_for_meaningful_obstruction (domain,max_in_domain,new_w,new_b) ;;
   
   let find_meaningful_obstruction (w,b) domain = 
+     if domain = [] then None else 
      let max_in_domain = List.hd(List.rev domain) in 
      iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
   
@@ -653,7 +654,7 @@ let check_g2 = List.filter (
 ) g2 ;;
 
 let current_width = 1 
-and current_breadth = 3 
+and current_breadth = 3
 and current_strappers = [] ;;
 let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 
