@@ -77,15 +77,7 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 
 *)
 
-module Point = struct 
-    
-  let width (P(w,b,n,s)) = w ;;
-  let breadth (P(w,b,n,s)) = b ;;
-  let size (P(w,b,n,s)) = n ;;
-  let scrappers (P(w,b,n,s)) = s ;;
-  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
 
-end ;;  
 
 module Constraint = struct
 
@@ -97,38 +89,6 @@ let extra_constraints_from_boundary_increment width breadth n =
      if (lower_end>=1) && (lower_end<=breadth) 
      then (C[lower_end;lower_end+width])::mainstream 
      else mainstream ;;   
-
-let check_if_obstruction_is_included pt (a1,a2,a3) =
-   (*
-   It is assumed that (w>=1)||(w <= Point.width pt)  has already been checked,
-   as is the case with the extra_obstructions_from_increment below 
-   *)
-   if (a1<1)||(a3 > Point.size pt) then false else 
-   let w = a2-a1 in 
-   if (w<1)||(w > Point.width pt) then false else 
-   if w = Point.width pt then a1<=Point.breadth pt else true ;; 
-   
-let extra_obstructions_from_increment pt pivot = 
-    let max_width = Point.width pt in 
-    let temp1 = Int_range.scale (fun w->
-       ((pivot-2*w,pivot-w,pivot),[pivot-2*w;pivot-w])  
-    ) 1 max_width   
-    and temp2 = Int_range.scale (fun w->
-      ((pivot-w,pivot,pivot+w),[pivot-w;pivot+w])  
-    ) 1 max_width  
-    and temp3 = Int_range.scale (fun w->
-      ((pivot,pivot+w,pivot+2*w),[pivot+w;pivot+2*w])  
-    ) 1 max_width in 
-    let temp4 = Option.filter_and_unpack (
-       fun (triple,remains) ->
-        if check_if_obstruction_is_included pt triple 
-        then Some remains 
-        else None   
-    ) (temp1@temp2@temp3) in 
-    Image.image (fun x->C x)(il_sort temp4) ;;
-
-
-
 
 let satisfied_by_individual l_constr l =
   List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
@@ -170,7 +130,15 @@ let insert_several  (n,scrappers) (old_constraints,extension) new_constraints =
 end ;;  
 
 
+module Point = struct 
+    
+  let width (P(w,b,n,s)) = w ;;
+  let breadth (P(w,b,n,s)) = b ;;
+  let size (P(w,b,n,s)) = n ;;
+  let scrappers (P(w,b,n,s)) = s ;;
+  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
 
+end ;;  
   
 module Accumulator_with_optional_anticipator = struct 
 
@@ -311,15 +279,6 @@ let apply_boundary_increment pt bres =
      None -> None 
     |Some new_bres -> Some(easy_polish(extend_with new_bres [n])) ;;
 
-let apply_upper_increment pt pivot_idx bres = 
-    let (width,breadth,n,_) = Point.unveil pt in
-    let pivot = n-(pivot_idx-1)*width in  
-    let new_constraints = Constraint.extra_obstructions_from_increment pt pivot in 
-    match insert_several_constraints new_constraints bres with 
-     None -> None 
-    |Some new_bres -> Some(easy_polish(extend_with new_bres [pivot])) ;;
-
- 
     
 let apply_fork pt ll =
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
@@ -498,7 +457,6 @@ let polish_fork ~with_anticipation pt unpolished_result =
 let apply_hook_naively ~with_anticipation pt hook ll =  
   match hook with 
   Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
-| Upper_increment pivot_idx -> Bulk_result.apply_upper_increment pt pivot_idx (List.nth ll (3-pivot_idx)) 
 | Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
 | Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
 | Jump -> Some(List.hd ll);; 
@@ -524,7 +482,7 @@ let descendants_for_hook pt hook =
       | Boundary_increment ->
        let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
        [P(width,breadth,m,new_scrappers)]
-      | Upper_increment(_) | Fork ->     
+      | Fork ->     
           Int_range.scale (fun k->
              let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
              P(width,breadth-1,m,scr)
@@ -671,10 +629,8 @@ let exhaust_new_line (width,breadth,scrappers) =
     (temp3,temp5) ;;   
 
 
-(*    
 med_add (1,1,[]) Parametrized_Example.example1 ;; 
 med_add (1,2,[]) Parametrized_Example.example2 ;;    
-*)
 
 (*
 let current_width = 1 
@@ -715,6 +671,5 @@ let check_g2 = List.filter (
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 *)
-
 
 

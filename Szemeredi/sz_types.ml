@@ -5,9 +5,8 @@
 *)
 
 type hook = 
-    Boundary_increment 
-   | Upper_increment of int  
-   | Passive_repeat  
+     Passive_repeat 
+   | Boundary_increment 
    | Fork 
    | Jump ;;
 
