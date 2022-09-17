@@ -4,8 +4,9 @@
 
 *)
 
-type hook_in_knowledge = 
-    Boundary_increment
+type hook = 
+    Boundary_increment 
+   | Upper_increment of int  
    | Passive_repeat  
    | Fork 
    | Jump ;;
