@@ -498,11 +498,12 @@ let polish_fork ~with_anticipation pt unpolished_result =
 let apply_hook_naively ~with_anticipation pt hook ll =  
   match hook with 
   Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
+| Upper_increment pivot_idx -> Bulk_result.apply_upper_increment pt pivot_idx (List.nth ll (3-pivot_idx)) 
 | Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
 | Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
 | Jump -> Some(List.hd ll);; 
 
-exception Apply_hook_exn of point * hook_in_knowledge ;;
+exception Apply_hook_exn of point * hook ;;
 
 
 let apply_hook ~with_anticipation pt hook ll = 
@@ -523,7 +524,7 @@ let descendants_for_hook pt hook =
       | Boundary_increment ->
        let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
        [P(width,breadth,m,new_scrappers)]
-      | Fork ->     
+      | Upper_increment(_) | Fork ->     
           Int_range.scale (fun k->
              let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
              P(width,breadth-1,m,scr)
@@ -670,8 +671,10 @@ let exhaust_new_line (width,breadth,scrappers) =
     (temp3,temp5) ;;   
 
 
+(*    
 med_add (1,1,[]) Parametrized_Example.example1 ;; 
 med_add (1,2,[]) Parametrized_Example.example2 ;;    
+*)
 
 (*
 let current_width = 1 
