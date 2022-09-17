@@ -366,29 +366,10 @@ let brf1 n =
     |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
     |_ -> failwith("impossible remainder") ;; 
 
-let brf2 breadth n =
-    let main = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 (breadth+2)) in 
-    let q = ((breadth+2)/3) in 
-    let pt1 = P (1, 3*q-5, 3*q-3, []) 
-    and pt2 = P (1, 3*q-2, 3*q, []) in 
-    let qp1 = (fun l->Q (pt1, [], l)) in 
-    let extra =  Int_range.range (breadth+3) n in 
-    match ((breadth+2) mod 3) with 
-     0 ->  
-      let brp1 = Breakpoint_with_extensions (Q (pt2, [], extra))  in 
-      if n=3 then BR (brp1,[main@extra],FD([[1;2]; [1;3]; [2;3]],[])) 
-             else BR (brp1,[main@extra],FD ([main@extra],[qp1([3*q-1; 3*q]);qp1([3*q-2; 3*q])]))
-    |1 ->  
-      let brp2 = Breakpoint_with_extensions (Q (pt2, [], [3*q+1])) in 
-      if n=1 then BR (Singleton main,[main],FD ([main],[])) else
-      if n=4 then BR (brp2,[main],FD ([main;[1;3;4]],[]))  else     
-                  BR (brp2,[main],FD ([main],[qp1([3*q-2; 3*q;3*q+1])]))   
-    |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
-    |_ -> failwith("impossible remainder") ;; 
 
 let brf2 breadth n = 
   (* only use this function when n >(breadth+2) *)
-  Bulk_result.extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;;
+  Bulk_result.fragile_extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;;
 
 
 

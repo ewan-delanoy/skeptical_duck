@@ -30,6 +30,6 @@ type function_of_size =
 Width_one of for_width_one 
 |Usual_fos of (int -> bulk_result) ;; 
 
-type function_of_scrappers_and_size = 
-Usual_foscras of ( (int list) -> int -> bulk_result) ;;
+type function_of_breadth_and_size = 
+Usual_fobas of ( int -> int -> bulk_result) ;;
 
