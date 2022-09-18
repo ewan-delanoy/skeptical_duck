@@ -336,9 +336,9 @@ module Parametrized = struct
        Width_one fw1 -> eval_fw1 fw1 n 
       | Usual_fos f -> f n ;; 
   
-  let eval_foscras foscras scrappers n = 
-    match foscras with 
-     Usual_foscras f -> f scrappers n ;;  
+  let eval_fobas fobas breadth n = 
+    match fobas with 
+     Usual_fobas f -> f breadth n ;;  
 
    
 
@@ -368,20 +368,13 @@ let brf1 n =
 
 
 let brf2 breadth n = 
-  (* only use this function when n >(breadth+2) *)
-  Bulk_result.fragile_extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;;
-
-
-
-
-let brf3 breadth n = 
    if n<=(breadth+2) 
    then brf1 n
-   else brf2 breadth n ;; 
+   else Bulk_result.fragile_extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;; 
 
 (*
 
-To test brf3 : 
+To test brf2 : 
 
 let u1 = Cartesian.product (Int_range.range 1 15)(Int_range.range 1 30) ;;
 let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
@@ -396,38 +389,6 @@ let u5 = List.filter (
 
 
 *)
-
-
-let bres1 = BR (Singleton [1], [[1]], FD ([[1]], [])) ;;
-let bres2 = BR (Singleton [1; 2], [[1; 2]], FD ([[1; 2]], [])) ;;
-let bres3 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2]],
-FD ([[1; 2]; [1; 3]; [2; 3]], [])) ;; 
-let bres4 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [4])), [[1; 2; 4]],
-     FD ([[1; 2; 4]; [1; 3; 4]], [])) ;;
-let bres5 = BR (Singleton [1; 2; 4; 5], [[1; 2; 4; 5]], FD ([[1; 2; 4; 5]], [])) ;; 
-
-let example1 =   
-  Width_one(FW1(
- [(1, bres1);
-  (2, bres2);
-  (3, bres3)])) ;;
-
-let example2 =   
-  Width_one(FW1(
- [(1, bres1);
-  (2, bres2);
-  (3, bres3);
-  (4, bres4)])) ;;
-
-let example3 =   
-  Width_one(FW1(
- [(1, bres1);
-  (2, bres2);
-  (3, bres3);
-  (4, bres4);
-  (5, bres5)])) ;;
-
-
     
 end ;;   
 
@@ -499,7 +460,6 @@ module Bulgarian_for_nonparametrized_sets = struct
   end ;;   
   
 
-
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
@@ -511,8 +471,8 @@ if ((List.length z)<3)||
     (test_for_admissiblity width breadth z) 
 then Some (BR(Singleton z,[z],FD([z],[]))) 
 else 
-match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-Some summary -> Some (Parametrized.eval_foscras summary scrappers n)
+match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+Some summary -> Some (Parametrized.eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
@@ -601,12 +561,8 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
  
-
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
-   match bulgarian_getter ~with_anticipation pt with 
-    Some old_answer -> ([],None) 
-    | None ->
    let (width,breadth,n,scrappers) = Point.unveil pt in     
    if breadth=0 
    then let (missing_data0,result_opt0) = 
@@ -628,6 +584,22 @@ let find_remote_stumbling_block_or_immediate_working_hook
    if result_opt3<>None then ([], Some Fork) else  
     (missing_data3,None) ;;
     
+let hook_and_descendants ~with_anticipation pt =  
+    let (_,result_opt) = find_remote_stumbling_block_or_immediate_working_hook 
+    ~with_anticipation pt in 
+    let hook = Option.unpack result_opt in 
+    let nonbulgarian_descendants = descendants_for_hook pt hook in  
+    (hook,Image.image Bulgarian.decompose nonbulgarian_descendants) ;; 
+    
+
+
+let find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
+~with_anticipation pt =      
+   match bulgarian_getter ~with_anticipation pt with 
+    Some old_answer -> ([],None) 
+    | None ->
+      find_remote_stumbling_block_or_immediate_working_hook ~with_anticipation pt ;;
+    
   
 exception Pusher_exn ;;
 
@@ -637,7 +609,7 @@ let rec pusher_for_recursive_computation to_be_treated=
     | pt :: others -> 
        let (pt2,adj) = Bulgarian.decompose pt in 
        let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_hook 
+      find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
       ~with_anticipation:true pt2 in 
       match opt_res with 
        Some hook ->
@@ -683,14 +655,15 @@ let feel_new_line (width,breadth,scrappers) =
 
 let exhaust_new_line (width,breadth,scrappers) = 
     let temp1 = Int_range.scale 
-      (fun n->P(width,breadth,n,scrappers)) 1  30 in 
+      (fun n->P(width,breadth,n,scrappers)) 1  60 in 
     let carrier = needed_subcomputations_for_several_computations temp1 in 
     let temp2 = Image.image (fun pt-> 
       let mutilated_carrier = List.filter (
         fun p->fst(p)<>pt
       ) carrier in 
       let _ = ( Accumulator_with_optional_anticipator.low_anticipator :=mutilated_carrier) in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_hook ~with_anticipation:true pt in 
+      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
+          ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
     let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
@@ -703,53 +676,25 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
-
-med_add (1,1,[]) Parametrized_Example.example1 ;; 
-med_add (1,2,[]) Parametrized_Example.example2 ;;    
+rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
+med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
 
 (*
-let current_width = 1 
-and current_breadth = 1 
+let current_width = 2 
+and current_breadth = 50 
 and current_strappers = [] ;;
 let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+let tf n = 
+  let p = P(current_width,current_breadth,n,current_strappers) in 
+
+  List.assoc n g2;;
 
 let check_g2 = List.filter (
-  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example1 n
+  fun (n,bres)->bres <> Parametrized_Example.brf1 n
 ) g2 ;;
 
-
-let current_width = 1 
-and current_breadth = 2 
-and current_strappers = [] ;;
-let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-
-let check_g2 = List.filter (
-  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example2 n
-) g2 ;;
-
-let current_width = 1 
-and current_breadth = 16
-and current_strappers = [] ;;
-let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-
-let check_g2 = List.filter (
-  fun (n,bres)->bres <> Parametrized.eval_fos Parametrized_Example.example2 n
-) g2 ;;
 
 *)
-
-open Parametrized_Example ;; 
-let u1 = Cartesian.product (Int_range.range 1 15)(Int_range.range 1 30) ;;
-let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
-let u3 = needed_subcomputations_for_several_computations u2 ;; 
-let u4 = Image.image (
-  fun (breadth,n)->let p = P(1,breadth,n,[]) in 
-  ((breadth,n),access ~with_anticipation:true p,brf3 breadth n)
-) u1;;
-let u5 = List.filter (
-  fun (pair,sol1,sol2)->sol1<>sol2
-) u4;;
-let u6 = List.filter (fun ((breadth,n),_,_)->breadth=12) u5 ;;
 
 (*
 
