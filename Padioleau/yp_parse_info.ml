@@ -93,4 +93,6 @@ let tokinfo_str_pos str pos =
   } in
   mk_info_of_loc loc ;; 
 
+let tokinfo lexbuf  =
+  tokinfo_str_pos (Lexing.lexeme lexbuf) (Lexing.lexeme_start lexbuf) ;;
            
