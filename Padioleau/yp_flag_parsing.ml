@@ -4,6 +4,6 @@
 
 *)
 
-let strict_lexer = ref false ;;
+let verbose_lexing = ref false ;;
 
            
