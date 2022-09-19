@@ -4,6 +4,8 @@
 
 *)
 
+let case_sensitive = ref true ;; 
+
 let strict_lexer = ref false ;;
 
            
