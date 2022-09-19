@@ -96,3 +96,27 @@ let tokinfo_str_pos str pos =
 let tokinfo lexbuf  =
   tokinfo_str_pos (Lexing.lexeme lexbuf) (Lexing.lexeme_start lexbuf) ;;
            
+  let rewrap_str s ii =
+    {ii with token =
+               (match ii.token with
+                | OriginTok pi -> OriginTok { pi with str = s;}
+                | FakeTokStr (s, info) -> FakeTokStr (s, info)
+                | Ab -> Ab
+                | ExpandedTok _ ->
+                    (* ExpandedTok ({ pi with Common.str = s;},vpi) *)
+                    failwith "rewrap_str: ExpandedTok not allowed here"
+               )
+    } ;; 
+
+exception NoTokenLocation of string ;;
+
+let str_of_info  ii =
+    match ii.token  with
+    | OriginTok x -> x.str
+    | FakeTokStr (s, _) -> s
+    | ExpandedTok _ | Ab ->
+        raise (NoTokenLocation "str_of_info: Expanded or Ab")
+
+(* less: should use Buffer and not ^ so we should not need that *)
+let tok_add_s s ii  =
+  rewrap_str ((str_of_info ii) ^ s) ii
