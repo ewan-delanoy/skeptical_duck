@@ -12,3 +12,7 @@ let pr2 s =
   flush stderr ;; 
 
            
+let hash_of_list xs =
+    let h = Hashtbl.create 101 in
+    xs |> List.iter (fun (k, v) -> Hashtbl.replace h k v);
+    h  
