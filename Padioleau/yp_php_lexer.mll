@@ -12,6 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
  * license.txt for more details.
  *)
+{
 open Yp_common ;;
 
 (* open Parser_php ;; *)
@@ -193,6 +194,7 @@ let keyword_table = Yp_common.hash_of_list [
 let _ = assert ((Yp_common.hkeys keyword_table) |>
         List.for_all (fun s -> s = String.lowercase_ascii s)) ;;
 
+
 (* ---------------------------------------------------------------------- *)
 (* Lexer State *)
 (* ---------------------------------------------------------------------- *)
@@ -333,7 +335,7 @@ let lang_ext_or_cast t lexbuf =
       t
     )
   else t ;;
-
+}
 
 (*****************************************************************************)
 (* Regexps aliases *)
