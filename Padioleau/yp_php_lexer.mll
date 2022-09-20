@@ -341,7 +341,7 @@ let lang_ext_or_cast t lexbuf =
 (* Regexps aliases *)
 (*****************************************************************************)
 
-(*
+
 let ANY_CHAR = (_ | ['\n'] )
 (* \x7f-\xff ???*)
 let WHITESPACE = [' ' '\n' '\r' '\t']+
@@ -385,7 +385,6 @@ let BACKQUOTE_CHARS =
 let XHPLABEL = LABEL
 let XHPTAG = XHPLABEL ([':''-'] XHPLABEL)*
 let XHPATTR = XHPTAG
-*)
 
 (*****************************************************************************)
 (* Rule in script *)
