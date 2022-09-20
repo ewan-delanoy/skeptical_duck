@@ -47,7 +47,7 @@ let pop2 l =
     v
   end ;;  
 
-let push v l = l := v :: !l ;; 
+let push v l = (l := v :: !l) ;; 
 
 
 
