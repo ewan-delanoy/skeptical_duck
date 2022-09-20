@@ -11,8 +11,23 @@ let pr2 s =
   prerr_string "\n";
   flush stderr ;; 
 
-           
+(*****************************************************************************)
+(* Hash *)
+(*****************************************************************************)
+        
 let hash_of_list xs =
     let h = Hashtbl.create 101 in
     xs |> List.iter (fun (k, v) -> Hashtbl.replace h k v);
-    h  
+    h  ;;
+
+let hash_to_list h =
+    Hashtbl.fold (fun k v acc -> (k,v)::acc) h []
+    |> List.sort compare ;; 
+    
+
+let hashset_to_list h = hash_to_list h |> List.map fst ;;
+
+let hkeys h =
+      let hkey = Hashtbl.create 101 in
+      h |> Hashtbl.iter (fun k _v -> Hashtbl.replace hkey k true);
+      hashset_to_list hkey ;;
