@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_parse_info.ml";;
+#use"Padioleau/yp_Yp_Yp_parse_info.ml";;
 
 *)
 
@@ -77,6 +77,8 @@ and transformation =
 and add =
   | AddStr of string
   | AddNewlineAndIdent ;; 
+
+type t = token_mutable ;;
 
 let mk_info_of_loc loc =
   { token = OriginTok loc; transfo = NoTransfo } ;;
