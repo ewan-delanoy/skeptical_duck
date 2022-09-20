@@ -31,3 +31,25 @@ let hkeys h =
       let hkey = Hashtbl.create 101 in
       h |> Hashtbl.iter (fun k _v -> Hashtbl.replace hkey k true);
       hashset_to_list hkey ;;
+
+(*****************************************************************************)
+(* Stack *)
+(*****************************************************************************)
+type 'a stack = 'a list ;;
+(* with sexp *)
+
+let (top: 'a stack -> 'a) = List.hd ;; 
+
+let pop2 l =
+  let v = List.hd !l in
+  begin
+    l := List.tl !l;
+    v
+  end ;;  
+
+let push v l = l := v :: !l ;; 
+
+
+
+
+
