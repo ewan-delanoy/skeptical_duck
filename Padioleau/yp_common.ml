@@ -71,7 +71,7 @@ let check_profile category =
     | ProfNone -> false
     | ProfSome l -> List.mem category l ;;
 
-let _profile_table = ref (Hashtbl.create 100)
+let _profile_table = ref (Hashtbl.create 100) ;; 
 
 let adjust_profile_entry category difftime =
       let (xtime, xcount) =
