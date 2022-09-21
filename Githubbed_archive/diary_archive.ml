@@ -1,6 +1,33 @@
 (************************************************************************************************************************
-Snippet 110 : 
+Snippet 111 : 
 ************************************************************************************************************************)
+
+
+(************************************************************************************************************************
+Snippet 110 : Extract token types from a .mli file 
+************************************************************************************************************************)
+
+let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Originals/parser_php.mly" ;; 
+let u1 = Io.read_whole_file ap1 ;;
+let u2 = Lines_in_string.interval u1 110 236 ;;
+let u3 = Outside_comments_and_strings.good_substrings u2 ;; 
+let u4 = String.concat " " (Image.image (fun (_,_,s)->s) u3) ;;
+let u5 = Substring.occurrences_of_in "%token" u4 ;; 
+let last_elt_in_u5 = List.hd(List.rev u5) ;; 
+let u6 = (Listennou.universal_delta_list u5) @ [last_elt_in_u5,(String.length u4)+1];; 
+let u7 = Image.image (fun (i,j)-> Cull_string.interval u4 i (j-1)) u6;; 
+let u8 = Image.image (
+  fun t->
+     let j = Substring.leftmost_index_of_in_from ">" t 9 in 
+     (Cull_string.interval t 9 (j-1),Cull_string.cobeginning j t)
+) u7 ;;
+let u9 = Image.image (fun (typename,l)->(typename,Str.split (Str.regexp"[ \t\r\n]+") l)) u8;;    
+let u10 = List.flatten (Image.image (fun (typename,l)->Image.image (fun x->(typename,x)) l) u9) ;;
+let u11 = Image.image (fun (typename,tokname)->(tokname,typename)) u10 ;; 
+let u12 = Ordered.sort Total_ordering.lex_for_strings  (Image.image fst u11) ;;
+let u13 = Image.image (fun t->"| "^ t ^ " of " ^ (List.assoc t u11)) u12 ;;
+let u14 = String.concat "\n" u13 ;; 
+let u15 () = print_string ("\n\n\n" ^ u14 ^ "\n\n\n") ;;
 
 
 (************************************************************************************************************************
