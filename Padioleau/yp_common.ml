@@ -49,7 +49,8 @@ let pop2 l =
 
 let push v l = (l := v :: !l) ;; 
 
-
+let optionise f =
+  try Some (f ()) with Not_found -> None ;; 
 
 
 
