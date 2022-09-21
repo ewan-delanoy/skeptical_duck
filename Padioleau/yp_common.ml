@@ -10,6 +10,7 @@ type timeout_info = {
   max_duration: float;
 } ;; 
 
+exception Impossible ;; 
 
 
 let prerr_string s = output_string stderr s ;;
