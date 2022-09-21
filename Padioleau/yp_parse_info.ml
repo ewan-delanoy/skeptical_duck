@@ -117,8 +117,23 @@ let str_of_info  ii =
     | OriginTok x -> x.str
     | FakeTokStr (s, _) -> s
     | ExpandedTok _ | Ab ->
-        raise (NoTokenLocation "str_of_info: Expanded or Ab")
+        raise (NoTokenLocation "str_of_info: Expanded or Ab") ;;
 
 (* less: should use Buffer and not ^ so we should not need that *)
 let tok_add_s s ii  =
-  rewrap_str ((str_of_info ii) ^ s) ii
+  rewrap_str ((str_of_info ii) ^ s) ii ;; 
+
+let token_location_of_info ii =
+    match ii.token with
+    | OriginTok pinfo -> Ok pinfo
+    (* TODO ? dangerous ? *)
+    | ExpandedTok (pinfo_pp, _pinfo_orig, _offset) -> Ok pinfo_pp
+    | FakeTokStr (_, (Some (pi, _))) -> Ok pi
+  
+    | FakeTokStr (_, None) -> Error "FakeTokStr"
+    | Ab -> Error "Ab" ;;
+
+let unsafe_token_location_of_info ii =
+    match token_location_of_info ii with
+    | Ok pinfo -> pinfo
+    | Error msg -> raise (NoTokenLocation msg) ;;
