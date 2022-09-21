@@ -504,8 +504,8 @@ rule st_in_scripting = parse
     (* facebook-ext: short lambdas *)
     | "==>" { T_DOUBLE_ARROW(tokinfo lexbuf) }
     (* sgrep-ext: *)
-    | "<..."  { Flag_parsing.sgrep_guard (LDots (tokinfo lexbuf)) }
-    | "...>"  { Flag_parsing.sgrep_guard (RDots (tokinfo lexbuf)) }
+    | "<..."  { Yp_flag_parsing.sgrep_guard (LDots (tokinfo lexbuf)) }
+    | "...>"  { Yp_flag_parsing.sgrep_guard (RDots (tokinfo lexbuf)) }
 
     (* we may come from a st_looking_for_xxx context, like in string
      * interpolation, so seeing a } we pop_mode!
