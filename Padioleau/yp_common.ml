@@ -88,7 +88,7 @@ let adjust_profile_entry category difftime =
 
 exception Timeout of timeout_info ;;
 
-(*
+
 let profile_code category f =
     if not (check_profile category)
     then f ()
@@ -98,7 +98,7 @@ let profile_code category f =
       let res, prefix =
         try Ok (f ()), ""
         with Timeout _ as exn ->
-          let e = Exception.catch exn in
+          let e = Yp_exception.catch exn in
           Error e, "*"
       in
       let category = prefix ^ category in (* add a '*' to indicate timeout func *)
@@ -109,7 +109,7 @@ let profile_code category f =
       adjust_profile_entry category (t' -. t);
       (match res with
        | Ok res -> res
-       | Error e -> Exception.reraise e
+       | Error e -> Yp_exception.reraise e
       );
     end ;; 
   
@@ -139,4 +139,4 @@ let match_func s re =
   
 let (=~) s re =
     match_func s re ;;
-*)    
+    
