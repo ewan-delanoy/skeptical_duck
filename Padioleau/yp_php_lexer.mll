@@ -1005,7 +1005,7 @@ and st_start_heredoc stopdoc = parse
       let colon_info =
         PI.tokinfo_str_pos semi pos_after_label in
       let space_info =
-        PI.tokinfo_str_pos (Common2.string_of_char space) pos_after_semi in
+        PI.tokinfo_str_pos (Yp_common.string_of_char space) pos_after_semi in
 
       if s = stopdoc
       then begin

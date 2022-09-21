@@ -141,3 +141,4 @@ let match_func s re =
 let (=~) s re =
     match_func s re ;;
     
+let string_of_char c = String.make 1 c ;;
