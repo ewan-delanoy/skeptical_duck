@@ -624,7 +624,7 @@ rule st_in_scripting = parse
          * token for metavariables. That way we also avoid certain
          * conflicts in the grammar.
          *)
-        if AST_generic_.is_metavar_name ("$" ^ s) && !Flag.sgrep_mode
+        if Yp_ast_generic.is_metavar_name ("$" ^ s) && !Flag.sgrep_mode
         then T_METAVAR (case_str ("$" ^ s), info)
         else T_VARIABLE(case_str s, info)
           }
