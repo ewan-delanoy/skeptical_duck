@@ -137,3 +137,5 @@ let unsafe_token_location_of_info ii =
     match token_location_of_info ii with
     | Ok pinfo -> pinfo
     | Error msg -> raise (NoTokenLocation msg) ;;
+
+let pos_of_info  ii = (unsafe_token_location_of_info ii).charpos ;;  
