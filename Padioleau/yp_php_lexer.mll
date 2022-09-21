@@ -600,7 +600,7 @@ rule st_in_scripting = parse
     | LABEL
         { let info = tokinfo lexbuf in
           let s = tok lexbuf in
-          match Common2.optionise (fun () ->
+          match Yp_common.optionise (fun () ->
             (* PHP is case insensitive ... it's ok to write IF(...) { ... } *)
             Hashtbl.find keyword_table (String.lowercase_ascii s))
           with
