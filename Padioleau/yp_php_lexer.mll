@@ -766,7 +766,7 @@ rule st_in_scripting = parse
         }
 
   (* ----------------------------------------------------------------------- *)
-    | eof { EOF (tokinfo lexbuf  }
+    | eof { EOF (tokinfo lexbuf)  }
     | _ {
         error ("unrecognised symbol, in token rule:"^tok lexbuf);
         TUnknown (tokinfo lexbuf)
