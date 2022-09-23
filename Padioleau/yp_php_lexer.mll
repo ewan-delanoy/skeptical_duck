@@ -822,7 +822,7 @@ and initial = parse
 
   (*------------------------------------------------------------------------ *)
 
-  | eof { EOF (tokinfo lexbuf  }
+  | eof { EOF (tokinfo lexbuf)  }
   | _ (* ANY_CHAR *) {
       error("unrecognised symbol, in token rule:"^tok lexbuf);
       TUnknown (tokinfo lexbuf)
