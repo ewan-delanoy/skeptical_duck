@@ -21,7 +21,7 @@ open Yp_php_token_t ;;
 (* module Ast = Cst_php ;; *)
 module Flag = Yp_flag_parsing ;;
 module Flag_php = Yp_flag_parsing_php ;;
-module PI = Yp_parse_info ;;
+module PI = Yp_parse_info ;; 
 
 (*****************************************************************************)
 (* Prelude *)
@@ -1153,3 +1153,20 @@ and st_one_line_comment = parse
         error ("unrecognised symbol, in st_one_line_comment rule:"^tok lexbuf);
         tok lexbuf
       }
+{
+
+   let read_string text = 
+    let lex_stream = Lexing.from_string text1 
+    and should_continue = ref true 
+    and accu = ref [] in 
+    let _ =(while (!should_continue) do 
+    (
+      let next_token = initial lex1 in 
+      match next_token with 
+      (Yp_php_token_t.EOF(_)) -> should_continue := false    
+      | _ -> accu := next_token :: (!accu)) 
+    done ) in  
+    List.rev (!accu) ;; 
+
+
+}
