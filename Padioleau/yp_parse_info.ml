@@ -63,25 +63,13 @@ type token_mutable = {
    * the token_location embedded inside the token_origin type.
   *)
   token : token_origin;
-  mutable transfo: transformation;
-  (* less: mutable comments: ...; *)
-} (* poor's man refactoring *)
-and transformation =
-  | NoTransfo
-  | Remove
-  | AddBefore of add
-  | AddAfter of add
-  | Replace of add
-  | AddArgsBefore of string list
-
-and add =
-  | AddStr of string
-  | AddNewlineAndIdent ;; 
+} 
+ ;; 
 
 type t = token_mutable ;;
 
 let mk_info_of_loc loc =
-  { token = OriginTok loc; transfo = NoTransfo } ;;
+  { token = OriginTok loc; } ;;
 
 let tokinfo_str_pos str pos =
   let loc =  {
