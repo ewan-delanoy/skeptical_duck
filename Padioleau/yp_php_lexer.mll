@@ -59,7 +59,6 @@ let yyback n lexbuf =
 (* shortcuts *)
 let tok = Lexing.lexeme ;;
 let tokinfo = PI.tokinfo ;;
-let tok_add_s = PI.tok_add_s ;;
 
 (* all string passed to T_IDENT or T_VARIABLE should go through case_str *)
 let case_str s =
@@ -398,19 +397,19 @@ rule st_in_scripting = parse
     | "/*" {
         let info = tokinfo lexbuf in
         let com = st_comment lexbuf in
-        T_COMMENT(info |> tok_add_s com)
+        T_COMMENT(info)
       }
     | "/**/" { T_COMMENT(tokinfo lexbuf) }
 
     | "/**" { (* RESET_DOC_COMMENT(); *)
         let info = tokinfo lexbuf in
         let com = st_comment lexbuf in
-        T_DOC_COMMENT(info |> tok_add_s com)
+        T_DOC_COMMENT(info)
       }
     | "#"|"//" {
         let info = tokinfo lexbuf in
         let com = st_one_line_comment lexbuf in
-        T_COMMENT(info |> tok_add_s com)
+        T_COMMENT(info)
       }
 
     (* old: | WHITESPACE { T_WHITESPACE(tokinfo lexbuf) } *)
