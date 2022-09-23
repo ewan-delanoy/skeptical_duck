@@ -396,19 +396,16 @@ rule st_in_scripting = parse
   (* ----------------------------------------------------------------------- *)
     | "/*" {
         let info = tokinfo lexbuf in
-        let com = st_comment lexbuf in
         T_COMMENT(info)
       }
     | "/**/" { T_COMMENT(tokinfo lexbuf) }
 
     | "/**" { (* RESET_DOC_COMMENT(); *)
         let info = tokinfo lexbuf in
-        let com = st_comment lexbuf in
         T_DOC_COMMENT(info)
       }
     | "#"|"//" {
         let info = tokinfo lexbuf in
-        let com = st_one_line_comment lexbuf in
         T_COMMENT(info)
       }
 
