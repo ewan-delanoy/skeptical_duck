@@ -33,3 +33,4 @@ let unsafe_token_location_of_info ii =
     | Error msg -> raise (NoTokenLocation msg) ;;
 
 let pos_of_info  ii = (unsafe_token_location_of_info ii).Yp_token_info_t.charpos ;;  
+let charpos ii = ii.Yp_token_info_t.charpos ;; 
