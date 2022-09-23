@@ -22,7 +22,7 @@ open Yp_php_token_t ;;
 (* module Ast = Cst_php ;; *)
 module Flag = Yp_flag_parsing ;;
 module Flag_php = Yp_flag_parsing_php ;;
-module PI = Yp_parse_info ;; 
+module TI = Yp_token_info ;; 
 
 (*****************************************************************************)
 (* Prelude *)
@@ -37,7 +37,7 @@ module PI = Yp_parse_info ;;
 (*****************************************************************************)
 (* Helpers *)
 (*****************************************************************************)
-(* todo: reuse PI.Lexical_error *)
+(* todo: reuse TI.Lexical_error *)
 exception Lexical of string ;;
 
 let error s =
@@ -59,7 +59,7 @@ let yyback n lexbuf =
   } ;; 
 (* shortcuts *)
 let tok = Lexing.lexeme ;;
-let tokinfo = PI.tokinfo ;;
+let tokinfo = TI.tokinfo ;;
 
 (* all string passed to T_IDENT or T_VARIABLE should go through case_str *)
 let case_str s =
@@ -70,7 +70,7 @@ let case_str s =
 let lang_ext_or_t_ident ii fii =
   if !Flag_php.facebook_lang_extensions
   then fii ii
-  else T_IDENT(case_str (PI.str_of_info ii), ii) ;;
+  else T_IDENT(case_str (TI.str_of_info ii), ii) ;;
 
 (* ---------------------------------------------------------------------- *)
 (* Keywords *)
@@ -182,7 +182,7 @@ let keyword_table = Yp_common.hash_of_list [
   "yield", (fun ii -> T_YIELD ii);
   "from", (fun ii -> T_FROM ii);
 
-  (* old: "__halt_compiler", (fun ii -> T_HALT_COMPILER ii); *)
+  (* old: "__halt_compiler", (fun ii -> T_HALT_COMTILER ii); *)
 
   (* php-facebook-ext: *)
   "await", (fun ii -> lang_ext_or_t_ident ii (fun x -> T_AWAIT x));
@@ -528,13 +528,13 @@ rule st_in_scripting = parse
       *)
         let info = tokinfo lexbuf in
 
-        let parse_info = PI.unsafe_token_location_of_info info in
+        let parse_info = TI.unsafe_token_location_of_info info in
         let pos_after_sym   =
-          parse_info.PI.charpos + String.length sym in
+          parse_info.TI.charpos + String.length sym in
         let pos_after_white = pos_after_sym + String.length white in
 
-        let whiteinfo = PI.tokinfo_str_pos white pos_after_sym in
-        let lblinfo = PI.tokinfo_str_pos label pos_after_white in
+        let whiteinfo = TI.tokinfo_str_pos white pos_after_sym in
+        let lblinfo = TI.tokinfo_str_pos label pos_after_white in
 
         push_token (T_IDENT (case_str label, lblinfo));
        (* todo: could be newline ... *)
@@ -626,9 +626,9 @@ rule st_in_scripting = parse
           }
     |  "$" (LABEL as s) {
         let info = tokinfo lexbuf in
-        let parse_info = PI.unsafe_token_location_of_info info in
-        let pos_after_sym = parse_info.PI.charpos + 2 in
-        let lblinfo = PI.tokinfo_str_pos s pos_after_sym in
+        let parse_info = TI.unsafe_token_location_of_info info in
+        let pos_after_sym = parse_info.TI.charpos + 2 in
+        let lblinfo = TI.tokinfo_str_pos s pos_after_sym in
 
         push_token (T_VARIABLE(case_str s, lblinfo));
         TDOLLAR info
@@ -899,10 +899,10 @@ and st_double_quotes = parse
           let info = tokinfo lexbuf in
 
           
-          let charpos_info = PI.pos_of_info info in
+          let charpos_info = TI.pos_of_info info in
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
-          let bra_info = PI.tokinfo_str_pos "[" pos_after_label in
+          let bra_info = TI.tokinfo_str_pos "[" pos_after_label in
           push_token (TOBRA bra_info);
           push_mode ST_VAR_OFFSET;
           T_VARIABLE(case_str s, info)
@@ -945,10 +945,10 @@ and st_backquote = parse
     | "$" (LABEL as s)     { T_VARIABLE(case_str s, tokinfo lexbuf) }
     | "$" (LABEL as s) "[" {
           let info = tokinfo lexbuf in
-          let charpos_info = PI.pos_of_info info in
+          let charpos_info = TI.pos_of_info info in
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
-          let bra_info = PI.tokinfo_str_pos "[" pos_after_label in
+          let bra_info = TI.tokinfo_str_pos "[" pos_after_label in
           push_token (TOBRA bra_info);
           push_mode ST_VAR_OFFSET;
           T_VARIABLE(case_str s, info)
@@ -988,14 +988,14 @@ and st_start_heredoc stopdoc = parse
 
   | (LABEL as s) (";"? as semi) (['\n' '\r'] as space) {
       let info = tokinfo lexbuf in
-      let pos = PI.pos_of_info info in
+      let pos = TI.pos_of_info info in
       let pos_after_label = pos + String.length s in
       let pos_after_semi = pos_after_label + String.length semi in
 
       let colon_info =
-        PI.tokinfo_str_pos semi pos_after_label in
+        TI.tokinfo_str_pos semi pos_after_label in
       let space_info =
-        PI.tokinfo_str_pos (Yp_common.string_of_char space) pos_after_semi in
+        TI.tokinfo_str_pos (Yp_common.string_of_char space) pos_after_semi in
 
       if s = stopdoc
       then begin
@@ -1017,10 +1017,10 @@ and st_start_heredoc stopdoc = parse
     | "$" (LABEL as s)     { T_VARIABLE(case_str s, tokinfo lexbuf) }
     | "$" (LABEL as s) "[" {
           let info = tokinfo lexbuf in
-          let charpos_info = PI.pos_of_info info in
+          let charpos_info = TI.pos_of_info info in
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
-          let bra_info = PI.tokinfo_str_pos "[" pos_after_label in
+          let bra_info = TI.tokinfo_str_pos "[" pos_after_label in
           push_token (TOBRA bra_info);
           push_mode ST_VAR_OFFSET;
           T_VARIABLE(case_str s, info)
@@ -1055,14 +1055,14 @@ and st_start_nowdoc stopdoc = parse
 
   | (LABEL as s) (";"? as semi) (['\n' '\r'] as space) {
       let info = tokinfo lexbuf in
-      let pos = PI.pos_of_info info in
+      let pos = TI.pos_of_info info in
       let pos_after_label = pos + String.length s in
       let pos_after_semi = pos_after_label + String.length semi in
 
       let colon_info =
-        PI.tokinfo_str_pos semi pos_after_label in
+        TI.tokinfo_str_pos semi pos_after_label in
       let space_info =
-        PI.tokinfo_str_pos (Yp_common.string_of_char space) pos_after_semi in
+        TI.tokinfo_str_pos (Yp_common.string_of_char space) pos_after_semi in
 
       if s = stopdoc
       then begin
