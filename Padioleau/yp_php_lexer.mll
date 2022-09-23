@@ -530,7 +530,7 @@ rule st_in_scripting = parse
 
         let parse_info = TI.unsafe_token_location_of_info info in
         let pos_after_sym   =
-          parse_info.TI.charpos + String.length sym in
+          (TI.charpos parse_info) + String.length sym in
         let pos_after_white = pos_after_sym + String.length white in
 
         let whiteinfo = TI.tokinfo_str_pos white pos_after_sym in
@@ -627,7 +627,7 @@ rule st_in_scripting = parse
     |  "$" (LABEL as s) {
         let info = tokinfo lexbuf in
         let parse_info = TI.unsafe_token_location_of_info info in
-        let pos_after_sym = parse_info.TI.charpos + 2 in
+        let pos_after_sym = (TI.charpos parse_info) + 2 in
         let lblinfo = TI.tokinfo_str_pos s pos_after_sym in
 
         push_token (T_VARIABLE(case_str s, lblinfo));
