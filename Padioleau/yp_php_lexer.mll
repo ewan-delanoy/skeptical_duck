@@ -626,7 +626,7 @@ rule st_in_scripting = parse
         then T_METAVAR (case_str ("$" ^ s), info)
         else T_VARIABLE(case_str s, info)
           }
-    | ("$" as dollar) "$" (LABEL as s) {
+    |  "$" (LABEL as s) {
         let info = tokinfo lexbuf in
         let parse_info = PI.unsafe_token_location_of_info info in
         let pos_after_sym = parse_info.PI.charpos + 2 in
