@@ -1156,12 +1156,12 @@ and st_one_line_comment = parse
 {
 
    let read_string text = 
-    let lex_stream = Lexing.from_string text1 
+    let lex_stream = Lexing.from_string text
     and should_continue = ref true 
     and accu = ref [] in 
     let _ =(while (!should_continue) do 
     (
-      let next_token = initial lex1 in 
+      let next_token = initial lex_stream in 
       match next_token with 
       (Yp_php_token_t.EOF(_)) -> should_continue := false    
       | _ -> accu := next_token :: (!accu)) 
