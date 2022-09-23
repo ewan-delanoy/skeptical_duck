@@ -37,7 +37,7 @@ let tokinfo lexbuf  =
 
 exception NoTokenLocation of string ;;
 
-let str_of_info x = x.str ;;
+let str_of_info (OriginTok x) = x.str ;;
 
 let token_location_of_info ii =
     match ii with
