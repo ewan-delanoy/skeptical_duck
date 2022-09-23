@@ -58,21 +58,15 @@ type token_origin =
   *)
   | Ab ;;
 
-type token_mutable = {
-  (* contains among other things the position of the token through
-   * the token_location embedded inside the token_origin type.
-  *)
-  token : token_origin;
-} 
- ;; 
 
-type t = token_mutable ;;
 
-let mk_info_of_loc loc =
-  { token = OriginTok loc; } ;;
+type t = token_origin ;;
+
+(* let mk_info_of_loc loc =
+  { token = OriginTok loc; } ;; *)
 
 let tokinfo_str_pos str pos =
-  let loc =  {
+   {
     charpos = pos;
     str     = str;
 
@@ -80,8 +74,7 @@ let tokinfo_str_pos str pos =
     line = -1;
     column = -1;
     file = "NO FILE INFO YET";
-  } in
-  mk_info_of_loc loc ;; 
+  } ;; 
 
 let tokinfo lexbuf  =
   tokinfo_str_pos (Lexing.lexeme lexbuf) (Lexing.lexeme_start lexbuf) ;;
@@ -91,7 +84,7 @@ let tokinfo lexbuf  =
 exception NoTokenLocation of string ;;
 
 let str_of_info  ii =
-    match ii.token  with
+    match ii  with
     | OriginTok x -> x.str
     | FakeTokStr (s, _) -> s
     | ExpandedTok _ | Ab ->
@@ -99,7 +92,7 @@ let str_of_info  ii =
 
 
 let token_location_of_info ii =
-    match ii.token with
+    match ii with
     | OriginTok pinfo -> Ok pinfo
     (* TODO ? dangerous ? *)
     | ExpandedTok (pinfo_pp, _pinfo_orig, _offset) -> Ok pinfo_pp
