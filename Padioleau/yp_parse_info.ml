@@ -16,7 +16,7 @@ type token_origin =
 
 type t = token_origin ;;
 
-let mk_info_of_loc loc = loc ;; 
+let mk_info_of_loc loc = OriginTok loc ;; 
 
 let tokinfo_str_pos str pos =
    let loc = {
