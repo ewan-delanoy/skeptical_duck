@@ -334,9 +334,79 @@ let qpf1 n (a,b) = Q (ptf1 n, a, b) ;;
 let bwef1 n =  Breakpoint_with_extensions (Q (ptf2 n, [], [])) ;;
 let bwef2 n =  let q = (n/3) in  Breakpoint_with_extensions (Q (ptf2 n, [], [3*q+1])) ;;
 let level2 = Int_range.scale (fun j->C[j;j+2;j+4]) ;; 
-let clf1 n = let q = (n/3) in  C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8)) ;;
-let clf2 n = let q = (n/3) in C[3*q-4] :: (Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q-9))@[3*q-7])) ;;
+let clf1 q = C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8)) ;;
+let clf2 q = 
+   let rest = (
+    if q<3 then [] else   
+    Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q-9))@[3*q-7])
+   ) in 
+    C[3*q-4] :: rest ;;
 let clf3 n = Int_range.scale (fun j->C[j;j+2;j+4]) 1 n  ;;
+let clf4 q = if q<3 then [] else C[3*q-6;3*q-4] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-9)) @ [C[3*q-7;3*q-5;3*q-3]];;
+
+let clf5 breadth n = 
+  let q = (n/3) in  
+  match (breadth mod 3) with 
+   0 ->  (
+          if n=breadth+6 
+          then clf3(breadth-1)
+          else clf3(breadth)
+         )  
+   |1 -> (
+          if n=breadth+5 
+          then clf1(q)
+          else clf3(breadth)
+         ) 
+     
+   |2 -> (
+          if n=breadth+5 
+          then clf1(q)
+          else clf3(breadth)
+         )
+   | _ -> failwith("impossible remainder") ;;    
+
+let clf6 breadth n = 
+  let q = (n/3) in  
+  match (breadth mod 3) with 
+   0 ->  (
+          if n=breadth+6 
+          then clf4(q)
+          else clf3(breadth) 
+         )  
+   |1 -> (
+          if n=breadth+5 
+          then clf4(q)
+          else clf3(breadth) 
+         ) 
+     
+   |2 -> (
+          if n=breadth+5 
+          then clf4(q)
+          else clf3(breadth) 
+         )
+   | _ -> failwith("impossible remainder") ;;    
+
+let clf7 breadth n = 
+  let q = (n/3) in  
+  match (breadth mod 3) with 
+   0 ->  (
+          if n=breadth+7 
+          then clf4(q)
+          else clf3(breadth)
+         )  
+   |1 -> (
+          if n=breadth+6 
+          then clf4(q)
+          else clf3(breadth)
+         ) 
+     
+   |2 -> (
+          if n=breadth+5 
+          then clf2(q)
+          else clf3(breadth)
+         )
+   | _ -> failwith("impossible remainder") ;;    
+
 
 let v1 = Bulk_result.singleton [1] ;;
 
@@ -374,6 +444,23 @@ let brf1 n =
     |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
     |_ -> failwith("impossible remainder")) ;; 
 
+(*
+
+To test brf1  : 
+
+open Parametrized_Example ;;
+let u1 = needed_subcomputations_for_several_computations 
+  (Int_range.scale(fun n->P(2,0,n,[])) 1 30) ;; 
+let u2 = Int_range.scale (
+  fun n->let p = P(2,0,n,[]) in 
+  (n,access ~with_anticipation:true p,brf1 n)
+) 1 30;;
+let u3 = List.filter (
+  fun (n,sol1,sol2)->sol1<>sol2
+) u2;;
+*)
+
+
 
 let brf2 breadth n = 
    if breadth = 0 then Bulk_result.singleton (Int_range.range 1 n) else 
@@ -383,7 +470,7 @@ let brf2 breadth n =
 
 (*
 
-To test brf1 and brf2 : 
+To test brf2 : 
 
 open Parametrized_Example ;;
 let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
@@ -396,54 +483,17 @@ let u4 = Image.image (
 let u5 = List.filter (
   fun (pair,sol1,sol2)->sol1<>sol2
 ) u4;;
-let u6 = needed_subcomputations_for_several_computations 
-  (Int_range.scale(fun n->P(2,0,n,[])) 1 30) ;; 
-let u7 = Int_range.scale (
-  fun n->let p = P(2,0,n,[]) in 
-  (n,access ~with_anticipation:true p,brf1 n)
-) 1 30;;
-let u8 = List.filter (
-  fun (n,sol1,sol2)->sol1<>sol2
-) u7;;
 *)
-
-(*
-let n1 = 12 ;;
-let (_,bres1) = tf n1 ;; 
-let p1 = P (1, n1-5, n1-3, []) ;;
-let p2 = P (1, n1-2, n1, []) ;;
-let main = sf1 n1 ;; 
-let cl1 = C[n1-5;n1-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (n1-8)) ;; 
-let cl2 = C[n1-4] :: (Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (n1-9))@[n1-7])) ;;  
-let check_bres1 = (bres1=BR (Breakpoint_with_extensions (Q (p2, [], [])),
-[main],
-FD ([main],[Q (p1,cl1, [n1-1; n1]); Q (p1,cl2, [n1-2; n1])])));;
-
-let n1 = 13 ;;
-let (_,bres1) = tf n1 ;; 
-let q1 = (n1/3) ;; 
-let p1 = P (1, 3*q1-5, 3*q1-3, []) ;;
-let p2 = P (1, 3*q1-2, 3*q1, []) ;;
-let main = sf1 n1 ;; 
-let cl1 = C[3*q1-5;3*q1-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q1-8)) ;; 
-let cl2 = C[3*q1-4] :: (Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q1-9))@[3*q1-7])) ;;  
-let check_bres1 = (bres1=
-BR (Breakpoint_with_extensions (Q (p2, [], [3*q1+1])),
-[main],FD ([main],[Q (p1,cl2,[3*q1-2; 3*q1; 3*q1+1])]))
-);;
-*)
-
 
 
 let brf3 n =
     let main = sf1 n in 
     let q = (n/3) in 
     let qp1 = qpf1 n in 
-    let cl1 = C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8))
-    and cl2 = C[3*q-4] :: (Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q-9))@[3*q-7])) in 
+    let cl1 = clf1 q
+    and cl2 = clf2 q in 
     if n<=5 then brf1 n else
-    match List.assoc_opt n [6,v4;7,v5] with
-    Some answer -> answer | None ->
+    match List.assoc_opt n [6,v4;7,v5] with Some answer -> answer | None ->
     (  
     match (n mod 3) with 
      0 ->  
@@ -456,23 +506,56 @@ let brf3 n =
     |_ -> failwith("impossible remainder") 
   );; 
 
+(*
+
+To test brf3  : 
+
+open Parametrized_Example ;;
+let v1 = needed_subcomputations_for_several_computations 
+  (Int_range.scale(fun n->P(3,0,n,[])) 1 30) ;; 
+let v2 = Int_range.scale (
+  fun n->let p = P(3,0,n,[]) in 
+  (n,access ~with_anticipation:true p,brf3 n)
+) 1 30;;
+let v3 = List.filter (
+  fun (n,sol1,sol2)->sol1<>sol2
+) v2;;
+*)
 
 let brf4 breadth n = 
-   if breadth = 0 then brf3 n  else 
+  let q = (n/3) 
+  and p1 = ptf1 n
+  and main = sf1 n  in 
+  match (n mod 3) with 
+   0 ->  
+    let bwe1 = bwef1 n  in
+    BR (bwe1,[main],FD ([main],
+      [Q(p1,clf5 breadth n,[3*q-1; 3*q]); 
+       Q(p1,clf6 breadth n,[3*q-2; 3*q])])) 
+  |1 -> 
+    let bwe2 = bwef2 n in
+    BR (bwe2,[main],FD ([main],[Q(p1,clf7 breadth n,[3*q-2; 3*q; 3*q+1])])) 
+  |2-> BR (Singleton (main),[main],FD ([main],[]))     
+  | _ -> failwith("impossible remainder") ;;  
+
+
+let brf5 breadth n = 
+   if breadth = 0 then brf1 n  else 
    if n<=(breadth+4) 
    then brf3 n
-   else Bulk_result.fragile_extend_with (brf3 (breadth+2)) (Int_range.range (breadth+3) n) ;; 
+   else brf4 breadth n ;; 
 
 (*
 
-To test brf4 : 
+To test brf5 : 
 
+open Parametrized_Example ;;
 let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
 let u2 = Image.image (fun (breadth,n)->P(2,breadth,n,[])) u1 ;;
 let u3 = needed_subcomputations_for_several_computations u2 ;; 
 let u4 = Image.image (
-  fun (breadth,n)->let p = P(1,breadth,n,[]) in 
-  ((breadth,n),access ~with_anticipation:true p,brf4 breadth n)
+  fun (breadth,n)->let p = P(2,breadth,n,[]) in 
+  ((breadth,n),access ~with_anticipation:true p,brf5 breadth n)
 ) u1;;
 let u5 = List.filter (
   fun (pair,sol1,sol2)->sol1<>sol2
@@ -761,15 +844,6 @@ let compute_recursively width breadth (n,scrappers) =
 ;;  
 
 
-
-
-let feel_new_line (width,breadth,scrappers) =
-  let temp1 = Int_range.scale 
-    (fun n->P(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
-  let temp2 = needed_subcomputations_for_several_computations temp1 in 
-  let temp3 = Image.image (fun (P(w,b,n,s),_)->(w,b,s)) temp2 in 
-  Ordered.sort t_order temp3 ;; 
-
 let exhaust_new_line (width,breadth,scrappers) = 
     let temp1 = Int_range.scale 
       (fun n->P(width,breadth,n,scrappers)) 1  60 in 
@@ -796,59 +870,45 @@ let exhaust_new_line (width,breadth,scrappers) =
 
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
-
+rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 
 (*
+
 let current_width = 2 
 and current_breadth = 40 
 and current_strappers = [] ;;
-let (_,g2) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 let tf n = 
   let p = P(current_width,current_breadth,n,current_strappers) in 
-  (hook_and_descendants ~with_anticipation:true p,List.assoc n g2);;
+  (hook_and_descendants ~with_anticipation:true p,List.assoc n small_accu);;
 
 let check_g2 = List.filter (
   fun (n,bres)->bres <> Parametrized_Example.brf1 n
 ) g2 ;;
-let breadth1 = 9 ;;
-let tg n = access ~with_anticipation:true (P(current_width,breadth1,n,current_strappers)) ;;
 
 
 *)
 
-(*
-open Parametrized_Example ;; 
-let indices = Int_range.scale (fun j->j) 1 20 ;;
-let g3 = List.filter (fun n->(List.assoc n g2)<>brf3 n) indices ;;
-let g4 = List.filter (fun n->(List.assoc n g2)<>brf1 n) indices;;
-
-
-let n1 = 21 ;;
-let bres1 = tg n1 ;; 
-let q1 = (n1/3) ;; 
-let p1 = ptf1 n1 ;;
-let p2 = ptf2 n1 ;;
-let main = sf1 n1 ;; 
-let cl3 = clf3 breadth1 ;; 
-let check_bres1 = (bres1=
-BR (Breakpoint_with_extensions (Q (p2, [], [])),
- [main],
- FD ([main],
-  [Q (p1,cl3,
-    [3*q1-1; 3*q1]);
-   Q (p1,cl3,
-    [3*q1-2; 3*q1])]))
-);;
 
 
 
-*)
 
 (*
 
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
+
+open Parametrized_Example ;; 
+
+let current_width = 2 
+and current_breadth = 40 
+and current_strappers = [] ;;
+let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+
+let tg b n = access ~with_anticipation:true (P(current_width,b,n,current_strappers)) ;;
+
+
 
 *)
 
