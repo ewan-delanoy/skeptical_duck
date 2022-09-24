@@ -453,7 +453,7 @@ let u1 = needed_subcomputations_for_several_computations
   (Int_range.scale(fun n->P(2,0,n,[])) 1 30) ;; 
 let u2 = Int_range.scale (
   fun n->let p = P(2,0,n,[]) in 
-  (n,access ~with_anticipation:true p,brf1 n)
+  (n,access  p,brf1 n)
 ) 1 30;;
 let u3 = List.filter (
   fun (n,sol1,sol2)->sol1<>sol2
@@ -478,7 +478,7 @@ let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
 let u3 = needed_subcomputations_for_several_computations u2 ;; 
 let u4 = Image.image (
   fun (breadth,n)->let p = P(1,breadth,n,[]) in 
-  ((breadth,n),access ~with_anticipation:true p,brf2 breadth n)
+  ((breadth,n),access p,brf2 breadth n)
 ) u1;;
 let u5 = List.filter (
   fun (pair,sol1,sol2)->sol1<>sol2
@@ -515,7 +515,7 @@ let v1 = needed_subcomputations_for_several_computations
   (Int_range.scale(fun n->P(3,0,n,[])) 1 30) ;; 
 let v2 = Int_range.scale (
   fun n->let p = P(3,0,n,[]) in 
-  (n,access ~with_anticipation:true p,brf3 n)
+  (n,access p,brf3 n)
 ) 1 30;;
 let v3 = List.filter (
   fun (n,sol1,sol2)->sol1<>sol2
@@ -555,7 +555,7 @@ let u2 = Image.image (fun (breadth,n)->P(2,breadth,n,[])) u1 ;;
 let u3 = needed_subcomputations_for_several_computations u2 ;; 
 let u4 = Image.image (
   fun (breadth,n)->let p = P(2,breadth,n,[]) in 
-  ((breadth,n),access ~with_anticipation:true p,brf5 breadth n)
+  ((breadth,n),access p,brf5 breadth n)
 ) u1;;
 let u5 = List.filter (
   fun (pair,sol1,sol2)->sol1<>sol2
@@ -683,8 +683,10 @@ let bulgarian_getter ~with_anticipation pt =
   Bulk_result.extend_with_opt ( nonbulgarian_getter  ~with_anticipation pt2) adj ;;
 
    
-let access ~with_anticipation pt = 
+let generic_access ~with_anticipation pt = 
    Option.unpack(bulgarian_getter ~with_anticipation pt) ;;   
+
+let access = generic_access ~with_anticipation:true ;; 
 
 let polish_fork ~with_anticipation pt unpolished_result =
     Some unpolished_result ;; 
@@ -696,16 +698,16 @@ let apply_hook_naively ~with_anticipation pt hook ll =
 | Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
 | Jump -> Some(List.hd ll);; 
 
-exception Apply_hook_exn of point * hook ;;
+exception Apply_hook_exn of (bulk_result list) * hook * point ;;
 
 
-let apply_hook ~with_anticipation pt hook ll = 
-   match apply_hook_naively ~with_anticipation pt hook ll with 
+let apply_hook ~with_anticipation pt hook args = 
+   match apply_hook_naively ~with_anticipation pt hook args with 
    None -> None 
     |Some bres ->
        let (BR(_,reps,_)) = bres in 
        if reps = []
-       then raise (Apply_hook_exn(pt,hook)) 
+       then raise (Apply_hook_exn(args,hook,pt)) 
        else Some bres ;;
 
 
@@ -867,6 +869,8 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
+let see p = (hook_and_descendants ~with_anticipation:true p,access p);;
+
 
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
@@ -899,6 +903,9 @@ let check_g2 = List.filter (
 
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
+let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
+
+
 open Parametrized_Example ;; 
 
 let current_width = 2 
@@ -908,8 +915,37 @@ let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_str
 
 let tg b n = access ~with_anticipation:true (P(current_width,b,n,current_strappers)) ;;
 
-
-
 *)
 
+(*
+let pt0 = P(3,1,7,[]) ;;
+let bad1 = needed_subcomputations_for_single_computation pt0 ;;
+let bad2 = needed_subcomputations_for_several_computations [pt0] ;; 
+Accumulator_with_optional_anticipator.low_anticipator:=[] ;;
+let bad3 = pusher_for_recursive_computation [pt0] ;;
+let (pt,others) = Listennou.ht [pt0] ;;
+let (pt2,adj) = Bulgarian.decompose pt ;;
+let bad4 =
+      find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
+      ~with_anticipation:true pt2 ;;
+let bad5 =
+    find_remote_stumbling_block_or_immediate_working_hook 
+        ~with_anticipation:true pt2 ;;
+let (missing_data1,result_opt1) = 
+        try_hook_quickly ~with_anticipation:true pt2 Passive_repeat ;;       
+let hook = Passive_repeat ;;  
 
+        let try_hook_quickly ~with_anticipation pt hook = 
+          let nonbulgarian_descendants = descendants_for_hook pt hook in  
+          let descendants = Image.image Bulgarian.decompose nonbulgarian_descendants in 
+          let descendants_with_their_images = Image.image (
+             fun (pt2,adj)  -> (pt2,Bulk_result.extend_with_opt (nonbulgarian_getter ~with_anticipation pt2) adj)
+           ) descendants in  
+         let (failures,successes) = List.partition (
+                 fun (_,opt) -> opt = None
+         ) descendants_with_their_images in 
+         let missing_data = Image.image fst failures in 
+         if missing_data <> [] then (missing_data,None) else 
+         let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
+         ([],apply_hook ~with_anticipation pt hook args) ;; 
+*)
