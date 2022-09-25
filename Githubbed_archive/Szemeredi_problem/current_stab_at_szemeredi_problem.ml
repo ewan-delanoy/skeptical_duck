@@ -873,17 +873,14 @@ let access = generic_access ~with_anticipation:true ;;
 let see p = (hook_and_descendants ~with_anticipation:true p,access p);;
 let rec all_representatives p =
     let (BR(sycom,reps,forced_data)) = access p in 
-    match Sycomore_list.extract_singleton_opt sycom with 
-     Some singleton -> [singleton]
-     | _ ->
-      let (FD(offshoots,qpoints)) = forced_data in 
-      let temp1 = Image.image (
+    let (FD(offshoots,qpoints)) = forced_data in 
+    let temp1 = Image.image (
          fun (Q(pt,constraints,extension)) -> 
            let ttemp2 = all_representatives pt in 
            let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) ttemp2 in 
            Image.image (i_merge extension) ttemp3
-      ) qpoints in 
-      il_fold_merge (offshoots::temp1) ;;
+    ) qpoints in 
+    il_fold_merge (offshoots::temp1) ;;
 
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
