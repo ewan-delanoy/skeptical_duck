@@ -5,33 +5,35 @@
 *)
 
 type hook = 
-     Passive_repeat 
-   | Boundary_increment 
-   | Fork 
-   | Jump ;;
+Passive_repeat 
+| Boundary_increment 
+| Fork 
+| Jump ;;
 
 type point = P of int * int * int * (int list) ;;
 
 type constraint_t = C of int list ;; 
 
-type qualified_point = Q of point * (constraint_t list) * (int list);;
+type extension_data = int list ;; 
 
-type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
+type qualified_point = Q of point * (constraint_t list) * extension_data;;
+
+type solution = int list ;; 
+
+type forced_data = FD of (solution list) * ( qualified_point list) ;;
 
 type ancestor_category =
-    Dead  
-   |Alive ;;
+Dead  
+|Alive ;;
 
-type ancestry_info = ( hook * (point list)) option ;;
+type ancestry_info = AI of (ancestor_category * point * extension_data) list ;;
 
-type bulk_result = BR of ancestry_info * ((int list) list) * forced_data ;;  
+type partial_result = PR of (solution list) * forced_data  ;;
 
-type for_width_one = FW1 of ((int * bulk_result) list) ;;
+type bulk_result = BR of ((hook * ancestry_info) option) * partial_result ;;  
 
 type function_of_size = 
-Width_one of for_width_one 
-|Usual_fos of (int -> bulk_result) ;; 
+Usual_fos of (int -> bulk_result) ;; 
 
 type function_of_breadth_and_size = 
 Usual_fobas of ( int -> int -> bulk_result) ;;
-
