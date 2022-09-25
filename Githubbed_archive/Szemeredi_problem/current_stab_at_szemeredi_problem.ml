@@ -162,38 +162,6 @@ let insert_several_constraints new_constraints (Q(pt,old_constraints,extension))
 
 end ;;  
 
-module Sycomore_list = struct 
-  
-        let extend_with sycom extension = match sycom with 
-        Singleton(l) -> Singleton(i_merge l extension)
-        | Breakpoint_with_extensions(Q(pt,old_constraints,extension2)) -> 
-          Breakpoint_with_extensions(Q(pt,old_constraints,i_merge extension extension2))   ;;    
-
-        let fragile_extend_with sycom extension = match sycom with 
-        Singleton(l) -> Singleton(l@extension)
-        | Breakpoint_with_extensions(Q(pt,old_constraints,extension2)) -> 
-          Breakpoint_with_extensions(Q(pt,old_constraints,extension2@extension))   ;;    
-
-
-
-         let insert_several_constraints extra_constraints sycom =
-            match sycom with 
-             (Singleton l) -> if Constraint.satisfied_by_individual extra_constraints l 
-              then Some(Singleton l)
-              else None 
-             | _ -> Some sycom ;; 
-      
-         let extract_singleton_opt = function 
-           (Singleton l) -> Some l | _ -> None ;;
-
-        exception Extract_qualified_point_exn of sycomore_list ;; 
-
-         let extract_qualified_point sycom = match sycom with 
-           (Breakpoint_with_extensions(qp)) -> qp 
-           | _ -> raise(Extract_qualified_point_exn(sycom)) ;;  
-
-end ;;  
-
 module Forced_data = struct 
 
 (* it is assumed that compatibility has already been checked *)   
@@ -213,26 +181,25 @@ let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) =
      Option.filter_and_unpack (
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
-    
-
+  
 end ;;
 
  
 
 module Bulk_result = struct 
 
-let common_length (BR(sycom,representatives,forced_data)) =
+let common_length (BR(ancestry,representatives,forced_data)) =
     List.length(List.hd representatives);;
 
 
-let extend_with (BR(sycom,representatives,forced_data)) extension =
-    BR(Sycomore_list.extend_with sycom extension,
+let extend_with (BR(ancestry,representatives,forced_data)) extension =
+    BR(ancestry,
       Image.image (i_merge extension) representatives,
       Forced_data.extend_with forced_data extension
     );;
 
-let fragile_extend_with (BR(sycom,representatives,forced_data)) extension =
-  BR(Sycomore_list.fragile_extend_with sycom extension,
+let fragile_extend_with (BR(ancestry,representatives,forced_data)) extension =
+  BR(ancestry,
         Image.image (fun x->x@extension) representatives,
         Forced_data.fragile_extend_with forced_data extension
   );;    
@@ -242,60 +209,40 @@ let extend_with_opt bres_opt extension = match bres_opt with
   |Some bres -> Some (extend_with bres extension) ;;     
 
 let insert_several_constraints extra_constraints 
-  (BR(sycom,representatives,forced_data)) = 
-   match Sycomore_list.insert_several_constraints extra_constraints sycom with 
-   None -> None 
-  | Some new_sycom -> 
-     let new_forced_data = Forced_data.insert_several_constraints extra_constraints forced_data in 
-     if new_forced_data = FD([],[])
-     then None 
-     else   
-     Some(BR(new_sycom,
+  (BR(ancestry,representatives,forced_data)) = 
+   let new_forced_data = Forced_data.insert_several_constraints extra_constraints forced_data in 
+   if new_forced_data = FD([],[])
+   then None 
+    else   
+     Some(BR(ancestry,
       List.filter (Constraint.satisfied_by_individual extra_constraints) representatives,
       Forced_data.insert_several_constraints extra_constraints forced_data
-     )) ;;
-    
-let easy_polish bres = 
-  let (BR(sycom,representatives,forced_data)) = bres in 
-  let (FD(direct,indirect)) = forced_data in 
-  if (indirect = [])&&(List.length(direct)=1)
-  then let new_sycom = Singleton (List.hd direct) in 
-       BR(new_sycom,representatives,forced_data)     
-  else bres ;;      
-
-let easy_polish_opt = function 
-   None -> None 
-   | Some bres -> Some(easy_polish bres) ;;   
+     )) ;;   
 
 let apply_passive_repeat  pt bres =
     let (width,b,_,_) = Point.unveil pt in 
-    easy_polish_opt(insert_several_constraints [C[b;b+width;b+2*width]] bres);;
+    insert_several_constraints [C[b;b+width;b+2*width]] bres;;
   
 let apply_boundary_increment pt bres = 
     let (width,breadth,n,_) = Point.unveil pt in 
     let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
     match insert_several_constraints new_constraints bres with 
      None -> None 
-    |Some new_bres -> Some(easy_polish(extend_with new_bres [n])) ;;
+    |Some new_bres -> Some(extend_with new_bres [n]) ;;
 
     
-let apply_fork pt ll =
+let apply_fork pt ancestry ll =
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
    let new_representatives = (fun (BR(_,r,_))->r) (List.hd(List.rev(temp1))) in 
-   let temp2 = Image.image (fun ebr -> let (BR(sycom,_,_)) = ebr in 
-        (ebr,Sycomore_list.extract_singleton_opt sycom ) ) temp1 in 
-   let (temp3,temp4) = List.partition (fun (_,opt_singleton)->opt_singleton=None) temp2 in 
+   let temp2 = Image.image (fun (BR(_,r,FD(offshoots,qpoints)))->offshoots ) temp1 
+   and temp3 = Image.image (fun (BR(_,r,FD(offshoots,qpoints)))->qpoints ) temp1 in 
    let new_forced_data = FD(
-    il_sort(Image.image (fun (_,opt_singleton)->Option.unpack opt_singleton) temp4),
-    Image.image (fun (ebr,_)->
-      let (BR(sycom,_,_)) = ebr in 
-         Sycomore_list.extract_qualified_point sycom 
-    ) temp3 
+    il_fold_merge temp2,
+    List.flatten temp3 
    ) in 
-   easy_polish(
-   BR(Breakpoint_with_extensions(Q(pt,[],[])),new_representatives,new_forced_data)) ;; 
+   BR(ancestry,new_representatives,new_forced_data) ;; 
 
-let singleton z = BR(Singleton z,[z],FD([z],[]))  ;;
+let singleton ancestry z = BR(ancestry,[z],FD([z],[]))  ;;
 
 end ;;  
 
@@ -407,7 +354,7 @@ let clf7 breadth n =
          )
    | _ -> failwith("impossible remainder") ;;    
 
-
+(*
 let v1 = Bulk_result.singleton [1] ;;
 
 let v2 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2]],
@@ -563,7 +510,8 @@ let u5 = List.filter (
 
 
 *)
-    
+*)  
+
 end ;;   
 
 module Bulgarian_for_nonparametrized_sets = struct 
@@ -669,7 +617,7 @@ let z = concretize (n,scrappers) in
 if ((List.length z)<3)||
     ((width,breadth)=(1,0))||
     (test_for_admissiblity width breadth z) 
-then Some (Bulk_result.singleton z) 
+then Some (Bulk_result.singleton None z) 
 else 
 match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
 Some summary -> Some (Parametrized.eval_fobas summary breadth n)
@@ -686,17 +634,30 @@ let bulgarian_getter ~with_anticipation pt =
 let generic_access ~with_anticipation pt = 
    Option.unpack(bulgarian_getter ~with_anticipation pt) ;;   
 
-
+let descendants_for_hook pt hook = 
+    let (width,breadth,n,scrappers) = Point.unveil pt in  
+    match hook with 
+    Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
+   | Boundary_increment ->
+    let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
+    [P(width,breadth,m,new_scrappers)]
+   | Fork ->     
+       Int_range.scale (fun k->
+          let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
+          P(width,breadth-1,m,scr)
+        ) 0 2 
+   | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 let polish_fork ~with_anticipation pt unpolished_result =
     Some unpolished_result ;; 
 
-let apply_hook_naively ~with_anticipation pt hook ll =  
+let apply_hook_naively ~with_anticipation pt hook args =  
   match hook with 
-  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd ll)
-| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd ll)
-| Fork ->  polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ll)
-| Jump -> Some(List.hd ll);; 
+  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd args)
+| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd args)
+| Fork ->  let ancestry = Some(hook,descendants_for_hook pt hook) in 
+           polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ancestry args)
+| Jump -> Some(List.hd args);; 
 
 exception Apply_hook_exn of (bulk_result list) * hook * point ;;
 
@@ -710,21 +671,6 @@ let apply_hook ~with_anticipation pt hook args =
        then raise (Apply_hook_exn(args,hook,pt)) 
        else Some bres ;;
 
-
-
-let descendants_for_hook pt hook = 
-       let (width,breadth,n,scrappers) = Point.unveil pt in  
-       match hook with 
-       Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
-      | Boundary_increment ->
-       let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-       [P(width,breadth,m,new_scrappers)]
-      | Fork ->     
-          Int_range.scale (fun k->
-             let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-             P(width,breadth-1,m,scr)
-           ) 0 2 
-      | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
 
 let try_hook_quickly ~with_anticipation pt hook = 
@@ -882,10 +828,11 @@ let rec all_representatives p =
     ) qpoints in 
     il_fold_merge (offshoots::temp1) ;;
 
+(*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
 rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
-
+*)
 
 
 (*
