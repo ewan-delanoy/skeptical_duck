@@ -889,25 +889,6 @@ rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
 rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 
-(*
-
-let current_width = 2 
-and current_breadth = 40 
-and current_strappers = [] ;;
-let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-let tf n = 
-  let p = P(current_width,current_breadth,n,current_strappers) in 
-  (hook_and_descendants ~with_anticipation:true p,List.assoc n small_accu);;
-
-let check_g2 = List.filter (
-  fun (n,bres)->bres <> Parametrized_Example.brf1 n
-) g2 ;;
-
-
-*)
-
-
-
 
 
 (*
@@ -927,6 +908,18 @@ and current_strappers = [] ;;
 let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 
 let tg b n = access ~with_anticipation:true (P(current_width,b,n,current_strappers)) ;;
+
+let current_width = 2 
+and current_breadth = 40 
+and current_strappers = [] ;;
+let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
+let tf n = 
+  let p = P(current_width,current_breadth,n,current_strappers) in 
+  (hook_and_descendants ~with_anticipation:true p,List.assoc n small_accu);;
+
+let check_g2 = List.filter (
+  fun (n,bres)->bres <> Parametrized_Example.brf1 n
+) g2 ;;
 
 *)
 
