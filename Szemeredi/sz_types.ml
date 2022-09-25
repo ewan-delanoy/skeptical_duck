@@ -16,10 +16,6 @@ type constraint_t = C of int list ;;
 
 type qualified_point = Q of point * (constraint_t list) * (int list);;
 
-type sycomore_list = 
-   Singleton of int list 
-   | Breakpoint_with_extensions of qualified_point ;;
-
 type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
 
 type closest_ancestry = ( hook * (point list)) option ;;
