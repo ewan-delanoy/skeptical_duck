@@ -22,9 +22,9 @@ type ancestor_category =
     Dead  
    |Alive ;;
 
-type closest_ancestry = ( hook * (point list)) option ;;
+type ancestry_info = ( hook * (point list)) option ;;
 
-type bulk_result = BR of closest_ancestry * ((int list) list) * forced_data ;;  
+type bulk_result = BR of ancestry_info * ((int list) list) * forced_data ;;  
 
 type for_width_one = FW1 of ((int * bulk_result) list) ;;
 
