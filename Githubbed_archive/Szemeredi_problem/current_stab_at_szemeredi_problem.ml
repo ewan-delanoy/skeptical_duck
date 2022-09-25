@@ -278,8 +278,10 @@ let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 let ptf1 n =  let q = (n/3) in  P (1, 3*q-5, 3*q-3, []) ;;
 let ptf2 n =  let q = (n/3) in  P (1, 3*q-2, 3*q, []) ;;
 let qpf1 n (a,b) = Q (ptf1 n, a, b) ;; 
+(*
 let bwef1 n =  Breakpoint_with_extensions (Q (ptf2 n, [], [])) ;;
 let bwef2 n =  let q = (n/3) in  Breakpoint_with_extensions (Q (ptf2 n, [], [3*q+1])) ;;
+*)
 let level2 = Int_range.scale (fun j->C[j;j+2;j+4]) ;; 
 let clf1 q = C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8)) ;;
 let clf2 q = 
@@ -581,8 +583,29 @@ module Bulgarian_for_nonparametrized_sets = struct
   
   end ;;   
   
+let nonbulgarian_descendants_for_hook pt hook = 
+    let (width,breadth,n,scrappers) = Point.unveil pt in  
+    match hook with 
+    Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
+   | Boundary_increment ->
+    let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
+    [P(width,breadth,m,new_scrappers)]
+   | Fork ->     
+       Int_range.scale (fun k->
+          let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
+          P(width,breadth-1,m,scr)
+        ) 0 2 
+   | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
-  
+let bulgarian_descendants_for_hook pt0 hook = 
+  let (pt1,adj1) = Bulgarian.decompose pt0 in 
+  let temp1 = nonbulgarian_descendants_for_hook pt1 hook in 
+  let temp2 = Image.image Bulgarian.decompose temp1 in 
+  Image.image (fun (pt2,adj2)-> (pt2,i_merge adj1 adj2)) temp2 ;; 
+
+let descendants_for_hook = nonbulgarian_descendants_for_hook ;;
+   
+
 module Accumulator_with_optional_anticipator = struct 
 
 let low_hashtbl = Hashtbl.create 50 ;;
@@ -634,19 +657,7 @@ let bulgarian_getter ~with_anticipation pt =
 let generic_access ~with_anticipation pt = 
    Option.unpack(bulgarian_getter ~with_anticipation pt) ;;   
 
-let descendants_for_hook pt hook = 
-    let (width,breadth,n,scrappers) = Point.unveil pt in  
-    match hook with 
-    Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
-   | Boundary_increment ->
-    let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-    [P(width,breadth,m,new_scrappers)]
-   | Fork ->     
-       Int_range.scale (fun k->
-          let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-          P(width,breadth-1,m,scr)
-        ) 0 2 
-   | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
+
 
 let polish_fork ~with_anticipation pt unpolished_result =
     Some unpolished_result ;; 
@@ -851,15 +862,13 @@ and current_breadth = 40
 and current_strappers = [] ;;
 let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 
-let tg b n = access ~with_anticipation:true (P(current_width,b,n,current_strappers)) ;;
+let tg b n = access (P(current_width,b,n,current_strappers)) ;;
 
 let current_width = 2 
 and current_breadth = 40 
 and current_strappers = [] ;;
 let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-let tf n = 
-  let p = P(current_width,current_breadth,n,current_strappers) in 
-  (hook_and_descendants ~with_anticipation:true p,List.assoc n small_accu);;
+let tf n = List.assoc n small_accu;;
 
 let check_g2 = List.filter (
   fun (n,bres)->bres <> Parametrized_Example.brf1 n
