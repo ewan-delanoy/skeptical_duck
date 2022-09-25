@@ -24,7 +24,7 @@ type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
 
 type closest_ancestry = ( hook * (point list)) option ;;
 
-type bulk_result = BR of sycomore_list * ((int list) list) * forced_data ;;  
+type bulk_result = BR of closest_ancestry * ((int list) list) * forced_data ;;  
 
 type for_width_one = FW1 of ((int * bulk_result) list) ;;
 
