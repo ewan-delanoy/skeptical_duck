@@ -18,6 +18,10 @@ type qualified_point = Q of point * (constraint_t list) * (int list);;
 
 type forced_data = FD of ((int list) list) * ( qualified_point list) ;;
 
+type ancestor_category =
+    Dead  
+   |Alive ;;
+
 type closest_ancestry = ( hook * (point list)) option ;;
 
 type bulk_result = BR of closest_ancestry * ((int list) list) * forced_data ;;  
