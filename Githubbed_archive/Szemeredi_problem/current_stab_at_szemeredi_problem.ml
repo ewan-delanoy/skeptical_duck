@@ -137,6 +137,7 @@ module Point = struct
   let size (P(w,b,n,s)) = n ;;
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
+  let concretize (P(w,b,n,s)) = concretize (n,s) ;;
 
 end ;;  
 
@@ -186,335 +187,97 @@ end ;;
 
  
 
-module Bulk_result = struct 
+module Partial_result = struct 
 
-let common_length (BR(ancestry,representatives,forced_data)) =
+let common_length (PR(representatives,forced_data)) =
     List.length(List.hd representatives);;
 
 
-let extend_with (BR(ancestry,representatives,forced_data)) extension =
-    BR(ancestry,
+let extend_with (PR(representatives,forced_data)) extension =
+    PR(
       Image.image (i_merge extension) representatives,
       Forced_data.extend_with forced_data extension
     );;
 
-let fragile_extend_with (BR(ancestry,representatives,forced_data)) extension =
-  BR(ancestry,
+let fragile_extend_with (PR(representatives,forced_data)) extension =
+  PR(
         Image.image (fun x->x@extension) representatives,
         Forced_data.fragile_extend_with forced_data extension
   );;    
 
-let extend_with_opt bres_opt extension = match bres_opt with 
+let extend_with_opt pres_opt extension = match pres_opt with 
   None -> None 
-  |Some bres -> Some (extend_with bres extension) ;;     
+  |Some pres -> Some (extend_with pres extension) ;;     
 
 let insert_several_constraints extra_constraints 
-  (BR(ancestry,representatives,forced_data)) = 
+  (PR(representatives,forced_data)) = 
    let new_forced_data = Forced_data.insert_several_constraints extra_constraints forced_data in 
    if new_forced_data = FD([],[])
    then None 
     else   
-     Some(BR(ancestry,
+     Some(PR(
       List.filter (Constraint.satisfied_by_individual extra_constraints) representatives,
       Forced_data.insert_several_constraints extra_constraints forced_data
      )) ;;   
 
-let apply_passive_repeat  pt bres =
+let apply_passive_repeat  pt pres =
     let (width,b,_,_) = Point.unveil pt in 
-    insert_several_constraints [C[b;b+width;b+2*width]] bres;;
+    insert_several_constraints [C[b;b+width;b+2*width]] pres;;
   
-let apply_boundary_increment pt bres = 
+let apply_boundary_increment pt pres = 
     let (width,breadth,n,_) = Point.unveil pt in 
     let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-    match insert_several_constraints new_constraints bres with 
+    match insert_several_constraints new_constraints pres with 
      None -> None 
-    |Some new_bres -> Some(extend_with new_bres [n]) ;;
+    |Some new_pres -> Some(extend_with new_pres [n]) ;;
 
     
-let apply_fork pt ancestry ll =
+let apply_fork pt ll =
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
-   let new_representatives = (fun (BR(_,r,_))->r) (List.hd(List.rev(temp1))) in 
-   let temp2 = Image.image (fun (BR(_,r,FD(offshoots,qpoints)))->offshoots ) temp1 
-   and temp3 = Image.image (fun (BR(_,r,FD(offshoots,qpoints)))->qpoints ) temp1 in 
+   let new_representatives = (fun (PR(r,_))->r) (List.hd(List.rev(temp1))) in 
+   let temp2 = Image.image (fun (PR(r,FD(offshoots,qpoints)))->offshoots ) temp1 
+   and temp3 = Image.image (fun (PR(r,FD(offshoots,qpoints)))->qpoints ) temp1 in 
    let new_forced_data = FD(
     il_fold_merge temp2,
     List.flatten temp3 
    ) in 
-   BR(ancestry,new_representatives,new_forced_data) ;; 
+   PR(new_representatives,new_forced_data) ;; 
 
-let singleton ancestry z = BR(ancestry,[z],FD([z],[]))  ;;
+
+let apply_hook_naively pt hook args =  
+    match hook with 
+    Passive_repeat -> apply_passive_repeat pt (List.hd args)
+  | Boundary_increment -> apply_boundary_increment pt (List.hd args)
+  | Fork ->   Some(apply_fork pt args)
+  | Jump -> Some(List.hd args);; 
+  
+exception Apply_hook_exn of (partial_result list) * hook * point ;;
+  
+let apply_hook pt hook args = 
+     match apply_hook_naively pt hook args with 
+     None -> None 
+      |Some pres ->
+         let (PR(reps,_)) = pres in 
+         if reps = []
+         then raise (Apply_hook_exn(args,hook,pt)) 
+         else Some pres ;;
+  
+let singleton z = PR([z],FD([z],[]))  ;;
 
 end ;;  
 
+module Ancestry_info = struct 
 
-module Parametrized = struct 
-
-
-    let eval_fw1 (FW1 l) n =
-      let (m,final_case) = List.hd(List.rev l) in 
-      if n < m 
-      then List.assoc n l 
-      else Bulk_result.extend_with final_case (Int_range.range (m+1) n) ;;   
-  
-  let eval_fos fos n =
-     match fos with 
-       Width_one fw1 -> eval_fw1 fw1 n 
-      | Usual_fos f -> f n ;; 
-  
-  let eval_fobas fobas breadth n = 
-    match fobas with 
-     Usual_fobas f -> f breadth n ;;  
-
-   
+let extend_with (AI l) extension =
+   AI(
+     Image.image (fun (category,pt,ext1)->
+        (category,pt,i_merge ext1 extension)
+      ) l
+   ) ;;
+    
 
 end ;;   
 
-
-module Parametrized_Example = struct 
-
-let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
-
-
-let ptf1 n =  let q = (n/3) in  P (1, 3*q-5, 3*q-3, []) ;;
-let ptf2 n =  let q = (n/3) in  P (1, 3*q-2, 3*q, []) ;;
-let qpf1 n (a,b) = Q (ptf1 n, a, b) ;; 
-(*
-let bwef1 n =  Breakpoint_with_extensions (Q (ptf2 n, [], [])) ;;
-let bwef2 n =  let q = (n/3) in  Breakpoint_with_extensions (Q (ptf2 n, [], [3*q+1])) ;;
-*)
-let level2 = Int_range.scale (fun j->C[j;j+2;j+4]) ;; 
-let clf1 q = C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8)) ;;
-let clf2 q = 
-   let rest = (
-    if q<3 then [] else   
-    Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q-9))@[3*q-7])
-   ) in 
-    C[3*q-4] :: rest ;;
-let clf3 n = Int_range.scale (fun j->C[j;j+2;j+4]) 1 n  ;;
-let clf4 q = if q<3 then [] else C[3*q-6;3*q-4] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-9)) @ [C[3*q-7;3*q-5;3*q-3]];;
-
-let clf5 breadth n = 
-  let q = (n/3) in  
-  match (breadth mod 3) with 
-   0 ->  (
-          if n=breadth+6 
-          then clf3(breadth-1)
-          else clf3(breadth)
-         )  
-   |1 -> (
-          if n=breadth+5 
-          then clf1(q)
-          else clf3(breadth)
-         ) 
-     
-   |2 -> (
-          if n=breadth+5 
-          then clf1(q)
-          else clf3(breadth)
-         )
-   | _ -> failwith("impossible remainder") ;;    
-
-let clf6 breadth n = 
-  let q = (n/3) in  
-  match (breadth mod 3) with 
-   0 ->  (
-          if n=breadth+6 
-          then clf4(q)
-          else clf3(breadth) 
-         )  
-   |1 -> (
-          if n=breadth+5 
-          then clf4(q)
-          else clf3(breadth) 
-         ) 
-     
-   |2 -> (
-          if n=breadth+5 
-          then clf4(q)
-          else clf3(breadth) 
-         )
-   | _ -> failwith("impossible remainder") ;;    
-
-let clf7 breadth n = 
-  let q = (n/3) in  
-  match (breadth mod 3) with 
-   0 ->  (
-          if n=breadth+7 
-          then clf4(q)
-          else clf3(breadth)
-         )  
-   |1 -> (
-          if n=breadth+6 
-          then clf4(q)
-          else clf3(breadth)
-         ) 
-     
-   |2 -> (
-          if n=breadth+5 
-          then clf2(q)
-          else clf3(breadth)
-         )
-   | _ -> failwith("impossible remainder") ;;    
-
-(*
-let v1 = Bulk_result.singleton [1] ;;
-
-let v2 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2]],
-FD ([[1; 2]; [1; 3]; [2; 3]], [])) ;;
-
-let v3 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [4])), [[1; 2; 4]],
-FD ([[1; 2; 4]; [1; 3; 4]], [])) ;;
-
-let v4 = BR (Breakpoint_with_extensions (Q (P (1, 4, 6, []), [], [])), [[1; 2; 4; 5]],
-FD ([[1; 2; 4; 5]],
- [Q (P (1, 1, 3, []), [C [1; 3]], [5; 6]);
-  Q (P (1, 1, 3, []), [C [2]], [4; 6])])) ;;
-
-let v5 =  BR (Breakpoint_with_extensions (Q (P (1, 4, 6, []), [], [7])),
-[[1; 2; 4; 5; 7]],
-FD ([[1; 2; 4; 5; 7]], [Q (P (1, 1, 3, []), [C [2]], [4; 6; 7])])) ;; 
-
-let brf1 n =
-    let main = sf1 n in 
-    let q = (n/3) in 
-    let qp1 = qpf1 n in 
-    match List.assoc_opt n [1,v1;3,v2;4,v3] with
-    Some answer -> answer | None ->
-    (match (n mod 3) with 
-     0 ->  
-      let bwe1 = bwef1 n  in 
-      if n=3 then BR (bwe1,[main],FD([[1;2]; [1;3]; [2;3]],[])) 
-             else BR (bwe1,[main],FD ([main],[qp1([],[3*q-1; 3*q]);qp1([],[3*q-2; 3*q])]))
-    |1 ->  
-      let bwe2 = bwef2 n in 
-      if n=1 then BR (Singleton main,[main],FD ([main],[])) else
-      if n=4 then BR (bwe2,[main],FD ([main;[1;3;4]],[]))  else     
-                  BR (bwe2,[main],FD ([main],[qp1([],[3*q-2; 3*q;3*q+1])]))   
-    |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
-    |_ -> failwith("impossible remainder")) ;; 
-
-(*
-
-To test brf1  : 
-
-open Parametrized_Example ;;
-let u1 = needed_subcomputations_for_several_computations 
-  (Int_range.scale(fun n->P(2,0,n,[])) 1 30) ;; 
-let u2 = Int_range.scale (
-  fun n->let p = P(2,0,n,[]) in 
-  (n,access  p,brf1 n)
-) 1 30;;
-let u3 = List.filter (
-  fun (n,sol1,sol2)->sol1<>sol2
-) u2;;
-*)
-
-
-
-let brf2 breadth n = 
-   if breadth = 0 then Bulk_result.singleton (Int_range.range 1 n) else 
-   if n<=(breadth+2) 
-   then brf1 n
-   else Bulk_result.fragile_extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;; 
-
-(*
-
-To test brf2 : 
-
-open Parametrized_Example ;;
-let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
-let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
-let u3 = needed_subcomputations_for_several_computations u2 ;; 
-let u4 = Image.image (
-  fun (breadth,n)->let p = P(1,breadth,n,[]) in 
-  ((breadth,n),access p,brf2 breadth n)
-) u1;;
-let u5 = List.filter (
-  fun (pair,sol1,sol2)->sol1<>sol2
-) u4;;
-*)
-
-
-let brf3 n =
-    let main = sf1 n in 
-    let q = (n/3) in 
-    let qp1 = qpf1 n in 
-    let cl1 = clf1 q
-    and cl2 = clf2 q in 
-    if n<=5 then brf1 n else
-    match List.assoc_opt n [6,v4;7,v5] with Some answer -> answer | None ->
-    (  
-    match (n mod 3) with 
-     0 ->  
-      let bwe1 = bwef1 n  in 
-      BR (bwe1,[main],FD ([main],[qp1(cl1,[3*q-1; 3*q]);qp1(cl2,[3*q-2; 3*q])]))
-    |1 ->  
-      let bwe2 = bwef2 n in 
-          BR (bwe2,[main],FD ([main],[qp1(cl2,[3*q-2; 3*q;3*q+1])]))   
-    |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
-    |_ -> failwith("impossible remainder") 
-  );; 
-
-(*
-
-To test brf3  : 
-
-open Parametrized_Example ;;
-let v1 = needed_subcomputations_for_several_computations 
-  (Int_range.scale(fun n->P(3,0,n,[])) 1 30) ;; 
-let v2 = Int_range.scale (
-  fun n->let p = P(3,0,n,[]) in 
-  (n,access p,brf3 n)
-) 1 30;;
-let v3 = List.filter (
-  fun (n,sol1,sol2)->sol1<>sol2
-) v2;;
-*)
-
-let brf4 breadth n = 
-  let q = (n/3) 
-  and p1 = ptf1 n
-  and main = sf1 n  in 
-  match (n mod 3) with 
-   0 ->  
-    let bwe1 = bwef1 n  in
-    BR (bwe1,[main],FD ([main],
-      [Q(p1,clf5 breadth n,[3*q-1; 3*q]); 
-       Q(p1,clf6 breadth n,[3*q-2; 3*q])])) 
-  |1 -> 
-    let bwe2 = bwef2 n in
-    BR (bwe2,[main],FD ([main],[Q(p1,clf7 breadth n,[3*q-2; 3*q; 3*q+1])])) 
-  |2-> BR (Singleton (main),[main],FD ([main],[]))     
-  | _ -> failwith("impossible remainder") ;;  
-
-
-let brf5 breadth n = 
-   if breadth = 0 then brf1 n  else 
-   if n<=(breadth+4) 
-   then brf3 n
-   else brf4 breadth n ;; 
-
-(*
-
-To test brf5 : 
-
-open Parametrized_Example ;;
-let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
-let u2 = Image.image (fun (breadth,n)->P(2,breadth,n,[])) u1 ;;
-let u3 = needed_subcomputations_for_several_computations u2 ;; 
-let u4 = Image.image (
-  fun (breadth,n)->let p = P(2,breadth,n,[]) in 
-  ((breadth,n),access p,brf5 breadth n)
-) u1;;
-let u5 = List.filter (
-  fun (pair,sol1,sol2)->sol1<>sol2
-) u4;;
-
-
-*)
-*)  
-
-end ;;   
 
 module Bulgarian_for_nonparametrized_sets = struct 
 
@@ -557,9 +320,10 @@ module Bulgarian_for_nonparametrized_sets = struct
   end ;;
   
   let decompose (old_width,old_breadth) domain = 
+    if (old_width,old_breadth)=(1,0) then None else 
     match Private.find_meaningful_obstruction (old_width,old_breadth) domain with 
-      None -> ((old_width,old_breadth),([],domain)) 
-      | Some (width,breadth) -> ((width,breadth),Private.detach (width,breadth) domain);;  
+      None -> None
+      | Some (width,breadth) -> Some((width,breadth),Private.detach (width,breadth) domain);;  
   
   
   end ;;  
@@ -569,10 +333,11 @@ module Bulgarian_for_nonparametrized_sets = struct
     let decompose pt =
         let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
         let domain = concretize (n,scrappers) in 
-         let ((new_width,new_breadth),(new_domain,adjustment)) =
-         Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain in 
+        match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with
+        None -> None
+      | (Some((new_width,new_breadth),(new_domain,adjustment))) -> 
          let (new_n,new_scrappers) = abstractize new_domain in 
-          (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+          Some(P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
       
   (*
      
@@ -583,7 +348,7 @@ module Bulgarian_for_nonparametrized_sets = struct
   
   end ;;   
   
-let nonbulgarian_descendants_for_hook pt hook = 
+  let nonbulgarian_ancestors_for_hook pt hook = 
     let (width,breadth,n,scrappers) = Point.unveil pt in  
     match hook with 
     Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
@@ -597,14 +362,319 @@ let nonbulgarian_descendants_for_hook pt hook =
         ) 0 2 
    | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
 
-let bulgarian_descendants_for_hook pt0 hook = 
-  let (pt1,adj1) = Bulgarian.decompose pt0 in 
-  let temp1 = nonbulgarian_descendants_for_hook pt1 hook in 
-  let temp2 = Image.image Bulgarian.decompose temp1 in 
-  Image.image (fun (pt2,adj2)-> (pt2,i_merge adj1 adj2)) temp2 ;; 
+exception Already_decomposable_point of point ;; 
 
-let descendants_for_hook = nonbulgarian_descendants_for_hook ;;
-   
+let ancestors_for_hook pt0 hook = 
+  match Bulgarian.decompose pt0 with 
+  None -> raise(Already_decomposable_point(pt0))
+  |Some(pt1,adj1) ->
+  let temp1 = nonbulgarian_ancestors_for_hook pt1 hook in 
+  (AI(Image.image (fun pt2-> 
+    match Bulgarian.decompose pt2 with 
+     None -> (Dead,pt2,adj1)
+    |Some(pt3,adj3) -> (Alive,pt3,i_merge adj1 adj3)
+  ) temp1))  ;; 
+
+  module Bulk_result = struct 
+
+    let common_length (BR(_,pres)) = Partial_result.common_length pres ;;
+    let partial (BR(_,pres)) = pres ;;  
+    let make ancestor_info pres = BR(ancestor_info,pres) ;;
+    let singleton ancestry z = BR(ancestry,Partial_result.singleton z)  ;;
+    
+    let extend_with (BR(ancestry_opt,pres)) extension = 
+       let new_ancestry_opt = (
+          match ancestry_opt with 
+            None -> None 
+           |Some(hook,anc_info) -> Some(hook,Ancestry_info.extend_with anc_info extension)
+       ) in 
+      BR(
+        new_ancestry_opt,
+        Partial_result.extend_with pres extension
+      );;
+    
+    
+    let extend_with_opt bres_opt extension = match bres_opt with 
+      None -> None 
+      |Some bres -> Some (extend_with bres extension) ;;     
+    
+    let apply_hook pt hook args = 
+       let partial_args = Image.image partial args in  
+       match Partial_result.apply_hook  pt hook partial_args with 
+        None -> None 
+       |Some new_pres ->
+            let anc_info = Some(hook,ancestors_for_hook pt hook) in  
+            Some(BR(anc_info,new_pres));;
+      
+    
+    end ;;  
+    
+    
+    module Parametrized = struct 
+      
+    
+      let eval_fos fos n =
+         match fos with 
+            Usual_fos f -> f n ;; 
+      
+      let eval_fobas fobas breadth n = 
+        match fobas with 
+         Usual_fobas f -> f breadth n ;;  
+    
+       
+    
+    end ;;   
+    
+    
+    module Parametrized_Example = struct 
+    
+    let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
+    
+    
+    let ptf1 n =  let q = (n/3) in  P (1, 3*q-5, 3*q-3, []) ;;
+    let ptf2 n =  let q = (n/3) in  P (1, 3*q-2, 3*q, []) ;;
+    let qpf1 n (a,b) = Q (ptf1 n, a, b) ;; 
+    (*
+    let bwef1 n =  Breakpoint_with_extensions (Q (ptf2 n, [], [])) ;;
+    let bwef2 n =  let q = (n/3) in  Breakpoint_with_extensions (Q (ptf2 n, [], [3*q+1])) ;;
+    *)
+    let level2 = Int_range.scale (fun j->C[j;j+2;j+4]) ;; 
+    let clf1 q = C[3*q-5;3*q-3] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-8)) ;;
+    let clf2 q = 
+       let rest = (
+        if q<3 then [] else   
+        Image.image (fun j->C[j;j+2;j+4]) ((Int_range.range 1 (3*q-9))@[3*q-7])
+       ) in 
+        C[3*q-4] :: rest ;;
+    let clf3 n = Int_range.scale (fun j->C[j;j+2;j+4]) 1 n  ;;
+    let clf4 q = if q<3 then [] else C[3*q-6;3*q-4] :: (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (3*q-9)) @ [C[3*q-7;3*q-5;3*q-3]];;
+    
+    let clf5 breadth n = 
+      let q = (n/3) in  
+      match (breadth mod 3) with 
+       0 ->  (
+              if n=breadth+6 
+              then clf3(breadth-1)
+              else clf3(breadth)
+             )  
+       |1 -> (
+              if n=breadth+5 
+              then clf1(q)
+              else clf3(breadth)
+             ) 
+         
+       |2 -> (
+              if n=breadth+5 
+              then clf1(q)
+              else clf3(breadth)
+             )
+       | _ -> failwith("impossible remainder") ;;    
+    
+    let clf6 breadth n = 
+      let q = (n/3) in  
+      match (breadth mod 3) with 
+       0 ->  (
+              if n=breadth+6 
+              then clf4(q)
+              else clf3(breadth) 
+             )  
+       |1 -> (
+              if n=breadth+5 
+              then clf4(q)
+              else clf3(breadth) 
+             ) 
+         
+       |2 -> (
+              if n=breadth+5 
+              then clf4(q)
+              else clf3(breadth) 
+             )
+       | _ -> failwith("impossible remainder") ;;    
+    
+    let clf7 breadth n = 
+      let q = (n/3) in  
+      match (breadth mod 3) with 
+       0 ->  (
+              if n=breadth+7 
+              then clf4(q)
+              else clf3(breadth)
+             )  
+       |1 -> (
+              if n=breadth+6 
+              then clf4(q)
+              else clf3(breadth)
+             ) 
+         
+       |2 -> (
+              if n=breadth+5 
+              then clf2(q)
+              else clf3(breadth)
+             )
+       | _ -> failwith("impossible remainder") ;;    
+    
+    (*
+    let v1 = Bulk_result.singleton [1] ;;
+    
+    let v2 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [])), [[1; 2]],
+    FD ([[1; 2]; [1; 3]; [2; 3]], [])) ;;
+    
+    let v3 = BR (Breakpoint_with_extensions (Q (P (1, 1, 3, []), [], [4])), [[1; 2; 4]],
+    FD ([[1; 2; 4]; [1; 3; 4]], [])) ;;
+    
+    let v4 = BR (Breakpoint_with_extensions (Q (P (1, 4, 6, []), [], [])), [[1; 2; 4; 5]],
+    FD ([[1; 2; 4; 5]],
+     [Q (P (1, 1, 3, []), [C [1; 3]], [5; 6]);
+      Q (P (1, 1, 3, []), [C [2]], [4; 6])])) ;;
+    
+    let v5 =  BR (Breakpoint_with_extensions (Q (P (1, 4, 6, []), [], [7])),
+    [[1; 2; 4; 5; 7]],
+    FD ([[1; 2; 4; 5; 7]], [Q (P (1, 1, 3, []), [C [2]], [4; 6; 7])])) ;; 
+    
+    let brf1 n =
+        let main = sf1 n in 
+        let q = (n/3) in 
+        let qp1 = qpf1 n in 
+        match List.assoc_opt n [1,v1;3,v2;4,v3] with
+        Some answer -> answer | None ->
+        (match (n mod 3) with 
+         0 ->  
+          let bwe1 = bwef1 n  in 
+          if n=3 then BR (bwe1,[main],FD([[1;2]; [1;3]; [2;3]],[])) 
+                 else BR (bwe1,[main],FD ([main],[qp1([],[3*q-1; 3*q]);qp1([],[3*q-2; 3*q])]))
+        |1 ->  
+          let bwe2 = bwef2 n in 
+          if n=1 then BR (Singleton main,[main],FD ([main],[])) else
+          if n=4 then BR (bwe2,[main],FD ([main;[1;3;4]],[]))  else     
+                      BR (bwe2,[main],FD ([main],[qp1([],[3*q-2; 3*q;3*q+1])]))   
+        |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
+        |_ -> failwith("impossible remainder")) ;; 
+    
+    (*
+    
+    To test brf1  : 
+    
+    open Parametrized_Example ;;
+    let u1 = needed_subcomputations_for_several_computations 
+      (Int_range.scale(fun n->P(2,0,n,[])) 1 30) ;; 
+    let u2 = Int_range.scale (
+      fun n->let p = P(2,0,n,[]) in 
+      (n,access  p,brf1 n)
+    ) 1 30;;
+    let u3 = List.filter (
+      fun (n,sol1,sol2)->sol1<>sol2
+    ) u2;;
+    *)
+    
+    
+    
+    let brf2 breadth n = 
+       if breadth = 0 then Bulk_result.singleton (Int_range.range 1 n) else 
+       if n<=(breadth+2) 
+       then brf1 n
+       else Bulk_result.fragile_extend_with (brf1 (breadth+2)) (Int_range.range (breadth+3) n) ;; 
+    
+    (*
+    
+    To test brf2 : 
+    
+    open Parametrized_Example ;;
+    let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
+    let u2 = Image.image (fun (breadth,n)->P(1,breadth,n,[])) u1 ;;
+    let u3 = needed_subcomputations_for_several_computations u2 ;; 
+    let u4 = Image.image (
+      fun (breadth,n)->let p = P(1,breadth,n,[]) in 
+      ((breadth,n),access p,brf2 breadth n)
+    ) u1;;
+    let u5 = List.filter (
+      fun (pair,sol1,sol2)->sol1<>sol2
+    ) u4;;
+    *)
+    
+    
+    let brf3 n =
+        let main = sf1 n in 
+        let q = (n/3) in 
+        let qp1 = qpf1 n in 
+        let cl1 = clf1 q
+        and cl2 = clf2 q in 
+        if n<=5 then brf1 n else
+        match List.assoc_opt n [6,v4;7,v5] with Some answer -> answer | None ->
+        (  
+        match (n mod 3) with 
+         0 ->  
+          let bwe1 = bwef1 n  in 
+          BR (bwe1,[main],FD ([main],[qp1(cl1,[3*q-1; 3*q]);qp1(cl2,[3*q-2; 3*q])]))
+        |1 ->  
+          let bwe2 = bwef2 n in 
+              BR (bwe2,[main],FD ([main],[qp1(cl2,[3*q-2; 3*q;3*q+1])]))   
+        |2 ->  BR (Singleton(main),[main],FD ([main],[]))   
+        |_ -> failwith("impossible remainder") 
+      );; 
+    
+    (*
+    
+    To test brf3  : 
+    
+    open Parametrized_Example ;;
+    let v1 = needed_subcomputations_for_several_computations 
+      (Int_range.scale(fun n->P(3,0,n,[])) 1 30) ;; 
+    let v2 = Int_range.scale (
+      fun n->let p = P(3,0,n,[]) in 
+      (n,access p,brf3 n)
+    ) 1 30;;
+    let v3 = List.filter (
+      fun (n,sol1,sol2)->sol1<>sol2
+    ) v2;;
+    *)
+    
+    let brf4 breadth n = 
+      let q = (n/3) 
+      and p1 = ptf1 n
+      and main = sf1 n  in 
+      match (n mod 3) with 
+       0 ->  
+        let bwe1 = bwef1 n  in
+        BR (bwe1,[main],FD ([main],
+          [Q(p1,clf5 breadth n,[3*q-1; 3*q]); 
+           Q(p1,clf6 breadth n,[3*q-2; 3*q])])) 
+      |1 -> 
+        let bwe2 = bwef2 n in
+        BR (bwe2,[main],FD ([main],[Q(p1,clf7 breadth n,[3*q-2; 3*q; 3*q+1])])) 
+      |2-> BR (Singleton (main),[main],FD ([main],[]))     
+      | _ -> failwith("impossible remainder") ;;  
+    
+    
+    let brf5 breadth n = 
+       if breadth = 0 then brf1 n  else 
+       if n<=(breadth+4) 
+       then brf3 n
+       else brf4 breadth n ;; 
+    
+    (*
+    
+    To test brf5 : 
+    
+    open Parametrized_Example ;;
+    let u1 = Cartesian.product (Int_range.range 0 15)(Int_range.range 1 30) ;;
+    let u2 = Image.image (fun (breadth,n)->P(2,breadth,n,[])) u1 ;;
+    let u3 = needed_subcomputations_for_several_computations u2 ;; 
+    let u4 = Image.image (
+      fun (breadth,n)->let p = P(2,breadth,n,[]) in 
+      ((breadth,n),access p,brf5 breadth n)
+    ) u1;;
+    let u5 = List.filter (
+      fun (pair,sol1,sol2)->sol1<>sol2
+    ) u4;;
+    
+    
+    *)
+    *)  
+    
+end ;;   
+      
+
+
+
 
 module Accumulator_with_optional_anticipator = struct 
 
@@ -634,69 +704,42 @@ end ;;
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
-let nonbulgarian_getter  ~with_anticipation pt = 
-let (width,breadth,n,scrappers) = Point.unveil pt in 
-let z = concretize (n,scrappers) in 
-if ((List.length z)<3)||
-    ((width,breadth)=(1,0))||
-    (test_for_admissiblity width breadth z) 
-then Some (Bulk_result.singleton None z) 
-else 
+let generic_access_opt  ~with_anticipation pt = 
+ match Bulgarian.decompose pt with 
+ None -> Some (Bulk_result.singleton None (Point.concretize pt))
+ | Some(pt2,adj) ->
+let (width,breadth,n,scrappers) = Point.unveil pt2 in 
+let pre_res=(
 match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
 Some summary -> Some (Parametrized.eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) ;;   
+ | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) 
+) in 
+Bulk_result.extend_with_opt pre_res adj ;;
+;;   
 
-let bulgarian_getter ~with_anticipation pt = 
-  let (pt2,adj)= Bulgarian.decompose pt  in 
-  Bulk_result.extend_with_opt ( nonbulgarian_getter  ~with_anticipation pt2) adj ;;
-
-   
 let generic_access ~with_anticipation pt = 
-   Option.unpack(bulgarian_getter ~with_anticipation pt) ;;   
+   Option.unpack(generic_access_opt ~with_anticipation pt) ;;   
 
-
-
-let polish_fork ~with_anticipation pt unpolished_result =
-    Some unpolished_result ;; 
-
-let apply_hook_naively ~with_anticipation pt hook args =  
-  match hook with 
-  Passive_repeat -> Bulk_result.apply_passive_repeat pt (List.hd args)
-| Boundary_increment -> Bulk_result.apply_boundary_increment pt (List.hd args)
-| Fork ->  let ancestry = Some(hook,descendants_for_hook pt hook) in 
-           polish_fork ~with_anticipation pt (Bulk_result.apply_fork pt ancestry args)
-| Jump -> Some(List.hd args);; 
-
-exception Apply_hook_exn of (bulk_result list) * hook * point ;;
-
-
-let apply_hook ~with_anticipation pt hook args = 
-   match apply_hook_naively ~with_anticipation pt hook args with 
-   None -> None 
-    |Some bres ->
-       let (BR(_,reps,_)) = bres in 
-       if reps = []
-       then raise (Apply_hook_exn(args,hook,pt)) 
-       else Some bres ;;
-
-
-
+(* The following function should only be used 
+  on a point whose decomposability has already been checked ;
+  otherwise the call to ancestors_for_hook will raise an exception   
+*)
 let try_hook_quickly ~with_anticipation pt hook = 
-   let nonbulgarian_descendants = descendants_for_hook pt hook in  
-   let descendants = Image.image Bulgarian.decompose nonbulgarian_descendants in 
-   let descendants_with_their_images = Image.image (
-      fun (pt2,adj)  -> (pt2,Bulk_result.extend_with_opt (nonbulgarian_getter ~with_anticipation pt2) adj)
-    ) descendants in  
+   let (AI ancestors) = ancestors_for_hook pt hook in  
+   let ancestors_with_their_images = Image.image (
+      fun (category,pt2,adj)  -> 
+        (pt2,Bulk_result.extend_with_opt (generic_access_opt ~with_anticipation pt2) adj)
+    ) ancestors in  
   let (failures,successes) = List.partition (
           fun (_,opt) -> opt = None
-  ) descendants_with_their_images in 
+  ) ancestors_with_their_images in 
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],apply_hook ~with_anticipation pt hook args) ;;  
+  ([],Bulk_result.apply_hook pt hook args) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
@@ -722,6 +765,9 @@ let rose_add (width,breadth) summary =
  
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
+    match generic_access_opt ~with_anticipation pt with 
+    Some old_answer -> ([],None) 
+  | None ->
    let (width,breadth,n,scrappers) = Point.unveil pt in     
    if breadth=0 
    then let (missing_data0,result_opt0) = 
@@ -742,22 +788,7 @@ let find_remote_stumbling_block_or_immediate_working_hook
     try_hook_quickly ~with_anticipation pt Fork in 
    if result_opt3<>None then ([], Some Fork) else  
     (missing_data3,None) ;;
-    
-let hook_and_descendants ~with_anticipation pt =  
-    let (_,result_opt) = find_remote_stumbling_block_or_immediate_working_hook 
-    ~with_anticipation pt in 
-    let hook = Option.unpack result_opt in 
-    let nonbulgarian_descendants = descendants_for_hook pt hook in  
-    (hook,Image.image Bulgarian.decompose nonbulgarian_descendants) ;; 
-    
-
-
-let find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
-~with_anticipation pt =      
-   match bulgarian_getter ~with_anticipation pt with 
-    Some old_answer -> ([],None) 
-    | None ->
-      find_remote_stumbling_block_or_immediate_working_hook ~with_anticipation pt ;;
+ 
     
   
 exception Pusher_exn ;;
@@ -766,9 +797,11 @@ let rec pusher_for_recursive_computation to_be_treated=
     match to_be_treated with 
     [] -> raise(Pusher_exn)
     | pt :: others -> 
-       let (pt2,adj) = Bulgarian.decompose pt in 
+       (match Bulgarian.decompose pt with 
+        None -> others
+        |Some(pt2,adj) ->
        let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
+      find_remote_stumbling_block_or_immediate_working_hook 
       ~with_anticipation:true pt2 in 
       match opt_res with 
        Some hook ->
@@ -780,7 +813,7 @@ let rec pusher_for_recursive_computation to_be_treated=
          if missing_data = [] 
          then others 
          else missing_data @ (pt::others) 
-      ;;      
+       );;      
          
 let rec born_to_fail_for_recursive_computation walker=
   born_to_fail_for_recursive_computation
@@ -812,7 +845,7 @@ let exhaust_new_line (width,breadth,scrappers) =
         fun p->fst(p)<>pt
       ) carrier in 
       let _ = ( Accumulator_with_optional_anticipator.low_anticipator :=mutilated_carrier) in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_hook_after_a_direct_try 
+      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_hook 
           ~with_anticipation:true pt in 
       (Point.size pt,hook_opt)
     ) temp1 in 
@@ -822,14 +855,13 @@ let exhaust_new_line (width,breadth,scrappers) =
     let temp4 = Int_range.scale (fun n-> 
        let pt2 = P(width,breadth,n,scrappers) in 
        let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
-      (n, bulgarian_getter ~with_anticipation:true pt2 ))  1 50  in 
+      (n, generic_access_opt ~with_anticipation:true pt2 ))  1 50  in 
     let temp5 = selector temp4 in 
     (temp3,temp5) ;;   
 
 let access = generic_access ~with_anticipation:true ;;     
-let see p = (hook_and_descendants ~with_anticipation:true p,access p);;
 let rec all_representatives p =
-    let (BR(sycom,reps,forced_data)) = access p in 
+    let (BR(anc_info,PR(reps,forced_data))) = access p in 
     let (FD(offshoots,qpoints)) = forced_data in 
     let temp1 = Image.image (
          fun (Q(pt,constraints,extension)) -> 
