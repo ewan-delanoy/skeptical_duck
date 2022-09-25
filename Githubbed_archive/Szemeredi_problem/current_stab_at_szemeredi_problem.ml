@@ -232,7 +232,7 @@ let apply_boundary_increment pt pres =
     |Some new_pres -> Some(extend_with new_pres [n]) ;;
 
     
-let apply_fork pt ll =
+let apply_fork pt ll ancs_with_images=
    let (_,temp1) = Max.maximize_it_with_care common_length  ll in  
    let new_representatives = (fun (PR(r,_))->r) (List.hd(List.rev(temp1))) in 
    let temp2 = Image.image (fun (PR(r,FD(offshoots,qpoints)))->offshoots ) temp1 
@@ -244,17 +244,17 @@ let apply_fork pt ll =
    PR(new_representatives,new_forced_data) ;; 
 
 
-let apply_hook_naively pt hook args =  
+let apply_hook_naively pt hook args ancs_with_images=  
     match hook with 
     Passive_repeat -> apply_passive_repeat pt (List.hd args)
   | Boundary_increment -> apply_boundary_increment pt (List.hd args)
-  | Fork ->   Some(apply_fork pt args)
+  | Fork ->   Some(apply_fork pt args  ancs_with_images)
   | Jump -> Some(List.hd args);; 
   
 exception Apply_hook_exn of (partial_result list) * hook * point ;;
   
-let apply_hook pt hook args = 
-     match apply_hook_naively pt hook args with 
+let apply_hook pt hook args  ancs_with_images = 
+     match apply_hook_naively pt hook args  ancs_with_images with 
      None -> None 
       |Some pres ->
          let (PR(reps,_)) = pres in 
@@ -398,9 +398,9 @@ let ancestors_for_hook pt0 hook =
       None -> None 
       |Some bres -> Some (extend_with bres extension) ;;     
     
-    let apply_hook pt hook args = 
+    let apply_hook pt hook args  ancs_with_images= 
        let partial_args = Image.image partial args in  
-       match Partial_result.apply_hook  pt hook partial_args with 
+       match Partial_result.apply_hook  pt hook partial_args  ancs_with_images with 
         None -> None 
        |Some new_pres ->
             let anc_info = Some(hook,ancestors_for_hook pt hook) in  
@@ -731,15 +731,16 @@ let try_hook_quickly ~with_anticipation pt hook =
    let (AI ancestors) = ancestors_for_hook pt hook in  
    let ancestors_with_their_images = Image.image (
       fun (category,pt2,adj)  -> 
-        (pt2,Bulk_result.extend_with_opt (generic_access_opt ~with_anticipation pt2) adj)
+        (pt2,
+        (adj,Bulk_result.extend_with_opt (generic_access_opt ~with_anticipation pt2) adj))
     ) ancestors in  
   let (failures,successes) = List.partition (
-          fun (_,opt) -> opt = None
+          fun (_,(_,opt)) -> opt = None
   ) ancestors_with_their_images in 
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
-  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Bulk_result.apply_hook pt hook args) ;;  
+  let args = Image.image (fun (_,(_,opt))->Option.unpack opt) successes in 
+  ([],Bulk_result.apply_hook pt hook args ancestors_with_their_images) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
@@ -889,18 +890,13 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 open Parametrized_Example ;; 
 
-let current_width = 2 
+let current_width = 1 
 and current_breadth = 40 
 and current_strappers = [] ;;
 let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
 
 let tg b n = access (P(current_width,b,n,current_strappers)) ;;
-
-let current_width = 2 
-and current_breadth = 40 
-and current_strappers = [] ;;
-let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-let tf n = List.assoc n small_accu;;
+let tt n = tg (n-2) n;;
 
 let check_g2 = List.filter (
   fun (n,bres)->bres <> Parametrized_Example.brf1 n
