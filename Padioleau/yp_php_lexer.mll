@@ -278,7 +278,7 @@ let rec current_mode () =
     reset();
     current_mode () ;;
 let push_mode mode = (_mode_stack := mode :: (!_mode_stack ));;
-let pop_mode () = (_mode_stack := List.tl (!mode_stack)) ;;
+let pop_mode () = (_mode_stack := List.tl (!_mode_stack)) ;;
 
 (* What is the semantic of BEGIN() in flex ? start from scratch with empty
  * stack ?
@@ -1139,13 +1139,26 @@ and st_one_line_comment = parse
       }
 {
 
+   let next =
+     match current_mode () with 
+    INITIAL -> initial 
+  | ST_IN_SCRIPTING -> st_in_scripting
+  | ST_IN_SCRIPTING2 -> st_in_scripting2
+  | ST_DOUBLE_QUOTES -> st_double_quotes
+  | ST_BACKQUOTE -> st_backquote
+  | ST_LOOKING_FOR_PROPERTY -> st_looking_for_property
+  | ST_LOOKING_FOR_VARNAME -> st_looking_for_varname
+  | ST_VAR_OFFSET -> st_var_offset 
+  | ST_START_HEREDOC (s) -> st_start_heredoc s 
+  | ST_START_NOWDOC (s) -> st_start_nowdoc s ;;
+
    let read_string text = 
     let lex_stream = Lexing.from_string text
     and should_continue = ref true 
     and accu = ref [] in 
     let _ =(while (!should_continue) do 
     (
-      let next_token = initial lex_stream in 
+      let next_token = next lex_stream in 
       match next_token with 
       (Yp_php_token_t.EOF(_)) -> should_continue := false    
       | _ -> accu := next_token :: (!accu)) 
