@@ -266,8 +266,8 @@ module Ancestry_info = struct
 
 let extend_with (AI l) extension =
    AI(
-     Image.image (fun (category,pt,ext1)->
-        (category,pt,i_merge ext1 extension)
+     Image.image (fun (pt,ext1)->
+        (pt,i_merge ext1 extension)
       ) l
    ) ;;
     
@@ -367,8 +367,8 @@ let ancestors_for_hook pt0 hook =
   let temp1 = nonbulgarian_ancestors_for_hook pt1 hook in 
   (AI(Image.image (fun pt2-> 
     match Bulgarian.decompose pt2 with 
-     None -> (Dead,pt2,adj1)
-    |Some(pt3,adj3) -> (Alive,pt3,i_merge adj1 adj3)
+     None -> (pt2,adj1)
+    |Some(pt3,adj3) -> (pt3,i_merge adj1 adj3)
   ) temp1))  ;; 
 
   module Bulk_result = struct 
@@ -726,7 +726,7 @@ let generic_access ~with_anticipation pt =
 let try_hook_quickly ~with_anticipation pt hook = 
    let (AI ancestors) = ancestors_for_hook pt hook in  
    let ancestors_with_their_images = Image.image (
-      fun (category,pt2,adj)  -> 
+      fun (pt2,adj)  -> 
         let bres1_opt = generic_access_opt ~with_anticipation pt2 in 
         (pt2,
         (bres1_opt,adj,Bulk_result.extend_with_opt bres1_opt adj))
