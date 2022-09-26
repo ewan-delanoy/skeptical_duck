@@ -739,6 +739,9 @@ let inspect_qualified_point ~with_anticipation qp =
       then false   
       else raise(Undecided(qp)) ;; 
 
+let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
+    FD(offshoots,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
+
 (* The following function should only be used 
   on a point whose decomposability has already been checked ;
   otherwise the call to ancestors_for_hook will raise an exception   
