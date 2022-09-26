@@ -719,10 +719,31 @@ Bulk_result.extend_with_opt pre_res adj ;;
 let generic_access ~with_anticipation pt = 
    Option.unpack(generic_access_opt ~with_anticipation pt) ;;   
 
+exception Bad_access_during_inspection of qualified_point ;;
+exception Undecided of qualified_point ;;
+
+let inspect_qualified_point ~with_anticipation qp =
+   let (Q(pt,constraints,_)) = qp in 
+   match generic_access_opt ~with_anticipation pt with 
+    None -> raise(Bad_access_during_inspection(qp))
+    | Some (BR(_,PR(reps,FD(offshoots,qpoints)))) ->
+      let test = Constraint.satisfied_by_individual constraints in 
+      if List.exists test reps 
+      then true 
+      else   
+       let temp1 = List.filter test offshoots 
+       and temp2 = List.filter (
+        fun qp2 -> (Qualified_point.insert_several_constraints constraints qp2)<>None
+       ) qpoints in 
+      if (temp1,temp2) = ([],[])
+      then false   
+      else raise(Undecided(qp)) ;; 
+
 (* The following function should only be used 
   on a point whose decomposability has already been checked ;
   otherwise the call to ancestors_for_hook will raise an exception   
 *)
+
 let try_hook_quickly ~with_anticipation pt hook = 
    let (AI ancestors) = ancestors_for_hook pt hook in  
    let ancestors_with_their_images = Image.image (
