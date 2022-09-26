@@ -742,6 +742,10 @@ let inspect_qualified_point ~with_anticipation qp =
 let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
     FD(offshoots,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
 
+let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
+  PR(reps,clean_forced_data ~with_anticipation forced_data) ;;
+
+
 (* The following function should only be used 
   on a point whose decomposability has already been checked ;
   otherwise the call to ancestors_for_hook will raise an exception   
