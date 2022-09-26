@@ -22,11 +22,7 @@ type solution = int list ;;
 
 type forced_data = FD of (solution list) * ( qualified_point list) ;;
 
-type ancestor_category =
-Dead  
-|Alive ;;
-
-type ancestry_info = AI of (ancestor_category * point * extension_data) list ;;
+type ancestry_info = AI of (point * extension_data) list ;;
 
 type partial_result = PR of (solution list) * forced_data  ;;
 
