@@ -272,14 +272,13 @@ let reset () =
   () ;;
 
 let rec current_mode () =
-  try
-    Yp_common.top !_mode_stack
+  try List.hd !_mode_stack
   with Failure(_) ->
     error("mode_stack is empty, defaulting to INITIAL");
     reset();
     current_mode () ;;
-let push_mode mode = Yp_common.push mode _mode_stack ;;
-let pop_mode () = ignore(Yp_common.pop2 _mode_stack) ;;
+let push_mode mode = (_mode_stack := mode :: (!_mode_stack ));;
+let pop_mode () = (_mode_stack := List.tl (!mode_stack))) ;;
 
 (* What is the semantic of BEGIN() in flex ? start from scratch with empty
  * stack ?
