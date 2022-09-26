@@ -1142,8 +1142,8 @@ and st_one_line_comment = parse
    let next =
      match current_mode () with 
     INITIAL -> initial 
-  | ST_IN_SCRIPTING -> st_in_scripting
-  | ST_IN_SCRIPTING2 -> st_in_scripting2
+  | ST_IN_SCRIPTING 
+  | ST_IN_SCRIPTING2 -> st_in_scripting
   | ST_DOUBLE_QUOTES -> st_double_quotes
   | ST_BACKQUOTE -> st_backquote
   | ST_LOOKING_FOR_PROPERTY -> st_looking_for_property
