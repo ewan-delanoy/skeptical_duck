@@ -745,6 +745,8 @@ let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
 let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
   PR(reps,clean_forced_data ~with_anticipation forced_data) ;;
 
+let clean_bulk_result ~with_anticipation (BR(anc_info,pres)) =
+    BR(anc_info,clean_partial_result ~with_anticipation pres) ;;
 
 (* The following function should only be used 
   on a point whose decomposability has already been checked ;
