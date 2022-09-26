@@ -278,7 +278,7 @@ let rec current_mode () =
     reset();
     current_mode () ;;
 let push_mode mode = (_mode_stack := mode :: (!_mode_stack ));;
-let pop_mode () = (_mode_stack := List.tl (!mode_stack))) ;;
+let pop_mode () = (_mode_stack := List.tl (!mode_stack)) ;;
 
 (* What is the semantic of BEGIN() in flex ? start from scratch with empty
  * stack ?
