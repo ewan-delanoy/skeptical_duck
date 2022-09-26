@@ -772,7 +772,8 @@ let try_hook_quickly ~with_anticipation pt hook =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
-  ([],Bulk_result.apply_hook pt hook args) ;;  
+  let bres_opt = Bulk_result.apply_hook pt hook args in 
+  ([],clean_bulk_result_opt ~with_anticipation bres_opt) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
