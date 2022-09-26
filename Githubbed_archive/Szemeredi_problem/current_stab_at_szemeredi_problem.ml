@@ -748,6 +748,11 @@ let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
 let clean_bulk_result ~with_anticipation (BR(anc_info,pres)) =
     BR(anc_info,clean_partial_result ~with_anticipation pres) ;;
 
+let clean_bulk_result_opt ~with_anticipation  = function 
+   None -> None 
+   |Some bres -> Some ( clean_bulk_result ~with_anticipation bres) ;;
+      
+
 (* The following function should only be used 
   on a point whose decomposability has already been checked ;
   otherwise the call to ancestors_for_hook will raise an exception   
