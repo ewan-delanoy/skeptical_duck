@@ -1139,18 +1139,18 @@ and st_one_line_comment = parse
       }
 {
 
-   let next =
+   let next lexbuf =
      match current_mode () with 
-    INITIAL -> initial 
+    INITIAL -> initial lexbuf
   | ST_IN_SCRIPTING 
-  | ST_IN_SCRIPTING2 -> st_in_scripting
-  | ST_DOUBLE_QUOTES -> st_double_quotes
-  | ST_BACKQUOTE -> st_backquote
-  | ST_LOOKING_FOR_PROPERTY -> st_looking_for_property
-  | ST_LOOKING_FOR_VARNAME -> st_looking_for_varname
-  | ST_VAR_OFFSET -> st_var_offset 
-  | ST_START_HEREDOC (s) -> st_start_heredoc s 
-  | ST_START_NOWDOC (s) -> st_start_nowdoc s ;;
+  | ST_IN_SCRIPTING2 -> st_in_scripting lexbuf
+  | ST_DOUBLE_QUOTES -> st_double_quotes lexbuf
+  | ST_BACKQUOTE -> st_backquote lexbuf
+  | ST_LOOKING_FOR_PROPERTY -> st_looking_for_property lexbuf
+  | ST_LOOKING_FOR_VARNAME -> st_looking_for_varname lexbuf
+  | ST_VAR_OFFSET -> st_var_offset lexbuf
+  | ST_START_HEREDOC (s) -> st_start_heredoc s lexbuf
+  | ST_START_NOWDOC (s) -> st_start_nowdoc s lexbuf ;;
 
    let read_string text = 
     let lex_stream = Lexing.from_string text
