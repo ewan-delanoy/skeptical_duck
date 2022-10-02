@@ -676,23 +676,22 @@ let rec born_to_fail_for_recursive_computation walker=
   (pusher_for_recursive_computation walker)  ;;     
 
 let  needed_subcomputations_for_several_computations uples = 
-  let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=[]) in  
   try born_to_fail_for_recursive_computation uples with 
   Pusher_exn -> !(  Accumulator_with_optional_anticipator.low_anticipator) ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
 
+let access = generic_access ~with_anticipation:true ;;  
 
-let compute_recursively width breadth (n,scrappers) = 
-  let uple = P(width,breadth,n,scrappers) in 
-  let needed_carrier = needed_subcomputations_for_single_computation uple in 
-  let answer = List.assoc_opt uple needed_carrier in 
+let compute_all_recursively pt = 
+  let needed_carrier = needed_subcomputations_for_single_computation pt in 
+  let answer = access pt in 
   (answer,needed_carrier) 
 ;;  
 
+let force_compute pt = fst(compute_all_recursively pt) ;;
 
-let access = generic_access ~with_anticipation:true ;;     
 let rec all_representatives p =
     let (BR(anc_info,PR(reps,forced_data))) = access p in 
     let (FD(offshoots,qpoints)) = forced_data in 
@@ -721,7 +720,7 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 
 open Parametrized_Example ;; 
-
+(  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 1 
 and current_breadth = 40 
 and current_strappers = [] ;;
