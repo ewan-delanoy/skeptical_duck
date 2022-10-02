@@ -445,6 +445,16 @@ let aif1 n =
   |1|2 ->Some(Passive_repeat,AI[(pf1(n-1), [n])])
   |_ ->failwith("impossible remainder by 3"));;
     
+(*
+   
+let check_aif1 = 
+   let temp1 = Int_range.scale (fun n->
+    let (BR(opt,_)) = force_compute (P(1,n-2,n,[])) in 
+    (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
+   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+
+*)
+
     
 end ;;   
       
@@ -710,7 +720,7 @@ rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 *)
 
 
-(*
+
 
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
@@ -722,11 +732,8 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 open Parametrized_Example ;; 
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 1 
-and current_breadth = 40 
 and current_strappers = [] ;;
-let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_strappers) ;;
-
-let tg b n = access (P(current_width,b,n,current_strappers)) ;;
+let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-2) n;;
 let parf1 n =
     let (BR(opt,_)) = tt n in 
@@ -735,7 +742,9 @@ let parf2 n = Option.unpack(parf1 n);;
 
 
 let check_aif1 = 
-   let temp1 = Int_range.scale (fun n->(n,parf1 n,aif1 n)) 1 30 in 
+   let temp1 = Int_range.scale (fun n->
+    let (BR(opt,_)) = force_compute (P(1,n-2,n,[])) in 
+    (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
 
