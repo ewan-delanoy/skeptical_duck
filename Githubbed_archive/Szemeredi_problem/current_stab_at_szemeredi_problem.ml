@@ -754,6 +754,31 @@ let action_on_forced_data_to_action_on_bulk_result_opt
 let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
     FD(offshoots,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
 
+
+exception Bad_access_during_singleton_recognition of qualified_point ;;
+
+let recognize_singleton_forced_data ~with_anticipation forced_data =
+   let (FD(offshoots,qpoints)) = forced_data in 
+   let temp1 = Image.image ( fun qp -> 
+    let (Q(pt,constraints,extension)) = qp in 
+    match generic_access_opt ~with_anticipation pt with 
+    None -> raise(Bad_access_during_singleton_recognition(qp))
+    | Some (BR(_,PR(reps,FD(offshoots2,qpoints2)))) ->
+       (offshoots2,constraints,extension,qpoints2)
+   ) qpoints in 
+   if List.exists (fun (_,_,_,qpoints2)->qpoints2<>[]) temp1 
+   then forced_data 
+   else  
+   let temp2 = Image.image (
+    fun (offshoots2,constraints,extension,qpoints2)->
+       let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) offshoots2 in 
+       Image.image (i_merge extension) ttemp3
+   ) temp1 in
+   let whole = il_fold_merge temp2 in 
+   if List.length whole = 1 
+   then FD(whole,[])
+   else forced_data ;;  
+
 let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
   PR(reps,clean_forced_data ~with_anticipation forced_data) ;;
 
