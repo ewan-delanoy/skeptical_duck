@@ -463,7 +463,44 @@ let check_aif1 =
 
 *)
 
-    
+let vqp1 = Q (vp1, [], []) ;;
+let vqp2 = Q (vp2, [], []) ;;
+let vqp3 = Q (vp2, [], [4]) ;;
+
+let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
+let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
+let qpf3 n = Q (pf1 (n-1), [], []) ;;
+
+let fdf1 n =
+  match List.assoc_opt n [
+    1,FD([[1]],[]);3,FD([],[vqp1; vqp2;qpf3(3)]);4,FD([],[vqp3; qpf2(4)])
+  ]  with Some answer -> answer | None ->
+  (match (n mod 3) with 
+    0 -> FD([],[qpf1(n); qpf2(n)  ;qpf3(n)]) 
+  | 1 -> FD([],[qpf1(n); qpf2(n)])
+  | 2 -> FD([sf1(n)],[])
+  |_ ->failwith("impossible remainder by 3")) ;;  
+
+
+(*
+let check_fdf1 = 
+   let temp1 = Int_range.scale (fun n->
+    let (BR(opt,PR(reps,forced_data))) = force_compute (P(1,n-2,n,[])) in 
+    (n,forced_data,Parametrized_Example.osf2 n)) 1 40 in 
+   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+*)    
+
+let bresf1 n = BR(aif1(n),PR([sf1(n)],fdf1(n))) ;;
+  
+(*
+let check_bresf1 = 
+   let temp1 = Int_range.scale (fun n->
+    let bres = force_compute (P(1,n-2,n,[])) in 
+    (n,bres,Parametrized_Example.bresf1 n)) 1 40 in 
+   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+*)    
+
+
 end ;;   
       
 
@@ -509,7 +546,7 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt) 
+ | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
 Bulk_result.extend_with_opt pre_res adj ;;
 ;;   
@@ -729,7 +766,7 @@ rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 
 
 
-
+(*
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
@@ -737,24 +774,48 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 
-open Parametrized_Example ;; 
+
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 1 
 and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-2) n;;
+let uu n = tg (n-1) n;;
+let tu n = (tt n,uu n);;
 let parf1 n =
-    let (BR(opt,PR(reps,_))) = tt n in 
-    reps;;
+    let (BR(opt,PR(reps,FD(offshoot,qpoints)))) = tt n in 
+    qpoints;;
 
 
-
-let check_sf1 = 
-   let temp1 = Int_range.scale (fun n->
-    let (BR(opt,PR(reps,_))) = force_compute (P(1,n-2,n,[])) in 
-    (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
-   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+module Parametrized_Example = struct 
+include Parametrized_Example ;;
 
 
+end ;;  
+
+
+let pt0 = P(1,5,6,[]) ;;
+let needed_carrier = needed_subcomputations_for_single_computation pt0 ;;
+let bad1 = access pt0;;
+let bad2 = generic_access_opt ~with_anticipation:true pt0;;
+let (Some(pt2,adj)) = Bulgarian.decompose pt0 ;;
+let (width,breadth,n,scrappers) = Point.unveil pt2 ;;
+
+
+let generic_access_opt  ~with_anticipation pt = 
+ match Bulgarian.decompose pt with 
+ None -> Some (Bulk_result.singleton None (Point.concretize pt))
+ | Some(pt2,adj) ->
+let (width,breadth,n,scrappers) = Point.unveil pt2 in 
+let pre_res=(
+match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+Some summary -> Some (Parametrized.eval_fobas summary breadth n)
+| None ->  
+ (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+   Some summary -> Some (Parametrized.eval_fos summary n)
+ | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
+) in 
+Bulk_result.extend_with_opt pre_res adj ;;
+;;   
 *)
 
