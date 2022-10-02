@@ -692,29 +692,6 @@ let compute_recursively width breadth (n,scrappers) =
 ;;  
 
 
-let exhaust_new_line (width,breadth,scrappers) = 
-    let temp1 = Int_range.scale 
-      (fun n->P(width,breadth,n,scrappers)) 1  60 in 
-    let carrier = needed_subcomputations_for_several_computations temp1 in 
-    let temp2 = Image.image (fun pt-> 
-      let mutilated_carrier = List.filter (
-        fun p->fst(p)<>pt
-      ) carrier in 
-      let _ = ( Accumulator_with_optional_anticipator.low_anticipator :=mutilated_carrier) in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_hook 
-          ~with_anticipation:true pt in 
-      (Point.size pt,hook_opt)
-    ) temp1 in 
-    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
-      None -> None |Some pair ->Some(n,pair)) l) in 
-    let temp3 = selector temp2 in 
-    let temp4 = Int_range.scale (fun n-> 
-       let pt2 = P(width,breadth,n,scrappers) in 
-       let _ = (  Accumulator_with_optional_anticipator.low_anticipator:=carrier) in 
-      (n, generic_access_opt ~with_anticipation:true pt2 ))  1 50  in 
-    let temp5 = selector temp4 in 
-    (temp3,temp5) ;;   
-
 let access = generic_access ~with_anticipation:true ;;     
 let rec all_representatives p =
     let (BR(anc_info,PR(reps,forced_data))) = access p in 
