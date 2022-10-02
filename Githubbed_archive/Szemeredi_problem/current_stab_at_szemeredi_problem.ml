@@ -426,6 +426,24 @@ module Parametrized_Example = struct
     
 let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
     
+let vp1 = P (1, 0, 3, [1]) ;; 
+let vp2 = P (1, 0, 3, [2]) ;; 
+
+let pf1 x = P (1, x-2, x, []) ;; 
+
+let aif1 n =
+   match List.assoc_opt n [1,None;2,None;
+    3, Some
+    (Fork,
+     AI
+      [(vp1, []); (vp2, []); (pf1 2, [])])
+   ] with 
+   Some answer -> answer 
+   | None ->
+   (match n mod 3 with 
+   0 -> Some(Fork,AI[(pf1(n-3), [n-1; n]); (pf1(n-2), [n]); (pf1(n-1), [])])
+  |1|2 ->Some(Passive_repeat,AI[(pf1(n-1), [n])])
+  |_ ->failwith("impossible remainder by 3"));;
     
     
 end ;;   
@@ -734,10 +752,16 @@ let (_,small_accu) = exhaust_new_line (current_width,current_breadth,current_str
 
 let tg b n = access (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-2) n;;
+let parf1 n =
+    let (BR(opt,_)) = tt n in 
+    opt;;
+let parf2 n = Option.unpack(parf1 n);;
 
-let check_g2 = List.filter (
-  fun (n,bres)->bres <> Parametrized_Example.brf1 n
-) g2 ;;
+
+let check_aif1 = 
+   let temp1 = Int_range.scale (fun n->(n,parf1 n,aif1 n)) 1 30 in 
+   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+
 
 *)
 
