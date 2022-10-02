@@ -149,7 +149,7 @@ let extend_with qp extension =
   Q(pt,old_constraints,extension2) -> 
   Q(pt,old_constraints,i_merge extension extension2)   ;;
 
-let fragile_extend_with qp extension =  
+let append_right qp extension =  
     match qp with 
     Q(pt,old_constraints,extension2) -> 
     Q(pt,old_constraints,extension2@extension)   ;;  
@@ -171,9 +171,9 @@ let extend_with (FD(offshoots,qpoints)) extension =
   Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
   ) ;;  
 
-let fragile_extend_with (FD(offshoots,qpoints)) extension =
+let append_right (FD(offshoots,qpoints)) extension =
     FD(Image.image (fun x->x@extension) offshoots,
-    Image.image (fun qpoint->Qualified_point.fragile_extend_with qpoint extension) qpoints
+    Image.image (fun qpoint->Qualified_point.append_right qpoint extension) qpoints
     ) ;;  
   
 
@@ -198,10 +198,10 @@ let extend_with (PR(representatives,forced_data)) extension =
       Forced_data.extend_with forced_data extension
     );;
 
-let fragile_extend_with (PR(representatives,forced_data)) extension =
+let append_right (PR(representatives,forced_data)) extension =
   PR(
         Image.image (fun x->x@extension) representatives,
-        Forced_data.fragile_extend_with forced_data extension
+        Forced_data.append_right forced_data extension
   );;    
 
 let extend_with_opt pres_opt extension = match pres_opt with 
@@ -271,6 +271,13 @@ let extend_with (AI l) extension =
       ) l
    ) ;;
     
+let append_right (AI l) extension =
+    AI(
+      Image.image (fun (pt,ext1)->
+         (pt,ext1@extension)
+       ) l
+    ) ;;
+
 
 end ;;   
 
@@ -389,6 +396,17 @@ let ancestors_for_hook pt0 hook =
         Partial_result.extend_with pres extension
       );;
     
+    let append_right (BR(ancestry_opt,pres)) extension = 
+        let new_ancestry_opt = (
+           match ancestry_opt with 
+             None -> None 
+            |Some(hook,anc_info) -> Some(hook,Ancestry_info.append_right anc_info extension)
+        ) in 
+       BR(
+         new_ancestry_opt,
+         Partial_result.append_right pres extension
+       );;
+       
     
     let extend_with_opt bres_opt extension = match bres_opt with 
       None -> None 
@@ -780,42 +798,50 @@ let current_width = 1
 and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-2) n;;
-let uu n = tg (n-1) n;;
-let tu n = (tt n,uu n);;
+let uu n = tg (n-3) n;;
+let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 let parf1 n =
     let (BR(opt,PR(reps,FD(offshoot,qpoints)))) = tt n in 
     qpoints;;
 
+let check_bresf1 = 
+   let temp1 = Int_range.scale (fun n->
+    let bres = force_compute (P(1,n,n,[])) in 
+    (n,bres,Parametrized_Example.bresf1 n)) 1 40 in 
+   List.filter (fun (n,a,b)->a<>b) temp1 ;;     
+
 
 module Parametrized_Example = struct 
 include Parametrized_Example ;;
+end ;;
+
+(uu 7)= Bulk_result.extend_with (force_compute (P (1, 4, 6, []))) [7] ;;
+(uu 8)= Bulk_result.extend_with (force_compute (P (1, 5, 7, []))) [8] ;;
+
+Bulgarian.decompose (P(1,5,8,[])) ;;
+(uu 8)=
+  BR
+   (Some(Passive_repeat,
+      AI[(pf1(6), [7; 8]);]),
+   PR ([sf1(8)],
+    FD ([],[Q (pf1(4), [], [6; 7; 8]); qpf1(8)]))) ;;
+
+(uu 9)=
+    BR
+     (Some(Passive_repeat,
+        AI[(pf1(7), [8; 9]);]),
+     PR ([sf1(9)],
+      FD ([sf1(9)],[]))) ;;
 
 
-end ;;  
+
+open Parametrized_Example ;;
+
+let pf1 x = P (1, x-2, x, []) ;; 
+let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
+let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
+let qpf3 n = Q (pf1 (n-1), [], []) ;;
 
 
-let pt0 = P(1,5,6,[]) ;;
-let needed_carrier = needed_subcomputations_for_single_computation pt0 ;;
-let bad1 = access pt0;;
-let bad2 = generic_access_opt ~with_anticipation:true pt0;;
-let (Some(pt2,adj)) = Bulgarian.decompose pt0 ;;
-let (width,breadth,n,scrappers) = Point.unveil pt2 ;;
-
-
-let generic_access_opt  ~with_anticipation pt = 
- match Bulgarian.decompose pt with 
- None -> Some (Bulk_result.singleton None (Point.concretize pt))
- | Some(pt2,adj) ->
-let (width,breadth,n,scrappers) = Point.unveil pt2 in 
-let pre_res=(
-match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-Some summary -> Some (Parametrized.eval_fobas summary breadth n)
-| None ->  
- (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-   Some summary -> Some (Parametrized.eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
-) in 
-Bulk_result.extend_with_opt pre_res adj ;;
-;;   
 *)
 
