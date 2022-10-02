@@ -425,7 +425,15 @@ let ancestors_for_hook pt0 hook =
 module Parametrized_Example = struct 
     
 let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
-    
+  
+(*
+let check_sf1 = 
+  let temp1 = Int_range.scale (fun n->
+   let (BR(opt,PR(reps,_))) = force_compute (P(1,n-2,n,[])) in 
+   (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
+  List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+*)  
+
 let vp1 = P (1, 0, 3, [1]) ;; 
 let vp2 = P (1, 0, 3, [2]) ;; 
 
@@ -736,15 +744,15 @@ and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-2) n;;
 let parf1 n =
-    let (BR(opt,_)) = tt n in 
-    opt;;
-let parf2 n = Option.unpack(parf1 n);;
+    let (BR(opt,PR(reps,_))) = tt n in 
+    reps;;
 
 
-let check_aif1 = 
+
+let check_sf1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,_)) = force_compute (P(1,n-2,n,[])) in 
-    (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
+    let (BR(opt,PR(reps,_))) = force_compute (P(1,n-2,n,[])) in 
+    (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
 
