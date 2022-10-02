@@ -1,7 +1,409 @@
 (************************************************************************************************************************
-Snippet 111 : 
+Snippet 113 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 112 : Sorting and comparing two overlapping list fo files
+************************************************************************************************************************)
+
+let ap1 = Absolute_path.of_string "~/Downloads/temp.html" ;; 
+let text1 = Io.read_whole_file ap1 ;; 
+
+
+let left_tag = "[{\"text\":\"" ;;
+let n1 = String.length left_tag ;; 
+let u1 = Substring.occurrences_of_in left_tag text1 ;; 
+let u2 = Image.image (
+  fun i->
+    let j = Substring.leftmost_index_of_in_from "\"" text1 (i+n1) in 
+    Cull_string.interval text1 (i+n1) (j-1)
+) u1 ;;
+let u3 = Ordered.sort Total_ordering.lex_for_strings u2 ;;
+
+let bad_beginnings = [
+" ";" "; " "; " ";
+"Enregistrer ";"La description";"Le titre "; "Placer ";
+"Pour";"Remarque "; "Revenir "; "Si ";"Sous";"Supprimer"; "Tout "; "Traitement";"Vidéo";"Visible"; "VISIONN"; "Voulez-";    
+"Fermer";"Vérifiez ";"Vous "] ;;
+let bad_contents = ["\\";"Titre";"Terminé";"Sermons";
+"Plus";"Diminuer la vitesse de lecture"; "Définir comme miniature de la playlist";"Définir comme série officielle"; "Déplacer vers le haut";"Effectuer des recherches vocales"; "En attente de l'autorisation…";"En attente..."; "En cours de lecture"; "Enregistrer";"Enregistrer dans une playlist"; "Enregistrer dans \\";"Faire un zoom arrière"; "Faire un zoom avant"; "Général";"94";"Lecture"; "Lecture aléatoire"; "Lecture/Pause";"Mettre en ligne une vidéo"; "Micro désactivé. Veuillez réessayer.";"Mise à jour aujourd'hui"; "Non répertoriée";"Panoramique vers la droite"; "Panoramique vers la gauche";
+"Panoramique vers le bas"; "Paramètres de la playlist"; "Passer au direct";"Privée"; "Publique"; "Raccourcis clavier"; "Rechercher";
+"Abbé Interesse"; "Accueil YouTube"; "Accéder au chapitre précédent";
+   "Accéder au chapitre suivant"; "Activer/désactiver le mode plein écran";
+   "Activer/Désactiver le lecteur réduit";
+   "Activer/Désactiver le mode cinéma"; "Activer/Désactiver le son";
+   "Ajouter des nouvelles vidéos au début de la playlist";
+   "Ajouter des vidéos"; "Ajouter à la file d'attente";
+   "Alterner entre les différents niveaux d'opacité de la fenêtre";
+   "Alterner entre les différents niveaux d'opacité du texte";
+   "Alterner entre les tailles de police (augmentation)";
+   "Alterner entre les tailles de police (diminution)"; "Annuler";
+   "Appuyez sur le micro pour réessayer";
+   "Atteindre un moment spécifique de la vidéo (7 correspond à 70 % de la durée)";
+   "Aucune connexion"; "Aucune description"; "Augmenter la vitesse de lecture";
+   "Autoriser l'intégration";
+   "Autorisez l'accès au micro pour effectuer des recherches vocales";
+   "Avancer de 10 secondes"; "Collaborer";
+   "Commande non comprise. Veuillez réessayer."; "Description";
+   "Image précédente (en pause)"; "Image suivante (en pause)";
+   "Ignorer"; "Ignorer les liens de navigation";
+] ;; 
+let u4 = List.filter (
+  fun w->(List.for_all (
+    fun v-> not(Supstring.begins_with w v) 
+  ) bad_beginnings)
+  &&
+  (not(List.mem w bad_contents))
+) u3 ;;
+
+let u5 = 
+  ["01 1er Dimanche de l’Avent et de l’Année Liturgique - Vendée - 01-12-2013 -";
+  "02 IIe  Dimanche de l’Avent Moulins 09 12 1990";
+  "03 IIIe  Dimanche de l’Avent Anjou 16 12 1990 La joie dans le Seigneur, moteur de la vie chrétienne.";
+  "031 IVe Dimanche de Carême Joie dans la penitence et Montée du Carmel 10 03 91 26min06";
+  "032 Ier Dimanche de la Passion RévéIation progressive de la Divinité de NS Moulins 05 04 1992 40min0";
+  "035 Pâques Moulins 04 04 1996 44min07";
+  "036 Dimanche in albis Quasi modo Les corps glorieux Tours 02 04 1989 19min22";
+  "037 IIe Dimanche apres Pâques Miséricorde et Justice de Dieu équilibre de l'esprit chrétien";
+  "038 IIIe Dimanche après Pâques Modicum et videbitis Me ND de l'Epine Mayenne 21 04 2013 26min12";
+  "040 Ve Dimanche après Pâques Dieu consolé par les Siens Tours 30 04 1989";
+  "046 Dimanche dans l'Octave de l'Ascension 2014 Vendée";
+  "047 Pentecôte  Moulins 19 05 1991";
+  "050 Très Sainte Trinité Moulins 16 Juin 1990";
+  "051 Fête du Très Saint Sacrement Moulins 02 06 1991";
+  "052 Dimanche dans l’octave du Très Saint Sacrement N.D. de l’Epine 02 06 2013";
+  "054 Dimanche dans l’octave du Sacré-Coeur N.D. de l’Epine 09 06 2013";
+  "055 IVe Dimanche après la Pentecôte Moulins 16 06 1991";
+  "056 Ve Dimanche après la Pentecôte  Sur la réparation et componction Tours 18 06 1989";
+  "057 L’Empereur Saint Henri I et la sanctification dans le monde - Moulins 15-07-1990";
+  "058. VIIe D. Ap Pent. ND de l’Epine 07 07 2013 Contre les loups déguisés sous des peaux de brebis...";
+  "059 Saint Bonaventure et le bonheur en Dieu seul - Moulins - 14-07-1991";
+  "06 Vigile Nativité - Choix et goûts de Dieu - Moulins 24-12-1990 min52";
+  "060 IXe Dimanche après la Pentecôte - Mayenne ND de l’Epine - 21-07-2013";
+  "065 XIIIe Dimanche après la Pentecôte 18 08 2013";
+  "066 XIVe Dimanche après la Pentecôte - Saint Louis - 25-08-1991";
+  "067 XVe Dimanche après la Pentecôte - Moulins 16-09-1990";
+  "069 XVIIe Dimanche après la Pentecôte ND de l’Epine 16 09 2018";
+  "070 XVIIIe Dimanche après la Pentecôte ND de l’Epine 8 10 2017";
+  "071 XIXe Dimanche après la Pentecôte Sur la colère 24-09-1989 à Tours";
+  "072. XXe Dimanche après la Pentecôte 22 10 2017 Notre Dame de l’Epine";
+  "073 Fête du Christ-Roi - à Moulins - 27 10 1991";
+  "074 XXIe Dimanche après la Pentecôte  En Vendée - 6/11/2011";
+  "076 XXIIIe Dimanche après la Pentecôte - sur le Purgatoire - Moulins 11-11-1990";
+  "08 Messe de Minuit - Anniversaire naissance de la fille aînée de l'Eglise -Moulins 25-12-1996";
+  "081 Solennité de Notre Dame des Victoires du Très Saint Rosaire - Tours 08 10 1989";
+  "082 Maternité Divine de Notre Dame 11 10 2015 Mayenne ND de l'Epine";
+  "083 Toussaint - Moulins - 01 11 1996";
+  "084 Commémoration des fidèles défunts - Vendée 02-11-2012";
+  "088 Découverte de la Sainte Croix - ND de l'Epine 3 05 2015";
+  "09 Messe du jour de Noël - Moulins 25-12-1996";
+  "091 VIe  D. après la Pentecôte Solennité des Saints Apôtres Pierre et Paul  Moulins 30 06 1991";
+  "092  Fête de Sainte Anne  Mayenne ND de l'Epine  26 07 2015";
+  "094  Fête de Saint Luc - Mayenne ND de l’Epine - 18-10-2015";
+  "100 Très Précieux Sang Mayenne ND de l’Epine 1er juillet 2013";
+  "101 Nativité de Notre Dame Moulins 08-09-1991";
+  "102 Notre-Dame des Sept Douleurs - 15-09-1996";
+  "103 Solennité de Sainte Thérèse de l’Enfant Jésus et de la Ste Face - Moulins 30-09-1990";
+  "104 Solennité de Saint Michel Archange Moulins 29 09 1991";
+  "106 VIe D. ap. Pent - Fructueuse ou infructueuse Communion à N. S. - ND de l’Epine - 12-7-2020";
+  "115 VIIIe Dimanche après la Pentecôte - Sur la remise des dettes - 7-8-2011  - Mayenne";
+  "116 XVIe Dimanche après la Pentecôte ND de l’Epine 20 09 2020";
+  "12 Dimanche dans l'Octave de la Nativité - Dum medium silentium... - Tours 31 12 1989";
+  "135 Fête de l'Evangéliste Saint Marc 25 04 2021";
+  "139 Pentecôte Vendée 27 05 2018";
+  "141 Saint Apôtre Jacques le Majeur - Mayenne ND de l’Epine 25-07-2021";
+  "142  Coeur Immaculé de Marie N.D. de l’Epine 22 08 2021";
+  "147 XVIe Dimanche après la Pentecôte 25 09 2022 Notre Dame de l’Epine";
+  "15 Circoncision - Vendée 01 01 2013";
+  "152 Fête de Saint Michel Archange 29 09 2019";
+  "16 Saint Nom de Jésus - Vendée 02-01-2013"; "17 Epiphanie - 06-01-1996";
+  "19 Dimanche dans l'octave de l'Epiphanie - Manifestation de la Divinité de NS - Moulins 13-01-1991";
+  "20 La Sainte Famille Moulins 07 01 1996";
+  "21 IIe Dimanche après l'Epiphanie Mayenne ND de l'Epine 19 01 2014";
+  "22  IIIe Dimanche après l'Epiphanie - Noli vinci a malo, sed vince in bono malum - Tours 25-01-1990";
+  "23 Septuagésime Deux genres de conversion Moulins 27 01 1991";
+  "24 Sexagésime - ND de Lourdes -Montée de l'esprit anti-chrétien et apparitions  - Moulins 11-02-1996";
+  "25 Quinquagésime Annonce prophétique de la Passion - Moulins 10 02 1991";
+  "61 Xe  D. ap. la Pent. Sur le Principe et Fondement des exercices de Saint Ignace Tours - 31-07-1988";
+  "62 XIe Dimanche après la Pentecôte - 04-08-1991 Moulins";
+  "75 XXIIe Dimanche après la Pentecôte - ND de l’Epine - 21 10 2018";
+  "77.  Dernier Dimanche après la Pentecôte  -  Moulins  26-11-1989";
+  "78 IVe Dimanche après l’Epiphanie - Tempête apaisée - Moulins 5/11/1989 - (XXVe D. Ap. P.)";
+  "78 XXIVe Dimanche après la Pentecôte (IVe ap Eph) - Tempête apaisée - Moulins 1992";
+  "79 Ve Dimanche après l’Epiphanie -Sur le bon grain et l’ivraie - Moulins 4/02/1990 -";
+  "79 XXVe D. après la Pent. (Ve ap Epiph) -Moulins 04 02 1990- Parabole sur le bon grain et l’ivraie.";
+  "80 XXVIe Dimanche après la Pentecôte (VIe ap Epiphanie) - 17 11 1991";
+  "86 Fête de l’Immaculée Conception de la Très Sainte Vierge - Moulins 8-12-1989-";
+  "87 Présentation de NS au temple et Purification légale de Marie -Mayenne ND de l’Epine - 02-02-2014";
+  "93 Saint Laurent, Diacre et Martyr - Vendée - 10-08-2014";
+  "96 Assomption Moulins 15 08 1991";
+  "99 Saint Joachim, Père de la Très Sainte Vierge Marie - Vendée - 16-08-2015";
+  "Dimanche des Rameaux En Vendee 01 04 2012";
+  "Ier Dimanche de Carême Sur la Pénitence. Moulins 04/03/1990. 24min53";
+  "Ier Dimanche de Carême. Sens mystique des montées vers Jérusalem 16/02/1997 15min18";
+  "IIIème dimanche de Carême. Contre le démon muet. Moulins, 10/03/1996, 26min07";
+  "IIème Dim. de Carême. Transfiguration. Équilibre entre désolations et consolations.";
+  "IVe  Dimanche de l’Avent - Moulins 23-12-1990 -  Comparaison du temps des Patriarches avec le nôtre.";
+  "IVe D. après Pâques :  Attachement apostolique à NS et remontée de sa nature humaine à sa Divinté.";
+  "IVe Dimanche de Carême - Laetare - Définition de la Charité - Tours - 05-03-1989";
+  "Sermon Jeudi Saint 13 04 2017 31min27";
+  "Sermon sur l'Ascension à Moulins 24 05 1990";
+  "Solennité du Sacré Coeur et Saint Jean Baptiste - Il faut qu'Il croisse et que je diminue 24/6/1990";
+  "Veillée pascale Sur l'illogisme de l'attitude actuelle des Juifs talmudistes Moulins 11 04 1998"]
+;;
+(*
+let check_u5 = u5=u4;;
+*)
+
+let (already_numbered_titles,nonnumbered_titles) =
+  List.partition (
+    fun s->let c= int_of_char(String.get s 0) in 
+      (48<=c)&&(c<=57)
+  ) u5 ;;
+
+exception Ios_exn of string;;
+
+let ios x =
+   try   int_of_string x with _ -> 
+    if Supstring.ends_with x "."
+    then int_of_string(Cull_string.coending 1 x)  
+    else raise(Ios_exn(x)) ;; 
+
+let unordered_numbered_titles_part1 = Image.image (
+  fun s ->
+     let k = Substring.leftmost_index_of_in " " s in
+     (ios (Cull_string.beginning (k-1) s),
+     Cull_string.cobeginning k s
+     )
+) already_numbered_titles ;;
+let pair_order = Total_ordering.product 
+    Total_ordering.for_integers Total_ordering.lex_for_strings ;;
+let numbered_titles_part1 = 
+   Ordered.sort  pair_order  unordered_numbered_titles_part1 ;;
+let indices_in_part1 = Image.image fst numbered_titles_part1 ;; 
+let indices_not_in_part1 =
+   Ordered.setminus Total_ordering.for_integers
+   (Int_range.range 1 143) indices_in_part1 ;;
+
+
+
+
+(*
+let dir2 = Directory_name.of_string 
+  "/Volumes/Matroska/Video/Abbe_Interesse/";;
+let naive_v1 = More_unix.beheaded_simple_ls dir2 ;; 
+*)
+let v1 = 
+  ["001_Ier_D_de_l_Avent_01_12_2013_27min33.mp4";
+  "002_IIe_dimanche_de_l_Avent_Moulins_09_12_1990_35min32.mp4";
+  "003_IIIe_dimanche_de_l_Avent_Gaudete_En_Anjou_16_12_1990_29min26.mp4";
+  "004_IIIe_dim_de_l_Avent_Vendee_16_12_2018.mp4";
+  "005_IVe_dimanche_de_l_Avent_Comparaison_du_temps_des_Patriarches_avec_le_notre_Moulins_23_12_1990_28min19_Copie_en_conflit_de_debian_2019_11_13.mp4";
+  "006_Vigile_Nativite_Choix_et_gouts_de_Dieu_Moulins_24_12_1990_18min52.mp4";
+  "007_Vigile_de_Noel_En_Vendee_24_12_2012_29min31.mp4";
+  "008_Messe_de_Minuit_Anniversaire_naissance_de_la_fille_ainee_de_l_Eglise_Moulins_25_12_1996_28min04.mp4";
+  "009_Messe_du_jour_de_Noel_Divinite_du_Christ_Seigneur_demontree_par_S_Paul_aux_Hebreux_a_partir_de_l_Ancien_Testament_Moulins_25_12_1996_19min48.mp4";
+  "010_Nativite_Messe_de_minuit_En_Vendee_25_12_2012_14min17.mp4";
+  "011_Nativite_Messe_du_jour_En_Vendee_25_12_2012_11min26.mp4";
+  "012_Dimanche_dans_l_Octave_de_la_Nativite_Dum_medium_silentium_Tours_31_12_1989_21min22.mp4";
+  "013_Dimanche_dans_l_octave_de_NoeI_30_12_2012_21min08.mp4";
+  "014_Dimanche_dans_l_Octave_de_NoeI_ND_de_l_Epine_29_12_2019_28_min.mp4";
+  "015_Circoncision_En_Vendee_01_01_2013_26min22.mp4";
+  "016_Saint_Nom_de_Jesus_En_Vendee_02_01_2013_22min24.mp4";
+  "017_Epiphanie_06_01_1996_38min27.mp4";
+  "018_Epiphanie_07_01_90_29min34.mp4";
+  "019_Octave_de_l_Epiphanie_Manifestation_de_la_Divinite_de_NS_Moulins_13_01_1991_38min17.mp4";
+  "020_La_Sainte_Famille_Moulins_07_01_1996_31min33.mp4";
+  "021_IIe_dimanche_apres_l_Epiphanie_Mayenne_ND_de_l_Epine_19_01_2014_30min50.mp4";
+  "022_IIIe_dimanche_apres_l_Epiphanie_Noli_vinci_a_malo_sed_vince_in_bono_malum_25_01_90_34min31.mp4";
+  "023_Septuagesime_Deux_genres_de_conversion_Moulins_27_01_1991_28min27.mp4";
+  "024_Sexagesime_ND_de_Lourdes_Montee_de_l_esprit_anti_chretien_et_apparitions_de_ND_Moulins_11_02_1996_33min36.mp4";
+  "025_Quinquagesime_Annonce_prophetique_de_la_Passion_Moulins_10_02_1991_24min39.mp4";
+  "026_Ier_dimanche_de_Careme_Sens_mystique_des_montees_vers_Jerusalem_16_02_1997_15min18.mp4";
+  "027_Ier_dimanche_de_Careme_Sur_la_Penitence_Moulins_04_03_1990_24min53.mp4";
+  "028_IIe_Dim_de_Careme_Transfiguration_Equilibre_entre_desolations_et_consolations_Moulins_24_02_1991_34min49.mp4";
+  "029_IIIe_dimanche_de_Careme_Contre_le_demon_muet_Moulins_10_03_1996_26min07.mp4";
+  "030_IIIe_dimanche_de_Careme_Sur_l_Annonciation_Maternite_virginale_et_voeu_de_virginite_22_03_92.mp4";
+  "031_IVe_dimanche_de_Careme_Joie_dans_la_penitence_et_Montee_du_Carmel_10_03_91_26min06.mp4";
+  "032_Ier_dimanche_de_la_Passion_ReveIation_progressive_de_la_divinite_de_NS_Moulins_05_04_1992_40min02.mp4";
+  "033_Dimanche_des_Rameaux_En_Vendee_01_04_2012_16min12.mp4";
+  "034_Veillee_pascale_Sur_l_illogisme_de_l_attitude_actuelle_des_Juifs_talmudistes_Moulins_11_04_1998_26min11.mp4";
+  "035_Paques_Moulins_04_04_1996_44min07.mp4";
+  "036_Dimanche_in_albis_Quasi_modo_Les_corps_glorieux_Tours_02_04_1989_19min22.mp4";
+  "037_IIe_dimanche_apres_Paques_Misericorde_et_Justice_de_Dieu_equilibre_de_l_esprit_chretien_Fete_de_saint_Pierre_de_Verone_29_04_1990_30min12.mp4";
+  "038_IIIe_dimanche_apres_Paques_Modicum_et_videbitis_Me_ND_de_l_Epine_Mayenne_21_04_2013_26min12.mp4";
+  "039_IVe_dimanche_apres_Paques_Attachement_apostolique_a_NS_pour_remonter_de_sa_nature_humaine_a_sa_Divinite_28_04_1991_23min03.mp4";
+  "040_Ve_dimanche_apres_Paques_Dieu_console_par_les_siens_Tours_30_04_1989_20min42.mp4";
+  "041_Ascension_24_05_1990_25min18.mp4";
+  "042_Ascension_Moulins_09_05_1991_27min55.mp4";
+  "043_Ascension_2011_Vendee_20min32.mp4";
+  "044_Ascension_ND_de_l_Epine_10_05_2018_26min12.mp4";
+  "045_Dimanche_dans_l_Octave_de_l_Ascension_12_05_2013_Mayenne_ND_de_l_Epine_15min28.mp4";
+  "046_Dimanche_dans_l_Octave_de_l_Ascension_2014_Vendee_19min.mp4";
+  "047_Pentecote_Moulins_19_05_1991_29min18.mp4";
+  "048_Pentecote_Vendee_19_05_2013_30min45.mp4";
+  "049_Pentecote_ND_de_l_Epine_15_05_2016_30min_50.mp4";
+  "050_Tres_Sainte_Trinite_Moulins_16_06_1990_33min05.mp4";
+  "051_Fete_du_Tres_Saint_Sacrement_Moulins_02_06_1991_28min53.mp4";
+  "052_Dimanche_dans_l_octave_du_Saint_Sacrement_Notre_Dame_de_l_Epine_2_06_2013_14min26.mp4";
+  "053_Solennite_du_Sacre_Coeur_et_Saint_Jean_Baptiste_Il_faut_qu_Il_croisse_et_que_je_diminue_Moulins_24_06_1990_24min55.mp4";
+  "054_Dimanche_dans_l_Octave_du_Sacre_Coeur_29min09.mp4";
+  "055_IVe_dimanche_apres_la_Pentecote_Moulins_16_06_1991_31min54.mp4";
+  "056_Ve_dimanche_apres_la_Pentecote_Sur_reparation_et_componction_Tours_18_06_1989_34min59.mp4";
+  "057_VIe_dimanche_apres_la_Pentecote_Saint_Henri_et_la_sanctification_dans_le_monde_Moulins_15_07_1990_37min39.mp4";
+  "058_VIIe_Dimanche_apres_la_Pentecote_Mayenne_ND_de_l_Epine_07_07_2013_36min04.mp4";
+  "059_VIIIe_dimanche_apres_la_Pentecote_Saint_Bonaventure_et_le_bonheur_en_Dieu_seul_Moulins_14_07_1991_42min06.mp4";
+  "060_IXe_dimanche_apres_la_Pentecote_Mayenne_ND_de_l_Epine_21_07_2013_34min55.mp4";
+  "061_Xe_dimanche_apres_la_Pentecote_Sur_le_Principe_et_Fondement_Tours_31_07_1988_22min08.mp4";
+  "062_XIe_dimanche_apres_la_Pentecote_04_08_1991_33min37.mp4";
+  "063_XIe_Dimanche_apres_Pentecote_12_08_2012_15min44.mp4";
+  "064_XIIe_dimanche_apres_la_Pentecote_11_08_2013_27min32.mp4";
+  "065_XIIIe_dimanche_apres_la_Pentecote_18_08_2013_27min34.mp4";
+  "066_XIVe_dimanche_apres_la_Pentecote_Saint_Louis_25_08_1991.mp4";
+  "067_XVe_dimanche_apres_la_Pentecote_Foi_en_la_Divinite_de_NS_Moulins_16_09_90_27min23.mp4";
+  "068_XVIe_dimanche_apres_la_Pentecote_03_09_89_24min15.mp4";
+  "069_XVIIe_Dimanche_apres_la_Pentecote_ND_de_l_Epine_16_09_2018_40_min.mp4";
+  "070_XVIIIe_Dim_apres_la_Pentecote_ND_de_l_Epine_8_10_2017_38min30.mp4";
+  "071_XIXe_dimanche_apres_la_Pentecote_Sur_la_colere_24_09_89_22min01.mp4";
+  "072_XXe_D_ap_Pent_22_10_2017_ND_de_l_Epine_1h.mp4";
+  "073_Fete_du_Christ_Roi_27_10_1991_27min22.mp4";
+  "074_XXIe_dimanche_apres_Pentecote_25min24.mp4";
+  "075_XXIIe_Dimanche_apres_la_Pentecote_ND_de_l_Epine_21_10_2018_36_min_35.mp4";
+  "076_XXIIIe_dimanche_apres_la_Pentecote_Sur_le_Purgatoire_11_11_90.mp4";
+  "077_XXIVe_et_dernier_dimanche_apres_la_Pentecote_Moulins_26_11_1989_26min38.mp4";
+  "078_XXIVe_ap_Pent_IVe_ap_Eph_Tempete_apaisee_Moulins_29min55.mp4";
+  "079_XXVe_dim_ap_Pent_Ve_ap_Epiphanie_Moulins_04_02_1990_20min.mp4";
+  "080_XXVIe_dim_apres_la_Pentecote_VIe_ap_Epiphanie_17_11_1991_30min38.mp4";
+  "081_Solennite_du_Tres_Saint_Rosaire_Tours_08_10_1989_23min31.mp4";
+  "082_Maternite_Divine_de_Notre_Dame_11_10_2015_Mayenne_ND_de_l_Epine_28min20.mp4";
+  "083_Toussaint_Moulins_01_11_1996_30min49.mp4";
+  "084_Commemoration_des_defunts_Vendee_2_novembre_2012_21min07.mp4";
+  "085_Fete_de_la_Dedicace_de_Saint_Jean_de_Latran_09_11_2014_33min47.mp4";
+  "086_Solennite_de_l_Immaculee_Conception_Moulins_1989_30min05.mp4";
+  "087_Presentation_de_NS_au_temple_et_Purification_de_Marie_Mayenne_ND_de_l_Epine_02_02_2014_23min13.mp4";
+  "088_Decouverte_de_la_Sainte_Croix_ND_de_l_Epine_3_05_2015_34min28.mp4";
+  "089_St_Philippe_et_st_Jacques_ND_de_l_Epine_11_05_2014_18min42_.mp4";
+  "090_Solennite_de_Ste_Jeannes_d_Arc_Moulins_13_05_1990_27min49.mp4";
+  "091_VIe_dimanche_apres_la_Pentecote_Solennite_de_St_Pierre_et_St_Paul_Monde_conquis_de_haute_lutte_par_papes_et_martyrs_Moulins_30_06_1991_42min50.mp4";
+  "092_Fete_de_Sainte_Anne_Mayenne_ND_de_l_Epine_26_07_2015_42min41.mp4";
+  "093_Saint_Laurent_diacre_et_martyr_Vendee_10_08_2014_33min24.mp4";
+  "094_Fete_de_saint_Luc_Mayenne_ND_de_l_Epine_18_10_2015_27min09.mp4";
+  "095_Sur_la_maniere_de_precher_1988_22min32.mp4";
+  "096_Assomption_Moulins_15_08_1991_29min15.mp4"; "097_Assomption_2012.mp4";
+  "098_Assomption_2013_Vendee_21min34.mp4";
+  "099_Saint_Joachim_Pere_de_la_TS_Vierge_Marie_Vendee_16_08_2015_24min03.mp4";
+  "100_Tres_Precieux_Sang_Mayenne_ND_de_l_Epine_1er_juillet_2013_27min03.mp4";
+  "101_Nativite_de_Notre_Dame_Moulins_08_09_1991_30min28.mp4";
+  "102_Notre_Dame_des_sept_douleurs_15_09_1996_15min51.mp4";
+  "103_Solennite_de_Ste_Therese_de_l_Enfant_Jesus_et_de_la_Ste_Face_Moulins_30_09_1990_22min47.mp4";
+  "104_Solennite_de_saint_Michel_Archange_Moulins_29_09_1991_32min31.mp4";
+  "105_IVe_D_ap_Pentecote_ND_de_l_Epine_28_juin_2020_35min.mp4";
+  "106_VIe_D_ap_Pentecote_ND_de_l_Epine_12_7_2020_39min25.mp4";
+  "107_refutation_T_de_M_ete_2013_Intro_10min.mp4";
+  "108_refutation_T_de_M_ete_2013_partie_1_18min19.mp4";
+  "109_refutation_T_de_M_ete_2013_partie_2_18min41.mp4";
+  "110_refutation_T_de_M_ete_2013_partie_3_23min22.mp4";
+  "111_refutation_T_de_M_ete_2013_partie_4_14min54.mp4";
+  "112_refutation_T_de_M_ete_2013_partie_5_21min57.mp4";
+  "113_refutation_T_de_M_ete_2013_partie_6_21min51.mp4";
+  "114_refutation_T_de_M_ete_2013_partie_7_17min02.mp4";
+  "115_VIIIe_D_Ap_Pent_7_8_2011_a_La_Boutouere_Mayenne_21min57.mp4";
+  "116_XVIe_Dimanche_apres_la_Pentecote_ND_de_lEpine_20_09_2020_22min14.mp4";
+  "117_Christ_Roi_25_10_2020_ND_de_lEpine_45min29.mp4";
+  "130_Presentation_des_ouvrages_de_labbe_Interesse_video_013_1h01min40s.mkv";
+  "131_debat_celier_zins_30min47.mp4";
+  "132_Jeudi_Saint_Vendee_2015_14min53.mp4";
+  "133_Jeudi_Saint_2016_5min32.mp4";
+  "134_Sermon_Jeudi_Saint_13_04_2017_31min27.mp4";
+  "135_Fete_de_lEvangeliste_Saint_Marc_25_04_2021.mp4";
+  "136_refutation_T_de_M_ete_2013_version_longue_pars_01_1h10min43s.mp4";
+  "137_refutation_T_de_M_ete_2013_version_longue_pars_02_1h15min44s.mp4";
+  "138_debat_celier_zins_30min48s.mp4";
+  "139_Pentecote_Vendee_27_05_2018_38_min.mp4";
+  "140_Fete_de_la_TS_Trinite_ND_de_lEpine_30_mai_2021_38min.mp4";
+  "141_Saint_Jacques_le_Majeur_ND_de_lEpine_21_07_2021_23min54.mp4";
+  "142_Coeur_Immacule_de_Marie_ND_de_lEpine_55min44_22_08_2021.mp4";
+  "143_Assomption_2021_ND_de_lEpine_46min29.mp4";
+  "144_IVe_dimanche_de_Careme_Laetare_Definition_de_la_Charite_05_03_89.mp4";
+  "146_XVIe_Dimanche_apres_la_Pentecote_ND_de_lEpine_20_09_2020.mp4";
+  "147_XVIe_D_ap_Pentecôte_ND_de_lEpine_25_9_2022.mp4";
+  "148_35_Christiade_01.mp4"; "149_36_Refutation_fou_these_02.mp4";
+  "150_37_Christiade_02.mp4"; "151_38_Refutation_fou_these_03.mp4";
+  "152_Fete_de_Saint_Michel_Archange_29_09_2019_31min.mp4";
+  "153_Solennite_du_Rosaire_Vendee_06_10_2019_15min15.mp4"]
+;;  
+
+(*
+let check_v1 = (v1=naive_v1) ;;
+*)
+
+let bigger_fountain_of_titles = Image.image (
+  fun s ->
+     let k = Substring.leftmost_index_of_in "_" s in
+     (ios (Cull_string.beginning (k-1) s),
+     Cull_string.coending 4 (Cull_string.cobeginning k s)
+     )
+) v1 ;;
+let fountain_of_titles = List.filter (
+  fun (j,_)->j<=143
+) bigger_fountain_of_titles ;;
+
+let retained_titles = List.filter (
+   fun (j,_)-> List.mem j [
+      4;5;
+   ]
+) fountain_of_titles ;;
+
+
+let unordered_numbered_titles_part2 =   
+  [(33, "Dimanche des Rameaux En Vendee 01 04 2012");
+  (27, "Ier Dimanche de Carême Sur la Pénitence. Moulins 04/03/1990. 24min53");
+  (26,
+   "Ier Dimanche de Carême. Sens mystique des montées vers Jérusalem 16/02/1997 15min18");
+  (29,
+   "IIIème dimanche de Carême. Contre le démon muet. Moulins, 10/03/1996, 26min07");
+  (28,
+   "IIème Dim. de Carême. Transfiguration. Équilibre entre désolations et consolations.");
+  (5,
+   "IVe  Dimanche de l’Avent - Moulins 23-12-1990 -  Comparaison du temps des Patriarches avec le nôtre.");
+  (39,
+   "IVe D. après Pâques :  Attachement apostolique à NS et remontée de sa nature humaine à sa Divinté.");
+  (0,
+   "IVe Dimanche de Carême - Laetare - Définition de la Charité - Tours - 05-03-1989");
+  (134, "Sermon Jeudi Saint 13 04 2017 31min27");
+  (0, "Sermon sur l'Ascension à Moulins 24 05 1990");
+  (53,
+   "Solennité du Sacré Coeur et Saint Jean Baptiste - Il faut qu'Il croisse et que je diminue 24/6/1990");
+  (34,
+   "Veillée pascale Sur l'illogisme de l'attitude actuelle des Juifs talmudistes Moulins 11 04 1998")]
+;;    
+
+let numbered_titles_part2 = 
+  Ordered.sort  pair_order  unordered_numbered_titles_part2 ;;
+
+let remaining_titles_in_part2 = List.filter (
+  fun (j,_) -> j = 0
+) numbered_titles_part2;;
+
+let remaining_indices_not_in_part1 = List.filter (
+  fun j -> j > 80
+) indices_not_in_part1;;
+
+let data = (remaining_indices_not_in_part1,remaining_titles_in_part2) ;;
+
+
+
+(************************************************************************************************************************
+Snippet 111 : Remove lines starting with a # in a file (can be used with ocamllex)
+************************************************************************************************************************)
+
+let ap3 = Absolute_path.of_string "Fads/jug.ml";; 
+let text3 = Io.read_whole_file ap3 ;;
+let lines = Lines_in_string.lines text3 ;; 
+let good_lines = List.filter (fun line->not(Supstring.begins_with line "#")) lines ;;
+let new_text3 = String.concat "\n" good_lines ;; 
+Io.overwrite_with ap3 new_text3 ;; 
 
 (************************************************************************************************************************
 Snippet 110 : Extract token types from a .mli file 

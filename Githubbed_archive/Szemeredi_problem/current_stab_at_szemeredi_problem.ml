@@ -739,6 +739,18 @@ let inspect_qualified_point ~with_anticipation qp =
       then false   
       else raise(Undecided(qp)) ;; 
 
+let action_on_forced_data_to_action_on_bulk_result_opt
+   on_forced_data =
+   let on_partial_result = (
+     fun (PR(reps,forced_data)) -> PR(reps,on_forced_data forced_data)
+   ) in 
+   let on_bulk_result = (
+     fun (BR(anc_info,pres)) -> BR(anc_info,on_partial_result pres)
+   ) in 
+   (
+    function None -> None | Some bres -> Some (on_bulk_result bres)
+   ) ;;
+
 let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
     FD(offshoots,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
 
