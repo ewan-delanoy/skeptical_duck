@@ -779,6 +779,11 @@ let recognize_singleton_forced_data ~with_anticipation forced_data =
    then FD(whole,[])
    else forced_data ;;  
 
+let improve_forced_data ~with_anticipation fd =
+   let fd1 = clean_forced_data ~with_anticipation fd in 
+   let fd2 = recognize_singleton_forced_data ~with_anticipation fd1 in 
+   fd2 ;;
+
 let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
   PR(reps,clean_forced_data ~with_anticipation forced_data) ;;
 
