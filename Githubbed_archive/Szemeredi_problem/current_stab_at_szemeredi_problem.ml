@@ -784,15 +784,15 @@ let improve_forced_data ~with_anticipation fd =
    let fd2 = recognize_singleton_forced_data ~with_anticipation fd1 in 
    fd2 ;;
 
-let clean_partial_result ~with_anticipation (PR(reps,forced_data)) =
-  PR(reps,clean_forced_data ~with_anticipation forced_data) ;;
+let improve_partial_result ~with_anticipation (PR(reps,forced_data)) =
+  PR(reps,improve_forced_data ~with_anticipation forced_data) ;;
 
-let clean_bulk_result ~with_anticipation (BR(anc_info,pres)) =
-    BR(anc_info,clean_partial_result ~with_anticipation pres) ;;
+let improve_bulk_result ~with_anticipation (BR(anc_info,pres)) =
+    BR(anc_info,improve_partial_result ~with_anticipation pres) ;;
 
-let clean_bulk_result_opt ~with_anticipation  = function 
+let improve_bulk_result_opt ~with_anticipation  = function 
    None -> None 
-   |Some bres -> Some ( clean_bulk_result ~with_anticipation bres) ;;
+   |Some bres -> Some ( improve_bulk_result ~with_anticipation bres) ;;
       
 
 (* The following function should only be used 
@@ -815,7 +815,7 @@ let try_hook_quickly ~with_anticipation pt hook =
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
   let bres_opt = Bulk_result.apply_hook pt hook args in 
-  ([],clean_bulk_result_opt ~with_anticipation bres_opt) ;;  
+  ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;;  
 
 
 exception Compute_from_below_exn of point ;;  
