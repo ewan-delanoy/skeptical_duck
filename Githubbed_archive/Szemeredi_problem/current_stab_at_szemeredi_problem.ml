@@ -446,7 +446,7 @@ let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 (*
 let check_sf1 = 
   let temp1 = Int_range.scale (fun n->
-   let (BR(opt,PR(reps,_))) = force_compute (P(1,n-2,n,[])) in 
+   let (BR(opt,M(reps,_))) = force_compute (P(2,0,n,[])) in 
    (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)  
@@ -474,7 +474,7 @@ let aif1 n =
    
 let check_aif1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,_)) = force_compute (P(1,n-2,n,[])) in 
+    let (BR(opt,_)) = force_compute (P(2,0,n,[])) in 
     (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
@@ -482,7 +482,6 @@ let check_aif1 =
 
 let vqp1 = Q (vp1, [], []) ;;
 let vqp2 = Q (vp2, [], []) ;;
-let vqp3 = Q (vp2, [], [4]) ;;
 
 let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
 let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
@@ -491,7 +490,7 @@ let qpf3 n = Q (pf1 (n-1), [], []) ;;
 let fdf1 n =
   match List.assoc_opt n [
     1,M([[1]],[]);3,M([sf1(3)],[vqp1; vqp2;qpf3(3)]);
-    4,M([sf1(4)],[vqp3; qpf2(4)])
+    4,M([sf1(4);[1;3;4]],[qpf2(4)])
   ]  with Some answer -> answer | None ->
   (match (n mod 3) with 
     0 -> M([sf1(n)],[qpf1(n); qpf2(n)  ;qpf3(n)]) 
@@ -686,7 +685,7 @@ let try_hook_quickly ~with_anticipation pt hook =
 
 
 let enhancement_data = ref [
-
+  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
 ] ;;
 
 exception Access_error_during_enhancement of point * point ;; 
@@ -830,7 +829,9 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
-
+enhancement_data:=[
+  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
+] ;;
 
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 2 
