@@ -256,14 +256,6 @@ let singleton z = M([z],[])  ;;
 end ;;
 
 
-module Partial_result = struct 
-
-
-  
-
-
-end ;;  
-
 module Ancestry_info = struct 
 
 let extend_with (AI l) extension =
@@ -422,8 +414,11 @@ module Bulk_result = struct
             let anc_info = Some(hook,ancestors_for_hook pt hook) in  
             Some(BR(anc_info,new_mold));;
       
-    let compute_full_replacement replacement_data (BR(anc_info,mold)) =
+    let compute_full_replacement (BR(anc_info,mold)) replacement_data =
       BR(anc_info,Mold.compute_full_replacement replacement_data mold) ;; 
+
+    let apply_several_replacements bres replacements = 
+        List.fold_left compute_full_replacement bres replacements ;;  
 
     end ;;  
     
