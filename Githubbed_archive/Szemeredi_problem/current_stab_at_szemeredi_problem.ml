@@ -690,6 +690,13 @@ let try_hook_quickly ~with_anticipation pt hook =
     Undecided(qp) -> raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
 
+let enhancement_data = [
+
+] ;;
+
+let enhance_first_time_result pt result =
+   result ;; 
+
 exception Compute_from_below_exn of point ;;  
 
 let compute_from_below ~with_anticipation pt hook =
@@ -697,7 +704,7 @@ let compute_from_below ~with_anticipation pt hook =
      try_hook_quickly ~with_anticipation pt hook in 
    match  result_opt with 
    None ->raise(Compute_from_below_exn(pt)) 
-   | Some result -> result ;; 
+   | Some result -> enhance_first_time_result pt result ;; 
 
 let low_add pt hook =
    let res = compute_from_below ~with_anticipation:false pt hook in  
