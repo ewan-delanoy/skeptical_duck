@@ -175,108 +175,92 @@ let compute_full_replacement_for_list (qp,list_of_solutions) qp_list =
 
 end ;;  
 
-module Forced_data = struct 
+module Mold = struct 
+
+let common_length (M(reps,qpoints)) =
+    List.length(List.hd reps);;
 
 (* it is assumed that compatibility has already been checked *)   
-let extend_with (FD(offshoots,qpoints)) extension =
-  FD(Image.image (i_merge extension) offshoots,
+let extend_with (M(reps,qpoints)) extension =
+  M(Image.image (i_merge extension) reps,
   Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
   ) ;;  
 
-let append_right (FD(offshoots,qpoints)) extension =
-    FD(Image.image (fun x->x@extension) offshoots,
+let append_right (M(reps,qpoints)) extension =
+    M(Image.image (fun x->x@extension) reps,
     Image.image (fun qpoint->Qualified_point.append_right qpoint extension) qpoints
     ) ;;  
   
 
-let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) = 
-  FD(List.filter (Constraint.satisfied_by_individual extra_constraints) offshoots,
+let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
+  M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
      Option.filter_and_unpack (
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
   
-let compute_full_replacement (qp,list_of_solutions) forced_data =
-  let (FD(offshoots,qpoints)) = forced_data in 
+let compute_full_replacement (qp,list_of_solutions) mold =
+  let (M(reps,qpoints)) = mold in 
   match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
-  None -> ([],forced_data) 
-  |Some(new_reps,remaining_qpoints) -> (new_reps,FD(il_merge offshoots new_reps,remaining_qpoints)) ;;   
+  None -> ([],mold) 
+  |Some(new_reps,remaining_qpoints) -> (new_reps,M(il_merge reps new_reps,remaining_qpoints)) ;;   
+
+let insert_several_constraints_opt extra_constraints mold = 
+   let new_mold = insert_several_constraints extra_constraints mold in 
+   if new_mold = M([],[])
+   then None 
+   else Some new_mold ;;   
+
+let apply_passive_repeat  pt mold =
+   let (width,b,_,_) = Point.unveil pt in 
+   insert_several_constraints_opt [C[b;b+width;b+2*width]] mold;;
+
+let apply_boundary_increment pt mold = 
+    let (width,breadth,n,_) = Point.unveil pt in 
+    let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
+    match insert_several_constraints_opt new_constraints mold with 
+     None -> None 
+    |Some new_mold -> Some(extend_with new_mold [n]) ;;
+
+let apply_fork ll =
+  let (_,temp1) = Max.maximize_it_with_care 
+    (fun (_,mold)->common_length mold)  ll in  
+  let chosen_reps = (fun (_,M(reps,_))->reps) (List.hd(List.rev(temp1))) in 
+  (*
+   for the second component, we deliberately do not expand,
+   to keep the stored expressions small   
+  *)
+  M(chosen_reps,Image.image fst temp1) ;; 
+
+let apply_hook_naively pt hook args =  
+    match hook with 
+    Passive_repeat -> apply_passive_repeat pt (snd(List.hd args))
+  | Boundary_increment -> apply_boundary_increment pt (snd(List.hd args))
+  | Fork ->   Some(apply_fork args )
+  | Jump -> Some(snd(List.hd args));; 
+
+
+exception Apply_hook_exn of ((qualified_point* mold) list) * hook * point ;;
+  
+let apply_hook pt hook args  = 
+  match apply_hook_naively pt hook args  with 
+    None -> None 
+  |Some mold ->
+    let (M(reps,_)) = mold in 
+    if reps = []
+    then raise (Apply_hook_exn(args,hook,pt)) 
+    else Some mold ;;
+
+let singleton z = M([z],[])  ;;
+
 
 end ;;
 
 
 module Partial_result = struct 
 
-let common_length (PR(representatives,forced_data)) =
-    List.length(List.hd representatives);;
 
-
-let extend_with (PR(representatives,forced_data)) extension =
-    PR(
-      Image.image (i_merge extension) representatives,
-      Forced_data.extend_with forced_data extension
-    );;
-
-let append_right (PR(representatives,forced_data)) extension =
-  PR(
-        Image.image (fun x->x@extension) representatives,
-        Forced_data.append_right forced_data extension
-  );;    
-
-let extend_with_opt pres_opt extension = match pres_opt with 
-  None -> None 
-  |Some pres -> Some (extend_with pres extension) ;;     
-
-let insert_several_constraints extra_constraints 
-  (PR(representatives,forced_data)) = 
-   let new_forced_data = Forced_data.insert_several_constraints extra_constraints forced_data in 
-   if new_forced_data = FD([],[])
-   then None 
-    else   
-     Some(PR(
-      List.filter (Constraint.satisfied_by_individual extra_constraints) representatives,
-      Forced_data.insert_several_constraints extra_constraints forced_data
-     )) ;;   
-
-let apply_passive_repeat  pt pres =
-    let (width,b,_,_) = Point.unveil pt in 
-    insert_several_constraints [C[b;b+width;b+2*width]] pres;;
   
-let apply_boundary_increment pt pres = 
-    let (width,breadth,n,_) = Point.unveil pt in 
-    let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-    match insert_several_constraints new_constraints pres with 
-     None -> None 
-    |Some new_pres -> Some(extend_with new_pres [n]) ;;
 
-    
-let apply_fork pt ll =
-   let (_,temp1) = Max.maximize_it_with_care (fun (_,pres)->common_length pres)  ll in  
-   let new_representatives = (fun (_,PR(r,_))->r) (List.hd(List.rev(temp1))) 
-   and new_forced_data = FD(
-    [],Image.image fst temp1
-   ) in 
-   PR(new_representatives,new_forced_data) ;; 
-
-
-let apply_hook_naively pt hook args =  
-    match hook with 
-    Passive_repeat -> apply_passive_repeat pt (snd(List.hd args))
-  | Boundary_increment -> apply_boundary_increment pt (snd(List.hd args))
-  | Fork ->   Some(apply_fork pt args )
-  | Jump -> Some(snd(List.hd args));; 
-  
-exception Apply_hook_exn of ((qualified_point* partial_result) list) * hook * point ;;
-  
-let apply_hook pt hook args  = 
-     match apply_hook_naively pt hook args  with 
-     None -> None 
-      |Some pres ->
-         let (PR(reps,_)) = pres in 
-         if reps = []
-         then raise (Apply_hook_exn(args,hook,pt)) 
-         else Some pres ;;
-  
-let singleton z = PR([z],FD([z],[]))  ;;
 
 end ;;  
 
@@ -396,12 +380,12 @@ let ancestors_for_hook pt0 hook =
     |Some(pt3,adj3) -> (pt3,i_merge adj1 adj3)
   ) temp1))  ;; 
 
-  module Bulk_result = struct 
+module Bulk_result = struct 
 
-    let common_length (BR(_,pres)) = Partial_result.common_length pres ;;
+    let common_length (BR(_,pres)) = Mold.common_length pres ;;
     let partial (BR(_,pres)) = pres ;;  
     let make ancestor_info pres = BR(ancestor_info,pres) ;;
-    let singleton ancestry z = BR(ancestry,Partial_result.singleton z)  ;;
+    let singleton ancestry z = BR(ancestry,Mold.singleton z)  ;;
     
     let extend_with (BR(ancestry_opt,pres)) extension = 
        let new_ancestry_opt = (
@@ -411,7 +395,7 @@ let ancestors_for_hook pt0 hook =
        ) in 
       BR(
         new_ancestry_opt,
-        Partial_result.extend_with pres extension
+        Mold.extend_with pres extension
       );;
     
     let append_right (BR(ancestry_opt,pres)) extension = 
@@ -422,7 +406,7 @@ let ancestors_for_hook pt0 hook =
         ) in 
        BR(
          new_ancestry_opt,
-         Partial_result.append_right pres extension
+         Mold.append_right pres extension
        );;
        
     
@@ -432,7 +416,7 @@ let ancestors_for_hook pt0 hook =
     
     let apply_hook pt hook args  = 
        let partial_args = Image.image (fun (qp,bres)->(qp,partial bres)) args in  
-       match Partial_result.apply_hook  pt hook partial_args  with 
+       match Mold.apply_hook  pt hook partial_args  with 
         None -> None 
        |Some new_pres ->
             let anc_info = Some(hook,ancestors_for_hook pt hook) in  
@@ -509,24 +493,25 @@ let qpf3 n = Q (pf1 (n-1), [], []) ;;
 
 let fdf1 n =
   match List.assoc_opt n [
-    1,FD([[1]],[]);3,FD([],[vqp1; vqp2;qpf3(3)]);4,FD([],[vqp3; qpf2(4)])
+    1,M([[1]],[]);3,M([sf1(3)],[vqp1; vqp2;qpf3(3)]);
+    4,M([sf1(4)],[vqp3; qpf2(4)])
   ]  with Some answer -> answer | None ->
   (match (n mod 3) with 
-    0 -> FD([],[qpf1(n); qpf2(n)  ;qpf3(n)]) 
-  | 1 -> FD([],[qpf1(n); qpf2(n)])
-  | 2 -> FD([sf1(n)],[])
+    0 -> M([sf1(n)],[qpf1(n); qpf2(n)  ;qpf3(n)]) 
+  | 1 -> M([sf1(n)],[qpf1(n); qpf2(n)])
+  | 2 -> M([sf1(n)],[])
   |_ ->failwith("impossible remainder by 3")) ;;  
 
 
 (*
 let check_fdf1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,PR(reps,forced_data))) = force_compute (P(1,n-2,n,[])) in 
-    (n,forced_data,Parametrized_Example.osf2 n)) 1 40 in 
+    let (BR(opt,PR(reps,mold))) = force_compute (P(1,n-2,n,[])) in 
+    (n,mold,Parametrized_Example.osf2 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
-let bresf1 n = BR(aif1(n),PR([sf1(n)],fdf1(n))) ;;
+let bresf1 n = BR(aif1(n),fdf1(n)) ;;
   
 (*
 let check_bresf1 = 
@@ -610,69 +595,64 @@ let inspect_qualified_point ~with_anticipation qp =
    let (Q(pt,constraints,_)) = qp in 
    match generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_inspection(qp))
-    | Some (BR(_,PR(reps,FD(offshoots,qpoints)))) ->
+    | Some (BR(_,M(reps,qpoints))) ->
       let test = Constraint.satisfied_by_individual constraints in 
       if List.exists test reps 
       then true 
       else   
-       let temp1 = List.filter test (reps@offshoots) 
+       let temp1 = List.filter test reps
        and temp2 = List.filter (
-        fun qp2 -> (Qualified_point.insert_several_constraints constraints qp2)<>None
+        fun qp2 -> 
+          (Qualified_point.insert_several_constraints constraints qp2)<>None
        ) qpoints in 
       if (temp1,temp2) = ([],[])
       then false   
       else raise(Undecided(qp)) ;; 
 
-let action_on_forced_data_to_action_on_bulk_result_opt
-   on_forced_data =
-   let on_partial_result = (
-     fun (PR(reps,forced_data)) -> PR(reps,on_forced_data forced_data)
-   ) in 
+let action_on_mold_to_action_on_bulk_result_opt
+   on_mold =
    let on_bulk_result = (
-     fun (BR(anc_info,pres)) -> BR(anc_info,on_partial_result pres)
+     fun (BR(reps,mold)) -> BR(reps,on_mold mold)
    ) in 
    (
     function None -> None | Some bres -> Some (on_bulk_result bres)
    ) ;;
 
-let clean_forced_data ~with_anticipation (FD(offshoots,qpoints)) =
-    FD(offshoots,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
+let clean_mold ~with_anticipation (M(reps,qpoints)) =
+    M(reps,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
 
 
 exception Bad_access_during_singleton_recognition of qualified_point ;;
 
-let recognize_singleton_forced_data ~with_anticipation forced_data =
-   let (FD(offshoots,qpoints)) = forced_data in 
+let recognize_singleton_mold ~with_anticipation mold =
+   let (M(reps,qpoints)) = mold in 
    let temp1 = Image.image ( fun qp -> 
     let (Q(pt,constraints,extension)) = qp in 
     match generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_singleton_recognition(qp))
-    | Some (BR(_,PR(reps,FD(offshoots2,qpoints2)))) ->
-       (offshoots2,constraints,extension,qpoints2)
+    | Some (BR(_,M(reps2,qpoints2))) ->
+       (reps2,constraints,extension,qpoints2)
    ) qpoints in 
    if List.exists (fun (_,_,_,qpoints2)->qpoints2<>[]) temp1 
-   then forced_data 
+   then mold 
    else  
    let temp2 = Image.image (
-    fun (offshoots2,constraints,extension,qpoints2)->
-       let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) offshoots2 in 
+    fun (reps2,constraints,extension,qpoints2)->
+       let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) reps2 in 
        Image.image (i_merge extension) ttemp3
    ) temp1 in
    let whole = il_fold_merge temp2 in 
    if List.length whole = 1 
-   then FD(whole,[])
-   else forced_data ;;  
+   then M(whole,[])
+   else mold ;;  
 
-let improve_forced_data ~with_anticipation fd =
-   let fd1 = clean_forced_data ~with_anticipation fd in 
-   let fd2 = recognize_singleton_forced_data ~with_anticipation fd1 in 
+let improve_mold ~with_anticipation fd =
+   let fd1 = clean_mold ~with_anticipation fd in 
+   let fd2 = recognize_singleton_mold ~with_anticipation fd1 in 
    fd2 ;;
 
-let improve_partial_result ~with_anticipation (PR(reps,forced_data)) =
-  PR(reps,improve_forced_data ~with_anticipation forced_data) ;;
-
-let improve_bulk_result ~with_anticipation (BR(anc_info,pres)) =
-    BR(anc_info,improve_partial_result ~with_anticipation pres) ;;
+let improve_bulk_result ~with_anticipation (BR(reps,mold)) =
+  BR(reps,improve_mold ~with_anticipation mold) ;;
 
 let improve_bulk_result_opt ~with_anticipation  = function 
    None -> None 
@@ -803,18 +783,19 @@ let compute_all_recursively pt =
 let force_compute pt = fst(compute_all_recursively pt) ;;
 
 let rec all_representatives p =
-    let (BR(anc_info,PR(reps,forced_data))) = access p in 
-    let (FD(offshoots,qpoints)) = forced_data in 
+    let (BR(anc_info,M(reps,qpoints))) = access p in 
     let temp1 = Image.image (
          fun (Q(pt,constraints,extension)) -> 
            let ttemp2 = all_representatives pt in 
            let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) ttemp2 in 
            Image.image (i_merge extension) ttemp3
     ) qpoints in 
-    il_fold_merge (offshoots::temp1) ;;
+    il_fold_merge (reps::temp1) ;;
 
+(*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.bresf1)) ;; 
+*)
 
 (*    
 
@@ -841,7 +822,7 @@ let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 let parf1 n =
-    let (BR(opt,PR(reps,FD(offshoot,qpoints)))) = tt n in 
+    let (BR(opt,PR(reps,M(offshoot,qpoints)))) = tt n in 
     qpoints;;
 
 let check_bresf1 = 
@@ -864,14 +845,14 @@ Bulgarian.decompose (P(1,5,8,[])) ;;
    (Some(Passive_repeat,
       AI[(pf1(6), [7; 8]);]),
    PR ([sf1(8)],
-    FD ([],[Q (pf1(4), [], [6; 7; 8]); qpf1(8)]))) ;;
+    M ([],[Q (pf1(4), [], [6; 7; 8]); qpf1(8)]))) ;;
 
 (uu 9)=
     BR
      (Some(Passive_repeat,
         AI[(pf1(7), [8; 9]);]),
      PR ([sf1(9)],
-      FD ([sf1(9)],[]))) ;;
+      M ([sf1(9)],[]))) ;;
 
 
 
