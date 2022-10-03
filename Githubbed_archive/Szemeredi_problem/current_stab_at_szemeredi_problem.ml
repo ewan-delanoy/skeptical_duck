@@ -685,12 +685,26 @@ let try_hook_quickly ~with_anticipation pt hook =
     Undecided(qp) -> raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
 
-let enhancement_data = [
+let enhancement_data = ref [
 
 ] ;;
 
-let enhance_first_time_result pt result =
-   result ;; 
+exception Access_error_during_enhancement of point * point ;; 
+
+let enhance_first_time_result ~with_anticipation pt result = 
+  match List.assoc_opt pt (!enhancement_data) with 
+  None -> result
+  | (Some pivots) -> 
+     let temp1 = Image.image (
+       fun qp -> let (Q(pt2,_,_)) = qp in 
+         try (qp,generic_access ~with_anticipation pt2) with 
+         _ -> raise (Access_error_during_enhancement(pt,pt2))
+     ) pivots in 
+     if List.exists (fun (qp,BR(_,M(_,qpoints)))->qpoints<>[]) temp1
+     then result 
+     else  
+    let replacements = Image.image (fun (qp,BR(_,M(reps,_)))->(qp,reps)) temp1 in 
+     Bulk_result.apply_several_replacements result replacements;; 
 
 exception Compute_from_below_exn of point ;;  
 
@@ -699,7 +713,7 @@ let compute_from_below ~with_anticipation pt hook =
      try_hook_quickly ~with_anticipation pt hook in 
    match  result_opt with 
    None ->raise(Compute_from_below_exn(pt)) 
-   | Some result -> enhance_first_time_result pt result ;; 
+   | Some result -> enhance_first_time_result ~with_anticipation pt result ;; 
 
 let low_add pt hook =
    let res = compute_from_below ~with_anticipation:false pt hook in  
