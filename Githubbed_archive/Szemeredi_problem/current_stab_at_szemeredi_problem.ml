@@ -198,6 +198,9 @@ let insert_several_constraints extra_constraints (M(reps,qpoints)) =
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
   
+let expand_qpoint (Q(_,constraints,extension)) mold =
+  extend_with (insert_several_constraints constraints mold) extension ;; 
+
 let compute_full_replacement (qp,list_of_solutions) mold =
   let (M(reps,qpoints)) = mold in 
   match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
@@ -487,7 +490,7 @@ let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
 let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
 let qpf3 n = Q (pf1 (n-1), [], []) ;;
 
-let fdf1 n =
+let moldf1 n =
   match List.assoc_opt n [
     1,M([[1]],[]);3,M([sf1(3)],[vqp1; vqp2;qpf3(3)]);
     4,M([sf1(4);[1;3;4]],[qpf2(4)])
@@ -500,14 +503,14 @@ let fdf1 n =
 
 
 (*
-let check_fdf1 = 
+let check_moldf1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,PR(reps,mold))) = force_compute (P(1,n-2,n,[])) in 
-    (n,mold,Parametrized_Example.osf2 n)) 1 40 in 
+    let (BR(opt,mold)) = force_compute (P(2,0,n,[])) in 
+    (n,mold,Parametrized_Example.moldf1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
-let bresf1 n = BR(aif1(n),fdf1(n)) ;;
+let bresf1 n = BR(aif1(n),moldf1(n)) ;;
   
 (*
 let check_bresf1 = 
@@ -829,9 +832,6 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
-enhancement_data:=[
-  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
-] ;;
 
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 2 
@@ -840,80 +840,15 @@ let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
-let parf1 n =
-    let (BR(opt,PR(reps,M(offshoot,qpoints)))) = tt n in 
-    qpoints;;
 
-let check_bresf1 = 
-   let temp1 = Int_range.scale (fun n->
-    let bres = force_compute (P(1,n,n,[])) in 
-    (n,bres,Parametrized_Example.bresf1 n)) 1 40 in 
-   List.filter (fun (n,a,b)->a<>b) temp1 ;;     
-
-
-module Parametrized_Example = struct 
-include Parametrized_Example ;;
-end ;;
-
-(uu 7)= Bulk_result.append_right (force_compute (P (1, 4, 6, []))) [7] ;;
-(uu 8)= Bulk_result.append_right (force_compute (P (1, 5, 7, []))) [8] ;;
-
-Bulgarian.decompose (P(1,5,8,[])) ;;
-(uu 8)=
-  BR
-   (Some(Passive_repeat,
-      AI[(pf1(6), [7; 8]);]),
-   PR ([sf1(8)],
-    M ([],[Q (pf1(4), [], [6; 7; 8]); qpf1(8)]))) ;;
-
-(uu 9)=
-    BR
-     (Some(Passive_repeat,
-        AI[(pf1(7), [8; 9]);]),
-     PR ([sf1(9)],
-      M ([sf1(9)],[]))) ;;
-
-
-
-open Parametrized_Example ;;
-
-let pf1 x = P (1, x-2, x, []) ;; 
-let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
-let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
-let qpf3 n = Q (pf1 (n-1), [], []) ;;
-
-let pt0 = P(2,2,6,[]) ;;
-let bad1 = force_compute pt0 ;;
-let bad2 = needed_subcomputations_for_several_computations [pt0] ;;
-let bad3 = pusher_for_recursive_computation [pt0] ;;
-let (pt,others) = Listennou.ht [pt0] ;;
-let (Some(pt2,adj)) = Bulgarian.decompose pt ;;
-let bad4 =
-      find_remote_stumbling_block_or_immediate_working_hook 
-      ~with_anticipation:true pt2 ;;
-
-
-let hook = Passive_repeat ;;      
-let bad5 = unexceptional_try_hook_quickly  
-  ~with_anticipation:true pt0 hook ;;
-let (AI ancestors) = ancestors_for_hook pt0 hook ;; 
-let ancestors_with_their_images = Image.image (
-       fun (pt2,adj)  -> 
-         let bres1_opt = generic_access_opt ~with_anticipation:true pt2 in 
-         (pt2,
-         (bres1_opt,adj,Bulk_result.extend_with_opt bres1_opt adj))
-     ) ancestors ;;
-    
-    in  
-   let (failures,successes) = List.partition (
-           fun (_,(_,_,opt)) -> opt = None
-   ) ancestors_with_their_images in 
-   let missing_data = Image.image fst failures in 
-   if missing_data <> [] then (missing_data,None) else 
-   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
-   let bres_opt = Bulk_result.apply_hook pt hook args in 
-   ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;; 
-
+let pt0 = (P (2, 5, 9, [])) ;; 
+let bad1 = force_compute pt0 ;; 
+let (AI anc) = ancestors_for_hook pt0 Passive_repeat ;;
+let pt1 = fst(List.hd anc) ;; 
+let see1 = force_compute pt1 ;; 
+let see2 = force_compute (P (1, 5, 7, [])) ;; 
+let see3 = all_representatives (P (1, 5, 7, [])) ;;
+let see4 = force_compute (P (1, 2, 4, [])) ;; 
 
 *)
 
