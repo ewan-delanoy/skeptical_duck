@@ -195,6 +195,12 @@ let insert_several_constraints extra_constraints (FD(offshoots,qpoints)) =
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
   
+let compute_full_replacement (qp,list_of_solutions) forced_data =
+  let (FD(offshoots,qpoints)) = forced_data in 
+  match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
+  None -> ([],forced_data) 
+  |Some(new_reps,remaining_qpoints) -> (new_reps,FD(il_merge offshoots new_reps,remaining_qpoints)) ;;   
+
 end ;;
 
 
