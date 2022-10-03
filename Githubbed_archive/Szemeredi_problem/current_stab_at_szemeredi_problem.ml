@@ -161,6 +161,18 @@ let insert_several_constraints new_constraints (Q(pt,old_constraints,extension))
     None -> None 
    |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension))) ;; 
 
+let compute_full_replacement 
+   (Q(pt,constraints,extension)) list_of_solutions = 
+     let temp1 = List.filter (Constraint.satisfied_by_individual constraints) list_of_solutions in 
+     Image.image (i_merge extension) temp1 ;;
+
+let compute_full_replacement_for_list (qp,list_of_solutions) qp_list =
+  let (tester,others) = List.partition (fun qp2->qp2=qp) qp_list in 
+  if tester = [] 
+  then None 
+  else Some(compute_full_replacement qp list_of_solutions,others) ;;             
+
+
 end ;;  
 
 module Forced_data = struct 
@@ -874,7 +886,28 @@ let bad4 =
       find_remote_stumbling_block_or_immediate_working_hook 
       ~with_anticipation:true pt2 ;;
 
-  
+
+let hook = Passive_repeat ;;      
+let bad5 = unexceptional_try_hook_quickly  
+  ~with_anticipation:true pt0 hook ;;
+let (AI ancestors) = ancestors_for_hook pt0 hook ;; 
+let ancestors_with_their_images = Image.image (
+       fun (pt2,adj)  -> 
+         let bres1_opt = generic_access_opt ~with_anticipation:true pt2 in 
+         (pt2,
+         (bres1_opt,adj,Bulk_result.extend_with_opt bres1_opt adj))
+     ) ancestors ;;
+    
+    in  
+   let (failures,successes) = List.partition (
+           fun (_,(_,_,opt)) -> opt = None
+   ) ancestors_with_their_images in 
+   let missing_data = Image.image fst failures in 
+   if missing_data <> [] then (missing_data,None) else 
+   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
+   let bres_opt = Bulk_result.apply_hook pt hook args in 
+   ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;; 
+
 
 *)
 
