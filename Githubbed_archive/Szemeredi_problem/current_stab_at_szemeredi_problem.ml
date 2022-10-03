@@ -703,6 +703,8 @@ let try_hook_quickly ~with_anticipation pt hook =
 let enhancement_data = ref [
   P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
 ] ;;
+let add_enhancement_data pair =
+   (enhancement_data := (!enhancement_data)@[pair]) ;; 
 
 exception Access_error_during_enhancement of point * point ;; 
 
