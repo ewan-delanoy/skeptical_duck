@@ -201,6 +201,19 @@ let insert_several_constraints extra_constraints (M(reps,qpoints)) =
 let expand_qpoint (Q(_,constraints,extension)) mold =
   extend_with (insert_several_constraints constraints mold) extension ;; 
 
+let replace_in_qpoint_list (pivot,mold) qpoint_list =
+  let pivot_found = ref false 
+  and (M(expanded_reps,expanded_qpoints)) = expand_qpoint pivot mold in 
+  let temp1 = Image.image (
+     fun qpoint ->
+       if qpoint = pivot 
+       then let _ = (pivot_found:=true) in 
+             expanded_qpoints
+       else [qpoint]      
+  ) qpoint_list in 
+  let new_reps = (if !pivot_found then expanded_reps else []) in 
+  (new_reps,List.flatten temp1) ;;
+
 let compute_full_replacement (qp,list_of_solutions) mold =
   let (M(reps,qpoints)) = mold in 
   match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
