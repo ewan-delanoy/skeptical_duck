@@ -20,13 +20,11 @@ type qualified_point = Q of point * (constraint_t list) * extension_data;;
 
 type solution = int list ;; 
 
-type forced_data = FD of (solution list) * ( qualified_point list) ;;
-
+type mold = M of (solution list) * ( qualified_point list) ;;
+  
 type ancestry_info = AI of (point * extension_data) list ;;
-
-type partial_result = PR of (solution list) * forced_data  ;;
-
-type bulk_result = BR of ((hook * ancestry_info) option) * partial_result ;;  
+  
+type bulk_result = BR of ((hook * ancestry_info) option) * mold ;;  
 
 type function_of_size = 
 Usual_fos of (int -> bulk_result) ;; 
