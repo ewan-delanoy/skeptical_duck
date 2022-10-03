@@ -513,11 +513,24 @@ let bresf1 n = BR(aif1(n),PR([sf1(n)],fdf1(n))) ;;
 (*
 let check_bresf1 = 
    let temp1 = Int_range.scale (fun n->
-    let bres = force_compute (P(1,n-2,n,[])) in 
+    let bres = force_compute (P(2,0,n,[])) in 
     (n,bres,Parametrized_Example.bresf1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
+let bresf2 breadth n = 
+  if breadth = 0 then Bulk_result.singleton None (Int_range.range 1 n) else
+  if n <= breadth + 2 then bresf1 n else 
+  Bulk_result.append_right (bresf1(breadth+2)) (Int_range.range (breadth+3) n)  ;;
+
+(*  
+let check_bresf2 =
+    let temp1 = Cartesian.product (Int_range.range 0 30) (Int_range.range 1 30) in 
+    let temp2 = Image.image (
+      fun (b,n) ->((b,n),force_compute (P(1,b,n,[])),Parametrized_Example.bresf2 b n)
+    ) temp1 in
+    List.filter (fun (n,a,b)->a<>b) temp2 ;;
+*)
 
 end ;;   
       
@@ -584,7 +597,7 @@ let inspect_qualified_point ~with_anticipation qp =
       if List.exists test reps 
       then true 
       else   
-       let temp1 = List.filter test offshoots 
+       let temp1 = List.filter test (reps@offshoots) 
        and temp2 = List.filter (
         fun qp2 -> (Qualified_point.insert_several_constraints constraints qp2)<>None
        ) qpoints in 
@@ -653,7 +666,7 @@ let improve_bulk_result_opt ~with_anticipation  = function
   otherwise the call to ancestors_for_hook will raise an exception   
 *)
 
-let try_hook_quickly ~with_anticipation pt hook = 
+let unexceptional_try_hook_quickly ~with_anticipation pt hook = 
    let (AI ancestors) = ancestors_for_hook pt hook in  
    let ancestors_with_their_images = Image.image (
       fun (pt2,adj)  -> 
@@ -669,6 +682,12 @@ let try_hook_quickly ~with_anticipation pt hook =
   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
   let bres_opt = Bulk_result.apply_hook pt hook args in 
   ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;;  
+
+exception Try_hook_quickly_exn of point * hook * qualified_point ;;
+
+let try_hook_quickly ~with_anticipation pt hook = 
+   try unexceptional_try_hook_quickly ~with_anticipation pt hook with  
+    Undecided(qp) -> raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
 
 exception Compute_from_below_exn of point ;;  
@@ -776,9 +795,12 @@ let rec all_representatives p =
     ) qpoints in 
     il_fold_merge (offshoots::temp1) ;;
 
+rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
+med_add (2,0,[]) (Usual_fos(Parametrized_Example.bresf1)) ;; 
+
 (*    
-rose_add (1,[]) (Usual_fobas(Parametrized_Example.brf2));;
-med_add (2,0,[]) (Usual_fos(Parametrized_Example.brf1)) ;; 
+
+
 rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 *)
 
@@ -794,10 +816,10 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
-let current_width = 1 
+let current_width = 2 
 and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
-let tt n = tg (n-2) n;;
+let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 let parf1 n =
@@ -815,8 +837,8 @@ module Parametrized_Example = struct
 include Parametrized_Example ;;
 end ;;
 
-(uu 7)= Bulk_result.extend_with (force_compute (P (1, 4, 6, []))) [7] ;;
-(uu 8)= Bulk_result.extend_with (force_compute (P (1, 5, 7, []))) [8] ;;
+(uu 7)= Bulk_result.append_right (force_compute (P (1, 4, 6, []))) [7] ;;
+(uu 8)= Bulk_result.append_right (force_compute (P (1, 5, 7, []))) [8] ;;
 
 Bulgarian.decompose (P(1,5,8,[])) ;;
 (uu 8)=
@@ -842,6 +864,17 @@ let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
 let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
 let qpf3 n = Q (pf1 (n-1), [], []) ;;
 
+let pt0 = P(2,2,6,[]) ;;
+let bad1 = force_compute pt0 ;;
+let bad2 = needed_subcomputations_for_several_computations [pt0] ;;
+let bad3 = pusher_for_recursive_computation [pt0] ;;
+let (pt,others) = Listennou.ht [pt0] ;;
+let (Some(pt2,adj)) = Bulgarian.decompose pt ;;
+let bad4 =
+      find_remote_stumbling_block_or_immediate_working_hook 
+      ~with_anticipation:true pt2 ;;
+
+  
 
 *)
 
