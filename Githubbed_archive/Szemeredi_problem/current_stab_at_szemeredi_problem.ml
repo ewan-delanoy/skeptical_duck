@@ -201,8 +201,8 @@ let insert_several_constraints extra_constraints (M(reps,qpoints)) =
 let compute_full_replacement (qp,list_of_solutions) mold =
   let (M(reps,qpoints)) = mold in 
   match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
-  None -> ([],mold) 
-  |Some(new_reps,remaining_qpoints) -> (new_reps,M(il_merge reps new_reps,remaining_qpoints)) ;;   
+  None -> mold
+  |Some(new_reps,remaining_qpoints) -> M(il_merge reps new_reps,remaining_qpoints) ;;   
 
 let insert_several_constraints_opt extra_constraints mold = 
    let new_mold = insert_several_constraints extra_constraints mold in 
@@ -418,11 +418,13 @@ module Bulk_result = struct
        let partial_args = Image.image (fun (qp,bres)->(qp,partial bres)) args in  
        match Mold.apply_hook  pt hook partial_args  with 
         None -> None 
-       |Some new_pres ->
+       |Some new_mold ->
             let anc_info = Some(hook,ancestors_for_hook pt hook) in  
-            Some(BR(anc_info,new_pres));;
+            Some(BR(anc_info,new_mold));;
       
-    
+    let compute_full_replacement replacement_data (BR(anc_info,mold)) =
+      BR(anc_info,Mold.compute_full_replacement replacement_data mold) ;; 
+
     end ;;  
     
     
