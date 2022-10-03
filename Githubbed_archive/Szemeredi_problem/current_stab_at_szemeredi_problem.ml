@@ -214,11 +214,11 @@ let replace_in_qpoint_list (pivot,mold) qpoint_list =
   let new_reps = (if !pivot_found then expanded_reps else []) in 
   (new_reps,List.flatten temp1) ;;
 
-let compute_full_replacement (qp,list_of_solutions) mold =
-  let (M(reps,qpoints)) = mold in 
-  match Qualified_point.compute_full_replacement_for_list  (qp,list_of_solutions) qpoints with
-  None -> mold
-  |Some(new_reps,remaining_qpoints) -> M(il_merge reps new_reps,remaining_qpoints) ;;   
+let compute_full_replacement (pivot,active_mold) passive_mold =
+  let (M(old_reps,old_qpoints)) = passive_mold in 
+  let (new_reps,final_qpoints) = replace_in_qpoint_list (pivot,active_mold)  old_qpoints in 
+  M(old_reps@new_reps,final_qpoints) ;;
+     
 
 let insert_several_constraints_opt extra_constraints mold = 
    let new_mold = insert_several_constraints extra_constraints mold in 
@@ -714,11 +714,8 @@ let enhance_first_time_result ~with_anticipation pt result =
        fun qp -> let (Q(pt2,_,_)) = qp in 
          try (qp,generic_access ~with_anticipation pt2) with 
          _ -> raise (Access_error_during_enhancement(pt,pt2))
-     ) pivots in 
-     if List.exists (fun (qp,BR(_,M(_,qpoints)))->qpoints<>[]) temp1
-     then result 
-     else  
-    let replacements = Image.image (fun (qp,BR(_,M(reps,_)))->(qp,reps)) temp1 in 
+     ) pivots in  
+    let replacements = Image.image (fun (qp,BR(_,mold))->(qp,mold)) temp1 in 
      Bulk_result.apply_several_replacements result replacements;; 
 
 exception Compute_from_below_exn of point ;;  
