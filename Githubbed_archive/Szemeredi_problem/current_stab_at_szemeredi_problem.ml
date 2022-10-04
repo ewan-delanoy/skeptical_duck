@@ -835,6 +835,15 @@ let all_representatives_for_qpoint (Q(pt,constraints,extension)) =
    let temp2 = List.filter (Constraint.satisfied_by_individual constraints) temp1 in 
    Image.image (i_merge extension) temp2 ;; 
 
+let zoom (Q(pt,constraints,extension)) = 
+   let (BR(_,M(_,qpoints))) = force_compute pt in 
+   Image.image (
+     fun qp3 ->
+       let ttemp1 = all_representatives_for_qpoint qp3 in 
+       (qp3,List.filter 
+       (Constraint.satisfied_by_individual constraints) ttemp1)
+   ) qpoints ;; 
+
    
 
 (*    
@@ -877,9 +886,8 @@ let (Q(pt2,constraints2,extension2)) = qp1 ;;
 let (BR(_,M(reps,qpoints))) = force_compute (pt2) ;;
 let res1 = Image.image (
   fun qp3 ->
-    let (Q(pt2,constraints2,extension2)) = qp3 in 
-    let ttemp1 = all_representatives pt2 in 
-    
+    let ttemp1 = all_representatives_for_qpoint qp3 in 
+    (qp3,List.filter (Constraint.satisfied_by_individual constraints2) ttemp1)
 ) qpoints ;; 
 
 
