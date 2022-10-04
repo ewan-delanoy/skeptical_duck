@@ -704,7 +704,9 @@ let enhancement_data = ref [
   P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
 ] ;;
 let add_enhancement_data pair =
-   (enhancement_data := (!enhancement_data)@[pair]) ;; 
+   (
+    Accumulator_with_optional_anticipator.low_anticipator:=[];
+    enhancement_data := (!enhancement_data)@[pair]) ;; 
 
 exception Access_error_during_enhancement of point * point ;; 
 
@@ -844,7 +846,9 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
-
+add_enhancement_data
+ (P (2, 4, 9, []),
+ [Q (P (1, 5, 7, []), [C [1; 3; 5]; C [2; 4; 6]; C [3; 5; 7]], [9])]);;
 (  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
 let current_width = 2 
 and current_strappers = [] ;;
