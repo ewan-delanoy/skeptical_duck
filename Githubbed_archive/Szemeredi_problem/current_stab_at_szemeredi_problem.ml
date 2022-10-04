@@ -695,9 +695,13 @@ let unexceptional_try_hook_quickly ~with_anticipation pt hook =
 
 exception Try_hook_quickly_exn of point * hook * qualified_point ;;
 
+let memorizer_for_try_hook_quickly = ref None ;;
+
 let try_hook_quickly ~with_anticipation pt hook = 
    try unexceptional_try_hook_quickly ~with_anticipation pt hook with  
-    Undecided(qp) -> raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
+    Undecided(qp) -> 
+      let _ = (memorizer_for_try_hook_quickly:=Some(pt,hook,qp)) in 
+      raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
 
 let enhancement_data = ref [
@@ -826,6 +830,13 @@ let rec all_representatives p =
     ) qpoints in 
     il_fold_merge (reps::temp1) ;;
 
+let all_representatives_for_qpoint (Q(pt,constraints,extension)) =
+   let temp1 = all_representatives pt in 
+   let temp2 = List.filter (Constraint.satisfied_by_individual constraints) temp1 in 
+   Image.image (i_merge extension) temp2 ;; 
+
+   
+
 (*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
 med_add (2,0,[]) (Usual_fos(Parametrized_Example.bresf1)) ;; 
@@ -839,6 +850,7 @@ rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 
 
 
+
 (*
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
@@ -849,7 +861,7 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 add_enhancement_data
  (P (2, 4, 9, []),
  [Q (P (1, 5, 7, []), [C [1; 3; 5]; C [2; 4; 6]; C [3; 5; 7]], [9])]);;
-(  Accumulator_with_optional_anticipator.low_anticipator:=[]) ;;
+( ) ;;
 let current_width = 2 
 and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
@@ -859,12 +871,19 @@ let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 
 let pt0 = (P (2, 5, 9, [])) ;; 
 let bad1 = force_compute pt0 ;; 
-let (AI anc) = ancestors_for_hook pt0 Passive_repeat ;;
-let pt1 = fst(List.hd anc) ;; 
-let see1 = force_compute pt1 ;; 
-let see2 = force_compute (P (1, 5, 7, [])) ;; 
-let see3 = all_representatives (P (1, 5, 7, [])) ;;
-let see4 = force_compute (P (1, 2, 4, [])) ;; 
+let (pt1,hook1,qp1) = Option.unpack(!memorizer_for_try_hook_quickly);;
+let (Q(pt2,constraints2,extension2)) = qp1 ;;
+
+let (BR(_,M(reps,qpoints))) = force_compute (pt2) ;;
+let res1 = Image.image (
+  fun qp3 ->
+    let (Q(pt2,constraints2,extension2)) = qp3 in 
+    let ttemp1 = all_representatives pt2 in 
+    
+) qpoints ;; 
+
+
+ Accumulator_with_optional_anticipator.low_anticipator:=[]
 
 *)
 
