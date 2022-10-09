@@ -240,7 +240,7 @@ let do_minimal_insertion_in_qpoint_list (pivot,mold,chosen_insertions) qpoint_li
             )
        else Some qpoint      
   ) qpoint_list in 
-  let new_reps = (if !pivot_found then expanded_reps else []) in 
+  let new_reps = (if !pivot_found then chosen_insertions else []) in 
   (new_reps,final_qpoints) ;;
 
 let compute_minimal_insertion (pivot,active_mold,chosen_insertions) passive_mold =
@@ -739,13 +739,12 @@ let try_hook_quickly ~with_anticipation pt hook =
       let _ = (memorizer_for_try_hook_quickly:=Some(pt,hook,qp)) in 
       raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
-let enhancement_data = ref [] ;;
-(*      
 let enhancement_data = ref [
-  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])];
-  (P (1, 5, 7, []), [Q (P (1, 2, 4, []), [], [6; 7])];
+  (P (1, 2, 4, []),
+  [Q (P (1, 0, 3, [2]), [], [4]),[[1;3;4]]]) ;
+
 ] ;;
-*)
+
 
 let add_enhancement_data pair =
    (
@@ -910,7 +909,7 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 add_enhancement_data
  (P (1, 5, 7, []),
- [Q (P (1, 2, 4, []), [], [6; 7])]);;
+ [(Q (P (1, 2, 4, []), [], [6; 7]), [[1; 3; 4; 6; 7]])]);;
 
 let current_width = 2 
 and current_strappers = [] ;;
@@ -919,7 +918,7 @@ let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 
-let pt0 = (P (2, 8, 12, [])) ;; 
+let pt0 = (P (2, 5, 9, [])) ;; 
 let bad1 = force_compute pt0 ;; 
 let (pt1,hook1,qp1) = Option.unpack(!memorizer_for_try_hook_quickly);;
 let see1 = zoom qp1 ;;
