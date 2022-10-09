@@ -759,12 +759,13 @@ let enhance_first_time_result ~with_anticipation pt result =
   None -> result
   | (Some pivots) -> 
      let temp1 = Image.image (
-       fun qp -> let (Q(pt2,_,_)) = qp in 
-         try (qp,generic_access ~with_anticipation pt2) with 
+       fun (qp,chosen_reps) -> let (Q(pt2,_,_)) = qp in 
+         try (qp,generic_access ~with_anticipation pt2,chosen_reps) with 
          _ -> raise (Access_error_during_enhancement(pt,pt2))
      ) pivots in  
-    let replacements = Image.image (fun (qp,BR(_,mold))->(qp,mold)) temp1 in 
-     Bulk_result.apply_several_replacements result replacements;; 
+    let minimal_insertions = Image.image 
+      (fun (qp,BR(_,mold),chosen_reps)->(qp,mold,chosen_reps)) temp1 in 
+     Bulk_result.apply_several_minimal_insertions result minimal_insertions;; 
 
 exception Compute_from_below_exn of point ;;  
 
