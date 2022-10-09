@@ -218,7 +218,37 @@ let compute_full_replacement (pivot,active_mold) passive_mold =
   let (M(old_reps,old_qpoints)) = passive_mold in 
   let (new_reps,final_qpoints) = replace_in_qpoint_list (pivot,active_mold)  old_qpoints in 
   M(old_reps@new_reps,final_qpoints) ;;
-     
+  
+exception Bad_minimal_insertion of qualified_point * mold * solution list ;;  
+
+let do_minimal_insertion_in_qpoint_list (pivot,mold,chosen_insertions) qpoint_list =
+  let pivot_found = ref false 
+  and (M(expanded_reps,expanded_qpoints)) = expand_qpoint pivot mold in 
+  let insertion_is_allowed = il_is_included_in chosen_insertions expanded_reps 
+  and replacement_for_pivot = (
+     if (chosen_insertions = expanded_reps) && (expanded_qpoints=[])
+     then None 
+     else Some pivot
+  ) in 
+  let final_qpoints = Option.filter_and_unpack (
+     fun qpoint ->
+       if qpoint = pivot 
+       then let _ = (pivot_found:=true) in 
+            (if not(insertion_is_allowed)
+             then raise(Bad_minimal_insertion(pivot,mold,chosen_insertions)) 
+             else replacement_for_pivot
+            )
+       else Some qpoint      
+  ) qpoint_list in 
+  let new_reps = (if !pivot_found then expanded_reps else []) in 
+  (new_reps,final_qpoints) ;;
+
+let compute_minimal_insertion (pivot,active_mold,chosen_insertions) passive_mold =
+  let (M(old_reps,old_qpoints)) = passive_mold in 
+  let (new_reps,final_qpoints) = do_minimal_insertion_in_qpoint_list 
+          (pivot,active_mold,chosen_insertions)  old_qpoints in 
+  M(old_reps@new_reps,final_qpoints) ;;
+
 
 let insert_several_constraints_opt extra_constraints mold = 
    let new_mold = insert_several_constraints extra_constraints mold in 
@@ -435,6 +465,12 @@ module Bulk_result = struct
 
     let apply_several_replacements bres replacements = 
         List.fold_left compute_full_replacement bres replacements ;;  
+
+        let compute_minimal_insertion (BR(anc_info,mold)) minins_data =
+          BR(anc_info,Mold.compute_minimal_insertion minins_data mold) ;;     
+
+    let apply_several_minimal_insertions bres minins_data = 
+          List.fold_left compute_minimal_insertion bres minins_data ;;    
 
     end ;;  
     
@@ -703,10 +739,14 @@ let try_hook_quickly ~with_anticipation pt hook =
       let _ = (memorizer_for_try_hook_quickly:=Some(pt,hook,qp)) in 
       raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
-
+let enhancement_data = ref [] ;;
+(*      
 let enhancement_data = ref [
-  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])]
+  P (1, 2, 4, []),[Q (P (1, 0, 3, [2]), [], [4])];
+  (P (1, 5, 7, []), [Q (P (1, 2, 4, []), [], [6; 7])];
 ] ;;
+*)
+
 let add_enhancement_data pair =
    (
     Accumulator_with_optional_anticipator.low_anticipator:=[];
@@ -868,9 +908,9 @@ let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 
 add_enhancement_data
- (P (2, 4, 9, []),
- [Q (P (1, 5, 7, []), [C [1; 3; 5]; C [2; 4; 6]; C [3; 5; 7]], [9])]);;
-( ) ;;
+ (P (1, 5, 7, []),
+ [Q (P (1, 2, 4, []), [], [6; 7])]);;
+
 let current_width = 2 
 and current_strappers = [] ;;
 let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
@@ -878,17 +918,11 @@ let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
 
-let pt0 = (P (2, 5, 9, [])) ;; 
+let pt0 = (P (2, 8, 12, [])) ;; 
 let bad1 = force_compute pt0 ;; 
 let (pt1,hook1,qp1) = Option.unpack(!memorizer_for_try_hook_quickly);;
-let (Q(pt2,constraints2,extension2)) = qp1 ;;
+let see1 = zoom qp1 ;;
 
-let (BR(_,M(reps,qpoints))) = force_compute (pt2) ;;
-let res1 = Image.image (
-  fun qp3 ->
-    let ttemp1 = all_representatives_for_qpoint qp3 in 
-    (qp3,List.filter (Constraint.satisfied_by_individual constraints2) ttemp1)
-) qpoints ;; 
 
 
  Accumulator_with_optional_anticipator.low_anticipator:=[]
