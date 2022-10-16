@@ -886,7 +886,9 @@ let zoom (Q(pt,constraints,extension)) =
 
 let usual_zoom () =   
    let (pt,hook,qp) = Option.unpack(!memorizer_for_try_hook_quickly) in 
-   zoom qp ;;   
+   let temp1 = zoom qp in 
+   let (qp1,sols1) = Listennou.force_find (fun (_,sols)->sols<>[]) temp1  in  
+   ((pt,[qp1,sols1]),temp1);;   
 
 (*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
@@ -917,6 +919,10 @@ add_enhancement_data
  (P (1, 8, 10, []),
  [(Q (P (1, 5, 7, []), [], [9; 10]), [[1; 3; 4; 6; 7; 9; 10]])]);; 
 
+add_enhancement_data
+ (P (1, 8, 10, []),
+ [(Q (P (1, 5, 7, []), [], [9; 10]), [[1; 3; 4; 6; 7; 9; 10]])]);; 
+
 
 let current_width = 2 
 and current_strappers = [] ;;
@@ -924,6 +930,8 @@ let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
 let tt n = tg (n-4) n;;
 let uu n = tg (n-3) n;;
 let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
+
+let (new_addition_to_be_made,all_data) = usual_zoom();;
 
 let pt0 = (P (2, 5, 9, [])) ;; 
 let bad1 = force_compute pt0 ;; 
