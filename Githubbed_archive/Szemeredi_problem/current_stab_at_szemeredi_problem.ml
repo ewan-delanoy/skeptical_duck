@@ -886,9 +886,10 @@ let zoom (Q(pt,constraints,extension)) =
 
 let usual_zoom () =   
    let (pt,hook,qp) = Option.unpack(!memorizer_for_try_hook_quickly) in 
-   let temp1 = zoom qp in 
+   let (Q(pt1,_,_)) = qp
+   and temp1 = zoom qp in 
    let (qp1,sols1) = Listennou.force_find (fun (_,sols)->sols<>[]) temp1  in  
-   ((pt,[qp1,sols1]),temp1);;   
+   ((pt1,[qp1,sols1]),temp1);;   
 
 (*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
