@@ -494,7 +494,8 @@ module Bulk_result = struct
 module Parametrized_Example = struct 
     
 let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
-  
+let sf2 n = List.filter (fun t->List.mem(t mod 3)[0;1]) (Int_range.range 1 n) ;;  
+
 (*
 let check_sf1 = 
   let temp1 = Int_range.scale (fun n->
@@ -751,6 +752,12 @@ let add_enhancement_data pair =
     Accumulator_with_optional_anticipator.low_anticipator:=[];
     enhancement_data := (!enhancement_data)@[pair]) ;; 
 
+let test1_for_enhancement (P(w,b,n,s)) =
+  (* tests where the point is of the form P(1,3*q-1,3*q+1,[]) *) 
+  if (w<>1)||(s<>[]) then None else
+  let q=(n/3) in 
+  if (b,n)=(3*q-1,3*q) then Some q else None;; 
+
 let omega_enhancements pt = None ;;
 
 let get_enhancements_opt pt = 
@@ -915,6 +922,18 @@ rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 (*
 #use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
+let current_width = 2 
+and current_strappers = [] ;;
+let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
+let tt n = tg (n-4) n;;
+
+let (new_addition_to_be_made,all_data) = usual_zoom();;
+
+
+let uu n = tg (n-3) n;;
+let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
+
+
 let g1 = needed_subcomputations_for_single_computation (P(4,0,8,[])) ;;
 
 let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
@@ -931,25 +950,11 @@ add_enhancement_data
  (P (1, 11, 13, []),
    [(Q (P (1, 8, 10, []), [], [12; 13]), [[1; 3; 4; 6; 7; 9; 10; 12; 13]])]);; 
 
+let gg q =    
+   (P (1, 3*q-1, 3*q+1, []),
+ [(Q (P (1, 3*q-4, 3*q-2, []), [], [3*q; 3*q+1]), [Parametrized_Example.sf2 (3*q+1)])]) ;;
 
 
-let current_width = 2 
-and current_strappers = [] ;;
-let tg b n = force_compute (P(current_width,b,n,current_strappers)) ;;
-let tt n = tg (n-4) n;;
-let uu n = tg (n-3) n;;
-let tu n = let tv=tt n and uv=uu n in (tv=uv,(tt n,uu n));;
-
-let (new_addition_to_be_made,all_data) = usual_zoom();;
-
-let pt0 = (P (2, 5, 9, [])) ;; 
-let bad1 = force_compute pt0 ;; 
-let (pt1,hook1,qp1) = Option.unpack(!memorizer_for_try_hook_quickly);;
-let see1 = zoom qp1 ;;
-
-
-
- Accumulator_with_optional_anticipator.low_anticipator:=[]
 
 *)
 
