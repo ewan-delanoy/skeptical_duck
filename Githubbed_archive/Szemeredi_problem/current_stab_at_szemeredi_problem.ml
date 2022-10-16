@@ -512,10 +512,7 @@ let pf2 x = P (2, x-5, x, []) ;;
 
 let aif1 n =
    match List.assoc_opt n [1,None;2,None;
-    3, Some
-    (Fork,
-     AI
-      [(vp1, []); (vp2, []); (pf1 2, [])])
+    3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])])
    ] with 
    Some answer -> answer 
    | None ->
@@ -536,16 +533,18 @@ let check_aif1 =
 
 let aif2 n =
   match List.assoc_opt n [1,None;2,None;
-   4, Some (Passive_repeat,AI[(pf1 3, [4])])
+  3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])]);
+   4, Some (Passive_repeat,AI[(pf1 3, [4])]);
+   5, Some (Passive_repeat,AI[(pf1 5, [])])
   ] with 
   Some answer -> answer 
-  | None -> Some(Passive_repeat,AI[(pf2(n), [n])]) ;;
+  | None -> Some(Passive_repeat,AI[(pf2(n), [])]) ;;
    
 (*
   
 let check_aif2 = 
   let temp1 = Int_range.scale (fun n->
-   let (BR(opt,_)) = force_compute (P(2,0,n,[])) in 
+   let (BR(opt,_)) = force_compute (P(3,0,n,[])) in 
    (n,opt,Parametrized_Example.aif2 n)) 1 40 in 
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
