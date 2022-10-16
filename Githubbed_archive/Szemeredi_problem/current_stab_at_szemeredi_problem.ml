@@ -508,6 +508,7 @@ let vp1 = P (1, 0, 3, [1]) ;;
 let vp2 = P (1, 0, 3, [2]) ;; 
 
 let pf1 x = P (1, x-2, x, []) ;; 
+let pf2 x = P (2, x-5, x, []) ;; 
 
 let aif1 n =
    match List.assoc_opt n [1,None;2,None;
@@ -532,6 +533,24 @@ let check_aif1 =
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
 *)
+
+let aif2 n =
+  match List.assoc_opt n [1,None;2,None;
+   4, Some (Passive_repeat,AI[(pf1 3, [4])])
+  ] with 
+  Some answer -> answer 
+  | None -> Some(Passive_repeat,AI[(pf2(n), [n])]) ;;
+   
+(*
+  
+let check_aif2 = 
+  let temp1 = Int_range.scale (fun n->
+   let (BR(opt,_)) = force_compute (P(2,0,n,[])) in 
+   (n,opt,Parametrized_Example.aif2 n)) 1 40 in 
+  List.filter (fun (n,a,b)->a<>b) temp1 ;; 
+
+*)
+
 
 let vqp1 = Q (vp1, [], []) ;;
 let vqp2 = Q (vp2, [], []) ;;
