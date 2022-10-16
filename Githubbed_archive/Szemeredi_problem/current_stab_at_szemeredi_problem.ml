@@ -751,10 +751,17 @@ let add_enhancement_data pair =
     Accumulator_with_optional_anticipator.low_anticipator:=[];
     enhancement_data := (!enhancement_data)@[pair]) ;; 
 
+let omega_enhancements pt = None ;;
+
+let get_enhancements_opt pt = 
+   match omega_enhancements pt with 
+     Some result -> result 
+     | None -> List.assoc_opt pt (!enhancement_data) ;;   
+
 exception Access_error_during_enhancement of point * point ;; 
 
 let enhance_first_time_result ~with_anticipation pt result = 
-  match List.assoc_opt pt (!enhancement_data) with 
+  match get_enhancements_opt pt  with 
   None -> result
   | (Some pivots) -> 
      let temp1 = Image.image (
@@ -921,8 +928,9 @@ add_enhancement_data
  [(Q (P (1, 5, 7, []), [], [9; 10]), [[1; 3; 4; 6; 7; 9; 10]])]);; 
 
 add_enhancement_data
- (P (1, 8, 10, []),
- [(Q (P (1, 5, 7, []), [], [9; 10]), [[1; 3; 4; 6; 7; 9; 10]])]);; 
+ (P (1, 11, 13, []),
+   [(Q (P (1, 8, 10, []), [], [12; 13]), [[1; 3; 4; 6; 7; 9; 10; 12; 13]])]);; 
+
 
 
 let current_width = 2 
