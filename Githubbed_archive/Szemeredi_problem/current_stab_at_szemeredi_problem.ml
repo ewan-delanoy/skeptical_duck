@@ -884,7 +884,9 @@ let zoom (Q(pt,constraints,extension)) =
        (Constraint.satisfied_by_individual constraints) ttemp1)
    ) qpoints ;; 
 
-   
+let usual_zoom () =   
+   let (pt,hook,qp) = Option.unpack(!memorizer_for_try_hook_quickly) in 
+   zoom qp ;;   
 
 (*    
 rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
@@ -910,6 +912,11 @@ let g2 = needed_subcomputations_for_single_computation (P(3,1,7,[])) ;;
 add_enhancement_data
  (P (1, 5, 7, []),
  [(Q (P (1, 2, 4, []), [], [6; 7]), [[1; 3; 4; 6; 7]])]);;
+
+add_enhancement_data
+ (P (1, 8, 10, []),
+ [(Q (P (1, 5, 7, []), [], [9; 10]), [[1; 3; 4; 6; 7; 9; 10]])]);; 
+
 
 let current_width = 2 
 and current_strappers = [] ;;
