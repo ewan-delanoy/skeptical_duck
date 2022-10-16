@@ -756,13 +756,18 @@ let test1_for_enhancement (P(w,b,n,s)) =
   (* tests where the point is of the form P(1,3*q-1,3*q+1,[]) *) 
   if (w<>1)||(s<>[]) then None else
   let q=(n/3) in 
-  if (b,n)=(3*q-1,3*q) then Some q else None;; 
+  if ((b,n)=(3*q-1,3*q))&&(q>=2) then Some q else None;; 
 
-let omega_enhancements pt = None ;;
+let omega_enhancements pt = 
+  match test1_for_enhancement pt with 
+    (Some q) ->    
+      Some [(Q (P (1, 3*q-4, 3*q-2, []), [], [3*q; 3*q+1]), 
+       [Parametrized_Example.sf2 (3*q+1)])]     
+  | None -> None ;;
 
 let get_enhancements_opt pt = 
    match omega_enhancements pt with 
-     Some result -> result 
+     Some result -> Some result 
      | None -> List.assoc_opt pt (!enhancement_data) ;;   
 
 exception Access_error_during_enhancement of point * point ;; 
