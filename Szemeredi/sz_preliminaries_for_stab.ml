@@ -49,3 +49,14 @@ module Finite_int_set = struct
        (n,i_setminus (Int_range.range 1 n) domain) ;;   
   
 end ;;    
+
+module Point = struct 
+  type t = Sz_types.point = P of int * int * int * int list ;;  
+  let width (P(w,b,n,s)) = w ;;
+  let breadth (P(w,b,n,s)) = b ;;
+  let size (P(w,b,n,s)) = n ;;
+  let scrappers (P(w,b,n,s)) = s ;;
+  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
+  let enumerate_supporting_set (P(w,b,n,s)) = Finite_int_set.of_pair (n,s) ;; 
+
+end ;;  

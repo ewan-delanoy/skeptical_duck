@@ -14,17 +14,6 @@ open Sz_preliminaries_for_stab ;;
 
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
-module Finite_int_set = struct 
-
-let of_pair (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
-
-let to_pair domain =
-     if domain = [] then (0,[]) else 
-     let n = List.hd(List.rev domain) in 
-     (n,i_setminus (Int_range.range 1 n) domain) ;;   
-
-end ;;    
-
 let test_for_admissibility_up_to_max_with max_width z =
   if max_width<1 then true else 
   Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
