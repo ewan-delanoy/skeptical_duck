@@ -272,7 +272,7 @@ end ;;
 
 
   
-  module Bulgarian = struct 
+  module Simplest_reduction = struct 
 
     module For_nonparametrized_sets = struct 
 
@@ -359,12 +359,12 @@ end ;;
 exception Already_decomposable_point of point ;; 
 
 let ancestors_for_hook pt0 hook = 
-  match Bulgarian.decompose pt0 with 
+  match Simplest_reduction.decompose pt0 with 
   None -> raise(Already_decomposable_point(pt0))
   |Some(pt1,adj1) ->
   let temp1 = nonbulgarian_ancestors_for_hook pt1 hook in 
   (AI(Image.image (fun pt2-> 
-    match Bulgarian.decompose pt2 with 
+    match Simplest_reduction.decompose pt2 with 
      None -> (pt2,adj1)
     |Some(pt3,adj3) -> (pt3,i_merge adj1 adj3)
   ) temp1))  ;; 
@@ -588,7 +588,7 @@ let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
 let generic_access_opt  ~with_anticipation pt = 
- match Bulgarian.decompose pt with 
+ match Simplest_reduction.decompose pt with 
  None -> Some (Bulk_result.singleton None (Point.enumerate_supporting_set pt))
  | Some(pt2,adj) ->
 let (width,breadth,n,scrappers) = Point.unveil pt2 in 
@@ -809,7 +809,7 @@ let rec pusher_for_recursive_computation to_be_treated=
     match to_be_treated with 
     [] -> raise(Pusher_exn)
     | pt :: others -> 
-       (match Bulgarian.decompose pt with 
+       (match Simplest_reduction.decompose pt with 
         None -> others
         |Some(pt2,adj) ->
        let (missing_data,opt_res) =
