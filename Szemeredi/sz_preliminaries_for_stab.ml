@@ -38,3 +38,14 @@ module Parameter_pair_for_obstruction = struct
          [breadth;breadth+width;breadth+2*width] domain ;;  
   
 end ;;  
+
+module Finite_int_set = struct 
+
+  let of_pair (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+  
+  let to_pair domain =
+       if domain = [] then (0,[]) else 
+       let n = List.hd(List.rev domain) in 
+       (n,i_setminus (Int_range.range 1 n) domain) ;;   
+  
+end ;;    

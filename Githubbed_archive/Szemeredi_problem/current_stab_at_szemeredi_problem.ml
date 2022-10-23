@@ -12,16 +12,18 @@ open Needed_values ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
-
-
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
-let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+module Finite_int_set = struct 
 
-let abstractize domain =
-   if domain = [] then (0,[]) else 
-   let n = List.hd(List.rev domain) in 
-   (n,i_setminus (Int_range.range 1 n) domain) ;;   
+let of_pair (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+
+let to_pair domain =
+     if domain = [] then (0,[]) else 
+     let n = List.hd(List.rev domain) in 
+     (n,i_setminus (Int_range.range 1 n) domain) ;;   
+
+end ;;    
 
 let test_for_admissibility_up_to_max_with max_width z =
   if max_width<1 then true else 
@@ -36,7 +38,7 @@ let test_for_admissiblity width breadth z =
 let remove_one_element (n,scrappers) k=
   let new_scrappers = i_insert k scrappers in 
   if k <> n then (n,new_scrappers) else 
-  let new_z =  concretize (n,new_scrappers) in 
+  let new_z =  Finite_int_set.of_pair (n,new_scrappers) in 
   let new_max = List.hd(List.rev new_z) in 
   (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
 
@@ -73,7 +75,7 @@ let merge_constraints l_constr1 l_constr2 =
      (simplifier l_constr1) (simplifier l_constr2))) ;;
 
 let insert_new (n,scrappers) (old_constraints,extension) (C new_constraint)= 
-  let whole = concretize (n,scrappers) in 
+  let whole = Finite_int_set.of_pair (n,scrappers) in 
   let remaining_constraint = i_setminus new_constraint extension in 
   if remaining_constraint = [] 
   then None 
@@ -107,7 +109,7 @@ module Point = struct
   let size (P(w,b,n,s)) = n ;;
   let scrappers (P(w,b,n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
-  let concretize (P(w,b,n,s)) = concretize (n,s) ;;
+  let enumerate_supporting_set (P(w,b,n,s)) = Finite_int_set.of_pair (n,s) ;; 
 
 end ;;  
 
@@ -345,11 +347,11 @@ module Bulgarian_for_nonparametrized_sets = struct
   
     let decompose pt =
         let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
-        let domain = concretize (n,scrappers) in 
+        let domain = Finite_int_set.of_pair (n,scrappers) in 
         match Bulgarian_for_nonparametrized_sets.decompose (old_width,old_breadth) domain with
         None -> None
       | (Some((new_width,new_breadth),(new_domain,adjustment))) -> 
-         let (new_n,new_scrappers) = abstractize new_domain in 
+         let (new_n,new_scrappers) = Finite_int_set.to_pair new_domain in 
           Some(P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
       
   (*
@@ -608,7 +610,7 @@ let medium_hashtbl = Hashtbl.create 50 ;;
 
 let generic_access_opt  ~with_anticipation pt = 
  match Bulgarian.decompose pt with 
- None -> Some (Bulk_result.singleton None (Point.concretize pt))
+ None -> Some (Bulk_result.singleton None (Point.enumerate_supporting_set pt))
  | Some(pt2,adj) ->
 let (width,breadth,n,scrappers) = Point.unveil pt2 in 
 let pre_res=(
