@@ -6,7 +6,7 @@
 
 type hook = 
 Passive_repeat 
-| Boundary_increment 
+(* | Boundary_increment  *)
 | Fork 
 | Jump ;;
 
