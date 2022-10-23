@@ -4,6 +4,25 @@
 
 *)
 
+let i_order = Total_ordering.for_integers ;;
+let i_insert = Ordered.insert i_order ;;
+let i_mem = Ordered.mem i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_intersects = Ordered.intersects i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_fold_merge = Ordered.fold_merge il_order ;;
+let il_is_included_in = Ordered.is_included_in il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let t_order = Total_ordering.triple_product 
+   i_order i_order (Total_ordering.silex_for_intlists) ;;
+
+
 module Parameter_pair_for_obstruction = struct 
 
   let predecessor max_in_set (width,breadth) = 
