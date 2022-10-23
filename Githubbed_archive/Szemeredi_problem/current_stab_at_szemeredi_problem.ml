@@ -272,7 +272,7 @@ end ;;
 
 
   
-  module Simplest_reduction = struct 
+module Simplest_reduction = struct 
 
     module For_nonparametrized_sets = struct 
 
