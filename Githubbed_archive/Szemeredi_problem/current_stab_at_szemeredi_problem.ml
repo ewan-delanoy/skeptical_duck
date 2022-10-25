@@ -12,6 +12,7 @@ open Needed_values ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
+
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
 let test_for_admissibility_up_to_max_with max_width z =
@@ -40,16 +41,7 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 
 
 
-module Constraint = struct
-
-let extra_constraints_from_boundary_increment width breadth n =
-    let mainstream = Int_range.scale (fun j->
-        let k = width-j in C[n-2*k;n-k]
-     ) 1 (width-1) in
-     let lower_end = n-2*width in 
-     if (lower_end>=1) && (lower_end<=breadth) 
-     then (C[lower_end;lower_end+width])::mainstream 
-     else mainstream ;;   
+module Constraint = struct  
 
 let satisfied_by_individual l_constr l =
   List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
@@ -208,13 +200,6 @@ let apply_passive_repeat  pt mold =
    let (width,b,_,_) = Point.unveil pt in 
    insert_several_constraints_opt [C[b;b+width;b+2*width]] mold;;
 
-let apply_boundary_increment pt mold = 
-    let (width,breadth,n,_) = Point.unveil pt in 
-    let new_constraints = Constraint.extra_constraints_from_boundary_increment width breadth n in 
-    match insert_several_constraints_opt new_constraints mold with 
-     None -> None 
-    |Some new_mold -> Some(extend_with new_mold [n]) ;;
-
 let apply_fork ll =
   let (_,temp1) = Max.maximize_it_with_care 
     (fun (_,mold)->common_length mold)  ll in  
@@ -228,7 +213,6 @@ let apply_fork ll =
 let apply_hook_naively pt hook args =  
     match hook with 
     Passive_repeat -> apply_passive_repeat pt (snd(List.hd args))
-  | Boundary_increment -> apply_boundary_increment pt (snd(List.hd args))
   | Fork ->   Some(apply_fork args )
   | Jump -> Some(snd(List.hd args));; 
 
@@ -275,9 +259,6 @@ let nondecomposed_ancestors_for_hook pt hook =
     let (width,breadth,n,scrappers) = Point.unveil pt in  
     match hook with 
     Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
-   | Boundary_increment ->
-    let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-    [P(width,breadth,m,new_scrappers)]
    | Fork ->     
        Int_range.scale (fun k->
           let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
@@ -639,9 +620,6 @@ let try_hook_quickly ~with_anticipation pt hook =
       raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
 
 let enhancement_data = ref [
-  (P (1, 2, 4, []),
-  [Q (P (1, 0, 3, [2]), [], [4]),[[1;3;4]]]) ;
-
 ] ;;
 
 
@@ -650,11 +628,8 @@ let add_enhancement_data pair =
     Accumulator_with_optional_anticipator.low_anticipator:=[];
     enhancement_data := (!enhancement_data)@[pair]) ;; 
 
-let test1_for_enhancement (P(w,b,n,s)) =
-  (* tests where the point is of the form P(1,3*q-1,3*q+1,[]) *) 
-  if (w<>1)||(s<>[]) then None else
-  let q=(n/3) in 
-  if ((b,n)=(3*q-1,3*q+1))&&(q>=2) then Some q else None;; 
+let test1_for_enhancement (P(w,b,n,s)) = None ;; 
+
 
 let omega_enhancements pt = 
   match test1_for_enhancement pt with 
@@ -721,10 +696,6 @@ let find_remote_stumbling_block_or_immediate_working_hook
     try_hook_quickly ~with_anticipation pt Passive_repeat in 
    if result_opt1<>None then ([], Some Passive_repeat) else  
    if missing_data1<>[] then (missing_data1,None) else  
-   let (missing_data2,result_opt2) = 
-    try_hook_quickly ~with_anticipation pt Boundary_increment in 
-   if result_opt2<>None then ([], Some Boundary_increment) else  
-   if missing_data2<>[] then (missing_data2,None) else  
    let (missing_data3,result_opt3) = 
     try_hook_quickly ~with_anticipation pt Fork in 
    if result_opt3<>None then ([], Some Fork) else  
