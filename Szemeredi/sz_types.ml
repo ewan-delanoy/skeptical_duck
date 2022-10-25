@@ -6,7 +6,6 @@
 
 type hook = 
 Passive_repeat 
-(* | Boundary_increment  *)
 | Fork 
 | Jump ;;
 
@@ -24,6 +23,12 @@ type mold = M of (solution list) * ( qualified_point list) ;;
   
 type ancestry_info = AI of (point * extension_data) list ;;
   
+type superficial_result = 
+  Atomic
+| Contraction_surface of point * constraint_t  
+| Fork_surface of (point * extension_data) list
+| Jump_surface of point * extension_data ;;
+
 type bulk_result = BR of ((hook * ancestry_info) option) * mold ;;  
 
 type function_of_size = 
