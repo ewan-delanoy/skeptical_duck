@@ -1,7 +1,88 @@
 (************************************************************************************************************************
-Snippet 114 : 
+Snippet 116 : 
 ************************************************************************************************************************)
 
+
+(************************************************************************************************************************
+Snippet 115 : Examples of "translating" ppx_deriving into usual OCaml code
+************************************************************************************************************************)
+
+(*
+let stork1 = {
+  FileHandler.logs_folder="suzanne"; 
+        truncate=false; 
+        file_perms=567; 
+        date_prefix = Some "vega"; 
+        versioning= Some 71; 
+        suffix ="Bart";
+} ;;     
+
+let stork2 = 
+{
+  FileHandler.logs_folder="amy"; 
+        truncate=true; 
+        file_perms=567; 
+        date_prefix = None; 
+        versioning= None; 
+        suffix ="macdonals";
+} ;;     
+
+let bee1 = {file_handlers=stork1} ;; 
+let bee2 = {file_handlers=stork2} ;; 
+
+let wasps = Image.image config_to_yojson [bee1;bee2] ;;
+
+let clis = Image.image (fun lev -> {level = lev}) 
+[Debug;Trace;Info;NoLevel] ;;
+
+let clos = Image.image cli_json_params_to_yojson clis ;; 
+
+let check6= List.filter (fun cfg->
+   (cli_json_params_of_yojson cfg)<>(cjo cfg)
+  ) clos ;;
+
+let check5= List.filter (fun cfg->
+   (cli_json_params_to_yojson cfg)<>(cjt cfg)
+  ) clis ;;
+
+let check4= List.filter (fun cfg->
+   (config_of_yojson cfg)<>(config__of_yojson cfg)
+  ) wasps ;;
+
+let check3 = List.filter (fun cfg->
+   (config_to_yojson cfg)<>(config__to_yojson cfg)
+  ) [bee1;bee2] ;;
+
+let check1 = List.filter (fun cfg->
+   (config_to_yojson cfg)<>(stork_to_yojson cfg)
+  ) [stork1;stork2] ;;
+
+let starks = Image.image config_to_yojson [stork1;stork2] ;;
+
+let check2 = List.filter (fun yj->
+  (config_of_yojson yj)<>(stork_of_yojson yj)
+ ) starks ;;
+*)
+
+(************************************************************************************************************************
+Snippet 114 : Local modularization
+************************************************************************************************************************)
+
+open Needed_values ;; 
+let path1 = home^"/Downloads/OCaml_packages/calendar-3.0.0/src" ;; 
+
+let u1 = rf (path1^"/depend.txt") ;;
+let u2 = Str.split (Str.regexp_string " ") u1;;
+let u3 = List.filter (fun s->Supstring.ends_with s ".ml") u2;;
+let u4 = Image.image (fun s->
+    Absolute_path.of_string (path1^"/"^s)
+  ) u3;;
+let u5 = Modularize.modularize_several "" u4 ;; 
+let u6 = "module CalendarLib = struct \n\n" ^ u5 ^ "\n\nend ;;" ;;  
+
+let path2 = home^"/Teuliou/OCaml/Ordinary/Fads/Extract_php_lexer_from_padioleau/More_complete_version";; 
+let ap1 = Absolute_path.of_string (path2^"/wrapped_calendarlib.ml") ;;
+Io.overwrite_with ap1 u6 ;; 
 
 (************************************************************************************************************************
 Snippet 113 : Copy large interval of text from a file to another
