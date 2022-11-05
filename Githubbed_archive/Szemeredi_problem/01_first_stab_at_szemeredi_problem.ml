@@ -1,17 +1,16 @@
 (*
 
-#use "Githubbed_archive/Szemeredi_problem/first_stab_at_szemeredi_problem.ml" ;;
+#use "Githubbed_archive/Szemeredi_problem/01_first_stab_at_szemeredi_problem.ml" ;;
 
 As shown in the code below, analysis is done up to n=25. 
 
-let ff n = Level_four.impatient_measure (Ennig.ennig 1 n);;
-let u1 = Ennig.doyle ff 1 25 ;;
-
+let ff n = Level_four.impatient_measure (Int_range.range 1 n);;
+let u1 = Int_range.scale ff 1 25 ;;
 *)
 
 open Needed_values ;;
 
-let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/first_stab_at_szemeredi_problem.ml" ;;
+let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/01_first_stab_at_szemeredi_problem.ml" ;;
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =

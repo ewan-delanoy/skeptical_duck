@@ -26,9 +26,9 @@ type ancestry_info = AI of (point * extension_data) list ;;
 type superficial_result = 
   Atomic
 | Decomposable of point * extension_data   
+| Jump_surface of point * extension_data
 | Contraction_surface of point * constraint_t  
-| Fork_surface of (point * extension_data) list
-| Jump_surface of point * extension_data ;;
+| Fork_surface of (point * extension_data) list ;;
 
 type bulk_result = BR of ((hook * ancestry_info) option) * mold ;;  
 
@@ -37,3 +37,4 @@ Usual_fos of (int -> bulk_result) ;;
 
 type function_of_breadth_and_size = 
 Usual_fobas of ( int -> int -> bulk_result) ;;
+

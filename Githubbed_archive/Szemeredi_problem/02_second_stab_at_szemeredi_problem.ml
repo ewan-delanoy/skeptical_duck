@@ -1,6 +1,6 @@
 (*
 
-#use "Githubbed_archive/Szemeredi_problem/second_stab_at_szemeredi_problem.ml" ;;
+#use "Githubbed_archive/Szemeredi_problem/02_second_stab_at_szemeredi_problem.ml" ;;
 
 A failed attempt : using a greedy elimination procedure, described in the Greedy module 
 just below.
@@ -53,7 +53,7 @@ let rec lexshorted_greedy_elimination (vertices,edges,goal) =
 
 end ;;  
 
-let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/second_stab_at_szemeredi_problem.ml" ;;
+let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/02_second_stab_at_szemeredi_problem.ml" ;;
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =

@@ -622,7 +622,6 @@ let try_hook_quickly ~with_anticipation pt hook =
 let enhancement_data = ref [
 ] ;;
 
-
 let add_enhancement_data pair =
    (
     Accumulator_with_optional_anticipator.low_anticipator:=[];
@@ -667,6 +666,7 @@ let compute_from_below ~with_anticipation pt hook =
    None ->raise(Compute_from_below_exn(pt)) 
    | Some result -> enhance_first_time_result ~with_anticipation pt result ;; 
 
+
 let low_add pt hook =
    let res = compute_from_below ~with_anticipation:false pt hook in  
    let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
@@ -679,6 +679,20 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
  
+ 
+let compute_superficial_result_partially ~with_anticipation pt =  
+  let (width,breadth,n,scrappers) = Point.unveil pt in 
+  let opt = Simplest_reduction.decompose pt in 
+  if ((width,breadth)=(1,0))||(opt=None)
+  then ([],Some Atomic)
+  else 
+  let (pt2,adj) = Option.unpack opt in 
+  if adj<>[]
+  then ([],Some(Decomposable(pt2,adj)))
+  else     
+  if breadth = 0
+  then partial_superificial_result_in_jump_case    
+
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
     match generic_access_opt ~with_anticipation pt with 
