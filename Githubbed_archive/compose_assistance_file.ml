@@ -6,7 +6,8 @@
 
 open Needed_values;;
 
-let g1=(Needed_values.abo "usual_coma_state")@["Compilation_management/usual_coma_state"];;
+let g1=(Needed_values.abo "usual_coma_state")@
+["Compilation_management/usual_coma_state"];;
 let g2=Image.image (
   fun old_s->
    let s= Cull_string.after_rightmost old_s '/' in 
@@ -43,8 +44,12 @@ let prologue=String.concat "\n"
 
 let g5=prologue^g4;;
 
+let s_githubbed_archive = 
+  Dfa_subdirectory.connectable_to_subpath(
+  Coma_constant.githubbed_archive_subdir) ;;
+
 let ap_for_assistance=Absolute_path.of_string
-  ("Githubbed_archive/assistance.ml");;
+  (s_githubbed_archive^"assistance.ml");;
 
 let act ()=Io.overwrite_with
   ap_for_assistance g5;;

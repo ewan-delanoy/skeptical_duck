@@ -6,14 +6,33 @@
 
 module Private = struct
 
-let utility_files_subdir=
-  Dfa_subdirectory.of_line "Utility_files";;
 
 let fads_subdir=
   Dfa_subdirectory.of_line "Fads";;
 
 let githubbed_archive_subdir=
   Dfa_subdirectory.of_line "Githubbed_archive";;
+
+let watched_subdir=
+  Dfa_subdirectory.of_line "watched";;
+
+let nonml_files_subdir=
+  Dfa_subdirectory.of_line "nonml_files";;
+
+let watched_and_githubbed_subdir=
+  Dfa_subdirectory.extend watched_subdir "watched_and_githubbed";;
+
+let watched_not_githubbed_subdir=
+  Dfa_subdirectory.extend watched_subdir "watched_not_githubbed";;
+
+let githubbed_nonml_files_subdir=
+  Dfa_subdirectory.extend nonml_files_subdir "githubbed_nonml_files";;
+
+let nongithubbed_nonml_files_subdir=
+  Dfa_subdirectory.extend nonml_files_subdir "nongithubbed_nonml_files";;  
+
+let utility_files_subdir=
+  Dfa_subdirectory.of_line "Utility_files";;
 
 let persistent_data_subdir = 
   Dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
@@ -57,6 +76,8 @@ let git_ignored_subdirectories =
      utility_files_subdir;
      build_subdir;
      fads_subdir;
+     watched_not_githubbed_subdir;
+     nongithubbed_nonml_files_subdir;
   ];;
 
 
@@ -99,7 +120,11 @@ let minimal_set_of_needed_dirs =
     persistent_data_subdir ; 
     usual_build_subdir ;
     utility_files_subdir ;
-    githubbed_archive_subdir
+    githubbed_archive_subdir;
+    watched_not_githubbed_subdir;
+    watched_and_githubbed_subdir;
+    githubbed_nonml_files_subdir;
+    nongithubbed_nonml_files_subdir;
   ] ;;  
 
 let full_set_of_needed_dirs = 
