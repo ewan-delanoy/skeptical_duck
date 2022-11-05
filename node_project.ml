@@ -47,7 +47,7 @@ let refresh () =
 
 let update opt_msg =
     let old_fw = (!watcher_ref) in 
-    let (fw2,changes) = File_watcher.inspect_and_update old_fw true in 
+    let (fw2,changes) = File_watcher.inspect_and_update old_fw ~verbose:true in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changes in 
     let _ = Transmit_change_to_github.backup github_config diff opt_msg in 
     let _=(watcher_ref:=fw2) in fw2;;
