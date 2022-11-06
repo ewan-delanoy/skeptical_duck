@@ -11,7 +11,8 @@ module Private = struct
   
   let ocamldebug_printersfile_path root= 
              (Dfa_root.connectable_to_subpath root)^
-             (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir)) ^
+             (Dfa_subdirectory.connectable_to_subpath
+               (Coma_constant.nongithubbed_nonml_files_subdir)) ^
                "cmos_for_ocamldebug.txt";;
   let parent fw = Fw_poly.parent fw;;
   let get_cmpl_results fw = Fw_poly.last_compilation_result_for_module fw ;;
@@ -201,7 +202,8 @@ module Private = struct
   
   let clean_debug_dir fw=
     let s_root=Dfa_root.connectable_to_subpath(root fw) in
-    let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir)) in 
+    let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath
+       (Coma_constant.debug_build_subdir)) in 
     Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
      
   let name_element_for_debugged_file = "debugged" ;;

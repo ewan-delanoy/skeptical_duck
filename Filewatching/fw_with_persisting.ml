@@ -34,7 +34,7 @@ module Private=struct
       let s_root=Dfa_root.connectable_to_subpath main_root in
       let temp1=Image.image 
         (fun sdir->"S "^s_root^(Dfa_subdirectory.connectable_to_subpath sdir) )
-      (Coma_constant.utility_files_subdir::dirs) in
+      dirs in
       let temp2=("B "^s_root^(Dfa_subdirectory.connectable_to_subpath building_site))::temp1 in
       "\n\n\n"^(String.concat "\n" temp2)^"\n\n\n";; 
 
