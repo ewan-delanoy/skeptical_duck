@@ -34,8 +34,7 @@ let nongithubbed_nonml_files_subdir=
 let utility_files_subdir=
   Dfa_subdirectory.of_line "Utility_files";;
 
-let persistent_data_subdir = 
-  Dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
+
 let confidential_data_subdir = 
   Dfa_subdirectory.extend utility_files_subdir "Confidential_data";;
 
@@ -66,7 +65,7 @@ let rootless_path_for_parametersfile=
 let rootless_path_for_printersfile=
   Dfn_join.subdirectory_to_short  utility_files_subdir short_path_for_printersfile;;
 let rootless_path_for_targetfile=
-  Dfn_join.subdirectory_to_short  persistent_data_subdir short_path_for_targetfile;;     
+  Dfn_join.subdirectory_to_short  nongithubbed_nonml_files_subdir short_path_for_targetfile;;     
 
 let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 
@@ -117,7 +116,6 @@ let conventional_files_with_minimal_content =
 
 let minimal_set_of_needed_dirs = 
   [
-    persistent_data_subdir ; 
     usual_build_subdir ;
     utility_files_subdir ;
     githubbed_archive_subdir;
