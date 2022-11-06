@@ -34,10 +34,6 @@ let nongithubbed_nonml_files_subdir=
 let utility_files_subdir=
   Dfa_subdirectory.of_line "Utility_files";;
 
-
-let confidential_data_subdir = 
-  Dfa_subdirectory.extend utility_files_subdir "Confidential_data";;
-
 let build_subdir =   Dfa_subdirectory.of_line "_build";;
 let usual_build_subdir= Dfa_subdirectory.extend build_subdir "_usual_build";;
 let debug_build_subdir= Dfa_subdirectory.extend build_subdir "_debug_build";;  
@@ -133,7 +129,6 @@ let full_set_of_needed_dirs =
 
 end ;;
 
- let confidential_data_subdir = Private.confidential_data_subdir ;;
  let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
  let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
  let debug_build_subdir = Private.debug_build_subdir ;;
