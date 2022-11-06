@@ -142,6 +142,7 @@ end ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
  let githubbed_archive_subdir = Private.githubbed_archive_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
  let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
  let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
