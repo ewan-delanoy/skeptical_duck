@@ -7,7 +7,7 @@
 let compact_replacer = 
   Dfn_rootless.of_line (
   (Dfa_subdirectory.connectable_to_subpath 
-   Coma_constant.confidential_data_subdir 
+   Coma_constant.nongithubbed_nonml_files_subdir
   )^"compact_replacer.txt");;
 
 let fw_config = 
