@@ -1,6 +1,6 @@
 (*
 
-#use"reconstruct_linear_poset.ml";;
+#use"lib/reconstruct_linear_poset.ml";;
 
 Computes the (canonical) maximal acyclic sub-poset of a given poset, returns
 it as a list L where each element of L is a triple (a,anc_a,a_is_clean)
