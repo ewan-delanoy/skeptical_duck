@@ -1,6 +1,6 @@
 (*
 
-#use"capitalize_directory_names.ml";;
+#use"lib/capitalize_directory_names.ml";;
 
 
 *)
