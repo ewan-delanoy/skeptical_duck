@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/partition_string.ml";;
+#use"lib/Text_editing/partition_string.ml";;
 
 The wrt_whistepace function is basically just the Str.full_split map, with 
 a little bit of standardization (if the string starts with
