@@ -2,7 +2,7 @@
 
 String appearing as a subsubdirectory name, at the moment it is used.
 
-#use"endsubdirectory.ml";;
+#use"lib/endsubdirectory.ml";;
 
 *)
 
