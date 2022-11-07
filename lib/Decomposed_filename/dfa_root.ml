@@ -2,7 +2,7 @@
 
 The rightmost trailing slash is removed.
 
-#use"Decomposed_filename/dfa_root.ml";;
+#use"lib/Decomposed_filename/dfa_root.ml";;
 
 *)
 
