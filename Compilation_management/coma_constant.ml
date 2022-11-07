@@ -12,9 +12,6 @@ let directives_subdir=
 let debugging_subdir=
   Dfa_subdirectory.of_line "debugging";;
 
-let githubbed_archive_subdir=
-  Dfa_subdirectory.of_line "Githubbed_archive";;
-
 let watched_subdir=
   Dfa_subdirectory.of_line "watched";;
 
@@ -47,7 +44,7 @@ let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
 let rootless_path_for_diary_file=
-  Dfn_join.subdirectory_to_short  githubbed_archive_subdir short_path_for_diary_file;;
+  Dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
@@ -109,7 +106,6 @@ let conventional_files_with_minimal_content =
 let minimal_set_of_needed_dirs = 
   [
     usual_build_subdir ;
-    githubbed_archive_subdir;
     watched_not_githubbed_subdir;
     watched_and_githubbed_subdir;
     githubbed_nonml_files_subdir;
@@ -130,7 +126,7 @@ end ;;
  let exec_build_subdir = Private.exec_build_subdir ;;
  let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
- let githubbed_archive_subdir = Private.githubbed_archive_subdir ;;
+ let githubbed_archive_subdir = Private.watched_and_githubbed_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
  let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
