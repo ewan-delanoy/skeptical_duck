@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/manage_diary.ml";;
+#use"lib/Text_editing/manage_diary.ml";;
 
 This module manages "diaries", i.e. files consisting of snippets 
 of code indexed in increasing order.
