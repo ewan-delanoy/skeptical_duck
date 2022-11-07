@@ -2,7 +2,7 @@
 
 Subdirectories name, with the trailing slash removed.
 
-#use"Decomposed_filename/dfa_subdirectory.ml";;
+#use"lib/Decomposed_filename/dfa_subdirectory.ml";;
 
 
 *)
