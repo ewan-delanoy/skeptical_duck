@@ -1,6 +1,6 @@
 (*
 
-#use"dircopy_diff.ml";;
+#use"lib/dircopy_diff.ml";;
 
 *)
 
