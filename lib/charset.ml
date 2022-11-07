@@ -1,6 +1,6 @@
 (*
 
-#use"charset.ml";;
+#use"lib/charset.ml";;
 
 *)
 
