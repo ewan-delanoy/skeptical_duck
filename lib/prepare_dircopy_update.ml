@@ -1,6 +1,6 @@
 (*
 
-#use"prepare_dircopy_update.ml";;
+#use"lib/prepare_dircopy_update.ml";;
 
 *)
 
