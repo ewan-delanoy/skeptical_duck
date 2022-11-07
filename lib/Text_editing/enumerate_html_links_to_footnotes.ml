@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/enumerate_html_links_to_footnotes.ml";;
+#use"lib/Text_editing/enumerate_html_links_to_footnotes.ml";;
 
 *)
 
