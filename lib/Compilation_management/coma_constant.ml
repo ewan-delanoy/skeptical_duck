@@ -1,6 +1,6 @@
 (* 
 
-#use"Compilation_management/coma_constant.ml";;
+#use"lib/Compilation_management/coma_constant.ml";;
 
 *)
 
