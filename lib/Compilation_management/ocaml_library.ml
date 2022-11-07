@@ -1,6 +1,6 @@
 (* 
 
-#use"Compilation_management/ocaml_library.ml";;
+#use"lib/Compilation_management/ocaml_library.ml";;
 
 *)
 
