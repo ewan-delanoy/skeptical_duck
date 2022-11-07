@@ -1,6 +1,6 @@
 (*
 
-#use"tools_for_absolute_path.ml";;
+#use"lib/tools_for_absolute_path.ml";;
 
 Standardize filename path. Non-directories never 
 end with /, directories always do (exceptions : the iterated_container 
