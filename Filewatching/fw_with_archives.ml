@@ -20,7 +20,7 @@ module Private = struct
    (* Inherited constructors *)
 
    let constructor par opt_subdirs= 
-      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.githubbed_archive_subdir]) in    
+      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.watched_and_githubbed_subdir]) in    
       Fw_poly.extend_file_watcher_to_fw_with_archives
         par ~subdirs_for_archived_mlx_files:subdirs ;;
       

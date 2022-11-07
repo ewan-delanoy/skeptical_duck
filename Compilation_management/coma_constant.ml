@@ -126,7 +126,7 @@ end ;;
  let exec_build_subdir = Private.exec_build_subdir ;;
  let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
- let githubbed_archive_subdir = Private.watched_and_githubbed_subdir ;;
+ let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
  let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;

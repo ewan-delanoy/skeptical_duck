@@ -34,6 +34,10 @@ let g4=Replace_inside.replace_several_inside_string
     "let githubbing=false;;"
   ] g3;;
 
+let s_githubbed_archive = 
+    Dfa_subdirectory.connectable_to_subpath(
+    Coma_constant.watched_and_githubbed_subdir) ;;
+
 let prologue=String.concat "\n"
 ["(*"; ""; "#use\"Githubbed_archive/assistance.ml\";;"; "";
    "In an emergency situation, open a fresh terminal, load this ";
@@ -44,15 +48,17 @@ let prologue=String.concat "\n"
 
 let g5=prologue^g4;;
 
-let s_githubbed_archive = 
-  Dfa_subdirectory.connectable_to_subpath(
-  Coma_constant.githubbed_archive_subdir) ;;
+
+let command_for_backup = 
+  "cp "^s_githubbed_archive^"assistance.ml "^s_githubbed_archive^"old_assistance.ml " ;; 
 
 let ap_for_assistance=Absolute_path.of_string
   (s_githubbed_archive^"assistance.ml");;
 
-let act ()=Io.overwrite_with
+let act ()=
+    let _ = Sys.command command_for_backup in 
+    Io.overwrite_with
   ap_for_assistance g5;;
 
 
-  
+
