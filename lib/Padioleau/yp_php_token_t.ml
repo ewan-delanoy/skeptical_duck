@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_php_token_t.ml";;
+#use"lib/Padioleau/yp_php_token_t.ml";;
 
 *)
 
