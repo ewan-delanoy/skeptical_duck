@@ -1,6 +1,6 @@
 (*
 
-#use"recently_deleted.ml";;
+#use"lib/recently_deleted.ml";;
 
 *)
 
