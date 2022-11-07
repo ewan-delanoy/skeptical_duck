@@ -1,6 +1,6 @@
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
 
 *)
 
