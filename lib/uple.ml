@@ -1,6 +1,6 @@
 (*
 
-#use"uple.ml";;
+#use"lib/uple.ml";;
 
 *) 
 
