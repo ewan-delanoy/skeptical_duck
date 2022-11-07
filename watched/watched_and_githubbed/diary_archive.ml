@@ -1,7 +1,145 @@
 (************************************************************************************************************************
-Snippet 116 : 
+Snippet 117 : 
 ************************************************************************************************************************)
 
+
+
+(************************************************************************************************************************
+Snippet 116 : Musing on discrepancy problem
+************************************************************************************************************************)
+
+module Z = struct
+
+type t = Big of int ;;
+let of_int x = Big x;;  
+let to_int (Big x) = x;;
+
+end ;;  
+
+module Q = struct 
+
+type t = { num : Z.t; den : Z.t; } ;;  
+
+let pp_print (fmt:Format.formatter) (q:t) = () ;;   
+let of_int i = {num = (Z.of_int i); den = (Z.of_int 1)}
+end ;;  
+
+(*
+#require"zarith";;
+*)
+
+#install_printer Q.pp_print ;; 
+
+let i_order = Total_ordering.for_integers ;; 
+let i_setminus = Ordered.setminus Total_ordering.for_integers ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
+
+let qfrac_of_pair (i,j) = Q.div (Q.of_int i) (Q.of_int j) ;; 
+let qfrac_to_pair q = (Z.to_int q.Q.num,Z.to_int q.Q.den) ;; 
+
+let q1 = qfrac_of_pair (4,7) ;; 
+
+let first_pfrac = (1,2) ;; 
+let next_pfrac (k,n) =
+   if k=n then (1,n+1) else (k+1,n) ;; 
+
+module Q_interval = struct 
+
+type t = I of Q.t * Q.t ;;
+
+let intersect (I(a1,b1)) (I(a2,b2)) =
+   let a = Q.max a1 a2 and b = Q.min b1 b2 in 
+   if Q.(>=) a b then None else Some(I(a,b)) ;;       
+
+let of_pfrac (k,n) =
+    I(qfrac_of_pair (k-1,n),qfrac_of_pair (k,n)) ;; 
+
+end ;;  
+
+
+type localizer = L of (int * Q_interval.t) list ;;  
+
+module Localizer = struct 
+  
+type t = localizer ;;   
+  
+let rec helper_for_pair_insertion (treated,(x,itv),to_be_treated) =
+    match to_be_treated with 
+    [] -> Some (List.rev_append treated [x,itv])
+    | (x2,itv2) :: others ->
+        if x2<x 
+        then  helper_for_pair_insertion ((x2,itv2)::treated,(x,itv),others) 
+        else
+        if x<x2 
+        then  Some (List.rev_append treated ((x,itv)::to_be_treated))
+        else  (match Q_interval.intersect itv itv2 with 
+                None -> None
+              | Some itv3 -> Some (List.rev_append treated ((x,itv3)::others))
+             ) ;;
+
+let insert_pair pair (L l) =
+    match helper_for_pair_insertion ([],pair,l) with 
+      None -> None 
+      | Some new_l -> Some (L new_l) ;;              
+
+end ;;  
+
+type walker =  W of (((int*int)* int) list)* Localizer.t ;; 
+
+module Walker = struct 
+
+type t = walker ;; 
+
+let impose_value (k,n) j (W(pairs,lclzr)) =
+    let itv = Q_interval.of_pfrac (k,n) in 
+    match Localizer.insert_pair (j,itv) lclzr with 
+    None -> None 
+    |Some new_lclzr -> Some(W(((k,n),j)::pairs,new_lclzr)) ;;
+
+let descendants walker =
+   let (W(pairs,lclzr)) = walker in 
+   let (k0,n0) = (match pairs with 
+     [] -> first_pfrac
+     |(predecessor,_) :: _ -> next_pfrac predecessor 
+   ) in 
+   let already_used_indices = i_sort (Option.filter_and_unpack (
+     fun ((_,n),j) -> if n=n0 then Some j else None 
+   ) pairs) 
+   and whole = Int_range.range 1 n0 in 
+   let unused_indices = i_setminus whole already_used_indices in 
+   Option.filter_and_unpack (
+    fun j-> impose_value (k0,n0) j  walker
+   ) unused_indices ;;  
+
+end ;;
+
+module Walker_list = struct 
+
+let rec descendants = function 
+  [] -> []
+  | walker :: others ->
+      let trial1 = Walker.descendants walker in 
+      if trial1 = []
+      then descendants others 
+      else trial1 @ others ;;      
+
+let origin = [W([],L[])];;
+
+let main = Memoized.small descendants origin ;; 
+
+end ;;  
+
+let ff = Walker_list.main ;; 
+
+let u1 = ff 10000 ;; 
+let (W(u2,L u3)) = List.hd u1 ;; 
+let u4 = List.rev u2 ;; 
+let gg n = Option.filter_and_unpack 
+   (fun ((_,m),j)->if m=n then Some j else None) u4 ;;
+
+let tt n =  (Walker.descendants(List.hd(ff n))=[]) ;;  
+
+let z1 = List.filter tt (Int_range.range 1 2000) ;;
 
 (************************************************************************************************************************
 Snippet 115 : Examples of "translating" ppx_deriving into usual OCaml code
