@@ -1,6 +1,6 @@
 (*
 
-#use"replace_inside.ml";;
+#use"lib/replace_inside.ml";;
 
 *)
 
