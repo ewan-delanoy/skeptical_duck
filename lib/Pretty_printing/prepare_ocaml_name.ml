@@ -1,6 +1,6 @@
 (*
 
-#use"Pretty_printing/prepare_ocaml_name.ml";;
+#use"lib/Pretty_printing/prepare_ocaml_name.ml";;
 
 *)
 
