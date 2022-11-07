@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/remove_hyphens.ml";;
+#use"lib/Text_editing/remove_hyphens.ml";;
 
 *)
 
