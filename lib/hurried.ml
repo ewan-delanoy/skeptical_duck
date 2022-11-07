@@ -1,6 +1,6 @@
 (*
 
-#use"hurried.ml";;
+#use"lib/hurried.ml";;
 
 *)
 
