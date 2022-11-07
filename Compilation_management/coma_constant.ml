@@ -56,7 +56,7 @@ let rootless_path_for_diary_file=
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
-  Dfn_join.subdirectory_to_short  fads_subdir short_path_for_painful_debugging_file;;
+  Dfn_join.subdirectory_to_short  watched_not_githubbed_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
   Dfn_join.subdirectory_to_short  parameters_subdir short_path_for_parametersfile;;
 let rootless_path_for_printersfile=
