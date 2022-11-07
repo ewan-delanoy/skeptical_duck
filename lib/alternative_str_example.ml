@@ -2,7 +2,7 @@
 
 Concrete values of type My_str.regexp.
 
-#use"alternative_str_example.ml";;
+#use"lib/alternative_str_example.ml";;
 
 *)
 
