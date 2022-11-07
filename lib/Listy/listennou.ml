@@ -1,6 +1,6 @@
 (*
 
-#use"Listy/listennou.ml";;
+#use"lib/Listy/listennou.ml";;
 
 *)
 
