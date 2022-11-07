@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/compute_all_ocaml_items.ml";;
+#use"lib/Ocaml_analysis/compute_all_ocaml_items.ml";;
 
 if the string argument has a dot inside it, we interpret it
 as a value inside a module.
