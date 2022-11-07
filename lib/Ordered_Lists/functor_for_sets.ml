@@ -1,6 +1,6 @@
 (*
  
-#use"Ordered_Lists/functor_for_sets.ml";;
+#use"lib/Ordered_Lists/functor_for_sets.ml";;
 
 Here all the possible dependencies are defined. Each particular
 instance defines only the value it needs.
