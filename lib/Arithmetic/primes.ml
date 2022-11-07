@@ -1,6 +1,6 @@
 (*
 
-#use"Arithmetic/primes.ml";;
+#use"lib/Arithmetic/primes.ml";;
 
 *)
 
