@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_preprocessing/por_private_component.ml";;
+#use"lib/Ocaml_preprocessing/por_private_component.ml";;
 
 *)
 
