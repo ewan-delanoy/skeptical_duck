@@ -1,6 +1,6 @@
 (*
 
-#use"absolute_path.ml";;
+#use"lib/absolute_path.ml";;
 
 *)
 
