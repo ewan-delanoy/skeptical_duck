@@ -1,6 +1,6 @@
 (*
 
-#use"Pretty_printing/disaggregated_ocaml_name.ml";;
+#use"lib/Pretty_printing/disaggregated_ocaml_name.ml";;
 
 *)
 
