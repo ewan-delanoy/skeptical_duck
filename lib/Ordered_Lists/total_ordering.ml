@@ -1,6 +1,6 @@
 (*
 
-#use"Ordered_Lists/total_ordering.ml";;
+#use"lib/Ordered_Lists/total_ordering.ml";;
 
 *)
 
