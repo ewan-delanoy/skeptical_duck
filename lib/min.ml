@@ -1,6 +1,6 @@
 (*
 
-#use"min.ml";;
+#use"lib/min.ml";;
 
 *) 
 
