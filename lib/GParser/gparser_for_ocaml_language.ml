@@ -1,6 +1,6 @@
 (*
 
-#use"GParser/gparser_for_ocaml_language.ml";;
+#use"lib/GParser/gparser_for_ocaml_language.ml";;
 
 *)
 
