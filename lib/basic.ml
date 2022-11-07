@@ -1,6 +1,6 @@
 (*
 
-#use"basic.ml";;
+#use"lib/basic.ml";;
 
 *)
 
