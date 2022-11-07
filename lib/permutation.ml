@@ -1,6 +1,6 @@
 (*
 
-#use"permutation.ml";;
+#use"lib/permutation.ml";;
 
 *)
 
