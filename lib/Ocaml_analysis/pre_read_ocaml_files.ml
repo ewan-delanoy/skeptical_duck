@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/pre_read_ocaml_files.ml";;
+#use"lib/Ocaml_analysis/pre_read_ocaml_files.ml";;
 
 Originated as the code shared by modules
 read_ocaml_files and read_ocaml_files_without_expanding_inclusions.
