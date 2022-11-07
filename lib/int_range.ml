@@ -1,6 +1,6 @@
 (*
 
-#use"int_range.ml";;
+#use"lib/int_range.ml";;
 
 *) 
 let scale f a b=
