@@ -1,6 +1,6 @@
 (*
 
-#use"Arithmetic/list_of_small_primes.ml";;
+#use"lib/Arithmetic/list_of_small_primes.ml";;
 
 *)
 (*Here we store the list of all primes up to 32271. *)
