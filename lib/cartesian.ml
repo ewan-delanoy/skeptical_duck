@@ -1,6 +1,6 @@
 (*
 
-#use"cartesian.ml";;
+#use"lib/cartesian.ml";;
 
 *) 
 
