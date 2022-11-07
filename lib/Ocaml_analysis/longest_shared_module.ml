@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/longest_shared_module.ml";;
+#use"lib/Ocaml_analysis/longest_shared_module.ml";;
 
 Given two ocaml items, find the longest namespace (module, in fact)
 in which they are both contained.
