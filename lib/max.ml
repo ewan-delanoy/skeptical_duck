@@ -1,6 +1,6 @@
 (*
 
-#use"max.ml";;
+#use"lib/max.ml";;
 
 *) 
 
