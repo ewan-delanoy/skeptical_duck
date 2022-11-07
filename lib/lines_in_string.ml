@@ -1,6 +1,6 @@
 (*
 
-#use"lines_in_string.ml";;
+#use"lib/lines_in_string.ml";;
 
 *)
 
