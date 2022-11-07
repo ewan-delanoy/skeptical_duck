@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/trim_text_between_tags.ml";;
+#use"lib/Text_editing/trim_text_between_tags.ml";;
 
 The final "trim" function removes any trailing space on the left or right of any
 text between the tags.
