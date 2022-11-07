@@ -1,6 +1,6 @@
 (* 
 
-#use"Compilation_management/modify_coma_state.ml";;
+#use"lib/Compilation_management/modify_coma_state.ml";;
 
 *)
 
