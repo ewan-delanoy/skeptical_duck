@@ -2,7 +2,7 @@
 
 Operation on substring finding, with indexes starting from 1.
 
-#use"unqsubstr_replace.ml";;
+#use"lib/unqsubstr_replace.ml";;
 
 *)
 
