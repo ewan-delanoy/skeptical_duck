@@ -2,7 +2,7 @@
 
 Directories name, with the trailing slash removed.
 
-#use"directory_name_t.ml";;
+#use"lib/directory_name_t.ml";;
 
 *)
 
