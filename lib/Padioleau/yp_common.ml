@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_common.ml";;
+#use"lib/Padioleau/yp_common.ml";;
 
 *)
 
