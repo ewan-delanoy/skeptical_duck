@@ -1,6 +1,6 @@
 (*
 
-#use"Decomposed_filename/dfn_short.ml";;
+#use"lib/Decomposed_filename/dfn_short.ml";;
 
 *)
 
