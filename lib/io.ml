@@ -1,6 +1,6 @@
 (*
 
-#use"io.ml";;
+#use"lib/io.ml";;
 
 *)
 
