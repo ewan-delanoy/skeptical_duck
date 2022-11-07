@@ -1,6 +1,6 @@
 (*
 
-#use"substring.ml";;
+#use"lib/substring.ml";;
 
 *)
 
