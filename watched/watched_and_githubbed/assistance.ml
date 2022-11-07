@@ -1,150 +1,16 @@
 (*
 
-#use"Githubbed_archive/assistance.ml";;
 
-In an emergency situation, open a fresh terminal, load this 
+In an emergency situation, 
+go up one directory, open a fresh terminal, load this 
 file with the above command and call 
 Assistance_usual_coma_state.refresh() )
 
 #load"unix.cma";;
 #load"str.cma";;
-#use"Ordinary/Githubbed_archive/assistance.ml";;
+#use"Ordinary/watched/watched_and_githubbed/assistance.ml";;
 
 *)
-
-
-
-
-module Assistance_ennig=struct
-
-(*
-
-#use"ennig.ml";;
-
-*) 
-let doyle f a b=
-let accu=ref([]) in
-let rec doyle0=(function
-j->if j<a
-   then (!accu)
- else let _=(accu:=f(j)::(!accu)) in doyle0(j-1)
-) in
-doyle0 b;;
-
-let rev_doyle f b a =
-  doyle (fun x->f(a+b-x)) a b ;; 
-
-let slow_doyle f a b=
-let accu=ref([]) in
-let rec slow_doyle0=(function
-j->if j>b
-   then List.rev(!accu)
- else let _=(accu:=f(j)::(!accu)) in slow_doyle0(j+1)
-) in
-slow_doyle0 a;;
-
-
-let doyle_for_delta f n u0=
-let accu=ref([u0]) and traveler=ref(u0) in
-let rec doyle0=(function
-da_ober->if da_ober<1
-         then List.rev(!accu)
-       else let _=(traveler:=f(!traveler);accu:=(!traveler)::(!accu)) in 
-            doyle0(da_ober-1)
-) in
-doyle0 n;;
- 
-
-let ennig a b=doyle (function x->x) a b;; 
-
-let index_everything l=
- let rec tempf=
-  (function (j,graet,da_ober)->
-    match da_ober with
-     []->graet
-    |a::b->tempf(j-1,(j,a)::graet,b)
-   )    in
-   tempf(List.length(l),[],List.rev(l));;
-
-let for_all f a b=
-let rec for_all0=(function
-j->if j>b
-   then true
- else if f(j)
-      then for_all0(j+1)
-    else false
-) in
-for_all0 a;;
-
-let rec exists f a b=
-if (a>b) 
-then false
-else if f(a)
-  then true
-  else exists f (a+1) b;;	 
-
-let rec find_it f a b=
-if (a>b) 
-then None
-else if f(a)
-  then Some(a)
-  else find_it f (a+1) b;;	  
-
-let rec find_and_stop f a b=
-let rec find_and_stop0=(function
- j->if (j>b)
-    then None
-  else match f(j) with
-   None->find_and_stop0(j+1)
-   |Some(x)->Some(x)
-) in
-find_and_stop0 a;;
-
-let constant_list n x=doyle (function j->x) 1 n;;
-
-let describe_fibers_as_intervals f a b=
- if (a>b) then [] else
- let rec tempf=(function
-   (graet,x1,x2,y0)->
-      if (x2>=b) then List.rev((x1,x2,y0)::graet) else
-      let x3=x2+1 in
-      let y3=f(x3) in
-      if (y3=y0)
-      then tempf(graet,x1,x3,y0)
-      else tempf((x1,x2,y0)::graet,x3,x3,y3)
- 
- ) in
- tempf([],a,a,f(a));;
-
-let test_for_interval l=
- match l with 
-  [] -> Some(1,0) 
- |a :: others ->
-    (
-      match List.rev others with 
-       [] -> Some(a,a)
-       | b :: _-> if l = ennig a b 
-                  then Some(a,b)
-                  else None 
-    )  ;;
-
-(* test_for_interval [2;3;4;5] ;; *)
-
-
-let reposition_by_putting_snd_immediately_after_fst i j t=
-    if t<=i then t else
-    if t=i+1  then j else
-    if t<=j  then t-1 else t;;
-
-
-
-          
-
-end;;
-
-
-
-
 
 
 module Assistance_hurried=struct
@@ -225,6 +91,450 @@ end;;
 
 
 
+module Assistance_int_range=struct
+
+(*
+
+#use"int_range.ml";;
+
+*) 
+let scale f a b=
+let accu=ref([]) in
+let rec doyle0=(function
+j->if j<a
+   then (!accu)
+ else let _=(accu:=f(j)::(!accu)) in doyle0(j-1)
+) in
+doyle0 b;;
+
+let descending_scale f b a =
+  scale (fun x->f(a+b-x)) a b ;; 
+
+let slow_scale f a b=
+let accu=ref([]) in
+let rec slow_doyle0=(function
+j->if j>b
+   then List.rev(!accu)
+ else let _=(accu:=f(j)::(!accu)) in slow_doyle0(j+1)
+) in
+slow_doyle0 a;;
+
+
+let scale_for_delta f n u0=
+let accu=ref([u0]) and traveler=ref(u0) in
+let rec doyle0=(function
+da_ober->if da_ober<1
+         then List.rev(!accu)
+       else let _=(traveler:=f(!traveler);accu:=(!traveler)::(!accu)) in 
+            doyle0(da_ober-1)
+) in
+doyle0 n;;
+ 
+
+let range a b=scale (function x->x) a b;; 
+
+let index_everything l=
+ let rec tempf=
+  (function (j,graet,da_ober)->
+    match da_ober with
+     []->graet
+    |a::b->tempf(j-1,(j,a)::graet,b)
+   )    in
+   tempf(List.length(l),[],List.rev(l));;
+
+let for_all f a b=
+let rec for_all0=(function
+j->if j>b
+   then true
+ else if f(j)
+      then for_all0(j+1)
+    else false
+) in
+for_all0 a;;
+
+let rec exists f a b=
+if (a>b) 
+then false
+else if f(a)
+  then true
+  else exists f (a+1) b;;	 
+
+let rec find_it f a b=
+if (a>b) 
+then None
+else if f(a)
+  then Some(a)
+  else find_it f (a+1) b;;	  
+
+let rec find_and_stop f a b=
+let rec find_and_stop0=(function
+ j->if (j>b)
+    then None
+  else match f(j) with
+   None->find_and_stop0(j+1)
+   |Some(x)->Some(x)
+) in
+find_and_stop0 a;;
+
+let constant_list n x=scale (function j->x) 1 n;;
+
+let describe_fibers_as_intervals f a b=
+ if (a>b) then [] else
+ let rec tempf=(function
+   (graet,x1,x2,y0)->
+      if (x2>=b) then List.rev((x1,x2,y0)::graet) else
+      let x3=x2+1 in
+      let y3=f(x3) in
+      if (y3=y0)
+      then tempf(graet,x1,x3,y0)
+      else tempf((x1,x2,y0)::graet,x3,x3,y3)
+ 
+ ) in
+ tempf([],a,a,f(a));;
+
+let test_for_interval l=
+ match l with 
+  [] -> Some(1,0) 
+ |a :: others ->
+    (
+      match List.rev others with 
+       [] -> Some(a,a)
+       | b :: _-> if l = range a b 
+                  then Some(a,b)
+                  else None 
+    )  ;;
+
+(* test_for_interval [2;3;4;5] ;; *)
+
+
+let reposition_by_putting_snd_immediately_after_fst i j t=
+    if t<=i then t else
+    if t=i+1  then j else
+    if t<=j  then t-1 else t;;
+
+let repeat n x = scale (fun _->x) 1 n ;;
+
+(* repeat 3 "a" ;; *)          
+  
+
+end;;
+
+
+
+
+
+
+module Assistance_memoized=struct
+
+(*
+
+#use"memoized.ml";;
+
+*) 
+type ('a,'b) map=('a->'b);;
+
+let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let y=f(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  (memoized_f:>('a,'b) map);;
+
+let make (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  make_from f a_hashtbl_for_f;;
+  
+let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
+  let rec memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let mf=(memoized_f:>('a->'b)) in
+          let y=big_f(mf)(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
+
+let recursive (big_f:('a->'b)->'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  recursive_from big_f a_hashtbl_for_f;;
+
+let small f initial_value=
+  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
+  
+let reversible (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) 
+  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
+  and irreducibles=ref([]) 
+  and minimal_reductions=ref([]) in
+  let compute_f=(fun x accu->
+     let y=f(x) in
+     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
+      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
+     else     
+     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
+          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
+          minimal_reductions:=(x,old_x)::(!minimal_reductions))
+     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
+            irreducibles:=x::(!irreducibles))
+     
+  ) in
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let accu=ref([]) in
+          let _=compute_f(x)(accu) in
+          List.hd(!accu)
+  ) 
+  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
+  let memoized_projector=(fun x->
+    let ()=compute_f(x)(ref[]) in
+    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
+    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
+    else x
+    ) in
+  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_int_uple=struct
+
+(*
+
+#use"int_uple.ml";;
+
+*) 
+let translate_pair a (x1,x2)=(a+x1,a+x2);;
+let translate_triple a (x1,x2,x3)=(a+x1,a+x2,a+x3);;
+let translate_fourtuple a (x1,x2,x3,x4)=(a+x1,a+x2,a+x3,a+x4);;
+let translate_fiftuple a (x1,x2,x3,x4,x5)=(a+x1,a+x2,a+x3,a+x4,a+x5);;
+let translate_sixtuple a (x1,x2,x3,x4,x5,x6)=(a+x1,a+x2,a+x3,a+x4,a+x5,a+x6);;
+
+let next_pair (i,j)=
+if i+1<j then (i+1,j) else
+(1,i+2);;
+
+let next_inclusive_pair (i,j)=
+if i+1<=j then (i+1,j) else
+(1,j+1);;
+
+
+let next_triple (i,j,k)=
+if i+1<j then (i+1,j,k) else
+if i+2<k then (1,i+2,k) else
+(1,2,i+3);;
+
+let next_fourtuple (x1,x2,x3,x4)=
+if x1+1<x2 then (x1+1,x2,x3,x4) else
+if x2+1<x3 then (1, x2+1,x3,x4) else
+if x3+1<x4 then (1,2,  x3+1,x4) else
+(1,2,3,x4+1);;
+
+let next_fiftuple (x1,x2,x3,x4,x5)=
+if x1+1<x2 then (x1+1,x2,x3,x4,x5) else
+if x2+1<x3 then (1, x2+1,x3,x4,x5) else
+if x3+1<x4 then (1,2,  x3+1,x4,x5) else
+if x4+1<x5 then (1,2,3,   x4+1,x5) else
+(1,2,3,4,x5+1);;
+
+let next_sixtuple (x1,x2,x3,x4,x5,x6)=
+if x1+1<x2 then (x1+1,x2,x3,x4,x5,x6) else
+if x2+1<x3 then (1, x2+1,x3,x4,x5,x6) else
+if x3+1<x4 then (1,2,  x3+1,x4,x5,x6) else
+if x4+1<x5 then (1,2,3,   x4+1,x5,x6) else
+if x5+1<x6 then (1,2,3,4,    x5+1,x6) else
+(1,2,3,4,5,x6+1);;
+
+
+let inclusive_list_of_pairs=Assistance_memoized.make(function n->
+        if n<1 then [] else
+        if n=1 then [1,1] else        
+        let accu=ref([],(1,1))
+        and number_of_iterations=(n*(n+1))/2 
+        and iterator=(function (l,c)->(c::l,next_inclusive_pair(c)) ) in
+        let _=(for k=1 to number_of_iterations do
+        accu:=iterator(!accu)
+        done) in
+        List.rev(fst (!accu)));;
+
+let list_of_pairs=Assistance_memoized.make(function n->
+if n<2 then [] else
+let accu=ref([],(1,2))
+and number_of_iterations=(n*(n-1))/2 
+and iterator=(function (l,c)->(c::l,next_pair(c)) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+List.rev(fst (!accu)));;
+
+let list_of_triples=Assistance_memoized.make(function n->
+if n<3 then [] else
+let accu=ref([],(1,2,3))
+and number_of_iterations=(n*(n-1)*(n-2))/6 
+and iterator=(function (l,c)->(c::l,next_triple(c)) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+List.rev(fst (!accu)));;
+
+let list_of_fourtuples=Assistance_memoized.make(function n->
+if n<4 then [] else
+let accu=ref([],(1,2,3,4))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3))/24 
+and iterator=(function (l,c)->(c::l,next_fourtuple(c)) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+List.rev(fst (!accu)));;
+
+
+let list_of_fiftuples=Assistance_memoized.make(function n->
+if n<5 then [] else
+let accu=ref([],(1,2,3,4,5))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4))/120 
+and iterator=(function (l,c)->(c::l,next_fiftuple(c)) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+List.rev(fst (!accu)));;
+
+
+let list_of_sixtuples=Assistance_memoized.make(function n->
+if n<6 then [] else
+let accu=ref([],(1,2,3,4,5,6))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4)*(n-5))/720 
+and iterator=(function (l,c)->(c::l,next_sixtuple(c)) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+List.rev(fst (!accu)));;
+
+let maximize_on_pairs f a b=
+let n=(b-a)+1 and aa=(a-1) in
+let accu=ref(f(a,a+1),[],(1,2))
+and number_of_iterations=(n*(n-1))/2 
+and iterator=(function (y0,lx,c)->
+   let tc=translate_pair(aa)(c) and nc=next_pair(c) in
+   let y=f(tc) in
+   if y<y0 
+   then (y0,lx,nc)
+   else if y=y0
+        then (y0,tc::lx,nc)
+        else (y,[],nc) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+let last_term=(!accu) in
+let final_y=(function (y,lx,c)->y)(last_term)
+and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+(final_y,final_list);;
+  
+let maximize_on_triples f a b=
+let n=(b-a)+1 and aa=(a-1) in
+let accu=ref(f(a,a+1,a+2),[],(1,2,3))
+and number_of_iterations=(n*(n-1)*(n-2))/6 
+and iterator=(function (y0,lx,c)->
+   let tc=translate_triple(aa)(c) and nc=next_triple(c) in
+   let y=f(tc) in
+   if y<y0 
+   then (y0,lx,nc)
+   else if y=y0
+        then (y0,tc::lx,nc)
+        else (y,[],nc) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+let last_term=(!accu) in
+let final_y=(function (y,lx,c)->y)(last_term)
+and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+(final_y,final_list);;  
+  
+let maximize_on_fourtuples f a b=
+let n=(b-a)+1 and aa=(a-1) in
+let accu=ref(f(a,a+1,a+2,a+3),[],(1,2,3,4))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3))/24 
+and iterator=(function (y0,lx,c)->
+   let tc=translate_fourtuple(aa)(c) and nc=next_fourtuple(c) in
+   let y=f(tc) in
+   if y<y0 
+   then (y0,lx,nc)
+   else if y=y0
+        then (y0,tc::lx,nc)
+        else (y,[],nc) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+let last_term=(!accu) in
+let final_y=(function (y,lx,c)->y)(last_term)
+and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+(final_y,final_list);;
+
+let maximize_on_fiftuples f a b=
+let n=(b-a)+1 and aa=(a-1) in
+let accu=ref(f(a,a+1,a+2,a+3,a+4),[],(1,2,3,4,5))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4))/120
+and iterator=(function (y0,lx,c)->
+   let tc=translate_fiftuple(aa)(c) and nc=next_fiftuple(c) in
+   let y=f(tc) in
+   if y<y0 
+   then (y0,lx,nc)
+   else if y=y0
+        then (y0,tc::lx,nc)
+        else (y,[],nc) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+let last_term=(!accu) in
+let final_y=(function (y,lx,c)->y)(last_term)
+and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+(final_y,final_list);;
+  
+let maximize_on_sixtuples f a b=
+let n=(b-a)+1 and aa=(a-1) in
+let accu=ref(f(a,a+1,a+2,a+3,a+4,a+5),[],(1,2,3,4,5,6))
+and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4)*(n-5))/720
+and iterator=(function (y0,lx,c)->
+   let tc=translate_sixtuple(aa)(c) and nc=next_sixtuple(c) in
+   let y=f(tc) in
+   if y<y0 
+   then (y0,lx,nc)
+   else if y=y0
+        then (y0,tc::lx,nc)
+        else (y,[],nc) ) in
+let _=(for k=1 to number_of_iterations do
+accu:=iterator(!accu)
+done) in
+let last_term=(!accu) in
+let final_y=(function (y,lx,c)->y)(last_term)
+and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+(final_y,final_list);;
+    
+  
+  
+
+
+end;;
+
+
+
+
+
+
 module Assistance_option=struct
 
 (*
@@ -296,7 +606,7 @@ module Assistance_listennou=struct
 
 (*
 
-#use"listennou.ml";;
+#use"Listy/listennou.ml";;
 
 *)
 
@@ -594,7 +904,7 @@ complement_union_of_ranges [1,7;8,30] 30;;
 
 
 let split_list_in_half l=
-   let temp1=Assistance_ennig.index_everything(l) in 
+   let temp1=Assistance_int_range.index_everything(l) in 
    let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
    (Assistance_image.image snd temp2,Assistance_image.image snd temp3);;
 
@@ -635,7 +945,7 @@ let extract_successive_pairs_from_even_list l=
    let m1 =(List.length l) in 
    if (m1 mod 2)<>0 then raise(Extract_successive_pairs_exn(m1)) else 
    let m2=m1/2 in 
-   Assistance_ennig.doyle (fun j->
+   Assistance_int_range.scale (fun j->
       (List.nth l (2*j-2),List.nth l (2*j-1)) 
    ) 1 m2;;
 
@@ -699,7 +1009,7 @@ let replace_if_possible l x=
   |Some y -> y ;;
 
 let complement_of_singleton l k = 
-     let temp1 = Assistance_ennig.index_everything l in 
+     let temp1 = Assistance_int_range.index_everything l in 
      Assistance_option.filter_and_unpack (fun (j,x)->if j=k then None else Some x) temp1 ;;
 
 (* complement_of_singleton (Ennig.ennig 1 7) 3 ;; *)
@@ -717,6 +1027,39 @@ let minimal_element_in_unpwards_filter f l =
 
 (*  (minimal_element_in_unpwards_filter (fun x->Basic.fold_sum(x)>=10) [6;2;5;1;1]) = [6;5] ;; *)
 
+let cut_into_small_parts  l ~max_part_size =
+  let rec tempf = (
+      fun (treated,to_be_treated,remaining_size) -> 
+           if remaining_size <= max_part_size 
+           then List.rev(to_be_treated::treated) 
+           else let (reversed_left,right) = big_rht max_part_size to_be_treated in 
+                let left = List.rev reversed_left in 
+                tempf(left::treated,right,remaining_size-max_part_size)
+  ) in 
+  tempf ([],l,List.length l) ;;
+
+(* cut_into_small_parts (Ennig.ennig 1 7) ~max_part_size:3 ;; *)
+
+let project l indices = Assistance_image.image (fun k->List.nth l (k-1)) indices ;;
+
+(* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
+
+let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
+  let (part1,temp1) = big_rht (idx1-1) l in 
+  let (part2,part3) = big_rht (idx2-idx1) temp1 in 
+  List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
+  
+(* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
+
+
+let extend_total_ordering_by_adding_two_elements old_total_order elt1 elt2 = 
+  let n = (List.length old_total_order)+1 in 
+  Assistance_image.image (
+   insert_two_elements_at_indices old_total_order (elt1,elt2)
+  ) (Assistance_int_uple.inclusive_list_of_pairs n) ;; 
+
+
+(* extend_total_ordering_by_adding_two_elements  [1; 2; 3; 4; 5; 6] 25 35 ;; *)
 
 
 
@@ -753,7 +1096,7 @@ let begins_with y x=
 let contains y x=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) in
-      Assistance_ennig.exists tester 0 (String.length(y)-lx);;               
+      Assistance_int_range.exists tester 0 (String.length(y)-lx);;               
 
 end;;
 
@@ -787,20 +1130,20 @@ module Assistance_substring=struct
   let leftmost_index_of_in x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) in
-      try (Assistance_option.unpack(Assistance_ennig.find_it tester 0 (String.length(y)-lx))+1) with
+      try (Assistance_option.unpack(Assistance_int_range.find_it tester 0 (String.length(y)-lx))+1) with
       _->(-1);;
   
   let rightmost_index_of_in x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 
-      and temp1=List.rev(Assistance_ennig.ennig(0)(String.length(y)-lx)) in
+      and temp1=List.rev(Assistance_int_range.range(0)(String.length(y)-lx)) in
       try ((Assistance_listennou.force_find tester temp1)+1) with
       _->(-1);;
   
    let leftmost_index_of_in_from x y i=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) in
-      match Assistance_ennig.find_it tester (i-1) (String.length(y)-lx) with
+      match Assistance_int_range.find_it tester (i-1) (String.length(y)-lx) with
          None->(-1)
         |Some(k)->k+1;;
   
@@ -809,7 +1152,7 @@ module Friend = struct
 let number_of_lines_before s i=
    if i<1 then 0 else
    let m=min i (String.length s) in
-   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Assistance_ennig.ennig 1 m));;
+   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Assistance_int_range.range 1 m));;
 
 
 end;;
@@ -830,14 +1173,14 @@ let leftmost_linedex_of_in_from x y i=
 
 let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
     let n=String.length(whole_string) in
-    let temp1=Assistance_ennig.index_everything patterns in 
+    let temp1=Assistance_int_range.index_everything patterns in 
     let tester =(fun idx->Assistance_option.find_and_stop (
          fun (patt_nbr,patt)->
            if is_a_substring_located_at patt whole_string idx 
            then Some(patt_nbr,idx)
            else None
        ) temp1) in
-    Assistance_option.find_and_stop tester (Assistance_ennig.ennig start_idx n);;          
+    Assistance_option.find_and_stop tester (Assistance_int_range.range start_idx n);;          
       
 (*
 
@@ -948,7 +1291,7 @@ let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
       match Assistance_option.seek(fun j->
           not(List.mem (String.get s (j-1)) l)
-      )(Assistance_ennig.ennig 1 n) with
+      )(Assistance_int_range.range 1 n) with
       None->""
       |Some(d)->cobeginning (d-1) s;;
 
@@ -956,7 +1299,7 @@ let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
       match Assistance_option.seek(fun j->
           not(List.mem (String.get s (n-j)) l)
-      )(Assistance_ennig.ennig 1 n) with
+      )(Assistance_int_range.range 1 n) with
       None->""
       |Some(d)->coending (d-1) s;;
 
@@ -970,10 +1313,10 @@ let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
 
  let trim_spaces s=
    let n=String.length s in
-   let opt1=Assistance_option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Assistance_ennig.ennig 1 n) in
+   let opt1=Assistance_option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in
    if opt1=None then "" else
    let i1=Assistance_option.unpack opt1 in
-   let k1=Assistance_listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Assistance_ennig.ennig 1 n) in 
+   let k1=Assistance_listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
 
@@ -996,7 +1339,7 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 
  let closeup_around_index s j=
    let n=String.length s in
-   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Assistance_ennig.ennig 1 n) in
+   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Assistance_int_range.range 1 n) in
    let (temp2,temp3)=Assistance_hurried.partition_in_two_parts(fun k->k<j) temp1 in
    let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
    and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
@@ -1048,7 +1391,7 @@ let shorten_blanks s=
        let d = String.get s (j-2)  in  
        not(List.mem d blanks) 
       ) in 
-   let temp1 = List.filter test_idx (Assistance_ennig.ennig 1 n) in 
+   let temp1 = List.filter test_idx (Assistance_int_range.range 1 n) in 
    let temp2 = Assistance_image.image (fun j->String.make 1 (String.get s (j-1))) temp1 in 
    let temp3 = String.concat "" temp2 in 
    trim_spaces temp3 ;;
@@ -1216,73 +1559,6 @@ module Exn = struct
         |Some(vaal,_)->vaal) 
       |_->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
    
-
-end;;
-
-
-
-
-
-
-module Assistance_alternative_global_replace=struct
-
-(*
-
-
-#use"alternative_global_replace.ml";;
-
-The my_global_replace is a replacement for Ocaml's Str.global_replace which has
-the disadvantage of applying certain transforms to the replacement string.
-
-
-*)
-
-
-
-
-let single_char_special_case (single_c,b) s=
-    let n=String.length(s) in
-    let temp1=Assistance_ennig.doyle (
-       fun j->let c=String.get s j in
-              if c=single_c
-              then b
-              else String.make 1 c 
-    ) 0 (n-1) in
-    String.concat "" temp1;;
-
-exception Ambiguity of string*int*int;;
-
-let my_global_replace (a,b) s=
-  let n=String.length(s) and na=String.length(a) in
-  if na=1 then single_char_special_case (String.get a 0,b) s else
-  let indices=Assistance_substring.occurrences_of_in a s in
-  if indices=[] then s else
-  let delta_indices = Assistance_listennou.universal_delta_list indices in 
-  let opt_ambiguity=Assistance_option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
-  if  opt_ambiguity<>None
-  then let (start1,start2)=Assistance_option.unpack opt_ambiguity in 
-       raise(Ambiguity(a,start1,start2))
-  else  
-  let m=List.length indices in 
-  let lower_end=(fun j->if j=0 then 1 else List.nth indices (j-1)+na) 
-  and upper_end=(fun j->if j=m then n else (List.nth indices (j))-1) in 
-  let unchanged_intervals = Assistance_ennig.doyle (fun j->(lower_end j,upper_end j)) 0 m in 
-  let unchanged_substrings=Assistance_image.image 
-     (fun (x,y)->if x>y then "" else Assistance_cull_string.interval s x y) unchanged_intervals in
-  String.concat b unchanged_substrings;;
-  
-(*  
-my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679";; 
-my_global_replace ("ab","cd") "ab12345ab6ab78cd91234ab679";; 
-my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679ab";;
-my_global_replace ("1111","") "abc1111111111def";;
-my_global_replace ("ab","cd") "xyz";;
-my_global_replace ("a","b") "1aa2";; 
-my_global_replace ("uv","w") "1uvuv2";; 
-
-*)  
-  
-           
 
 end;;
 
@@ -1541,6 +1817,7 @@ let read_reasonable_command cmd =
 
 end ;; 
 
+let append_string_to_file = Private.append_string_to_file ;;
 let overwrite_with = Private.overwrite_with ;;
 let read_reasonable_command = Private.read_reasonable_command ;;
 let read_whole_file = Private.read_whole_file ;;
@@ -1585,21 +1862,101 @@ module Assistance_replace_inside=struct
 
 *)
 
+exception Ambiguity of string*int*int;;
+
+module Private = struct 
+
+(*
+
+The my_global_replace function below is a replacement for Ocaml's Str.global_replace which has
+the disadvantage of applying certain transforms to the replacement string.
+
+*)
+
+  let single_char_special_case (single_c,b) s=
+  let n=String.length(s) and counter=ref(0) in
+  let temp1=Assistance_int_range.scale (
+     fun j->let c=String.get s j in
+            if c=single_c
+            then let _=(counter:=(!counter)+1) in b
+            else String.make 1 c 
+  ) 0 (n-1) in
+  (String.concat "" temp1,!counter);;
+
+let global_replace_with_number_of_matches (a,b) s=
+let n=String.length(s) and na=String.length(a) in
+if na=1 then single_char_special_case (String.get a 0,b) s else
+let indices=Assistance_substring.occurrences_of_in a s in
+if indices=[] then (s,0) else
+let delta_indices = Assistance_listennou.universal_delta_list indices in 
+let opt_ambiguity=Assistance_option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
+if  opt_ambiguity<>None
+then let (start1,start2)=Assistance_option.unpack opt_ambiguity in 
+     raise(Ambiguity(a,start1,start2))
+else  
+let m=List.length indices in 
+let lower_end=(fun j->if j=0 then 1 else List.nth indices (j-1)+na) 
+and upper_end=(fun j->if j=m then n else (List.nth indices (j))-1) in 
+let unchanged_intervals = Assistance_int_range.scale (fun j->(lower_end j,upper_end j)) 0 m in 
+let unchanged_substrings=Assistance_image.image 
+   (fun (x,y)->if x>y then "" else Assistance_cull_string.interval s x y) unchanged_intervals in
+(String.concat b unchanged_substrings,m);;
+
+let text_for_number_of_replacements k=
+  if k = 0 then "No replacement made" else
+  if k = 1 then "1 replacement made" else 
+  (string_of_int k)^" replacements made" ;;   
+
+let my_global_replace ?(display_number_of_matches=true) (a,b) old_s  =
+   let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
+   let _ =(
+      if display_number_of_matches 
+      then print_string("\n"^(text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
+           flush stdout 
+   ) in 
+   new_s ;; 
+
+(*  
+my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679";; 
+my_global_replace ("ab","cd") "ab12345ab6ab78cd91234ab679";; 
+my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679ab";;
+my_global_replace ("1111","") "abc1111111111def";;
+my_global_replace ("ab","cd") "xyz";;
+my_global_replace ("a","b") "1aa2";; 
+my_global_replace ("uv","w") "1uvuv2";; 
+
+*)  
+
+end ;;
+
+
 
 let replace_inside_string (a,b) s=
-  Assistance_alternative_global_replace.my_global_replace (a,b) s;;
+  Private.my_global_replace (a,b) s ~display_number_of_matches:true;;
  
+let silently_replace_inside_string (a,b) s=
+  Private.my_global_replace (a,b) s ~display_number_of_matches:false;;
+
 let replace_several_inside_string l t=List.fold_left 
-(fun s (a,b)->replace_inside_string (a,b) s) t l;;  
+(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches:false) t l;;  
  
 let replace_inside_file (a,b) fn=
     let s1=Assistance_io.read_whole_file fn in
     let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_ennig.ennig 0 ((String.length s1)-la))
+    if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_int_range.range 0 ((String.length s1)-la))
     then let s2=replace_inside_string (a,b) s1 in
          Assistance_io.overwrite_with fn s2
     else ();; 
     
+let silently_replace_inside_file (a,b) fn=
+    let s1=Assistance_io.read_whole_file fn in
+    let la=String.length(a) in
+    if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_int_range.range 0 ((String.length s1)-la))
+    then let s2=silently_replace_inside_string (a,b) s1 in
+         Assistance_io.overwrite_with fn s2
+    else ();; 
+
+
 let replace_several_inside_file l fn=
     let s1=Assistance_io.read_whole_file fn in
     let s2=replace_several_inside_string l s1  in
@@ -1739,12 +2096,12 @@ let replacement_salt =
   String.concat "" ["b"; "Z"; "3"; "v"; "l"; "m"; "x"; "E"; "A"; "z"; "L"; "e"];;
 
 let decode (Assistance_encoded_string_t.E(encoded_s))=
-   Assistance_replace_inside.replace_inside_string (replacement_salt,salt) encoded_s;;
+   Assistance_replace_inside.silently_replace_inside_string (replacement_salt,salt) encoded_s;;
 
 let encode s=
    if Assistance_substring.is_a_substring_of replacement_salt s 
    then raise(Forbidden_substring)
-   else let encoded_s=Assistance_replace_inside.replace_inside_string (salt,replacement_salt) s in 
+   else let encoded_s=Assistance_replace_inside.silently_replace_inside_string (salt,replacement_salt) s in 
         if  Assistance_substring.is_a_substring_of salt encoded_s 
         then raise(Forbidden_substring)
         else Assistance_encoded_string_t.E(encoded_s);;
@@ -2683,7 +3040,7 @@ let lex_for_strings=
       and m2=String.length s2
       in
       let m=Stdlib.min(m1)(m2) in
-      match Assistance_option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_ennig.ennig 0 (m-1)) with
+      match Assistance_option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_int_range.range 0 (m-1)) with
       None->standard m1 m2
       |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
     ) : string Assistance_total_ordering_t.t);;
@@ -2698,6 +3055,7 @@ let silex_for_strings=
         then first_try
         else lex_for_strings s1 s2
       ) : string Assistance_total_ordering_t.t);;    
+
 
 let lex_for_string_lists=
   ((fun l1 l2->
@@ -2767,7 +3125,7 @@ let silex_for_strings = Private.silex_for_strings ;;
 let silex_for_intlists = Private.silex_compare for_integers ;;
 let standard = Private.standard ;;
 let standard2 = Private.standard2 ;;
-
+let triple_product = Private.triple_product ;;
  
            
 
@@ -2805,7 +3163,7 @@ let implode l=
     
 let explode s=
     let n=String.length s in
-    Assistance_ennig.doyle (String.get s) 0 (n-1);;
+    Assistance_int_range.scale (String.get s) 0 (n-1);;
     
  
 let char_finder_from f s w0=
@@ -2827,9 +3185,19 @@ let backwards_char_finder f s =
  
 let show_indices s=
   let n=String.length s in
-  Assistance_ennig.doyle (fun i->(i,String.get s (i-1)) ) 1 n;;   
+  Assistance_int_range.scale (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
 let number_of_lines_before = Assistance_substring.Friend.number_of_lines_before;;
+
+let number_of_linebreaks s =
+    let n = String.length s 
+    and counter = ref 0 in
+    for k = 0 to (n-1) 
+    do 
+       if (String.get s k='\n') then counter:=(!counter)+1
+    done; (!counter) ;; 
+
+(* number_of_linebreaks "3\n\n\n4\n\n\n\nhum";; *)    
 
 exception Negative_offset_for_string;; 
 
@@ -2867,7 +3235,7 @@ let find_one_of_several_in_from_idx candidates s idx =
   let n=String.length s in 
   Assistance_option.find_and_stop (
     find_one_of_several_in_at_idx candidates s
-  ) (Assistance_ennig.ennig idx n);;
+  ) (Assistance_int_range.range idx n);;
 
 (*
 
@@ -2890,16 +3258,16 @@ let find_successively_in_from patterns_in_order s start_idx=
          match  find_one_of_several_in_from_idx patt s idx with 
          None->raise(Not_found_during_succession)
          |Some(idx2,candidate)->
-          let temp1=List.filter(fun k->(get s k)='\n')(Assistance_ennig.ennig idx (idx2-1)) in 
+          let temp1=List.filter(fun k->(get s k)='\n')(Assistance_int_range.range idx (idx2-1)) in 
           let line_idx_for_idx2=line_idx+List.length(temp1) in 
           let msg="Found "^(remove_newlines candidate)^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
           let _=(print_string msg;flush stdout) in 
           let idx3=idx2+(String.length candidate) in  
-          let temp2=List.filter(fun k->(get s k)='\n')(Assistance_ennig.ennig idx2 (idx3-1)) in 
+          let temp2=List.filter(fun k->(get s k)='\n')(Assistance_int_range.range idx2 (idx3-1)) in 
           let line_idx_for_idx3=line_idx_for_idx2+List.length(temp2) in 
           tempf((idx2,idx3-1)::treated,other_patts,idx3,line_idx_for_idx3)    
   ) in 
-  let temp3=List.filter(fun k->(get s k)='\n')(Assistance_ennig.ennig 1 (start_idx-1)) in 
+  let temp3=List.filter(fun k->(get s k)='\n')(Assistance_int_range.range 1 (start_idx-1)) in 
   let start_line_idx = 1+(List.length(temp3)) in 
   tempf([],patterns_in_order,start_idx,start_line_idx);;
 
@@ -2987,7 +3355,7 @@ let leftmost_difference s1 s2=
    let n=min(n1)(n2) in 
    match Assistance_option.seek(fun j->
       (get s1 j)<>(get s2 j)
-   )(Assistance_ennig.ennig 1 n) with 
+   )(Assistance_int_range.range 1 n) with 
    None->None 
    |Some(j0)->
       let common_part=String.sub s1 0 (j0-1) 
@@ -3187,7 +3555,7 @@ module Private = struct
 
    let of_line s=
       let n = String.length s in 
-      let indices = List.rev(Assistance_ennig.ennig 1 n) in 
+      let indices = List.rev(Assistance_int_range.range 1 n) in 
       let limit_idx=(match Assistance_option.seek(fun j->(Assistance_strung.get s j)<>'/')(indices) with 
          None -> 0 |Some(j)->j
       ) in 
@@ -3763,9 +4131,9 @@ module Assistance_characters_in_namespace_name=struct
 
 
 let chars=
-  (Assistance_ennig.doyle char_of_int 65 90)@
-  (Assistance_ennig.doyle char_of_int 97 122)@
-  (Assistance_ennig.doyle char_of_int 48 57)@
+  (Assistance_int_range.scale char_of_int 65 90)@
+  (Assistance_int_range.scale char_of_int 97 122)@
+  (Assistance_int_range.scale char_of_int 48 57)@
   ['\\';'_'];;
            
 
@@ -4051,7 +4419,7 @@ let after_classlike_declaration s i=
      fun j->not(List.mem 
          (String.get s (j-1)) Assistance_charset.classlike_declaration_chars
      )
-    )(Assistance_ennig.ennig i (String.length s));;
+    )(Assistance_int_range.range i (String.length s));;
 
 
 let after_abstract_class s i0=
@@ -4158,7 +4526,7 @@ let after_classlike_block_with_linebreak s i=
   let i1=Assistance_option.unpack opt1 in
   let opt2=Assistance_option.seek(fun j->
      not(List.mem (Assistance_strung.get s j) [' ';'\r';'\t']) )
-  (Assistance_ennig.ennig i1 n) in
+  (Assistance_int_range.range i1 n) in
   if opt2=None then None else
   let i2=Assistance_option.unpack opt2 in
   if Assistance_strung.get s i2='\n'
@@ -4983,14 +5351,16 @@ let indices_in_ml_ocamlcode code=
   List.flatten temp2;;
 
 let indices_in_mli_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
+let indices_in_mll_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
+let indices_in_mly_ocamlcode code=  indices_in_ml_ocamlcode code ;; 
   
 let indices_in_mlx_file ap=  
     let s_ap = Assistance_absolute_path.to_string ap in 
     let ending = Assistance_cull_string.after_rightmost s_ap '.' in 
     if ending = "ml"  then indices_in_ml_ocamlcode (Assistance_io.read_whole_file ap) else 
     if ending = "mli" then indices_in_mli_ocamlcode (Assistance_io.read_whole_file ap) else   
-    if ending = "mll" then raise(Change_not_implemented s_ap) else 
-    if ending = "mly" then raise(Change_not_implemented s_ap) else   
+    if ending = "mll" then indices_in_mll_ocamlcode (Assistance_io.read_whole_file ap) else 
+    if ending = "mly" then indices_in_mly_ocamlcode (Assistance_io.read_whole_file ap) else   
     raise(Unknown_ending_during_modulename_reading s_ap);;  
 
 
@@ -5312,7 +5682,7 @@ let make_full_instance () =
 let push_state instance =
   let raf = Private.main_ref in 
   let (Assistance_fw_state_index_t.I old_state) = get_state instance 
-  and indexed_old_list = Assistance_ennig.index_everything (!raf) in 
+  and indexed_old_list = Assistance_int_range.index_everything (!raf) in 
   let new_state = (Assistance_fw_state_index_t.I (old_state+1)) in 
   let (Assistance_fw_instance_index_t.I ii) = instance in 
   let new_list = Assistance_image.image 
@@ -5741,7 +6111,7 @@ let parse descr =
    let temp1 = Str.split (Str.regexp_string separator) descr in 
    let m = (List.length temp1)/2 in
    let tg =(fun k->List.nth temp1 (k-1)) in  
-   Assistance_compact_replacer_t.CR(Assistance_ennig.doyle (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
+   Assistance_compact_replacer_t.CR(Assistance_int_range.scale (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
 
 let replace_inside_string (Assistance_compact_replacer_t.CR(l)) old_text =
    Assistance_replace_inside.replace_several_inside_string l old_text ;;
@@ -6018,94 +6388,6 @@ end;;
 
 
 
-module Assistance_memoized=struct
-
-(*
-
-#use"memoized.ml";;
-
-*) 
-type ('a,'b) map=('a->'b);;
-
-let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let y=f(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  (memoized_f:>('a,'b) map);;
-
-let make (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  make_from f a_hashtbl_for_f;;
-  
-let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
-  let rec memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let mf=(memoized_f:>('a->'b)) in
-          let y=big_f(mf)(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
-
-let recursive (big_f:('a->'b)->'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  recursive_from big_f a_hashtbl_for_f;;
-
-let small f initial_value=
-  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
-  
-let reversible (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) 
-  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
-  and irreducibles=ref([]) 
-  and minimal_reductions=ref([]) in
-  let compute_f=(fun x accu->
-     let y=f(x) in
-     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
-      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
-     else     
-     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
-          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
-          minimal_reductions:=(x,old_x)::(!minimal_reductions))
-     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
-            irreducibles:=x::(!irreducibles))
-     
-  ) in
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let accu=ref([]) in
-          let _=compute_f(x)(accu) in
-          List.hd(!accu)
-  ) 
-  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
-  let memoized_projector=(fun x->
-    let ()=compute_f(x)(ref[]) in
-    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
-    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
-    else x
-    ) in
-  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
-           
-
-end;;
-
-
-
-
-
-
 module Assistance_cartesian=struct
 
 (*
@@ -6148,7 +6430,7 @@ let rec sub_f=(function
 in
 sub_f(List.rev(x),[[]]);;
 
-let power x n=general_product (Assistance_ennig.doyle (fun j->x) 1 n);;
+let power x n=general_product (Assistance_int_range.scale (fun j->x) 1 n);;
              
 
 end;;
@@ -6169,6 +6451,18 @@ module Assistance_ordered_misc=struct
 module Private = struct 
 
   let oi = Assistance_total_ordering.for_integers ;;
+
+  let rec helper_for_maximal_elts_wrt_inclusion (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+       if List.exists (fun b->
+         (b<>a) && ( Assistance_ordered.is_included_in oi a b) ) others
+       then helper_for_maximal_elts_wrt_inclusion (already_treated,others)
+       else 
+        let temp1 = List.filter (fun b->
+           not(Assistance_ordered.is_included_in oi b a)) others in
+        helper_for_maximal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
 
   let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
     match to_be_treated with 
@@ -6229,11 +6523,37 @@ module Private = struct
      let get_several = Assistance_image.image get_one in 
      let n = List.length base 
      and normalized_f = (fun indices ->f(get_several indices)) in 
-     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_ennig.ennig 1 n) in 
+     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_int_range.range 1 n) in 
      Assistance_image.image get_several temp1 ;;
 
+let commonest_elements ll = 
+  let temp1 = Assistance_ordered.fold_merge oi ll in 
+  let (_,temp2) = Assistance_max.maximize_it_with_care (
+    fun y->List.length(List.filter (Assistance_ordered.mem oi y) ll)
+  ) temp1 in 
+  temp2;; 
 
+let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
+   if to_be_treated = [] 
+   then (List.rev history,treated)
+   else
+   let temp1 = commonest_elements to_be_treated in 
+   let a = List.hd temp1 in 
+   helper_for_greedy_transversal(temp1::history,Assistance_ordered.insert oi a treated,
+     List.filter (fun x->not(Assistance_ordered.mem oi a x)) to_be_treated) ;;  
+
+ let greedy_transversal ll =
+  helper_for_greedy_transversal ([],[],ll) ;;
+   
 end ;;        
+
+
+let commonest_elements = Private.commonest_elements ;;
+
+let greedy_transversal = Private.greedy_transversal ;;
+
+let maximal_elts_wrt_inclusion l= 
+  Private.helper_for_maximal_elts_wrt_inclusion ([],l) ;;
 
 let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
 
@@ -6664,253 +6984,6 @@ end;;
 
 
 
-module Assistance_lines_in_string=struct
-
-(*
-
-#use"lines_in_string.ml";;
-
-*)
-
-
-module Private = struct 
-
-  let lines old_s=
-     let left_offset=(if Assistance_supstring.begins_with old_s "\n" then "\n" else "")
-     and right_offset=(if Assistance_supstring.ends_with old_s "\n" then "\n" else "") in
-     let s=left_offset^old_s^right_offset in
-     Str.split (Str.regexp_string "\n") s ;;
-
-  let indexed_lines text=
-     Assistance_ennig.index_everything (lines text);;
-  
-  let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
-       match lines with 
-       [] -> List.rev treated_lines 
-       |(line_idx,line) :: other_lines ->
-        iterator_for_enchancement 
-        (num_of_treated_chars+(String.length line)+1,
-         (num_of_treated_chars,line_idx,line)::treated_lines,other_lines)   ;;
-        
-  let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
-  
-  let adjust_num_of_lines_upwards_in_string ~required_size text =
-      let temp1 = lines text in  
-      let d = required_size - (List.length temp1) in 
-      if d<=0 
-      then text 
-      else text ^ (String.make d '\n') ;;   
-
-  let adjust_num_of_lines_upwards_in_file ~required_size file =
-      let old_text = Assistance_io.read_whole_file file in
-      let new_text = adjust_num_of_lines_upwards_in_string ~required_size old_text  in
-      Assistance_io.overwrite_with file new_text ;;   
-
-  let tripartition_associated_to_interval s i j=
-      let temp2=lines s in 
-      let (temp3,temp4)=Assistance_listennou.big_rht (i-1) temp2 in 
-      let part1=String.concat "\n" (List.rev temp3) in 
-      let (temp5,temp6)=Assistance_listennou.big_rht (j-i+1) temp4 in 
-      let part2=String.concat "\n" (List.rev temp5) in 
-      let part3=String.concat "\n" temp6 in 
-      (part1^"\n",part2,"\n"^part3);;
-   
-   (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-       
-  let interval text i j=
-    let temp1=indexed_lines text in
-    let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
-    let temp3=Assistance_image.image snd temp2 in
-    String.concat "\n" temp3;;  
-      
-  (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-    
-  let copy_interval_from_string_to_string (i,j)  src dest =
-     let src_linelength = List.length (lines src) in 
-     let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
-     let (before,in_between,after) = tripartition_associated_to_interval temp1 i j in 
-     before^(interval src i j)^after;;
-
-      
-  (* copy_interval_from_string_to_string (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
-
-  let copy_interval_from_file_to_file (i,j) src_file  dest_file =
-     let src = Assistance_io.read_whole_file src_file 
-     and old_text = Assistance_io.read_whole_file dest_file  in 
-     let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
-     Assistance_io.overwrite_with dest_file new_text ;; 
-     
-   exception Lines_in_char_range_exn of int*int;;
-
-   let number_of_lines_in_char_interval s  i j=
-     try (List.length(List.filter (fun k->
-         String.get s (k-1)='\n'
-     ) (Assistance_ennig.ennig i j))) with
-     _->raise(Lines_in_char_range_exn(i,j));;    
-  
-  end ;;   
-  
-  let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
-  let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
-
-
-  let indexed_lines = Private.indexed_lines ;;
-  
-  (*
-  
-  indexed_lines "a\nb";;
-  indexed_lines "\na\nb";;
-  indexed_lines "a\nb\n";;
-  
-  *)
-
-  let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
-  
-  (*
-  
-  enhanced_indexed_lines "a\nb";;
-  enhanced_indexed_lines "\na\nb";;
-  enhanced_indexed_lines "a\nb\n";;
-  
-  *)
-
-  let indent_interval_in_string_with (i,j) ~text ~tab_width =
-    let old_lines = indexed_lines text 
-    and tab = String.make tab_width ' ' in 
-    let new_lines = Assistance_image.image (
-        fun (k,line) -> 
-          if (k<i)||(k>j)
-          then line
-         else tab^line
-    ) old_lines in 
-    String.concat "\n" new_lines ;;
-
-(* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
-
-let indent_interval_in_file_with (i,j) fn ~tab_width=
-   let old_text=Assistance_io.read_whole_file fn in
-   let new_text=indent_interval_in_string_with (i,j) ~text:old_text ~tab_width  in
-   Assistance_io.overwrite_with fn new_text;;   
-
-let interval = Private.interval ;;
-
-   let line_index_from_char_index s char_idx=
-      1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
-
-  let lines s= Assistance_image.image snd (indexed_lines s);;
-
-  let remove_interval s i j=
-    let temp1=indexed_lines s in
-    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
-    let temp3=Assistance_image.image snd temp2 in
-    String.concat "\n" temp3;; 
-  
-  let remove_interval_in_file fn i j=
-      let s1=Assistance_io.read_whole_file fn in
-      let s2=remove_interval s1 i j  in
-     Assistance_io.overwrite_with fn s2;;   
-  
-  let remove_lines_containing_substring_in_string pattern text =
-     let temp1=indexed_lines text in
-     let temp2=List.filter (fun (_,line)->not(Assistance_substring.is_a_substring_of pattern line)) temp1  in
-     let temp3=Assistance_image.image snd temp2 in
-     String.concat "\n" temp3;; 
-   
-   let remove_lines_containing_substring_in_file pattern fn=
-       let old_text=Assistance_io.read_whole_file fn in
-       let new_text=remove_lines_containing_substring_in_string pattern old_text  in
-      Assistance_io.overwrite_with fn new_text;;   
-  
-let suppress_linebreaks_in_interval s i j=
-    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
-    let new_part2 = String.concat "" (lines old_part2) in 
-    part1^new_part2^part3 ;; 
-  
-  (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-  
-let suppress_linebreaks_in_interval_in_file fn i j=
-    let s1=Assistance_io.read_whole_file fn in
-    let s2=suppress_linebreaks_in_interval s1 i j  in
-    Assistance_io.overwrite_with fn s2;;     
-
-let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_directory_name_t=struct
-
-(*
-
-Directories name, with the trailing slash removed.
-
-#use"directory_name_t.ml";;
-
-*)
-
-type t=D of string;;
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_directory_name=struct
-
-(*
-
-Directories name, with the trailing slash removed.
-
-#use"directory_name.ml";;
-
-*)
-
-
-
-exception Non_directory of string;;
-exception File_not_found of string * (Assistance_directory_name_t.t list);;
-
-let find_file_with_directory_list fname l=
-  match Assistance_option.find_and_stop (
-     fun (Assistance_directory_name_t.D s_dir) ->
-      let full_path = s_dir^"/"^fname in 
-      if Sys.file_exists full_path 
-      then Some(Assistance_absolute_path.of_string full_path)
-      else None
-  ) l with 
-  None -> raise(File_not_found(fname,l))
-  |Some(ap) -> ap;;
-
-
-let of_string s=
-  let temp1=Assistance_tools_for_absolute_path.of_string s in
-  if Sys.is_directory temp1
-  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
-  else raise(Non_directory(s));;
-
-let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
-
-
-
-end;;
-
-
-
-
-
-
 module Assistance_chronometer=struct
 
 (*
@@ -6976,6 +7049,51 @@ let rewrite_duration x=
  
    
            
+
+end;;
+
+
+
+
+
+
+module Assistance_coma_big_constant=struct
+
+(* 
+#use"Compilation_management/coma_big_constant.ml";;
+*)
+
+let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
+let home = Sys.getenv "HOME" ;;
+
+module This_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Ordinary");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Next_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Third_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+
+
+
+
 
 end;;
 
@@ -7099,6 +7217,280 @@ let image_computed_backwards f l=Assistance_chronometer.it
 let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
 
 (* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
+
+
+end;;
+
+
+
+
+
+
+module Assistance_lines_in_string=struct
+
+(*
+
+#use"lines_in_string.ml";;
+
+*)
+
+
+module Private = struct 
+
+  let lines old_s=
+     let left_offset=(if Assistance_supstring.begins_with old_s "\n" then "\n" else "")
+     and right_offset=(if Assistance_supstring.ends_with old_s "\n" then "\n" else "") in
+     let s=left_offset^old_s^right_offset in
+     Str.split (Str.regexp_string "\n") s ;;
+
+  let indexed_lines text=
+     Assistance_int_range.index_everything (lines text);;
+  
+  let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
+       match lines with 
+       [] -> List.rev treated_lines 
+       |(line_idx,line) :: other_lines ->
+        iterator_for_enchancement 
+        (num_of_treated_chars+(String.length line)+1,
+         (num_of_treated_chars,line_idx,line)::treated_lines,other_lines)   ;;
+        
+  let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
+  
+  let adjust_num_of_lines_upwards_in_string ~required_size text =
+      let temp1 = lines text in  
+      let d = required_size - (List.length temp1) in 
+      if d<=0 
+      then text 
+      else text ^ (String.make d '\n') ;;   
+
+  let adjust_num_of_lines_upwards_in_file ~required_size file =
+      let old_text = Assistance_io.read_whole_file file in
+      let new_text = adjust_num_of_lines_upwards_in_string ~required_size old_text  in
+      Assistance_io.overwrite_with file new_text ;;   
+
+  let tripartition_associated_to_interval s i j=
+      let temp2=lines s in 
+      let (temp3,temp4)=Assistance_listennou.big_rht (i-1) temp2 in 
+      let part1=String.concat "\n" (List.rev temp3) in 
+      let (temp5,temp6)=Assistance_listennou.big_rht (j-i+1) temp4 in 
+      let part2=String.concat "\n" (List.rev temp5) in 
+      let part3=String.concat "\n" temp6 in 
+      (part1^"\n",part2,"\n"^part3);;
+   
+   (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+       
+  let interval text i j=
+    let temp1=indexed_lines text in
+    let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
+    let temp3=Assistance_image.image snd temp2 in
+    String.concat "\n" temp3;;  
+      
+  (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+    
+  let copy_interval_from_string_to_string (i,j)  src dest =
+     let src_linelength = List.length (lines src) in 
+     let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
+     let (before,in_between,after) = tripartition_associated_to_interval temp1 i j in 
+     before^(interval src i j)^after;;
+
+      
+  (* copy_interval_from_string_to_string (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
+
+  let copy_interval_from_file_to_file (i,j) src_file  dest_file =
+     let src = Assistance_io.read_whole_file src_file 
+     and old_text = Assistance_io.read_whole_file dest_file  in 
+     let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
+     Assistance_io.overwrite_with dest_file new_text ;; 
+     
+   exception Lines_in_char_range_exn of int*int;;
+
+   let number_of_lines_in_char_interval s  i j=
+     try (List.length(List.filter (fun k->
+         String.get s (k-1)='\n'
+     ) (Assistance_int_range.range i j))) with
+     _->raise(Lines_in_char_range_exn(i,j));;    
+
+   let duplicate_interval_in_string (i,j) s = 
+     let (before,itv,after) = tripartition_associated_to_interval s i j in 
+     before^itv^"\n"^itv^after ;;
+
+  (* duplicate_interval_in_string (2,4) "1\n2\n3\n4\n5\n";; *)
+
+   let duplicate_interval_in_file (i,j) src_file  =
+     let old_text = Assistance_io.read_whole_file src_file  in 
+     let new_text = duplicate_interval_in_string (i,j) old_text in 
+     Assistance_io.overwrite_with src_file new_text ;; 
+
+  
+  end ;;   
+  
+  let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
+  let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
+
+  let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
+  let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
+
+  let indexed_lines = Private.indexed_lines ;;
+  
+  (*
+  
+  indexed_lines "a\nb";;
+  indexed_lines "\na\nb";;
+  indexed_lines "a\nb\n";;
+  
+  *)
+
+  let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
+  
+  (*
+  
+  enhanced_indexed_lines "a\nb";;
+  enhanced_indexed_lines "\na\nb";;
+  enhanced_indexed_lines "a\nb\n";;
+  
+  *)
+
+  let indent_interval_in_string_with (i,j) ~text ~tab_width =
+    let old_lines = indexed_lines text 
+    and tab = String.make tab_width ' ' in 
+    let new_lines = Assistance_image.image (
+        fun (k,line) -> 
+          if (k<i)||(k>j)
+          then line
+         else tab^line
+    ) old_lines in 
+    String.concat "\n" new_lines ;;
+
+(* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
+
+let indent_interval_in_file_with (i,j) fn ~tab_width=
+   let old_text=Assistance_io.read_whole_file fn in
+   let new_text=indent_interval_in_string_with (i,j) ~text:old_text ~tab_width  in
+   Assistance_io.overwrite_with fn new_text;;   
+
+let interval = Private.interval ;;
+
+   let line_index_from_char_index s char_idx=
+      1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
+
+  let lines s= Assistance_image.image snd (indexed_lines s);;
+
+  let remove_interval s i j=
+    let temp1=indexed_lines s in
+    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
+    let temp3=Assistance_image.image snd temp2 in
+    String.concat "\n" temp3;; 
+  
+  let remove_interval_in_file fn i j=
+      let s1=Assistance_io.read_whole_file fn in
+      let s2=remove_interval s1 i j  in
+     Assistance_io.overwrite_with fn s2;;   
+  
+  let remove_lines_containing_substring_in_string pattern text =
+     let temp1=indexed_lines text in
+     let temp2=List.filter (fun (_,line)->not(Assistance_substring.is_a_substring_of pattern line)) temp1  in
+     let temp3=Assistance_image.image snd temp2 in
+     String.concat "\n" temp3;; 
+   
+   let remove_lines_containing_substring_in_file pattern fn=
+       let old_text=Assistance_io.read_whole_file fn in
+       let new_text=remove_lines_containing_substring_in_string pattern old_text  in
+      Assistance_io.overwrite_with fn new_text;;   
+  
+let findreplace_in_interval (x,y) s i j=
+      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+      let new_part2 = Assistance_replace_inside.replace_inside_string (x,y) old_part2 in 
+      part1^new_part2^part3 ;; 
+
+let findreplace_in_interval_in_file (x,y) fn i j=
+      let s1=Assistance_io.read_whole_file fn in
+      let s2=findreplace_in_interval (x,y) s1 i j  in
+      Assistance_io.overwrite_with fn s2;;     
+  
+
+(* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
+let suppress_linebreaks_in_interval s i j=
+    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+    let new_part2 = String.concat "" (lines old_part2) in 
+    part1^new_part2^part3 ;; 
+  
+  (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+  
+let suppress_linebreaks_in_interval_in_file fn i j=
+    let s1=Assistance_io.read_whole_file fn in
+    let s2=suppress_linebreaks_in_interval s1 i j  in
+    Assistance_io.overwrite_with fn s2;;     
+
+let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
+
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_directory_name_t=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"directory_name_t.ml";;
+
+*)
+
+type t=D of string;;
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_directory_name=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"directory_name.ml";;
+
+*)
+
+
+
+exception Non_directory of string;;
+exception File_not_found of string * (Assistance_directory_name_t.t list);;
+
+let find_file_with_directory_list fname l=
+  match Assistance_option.find_and_stop (
+     fun (Assistance_directory_name_t.D s_dir) ->
+      let full_path = s_dir^"/"^fname in 
+      if Sys.file_exists full_path 
+      then Some(Assistance_absolute_path.of_string full_path)
+      else None
+  ) l with 
+  None -> raise(File_not_found(fname,l))
+  |Some(ap) -> ap;;
+
+
+let of_string s=
+  let temp1=Assistance_tools_for_absolute_path.of_string s in
+  if Sys.is_directory temp1
+  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
+  else raise(Non_directory(s));;
+
+let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
+
 
 
 end;;
@@ -7626,51 +8018,6 @@ end;;
 
 
 
-module Assistance_coma_big_constant=struct
-
-(* 
-#use"Compilation_management/coma_big_constant.ml";;
-*)
-
-let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
-let home = Sys.getenv "HOME" ;;
-
-module This_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Ordinary");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Next_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Third_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-
-
-
-
-
-end;;
-
-
-
-
-
-
 module Assistance_particular_string=struct
 
 (*
@@ -7704,27 +8051,35 @@ module Assistance_coma_constant=struct
 
 module Private = struct
 
-let utility_files_subdir=
-  Assistance_dfa_subdirectory.of_line "Utility_files";;
+let directives_subdir=
+  Assistance_dfa_subdirectory.of_line "directives";;
 
-let fads_subdir=
-  Assistance_dfa_subdirectory.of_line "Fads";;
+let debugging_subdir=
+  Assistance_dfa_subdirectory.of_line "debugging";;
 
-let githubbed_archive_subdir=
-  Assistance_dfa_subdirectory.of_line "Githubbed_archive";;
+let watched_subdir=
+  Assistance_dfa_subdirectory.of_line "watched";;
 
-let persistent_data_subdir = 
-  Assistance_dfa_subdirectory.extend utility_files_subdir "Persistent_data";;
-let confidential_data_subdir = 
-  Assistance_dfa_subdirectory.extend utility_files_subdir "Confidential_data";;
+let nonml_files_subdir=
+  Assistance_dfa_subdirectory.of_line "nonml_files";;
 
-let build_subdir =   Assistance_dfa_subdirectory.of_line "_build";;
+let watched_and_githubbed_subdir=
+  Assistance_dfa_subdirectory.extend watched_subdir "watched_and_githubbed";;
+
+let watched_not_githubbed_subdir=
+  Assistance_dfa_subdirectory.extend watched_subdir "watched_not_githubbed";;
+
+let githubbed_nonml_files_subdir=
+  Assistance_dfa_subdirectory.extend nonml_files_subdir "githubbed_nonml_files";;
+
+let nongithubbed_nonml_files_subdir=
+  Assistance_dfa_subdirectory.extend nonml_files_subdir "nongithubbed_nonml_files";;  
+
+let build_subdir =   Assistance_dfa_subdirectory.extend nongithubbed_nonml_files_subdir "_build";;
 let usual_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_usual_build";;
 let debug_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_debug_build";;  
 let exec_build_subdir=  Assistance_dfa_subdirectory.extend build_subdir "_exec_build";;  
 let parameters_subdir= Assistance_dfa_subdirectory.of_line "Compilation_management";;
-
-
 
 let short_path_for_diary_file= Assistance_dfn_short.of_line"diary_archive.ml";;
 let short_path_for_loadingsfile= Assistance_dfn_short.of_line"my_loadings.ml";;
@@ -7733,28 +8088,29 @@ let short_path_for_parametersfile= Assistance_dfn_short.of_line "coma_big_consta
 let short_path_for_printersfile= Assistance_dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Assistance_dfn_short.of_line "targetfile.ocaml_made";;
  
- 
 let rootless_path_for_diary_file=
-  Assistance_dfn_join.subdirectory_to_short  githubbed_archive_subdir short_path_for_diary_file;;
+  Assistance_dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
 let rootless_path_for_loadingsfile=
-  Assistance_dfn_join.subdirectory_to_short  utility_files_subdir short_path_for_loadingsfile;;
+  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
 let rootless_path_for_painful_debugging_file=
-  Assistance_dfn_join.subdirectory_to_short  fads_subdir short_path_for_painful_debugging_file;;
+  Assistance_dfn_join.subdirectory_to_short  watched_not_githubbed_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
   Assistance_dfn_join.subdirectory_to_short  parameters_subdir short_path_for_parametersfile;;
 let rootless_path_for_printersfile=
-  Assistance_dfn_join.subdirectory_to_short  utility_files_subdir short_path_for_printersfile;;
+  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_printersfile;;
 let rootless_path_for_targetfile=
-  Assistance_dfn_join.subdirectory_to_short  persistent_data_subdir short_path_for_targetfile;;     
+  Assistance_dfn_join.subdirectory_to_short  nongithubbed_nonml_files_subdir short_path_for_targetfile;;     
 
 let rootless_path_for_ocamlinit = Assistance_dfn_rootless.of_line ".ocamlinit";;
 
 
 let git_ignored_subdirectories =
   [
-     utility_files_subdir;
      build_subdir;
-     fads_subdir;
+     watched_not_githubbed_subdir;
+     nongithubbed_nonml_files_subdir;
+     directives_subdir;
+     debugging_subdir;
   ];;
 
 
@@ -7794,36 +8150,36 @@ let conventional_files_with_minimal_content =
 
 let minimal_set_of_needed_dirs = 
   [
-    persistent_data_subdir ; 
     usual_build_subdir ;
-    utility_files_subdir ;
-    githubbed_archive_subdir
+    watched_not_githubbed_subdir;
+    watched_and_githubbed_subdir;
+    githubbed_nonml_files_subdir;
+    nongithubbed_nonml_files_subdir;
   ] ;;  
 
 let full_set_of_needed_dirs = 
   minimal_set_of_needed_dirs @
     [
-      fads_subdir 
     ] ;;  
 
 end ;;
 
- let confidential_data_subdir = Private.confidential_data_subdir ;;
  let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
  let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
  let debug_build_subdir = Private.debug_build_subdir ;;
+ let debugging_subdir = Private.debugging_subdir ;;
  let exec_build_subdir = Private.exec_build_subdir ;;
  let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
- let githubbed_archive_subdir = Private.githubbed_archive_subdir ;;
+ let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
  let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
  let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
  let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
  let rootless_path_for_targetfile = Private.rootless_path_for_targetfile ;;
  let usual_build_subdir = Private.usual_build_subdir ;;
- let utility_files_subdir = Private.utility_files_subdir ;;
 
 
 
@@ -8463,7 +8819,7 @@ let of_in substr s=
        if main_test k
        then Some(k,k+l_substr-1)
        else None
-  ) (Assistance_ennig.ennig 1 (n+1-l_substr));;
+  ) (Assistance_int_range.range 1 (n+1-l_substr));;
 
    
 (*   
@@ -8613,7 +8969,7 @@ let inside_string replacings s=
   let xy_substring=(fun j->
     Assistance_cull_string.interval s (x_coord j) (y_coord j)
   ) in
-  let all_parts=Assistance_ennig.doyle (
+  let all_parts=Assistance_int_range.scale (
     fun j->
       if (j mod 2)=1
       then xy_substring j
@@ -9341,7 +9697,7 @@ let debugful_detailed_chain l=
   main_f;;
 
 let disjunction l=
-   let indexed_l=Assistance_ennig.index_everything l in   
+   let indexed_l=Assistance_int_range.index_everything l in   
    let rec tempf=(fun
    (da_ober,s,i0)->
       match da_ober with
@@ -9490,11 +9846,11 @@ exception Bad_set_of_indices;;
 
 let list_with_indices l=
   let n=List.length l in
-  let temp1=Assistance_ennig.doyle (fun i->Assistance_option.seek(fun p->fst(p)=i) l) 1 n in
+  let temp1=Assistance_int_range.scale (fun i->Assistance_option.seek(fun p->fst(p)=i) l) 1 n in
   if List.mem None temp1
   then raise(Bad_set_of_indices)
   else
-  Assistance_ennig.doyle (fun
+  Assistance_int_range.scale (fun
      i->snd(Assistance_listennou.force_find(fun p->fst(p)=i) l)
   ) 1 n;;
 
@@ -10645,7 +11001,7 @@ module Private = struct
    (* Inherited constructors *)
 
    let constructor par opt_subdirs= 
-      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Assistance_coma_constant.githubbed_archive_subdir]) in    
+      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Assistance_coma_constant.watched_and_githubbed_subdir]) in    
       Assistance_fw_poly.extend_file_watcher_to_fw_with_archives
         par ~subdirs_for_archived_mlx_files:subdirs ;;
       
@@ -10811,7 +11167,7 @@ module Private = struct
    let replace_string old_fw (replacee,replacer) = 
       let apply = (fun par files->
          Assistance_file_watcher.apply_text_transformation_on_some_files par 
-         (Assistance_replace_inside.replace_inside_string (replacee,replacer)) files
+         (Assistance_replace_inside.silently_replace_inside_string (replacee,replacer)) files
       ) in 
       let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
       let old_parent = parent old_fw in    
@@ -12757,6 +13113,7 @@ let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
 let plunge_fw_configuration = Private.Exit.plunge_fw_configuration ;;
+let principal_ending_for_module fw mn = Assistance_fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
 let register_rootless_paths = Private.Exit.register_rootless_paths ;;
 let relocate_module_to = Private.Exit.relocate_module_to ;;
@@ -12870,10 +13227,6 @@ module Private = struct
      String.concat " " ["";dirs;libs;""];;
   
   
-  (*
-  exception Unregistered_cmi of Dfn_endingless_t.t;;
-  exception Unregistered_cmo of Dfn_endingless_t.t;;
-  *)
   let command_for_cmi (cmod:Assistance_compilation_mode_t.t) dir fw hm=
       let nm=Assistance_dfn_endingless.to_module hm in
       let s_root=Assistance_dfa_root.connectable_to_subpath(dir) in
@@ -12911,6 +13264,75 @@ module Private = struct
               ) in 
               Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;;
      
+    let hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds =
+       (* 
+          in this situation the mli file exists but is not registered.
+          So the compilation manager must treat it as though it didn't
+          exist. We temporarily rename it so that ocamlc will ignore it.
+        *)
+        let dummy_mli=s_root^"uvueaoqhkt" in
+        [
+          "mv "^full_mli^" "^dummy_mli
+        ]
+        @ 
+          central_cmds
+        @ 
+        [ 
+          "mv "^dummy_mli^" "^full_mli
+        ] ;;
+
+
+
+    let command_for_cmo_from_mll (cmod:Assistance_compilation_mode_t.t) dir fw eless=
+      let nm=Assistance_dfn_endingless.to_module eless in
+      let s_root=Assistance_dfa_root.connectable_to_subpath(dir) in
+      let s_eless=Assistance_dfn_endingless.to_line eless in
+      let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
+      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm in 
+      let full_mli=s_eless^".mli" in
+      let workdir = Assistance_dfa_subdirectory.connectable_to_subpath (Assistance_compilation_mode.workspace cmod ) in 
+      let opt_exec_move=(if cmod=Assistance_compilation_mode_t.Executable 
+                         then Some("mv "^s_eless^".o "^s_root^workdir) 
+                         else None) in 
+      let ml_in_workplace = s_root^workdir ^ (Assistance_dfa_module.to_line nm) ^ ".ml" in                   
+      let central_cmds=
+      [ 
+        "ocamllex "^s_eless^".mll";
+        "mv "^s_eless^".ml "^s_root^workdir;
+        (Assistance_compilation_mode.executioner cmod)^dir_and_libs^" -c "^ml_in_workplace;
+      ] in 
+      let almost_full_answer= 
+      (if (not mli_reg) &&(Sys.file_exists(full_mli))
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
+      else central_cmds)
+      in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+    let command_for_cmo_from_mly (cmod:Assistance_compilation_mode_t.t) dir fw eless=
+      let nm=Assistance_dfn_endingless.to_module eless in
+      let s_root=Assistance_dfa_root.connectable_to_subpath(dir) in
+      let s_eless=Assistance_dfn_endingless.to_line eless in
+      let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
+      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm in 
+      let full_mli=s_eless^".mli" in
+      let workdir = Assistance_dfa_subdirectory.connectable_to_subpath (Assistance_compilation_mode.workspace cmod ) in 
+      let opt_exec_move=(if cmod=Assistance_compilation_mode_t.Executable 
+                         then Some("mv "^s_eless^".o "^s_root^workdir) 
+                         else None) in 
+      let ml_in_workplace = s_root^workdir ^ (Assistance_dfa_module.to_line nm) ^ ".ml" in                   
+      let central_cmds=
+      [ 
+        "ocamlyacc "^s_eless^".mly";
+        "mv "^s_eless^".ml "^s_root^workdir;
+        (Assistance_compilation_mode.executioner cmod)^dir_and_libs^" -c "^ml_in_workplace;
+      ] in 
+      let almost_full_answer= 
+      (if (not mli_reg) &&(Sys.file_exists(full_mli))
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
+      else central_cmds)
+      in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+
+
     let command_for_cmo (cmod:Assistance_compilation_mode_t.t) dir fw eless=
       let nm=Assistance_dfn_endingless.to_module eless in
       let s_root=Assistance_dfa_root.connectable_to_subpath(dir) in
@@ -12929,41 +13351,63 @@ module Private = struct
       ] in 
       let almost_full_answer= 
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
-      then 
-            (* 
-                     in this situation the mli file exists but is not registered.
-                     So the compilation manager must treat it as though it didn't
-                     exist. We temporarily rename it so that ocamlc will ignore it.
-            *)
-                    let dummy_mli=s_root^"uvueaoqhkt" in
-                    [
-                     "mv "^full_mli^" "^dummy_mli
-                    ]
-                    @ 
-                     central_cmds
-                    @ 
-                    [ 
-                     "mv "^dummy_mli^" "^full_mli
-                    ] 
+      then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds
       else central_cmds)
       in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+
+
   
-  exception  Unregistered_element of Assistance_dfn_endingless_t.t;;   
-  
-  let command_for_module_separate_compilation cmod fw eless=
+
+
+  let command_for_mli_module_separate_compilation cmod fw eless =
+      let dir = Assistance_fw_with_dependencies.root fw in 
+      command_for_cmi cmod dir fw eless;;
+
+  let command_for_ml_module_separate_compilation cmod fw eless =
       let dir = Assistance_fw_with_dependencies.root fw in 
       let nm=Assistance_dfn_endingless.to_module eless in
-      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm
-      and ml_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Ml nm in
+      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo cmod dir fw eless in 
       if mli_reg
       then let ci=command_for_cmi cmod dir fw eless in 
-           if ml_reg
-           then [ci;co]
-           else [ci]
+           [ci;co]
       else [co]) in 
       List.flatten temp2;;
+
+  let command_for_mll_module_separate_compilation cmod fw eless =
+      let dir = Assistance_fw_with_dependencies.root fw in 
+      let nm=Assistance_dfn_endingless.to_module eless in
+      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm in
+      let temp2=(
+      let co=command_for_cmo_from_mll cmod dir fw eless in 
+      if mli_reg
+      then let ci=command_for_cmi cmod dir fw eless in 
+           [ci;co]
+      else [co]) in 
+      List.flatten temp2;;
+
+  let command_for_mly_module_separate_compilation cmod fw eless =
+      let dir = Assistance_fw_with_dependencies.root fw in 
+      let nm=Assistance_dfn_endingless.to_module eless in
+      let mli_reg=Assistance_fw_with_dependencies.check_ending_on_module fw Assistance_dfa_ocaml_ending_t.Mli nm in
+      let temp2=(
+      let co=command_for_cmo_from_mly cmod dir fw eless in 
+      if mli_reg
+      then let ci=command_for_cmi cmod dir fw eless in 
+           [ci;co]
+      else [co]) in 
+      List.flatten temp2;;
+
+  let command_for_module_separate_compilation cmod fw eless pr_ending = 
+     match pr_ending with 
+      Assistance_dfa_ocaml_ending_t.Mli -> command_for_mli_module_separate_compilation cmod fw eless
+     |Ml -> command_for_ml_module_separate_compilation cmod fw eless
+     |Mll -> command_for_mll_module_separate_compilation cmod fw eless
+     |Mly -> command_for_mly_module_separate_compilation cmod fw eless
+    ;;
+
+
   
   exception  Command_for_predebuggable_or_preexecutable_exn;;
   
@@ -13118,7 +13562,8 @@ module Private = struct
   
   let ocamldebug_printersfile_path root= 
              (Assistance_dfa_root.connectable_to_subpath root)^
-             (Assistance_dfa_subdirectory.connectable_to_subpath(Assistance_coma_constant.utility_files_subdir)) ^
+             (Assistance_dfa_subdirectory.connectable_to_subpath
+               (Assistance_coma_constant.nongithubbed_nonml_files_subdir)) ^
                "cmos_for_ocamldebug.txt";;
   let parent fw = Assistance_fw_poly.parent fw;;
   let get_cmpl_results fw = Assistance_fw_poly.last_compilation_result_for_module fw ;;
@@ -13132,6 +13577,7 @@ module Private = struct
      
   let last_compilation_result_for_module fw mn = 
     List.assoc mn (get_cmpl_results fw) ;;
+
   let modules_with_their_ancestors fw l=
     Assistance_fw_with_dependencies.modules_with_their_ancestors
      (parent fw) l ;;
@@ -13157,9 +13603,9 @@ module Private = struct
   
   module Command = struct 
   
-      let module_separate_compilation cmod fw eless =
+      let module_separate_compilation cmod fw eless pr_ending=
        Assistance_commands_for_batch_compilation.module_separate_compilation 
-         cmod (parent fw) eless;;
+         cmod (parent fw) eless pr_ending;;
       
       let predebuggable fw short_path =
         Assistance_commands_for_batch_compilation.predebuggable 
@@ -13243,8 +13689,9 @@ module Private = struct
   let list_of_commands_for_shaft_part_of_feydeau cmod fw (opt_modulenames,opt_rootless_path)=
      let l=dependencies_inside_shaft cmod fw (opt_modulenames,opt_rootless_path) in 
      let temp1=Assistance_image.image (fun mn->
-       let eless=Assistance_fw_with_dependencies.endingless_at_module fw mn in 
-       let cmds=Command.module_separate_compilation cmod fw eless in 
+       let eless=Assistance_fw_with_dependencies.endingless_at_module fw mn 
+       and pr_ending = Assistance_fw_with_dependencies.principal_ending_for_module fw mn in 
+       let cmds=Command.module_separate_compilation cmod fw eless pr_ending in 
       Assistance_image.image (fun cmd->(mn,Assistance_fw_with_dependencies.endingless_at_module fw mn,cmd) ) cmds ) l in 
       List.flatten temp1;;
   
@@ -13307,11 +13754,13 @@ module Private = struct
   
   let clean_debug_dir fw=
     let s_root=Assistance_dfa_root.connectable_to_subpath(root fw) in
-    let s_debug_dir=s_root^(Assistance_dfa_subdirectory.connectable_to_subpath(Assistance_coma_constant.debug_build_subdir)) in 
+    let s_debug_dir=s_root^(Assistance_dfa_subdirectory.connectable_to_subpath
+       (Assistance_coma_constant.debug_build_subdir)) in 
     Assistance_unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
      
   let name_element_for_debugged_file = "debugged" ;;
-  let debugged_file_path = (Assistance_dfa_subdirectory.connectable_to_subpath(Assistance_coma_constant.utility_files_subdir))
+  let debugged_file_path = 
+    (Assistance_dfa_subdirectory.connectable_to_subpath(Assistance_coma_constant.debugging_subdir))
                ^ name_element_for_debugged_file ^ ".ml" ;;  
   
   let start_debugging fw=
@@ -13732,7 +14181,7 @@ module Private=struct
       let s_root=Assistance_dfa_root.connectable_to_subpath main_root in
       let temp1=Assistance_image.image 
         (fun sdir->"S "^s_root^(Assistance_dfa_subdirectory.connectable_to_subpath sdir) )
-      (Assistance_coma_constant.utility_files_subdir::dirs) in
+      dirs in
       let temp2=("B "^s_root^(Assistance_dfa_subdirectory.connectable_to_subpath building_site))::temp1 in
       "\n\n\n"^(String.concat "\n" temp2)^"\n\n\n";; 
 

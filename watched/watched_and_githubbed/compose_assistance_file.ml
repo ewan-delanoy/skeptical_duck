@@ -34,31 +34,32 @@ let g4=Replace_inside.replace_several_inside_string
     "let githubbing=false;;"
   ] g3;;
 
-let s_githubbed_archive = 
+let s_watched_and_githubbed = 
     Dfa_subdirectory.connectable_to_subpath(
     Coma_constant.watched_and_githubbed_subdir) ;;
 
 let prologue=String.concat "\n"
-["(*"; ""; "#use\"Githubbed_archive/assistance.ml\";;"; "";
-   "In an emergency situation, open a fresh terminal, load this ";
+["(*"; ""; "";
+   "In an emergency situation, ";
+   "go up one directory, open a fresh terminal, load this ";
    "file with the above command and call ";
    "Assistance_usual_coma_state.refresh() )";
-   "";"#load\"unix.cma\";;";"#load\"str.cma\";;";"#use\"Ordinary/Githubbed_archive/assistance.ml\";;";
+   "";"#load\"unix.cma\";;";"#load\"str.cma\";;";
+   "#use\"Ordinary/"^s_watched_and_githubbed^"assistance.ml\";;";
    ""; "*)"; ""; "";""];;
 
 let g5=prologue^g4;;
 
 
 let command_for_backup = 
-  "cp "^s_githubbed_archive^"assistance.ml "^s_githubbed_archive^"old_assistance.ml " ;; 
+  "cp "^s_watched_and_githubbed^"assistance.ml "^s_watched_and_githubbed^"old_assistance.ml " ;; 
 
 let ap_for_assistance=Absolute_path.of_string
-  (s_githubbed_archive^"assistance.ml");;
+  (s_watched_and_githubbed^"assistance.ml");;
 
 let act ()=
     let _ = Sys.command command_for_backup in 
-    Io.overwrite_with
-  ap_for_assistance g5;;
+    Io.overwrite_with ap_for_assistance g5;;
 
 
 
