@@ -1,6 +1,6 @@
 (*
 
-#use"check_ocaml_dircopy.ml";;
+#use"lib/check_ocaml_dircopy.ml";;
 
 Usable on a github clone of the remote master version.
 
