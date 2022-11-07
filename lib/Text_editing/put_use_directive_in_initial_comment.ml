@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/put_use_directive_in_initial_comment.ml";;
+#use"lib/Text_editing/put_use_directive_in_initial_comment.ml";;
 
 *)
 
