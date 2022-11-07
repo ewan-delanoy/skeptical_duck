@@ -1,6 +1,6 @@
 (*
 
-#use"find_suitable_ending.ml";;
+#use"lib/find_suitable_ending.ml";;
 
 *)
 
