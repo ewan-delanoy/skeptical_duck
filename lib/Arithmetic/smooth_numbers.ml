@@ -1,6 +1,6 @@
 (*
 
-#use"Arithmetic/smooth_numbers.ml";;
+#use"lib/Arithmetic/smooth_numbers.ml";;
 
 *)
 
