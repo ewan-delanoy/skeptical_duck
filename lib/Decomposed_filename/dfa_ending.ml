@@ -1,6 +1,6 @@
 (*
 
-#use"Decomposed_filename/dfa_ending.ml";;
+#use"lib/Decomposed_filename/dfa_ending.ml";;
 
 *)
 
