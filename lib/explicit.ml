@@ -1,6 +1,6 @@
 (*
 
-#use"explicit.ml";;
+#use"lib/explicit.ml";;
 
 *)
 
