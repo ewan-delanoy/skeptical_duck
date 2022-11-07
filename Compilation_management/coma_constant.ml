@@ -6,10 +6,6 @@
 
 module Private = struct
 
-
-let fads_subdir=
-  Dfa_subdirectory.of_line "Fads";;
-
 let directives_subdir=
   Dfa_subdirectory.of_line "directives";;
 
@@ -50,7 +46,6 @@ let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
- 
 let rootless_path_for_diary_file=
   Dfn_join.subdirectory_to_short  githubbed_archive_subdir short_path_for_diary_file;;
 let rootless_path_for_loadingsfile=
@@ -70,7 +65,6 @@ let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 let git_ignored_subdirectories =
   [
      build_subdir;
-     fads_subdir;
      watched_not_githubbed_subdir;
      nongithubbed_nonml_files_subdir;
      directives_subdir;
@@ -125,7 +119,6 @@ let minimal_set_of_needed_dirs =
 let full_set_of_needed_dirs = 
   minimal_set_of_needed_dirs @
     [
-      fads_subdir 
     ] ;;  
 
 end ;;
