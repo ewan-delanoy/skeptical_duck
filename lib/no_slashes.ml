@@ -1,6 +1,6 @@
 (*
 
-#use"no_slashes.ml";;
+#use"lib/no_slashes.ml";;
 
 *)
 
