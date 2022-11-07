@@ -1,6 +1,6 @@
 (*
 
-#use"isolated_occurrences.ml";;
+#use"lib/isolated_occurrences.ml";;
 
 Used to detect mentions of previously defined names in
 the same OCaml module.
