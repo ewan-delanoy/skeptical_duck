@@ -1,6 +1,6 @@
 (*
  
-#use"ordered.ml";;
+#use"lib/ordered.ml";;
 
 *)
 
