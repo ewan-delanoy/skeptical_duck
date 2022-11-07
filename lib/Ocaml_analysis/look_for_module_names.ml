@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/look_for_module_names.ml";;
+#use"lib/Ocaml_analysis/look_for_module_names.ml";;
 
 *)
 
