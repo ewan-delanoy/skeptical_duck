@@ -1,6 +1,6 @@
 (*
 
-#use"Szemeredi/sz_types.ml";;
+#use"lib/Szemeredi/sz_types.ml";;
 
 *)
 
