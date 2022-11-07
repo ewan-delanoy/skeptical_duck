@@ -1,6 +1,6 @@
 (*
 
-#use"memoized.ml";;
+#use"lib/memoized.ml";;
 
 *) 
 type ('a,'b) map=('a->'b);;
