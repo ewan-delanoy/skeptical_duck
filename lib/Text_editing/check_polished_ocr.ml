@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/check_polished_ocr.ml";;
+#use"lib/Text_editing/check_polished_ocr.ml";;
 
 Checks if footnote and page numbering is consistent.
 A footenote number has format [b][color=blue](<Number>)[/color][/b]  
