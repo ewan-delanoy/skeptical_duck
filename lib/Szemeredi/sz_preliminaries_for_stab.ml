@@ -1,6 +1,6 @@
 (*
 
-#use"Szemeredi/sz_preliminaries_for_stab.ml";;
+#use"lib/Szemeredi/sz_preliminaries_for_stab.ml";;
 
 *)
 
