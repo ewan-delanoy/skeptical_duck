@@ -1,6 +1,6 @@
 (*
 
-#use"supstring.ml";;
+#use"lib/supstring.ml";;
 
 *)
 
