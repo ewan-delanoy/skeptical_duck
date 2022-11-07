@@ -1,5 +1,5 @@
 (*
-#use"self_contained_module_copy.ml";;
+#use"lib/self_contained_module_copy.ml";;
 *)
 
 
