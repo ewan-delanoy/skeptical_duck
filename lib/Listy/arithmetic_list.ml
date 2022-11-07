@@ -1,6 +1,6 @@
 (*
 
-#use"Listy/arithmetic_list.ml";;
+#use"lib/Listy/arithmetic_list.ml";;
 
 *)
 
