@@ -1,6 +1,6 @@
 (*
 
-#use"three_parts.ml";;
+#use"lib/three_parts.ml";;
 
 *)
 
