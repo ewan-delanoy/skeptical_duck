@@ -1,6 +1,6 @@
 (*
 
-#use"parenthesed_block.ml";;
+#use"lib/parenthesed_block.ml";;
 
 Decompose a string into parenthesed blocks.
 Sample examples at the end of this file
