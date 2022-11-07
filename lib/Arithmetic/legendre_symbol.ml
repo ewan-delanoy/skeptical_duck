@@ -1,6 +1,6 @@
 (*
 
-#use"Arithmetic/legendre_symbol.ml";;
+#use"lib/Arithmetic/legendre_symbol.ml";;
 
 *)
 
