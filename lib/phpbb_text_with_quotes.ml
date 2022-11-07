@@ -1,6 +1,6 @@
 (*
 
-#use"phpbb_text_with_quotes.ml";;
+#use"lib/phpbb_text_with_quotes.ml";;
 
 
 *)
