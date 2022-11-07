@@ -1,6 +1,6 @@
 (*
 
-#use"modularize.ml";;
+#use"lib/modularize.ml";;
 
 *)
 
