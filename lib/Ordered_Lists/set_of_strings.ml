@@ -1,6 +1,6 @@
 (* 
 
-#use"Ordered_Lists/set_of_strings.ml";;
+#use"lib/Ordered_Lists/set_of_strings.ml";;
 
 *)
 
