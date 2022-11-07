@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_token_info.ml";;
+#use"lib/Padioleau/yp_token_info.ml";;
 
 *)
 
