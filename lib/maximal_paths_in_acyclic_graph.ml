@@ -1,6 +1,6 @@
 (*
 
-#use"maximal_paths_in_acyclic_graph.ml";;
+#use"lib/maximal_paths_in_acyclic_graph.ml";;
 
 *)
 
