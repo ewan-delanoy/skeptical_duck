@@ -1,6 +1,6 @@
 (*
 
-#use"strung.ml";;
+#use"lib/strung.ml";;
 
 *)
 
