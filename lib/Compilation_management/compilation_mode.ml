@@ -1,6 +1,6 @@
 (* 
 
-#use"Compilation_management/compilation_mode.ml";;
+#use"lib/Compilation_management/compilation_mode.ml";;
 
 *)
 
