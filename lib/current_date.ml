@@ -1,6 +1,6 @@
 (*
 
-#use"current_date.ml";;
+#use"lib/current_date.ml";;
 
 *)
 
