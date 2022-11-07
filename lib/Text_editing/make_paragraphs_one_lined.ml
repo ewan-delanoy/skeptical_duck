@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/make_paragraphs_one_lined.ml";;
+#use"lib/Text_editing/make_paragraphs_one_lined.ml";;
 
 *)
 
