@@ -1,6 +1,6 @@
 (*
 
-#use"Pretty_printing/aggregate_ocaml_name.ml";;
+#use"lib/Pretty_printing/aggregate_ocaml_name.ml";;
 
 *)
 
