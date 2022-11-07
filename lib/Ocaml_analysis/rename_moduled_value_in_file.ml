@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/rename_moduled_value_in_file.ml";;
+#use"lib/Ocaml_analysis/rename_moduled_value_in_file.ml";;
 
 *)
 
