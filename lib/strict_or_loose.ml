@@ -1,6 +1,6 @@
 (*
 
-#use"strict_or_loose.ml";;
+#use"lib/strict_or_loose.ml";;
    
 *)
 
