@@ -1,6 +1,6 @@
 (*
 
-#use"ocaml_long_name.ml";;
+#use"lib/ocaml_long_name.ml";;
 
 *)
    
