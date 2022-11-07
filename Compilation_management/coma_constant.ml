@@ -37,7 +37,7 @@ let githubbed_nonml_files_subdir=
 let nongithubbed_nonml_files_subdir=
   Dfa_subdirectory.extend nonml_files_subdir "nongithubbed_nonml_files";;  
 
-let build_subdir =   Dfa_subdirectory.of_line "_build";;
+let build_subdir =   Dfa_subdirectory.extend nongithubbed_nonml_files_subdir "_build";;
 let usual_build_subdir= Dfa_subdirectory.extend build_subdir "_usual_build";;
 let debug_build_subdir= Dfa_subdirectory.extend build_subdir "_debug_build";;  
 let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;  
