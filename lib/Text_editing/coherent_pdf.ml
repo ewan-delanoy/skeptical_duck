@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/coherent_pdf.ml";;
+#use"lib/Text_editing/coherent_pdf.ml";;
 
 *)
 
