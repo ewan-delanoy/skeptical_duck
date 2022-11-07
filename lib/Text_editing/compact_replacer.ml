@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/compact_replacer.ml";;
+#use"lib/Text_editing/compact_replacer.ml";;
 
 *)
 
