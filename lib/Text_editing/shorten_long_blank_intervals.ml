@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/shorten_long_blank_intervals.ml";;
+#use"lib/Text_editing/shorten_long_blank_intervals.ml";;
 
 *)
 
