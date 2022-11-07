@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/read_needed_ocaml_files.ml";;
+#use"lib/Ocaml_analysis/read_needed_ocaml_files.ml";;
 
 Given a module, first computes all the dependencies needed to
 define this module, then reads the dependencies and 
