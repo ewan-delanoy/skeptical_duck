@@ -26,6 +26,7 @@ module Private = struct
      
   let last_compilation_result_for_module fw mn = 
     List.assoc mn (get_cmpl_results fw) ;;
+
   let modules_with_their_ancestors fw l=
     Fw_with_dependencies.modules_with_their_ancestors
      (parent fw) l ;;
@@ -207,7 +208,8 @@ module Private = struct
     Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
      
   let name_element_for_debugged_file = "debugged" ;;
-  let debugged_file_path = (Dfa_subdirectory.connectable_to_subpath(Coma_constant.utility_files_subdir))
+  let debugged_file_path = 
+    (Dfa_subdirectory.connectable_to_subpath(Coma_constant.debugging_subdir))
                ^ name_element_for_debugged_file ^ ".ml" ;;  
   
   let start_debugging fw=

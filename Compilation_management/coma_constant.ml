@@ -10,6 +10,9 @@ module Private = struct
 let fads_subdir=
   Dfa_subdirectory.of_line "Fads";;
 
+let debugging_subdir=
+  Dfa_subdirectory.of_line "debugging";;
+
 let githubbed_archive_subdir=
   Dfa_subdirectory.of_line "Githubbed_archive";;
 
@@ -132,6 +135,7 @@ end ;;
  let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
  let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
  let debug_build_subdir = Private.debug_build_subdir ;;
+ let debugging_subdir = Private.debugging_subdir ;;
  let exec_build_subdir = Private.exec_build_subdir ;;
  let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
