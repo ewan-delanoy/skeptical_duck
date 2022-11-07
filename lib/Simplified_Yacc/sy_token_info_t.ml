@@ -1,6 +1,6 @@
 (* 
 
-#use"Simplified_yacc/sy_token_info_t.ml";;
+#use"lib/Simplified_Yacc/sy_token_info_t.ml";;
 
 *)
 
