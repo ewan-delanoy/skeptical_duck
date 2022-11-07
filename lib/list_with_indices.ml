@@ -1,6 +1,6 @@
 (*
 
-#use"list_with_indices.ml";;
+#use"lib/list_with_indices.ml";;
 
 *)
 
