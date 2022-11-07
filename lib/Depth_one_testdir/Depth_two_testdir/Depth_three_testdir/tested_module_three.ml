@@ -1,6 +1,6 @@
 (*
 
-#use"Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/tested_module_three.ml";;
+#use"lib/Depth_one_testdir/Depth_two_testdir/Depth_three_testdir/tested_module_three.ml";;
 
 
 *)
