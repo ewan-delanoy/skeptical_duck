@@ -1,6 +1,6 @@
 (*
 
-#use"GParser/gparser_house_with_doors.ml";;
+#use"lib/GParser/gparser_house_with_doors.ml";;
 
 *)
 
