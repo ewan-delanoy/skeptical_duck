@@ -3,7 +3,7 @@
 Useful to avoid empty strings between two successive separators in
 an archive string, or to avoid empty strings to be forgotten during unarchiving. 
 
-#use"nonblank.ml";;
+#use"lib/nonblank.ml";;
 
 *)
 
