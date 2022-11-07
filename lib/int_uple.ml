@@ -1,6 +1,6 @@
 (*
 
-#use"int_uple.ml";;
+#use"lib/int_uple.ml";;
 
 *) 
 let translate_pair a (x1,x2)=(a+x1,a+x2);;
