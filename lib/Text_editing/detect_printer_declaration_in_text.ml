@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/detect_printer_declaration_in_text.ml";;
+#use"lib/Text_editing/detect_printer_declaration_in_text.ml";;
 
 *)
 
