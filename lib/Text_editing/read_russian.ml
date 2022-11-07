@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/read_russian.ml";;
+#use"lib/Text_editing/read_russian.ml";;
 
 *)
 
