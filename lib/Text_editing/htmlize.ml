@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/htmlize.ml";;
+#use"lib/Text_editing/htmlize.ml";;
 
 *)
 
