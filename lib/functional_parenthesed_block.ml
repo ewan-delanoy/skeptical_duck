@@ -1,6 +1,6 @@
 (*
 
-#use"functional_parenthesed_block.ml";;
+#use"lib/functional_parenthesed_block.ml";;
 
 Decompose a string into parenthesed blocks.
 More general version of Parenthesed_block module : now parentheses are not necessarily constant strings.
