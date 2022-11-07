@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/html_to_phpbb.ml";;
+#use"lib/Text_editing/html_to_phpbb.ml";;
 
 
 *)
