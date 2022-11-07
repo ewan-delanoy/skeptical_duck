@@ -1,6 +1,6 @@
 (*
 
-#use"multiset.ml";;
+#use"lib/multiset.ml";;
 
 *) 
 type 'a t=M of ('a*int) list;; 
