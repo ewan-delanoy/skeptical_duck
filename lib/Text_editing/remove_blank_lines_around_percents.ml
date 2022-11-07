@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/remove_blank_lines_around_percents.ml";;
+#use"lib/Text_editing/remove_blank_lines_around_percents.ml";;
 
 *)
 
