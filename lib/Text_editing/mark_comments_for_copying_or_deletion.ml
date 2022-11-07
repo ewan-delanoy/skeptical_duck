@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/mark_comments_for_copying_or_deletion.ml";;
+#use"lib/Text_editing/mark_comments_for_copying_or_deletion.ml";;
 
 *)
 
