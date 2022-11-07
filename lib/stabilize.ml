@@ -1,6 +1,6 @@
 (*
 
-#use"stabilize.ml";;
+#use"lib/stabilize.ml";;
 
 *) 
 
