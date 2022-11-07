@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/enumerate_html_footnotes.ml";;
+#use"lib/Text_editing/enumerate_html_footnotes.ml";;
 
 The main function takes an HTML source text and returns the list of all its footnotes,
 in phpbb rather than html form.
