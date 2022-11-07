@@ -1,6 +1,6 @@
 (* 
 
-#use "Compilation_management/commands_for_batch_compilation.ml";;
+#use"lib/Compilation_management/commands_for_batch_compilation.ml";;
 
 *)
 
