@@ -1,6 +1,6 @@
 (*
 
-#use"incremental_replace_on_a_set_of_files.ml";;
+#use"lib/incremental_replace_on_a_set_of_files.ml";;
 
 *)
 
