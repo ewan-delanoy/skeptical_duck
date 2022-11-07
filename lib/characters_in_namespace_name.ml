@@ -1,6 +1,6 @@
 (*
 
-#use"characters_in_namespace_name.ml";;
+#use"lib/characters_in_namespace_name.ml";;
 
 *)
 
