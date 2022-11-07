@@ -1,6 +1,6 @@
 (*
 
-#use"Ocaml_analysis/ocaml_gsyntax_category.ml";;
+#use"lib/Ocaml_analysis/ocaml_gsyntax_category.ml";;
 
 *)
 
