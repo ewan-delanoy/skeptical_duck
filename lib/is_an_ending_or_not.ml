@@ -1,6 +1,6 @@
 (*
 
-#use"is_an_ending_or_not.ml";;
+#use"lib/is_an_ending_or_not.ml";;
 
 *)
 
