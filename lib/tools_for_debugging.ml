@@ -1,6 +1,6 @@
 (*
 
-#use"tools_for_debugging.ml";;
+#use"lib/tools_for_debugging.ml";;
 
 *)
 
