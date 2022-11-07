@@ -1,6 +1,6 @@
 (*
 
-#use "Szemeredi/sz_precomputed.ml";;
+#use"lib/Szemeredi/sz_precomputed.ml";;
 
 
 *)
