@@ -1,6 +1,6 @@
 (*
 
-#use"rectangle_bounds.ml";;
+#use"lib/rectangle_bounds.ml";;
 
 *)
 
