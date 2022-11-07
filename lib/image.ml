@@ -1,6 +1,6 @@
 (*
 
-#use"image.ml";;
+#use"lib/image.ml";;
 The most used function in all those modules !
 
 
