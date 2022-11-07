@@ -1,6 +1,6 @@
 (*
 
-#use"Filewatching/fw_module_small_details.ml";;
+#use"lib/Filewatching/fw_module_small_details.ml";;
 
 From an associative list associating to each Dfn_rootless_t.t its small details,
 we create a new list associating to each Dfa_module_t.t its small details.
