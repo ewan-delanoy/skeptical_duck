@@ -1,6 +1,6 @@
 (*
 
-#use"associative_list.ml";;
+#use"lib/associative_list.ml";;
 
 *)
 
