@@ -1,6 +1,6 @@
 (*
 
-#use"chronometer.ml";;
+#use"lib/chronometer.ml";;
 
 *) 
 
