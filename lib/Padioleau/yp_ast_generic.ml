@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_ast_generic.ml";;
+#use"lib/Padioleau/yp_ast_generic.ml";;
 
 *)
 
