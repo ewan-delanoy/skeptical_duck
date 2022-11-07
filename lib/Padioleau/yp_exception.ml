@@ -1,6 +1,6 @@
 (*
 
-#use"Padioleau/yp_exception.ml";;
+#use"lib/Padioleau/yp_exception.ml";;
 
 *)
 
