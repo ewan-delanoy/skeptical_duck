@@ -1,6 +1,6 @@
 (*
 
-#use"more_uchar.ml";;
+#use"lib/more_uchar.ml";;
 
 *)
 
