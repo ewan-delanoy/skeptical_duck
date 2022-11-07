@@ -73,6 +73,8 @@ let git_ignored_subdirectories =
      fads_subdir;
      watched_not_githubbed_subdir;
      nongithubbed_nonml_files_subdir;
+     directives_subdir;
+     debugging_subdir;
   ];;
 
 
