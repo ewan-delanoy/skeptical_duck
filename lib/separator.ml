@@ -1,6 +1,6 @@
 (*
 
-#use"separator.ml";;
+#use"lib/separator.ml";;
 
 *)
 
