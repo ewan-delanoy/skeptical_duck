@@ -1,6 +1,6 @@
 (*
 
-#use"Decomposed_filename/dfa_module.ml";;
+#use"lib/Decomposed_filename/dfa_module.ml";;
 
 A module name, or a candidate for one. Uncapitalized. Should contain no slashes.
 
