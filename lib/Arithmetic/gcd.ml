@@ -1,6 +1,6 @@
 (*
 
-#use"Arithmetic/gcd.ml";;
+#use"lib/Arithmetic/gcd.ml";;
 
 *)
 
