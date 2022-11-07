@@ -1,6 +1,6 @@
 (*
 
-#use"detect_arithmetic_progressions.ml";;
+#use"lib/detect_arithmetic_progressions.ml";;
 
 *)
 
