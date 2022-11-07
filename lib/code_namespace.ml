@@ -1,5 +1,5 @@
 (*
-#use"code_namespace.ml";;
+#use"lib/code_namespace.ml";;
 *)
 
 
