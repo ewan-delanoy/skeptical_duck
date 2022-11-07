@@ -1,6 +1,6 @@
 (*
 
-#use"particular_string.ml";;
+#use"lib/particular_string.ml";;
 
 
 *)
