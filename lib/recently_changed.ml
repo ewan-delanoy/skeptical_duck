@@ -1,6 +1,6 @@
 (*
 
-#use"recently_changed.ml";;
+#use"lib/recently_changed.ml";;
 
 *)
 
