@@ -2,7 +2,7 @@
 
 Wrapper on the Sys dot command function.
 
-#use"unix_command.ml";;
+#use"lib/unix_command.ml";;
 
 *)
 
