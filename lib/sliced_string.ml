@@ -1,6 +1,6 @@
 (*
 
-#use"sliced_string.ml";;
+#use"lib/sliced_string.ml";;
 
 A string is sliced when \n's are introduced at suitable places
 in it, so that the display will have shorter lines and will 
