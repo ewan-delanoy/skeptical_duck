@@ -1,6 +1,6 @@
 (* 
 
-#use"Filewatching/fw_with_batch_compilation.ml";;
+#use"lib/Filewatching/fw_with_batch_compilation.ml";;
 
 *)
 
