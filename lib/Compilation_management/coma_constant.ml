@@ -15,6 +15,9 @@ let debugging_subdir=
 let watched_subdir=
   Dfa_subdirectory.of_line "watched";;
 
+let dune_build_subdir=
+  Dfa_subdirectory.of_line "_build";;
+
 let nonml_files_subdir=
   Dfa_subdirectory.of_line "nonml_files";;
 
@@ -62,6 +65,7 @@ let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 let git_ignored_subdirectories =
   [
      build_subdir;
+     dune_build_subdir;
      watched_not_githubbed_subdir;
      nongithubbed_nonml_files_subdir;
      directives_subdir;
