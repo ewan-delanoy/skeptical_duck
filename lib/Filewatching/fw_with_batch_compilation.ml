@@ -393,10 +393,10 @@ module Private = struct
 
   let usual_recompile fw = 
     let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
-    let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
     let fw2 = fw1 in 
     (*
     When not using dune, replace the above line with : 
+    let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
     let fw2 = modern_recompile fw1 unordered_mods  in 
     *)
     (fw2,(changed_uc,changed_files)) ;;   
