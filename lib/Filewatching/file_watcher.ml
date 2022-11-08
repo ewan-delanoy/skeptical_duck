@@ -8,7 +8,6 @@ exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
 
-
 module Private = struct
 
 
