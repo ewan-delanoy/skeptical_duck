@@ -3,7 +3,6 @@
 #use"lib/Filewatching/fw_with_batch_compilation.ml";;
 
 *)
-
    
 exception Rename_string_or_value_exn of string ;;
 
@@ -262,14 +261,14 @@ module Private = struct
   
   let modern_recompile fw changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then fw else
-      let (all_deps,new_deps,changed_modules) = 
+      let (all_deps,new_deps,_changed_modules) = 
         Fw_with_dependencies.below_several (parent fw) changed_modules_in_any_order in     
       let _ = Strung.announce 
       ~trailer:("The following modules need to be recompiled \n"^
       "because they depend on directly changed modules :")
          ~printer:Dfa_module.to_line ~items:new_deps 
          ~separator: ", " in 
-      let (fw2,rejected_pairs,accepted_pairs)=
+      let (fw2,_,_)=
         Ocaml_target_making.usual_feydeau fw all_deps in 
       fw2 ;;
 
@@ -291,7 +290,7 @@ module Private = struct
       set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
-      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_,changed_files))
+      let (new_parent,((_changed_archived_compilables,changed_usual_compilables),_,changed_files))
          =Fw_with_dependencies.inspect_and_update (parent fw) in   
       (set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
@@ -308,14 +307,14 @@ module Private = struct
       let initial_parent = Fw_with_dependencies.of_configuration config in 
       let fw = of_fw_with_dependencies initial_parent in 
       let mods = Fw_with_dependencies.dep_ordered_modules initial_parent in 
-      let (fw2,rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
+      let (fw2,_rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
         let cmpl_results = Image.image (
              fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
            ) mods in 
       set_cmpl_results fw2 cmpl_results ;; 
    
    let register_rootless_paths fw rps=
-      let (new_parent,((ac_paths,uc_paths,nc_paths),_))=
+      let (new_parent,((_ac_paths,uc_paths,_nc_paths),_))=
        Fw_with_dependencies.register_rootless_paths (parent fw) rps in   
       let old_list_of_cmpl_results= get_cmpl_results fw in 
      let new_list_of_cmpl_results = Image.image (
@@ -349,7 +348,7 @@ module Private = struct
     let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Image.image (
          fun old_pair -> 
-           let (mn,cmpl_result) = old_pair in 
+           let (mn,_cmpl_result) = old_pair in 
            if mn = old_nm 
            then (new_nm,false)
            else old_pair    
