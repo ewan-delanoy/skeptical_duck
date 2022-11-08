@@ -163,10 +163,22 @@ module Private = struct
 
    let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
 
+   let findreplace_at_index_in replacements k (D snippets) =
+      let (old_title,old_content) = List.nth snippets (k-1) in 
+      let new_content = 
+         Replace_inside.replace_several_inside_string 
+           replacements old_content in 
+      let n = List.length snippets in 
+      D(Int_range.scale (fun j->
+         if j=(k-1) then (old_title,new_content) else List.nth snippets j) 0 (n-1)) ;;     
+
+    (* Conversion to and from file functions *)
   
     let read_and_parse fn = parse (Io.read_whole_file fn) ;;
     let unparse_and_write_to pairs fn = Io.overwrite_with fn (unparse pairs) ;;
   
+    (* File versions of the functions *)
+
     let absorb_new_snippet_in_file fn =
       let (prologue,old_pairs) = read_and_parse fn in 
       let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
@@ -177,6 +189,11 @@ module Private = struct
        let old_text = Io.read_whole_file fn in 
        let new_text = old_text ^ snippet in 
        Io.overwrite_with fn new_text ;;
+
+    let findreplace_at_index_in_file replacements k fn =  
+      let (_,old_pairs) = read_and_parse fn in 
+      let new_pairs = findreplace_at_index_in replacements k old_pairs in 
+      unparse_and_write_to new_pairs fn ;;
 
     let fix_indexation_in_file fn =
       let (_,old_pairs) = read_and_parse fn in 
@@ -202,6 +219,7 @@ module Private = struct
      let the_diary = snd(Private.read_and_parse Private.usual_path) in 
      Private.extract_and_append_to_file the_diary idx fn;;
 
+  let findreplace_at_index replacements idx = Private.findreplace_at_index_in_file replacements idx Private.usual_path;;   
   let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
   let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
   
