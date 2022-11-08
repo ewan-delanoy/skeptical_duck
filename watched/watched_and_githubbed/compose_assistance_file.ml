@@ -4,6 +4,7 @@
 
 *)
 
+open Skeptical_duck_lib ;; 
 open Needed_values;;
 
 let g1=(Needed_values.abo "usual_coma_state")@
@@ -45,7 +46,7 @@ let prologue=String.concat "\n"
    "file with the above command and call ";
    "Assistance_usual_coma_state.refresh() )";
    "";"#load\"unix.cma\";;";"#load\"str.cma\";;";
-   "#use\"Ordinary/"^s_watched_and_githubbed^"assistance.ml\";;";
+   "#use\"skeptical_duck/"^s_watched_and_githubbed^"assistance.ml\";;";
    ""; "*)"; ""; "";""];;
 
 let g5=prologue^g4;;

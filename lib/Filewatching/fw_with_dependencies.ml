@@ -4,6 +4,7 @@
 
 *)
 
+
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
@@ -154,7 +155,7 @@ module Modularized_details = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Cached.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
@@ -164,11 +165,11 @@ let inspect_and_update old_fw  =
  let visible = Cached.inspect_and_update old_fw  in 
  let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
- let ((a_files,u_files),changed_u_files,changed_files) = extra in 
+ let ((_,_),changed_u_files,_) = extra in 
  let tempf = (
    fun old_pair ->
-    let (mn,details) = old_pair in 
-    let temp1 = List.filter (fun (rl,details2)->
+    let (mn,_) = old_pair in 
+    let temp1 = List.filter (fun (rl,_)->
        (Dfn_rootless.to_module rl)= mn
       ) changed_u_files in 
  if temp1 <> []
@@ -200,8 +201,8 @@ let overwrite_file_if_it_exists old_fw pair =
       |Some(change) ->
  let tempf = (
         fun old_pair -> 
-          let (mn,details) = old_pair in 
-          let temp1 = List.filter (fun (rl,details2)->
+          let (mn,_) = old_pair in 
+          let temp1 = List.filter (fun (rl,_)->
              (Dfn_rootless.to_module rl)= mn
             ) [change] in
           if temp1 <> []
@@ -223,14 +224,14 @@ let register_rootless_paths old_fw rootlesses =
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
   let old_val = get old_fw in 
-  let ((a_files,u_files,nc_files),new_details) = extra in 
+  let (_,new_details) = extra in 
   let old_mods = Image.image fst old_val in 
   let (overlapping,nonoverlapping) = List.partition (
      fun (rl,_) -> List.mem (Dfn_rootless.to_module rl) old_mods 
   ) new_details in 
   let tempf1 = (
     fun old_pair -> 
-      let (mn,details) = old_pair in 
+      let (mn,_) = old_pair in 
       let temp1 = Option.filter_and_unpack (fun (rl,details2)->
          if (Dfn_rootless.to_module rl)= mn
          then Some(rl,Some(rl,details2))
@@ -252,8 +253,8 @@ let relocate_module_to old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -271,8 +272,8 @@ let remove_files old_fw files_to_be_removed =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= mn
        ) extra in
      if temp1 <> []
@@ -290,8 +291,8 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
  let (old_mn,new_mn,_) = triple in 
  let tempf = (
    fun old_pair -> 
-     let (pre_mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (pre_mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= pre_mn
        ) (fst extra) in
      if temp1 <> []
@@ -310,8 +311,8 @@ let rename_subdirectory_as old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -329,8 +330,8 @@ let replace_string old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -348,8 +349,8 @@ let replace_value old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -379,7 +380,7 @@ module Order = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Modularized_details.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
@@ -387,7 +388,7 @@ let forget_modules old_fw mods_to_be_erased =
 
 let inspect_and_update old_fw  =  
  let visible = Modularized_details.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Image.image fst old_val in 
  let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -410,7 +411,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Modularized_details.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Image.image fst old_val in 
  let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -427,7 +428,7 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Modularized_details.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let extended_details_list = Modularized_details.get new_fw in 
  let new_details = Listennou.big_tail (List.length old_val) extended_details_list in
@@ -441,21 +442,21 @@ let register_rootless_paths old_fw rootlesses =
 
 let relocate_module_to old_fw pair =  
  let visible = Modularized_details.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Modularized_details.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Modularized_details.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in  
@@ -467,14 +468,14 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Modularized_details.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_string old_fw pair =  
  let visible = Modularized_details.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Image.image fst old_val in 
  let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -485,7 +486,7 @@ let replace_string old_fw pair =
 
 let replace_value old_fw pair =  
  let visible = Modularized_details.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Image.image fst old_val in 
  let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -520,14 +521,14 @@ module Needed_dirs = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Order.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Order.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -546,7 +547,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Order.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -559,28 +560,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Order.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Order.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Order.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Order.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in 
@@ -590,7 +591,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Order.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let rep = (fun sdir ->
    match Dfa_subdirectory.soak pair sdir with 
@@ -603,14 +604,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = Order.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Order.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -641,14 +642,14 @@ module Needed_libs = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_dirs.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -667,7 +668,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Needed_dirs.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -680,28 +681,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_dirs.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Needed_dirs.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Needed_dirs.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Needed_dirs.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in 
@@ -711,21 +712,21 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Needed_dirs.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_string old_fw pair =  
  let visible = Needed_dirs.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Needed_dirs.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -738,7 +739,7 @@ module All_subdirectories = struct
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
  let force_get fw =  let details = Modularized_details.get fw in 
  Ordered.sort Total_ordering.standard (Image.image (
-  fun (mn,details_on_mn) ->
+  fun (_,details_on_mn) ->
   Fw_module_small_details.subdirectory(details_on_mn)
 ) details) ;;
  let get fw = 
@@ -752,14 +753,14 @@ module All_subdirectories = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_libs.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_libs.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -778,7 +779,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Needed_libs.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -795,35 +796,35 @@ let register_rootless_paths old_fw rootlesses =
  let old_val = get old_fw in 
  let (_,novelties) = extra in 
  let possibly_new = Ordered.sort Total_ordering.standard 
-   (Image.image (fun (rl,dets)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
+   (Image.image (fun (rl,_)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
  let answer = Ordered.merge Total_ordering.standard possibly_new old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Needed_libs.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Needed_libs.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Needed_libs.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Needed_libs.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let rep = (fun sdir ->
    match Dfa_subdirectory.soak pair sdir with 
@@ -836,14 +837,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = Needed_libs.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Needed_libs.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -878,7 +879,7 @@ module All_printables = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun middle->
     not(List.mem (Dfn_middle.to_module middle) mods_to_be_erased)) old_val in 
@@ -887,7 +888,7 @@ let forget_modules old_fw mods_to_be_erased =
 
 let inspect_and_update old_fw  =  
  let visible = All_subdirectories.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -906,7 +907,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = All_subdirectories.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -919,28 +920,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = All_subdirectories.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = All_subdirectories.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = All_subdirectories.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = All_subdirectories.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = Dfn_middle.rename_module (old_mname,new_mname) in 
@@ -950,7 +951,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = All_subdirectories.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_sdir,new_sdir) = pair in
  let s_new_sdir = Dfa_subdirectory.without_trailing_slash new_sdir in 
@@ -961,14 +962,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = All_subdirectories.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = All_subdirectories.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;

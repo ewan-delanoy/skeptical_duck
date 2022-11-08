@@ -76,7 +76,7 @@ module Private = struct
       (modules_in_good_order,faraway_fw);; 
 
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
-      let (modules_in_good_order,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
+      let (_,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
       let faraway_cs1 = Fw_with_githubbing.of_fw_with_batch_compilation 
                           (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
                              destbackupdir destgab Coma_big_constant.github_url [] in 

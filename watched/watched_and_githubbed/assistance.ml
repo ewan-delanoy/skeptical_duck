@@ -8,16 +8,18 @@ Assistance_usual_coma_state.refresh() )
 
 #load"unix.cma";;
 #load"str.cma";;
-#use"Ordinary/watched/watched_and_githubbed/assistance.ml";;
+#use"skeptical_duck/watched/watched_and_githubbed/assistance.ml";;
 
 *)
+
+
 
 
 module Assistance_hurried=struct
 
 (*
 
-#use"hurried.ml";;
+#use"lib/hurried.ml";;
 
 *)
 
@@ -67,7 +69,7 @@ module Assistance_image=struct
 
 (*
 
-#use"image.ml";;
+#use"lib/image.ml";;
 The most used function in all those modules !
 
 
@@ -95,7 +97,7 @@ module Assistance_int_range=struct
 
 (*
 
-#use"int_range.ml";;
+#use"lib/int_range.ml";;
 
 *) 
 let scale f a b=
@@ -228,7 +230,7 @@ module Assistance_memoized=struct
 
 (*
 
-#use"memoized.ml";;
+#use"lib/memoized.ml";;
 
 *) 
 type ('a,'b) map=('a->'b);;
@@ -316,7 +318,7 @@ module Assistance_int_uple=struct
 
 (*
 
-#use"int_uple.ml";;
+#use"lib/int_uple.ml";;
 
 *) 
 let translate_pair a (x1,x2)=(a+x1,a+x2);;
@@ -539,7 +541,7 @@ module Assistance_option=struct
 
 (*
 
-#use"option.ml";;
+#use"lib/option.ml";;
 
 *) 
 
@@ -606,7 +608,7 @@ module Assistance_listennou=struct
 
 (*
 
-#use"Listy/listennou.ml";;
+#use"lib/Listy/listennou.ml";;
 
 *)
 
@@ -1074,7 +1076,7 @@ module Assistance_supstring=struct
 
 (*
 
-#use"supstring.ml";;
+#use"lib/supstring.ml";;
 
 *)
 
@@ -1109,7 +1111,7 @@ module Assistance_substring=struct
 
 (*
 
-#use"substring.ml";;
+#use"lib/substring.ml";;
 
 *)
 
@@ -1214,7 +1216,7 @@ module Assistance_cull_string=struct
 
 (*
 
-#use"cull_string.ml";;
+#use"lib/cull_string.ml";;
 
 *)
 
@@ -1416,7 +1418,7 @@ module Assistance_encoded_string_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/encoded_string_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/encoded_string_t.ml";;
 
 
 *)
@@ -1437,7 +1439,7 @@ module Assistance_concrete_object_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/concrete_object_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/concrete_object_t.ml";;
 
 
 *)
@@ -1464,7 +1466,7 @@ module Assistance_concrete_object=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/concrete_object.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/concrete_object.ml";;
 
 *)
 
@@ -1571,7 +1573,7 @@ module Assistance_tools_for_absolute_path=struct
 
 (*
 
-#use"tools_for_absolute_path.ml";;
+#use"lib/tools_for_absolute_path.ml";;
 
 Standardize filename path. Non-directories never 
 end with /, directories always do (exceptions : the iterated_container 
@@ -1683,7 +1685,7 @@ module Assistance_absolute_path=struct
 
 (*
 
-#use"absolute_path.ml";;
+#use"lib/absolute_path.ml";;
 
 *)
 
@@ -1744,7 +1746,7 @@ module Assistance_io=struct
 
 (*
 
-#use"io.ml";;
+#use"lib/io.ml";;
 
 *)
 
@@ -1836,7 +1838,7 @@ module Assistance_overwriter=struct
 
 (*
 
-#use"overwriter.ml";;
+#use"lib/overwriter.ml";;
 
 *)
 
@@ -1858,7 +1860,7 @@ module Assistance_replace_inside=struct
 
 (*
 
-#use"replace_inside.ml";;
+#use"lib/replace_inside.ml";;
 
 *)
 
@@ -2080,7 +2082,7 @@ module Assistance_encoded_string=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/encoded_string.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/encoded_string.ml";;
 
 This is a leaky abstraction, as witnessed by the "retrieve" and "store" functions above.
 
@@ -2121,7 +2123,7 @@ module Assistance_crobj_converter=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_converter.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_converter.ml";;
 
 *)
 
@@ -2162,7 +2164,7 @@ module Assistance_dfa_root_t=struct
 
 Does not end with a slash.
 
-#use"Decomposed_filename/dfa_root_t.ml";;
+#use"lib/Decomposed_filename/dfa_root_t.ml";;
 
 *)
 
@@ -2181,7 +2183,7 @@ module Assistance_dfa_root=struct
 
 The rightmost trailing slash is removed.
 
-#use"Decomposed_filename/dfa_root.ml";;
+#use"lib/Decomposed_filename/dfa_root.ml";;
 
 *)
 
@@ -2212,7 +2214,7 @@ module Assistance_crobj_converter_combinator=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
 
 *)
 
@@ -2251,7 +2253,7 @@ module Assistance_dfa_ending_t=struct
 
 (*
 
-#use"Decomposed_filename/dfa_ending_t.ml";;
+#use"lib/Decomposed_filename/dfa_ending_t.ml";;
 
 Does not contain a dot.
 
@@ -2272,7 +2274,7 @@ module Assistance_dfa_ending=struct
 
 (*
 
-#use"Decomposed_filename/dfa_ending.ml";;
+#use"lib/Decomposed_filename/dfa_ending.ml";;
 
 *)
 
@@ -2344,7 +2346,7 @@ module Assistance_dfa_module_t=struct
 
 (*
 
-#use"Decomposed_filename/dfa_module_t.ml";;
+#use"lib/Decomposed_filename/dfa_module_t.ml";;
 
 A module name, or a candidate for one. Uncapitalized. 
 Should contain no slashes.
@@ -2366,7 +2368,7 @@ module Assistance_dfa_module=struct
 
 (*
 
-#use"Decomposed_filename/dfa_module.ml";;
+#use"lib/Decomposed_filename/dfa_module.ml";;
 
 A module name, or a candidate for one. Uncapitalized. Should contain no slashes.
 
@@ -2404,7 +2406,7 @@ module Assistance_dfa_subdirectory_t=struct
 
 Subdirectories name, with the trailing slash removed.
 
-#use"Decomposed_filename/dfa_subdirectory_t.ml";;
+#use"lib/Decomposed_filename/dfa_subdirectory_t.ml";;
 
 *)
 
@@ -2423,7 +2425,7 @@ module Assistance_max=struct
 
 (*
 
-#use"max.ml";;
+#use"lib/max.ml";;
 
 *) 
 
@@ -2483,7 +2485,7 @@ module Assistance_min=struct
 
 (*
 
-#use"min.ml";;
+#use"lib/min.ml";;
 
 *) 
 
@@ -2542,7 +2544,7 @@ module Assistance_total_ordering_result_t=struct
 
 (*
 
-#use"Ordered_Lists/total_ordering_result_t.ml";;
+#use"lib/Ordered_Lists/total_ordering_result_t.ml";;
 
 *)
 
@@ -2566,7 +2568,7 @@ module Assistance_total_ordering_t=struct
 
 (*
 
-#use"Ordered_Lists/total_ordering_t.ml";;
+#use"lib/Ordered_Lists/total_ordering_t.ml";;
 
 *)
 
@@ -2587,7 +2589,7 @@ module Assistance_ordered=struct
 
 (*
  
-#use"ordered.ml";;
+#use"lib/ordered.ml";;
 
 *)
 
@@ -2801,7 +2803,7 @@ module Assistance_total_ordering=struct
 
 (*
 
-#use"Ordered_Lists/total_ordering.ml";;
+#use"lib/Ordered_Lists/total_ordering.ml";;
 
 *)
 
@@ -3140,7 +3142,7 @@ module Assistance_strung=struct
 
 (*
 
-#use"strung.ml";;
+#use"lib/strung.ml";;
 
 *)
 
@@ -3546,7 +3548,7 @@ module Assistance_dfa_subdirectory=struct
 
 Subdirectories name, with the trailing slash removed.
 
-#use"Decomposed_filename/dfa_subdirectory.ml";;
+#use"lib/Decomposed_filename/dfa_subdirectory.ml";;
 
 
 *)
@@ -3641,7 +3643,7 @@ module Assistance_dfn_rootless_t=struct
 
 (*
 
-#use"Decomposed_filename/dfn_rootless_t.ml";;
+#use"lib/Decomposed_filename/dfn_rootless_t.ml";;
 
 *)
 
@@ -3661,7 +3663,7 @@ module Assistance_dfn_common=struct
 
 (*
 
-#use"Decomposed_filename/dfn_common.ml";;
+#use"lib/Decomposed_filename/dfn_common.ml";;
 
 *)
 
@@ -3714,7 +3716,7 @@ module Assistance_dfn_middle_t=struct
 
 (*
 
-#use"Decomposed_filename/dfn_middle_t.ml";;
+#use"lib/Decomposed_filename/dfn_middle_t.ml";;
 
 *)
 
@@ -3734,7 +3736,7 @@ module Assistance_dfn_rootless=struct
 
 (*
 
-#use"Decomposed_filename/dfn_rootless.ml";;
+#use"lib/Decomposed_filename/dfn_rootless.ml";;
 
 
 *)
@@ -3837,7 +3839,7 @@ module Assistance_dircopy_diff_t=struct
 
 (*
 
-#use"dircopy_diff_t.ml";;
+#use"lib/dircopy_diff_t.ml";;
 
 *)
 
@@ -3860,7 +3862,7 @@ module Assistance_dircopy_diff=struct
 
 (*
 
-#use"dircopy_diff.ml";;
+#use"lib/dircopy_diff.ml";;
 
 *)
 
@@ -4013,7 +4015,7 @@ module Assistance_detect_printer_declaration_in_text=struct
 
 (*
 
-#use"Text_editing/detect_printer_declaration_in_text.ml";;
+#use"lib/Text_editing/detect_printer_declaration_in_text.ml";;
 
 *)
 
@@ -4080,7 +4082,7 @@ module Assistance_ocaml_library_t=struct
 
 (* 
 
-#use"Compilation_management/ocaml_library_t.ml";;
+#use"lib/Compilation_management/ocaml_library_t.ml";;
 
 *)
 
@@ -4101,7 +4103,7 @@ module Assistance_fw_file_small_details_t=struct
 
 (*
 
-#use"Filewatching/fw_file_small_details_t.ml";;
+#use"lib/Filewatching/fw_file_small_details_t.ml";;
 
 
 *)
@@ -4125,7 +4127,7 @@ module Assistance_characters_in_namespace_name=struct
 
 (*
 
-#use"characters_in_namespace_name.ml";;
+#use"lib/characters_in_namespace_name.ml";;
 
 *)
 
@@ -4148,7 +4150,7 @@ module Assistance_charset=struct
 
 (*
 
-#use"charset.ml";;
+#use"lib/charset.ml";;
 
 *)
 
@@ -4232,7 +4234,7 @@ module Assistance_after=struct
 
 (*
 
-#use"after.ml";;
+#use"lib/after.ml";;
 
 *)
 
@@ -4605,7 +4607,7 @@ An adptation of OCaml's Str module :
 String indices are now from 1 to n instead of 0 to (n-1).
 Operations on regexps are encoded as functions in the module.
 
-#use"alternative_str.ml";;
+#use"lib/alternative_str.ml";;
 
 *)
 
@@ -4748,7 +4750,7 @@ module Assistance_alternative_str_example=struct
 
 Concrete values of type My_str.regexp.
 
-#use"alternative_str_example.ml";;
+#use"lib/alternative_str_example.ml";;
 
 *)
 
@@ -4904,7 +4906,7 @@ module Assistance_outside_comments_and_strings=struct
 
 (*
 
-#use"outside_comments_and_strings.ml";;
+#use"lib/outside_comments_and_strings.ml";;
 
 Detect in a text the parts which can possibly contain module
 names, i.e. those parts which are outside comments and outside
@@ -5079,7 +5081,7 @@ module Assistance_functor_for_sets=struct
 
 (*
  
-#use"Ordered_Lists/functor_for_sets.ml";;
+#use"lib/Ordered_Lists/functor_for_sets.ml";;
 
 Here all the possible dependencies are defined. Each particular
 instance defines only the value it needs.
@@ -5176,7 +5178,7 @@ module Assistance_set_of_strings_t=struct
 
 (* 
 
-#use"Ordered_Lists/set_of_strings_t.ml";;
+#use"lib/Ordered_Lists/set_of_strings_t.ml";;
 
 *)
 
@@ -5194,7 +5196,7 @@ module Assistance_set_of_strings=struct
 
 (* 
 
-#use"Ordered_Lists/set_of_strings.ml";;
+#use"lib/Ordered_Lists/set_of_strings.ml";;
 
 *)
 
@@ -5221,7 +5223,7 @@ module Assistance_three_parts=struct
 
 (*
 
-#use"three_parts.ml";;
+#use"lib/three_parts.ml";;
 
 *)
 
@@ -5327,7 +5329,7 @@ module Assistance_look_for_module_names=struct
 
 (*
 
-#use"Ocaml_analysis/look_for_module_names.ml";;
+#use"lib/Ocaml_analysis/look_for_module_names.ml";;
 
 *)
 
@@ -5475,7 +5477,7 @@ module Assistance_ocaml_library=struct
 
 (* 
 
-#use"Compilation_management/ocaml_library.ml";;
+#use"lib/Compilation_management/ocaml_library.ml";;
 
 *)
 
@@ -5542,7 +5544,7 @@ module Assistance_fw_file_small_details=struct
 
 (*
 
-#use"Filewatching/fw_file_small_details.ml";;
+#use"lib/Filewatching/fw_file_small_details.ml";;
 
 *)
 
@@ -5614,7 +5616,7 @@ module Assistance_fw_instance_index_t=struct
 
 (*
 
-#use"Filewatching/fw_instance_index_t.ml";;
+#use"lib/Filewatching/fw_instance_index_t.ml";;
 
 *)
 
@@ -5631,7 +5633,7 @@ module Assistance_fw_state_index_t=struct
 
 (*
 
-#use"Filewatching/fw_state_index_t.ml";;
+#use"lib/Filewatching/fw_state_index_t.ml";;
 
 *)
 
@@ -5648,7 +5650,7 @@ module Assistance_fw_indexer=struct
 
 (*
 
-#use"Filewatching/fw_indexer.ml";;
+#use"lib/Filewatching/fw_indexer.ml";;
 
 
 
@@ -5704,7 +5706,7 @@ module Assistance_fw_poly_t=struct
 
 (*
 
-#use"Filewatching/fw_poly_t.ml";;
+#use"lib/Filewatching/fw_poly_t.ml";;
 
 *)
 
@@ -5736,7 +5738,7 @@ module Assistance_fw_poly=struct
 
 (*
 
-#use"Filewatching/fw_poly.ml";;
+#use"lib/Filewatching/fw_poly.ml";;
 
 *)
 
@@ -6078,7 +6080,7 @@ module Assistance_compact_replacer_t=struct
 
 (*
 
-#use"Text_editing/compact_replacer_t.ml";;
+#use"lib/Text_editing/compact_replacer_t.ml";;
 
 *)
 
@@ -6096,7 +6098,7 @@ module Assistance_compact_replacer=struct
 
 (*
 
-#use"Text_editing/compact_replacer.ml";;
+#use"lib/Text_editing/compact_replacer.ml";;
 
 *)
 
@@ -6163,7 +6165,7 @@ module Assistance_unix_command=struct
 
 Wrapper on the Sys dot command function.
 
-#use"unix_command.ml";;
+#use"lib/unix_command.ml";;
 
 *)
 
@@ -6282,7 +6284,7 @@ module Assistance_transmit_change_to_github=struct
 
 (* 
 
-#use"Githubbing/transmit_change_to_github.ml";;
+#use"lib/Githubbing/transmit_change_to_github.ml";;
 
 *)
 
@@ -6392,7 +6394,7 @@ module Assistance_cartesian=struct
 
 (*
 
-#use"cartesian.ml";;
+#use"lib/cartesian.ml";;
 
 *) 
 
@@ -6444,7 +6446,7 @@ module Assistance_ordered_misc=struct
 
 (* 
 
-#use"Ordered_Lists/ordered_misc.ml";;
+#use"lib/Ordered_Lists/ordered_misc.ml";;
 
 *)
 
@@ -6619,7 +6621,7 @@ module Assistance_dfa_ocaml_ending_t=struct
 
 (*
 
-#use"Decomposed_filename/dfa_ocaml_ending_t.ml";;
+#use"lib/Decomposed_filename/dfa_ocaml_ending_t.ml";;
 
 *)
 
@@ -6638,7 +6640,7 @@ module Assistance_dfn_full_t=struct
 
 (*
 
-#use"Decomposed_filename/dfn_full_t.ml";;
+#use"lib/Decomposed_filename/dfn_full_t.ml";;
 
 *)
 
@@ -6658,7 +6660,7 @@ module Assistance_dfn_endingless_t=struct
 
 (*
 
-#use"Decomposed_filename/dfn_endingless_t.ml";;
+#use"lib/Decomposed_filename/dfn_endingless_t.ml";;
 
 *)
 
@@ -6677,7 +6679,7 @@ module Assistance_dfn_short_t=struct
 
 (*
 
-#use"Decomposed_filename/dfn_short_t.ml";;
+#use"lib/Decomposed_filename/dfn_short_t.ml";;
 
 *)
 
@@ -6697,7 +6699,7 @@ module Assistance_dfn_join=struct
 
 (*
 
-#use"Decomposed_filename/dfn_join.ml";;
+#use"lib/Decomposed_filename/dfn_join.ml";;
 
 *)
 
@@ -6722,7 +6724,7 @@ module Assistance_dfn_short=struct
 
 (*
 
-#use"Decomposed_filename/dfn_short.ml";;
+#use"lib/Decomposed_filename/dfn_short.ml";;
 
 *)
 
@@ -6751,7 +6753,7 @@ module Assistance_dfn_full=struct
 
 (*
 
-#use"Decomposed_filename/dfn_full.ml";;
+#use"lib/Decomposed_filename/dfn_full.ml";;
 
 *)
 
@@ -6798,7 +6800,7 @@ module Assistance_dfn_endingless=struct
 
 (*
 
-#use"Decomposed_filename/dfn_endingless.ml";;
+#use"lib/Decomposed_filename/dfn_endingless.ml";;
 
 
 *)
@@ -6881,7 +6883,7 @@ module Assistance_dfn_middle=struct
 
 (*
 
-#use"Decomposed_filename/dfn_middle.ml";;
+#use"lib/Decomposed_filename/dfn_middle.ml";;
 
 *)
 
@@ -6932,7 +6934,7 @@ module Assistance_dfa_ocaml_ending=struct
 
 (*
 
-#use"Decomposed_filename/dfa_ocaml_ending.ml";;
+#use"lib/Decomposed_filename/dfa_ocaml_ending.ml";;
 
 *)
 
@@ -6984,253 +6986,11 @@ end;;
 
 
 
-module Assistance_chronometer=struct
-
-(*
-
-#use"chronometer.ml";;
-
-*) 
-
-let rewrite_days=function
-0->""
-|1->"1 day,"
-|x->string_of_int(x)^" days,";;
-
-let rewrite_hours=function
-0->""
-|1->"1 hour,"
-|x->string_of_int(x)^" hours,";;
-
-let rewrite_minutes=function
-0->""
-|1->"1 minute,"
-|x->string_of_int(x)^" minutes,";;
-
-let rewrite_seconds=function
-0->""
-|1->"1 second."
-|x->string_of_int(x)^" seconds.";;
-
-let rewrite_float x=
-   let i=int_of_float(x) in
-   let v_sec=(i mod 60) and q_sec=(i/60) in
-   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
-   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
-   let s_day=rewrite_days(q_hour)
-   and s_hour=rewrite_hours(v_hour)
-   and s_min=rewrite_minutes(v_min)
-   and s_sec=rewrite_seconds(v_sec) in
-   s_day^s_hour^s_min^s_sec;;
-  
-let rewrite_duration x=
-   if x=0. 
-   then "Computation was quick.\n"
-   else "Computation lasted "^(rewrite_float x)^"\n";;
-
- let timer=ref(0.000);;  
- 
- let duration_of_computation f x=
-   let t0=Unix.time() in
-   let _=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   (print_string(rewrite_duration (!timer));flush stdout);;
- 
- let duration_of_last_computation ()=
-  (print_string(rewrite_duration (!timer));flush stdout);;
-   
-   
- let  it f x=
-  let t0=Unix.time() in
-   let y=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   let _=(print_string(rewrite_duration (!timer));flush stdout) in
-   y;;
- 
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_coma_big_constant=struct
-
-(* 
-#use"Compilation_management/coma_big_constant.ml";;
-*)
-
-let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
-let home = Sys.getenv "HOME" ;;
-
-module This_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Ordinary");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Next_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Third_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_explicit=struct
-
-(*
-
-#use"explicit.ml";;
-
-*)
-
-module Private = struct 
-
-let iter0 (f:'a->unit) l addenda=
-  let n=List.length(l)
-  and accu=ref(l) in
-  let s0=" of "^string_of_int(n)^" "^addenda^"\n" in
-  for j=1 to n
-               do
-               ( f(List.hd(!accu));
-                 accu:=List.tl(!accu);
-                 print_string(string_of_int(j)^s0);
-                 flush stdout)
-               done;;
-
-let iter2 (f:'a->'a) initial_value tester (shower:'a->string)  addenda=
-  let accu=ref(initial_value) in
-  let _=(while tester(!accu)
-               do
-               ( 
-                 accu:=f(!accu);
-                 print_string((shower (!accu))^addenda);
-                 flush stdout;
-               )
-               done) in
-  !accu;;
-
-let e_rev l=
-   let accu=ref([]) in 
-   let f=(fun x->accu:=x::(!accu)) in
-   let _=iter0(f)(l)(" (rev part)") in
-   !accu;;    
-
-let unchronometered_explore_tree f l=
-    let g=(fun (graet,p,q,da_ober)->
-       match da_ober with
-       []->(graet,0,0,[])
-       |a::peurrest->
-         let temp1=f a in
-         if temp1=[]
-         then (a::graet,p-1,q+1,peurrest)
-         else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
-    ) and 
-    tester=(fun (graet,p,q,da_ober)->da_ober<>[]) 
-    and
-    shower=(
-     fun (graet,p,q,da_ober)->
-       (string_of_int p)^" to be explored ; "^
-       (string_of_int q)^" already explored\n"
-    )
-    in
-    let initial_value=([],List.length l,0,l) in
-    let _=(print_string(shower(initial_value));flush stdout) in
-    let (ans,_,_,_)=iter2 g initial_value tester shower  "" in
-    ans;;
-
-
-
-let unchronometered_filter f l=
-   let accu=ref([]) in 
-   let g=(fun x->if f(x) then accu:=x::(!accu) else ()) in
-   let _=iter0(g)(l)(" (filter part)") in
-   e_rev(!accu);;    
- 
- 
- let unchronometered_image f l=
-   let accu=ref([]) in 
-   let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(l)(" (rev_image part)") in
-   e_rev(!accu);;  
-   
-
-let unchronometered_image_computed_backwards f l=
-   let temp1=e_rev(l) in
-    let accu=ref([]) in 
-   let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(temp1)(" (image part)") in
-   (!accu);;     
- 
-  
-
-exception Force_find_exn ;;
-
-let rec helper_for_opt_finding (f,sn) (j,x)=
-   match x with 
-   [] -> None
-   |a::others -> if f a 
-                 then Some a
-                 else let _=(
-                        print_string("Item number "^string_of_int(j)^" of "^sn^" found wanting \n");
-                        flush stdout) in 
-                      helper_for_opt_finding (f,sn) (j+1,others) ;; 
-
-end ;; 
-
-let explore_tree f l=Assistance_chronometer.it (Private.unchronometered_explore_tree f) l;; 
-           
-let filter f l=Assistance_chronometer.it (Private.unchronometered_filter f) l;; 
-
-
-let image f l=Assistance_chronometer.it (Private.unchronometered_image f) l;;  
-
-let image_computed_backwards f l=Assistance_chronometer.it 
-   	(Private.unchronometered_image_computed_backwards f) l;;               
-
-let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
-
-(* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
-
-
-end;;
-
-
-
-
-
-
 module Assistance_lines_in_string=struct
 
 (*
 
-#use"lines_in_string.ml";;
+#use"lib/lines_in_string.ml";;
 
 *)
 
@@ -7441,7 +7201,7 @@ module Assistance_directory_name_t=struct
 
 Directories name, with the trailing slash removed.
 
-#use"directory_name_t.ml";;
+#use"lib/directory_name_t.ml";;
 
 *)
 
@@ -7462,7 +7222,7 @@ module Assistance_directory_name=struct
 
 Directories name, with the trailing slash removed.
 
-#use"directory_name.ml";;
+#use"lib/directory_name.ml";;
 
 *)
 
@@ -7500,11 +7260,208 @@ end;;
 
 
 
+module Assistance_chronometer=struct
+
+(*
+
+#use"lib/chronometer.ml";;
+
+*) 
+
+let rewrite_days=function
+0->""
+|1->"1 day,"
+|x->string_of_int(x)^" days,";;
+
+let rewrite_hours=function
+0->""
+|1->"1 hour,"
+|x->string_of_int(x)^" hours,";;
+
+let rewrite_minutes=function
+0->""
+|1->"1 minute,"
+|x->string_of_int(x)^" minutes,";;
+
+let rewrite_seconds=function
+0->""
+|1->"1 second."
+|x->string_of_int(x)^" seconds.";;
+
+let rewrite_float x=
+   let i=int_of_float(x) in
+   let v_sec=(i mod 60) and q_sec=(i/60) in
+   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
+   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
+   let s_day=rewrite_days(q_hour)
+   and s_hour=rewrite_hours(v_hour)
+   and s_min=rewrite_minutes(v_min)
+   and s_sec=rewrite_seconds(v_sec) in
+   s_day^s_hour^s_min^s_sec;;
+  
+let rewrite_duration x=
+   if x=0. 
+   then "Computation was quick.\n"
+   else "Computation lasted "^(rewrite_float x)^"\n";;
+
+ let timer=ref(0.000);;  
+ 
+ let duration_of_computation f x=
+   let t0=Unix.time() in
+   let _=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   (print_string(rewrite_duration (!timer));flush stdout);;
+ 
+ let duration_of_last_computation ()=
+  (print_string(rewrite_duration (!timer));flush stdout);;
+   
+   
+ let  it f x=
+  let t0=Unix.time() in
+   let y=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   let _=(print_string(rewrite_duration (!timer));flush stdout) in
+   y;;
+ 
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_explicit=struct
+
+(*
+
+#use"lib/explicit.ml";;
+
+*)
+
+module Private = struct 
+
+let iter0 (f:'a->unit) l addenda=
+  let n=List.length(l)
+  and accu=ref(l) in
+  let s0=" of "^string_of_int(n)^" "^addenda^"\n" in
+  for j=1 to n
+               do
+               ( f(List.hd(!accu));
+                 accu:=List.tl(!accu);
+                 print_string(string_of_int(j)^s0);
+                 flush stdout)
+               done;;
+
+let iter2 (f:'a->'a) initial_value tester (shower:'a->string)  addenda=
+  let accu=ref(initial_value) in
+  let _=(while tester(!accu)
+               do
+               ( 
+                 accu:=f(!accu);
+                 print_string((shower (!accu))^addenda);
+                 flush stdout;
+               )
+               done) in
+  !accu;;
+
+let e_rev l=
+   let accu=ref([]) in 
+   let f=(fun x->accu:=x::(!accu)) in
+   let _=iter0(f)(l)(" (rev part)") in
+   !accu;;    
+
+let unchronometered_explore_tree f l=
+    let g=(fun (graet,p,q,da_ober)->
+       match da_ober with
+       []->(graet,0,0,[])
+       |a::peurrest->
+         let temp1=f a in
+         if temp1=[]
+         then (a::graet,p-1,q+1,peurrest)
+         else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
+    ) and 
+    tester=(fun (graet,p,q,da_ober)->da_ober<>[]) 
+    and
+    shower=(
+     fun (graet,p,q,da_ober)->
+       (string_of_int p)^" to be explored ; "^
+       (string_of_int q)^" already explored\n"
+    )
+    in
+    let initial_value=([],List.length l,0,l) in
+    let _=(print_string(shower(initial_value));flush stdout) in
+    let (ans,_,_,_)=iter2 g initial_value tester shower  "" in
+    ans;;
+
+
+
+let unchronometered_filter f l=
+   let accu=ref([]) in 
+   let g=(fun x->if f(x) then accu:=x::(!accu) else ()) in
+   let _=iter0(g)(l)(" (filter part)") in
+   e_rev(!accu);;    
+ 
+ 
+ let unchronometered_image f l=
+   let accu=ref([]) in 
+   let g=(fun x->accu:=f(x)::(!accu)) in
+   let _=iter0(g)(l)(" (rev_image part)") in
+   e_rev(!accu);;  
+   
+
+let unchronometered_image_computed_backwards f l=
+   let temp1=e_rev(l) in
+    let accu=ref([]) in 
+   let g=(fun x->accu:=f(x)::(!accu)) in
+   let _=iter0(g)(temp1)(" (image part)") in
+   (!accu);;     
+ 
+  
+
+exception Force_find_exn ;;
+
+let rec helper_for_opt_finding (f,sn) (j,x)=
+   match x with 
+   [] -> None
+   |a::others -> if f a 
+                 then Some a
+                 else let _=(
+                        print_string("Item number "^string_of_int(j)^" of "^sn^" found wanting \n");
+                        flush stdout) in 
+                      helper_for_opt_finding (f,sn) (j+1,others) ;; 
+
+end ;; 
+
+let explore_tree f l=Assistance_chronometer.it (Private.unchronometered_explore_tree f) l;; 
+           
+let filter f l=Assistance_chronometer.it (Private.unchronometered_filter f) l;; 
+
+
+let image f l=Assistance_chronometer.it (Private.unchronometered_image f) l;;  
+
+let image_computed_backwards f l=Assistance_chronometer.it 
+   	(Private.unchronometered_image_computed_backwards f) l;;               
+
+let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
+
+(* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
+
+
+end;;
+
+
+
+
+
+
 module Assistance_set_of_polys_t=struct
 
 (* 
 
-#use"Ordered_Lists/set_of_polys_t.ml";;
+#use"lib/Ordered_Lists/set_of_polys_t.ml";;
 
 *)
 
@@ -7522,7 +7479,7 @@ module Assistance_set_of_polys=struct
 
 (* 
 
-#use"Ordered_Lists/set_of_polys.ml";;
+#use"lib/Ordered_Lists/set_of_polys.ml";;
 
 *)
 
@@ -7561,7 +7518,7 @@ module Assistance_stabilize=struct
 
 (*
 
-#use"stabilize.ml";;
+#use"lib/stabilize.ml";;
 
 *) 
 
@@ -7681,7 +7638,7 @@ module Assistance_more_unix=struct
 
 (*
 
-#use"more_unix.ml";;
+#use"lib/more_unix.ml";;
 
 *)
 
@@ -7953,7 +7910,7 @@ module Assistance_put_use_directive_in_initial_comment=struct
 
 (*
 
-#use"Text_editing/put_use_directive_in_initial_comment.ml";;
+#use"lib/Text_editing/put_use_directive_in_initial_comment.ml";;
 
 *)
 
@@ -8018,11 +7975,56 @@ end;;
 
 
 
+module Assistance_coma_big_constant=struct
+
+(* 
+#use"lib/Compilation_management/coma_big_constant.ml";;
+*)
+
+let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
+let home = Sys.getenv "HOME" ;;
+
+module This_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/skeptical_duck");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Next_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Third_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+
+
+
+
+
+end;;
+
+
+
+
+
+
 module Assistance_particular_string=struct
 
 (*
 
-#use"particular_string.ml";;
+#use"lib/particular_string.ml";;
 
 
 *)
@@ -8045,7 +8047,7 @@ module Assistance_coma_constant=struct
 
 (* 
 
-#use"Compilation_management/coma_constant.ml";;
+#use"lib/Compilation_management/coma_constant.ml";;
 
 *)
 
@@ -8059,6 +8061,9 @@ let debugging_subdir=
 
 let watched_subdir=
   Assistance_dfa_subdirectory.of_line "watched";;
+
+let dune_build_subdir=
+  Assistance_dfa_subdirectory.of_line "_build";;
 
 let nonml_files_subdir=
   Assistance_dfa_subdirectory.of_line "nonml_files";;
@@ -8107,6 +8112,7 @@ let rootless_path_for_ocamlinit = Assistance_dfn_rootless.of_line ".ocamlinit";;
 let git_ignored_subdirectories =
   [
      build_subdir;
+     dune_build_subdir;
      watched_not_githubbed_subdir;
      nongithubbed_nonml_files_subdir;
      directives_subdir;
@@ -8195,7 +8201,7 @@ module Assistance_partial_crobj_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
 
 For convenience, the list is reversed when the partial object is closed and becomes full
 (new objects are therefore appended directly to the left on a partial object).
@@ -8225,7 +8231,7 @@ module Assistance_double_partial_crobj_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
 
 First argument says if a comma appears last, waiting for another item.
 
@@ -8250,7 +8256,7 @@ module Assistance_crobj_parsing_machine_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
 
 
 *)
@@ -8275,7 +8281,7 @@ module Assistance_crobj_category_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
 
 
 *)
@@ -8301,7 +8307,7 @@ module Assistance_crobj_opening_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
 
 
 
@@ -8328,7 +8334,7 @@ module Assistance_crobj_basic_increase_t=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
 
 
 *)
@@ -8361,7 +8367,7 @@ module Assistance_partial_crobj=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
 
 
 *)
@@ -8430,7 +8436,7 @@ module Assistance_double_partial_crobj=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
 
 *)
 
@@ -8511,7 +8517,7 @@ module Assistance_crobj_parsing=struct
 
 (* 
 
-#use"Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
 
 
 *)
@@ -8727,7 +8733,7 @@ module Assistance_isolated_occurrences=struct
 
 (*
 
-#use"isolated_occurrences.ml";;
+#use"lib/isolated_occurrences.ml";;
 
 Used to detect mentions of previously defined names in
 the same OCaml module.
@@ -8845,7 +8851,7 @@ module Assistance_ocaml_gsyntax_category=struct
 
 (*
 
-#use"Ocaml_analysis/ocaml_gsyntax_category.ml";;
+#use"lib/Ocaml_analysis/ocaml_gsyntax_category.ml";;
 
 *)
 
@@ -8870,7 +8876,7 @@ module Assistance_ocaml_gsyntax_item=struct
 
 (*
 
-#use"Ocaml_analysis/ocaml_gsyntax_item.ml";;
+#use"lib/Ocaml_analysis/ocaml_gsyntax_item.ml";;
 
 *)
 
@@ -8950,7 +8956,7 @@ module Assistance_overwrite_at_intervals=struct
 
 (*
 
-#use"overwrite_at_intervals.ml";;
+#use"lib/overwrite_at_intervals.ml";;
 
 *)
 
@@ -9009,7 +9015,7 @@ module Assistance_gparser=struct
 
 (*
 
-#use"GParser/gparser.ml";;
+#use"lib/GParser/gparser.ml";;
 
 *)
 
@@ -9047,7 +9053,7 @@ module Assistance_gparser_result=struct
 
 (*
 
-#use"GParser/gparser_result.ml";;
+#use"lib/GParser/gparser_result.ml";;
 
 *)
 
@@ -9085,7 +9091,7 @@ module Assistance_gparser_fun=struct
 
 (*
 
-#use"GParser/gparser_fun.ml";;
+#use"lib/GParser/gparser_fun.ml";;
 
 *)
 
@@ -9103,7 +9109,7 @@ module Assistance_gparser_house_with_doors=struct
 
 (*
 
-#use"GParser/gparser_house_with_doors.ml";;
+#use"lib/GParser/gparser_house_with_doors.ml";;
 
 *)
 
@@ -9273,7 +9279,7 @@ module Assistance_gparser_ocaml_comment=struct
 
 (*
 
-#use"GParser/gparser_ocaml_comment.ml";;
+#use"lib/GParser/gparser_ocaml_comment.ml";;
 
 *)
 
@@ -9464,7 +9470,7 @@ module Assistance_gparser_apply=struct
 
 (*
 
-#use"GParser/gparser_apply.ml";;
+#use"lib/GParser/gparser_apply.ml";;
 
 *)
 
@@ -9838,7 +9844,7 @@ module Assistance_list_with_indices=struct
 
 (*
 
-#use"list_with_indices.ml";;
+#use"lib/list_with_indices.ml";;
 
 *)
 
@@ -9872,7 +9878,7 @@ module Assistance_gparser_for_ocaml_language=struct
 
 (*
 
-#use"GParser/gparser_for_ocaml_language.ml";;
+#use"lib/GParser/gparser_for_ocaml_language.ml";;
 
 *)
 
@@ -10131,7 +10137,7 @@ module Assistance_pre_read_ocaml_files=struct
 
 (*
 
-#use"Ocaml_analysis/pre_read_ocaml_files.ml";;
+#use"lib/Ocaml_analysis/pre_read_ocaml_files.ml";;
 
 Originated as the code shared by modules
 read_ocaml_files and read_ocaml_files_without_expanding_inclusions.
@@ -10297,7 +10303,7 @@ module Assistance_read_ocaml_files=struct
 
 (*
 
-#use"Ocaml_analysis/read_ocaml_files.ml";;
+#use"lib/Ocaml_analysis/read_ocaml_files.ml";;
 
 *)
 
@@ -10453,7 +10459,7 @@ module Assistance_rename_moduled_value_in_file=struct
 
 (*
 
-#use"Ocaml_analysis/rename_moduled_value_in_file.ml";;
+#use"lib/Ocaml_analysis/rename_moduled_value_in_file.ml";;
 
 *)
 
@@ -10515,7 +10521,7 @@ module Assistance_find_suitable_ending=struct
 
 (*
 
-#use"find_suitable_ending.ml";;
+#use"lib/find_suitable_ending.ml";;
 
 *)
 
@@ -10559,7 +10565,7 @@ module Assistance_fw_module_small_details_t=struct
 
 (*
 
-#use"Filewatching/fw_module_small_details_t.ml";;
+#use"lib/Filewatching/fw_module_small_details_t.ml";;
 
 
 *)
@@ -10588,7 +10594,7 @@ module Assistance_fw_configuration=struct
 
 (*
 
-#use"Filewatching/fw_configuration.ml";;
+#use"lib/Filewatching/fw_configuration.ml";;
 
 *)
 
@@ -10630,7 +10636,7 @@ module Assistance_file_watcher=struct
 
 (*
 
-#use"Filewatching/file_watcher.ml";;
+#use"lib/Filewatching/file_watcher.ml";;
 
 *)
 
@@ -10981,7 +10987,7 @@ module Assistance_fw_with_archives=struct
 
 (*
 
-#use"Filewatching/fw_with_archives.ml";;
+#use"lib/Filewatching/fw_with_archives.ml";;
 
 *)
 
@@ -10994,7 +11000,7 @@ module Private = struct
    (* let configuration fw = File_watcher.configuration (parent fw) ;;*)
 
    let root fw = Assistance_fw_poly.root fw ;;
-   let update_parent fw new_parent = Assistance_fw_poly.set_parent fw new_parent ;;
+   let update_parent fw new_parent = Assistance_fw_poly.set_parent ~child:fw ~new_parent ;;
    let watched_files fw = Assistance_fw_poly.watched_files fw ;;
    
    (* End of inherited methods *)  
@@ -11246,7 +11252,7 @@ module Assistance_fw_with_small_details=struct
 
 (*
 
-#use"Filewatching/fw_with_small_details.ml";;
+#use"lib/Filewatching/fw_with_small_details.ml";;
 
 *)
 
@@ -11506,7 +11512,7 @@ module Assistance_fw_module_small_details=struct
 
 (*
 
-#use"Filewatching/fw_module_small_details.ml";;
+#use"lib/Filewatching/fw_module_small_details.ml";;
 
 From an associative list associating to each Dfn_rootless_t.t its small details,
 we create a new list associating to each Dfa_module_t.t its small details.
@@ -11647,7 +11653,7 @@ module Assistance_reconstruct_linear_poset=struct
 
 (*
 
-#use"reconstruct_linear_poset.ml";;
+#use"lib/reconstruct_linear_poset.ml";;
 
 Computes the (canonical) maximal acyclic sub-poset of a given poset, returns
 it as a list L where each element of L is a triple (a,anc_a,a_is_clean)
@@ -11767,7 +11773,7 @@ module Assistance_fw_determine_order=struct
 
 (*
 
-#use"Filewatching/fw_determine_order.ml";;
+#use"lib/Filewatching/fw_determine_order.ml";;
 
 *)
 
@@ -11861,7 +11867,7 @@ module Assistance_fw_with_dependencies=struct
 
 (*
 
-#use"Filewatching/fw_with_dependencies.ml";;
+#use"lib/Filewatching/fw_with_dependencies.ml";;
 
 *)
 
@@ -13140,7 +13146,7 @@ module Assistance_compilation_mode_t=struct
 
 (* 
 
-#use"Compilation_management/compilation_mode_t.ml";;
+#use"lib/Compilation_management/compilation_mode_t.ml";;
 
 *)
 
@@ -13165,7 +13171,7 @@ module Assistance_compilation_mode=struct
 
 (* 
 
-#use"Compilation_management/compilation_mode.ml";;
+#use"lib/Compilation_management/compilation_mode.ml";;
 
 *)
 
@@ -13209,7 +13215,7 @@ module Assistance_commands_for_batch_compilation=struct
 
 (* 
 
-#use "Compilation_management/commands_for_batch_compilation.ml";;
+#use"lib/Compilation_management/commands_for_batch_compilation.ml";;
 
 *)
 
@@ -13517,7 +13523,7 @@ module Assistance_no_slashes=struct
 
 (*
 
-#use"no_slashes.ml";;
+#use"lib/no_slashes.ml";;
 
 *)
 
@@ -13551,7 +13557,7 @@ module Assistance_fw_with_batch_compilation=struct
 
 (* 
 
-#use"Filewatching/fw_with_batch_compilation.ml";;
+#use"lib/Filewatching/fw_with_batch_compilation.ml";;
 
 *)
 
@@ -13993,7 +13999,7 @@ module Assistance_fw_with_githubbing=struct
 
 (* 
 
-#use"Filewatching/fw_with_githubbing.ml";;
+#use"lib/Filewatching/fw_with_githubbing.ml";;
 
 *)
 
@@ -14004,10 +14010,11 @@ module Private = struct
   
   let set_parent = Assistance_fw_poly.set_parent ;;
   
-  
+
   let usual_batch fw modnames = 
-    let (new_parent,rejected_ones,accepted_ones) = Assistance_fw_with_batch_compilation.usual_batch (parent fw) modnames in 
-    (set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
+    let (new_parent,rejected_ones,accepted_ones) = 
+      Assistance_fw_with_batch_compilation.usual_batch (parent fw) modnames in 
+    (set_parent ~child:fw ~new_parent,rejected_ones,accepted_ones) ;; 
   
   let usual_extension fw_batch backup_dir gab git_url enc_files = 
       Assistance_fw_poly.extend_fw_with_batch_compilation_to_fw_with_githubbing 
@@ -14045,7 +14052,7 @@ module Private = struct
     let msg="delete "^descr in 
     let diff = Assistance_dircopy_diff.destroy Assistance_dircopy_diff.empty_one removed_files  in  
     let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in     
-    set_parent fw new_parent ;;     
+    set_parent ~child:fw ~new_parent ;;     
 
   let forget_nonmodular_rootlesses fw rootless_paths=
       let new_parent = Assistance_fw_with_batch_compilation.remove_files (parent fw) rootless_paths in 
@@ -14053,7 +14060,7 @@ module Private = struct
       let msg="delete "^descr in 
       let diff = Assistance_dircopy_diff.destroy Assistance_dircopy_diff.empty_one rootless_paths  in  
       let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;;     
+      set_parent ~child:fw ~new_parent ;;     
     
   
   let register_rootless_paths fw rootless_paths = 
@@ -14062,7 +14069,7 @@ module Private = struct
       let msg="register "^descr in 
       let diff = Assistance_dircopy_diff.create Assistance_dircopy_diff.empty_one rootless_paths  in  
       let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;;  
+      set_parent ~child:fw ~new_parent ;;  
 
    
 
@@ -14071,7 +14078,7 @@ module Private = struct
       let msg="move "^(Assistance_dfa_module.to_line mod_name)^" to "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
       let diff = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one replacements  in  
       let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;; 
+      set_parent ~child:fw ~new_parent ;; 
 
   let rename_module fw old_middle_name new_nonslashed_name = 
       let (new_parent,(_,(file_renamings,changed_files))) = Assistance_fw_with_batch_compilation.rename_module (parent fw) old_middle_name new_nonslashed_name in 
@@ -14080,7 +14087,7 @@ module Private = struct
       let diff1 = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one file_renamings  in  
       let diff2 = Assistance_dircopy_diff.add_changes diff1  changed_files  in  
       let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff2 (Some msg) in     
-      set_parent fw new_parent ;;    
+      set_parent ~child:fw ~new_parent ;;    
 
   let rename_subdirectory_as fw (old_subdir,new_subdir) = 
     let (new_parent,(_,original_reps)) = Assistance_fw_with_batch_compilation.rename_subdirectory_as 
@@ -14089,33 +14096,33 @@ module Private = struct
           " as "^(Assistance_dfa_subdirectory.connectable_to_subpath new_subdir) in 
     let diff = Assistance_dircopy_diff.replace Assistance_dircopy_diff.empty_one original_reps in   
     let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in     
-    set_parent fw new_parent ;; 
+    set_parent ~child:fw ~new_parent ;; 
 
   
   let replace_string fw old_s new_s = 
       let (parent1,(changed_modules_in_any_order,all_changed_files)) = 
       Assistance_fw_with_batch_compilation.replace_string (parent fw) old_s new_s  in 
-      let parent2 = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+      let new_parent = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
       let msg="rename "^old_s^" as "^new_s in 
       let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one all_changed_files in 
       let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in 
-      set_parent fw parent2 ;;
+      set_parent ~child:fw ~new_parent ;;
 
   let replace_value fw ((preceding_files,path),(old_v,new_v)) = 
         let (parent1,(changed_modules_in_any_order,all_changes)) = 
         Assistance_fw_with_batch_compilation.replace_value (parent fw) ((preceding_files,path),(old_v,new_v))  in 
-        let parent2 = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+        let new_parent = Assistance_fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
         let msg="rename "^old_v^" as "^new_v in 
         let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one all_changes in 
         let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff (Some msg) in 
-        set_parent fw parent2 ;; 
+        set_parent ~child:fw ~new_parent ;; 
  
    
   let usual_recompile fw opt_comment = 
     let (new_parent,(changed_uc,changed_files)) = Assistance_fw_with_batch_compilation.usual_recompile (parent fw)  in 
     let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one changed_files in 
     let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff opt_comment in 
-    set_parent fw new_parent ;;
+    set_parent ~child:fw ~new_parent ;;
     
 
 end;;  
@@ -14147,7 +14154,7 @@ module Assistance_fw_with_persisting=struct
 
 (* 
 
-#use"Filewatching/fw_with_persisting.ml";;
+#use"lib/Filewatching/fw_with_persisting.ml";;
 
 *)
 
@@ -14285,7 +14292,7 @@ module Assistance_modify_coma_state=struct
 
 (* 
 
-#use"Compilation_management/modify_coma_state.ml";;
+#use"lib/Compilation_management/modify_coma_state.ml";;
 
 *)
 
@@ -14507,7 +14514,7 @@ module Assistance_usual_coma_state=struct
 
 (* 
 
-#use"Compilation_management/usual_coma_state.ml";;
+#use"lib/Compilation_management/usual_coma_state.ml";;
 
 *)
 
