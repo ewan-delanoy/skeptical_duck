@@ -76,11 +76,10 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
         (List.mem s_rootless ignored_files)
      then None
      else 
-     let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
-     Some(Dfn_rootless.to_line rootless_path) ) 
+     try Some(Dfn_rootless.to_line (Dfn_common.decompose_absolute_path_using_root ap sourcedir)) with 
+     _ -> None ) 
    absolute_paths1;;
       
-
 let compute_restricted_diff sourcedir destdir restrictions=
    compute_diff (sourcedir,restricted_list sourcedir restrictions) destdir;;
 
