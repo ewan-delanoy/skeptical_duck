@@ -12,8 +12,6 @@ let of_root root_dir =
       ~ignored_files:[]
     ;; 
 
-
-
 let test_for_admissibility data rl=
   (List.mem (
     (Dfn_rootless.to_ending rl)
