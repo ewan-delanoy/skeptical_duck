@@ -11,10 +11,11 @@ module Private = struct
   
   let set_parent = Fw_poly.set_parent ;;
   
-  
+
   let usual_batch fw modnames = 
-    let (new_parent,rejected_ones,accepted_ones) = Fw_with_batch_compilation.usual_batch (parent fw) modnames in 
-    (set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
+    let (new_parent,rejected_ones,accepted_ones) = 
+      Fw_with_batch_compilation.usual_batch (parent fw) modnames in 
+    (set_parent ~child:fw ~new_parent,rejected_ones,accepted_ones) ;; 
   
   let usual_extension fw_batch backup_dir gab git_url enc_files = 
       Fw_poly.extend_fw_with_batch_compilation_to_fw_with_githubbing 
@@ -52,7 +53,7 @@ module Private = struct
     let msg="delete "^descr in 
     let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
     let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in     
-    set_parent fw new_parent ;;     
+    set_parent ~child:fw ~new_parent ;;     
 
   let forget_nonmodular_rootlesses fw rootless_paths=
       let new_parent = Fw_with_batch_compilation.remove_files (parent fw) rootless_paths in 
@@ -60,7 +61,7 @@ module Private = struct
       let msg="delete "^descr in 
       let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
       let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;;     
+      set_parent ~child:fw ~new_parent ;;     
     
   
   let register_rootless_paths fw rootless_paths = 
@@ -69,7 +70,7 @@ module Private = struct
       let msg="register "^descr in 
       let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
       let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;;  
+      set_parent ~child:fw ~new_parent ;;  
 
    
 
@@ -78,7 +79,7 @@ module Private = struct
       let msg="move "^(Dfa_module.to_line mod_name)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
       let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
       let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent fw new_parent ;; 
+      set_parent ~child:fw ~new_parent ;; 
 
   let rename_module fw old_middle_name new_nonslashed_name = 
       let (new_parent,(_,(file_renamings,changed_files))) = Fw_with_batch_compilation.rename_module (parent fw) old_middle_name new_nonslashed_name in 
@@ -87,7 +88,7 @@ module Private = struct
       let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
       let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
       let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff2 (Some msg) in     
-      set_parent fw new_parent ;;    
+      set_parent ~child:fw ~new_parent ;;    
 
   let rename_subdirectory_as fw (old_subdir,new_subdir) = 
     let (new_parent,(_,original_reps)) = Fw_with_batch_compilation.rename_subdirectory_as 
@@ -96,33 +97,33 @@ module Private = struct
           " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
     let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
     let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in     
-    set_parent fw new_parent ;; 
+    set_parent ~child:fw ~new_parent ;; 
 
   
   let replace_string fw old_s new_s = 
       let (parent1,(changed_modules_in_any_order,all_changed_files)) = 
       Fw_with_batch_compilation.replace_string (parent fw) old_s new_s  in 
-      let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+      let new_parent = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
       let msg="rename "^old_s^" as "^new_s in 
       let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changed_files in 
       let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in 
-      set_parent fw parent2 ;;
+      set_parent ~child:fw ~new_parent ;;
 
   let replace_value fw ((preceding_files,path),(old_v,new_v)) = 
         let (parent1,(changed_modules_in_any_order,all_changes)) = 
         Fw_with_batch_compilation.replace_value (parent fw) ((preceding_files,path),(old_v,new_v))  in 
-        let parent2 = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
+        let new_parent = Fw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
         let msg="rename "^old_v^" as "^new_v in 
         let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changes in 
         let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff (Some msg) in 
-        set_parent fw parent2 ;; 
+        set_parent ~child:fw ~new_parent ;; 
  
    
   let usual_recompile fw opt_comment = 
     let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent fw)  in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
     let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff opt_comment in 
-    set_parent fw new_parent ;;
+    set_parent ~child:fw ~new_parent ;;
     
 
 end;;  
