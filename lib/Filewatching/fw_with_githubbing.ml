@@ -120,12 +120,11 @@ module Private = struct
  
    
   let usual_recompile fw opt_comment = 
-    let (new_parent,(changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent fw)  in 
+    let (new_parent,(_changed_uc,changed_files)) = Fw_with_batch_compilation.usual_recompile (parent fw)  in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
     let _ = Transmit_change_to_github.backup (Fw_poly.to_github_configuration fw) diff opt_comment in 
     set_parent ~child:fw ~new_parent ;;
     
-
 end;;  
       
 
