@@ -259,7 +259,7 @@ module Private = struct
       and last_ending=Compilation_mode.ending_for_last_module cmod 
       and product_ending=Compilation_mode.ending_for_final_product cmod  in
       let cm_elements_but_the_last = Image.image (
-        fun (subdir,nm)->(Dfa_module.to_line nm)^ending
+        fun (_subdir,nm)->(Dfa_module.to_line nm)^ending
       ) nm_deps_with_subdirs in 
       let unpointed_short_path = Cull_string.before_rightmost rootless_path '.' in 
       let nm_name = (Cull_string.after_rightmost unpointed_short_path '/') in 

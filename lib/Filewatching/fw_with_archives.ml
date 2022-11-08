@@ -117,7 +117,7 @@ module Private = struct
           File_watcher.inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
-      let (a_files,u_files,nc_files) = announce_changes new_fw changed_files in 
+      let (a_files,u_files,_nc_files) = announce_changes new_fw changed_files in 
       (new_fw,changed_files,(a_files,u_files)) ;;   
 
    let latest_changes fw = 
@@ -144,7 +144,7 @@ module Private = struct
          
    let rename_module_on_filename_level old_fw (old_module,new_module) = 
       let all_files = Image.image fst (watched_files old_fw) in 
-      let (a_files,u_files,nc_files) = canonical_tripartition old_fw all_files in 
+      let (_a_files,u_files,_nc_files) = canonical_tripartition old_fw all_files in 
       let acolytes = List.filter (
                    fun rl -> (Dfn_rootless.to_module rl) = old_module 
       ) u_files in

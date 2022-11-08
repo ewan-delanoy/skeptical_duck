@@ -52,7 +52,7 @@ let announce_missing_files missing_files=
      else (print_string(message_about_missing_files missing_files);flush stdout);;
             
 
-let helper1_during_inspection fw accu (rl,old_mtime,new_mtime)=
+let helper1_during_inspection _fw accu (rl,old_mtime,new_mtime)=
    let _ = (if new_mtime <> old_mtime then accu:=rl::(!accu)) in 
    (rl,new_mtime);;
 
@@ -142,7 +142,7 @@ let of_configuration_and_list config to_be_watched =
 let update_in_list_of_pairs fw  to_be_updated pairs  =
 Image.image (
    fun pair -> 
-     let (rootless,mtime)=pair in 
+     let (rootless,_mtime)=pair in 
      if List.mem rootless to_be_updated 
      then recompute_all_info fw rootless 
      else pair
@@ -196,7 +196,7 @@ let apply_text_transformation_on_some_files fw tr l=
 
    
 let check_that_no_change_has_occurred fw =
-  let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
+  let (_new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
   if changed_files <> []
   then raise(Change_has_occurred)
   else () ;;       

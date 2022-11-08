@@ -22,7 +22,7 @@ let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
 let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Listennou.partition_according_to_fst temp1 in 
-   let should_be_empty = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
+   let should_be_empty = List.filter (fun (_edg,l_rl)->List.length(l_rl)>1) temp2 in 
    if should_be_empty<>[]
    then let clearer_picture = Image.image (fun (edg,detailed_l) -> (edg,Image.image fst detailed_l) ) 
                        should_be_empty in 
@@ -32,7 +32,7 @@ let compute_details_from_acolytes_list_for_one_module l=
       (Dfa_ocaml_ending.of_ending edg,List.hd l_rl)
       ) temp2   in 
    let (temp4,temp5) = List.partition 
-    (function (edg,rl)->edg=Dfa_ocaml_ending_t.Mli) temp3 in 
+    (function (edg,_rl)->edg=Dfa_ocaml_ending_t.Mli) temp3 in 
    if (temp3=[]) || (List.length(temp5)>1)
    then raise(Nonadmissible_acolytes_list(Image.image (fun (_,(rl,_))->rl) temp3))
    else        

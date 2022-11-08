@@ -78,7 +78,7 @@ module Private = struct
   let rec get_next_ordinary_lines (treated,to_be_treated) =
       match to_be_treated with 
       [] -> (treated,[])
-      | ((linedex,line),lk) :: other_lines -> match lk with 
+      | ((_linedex,line),lk) :: other_lines -> match lk with 
       Ordinary_line -> let next_content = (if treated="" then line else treated^"\n"^line) in 
                         get_next_ordinary_lines (next_content,other_lines)
      |_ ->  (treated,to_be_treated) ;; 
@@ -134,7 +134,7 @@ module Private = struct
       ) pairs in 
       let temp2 = Int_range.index_everything temp1 in 
       let replacements = Option.filter_and_unpack (
-        fun (absolute_idx,(sn_descr,sn_content,sn_indices)) ->
+        fun (absolute_idx,(_sn_descr,_sn_content,sn_indices)) ->
            match sn_indices with 
            [] -> None 
            | (_,_,idx) :: _ ->

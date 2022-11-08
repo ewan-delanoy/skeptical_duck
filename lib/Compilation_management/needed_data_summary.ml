@@ -47,7 +47,7 @@ let expand fw summary =
         let noncompilables =
             (match summary with 
              Needed_data_summary_t.Everything -> original_noncompilables
-            |Selection(needed_modules,needed_subdirs)-> 
+            |Selection(_needed_modules,_needed_subdirs)-> 
               List.filter (
                 fun rless-> List.mem (Dfn_rootless.to_subdirectory rless) all_needed_subdirs 
             ) original_noncompilables) in        
