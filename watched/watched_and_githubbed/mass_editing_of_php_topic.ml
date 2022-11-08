@@ -4,6 +4,8 @@
 
 *)
 
+open Skeptical_duck_lib ;; 
+
 (*
 
 CHAPTER 1 : Call mysql from ocaml

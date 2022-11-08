@@ -1,13 +1,12 @@
 (************************************************************************************************************************
-Snippet 117 : 
+Snippet 108 : 
 ************************************************************************************************************************)
-
+open Skeptical_duck_lib ;; 
 
 
 (************************************************************************************************************************
-Snippet 116 : Musing on discrepancy problem
+Snippet 107 : Musing on discrepancy problem
 ************************************************************************************************************************)
-
 module Z = struct
 
 type t = Big of int ;;
@@ -21,14 +20,21 @@ module Q = struct
 type t = { num : Z.t; den : Z.t; } ;;  
 
 let pp_print (fmt:Format.formatter) (q:t) = () ;;   
-let of_int i = {num = (Z.of_int i); den = (Z.of_int 1)}
+let of_int i = {num = (Z.of_int i); den = (Z.of_int 1)} ;;
+let div q1 q2 = q1 ;;
+let max q1 q2 = q1 ;;
+let min q1 q2 = q1 ;;
+let (>=) q1 q2 = true ;;
+
 end ;;  
 
 (*
 #require"zarith";;
 *)
 
+(*
 #install_printer Q.pp_print ;; 
+*)
 
 let i_order = Total_ordering.for_integers ;; 
 let i_setminus = Ordered.setminus Total_ordering.for_integers ;;
@@ -142,9 +148,8 @@ let tt n =  (Walker.descendants(List.hd(ff n))=[]) ;;
 let z1 = List.filter tt (Int_range.range 1 2000) ;;
 
 (************************************************************************************************************************
-Snippet 115 : Examples of "translating" ppx_deriving into usual OCaml code
+Snippet 106 : Examples of "translating" ppx_deriving into usual OCaml code
 ************************************************************************************************************************)
-
 (*
 let stork1 = {
   FileHandler.logs_folder="suzanne"; 
@@ -203,9 +208,8 @@ let check2 = List.filter (fun yj->
 *)
 
 (************************************************************************************************************************
-Snippet 114 : Local modularization
+Snippet 105 : Local modularization
 ************************************************************************************************************************)
-
 open Needed_values ;; 
 let path1 = home^"/Downloads/OCaml_packages/calendar-3.0.0/src" ;; 
 
@@ -223,9 +227,8 @@ let ap1 = Absolute_path.of_string (path2^"/wrapped_calendarlib.ml") ;;
 Io.overwrite_with ap1 u6 ;; 
 
 (************************************************************************************************************************
-Snippet 113 : Copy large interval of text from a file to another
+Snippet 104 : Copy large interval of text from a file to another
 ************************************************************************************************************************)
-
 let ap1 = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 let ap1 = Absolute_path.of_string "Fads/nap.ml" ;;
 Lines_in_string.duplicate_interval_in_file (228,287) ap1 ;; 
@@ -236,9 +239,8 @@ Manage_diary.extract_at_index_and_append_to_file 95 ap2 ;;
 
 
 (************************************************************************************************************************
-Snippet 112 : Sorting and comparing two overlapping list fo files
+Snippet 103 : Sorting and comparing two overlapping list fo files
 ************************************************************************************************************************)
-
 let ap1 = Absolute_path.of_string "~/Downloads/temp.html" ;; 
 let text1 = Io.read_whole_file ap1 ;; 
 
@@ -627,9 +629,8 @@ let data = (remaining_indices_not_in_part1,remaining_titles_in_part2) ;;
 
 
 (************************************************************************************************************************
-Snippet 111 : Remove lines starting with a # in a file (can be used with ocamllex)
+Snippet 102 : Remove lines starting with a # in a file (can be used with ocamllex)
 ************************************************************************************************************************)
-
 let ap3 = Absolute_path.of_string "Fads/jug.ml";; 
 let text3 = Io.read_whole_file ap3 ;;
 let lines = Lines_in_string.lines text3 ;; 
@@ -638,9 +639,8 @@ let new_text3 = String.concat "\n" good_lines ;;
 Io.overwrite_with ap3 new_text3 ;; 
 
 (************************************************************************************************************************
-Snippet 110 : Extract token types from a .mli file 
+Snippet 101 : Extract token types from a .mli file 
 ************************************************************************************************************************)
-
 let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Originals/parser_php.mly" ;; 
 let u1 = Io.read_whole_file ap1 ;;
 let u2 = Lines_in_string.interval u1 110 236 ;;
@@ -665,9 +665,8 @@ let u15 () = print_string ("\n\n\n" ^ u14 ^ "\n\n\n") ;;
 
 
 (************************************************************************************************************************
-Snippet 109 : Musings on a random walk (version 2, with stopping times)
+Snippet 100 : Musings on a random walk (version 2, with stopping times)
 ************************************************************************************************************************)
-
 let first_base = Memoized.make (fun n->Cartesian.general_product 
  (Int_range.scale (fun k->[-2;1]) 1 n)
 ) ;;
@@ -705,9 +704,8 @@ let ac = admissible_cases ;;
 
 
 (************************************************************************************************************************
-Snippet 108 : Musings on a random walk
+Snippet 99 : Musings on a random walk
 ************************************************************************************************************************)
-
 type dyadic = D of int * int ;; 
 type linear_combination = LC of (dyadic * int ) list ;;
 
@@ -780,10 +778,8 @@ let gg = Memoized.make (fun n->
   ) ;; 
 
 (************************************************************************************************************************
-Snippet 107 : Read a file and remove tabs in each line
+Snippet 98 : Read a file and remove tabs in each line
 ************************************************************************************************************************)
-
-
 let ap3 = Absolute_path.of_string "Fads/pan.ml" ;;
 let z4 = Io.read_whole_file ap3 ;;
 let z5 = Lines_in_string.interval z4 9 21 ;;
@@ -803,13 +799,12 @@ let z10 = [(53, "Veni de Libano"); (55, "Paulus"); (56, "Pitra"); (57, "Fulgurat
 let z11 = String.concat "," (Image.image snd z10) ;;
 
 (************************************************************************************************************************
-Snippet 106 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 
+Snippet 97 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 
 to compute the maximal elts in an upwards filter and the minimal elts outside
 it (see the "butterfly" function). It should work even for a filter on a large
 base set, as long as the minimal and maximal elts have small size and are not
 too numerous.
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
 let i_intersects = Ordered.intersects i_order ;;
@@ -990,9 +985,8 @@ and temp7 = Image.image (fun x->i_sort (x@addendum) ) temp5 ;;
 *)   
 
 (************************************************************************************************************************
-Snippet 105 : Musing on the Alon-Knuth theorem (episode 2)
+Snippet 96 : Musing on the Alon-Knuth theorem (episode 2)
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
 let i_sort = Ordered.sort i_order ;;
@@ -1038,9 +1032,8 @@ let u6 = Int_range.index_everything unattended
 
 
 (************************************************************************************************************************
-Snippet 104 : Musing on the Alon-Knuth theorem
+Snippet 95 : Musing on the Alon-Knuth theorem
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
 let i_sort = Ordered.sort i_order ;;
@@ -1113,9 +1106,8 @@ let z2 =
 
 
 (************************************************************************************************************************
-Snippet 103 : Musing on the simplicity of An
+Snippet 94 : Musing on the simplicity of An
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let i_sort = Ordered.sort i_order ;;
 
@@ -1185,9 +1177,8 @@ let v2 = expand_pookabi_result v1;;
 
 
 (************************************************************************************************************************
-Snippet 102 : Define a cycle from list of successive elts
+Snippet 93 : Define a cycle from list of successive elts
 ************************************************************************************************************************)
-
 let cycle_from_perm perm =
   let n = List.length perm in 
   let idx = (fun x->Listennou.find_index x perm) in 
@@ -1199,2282 +1190,10 @@ let cycle_from_perm perm =
    Int_range.scale next 1 n ;;
 
 (************************************************************************************************************************
-Snippet 101 : 
-An attempt at creating an algorithm that (given enough time) can compute sytematically
-any value of the Szemeredi function. (Version 4 : Starting to use rubber lists instead of 
-lists. At the end, we check that the computation of 
-sz(8,[]) is identical between the two versions.
-
-************************************************************************************************************************)
-
-
-open Needed_values ;;
-
-module Sz_types = struct 
-
-  type hook_in_knowledge = 
-    Boundary_increment
-   | Passive_repeat  
-   | Fork 
-   | Jump ;;
-
-type selector_for_hook = 
-  Boundary_increment_selector of int * int * int 
-| Passive_repeat_selector of int * int  
-| Fork_selector 
-| Jump_selector ;;
-
-type rubber_core_list = L of int ;;
-
-type rubber_list =
-     Short_list of int list list 
-    |Rubber of rubber_core_list * (int list) ;;
-
-type rubber_definition = 
-     Constraining of rubber_core_list * (int list list) 
-    |Merger of (int list list) * ((rubber_core_list * (int list)) list)
-    |Short_name of int list list ;;
-
-type parametrized_uniform_subrange = {
-   usr_positive_exceptions : int list ;
-   usr_negative_exceptions : int list ;
-   usr_modulus : int ;
-   usr_usual :  int list ;
-} ;; 
-
-type  parametrized_subrange = {
-   ps_exceptions : (int * (int list)) list ;
-   ps_usual : parametrized_uniform_subrange ; 
-} ;; 
-
-type parametrized_ps_list = {
-   pl_exceptions : (int * (int list list)) list ;
-   pl_usual : parametrized_subrange list ;
-} ;; 
-
-type hungarian_adjuster =
-     Leave_unchanged 
-    |Adjust of int list ;; 
-   
-
-       
-
-type level_two_t = Quick of int list ;; 
-  
-
-end ;;  
-
-open Sz_types ;; 
-
-let i_order = Total_ordering.for_integers ;;
-let i_insert = Ordered.insert i_order ;;
-let i_mem = Ordered.mem i_order ;;
-let i_merge = Ordered.merge i_order ;;
-let i_is_included_in = Ordered.is_included_in i_order ;;
-let i_setminus = Ordered.setminus i_order ;;
-
-
-let il_order = Total_ordering.silex_for_intlists ;;
-let il_fold_merge = Ordered.fold_merge il_order ;;
-let il_is_included_in = Ordered.is_included_in il_order ;;
-let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.sort il_order ;;
-
-let t_order = Total_ordering.triple_product 
-   i_order i_order (Total_ordering.silex_for_intlists) ;;
-
-let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
-
-let test_for_admissibility_up_to_max_with max_width z =
-  if max_width<1 then true else 
-  Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
-
-let test_for_admissiblity width breadth z =
-   (test_for_admissibility_up_to_max_with (width-1) z)
-   &&
-   (List.for_all (fun t->
-    not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
-
-let remove_one_element (n,scrappers) k=
-  let new_scrappers = i_insert k scrappers in 
-  if k <> n then (n,new_scrappers) else 
-  let new_z =  concretize (n,new_scrappers) in 
-  let new_max = List.hd(List.rev new_z) in 
-  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
-
-
-(*
-
-remove_one_element (10,[3;7;8;9]) 10 ;;
-
-*)
-let extra_constraints_from_boundary_increment width breadth n =
-   let mainstream = Int_range.scale (fun j->
-       let k = width-j in [n-2*k;n-k]
-    ) 1 (width-1) in
-    let lower_end = n-2*width in 
-    if (lower_end>=1) && (lower_end<=breadth) 
-    then [lower_end;lower_end+width]::mainstream 
-    else mainstream ;;   
-
-
-module Constraint = struct
-
-let satisfied_by_individual l_constr l =
-  List.for_all (fun constr->not(i_is_included_in constr l)) l_constr
-
-let satisfied_by_all_in_list l_constr ll=
-  List.for_all (satisfied_by_individual l_constr) ll ;;
-
-end ;;  
-
-module Rubber_definition = struct 
-
-let check_constraints constraints = function 
-Constraining (rcl,constraints2) -> List.for_all (fun weak->
-   List.exists (fun strong->i_is_included_in strong weak) constraints2
-  ) constraints 
-| Merger (_,_) -> false
-| Short_name (ll) -> Constraint.satisfied_by_all_in_list constraints ll ;;
-
-
-end ;;   
-
-module Rubber_core_list = struct 
-
-let ref_for_definitions = ref [] ;; 
-let ref_for_ambient_spaces = ref [] ;;
-let ref_for_representatives = ref [] ;; 
-let ref_for_constraint_data = ref [] ;;
-
-let add_definition rcl rcl_defn =
-  ref_for_definitions :=   
-     (rcl_defn,rcl) :: (!ref_for_definitions) ;;    
-
-exception Find_associated_definition_exn of rubber_core_list ;;
-
-let find_associated_definition rcl =
-    match Option.seek (
-      fun pair -> snd(pair) = rcl
-    )(!ref_for_definitions) with 
-    Some (rcl_defn,_) -> rcl_defn
-    |None -> raise(Find_associated_definition_exn rcl);;
-
-exception Find_from_definition_exn of rubber_definition ;;
-
-let find_from_definition rcl_defn =
-  match List.assoc_opt rcl_defn (!ref_for_definitions) with 
-  Some (rcl) -> rcl
-  |None -> raise(Find_from_definition_exn rcl_defn);;
-
-
-exception Find_ambient_space_exn of rubber_core_list ;;
-
-let find_ambient_space rcl =
-        match List.assoc_opt rcl (!ref_for_ambient_spaces) with 
-        Some n -> n
-        |None -> raise(Find_ambient_space_exn rcl);;
-
-exception Find_representative_exn of rubber_core_list ;;
-
-let find_representative rcl =
-    match List.assoc_opt rcl (!ref_for_representatives) with 
-     Some n -> n
-    |None -> raise(Find_representative_exn rcl);;
-
-exception Impose_constraint_exn of rubber_core_list * ((int list) list);;
-
-let impose_constraints rcl constraints = 
-    if Rubber_definition.check_constraints constraints (find_associated_definition rcl)
-    then Some rcl
-    else  
-    match List.assoc_opt (rcl,constraints) (!ref_for_constraint_data) with 
-      Some old_answer -> old_answer 
-    | None -> raise(Impose_constraint_exn(rcl,constraints)) ;; 
-
-let common_length rcl = List.length (find_representative rcl) ;; 
-
-end ;; 
- 
-module Rubber_list = struct 
-
-  exception List_too_large of int list list ;;   
-
-  let of_list ll = 
-     if List.length(ll)<=500 
-     then Short_list ll 
-     else let defn = Short_name ll in 
-          try Rubber(Rubber_core_list.find_from_definition defn,[]) with 
-          _ -> raise(List_too_large ll) ;;
-
-  let unveil = function 
-   (Short_list small_list) -> (Some small_list, None) 
-  |Rubber(rcl,common) -> (None,Some(rcl,common)) ;; 
-
-  let common_length = function 
-  (Short_list small_list) -> List.length (List.hd small_list) 
- |Rubber(rcl,common) -> (Rubber_core_list.common_length rcl) + (List.length(common)) ;; 
-
-  let remaining_part_of_constraint rcl common new_constraint = 
-    let n = Rubber_core_list.find_ambient_space rcl in 
-    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
-    if not(i_is_included_in above common)
-    then None 
-    else Some below ;;
-
-    
-  let apply_new_constraints new_constraints = function 
-  (Short_list small_list) -> 
-    let new_small_list = List.filter (fun z->
-      List.for_all (fun new_constraint ->
-      not(i_is_included_in new_constraint z))  new_constraints
-  )  small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let cleaned_constraints = Option.filter_and_unpack (
-        remaining_part_of_constraint rcl common
-      ) new_constraints in 
-      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-       None -> (of_list [])
-       | Some new_rcl -> Rubber(new_rcl,common) ;;
-  
-  
-  
-
-   exception Remove_fixed_part of rubber_core_list * (int list) ;;
-
-   let remove_fixed_part_on_all extra = function 
-   (Short_list small_list) -> 
-    let new_small_list = Image.image (fun z->i_setminus z extra) small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let n =  Rubber_core_list.find_ambient_space rcl in 
-      if List.exists (fun t->t<=n) extra 
-      then raise(Remove_fixed_part(rcl,extra))
-      else       
-      Rubber(rcl,i_setminus common extra) ;;
-
-         
-
-
-  end ;; 
-
-module Selector_for_hook = struct 
-
-  let of_hook (width,breadth,n) = function   
-      Passive_repeat -> Passive_repeat_selector(width,breadth)
-    | Boundary_increment -> Boundary_increment_selector(width,breadth,n) 
-    | Fork -> Fork_selector  
-    | Jump -> Jump_selector ;;
-  
-    let apply_passive_repeat width b rl =
-      Rubber_list.apply_new_constraints [[b;b+width;b+2*width]] rl ;; 
-     
-     
-    let apply_boundary_increment width breadth n rl = 
-      let new_constraints = extra_constraints_from_boundary_increment width breadth n in 
-     match rl with 
-    (Short_list small_list) -> 
-      let new_small_list = Option.filter_and_unpack (fun z->
-        if List.for_all (fun new_constraint ->
-        not(i_is_included_in new_constraint z))  new_constraints 
-        then Some(z@[n])
-        else None
-    )  small_list in 
-      Rubber_list.of_list new_small_list 
-     |Rubber(rcl,common) -> 
-        let cleaned_constraints = Option.filter_and_unpack (
-          Rubber_list.remaining_part_of_constraint rcl common
-        ) new_constraints in 
-        match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-         None -> (Rubber_list.of_list [])
-         | Some new_rcl -> Rubber(new_rcl,i_insert n common) ;;
-  
-    let apply_fork ll =
-      let (_,temp1) = Max.maximize_it_with_care Rubber_list.common_length ll in  
-      let temp2 = Image.image Rubber_list.unveil temp1 in 
-      let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
-      let small_lists = Image.image (fun (opt1,opt2)->Option.unpack opt1) temp3 
-      and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
-      let full_list = il_fold_merge small_lists in 
-      if increased_lists = [] 
-      then Rubber_list.of_list full_list 
-      else   
-      let defn =  Merger (full_list,increased_lists) in 
-      Rubber(Rubber_core_list.find_from_definition defn,[])  ;; 
-  
-    let eval selector l =  
-          match selector with 
-          Passive_repeat_selector(width,b) -> 
-            apply_passive_repeat width b (List.hd l)
-          | Boundary_increment_selector(width,breadth,n) ->
-            apply_boundary_increment width breadth n (List.hd l)
-           | Fork_selector ->     
-            apply_fork l 
-           | Jump_selector -> List.hd l;;
-  
-  end ;;  
-  
-  
-
-module Hungarian = struct 
-
-module Breadth_reduction = struct 
-
-let test_for_automatic_treatment width scrappers b = 
-  List.exists(fun t->List.mem t scrappers) 
-  [b;b+width;b+2*width] ;;
-
-let rec effective_breadth (width,scrappers,b) =
-   if (test_for_automatic_treatment width scrappers b)&&(b>0) 
-   then effective_breadth (width,scrappers,b-1)
-   else b ;;
-
-end ;;  
-
-let normalized_adjust adj =
-    if adj = [] 
-    then Leave_unchanged 
-    else Adjust adj ;;
-
-
-let short_adjust old_result adjustment =
-      match adjustment with 
-      Leave_unchanged -> old_result 
-      |Adjust extra -> Rubber_list.remove_fixed_part_on_all extra old_result;;
-  
-let adjust result_opt adjustment=
-    match result_opt with 
-    None -> None 
-    | Some old_result ->  
-    Some(short_adjust old_result adjustment) ;;   
-
-let merge_adjustments adj1 adj2 =
-  (
-    match adj1 with 
-      Leave_unchanged -> adj2 
-     |Adjust content1 -> 
-      (
-      match adj2 with 
-      Leave_unchanged -> adj1 
-     |Adjust content2 -> Adjust(i_merge content1 content2) 
-      
-  )
-  ) ;;
-
-let first_step_in_decomposition (width,breadth,scrappers) =
-     let bound = breadth+2*width in 
-     let (below,above) = (if width<>1
-      then (scrappers,[])
-      else List.partition (fun t->t<=bound) scrappers) in 
-     ((width,Breadth_reduction.effective_breadth (width,scrappers,breadth),below),
-       normalized_adjust above) ;;     
-
-let pusher_for_decomposition (triple,adj)= 
-      let (triple2,adj2) = first_step_in_decomposition triple in 
-      (triple2,merge_adjustments adj adj2) ;;
-
-let rec iterator_for_decomposition  pair =
-   let next_pair = pusher_for_decomposition pair in 
-   if next_pair = pair 
-   then pair 
-   else iterator_for_decomposition next_pair ;;
-
-let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;  
-
-(* Example : decompose (1,18,[8;11;14;17;20]);; *)
-
-end ;;  
-
-
-
-module Parametrized = struct 
-
-let eval_uniform_subrange usr n =
-  List.filter (
-     fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
-  ) (Int_range.range 1 n) ;; 
-
-let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
-   Some answer -> answer 
-   | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
-
-let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
-  Some answer -> Short_list(answer) 
-  | None ->
-   Short_list(Image.image (fun sr->eval_subrange sr n) psl.Sz_types.pl_usual) ;;    
-
-let eval_level_two (Quick l) scrappers n =
-  let z = concretize (n,scrappers) in 
-  if (not(i_is_included_in l z))  
-  then Short_list([z]) 
-  else 
-  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
-  Short_list(il_sort temp1) ;;     
-
-end ;;   
-
-
-module Parametrized_Example = struct 
-
-  let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
-    usr_negative_exceptions = ne ; 
-    usr_modulus = mdl;
-    usr_usual = usu ;
-  };; 
-  
-  let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
-    ps_usual = uniform_subrange pe ne mdl usu ;
-  };; 
-  
-  let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
-    pl_usual = Image.image subrange psl_usu ;
-  };; 
-
-  let example1 = Quick [1;2;3] ;;
-
-  let example2 (* for (1,2,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-      ([],[],[2],1,[0]);
-     ] ;;  
-     
-  let example3 (* for (1,3,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-     ] ;;    
-     
-  let example4 (* for (1,4,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[3;4],1,[0]);
-      ([],[],[2;5],1,[0]);
-      ([],[],[2;4],1,[0]);
-      ([],[],[1;4],1,[0]);
-     ] ;;   
-     
-   let example5 (* for (1,5,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;      
-
-    let example6 (* for (1,6,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
-       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-     ] ;;    
-
-     let example9 (* for (1,2,[7]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;  
-     
-
-  end ;;   
-  
-
-
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;
-let low_hashtbl = Hashtbl.create 50 ;;
-
-
-let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-    let z = concretize (n,scrappers) in 
-    if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-    then Some (Short_list[z]) 
-    else 
-    match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-    Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
-    | None ->  
-    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-     Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> old_getter (width,breadth,n,scrappers)) ;;   
-
-let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-  let ((width2,breadth2,scrappers2),adj) = 
-    Hungarian.decompose (width,breadth,scrappers) in 
-  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
-    Hungarian.adjust res_opt adj;;
-
-let low_getter = Hashtbl.find_opt low_hashtbl ;;    
-let access = hungarian_enhance_getter low_getter ;;   
-
-let descendants_for_tool (width,breadth,n,scrappers) tool = 
-       match tool with 
-       Passive_repeat -> [(width,breadth-1,n,scrappers)]     
-      | Boundary_increment ->
-       let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-       [width,breadth,m,new_scrappers]
-      | Fork ->     
-          Int_range.scale (fun k->
-             let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-             (width,breadth-1,m,scr)
-           ) 0 2 
-      | Jump -> [(width-1,n-2*(width-1),n,scrappers)] ;;
-
-
-let try_tool_quickly old_getter width breadth (n,scrappers) tool = 
-   let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
-   let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
-   and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
-   let hungarian_descendants = Image.image (
-      fun (w,b,m,s) ->
-        let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
-        ((w2,b2,m,s2),adj)
-    ) descendants in 
-   let temp1 = Image.image (fun (uple,adj)->
-      let (w,b,m,s) = uple in 
-      (uple,Hungarian.adjust (nh_enhanced_getter w b (m,s)) adj)
-  ) hungarian_descendants in   
-  let (failures,successes) = List.partition (
-          fun (_,opt) -> opt = None
-  ) temp1 in 
-  let missing_data = Image.image fst failures in 
-  if missing_data <> [] then (missing_data,Short_list []) else 
-  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval selector args) ;;  
-
-
-exception Compute_from_below_exn of int * int * int * (int list) ;;  
-
-let compute_from_below old_getter (width,breadth,n,scrappers) tool =
-   let (missing_data,result) = 
-     try_tool_quickly old_getter width breadth (n,scrappers) tool in 
-   if result = Short_list [] 
-   then raise(Compute_from_below_exn(width,breadth,n,scrappers)) 
-   else  result ;; 
-
-let low_add (width,breadth,n,scrappers,tool) =
-   let finder = Hashtbl.find_opt low_hashtbl in  
-   let res = compute_from_below finder (width,breadth,n,scrappers) tool in  
-   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
-   res ;;
-
-let med_add (width,breadth,scrappers) summary = 
-  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
-
-let rose_add (width,breadth) summary = 
-    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
- 
-
-let find_remote_stumbling_block_or_immediate_working_tool 
-       old_getter width breadth (n,scrappers) = 
-   let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
-   match hg_enhanced_getter width breadth (n,scrappers) with 
-    Some old_answer -> ([],None) 
-    | None ->
-   if breadth=0 
-   then let (missing_data0,result_opt0) = 
-        try_tool_quickly old_getter width breadth (n,scrappers) Jump in 
-        if result_opt0<>(Short_list [])
-        then ([],Some Jump)
-        else (missing_data0,None)    
-   else      
-   let (missing_data1,result_opt1) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Passive_repeat in 
-   if result_opt1<>(Short_list []) then ([], Some Passive_repeat) else  
-   if missing_data1<>[] then (missing_data1,None) else  
-   let (missing_data2,result_opt2) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Boundary_increment in 
-   if result_opt2<>(Short_list []) then ([], Some Boundary_increment) else  
-   if missing_data2<>[] then (missing_data2,None) else  
-   let (missing_data3,result_opt3) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Fork in 
-   if result_opt3<>(Short_list []) then ([], Some Fork) else  
-    (missing_data3,None) ;;
-    
-
-let carrier_get carrier (width,breadth,n,scrappers) = match 
-  Hashtbl.find_opt low_hashtbl  (width,breadth,n,scrappers) with
-  Some old_answer -> Some old_answer 
-  | None -> List.assoc_opt  
-      (width,breadth,n,scrappers) carrier ;;
-     
-let carrier_add carrier (width,breadth,n,scrappers,tool) =
-    let res = compute_from_below (carrier_get carrier) (width,breadth,n,scrappers) tool in  
-    ((width,breadth,n,scrappers),res) :: carrier  ;;
-
-  
-exception Pusher_exn of ((int * int * int * int list) * rubber_list) list;;
-
-let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
-    match to_be_treated with 
-    [] -> raise(Pusher_exn(carrier))
-    | uple :: others -> 
-       let (width,breadth,n,scrappers) = uple in 
-       let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get carrier) width breadth (n,scrappers) in 
-      match opt_res with 
-       Some tool ->
-           let new_carrier = carrier_add carrier (width,breadth,n,scrappers,tool) in 
-           (new_carrier,others)
-       | None -> 
-         if missing_data = [] 
-         then (carrier,others) 
-         else (carrier,missing_data @ (uple::others)) 
-      ;;      
-         
-let rec born_to_fail_for_recursive_computation walker=
-  born_to_fail_for_recursive_computation
-  (pusher_for_recursive_computation walker)  ;;     
-
-let  needed_subcomputations_for_several_computations uples = 
-  try born_to_fail_for_recursive_computation ([],uples) with 
-  Pusher_exn(carrier) -> carrier ;; 
-
-let needed_subcomputations_for_single_computation uple = 
-  needed_subcomputations_for_several_computations [uple] ;; 
-
-
-let compute_recursively width breadth (n,scrappers) = 
-  let uple = (width,breadth,n,scrappers) in 
-  let needed_carrier = needed_subcomputations_for_single_computation uple in 
-  let answer = List.assoc_opt uple needed_carrier in 
-  (answer,needed_carrier) 
-;;  
-
-
-
-
-let feel_new_line (width,breadth,scrappers) =
-  let temp1 = Int_range.scale 
-    (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
-  let temp2 = needed_subcomputations_for_several_computations temp1 in 
-  let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
-  Ordered.sort t_order temp3 ;; 
-
-let exhaust_new_line (width,breadth,scrappers) =
-    let temp1 = Int_range.scale 
-      (fun n->(width,breadth,n,scrappers)) 1  30 in 
-    let carrier = needed_subcomputations_for_several_computations temp1 in 
-    let temp2 = Image.image (fun (w,b,n,s)-> 
-      let mutilated_carrier = List.filter (
-        fun p->fst(p)<>(w,b,n,s)
-      ) carrier in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get mutilated_carrier) w b (n,s) in 
-      (n,hook_opt)
-    ) temp1 in 
-    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
-      None -> None |Some pair ->Some(n,pair)) l) in 
-    let temp3 = selector temp2 in 
-    let temp4 = Int_range.scale (fun n->
-      (n, hungarian_enhance_getter
-      (carrier_get carrier) width breadth (n,scrappers)))  1 30  in 
-    let temp5 = selector temp4 in 
-    (temp3,temp5) ;;   
-
-
-
-
-rose_add (1,1) Parametrized_Example.example1 ;; 
-
-
-med_add (1,2,[]) Parametrized_Example.example2 ;; 
-med_add (1,3,[]) Parametrized_Example.example3 ;; 
-
-
-med_add (1,4,[])  Parametrized_Example.example4 ;; 
-med_add (1,5,[])  Parametrized_Example.example5 ;; 
-med_add (1,6,[])  Parametrized_Example.example6 ;; 
-
-
-module Pure_list_version = struct 
-
-  
-
-open Needed_values ;;
-module Sz_types = struct 
-  
-  type hook_in_knowledge = 
-  Boundary_increment
- | Passive_repeat  
- | Fork 
- | Jump ;;
-
-type selector_for_hook = 
-Boundary_increment_selector of int * int * int 
-| Passive_repeat_selector of int * int  
-| Fork_selector 
-| Jump_selector ;;
-
-type rubber_core_list = L of int ;;
-
-type rubber_list =
-   Short_list of int list list 
-  |Rubber of rubber_core_list * (int list) ;;
-
-type rubber_definition = 
-   Constraining of rubber_core_list * (int list list) 
-  |Merger of (int list list) * ((rubber_core_list * (int list)) list)
-  |Short_name of int list list ;;
-
-type parametrized_uniform_subrange = {
- usr_positive_exceptions : int list ;
- usr_negative_exceptions : int list ;
- usr_modulus : int ;
- usr_usual :  int list ;
-} ;; 
-
-type  parametrized_subrange = {
- ps_exceptions : (int * (int list)) list ;
- ps_usual : parametrized_uniform_subrange ; 
-} ;; 
-
-type parametrized_ps_list = {
- pl_exceptions : (int * (int list list)) list ;
- pl_usual : parametrized_subrange list ;
-} ;; 
-
-type hungarian_adjuster =
-   Leave_unchanged 
-  |Adjust of int list ;; 
- 
-
-     
-
-type level_two_t = Quick of int list ;; 
-
-
-
-end ;;  
-
-open Sz_types ;;
-
-let i_order = Total_ordering.for_integers ;;
-let i_insert = Ordered.insert i_order ;;
-let i_mem = Ordered.mem i_order ;;
-let i_merge = Ordered.merge i_order ;;
-let i_is_included_in = Ordered.is_included_in i_order ;;
-let i_setminus = Ordered.setminus i_order ;;
-
-
-let il_order = Total_ordering.silex_for_intlists ;;
-let il_fold_merge = Ordered.fold_merge il_order ;;
-let il_is_included_in = Ordered.is_included_in il_order ;;
-let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.sort il_order ;;
-
-let t_order = Total_ordering.triple_product 
-   i_order i_order (Total_ordering.silex_for_intlists) ;;
-
-let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
-
-let test_for_admissibility_up_to_max_with max_width z =
-  if max_width<1 then true else 
-  Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
-
-let test_for_admissiblity width breadth z =
-   (test_for_admissibility_up_to_max_with (width-1) z)
-   &&
-   (List.for_all (fun t->
-    not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
-
-let remove_one_element (n,scrappers) k=
-  let new_scrappers = i_insert k scrappers in 
-  if k <> n then (n,new_scrappers) else 
-  let new_z =  concretize (n,new_scrappers) in 
-  let new_max = List.hd(List.rev new_z) in 
-  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
-
-
-(*
-
-remove_one_element (10,[3;7;8;9]) 10 ;;
-
-*)
-let extra_constraints_from_boundary_increment width breadth n =
-   let mainstream = Int_range.scale (fun j->
-       let k = width-j in [n-2*k;n-k]
-    ) 1 (width-1) in
-    let lower_end = n-2*width in 
-    if (lower_end>=1) && (lower_end<=breadth) 
-    then [lower_end;lower_end+width]::mainstream 
-    else mainstream ;;   
-
-
-module Constraint = struct
-
-let satisfied_by_individual l_constr l =
-  List.for_all (fun constr->not(i_is_included_in constr l)) l_constr
-
-let satisfied_by_all_in_list l_constr ll=
-  List.for_all (satisfied_by_individual l_constr) ll ;;
-
-end ;;  
-
-module Rubber_definition = struct 
-
-let check_constraints constraints = function 
-Constraining (rcl,constraints2) -> List.for_all (fun weak->
-   List.exists (fun strong->i_is_included_in strong weak) constraints2
-  ) constraints 
-| Merger (_,_) -> false
-| Short_name (ll) -> Constraint.satisfied_by_all_in_list constraints ll ;;
-
-
-end ;;   
-
-module Rubber_core_list = struct 
-
-let ref_for_definitions = ref [] ;; 
-let ref_for_ambient_spaces = ref [] ;;
-let ref_for_representatives = ref [] ;; 
-let ref_for_constraint_data = ref [] ;;
-
-let add_definition rcl rcl_defn =
-  ref_for_definitions :=   
-     (rcl_defn,rcl) :: (!ref_for_definitions) ;;    
-
-exception Find_associated_definition_exn of rubber_core_list ;;
-
-let find_associated_definition rcl =
-    match Option.seek (
-      fun pair -> snd(pair) = rcl
-    )(!ref_for_definitions) with 
-    Some (rcl_defn,_) -> rcl_defn
-    |None -> raise(Find_associated_definition_exn rcl);;
-
-exception Find_from_definition_exn of rubber_definition ;;
-
-let find_from_definition rcl_defn =
-  match List.assoc_opt rcl_defn (!ref_for_definitions) with 
-  Some (rcl) -> rcl
-  |None -> raise(Find_from_definition_exn rcl_defn);;
-
-
-exception Find_ambient_space_exn of rubber_core_list ;;
-
-let find_ambient_space rcl =
-        match List.assoc_opt rcl (!ref_for_ambient_spaces) with 
-        Some n -> n
-        |None -> raise(Find_ambient_space_exn rcl);;
-
-exception Find_representative_exn of rubber_core_list ;;
-
-let find_representative rcl =
-    match List.assoc_opt rcl (!ref_for_representatives) with 
-     Some n -> n
-    |None -> raise(Find_representative_exn rcl);;
-
-exception Impose_constraint_exn of rubber_core_list * ((int list) list);;
-
-let impose_constraints rcl constraints = 
-    if Rubber_definition.check_constraints constraints (find_associated_definition rcl)
-    then Some rcl
-    else  
-    match List.assoc_opt (rcl,constraints) (!ref_for_constraint_data) with 
-      Some old_answer -> old_answer 
-    | None -> raise(Impose_constraint_exn(rcl,constraints)) ;; 
-
-let common_length rcl = List.length (find_representative rcl) ;; 
-
-end ;; 
- 
-
-module Selector_for_hook = struct 
-
-  let of_hook (width,breadth,n) = function   
-      Passive_repeat -> Passive_repeat_selector(width,breadth)
-    | Boundary_increment -> Boundary_increment_selector(width,breadth,n) 
-    | Fork -> Fork_selector  
-    | Jump -> Jump_selector ;;
-  
-  let eval selector l =  
-       match selector with 
-       Passive_repeat_selector(width,b) -> 
-        List.filter (fun z->
-          not(i_is_included_in [b;b+width;b+2*width] z) 
-      )  (List.hd l)
-       | Boundary_increment_selector(width,breadth,n) ->
-       Option.filter_and_unpack (fun z->
-              let new_z = z @ [n] in 
-              if test_for_admissiblity width breadth new_z 
-               then Some new_z
-               else None
-           )  (List.hd l)
-        | Fork_selector ->     
-          let (_,temp1) = Max.maximize_it_with_care 
-           List.length (List.flatten l) in 
-          il_sort temp1 
-        | Jump_selector -> List.hd l  ;;
-  
-  end ;;  
-  
-  
-
-module Hungarian = struct 
-
-module Breadth_reduction = struct 
-
-let test_for_automatic_treatment width scrappers b = 
-  List.exists(fun t->List.mem t scrappers) 
-  [b;b+width;b+2*width] ;;
-
-let rec effective_breadth (width,scrappers,b) =
-   if (test_for_automatic_treatment width scrappers b)&&(b>0) 
-   then effective_breadth (width,scrappers,b-1)
-   else b ;;
-
-end ;;  
-
-let normalized_adjust adj =
-    if adj = [] 
-    then Leave_unchanged 
-    else Adjust adj ;;
-
-let short_adjust old_result adjustment =
-      match adjustment with 
-      Leave_unchanged -> old_result 
-      |Adjust extra -> Image.image (fun z->i_setminus z extra) old_result;;
-  
-let adjust result_opt adjustment=
-    match result_opt with 
-    None -> None 
-    | Some old_result ->  
-    Some(short_adjust old_result adjustment) ;; 
-
-let merge_adjustments adj1 adj2 =
-  (
-    match adj1 with 
-      Leave_unchanged -> adj2 
-     |Adjust content1 -> 
-      (
-      match adj2 with 
-      Leave_unchanged -> adj1 
-     |Adjust content2 -> Adjust(i_merge content1 content2) 
-      
-  )
-  ) ;;
-
-let first_step_in_decomposition (width,breadth,scrappers) =
-     let bound = breadth+2*width in 
-     let (below,above) = (if width<>1
-      then (scrappers,[])
-      else List.partition (fun t->t<=bound) scrappers) in 
-     ((width,Breadth_reduction.effective_breadth (width,scrappers,breadth),below),
-       normalized_adjust above) ;;     
-
-let pusher_for_decomposition (triple,adj)= 
-      let (triple2,adj2) = first_step_in_decomposition triple in 
-      (triple2,merge_adjustments adj adj2) ;;
-
-let rec iterator_for_decomposition  pair =
-   let next_pair = pusher_for_decomposition pair in 
-   if next_pair = pair 
-   then pair 
-   else iterator_for_decomposition next_pair ;;
-
-let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;  
-
-(* Example : decompose (1,18,[8;11;14;17;20]);; *)
-
-end ;;  
-
-module Rubber_list = struct 
-
-  exception List_too_large of int list list ;;   
-
-  let of_list ll = 
-     if List.length(ll)<=10 
-     then Short_list ll 
-     else raise(List_too_large ll) ;;
-
-  let unveil = function 
-   (Short_list small_list) -> (Some small_list, None) 
-  |Rubber(rcl,common) -> (None,Some(rcl,common)) ;; 
-
-  let common_length = function 
-  (Short_list small_list) -> List.length (List.hd small_list) 
- |Rubber(rcl,common) -> (Rubber_core_list.common_length rcl) + (List.length(common)) ;; 
-
-  let remaining_part_of_constraint rcl common new_constraint = 
-    let n = Rubber_core_list.find_ambient_space rcl in 
-    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
-    if not(i_is_included_in above common)
-    then None 
-    else Some below ;;
-
-    
-  let apply_new_constraints new_constraints = function 
-  (Short_list small_list) -> 
-    let new_small_list = List.filter (fun z->
-      List.for_all (fun new_constraint ->
-      not(i_is_included_in new_constraint z))  new_constraints
-  )  small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let cleaned_constraints = Option.filter_and_unpack (
-        remaining_part_of_constraint rcl common
-      ) new_constraints in 
-      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-       None -> (of_list [])
-       | Some new_rcl -> Rubber(new_rcl,common) ;;
-  
-  
-  let apply_passive_repeat width b rl =
-    apply_new_constraints [[b;b+width;b+2*width]] rl ;; 
-   
-   
-  let apply_boundary_increment width breadth n rl = 
-    let new_constraints = extra_constraints_from_boundary_increment width breadth n in 
-   match rl with 
-  (Short_list small_list) -> 
-    let new_small_list = Option.filter_and_unpack (fun z->
-      if List.for_all (fun new_constraint ->
-      not(i_is_included_in new_constraint z))  new_constraints 
-      then Some(z@[n])
-      else None
-  )  small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let cleaned_constraints = Option.filter_and_unpack (
-        remaining_part_of_constraint rcl common
-      ) new_constraints in 
-      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-       None -> (of_list [])
-       | Some new_rcl -> Rubber(new_rcl,i_insert n common) ;;
-
-  let apply_fork ll =
-    let (_,temp1) = Max.maximize_it_with_care common_length ll in  
-    let temp2 = Image.image unveil temp1 in 
-    let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
-    let small_lists = Image.image (fun (opt1,opt2)->Option.unpack opt1) temp3 
-    and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
-    let defn =  Merger (il_fold_merge small_lists,increased_lists) in 
-    Rubber(Rubber_core_list.find_from_definition defn,[])  ;; 
-
-  let apply_selector selector l =  
-        match selector with 
-        Passive_repeat_selector(width,b) -> 
-          apply_passive_repeat width b (List.hd l)
-        | Boundary_increment_selector(width,breadth,n) ->
-          apply_boundary_increment width breadth n (List.hd l)
-         | Fork_selector ->     
-          apply_fork l 
-         | Jump_selector -> List.hd l;;
-
-   exception Remove_fixed_part of rubber_core_list * (int list) ;;
-
-   let remove_fixed_part_on_all extra = function 
-   (Short_list small_list) -> 
-    let new_small_list = Image.image (fun z->i_setminus z extra) small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let n =  Rubber_core_list.find_ambient_space rcl in 
-      if List.exists (fun t->t<=n) extra 
-      then raise(Remove_fixed_part(rcl,extra))
-      else       
-      Rubber(rcl,i_setminus common extra) ;;
-
-   let hg_short_adjust old_result adjustment =
-            match adjustment with 
-            Leave_unchanged -> old_result 
-            |Adjust extra -> remove_fixed_part_on_all extra old_result;;
-        
-   let hg_adjust result_opt adjustment=
-          match result_opt with 
-          None -> None 
-          | Some old_result ->  
-          Some(hg_short_adjust old_result adjustment) ;;         
-
-
-  end ;; 
-
-module Parametrized = struct 
-
-let eval_uniform_subrange usr n =
-  List.filter (
-     fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
-  ) (Int_range.range 1 n) ;; 
-
-let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
-   Some answer -> answer 
-   | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
-
-let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
-  Some answer -> answer 
-  | None ->
-   Image.image (fun sr->eval_subrange sr n) 
-   psl.Sz_types.pl_usual ;;    
-
-let eval_level_two (Quick l) scrappers n =
-  let z = concretize (n,scrappers) in 
-  if (not(i_is_included_in l z))  
-  then [z] 
-  else 
-  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
-  il_sort temp1 ;;     
-
-end ;;   
-
-
-module Parametrized_Example = struct 
-
-  let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
-    usr_negative_exceptions = ne ; 
-    usr_modulus = mdl;
-    usr_usual = usu ;
-  };; 
-  
-  let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
-    ps_usual = uniform_subrange pe ne mdl usu ;
-  };; 
-  
-  let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
-    pl_usual = Image.image subrange psl_usu ;
-  };; 
-
-  let example1 = Quick [1;2;3] ;;
-
-  let example2 (* for (1,2,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-      ([],[],[2],1,[0]);
-     ] ;;  
-     
-  let example3 (* for (1,3,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-     ] ;;    
-     
-  let example4 (* for (1,4,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[3;4],1,[0]);
-      ([],[],[2;5],1,[0]);
-      ([],[],[2;4],1,[0]);
-      ([],[],[1;4],1,[0]);
-     ] ;;   
-     
-   let example5 (* for (1,5,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;      
-
-    let example6 (* for (1,6,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
-       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-     ] ;;    
-
-     let example9 (* for (1,2,[7]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;  
-     
-
-  end ;;   
-  
-
-
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;
-let low_hashtbl = Hashtbl.create 50 ;;
-
-
-let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-    let z = concretize (n,scrappers) in 
-    if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-    then Some [z] 
-    else 
-    match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-    Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
-    | None ->  
-    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-     Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> old_getter (width,breadth,n,scrappers)) ;;   
-
-let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-  let ((width2,breadth2,scrappers2),adj) = 
-    Hungarian.decompose (width,breadth,scrappers) in 
-  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
-    Hungarian.adjust res_opt adj;;
-
-let low_getter = Hashtbl.find_opt low_hashtbl ;;    
-let access = hungarian_enhance_getter low_getter ;;   
-
-let descendants_for_tool (width,breadth,n,scrappers) tool = 
-       match tool with 
-       Passive_repeat -> [(width,breadth-1,n,scrappers)]     
-      | Boundary_increment ->
-       let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-       [width,breadth,m,new_scrappers]
-      | Fork ->     
-          Int_range.scale (fun k->
-             let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-             (width,breadth-1,m,scr)
-           ) 0 2 
-      | Jump -> [(width-1,n-2*(width-1),n,scrappers)] ;;
-
-
-let try_tool_quickly old_getter width breadth (n,scrappers) tool = 
-   let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
-   let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
-   and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
-   let hungarian_descendants = Image.image (
-      fun (w,b,m,s) ->
-        let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
-        ((w2,b2,m,s2),adj)
-    ) descendants in 
-   let temp1 = Image.image (fun (uple,adj)->
-      let (w,b,m,s) = uple in 
-      (uple,Hungarian.adjust (nh_enhanced_getter w b (m,s)) adj)
-  ) hungarian_descendants in   
-  let (failures,successes) = List.partition (
-          fun (_,opt) -> opt = None
-  ) temp1 in 
-  let missing_data = Image.image fst failures in 
-  if missing_data <> [] then (missing_data,[]) else 
-  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval selector args) ;;  
-
-
-exception Compute_from_below_exn of int * int * int * (int list) ;;  
-
-let compute_from_below old_getter (width,breadth,n,scrappers) tool =
-   let (missing_data,result_opt) = 
-     try_tool_quickly old_getter width breadth (n,scrappers) tool in 
-   if result_opt = []
-   then raise (Compute_from_below_exn(width,breadth,n,scrappers)) 
-   else result_opt ;; 
-
-let low_add (width,breadth,n,scrappers,tool) =
-   let finder = Hashtbl.find_opt low_hashtbl in  
-   let res = compute_from_below finder (width,breadth,n,scrappers) tool in  
-   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
-   res ;;
-
-let med_add (width,breadth,scrappers) summary = 
-  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
-
-let rose_add (width,breadth) summary = 
-    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
- 
-
-let find_remote_stumbling_block_or_immediate_working_tool 
-       old_getter width breadth (n,scrappers) = 
-   let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
-   match hg_enhanced_getter width breadth (n,scrappers) with 
-    Some old_answer -> ([],None) 
-    | None ->
-   if breadth=0 
-   then let (missing_data0,result_opt0) = 
-        try_tool_quickly old_getter width breadth (n,scrappers) Jump in 
-        if result_opt0<>[]
-        then ([],Some Jump)
-        else (missing_data0,None)    
-   else      
-   let (missing_data1,result_opt1) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Passive_repeat in 
-   if result_opt1<>[] then ([], Some Passive_repeat) else  
-   if missing_data1<>[] then (missing_data1,None) else  
-   let (missing_data2,result_opt2) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Boundary_increment in 
-   if result_opt2<>[] then ([], Some Boundary_increment) else  
-   if missing_data2<>[] then (missing_data2,None) else  
-   let (missing_data3,result_opt3) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Fork in 
-   if result_opt3<>[] then ([], Some Fork) else  
-    (missing_data3,None) ;;
-    
-
-let carrier_get carrier (width,breadth,n,scrappers) = match 
-  Hashtbl.find_opt low_hashtbl  (width,breadth,n,scrappers) with
-  Some old_answer -> Some old_answer 
-  | None -> List.assoc_opt  
-      (width,breadth,n,scrappers) carrier ;;
-     
-let carrier_add carrier (width,breadth,n,scrappers,tool) =
-    let res = compute_from_below (carrier_get carrier) (width,breadth,n,scrappers) tool in  
-    ((width,breadth,n,scrappers),res) :: carrier  ;;
-
-exception Pusher_exn of ((int * int * int * int list) * int list list) list;;
-
-let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
-    match to_be_treated with 
-    [] -> raise(Pusher_exn(carrier))
-    | uple :: others -> 
-       let (width,breadth,n,scrappers) = uple in 
-       let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get carrier) width breadth (n,scrappers) in 
-      match opt_res with 
-       Some tool ->
-           let new_carrier = carrier_add carrier (width,breadth,n,scrappers,tool) in 
-           (new_carrier,others)
-       | None -> 
-         if missing_data = [] 
-         then (carrier,others) 
-         else (carrier,missing_data @ (uple::others)) 
-      ;;      
-         
-let rec born_to_fail_for_recursive_computation walker=
-  born_to_fail_for_recursive_computation
-  (pusher_for_recursive_computation walker)  ;;     
-
-let  needed_subcomputations_for_several_computations uples = 
-  try born_to_fail_for_recursive_computation ([],uples) with 
-  Pusher_exn(carrier) -> carrier ;; 
-
-let needed_subcomputations_for_single_computation uple = 
-  needed_subcomputations_for_several_computations [uple] ;; 
-
-
-let compute_recursively width breadth (n,scrappers) = 
-  let uple = (width,breadth,n,scrappers) in 
-  let needed_carrier = needed_subcomputations_for_single_computation uple in 
-  let answer = List.assoc uple needed_carrier in 
-  (answer,needed_carrier) 
-;;  
-
-
-
-
-let feel_new_line (width,breadth,scrappers) =
-  let temp1 = Int_range.scale 
-    (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
-  let temp2 = needed_subcomputations_for_several_computations temp1 in 
-  let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
-  Ordered.sort t_order temp3 ;; 
-
-let exhaust_new_line (width,breadth,scrappers) =
-    let temp1 = Int_range.scale 
-      (fun n->(width,breadth,n,scrappers)) 1  30 in 
-    let carrier = needed_subcomputations_for_several_computations temp1 in 
-    let temp2 = Image.image (fun (w,b,n,s)-> 
-      let mutilated_carrier = List.filter (
-        fun p->fst(p)<>(w,b,n,s)
-      ) carrier in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get mutilated_carrier) w b (n,s) in 
-      (n,hook_opt)
-    ) temp1 in 
-    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
-      None -> None |Some pair ->Some(n,pair)) l) in 
-    let temp3 = selector temp2 in 
-    let temp4 = Int_range.scale (fun n->
-      (n, hungarian_enhance_getter
-      (carrier_get carrier) width breadth (n,scrappers)))  1 30  in 
-    let temp5 = selector temp4 in 
-    (temp3,temp5) ;;   
-
-
-
-
-rose_add (1,1) Parametrized_Example.example1 ;; 
-
-
-med_add (1,2,[]) Parametrized_Example.example2 ;; 
-med_add (1,3,[]) Parametrized_Example.example3 ;; 
-
-
-med_add (1,4,[])  Parametrized_Example.example4 ;; 
-med_add (1,5,[])  Parametrized_Example.example5 ;; 
-med_add (1,6,[])  Parametrized_Example.example6 ;; 
-
- 
-
-
-   
-
-end ;;  
-
-   
-let g1 = Pure_list_version.needed_subcomputations_for_single_computation (4,0,8,[]) ;;
-let h1 = needed_subcomputations_for_single_computation (4,0,8,[]) ;;
-let check = (h1 = Image.image (fun (x,y)->(x,Short_list y)) g1) ;;
-
-
-
-
-
-
-(************************************************************************************************************************
-Snippet 100 : 
-
-An attempt at creating an algorithm that (given enough time) can compute sytematically
-any value of the Szemeredi function. (Version 3 : add jumps among hooks and 
-compute sz(1..8) )
-
-************************************************************************************************************************)
-
-
-open Needed_values ;;
-module Sz_types = struct 
-  
-  type hook_in_knowledge = 
-  Boundary_increment
- | Passive_repeat  
- | Fork 
- | Jump ;;
-
-type selector_for_hook = 
-Boundary_increment_selector of int * int * int 
-| Passive_repeat_selector of int * int  
-| Fork_selector 
-| Jump_selector ;;
-
-type rubber_core_list = L of int ;;
-
-type rubber_list =
-   Short_list of int list list 
-  |Rubber of rubber_core_list * (int list) ;;
-
-type rubber_definition = 
-   Constraining of rubber_core_list * (int list list) 
-  |Merger of (int list list) * ((rubber_core_list * (int list)) list)
-  |Short_name of int list list ;;
-
-type parametrized_uniform_subrange = {
- usr_positive_exceptions : int list ;
- usr_negative_exceptions : int list ;
- usr_modulus : int ;
- usr_usual :  int list ;
-} ;; 
-
-type  parametrized_subrange = {
- ps_exceptions : (int * (int list)) list ;
- ps_usual : parametrized_uniform_subrange ; 
-} ;; 
-
-type parametrized_ps_list = {
- pl_exceptions : (int * (int list list)) list ;
- pl_usual : parametrized_subrange list ;
-} ;; 
-
-type hungarian_adjuster =
-   Leave_unchanged 
-  |Adjust of int list ;; 
- 
-
-     
-
-type level_two_t = Quick of int list ;; 
-
-
-
-end ;;  
-
-open Sz_types ;;
-
-let i_order = Total_ordering.for_integers ;;
-let i_insert = Ordered.insert i_order ;;
-let i_mem = Ordered.mem i_order ;;
-let i_merge = Ordered.merge i_order ;;
-let i_is_included_in = Ordered.is_included_in i_order ;;
-let i_setminus = Ordered.setminus i_order ;;
-
-
-let il_order = Total_ordering.silex_for_intlists ;;
-let il_fold_merge = Ordered.fold_merge il_order ;;
-let il_is_included_in = Ordered.is_included_in il_order ;;
-let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.sort il_order ;;
-
-let t_order = Total_ordering.triple_product 
-   i_order i_order (Total_ordering.silex_for_intlists) ;;
-
-let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
-
-let test_for_admissibility_up_to_max_with max_width z =
-  if max_width<1 then true else 
-  Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
-
-let test_for_admissiblity width breadth z =
-   (test_for_admissibility_up_to_max_with (width-1) z)
-   &&
-   (List.for_all (fun t->
-    not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
-
-let remove_one_element (n,scrappers) k=
-  let new_scrappers = i_insert k scrappers in 
-  if k <> n then (n,new_scrappers) else 
-  let new_z =  concretize (n,new_scrappers) in 
-  let new_max = List.hd(List.rev new_z) in 
-  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
-
-
-(*
-
-remove_one_element (10,[3;7;8;9]) 10 ;;
-
-*)
-let extra_constraints_from_boundary_increment width breadth n =
-   let mainstream = Int_range.scale (fun j->
-       let k = width-j in [n-2*k;n-k]
-    ) 1 (width-1) in
-    let lower_end = n-2*width in 
-    if (lower_end>=1) && (lower_end<=breadth) 
-    then [lower_end;lower_end+width]::mainstream 
-    else mainstream ;;   
-
-
-module Constraint = struct
-
-let satisfied_by_individual l_constr l =
-  List.for_all (fun constr->not(i_is_included_in constr l)) l_constr
-
-let satisfied_by_all_in_list l_constr ll=
-  List.for_all (satisfied_by_individual l_constr) ll ;;
-
-end ;;  
-
-module Rubber_definition = struct 
-
-let check_constraints constraints = function 
-Constraining (rcl,constraints2) -> List.for_all (fun weak->
-   List.exists (fun strong->i_is_included_in strong weak) constraints2
-  ) constraints 
-| Merger (_,_) -> false
-| Short_name (ll) -> Constraint.satisfied_by_all_in_list constraints ll ;;
-
-
-end ;;   
-
-module Rubber_core_list = struct 
-
-let ref_for_definitions = ref [] ;; 
-let ref_for_ambient_spaces = ref [] ;;
-let ref_for_representatives = ref [] ;; 
-let ref_for_constraint_data = ref [] ;;
-
-let add_definition rcl rcl_defn =
-  ref_for_definitions :=   
-     (rcl_defn,rcl) :: (!ref_for_definitions) ;;    
-
-exception Find_associated_definition_exn of rubber_core_list ;;
-
-let find_associated_definition rcl =
-    match Option.seek (
-      fun pair -> snd(pair) = rcl
-    )(!ref_for_definitions) with 
-    Some (rcl_defn,_) -> rcl_defn
-    |None -> raise(Find_associated_definition_exn rcl);;
-
-exception Find_from_definition_exn of rubber_definition ;;
-
-let find_from_definition rcl_defn =
-  match List.assoc_opt rcl_defn (!ref_for_definitions) with 
-  Some (rcl) -> rcl
-  |None -> raise(Find_from_definition_exn rcl_defn);;
-
-
-exception Find_ambient_space_exn of rubber_core_list ;;
-
-let find_ambient_space rcl =
-        match List.assoc_opt rcl (!ref_for_ambient_spaces) with 
-        Some n -> n
-        |None -> raise(Find_ambient_space_exn rcl);;
-
-exception Find_representative_exn of rubber_core_list ;;
-
-let find_representative rcl =
-    match List.assoc_opt rcl (!ref_for_representatives) with 
-     Some n -> n
-    |None -> raise(Find_representative_exn rcl);;
-
-exception Impose_constraint_exn of rubber_core_list * ((int list) list);;
-
-let impose_constraints rcl constraints = 
-    if Rubber_definition.check_constraints constraints (find_associated_definition rcl)
-    then Some rcl
-    else  
-    match List.assoc_opt (rcl,constraints) (!ref_for_constraint_data) with 
-      Some old_answer -> old_answer 
-    | None -> raise(Impose_constraint_exn(rcl,constraints)) ;; 
-
-let common_length rcl = List.length (find_representative rcl) ;; 
-
-end ;; 
- 
-
-module Selector_for_hook = struct 
-
-  let of_hook (width,breadth,n) = function   
-      Passive_repeat -> Passive_repeat_selector(width,breadth)
-    | Boundary_increment -> Boundary_increment_selector(width,breadth,n) 
-    | Fork -> Fork_selector  
-    | Jump -> Jump_selector ;;
-  
-  let eval selector l =  
-       match selector with 
-       Passive_repeat_selector(width,b) -> 
-        List.filter (fun z->
-          not(i_is_included_in [b;b+width;b+2*width] z) 
-      )  (List.hd l)
-       | Boundary_increment_selector(width,breadth,n) ->
-       Option.filter_and_unpack (fun z->
-              let new_z = z @ [n] in 
-              if test_for_admissiblity width breadth new_z 
-               then Some new_z
-               else None
-           )  (List.hd l)
-        | Fork_selector ->     
-          let (_,temp1) = Max.maximize_it_with_care 
-           List.length (List.flatten l) in 
-          il_sort temp1 
-        | Jump_selector -> List.hd l  ;;
-  
-  end ;;  
-  
-  
-
-module Hungarian = struct 
-
-module Breadth_reduction = struct 
-
-let test_for_automatic_treatment width scrappers b = 
-  List.exists(fun t->List.mem t scrappers) 
-  [b;b+width;b+2*width] ;;
-
-let rec effective_breadth (width,scrappers,b) =
-   if (test_for_automatic_treatment width scrappers b)&&(b>0) 
-   then effective_breadth (width,scrappers,b-1)
-   else b ;;
-
-end ;;  
-
-let normalized_adjust adj =
-    if adj = [] 
-    then Leave_unchanged 
-    else Adjust adj ;;
-
-let short_adjust old_result adjustment =
-      match adjustment with 
-      Leave_unchanged -> old_result 
-      |Adjust extra -> Image.image (fun z->i_setminus z extra) old_result;;
-  
-let adjust result_opt adjustment=
-    match result_opt with 
-    None -> None 
-    | Some old_result ->  
-    Some(short_adjust old_result adjustment) ;; 
-
-let merge_adjustments adj1 adj2 =
-  (
-    match adj1 with 
-      Leave_unchanged -> adj2 
-     |Adjust content1 -> 
-      (
-      match adj2 with 
-      Leave_unchanged -> adj1 
-     |Adjust content2 -> Adjust(i_merge content1 content2) 
-      
-  )
-  ) ;;
-
-let first_step_in_decomposition (width,breadth,scrappers) =
-     let bound = breadth+2*width in 
-     let (below,above) = (if width<>1
-      then (scrappers,[])
-      else List.partition (fun t->t<=bound) scrappers) in 
-     ((width,Breadth_reduction.effective_breadth (width,scrappers,breadth),below),
-       normalized_adjust above) ;;     
-
-let pusher_for_decomposition (triple,adj)= 
-      let (triple2,adj2) = first_step_in_decomposition triple in 
-      (triple2,merge_adjustments adj adj2) ;;
-
-let rec iterator_for_decomposition  pair =
-   let next_pair = pusher_for_decomposition pair in 
-   if next_pair = pair 
-   then pair 
-   else iterator_for_decomposition next_pair ;;
-
-let decompose triple =  iterator_for_decomposition (triple,Leave_unchanged) ;;  
-
-(* Example : decompose (1,18,[8;11;14;17;20]);; *)
-
-end ;;  
-
-module Rubber_list = struct 
-
-  exception List_too_large of int list list ;;   
-
-  let of_list ll = 
-     if List.length(ll)<=10 
-     then Short_list ll 
-     else raise(List_too_large ll) ;;
-
-  let unveil = function 
-   (Short_list small_list) -> (Some small_list, None) 
-  |Rubber(rcl,common) -> (None,Some(rcl,common)) ;; 
-
-  let common_length = function 
-  (Short_list small_list) -> List.length (List.hd small_list) 
- |Rubber(rcl,common) -> (Rubber_core_list.common_length rcl) + (List.length(common)) ;; 
-
-  let remaining_part_of_constraint rcl common new_constraint = 
-    let n = Rubber_core_list.find_ambient_space rcl in 
-    let (below,above) = List.partition (fun t->t<=n) new_constraint in 
-    if not(i_is_included_in above common)
-    then None 
-    else Some below ;;
-
-    
-  let apply_new_constraints new_constraints = function 
-  (Short_list small_list) -> 
-    let new_small_list = List.filter (fun z->
-      List.for_all (fun new_constraint ->
-      not(i_is_included_in new_constraint z))  new_constraints
-  )  small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let cleaned_constraints = Option.filter_and_unpack (
-        remaining_part_of_constraint rcl common
-      ) new_constraints in 
-      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-       None -> (of_list [])
-       | Some new_rcl -> Rubber(new_rcl,common) ;;
-  
-  
-  let apply_passive_repeat width b rl =
-    apply_new_constraints [[b;b+width;b+2*width]] rl ;; 
-   
-   
-  let apply_boundary_increment width breadth n rl = 
-    let new_constraints = extra_constraints_from_boundary_increment width breadth n in 
-   match rl with 
-  (Short_list small_list) -> 
-    let new_small_list = Option.filter_and_unpack (fun z->
-      if List.for_all (fun new_constraint ->
-      not(i_is_included_in new_constraint z))  new_constraints 
-      then Some(z@[n])
-      else None
-  )  small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let cleaned_constraints = Option.filter_and_unpack (
-        remaining_part_of_constraint rcl common
-      ) new_constraints in 
-      match Rubber_core_list.impose_constraints rcl cleaned_constraints with 
-       None -> (of_list [])
-       | Some new_rcl -> Rubber(new_rcl,i_insert n common) ;;
-
-  let apply_fork ll =
-    let (_,temp1) = Max.maximize_it_with_care common_length ll in  
-    let temp2 = Image.image unveil temp1 in 
-    let (temp3,temp4) = List.partition (fun (opt1,opt2)->opt2=None) temp2 in 
-    let small_lists = Image.image (fun (opt1,opt2)->Option.unpack opt1) temp3 
-    and increased_lists = Image.image (fun (opt1,opt2)->Option.unpack opt2) temp4 in 
-    let defn =  Merger (il_fold_merge small_lists,increased_lists) in 
-    Rubber(Rubber_core_list.find_from_definition defn,[])  ;; 
-
-  let apply_selector selector l =  
-        match selector with 
-        Passive_repeat_selector(width,b) -> 
-          apply_passive_repeat width b (List.hd l)
-        | Boundary_increment_selector(width,breadth,n) ->
-          apply_boundary_increment width breadth n (List.hd l)
-         | Fork_selector ->     
-          apply_fork l 
-         | Jump_selector -> List.hd l;;
-
-   exception Remove_fixed_part of rubber_core_list * (int list) ;;
-
-   let remove_fixed_part_on_all extra = function 
-   (Short_list small_list) -> 
-    let new_small_list = Image.image (fun z->i_setminus z extra) small_list in 
-    of_list new_small_list 
-   |Rubber(rcl,common) -> 
-      let n =  Rubber_core_list.find_ambient_space rcl in 
-      if List.exists (fun t->t<=n) extra 
-      then raise(Remove_fixed_part(rcl,extra))
-      else       
-      Rubber(rcl,i_setminus common extra) ;;
-
-   let hg_short_adjust old_result adjustment =
-            match adjustment with 
-            Leave_unchanged -> old_result 
-            |Adjust extra -> remove_fixed_part_on_all extra old_result;;
-        
-   let hg_adjust result_opt adjustment=
-          match result_opt with 
-          None -> None 
-          | Some old_result ->  
-          Some(hg_short_adjust old_result adjustment) ;;         
-
-
-  end ;; 
-
-module Parametrized = struct 
-
-let eval_uniform_subrange usr n =
-  List.filter (
-     fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
-  ) (Int_range.range 1 n) ;; 
-
-let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
-   Some answer -> answer 
-   | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
-
-let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
-  Some answer -> answer 
-  | None ->
-   Image.image (fun sr->eval_subrange sr n) 
-   psl.Sz_types.pl_usual ;;    
-
-let eval_level_two (Quick l) scrappers n =
-  let z = concretize (n,scrappers) in 
-  if (not(i_is_included_in l z))  
-  then [z] 
-  else 
-  let temp1 = List.rev_map (fun t->i_setminus z [t]) l in 
-  il_sort temp1 ;;     
-
-end ;;   
-
-
-module Parametrized_Example = struct 
-
-  let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
-    usr_negative_exceptions = ne ; 
-    usr_modulus = mdl;
-    usr_usual = usu ;
-  };; 
-  
-  let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
-    ps_usual = uniform_subrange pe ne mdl usu ;
-  };; 
-  
-  let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
-    pl_usual = Image.image subrange psl_usu ;
-  };; 
-
-  let example1 = Quick [1;2;3] ;;
-
-  let example2 (* for (1,2,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-      ([],[],[2],1,[0]);
-     ] ;;  
-     
-  let example3 (* for (1,3,[]) *) = ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3],1,[0]);
-     ] ;;    
-     
-  let example4 (* for (1,4,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[3;4],1,[0]);
-      ([],[],[2;5],1,[0]);
-      ([],[],[2;4],1,[0]);
-      ([],[],[1;4],1,[0]);
-     ] ;;   
-     
-   let example5 (* for (1,5,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]]
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;      
-
-    let example6 (* for (1,6,[]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-       5,[[1;2;4;5]];
-       6,[[1;2;4;5];[1;2;4;6];[1;2;5;6];
-          [1;3;4;6];[1;3;5;6];[2;3;5;6]];
-       7,[[1;2;4;5;7];[1;2;4;6;7];[1;3;4;6;7]]   
-     ]
-     [
-      ([],[],[3;6],1,[0]);
-     ] ;;    
-
-     let example9 (* for (1,2,[7]) *)= ps_list 
-     [
-       1,[[1]];
-       2,[[1;2]];
-       3,[[1;2];[1;3];[2;3]];
-       4,[[1;2;4];[1;3;4]];
-     ]
-     [
-      ([],[],[3;5],1,[0]);
-      ([],[],[2;5],1,[0]);
-     ] ;;  
-     
-
-  end ;;   
-  
-
-
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;
-let low_hashtbl = Hashtbl.create 50 ;;
-
-
-let nonhungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-    let z = concretize (n,scrappers) in 
-    if ((width,breadth)=(1,0))||(test_for_admissiblity width breadth z) 
-    then Some [z] 
-    else 
-    match Hashtbl.find_opt rose_hashtbl (width,breadth) with 
-    Some summary -> Some (Parametrized.eval_level_two summary scrappers n)
-    | None ->  
-    (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-     Some summary -> Some (Parametrized.eval_ps_list summary n)
-     | None -> old_getter (width,breadth,n,scrappers)) ;;   
-
-let hungarian_enhance_getter old_getter width breadth (n,scrappers) = 
-  let ((width2,breadth2,scrappers2),adj) = 
-    Hungarian.decompose (width,breadth,scrappers) in 
-  let res_opt = nonhungarian_enhance_getter old_getter width2 breadth2 (n,scrappers2) in  
-    Hungarian.adjust res_opt adj;;
-
-let low_getter = Hashtbl.find_opt low_hashtbl ;;    
-let access = hungarian_enhance_getter low_getter ;;   
-
-let descendants_for_tool (width,breadth,n,scrappers) tool = 
-       match tool with 
-       Passive_repeat -> [(width,breadth-1,n,scrappers)]     
-      | Boundary_increment ->
-       let (m,new_scrappers) = remove_one_element (n,scrappers) n in  
-       [width,breadth,m,new_scrappers]
-      | Fork ->     
-          Int_range.scale (fun k->
-             let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-             (width,breadth-1,m,scr)
-           ) 0 2 
-      | Jump -> [(width-1,n-2*(width-1),n,scrappers)] ;;
-
-
-let try_tool_quickly old_getter width breadth (n,scrappers) tool = 
-   let nh_enhanced_getter = nonhungarian_enhance_getter old_getter in 
-   let descendants = descendants_for_tool (width,breadth,n,scrappers) tool 
-   and selector = Selector_for_hook.of_hook (width,breadth,n) tool in 
-   let hungarian_descendants = Image.image (
-      fun (w,b,m,s) ->
-        let ((w2,b2,s2),adj) =  Hungarian.decompose (w,b,s) in 
-        ((w2,b2,m,s2),adj)
-    ) descendants in 
-   let temp1 = Image.image (fun (uple,adj)->
-      let (w,b,m,s) = uple in 
-      (uple,Hungarian.adjust (nh_enhanced_getter w b (m,s)) adj)
-  ) hungarian_descendants in   
-  let (failures,successes) = List.partition (
-          fun (_,opt) -> opt = None
-  ) temp1 in 
-  let missing_data = Image.image fst failures in 
-  if missing_data <> [] then (missing_data,[]) else 
-  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
-  ([],Selector_for_hook.eval selector args) ;;  
-
-
-exception Compute_from_below_exn of int * int * int * (int list) ;;  
-
-let compute_from_below old_getter (width,breadth,n,scrappers) tool =
-   let (missing_data,result_opt) = 
-     try_tool_quickly old_getter width breadth (n,scrappers) tool in 
-   if result_opt = []
-   then raise (Compute_from_below_exn(width,breadth,n,scrappers)) 
-   else result_opt ;; 
-
-let low_add (width,breadth,n,scrappers,tool) =
-   let finder = Hashtbl.find_opt low_hashtbl in  
-   let res = compute_from_below finder (width,breadth,n,scrappers) tool in  
-   let _ = Hashtbl.replace low_hashtbl (width,breadth,n,scrappers) res in 
-   res ;;
-
-let med_add (width,breadth,scrappers) summary = 
-  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
-
-let rose_add (width,breadth) summary = 
-    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
- 
-
-let find_remote_stumbling_block_or_immediate_working_tool 
-       old_getter width breadth (n,scrappers) = 
-   let hg_enhanced_getter = hungarian_enhance_getter old_getter in     
-   match hg_enhanced_getter width breadth (n,scrappers) with 
-    Some old_answer -> ([],None) 
-    | None ->
-   if breadth=0 
-   then let (missing_data0,result_opt0) = 
-        try_tool_quickly old_getter width breadth (n,scrappers) Jump in 
-        if result_opt0<>[]
-        then ([],Some Jump)
-        else (missing_data0,None)    
-   else      
-   let (missing_data1,result_opt1) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Passive_repeat in 
-   if result_opt1<>[] then ([], Some Passive_repeat) else  
-   if missing_data1<>[] then (missing_data1,None) else  
-   let (missing_data2,result_opt2) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Boundary_increment in 
-   if result_opt2<>[] then ([], Some Boundary_increment) else  
-   if missing_data2<>[] then (missing_data2,None) else  
-   let (missing_data3,result_opt3) = 
-    try_tool_quickly old_getter width breadth (n,scrappers) Fork in 
-   if result_opt3<>[] then ([], Some Fork) else  
-    (missing_data3,None) ;;
-    
-
-let carrier_get carrier (width,breadth,n,scrappers) = match 
-  Hashtbl.find_opt low_hashtbl  (width,breadth,n,scrappers) with
-  Some old_answer -> Some old_answer 
-  | None -> List.assoc_opt  
-      (width,breadth,n,scrappers) carrier ;;
-     
-let carrier_add carrier (width,breadth,n,scrappers,tool) =
-    let res = compute_from_below (carrier_get carrier) (width,breadth,n,scrappers) tool in  
-    ((width,breadth,n,scrappers),res) :: carrier  ;;
-
-exception Pusher_exn of ((int * int * int * int list) * int list list) list;;
-
-let rec pusher_for_recursive_computation (carrier,to_be_treated)= 
-    match to_be_treated with 
-    [] -> raise(Pusher_exn(carrier))
-    | uple :: others -> 
-       let (width,breadth,n,scrappers) = uple in 
-       let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get carrier) width breadth (n,scrappers) in 
-      match opt_res with 
-       Some tool ->
-           let new_carrier = carrier_add carrier (width,breadth,n,scrappers,tool) in 
-           (new_carrier,others)
-       | None -> 
-         if missing_data = [] 
-         then (carrier,others) 
-         else (carrier,missing_data @ (uple::others)) 
-      ;;      
-         
-let rec born_to_fail_for_recursive_computation walker=
-  born_to_fail_for_recursive_computation
-  (pusher_for_recursive_computation walker)  ;;     
-
-let  needed_subcomputations_for_several_computations uples = 
-  try born_to_fail_for_recursive_computation ([],uples) with 
-  Pusher_exn(carrier) -> carrier ;; 
-
-let needed_subcomputations_for_single_computation uple = 
-  needed_subcomputations_for_several_computations [uple] ;; 
-
-
-let compute_recursively width breadth (n,scrappers) = 
-  let uple = (width,breadth,n,scrappers) in 
-  let needed_carrier = needed_subcomputations_for_single_computation uple in 
-  let answer = List.assoc_opt uple needed_carrier in 
-  (answer,needed_carrier) 
-;;  
-
-
-
-
-let feel_new_line (width,breadth,scrappers) =
-  let temp1 = Int_range.scale 
-    (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
-  let temp2 = needed_subcomputations_for_several_computations temp1 in 
-  let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
-  Ordered.sort t_order temp3 ;; 
-
-let exhaust_new_line (width,breadth,scrappers) =
-    let temp1 = Int_range.scale 
-      (fun n->(width,breadth,n,scrappers)) 1  30 in 
-    let carrier = needed_subcomputations_for_several_computations temp1 in 
-    let temp2 = Image.image (fun (w,b,n,s)-> 
-      let mutilated_carrier = List.filter (
-        fun p->fst(p)<>(w,b,n,s)
-      ) carrier in 
-      let (_,hook_opt) = find_remote_stumbling_block_or_immediate_working_tool 
-      (carrier_get mutilated_carrier) w b (n,s) in 
-      (n,hook_opt)
-    ) temp1 in 
-    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
-      None -> None |Some pair ->Some(n,pair)) l) in 
-    let temp3 = selector temp2 in 
-    let temp4 = Int_range.scale (fun n->
-      (n, hungarian_enhance_getter
-      (carrier_get carrier) width breadth (n,scrappers)))  1 30  in 
-    let temp5 = selector temp4 in 
-    (temp3,temp5) ;;   
-
-
-
-
-rose_add (1,1) Parametrized_Example.example1 ;; 
-
-
-med_add (1,2,[]) Parametrized_Example.example2 ;; 
-med_add (1,3,[]) Parametrized_Example.example3 ;; 
-
-
-med_add (1,4,[])  Parametrized_Example.example4 ;; 
-med_add (1,5,[])  Parametrized_Example.example5 ;; 
-med_add (1,6,[])  Parametrized_Example.example6 ;; 
-
-
-
-(*
-   
-let g1 = needed_subcomputations_for_single_computation (4,0,8,[]) ;;
-
-*)
-
-
-
-(************************************************************************************************************************
-Snippet 99 : An attempt at creating an algorithm that (given enough time) can compute sytematically
+Snippet 92 : An attempt at creating an algorithm that (given enough time) can compute sytematically
 any value of the Szemeredi function. (Version 2)
 ************************************************************************************************************************)
-
+module SN99 = struct 
 open Needed_values ;;
 module Sz_types = struct 
   type hook_in_knowledge = 
@@ -4127,11 +1846,13 @@ let bad5 = Hungarian.adjust enhanced_getter uple1;;
 Hungarian.decompose (1,1,[5]) ;;
 *)   
 
+end ;;
+
 (************************************************************************************************************************
-Snippet 98 : An attempt at creating an algorithm that (given enough time) can compute sytematically
+Snippet 91 : An attempt at creating an algorithm that (given enough time) can compute sytematically
 any value of the Szemeredi function. (Version 1)
 ************************************************************************************************************************)
-
+module SN98 = struct 
 open Needed_values ;;
 module Sz_types = struct 
   
@@ -4845,17 +2566,16 @@ let u1 = Int_range.scale (fun k->(k,gg k,
 let check_u1 = List.filter (fun (k,x,y)->x<> y) u1 ;;
 
 *)
-
+end ;; 
 
 
 
 (************************************************************************************************************************
-Snippet 97 : Code that lead to the discovery of a linear algorithm to compute, given any
+Snippet 90 : Code that lead to the discovery of a linear algorithm to compute, given any
 finite set X of integers, the largest subset Y of X, containing no AP of length 3 and
 width <=2. The algorithm uses an automaton with 8 states where the transitions are
 the successive differences in Y.
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -5074,9 +2794,8 @@ let rec dougherty_helper (to_be_treated,treated) =
       
 
 (************************************************************************************************************************
-Snippet 96 : Compare two copies of the same directory
+Snippet 89 : Compare two copies of the same directory
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let select = List.filter(
@@ -5107,9 +2826,8 @@ let u1 = Image.image read_both v1 ;;
 let u2 = List.filter (fun (fn,(x,y))-> x<>y) u1;;
 let u3 = Image.image fst u2 ;;
 (************************************************************************************************************************
-Snippet 95 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
+Snippet 88 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let building_site = home^"/Teuliou/html_files/Translations/Originals//Building_site/";;
@@ -5282,9 +3000,8 @@ let u4 = Check_polished_ocr.check_footnotes_on_page text2 ;;
 *)
 
 (************************************************************************************************************************
-Snippet 94 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
+Snippet 87 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
 ************************************************************************************************************************)
-
 open Needed_values ;; 
 
 let dirname = "Building_site/";;
@@ -5342,10 +3059,8 @@ let html_ending = String.concat "\n"
 
 
 (************************************************************************************************************************
-Snippet 93 : Code using the Parse_js module 
+Snippet 86 : Code using the Parse_js module 
 ************************************************************************************************************************)
-
-
 (*
 
 let ap1 = Absolute_path.of_string 
@@ -5361,9 +3076,8 @@ let res3 = Parse_js.program_of_string text1 ;;
 
 
 (************************************************************************************************************************
-Snippet 92 : Absorbing code from Y. Padioleau's codebase
+Snippet 85 : Absorbing code from Y. Padioleau's codebase
 ************************************************************************************************************************)
-
 let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
 let fw_config = Fw_configuration.of_root root ;;
 let github_config = Fw_poly.construct_github_configuration 
@@ -5429,9 +3143,8 @@ let text2 = String.concat "\n" [a;new_b;c] ;;
 
 
 (************************************************************************************************************************
-Snippet 91 : Code to OCR-size PDF's into .txt 
+Snippet 84 : Code to OCR-size PDF's into .txt 
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let lag = (0) ;;
@@ -5477,10 +3190,8 @@ let partial_texts_for_txt = Int_range.scale (fun k->
 
 
 (************************************************************************************************************************
-Snippet 90 : Musing on Egyptian fractions
+Snippet 83 : Musing on Egyptian fractions
 ************************************************************************************************************************)
-
-
 let rec next_gcd_correct_index (l,walker) = 
   if List.for_all (fun t->(Gcd.gcd t walker) =1) l
   then walker
@@ -5513,9 +3224,8 @@ let ff = Memoized.small next_state v0 ;;
 
 
 (************************************************************************************************************************
-Snippet 89 : Linear algebra on variables indexed by Z^2
+Snippet 82 : Linear algebra on variables indexed by Z^2
 ************************************************************************************************************************)
-
 let w1 n =Int_range.scale (fun y->(n,y-1)) 1 (n+1) ;;
 let w2 n =Int_range.scale (fun x->(n-x,n)) 1 (2*n) ;;
 let w3 n =Int_range.scale (fun y->(-n,n-y)) 1 (2*n) ;;
@@ -5579,9 +3289,8 @@ let ff k = List.nth base6 (k-1) ;;
 
 
 (************************************************************************************************************************
-Snippet 88 : Short code related to similar matrices exercise
+Snippet 81 : Short code related to similar matrices exercise
 ************************************************************************************************************************)
-
 let test1 n = List.exists (fun a->((a*(4-a)+1) mod n)= 0) (Int_range.range 0 (n-1)) ;;
     
 let v1 = List.filter test1 (Int_range.range 3 50) ;;
@@ -5607,10 +3316,8 @@ let good_moduli = see1 abs_b ;;
 let ff a = tf1(a,current_b) ;;
 
 (************************************************************************************************************************
-Snippet 87 : Exercise related to Cantor set 
+Snippet 80 : Exercise related to Cantor set 
 ************************************************************************************************************************)
-
-
 let read_fraction s = 
   let (a,b) = Cull_string.split_wrt_rightmost s '/' in 
   (int_of_string a,int_of_string b) ;;
@@ -5685,10 +3392,8 @@ let u2 = Listennou.partition_according_to_fst u1 ;;
 let tf k = List.nth u2 (k-1) ;; 
 
 (************************************************************************************************************************
-Snippet 86 : Enumeration of multi-degrees related to symmetric polynomials
+Snippet 79 : Enumeration of multi-degrees related to symmetric polynomials
 ************************************************************************************************************************)
-
-
 let order_for_triples = ((
   fun (x1,x2,x3) (y1,y2,y3) ->
     let sx = x1+x2+x3
@@ -5713,9 +3418,8 @@ let tf k = List.nth u3 (k-1) ;;
 
 
 (************************************************************************************************************************
-Snippet 85 : Reindex pages of a book for printing
+Snippet 78 : Reindex pages of a book for printing
 ************************************************************************************************************************)
-
 let ap1 = Absolute_path.of_string (Needed_values.home^"/Downloads/Gwenn/");;
 let s_ap1 = Absolute_path.to_string ap1 ;;
 
@@ -5742,9 +3446,8 @@ let act () = Image.image Sys.command reindexing_commands ;;
 Coherent_pdf.implode ("q","") ;;
 
 (************************************************************************************************************************
-Snippet 84 : Musing on Steinhaus triangles
+Snippet 77 : Musing on Steinhaus triangles
 ************************************************************************************************************************)
-
 let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
 let i_sort = Ordered.sort Total_ordering.for_integers ;;
 let il_sort = Ordered.sort Total_ordering.silex_for_intlists ;;
@@ -5856,9 +3559,8 @@ let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh))
 
 
 (************************************************************************************************************************
-Snippet 83 : Draft to preprocess a file using data from PARI-GP
+Snippet 76 : Draft to preprocess a file using data from PARI-GP
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
@@ -5913,9 +3615,8 @@ let prprpr () =
 
 
 (************************************************************************************************************************
-Snippet 82 : Lower bounds on linear recurrent sequences of order 2
+Snippet 75 : Lower bounds on linear recurrent sequences of order 2
 ************************************************************************************************************************)
-
 let nachste (x,y) = (y,4*y-5*x) ;;
 
 let nachstee (x,y,l) = (y,4*y-5*x,x::l) ;; 
@@ -5977,9 +3678,8 @@ let sm = see_measure ;;
 let nb = next_breaker ;;
 
 (************************************************************************************************************************
-Snippet 81 : Debugging compiling of mll and mly files
+Snippet 74 : Debugging compiling of mll and mly files
 ************************************************************************************************************************)
-
 let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
 let fw_config = Fw_configuration.of_root root ;;
 let github_config = Fw_poly.construct_github_configuration 
@@ -6094,10 +3794,8 @@ let a0 =
 *)
 
 (************************************************************************************************************************
-Snippet 80 : Duplicating a paragraph in a file 
+Snippet 73 : Duplicating a paragraph in a file 
 ************************************************************************************************************************)
-
-
 let ap1 = Absolute_path.of_string  
    "Compilation_management/commands_for_batch_compilation.ml" ;;
 let text1 = Io.read_whole_file ap1 ;;
@@ -6110,9 +3808,8 @@ Io.overwrite_with ap1 text2 ;;
 
 
 (************************************************************************************************************************
-Snippet 79 : Write mathjax text for answer on chain additions
+Snippet 72 : Write mathjax text for answer on chain additions
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -6482,7 +4179,8 @@ let array_in_mathjax l =
 
 let max_part_size = 15 ;;
 
-let parts = Listennou.cut_into_small_parts all_expanded_moves max_part_size ;;
+let parts = Listennou.cut_into_small_parts 
+all_expanded_moves ~max_part_size ;;
 
 let prelude ="/////////////////////////////////////////////////////////\nQuestion : \n/////////////////////////////////////////////////////////\n\n" ;;
 
@@ -6499,9 +4197,8 @@ let act () = Io.overwrite_with the_ap arrays_in_mathjax  ;;
 *)
 
 (************************************************************************************************************************
-Snippet 78 : Transfer a large snippet from one file to another
+Snippet 71 : Transfer a large snippet from one file to another
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let z1 = rf "Fads/nap.ml" ;;
@@ -6517,9 +4214,8 @@ let simplest_case i x = (accu:=(S i)::(!accu)) ;;
 let pointed_card a b c = (accu:=(P a)::(!accu)) ;;
 
 (************************************************************************************************************************
-Snippet 77 : Third stab at boundary operator combinatorics 
+Snippet 70 : Third stab at boundary operator combinatorics 
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -6727,9 +4423,8 @@ let v4 = Option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None
 
 
 (************************************************************************************************************************
-Snippet 76 : Second stab at boundary operator combinatorics 
+Snippet 69 : Second stab at boundary operator combinatorics 
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let il_order = Total_ordering.silex_compare i_order ;;
 let j_order = Total_ordering.product i_order il_order ;;
@@ -6979,9 +4674,8 @@ let v2 = List.filter (
 
 
 (************************************************************************************************************************
-Snippet 75 : First stab at boundary operator combinatorics 
+Snippet 68 : First stab at boundary operator combinatorics 
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 let il_order = Total_ordering.silex_compare i_order ;;
 
@@ -7017,9 +4711,8 @@ let v3 = List.filter (fun (x1,x2,x3) -> not(i_is_included_in x3 (i_merge x1 x2))
 
 
 (************************************************************************************************************************
-Snippet 74 : Preprocess some PARI/GP code
+Snippet 67 : Preprocess some PARI/GP code
 ************************************************************************************************************************)
-
 open Needed_values ;;
 
 let n1 = 5 ;;
@@ -7051,495 +4744,8 @@ Ordered.setminus Total_ordering.for_integers (Int_range.range 1 32)
 
 
 (************************************************************************************************************************
-Snippet 73 : Research of flexible permutation groups
+Snippet 66 : Transform a text in an Ocaml string 
 ************************************************************************************************************************)
-
-
-let i_order = Total_ordering.for_integers ;;
-
-let s_order = Total_ordering.lex_for_strings ;;
-let si_order = Total_ordering.product s_order i_order ;;
-let p_order = Total_ordering.product si_order i_order ;;
-let o_order = Total_ordering.silex_compare p_order ;;
-
-let i_insert = Ordered.insert i_order ;;
-let i_merge = Ordered.merge i_order ;;
-let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.sort i_order ;;
-
-let o_merge = Ordered.merge o_order ;;
-
-let p_insert = Ordered.insert p_order ;;
-let p_is_included_in = Ordered.is_included_in p_order ;;
-let p_mem = Ordered.mem p_order ;;
-let p_sort = Ordered.sort p_order ;;
-
-let s_sort = Ordered.sort s_order ;;
-
-
-module Initial_data = struct 
-
-   let current_size = 3 ;;
-   let base = Int_range.scale (fun t->
-          let c= char_of_int (64+t) in 
-          ((String.make 1 c,t),current_size+t)
-         ) 1 current_size ;; 
-   let basic_vars = Int_range.scale (fun t->
-      String.make 1 (char_of_int (64+t))
-     ) 1 current_size ;;        
-   let sphere = Memoized.recursive (fun old_f j->
-      if j=0 then [""] else 
-      let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
-      Image.image (fun (x,y)->x^y) temp1
-   ) ;;
-   let vars = List.flatten (Int_range.scale sphere 1 5) ;;
-   
-end ;;    
-
-module Obstruction_list = struct 
-
-type t = OL of (((string * int) * int) list) list ;; 
-
-let reunite shortened same_length = 
-  let temp1 = List.filter (fun y->
-     List.for_all (fun x->not(p_is_included_in x y)) shortened) same_length in 
-  o_merge shortened temp1 ;;
-
-let take_note_of_new_condition (OL l) point =
-   let ((s,i),j) = point in 
-   let rec tempf = (fun (same_length,shortened,to_be_treated)->
-      match to_be_treated with 
-      [] -> OL(reunite (List.rev shortened) (List.rev same_length)) 
-      | obstr :: other_obstrs ->
-         let (temp1,temp2) = List.partition (fun (pair,_)->pair=(s,i) ) obstr in
-         if temp1 = []
-         then tempf(obstr::same_length,shortened,other_obstrs)    
-         else 
-         let j1 = snd(List.hd temp1) in 
-         if j1 =j 
-         then tempf(same_length,temp2::shortened,other_obstrs)     
-         else tempf(same_length,shortened,other_obstrs)   
-   ) in 
-   tempf([],[],l) ;;
-
-let singletons (OL l)= 
-   Option.filter_and_unpack (fun obstr -> 
-        if List.length obstr =1 
-        then Some(List.hd obstr)
-      else None
-   ) l;;
-
-let removables (OL l) y= List.filter (p_is_included_in y) l ;;
-
-let main_list = OL [ 
-
-   [
-      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-      (("C", 2), 2); (("B", 4), 2); (("B", 5), 3);  (("B", 3), 4)
-      (* makes ABBC win *)
-   ];
-   [
-      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-      (("C", 2), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6); (("B", 6), 4); 
-      (("C", 4), 3); (("C", 5), 4); (("C", 6), 5)
-      (* makes ACBB win *)
-   ];
-   
-   [
-      (("A", 2), 1); (("B", 1), 1); (("A", 4), 2); (("A", 5), 3);
-      (("A", 3), 5); (("B", 3), 6); (("C", 4), 3); (("A", 6), 6); (("C", 6), 7);
-      (* makes ACAB win *)
-   ];   
-
-] ;;
-
-end ;;    
-
-
-
-
-
-module Bough = struct 
-
-type t = {
-   size : int ;
-   points : ((string * int) * int) list ;
-   history : ((string * int) * int) list ;
-   forbidden : Obstruction_list.t ;
-} ;; 
-
-exception Forbidden_insertion of (string * int) * int ;;
-
-let insert_point bough point =
-   let ((s,i),j) = point in 
-   let old_constraints = bough.forbidden in 
-   let immediate_constraints = Obstruction_list.singletons old_constraints in 
-   if List.mem point immediate_constraints 
-   then raise(Forbidden_insertion((s,i),j))   
-   else  
-   {
-      size = max (bough.size) (max i j);
-      points = p_insert point (bough.points);
-      history = point :: (bough.history);
-      forbidden = Obstruction_list.take_note_of_new_condition old_constraints point ;
-   }
-
-exception Already_assigned of string * int ;;
-
-let expand bough (s0,i0) =
-   let unordered_temp1 = Option.filter_and_unpack (
-        fun ((s,i),j)->
-          if s=s0 
-          then (if i=i0 
-               then raise(Already_assigned(s0,i0))
-               else Some j) 
-          else None    
-   ) bough.points in 
-   let already_reached1 = i_sort unordered_temp1 
-   and immediate_constraints = Obstruction_list.singletons bough.forbidden in 
-   let useful_immediate_constraints = i_sort(Option.filter_and_unpack 
-    (fun (pair,j)->if pair=(s0,i0) then Some j else None) immediate_constraints)  in 
-   let already_reached = i_merge already_reached1 useful_immediate_constraints 
-   and new_whole = Int_range.range 1 (bough.size+1) in 
-   let exits = i_setminus new_whole already_reached in 
-   Image.image (
-       fun j -> insert_point bough ((s0,i0),j) 
-   ) exits ;;
-
-let smooth_expand bough (s0,i0) = try expand bough (s0,i0) with
-   Already_assigned(_,_) -> [bough] ;;
-
-let eval_list bough =
-    let rec tempf=( fun (l,i0) -> match l with 
-      [] -> (Some i0,None)
-     |s0::others ->
-       match Option.seek (
-       fun (pair,j)-> pair = (s0,i0)
-       ) bough.points with 
-       Some(_,j0) -> tempf(others,j0)
-       |None -> (None,Some(s0,i0))
-    ) in 
-    tempf ;; 
-
-let expand_long_string long_string =
-   let n = String.length long_string in 
-  Int_range.scale (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
-
-let eval bough long_string i =
-    let l = expand_long_string long_string in 
-    eval_list bough (l,i) ;;
-    
-let force_eval bough long_string i =
-     let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
-
-let full_shadow bough long_string =
-     let temp1 = Int_range.scale (
-        fun j->(j,eval bough long_string j)
-     ) 1 Initial_data.current_size in 
-     let (good_temp1,bad_temp1) = List.partition (
-        fun (j,(opt_good,opt_bad)) -> opt_bad = None 
-     ) temp1 in 
-     (Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_good) ) good_temp1,
-     Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_bad) ) bad_temp1 );;
-
-   ;;
-
-let to_string bough =
-    let all_points = bough.points in 
-    let vars_involved = s_sort (Image.image (fun (pair,_)->fst pair) all_points) in 
-    let temp1 = Image.image (
-      fun s0->(s0,Option.filter_and_unpack (
-          fun ((s,i),j)->
-              if s=s0 then Some(i,j) else None
-      ) all_points) 
-    ) vars_involved in
-    let temp2 = Image.image (
-      fun (s,l)->(String.make 4 ' ')^ s^" : "^(String.concat ", " (Image.image (fun (i,j)->Printf.sprintf "%i -> %i" i j) l))
-    )  temp1 in 
-    String.concat "\n" temp2 ;;
-
-let constructor l = {
-   size = snd (Max.maximize_it  (fun ((s,i),j)-> max i j ) l) ;
-   points = l ;
-   history = [] ;
-   forbidden = Obstruction_list.main_list ;
-} ;;
-
-let starting_point = constructor Initial_data.base ;;
-
-let fold_construct l = List.fold_left insert_point starting_point l ;;
-
-
-let is_stronger_than bough conditions =
-   let conditions_in_order = p_sort conditions in 
-   p_is_included_in  conditions_in_order bough.points ;;  
-
-let find_chair_opt bough indexed_list =
-   match Option.seek (fun (idx,conditions)->is_stronger_than bough conditions ) indexed_list with 
-    None -> None
-    |Some(idx0,_) -> Some idx0 ;;
-
-exception Compute_long_chain_exn of (string * int) list ;;
-
-let compute_long_chain bough long_string =
-   let rec tempf=( fun (treated,to_be_treated,slice) -> match to_be_treated with 
-   [] -> List.rev treated 
-  |s0::others -> 
-     let temp1 = Image.image (eval bough s0) slice in 
-     let (good_temp1,bad_temp1) = List.partition (fun (good_opt,bad_opt)->good_opt<>None) temp1 in 
-     if bad_temp1 <> []
-     then let temp2 = Image.image (fun (good_opt,bad_opt)->Option.unpack bad_opt) bad_temp1 in 
-          raise(Compute_long_chain_exn (temp2))
-     else  
-     let new_slice = Image.image (fun (good_opt,bad_opt)->Option.unpack good_opt) good_temp1 in 
-     tempf(((s0,new_slice)::treated,others,new_slice))
- ) in 
- tempf(["Z",[1;2;3]],expand_long_string long_string,[1;2;3]) ;; 
-
-let deduce_long_snake_from_long_chain bough long_chain =
-   let temp2 = Listennou.universal_delta_list long_chain in 
-   let temp3 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->(actor2,acted1) ) temp2 in 
-   let temp4 = List.flatten (Image.image (fun (s,l)->Image.image (fun i->(s,i)) l) temp3) in 
-   let temp5 = Image.image (fun (s,i)->((s,i),force_eval bough s i) ) temp4 in
-   p_sort temp5 ;; 
-
-let compute_long_snake bough long_string =
-     let long_chain = compute_long_chain bough long_string in 
-     deduce_long_snake_from_long_chain bough long_chain ;;
-
-let snake_history bough long_string =
-  let temp1 = compute_long_snake bough long_string 
-  and bare_history = List.rev (bough.history) in
-  List.filter (fun p->p_mem p temp1) bare_history ;; 
-  
-let cut_long_chain_in_one_place bough long_chain =
-   let (_,final_result) = List.hd(List.rev long_chain) in 
-   let idx_for_max = Listennou.find_index (Max.list final_result) final_result in 
-   let part1 = Image.image (fun (actor,acted)->
-        (actor,Listennou.complement_of_singleton acted idx_for_max)) long_chain
-   and temp1 = Image.image (fun (actor,acted)->
-      (actor,List.nth acted (idx_for_max-1))) long_chain in
-   let temp2 = Listennou.universal_delta_list temp1 in 
-   let part2 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->((actor2,acted1),acted2) ) temp2 in    
-   (idx_for_max,deduce_long_snake_from_long_chain bough part1,part2) ;;
-
-end ;;
-
-
-
-module Analysis_on_bough = struct 
-
-type result_on_var = 
-   Uunfinished of string *int 
-  |Finnished_well of  ((int*int) list) 
-  |Finished_badly of  int * int ;;  
-
-let analize_var bough long_string = 
-   let (dead,alive) = Bough.full_shadow bough long_string in 
-   (match Option.seek (fun (i,j)->j<=Initial_data.current_size) dead with 
-    (Some(i0,j0)) -> Finished_badly (i0,j0)
-   |None ->
-      (
-         match alive with 
-         [] -> Finnished_well(dead)
-         |(_,(s1,i1)) :: _ -> Uunfinished(s1,i1) 
-      )) ;;
-     
-type result_on_vars =
-   Unfinished of string * int 
-  |Finished_well of string * ((int*int) list)
-  |Inconclusive of (string * int * int) list ;;
-
-let analize_vars bough vars=
-     let rec tempf =(
-        fun (treated,to_be_treated) -> match to_be_treated with 
-        [] -> Inconclusive (List.rev treated)
-        | long_string :: others -> 
-          (match analize_var bough long_string with
-         Uunfinished (s,i) ->  Unfinished (s,i)
-        |Finnished_well (explanation) -> Finished_well (long_string,explanation)
-        |Finished_badly (i,j) -> tempf((long_string,i,j)::treated,others)
-          )
-     )  in 
-     tempf ([],vars) ;;
-
-type check_result =
-     Usual of ((int*int) list)
-    |Special of int  ;; 
-
-
-exception Unhappy_ending of string * result_on_var ;;
-
-let check_happy_ending bough var = match analize_var bough var with 
-     Finnished_well(explanation) -> Usual(explanation) 
-   | other -> raise (Unhappy_ending(var,other)) ;;
-
-end ;;   
-
-
-
-module Bough_list = struct 
-
-let analize l vars = Analysis_on_bough.analize_vars (List.hd l) vars ;;
-
-let expand boughs (b_idx0,s0,i_idx0)=
-  let indexed_boughs = Int_range.index_everything boughs in 
-  let temp2 = Image.image (
-     fun (b_idx,bough) -> 
-       if b_idx = b_idx0 
-       then Bough.expand bough (s0,i_idx0)
-       else [bough]    
-  ) indexed_boughs in 
-  List.flatten temp2 ;;
-
-let to_string l = 
-   let temp1 = Int_range.index_everything l in 
-   let temp2 = List.rev_map (fun (idx,bough)->"\nCase "^(string_of_int idx)^".\n"^(Bough.to_string bough)) temp1 in 
-   let sn = string_of_int(List.length l) in 
-   (String.concat "\n" temp2)^"\n "^sn^" cases." ;;
-
-
-let expand_all_using_delayed_expression boughs (s1,delayer,i1) =
-   let temp1 = Image.image (
-      fun bough -> let i2=Bough.force_eval bough delayer i1  in 
-                   Bough.smooth_expand bough (s1,i2)   
-   ) boughs in 
-   List.flatten temp1 ;;      
-
-
-let expand_long_string long_string =
-      let n = String.length long_string in 
-     Int_range.scale (fun j->
-      let ck = String.get long_string (n-j) in 
-      (String.make 1  ck,Cull_string.ending (j-1) long_string) ) 1 n ;;
-       
-
-let expand_following_long_chain boughs (long_string,i1)  = 
-  let expansions = Image.image (fun (s1,delayer)->
-   (s1,delayer,i1) ) (expand_long_string long_string) in 
-  List.fold_left expand_all_using_delayed_expression boughs expansions ;;    
-
-let shadow boughs (long_string,i1)  = 
-   let temp1 =  expand_following_long_chain boughs (long_string,i1)  in 
-   let temp2 = Image.image (fun bough->Bough.force_eval bough long_string i1) temp1 in 
-   i_sort temp2 ;;
-
-let seek_overture (long_string,i1) l=
-   let bough0 = Bough.fold_construct l in 
-   let temp1 =  expand_following_long_chain [bough0] (long_string,i1)  in 
-   Option.find_and_stop (fun bough->
-       let t = Bough.force_eval bough long_string i1 in 
-       if t > Initial_data.current_size 
-       then Some(l,t)  
-       else None   
-   ) temp1 ;;  
- 
-let is_closed pair l = (seek_overture pair l=None) ;;
-
-let minimal_version pair bough = 
-   Listennou.minimal_element_in_unpwards_filter 
-     (is_closed pair) (bough.Bough.history) ;;
-
-end ;;   
-
-
-module Seek_minimal_obstruction = struct 
-   
-
-end ;;   
-
-
-
-
-module Walker = struct 
-   
-type t = W of ((string*int) list)*(Bough.t list) ;;
-
-let expand (W(expansion_history,boughs)) triple = 
-   let (b_idx,s,i) = triple in   
-   W((s,i)::expansion_history,Bough_list.expand boughs triple) ;;
-
-   let analize (W(_,boughs)) vars = Bough_list.analize boughs vars ;; 
-
-exception Iter_expand_exn ;;
-
-let rec iter_expand w vars =
-   match analize w vars with 
-   Analysis_on_bough.Finished_well(long_string,explanation) -> (w,long_string,explanation)
-   |Unfinished(s,i) -> let new_w = expand w (1,s,i) in 
-                       iter_expand new_w vars
-   |Inconclusive(_) -> raise (Iter_expand_exn);; 
-
-
-let to_string (W(expansion_history,boughs)) = Bough_list.to_string boughs ;;
-
-let print_out  (fmt:Format.formatter) w = Format.fprintf fmt "@[%s@]" (to_string w);; 
-
-let constructor l = W([],[Bough.constructor l]) ;;
-
-
-
-let starting_point = constructor Initial_data.base ;;
-
-
-end ;;   
-
-module This_walker = struct 
-
-let main_ref = ref (Walker.starting_point) ;;
-
-let initialize () = let _ =(main_ref := Walker.starting_point )  in Walker.starting_point;;
-
-let expand (s,i) = 
-   let new_w = Walker.expand (!main_ref) (1,s,i) in 
-   let _ = (main_ref := new_w) in 
-   new_w ;;
-
-let analize () = Walker.analize (!main_ref) Initial_data.vars ;;
-
-let rec iter_expand () = 
-   let (new_w,long_string,explanation) = Walker.iter_expand (!main_ref) Initial_data.vars  in 
-   let _ = (main_ref := new_w) in 
-   (new_w,long_string,explanation) ;;
-
-let expand_and_analize pair = let next_state = expand pair in (next_state,analize ()) ;;
-
-
-end ;;   
-
-(* #install_printer Walker.print_out ;; *)
-
-This_walker.initialize () ;;
-
-
-let ie = This_walker.iter_expand  ;;
-
-
-(*
-ie();;
-let (current_solver,end_result) = (match This_walker.analize () with 
-Analysis_on_bough.Finished_well (x, y) -> (x,y) 
-| _-> failwith("aaa")
-);;
-let (Walker.W(_,alive1))=(!(This_walker.main_ref)) ;;
-let bough1 = List.hd alive1 ;;
-let history1= List.rev(bough1.Bough.history) ;;
-let lc1 = Bough.compute_long_chain bough1 current_solver ;;
-let ls1 = Bough.snake_history bough1 current_solver ;;
-let (idx1,unquestioned,questioned) =
-   Bough.cut_long_chain_in_one_place bough1 lc1 ;;
-let im1 = Bough_list.minimal_version (current_solver,idx1) bough1 ;;
-
-#use"Fads/cloth.ml";;
-
-*)
-
-
-
-(************************************************************************************************************************
-Snippet 72 : Transform a text in an Ocaml string 
-************************************************************************************************************************)
-
 let z1 = Needed_values.rf "Fads/nap.ml"  ;;
 let z2 = Lines_in_string.interval z1 12 25 ;;
 let z3 = Replace_inside.replace_inside_string ("\"","\\\"") z2;;
@@ -7549,9 +4755,8 @@ let z6 = "\n\n\n" ^ (String.concat ";\n" z5) ^ "\n\n\n" ;;
 let z7 () = print_string z6 ;;
 
 (************************************************************************************************************************
-Snippet 71 : Find and replace on several files 
+Snippet 65 : Find and replace on several files 
 ************************************************************************************************************************)
-
 let reps_ref = ref [ ];;
 
 reps_ref := [
@@ -7601,7 +4806,7 @@ let tr x = Replace_inside.replace_several_inside_file (!reps_ref) (Absolute_path
 let act () = List.iter tr (!files_ref) ;;
 
 (************************************************************************************************************************
-Snippet 70 : Modifying line intervals in a file
+Snippet 64 : Modifying line intervals in a file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "../Idaho/Filewatching/fw_with_githubbing.ml" ;;
 let text1 = Io.read_whole_file ap1 ;;
@@ -7615,448 +4820,7 @@ Io.overwrite_with ap1 new_text1 ;;
 Lines_in_string.remove_interval_in_file ap1 169 253 ;;
 
 (************************************************************************************************************************
-Snippet 69 : Exercise on flexible transitive permutation groups, version 1
-************************************************************************************************************************)
-let i_order = Total_ordering.for_integers ;;
-let s_order = Total_ordering.lex_for_strings ;;
-let si_order = Total_ordering.product s_order i_order ;;
-let p_order = Total_ordering.product si_order i_order ;;
-
-let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.sort i_order ;;
-
-let p_insert = Ordered.insert p_order ;;
-let p_is_included_in = Ordered.is_included_in p_order ;;
-let p_mem = Ordered.mem p_order ;;
-let p_sort = Ordered.sort p_order ;;
-
-let s_sort = Ordered.sort s_order ;;
-
-
-module Initial_data = struct 
-
-   let current_size = 3 ;;
-   let base = Int_range.scale (fun t->
-          let c= char_of_int (64+t) in 
-          ((String.make 1 c,t),current_size+t)
-         ) 1 current_size ;; 
-   let basic_vars = Int_range.scale (fun t->
-      String.make 1 (char_of_int (64+t))
-     ) 1 current_size ;;        
-   let sphere = Memoized.recursive (fun old_f j->
-      if j=0 then [""] else 
-      let temp1 = Cartesian.product basic_vars (old_f (j-1)) in 
-      Image.image (fun (x,y)->x^y) temp1
-   ) ;;
-   let vars = List.flatten (Int_range.scale sphere 1 5) ;;
-   
-end ;;    
-
-module Bough = struct 
-
-type t = {
-   size : int ;
-   points : ((string * int) * int) list ;
-   history : ((string * int) * int) list ;
-} ;; 
-
-let insert_point point bough =
-   let ((s,i),j) = point in 
-   {
-      size = max (bough.size) (max i j);
-      points = p_insert point (bough.points);
-      history = point :: (bough.history);
-   }
-
-exception Already_assigned of string * int ;;
-
-let expand bough (s0,i0) =
-   let unordered_temp1 = Option.filter_and_unpack (
-        fun ((s,i),j)->
-          if s=s0 
-          then (if i=i0 
-               then raise(Already_assigned(s0,i0))
-               else Some j) 
-          else None    
-   ) bough.points in 
-   let already_reached = i_sort unordered_temp1 
-   and new_whole = Int_range.range 1 (bough.size+1) in 
-   let exits = i_setminus new_whole already_reached in 
-   Image.image (
-       fun j -> insert_point ((s0,i0),j) bough
-   ) exits ;;
-
-let eval_list bough =
-    let rec tempf=( fun (l,i0) -> match l with 
-      [] -> (Some i0,None)
-     |s0::others ->
-       match Option.seek (
-       fun (pair,j)-> pair = (s0,i0)
-       ) bough.points with 
-       Some(_,j0) -> tempf(others,j0)
-       |None -> (None,Some(s0,i0))
-    ) in 
-    tempf ;; 
-
-let expand_long_string long_string =
-   let n = String.length long_string in 
-  Int_range.scale (fun j->String.make 1 (String.get long_string (n-j))) 1 n ;;
-
-let eval bough long_string i =
-    let l = expand_long_string long_string in 
-    eval_list bough (l,i) ;;
-    
-let force_eval bough long_string i =
-     let (opt_good,_) = eval bough long_string i in Option.unpack opt_good ;;
-
-let full_shadow bough long_string =
-     let temp1 = Int_range.scale (
-        fun j->(j,eval bough long_string j)
-     ) 1 Initial_data.current_size in 
-     let (good_temp1,bad_temp1) = List.partition (
-        fun (j,(opt_good,opt_bad)) -> opt_bad = None 
-     ) temp1 in 
-     (Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_good) ) good_temp1,
-     Image.image ( fun (j,(opt_good,opt_bad)) ->(j,Option.unpack opt_bad) ) bad_temp1 );;
-
-   ;;
-
-let to_string bough =
-    let all_points = bough.points in 
-    let vars_involved = s_sort (Image.image (fun (pair,_)->fst pair) all_points) in 
-    let temp1 = Image.image (
-      fun s0->(s0,Option.filter_and_unpack (
-          fun ((s,i),j)->
-              if s=s0 then Some(i,j) else None
-      ) all_points) 
-    ) vars_involved in
-    let temp2 = Image.image (
-      fun (s,l)->(String.make 4 ' ')^ s^" : "^(String.concat ", " (Image.image (fun (i,j)->Printf.sprintf "%i -> %i" i j) l))
-    )  temp1 in 
-    String.concat "\n" temp2 ;;
-
-let constructor l = {
-   size = snd (Max.maximize_it  (fun ((s,i),j)-> max i j ) l) ;
-   points = l ;
-   history = [] ;
-} ;;
-
-let is_stronger_than bough conditions =
-   let conditions_in_order = p_sort conditions in 
-   p_is_included_in  conditions_in_order bough.points ;;  
-
-let find_chair_opt bough indexed_list =
-   match Option.seek (fun (idx,conditions)->is_stronger_than bough conditions ) indexed_list with 
-    None -> None
-    |Some(idx0,_) -> Some idx0 ;;
-
-exception Compute_long_chain_exn of (string * int) list ;;
-
-let compute_long_chain bough long_string =
-   let rec tempf=( fun (treated,to_be_treated,slice) -> match to_be_treated with 
-   [] -> List.rev treated 
-  |s0::others -> 
-     let temp1 = Image.image (eval bough s0) slice in 
-     let (good_temp1,bad_temp1) = List.partition (fun (good_opt,bad_opt)->good_opt<>None) temp1 in 
-     if bad_temp1 <> []
-     then let temp2 = Image.image (fun (good_opt,bad_opt)->Option.unpack bad_opt) bad_temp1 in 
-          raise(Compute_long_chain_exn (temp2))
-     else  
-     let new_slice = Image.image (fun (good_opt,bad_opt)->Option.unpack good_opt) good_temp1 in 
-     tempf(((s0,new_slice)::treated,others,new_slice))
- ) in 
- tempf(["Z",[1;2;3]],expand_long_string long_string,[1;2;3]) ;; 
-
-let compute_long_snake bough long_string =
-     let temp1 = compute_long_chain bough long_string in 
-     let temp2 = Listennou.universal_delta_list temp1 in 
-     let temp3 = Image.image (fun ((actor1,acted1),(actor2,acted2)) ->(actor2,acted1) ) temp2 in 
-     let temp4 = List.flatten (Image.image (fun (s,l)->Image.image (fun i->(s,i)) l) temp3) in 
-     let temp5 = Image.image (fun (s,i)->((s,i),force_eval bough s i) ) temp4 in
-     p_sort temp5 ;; 
-
-let snake_history bough long_string =
-  let temp1 = compute_long_snake bough long_string 
-  and bare_history = List.rev (bough.history) in
-  List.filter (fun p->p_mem p temp1) bare_history ;; 
-  
-
-
-end ;;
-
-module Special_reductions = struct 
-
-   let main_list = [
-      [
-      (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-      (("C", 2), 2); (("B", 4), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 4);
-       (* in this case ABBC is a solution *)
-      ];
-      [
-         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-         (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
-         (("B", 6), 4); (("C", 4), 3); 
-         (* in this case ACBB is a solution *)
-      ];
-      [
-         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-         (("C", 2), 2);  (("A", 3), 5); (("B", 3), 6); (("C", 4), 4); (("C", 5), 3); 
-         (* in this case CAB is a solution *)
-      ];
-      [
-         (* (("B", 1), 1); (("C", 1), 1); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
-         (("C", 5), 5); (("A", 6), 6); (("C", 6), 3) *)
-         (("A", 2), 1); (("B", 1), 1); (("C", 1), 1); (("A", 4), 2); (("A", 5), 3);
-         (("C", 2), 2); (("B", 4), 2); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
-         (("B", 6), 4); (("C", 4), 4); (("C", 5), 5)
-       (* in this case ABCB is a solution *)
-      ];
-      [
-         (("B", 1), 1); (("A", 5), 3); (("B", 3), 6); (("C", 4), 4); (("A", 6), 6);
-         (("C", 6), 7) 
-         (* in this case CAB is a solution *)
-      ];
-   ]  ;; 
-   
-   let indexed_main_list = Int_range.index_everything main_list ;;
-
-   end ;;   
-
-
-module Analysis_on_bough = struct 
-
-type result_on_var = 
-   Uunfinished of string *int 
-  |Finnished_well of  ((int*int) list) 
-  |Finnished_with_a_jump of int
-  |Finished_badly of  int * int ;;  
-
-let analize_var bough long_string = 
-   match Bough.find_chair_opt bough Special_reductions.indexed_main_list with
-   Some(idx0) -> Finnished_with_a_jump(idx0)
-   |None ->   
-   let (dead,alive) = Bough.full_shadow bough long_string in 
-   (match Option.seek (fun (i,j)->j<=Initial_data.current_size) dead with 
-    (Some(i0,j0)) -> Finished_badly (i0,j0)
-   |None ->
-      (
-         match alive with 
-         [] -> Finnished_well(dead)
-         |(_,(s1,i1)) :: _ -> Uunfinished(s1,i1) 
-      )) ;;
-     
-type result_on_vars =
-   Unfinished of string * int 
-  |Finished_well of string * ((int*int) list)
-  |Finished_with_a_jump of int
-  |Inconclusive of (string * int * int) list ;;
-
-let analize_vars bough vars=
-     let rec tempf =(
-        fun (treated,to_be_treated) -> match to_be_treated with 
-        [] -> Inconclusive (List.rev treated)
-        | long_string :: others -> 
-          (match analize_var bough long_string with
-         Uunfinished (s,i) ->  Unfinished (s,i)
-        |Finnished_well (explanation) -> Finished_well (long_string,explanation)
-        |Finnished_with_a_jump idx -> Finished_with_a_jump idx
-        |Finished_badly (i,j) -> tempf((long_string,i,j)::treated,others)
-          )
-     )  in 
-     tempf ([],vars) ;;
-
-type check_result =
-     Usual of ((int*int) list)
-    |Special of int  ;; 
-
-
-exception Unhappy_ending of string * result_on_var ;;
-
-let check_happy_ending bough var = match analize_var bough var with 
-     Finnished_well(explanation) -> Usual(explanation) 
-   | other -> raise (Unhappy_ending(var,other)) ;;
-
-exception Not_a_jump of result_on_var ;;
-exception Jump_index_mismatch of int * int ;;
-
-let check_jump bough jump_idx= match analize_var bough "" with 
-   Finnished_with_a_jump idx -> if idx=jump_idx 
-                                then Special(idx) 
-                                else raise(Jump_index_mismatch(jump_idx,idx)) 
- | other -> raise (Not_a_jump(other)) ;;   
-
-
-end ;;   
-
-
-
-module Bough_list = struct 
-
-let to_string l = 
-   let temp1 = Int_range.index_everything l in 
-   let temp2 = List.rev_map (fun (idx,bough)->"\nCase "^(string_of_int idx)^".\n"^(Bough.to_string bough)) temp1 in 
-   let sn = string_of_int(List.length l) in 
-   (String.concat "\n" temp2)^"\n "^sn^" cases." ;;
-
-let analize l vars = Analysis_on_bough.analize_vars (List.hd l) vars ;;
-
-end ;;   
-
-
-
-
-
-module Walker = struct 
-   
-type t = W of ((Bough.t * (string * Analysis_on_bough.check_result )) list) * (Bough.t list) ;;
-
-let expand (W(dead,alive)) (b_idx0,s0,i_idx0)=
-  let temp1 = Int_range.index_everything alive in 
-  let temp2 = Image.image (
-     fun (b_idx,bough) -> 
-       if b_idx = b_idx0 
-       then Bough.expand bough (s0,i_idx0)
-       else [bough]    
-  ) temp1 in 
-  W(dead,List.flatten temp2) ;;
-
-let kill  (W(dead,alive)) b_idx0 long_string =
-   let temp1 = Int_range.index_everything alive in 
-   let (the_one,others) = List.partition (fun (b_idx,bough)->b_idx = b_idx0) temp1 in 
-   let (_,dead_bough) = List.hd the_one in  
-   let explanation = Analysis_on_bough.check_happy_ending dead_bough long_string in 
-   (W((dead_bough,(long_string,explanation))::dead,Image.image snd others)) ;;   
-
-let jump  (W(dead,alive)) b_idx0 jump_idx=
-   let temp1 = Int_range.index_everything alive in 
-   let (the_one,others) = List.partition (fun (b_idx,bough)->b_idx = b_idx0) temp1 in 
-   let (_,dead_bough) = List.hd the_one in  
-   let explanation = Analysis_on_bough.check_jump dead_bough jump_idx in 
-   (W((dead_bough,("",explanation))::dead,Image.image snd others)) ;;  
-
-
-let to_string (W(dead,alive)) = Bough_list.to_string alive ;;
-
-let print_out  (fmt:Format.formatter) w = Format.fprintf fmt "@[%s@]" (to_string w);; 
-
-let constructor l = W([],[Bough.constructor l]) ;;
-
-let analize (W(dead,alive)) vars = Bough_list.analize alive vars ;; 
-
-let starting_point = constructor Initial_data.base ;;
-
-let alcove (W(dead,alive)) = dead ;;
-
-end ;;   
-
-module This_walker = struct 
-
-let main_ref = ref (Walker.starting_point) ;;
-
-let initialize () = let _ =(main_ref := Walker.starting_point )  in Walker.starting_point;;
-
-let expand (s,i) = 
-   let new_w = Walker.expand (!main_ref) (1,s,i) in 
-   let _ = (main_ref := new_w) in 
-   new_w ;;
-     
-let kill long_string = 
-   let new_w = Walker.kill (!main_ref) 1 long_string in 
-   let _ = (main_ref := new_w) in 
-   new_w ;;     
-
-let jump jump_idx = 
-   let new_w = Walker.jump (!main_ref) 1 jump_idx in 
-   let _ = (main_ref := new_w) in 
-   new_w ;;     
-           
-   
-
-let analize () = Walker.analize (!main_ref) Initial_data.vars ;;
-
-let alcove () = Walker.alcove (!main_ref) ;;
-
-let expand_and_analize pair = let next_state = expand pair in (next_state,analize ()) ;;
-let kill_and_analize data = let next_state = kill data in (next_state,analize ()) ;;
-let jump_and_analize jump_idx = let next_state = jump jump_idx in (next_state,analize ()) ;;
-
-end ;;   
-
-(* #install_printer Walker.print_out ;; *)
-
-This_walker.initialize () ;;
-
-
-let ea = This_walker.expand_and_analize  ;;
-let ka = This_walker.kill_and_analize ;;
-let ja = This_walker.jump_and_analize ;;
-
-ea("A",2);;
-ea("B",1);;
-ea("C",1);;
-ea("A",4);;
-ea("A",5);;
-ea("C",2);;
-ea("B",4);;
-ea("B",5);;
-ea("A",3);;
-ea("B",3);;
-ja 1;;
-ea("B",6);;
-ea("C",4);;
-ja 2;;
-ea("C",5);;
-ja 3;;
-ea("A",6);;
-ea("C",6);;
-ja 4;;
-ja 4;;
-ja 4;;
-ea("A",7);;
-ea("C",6);;
-ka "ACB" ;;
-ea("A",6);;
-ea("C",7);;
-ea("B",7);;
-ka "ABCB" ;;
-ea("A",8);;
-
-
-(*
-
-ja 5;;
-ea("C",7);;
-ea("C",6);;
-ea("B",7);;
-ea("A",7);;
-*)
-
-
-(*
-let (Walker.W(dead1,alive1))=(!(This_walker.main_ref)) ;;
-let bough1 = List.hd alive1 ;;
-let history1= List.rev(bough1.Bough.history) ;;
-let lc1 = Bough.compute_long_chain bough1 "ABCB" ;;
-let ls1 = Bough.snake_history bough1 "ABCB" ;;
-
-
-let g1_acb = [(("B", 1), 1); (("C", 1), 1); (("A", 3), 5); (("B", 3), 6); (("C", 5), 7);
-   (("A", 7), 6); (("C", 6), 3)] ;;
-let g2_abcb = [(("B", 1), 1); (("C", 1), 1); (("B", 5), 3); (("A", 3), 5); (("B", 3), 6);
-   (("C", 5), 7); (("A", 7), 6); (("C", 6), 5); (("B", 7), 7)] ;;
-
-
-
-
-
-This_walker.analize () ;;
-
-*)
-
-
-
-(************************************************************************************************************************
-Snippet 68 : Enumerating subgroups of S4 
+Snippet 63 : Enumerating subgroups of S4 
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_sort  = Ordered.sort i_order ;;
@@ -8141,7 +4905,7 @@ let halves_for_whole = halves full_subgroup ;;
     
 
 (************************************************************************************************************************
-Snippet 67 : Finding a polynomial x^4+p*x+q with Galois group A4
+Snippet 62 : Finding a polynomial x^4+p*x+q with Galois group A4
 ************************************************************************************************************************)
 let u1 = Int_range.range (-50) 50 ;;
 let u2 = Cartesian.square u1 ;;
@@ -8166,7 +4930,7 @@ let check = List.filter is_a_square (Int_range.range 0 100) ;;
 let u6 = List.filter (fun (p,q)->is_a_square(-27*p*p*p*p + 256*q*q*q)) u5 ;;
 
 (************************************************************************************************************************
-Snippet 66 : Removing indentation in a paragraph in a file  
+Snippet 61 : Removing indentation in a paragraph in a file  
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
@@ -8184,7 +4948,7 @@ let new_text1 = String.concat "\n" [before_text2;new_text2;after_text2] ;;
 Io.overwrite_with ap1 new_text1 ;;
 
 (************************************************************************************************************************
-Snippet 65 : Intertwining prints for debugging purposes
+Snippet 60 : Intertwining prints for debugging purposes
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -8201,7 +4965,7 @@ let z6 = Image.image (
 let z7 = "\n\n\n" ^ (String.concat "\n" z6) ^ "\n\n\n" ;;  
 
 (************************************************************************************************************************
-Snippet 64 : Problem involving periodicity
+Snippet 59 : Problem involving periodicity
 ************************************************************************************************************************)
 let find_periodicity l= 
   let rl = List.rev l in 
@@ -8242,7 +5006,7 @@ let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max
 
 
 (************************************************************************************************************************
-Snippet 63 : Musings on the Szemeredi problem, chapter V
+Snippet 58 : Musings on the Szemeredi problem, chapter V
 ************************************************************************************************************************)
 let current_width = 3 ;; 
 let max_width = Sz_max_width_t.MW current_width ;;
@@ -8719,295 +5483,7 @@ asc (Ennig.ennig 1 4, 3)  [[2]; [1; 3]; [3; 4]] ;;
 *)
 
 (************************************************************************************************************************
-Snippet 62 : Musings on the Szemeredi problem, chapter IV
-************************************************************************************************************************)
-let current_width = 3 ;; 
-let max_width = Sz_max_width_t.MW current_width ;;
-let is_admissible = Sz_preliminaries.test_for_admissibility max_width ;;
-let is_not_admissible x= (not(is_admissible x));;
-
-let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
-let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
-let i_merge = Ordered.merge Total_ordering.for_integers ;;
-let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
-let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
-let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
-let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
-let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
-
-let uncurried_sl  = Memoized.make (fun (n,k)->
-   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.range 1 n) in 
-   List.filter (fun z->List.length z=k) temp1 
-) ;;  
-let sl n k = uncurried_sl (n,k) ;;
-
-let original_minimal_carriers carriers sols =
-  let indexed_carriers = Int_range.index_everything carriers in 
-  let shadow = (
-      fun sol ->
-         Option.filter_and_unpack (
-          fun (idx,carrier) -> 
-             if i_is_included_in carrier sol 
-             then Some idx 
-            else None 
-        ) indexed_carriers 
-  )  in     
-  let all_shadows = Image.image shadow sols in 
-  Ordered_misc.minimal_transversals all_shadows ;;
- 
-exception Nonunique_set_of_minimal_carriers ;;
- 
-let set_of_minimal_carriers carriers sols =
- let version1 = original_minimal_carriers carriers sols in 
- let m = List.length(List.hd version1) in 
- let version2 = List.filter (fun x->List.length(x)=m) version1 in 
- if (List.length version2)<>1
- then raise Nonunique_set_of_minimal_carriers 
- else 
- Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
- ;;
- 
-let set_of_minimal_carriers_with_extra carriers sols =
- try (Some(set_of_minimal_carriers carriers sols),None) with 
- _ -> (None, Some carriers)   ;;
-
-
-let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
-let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
-
-module ConstraintList = struct 
-
-type t = CL of (int * ((int list) list) ) list ;;
-
-exception Constraint_already_present of (int list) * int ;; 
-
-let helper_for_adding (x,j,cstr_for_xj) cl_content=
-   let rec tempf = (fun (above_j,to_be_treated) ->
-   match to_be_treated with 
-     [] -> List.rev ((j,cstr_for_xj)::above_j) 
-     |k_pair :: others ->
-        let (k,cstr_for_k) = k_pair in 
-        (match Total_ordering.for_integers j k with 
-         Total_ordering_result_t.Lower->tempf(k_pair::above_j,others)
-        |Greater-> 
-          List.rev_append ((j,cstr_for_xj)::above_j) to_be_treated
-        |Equal -> raise (Constraint_already_present(x,j))
-        )
-   ) in
-   tempf([],cl_content) ;;
-
-let add (x,j,cstr_for_xj) (CL cl_content) = 
-    CL (helper_for_adding (x,j,cstr_for_xj) cl_content) ;;
-let at_index (CL cl_content) idx = List.assoc_opt idx cl_content ;;    
-let empty_one = CL [] ;;
-
-end ;;  
-
-
-module Oar = struct 
-
-type t = {
-  solution : (int list) ;
-  constraints : ConstraintList.t ;
-} ;;
-
-let add_constraint (x,j,cstr_for_xj) oar ={
-   oar with constraints = ConstraintList.add (x,j,cstr_for_xj) oar.constraints ;
-} ;;
-
-let extract_constraint oar j = ConstraintList.at_index oar.constraints j ;;
-let extract_solution oar = oar.solution ;;
-
-let of_solution sol = {
-  solution = sol ;
-  constraints = ConstraintList.empty_one ;
-} ;;
-
-end ;;
-
-module Boat = struct 
-
-type t = B of ((int list) * Oar.t) list ;;
-
-let empty_one = B [] ;;
-
-exception Solution_already_present of int list ;; 
-
-let helper_for_solution_adding (x,sol_for_x) boat_content=
-   let rec tempf = (fun (above_x,to_be_treated) ->
-   match to_be_treated with 
-     [] -> let oar_for_x = Oar.of_solution sol_for_x in 
-            List.rev ((x,oar_for_x)::above_x) 
-     |y_pair :: others ->
-        let (y,data_for_y) = y_pair in 
-        (match Total_ordering.silex_for_intlists x y with 
-         Total_ordering_result_t.Lower->tempf(y_pair::above_x,others)
-        |Greater-> 
-          let oar_for_x = Oar.of_solution sol_for_x in 
-          List.rev_append ((x,oar_for_x)::above_x) to_be_treated
-        |Equal -> raise (Solution_already_present x)
-        )
-   ) in
-   tempf([],boat_content) ;;
-
-let add_solution (B l) (x,sol_for_x) = 
-   B(helper_for_solution_adding (x,sol_for_x) l) ;; 
-
-exception Solution_not_found of int list ;;
-
-let helper_for_constraint_adding (x,j,cstr_for_xj) boat_content=
-      let rec tempf = (fun (above_x,to_be_treated) ->
-      match to_be_treated with 
-        [] -> raise(Solution_not_found x)
-        |y_pair :: others -> 
-           let (y,data_for_y) = y_pair in 
-           (match Total_ordering.silex_for_intlists x y with 
-            Total_ordering_result_t.Lower->tempf(y_pair::above_x,others)
-           |Greater-> raise(Solution_not_found x)
-           |Equal -> 
-              let new_data_for_y = Oar.add_constraint (x,j,cstr_for_xj) data_for_y in 
-              List.rev_append above_x ((y,new_data_for_y)::others)
-           )
-      ) in
-      tempf([],boat_content) ;;
-   
-let add_constraint (B l) (x,j,constr_for_xj) = 
-      B(helper_for_constraint_adding (x,j,constr_for_xj) l) ;;   
-
-let get_opt (B l) x = List.assoc_opt x l ;;
-
-end ;;  
-
-
-module ThisBoat = struct 
-
-let main_ref = ref Boat.empty_one ;; 
-
-let add_constraint cstr = (main_ref:= Boat.add_constraint (!main_ref) cstr) ;;
-let add_solution sol = (main_ref:= Boat.add_solution (!main_ref) sol) ;;
-let get_opt x = Boat.get_opt (!main_ref) x ;;
-
-end ;;
-
-exception Missing_constraints of int list * int list;; 
-
-
-let induction_step_in_partial_case old_f (x,treated) = (
-  if List.length(x)<3 
-  then Oar.of_solution(x@treated) 
-  else
-  let (n,ry) = Listennou.ht(List.rev x) in 
-  let y = List.rev ry in 
-  if is_not_admissible(n::treated)
-  then old_f(false,y,treated)  
-  else 
-  let answer_for_y = old_f(true,y,[]) in 
-  let soly = Oar.extract_solution answer_for_y in 
-  let my = List.length soly in 
-  match Oar.extract_constraint answer_for_y my with 
-   None -> Oar.of_solution(soly @ [n]) 
-  |Some (constraints) ->
-    if List.for_all (fun z->is_not_admissible(z@[n])) constraints
-    then Oar.of_solution(soly)
-    else Oar.of_solution(soly@[n]) 
-  ) ;;    
-
-let induction_in_full_case old_f x =
-    match ThisBoat.get_opt x with 
-       Some(old_answer) -> old_answer 
-     | None -> 
-    let sol_for_x = (
-      if List.length(x)<3 
-      then x  
-      else Oar.extract_solution(old_f(false,x,[]))) in 
-    if is_not_admissible sol_for_x 
-    then raise (Missing_constraints (x,sol_for_x))
-    else   
-    let _ = ThisBoat.add_solution (x,sol_for_x) in 
-    Oar.of_solution sol_for_x ;;
-
-let rec helper_for_solving (is_full,x,treated) =
-   if is_full 
-   then induction_in_full_case         helper_for_solving x 
-   else induction_step_in_partial_case helper_for_solving (x,treated)  ;; 
-
-let solve x = helper_for_solving (true,x,[]) ;;   
-
-let ff n = solve (Int_range.range 1 n) ;;
-
-ff 1 ;;
-ff 2 ;;
-ThisBoat.add_constraint ([1;2],2,[[1;2]]) ;;
-ff 3 ;;
-ff 4 ;;
-ff 5 ;;
-ThisBoat.add_constraint (Int_range.range 1 5,4,[[1;2;4;5]]) ;;
-ff 6 ;;
-
-let z1 = set_of_minimal_carriers [[5;6];[3;5];[1;4]] (sl 8 4);;
-let z1 = set_of_minimal_carriers_with_extra [[5;6];[3;5];[1;4]] (sl 8 4);;
-
-(************************************************************************************************************************
-Snippet 61 : Musings on the 1234 problem, chapter II
-************************************************************************************************************************)
-let original_seed =
-   [2; 3; 5; 7; 11; 13; 14; 15; 17; 19; 23; 27; 29; 31; 35; 37; 38] ;;
-   
-   let seed =
-   [2; 3; 5; 6; 7; 10; 11; 13; 14; 15; 17; 19; 22; 23; 26; 27; 29; 30; 31; 33;
-      34; 35; 37; 38] ;;
-   
-   let seed = 
-     [2; 3; 5; 6; 7; 9; 10; 11; 13; 14; 15; 17; 19; 21; 22; 23; 25; 26; 27; 29;
-      30; 31; 33; 34; 35; 37; 38] ;;
-   
-   let seed =    
-   [2; 3; 5; 6; 7; 9; 10; 11; 13; 14; 15; 17; 18; 19; 21; 22; 23; 25; 26; 27;
-      29; 30; 31; 33; 34; 35; 37; 38] ;;
-   
-   let oi = Total_ordering.for_integers ;;
-   let oi2 = Total_ordering.product oi oi ;; 
-   
-   let reorder pairs =
-      let temp1 = Listennou.partition_according_to_fst pairs in 
-      let temp2 = Image.image (fun (x,ll)->
-          (x,Ordered.safe_set oi2 (List.flatten ll))
-         ) temp1 in 
-      let temp3 = Ordered.sort Total_ordering.for_integers (Image.image fst temp2) in 
-      Image.image (fun x->(x,List.assoc x temp2)) temp3 ;;
-   
-   let new_elts l=
-     let temp1 = Uple.inclusive_list_of_pairs l in 
-     let temp2 = Option.filter_and_unpack (
-       fun (a,b)->
-         if not(Ordered.mem oi (a+b) l) then None else
-         let c= a*b  in 
-         if Ordered.mem oi c l then None else Some(c,[a,b])
-     ) temp1 in 
-     reorder temp2 ;;
-   
-   let generic_push (old_state,old_explanations)=
-      let temp1 = new_elts old_state in 
-      let temp2 = Image.image fst temp1 in 
-      ((Ordered.merge oi old_state temp2,old_explanations@temp1),temp1) ;;
-   
-   let walker = ref (seed,[]) ;;
-   
-   let push () = 
-      let (new_state,explanations) = generic_push (!walker) in 
-      let _ = (walker := new_state) in 
-      explanations ;;
-   
-   let z1 = push () ;;
-   let level2 = Image.image fst z1 ;;
-   let z2 = List.filter (fun x->x<=38) level2 ;;
-   let new_seed = Ordered.merge oi seed z2 ;;
-   
-   
-   
-
-(************************************************************************************************************************
-Snippet 60 : Musings on the 1234 problem
+Snippet 57 : Musings on the 1234 problem
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -9181,7 +5657,7 @@ walker:=([],[]) ;;
 
 
 (************************************************************************************************************************
-Snippet 59 : Removes unnecessary blanks at the beginning of lines in an interval
+Snippet 56 : Removes unnecessary blanks at the beginning of lines in an interval
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -9200,7 +5676,7 @@ let new_text = part1 ^ "\n" ^ new_part2 ;;
 Io.overwrite_with ap new_text ;;
 
 (************************************************************************************************************************
-Snippet 58 : Find all modules whose ml file contains a certain substring
+Snippet 55 : Find all modules whose ml file contains a certain substring
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -9214,445 +5690,7 @@ let z3 = Explicit.filter (
 ) z2 ;;
 
 (************************************************************************************************************************
-Snippet 57 : Musings on the Szemeredi problem, chapter IV
-************************************************************************************************************************)
-open Needed_values ;;
-
-
-let current_width = 3 ;; 
-let max_width = Sz_max_width_t.MW current_width ;;
-
-
-let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
-let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
-let i_merge = Ordered.merge Total_ordering.for_integers ;;
-let i_outsert = Ordered.outsert Total_ordering.for_integers ;;
-let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
-let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
-let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
-let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
-
-let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
-let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
-
-let hashtbl_for_main = Hashtbl.create 100 ;;
-
-let main_in_easy_case (n,avoided_elts) =
-   let temp1 = Sz_preliminaries.restricted_power_set (max_width,Int_range.range 1 n) in 
-   let temp2 = List.filter (
-     fun y->i_does_not_intersect avoided_elts y
-   ) temp1 in 
-   Max.maximize_it_with_care List.length temp2 ;;
-
-let translate1 t = Image.image (fun x->x+t) ;;
-let translate2 t = Image.image (translate1 t) ;;
-
-let first_break_without_1 avoided_elts =
-   [(false,Option.filter_and_unpack 
-    (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
-let first_break_with_1 avoided_elts = 
-   if Listennou.extends avoided_elts [1] then None else 
-   Some(Image.image ( fun x->
-      (true,translate1 (-1) (i_merge avoided_elts x))
-    ) tag2) ;;  
-
-let first_break avoided_elts = 
-   let part1 = first_break_without_1 avoided_elts in 
-   match first_break_with_1 avoided_elts with 
-   None -> part1 
-   |Some(part2) -> part1 @ part2 ;;
-
-let main_pusher old_f (n,avoided_elts) =
-   if n<=15 
-   then main_in_easy_case (n,avoided_elts) 
-   else 
-   let cases = first_break avoided_elts in 
-   let temp1 = Image.image (
-     fun (head_needed,new_avoided_elts) ->
-        let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
-        let sols3 = translate2 1 sols2 in 
-        if head_needed 
-        then (m2+1,Image.image (fun x->1::x) sols3) 
-        else (m2,sols3)   
-   ) cases in 
-   let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
-   (final_m,il_fold_merge (Image.image snd temp2)) ;;
-
-exception Impatient_exn of int * (int list) ;;
-
-let impatient_main (n,avoided_elts) =
-   match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
-   Some res -> res 
-   | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
-
-
-let main pair =
-  match Hashtbl.find_opt hashtbl_for_main pair with 
-   Some old_answer -> old_answer 
-  | None -> 
-    let answer = main_pusher impatient_main pair in 
-    let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
-    answer ;; 
-
-let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
-
-let iterator (already_treated,to_be_treated) =
-   let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
-   let new_ones = List.filter (
-     fun x->not(il_mem  x already_treated)
-   ) temp1 in 
-   (il_merge already_treated new_ones,new_ones) ;;
-
-let rec computer pair =
-   if snd pair = [] then fst pair else 
-   computer(iterator pair) ;; 
-
-let all_helpers = computer ([],[[]]) ;;   
-
-let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
-
-let lm n = 
-   let _ = linear_main n in 
-   let (m,sols)=main (n,[]) in 
-    (m,List.hd sols) ;;
-
-let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
-
-
-let check = List.filter (fun (n,(m,_))->m <> 
-  Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
-
-let easy_selector = Memoized.make(fun (n,k) ->
-List.filter (fun x->List.length(x)=k) (Sz_preliminaries.restricted_power_set 
-(Sz_max_width_t.MW current_width,Int_range.range 1 n))
-) ;;  
-
-
-let original_minimal_carriers carriers sols =
- let indexed_carriers = Int_range.index_everything carriers in 
- let shadow = (
-     fun sol ->
-        Option.filter_and_unpack (
-         fun (idx,carrier) -> 
-            if i_is_included_in carrier sol 
-            then Some idx 
-           else None 
-       ) indexed_carriers 
- )  in     
- let all_shadows = Image.image shadow sols in 
- Ordered_misc.minimal_transversals all_shadows ;;
-
-exception Nonunique_set_of_minimal_carriers ;;
-
-let set_of_minimal_carriers carriers sols =
-let version1 = original_minimal_carriers carriers sols in 
-let m = List.length(List.hd version1) in 
-let version2 = List.filter (fun x->List.length(x)=m) version1 in 
-if (List.length version2)<>1
-then raise Nonunique_set_of_minimal_carriers 
-else 
-Image.image (fun idx->List.nth carriers (idx-1)) (List.hd version2)
-;;
-
-let set_of_minimal_carriers_with_extra carriers sols =
-try (Some(set_of_minimal_carriers carriers sols),None) with 
-_ -> (None, Some carriers)   ;;
-
-let original_carriers n = 
-let temp = Int_range.scale (fun y->let x=current_width+1-y in [n-2*x;n-x]) 1 current_width in 
-List.filter (fun l->List.hd(l)>0) temp;;  
-
-let new_carriers_in_hard_case n carriers = 
-let (temp1,temp2) = List.partition (fun l->List.mem n l) carriers in 
-let temp3 = Image.image (i_outsert n) temp1 in 
-let whole1 = temp2@temp3@(original_carriers n) in 
-let whole2 = Ordered_misc.minimal_elts_wrt_inclusion whole1 in 
-il_sort whole2 ;;
-
-let easy_case (n,k,carriers) = 
-(n-1,k,set_of_minimal_carriers carriers (easy_selector (n-1,k)));;
-
-let hard_case (n,k,carriers) = 
-let new_carriers = new_carriers_in_hard_case n carriers in 
-(n-1,k-1,set_of_minimal_carriers new_carriers (easy_selector (n-1,k-1)));;  
-
-let milton_product carriers1 carriers2 =
-let temp1 = Cartesian.product carriers1 carriers2 in 
-let temp2 = Image.image (fun (x,y)->i_merge x y) temp1 in 
-let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
-il_sort temp3 ;;
-
-let fold_milton = function 
-[] -> []
-| a :: b -> List.fold_left milton_product a b ;;
-
-let meas = Sz_precomputed.measure max_width ;;  
-let sample_size = 15 ;;
-let current_a = 7 ;;
-let base1 = Int_range.range 3 (meas current_a) ;;
-let base2 = Cartesian.product base1 (Int_range.range 1 sample_size) ;;
-let base3 = List.flatten(Image.image (
-fun (sa,b) -> 
-   Int_range.scale (fun sb->(sa,b,sb)) (meas(current_a+b)-sa+1) (meas b)
-) base2);;
-let base4 = List.flatten(Image.image (
-fun (sa,b,sb) -> 
-   Option.filter_and_unpack (
-      fun zb -> 
-        if List.length(zb) = sb 
-        then Some(sa,Image.image (fun t->current_a+t) zb) 
-        else None
-   ) (Sz_preliminaries.restricted_power_set(max_width,Int_range.range 1 b))
-) base3);;
-
-let current_sa = 4 ;;
-let current_left_component =
- List.filter (fun z->List.length(z)=current_sa) 
- (Sz_preliminaries.restricted_power_set(max_width,Int_range.range 1 current_a)) ;; 
-let base5 = Option.filter_and_unpack (
-fun (sa,zb) -> if sa = current_sa then Some zb else None
-) base4 ;;
-let base6 = Ordered_misc.minimal_elts_wrt_inclusion(il_sort base5) ;;
-let base7 = Image.image (fun z->
-let temp1 = Sz_preliminaries.force_subset_in_interval max_width z (1,List.hd(List.rev z)) in 
-List.filter (fun l->Max.list(l)<=current_a) temp1
-) base6 ;;
-let base8 = Image.image (fun l->(l,
-set_of_minimal_carriers_with_extra l current_left_component) 
-) base7 ;;
-let (first_half,other_half) = List.partition (fun (l,(opt1,opt2))->opt2=None) base8 ;;
-let base9 = Image.image (fun (l,(opt1,opt2))->Option.unpack opt1) first_half ;;
-let base10 = Image.image (fun (l,(opt1,opt2))->Option.unpack opt2) other_half ;;
-let res1 = fold_milton base9 ;;
-
-(************************************************************************************************************************
-Snippet 56 : Musings on the Szemeredi problem 
-************************************************************************************************************************)
-open Needed_values ;;
-module L3 = struct
-
-   let current_width = 3 ;; 
-   
-   let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
-   let i_merge = Ordered.merge Total_ordering.for_integers ;;
-   let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
-   let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
-   let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
-   let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
-   
-   let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
-   let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
-   
-   let hashtbl_for_main = Hashtbl.create 100 ;;
-   
-   let main_in_easy_case (n,avoided_elts) =
-      let temp1 = Sz_preliminaries.restricted_power_set 
-          (Sz_max_width_t.MW current_width,Int_range.range 1 n) in 
-      let temp2 = List.filter (
-        fun y->i_does_not_intersect avoided_elts y
-      ) temp1 in 
-      Max.maximize_it_with_care List.length temp2 ;;
-   
-   let translate1 t = Image.image (fun x->x+t) ;;
-   let translate2 t = Image.image (translate1 t) ;;
-   
-   let first_break_without_1 avoided_elts =
-      [(false,Option.filter_and_unpack 
-       (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
-   let first_break_with_1 avoided_elts = 
-      if Listennou.extends avoided_elts [1] then None else 
-      Some(Image.image ( fun x->
-         (true,translate1 (-1) (i_merge avoided_elts x))
-       ) tag2) ;;  
-   
-   let first_break avoided_elts = 
-      let part1 = first_break_without_1 avoided_elts in 
-      match first_break_with_1 avoided_elts with 
-      None -> part1 
-      |Some(part2) -> part1 @ part2 ;;
-   
-   let main_pusher old_f (n,avoided_elts) =
-      if n<=15 
-      then main_in_easy_case (n,avoided_elts) 
-      else 
-      let cases = first_break avoided_elts in 
-      let temp1 = Image.image (
-        fun (head_needed,new_avoided_elts) ->
-           let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
-           let sols3 = translate2 1 sols2 in 
-           if head_needed 
-           then (m2+1,Image.image (fun x->1::x) sols3) 
-           else (m2,sols3)   
-      ) cases in 
-      let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
-      (final_m,il_fold_merge (Image.image snd temp2)) ;;
-   
-   exception Impatient_exn of int * (int list) ;;
-   
-   let impatient_main (n,avoided_elts) =
-      match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
-      Some res -> res 
-      | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
-   
-   
-   let main pair =
-     match Hashtbl.find_opt hashtbl_for_main pair with 
-      Some old_answer -> old_answer 
-     | None -> 
-       let answer = main_pusher impatient_main pair in 
-       let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
-       answer ;; 
-   
-   let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
-   
-   let iterator (already_treated,to_be_treated) =
-      let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
-      let new_ones = List.filter (
-        fun x->not(il_mem  x already_treated)
-      ) temp1 in 
-      (il_merge already_treated new_ones,new_ones) ;;
-   
-   let rec computer pair =
-      if snd pair = [] then fst pair else 
-      computer(iterator pair) ;; 
-   
-   let all_helpers = computer ([],[[]]) ;;   
-   
-   let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
-   
-   let lm n = 
-      let _ = linear_main n in 
-      let (m,sols)=main (n,[]) in 
-       (m,List.hd sols) ;;
-   
-   let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
-   
-   
-   let check = List.filter (fun (n,(m,_))->m <> 
-     Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
-   
-   
-   end ;;
-   
-   
-   
-   module L4 = struct
-   
-     let current_width = 4 ;; 
-     
-     let i_does_not_intersect = Ordered.does_not_intersect Total_ordering.for_integers ;;
-     let i_merge = Ordered.merge Total_ordering.for_integers ;;
-     let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
-     let il_mem = Ordered.mem Total_ordering.silex_for_intlists ;;
-     let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
-     let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
-     
-     let tag1 = Int_range.scale (fun x->[x;2*x-1]) 2 (1+current_width) ;;
-     let tag2 = il_sort (Ordered_misc.minimal_transversals tag1) ;;
-     
-     let hashtbl_for_main = Hashtbl.create 100 ;;
-     
-     let main_in_easy_case (n,avoided_elts) =
-        let temp1 = Sz_preliminaries.restricted_power_set 
-            (Sz_max_width_t.MW current_width,Int_range.range 1 n) in 
-        let temp2 = List.filter (
-          fun y->i_does_not_intersect avoided_elts y
-        ) temp1 in 
-        Max.maximize_it_with_care List.length temp2 ;;
-     
-     let translate1 t = Image.image (fun x->x+t) ;;
-     let translate2 t = Image.image (translate1 t) ;;
-     
-     let first_break_without_1 avoided_elts =
-        [(false,Option.filter_and_unpack 
-         (fun x->if x > 1 then Some(x-1) else None) avoided_elts)];;
-     let first_break_with_1 avoided_elts = 
-        if Listennou.extends avoided_elts [1] then None else 
-        Some(Image.image ( fun x->
-           (true,translate1 (-1) (i_merge avoided_elts x))
-         ) tag2) ;;  
-     
-     let first_break avoided_elts = 
-        let part1 = first_break_without_1 avoided_elts in 
-        match first_break_with_1 avoided_elts with 
-        None -> part1 
-        |Some(part2) -> part1 @ part2 ;;
-     
-     let main_pusher old_f (n,avoided_elts) =
-        if n<=15 
-        then main_in_easy_case (n,avoided_elts) 
-        else 
-        let cases = first_break avoided_elts in 
-        let temp1 = Image.image (
-          fun (head_needed,new_avoided_elts) ->
-             let (m2,sols2) = old_f(n-1,new_avoided_elts) in 
-             let sols3 = translate2 1 sols2 in 
-             if head_needed 
-             then (m2+1,Image.image (fun x->1::x) sols3) 
-             else (m2,sols3)   
-        ) cases in 
-        let (final_m,temp2) = Max.maximize_it_with_care fst temp1 in 
-        (final_m,il_fold_merge (Image.image snd temp2)) ;;
-     
-     exception Impatient_exn of int * (int list) ;;
-     
-     let impatient_main (n,avoided_elts) =
-        match Hashtbl.find_opt hashtbl_for_main (n,avoided_elts) with 
-        Some res -> res 
-        | None -> raise (Impatient_exn(n,avoided_elts)) ;; 
-     
-     
-     let main pair =
-       match Hashtbl.find_opt hashtbl_for_main pair with 
-        Some old_answer -> old_answer 
-       | None -> 
-         let answer = main_pusher impatient_main pair in 
-         let _ = (Hashtbl.add hashtbl_for_main pair answer) in 
-         answer ;; 
-     
-     let sons avoided_elts = il_sort (Image.image snd (first_break avoided_elts));;
-     
-     let iterator (already_treated,to_be_treated) =
-        let temp1 = il_fold_merge (Image.image sons to_be_treated) in 
-        let new_ones = List.filter (
-          fun x->not(il_mem  x already_treated)
-        ) temp1 in 
-        (il_merge already_treated new_ones,new_ones) ;;
-     
-     let rec computer pair =
-        if snd pair = [] then fst pair else 
-        computer(iterator pair) ;; 
-     
-     let all_helpers = computer ([],[[]]) ;;   
-     
-     let linear_main n = Image.image (fun y->main (n,y)) all_helpers ;;
-     
-     let lm n = 
-        let _ = linear_main n in 
-        let (m,sols)=main (n,[]) in 
-         (m,List.hd sols) ;;
-     
-     let computation = Image.image (fun x->(x,lm x)) (Int_range.range 15 50);;
-     
-     let check = List.filter (fun (n,(m,_))->m <> 
-       Sz_precomputed.measure (Sz_max_width_t.MW current_width) n) computation;;
-     
-     end ;;
-   
-   
-   let z1 =  List.filter (fun x->
-     let m3 = Sz_precomputed.measure (Sz_max_width_t.MW 3) x 
-     and m4 = Sz_precomputed.measure (Sz_max_width_t.MW 4) x in 
-     m3<>m4) (Int_range.range 1 25);; 
-   
-   let g1 = L3.main (10,[]) ;;  
-   let g2 = L4.main (10,[]) ;; 
-   
-   let h1 = L3.il_sort (Ordered_misc.minimal_transversals [[1;5;9];[2;6;10]]) ;;
-   
-
-(************************************************************************************************************************
-Snippet 55 : 
+Snippet 54 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 let mixer (a,b,ll)= Image.image (fun l->a@(Image.image (fun t->t+b) l)) ll;;
@@ -9767,163 +5805,6 @@ let sizes =
   Int_range.scale (fun n->List.length(whole n)) 1 25;;
 let check_sizes = (sizes = [1; 2; 6; 12; 20; 34; 56; 88; 136; 208; 314; 470; 700; 1038; 1534; 2262;
 3330; 4896; 7192; 10558; 15492; 22724; 33324; 48860; 71630]) ;;
-
-(************************************************************************************************************************
-Snippet 54 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2, chapter III
-************************************************************************************************************************)
-open Needed_values ;;
-let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
-
-let extensions1 n l = match l with 
-    [] -> Int_range.range 1 n 
-   | a :: others ->
-      List.filter (fun x->(x>0)&&(x<=n)&&(not(List.mem x l))) [a-2;a-1;a+1;a+2] ;;
-
-let extensions2 n ll =
-  List.flatten (Image.image (fun l->
-    let temp1 = extensions1 n l in 
-    Image.image (fun a-> a::l) temp1
-    ) ll) ;;
-
-let main = Memoized.make(fun n->
-    let rec tempf = (fun j->
-      if j=0 then [[]] else 
-      extensions2 n (tempf (j-1))  
-    ) in 
-    Image.image List.rev (tempf n)
-) ;;    
-
-let selector = Memoized.make(fun (n,beginning)->
-  List.filter (
-   fun l->Listennou.extends l beginning  
-) (main (n+1)));;
-
-let old_sel beg n = List.length (selector (n-1,beg)) ;;
-
-let sel beg = 
-    let temp1 = Image.image string_of_int (Int_range.scale (old_sel beg) 1 18) in 
-    let temp2 = String.concat "," temp1 in 
-    let temp3 = "\n\n\n["^temp2^"]\n\n\n" in 
-    print_string temp3;;
-
-let mixer (a,b,ll)= Image.image (fun l->a@(Image.image (fun t->t+b) l)) ll;;
-
-let upwards_hat (a,n,b) =  
-  let q1 = (n-a)/2 in 
-  let central_move = (if (n-a) mod 2 = 0 then -1 else 1) in 
-  let new_beginning = (a+2*q1)+central_move in 
-  let q2 = (new_beginning-b)/2 in 
-  (Int_range.scale (fun t->a+2*t) 0 q1)@(Int_range.scale (fun t->new_beginning-2*t) 0 q2) ;;
-
-let downwards_hat (a,n,b) =  
-  let q1 = (a-n)/2 in 
-  let central_move = (if (a-n) mod 2 = 0 then 1 else -1) in 
-  let new_beginning = (a-2*q1)+central_move in 
-  let q2 = (b-new_beginning)/2 in 
-  (Int_range.scale (fun t->a-2*t) 0 q1)@(Int_range.scale (fun t->new_beginning+2*t) 0 q2) ;;
-
-exception Hat_definition_exn of int * int * int ;;
-
-let hat (a,n,b) =
-  if (((b-a) mod 2)=0)
-    ||((n<a)&&(n>b))||((n>a)&&(n<b))
-  then raise(Hat_definition_exn(a,n,b)) else  
-  if a<n 
-  then upwards_hat (a,n,b)
-  else downwards_hat (a,n,b) ;;  
-
-   
-let eu_12  old_f n = mixer([1],1,old_f(n-1,1)) ;;
-let eu_132 old_f n = if n=3 then [[1;3;2]] else mixer([1;3;2],3,old_f(n-3,1)) ;;
-let eu_134 old_f n = if n=4 then [hat(1,4,2)] else [] ;;
-let eu_135 old_f n = [hat(1,n,2)] ;;
-
-let eu_21 old_f n = 
-  if n=2
-  then [[2;1]]
-  else mixer([2;1],2,old_f(n-2,1));;
-
-let eu_case1 i1 old_f n = 
-  if n=i1 
-  then mixer([i1],0,old_f(i1-1,i1-2))
-  else mixer(hat(i1,1,i1-1),i1,old_f(n-i1,1)) ;;
-let eu_case2 i1 old_f n = 
-  if n=i1 
-  then mixer([i1],0,old_f(i1-1,i1-1))
-  else [] ;;
-let eu_case3 i1 old_f n = 
-  if n=(i1+1) 
-  then mixer([i1;(i1+1)],0,old_f(i1-1,i1-1))
-  else [] ;;
-let eu_case4 i1 old_f n = mixer(hat(i1,n,i1+1),0,old_f(i1-1,i1-1)) ;;  
-
-let main_base n =
-    (
-      [
-          [1;2],eu_12 ;
-          [1;3;2],eu_132 ;
-          [1;3;4],eu_134 ; 
-          [1;3;5],eu_135 ; 
-          [2;1],eu_21;
-          [2;3],eu_case3 2; 
-          [2;4],eu_case4 2; 
-        ]  
-    )  
-    @
-    (List.flatten(
-      Int_range.scale (fun x->
-        List.filter (fun (l,f)->(List.for_all(fun j->j>0)l)&&(List.hd(List.rev l)<= n)) [
-          [x;x-2],eu_case1 x;
-          [x;x-1],eu_case2 x;
-          [x;x+1],eu_case3 x; 
-          [x;x+2],eu_case4 x; 
-        ]
-        ) 3 n
-    )) ;;
-
-let small_values = [
-   (1,1),[[1]];
-   (2,1),[[1;2]];
-   (2,2),[[2;1]];
-   (3,1),[[1;2;3];[1;3;2]];
-   (3,2),[[2;1;3];[2;3;1]];
-   (3,3),[[3;1;2];[3;2;1]];
-   (4,1),[[1;2;3;4];[1;2;4;3];[1;3;2;4];[1;3;4;2]];
-   (4,2),[[2;1;3;4];[2;4;3;1]];
-   (4,3),[[3;1;2;4];[3;4;2;1]];
-   (4,4),[[4;2;1;3];[4;2;3;1];[4;3;1;2];[4;3;2;1]];
-]   ;;
-
-exception Main_parameter_exn of int * int ;;
-
-let main = Memoized.recursive (fun old_f (n,i1)->
-   match List.assoc_opt (n,i1) small_values with 
-   Some(easy_answer) -> easy_answer 
-   | None ->
-     if (n<5)||(i1<1)||(i1>n) then raise(Main_parameter_exn(n,i1)) else 
-     let temp1 = main_base n in 
-     let temp2 = Image.image (fun (prefix,f)-> 
-        if List.hd(prefix)=i1 
-        then f old_f n
-        else []  
-     ) temp1  in 
-     List.flatten temp2 
-) ;;
-
-let support = List.flatten (Int_range.scale (fun m->Int_range.scale(fun j->(m,j)) 1 m) 1 18);;
-let check = List.filter (
-  fun (n,i1) -> (main (n,i1)) <> selector (n-1,[i1])
-) support ;;
-
-
-let dbg1= main_base 5 ;;
-let dbg2 = List.filter (fun (l,f) -> List.hd l = 2) dbg1 ;;
-let dbg3 = Image.image (
-  fun (l,f)-> f main 5
-) dbg2 ;;
-
-eu_case2 3 main 5 ;;
-
 
 (************************************************************************************************************************
 Snippet 53 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2 

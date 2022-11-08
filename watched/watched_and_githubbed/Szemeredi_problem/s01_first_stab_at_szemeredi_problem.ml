@@ -1,59 +1,17 @@
 (*
 
-#use "Githubbed_archive/Szemeredi_problem/02_second_stab_at_szemeredi_problem.ml" ;;
+#use "Githubbed_archive/Szemeredi_problem/01_first_stab_at_szemeredi_problem.ml" ;;
 
-A failed attempt : using a greedy elimination procedure, described in the Greedy module 
-just below.
+As shown in the code below, analysis is done up to n=25. 
 
+let ff n = Level_four.impatient_measure (Int_range.range 1 n);;
+let u1 = Int_range.scale ff 1 25 ;;
 *)
 
+open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
-module Greedy = struct 
-
-  let i_mem = Ordered.mem Total_ordering.for_integers  ;;
-  let i_outsert = Ordered.outsert Total_ordering.for_integers  ;;
-  let i_setminus = Ordered.setminus Total_ordering.for_integers  ;;  
-  let i_sort = Ordered.safe_set Total_ordering.for_integers  ;;
-  let i_is_included_in = Ordered.is_included_in Total_ordering.for_integers ;;
-  let il_merge = Ordered.merge Total_ordering.silex_for_intlists ;;
-  let il_sort = Ordered.safe_set Total_ordering.silex_for_intlists ;;
- 
-  let atomic_step_in_greedy_elimination (vertices,edges) =
-    let temp1 = Image.image (fun v->(v,List.length(List.filter (fun e->List.mem v e) edges))) vertices in 
-    let (_,sols) = Max.maximize_it_with_care snd temp1 in 
-    fst(List.hd(List.rev sols)) ;;
-
-let eliminate_vertex_in v (vertices,edges) =   
-  (i_outsert v vertices,List.filter (fun e->not(i_mem v e)) edges) ;; 
-
-let rec greedy_elimination (vertices,edges) =
-   if edges = [] then vertices else 
-   let v = atomic_step_in_greedy_elimination (vertices,edges) in 
-   greedy_elimination (eliminate_vertex_in v (vertices,edges)) ;;
-   
-let measure_via_greedy_elmination (vertices,edges) =
-   List.length (greedy_elimination (vertices,edges)) ;;
-
-let rec lexshorted_greedy_elimination (vertices,edges,goal) =
-   match vertices with 
-   [] -> []
-   | v :: other_vertices ->
-     let (edges_with_v,edges_without_v) = List.partition (i_mem v) edges in 
-     let new_edges = Image.image (i_outsert v) edges_with_v in 
-     let towards_new_whole = il_merge new_edges edges_without_v in  
-     let new_whole = Ordered_misc.minimal_elts_wrt_inclusion towards_new_whole in 
-     if measure_via_greedy_elmination (other_vertices,new_whole) = goal -1 
-     then let preceding_answer =
-          lexshorted_greedy_elimination  (other_vertices,new_whole,goal-1) in 
-          v :: preceding_answer
-     else lexshorted_greedy_elimination 
-          (other_vertices,List.filter (fun e->not(i_mem v e)) edges,goal) ;;  
-
-
-end ;;  
-
-let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/02_second_stab_at_szemeredi_problem.ml" ;;
+let this_file = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/01_first_stab_at_szemeredi_problem.ml" ;;
 
 let basic_string_of_il l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
 let string_of_interval (a,b) =
@@ -961,36 +919,4 @@ g_add_decomposable 4 (Int_range.range 1 22) [[1];(Int_range.range 2 22)] ([1;2]@
 
 (* End of precomputed data for level 4 *)
 
-
-let z1 = List.flatten [
-  (!(Level_two.ref_for_additions));
-  (!(Level_three.ref_for_additions));
-  (!(Level_four.ref_for_additions))
-] ;;
-
-let optimistic_measure = Memoized.make (fun dsol->
-    let (L i_level) = dsol.Detailed_solution.level 
-    and vertices = dsol.Detailed_solution.argument in 
-    let edges = Sz_preliminaries.contained_arithmetic_progressions 
-      (Sz_max_width_t.MW i_level) vertices in 
-     Greedy.greedy_elimination (vertices,edges) 
-) ;;
-
-let z2 = Explicit.filter (fun dsol->
-   List.length(optimistic_measure dsol) <> List.length(dsol.Detailed_solution.solution)
-  ) z1 ;;
-
-let optimistic = Memoized.make (fun (level,vertices)->
-  let edges = il_sort(Sz_preliminaries.contained_arithmetic_progressions 
-    (Sz_max_width_t.MW level) vertices) in 
-   Greedy.greedy_elimination (vertices,edges) 
-) ;;
-
-let r1 = Int_range.range 1 11 ;;
-let edges_in_r1 = il_sort(Sz_preliminaries.contained_arithmetic_progressions 
-(Sz_max_width_t.MW 2) r1) ;;
-
-let a1 = Greedy.atomic_step_in_greedy_elimination (r1,edges_in_r1) ;;
-let pair2 = Greedy.eliminate_vertex_in a1 (r1,edges_in_r1) ;;
-let res2 = Level_two.patient_measure (fst pair2) ;;
 
