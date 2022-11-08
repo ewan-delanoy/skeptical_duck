@@ -238,12 +238,12 @@ module Bare = struct
 
   let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=
     if page_number=1
-    then replace_first_page_number_in_by  receiving_one inserted_one  total_length
+    then replace_first_page_number_in_by  ~receiving_one ~inserted_one  ~total_length
     else 
     if page_number=total_length
-    then replace_last_page_number_in_by  receiving_one inserted_one  total_length
+    then replace_last_page_number_in_by  ~receiving_one ~inserted_one  ~total_length
     else 
-    replace_nonfirst_page_number_in_by page_number receiving_one inserted_one  total_length;;
+    replace_nonfirst_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length;;
 
   let unlabeled_replace_page_number_in_by page_number receiving_one inserted_one  total_length=
      replace_page_number_in_by

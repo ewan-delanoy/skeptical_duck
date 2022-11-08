@@ -13,7 +13,7 @@ module Private = struct
    (* let configuration fw = File_watcher.configuration (parent fw) ;;*)
 
    let root fw = Fw_poly.root fw ;;
-   let update_parent fw new_parent = Fw_poly.set_parent fw new_parent ;;
+   let update_parent fw new_parent = Fw_poly.set_parent ~child:fw ~new_parent ;;
    let watched_files fw = Fw_poly.watched_files fw ;;
    
    (* End of inherited methods *)  
