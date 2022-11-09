@@ -13,11 +13,11 @@ let naive_extension ap=
    (Cull_string.cobeginning (i+1) s);; 
    
 let extension x=try (naive_extension x) with 
-  any_exception->"";;
+  _any_exception->"";;
   
  let is_a_directory ap=
    let s=Absolute_path.to_string ap in
-   try (function x->true)(Sys.readdir s) with any_exception->false;;
+   try (function _x->true)(Sys.readdir s) with _any_exception->false;;
  
  let father ap=
    let s=Absolute_path.to_string ap in
@@ -45,10 +45,10 @@ let extension x=try (naive_extension x) with
    )() in
    let temp1=Array.to_list(Sys.readdir(s)) in
    let tempf=(function w->try (Some(Absolute_path.of_string(s_with_slash^w))) with
-   any_exception->None) in
+   _any_exception->None) in
    Option.filter_and_unpack tempf temp1;;
    
- let ls x=try (naive_ls x) with any_exception->[];;  
+ let ls x=try (naive_ls x) with _any_exception->[];;  
  
  let test_for_cleaniness=function ap->
   let s=Absolute_path.to_string ap in

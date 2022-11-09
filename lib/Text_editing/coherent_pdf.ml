@@ -302,11 +302,11 @@ module Bare = struct
          let base  = Image.image (
             fun (k,pair)->(k,pair,Helper.usual_name_in_extract_page_range pdfname pair)
          )(Int_range.index_everything ranges) in  
-         let part1=Image.image (fun (idx,pair,name)->
+         let part1=Image.image (fun (_idx,pair,name)->
             Helper.generic_extract_page_range pdfname pair name
          ) base
          and part2=Image.image(
-            fun (idx,pair,name)->
+            fun (idx,_pair,name)->
             "mv "^name^" part"^(string_of_int idx)^".pdf"
          ) base in  
          part1@part2 ;;
