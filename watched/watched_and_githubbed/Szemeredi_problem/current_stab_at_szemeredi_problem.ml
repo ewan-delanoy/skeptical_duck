@@ -768,7 +768,7 @@ let partial_superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
   let pt_before_jump = P(width-1,n-2*(width-1),n,scrappers) in  
   match Simplest_reduction.decompose pt_before_jump with 
-  None -> ([],Some(Jump_from_atom(Point.enumerate_supporting_set pt_before_jump)))
+  None -> ([],Some(Jump_from_atom(pt_before_jump)))
   | Some (pt2,adj2) -> ([],Some(Jump_surface(pt2,adj2))) ;; 
     
 
@@ -805,7 +805,27 @@ let compute_superficial_result_partially ~with_anticipation pt =
               ([],Some(Fork_surface tooths))
       |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
 
-
+(*
+let compute_bulk_result_partially ~with_anticipation pt =  
+   let partial_res1 = compute_superficial_result_partially ~with_anticipation pt in 
+   match snd partial_res1 with 
+    None -> partial_res1 
+   |Some sr ->(match sr with 
+     Atomic -> Bulk_result.atomic_case pt 
+   | Decomposable(pt2,adj2) -> 
+       let partial_res2 = compute_bulk_result_partially ~with_anticipation pt2 in 
+       (
+        match snd partial_res2 with 
+        None -> partial_res2 
+       |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
+       )
+   | Jump_from_atom of int list
+   | Jump_surface of point * extension_data
+   | Contraction_surface of point * constraint_t
+   | Fork_surface of (point * extension_data) list
+   
+   ) ;; 
+*)
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      

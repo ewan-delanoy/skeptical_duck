@@ -26,7 +26,7 @@ type ancestry_info = AI of (point * extension_data) list ;;
 type superficial_result = 
   Atomic
 | Decomposable of point * extension_data   
-| Jump_from_atom of int list 
+| Jump_from_atom of point 
 | Jump_surface of point * extension_data
 | Contraction_surface of point * constraint_t  
 | Fork_surface of (point * extension_data) list ;;
