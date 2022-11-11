@@ -139,6 +139,18 @@ let insert_several_constraints extra_constraints (M(reps,qpoints)) =
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
   
+exception Insert_several_constraints_carefully_exn of constraint_t list * mold ;;
+
+let insert_several_constraints_carefully extra_constraints old_mold =
+   let new_mold = insert_several_constraints extra_constraints old_mold in 
+   let (M(new_reps,new_qpoints)) = new_mold in     
+    if new_qpoints = [] 
+    then None 
+    else
+    if new_reps = []
+    then raise(Insert_several_constraints_carefully_exn(extra_constraints,old_mold))
+    else Some new_mold ;;          
+
 let expand_qpoint (Q(_,constraints,extension)) mold =
   extend_with (insert_several_constraints constraints mold) extension ;; 
 
@@ -350,6 +362,12 @@ let extend_with pt (BR(old_sr,mold)) extension =
 let extend_with_opt pt bres_opt extension = match bres_opt with 
       None -> None 
       |Some bres -> Some (extend_with pt bres extension) ;;    
+
+let impose_one_more_constraint_opt pt cstr (BR(sr,mold)) =
+    match Mold.insert_several_constraints_opt [cstr] mold with 
+     None -> None
+    | Some new_mold -> Some(BR(Contraction_surface(pt,cstr),new_mold)) ;;
+     
 
 end ;;  
     
@@ -772,10 +790,16 @@ let compute_superficial_result_partially ~with_anticipation pt =
   let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
   match generic_access_opt  ~with_anticipation preceding_point with 
-    None -> ([preceding_point],)
-   |Some 
+    None -> ([preceding_point],None)
+   |Some bres ->
+       match Bulk_result.impose_one_more_constraint bres front_constraint with 
+       None -> let tooths = Int_range.scale (fun k->
+                let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
+                 Simplest_reduction.decompose(P(width2,breadth2-1,m,scr))
+               ) 0 2  in 
+              ([],Some(Fork_surface tooths))
+      |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint))) ;; 
 *)
-
 
 
 let find_remote_stumbling_block_or_immediate_working_hook 
