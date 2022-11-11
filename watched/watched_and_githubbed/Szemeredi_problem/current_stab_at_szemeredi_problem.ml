@@ -512,7 +512,7 @@ let deprecated_add_to_low_hashtbl  ~with_anticipation pt vaal=
     then   Hashtbl.replace deprecated_low_hashtbl pt vaal
     else deprecated_low_anticipator := (pt,vaal) :: (!deprecated_low_anticipator)  ;;
 
-(*
+
 
 let low_hashtbl = Hashtbl.create 50 ;;
 let low_anticipator = ref [] ;; 
@@ -528,9 +528,7 @@ let add_to_low_hashtbl  ~with_anticipation pt vaal=
     if not(with_anticipation)
     then   Hashtbl.replace low_hashtbl pt vaal
     else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
-
-
-*)  
+  
   
 end ;;   
   
