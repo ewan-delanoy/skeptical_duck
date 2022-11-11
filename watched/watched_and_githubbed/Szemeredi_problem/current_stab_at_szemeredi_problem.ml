@@ -868,10 +868,12 @@ let from_partial_to_full f_partial ~with_anticipation pts0 =
   ) in 
   main ;;
 
-let generic_compute_bulk_results ~with_anticipation pts0 =
-  from_partial_to_full compute_bulk_result_partially ~with_anticipation pts0 ;;
+let compute_bulk_results pts0 =
+  from_partial_to_full 
+     compute_bulk_result_partially 
+       ~with_anticipation:true pts0 ;;
 
-
+let compute_bulk_result pt = compute_bulk_results [pt] ;; 
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
