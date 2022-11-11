@@ -35,9 +35,19 @@ type deprecated_bulk_result = DBR of ((hook * ancestry_info) option) * mold ;;
 
 type bulk_result = BR of superficial_result * mold ;;  
 
-type function_of_size = 
+type deprecated_function_of_size = 
 Usual_fos of (int -> deprecated_bulk_result) ;; 
 
-type function_of_breadth_and_size = 
+type deprectaed_function_of_breadth_and_size = 
 Usual_fobas of ( int -> int -> deprecated_bulk_result) ;;
+
+(*
+
+type function_of_size = 
+Usual_fos of (int -> bulk_result) ;; 
+
+type function_of_breadth_and_size = 
+Usual_fobas of ( int -> int -> bulk_result) ;;
+
+*)
 
