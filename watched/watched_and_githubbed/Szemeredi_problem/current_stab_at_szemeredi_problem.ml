@@ -534,8 +534,8 @@ end ;;
   
 
 
-let rose_hashtbl = Hashtbl.create 50 ;;
-let medium_hashtbl = Hashtbl.create 50 ;;
+let deprecated_rose_hashtbl = Hashtbl.create 50 ;;
+let deprecated_medium_hashtbl = Hashtbl.create 50 ;;
 
 let deprecated_generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
@@ -543,10 +543,10 @@ let deprecated_generic_access_opt  ~with_anticipation pt =
  | Some(pt2,adj) ->
 let (width,breadth,n,scrappers) = Point.unveil pt2 in 
 let pre_res=(
-match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+match Hashtbl.find_opt deprecated_rose_hashtbl (width,scrappers) with 
 Some summary -> Some (Parametrized.deprecated_eval_fobas summary breadth n)
 | None ->  
- (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+ (match Hashtbl.find_opt deprecated_medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.deprecated_eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.deprecated_get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
@@ -566,7 +566,7 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
    Some summary -> Some (Parametrized.eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
-Bulk_result.extend_with_opt pre_res adj ;;
+Bulk_result.extend_with_opt pt2 pre_res adj ;;
 *)
 
 let generic_access ~with_anticipation pt = 
@@ -729,12 +729,20 @@ let low_add pt hook =
              ~with_anticipation:false pt res in 
    res ;;
 
-let med_add (width,breadth,scrappers) summary = 
-  Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
+let  deprecated_med_add (width,breadth,scrappers) summary = 
+  Hashtbl.replace deprecated_medium_hashtbl (width,breadth,scrappers) summary ;;
 
-let rose_add (width,breadth) summary = 
-    Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
+let  deprecated_rose_add (width,breadth) summary = 
+    Hashtbl.replace deprecated_rose_hashtbl (width,breadth) summary ;;  
  
+(*    
+let med_add (width,breadth,scrappers) summary = 
+    Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
+    
+let rose_add (width,breadth) summary = 
+    Hashtbl.replace rose_hashtbl (width,breadth) summary ;; 
+*)
+
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
