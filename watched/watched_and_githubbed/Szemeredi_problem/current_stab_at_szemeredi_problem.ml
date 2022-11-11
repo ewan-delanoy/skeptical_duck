@@ -497,11 +497,25 @@ end ;;
 
 module Accumulator_with_optional_anticipator = struct 
 
+let deprecated_low_hashtbl = Hashtbl.create 50 ;;
+let deprecated_low_anticipator = ref [] ;; 
+let deprecated_get_from_low_hashtbl ~with_anticipation pt =
+      if not(with_anticipation)
+      then  Hashtbl.find_opt deprecated_low_hashtbl pt 
+      else
+          match List.assoc_opt pt (!deprecated_low_anticipator) with 
+          Some anticiped_answer -> Some anticiped_answer 
+          | None -> Hashtbl.find_opt deprecated_low_hashtbl pt  ;;
+  
+let deprecated_add_to_low_hashtbl  ~with_anticipation pt vaal=
+    if not(with_anticipation)
+    then   Hashtbl.replace deprecated_low_hashtbl pt vaal
+    else deprecated_low_anticipator := (pt,vaal) :: (!deprecated_low_anticipator)  ;;
+
+(*
+
 let low_hashtbl = Hashtbl.create 50 ;;
 let low_anticipator = ref [] ;; 
-    
-  
-  
 let get_from_low_hashtbl ~with_anticipation pt =
       if not(with_anticipation)
       then  Hashtbl.find_opt low_hashtbl pt 
@@ -514,7 +528,9 @@ let add_to_low_hashtbl  ~with_anticipation pt vaal=
     if not(with_anticipation)
     then   Hashtbl.replace low_hashtbl pt vaal
     else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
-  
+
+
+*)  
   
 end ;;   
   
@@ -534,7 +550,7 @@ Some summary -> Some (Parametrized.deprecated_eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.deprecated_eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
+ | None -> Accumulator_with_optional_anticipator.deprecated_get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
 Deprecated_bulk_result.extend_with_opt pre_res adj ;;
 
@@ -666,7 +682,7 @@ let enhancement_data = ref [
 
 let add_enhancement_data pair =
    (
-    Accumulator_with_optional_anticipator.low_anticipator:=[];
+    Accumulator_with_optional_anticipator.deprecated_low_anticipator:=[];
     enhancement_data := (!enhancement_data)@[pair]) ;; 
 
 let test1_for_enhancement (P(w,b,n,s)) = None ;; 
@@ -711,7 +727,7 @@ let compute_from_below ~with_anticipation pt hook =
 
 let low_add pt hook =
    let res = compute_from_below ~with_anticipation:false pt hook in  
-   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
+   let _ = Accumulator_with_optional_anticipator.deprecated_add_to_low_hashtbl  
              ~with_anticipation:false pt res in 
    res ;;
 
@@ -793,7 +809,7 @@ let rec pusher_for_recursive_computation to_be_treated=
       match opt_res with 
        Some hook ->
            let res = compute_from_below ~with_anticipation:true pt2 hook in  
-           let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl 
+           let _ = Accumulator_with_optional_anticipator.deprecated_add_to_low_hashtbl 
            ~with_anticipation:true pt2 res in 
            others
        | None -> 
@@ -808,7 +824,7 @@ let rec born_to_fail_for_recursive_computation walker=
 
 let  needed_subcomputations_for_several_computations uples = 
   try born_to_fail_for_recursive_computation uples with 
-  Pusher_exn -> !(  Accumulator_with_optional_anticipator.low_anticipator) ;; 
+  Pusher_exn -> !(  Accumulator_with_optional_anticipator.deprecated_low_anticipator) ;; 
 
 let needed_subcomputations_for_single_computation pt = 
   needed_subcomputations_for_several_computations [pt] ;; 
