@@ -13,7 +13,6 @@ open Needed_values ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
-
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
 let test_for_admissibility_up_to_max_with max_width z =
@@ -223,131 +222,13 @@ let apply_fork ll =
   *)
   M(chosen_reps,Image.image fst temp1) ;; 
 
-let apply_hook_naively pt hook args =  
-    match hook with 
-    Passive_repeat -> apply_passive_repeat pt (snd(List.hd args))
-  | Fork ->   Some(apply_fork args )
-  | Jump -> Some(snd(List.hd args));; 
-
-
-exception Apply_hook_exn of ((qualified_point* mold) list) * hook * point ;;
-  
-let apply_hook pt hook args  = 
-  match apply_hook_naively pt hook args  with 
-    None -> None 
-  |Some mold ->
-    let (M(reps,_)) = mold in 
-    if reps = []
-    then raise (Apply_hook_exn(args,hook,pt)) 
-    else Some mold ;;
-
 let singleton z = M([z],[])  ;;
 
 
 end ;;
 
-
-module Ancestry_info = struct 
-
-let extend_with (AI l) extension =
-   AI(
-     Image.image (fun (pt,ext1)->
-        (pt,i_merge ext1 extension)
-      ) l
-   ) ;;
-    
-let append_right (AI l) extension =
-    AI(
-      Image.image (fun (pt,ext1)->
-         (pt,ext1@extension)
-       ) l
-    ) ;;
-
-
-end ;;   
-
   
-  
-let nondecomposed_ancestors_for_hook pt hook = 
-    let (width,breadth,n,scrappers) = Point.unveil pt in  
-    match hook with 
-    Passive_repeat -> [P(width,breadth-1,n,scrappers)]     
-   | Fork ->     
-       Int_range.scale (fun k->
-          let (m,scr) = remove_one_element  (n,scrappers)  (breadth+k*width) in 
-          P(width,breadth-1,m,scr)
-        ) 0 2 
-   | Jump -> [P(width-1,n-2*(width-1),n,scrappers)] ;;
-
-exception Already_decomposable_point of point ;; 
-
-let ancestors_for_hook pt0 hook = 
-  match Simplest_reduction.decompose pt0 with 
-  None -> raise(Already_decomposable_point(pt0))
-  |Some(pt1,adj1) ->
-  let temp1 = nondecomposed_ancestors_for_hook pt1 hook in 
-  (AI(Image.image (fun pt2-> 
-    match Simplest_reduction.decompose pt2 with 
-     None -> (pt2,adj1)
-    |Some(pt3,adj3) -> (pt3,i_merge adj1 adj3)
-  ) temp1))  ;; 
-
-module Deprecated_bulk_result = struct 
-
-    let common_length (DBR(_,pres)) = Mold.common_length pres ;;
-    let partial (DBR(_,pres)) = pres ;;  
-    let make ancestor_info pres = DBR(ancestor_info,pres) ;;
-    let singleton ancestry z = DBR(ancestry,Mold.singleton z)  ;;
-    
-    let extend_with (DBR(ancestry_opt,pres)) extension = 
-       let new_ancestry_opt = (
-          match ancestry_opt with 
-            None -> None 
-           |Some(hook,anc_info) -> Some(hook,Ancestry_info.extend_with anc_info extension)
-       ) in 
-      DBR(
-        new_ancestry_opt,
-        Mold.extend_with pres extension
-      );;
-    
-    let append_right (DBR(ancestry_opt,pres)) extension = 
-        let new_ancestry_opt = (
-           match ancestry_opt with 
-             None -> None 
-            |Some(hook,anc_info) -> Some(hook,Ancestry_info.append_right anc_info extension)
-        ) in 
-       DBR(
-         new_ancestry_opt,
-         Mold.append_right pres extension
-       );;
-       
-    
-    let extend_with_opt bres_opt extension = match bres_opt with 
-      None -> None 
-      |Some bres -> Some (extend_with bres extension) ;;     
-    
-    let apply_hook pt hook args  = 
-       let partial_args = Image.image (fun (qp,bres)->(qp,partial bres)) args in  
-       match Mold.apply_hook  pt hook partial_args  with 
-        None -> None 
-       |Some new_mold ->
-            let anc_info = Some(hook,ancestors_for_hook pt hook) in  
-            Some(DBR(anc_info,new_mold));;
-      
-    let compute_full_replacement (DBR(anc_info,mold)) replacement_data =
-      DBR(anc_info,Mold.compute_full_replacement replacement_data mold) ;; 
-
-    let apply_several_replacements bres replacements = 
-        List.fold_left compute_full_replacement bres replacements ;;  
-
-        let compute_minimal_insertion (DBR(anc_info,mold)) minins_data =
-          DBR(anc_info,Mold.compute_minimal_insertion minins_data mold) ;;     
-
-    let apply_several_minimal_insertions bres minins_data = 
-          List.fold_left compute_minimal_insertion bres minins_data ;;    
-
-    end ;;  
-    
+ 
 
 module Bulk_result = struct     
 
@@ -373,16 +254,7 @@ let impose_one_more_constraint_opt pt cstr (BR(sr,mold)) =
 
 end ;;  
     
-    module Parametrized = struct 
-
-      let deprecated_eval_fos fos n =
-        match fos with 
-           Dusual_fos f -> f n ;; 
-     
-     let deprecated_eval_fobas fobas breadth n = 
-       match fobas with 
-        Dusual_fobas f -> f breadth n ;;  
-
+module Parametrized = struct 
       
       let eval_fos fos n =
          match fos with 
@@ -416,6 +288,7 @@ let vp2 = P (1, 0, 3, [2]) ;;
 let pf1 x = P (1, x-2, x, []) ;; 
 let pf2 x = P (2, x-5, x, []) ;; 
 
+(*
 let aif1 n =
    match List.assoc_opt n [1,None;2,None;
     3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])])
@@ -427,7 +300,7 @@ let aif1 n =
   |1|2 ->Some(Passive_repeat,AI[(pf1(n-1), [n])])
   |_ ->failwith("impossible remainder by 3"));;
     
-(*
+
    
 let check_aif1 = 
    let temp1 = Int_range.scale (fun n->
@@ -437,6 +310,7 @@ let check_aif1 =
 
 *)
 
+(*
 let aif2 n =
   match List.assoc_opt n [1,None;2,None;
   3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])]);
@@ -446,7 +320,7 @@ let aif2 n =
   Some answer -> answer 
   | None -> Some(Passive_repeat,AI[(pf2(n), [])]) ;;
    
-(*
+
   
 let check_aif2 = 
   let temp1 = Int_range.scale (fun n->
@@ -464,6 +338,7 @@ let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
 let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
 let qpf3 n = Q (pf1 (n-1), [], []) ;;
 
+(*
 let moldf1 n =
   match List.assoc_opt n [
     1,M([[1]],[]);3,M([sf1(3)],[vqp1; vqp2;qpf3(3)]);
@@ -476,7 +351,7 @@ let moldf1 n =
   |_ ->failwith("impossible remainder by 3")) ;;  
 
 
-(*
+
 let check_moldf1 = 
    let temp1 = Int_range.scale (fun n->
     let (DBR(opt,mold)) = force_compute (P(2,0,n,[])) in 
@@ -484,9 +359,10 @@ let check_moldf1 =
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
+(*
 let bresf1 n = DBR(aif1(n),moldf1(n)) ;;
   
-(*
+
 let check_bresf1 = 
    let temp1 = Int_range.scale (fun n->
     let bres = force_compute (P(2,0,n,[])) in 
@@ -494,19 +370,6 @@ let check_bresf1 =
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
-let bresf2 breadth n = 
-  if breadth = 0 then Deprecated_bulk_result.singleton None (Int_range.range 1 n) else
-  if n <= breadth + 2 then bresf1 n else 
-  Deprecated_bulk_result.append_right (bresf1(breadth+2)) (Int_range.range (breadth+3) n)  ;;
-
-(*  
-let check_bresf2 =
-    let temp1 = Cartesian.product (Int_range.range 0 30) (Int_range.range 1 30) in 
-    let temp2 = Image.image (
-      fun (b,n) ->((b,n),force_compute (P(1,b,n,[])),Parametrized_Example.bresf2 b n)
-    ) temp1 in
-    List.filter (fun (n,a,b)->a<>b) temp2 ;;
-*)
 
 end ;;   
       
@@ -515,23 +378,6 @@ end ;;
 
 
 module Accumulator_with_optional_anticipator = struct 
-
-let deprecated_low_hashtbl = Hashtbl.create 50 ;;
-let deprecated_low_anticipator = ref [] ;; 
-let deprecated_get_from_low_hashtbl ~with_anticipation pt =
-      if not(with_anticipation)
-      then  Hashtbl.find_opt deprecated_low_hashtbl pt 
-      else
-          match List.assoc_opt pt (!deprecated_low_anticipator) with 
-          Some anticiped_answer -> Some anticiped_answer 
-          | None -> Hashtbl.find_opt deprecated_low_hashtbl pt  ;;
-  
-let deprecated_add_to_low_hashtbl  ~with_anticipation pt vaal=
-    if not(with_anticipation)
-    then   Hashtbl.replace deprecated_low_hashtbl pt vaal
-    else deprecated_low_anticipator := (pt,vaal) :: (!deprecated_low_anticipator)  ;;
-
-
 
 let low_hashtbl = Hashtbl.create 50 ;;
 let low_anticipator = ref [] ;; 
@@ -554,26 +400,6 @@ end ;;
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
-let deprecated_rose_hashtbl = Hashtbl.create 50 ;;
-let deprecated_medium_hashtbl = Hashtbl.create 50 ;;
-
-
-
-let deprecated_generic_access_opt  ~with_anticipation pt = 
- match Simplest_reduction.decompose pt with 
- None -> Some (Deprecated_bulk_result.singleton None (Point.enumerate_supporting_set pt))
- | Some(pt2,adj) ->
-let (width,breadth,n,scrappers) = Point.unveil pt2 in 
-let pre_res=(
-match Hashtbl.find_opt deprecated_rose_hashtbl (width,scrappers) with 
-Some summary -> Some (Parametrized.deprecated_eval_fobas summary breadth n)
-| None ->  
- (match Hashtbl.find_opt deprecated_medium_hashtbl (width,breadth,scrappers) with 
-   Some summary -> Some (Parametrized.deprecated_eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.deprecated_get_from_low_hashtbl ~with_anticipation pt2) 
-) in 
-Deprecated_bulk_result.extend_with_opt pre_res adj ;;
-
 
 let generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
@@ -591,179 +417,23 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
 Bulk_result.extend_with_opt pt2 pre_res adj ;;
 
 
-let generic_access ~with_anticipation pt = 
-   Option.unpack(deprecated_generic_access_opt ~with_anticipation pt) ;;   
 
-exception Bad_access_during_inspection of qualified_point ;;
-exception Undecided of qualified_point ;;
-
-let inspect_qualified_point ~with_anticipation qp =
-   let (Q(pt,constraints,_)) = qp in 
-   match deprecated_generic_access_opt ~with_anticipation pt with 
-    None -> raise(Bad_access_during_inspection(qp))
-    | Some (DBR(_,M(reps,qpoints))) ->
-      let test = Constraint.satisfied_by_individual constraints in 
-      if List.exists test reps 
-      then true 
-      else   
-       let temp1 = List.filter test reps
-       and temp2 = List.filter (
-        fun qp2 -> 
-          (Qualified_point.insert_several_constraints constraints qp2)<>None
-       ) qpoints in 
-      if (temp1,temp2) = ([],[])
-      then false   
-      else raise(Undecided(qp)) ;; 
-
-let action_on_mold_to_action_on_bulk_result_opt
-   on_mold =
-   let on_bulk_result = (
-     fun (DBR(reps,mold)) -> DBR(reps,on_mold mold)
-   ) in 
-   (
-    function None -> None | Some bres -> Some (on_bulk_result bres)
-   ) ;;
-
-let clean_mold ~with_anticipation (M(reps,qpoints)) =
-    M(reps,List.filter (inspect_qualified_point ~with_anticipation) qpoints) ;;
-
-
-exception Bad_access_during_singleton_recognition of qualified_point ;;
-
-let recognize_singleton_mold ~with_anticipation mold =
-   let (M(reps,qpoints)) = mold in 
-   let temp1 = Image.image ( fun qp -> 
-    let (Q(pt,constraints,extension)) = qp in 
-    match deprecated_generic_access_opt ~with_anticipation pt with 
-    None -> raise(Bad_access_during_singleton_recognition(qp))
-    | Some (DBR(_,M(reps2,qpoints2))) ->
-       (reps2,constraints,extension,qpoints2)
-   ) qpoints in 
-   if List.exists (fun (_,_,_,qpoints2)->qpoints2<>[]) temp1 
-   then mold 
-   else  
-   let temp2 = Image.image (
-    fun (reps2,constraints,extension,qpoints2)->
-       let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) reps2 in 
-       Image.image (i_merge extension) ttemp3
-   ) temp1 in
-   let whole = il_fold_merge temp2 in 
-   if List.length whole = 1 
-   then M(whole,[])
-   else mold ;;  
-
-let improve_mold ~with_anticipation fd =
-   let fd1 = clean_mold ~with_anticipation fd in 
-   let fd2 = recognize_singleton_mold ~with_anticipation fd1 in 
-   fd2 ;;
-
-let improve_bulk_result ~with_anticipation (DBR(reps,mold)) =
-  DBR(reps,improve_mold ~with_anticipation mold) ;;
-
-let improve_bulk_result_opt ~with_anticipation  = function 
-   None -> None 
-   |Some bres -> Some ( improve_bulk_result ~with_anticipation bres) ;;
-      
-
-(* The following function should only be used 
-  on a point whose decomposability has already been checked ;
-  otherwise the call to ancestors_for_hook will raise an exception   
-*)
-
-let unexceptional_try_hook_quickly ~with_anticipation pt hook = 
-   let (AI ancestors) = ancestors_for_hook pt hook in  
-   let ancestors_with_their_images = Image.image (
-      fun (pt2,adj)  -> 
-        let bres1_opt = deprecated_generic_access_opt ~with_anticipation pt2 in 
-        (pt2,
-        (bres1_opt,adj,Deprecated_bulk_result.extend_with_opt bres1_opt adj))
-    ) ancestors in  
-  let (failures,successes) = List.partition (
-          fun (_,(_,_,opt)) -> opt = None
-  ) ancestors_with_their_images in 
-  let missing_data = Image.image fst failures in 
-  if missing_data <> [] then (missing_data,None) else 
-  let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
-  let bres_opt = Deprecated_bulk_result.apply_hook pt hook args in 
-  ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;;  
-
-exception Try_hook_quickly_exn of point * hook * qualified_point ;;
-
-let memorizer_for_try_hook_quickly = ref None ;;
-
-let try_hook_quickly ~with_anticipation pt hook = 
-   try unexceptional_try_hook_quickly ~with_anticipation pt hook with  
-    Undecided(qp) -> 
-      let _ = (memorizer_for_try_hook_quickly:=Some(pt,hook,qp)) in 
-      raise(Try_hook_quickly_exn(pt,hook,qp)) ;;
-
-let enhancement_data = ref [
-] ;;
-
-let add_enhancement_data pair =
-   (
-    Accumulator_with_optional_anticipator.deprecated_low_anticipator:=[];
-    enhancement_data := (!enhancement_data)@[pair]) ;; 
-
-let test1_for_enhancement (P(w,b,n,s)) = None ;; 
-
-
-let omega_enhancements pt = 
-  match test1_for_enhancement pt with 
-    (Some q) ->    
-      Some [(Q (P (1, 3*q-4, 3*q-2, []), [], [3*q; 3*q+1]), 
-       [Parametrized_Example.sf2 (3*q+1)])]     
-  | None -> None ;;
-
-let get_enhancements_opt pt = 
-   match omega_enhancements pt with 
-     Some result -> Some result 
-     | None -> List.assoc_opt pt (!enhancement_data) ;;   
-
-exception Access_error_during_enhancement of point * point ;; 
-
-let enhance_first_time_result ~with_anticipation pt result = 
-  match get_enhancements_opt pt  with 
-  None -> result
-  | (Some pivots) -> 
-     let temp1 = Image.image (
-       fun (qp,chosen_reps) -> let (Q(pt2,_,_)) = qp in 
-         try (qp,generic_access ~with_anticipation pt2,chosen_reps) with 
-         _ -> raise (Access_error_during_enhancement(pt,pt2))
-     ) pivots in  
-    let minimal_insertions = Image.image 
-      (fun (qp,DBR(_,mold),chosen_reps)->(qp,mold,chosen_reps)) temp1 in 
-     Deprecated_bulk_result.apply_several_minimal_insertions result minimal_insertions;; 
-
-exception Compute_from_below_exn of point ;;  
-
-let compute_from_below ~with_anticipation pt hook =
-   let (missing_data,result_opt) = 
-     try_hook_quickly ~with_anticipation pt hook in 
-   match  result_opt with 
-   None ->raise(Compute_from_below_exn(pt)) 
-   | Some result -> enhance_first_time_result ~with_anticipation pt result ;; 
-
-
+(*
 let low_add pt hook =
    let res = compute_from_below ~with_anticipation:false pt hook in  
-   let _ = Accumulator_with_optional_anticipator.deprecated_add_to_low_hashtbl  
+   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
              ~with_anticipation:false pt res in 
    res ;;
+*)
 
-let  deprecated_med_add (width,breadth,scrappers) summary = 
-  Hashtbl.replace deprecated_medium_hashtbl (width,breadth,scrappers) summary ;;
 
-let  deprecated_rose_add (width,breadth) summary = 
-    Hashtbl.replace deprecated_rose_hashtbl (width,breadth) summary ;;  
- 
-(*    
+    
 let med_add (width,breadth,scrappers) summary = 
     Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
     
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;; 
-*)
+
 
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
@@ -874,118 +544,6 @@ let compute_bulk_results pts0 =
        ~with_anticipation:true pts0 ;;
 
 let compute_bulk_result pt = compute_bulk_results [pt] ;; 
-
-let find_remote_stumbling_block_or_immediate_working_hook 
-~with_anticipation pt =      
-    match deprecated_generic_access_opt ~with_anticipation pt with 
-    Some old_answer -> ([],None) 
-  | None ->
-   let (width,breadth,n,scrappers) = Point.unveil pt in     
-   if breadth=0 
-   then let (missing_data0,result_opt0) = 
-        try_hook_quickly ~with_anticipation pt Jump in 
-        if result_opt0<>None
-        then ([],Some Jump)
-        else (missing_data0,None)    
-   else      
-   let (missing_data1,result_opt1) = 
-    try_hook_quickly ~with_anticipation pt Passive_repeat in 
-   if result_opt1<>None then ([], Some Passive_repeat) else  
-   if missing_data1<>[] then (missing_data1,None) else  
-   let (missing_data3,result_opt3) = 
-    try_hook_quickly ~with_anticipation pt Fork in 
-   if result_opt3<>None then ([], Some Fork) else  
-    (missing_data3,None) ;;
- 
-    
-  
-exception Pusher_exn ;;
-
-let rec pusher_for_recursive_computation to_be_treated= 
-    match to_be_treated with 
-    [] -> raise(Pusher_exn)
-    | pt :: others -> 
-       (match Simplest_reduction.decompose pt with 
-        None -> others
-        |Some(pt2,adj) ->
-       let (missing_data,opt_res) =
-      find_remote_stumbling_block_or_immediate_working_hook 
-      ~with_anticipation:true pt2 in 
-      match opt_res with 
-       Some hook ->
-           let res = compute_from_below ~with_anticipation:true pt2 hook in  
-           let _ = Accumulator_with_optional_anticipator.deprecated_add_to_low_hashtbl 
-           ~with_anticipation:true pt2 res in 
-           others
-       | None -> 
-         if missing_data = [] 
-         then others 
-         else missing_data @ (pt::others) 
-       );;      
-         
-let rec born_to_fail_for_recursive_computation walker=
-  born_to_fail_for_recursive_computation
-  (pusher_for_recursive_computation walker)  ;;     
-
-let  needed_subcomputations_for_several_computations uples = 
-  try born_to_fail_for_recursive_computation uples with 
-  Pusher_exn -> !(  Accumulator_with_optional_anticipator.deprecated_low_anticipator) ;; 
-
-let needed_subcomputations_for_single_computation pt = 
-  needed_subcomputations_for_several_computations [pt] ;; 
-
-let access = generic_access ~with_anticipation:true ;;  
-
-let compute_all_recursively pt = 
-  let needed_carrier = needed_subcomputations_for_single_computation pt in 
-  let answer = access pt in 
-  (answer,needed_carrier) 
-;;  
-
-let force_compute pt = fst(compute_all_recursively pt) ;;
-
-let rec all_representatives p =
-    let (DBR(anc_info,M(reps,qpoints))) = access p in 
-    let temp1 = Image.image (
-         fun (Q(pt,constraints,extension)) -> 
-           let ttemp2 = all_representatives pt in 
-           let ttemp3 = List.filter (Constraint.satisfied_by_individual constraints) ttemp2 in 
-           Image.image (i_merge extension) ttemp3
-    ) qpoints in 
-    il_fold_merge (reps::temp1) ;;
-
-let all_representatives_for_qpoint (Q(pt,constraints,extension)) =
-   let temp1 = all_representatives pt in 
-   let temp2 = List.filter (Constraint.satisfied_by_individual constraints) temp1 in 
-   Image.image (i_merge extension) temp2 ;; 
-
-let zoom (Q(pt,constraints,extension)) = 
-   let (DBR(_,M(_,qpoints))) = force_compute pt in 
-   Image.image (
-     fun qp3 ->
-       let ttemp1 = all_representatives_for_qpoint qp3 in 
-       (qp3,List.filter 
-       (Constraint.satisfied_by_individual constraints) ttemp1)
-   ) qpoints ;; 
-
-let usual_zoom () =   
-   let (pt,hook,qp) = Option.unpack(!memorizer_for_try_hook_quickly) in 
-   let (Q(pt1,_,_)) = qp
-   and temp1 = zoom qp in 
-   let (qp1,sols1) = Listennou.force_find (fun (_,sols)->sols<>[]) temp1  in  
-   ((pt1,[qp1,sols1]),temp1);;   
-
-(*    
-rose_add (1,[]) (Usual_fobas(Parametrized_Example.bresf2));;
-med_add (2,0,[]) (Usual_fos(Parametrized_Example.bresf1)) ;; 
-*)
-
-(*    
-
-
-rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
-*)
-
 
 
 
