@@ -54,12 +54,13 @@ end ;;
 
 module Point = struct 
   
-  let width (P(w,b,n,s)) = w ;;
-  let breadth (P(w,b,n,s)) = b ;;
-  let size (P(w,b,n,s)) = n ;;
-  let scrappers (P(w,b,n,s)) = s ;;
+  let width (P(w,_b,_n,_s)) = w ;;
+  let breadth (P(_w,b,_n,_s)) = b ;;
+  let size (P(_w,_b,n,_s)) = n ;;
+  let scrappers (P(_w,_b,_n,s)) = s ;;
   let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
-  let enumerate_supporting_set (P(w,b,n,s)) = Finite_int_set.of_pair (n,s) ;; 
+  let enumerate_supporting_set (P(_w,_b,n,s)) = 
+     Finite_int_set.of_pair (n,s) ;; 
 
 end ;;  
 
