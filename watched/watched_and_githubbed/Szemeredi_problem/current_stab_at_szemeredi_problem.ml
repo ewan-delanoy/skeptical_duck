@@ -354,6 +354,15 @@ let extend_with_opt pt bres_opt extension = match bres_opt with
 end ;;  
     
     module Parametrized = struct 
+
+      let deprecated_eval_fos fos n =
+        match fos with 
+           Dusual_fos f -> f n ;; 
+     
+     let deprecated_eval_fobas fobas breadth n = 
+       match fobas with 
+        Dusual_fobas f -> f breadth n ;;  
+
       
  (*   
       let eval_fos fos n =
@@ -521,10 +530,10 @@ let deprecated_generic_access_opt  ~with_anticipation pt =
 let (width,breadth,n,scrappers) = Point.unveil pt2 in 
 let pre_res=(
 match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-Some summary -> Some (Parametrized.eval_fobas summary breadth n)
+Some summary -> Some (Parametrized.deprecated_eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
-   Some summary -> Some (Parametrized.eval_fos summary n)
+   Some summary -> Some (Parametrized.deprecated_eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
 Deprecated_bulk_result.extend_with_opt pre_res adj ;;
