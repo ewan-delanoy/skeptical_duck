@@ -364,7 +364,7 @@ end ;;
         Dusual_fobas f -> f breadth n ;;  
 
       
- (*   
+ 
       let eval_fos fos n =
          match fos with 
             Usual_fos f -> f n ;; 
@@ -372,7 +372,7 @@ end ;;
       let eval_fobas fobas breadth n = 
         match fobas with 
          Usual_fobas f -> f breadth n ;;  
-  *)  
+  
        
     
     end ;;   
