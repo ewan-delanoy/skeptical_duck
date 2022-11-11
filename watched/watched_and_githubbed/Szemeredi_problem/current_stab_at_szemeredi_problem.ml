@@ -353,6 +353,8 @@ module Bulk_result = struct
 
 let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
 
+let jump_from_atom pt = BR (Jump_from_atom(pt),M([Point.enumerate_supporting_set pt],[])) ;;
+
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)
