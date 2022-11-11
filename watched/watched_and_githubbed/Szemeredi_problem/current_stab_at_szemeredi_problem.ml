@@ -336,6 +336,22 @@ module Deprecated_bulk_result = struct
 
     end ;;  
     
+
+module Bulk_result = struct     
+
+let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
+
+let extend_with pt (BR(old_sr,mold)) extension = 
+ let new_sr = (if extension <> []
+ then Decomposable(pt,extension)
+ else old_sr) in
+ BR(new_sr,Mold.extend_with mold extension);;
+
+let extend_with_opt pt bres_opt extension = match bres_opt with 
+      None -> None 
+      |Some bres -> Some (extend_with pt bres extension) ;;    
+
+end ;;  
     
     module Parametrized = struct 
       
@@ -498,7 +514,7 @@ end ;;
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
-let generic_access_opt  ~with_anticipation pt = 
+let deprecated_generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
  None -> Some (Deprecated_bulk_result.singleton None (Point.enumerate_supporting_set pt))
  | Some(pt2,adj) ->
@@ -512,17 +528,33 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
 Deprecated_bulk_result.extend_with_opt pre_res adj ;;
-;;   
+
+(*
+let generic_access_opt  ~with_anticipation pt = 
+ match Simplest_reduction.decompose pt with 
+ None -> Some (Bulk_result.atomic_case pt)
+ | Some(pt2,adj) ->
+let (width,breadth,n,scrappers) = Point.unveil pt2 in 
+let pre_res=(
+match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+Some summary -> Some (Parametrized.eval_fobas summary breadth n)
+| None ->  
+ (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
+   Some summary -> Some (Parametrized.eval_fos summary n)
+ | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
+) in 
+Bulk_result.extend_with_opt pre_res adj ;;
+*)
 
 let generic_access ~with_anticipation pt = 
-   Option.unpack(generic_access_opt ~with_anticipation pt) ;;   
+   Option.unpack(deprecated_generic_access_opt ~with_anticipation pt) ;;   
 
 exception Bad_access_during_inspection of qualified_point ;;
 exception Undecided of qualified_point ;;
 
 let inspect_qualified_point ~with_anticipation qp =
    let (Q(pt,constraints,_)) = qp in 
-   match generic_access_opt ~with_anticipation pt with 
+   match deprecated_generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_inspection(qp))
     | Some (DBR(_,M(reps,qpoints))) ->
       let test = Constraint.satisfied_by_individual constraints in 
@@ -557,7 +589,7 @@ let recognize_singleton_mold ~with_anticipation mold =
    let (M(reps,qpoints)) = mold in 
    let temp1 = Image.image ( fun qp -> 
     let (Q(pt,constraints,extension)) = qp in 
-    match generic_access_opt ~with_anticipation pt with 
+    match deprecated_generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_singleton_recognition(qp))
     | Some (DBR(_,M(reps2,qpoints2))) ->
        (reps2,constraints,extension,qpoints2)
@@ -597,7 +629,7 @@ let unexceptional_try_hook_quickly ~with_anticipation pt hook =
    let (AI ancestors) = ancestors_for_hook pt hook in  
    let ancestors_with_their_images = Image.image (
       fun (pt2,adj)  -> 
-        let bres1_opt = generic_access_opt ~with_anticipation pt2 in 
+        let bres1_opt = deprecated_generic_access_opt ~with_anticipation pt2 in 
         (pt2,
         (bres1_opt,adj,Deprecated_bulk_result.extend_with_opt bres1_opt adj))
     ) ancestors in  
@@ -715,7 +747,7 @@ let compute_superficial_result_partially ~with_anticipation pt =
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
-    match generic_access_opt ~with_anticipation pt with 
+    match deprecated_generic_access_opt ~with_anticipation pt with 
     Some old_answer -> ([],None) 
   | None ->
    let (width,breadth,n,scrappers) = Point.unveil pt in     

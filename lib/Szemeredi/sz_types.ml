@@ -33,7 +33,7 @@ type superficial_result =
 
 type deprecated_bulk_result = DBR of ((hook * ancestry_info) option) * mold ;;  
 
-type bulk_result = DBR of superficial_result * mold ;;  
+type bulk_result = BR of superficial_result * mold ;;  
 
 type function_of_size = 
 Usual_fos of (int -> deprecated_bulk_result) ;; 
