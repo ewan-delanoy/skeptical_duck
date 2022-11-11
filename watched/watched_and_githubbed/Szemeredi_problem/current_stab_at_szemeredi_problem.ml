@@ -13,7 +13,7 @@ open Needed_values ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
-(*
+
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
 let test_for_admissibility_up_to_max_with max_width z =
@@ -680,19 +680,27 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
  
- 
+(*    
+let go_before_jump pt =
+  let (width,breadth,n,scrappers) = Point.unveil pt in 
+  match Simplest_reduction.decompose pt with 
+  None -> ([],)
+
+
 let compute_superficial_result_partially ~with_anticipation pt =  
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let opt = Simplest_reduction.decompose pt in 
   if ((width,breadth)=(1,0))||(opt=None)
   then ([],Some Atomic)
   else 
-  let (pt2,adj) = Option.unpack opt in 
-  if adj<>[]
-  then ([],Some(Decomposable(pt2,adj)))
+  let (pt2,adj2) = Option.unpack opt in 
+  if adj2<>[]
+  then ([],Some(Decomposable(pt2,adj2)))
   else     
   if breadth = 0
   then partial_superificial_result_in_jump_case    
+  else
+*)
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
@@ -804,7 +812,7 @@ med_add (2,0,[]) (Usual_fos(Parametrized_Example.bresf1)) ;;
 
 rose_add (2,[]) (Usual_fobas(Parametrized_Example.brf5));;
 *)
-*)
+
 
 
 
