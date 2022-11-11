@@ -88,11 +88,7 @@ let extend_with qp extension =
   match qp with 
   Q(pt,old_constraints,extension2) -> 
   Q(pt,old_constraints,i_merge extension extension2)   ;;
-
-let append_right qp extension =  
-    match qp with 
-    Q(pt,old_constraints,extension2) -> 
-    Q(pt,old_constraints,extension2@extension)   ;;  
+ 
 
 let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
   let n = Point.size pt and scrappers = Point.scrappers pt in 
@@ -101,36 +97,16 @@ let insert_several_constraints new_constraints (Q(pt,old_constraints,extension))
     None -> None 
    |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension))) ;; 
 
-let compute_full_replacement 
-   (Q(pt,constraints,extension)) list_of_solutions = 
-     let temp1 = List.filter (Constraint.satisfied_by_individual constraints) list_of_solutions in 
-     Image.image (i_merge extension) temp1 ;;
-
-let compute_full_replacement_for_list (qp,list_of_solutions) qp_list =
-  let (tester,others) = List.partition (fun qp2->qp2=qp) qp_list in 
-  if tester = [] 
-  then None 
-  else Some(compute_full_replacement qp list_of_solutions,others) ;;             
-
 
 end ;;  
 
 module Mold = struct 
-
-let common_length (M(reps,qpoints)) =
-    List.length(List.hd reps);;
 
 (* it is assumed that compatibility has already been checked *)   
 let extend_with (M(reps,qpoints)) extension =
   M(Image.image (i_merge extension) reps,
   Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
   ) ;;  
-
-let append_right (M(reps,qpoints)) extension =
-    M(Image.image (fun x->x@extension) reps,
-    Image.image (fun qpoint->Qualified_point.append_right qpoint extension) qpoints
-    ) ;;  
-  
 
 let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
   M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
@@ -149,80 +125,6 @@ let insert_several_constraints_carefully extra_constraints old_mold =
     if new_reps = []
     then raise(Insert_several_constraints_carefully_exn(extra_constraints,old_mold))
     else Some new_mold ;;          
-
-let expand_qpoint (Q(_,constraints,extension)) mold =
-  extend_with (insert_several_constraints constraints mold) extension ;; 
-
-let replace_in_qpoint_list (pivot,mold) qpoint_list =
-  let pivot_found = ref false 
-  and (M(expanded_reps,expanded_qpoints)) = expand_qpoint pivot mold in 
-  let temp1 = Image.image (
-     fun qpoint ->
-       if qpoint = pivot 
-       then let _ = (pivot_found:=true) in 
-             expanded_qpoints
-       else [qpoint]      
-  ) qpoint_list in 
-  let new_reps = (if !pivot_found then expanded_reps else []) in 
-  (new_reps,List.flatten temp1) ;;
-
-let compute_full_replacement (pivot,active_mold) passive_mold =
-  let (M(old_reps,old_qpoints)) = passive_mold in 
-  let (new_reps,final_qpoints) = replace_in_qpoint_list (pivot,active_mold)  old_qpoints in 
-  M(old_reps@new_reps,final_qpoints) ;;
-  
-exception Bad_minimal_insertion of qualified_point * mold * solution list ;;  
-
-let do_minimal_insertion_in_qpoint_list (pivot,mold,chosen_insertions) qpoint_list =
-  let pivot_found = ref false 
-  and (M(expanded_reps,expanded_qpoints)) = expand_qpoint pivot mold in 
-  let insertion_is_allowed = il_is_included_in chosen_insertions expanded_reps 
-  and replacement_for_pivot = (
-     if (chosen_insertions = expanded_reps) && (expanded_qpoints=[])
-     then None 
-     else Some pivot
-  ) in 
-  let final_qpoints = Option.filter_and_unpack (
-     fun qpoint ->
-       if qpoint = pivot 
-       then let _ = (pivot_found:=true) in 
-            (if not(insertion_is_allowed)
-             then raise(Bad_minimal_insertion(pivot,mold,chosen_insertions)) 
-             else replacement_for_pivot
-            )
-       else Some qpoint      
-  ) qpoint_list in 
-  let new_reps = (if !pivot_found then chosen_insertions else []) in 
-  (new_reps,final_qpoints) ;;
-
-let compute_minimal_insertion (pivot,active_mold,chosen_insertions) passive_mold =
-  let (M(old_reps,old_qpoints)) = passive_mold in 
-  let (new_reps,final_qpoints) = do_minimal_insertion_in_qpoint_list 
-          (pivot,active_mold,chosen_insertions)  old_qpoints in 
-  M(old_reps@new_reps,final_qpoints) ;;
-
-
-let insert_several_constraints_opt extra_constraints mold = 
-   let new_mold = insert_several_constraints extra_constraints mold in 
-   if new_mold = M([],[])
-   then None 
-   else Some new_mold ;;   
-
-let apply_passive_repeat  pt mold =
-   let (width,b,_,_) = Point.unveil pt in 
-   insert_several_constraints_opt [C[b;b+width;b+2*width]] mold;;
-
-let apply_fork ll =
-  let (_,temp1) = Max.maximize_it_with_care 
-    (fun (_,mold)->common_length mold)  ll in  
-  let chosen_reps = (fun (_,M(reps,_))->reps) (List.hd(List.rev(temp1))) in 
-  (*
-   for the second component, we deliberately do not expand,
-   to keep the stored expressions small   
-  *)
-  M(chosen_reps,Image.image fst temp1) ;; 
-
-let singleton z = M([z],[])  ;;
 
 
 end ;;
@@ -247,7 +149,7 @@ let extend_with_opt pt bres_opt extension = match bres_opt with
       |Some bres -> Some (extend_with pt bres extension) ;;    
 
 let impose_one_more_constraint_opt pt cstr (BR(sr,mold)) =
-    match Mold.insert_several_constraints_opt [cstr] mold with 
+    match Mold.insert_several_constraints_carefully [cstr] mold with 
      None -> None
     | Some new_mold -> Some(BR(Contraction_surface(pt,cstr),new_mold)) ;;
      
