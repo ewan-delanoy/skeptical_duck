@@ -31,11 +31,13 @@ type superficial_result =
 | Contraction_surface of point * constraint_t  
 | Fork_surface of (point * extension_data) list ;;
 
-type bulk_result = BR of ((hook * ancestry_info) option) * mold ;;  
+type deprecated_bulk_result = DBR of ((hook * ancestry_info) option) * mold ;;  
+
+type bulk_result = DBR of superficial_result * mold ;;  
 
 type function_of_size = 
-Usual_fos of (int -> bulk_result) ;; 
+Usual_fos of (int -> deprecated_bulk_result) ;; 
 
 type function_of_breadth_and_size = 
-Usual_fobas of ( int -> int -> bulk_result) ;;
+Usual_fobas of ( int -> int -> deprecated_bulk_result) ;;
 

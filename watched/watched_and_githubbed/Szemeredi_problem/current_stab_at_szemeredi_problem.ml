@@ -280,31 +280,31 @@ let ancestors_for_hook pt0 hook =
     |Some(pt3,adj3) -> (pt3,i_merge adj1 adj3)
   ) temp1))  ;; 
 
-module Bulk_result = struct 
+module Deprecated_bulk_result = struct 
 
-    let common_length (BR(_,pres)) = Mold.common_length pres ;;
-    let partial (BR(_,pres)) = pres ;;  
-    let make ancestor_info pres = BR(ancestor_info,pres) ;;
-    let singleton ancestry z = BR(ancestry,Mold.singleton z)  ;;
+    let common_length (DBR(_,pres)) = Mold.common_length pres ;;
+    let partial (DBR(_,pres)) = pres ;;  
+    let make ancestor_info pres = DBR(ancestor_info,pres) ;;
+    let singleton ancestry z = DBR(ancestry,Mold.singleton z)  ;;
     
-    let extend_with (BR(ancestry_opt,pres)) extension = 
+    let extend_with (DBR(ancestry_opt,pres)) extension = 
        let new_ancestry_opt = (
           match ancestry_opt with 
             None -> None 
            |Some(hook,anc_info) -> Some(hook,Ancestry_info.extend_with anc_info extension)
        ) in 
-      BR(
+      DBR(
         new_ancestry_opt,
         Mold.extend_with pres extension
       );;
     
-    let append_right (BR(ancestry_opt,pres)) extension = 
+    let append_right (DBR(ancestry_opt,pres)) extension = 
         let new_ancestry_opt = (
            match ancestry_opt with 
              None -> None 
             |Some(hook,anc_info) -> Some(hook,Ancestry_info.append_right anc_info extension)
         ) in 
-       BR(
+       DBR(
          new_ancestry_opt,
          Mold.append_right pres extension
        );;
@@ -320,16 +320,16 @@ module Bulk_result = struct
         None -> None 
        |Some new_mold ->
             let anc_info = Some(hook,ancestors_for_hook pt hook) in  
-            Some(BR(anc_info,new_mold));;
+            Some(DBR(anc_info,new_mold));;
       
-    let compute_full_replacement (BR(anc_info,mold)) replacement_data =
-      BR(anc_info,Mold.compute_full_replacement replacement_data mold) ;; 
+    let compute_full_replacement (DBR(anc_info,mold)) replacement_data =
+      DBR(anc_info,Mold.compute_full_replacement replacement_data mold) ;; 
 
     let apply_several_replacements bres replacements = 
         List.fold_left compute_full_replacement bres replacements ;;  
 
-        let compute_minimal_insertion (BR(anc_info,mold)) minins_data =
-          BR(anc_info,Mold.compute_minimal_insertion minins_data mold) ;;     
+        let compute_minimal_insertion (DBR(anc_info,mold)) minins_data =
+          DBR(anc_info,Mold.compute_minimal_insertion minins_data mold) ;;     
 
     let apply_several_minimal_insertions bres minins_data = 
           List.fold_left compute_minimal_insertion bres minins_data ;;    
@@ -361,7 +361,7 @@ let sf2 n = List.filter (fun t->List.mem(t mod 3)[0;1]) (Int_range.range 1 n) ;;
 (*
 let check_sf1 = 
   let temp1 = Int_range.scale (fun n->
-   let (BR(opt,M(reps,_))) = force_compute (P(2,0,n,[])) in 
+   let (DBR(opt,M(reps,_))) = force_compute (P(2,0,n,[])) in 
    (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)  
@@ -387,7 +387,7 @@ let aif1 n =
    
 let check_aif1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,_)) = force_compute (P(2,0,n,[])) in 
+    let (DBR(opt,_)) = force_compute (P(2,0,n,[])) in 
     (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
@@ -406,7 +406,7 @@ let aif2 n =
   
 let check_aif2 = 
   let temp1 = Int_range.scale (fun n->
-   let (BR(opt,_)) = force_compute (P(3,0,n,[])) in 
+   let (DBR(opt,_)) = force_compute (P(3,0,n,[])) in 
    (n,opt,Parametrized_Example.aif2 n)) 1 40 in 
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 
@@ -435,12 +435,12 @@ let moldf1 n =
 (*
 let check_moldf1 = 
    let temp1 = Int_range.scale (fun n->
-    let (BR(opt,mold)) = force_compute (P(2,0,n,[])) in 
+    let (DBR(opt,mold)) = force_compute (P(2,0,n,[])) in 
     (n,mold,Parametrized_Example.moldf1 n)) 1 40 in 
    List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)    
 
-let bresf1 n = BR(aif1(n),moldf1(n)) ;;
+let bresf1 n = DBR(aif1(n),moldf1(n)) ;;
   
 (*
 let check_bresf1 = 
@@ -451,9 +451,9 @@ let check_bresf1 =
 *)    
 
 let bresf2 breadth n = 
-  if breadth = 0 then Bulk_result.singleton None (Int_range.range 1 n) else
+  if breadth = 0 then Deprecated_bulk_result.singleton None (Int_range.range 1 n) else
   if n <= breadth + 2 then bresf1 n else 
-  Bulk_result.append_right (bresf1(breadth+2)) (Int_range.range (breadth+3) n)  ;;
+  Deprecated_bulk_result.append_right (bresf1(breadth+2)) (Int_range.range (breadth+3) n)  ;;
 
 (*  
 let check_bresf2 =
@@ -500,7 +500,7 @@ let medium_hashtbl = Hashtbl.create 50 ;;
 
 let generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
- None -> Some (Bulk_result.singleton None (Point.enumerate_supporting_set pt))
+ None -> Some (Deprecated_bulk_result.singleton None (Point.enumerate_supporting_set pt))
  | Some(pt2,adj) ->
 let (width,breadth,n,scrappers) = Point.unveil pt2 in 
 let pre_res=(
@@ -511,7 +511,7 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
    Some summary -> Some (Parametrized.eval_fos summary n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
-Bulk_result.extend_with_opt pre_res adj ;;
+Deprecated_bulk_result.extend_with_opt pre_res adj ;;
 ;;   
 
 let generic_access ~with_anticipation pt = 
@@ -524,7 +524,7 @@ let inspect_qualified_point ~with_anticipation qp =
    let (Q(pt,constraints,_)) = qp in 
    match generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_inspection(qp))
-    | Some (BR(_,M(reps,qpoints))) ->
+    | Some (DBR(_,M(reps,qpoints))) ->
       let test = Constraint.satisfied_by_individual constraints in 
       if List.exists test reps 
       then true 
@@ -541,7 +541,7 @@ let inspect_qualified_point ~with_anticipation qp =
 let action_on_mold_to_action_on_bulk_result_opt
    on_mold =
    let on_bulk_result = (
-     fun (BR(reps,mold)) -> BR(reps,on_mold mold)
+     fun (DBR(reps,mold)) -> DBR(reps,on_mold mold)
    ) in 
    (
     function None -> None | Some bres -> Some (on_bulk_result bres)
@@ -559,7 +559,7 @@ let recognize_singleton_mold ~with_anticipation mold =
     let (Q(pt,constraints,extension)) = qp in 
     match generic_access_opt ~with_anticipation pt with 
     None -> raise(Bad_access_during_singleton_recognition(qp))
-    | Some (BR(_,M(reps2,qpoints2))) ->
+    | Some (DBR(_,M(reps2,qpoints2))) ->
        (reps2,constraints,extension,qpoints2)
    ) qpoints in 
    if List.exists (fun (_,_,_,qpoints2)->qpoints2<>[]) temp1 
@@ -580,8 +580,8 @@ let improve_mold ~with_anticipation fd =
    let fd2 = recognize_singleton_mold ~with_anticipation fd1 in 
    fd2 ;;
 
-let improve_bulk_result ~with_anticipation (BR(reps,mold)) =
-  BR(reps,improve_mold ~with_anticipation mold) ;;
+let improve_bulk_result ~with_anticipation (DBR(reps,mold)) =
+  DBR(reps,improve_mold ~with_anticipation mold) ;;
 
 let improve_bulk_result_opt ~with_anticipation  = function 
    None -> None 
@@ -599,7 +599,7 @@ let unexceptional_try_hook_quickly ~with_anticipation pt hook =
       fun (pt2,adj)  -> 
         let bres1_opt = generic_access_opt ~with_anticipation pt2 in 
         (pt2,
-        (bres1_opt,adj,Bulk_result.extend_with_opt bres1_opt adj))
+        (bres1_opt,adj,Deprecated_bulk_result.extend_with_opt bres1_opt adj))
     ) ancestors in  
   let (failures,successes) = List.partition (
           fun (_,(_,_,opt)) -> opt = None
@@ -607,7 +607,7 @@ let unexceptional_try_hook_quickly ~with_anticipation pt hook =
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,None) else 
   let args = Image.image (fun (pt3,(_,adj,opt))->(Q(pt3,[],adj),Option.unpack opt)) successes in 
-  let bres_opt = Bulk_result.apply_hook pt hook args in 
+  let bres_opt = Deprecated_bulk_result.apply_hook pt hook args in 
   ([],improve_bulk_result_opt ~with_anticipation bres_opt) ;;  
 
 exception Try_hook_quickly_exn of point * hook * qualified_point ;;
@@ -655,8 +655,8 @@ let enhance_first_time_result ~with_anticipation pt result =
          _ -> raise (Access_error_during_enhancement(pt,pt2))
      ) pivots in  
     let minimal_insertions = Image.image 
-      (fun (qp,BR(_,mold),chosen_reps)->(qp,mold,chosen_reps)) temp1 in 
-     Bulk_result.apply_several_minimal_insertions result minimal_insertions;; 
+      (fun (qp,DBR(_,mold),chosen_reps)->(qp,mold,chosen_reps)) temp1 in 
+     Deprecated_bulk_result.apply_several_minimal_insertions result minimal_insertions;; 
 
 exception Compute_from_below_exn of point ;;  
 
@@ -783,7 +783,7 @@ let compute_all_recursively pt =
 let force_compute pt = fst(compute_all_recursively pt) ;;
 
 let rec all_representatives p =
-    let (BR(anc_info,M(reps,qpoints))) = access p in 
+    let (DBR(anc_info,M(reps,qpoints))) = access p in 
     let temp1 = Image.image (
          fun (Q(pt,constraints,extension)) -> 
            let ttemp2 = all_representatives pt in 
@@ -798,7 +798,7 @@ let all_representatives_for_qpoint (Q(pt,constraints,extension)) =
    Image.image (i_merge extension) temp2 ;; 
 
 let zoom (Q(pt,constraints,extension)) = 
-   let (BR(_,M(_,qpoints))) = force_compute pt in 
+   let (DBR(_,M(_,qpoints))) = force_compute pt in 
    Image.image (
      fun qp3 ->
        let ttemp1 = all_representatives_for_qpoint qp3 in 
