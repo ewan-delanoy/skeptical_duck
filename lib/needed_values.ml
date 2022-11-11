@@ -40,7 +40,7 @@ let image = Image.image ;;
 
 let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
 
-let lc = Usual_coma_state.latest_changes;; 
+let lc () = let _ = Usual_coma_state.latest_changes () in ();; 
 
 let muv=Usual_coma_state.modules_using_value;;
 
