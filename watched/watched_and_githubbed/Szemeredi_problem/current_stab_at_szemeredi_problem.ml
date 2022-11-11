@@ -1,6 +1,6 @@
 (*
 
-#use "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+#use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 
 
 An attempt at creating an algorithm that (given enough time) can compute sytematically
@@ -680,13 +680,15 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;;  
  
-(*    
-let go_before_jump pt =
-  let (width,breadth,n,scrappers) = Point.unveil pt in 
-  match Simplest_reduction.decompose pt with 
-  None -> ([],)
-
-
+   
+let partial_superificial_result_in_jump_case  pt_after_jump =
+  let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
+  let pt_before_jump = P(width-1,n-2*(width-1),n,scrappers) in  
+  match Simplest_reduction.decompose pt_before_jump with 
+  None -> ([],Some(Jump_from_atom(Point.enumerate_supporting_set pt_before_jump)))
+  | Some (pt2,adj2) -> ([],Some(Jump_surface(pt2,adj2))) ;; 
+    
+(*
 let compute_superficial_result_partially ~with_anticipation pt =  
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let opt = Simplest_reduction.decompose pt in 
@@ -698,9 +700,18 @@ let compute_superficial_result_partially ~with_anticipation pt =
   then ([],Some(Decomposable(pt2,adj2)))
   else     
   if breadth = 0
-  then partial_superificial_result_in_jump_case    
+  then partial_superificial_result_in_jump_case pt   
   else
+  let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
+  let _ = assert(breadth2>0) in 
+  let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
+  match generic_access_opt  ~with_anticipation preceding_point with 
+    None -> ([preceding_point],)
+   |Some 
 *)
+
+
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
