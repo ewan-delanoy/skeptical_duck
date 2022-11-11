@@ -364,7 +364,6 @@ end ;;
         Dusual_fobas f -> f breadth n ;;  
 
       
- 
       let eval_fos fos n =
          match fos with 
             Usual_fos f -> f n ;; 
@@ -373,7 +372,7 @@ end ;;
         match fobas with 
          Usual_fobas f -> f breadth n ;;  
   
-       
+      
     
     end ;;   
     
@@ -532,10 +531,13 @@ let add_to_low_hashtbl  ~with_anticipation pt vaal=
   
 end ;;   
   
-
+let rose_hashtbl = Hashtbl.create 50 ;;
+let medium_hashtbl = Hashtbl.create 50 ;;
 
 let deprecated_rose_hashtbl = Hashtbl.create 50 ;;
 let deprecated_medium_hashtbl = Hashtbl.create 50 ;;
+
+
 
 let deprecated_generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
@@ -552,7 +554,7 @@ Some summary -> Some (Parametrized.deprecated_eval_fobas summary breadth n)
 ) in 
 Deprecated_bulk_result.extend_with_opt pre_res adj ;;
 
-(*
+
 let generic_access_opt  ~with_anticipation pt = 
  match Simplest_reduction.decompose pt with 
  None -> Some (Bulk_result.atomic_case pt)
@@ -567,7 +569,7 @@ Some summary -> Some (Parametrized.eval_fobas summary breadth n)
  | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
 ) in 
 Bulk_result.extend_with_opt pt2 pre_res adj ;;
-*)
+
 
 let generic_access ~with_anticipation pt = 
    Option.unpack(deprecated_generic_access_opt ~with_anticipation pt) ;;   
