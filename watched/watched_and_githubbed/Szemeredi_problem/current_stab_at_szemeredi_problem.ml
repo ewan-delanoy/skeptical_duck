@@ -13,7 +13,6 @@ open Needed_values ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
-
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
 let test_for_admissibility_up_to_max_with max_width z =
