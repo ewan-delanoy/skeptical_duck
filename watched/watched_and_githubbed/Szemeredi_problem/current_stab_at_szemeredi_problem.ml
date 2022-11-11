@@ -771,7 +771,7 @@ let partial_superificial_result_in_jump_case  pt_after_jump =
   None -> ([],Some(Jump_from_atom(Point.enumerate_supporting_set pt_before_jump)))
   | Some (pt2,adj2) -> ([],Some(Jump_surface(pt2,adj2))) ;; 
     
-(*
+
 let compute_superficial_result_partially ~with_anticipation pt =  
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let opt = Simplest_reduction.decompose pt in 
@@ -792,14 +792,19 @@ let compute_superficial_result_partially ~with_anticipation pt =
   match generic_access_opt  ~with_anticipation preceding_point with 
     None -> ([preceding_point],None)
    |Some bres ->
-       match Bulk_result.impose_one_more_constraint bres front_constraint with 
+       (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
        None -> let tooths = Int_range.scale (fun k->
                 let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
-                 Simplest_reduction.decompose(P(width2,breadth2-1,m,scr))
+                let pt3 = P(width2,breadth2-1,m,scr) in 
+                match Simplest_reduction.decompose(pt3) with 
+                 None -> (* TODO : create an empty point variant *)
+                          let z = Point.enumerate_supporting_set pt3 in   
+                          (P(1,0,0,[]),z)
+                 |Some(pt4,adj4) -> (pt4,adj4) 
                ) 0 2  in 
               ([],Some(Fork_surface tooths))
-      |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint))) ;; 
-*)
+      |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
+
 
 
 let find_remote_stumbling_block_or_immediate_working_hook 
