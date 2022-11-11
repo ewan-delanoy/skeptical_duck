@@ -807,27 +807,54 @@ let compute_superficial_result_partially ~with_anticipation pt =
               ([],Some(Fork_surface tooths))
       |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
 
-(*
-let compute_bulk_result_partially ~with_anticipation pt =  
+
+exception Bad_contraction of point * constraint_t ;; 
+
+let rec compute_bulk_result_partially ~with_anticipation pt =  
    let partial_res1 = compute_superficial_result_partially ~with_anticipation pt in 
    match snd partial_res1 with 
-    None -> partial_res1 
+    None -> (fst partial_res1,None) 
    |Some sr ->(match sr with 
-     Atomic -> Bulk_result.atomic_case pt 
+     Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
    | Decomposable(pt2,adj2) -> 
        let partial_res2 = compute_bulk_result_partially ~with_anticipation pt2 in 
        (
         match snd partial_res2 with 
-        None -> partial_res2 
+        None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
-   | Jump_from_atom of int list
-   | Jump_surface of point * extension_data
-   | Contraction_surface of point * constraint_t
-   | Fork_surface of (point * extension_data) list
-   
+   | Jump_from_atom (pt3) -> ([],Some(Bulk_result.jump_from_atom pt))
+   | Jump_surface(pt4,adj4) ->
+    let partial_res3 = compute_bulk_result_partially ~with_anticipation pt4 in 
+    (
+     match snd partial_res3 with 
+     None -> (fst partial_res3,None) 
+    |Some br3 -> ([],Some (Bulk_result.extend_with pt4 br3 adj4))
+    )
+   | Contraction_surface (pt5,cstr) ->
+    let partial_res4 = compute_bulk_result_partially ~with_anticipation pt5 in 
+    (
+     match snd partial_res4 with 
+     None -> (fst partial_res4,None) 
+    |Some br4 -> 
+      match Bulk_result.impose_one_more_constraint_opt pt5 cstr br4 with 
+        None -> raise(Bad_contraction(pt5,cstr))
+        |Some new_br4 ->([],Some new_br4)
+    ) 
+   | Fork_surface cases ->
+      let (last_pt,last_adj) = List.nth cases 2 in 
+      let partial_res5 = compute_bulk_result_partially ~with_anticipation last_pt in 
+    (
+     match snd partial_res5 with 
+     None -> (fst partial_res5,None) 
+    |Some br5 -> 
+       let (BR(_,M(reps,_))) = br5 in 
+       let new_mold = M(reps,Image.image (
+        fun (pt6,adj6)-> Q(pt6,[],adj6)
+     ) cases) in 
+      ([],Some (BR(Fork_surface cases,new_mold)))
+    )
    ) ;; 
-*)
 
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
