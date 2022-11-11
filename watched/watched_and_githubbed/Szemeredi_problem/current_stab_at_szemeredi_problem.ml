@@ -856,6 +856,23 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
     )
    ) ;; 
 
+let from_partial_to_full f_partial ~with_anticipation pts0 =
+  let rec main = (
+     fun pts -> match pts with 
+       [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
+       | pt1 :: other_pts ->
+         let partial_res1 = f_partial ~with_anticipation pt1 in 
+         match snd partial_res1 with 
+          None -> main((fst partial_res1)@pts)
+         |Some _ -> main other_pts 
+  ) in 
+  main ;;
+
+let generic_compute_bulk_results ~with_anticipation pts0 =
+  from_partial_to_full compute_bulk_result_partially ~with_anticipation pts0 ;;
+
+
+
 let find_remote_stumbling_block_or_immediate_working_hook 
 ~with_anticipation pt =      
     match deprecated_generic_access_opt ~with_anticipation pt with 
