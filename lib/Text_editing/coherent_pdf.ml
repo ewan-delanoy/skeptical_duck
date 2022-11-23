@@ -58,6 +58,14 @@ module Helper = struct
     (Io.read_reasonable_command ("mdls -name kMDItemPageHeight -raw  "^full_pdfname))
     );;
 
+  let present_indices ?(range=(1,500)) prefix=  
+   let (range_start,range_end) = range in  
+   let temp1 = List.filter (
+    fun k-> 
+       let fn = (!workspace_directory) ^ prefix ^ (string_of_int k) ^ ".pdf" in 
+       Sys.file_exists fn 
+    ) (Int_range.range range_start range_end) in 
+    Arithmetic_list.decompose_into_connected_components temp1 ;; 
 
   let wrap_list_inside_workspace  l=
     let old_dir=Sys.getcwd() in 
@@ -641,6 +649,7 @@ let pagesize_in_pdf ap =
 let prepare_recto_verso pdfname (i,j)=Image.image Unix_command.uc 
   (Command.prepare_recto_verso pdfname (i,j));;
 
+let present_indices = Helper.present_indices ;; 
 
 let replace_page_number_in_by ~page_number ~receiving_one ~inserted_one  ~total_length=Image.image Unix_command.uc 
    (Command.replace_page_number_in_by page_number receiving_one inserted_one  total_length );;
