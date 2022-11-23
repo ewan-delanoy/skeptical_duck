@@ -136,6 +136,19 @@ module Bare = struct
           else None 
       ) special_order ;;
    
+  let mass_rename ?(range=(1,500)) ~old_prefix ~new_prefix offset  =
+    let (range_start,range_end) = range in 
+        Option.filter_and_unpack (
+        fun k-> 
+           let old_fn = old_prefix ^ (string_of_int k) ^ ".pdf" 
+           and new_fn = new_prefix ^ (string_of_int (k+offset)) ^ ".pdf" in 
+           if Sys.file_exists ((!workspace_directory)^ old_fn) 
+           then Some("mv "^old_fn^" "^new_fn)
+           else None  
+        ) (Int_range.range range_start range_end)  ;;
+
+
+
   let prepare_recto_verso pdfname (i,j)=
         let excerpt_name = Helper.usual_name_in_extract_page_range pdfname (i,j)  in 
         let even_pages = excerpt_name^"_even.pdf"  
@@ -469,6 +482,10 @@ module Command = struct
   let insert_in_just_after =qdi Bare.unlabeled_insert_in_just_after;;
   let intertwine =qti Bare.unlabeled_intertwine;;
   let lay_down =uni Bare.lay_down;; 
+  let mass_rename ?(range=(1,500)) ~old_prefix ~new_prefix offset  =
+      Helper.wrap_list_inside_workspace (
+        Bare.mass_rename ~range ~old_prefix ~new_prefix offset
+      ) ;; 
   let merge =bi Bare.merge;;
   let prepare_recto_verso =bi Bare.prepare_recto_verso;;
   let remove_page_range_in_in_a_total_of = tri Bare.remove_page_range_in_a_total_of;;
@@ -604,6 +621,11 @@ let intertwine ~odd_pages ~even_pages ~num_odd ~num_even ~final_name=Image.image
 
 let lay_down  pdfname=Image.image Unix_command.uc 
   (Command.lay_down  pdfname);;
+
+
+let mass_rename ?(range=(1,500)) ~old_prefix ~new_prefix offset  = Image.image Unix_command.uc 
+  (Command.mass_rename ~range ~old_prefix ~new_prefix offset);;
+
 
 let merge parts whole=
   Image.image Unix_command.uc 

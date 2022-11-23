@@ -1,8 +1,89 @@
 (************************************************************************************************************************
-Snippet 108 : 
+Snippet 109 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 
+
+(************************************************************************************************************************
+Snippet 108 : Mass renamings (TODO : put it in the Coherent_pdf module)
+************************************************************************************************************************)
+
+(*
+open Skeptical_duck_lib ;; 
+*)
+
+open Needed_values ;;
+
+
+let working_dir = home ^ "/Downloads/Building_site/Older_pages";;
+let ap1 = Absolute_path.of_string working_dir;;
+let s_ap1 = Absolute_path.to_string ap1 ;;
+
+Coherent_pdf.workspace_directory := s_ap1 ;;
+
+let see_commands = Coherent_pdf.Command.mass_rename 
+   ~old_prefix:"s" ~new_prefix:"p" 300;; 
+
+let act () = Coherent_pdf.mass_rename 
+  ~old_prefix:"s" ~new_prefix:"p" 300;; 
+
+let old_name = "r" ;;
+let offset = 200 ;;
+let new_name = "p" ;;
+
+Sys.chdir working_dir ;; 
+
+let list_of_renamings ~workdir ~old_prefix ~page_offset ~new_prefix = 
+   let current_dir = Sys.getcwd () in 
+   let _ = Sys.chdir workdir in 
+   let answer = Option.filter_and_unpack (
+   fun k-> 
+      let old_fn = old_prefix ^ (string_of_int k) ^ ".pdf" 
+      and new_fn = new_prefix ^ (string_of_int (k+page_offset)) ^ ".pdf" in 
+      if Sys.file_exists old_fn 
+      then Some("mv "^old_fn^" "^new_fn)
+      else None  
+   ) (Int_range.range 1 100)  in 
+   let _ = Sys.chdir current_dir in 
+   answer ;;
+   
+let see1 = 
+  list_of_renamings 
+   ~workdir:working_dir 
+    ~old_prefix:"r" 
+     ~page_offset:200 
+       ~new_prefix:"p" ;; 
+
+let mass_rename ~workdir ~old_prefix ~page_offset ~new_prefix = 
+  let current_dir = Sys.getcwd () in 
+  let _ = Sys.chdir workdir in 
+  let cmds = list_of_renamings ~workdir ~old_prefix ~page_offset ~new_prefix in 
+  let answer = Unix_command.conditional_multiple_uc cmds in 
+  let _ = Sys.chdir current_dir in 
+  answer ;;
+        
+let act1 () = 
+    mass_rename  
+     ~workdir:working_dir 
+      ~old_prefix:"r" 
+       ~page_offset:200 
+         ~new_prefix:"p" ;; 
+
+let act2 () = 
+  mass_rename  
+    ~workdir:working_dir 
+      ~old_prefix:"s" 
+        ~page_offset:300 
+          ~new_prefix:"p" ;;          
+
+let reached_indices ~prefix = 
+  List.filter (
+    fun k-> 
+       let fn = prefix ^ (string_of_int k) ^ ".pdf" in 
+       Sys.file_exists fn 
+    ) (Int_range.range 1 1000) ;;               
+
+let z1 = (reached_indices ~prefix:"p") = (Int_range.range 1 309) ;;  
 
 (************************************************************************************************************************
 Snippet 107 : Musing on discrepancy problem

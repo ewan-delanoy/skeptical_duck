@@ -26,13 +26,12 @@ let to_concrete_object (Dfn_rootless_t.J(s,m,e))=
    ) ;;
 
 
-
 end ;; 
 
 
-let is_compilable (Dfn_rootless_t.J(s,m,e))= Dfa_ending.is_compilable e;;
+let is_compilable (Dfn_rootless_t.J(_s,_m,e))= Dfa_ending.is_compilable e;;
 
-let is_in (Dfn_rootless_t.J(s,m,e)) sd = Dfa_subdirectory.begins_with s sd;;
+let is_in (Dfn_rootless_t.J(s,_m,_e)) sd = Dfa_subdirectory.begins_with s sd;;
 
 let list_of_concrete_object crobj=
   Crobj_converter_combinator.to_list Private.of_concrete_object crobj ;;
@@ -52,7 +51,7 @@ let pair_list_to_concrete_object l=
   Crobj_converter_combinator.of_pair_list Private.to_concrete_object Private.to_concrete_object l;;
 
 
-let relocate_to (Dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
+let relocate_to (Dfn_rootless_t.J(_old_subdir,m,e)) new_subdir=Dfn_rootless_t.J(new_subdir,m,e);;
 
 let rename_module_as  (old_m,new_m) old_path=
    let (Dfn_rootless_t.J(s,m,e))=old_path in 
@@ -73,17 +72,17 @@ let soak (old_subdir,new_subdir) (Dfn_rootless_t.J(s,m,e)) =
 
 let to_concrete_object = Private.to_concrete_object ;;
 
-let to_ending (Dfn_rootless_t.J(s,m,e))=e;;
+let to_ending (Dfn_rootless_t.J(_s,_m,e))=e;;
 
 let to_line (Dfn_rootless_t.J(s,m,e))=
    (Dfa_subdirectory.connectable_to_subpath s)^
    (Dfa_module.to_line m)^(Dfa_ending.connectable_to_modulename e);;
 
-let to_middle (Dfn_rootless_t.J(s,m,e))=Dfn_middle_t.J(s,m);;
+let to_middle (Dfn_rootless_t.J(s,m,_e))=Dfn_middle_t.J(s,m);;
 
-let to_module (Dfn_rootless_t.J(s,m,e))=m;;
+let to_module (Dfn_rootless_t.J(_s,m,_e))=m;;
 
-let to_subdirectory (Dfn_rootless_t.J(s,m,e))=s;;
+let to_subdirectory (Dfn_rootless_t.J(s,_m,_e))=s;;
 
 
 

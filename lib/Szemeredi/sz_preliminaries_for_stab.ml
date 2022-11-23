@@ -4,7 +4,9 @@
 
 *)
 
-type point = Sz_types.point = P of int * int * int * int list ;;  
+type point = Sz_types.point = 
+   Empty_point 
+  |P of int * int * int * int list ;;  
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -54,13 +56,17 @@ end ;;
 
 module Point = struct 
   
-  let width (P(w,_b,_n,_s)) = w ;;
-  let breadth (P(_w,b,_n,_s)) = b ;;
-  let size (P(_w,_b,n,_s)) = n ;;
-  let scrappers (P(_w,_b,_n,s)) = s ;;
-  let unveil (P(w,b,n,s)) = (w,b,n,s) ;;
-  let enumerate_supporting_set (P(_w,_b,n,s)) = 
-     Finite_int_set.of_pair (n,s) ;; 
+   exception Empty_point_cannot_be_unveiled ;; 
+  let unveil =function 
+   Empty_point -> raise(Empty_point_cannot_be_unveiled) 
+   |P(w,b,n,s) ->  (w,b,n,s) ;; 
+  let width p = let (w,_,_,_) = unveil p in w ;; 
+  let breadth p = let (_,b,_,_) = unveil p in b ;;  
+  let size p = let (_,_,n,_) = unveil p in n ;;   
+  let scrappers p = let (_,_,_,s) = unveil p in s ;;   
+  let enumerate_supporting_set = function
+     Empty_point -> []
+    |P(_w,_b,n,s) -> Finite_int_set.of_pair (n,s) ;; 
 
 end ;;  
 
@@ -121,10 +127,10 @@ module Simplest_reduction = struct
       let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
       let domain = Finite_int_set.of_pair (n,scrappers) in 
       match For_nonparametrized_sets.decompose (old_width,old_breadth) domain with
-      None -> None
+      None -> (Empty_point,domain)
     | (Some((new_width,new_breadth),(new_domain,adjustment))) -> 
        let (new_n,new_scrappers) = Finite_int_set.to_pair new_domain in 
-        Some(P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+        (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
     
 (*
    

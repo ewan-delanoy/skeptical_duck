@@ -136,8 +136,6 @@ module Bulk_result = struct
 
 let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
 
-let jump_from_atom pt = BR (Jump_from_atom(pt),M([Point.enumerate_supporting_set pt],[])) ;;
-
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)
@@ -304,13 +302,14 @@ let medium_hashtbl = Hashtbl.create 50 ;;
 
 
 let generic_access_opt  ~with_anticipation pt = 
- match Simplest_reduction.decompose pt with 
- None -> Some (Bulk_result.atomic_case pt)
- | Some(pt2,adj) ->
-let (width,breadth,n,scrappers) = Point.unveil pt2 in 
-let pre_res=(
-match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-Some summary -> Some (Parametrized.eval_fobas summary breadth n)
+ let (pt2,adj) = Simplest_reduction.decompose pt in 
+ if pt2 = Empty_point 
+ then Some (Bulk_result.atomic_case pt)
+ else
+ let (width,breadth,n,scrappers) = Point.unveil pt2 in 
+  let pre_res=(
+  match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+  Some summary -> Some (Parametrized.eval_fobas summary breadth n)
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
@@ -341,18 +340,16 @@ let rose_add (width,breadth) summary =
 let partial_superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
   let pt_before_jump = P(width-1,n-2*(width-1),n,scrappers) in  
-  match Simplest_reduction.decompose pt_before_jump with 
-  None -> ([],Some(Jump_from_atom(pt_before_jump)))
-  | Some (pt2,adj2) -> ([],Some(Jump_surface(pt2,adj2))) ;; 
+  let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
+  ([],Some(Decomposable(pt2,adj2))) ;; 
     
 
 let compute_superficial_result_partially ~with_anticipation pt =  
   let (width,breadth,n,scrappers) = Point.unveil pt in 
-  let opt = Simplest_reduction.decompose pt in 
-  if ((width,breadth)=(1,0))||(opt=None)
+  let (pt2,adj2) = Simplest_reduction.decompose pt in 
+  if ((width,breadth)=(1,0))||(pt2=Empty_point)
   then ([],Some Atomic)
   else 
-  let (pt2,adj2) = Option.unpack opt in 
   if adj2<>[]
   then ([],Some(Decomposable(pt2,adj2)))
   else     
@@ -370,11 +367,7 @@ let compute_superficial_result_partially ~with_anticipation pt =
        None -> let tooths = Int_range.scale (fun k->
                 let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
                 let pt3 = P(width2,breadth2-1,m,scr) in 
-                match Simplest_reduction.decompose(pt3) with 
-                 None -> (* TODO : create an empty point variant *)
-                          let z = Point.enumerate_supporting_set pt3 in   
-                          (P(1,0,0,[]),z)
-                 |Some(pt4,adj4) -> (pt4,adj4) 
+                Simplest_reduction.decompose(pt3) 
                ) 0 2  in 
               ([],Some(Fork_surface tooths))
       |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
@@ -395,14 +388,6 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
         None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
-   | Jump_from_atom (pt3) -> ([],Some(Bulk_result.jump_from_atom pt))
-   | Jump_surface(pt4,adj4) ->
-    let partial_res3 = compute_bulk_result_partially ~with_anticipation pt4 in 
-    (
-     match snd partial_res3 with 
-     None -> (fst partial_res3,None) 
-    |Some br3 -> ([],Some (Bulk_result.extend_with pt4 br3 adj4))
-    )
    | Contraction_surface (pt5,cstr) ->
     let partial_res4 = compute_bulk_result_partially ~with_anticipation pt5 in 
     (

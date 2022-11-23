@@ -46,7 +46,7 @@ let unchronometered_explore_tree f l=
          then (a::graet,p-1,q+1,peurrest)
          else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
     ) and 
-    tester=(fun (graet,p,q,da_ober)->da_ober<>[]) 
+    tester=(fun (_graet,p,q,da_ober)->da_ober<>[]) 
     and
     shower=(
      fun (graet,p,q,da_ober)->

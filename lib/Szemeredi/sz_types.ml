@@ -4,7 +4,9 @@
 
 *)
 
-type point = P of int * int * int * (int list) ;;
+type point = 
+  Empty_point
+ |P of int * int * int * (int list) ;;
 
 type constraint_t = C of int list ;; 
 
@@ -18,9 +20,7 @@ type mold = M of (solution list) * ( qualified_point list) ;;
   
 type superficial_result = 
   Atomic
-| Decomposable of point * extension_data   
-| Jump_from_atom of point 
-| Jump_surface of point * extension_data
+| Decomposable of point * extension_data  
 | Contraction_surface of point * constraint_t  
 | Fork_surface of (point * extension_data) list ;;
 

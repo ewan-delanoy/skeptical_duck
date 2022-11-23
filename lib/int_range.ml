@@ -81,7 +81,7 @@ let rec find_and_stop0=(function
 ) in
 find_and_stop0 a;;
 
-let constant_list n x=scale (function j->x) 1 n;;
+let constant_list n x=scale (function _j->x) 1 n;;
 
 let describe_fibers_as_intervals f a b=
  if (a>b) then [] else
