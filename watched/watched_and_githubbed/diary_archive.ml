@@ -1,11 +1,261 @@
 (************************************************************************************************************************
-Snippet 109 : 
+Snippet 110 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 
 
 (************************************************************************************************************************
-Snippet 108 : Mass renamings (TODO : put it in the Coherent_pdf module)
+Snippet 109 : Musings on permutations
+************************************************************************************************************************)
+
+open Needed_values ;;
+
+let i_order = Total_ordering.for_integers ;;
+let i_intersect  = Ordered.intersect i_order ;;
+let i_merge  = Ordered.merge i_order ;;
+let i_setminus  = Ordered.setminus i_order ;;
+let i_sort  = Ordered.sort i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order;;
+
+let il_order = Total_ordering.silex_compare  Total_ordering.for_integers ;;
+let il_sort  = Ordered.sort il_order ;;
+
+let current_order = 5 ;;
+let base = Permutation.iii current_order ;;
+
+let eval_list_permutation sigma k = List.nth sigma (k-1) ;;
+
+let compose_list_permutations sigma1 sigma2 = 
+   Int_range.scale (fun k-> eval_list_permutation sigma1 (eval_list_permutation sigma2 k)) 1 current_order ;;
+
+let inverse_of_list_permutation sigma =
+    let temp1 = Int_range.index_everything sigma in 
+    let temp2 = Image.image (fun (x,y)->(y,x)) temp1 in 
+    Int_range.scale (fun k->List.assoc k temp2) 1 current_order ;;  
+
+let uncurried_compose = Memoized.make(fun (i,j) ->
+   let sigma1 = List.nth base (i-1)   
+   and sigma2 = List.nth base (j-1) in 
+   Listennou.find_index (compose_list_permutations sigma1 sigma2) base
+);;     
+
+let compose  i j = uncurried_compose (i,j) ;;
+
+let fold_compose l = List.fold_left compose 1 l ;; 
+
+let inverse = Memoized.make(fun i->
+    let sigma = List.nth base (i-1)   in 
+    Listennou.find_index (inverse_of_list_permutation sigma) base
+  ) ;; 
+
+let uncurried_commutator =  Memoized.make(fun (x,y)->
+  let ix = inverse x
+  and iy = inverse y   in 
+  compose x (compose y (compose ix iy))
+) ;;  
+
+let commutator x y = uncurried_commutator (x,y) ;; 
+
+let commutators arbitrary_set =
+    let square = Cartesian.square arbitrary_set in 
+    Image.image uncurried_commutator square ;;
+
+let uncurried_conjugate =  Memoized.make(fun (x,y)->
+  let ix = inverse x  in 
+  compose x (compose y ix)
+) ;;  
+
+let conjugate x y = uncurried_conjugate (x,y) ;; 
+
+let conjugate_of_set_by ly x= i_sort (Image.image (conjugate x) ly) ;; 
+
+let base_size = List.length base ;;
+
+let visualize_permutation k =
+   let sigma = List.nth base (k-1) in 
+   String.concat "" (Image.image string_of_int sigma) ;;
+
+
+let all_conjugates_of_set ly =
+   il_sort(Int_range.scale (conjugate_of_set_by ly) 1 base_size) ;; 
+
+let rec helper_for_order (k,small,big) =
+   if big = 1 
+   then k 
+   else helper_for_order (k+1,small,compose small big) ;; 
+
+let order = Memoized.make (fun k->helper_for_order (1,k,k)) ;; 
+
+let rec helper_for_power (remaining,small,big) =
+  if remaining = 0 
+  then big
+  else helper_for_power (remaining-1,small,compose small big) ;; 
+
+let nonnegative_power x k = helper_for_power (k-1,x,x) ;; 
+
+let power x k =
+   if k=0 then 1 else 
+   if k<0 
+   then nonnegative_power (inverse x) (-k)  
+   else nonnegative_power x k ;; 
+    
+let compose_powers l = fold_compose (Image.image (fun (x,k)->power x k) l) ;;  
+
+let order = Memoized.make (fun k->helper_for_order (1,k,k)) ;;
+
+let subset_product l1 l2 =
+    let temp1 = Cartesian.product l1 l2 in 
+    let temp2 = Image.image uncurried_compose temp1 in 
+    i_sort temp2 ;; 
+
+let rec helper_for_generated_subgroup (treated,seed) = 
+      let possibly_new = subset_product treated seed in 
+      let really_new = i_setminus possibly_new treated in 
+      if really_new = [] 
+      then treated 
+      else let new_whole = i_merge really_new treated in 
+            helper_for_generated_subgroup (new_whole,seed) ;;
+        
+let generated_subgroup seed = helper_for_generated_subgroup ([1],seed) ;; 
+
+let derived_subgroup sg = generated_subgroup (commutators sg) ;; 
+
+let trivial_subgroup = [1] ;;
+let full_subgroup = Int_range.range 1 base_size ;;
+
+let level1  = 
+  il_sort (Int_range.scale (fun k->generated_subgroup [k]) 2 base_size) ;; 
+
+let pre_level2 = 
+    let temp1 = Uple.list_of_pairs level1 in 
+    let temp2 = Image.image (fun (a,b)->generated_subgroup(a@b)) temp1 in 
+    il_sort temp2 ;;
+
+let (next_to_level2,level2) = List.partition (fun x->List.mem x level1) pre_level2 ;;
+
+let pre_level3 = 
+  let temp1 = Cartesian.product level1 level2 in 
+  let temp2 = List.filter (fun (x,y)->not(i_is_included_in x y)) temp1 in 
+  let temp3 = Image.image (fun (a,b)->generated_subgroup(a@b)) temp2 in 
+  il_sort temp3 ;;
+
+let (next_to_level3,level3) = List.partition (fun x->List.mem x level2) pre_level3 ;;  
+
+let all_subgroups = trivial_subgroup :: (level1 @ level2) ;; 
+
+let subgroups_of_given_group sg =
+   List.filter (fun sg2->(i_is_included_in sg2 sg)&&(sg2<>sg)) all_subgroups ;; 
+
+let frobenius_test big_sg small_sg = 
+   if small_sg = [1] then false else 
+    List.for_all (fun g->
+      if List.mem g small_sg 
+      then true 
+      else  
+      let csg = conjugate_of_set_by small_sg g in 
+      (i_intersect small_sg csg=[1])
+    ) big_sg ;;
+
+let frobenius_subgoups big_sg =
+    List.filter (frobenius_test big_sg) (subgroups_of_given_group big_sg);;    
+
+type formal_subgroup = FSG of int ;; 
+
+module Formal_subgroup = struct 
+
+let full_group = FSG(List.length all_subgroups) ;;   
+let of_list l = FSG(Listennou.find_index l all_subgroups) ;; 
+let to_list (FSG k) = List.nth all_subgroups (k-1) ;;
+let derived_subgroup = Memoized.make (fun fsg ->
+      of_list(derived_subgroup(to_list fsg))
+) ;;
+let all = Int_range.scale (fun k->FSG k) 1 (List.length all_subgroups) ;; 
+let is_solvable = Memoized.recursive (fun old_f fsg ->
+  if fsg = FSG 1 then true else 
+  let der_fsg = derived_subgroup  fsg in 
+  if der_fsg = fsg 
+  then false 
+  else old_f der_fsg
+) ;;
+
+end ;;  
+
+let z1 = Explicit.image Formal_subgroup.derived_subgroup Formal_subgroup.all ;;
+let z2 = List.filter Formal_subgroup.is_solvable Formal_subgroup.all ;;
+
+let z3 = Image.image Formal_subgroup.to_list z2 ;; 
+let maximalities = Ordered_misc.maximal_elts_wrt_inclusion (il_sort z3) ;; 
+let z4 = Explicit.image (fun x->(x,all_conjugates_of_set x)) maximalities ;;
+let maximalities_up_to_conjugation = Option.filter_and_unpack (fun (x,y)->if x=List.hd y then Some x else None) z4;;
+
+let four_cycles = List.filter (fun k->order(k)=4) 
+   (Int_range.range 1 base_size) ;;
+let z5 = Image.image (
+   fun k-> 
+     let sg = generated_subgroup (i_sort [34;k]) in 
+     (Formal_subgroup.of_list sg,k)
+) four_cycles ;;
+let z6 = Listennou.partition_according_to_fst z5 ;; 
+let z7 = Image.image snd z6 ;; 
+let common_cycles = List.hd z7 ;; 
+
+
+
+let view_as_product_of_cycles k =
+   let sigma = List.nth base (k-1) in 
+   Permutation.decompose_into_disjoint_cycles sigma ;; 
+
+let ivp = Image.image view_as_product_of_cycles ;; 
+
+let tf1 sigma k = conjugate (power 34 k) sigma ;; 
+let tf2 sigma =
+   let sigma_inv = inverse sigma in 
+   let temp1 = Int_range.scale (tf1 sigma) 0 4 
+   and temp2 = Int_range.scale (tf1 sigma_inv) 0 4 in 
+   (ivp temp1,ivp temp2,i_sort(temp1@temp2)) ;; 
+
+let z8 = tf2 11 ;; 
+let (z9,z10,z11) = tf2 10 ;; 
+let other_cycles = i_setminus common_cycles z11 ;; 
+let z12 = tf2 18 ;; 
+
+let sg_t = generated_subgroup [34] ;; 
+let base2 = Cartesian.product (Int_range.range 0 4) (Int_range.range 0 3) ;; 
+
+let x0 = 18 and y0 = 10 ;; 
+
+
+let sg_x0 = generated_subgroup [x0] ;; 
+let sel_x0 w =
+   Listennou.force_find (fun (i,j)->compose(power 34 i)(power x0 j)=w) base2 ;;
+
+let z13 = Cartesian.product sg_t sg_x0 ;; 
+let z14 = Image.image (fun (u,v)->(compose u v,(u,v))) z13 ;;
+let mixed1 = i_sort(Image.image fst z14);;
+let z15 = Cartesian.square mixed1 ;; 
+let z16 = List.filter (fun (u,v)->compose u v = y0) z15 ;; 
+let z17 = Image.image (fun (u,v)->(sel_x0 u,sel_x0 v)) z16;;
+
+let see1 = compose_powers [34,2;10,2;34,1;10,1] ;;
+let see2 = compose_powers [34,1;18,1;34,2;18,2] ;;
+
+let z18 = Cartesian.tproduct sg_t common_cycles sg_t ;; 
+let z19 = Image.image (fun (u,v,w)->(fold_compose [u;v;w],(u,v,w))) z18 ;;
+let z20 = i_sort (Image.image fst z19) ;; 
+let z21 = i_setminus z20 common_cycles ;; 
+let z22 = List.filter (fun p->fst(p)=25) z19;;
+
+let act_on_int i_sigma k = List.nth (List.nth base (i_sigma-1)) (k-1) ;; 
+let act_on_intlist i_sigma l =  i_sort(Image.image (act_on_int i_sigma) l) ;;
+let collective_on_intlist i_sigma  ll = il_sort (Image.image (act_on_intlist i_sigma) ll);;
+
+let power5 = il_sort (Listennou.power_set (Int_range.range 1 5) );;
+let triples = List.filter (fun x->List.length x=3) power5 ;; 
+
+let frob = generated_subgroup [11;34] ;;
+let frob_on_intlist l = il_sort (Image.image (fun f->act_on_intlist f l) frob) ;; 
+(************************************************************************************************************************
+Snippet 108 : Mass renamings, using the Coherent_pdf module
 ************************************************************************************************************************)
 
 (*
@@ -14,18 +264,16 @@ open Skeptical_duck_lib ;;
 
 open Needed_values ;;
 
+Coherent_pdf.workspace_directory := (home ^ "/Downloads/Building_site/Older_pages/") ;;
+let (current_letter,current_offset) = ("q",100);;
 
-let working_dir = home ^ "/Downloads/Building_site/Older_pages";;
-let ap1 = Absolute_path.of_string working_dir;;
-let s_ap1 = Absolute_path.to_string ap1 ;;
-
-Coherent_pdf.workspace_directory := s_ap1 ;;
+let (current_letter,current_offset) = ("r",200);;
 
 let see_commands = Coherent_pdf.Command.mass_rename 
-   ~old_prefix:"s" ~new_prefix:"p" 300;; 
+   ~old_prefix:current_letter ~new_prefix:"p" current_offset;; 
 
 let act () = Coherent_pdf.mass_rename 
-  ~old_prefix:"s" ~new_prefix:"p" 300;; 
+  ~old_prefix:current_letter ~new_prefix:"p" current_offset;; 
 
 let see_indices = Coherent_pdf.present_indices "p" ;; 
 
