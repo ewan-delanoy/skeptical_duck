@@ -136,6 +136,8 @@ module Bulk_result = struct
 
 let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
 
+let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
+
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)
@@ -423,11 +425,18 @@ let pusher_for_bulk_result_computation
             None -> (treated,(fst partial_res1)@to_be_treated)
            |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
 
-let rec compute_bulk_results walker =
+let rec needed_subcomputations walker =
     let (treated,to_be_treated) = walker in 
     match to_be_treated with 
     [] -> treated
-    | _ -> compute_bulk_results (pusher_for_bulk_result_computation walker) ;;
+    | _ -> needed_subcomputations (pusher_for_bulk_result_computation walker) ;;
 
+let compute_bulk_result pt =
+   let subcomps = needed_subcomputations ([],[pt]) in 
+   let new_subcomps = List.filter (
+    fun (_,bres) -> Bulk_result.is_not_atomic bres
+   ) subcomps in 
+   let _ = List.iter (fun (pt2,bres)->
+    Hashtbl.replace low_hashtbl pt2 bres ) new_subcomps in 
+   List.assoc pt subcomps ;;   
 
-let compute_bulk_result pt = compute_bulk_results ([],[pt]) ;; 
