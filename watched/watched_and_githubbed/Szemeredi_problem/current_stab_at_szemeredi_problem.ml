@@ -402,6 +402,11 @@ let rec compute_bulk_result_partially pt =
     )
    ) ;; 
 
+let compute_bulk_result_partially_with_helper pt helper =
+   match List.assoc_opt pt helper with 
+   Some answer -> ([],Some answer) 
+   | None ->  compute_bulk_result_partially pt ;; 
+   
 exception Pusher_stop ;;
 
 let pusher_for_bulk_result_computation  
