@@ -4,6 +4,17 @@
 
 *)
 
+
+(* Reproduced stab starts here *)(*
+
+#use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+
+
+An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. 
+
+*)
+
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 open Sz_types ;; 
@@ -331,7 +342,27 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;; 
 
+let this_path = 
+  home^
+     "/Teuliou/OCaml/skeptical_duck/watched/watched_and_githubbed/"^
+     "Szemeredi_problem/" ;; 
 
+let ap_for_head =
+    Absolute_path.of_string(this_path^
+     "current_head_position_for_szemeredi_problem.ml") ;; 
+
+let ap_for_this_file =
+      Absolute_path.of_string(this_path^
+       "current_stab_at_szemeredi_problem.ml") ;; 
+
+let update_head () = 
+    let new_text = Io.read_whole_file ap_for_this_file in 
+    Replace_inside.overwrite_between_markers_inside_file 
+     (Overwriter.of_string new_text) 
+        (
+          "(* Reproduced stab starts here *)",
+          "(* Reproduced stab ends here *)"
+        ) ap_for_head ;; 
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
@@ -414,21 +445,21 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
 exception Pusher_stop ;;
 
 let from_partial_to_full f_partial ~with_anticipation pts0 =
-   let pusher = (
+    let pusher = (
+       fun pts -> match pts with 
+         [] -> raise Pusher_stop
+         | pt1 :: other_pts ->
+           let partial_res1 = f_partial ~with_anticipation pt1 in 
+           match snd partial_res1 with 
+            None -> ((fst partial_res1)@pts)
+           |Some _ -> other_pts 
+    ) in 
+    let rec main = (
       fun pts -> match pts with 
-        [] -> raise Pusher_stop
-        | pt1 :: other_pts ->
-          let partial_res1 = f_partial ~with_anticipation pt1 in 
-          match snd partial_res1 with 
-           None -> ((fst partial_res1)@pts)
-          |Some _ -> other_pts 
+        [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
+        | pt1 :: other_pts -> main (pusher pts)
    ) in 
-   let rec main = (
-     fun pts -> match pts with 
-       [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
-       | pt1 :: other_pts -> main (pusher pts)
-  ) in 
-  main pts0;;
+   main pts0;;
 
 let compute_bulk_results pts0 =
   from_partial_to_full 
@@ -439,7 +470,7 @@ let compute_bulk_result pt = compute_bulk_results [pt] ;;
 
 
 
-
+(* Reproduced stab ends here *)
 
 let current_width = 2 
 and current_strappers = [] ;;
@@ -450,6 +481,22 @@ let pt0 = P(2,0,4,[]) ;;
 
 let long1 = compute_bulk_result pt0 ;; 
 let long2 = compute_bulk_results [pt0] ;; 
+
+let f_partial = compute_bulk_result_partially  ;; 
+
 let long3 = from_partial_to_full 
-compute_bulk_result_partially 
-  ~with_anticipation:true [pt0] ;; 
+f_partial ~with_anticipation:true [pt0] ;; 
+
+let pusher = (
+      fun pts -> match pts with 
+        [] -> raise Pusher_stop
+        | pt1 :: other_pts ->
+          let partial_res1 = f_partial ~with_anticipation:true pt1 in 
+          match snd partial_res1 with 
+           None -> ((fst partial_res1)@pts)
+          |Some _ -> other_pts 
+   ) ;; 
+
+let v0 = [pt0];;
+let ff = Memoized.small pusher v0 ;; 
+

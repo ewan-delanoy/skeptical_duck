@@ -335,7 +335,27 @@ let med_add (width,breadth,scrappers) summary =
 let rose_add (width,breadth) summary = 
     Hashtbl.replace rose_hashtbl (width,breadth) summary ;; 
 
+let this_path = 
+  home^
+     "/Teuliou/OCaml/skeptical_duck/watched/watched_and_githubbed/"^
+     "Szemeredi_problem/" ;; 
 
+let ap_for_head =
+    Absolute_path.of_string(this_path^
+     "current_head_position_for_szemeredi_problem.ml") ;; 
+
+let ap_for_this_file =
+      Absolute_path.of_string(this_path^
+       "current_stab_at_szemeredi_problem.ml") ;; 
+
+let update_head () = 
+    let new_text = Io.read_whole_file ap_for_this_file in 
+    Replace_inside.overwrite_between_markers_inside_file 
+     (Overwriter.of_string new_text) 
+        (
+          "(* Reproduced stab starts here *)",
+          "(* Reproduced stab ends here *)"
+        ) ap_for_head ;; 
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
