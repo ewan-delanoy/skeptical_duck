@@ -345,6 +345,7 @@ let partial_superificial_result_in_jump_case  pt_after_jump =
     
 
 let compute_superficial_result_partially ~with_anticipation pt =  
+  if pt = Empty_point then ([],Some Atomic) else
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let (pt2,adj2) = Simplest_reduction.decompose pt in 
   if ((width,breadth)=(1,0))||(pt2=Empty_point)
@@ -376,6 +377,7 @@ let compute_superficial_result_partially ~with_anticipation pt =
 exception Bad_contraction of point * constraint_t ;; 
 
 let rec compute_bulk_result_partially ~with_anticipation pt =  
+  if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
    let partial_res1 = compute_superficial_result_partially ~with_anticipation pt in 
    match snd partial_res1 with 
     None -> (fst partial_res1,None) 
@@ -423,7 +425,7 @@ let from_partial_to_full f_partial ~with_anticipation pts0 =
           None -> main((fst partial_res1)@pts)
          |Some _ -> main other_pts 
   ) in 
-  main ;;
+  main pts0;;
 
 let compute_bulk_results pts0 =
   from_partial_to_full 

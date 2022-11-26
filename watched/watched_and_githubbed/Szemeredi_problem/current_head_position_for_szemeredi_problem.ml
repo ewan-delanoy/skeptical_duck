@@ -8,6 +8,12 @@ open Skeptical_duck_lib ;;
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
 
+let current_width = 2 
+and current_strappers = [] ;;
+let tf1 n = compute_bulk_result 
+   (P(2,0,n,[])) ;; 
+
+
 
 
 
