@@ -415,17 +415,24 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
     )
    ) ;; 
 
+exception Pusher_stop ;;
+
 let from_partial_to_full f_partial ~with_anticipation pts0 =
-  let rec main = (
-     fun pts -> match pts with 
-       [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
-       | pt1 :: other_pts ->
-         let partial_res1 = f_partial ~with_anticipation pt1 in 
-         match snd partial_res1 with 
-          None -> main((fst partial_res1)@pts)
-         |Some _ -> main other_pts 
-  ) in 
-  main pts0;;
+    let pusher = (
+       fun pts -> match pts with 
+         [] -> raise Pusher_stop
+         | pt1 :: other_pts ->
+           let partial_res1 = f_partial ~with_anticipation pt1 in 
+           match snd partial_res1 with 
+            None -> ((fst partial_res1)@pts)
+           |Some _ -> other_pts 
+    ) in 
+    let rec main = (
+      fun pts -> match pts with 
+        [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
+        | pt1 :: other_pts -> main (pusher pts)
+   ) in 
+   main pts0;;
 
 let compute_bulk_results pts0 =
   from_partial_to_full 
