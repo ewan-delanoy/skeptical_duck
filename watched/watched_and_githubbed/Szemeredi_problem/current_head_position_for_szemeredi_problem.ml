@@ -143,6 +143,8 @@ module Bulk_result = struct
 
 let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
 
+let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
+
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)
@@ -281,34 +283,13 @@ let check_bresf1 =
 end ;;   
       
 
-
-
-
-module Accumulator_with_optional_anticipator = struct 
-
 let low_hashtbl = Hashtbl.create 50 ;;
-let low_anticipator = ref [] ;; 
-let get_from_low_hashtbl ~with_anticipation pt =
-      if not(with_anticipation)
-      then  Hashtbl.find_opt low_hashtbl pt 
-      else
-          match List.assoc_opt pt (!low_anticipator) with 
-          Some anticiped_answer -> Some anticiped_answer 
-          | None -> Hashtbl.find_opt low_hashtbl pt  ;;
-  
-let add_to_low_hashtbl  ~with_anticipation pt vaal=
-    if not(with_anticipation)
-    then   Hashtbl.replace low_hashtbl pt vaal
-    else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
-  
-  
-end ;;   
   
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
 
-let generic_access_opt  ~with_anticipation pt = 
+let generic_access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
  if pt2 = Empty_point 
  then Some (Bulk_result.atomic_case pt)
@@ -320,22 +301,10 @@ let generic_access_opt  ~with_anticipation pt =
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
+ | None -> Hashtbl.find_opt low_hashtbl pt2 )
 ) in 
 Bulk_result.extend_with_opt pt2 pre_res adj ;;
 
-
-
-(*
-let low_add pt hook =
-   let res = compute_from_below ~with_anticipation:false pt hook in  
-   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
-             ~with_anticipation:false pt res in 
-   res ;;
-*)
-
-
-    
 let med_add (width,breadth,scrappers) summary = 
     Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
     
@@ -360,8 +329,8 @@ let update_head () =
     Replace_inside.overwrite_between_markers_inside_file 
      (Overwriter.of_string new_text) 
         (
-          "(* Reproduced stab starts here *)",
-          "(* Reproduced stab ends here *)"
+          "(*"^" Reproduced stab starts here *)",
+          "(*"^" Reproduced stab ends here *)"
         ) ap_for_head ;; 
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
@@ -371,7 +340,7 @@ let partial_superificial_result_in_jump_case  pt_after_jump =
   ([],Some(Decomposable(pt2,adj2))) ;; 
     
 
-let compute_superficial_result_partially ~with_anticipation pt =  
+let compute_superficial_result_partially pt =  
   if pt = Empty_point then ([],Some Atomic) else
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let (pt2,adj2) = Simplest_reduction.decompose pt in 
@@ -388,7 +357,7 @@ let compute_superficial_result_partially ~with_anticipation pt =
   let _ = assert(breadth2>0) in 
   let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
-  match generic_access_opt  ~with_anticipation preceding_point with 
+  match generic_access_opt  preceding_point with 
     None -> ([preceding_point],None)
    |Some bres ->
        (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
@@ -403,22 +372,22 @@ let compute_superficial_result_partially ~with_anticipation pt =
 
 exception Bad_contraction of point * constraint_t ;; 
 
-let rec compute_bulk_result_partially ~with_anticipation pt =  
+let rec compute_bulk_result_partially pt =  
   if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-   let partial_res1 = compute_superficial_result_partially ~with_anticipation pt in 
+   let partial_res1 = compute_superficial_result_partially pt in 
    match snd partial_res1 with 
     None -> (fst partial_res1,None) 
    |Some sr ->(match sr with 
      Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
    | Decomposable(pt2,adj2) -> 
-       let partial_res2 = compute_bulk_result_partially ~with_anticipation pt2 in 
+       let partial_res2 = compute_bulk_result_partially pt2 in 
        (
         match snd partial_res2 with 
         None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
    | Contraction_surface (pt5,cstr) ->
-    let partial_res4 = compute_bulk_result_partially ~with_anticipation pt5 in 
+    let partial_res4 = compute_bulk_result_partially pt5 in 
     (
      match snd partial_res4 with 
      None -> (fst partial_res4,None) 
@@ -429,7 +398,7 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
     ) 
    | Fork_surface cases ->
       let (last_pt,last_adj) = List.nth cases 2 in 
-      let partial_res5 = compute_bulk_result_partially ~with_anticipation last_pt in 
+      let partial_res5 = compute_bulk_result_partially last_pt in 
     (
      match snd partial_res5 with 
      None -> (fst partial_res5,None) 
@@ -442,33 +411,41 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
     )
    ) ;; 
 
+let compute_bulk_result_partially_with_helper pt helper =
+   match List.assoc_opt pt helper with 
+   Some answer -> ([],Some answer) 
+   | None ->  compute_bulk_result_partially pt ;; 
+   
+let add_if_necessary (a,b) assoc_list = 
+  if List.mem_assoc a assoc_list 
+  then assoc_list 
+  else (a,b) :: assoc_list ;;   
+
 exception Pusher_stop ;;
 
-let from_partial_to_full f_partial ~with_anticipation pts0 =
-    let pusher = (
-       fun pts -> match pts with 
+let pusher_for_bulk_result_computation  
+   (treated,to_be_treated) = match to_be_treated with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
-           let partial_res1 = f_partial ~with_anticipation pt1 in 
+           let partial_res1 = compute_bulk_result_partially pt1 in 
            match snd partial_res1 with 
-            None -> ((fst partial_res1)@pts)
-           |Some _ -> other_pts 
-    ) in 
-    let rec main = (
-      fun pts -> match pts with 
-        [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
-        | pt1 :: other_pts -> main (pusher pts)
-   ) in 
-   main pts0;;
+            None -> (treated,(fst partial_res1)@to_be_treated)
+           |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
 
-let compute_bulk_results pts0 =
-  from_partial_to_full 
-     compute_bulk_result_partially 
-       ~with_anticipation:true pts0 ;;
+let rec needed_subcomputations walker =
+    let (treated,to_be_treated) = walker in 
+    match to_be_treated with 
+    [] -> treated
+    | _ -> needed_subcomputations (pusher_for_bulk_result_computation walker) ;;
 
-let compute_bulk_result pt = compute_bulk_results [pt] ;; 
-
-
+let compute_bulk_result pt =
+   let subcomps = needed_subcomputations ([],[pt]) in 
+   let new_subcomps = List.filter (
+    fun (_,bres) -> Bulk_result.is_not_atomic bres
+   ) subcomps in 
+   let _ = List.iter (fun (pt2,bres)->
+    Hashtbl.replace low_hashtbl pt2 bres ) new_subcomps in 
+   List.assoc pt subcomps ;;   
 
 (* Reproduced stab ends here *)
 
@@ -480,23 +457,3 @@ let tf1 n = compute_bulk_result
 let pt0 = P(2,0,4,[]) ;;
 
 let long1 = compute_bulk_result pt0 ;; 
-let long2 = compute_bulk_results [pt0] ;; 
-
-let f_partial = compute_bulk_result_partially  ;; 
-
-let long3 = from_partial_to_full 
-f_partial ~with_anticipation:true [pt0] ;; 
-
-let pusher = (
-      fun pts -> match pts with 
-        [] -> raise Pusher_stop
-        | pt1 :: other_pts ->
-          let partial_res1 = f_partial ~with_anticipation:true pt1 in 
-          match snd partial_res1 with 
-           None -> ((fst partial_res1)@pts)
-          |Some _ -> other_pts 
-   ) ;; 
-
-let v0 = [pt0];;
-let ff = Memoized.small pusher v0 ;; 
-

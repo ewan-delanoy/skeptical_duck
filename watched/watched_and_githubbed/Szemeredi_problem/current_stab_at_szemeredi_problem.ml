@@ -322,8 +322,8 @@ let update_head () =
     Replace_inside.overwrite_between_markers_inside_file 
      (Overwriter.of_string new_text) 
         (
-          "(* Reproduced stab starts here *)",
-          "(* Reproduced stab ends here *)"
+          "(*"^" Reproduced stab starts here *)",
+          "(*"^" Reproduced stab ends here *)"
         ) ap_for_head ;; 
    
 let partial_superificial_result_in_jump_case  pt_after_jump =
