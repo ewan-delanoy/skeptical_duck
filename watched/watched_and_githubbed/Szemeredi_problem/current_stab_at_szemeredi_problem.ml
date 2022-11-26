@@ -404,6 +404,15 @@ let rec compute_bulk_result_partially pt =
 
 exception Pusher_stop ;;
 
+let pusher_for_bulk_result_computation  
+   (treated,to_be_treated) = match to_be_treated with 
+         [] -> raise Pusher_stop
+         | pt1 :: other_pts ->
+           let partial_res1 = compute_bulk_result_partially pt1 in 
+           match snd partial_res1 with 
+            None -> ((fst partial_res1)@to_be_treated)
+           |Some _ -> other_pts ;;
+
 let from_partial_to_full f_partial pts0 =
     let pusher = (
        fun pts -> match pts with 
@@ -426,6 +435,3 @@ let compute_bulk_results pts0 =
      compute_bulk_result_partially  pts0 ;;
 
 let compute_bulk_result pt = compute_bulk_results [pt] ;; 
-
-
-
