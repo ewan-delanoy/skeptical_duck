@@ -280,7 +280,7 @@ let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
 
-let generic_access_opt  ~with_anticipation pt = 
+let generic_access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
  if pt2 = Empty_point 
  then Some (Bulk_result.atomic_case pt)
@@ -331,7 +331,7 @@ let partial_superificial_result_in_jump_case  pt_after_jump =
   ([],Some(Decomposable(pt2,adj2))) ;; 
     
 
-let compute_superficial_result_partially ~with_anticipation pt =  
+let compute_superficial_result_partially pt =  
   if pt = Empty_point then ([],Some Atomic) else
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let (pt2,adj2) = Simplest_reduction.decompose pt in 
@@ -348,7 +348,7 @@ let compute_superficial_result_partially ~with_anticipation pt =
   let _ = assert(breadth2>0) in 
   let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
-  match generic_access_opt  ~with_anticipation preceding_point with 
+  match generic_access_opt  preceding_point with 
     None -> ([preceding_point],None)
    |Some bres ->
        (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
@@ -363,22 +363,22 @@ let compute_superficial_result_partially ~with_anticipation pt =
 
 exception Bad_contraction of point * constraint_t ;; 
 
-let rec compute_bulk_result_partially ~with_anticipation pt =  
+let rec compute_bulk_result_partially pt =  
   if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-   let partial_res1 = compute_superficial_result_partially ~with_anticipation pt in 
+   let partial_res1 = compute_superficial_result_partially pt in 
    match snd partial_res1 with 
     None -> (fst partial_res1,None) 
    |Some sr ->(match sr with 
      Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
    | Decomposable(pt2,adj2) -> 
-       let partial_res2 = compute_bulk_result_partially ~with_anticipation pt2 in 
+       let partial_res2 = compute_bulk_result_partially pt2 in 
        (
         match snd partial_res2 with 
         None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
    | Contraction_surface (pt5,cstr) ->
-    let partial_res4 = compute_bulk_result_partially ~with_anticipation pt5 in 
+    let partial_res4 = compute_bulk_result_partially pt5 in 
     (
      match snd partial_res4 with 
      None -> (fst partial_res4,None) 
@@ -389,7 +389,7 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
     ) 
    | Fork_surface cases ->
       let (last_pt,last_adj) = List.nth cases 2 in 
-      let partial_res5 = compute_bulk_result_partially ~with_anticipation last_pt in 
+      let partial_res5 = compute_bulk_result_partially last_pt in 
     (
      match snd partial_res5 with 
      None -> (fst partial_res5,None) 
@@ -404,27 +404,26 @@ let rec compute_bulk_result_partially ~with_anticipation pt =
 
 exception Pusher_stop ;;
 
-let from_partial_to_full f_partial ~with_anticipation pts0 =
+let from_partial_to_full f_partial pts0 =
     let pusher = (
        fun pts -> match pts with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
-           let partial_res1 = f_partial ~with_anticipation pt1 in 
+           let partial_res1 = f_partial pt1 in 
            match snd partial_res1 with 
             None -> ((fst partial_res1)@pts)
            |Some _ -> other_pts 
     ) in 
     let rec main = (
       fun pts -> match pts with 
-        [] -> Image.image (fun pt->Option.unpack(snd(f_partial ~with_anticipation pt))) pts0 
+        [] -> Image.image (fun pt->Option.unpack(snd(f_partial pt))) pts0 
         | pt1 :: other_pts -> main (pusher pts)
    ) in 
    main pts0;;
 
 let compute_bulk_results pts0 =
   from_partial_to_full 
-     compute_bulk_result_partially 
-       ~with_anticipation:true pts0 ;;
+     compute_bulk_result_partially  pts0 ;;
 
 let compute_bulk_result pt = compute_bulk_results [pt] ;; 
 
