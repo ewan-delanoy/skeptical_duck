@@ -274,28 +274,7 @@ let check_bresf1 =
 end ;;   
       
 
-
-
-
-module Accumulator_with_optional_anticipator = struct 
-
 let low_hashtbl = Hashtbl.create 50 ;;
-let low_anticipator = ref [] ;; 
-let get_from_low_hashtbl ~with_anticipation pt =
-      if not(with_anticipation)
-      then  Hashtbl.find_opt low_hashtbl pt 
-      else
-          match List.assoc_opt pt (!low_anticipator) with 
-          Some anticiped_answer -> Some anticiped_answer 
-          | None -> Hashtbl.find_opt low_hashtbl pt  ;;
-  
-let add_to_low_hashtbl  ~with_anticipation pt vaal=
-    if not(with_anticipation)
-    then   Hashtbl.replace low_hashtbl pt vaal
-    else low_anticipator := (pt,vaal) :: (!low_anticipator)  ;;
-  
-  
-end ;;   
   
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
@@ -313,22 +292,10 @@ let generic_access_opt  ~with_anticipation pt =
 | None ->  
  (match Hashtbl.find_opt medium_hashtbl (width,breadth,scrappers) with 
    Some summary -> Some (Parametrized.eval_fos summary n)
- | None -> Accumulator_with_optional_anticipator.get_from_low_hashtbl ~with_anticipation pt2) 
+ | None -> Hashtbl.find_opt low_hashtbl pt2 )
 ) in 
 Bulk_result.extend_with_opt pt2 pre_res adj ;;
 
-
-
-(*
-let low_add pt hook =
-   let res = compute_from_below ~with_anticipation:false pt hook in  
-   let _ = Accumulator_with_optional_anticipator.add_to_low_hashtbl  
-             ~with_anticipation:false pt res in 
-   res ;;
-*)
-
-
-    
 let med_add (width,breadth,scrappers) summary = 
     Hashtbl.replace medium_hashtbl (width,breadth,scrappers) summary ;;
     
