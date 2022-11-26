@@ -410,28 +410,14 @@ let pusher_for_bulk_result_computation
          | pt1 :: other_pts ->
            let partial_res1 = compute_bulk_result_partially pt1 in 
            match snd partial_res1 with 
-            None -> ((fst partial_res1)@to_be_treated)
-           |Some _ -> other_pts ;;
+            None -> (treated,(fst partial_res1)@to_be_treated)
+           |Some _ -> (treated,other_pts) ;;
 
-let from_partial_to_full f_partial pts0 =
-    let pusher = (
-       fun pts -> match pts with 
-         [] -> raise Pusher_stop
-         | pt1 :: other_pts ->
-           let partial_res1 = f_partial pt1 in 
-           match snd partial_res1 with 
-            None -> ((fst partial_res1)@pts)
-           |Some _ -> other_pts 
-    ) in 
-    let rec main = (
-      fun pts -> match pts with 
-        [] -> Image.image (fun pt->Option.unpack(snd(f_partial pt))) pts0 
-        | pt1 :: other_pts -> main (pusher pts)
-   ) in 
-   main pts0;;
+let rec compute_bulk_results walker =
+    let (treated,to_be_treated) = walker in 
+    match to_be_treated with 
+    [] -> treated
+    | _ -> compute_bulk_results (pusher_for_bulk_result_computation walker) ;;
 
-let compute_bulk_results pts0 =
-  from_partial_to_full 
-     compute_bulk_result_partially  pts0 ;;
 
-let compute_bulk_result pt = compute_bulk_results [pt] ;; 
+let compute_bulk_result pt = compute_bulk_results ([],[pt]) ;; 
