@@ -420,7 +420,7 @@ let pusher_for_bulk_result_computation
    (treated,to_be_treated) = match to_be_treated with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
-           let partial_res1 = compute_bulk_result_partially pt1 in 
+           let partial_res1 = compute_bulk_result_partially_with_helper pt1 treated in 
            match snd partial_res1 with 
             None -> (treated,(fst partial_res1)@to_be_treated)
            |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
