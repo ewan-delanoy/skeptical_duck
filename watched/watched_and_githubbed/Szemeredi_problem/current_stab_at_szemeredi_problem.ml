@@ -407,6 +407,11 @@ let compute_bulk_result_partially_with_helper pt helper =
    Some answer -> ([],Some answer) 
    | None ->  compute_bulk_result_partially pt ;; 
    
+let add_if_necessary (a,b) assoc_list = 
+  if List.mem_assoc a assoc_list 
+  then assoc_list 
+  else (a,b) :: assoc_list ;;   
+
 exception Pusher_stop ;;
 
 let pusher_for_bulk_result_computation  
