@@ -405,7 +405,7 @@ let rec compute_bulk_result_partially pt helper=
      match snd partial_res5 with 
      None -> (fst partial_res5,None) 
     |Some br5 -> 
-       let (BR(_,M(reps,_))) = br5 in 
+       let (BR(_,M(reps,_))) = Bulk_result.extend_with last_pt br5 last_adj in 
        let new_mold = M(reps,Image.image (
         fun (pt6,adj6)-> Q(pt6,[],adj6)
      ) cases) in 
@@ -448,13 +448,70 @@ let compute_bulk_result pt =
 
 (* Reproduced stab ends here *)
 
-let current_width = 2 
-and current_strappers = [] ;;
+
 let tf1 n = compute_bulk_result (P(2,0,n,[])) ;; 
 
-let pt0 = P(2,0,4,[]) ;;
+let pt0 = P(1,1,3,[]) ;;
 
-let long1 = compute_bulk_result pt0 ;; 
+let bad1 = compute_bulk_result pt0 ;; 
+let bad2 =  needed_subcomputations ([],[pt0]) ;; 
 let v0 = ([],[pt0]) ;;
-let long2 = needed_subcomputations v0 ;;
-let ff = Memoized.small pusher_for_needed_subcomputations v0;;
+let bad3 = pusher_for_needed_subcomputations v0 ;; 
+let bad4 = compute_bulk_result_partially pt0 [] ;; 
+let partial_res1 = compute_superficial_result_partially pt0 [] ;;
+let sr = Option.unpack (snd partial_res1) ;; 
+let (Fork_surface cases) = sr ;; 
+let partial_res2 = compute_bulk_result_partially pt2 [] ;; 
+let (last_pt,last_adj) = List.nth cases 2 ;;
+let partial_res5 = compute_bulk_result_partially last_pt [] ;; 
+    (
+     match snd partial_res5 with 
+     None -> (fst partial_res5,None) 
+    |Some br5 -> 
+       let (BR(_,M(reps,_))) = br5 in 
+       let new_mold = M(reps,Image.image (
+        fun (pt6,adj6)-> Q(pt6,[],adj6)
+     ) cases) in 
+      ([],Some (BR(Fork_surface cases,new_mold)))
+    )
+
+
+
+let rec compute_bulk_result_partially pt helper=  
+  if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
+   let partial_res1 = compute_superficial_result_partially pt helper in 
+   match snd partial_res1 with 
+    None -> (fst partial_res1,None) 
+   |Some sr ->(match sr with 
+     Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
+   | Decomposable(pt2,adj2) -> 
+       let partial_res2 = compute_bulk_result_partially pt2 helper in 
+       (
+        match snd partial_res2 with 
+        None -> (fst partial_res2,None) 
+       |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
+       )
+   | Contraction_surface (pt5,cstr) ->
+    let partial_res4 = compute_bulk_result_partially pt5 helper in 
+    (
+     match snd partial_res4 with 
+     None -> (fst partial_res4,None) 
+    |Some br4 -> 
+      match Bulk_result.impose_one_more_constraint_opt pt5 cstr br4 with 
+        None -> raise(Bad_contraction(pt5,cstr))
+        |Some new_br4 ->([],Some new_br4)
+    ) 
+   | Fork_surface cases ->
+      let (last_pt,last_adj) = List.nth cases 2 in 
+      let partial_res5 = compute_bulk_result_partially last_pt helper in 
+    (
+     match snd partial_res5 with 
+     None -> (fst partial_res5,None) 
+    |Some br5 -> 
+       let (BR(_,M(reps,_))) = br5 in 
+       let new_mold = M(reps,Image.image (
+        fun (pt6,adj6)-> Q(pt6,[],adj6)
+     ) cases) in 
+      ([],Some (BR(Fork_surface cases,new_mold)))
+    )
+   ) ;; 

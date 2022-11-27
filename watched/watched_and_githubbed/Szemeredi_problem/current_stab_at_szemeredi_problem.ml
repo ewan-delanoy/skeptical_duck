@@ -398,7 +398,7 @@ let rec compute_bulk_result_partially pt helper=
      match snd partial_res5 with 
      None -> (fst partial_res5,None) 
     |Some br5 -> 
-       let (BR(_,M(reps,_))) = br5 in 
+       let (BR(_,M(reps,_))) = Bulk_result.extend_with last_pt br5 last_adj in 
        let new_mold = M(reps,Image.image (
         fun (pt6,adj6)-> Q(pt6,[],adj6)
      ) cases) in 
