@@ -332,6 +332,10 @@ let superificial_result_in_jump_case  pt_after_jump =
   let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
   ([],Some(Decomposable(pt2,adj2))) ;; 
     
+let access_with_helper_opt pt helper =
+    match List.assoc_opt pt helper with 
+    Some answer -> Some answer
+    | None ->  access_opt pt ;;
 
 let compute_superficial_result_partially pt =  
   if pt = Empty_point then ([],Some Atomic) else
