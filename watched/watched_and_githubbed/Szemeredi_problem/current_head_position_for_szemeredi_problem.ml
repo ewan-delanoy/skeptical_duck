@@ -289,7 +289,7 @@ let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
 
-let generic_access_opt  pt = 
+let access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
  if pt2 = Empty_point 
  then Some (Bulk_result.atomic_case pt)
@@ -339,8 +339,12 @@ let superificial_result_in_jump_case  pt_after_jump =
   let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
   ([],Some(Decomposable(pt2,adj2))) ;; 
     
+let access_with_helper_opt pt helper =
+    match List.assoc_opt pt helper with 
+    Some answer -> Some answer
+    | None ->  access_opt pt ;;
 
-let compute_superficial_result_partially pt =  
+let compute_superficial_result_partially pt helper =  
   if pt = Empty_point then ([],Some Atomic) else
   let (width,breadth,n,scrappers) = Point.unveil pt in 
   let (pt2,adj2) = Simplest_reduction.decompose pt in 
@@ -357,7 +361,7 @@ let compute_superficial_result_partially pt =
   let _ = assert(breadth2>0) in 
   let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
-  match generic_access_opt  preceding_point with 
+  match access_with_helper_opt  preceding_point helper with 
     None -> ([preceding_point],None)
    |Some bres ->
        (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
@@ -372,22 +376,22 @@ let compute_superficial_result_partially pt =
 
 exception Bad_contraction of point * constraint_t ;; 
 
-let rec compute_bulk_result_partially pt =  
+let rec compute_bulk_result_partially pt helper=  
   if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-   let partial_res1 = compute_superficial_result_partially pt in 
+   let partial_res1 = compute_superficial_result_partially pt helper in 
    match snd partial_res1 with 
     None -> (fst partial_res1,None) 
    |Some sr ->(match sr with 
      Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
    | Decomposable(pt2,adj2) -> 
-       let partial_res2 = compute_bulk_result_partially pt2 in 
+       let partial_res2 = compute_bulk_result_partially pt2 helper in 
        (
         match snd partial_res2 with 
         None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
    | Contraction_surface (pt5,cstr) ->
-    let partial_res4 = compute_bulk_result_partially pt5 in 
+    let partial_res4 = compute_bulk_result_partially pt5 helper in 
     (
      match snd partial_res4 with 
      None -> (fst partial_res4,None) 
@@ -398,7 +402,7 @@ let rec compute_bulk_result_partially pt =
     ) 
    | Fork_surface cases ->
       let (last_pt,last_adj) = List.nth cases 2 in 
-      let partial_res5 = compute_bulk_result_partially last_pt in 
+      let partial_res5 = compute_bulk_result_partially last_pt helper in 
     (
      match snd partial_res5 with 
      None -> (fst partial_res5,None) 
@@ -411,10 +415,6 @@ let rec compute_bulk_result_partially pt =
     )
    ) ;; 
 
-let compute_bulk_result_partially_with_helper pt helper =
-   match List.assoc_opt pt helper with 
-   Some answer -> ([],Some answer) 
-   | None ->  compute_bulk_result_partially pt ;; 
    
 let add_if_necessary (a,b) assoc_list = 
   if List.mem_assoc a assoc_list 
@@ -423,28 +423,29 @@ let add_if_necessary (a,b) assoc_list =
 
 exception Pusher_stop ;;
 
-let pusher_for_bulk_result_computation  
+let pusher_for_needed_subcomputations  
    (treated,to_be_treated) = match to_be_treated with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
-           let partial_res1 = compute_bulk_result_partially_with_helper pt1 treated in 
+           let partial_res1 = compute_bulk_result_partially pt1 treated in 
            match snd partial_res1 with 
             None -> (treated,(fst partial_res1)@to_be_treated)
            |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
 
 let rec needed_subcomputations walker =
     let (treated,to_be_treated) = walker in 
-    match to_be_treated with 
+    let subcomps =( match to_be_treated with 
     [] -> treated
-    | _ -> needed_subcomputations (pusher_for_bulk_result_computation walker) ;;
-
-let compute_bulk_result pt =
-   let subcomps = needed_subcomputations ([],[pt]) in 
-   let new_subcomps = List.filter (
+    | _ -> needed_subcomputations (pusher_for_needed_subcomputations walker) ) in 
+    let new_subcomps = List.filter (
     fun (_,bres) -> Bulk_result.is_not_atomic bres
    ) subcomps in 
    let _ = List.iter (fun (pt2,bres)->
     Hashtbl.replace low_hashtbl pt2 bres ) new_subcomps in 
+    subcomps ;;
+
+let compute_bulk_result pt =
+   let subcomps = needed_subcomputations ([],[pt]) in 
    List.assoc pt subcomps ;;   
 
 (* Reproduced stab ends here *)

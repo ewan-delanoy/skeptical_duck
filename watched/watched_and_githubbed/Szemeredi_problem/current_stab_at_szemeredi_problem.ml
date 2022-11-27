@@ -427,16 +427,17 @@ let pusher_for_needed_subcomputations
 
 let rec needed_subcomputations walker =
     let (treated,to_be_treated) = walker in 
-    match to_be_treated with 
+    let subcomps =( match to_be_treated with 
     [] -> treated
-    | _ -> needed_subcomputations (pusher_for_needed_subcomputations walker) ;;
-
-let compute_bulk_result pt =
-   let subcomps = needed_subcomputations ([],[pt]) in 
-   let new_subcomps = List.filter (
+    | _ -> needed_subcomputations (pusher_for_needed_subcomputations walker) ) in 
+    let new_subcomps = List.filter (
     fun (_,bres) -> Bulk_result.is_not_atomic bres
    ) subcomps in 
    let _ = List.iter (fun (pt2,bres)->
     Hashtbl.replace low_hashtbl pt2 bres ) new_subcomps in 
+    subcomps ;;
+
+let compute_bulk_result pt =
+   let subcomps = needed_subcomputations ([],[pt]) in 
    List.assoc pt subcomps ;;   
 
