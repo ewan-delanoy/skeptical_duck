@@ -21,8 +21,8 @@ type mold = M of (solution list) * ( qualified_point list) ;;
 type superficial_result = 
   Atomic
 | Decomposable of point * extension_data  
-| Contraction_surface of point * constraint_t  
-| Fork_surface of (point * extension_data) list ;;
+| Contraction of point * constraint_t  
+| Fork of (point * extension_data) list ;;
 
 type bulk_result = BR of superficial_result * mold ;;  
 
