@@ -62,23 +62,22 @@ let merge_constraints l_constr1 l_constr2 =
     (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
      (simplifier l_constr1) (simplifier l_constr2))) ;;
 
-let insert_new (n,scrappers) (old_constraints,extension) (C new_constraint)= 
-  let whole = Finite_int_set.of_pair (n,scrappers) in 
+let insert_new domain (old_constraints,extension) (C new_constraint)= 
   let remaining_constraint = i_setminus new_constraint extension in 
   if remaining_constraint = [] 
   then None 
   else 
-  if (i_setminus remaining_constraint whole)<>[] 
+  if (i_setminus remaining_constraint domain)<>[] 
   then Some (old_constraints)    
   else Some (merge_constraints [C remaining_constraint] old_constraints) ;;  
    
-let insert_several  (n,scrappers) (old_constraints,extension) new_constraints =
+let insert_several  domain (old_constraints,extension) new_constraints =
    let rec tempf = (
       fun (constraints_walker,to_be_treated) ->
          match to_be_treated with 
          [] -> Some constraints_walker 
          | new_constraint :: others ->  
-        (match  insert_new (n,scrappers) (constraints_walker,extension) new_constraint with    
+        (match  insert_new domain (constraints_walker,extension) new_constraint with    
            None -> None 
           | Some new_walker -> tempf(new_walker,others) 
         )
@@ -98,11 +97,10 @@ let extend_with qp extension =
  
 
 let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
-  let n = Point.size pt and scrappers = Point.scrappers pt in 
-  match Constraint.insert_several (n,scrappers) (old_constraints,extension) new_constraints 
+  (match Constraint.insert_several (Point.enumerate_supporting_set pt) (old_constraints,extension) new_constraints 
   with
     None -> None 
-   |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension))) ;; 
+   |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension)))) ;; 
 
 
 end ;;  
@@ -459,4 +457,4 @@ let pt0 = P(2,0,4,[]) ;;
 let long1 = compute_bulk_result pt0 ;; 
 let v0 = ([],[pt0]) ;;
 let long2 = needed_subcomputations v0 ;;
-let ff = Memoized.small pusher_for_bulk_result_computation v0;;
+let ff = Memoized.small pusher_for_needed_subcomputations v0;;
