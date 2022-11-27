@@ -371,6 +371,17 @@ let compute_superficial_result_partially pt helper =
               ([],Some(Fork tooths))
       |Some bres2 -> ([],Some(Contraction(preceding_point,front_constraint)))) ;; 
 
+let fork_case_in_bulk_result_computation old_f cases helper = 
+      let (last_pt,last_adj) = List.nth cases 2 in 
+      let partial_res5 = old_f last_pt helper in 
+      match snd partial_res5 with 
+      None -> (fst partial_res5,None) 
+     |Some br5 -> 
+       let (BR(_,M(reps,_))) = Bulk_result.extend_with last_pt br5 last_adj in 
+       let new_mold = M(reps,Image.image (
+        fun (pt6,adj6)-> Q(pt6,[],adj6)
+      ) cases) in 
+      ([],Some (BR(Fork cases,new_mold))) ;; 
 
 exception Bad_contraction of point * constraint_t ;; 
 
@@ -399,18 +410,7 @@ let rec compute_bulk_result_partially pt helper=
         |Some new_br4 ->([],Some new_br4)
     ) 
    | Fork cases ->
-      let (last_pt,last_adj) = List.nth cases 2 in 
-      let partial_res5 = compute_bulk_result_partially last_pt helper in 
-    (
-     match snd partial_res5 with 
-     None -> (fst partial_res5,None) 
-    |Some br5 -> 
-       let (BR(_,M(reps,_))) = Bulk_result.extend_with last_pt br5 last_adj in 
-       let new_mold = M(reps,Image.image (
-        fun (pt6,adj6)-> Q(pt6,[],adj6)
-     ) cases) in 
-      ([],Some (BR(Fork cases,new_mold)))
-    )
+    fork_case_in_bulk_result_computation compute_bulk_result_partially cases helper
    ) ;; 
 
    
