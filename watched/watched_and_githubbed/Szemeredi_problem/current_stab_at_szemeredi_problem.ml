@@ -416,7 +416,7 @@ let add_if_necessary (a,b) assoc_list =
 
 exception Pusher_stop ;;
 
-let pusher_for_bulk_result_computation  
+let pusher_for_needed_subcomputations  
    (treated,to_be_treated) = match to_be_treated with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
@@ -429,7 +429,7 @@ let rec needed_subcomputations walker =
     let (treated,to_be_treated) = walker in 
     match to_be_treated with 
     [] -> treated
-    | _ -> needed_subcomputations (pusher_for_bulk_result_computation walker) ;;
+    | _ -> needed_subcomputations (pusher_for_needed_subcomputations walker) ;;
 
 let compute_bulk_result pt =
    let subcomps = needed_subcomputations ([],[pt]) in 
