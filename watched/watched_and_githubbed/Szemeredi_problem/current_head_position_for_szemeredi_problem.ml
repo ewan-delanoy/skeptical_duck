@@ -333,7 +333,7 @@ let update_head () =
           "(*"^" Reproduced stab ends here *)"
         ) ap_for_head ;; 
    
-let partial_superificial_result_in_jump_case  pt_after_jump =
+let superificial_result_in_jump_case  pt_after_jump =
   let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
   let pt_before_jump = P(width-1,n-2*(width-1),n,scrappers) in  
   let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
@@ -351,7 +351,7 @@ let compute_superficial_result_partially pt =
   then ([],Some(Decomposable(pt2,adj2)))
   else     
   if breadth = 0
-  then partial_superificial_result_in_jump_case pt   
+  then superificial_result_in_jump_case pt   
   else
   let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
   let _ = assert(breadth2>0) in 
@@ -427,7 +427,7 @@ let pusher_for_bulk_result_computation
    (treated,to_be_treated) = match to_be_treated with 
          [] -> raise Pusher_stop
          | pt1 :: other_pts ->
-           let partial_res1 = compute_bulk_result_partially pt1 in 
+           let partial_res1 = compute_bulk_result_partially_with_helper pt1 treated in 
            match snd partial_res1 with 
             None -> (treated,(fst partial_res1)@to_be_treated)
            |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
@@ -451,9 +451,11 @@ let compute_bulk_result pt =
 
 let current_width = 2 
 and current_strappers = [] ;;
-let tf1 n = compute_bulk_result 
-   (P(2,0,n,[])) ;; 
+let tf1 n = compute_bulk_result (P(2,0,n,[])) ;; 
 
 let pt0 = P(2,0,4,[]) ;;
 
 let long1 = compute_bulk_result pt0 ;; 
+let v0 = ([],[pt0]) ;;
+let long2 = needed_subcomputations v0 ;;
+let ff = Memoized.small pusher_for_bulk_result_computation v0;;
