@@ -282,7 +282,7 @@ let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
 
-let generic_access_opt  pt = 
+let access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
  if pt2 = Empty_point 
  then Some (Bulk_result.atomic_case pt)
@@ -350,7 +350,7 @@ let compute_superficial_result_partially pt =
   let _ = assert(breadth2>0) in 
   let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
-  match generic_access_opt  preceding_point with 
+  match access_opt  preceding_point with 
     None -> ([preceding_point],None)
    |Some bres ->
        (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
