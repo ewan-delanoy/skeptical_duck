@@ -156,7 +156,7 @@ let extend_with_opt pt bres_opt extension = match bres_opt with
 let impose_one_more_constraint_opt pt cstr (BR(sr,mold)) =
     match Mold.insert_several_constraints_carefully [cstr] mold with 
      None -> None
-    | Some new_mold -> Some(BR(Contraction_surface(pt,cstr),new_mold)) ;;
+    | Some new_mold -> Some(BR(Contraction(pt,cstr),new_mold)) ;;
      
 
 end ;;  
@@ -357,7 +357,7 @@ let compute_superficial_result_partially pt helper =
   else
   let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
   let _ = assert(breadth2>0) in 
-  let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
   match access_with_helper_opt  preceding_point helper with 
     None -> ([preceding_point],None)
@@ -368,8 +368,8 @@ let compute_superficial_result_partially pt helper =
                 let pt3 = P(width2,breadth2-1,m,scr) in 
                 Simplest_reduction.decompose(pt3) 
                ) 0 2  in 
-              ([],Some(Fork_surface tooths))
-      |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
+              ([],Some(Fork tooths))
+      |Some bres2 -> ([],Some(Contraction(preceding_point,front_constraint)))) ;; 
 
 
 exception Bad_contraction of point * constraint_t ;; 
@@ -388,7 +388,7 @@ let rec compute_bulk_result_partially pt helper=
         None -> (fst partial_res2,None) 
        |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
        )
-   | Contraction_surface (pt5,cstr) ->
+   | Contraction (pt5,cstr) ->
     let partial_res4 = compute_bulk_result_partially pt5 helper in 
     (
      match snd partial_res4 with 
@@ -398,7 +398,7 @@ let rec compute_bulk_result_partially pt helper=
         None -> raise(Bad_contraction(pt5,cstr))
         |Some new_br4 ->([],Some new_br4)
     ) 
-   | Fork_surface cases ->
+   | Fork cases ->
       let (last_pt,last_adj) = List.nth cases 2 in 
       let partial_res5 = compute_bulk_result_partially last_pt helper in 
     (
@@ -409,7 +409,7 @@ let rec compute_bulk_result_partially pt helper=
        let new_mold = M(reps,Image.image (
         fun (pt6,adj6)-> Q(pt6,[],adj6)
      ) cases) in 
-      ([],Some (BR(Fork_surface cases,new_mold)))
+      ([],Some (BR(Fork cases,new_mold)))
     )
    ) ;; 
 
