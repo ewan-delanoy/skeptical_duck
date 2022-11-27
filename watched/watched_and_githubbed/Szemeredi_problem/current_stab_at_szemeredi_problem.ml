@@ -170,7 +170,41 @@ module Parametrized = struct
     
     end ;;   
     
-    
+let ep = Empty_point ;;
+let vp1 n = P (1, n-2, n, []) ;;
+let vp2 n = P (1, n-3, n, []) ;;    
+let cstr1 n = C [n-2; n-1; n] ;; 
+
+module Superficial_Example = struct 
+
+let sr1 n= 
+  match n with 
+  1 | 2 -> Atomic 
+  | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
+  | _ -> 
+  (match n mod 3 with 
+  0 -> Fork
+  [(vp1(n-3), [n-1; n]);
+   (vp1(n-2), [n]);
+   (vp1(n-1), [])]
+ |1|2 ->  Contraction (vp2(n), cstr1 n)
+ |_ -> failwith("Impossible remainder by 3")) ;; 
+
+(*
+   
+let check_sr1 = 
+   let temp1 = Int_range.scale (
+     fun k->(k,
+     Bulk_result.superficial_part(compute_bulk_result (P(2,0,k,[]))),
+     Superficial_Example.sr1 k)
+   ) 1 30 in 
+   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
+*)
+
+end ;;  
+
+
 module Parametrized_Example = struct 
     
 let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
@@ -184,93 +218,6 @@ let check_sf1 =
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)  
 
-let vp1 = P (1, 0, 3, [1]) ;; 
-let vp2 = P (1, 0, 3, [2]) ;; 
-
-let pf1 x = P (1, x-2, x, []) ;; 
-let pf2 x = P (2, x-5, x, []) ;; 
-
-(*
-let aif1 n =
-   match List.assoc_opt n [1,None;2,None;
-    3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])])
-   ] with 
-   Some answer -> answer 
-   | None ->
-   (match n mod 3 with 
-   0 -> Some(Fork,AI[(pf1(n-3), [n-1; n]); (pf1(n-2), [n]); (pf1(n-1), [])])
-  |1|2 ->Some(Passive_repeat,AI[(pf1(n-1), [n])])
-  |_ ->failwith("impossible remainder by 3"));;
-    
-
-   
-let check_aif1 = 
-   let temp1 = Int_range.scale (fun n->
-    let (DBR(opt,_)) = force_compute (P(2,0,n,[])) in 
-    (n,opt,Parametrized_Example.aif1 n)) 1 40 in 
-   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
-
-*)
-
-(*
-let aif2 n =
-  match List.assoc_opt n [1,None;2,None;
-  3, Some(Fork,AI[(vp1, []); (vp2, []); (pf1 2, [])]);
-   4, Some (Passive_repeat,AI[(pf1 3, [4])]);
-   5, Some (Passive_repeat,AI[(pf1 5, [])])
-  ] with 
-  Some answer -> answer 
-  | None -> Some(Passive_repeat,AI[(pf2(n), [])]) ;;
-   
-
-  
-let check_aif2 = 
-  let temp1 = Int_range.scale (fun n->
-   let (DBR(opt,_)) = force_compute (P(3,0,n,[])) in 
-   (n,opt,Parametrized_Example.aif2 n)) 1 40 in 
-  List.filter (fun (n,a,b)->a<>b) temp1 ;; 
-
-*)
-
-
-let vqp1 = Q (vp1, [], []) ;;
-let vqp2 = Q (vp2, [], []) ;;
-
-let qpf1 n = Q (pf1 (n-3), [], [n-1; n]) ;;
-let qpf2 n = Q (pf1 (n-2), [], [n]) ;;
-let qpf3 n = Q (pf1 (n-1), [], []) ;;
-
-(*
-let moldf1 n =
-  match List.assoc_opt n [
-    1,M([[1]],[]);3,M([sf1(3)],[vqp1; vqp2;qpf3(3)]);
-    4,M([sf1(4);[1;3;4]],[qpf2(4)])
-  ]  with Some answer -> answer | None ->
-  (match (n mod 3) with 
-    0 -> M([sf1(n)],[qpf1(n); qpf2(n)  ;qpf3(n)]) 
-  | 1 -> M([sf1(n);sf2(n)],[qpf1(n); qpf2(n)])
-  | 2 -> M([sf1(n)],[])
-  |_ ->failwith("impossible remainder by 3")) ;;  
-
-
-
-let check_moldf1 = 
-   let temp1 = Int_range.scale (fun n->
-    let (DBR(opt,mold)) = force_compute (P(2,0,n,[])) in 
-    (n,mold,Parametrized_Example.moldf1 n)) 1 40 in 
-   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
-*)    
-
-(*
-let bresf1 n = DBR(aif1(n),moldf1(n)) ;;
-  
-
-let check_bresf1 = 
-   let temp1 = Int_range.scale (fun n->
-    let bres = force_compute (P(2,0,n,[])) in 
-    (n,bres,Parametrized_Example.bresf1 n)) 1 40 in 
-   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
-*)    
 
 
 end ;;   

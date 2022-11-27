@@ -143,6 +143,8 @@ let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;;
 
 let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
 
+let superficial_part (BR(sr,_)) = sr ;; 
+
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)
@@ -453,17 +455,28 @@ let tf1 n = compute_bulk_result (P(2,0,n,[])) ;;
 let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
 
 let sr1 n= 
- let q = (n/3) in 
- match n mod 3 with 
+ match n with 
+ 1 | 2 -> Atomic 
+ | 3 -> Fork
+ [(Empty_point, [2;3]);
+  (Empty_point, [1;3]);
+  (Empty_point, [1;2])]
+ | _ -> 
+ (match n mod 3 with 
  0 -> Fork
  [(P (1, n-5, n-3, []), [n-1; n]);
   (P (1, n-4, n-2, []), [n]);
   (P (1, n-3, n-1, []), [])]
 |1 ->  Contraction (P (1, n-3, n, []), C [n-2; n-1; n])
 |2 ->  Contraction (P (1, n-3, n, []), C [n-2; n-1; n])
-|_ -> failwith("Impossible remainder by 3") ;; 
+|_ -> failwith("Impossible remainder by 3")) ;; 
 
 let check_sr1 = 
    let temp1 = Int_range.scale (
-     fun k->(k,tf2 k,sr1 k)
+     fun k->(k,
+     Bulk_result.superficial_part(compute_bulk_result (P(2,0,k,[]))),
+     sr1 k)
    ) 1 30 in 
+   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
+
