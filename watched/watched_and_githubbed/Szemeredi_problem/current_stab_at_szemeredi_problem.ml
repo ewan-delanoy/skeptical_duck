@@ -136,6 +136,8 @@ let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;;
 
 let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
 
+let superficial_part (BR(sr,_)) = sr ;; 
+
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
  then Decomposable(pt,extension)

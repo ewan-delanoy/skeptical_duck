@@ -450,22 +450,20 @@ let compute_bulk_result pt =
 
 
 let tf1 n = compute_bulk_result (P(2,0,n,[])) ;; 
+let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
 
-let pt0 = P(1,4,6,[]) ;;
+let sr1 n= 
+ let q = (n/3) in 
+ match n mod 3 with 
+ 0 -> Fork
+ [(P (1, n-5, n-3, []), [n-1; n]);
+  (P (1, n-4, n-2, []), [n]);
+  (P (1, n-3, n-1, []), [])]
+|1 ->  Contraction (P (1, n-3, n, []), C [n-2; n-1; n])
+|2 ->  Contraction (P (1, n-3, n, []), C [n-2; n-1; n])
+|_ -> failwith("Impossible remainder by 3") ;; 
 
-let bad1 = compute_bulk_result pt0 ;; 
-let bad2 =  needed_subcomputations ([],[pt0]) ;; 
-let v0 = ([],[pt0]) ;;
-let ff = Memoized.small  pusher_for_needed_subcomputations v0 ;; 
-let v1 = ff 6 ;; 
-let (helper,tamp1) = v1 ;; 
-let bad4 = compute_bulk_result_partially pt0 helper ;; 
-
-
-let partial_res1 = compute_superficial_result_partially pt0 helper ;;
-let (width,breadth,n,scrappers) = Point.unveil pt0 ;;
-let (pt2,adj2) = Simplest_reduction.decompose pt0 ;;
-let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 ;;
-let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
-and preceding_point = P(width2,breadth2-1,n2,scrappers2) ;;
-  match access_with_helper_opt  preceding_point helper with 
+let check_sr1 = 
+   let temp1 = Int_range.scale (
+     fun k->(k,tf2 k,sr1 k)
+   ) 1 30 in 
