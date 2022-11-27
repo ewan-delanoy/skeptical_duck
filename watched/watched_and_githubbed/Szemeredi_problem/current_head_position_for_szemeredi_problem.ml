@@ -357,7 +357,7 @@ let compute_superficial_result_partially pt helper =
   else
   let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
   let _ = assert(breadth2>0) in 
-  let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
   match access_with_helper_opt  preceding_point helper with 
     None -> ([preceding_point],None)
@@ -451,67 +451,52 @@ let compute_bulk_result pt =
 
 let tf1 n = compute_bulk_result (P(2,0,n,[])) ;; 
 
-let pt0 = P(1,1,3,[]) ;;
+let pt0 = P(1,4,6,[]) ;;
 
 let bad1 = compute_bulk_result pt0 ;; 
 let bad2 =  needed_subcomputations ([],[pt0]) ;; 
 let v0 = ([],[pt0]) ;;
-let bad3 = pusher_for_needed_subcomputations v0 ;; 
-let bad4 = compute_bulk_result_partially pt0 [] ;; 
-let partial_res1 = compute_superficial_result_partially pt0 [] ;;
-let sr = Option.unpack (snd partial_res1) ;; 
-let (Fork_surface cases) = sr ;; 
-let partial_res2 = compute_bulk_result_partially pt2 [] ;; 
-let (last_pt,last_adj) = List.nth cases 2 ;;
-let partial_res5 = compute_bulk_result_partially last_pt [] ;; 
-    (
-     match snd partial_res5 with 
-     None -> (fst partial_res5,None) 
-    |Some br5 -> 
-       let (BR(_,M(reps,_))) = br5 in 
-       let new_mold = M(reps,Image.image (
-        fun (pt6,adj6)-> Q(pt6,[],adj6)
-     ) cases) in 
-      ([],Some (BR(Fork_surface cases,new_mold)))
-    )
+let ff = Memoized.small  pusher_for_needed_subcomputations v0 ;; 
+let v1 = ff 6 ;; 
+let (helper,tamp1) = v1 ;; 
+let bad4 = compute_bulk_result_partially pt0 helper ;; 
 
 
+let partial_res1 = compute_superficial_result_partially pt0 helper ;;
+let (width,breadth,n,scrappers) = Point.unveil pt0 ;;
+let (pt2,adj2) = Simplest_reduction.decompose pt0 ;;
+let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 ;;
+let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  and preceding_point = P(width2,breadth2-1,n2,scrappers2) ;;
+  match access_with_helper_opt  preceding_point helper with 
 
-let rec compute_bulk_result_partially pt helper=  
-  if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-   let partial_res1 = compute_superficial_result_partially pt helper in 
-   match snd partial_res1 with 
-    None -> (fst partial_res1,None) 
-   |Some sr ->(match sr with 
-     Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
-   | Decomposable(pt2,adj2) -> 
-       let partial_res2 = compute_bulk_result_partially pt2 helper in 
-       (
-        match snd partial_res2 with 
-        None -> (fst partial_res2,None) 
-       |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
-       )
-   | Contraction_surface (pt5,cstr) ->
-    let partial_res4 = compute_bulk_result_partially pt5 helper in 
-    (
-     match snd partial_res4 with 
-     None -> (fst partial_res4,None) 
-    |Some br4 -> 
-      match Bulk_result.impose_one_more_constraint_opt pt5 cstr br4 with 
-        None -> raise(Bad_contraction(pt5,cstr))
-        |Some new_br4 ->([],Some new_br4)
-    ) 
-   | Fork_surface cases ->
-      let (last_pt,last_adj) = List.nth cases 2 in 
-      let partial_res5 = compute_bulk_result_partially last_pt helper in 
-    (
-     match snd partial_res5 with 
-     None -> (fst partial_res5,None) 
-    |Some br5 -> 
-       let (BR(_,M(reps,_))) = br5 in 
-       let new_mold = M(reps,Image.image (
-        fun (pt6,adj6)-> Q(pt6,[],adj6)
-     ) cases) in 
-      ([],Some (BR(Fork_surface cases,new_mold)))
-    )
-   ) ;; 
+
+let compute_superficial_result_partially pt helper =  
+  if pt = Empty_point then ([],Some Atomic) else
+  let (width,breadth,n,scrappers) = Point.unveil pt in 
+  let (pt2,adj2) = Simplest_reduction.decompose pt in 
+  if ((width,breadth)=(1,0))||(pt2=Empty_point)
+  then ([],Some Atomic)
+  else 
+  if adj2<>[]
+  then ([],Some(Decomposable(pt2,adj2)))
+  else     
+  if breadth = 0
+  then superificial_result_in_jump_case pt   
+  else
+  let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
+  let _ = assert(breadth2>0) in 
+  let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
+  match access_with_helper_opt  preceding_point helper with 
+    None -> ([preceding_point],None)
+   |Some bres ->
+       (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
+       None -> let tooths = Int_range.scale (fun k->
+                let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
+                let pt3 = P(width2,breadth2-1,m,scr) in 
+                Simplest_reduction.decompose(pt3) 
+               ) 0 2  in 
+              ([],Some(Fork_surface tooths))
+      |Some bres2 -> ([],Some(Contraction_surface(preceding_point,front_constraint)))) ;; 
+

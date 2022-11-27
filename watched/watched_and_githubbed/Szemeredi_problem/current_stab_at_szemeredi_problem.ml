@@ -350,7 +350,7 @@ let compute_superficial_result_partially pt helper =
   else
   let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
   let _ = assert(breadth2>0) in 
-  let front_constraint = C [width2;width2+breadth2;width2+2*breadth2] 
+  let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
   and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
   match access_with_helper_opt  preceding_point helper with 
     None -> ([preceding_point],None)
