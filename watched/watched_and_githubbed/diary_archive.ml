@@ -5,10 +5,40 @@ open Skeptical_duck_lib ;;
 
 
 (************************************************************************************************************************
+Snippet 110 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
+************************************************************************************************************************)
+open Needed_values ;;
+
+
+let tf1 (i,j,vn) =
+  let si = string_of_int i 
+  and sj = string_of_int j in 
+  "for_a"^si^"=make_zero(harry[1]["^sj^"],a"^si^");\n"^
+  "harry=subst(harry,a"^si^",for_a"^si^");\n"^
+  "printf(\" Step \");"^"printf("^si^");printf(\" for "^vn^" done \\n\");" ;;
+
+let tf2 k vn= (tf1(2*k-1,2*k-1,vn))^"\n"^(tf1(2*k-2,2*k,vn)) ;; 
+
+let tf3 a b vn = String.concat "\n" (Int_range.scale (fun j->
+  let k = (a+1)-j in tf2 k vn
+) 1 ((a+1)-b));; 
+
+let tf4 vn =
+   (tf3 60 1 vn)^"\n"^
+   "arr_for_"^vn^"=harry;";; 
+
+let z1 = String.concat "\n\n\n" (Int_range.scale (fun j->tf4("x"^(string_of_int(5-j)))) 1 3);;
+
+let ap1 = Absolute_path.of_string
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp");;
+
+Io.append_string_to_file z1 ap1 ;;  
+
+(************************************************************************************************************************
 Snippet 109 : Musings on permutations
 ************************************************************************************************************************)
 
-open Needed_values ;;
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_intersect  = Ordered.intersect i_order ;;

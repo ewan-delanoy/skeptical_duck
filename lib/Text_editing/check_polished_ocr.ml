@@ -102,7 +102,7 @@ seek_phpbb_footnote_at_index "123[size=90][b][color=blue](27)[/color][/b]The Bou
 
 let pusher_for_footnote_collecting text (references,footnotes,next_idx) =
    match  seek_phpbb_footnote_at_index text next_idx with 
-   Some(footnote_nbr,snippet_in_between,idx2) -> (references,footnote_nbr::footnotes,idx2) 
+   Some(footnote_nbr,_snippet_in_between,idx2) -> (references,footnote_nbr::footnotes,idx2) 
     | None ->
       (
         match  seek_phpbb_footnote_number_at_index text next_idx with 
@@ -132,7 +132,7 @@ collect_footnotes
 let test_for_percent_block list_of_lines = 
     if List.length(list_of_lines)<3 then None else 
     let (rev_left,right) = Listennou.big_rht 3 list_of_lines in 
-    if List.for_all (fun (j,line)->Supstring.begins_with line "%") rev_left  
+    if List.for_all (fun (_j,line)->Supstring.begins_with line "%") rev_left  
     then Some(List.rev rev_left,right)
     else None ;;  
 
@@ -165,7 +165,7 @@ let re_merge l = String.concat "\n" (Image.image snd l) ;;
 
 let extract_first_page_and_remerge text =
     let indexed_lines = Lines_in_string.indexed_lines text in 
-    let (before_block1,block1,lines_in_page1,lines_after_page1) = 
+    let (_before_block1,block1,lines_in_page1,lines_after_page1) = 
     towards_first_page_extraction indexed_lines in 
     (re_merge (block1@lines_in_page1), re_merge lines_after_page1) ;; 
 
@@ -182,7 +182,7 @@ let extract_page_number_from_percent_block three_lines =
 
 let read_page_number text =
   let indexed_lines = Lines_in_string.indexed_lines text in 
-  let (before_block1,block1,lines_in_page1,lines_after_page1) = 
+  let (_before_block1,block1,_lines_in_page1,_lines_after_page1) = 
     towards_first_page_extraction indexed_lines in 
     extract_page_number_from_percent_block block1 ;;  
 
@@ -205,7 +205,7 @@ let extract_all_pages_in_lined_form text =
   let indexed_lines = Lines_in_string.indexed_lines text in 
   match seek_next_percent_block ([],indexed_lines) with 
       None -> raise No_pages_to_extract
-     |Some(before_block1,block1,after_block1) ->
+     |Some(_before_block1,block1,after_block1) ->
       helper_for_page_extraction ([],block1,after_block1) ;;
 
 (*    
@@ -226,7 +226,7 @@ let extract_all_pages text =
 (*    
  
 extract_all_pages 
-"A\n%\n% Page 1 \n%\nB\nC\nD\n%\n% Page 2 \n%\nE\nF\nG\n%\n% Page 3 \n%\nH\nI\nJ";;
+"A\n%\n% Page 5 \n%\nB\nC\nD\n%\n% Page 6 \n%\nE\nF\nG\n%\n% Page 7 \n%\nH\nI\nJ";;
 
 *)
 

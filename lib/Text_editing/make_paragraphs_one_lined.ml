@@ -12,15 +12,15 @@ let rec find_next_delimiter (treated,to_be_treated) =
     |elt :: other_elts ->
        (
          match elt with 
-         |Str.Text(t) -> find_next_delimiter (elt ::treated,other_elts)
-         |Str.Delim(d) ->  (treated,Some elt,other_elts)
+         |Str.Text(_) -> find_next_delimiter (elt ::treated,other_elts)
+         |Str.Delim(_) ->  (treated,Some elt,other_elts)
        ) ;;
 
 exception NDM_exn ;;
 
 let rec helper_for_nondelimiters_merging (treated,to_be_treated) =
     let (reversed_left,opt_delim,right) = find_next_delimiter ([],to_be_treated) in 
-    let texts=(List.rev_map (function Str.Text(x)->x |_->raise(NDM_exn)) reversed_left) in 
+    let texts=(List.rev_map (function Str.Text(x)->x |Str.Delim(_)->raise(NDM_exn)) reversed_left) in 
     let merged_text = Str.Text(String.concat "" texts) in 
     match opt_delim with 
     None -> List.rev(merged_text::treated) 
@@ -32,7 +32,7 @@ let compute_paragraphs text =
   let temp1 = Str.full_split (Str.regexp "[ \t\n\r]+") text in 
   let temp2 = Image.image (
      function elt -> match elt with 
-      |Str.Text(t) -> elt 
+      |Str.Text(_) -> elt 
       |Str.Delim(d) ->
         if Strung.number_of_linebreaks(d)>=2 
         then elt  
