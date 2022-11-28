@@ -6,9 +6,14 @@
 
 module Private = struct 
 
-let is_a_lowercase_letter c=
+let char_is_in_range (a,b) c=
   let i = int_of_char c in 
-  (97<=i)&&(i<=122);;
+  (a<=i)&&(i<=b);;  
+(*
+let is_a_digit             = char_is_in_range (48,57) ;;
+let is_an_uppercase_letter = char_is_in_range (65,90) ;;
+*)
+let is_a_lowercase_letter  = char_is_in_range (97,122) ;;
 
 end ;;
 
