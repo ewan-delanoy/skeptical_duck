@@ -98,14 +98,12 @@ extract_all_pages_in_lined_form
 
 *)
 
-end ;;
-
 let extract_all_pages text =
-    let temp1 = Private.extract_all_pages_in_lined_form text in 
+    let temp1 = extract_all_pages_in_lined_form text in 
     Image.image (
       fun (percent_block,lines_in_page) ->
-        (Private.extract_page_number_from_percent_block percent_block,
-         Private.re_merge lines_in_page)
+        (extract_page_number_from_percent_block percent_block,
+         re_merge lines_in_page)
     ) temp1 ;;
 
 (*    
@@ -115,6 +113,34 @@ extract_all_pages
 
 *)
 
+let modify_string_pagewise f old_text = 
+  let indexed_pages =extract_all_pages old_text in 
+  let indexed_new_pages = Image.image (fun 
+  (page_nbr,old_text) ->
+    (page_nbr,f old_text)  
+  ) indexed_pages in 
+  String.concat "\n" (Image.image (
+  fun (page_nbr,old_text) ->
+     "\n%\n% Page "^(string_of_int page_nbr)^" \n%\n" ^ (f old_text)
+) indexed_new_pages );; 
 
+
+(*    
+ 
+modify_string_pagewise (Replace_inside.replace_inside_string ("\n","_"))
+"A\n%\n% Page 5 \n%\nB\nC\nD\n%\n% Page 6 \n%\nE\nF\nG\n%\n% Page 7 \n%\nH\nI\nJ";;
+
+*)
+
+end ;; 
+
+let extract_all_pages = Private.extract_all_pages ;;
+
+let modify_file_pagewise f file = 
+  let old_text = Io.read_whole_file file in
+  let new_text = Private.modify_string_pagewise f old_text  in
+  Io.overwrite_with file new_text ;;  
+
+let modify_string_pagewise = Private.modify_string_pagewise ;;
 let read_number_of_first_page = Private.read_number_of_first_page ;;
 
