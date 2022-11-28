@@ -82,7 +82,7 @@ let rec helper_for_page_extraction verbose (treated,current_percent_block,to_be_
   None -> List.rev((current_percent_block,to_be_treated)::treated)
   |Some(before_block1,block1,after_block1) -> 
     let sk = string_of_int(extract_page_number_from_percent_block block1) in 
-    let _ = (if verbose then print_string ("Page "^sk^" extracted. \n\n\n");flush stdout) in 
+    let _ = (if verbose then print_string ("Page "^sk^" extracted.\n");flush stdout) in 
     helper_for_page_extraction verbose ((current_percent_block,before_block1)::treated,block1,after_block1) ;;
 
 

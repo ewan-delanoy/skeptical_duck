@@ -79,8 +79,8 @@ let replace_inside_string (a,b) s=
 let silently_replace_inside_string (a,b) s=
   Private.my_global_replace (a,b) s ~display_number_of_matches:false;;
 
-let replace_several_inside_string l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches:false) t l;;  
+let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
+(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches) t l;;  
  
 let replace_inside_file (a,b) fn=
     let s1=Io.read_whole_file fn in
@@ -99,9 +99,9 @@ let silently_replace_inside_file (a,b) fn=
     else ();; 
 
 
-let replace_several_inside_file l fn=
+let replace_several_inside_file ?(display_number_of_matches=false) l fn=
     let s1=Io.read_whole_file fn in
-    let s2=replace_several_inside_string l s1  in
+    let s2=replace_several_inside_string ~display_number_of_matches l s1  in
     Io.overwrite_with fn s2;; 
 
 exception Absent_beginning_marker of string;;
@@ -186,8 +186,8 @@ let at_char_intervals_inside_string s l=
   let n=String.length s in
   let temp1=Listennou.universal_delta_list l 
   and ((i_first,_),_)=List.hd(l)
-  and ((i_last,j_last),rep_last)=List.hd(List.rev l) in
-  let temp2=Image.image (fun (((i1,j1),rep1),((i2,j2),rep2))->
+  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
+  let temp2=Image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
       rep1^(String.sub s j1 (i2-j1-1))
   ) temp1 in
   let first_part=(String.sub s 0 (i_first-1))
