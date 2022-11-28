@@ -10,7 +10,7 @@ module Private = struct
       module Crobj = struct 
       
       let text_for_label 
-            (por:Polymorphic_ocaml_record_t.t) 
+            (_por:Polymorphic_ocaml_record_t.t) 
               max_namesize
              (field:Polymorphic_ocaml_record_t.field_t) = 
              let fn = field.Polymorphic_ocaml_record_t.field_name in 
@@ -43,12 +43,12 @@ module Private = struct
            (Image.image (text_for_label por max_namesize) crobjed_fields)) ;;  
           
       let text_for_ofcrobj_element 
-           (por:Polymorphic_ocaml_record_t.t) 
+           (_por:Polymorphic_ocaml_record_t.t) 
            fld = 
            let vowel = (
              match fld.Polymorphic_ocaml_record_t.crobj_converters with 
              None ->  (fld.Polymorphic_ocaml_record_t.default_value) 
-           | Some(of_crobj,to_crobj) ->
+           | Some(of_crobj,_to_crobj) ->
                of_crobj^" (g label_for_"^(fld.Polymorphic_ocaml_record_t.field_name)^") "
            ) in 
                (String.make 3 ' ')^(fld.Polymorphic_ocaml_record_t.field_name)^" = "^
@@ -73,7 +73,7 @@ module Private = struct
        
       let text_for_tocrobj_element 
              (por:Polymorphic_ocaml_record_t.t) 
-             (fld,(of_crobj,to_crobj)) = 
+             (fld,(_of_crobj,to_crobj)) = 
              let field_name  = fld.Polymorphic_ocaml_record_t.field_name in 
                  (String.make 4 ' ')^" label_for_"^field_name^", "^ 
                  to_crobj^" fw."^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^"_t."^
@@ -120,8 +120,8 @@ module Private = struct
             let ext_name = Por_common.extender_name (before_ext,after_ext) in 
             let inst_before = Por_common.get_instance por before_ext 
             and inst_after = Por_common.get_instance por after_ext  in 
-            let field_names_before = inst_before.Polymorphic_ocaml_record_t.fields 
-            and field_names_after = inst_after.Polymorphic_ocaml_record_t.fields in 
+            let field_names_before = inst_before.Polymorphic_ocaml_record_t.instance_fields 
+            and field_names_after = inst_after.Polymorphic_ocaml_record_t.instance_fields in 
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
@@ -203,7 +203,7 @@ module Private = struct
                   "let sp_for_"^uc_sibling^" child new_parent = ";
                   " Extender."^ext_name^" new_parent ";
             ]@(   
-               Image.image (fun (field_name,indexed_varname)->
+               Image.image (fun (field_name,_indexed_varname)->
                  (String.make 3 ' ')^"~"^field_name^":(child."^main_module_name^"_t."^field_name^")" ) indexed_and_labeled    
             )@[" ;;"
             ]) ;; 
@@ -220,7 +220,7 @@ module Private = struct
                   " let name = child."^main_module_name^"_t.type_name in ";
                   " match List.assoc_opt name ["
             ]@(   
-               Image.image (fun (sibling,parent)->
+               Image.image (fun (sibling,_parent)->
                   let c_sibling = String.capitalize_ascii sibling 
                   and uc_sibling = String.uncapitalize_ascii sibling in 
                  (String.make 3 ' ')^(Strung.enclose c_sibling)^" , sp_for_"^uc_sibling^" child new_parent ;" ) 
@@ -259,7 +259,7 @@ module Private = struct
       module Origin = struct 
             
       let snippet
-        (por:Polymorphic_ocaml_record_t.t) 
+        (_por:Polymorphic_ocaml_record_t.t) 
           (field:Polymorphic_ocaml_record_t.field_t) = 
              (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
              (field.Polymorphic_ocaml_record_t.default_value)^" ;" ;;
@@ -285,7 +285,7 @@ module Private = struct
       let  text_for_fields_for_instances por =
             let temp1 = Image.image (fun 
               inst -> (inst.Polymorphic_ocaml_record_t.instance_name,
-                  inst.Polymorphic_ocaml_record_t.fields)
+                  inst.Polymorphic_ocaml_record_t.instance_fields)
             ) por.Polymorphic_ocaml_record_t.instances in 
             
              (
@@ -322,7 +322,7 @@ module Private = struct
                ^"\n] ;;"
              );;      
       
-      let text_for_get_field_data por = 
+      let text_for_get_field_data _por = 
             ( String.concat "\n"
             [
               "exception Get_field_data_exn of string ;;\n";

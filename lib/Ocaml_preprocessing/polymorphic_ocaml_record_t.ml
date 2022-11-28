@@ -14,7 +14,7 @@ type field_t = {
    
 type instance_t = {
       instance_name : string ;
-      fields : string list ;
+      instance_fields : string list ;
 } ;;
    
 

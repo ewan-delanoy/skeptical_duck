@@ -49,11 +49,11 @@ let text_for_number_of_replacements k=
   if k = 1 then "1 replacement made" else 
   (string_of_int k)^" replacements made" ;;   
 
-let my_global_replace ?(display_number_of_matches=true) (a,b) old_s  =
+let my_global_replace display_number_of_matches (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
-      then print_string("\n"^(text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
+      then print_string((text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
            flush stdout 
    ) in 
    new_s ;; 
@@ -74,11 +74,10 @@ end ;;
 
 
 let replace_inside_string ?(display_number_of_matches=true) (a,b) s=
-  Private.my_global_replace (a,b) s ~display_number_of_matches;;
+  Private.my_global_replace display_number_of_matches (a,b) s ;;
  
-
 let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches) t l;;  
+(fun s (a,b)->Private.my_global_replace display_number_of_matches (a,b) s ) t l;;  
  
 let replace_inside_file ?(display_number_of_matches=true) (a,b) fn=
     let s1=Io.read_whole_file fn in

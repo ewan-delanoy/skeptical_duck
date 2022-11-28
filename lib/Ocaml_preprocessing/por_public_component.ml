@@ -60,7 +60,7 @@ module Private = struct
       } 
       ) (Por_common.extensions_from_different_sources por) ;;
 
-      let annotated_text_for_parenting_symlinks por=
+      let annotated_text_for_parenting_symlinks _por=
       [
         {
           Por_public_definition_t.value_name = "parent" ;
@@ -72,7 +72,7 @@ module Private = struct
         } ;
        ] ;; 
 
-       let annotated_text_for_typeinfo_symlinks por=
+       let annotated_text_for_typeinfo_symlinks _por=
        [
          {
            Por_public_definition_t.value_name = "show_fields" ;
@@ -88,7 +88,7 @@ module Private = struct
     let annotated_definition_for_constructor por constructed_instance =
       let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
       let full_instance = Por_common.get_instance por constructed_instance  in 
-      let field_names = full_instance.Polymorphic_ocaml_record_t.fields in 
+      let field_names = full_instance.Polymorphic_ocaml_record_t.instance_fields in 
       let fields = Image.image (Por_common.get_field por)field_names in 
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
