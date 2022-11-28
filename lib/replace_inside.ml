@@ -73,8 +73,8 @@ end ;;
 
 
 
-let replace_inside_string (a,b) s=
-  Private.my_global_replace (a,b) s ~display_number_of_matches:true;;
+let replace_inside_string ?(display_number_of_matches=true) (a,b) s=
+  Private.my_global_replace (a,b) s ~display_number_of_matches;;
  
 let silently_replace_inside_string (a,b) s=
   Private.my_global_replace (a,b) s ~display_number_of_matches:false;;
@@ -82,11 +82,11 @@ let silently_replace_inside_string (a,b) s=
 let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
 (fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches) t l;;  
  
-let replace_inside_file (a,b) fn=
+let replace_inside_file ?(display_number_of_matches=true) (a,b) fn=
     let s1=Io.read_whole_file fn in
     let la=String.length(a) in
     if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string (a,b) s1 in
+    then let s2=replace_inside_string ~display_number_of_matches (a,b) s1 in
          Io.overwrite_with fn s2
     else ();; 
     

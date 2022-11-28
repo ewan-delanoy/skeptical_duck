@@ -3136,32 +3136,42 @@ Snippet 88 : Typical combination of the Check_polished_ocr and Incremental_repla
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let building_site = home^"/Teuliou/html_files/Translations/Originals//Building_site/";;
+let building_site = home^"/Teuliou/html_files/Translations/Building_site/";;
 
-let emptiable_ap = Absolute_path.of_string (building_site^"emptiable_evmist.txt") ;;
-let polished_ap = Absolute_path.of_string (building_site^"polished_evmist.txt") ;;
-let walker_ap = Absolute_path.of_string (building_site^"walker_evmist.txt") ;;
+let emptiable_ap = Absolute_path.of_string (building_site^"emptiable_cmist.txt") ;;
+let polished_ap = Absolute_path.of_string (building_site^"polished_cmist.txt") ;;
+let walker_ap = Absolute_path.of_string (building_site^"walker_cmist.txt") ;;
+
+let ref_for_expected_action = ref None ;;
 
 let put_first_page_on_walker ()=
-  let text1 = Io.read_whole_file emptiable_ap in 
-  let (first_page,new_text1) = Check_polished_ocr.extract_first_page_and_remerge text1 in 
+  if (! ref_for_expected_action) = Some "officialize" 
+  then failwith("You just pushed a page. You need to officialize it before putting another page") 
+  else    
+  let (first_page,new_text1) = Percent_pagination.extract_first_page_in_file emptiable_ap in 
   (
     Io.overwrite_with emptiable_ap new_text1 ;
-    Io.overwrite_with walker_ap first_page
+    Io.overwrite_with walker_ap first_page ;
+    ref_for_expected_action := Some "officialize" ;
   ) ;;
    
-let officialize () =
+let officialize () = 
+  if (! ref_for_expected_action) = Some "push page" 
+  then failwith("You just officialized a page. No need to officialize it a second time") 
+  else   
   let walker_text = Io.read_whole_file walker_ap in 
   let _ = Check_polished_ocr.check_footnotes_on_page walker_text in 
   let new_polished_text = (Io.read_whole_file polished_ap) ^ "\n\n" ^ walker_text  in 
   (
-    Io.overwrite_with polished_ap new_polished_text
+    Io.overwrite_with polished_ap new_polished_text;
+    ref_for_expected_action := Some "push page" ;
   ) ;;
 
 let compress_paragraph_in_walker_interval i j=
    Lines_in_string.findreplace_in_interval_in_file ("\n"," ") walker_ap  i j ;; 
 
-let this_ap = Absolute_path.of_string (home^"/Teuliou/OCaml/Ordinary/fads/cloth.ml") ;;
+let this_ap = Absolute_path.of_string 
+   (home^"/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/pan.ml") ;;
 
 Incremental_replace_on_a_set_of_files.set_replacements_datafile  this_ap ;;
 
@@ -3184,57 +3194,89 @@ let replacements = [
    (" cl "," el ");
    (" cn "," en ");
    (" cs "," es ");
+   (" cse"," ese");
+   (" cst"," est");
    (" ct "," et ");
    (" Ja "," la ");
    (" mo "," no ");
    (" sc "," se ");
+   ("esc ","ese ");
    ("nucv","nuev");
+   (" cdad"," edad");
+   (" clla"," ella");
    (" cra "," era ");
+   (" csta"," esta");
    (" Cf, "," Cf. ");
    (" e. "," c. ");
    (" dcbe"," debe");
    (" elc."," etc.");
    (" ficl"," fiel");
+   (" imte"," inte");
    (" Jas "," las ");
+   (" lgle"," Igle");
+   (" pucb"," pueb");
    (" quc "," que ");
    (" sca "," sea ");
+   (" veee"," vece");
    ("(1s. ","(Is. ");
    ("cnerg","energ");
    ("mcdio","medio");
    ("mcter","meter");
    ("tcolo","teolo");
+   (" cfect"," efect");
    (" clla "," ella ");
    (" cllas"," ellas");
+   (" cntre"," entre");
    (" cstas"," estas");
    (" C\195\173. "," Cf. ");
+   (" idemt"," ident");
+   (" incfa"," inefa");
    (" Mer. "," Mgr. ");
+   (" posce"," posee");
    ("cterna","eterna");
    ("cucrpo","cuerpo");
+   ("poscsi","posesi");
+   ("posec ","posee ");
    ("vuclve","vuelve");
    (" alina "," alma ");
    (" clerna"," eterna");
    (" cllos "," ellos ");
    (" cxiste"," existe");
    (" desco "," deseo ");
+   (" elerna"," eterna");
    (" eloria"," gloria");
    (" elorio"," glorio");
+   (" eriatu"," criatu");
    (" mucve "," mueve ");
+   (" sicte "," siete ");
+   (" Samto "," Santo ");
+   (" tinicb"," tinieb");
    ("/nstitu","Institu");
    ("inanera","manera");
    ("lelesia","Iglesia");
    ("picrden","pierden");
+   ("quictud","quietud");
    ("S, TH.,","S. TH.,");
    ("S. Ti.,","S. TH.,");
    ("virlude","virtude");
    (" anmento"," aumento");
+   (" comocer"," conocer");
+   (" descos "," deseos ");
    (" eloria "," gloria ");
+   (" elorifi"," glorifi");
+   (" Ielesia"," Iglesia");
+   (" vuesira"," vuestra");
    ("Acust\195\173n","Agust\195\173n");
+   ("entre El","entre \195\137l");
+   ("mencster","menester");
    ("nucstros","nuestros");
    ("S, Tit.,","S. TH.,");
    (" descar\194\187"," desear\194\187");
    (" eristian"," cristian");
    (" misinas "," mismas ");
+   ("cuanto El","cuanto \195\137l");
    ("maturales","naturales");
+   ("siendo El","siendo \195\137l");
    (" eriaturas"," criaturas");
    ("Jesueristo","Jesucristo");
    (" eristianos"," cristianos");
@@ -3281,6 +3323,17 @@ let replacements = [
 
 Incremental_replace_on_a_set_of_files.initialize_replacements replacements ;; 
 
+(*
+On startup, you can make a few clean-up initializations as follows : 
+*)
+
+let act1 () = Chronometer.it (Percent_pagination.modify_file_pagewise
+  (fun text->
+    Remove_hyphens.in_string(Make_paragraphs_one_lined.in_string text)
+    )) emptiable_ap ;;
+
+let act2 () = Chronometer.it Incremental_replace_on_a_set_of_files.apply_all () ;;
+
 
 
 let p = put_first_page_on_walker ;;
@@ -3293,17 +3346,6 @@ let r (a,b) = Incremental_replace_on_a_set_of_files.add_new_replacement (a,b) ;;
 
 let f =  check_pages_and_footnotes ;;
 
-
-(*
-let text1 = Io.read_whole_file polished_ap ;;
-let u1 = Check_polished_ocr.Private.extract_all_pages text1 ;;
-let u2 = Check_polished_ocr.Private.footnote_inconsistencies u1;;
-let u3 = Image.image (fun (i,a,b)->(i,i+36,a,b)) u2;;
-
-let text2 = Io.read_whole_file walker_ap ;;
-let u4 = Check_polished_ocr.check_footnotes_on_page text2 ;;
-
-*)
 
 (************************************************************************************************************************
 Snippet 87 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
