@@ -129,7 +129,7 @@ collect_footnotes
 
 
 let message_for_int_range_completeness_check unordered_numbers =
-    let numbers = Ordered.zort Total_ordering.for_integers unordered_numbers in 
+    let numbers = Ordered.sort Total_ordering.for_integers unordered_numbers in 
     let vmin = List.hd numbers and vmax = List.hd (List.rev numbers) in 
     let full_range = Int_range.range vmin vmax in 
     let missing_numbers = Ordered.setminus Total_ordering.for_integers full_range numbers in 
@@ -167,8 +167,8 @@ let footnote_inconsistencies numbered_pages =
   Option.filter_and_unpack (
     fun (page_number,page_content) ->
        let (unordered_refs,unordered_notes) = collect_footnotes page_content in 
-       let refs = Ordered.zort Total_ordering.for_integers  unordered_refs 
-       and notes = Ordered.zort Total_ordering.for_integers  unordered_notes in 
+       let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
+       and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
        let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
        and notes_without_refs = Ordered.setminus Total_ordering.for_integers notes refs in  
        if (refs_without_notes,notes_without_refs)=([],[])

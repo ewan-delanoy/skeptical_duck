@@ -176,7 +176,7 @@ open Needed_values ;;
      {
        Polymorphic_ocaml_record_t.main_type_name = "t" ;
        module_name = "fw_poly" ;
-       fields = Ordered.zort field_order all_fields ;
+       fields = Ordered.sort field_order all_fields ;
        instances = instance_list_constructor full_base ;
        type_signature_file = (file_there "fw_poly_t") ;
        implementation_file = (file_there "fw_poly") ;

@@ -19,7 +19,7 @@ let compute_all_needed_elesses cs needed_modules needed_subdirs =
        Fw_with_dependencies.ancestors_for_module cs nm
     ) step2_modules)  in 
     let list_of_modules_with_nonstandard_ordering = 
-          Ordered.zort Total_ordering.standard (modules_above@step2_modules) in 
+          Ordered.sort Total_ordering.standard (modules_above@step2_modules) in 
     let all_elesses = Fw_with_dependencies.all_endinglesses cs in 
     List.filter 
         (fun eless-> List.mem (Dfn_endingless.to_module eless) list_of_modules_with_nonstandard_ordering)
@@ -35,7 +35,7 @@ let expand fw summary =
         compute_all_needed_elesses fw needed_modules needed_subdirs
              ) in 
         let all_needed_subdirs = 
-                Ordered.zort Total_ordering.standard 
+                Ordered.sort Total_ordering.standard 
                   (Image.image Dfn_endingless.to_subdirectory all_needed_elesses) 
         and all_needed_modules = 
          Image.image Dfn_endingless.to_module all_needed_elesses in      

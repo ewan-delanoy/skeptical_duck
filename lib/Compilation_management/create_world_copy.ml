@@ -38,7 +38,7 @@ module Private = struct
        let s_old_root=Dfa_root.connectable_to_subpath(Fw_poly.root cs) 
        and s_new_root=Dfa_root.connectable_to_subpath destination in 
        let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
-       let needed_subdirs = Ordered.zort Total_ordering.standard unordered_subdirs in 
+       let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
        let dir_commands = Image.image (
          fun subdir ->"mkdir -p "^s_new_root^(Dfa_subdirectory.without_trailing_slash subdir)
        ) needed_subdirs 

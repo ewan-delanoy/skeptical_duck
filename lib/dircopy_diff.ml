@@ -14,7 +14,7 @@ let summarize_rootless_path rl=
  
 let summarize_rootless_path_list  l=
     let temp1=Image.image summarize_rootless_path l in
-    Ordered.zort Total_ordering.silex_for_strings temp1;;
+    Ordered.sort Total_ordering.silex_for_strings temp1;;
 
     
 

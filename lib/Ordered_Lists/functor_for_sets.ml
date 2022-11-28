@@ -77,7 +77,7 @@ let size_of_intersection ((co,deco,cmpr):('a,'b) parameter)
      ox oy= List.length(Ordered.intersect cmpr (deco ox) (deco oy));;
 
 let sort ((co,deco,cmpr):('a,'b) parameter) 
-     l= co(Ordered.zort cmpr l);;
+     l= co(Ordered.sort cmpr l);;
 
 let tl ((co,deco,cmpr):('a,'b) parameter) ox= co(List.tl(deco ox));;
 

@@ -508,7 +508,7 @@ module Needed_dirs = struct
  Image.image (
   fun (mn,(_,ancestors)) ->
    let temp1 = Image.image subdir_at_module (mn::ancestors) in 
-   (mn,Ordered.zort Total_ordering.standard temp1)
+   (mn,Ordered.sort Total_ordering.standard temp1)
 ) (Order.get fw) ;;
  let get fw = 
    let idx = index fw in 
@@ -629,7 +629,7 @@ module Needed_libs = struct
  Image.image (
   fun (mn,(_,ancestors)) ->
    let temp1 = List.flatten(Image.image needed_libs_at_module (mn::ancestors)) in 
-   (mn,Ordered.zort Total_ordering.standard temp1)
+   (mn,Ordered.sort Total_ordering.standard temp1)
 ) (Order.get fw) ;;
  let get fw = 
    let idx = index fw in 
@@ -738,7 +738,7 @@ module All_subdirectories = struct
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
  let force_get fw =  let details = Modularized_details.get fw in 
- Ordered.zort Total_ordering.standard (Image.image (
+ Ordered.sort Total_ordering.standard (Image.image (
   fun (_,details_on_mn) ->
   Fw_module_small_details.subdirectory(details_on_mn)
 ) details) ;;
@@ -795,7 +795,7 @@ let register_rootless_paths old_fw rootlesses =
  let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
  let (_,novelties) = extra in 
- let possibly_new = Ordered.zort Total_ordering.standard 
+ let possibly_new = Ordered.sort Total_ordering.standard 
    (Image.image (fun (rl,_)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
  let answer = Ordered.merge Total_ordering.standard possibly_new old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
@@ -1047,7 +1047,7 @@ end ;;
   ) temp1 in
  let temp3=List.flatten temp2 in
  let temp4=Image.image fst temp3 in 
- let temp5=Ordered.zort Total_ordering.lex_for_strings temp4 in
+ let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
  Image.image (
     fun x->(x,Option.filter_and_unpack(
       fun (y,ap)->if y=x then Some(ap) else None

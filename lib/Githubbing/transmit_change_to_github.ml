@@ -21,7 +21,7 @@ let commands_for_backup config diff=
           Some("mkdir -p "^s_destination^dn)
      else None 
     ) created_ones in
-   let temp3=Ordered.zort Total_ordering.silex_for_strings temp2 in
+   let temp3=Ordered.sort Total_ordering.silex_for_strings temp2 in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
    let temp4=Image.image(
       fun fn->

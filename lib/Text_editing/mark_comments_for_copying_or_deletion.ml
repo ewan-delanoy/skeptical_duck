@@ -34,7 +34,7 @@ let check_for_overlapping_intervals indexed_lines pairs =
   ) temp1 with 
    (Some((i1_open,i2_close),(i3_open,i4_close)))->
       let indices_in_order = 
-        Ordered.zort Total_ordering.standard  
+        Ordered.sort Total_ordering.standard  
          [i1_open;i2_close;i3_open;i4_close] in
       let passage =
         String.concat "\n" (Image.image

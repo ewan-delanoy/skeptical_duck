@@ -24,7 +24,7 @@ let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext
 
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 
-  Ordered.zort (Total_ordering.product lfs lfs)
+  Ordered.sort (Total_ordering.product lfs lfs)
   (por.Polymorphic_ocaml_record_t.extensions @
   (Image.image (fun (x,y)->(y,x)) por.Polymorphic_ocaml_record_t.designated_parents)) ;; 
 

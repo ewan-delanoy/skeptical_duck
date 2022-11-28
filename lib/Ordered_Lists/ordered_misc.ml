@@ -42,7 +42,7 @@ module Private = struct
       helper_for_minimal_transversals (temp3,others) ;;        
 
   let power_set_for_intset x =
-     Ordered.zort (Total_ordering.silex_compare oi) (Listennou.power_set x) ;; 
+     Ordered.sort (Total_ordering.silex_compare oi) (Listennou.power_set x) ;; 
 
   let rec helper_for_int_upwards_filter (f,treated,to_be_treated) = 
      match to_be_treated with 
@@ -131,7 +131,7 @@ let reorder_list_of_pairs_using_list_of_singles pairs singles =
   ) in 
   let ordr = (fun x1 x2 -> Total_ordering.for_integers (idx x1) (idx x2)) in 
   let ordr2 = Total_ordering.product ordr Total_ordering.standard in 
-  Ordered.zort ordr2 pairs ;;
+  Ordered.sort ordr2 pairs ;;
 
 (*
 

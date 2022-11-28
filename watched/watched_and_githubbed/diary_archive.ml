@@ -44,11 +44,11 @@ let i_order = Total_ordering.for_integers ;;
 let i_intersect  = Ordered.intersect i_order ;;
 let i_merge  = Ordered.merge i_order ;;
 let i_setminus  = Ordered.setminus i_order ;;
-let i_sort  = Ordered.zort i_order ;;
+let i_sort  = Ordered.sort i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order;;
 
 let il_order = Total_ordering.silex_compare  Total_ordering.for_integers ;;
-let il_sort  = Ordered.zort il_order ;;
+let il_sort  = Ordered.sort il_order ;;
 
 let current_order = 5 ;;
 let base = Permutation.iii current_order ;;
@@ -346,7 +346,7 @@ end ;;
 
 let i_order = Total_ordering.for_integers ;; 
 let i_setminus = Ordered.setminus Total_ordering.for_integers ;;
-let i_sort = Ordered.zort Total_ordering.for_integers ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
 
 let qfrac_of_pair (i,j) = Q.div (Q.of_int i) (Q.of_int j) ;; 
 let qfrac_to_pair q = (Z.to_int q.Q.num,Z.to_int q.Q.den) ;; 
@@ -561,7 +561,7 @@ let u2 = Image.image (
     let j = Substring.leftmost_index_of_in_from "\"" text1 (i+n1) in 
     Cull_string.interval text1 (i+n1) (j-1)
 ) u1 ;;
-let u3 = Ordered.zort Total_ordering.lex_for_strings u2 ;;
+let u3 = Ordered.sort Total_ordering.lex_for_strings u2 ;;
 
 let bad_beginnings = [
 " ";" "; " "; " ";
@@ -722,7 +722,7 @@ let unordered_numbered_titles_part1 = Image.image (
 let pair_order = Total_ordering.product 
     Total_ordering.for_integers Total_ordering.lex_for_strings ;;
 let numbered_titles_part1 = 
-   Ordered.zort  pair_order  unordered_numbered_titles_part1 ;;
+   Ordered.sort  pair_order  unordered_numbered_titles_part1 ;;
 let indices_in_part1 = Image.image fst numbered_titles_part1 ;; 
 let indices_not_in_part1 =
    Ordered.setminus Total_ordering.for_integers
@@ -922,7 +922,7 @@ let unordered_numbered_titles_part2 =
 ;;    
 
 let numbered_titles_part2 = 
-  Ordered.zort  pair_order  unordered_numbered_titles_part2 ;;
+  Ordered.sort  pair_order  unordered_numbered_titles_part2 ;;
 
 let remaining_titles_in_part2 = List.filter (
   fun (j,_) -> j = 0
@@ -966,7 +966,7 @@ let u8 = Image.image (
 let u9 = Image.image (fun (typename,l)->(typename,Str.split (Str.regexp"[ \t\r\n]+") l)) u8;;    
 let u10 = List.flatten (Image.image (fun (typename,l)->Image.image (fun x->(typename,x)) l) u9) ;;
 let u11 = Image.image (fun (typename,tokname)->(tokname,typename)) u10 ;; 
-let u12 = Ordered.zort Total_ordering.lex_for_strings  (Image.image fst u11) ;;
+let u12 = Ordered.sort Total_ordering.lex_for_strings  (Image.image fst u11) ;;
 let u13 = Image.image (fun t->"| "^ t ^ " of " ^ (List.assoc t u11)) u12 ;;
 let u14 = String.concat "\n" u13 ;; 
 let u15 () = print_string ("\n\n\n" ^ u14 ^ "\n\n\n") ;;
@@ -1093,7 +1093,7 @@ let z4 = Io.read_whole_file ap3 ;;
 let z5 = Lines_in_string.interval z4 9 21 ;;
 let z6 = Lines_in_string.lines z5 ;; 
 let z7 = Image.image String.lowercase_ascii z6 ;;
-let z8 = Ordered.zort Total_ordering.lex_for_strings z7 ;;
+let z8 = Ordered.sort Total_ordering.lex_for_strings z7 ;;
 let z9 = Image.image (Str.split (Str.regexp_string "\t")) z6;;
 let z10 = Image.image (
    fun l -> let nth  = (fun k->Cull_string.trim_spaces(List.nth l (k-1))) in 
@@ -1118,13 +1118,13 @@ let i_fold_intersect = Ordered.fold_intersect i_order ;;
 let i_intersects = Ordered.intersects i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_setminus = Ordered.setminus il_order ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let u1 = Int_range.scale (fun t->[-1;1]) 1 5 ;;
 let u2 = Cartesian.general_product u1 ;;
@@ -1297,14 +1297,14 @@ Snippet 96 : Musing on the Alon-Knuth theorem (episode 2)
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 
 let il_order = Total_ordering.silex_for_intlists ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let p_order = Total_ordering.product i_order il_order ;;
-let p_sort = Ordered.zort p_order ;;
+let p_sort = Ordered.sort p_order ;;
 
 let u1 = Int_range.scale (fun t->[0;1;2]) 1 3 ;;
 let u2 = Cartesian.general_product u1 ;;
@@ -1344,11 +1344,11 @@ Snippet 95 : Musing on the Alon-Knuth theorem
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 
 let il_order = Total_ordering.silex_for_intlists ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let u1 = Int_range.scale (fun t->[-1;1]) 1 3 ;;
 let u2 = Cartesian.general_product u1 ;;
@@ -1417,11 +1417,11 @@ let z2 =
 Snippet 94 : Musing on the simplicity of An
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_fold_merge = Ordered.fold_merge Total_ordering.silex_for_intlists ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 
 let pr = Permutation.product ;;
@@ -1472,7 +1472,7 @@ let expand_pookabi_result ll =
 let u1 = Image.image pookabi main ;;   
 
 let boehme_order = Total_ordering.silex_compare Total_ordering.silex_for_intlists ;;
-let u2 = Ordered.zort boehme_order u1 ;;
+let u2 = Ordered.sort boehme_order u1 ;;
 let u3 = Image.image (
   fun y->(y,List.filter (fun x->pookabi x=y) main)
 ) u2 ;;
@@ -1552,7 +1552,7 @@ let i_setminus = Ordered.setminus i_order ;;
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
@@ -2009,7 +2009,7 @@ let feel_new_line (width,breadth,scrappers) =
     (fun n->(width,breadth,n,scrappers)) 1  (width+2*breadth) in 
   let temp2 = needed_subcomputations_for_several_computations temp1 in 
   let temp3 = Image.image (fun ((w,b,n,s),_)->(w,b,s)) temp2 in 
-  Ordered.zort t_order temp3 ;; 
+  Ordered.sort t_order temp3 ;; 
 
 let exhaust_new_line (width,breadth,scrappers) =
     let temp1 = Int_range.scale 
@@ -2200,7 +2200,7 @@ let i_setminus = Ordered.setminus i_order ;;
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let concretize (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
 
@@ -2891,7 +2891,7 @@ let i_setminus = Ordered.setminus i_order ;;
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 let careful_merge x y = Ordered_misc.minimal_elts_wrt_inclusion (il_merge x y) ;;
 
 let current_width = 2 ;;
@@ -2983,7 +2983,7 @@ let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
 let bigger_shadow x = Image.image (diff x) bigger_right_base ;;
 let u5 = Image.image (fun (_,l)->(l,
-   Ordered.zort Total_ordering.standard (Image.image bigger_shadow l)
+   Ordered.sort Total_ordering.standard (Image.image bigger_shadow l)
 ) ) u4;;
 let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
 
@@ -3002,7 +3002,7 @@ let u7 = Image.image (fun (_,l)->
 let u8 = Int_range.index_everything u7 ;;  
 
 let u9 = Image.image (fun (idx,l)->(idx,
-    Ordered.zort Total_ordering.standard (Image.image waters_index l)
+    Ordered.sort Total_ordering.standard (Image.image waters_index l)
  ) ) u8;;
 
 let check_u9 = (u9 = [(1, [(2, 3)]); (2, [(4, 3)]); (3, [(5, 4)]); (4, [(1, 1)]); (5, [(6, 3)]);
@@ -3033,7 +3033,7 @@ let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
 let bigger_shadow x = Image.image (diff x) bigger_right_base ;;
 let u5 = Image.image (fun (_,l)->(l,
-   Ordered.zort Total_ordering.standard (Image.image bigger_shadow l)
+   Ordered.sort Total_ordering.standard (Image.image bigger_shadow l)
 ) ) u4;;
 let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
 
@@ -3053,7 +3053,7 @@ let u7 = Image.image (fun (_,l)->
 let u8 = Int_range.index_everything u7 ;;  
 
 let u9 = Image.image (fun (idx,l)->(idx,
-    Ordered.zort Total_ordering.standard (Image.image waters_index l)
+    Ordered.sort Total_ordering.standard (Image.image waters_index l)
  ) ) u8;;
 
 let check_u9 = (u9 = [(1, [(2, 3)]); (2, [(4, 5)]); (3, [(6, 4)]); (4, [(1, 1)]); (5, [(6, 4)]);
@@ -3119,11 +3119,11 @@ let dir2 = home^"/Teuliou/Sites/Mongoose_example/Current_app" ;;
 let read_both x = (x,(rf(dir1^"/"^x),rf(dir2^"/"^x) )) ;;
 
 let v1 = 
-  Ordered.zort Total_ordering.lex_for_strings
+  Ordered.sort Total_ordering.lex_for_strings
   (select(More_unix.quick_beheaded_complete_ls dir1));;
 
 let v2 = 
-    Ordered.zort Total_ordering.lex_for_strings
+    Ordered.sort Total_ordering.lex_for_strings
     (select(More_unix.quick_beheaded_complete_ls dir2));;  
 
 let v12 =  Ordered.setminus Total_ordering.lex_for_strings v1 v2 ;;   
@@ -3625,7 +3625,7 @@ let base2 = List.filter check_double_pair unchecked_base2 ;;
 let base3 = Image.image (fun ((a,b),(c,d))->
   [(a+c,b+d);(a-c,b-d);(a,b);(c,d)]
   ) base2 ;;
-let base4 = Ordered.zort for_list base3 ;;
+let base4 = Ordered.sort for_list base3 ;;
 let standardize_pair (x,y)= if x<0 then (-x,-y) else (x,y) ;;
 let mima (a,b) = if (for_two a b)=Total_ordering_result_t.Lower then (b,a) else (a,b) ;;
 let standardize_list l=
@@ -3757,10 +3757,10 @@ let order_for_triples = ((
       Total_ordering.silex_for_intlists [x1;x2;x3] [y1;y2;y3] 
 ) :> (int*int*int) Total_ordering_t.t );;
 
-let orbit (x1,x2,x3) = Ordered.zort order_for_triples 
+let orbit (x1,x2,x3) = Ordered.sort order_for_triples 
    [ (x1,x2,x3);(x1,x3,x2);(x2,x1,x3);(x2,x3,x1);(x3,x1,x2);(x3,x2,x1); ] ;;
 
-let u1 = Ordered.zort order_for_triples  (Cartesian.cube (Int_range.range 0 8)) ;;   
+let u1 = Ordered.sort order_for_triples  (Cartesian.cube (Int_range.range 0 8)) ;;   
 
 let u2 = Explicit.image (fun tr->(tr,orbit tr)) u1 ;;
 let u3 = List.filter (fun (tr,l)->tr=List.hd l) u2 ;; 
@@ -3799,8 +3799,8 @@ Coherent_pdf.implode ("q","") ;;
 Snippet 77 : Musing on Steinhaus triangles
 ************************************************************************************************************************)
 let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
-let i_sort = Ordered.zort Total_ordering.for_integers ;;
-let il_sort = Ordered.zort Total_ordering.silex_for_intlists ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
+let il_sort = Ordered.sort Total_ordering.silex_for_intlists ;;
 
 let index_from_x unadbridged_x_form =
     let x_form = Cull_string.trim_spaces unadbridged_x_form in 
@@ -3914,7 +3914,7 @@ Snippet 76 : Draft to preprocess a file using data from PARI-GP
 open Needed_values ;;
 
 let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
-let i_sort = Ordered.zort Total_ordering.for_integers ;;
+let i_sort = Ordered.sort Total_ordering.for_integers ;;
 
 let index_from_x unadbridged_x_form =
     let x_form = Cull_string.trim_spaces unadbridged_x_form in 
@@ -4167,10 +4167,10 @@ let il_order = Total_ordering.silex_compare i_order ;;
 
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_merge = Ordered.merge i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 let il_fold_merge = Ordered.fold_merge il_order ;;
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 let decompositions n = Int_range.scale (fun j->(j,n-j)) 1 (n/2) ;;
 
@@ -4194,7 +4194,7 @@ let abauzit_expansion l =
     let temp2 = List.rev temp1 
     and decs = decompositions n in 
     let temp3 = Image.image (fun (a,b)->i_merge (i_sort [a;b]) temp2) decs in   
-    Ordered.zort abauzit_order temp3 ;;
+    Ordered.sort abauzit_order temp3 ;;
 
 let main = Memoized.recursive (fun old_f l->
    if l=[1] then [[1]] else
@@ -4578,9 +4578,9 @@ let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_merge = Ordered.merge i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 let il_setminus = Ordered.setminus il_order ;;
 
 
@@ -4784,9 +4784,9 @@ let i_intersection = Ordered.intersect i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_merge = Ordered.merge i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.zort i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 let il_setminus = Ordered.setminus il_order ;;
 
 
@@ -5034,7 +5034,7 @@ let i_intersection = Ordered.intersect i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 
 
-let il_sort = Ordered.zort il_order ;;
+let il_sort = Ordered.sort il_order ;;
 
 
 let u1 = il_sort (Listennou.power_set [1;2;3]) ;;
@@ -5173,11 +5173,11 @@ Lines_in_string.remove_interval_in_file ap1 169 253 ;;
 Snippet 63 : Enumerating subgroups of S4 
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
-let i_sort  = Ordered.zort i_order ;;
+let i_sort  = Ordered.sort i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order;;
 
 let il_order = Total_ordering.silex_compare  Total_ordering.for_integers ;;
-let il_sort  = Ordered.zort il_order ;;
+let il_sort  = Ordered.sort il_order ;;
 
 let current_order = 4 ;;
 let base = Permutation.iii current_order ;;
@@ -5260,7 +5260,7 @@ Snippet 62 : Finding a polynomial x^4+p*x+q with Galois group A4
 let u1 = Int_range.range (-50) 50 ;;
 let u2 = Cartesian.square u1 ;;
 let u3 = Image.image (fun (x,y)->(max(abs x)(abs y),(x,y)) ) u2 ;;
-let u4 = Ordered.zort Total_ordering.standard2 u3 ;;
+let u4 = Ordered.sort Total_ordering.standard2 u3 ;;
 let unchecked_u5 = Image.image snd u4 ;;
 let u5 = List.filter (fun (p,q)->List.for_all (fun z->z*z*z*z+p*z+q<>0) 
 (Int_range.range (-1) 1)) unchecked_u5 ;;
@@ -5857,7 +5857,7 @@ let reorder pairs =
    let temp2 = Image.image (fun (x,ll)->
        (x,Ordered.safe_set oi2 (List.flatten ll))
       ) temp1 in 
-   let temp3 = Ordered.zort Total_ordering.for_integers (Image.image fst temp2) in 
+   let temp3 = Ordered.sort Total_ordering.for_integers (Image.image fst temp2) in 
    Image.image (fun x->(x,List.assoc x temp2)) temp3 ;;
 
 exception Sore_wound of int list * int * sensitive_t;;
@@ -6521,7 +6521,7 @@ let z6 = Image.image (Cull_string.cobeginning 6) z6;;
 let g1 = Image.image (fun s->
    let j = Strung.char_finder_from (fun c->c='/') s 1 in 
    Cull_string.beginning j s  ) z6;;
-let g2 = Ordered.zort Total_ordering.lex_for_strings g1 ;;
+let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
 let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
@@ -6664,7 +6664,7 @@ let z5 = Image.image (
 let bad_in_z5=List.filter (fun x->not(List.mem x w2)) z5;;
 
 let z4=[];;
-let check_z4 = Ordered.zort Total_ordering.lex_for_strings (Image.image snd z4) ;;
+let check_z4 = Ordered.sort Total_ordering.lex_for_strings (Image.image snd z4) ;;
 
 let write (fun_name,lbl)=
  let addendum=(
@@ -6916,7 +6916,7 @@ let g4 = String.concat "\n" g3 ;;
 let g5 = "\n\n\n" ^ g4 ^ "\n\n\n" ;; 
 
 let h1 = List.flatten (Image.image snd g1) ;;
-let h2 = Ordered.zort Total_ordering.standard h1 ;;
+let h2 = Ordered.sort Total_ordering.standard h1 ;;
 let h3 = List.iter (
   fun fn -> Replace_inside.replace_inside_file ("Hex_flattened_end_strategy_automatic.","Hex_flattened_end_strategy.") fn
 ) h2 ;;
@@ -7186,7 +7186,7 @@ let v3 = Image.image (fun (j,line) ->
     ) v2;;
 
 let tab = String.make 7 ' ' ;;
-let v4 = Ordered.zort Total_ordering.lex_for_strings v3;;
+let v4 = Ordered.sort Total_ordering.lex_for_strings v3;;
 let v5 = Image.image (fun name -> tab^"let "^name^" = Aantron_encoding."^name^" ;;") v4;;
 let old_snippet = String.concat "\n" (Image.image snd v2) ;;
 let new_snippet = String.concat "\n"  v5;;
@@ -7204,7 +7204,7 @@ let v5 = Image.image (
       and i2 = Substring.leftmost_index_of_in "'" line in 
       Cull_string.trim_spaces(Cull_string.interval line (i1+1) (i2-1))
 ) v4 ;;
-let v6 = Ordered.zort Total_ordering.lex_for_strings v5;;
+let v6 = Ordered.sort Total_ordering.lex_for_strings v5;;
 let v7 = Image.image (fun name -> "let "^name^" = Aantron_utility."^name^" ;;") v6;;
 let v8 = "\n\n\n" ^ (String.concat "\n" v7) ^ "\n\n\n";;
 let v9 = print_string v8 ;;
@@ -7238,7 +7238,7 @@ let act1 () = List.iter remove_module_wrapper_in_file u1 ;;
 (************************************************************************************************************************
 Snippet  23 : Sorting names in the dictionary order
 ************************************************************************************************************************)
-let z1 = Ordered.zort Total_ordering.lex_for_strings 
+let z1 = Ordered.sort Total_ordering.lex_for_strings 
 [
   "current_state";
   "emit";
@@ -7505,7 +7505,7 @@ let (bad_ones1,u3) = List.partition (fun (s,p)->(p<min_pageNumber) || (p>max_pag
 let cmds1 = Image.image (fun (s,_)->"rm "^downloads_s_dir^"/"^s) bad_ones1;;
 let act1 () = Image.image Sys.command cmds1 ;;
 
-let reached_page_numbers = Ordered.zort Total_ordering.for_integers (Image.image snd u3) ;; 
+let reached_page_numbers = Ordered.sort Total_ordering.for_integers (Image.image snd u3) ;; 
 
 let u4 = Int_range.scale (
    fun p->(p,Option.filter_and_unpack (fun (s,q)->if q=p then Some s else None) u3)
