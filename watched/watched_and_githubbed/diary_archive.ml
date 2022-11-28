@@ -299,6 +299,8 @@ let (current_letter,current_offset) = ("q",100);;
 
 let (current_letter,current_offset) = ("r",200);;
 
+let (current_letter,current_offset) = ("s",300);;
+
 let see_commands = Coherent_pdf.Command.mass_rename 
    ~old_prefix:current_letter ~new_prefix:"p" current_offset;; 
 
@@ -307,7 +309,7 @@ let act () = Coherent_pdf.mass_rename
 
 let see_indices = Coherent_pdf.present_indices "p" ;; 
 
-
+Coherent_pdf.implode ("p","") ;; 
   
 
 (************************************************************************************************************************
