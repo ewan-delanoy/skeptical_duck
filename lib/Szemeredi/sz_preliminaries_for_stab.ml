@@ -21,7 +21,7 @@ let il_order = Total_ordering.silex_for_intlists ;;
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_is_included_in = Ordered.is_included_in il_order ;;
 let il_merge = Ordered.merge il_order ;;
-let il_sort = Ordered.sort il_order ;;
+let il_sort = Ordered.zort il_order ;;
 
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;

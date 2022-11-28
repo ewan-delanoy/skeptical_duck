@@ -25,7 +25,7 @@ let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
    Total_ordering.lex_for_strings m1 m2) : Dfa_module_t.t Total_ordering_t.t);;
 
 let compute_dependencies  l =
-  let lex_sort = Ordered.sort lex_order in 
+  let lex_sort = Ordered.zort lex_order in 
   let modules = Image.image fst l in 
   let modules_in_lex_order = lex_sort modules in 
   let coatoms_in_lex_order = Memoized.make (fun mname ->
@@ -49,7 +49,7 @@ let compute_dependencies  l =
 let compute_coatoms_in_small_extension older_modules extension =
    let modules_in_correct_order = 
        (Image.image fst older_modules) @ (Image.image fst extension) in 
-   let lex_sort = Ordered.sort lex_order in 
+   let lex_sort = Ordered.zort lex_order in 
    let coatoms = (fun mname ->
       let details = List.assoc mname  extension in 
       let temp1 = lex_sort(Fw_module_small_details.used_modules details) in 
@@ -62,7 +62,7 @@ let rec iterator_for_ancestor_computation (treated,to_be_treated) =
    [] -> treated 
    | (mn,coat_mn) :: others ->
       let temp1 = (coat_mn) :: (Image.image (fun mn2->snd(List.assoc mn2 treated)) coat_mn) in 
-      let ancestors_in_lex_order = Ordered.sort lex_order (List.flatten temp1) in 
+      let ancestors_in_lex_order = Ordered.zort lex_order (List.flatten temp1) in 
       let ancestors_mn = Option.filter_and_unpack (
          fun (mn3,_) ->
             if Ordered.mem lex_order mn3  ancestors_in_lex_order 

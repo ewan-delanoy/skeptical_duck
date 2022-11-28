@@ -518,7 +518,7 @@ order "replace_value" (order_usual_preliminary,"") ;;
     " Image.image (";
     "  fun (mn,(_,ancestors)) ->";
     "   let temp1 = Image.image subdir_at_module (mn::ancestors) in ";
-    "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
+    "   (mn,Ordered.zort Total_ordering.standard temp1)"; 
     ") (Order.get fw) ;;"];;
  
 let needed_dirs = add_to_cartesian "Needed_dirs";;
@@ -594,7 +594,7 @@ needed_dirs "replace_value" ([
      " Image.image (";
      "  fun (mn,(_,ancestors)) ->";
      "   let temp1 = List.flatten(Image.image needed_libs_at_module (mn::ancestors)) in ";
-     "   (mn,Ordered.sort Total_ordering.standard temp1)"; 
+     "   (mn,Ordered.zort Total_ordering.standard temp1)"; 
      ") (Order.get fw) ;;"];;
 
 let needed_libs = add_to_cartesian "Needed_libs";;     
@@ -664,7 +664,7 @@ add_to_ghetto
      "All_subdirectories" 
      [   
        " let details = Modularized_details.get fw in ";
-       " Ordered.sort Total_ordering.standard (Image.image (";
+       " Ordered.zort Total_ordering.standard (Image.image (";
        "  fun (mn,details_on_mn) ->";
        "  Fw_module_small_details.subdirectory(details_on_mn)";
        ") details) ;;"
@@ -698,7 +698,7 @@ all_subdirectories "overwrite_file_if_it_exists" ([
 all_subdirectories "register_rootless_paths" ([
   " let old_val = get old_fw in ";
   " let (_,novelties) = extra in ";
-  " let possibly_new = Ordered.sort Total_ordering.standard ";
+  " let possibly_new = Ordered.zort Total_ordering.standard ";
   "   (Image.image (fun (rl,dets)->Dfn_rootless.to_subdirectory rl  ) novelties) in ";
   " let answer = Ordered.merge Total_ordering.standard possibly_new old_val in ";
 ],"") ;;

@@ -64,7 +64,7 @@ let compute_details_from_acolytes_list_for_one_module l=
          (principal_coatoms @ mli_coatoms,
          Some(Fw_file_small_details.modification_time mli_details))    
    ) in
-   let all_coatoms_in_order = Ordered.sort lex_order all_coatoms in 
+   let all_coatoms_in_order = Ordered.zort lex_order all_coatoms in 
    {
       Fw_module_small_details_t.used_modules = all_coatoms_in_order ;
       used_libraries = Fw_file_small_details.used_libraries principal_details ;

@@ -22,7 +22,7 @@ let expand anndef =
       String.concat "\n" anndef.Por_public_definition_t.lines_in_definition ;;
       
 let expand_list l =
-      let temp1 = Ordered.sort Private.order l in 
+      let temp1 = Ordered.zort Private.order l in 
       String.concat "\n" (Image.image expand temp1) ;;
       
 let order = Private.order ;;

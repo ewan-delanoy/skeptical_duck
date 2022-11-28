@@ -131,7 +131,7 @@ module Private = struct
            Total_ordering.product 
               Total_ordering.standard Total_ordering.standard 
        and temp1 = Image.image (fun cycle->(List.hd cycle,cycle)) cycles in 
-       let temp2 = Ordered.sort order_for_pairs temp1 in 
+       let temp2 = Ordered.zort order_for_pairs temp1 in 
        Image.image snd temp2 ;;
 
    let rec helper_for_cycle_decomposition (walker_perm,treated)=
@@ -200,7 +200,7 @@ module Private = struct
          walker:=(new_val,to_be_treated::treated)
        done in 
        let (last_perm,other_perms) = (!walker) in 
-       Ordered.sort Total_ordering.silex_for_intlists (last_perm::other_perms)
+       Ordered.zort Total_ordering.silex_for_intlists (last_perm::other_perms)
       ;;  
 
    (*
@@ -225,7 +225,7 @@ let iii (* meaning, integer initial interval *)
       Private.integer_initial_interval n);;
    
 let permutations l =
-      let initial_item = Ordered.sort Total_ordering.standard l in 
+      let initial_item = Ordered.zort Total_ordering.standard l in 
       Private.helper_for_enumeration (initial_item,[]);;   
    
 let product = Private.product ;;

@@ -117,7 +117,7 @@ let post_indices_in_topic =Memoized.make(fun topic_idx ->
       ^s_topic_idx^" ;") in
     let temp2 = Cull_string.cobeginning 8 temp1 in   
     let temp3 = Str.split (Str.regexp_string "\n") temp2 in 
-    Ordered.sort Total_ordering.standard 
+    Ordered.zort Total_ordering.standard 
     (Image.image int_of_string temp3));;
 
 (*    

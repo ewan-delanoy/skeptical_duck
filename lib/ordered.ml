@@ -195,7 +195,7 @@ module Private = struct
   
   let setminus = Private.setminus;;
   
-  let sort = Private.sort;;
+  let zort = Private.sort;;
 
   let symmetric_difference cmpr x y =
     merge cmpr (setminus cmpr x y) (setminus cmpr y x) ;;

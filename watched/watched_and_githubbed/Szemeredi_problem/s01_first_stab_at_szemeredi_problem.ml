@@ -509,7 +509,7 @@ let analize lx =
       is_compatible = (old_a = new_a) ;
    } ) 
     (helper_for_analysis ([],lx)) in
-   let data_for_current_level = Ordered.sort Detailed_solution.order unordered_data_for_current_level in 
+   let data_for_current_level = Ordered.zort Detailed_solution.order unordered_data_for_current_level in 
    if data_for_current_level = [] then [] else  
    let related_to_preceding_level = Option.filter_and_unpack (
       fun  dsol -> 
