@@ -295,19 +295,22 @@ open Skeptical_duck_lib ;;
 open Needed_values ;;
 
 Coherent_pdf.workspace_directory := (home ^ "/Downloads/Building_site/Older_pages/") ;;
-let (current_letter,current_offset) = ("q",100);;
+let current_letter = ref "q" 
+and current_offset = ref 100 ;; 
 
-let (current_letter,current_offset) = ("r",200);;
+(current_letter:="p";current_offset:=100) ;;
 
-let (current_letter,current_offset) = ("s",300);;
+(current_letter:="r";current_offset:=200) ;;
+
+(current_letter:="s";current_offset:=300) ;;
 
 let see_commands = Coherent_pdf.Command.mass_rename 
-   ~old_prefix:current_letter ~new_prefix:"p" current_offset;; 
+   ~old_prefix:(!current_letter) ~new_prefix:"p" (!current_offset);; 
 
 let act () = Coherent_pdf.mass_rename 
-  ~old_prefix:current_letter ~new_prefix:"p" current_offset;; 
+  ~old_prefix:(!current_letter) ~new_prefix:"p" (!current_offset);; 
 
-let see_indices = Coherent_pdf.present_indices "p" ;; 
+let see_indices () = Coherent_pdf.present_indices "p" ;; 
 
 Coherent_pdf.implode ("p","") ;; 
   
