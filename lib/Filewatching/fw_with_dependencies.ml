@@ -1173,7 +1173,7 @@ let decipher_module fw capitalized_or_not_x=
           then Put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
         Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;      
 
-    let all_ml_absolute_paths fw =  
+    let all_moduled_ml_absolute_paths fw =  
         Option.filter_and_unpack (fun (mn,_)->
           if not(check_ending_in_at_module Dfa_ocaml_ending_t.Ml fw mn)
           then None
@@ -1221,7 +1221,7 @@ end ;;
 let above = Private.above ;;
 let acolytes_at_module = Private.acolytes_at_module ;;
 let all_endinglesses = Private.all_endinglesses ;;
-let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;
+let all_moduled_ml_absolute_paths = Private.all_moduled_ml_absolute_paths ;;
 let all_moduled_mlx_files = Private.all_moduled_mlx_files ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
