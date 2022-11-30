@@ -81,7 +81,7 @@ module Private = struct
       | ((_linedex,line),lk) :: other_lines -> match lk with 
       Ordinary_line -> let next_content = (if treated="" then line else treated^"\n"^line) in 
                         get_next_ordinary_lines (next_content,other_lines)
-     |_ ->  (treated,to_be_treated) ;; 
+     |Opener | Closer ->  (treated,to_be_treated) ;; 
   
   exception Get_next_end_of_chunk_exn of int * string ;;
   exception Empty_arg_in_get_next_end_of_chunk_exn ;;
