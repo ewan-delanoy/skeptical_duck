@@ -16,7 +16,8 @@ module Private = struct
 let indices_in_ml_ocamlcode code=
   let temp1=Outside_comments_and_strings.good_substrings code in
   let temp2=Image.image (fun (a,_b,t)->
-     let ttemp3=Alternative_str.find_all_occurrences Alternative_str_example.moodle_cases t 1 in
+     let ttemp3=Alternative_str.find_all_decorated_occurrences 
+       Alternative_str_example.decorated_moodle_cases t 1 in
      Image.image (fun (case_index,(u,v))->
         (case_index,(u+a-1,v+a-1))
      ) ttemp3
@@ -95,7 +96,7 @@ let list_values_from_module_in_file module_name file=
    let s=Io.read_whole_file file in
    let temp1=indices_in_mlx_file file in
    let temp2=List.filter (fun (t,(i,j))->
-     (t=Alternative_str_example.index_for_pointed_case)&&
+     (t=Modulekeyword_use_case_t.Pointed)&&
      (Cull_string.interval s i j=(String.capitalize_ascii module_name))
    ) temp1 in
    let temp3=Image.image(fun (_t,(_i,j))->
