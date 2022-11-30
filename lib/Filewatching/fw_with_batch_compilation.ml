@@ -124,7 +124,8 @@ module Private = struct
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
      match cmod with 
      Compilation_mode_t.Usual->Option.unpack opt_modnames
-     |_->let rootless_path=Option.unpack opt_rootless_path in 
+     |Compilation_mode_t.Debug
+     |Compilation_mode_t.Executable->let rootless_path=Option.unpack opt_rootless_path in 
          let full_path=Absolute_path.of_string(
           (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
@@ -148,7 +149,7 @@ module Private = struct
      match cmod with 
       Compilation_mode_t.Usual
      |Compilation_mode_t.Executable ->[] 
-     |_->
+     |Compilation_mode_t.Debug->
         let rootless_path=Option.unpack opt_rootless_path in 
         Command.predebuggable fw rootless_path) in 
      cmds;;
@@ -158,7 +159,8 @@ module Private = struct
      let cmds=(
      match cmod with 
      Compilation_mode_t.Usual->[] 
-     |_->
+     |Compilation_mode_t.Debug
+     |Compilation_mode_t.Executable->
         let rootless_path=Option.unpack opt_rootless_path in 
         Command.debuggable_or_executable cmod fw rootless_path) in 
      cmds;;   
@@ -178,7 +180,8 @@ module Private = struct
   let end_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path)=
     match cmod with 
      Compilation_mode_t.Usual->()
-     |_->
+     |Compilation_mode_t.Debug
+     |Compilation_mode_t.Executable->
        let all_cmds=
          (list_of_commands_for_connecting_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path))@
          (list_of_commands_for_end_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path)) in 
