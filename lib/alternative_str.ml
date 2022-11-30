@@ -13,7 +13,7 @@ type backtrack_length=int;;
 
 type regexp=M of string*(Str.regexp)*backtrack_length;;
 
-let unveil (M(s,_,b))=s;;
+let unveil (M(s,_,_b))=s;;
 let veil s=M(s,Str.regexp s,0);;
 
 let set_backtrack (b:backtrack_length) (M(s,rgxp,_))=M(s,rgxp,b);;
