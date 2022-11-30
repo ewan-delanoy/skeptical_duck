@@ -15,7 +15,7 @@ module Private = struct
 
 let indices_in_ml_ocamlcode code=
   let temp1=Outside_comments_and_strings.good_substrings code in
-  let temp2=Image.image (fun (a,b,t)->
+  let temp2=Image.image (fun (a,_b,t)->
      let ttemp3=Alternative_str.find_all_occurrences Alternative_str_example.moodle_cases t 1 in
      Image.image (fun (case_index,(u,v))->
         (case_index,(u+a-1,v+a-1))
@@ -44,8 +44,8 @@ let names_in_mlx_file ap=
   let text = Io.read_whole_file ap in 
   let temp2=Image.image (fun (_,(a,b))->String.sub text (a-1) (b-a+1) ) temp1 in
   let temp3=Three_parts.generic temp2 in
-  let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
-  let temp5=Image.image (fun (x,y,z)->Dfa_module.of_line 
+  let temp4=List.filter (fun (x,y,_z)->not(List.mem y x)) temp3 in
+  let temp5=Image.image (fun (_x,y,_z)->Dfa_module.of_line 
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 
@@ -57,11 +57,11 @@ let change_module_name_in_ml_ocamlcode
    and new_name=String.capitalize_ascii(Dfa_module.to_line(new_naked_name)) in
    let itv=(fun a b->String.sub old_code (a-1) (b-a+1)) in
    let temp1=indices_in_ml_ocamlcode old_code in
-   let temp2=List.filter (fun (j,(a,b))->(itv a b)=old_name ) temp1 in
+   let temp2=List.filter (fun (_j,(a,b))->(itv a b)=old_name ) temp1 in
    if temp2=[]
    then old_code
    else
-   let temp3 = Image.image (fun (j,(a,b))->((a,b),new_name) ) temp2 in  
+   let temp3 = Image.image (fun (_j,(a,b))->((a,b),new_name) ) temp2 in  
    Strung.replace_ranges_in temp3 old_code;;
  
   
@@ -98,7 +98,7 @@ let list_values_from_module_in_file module_name file=
      (t=Alternative_str_example.index_for_pointed_case)&&
      (Cull_string.interval s i j=(String.capitalize_ascii module_name))
    ) temp1 in
-   let temp3=Image.image(fun (t,(i,j))->
+   let temp3=Image.image(fun (_t,(_i,j))->
     let opt=After.after_star 
      Charset.ocaml_modulename_nonfirst_letters
      s (j+2) in
