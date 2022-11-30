@@ -25,11 +25,7 @@ val centered_regexp_decorated_list_match :
   ('a * centered_regexp) list ->
   string ->
   backtrack_length -> ('a * (backtrack_length * backtrack_length)) option  
-val centered_regexp_list_match :
-  centered_regexp list -> string -> int -> (int * (int * int)) option
 val find_all_decorated_occurrences :
   ('a * centered_regexp) list ->
   string ->
   backtrack_length -> ('a * (backtrack_length * backtrack_length)) list  
-val find_all_occurrences :
-  centered_regexp list -> string -> int -> (int * (int * int)) list

@@ -99,8 +99,6 @@ let centered_regexp_decorated_list_match decorated_l s i0=
     |None->None
   ) decorated_l;;   
   
-let centered_regexp_list_match l s i0=
-   centered_regexp_decorated_list_match (index_everything l) s i0 ;;
   
 let find_all_decorated_occurrences decorated_l s i0=
    let n=String.length s in
@@ -112,17 +110,6 @@ let find_all_decorated_occurrences decorated_l s i0=
      tempf((pattern_idx,(i_start,i_end))::graet,i_end+1)
    ) in
    tempf([],i0);;
-   
-let find_all_occurrences l s i0=
-  let n=String.length s in
-  let rec tempf=(fun (graet,j)->
-    if j>n then List.rev(graet) else
-    let opt=centered_regexp_list_match l s j in
-    if opt=None then tempf(graet,j+1) else
-    let (pattern_idx,(i_start,i_end))=unpack(opt) in
-    tempf((pattern_idx,(i_start,i_end))::graet,i_end+1)
-  ) in
-  tempf([],i0);;
 
    
    

@@ -96,7 +96,7 @@ module Private = struct
   
   exception Get_next_chunk_exn of int * string ;;
   
-  let rec get_next_chunk lines =
+  let get_next_chunk lines =
       match lines with 
       [] -> None
       | ((linedex,line),lk) :: other_lines -> match lk with 
