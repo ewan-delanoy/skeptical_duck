@@ -50,7 +50,7 @@ let pointed_case=
   and right_part=Alternative_str.regexp_string "." in
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
 
-let moodle_cases=[include_case;open_case;moodle_case;pointed_case];;
+
 
 let decorated_moodle_cases=
    [
@@ -60,10 +60,6 @@ let decorated_moodle_cases=
    Modulekeyword_use_case_t.Pointed,pointed_case
    ];;
 
-let index_for_include_case=1;;
-let index_for_open_case=2;;
-let index_for_moodle_case=3;;
-let index_for_pointed_case=4;;
 
 
 (*
