@@ -53,9 +53,12 @@ let pointed_case=
 let moodle_cases=[include_case;open_case;moodle_case;pointed_case];;
 
 let decorated_moodle_cases=
-   [include_case;
-    open_case;
-    moodle_case;pointed_case];;
+   [
+   Modulekeyword_use_case_t.Include,include_case;
+   Modulekeyword_use_case_t.Open,open_case;
+   Modulekeyword_use_case_t.Duplicate,moodle_case;
+   Modulekeyword_use_case_t.Pointed,pointed_case
+   ];;
 
 let index_for_include_case=1;;
 let index_for_open_case=2;;
