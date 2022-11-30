@@ -31,7 +31,7 @@ let expand fw summary =
         let all_needed_elesses =
         (match summary with 
         Needed_data_summary_t.Everything -> Fw_with_dependencies.all_endinglesses fw
-       |Selection(needed_modules,needed_subdirs)-> 
+       |Needed_data_summary_t.Selection(needed_modules,needed_subdirs)-> 
         compute_all_needed_elesses fw needed_modules needed_subdirs
              ) in 
         let all_needed_subdirs = 
@@ -47,7 +47,7 @@ let expand fw summary =
         let noncompilables =
             (match summary with 
              Needed_data_summary_t.Everything -> original_noncompilables
-            |Selection(_needed_modules,_needed_subdirs)-> 
+            |Needed_data_summary_t.Selection(_needed_modules,_needed_subdirs)-> 
               List.filter (
                 fun rless-> List.mem (Dfn_rootless.to_subdirectory rless) all_needed_subdirs 
             ) original_noncompilables) in        
@@ -62,5 +62,7 @@ end ;;
 
 let expand = Private.expand ;;
 
-let is_everything = function Needed_data_summary_t.Everything -> true | _ -> false ;;
+let is_everything = function 
+   Needed_data_summary_t.Everything -> true 
+ | Needed_data_summary_t.Selection _ -> false ;;
 
