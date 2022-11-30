@@ -193,9 +193,9 @@ module Private = struct
   let command_for_module_separate_compilation cmod fw eless pr_ending = 
      match pr_ending with 
       Dfa_ocaml_ending_t.Mli -> command_for_mli_module_separate_compilation cmod fw eless
-     |Ml -> command_for_ml_module_separate_compilation cmod fw eless
-     |Mll -> command_for_mll_module_separate_compilation cmod fw eless
-     |Mly -> command_for_mly_module_separate_compilation cmod fw eless
+     |Dfa_ocaml_ending_t.Ml -> command_for_ml_module_separate_compilation cmod fw eless
+     |Dfa_ocaml_ending_t.Mll -> command_for_mll_module_separate_compilation cmod fw eless
+     |Dfa_ocaml_ending_t.Mly -> command_for_mly_module_separate_compilation cmod fw eless
     ;;
 
 
