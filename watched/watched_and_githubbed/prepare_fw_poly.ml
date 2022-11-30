@@ -115,7 +115,7 @@ open Needed_values ;;
    let instance_list_constructor l = Image.image (
       fun (a,b) -> {
        Polymorphic_ocaml_record_t.instance_name = a ;
-       fields = b ;
+       instance_fields = b ;
     }
    ) l;;
   
@@ -153,7 +153,7 @@ open Needed_values ;;
    let instance_list_constructor l = Image.image (
       fun (a,b) -> {
         Polymorphic_ocaml_record_t.instance_name = a ;
-        fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.field_name ) b ;
+        instance_fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.field_name ) b ;
       }
    ) l;;
 
