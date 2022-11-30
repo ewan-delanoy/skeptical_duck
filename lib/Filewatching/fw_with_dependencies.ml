@@ -1039,8 +1039,18 @@ end ;;
        
  let all_moduled_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
 
+let archived_mlx_paths cs = Option.filter_and_unpack (
+   fun rl -> let edg = Dfn_rootless.to_ending rl in 
+     if List.mem edg Dfa_ending.all_ocaml_endings 
+     then let full = Dfn_join.root_to_rootless (root cs) rl in 
+           Some(Dfn_full.to_absolute_path full)
+     else None   
+) (Fw_with_archives.archived_files cs);;
+
+let all_mlx_paths cs = (archived_mlx_paths cs) @ (all_moduled_mlx_paths cs) ;;
+
  let list_values_from_module fw module_name=
- let temp1=all_moduled_mlx_paths fw in
+ let temp1=all_mlx_paths fw in
  let temp2=Image.image (fun ap->
   let ttemp1=Look_for_module_names.list_values_from_module_in_file module_name ap in
   Set_of_strings.image (fun x->(x,ap) ) ttemp1
@@ -1057,7 +1067,7 @@ end ;;
 
 let show_value_occurrences fw t=
  let m=String.length(Dfa_root.connectable_to_subpath (root fw)) in
- let temp1=all_moduled_mlx_paths fw in
+ let temp1=all_mlx_paths fw in
  let temp2=Image.image (fun ap->
     let text = Io.read_whole_file ap in   
     let temp3=Substring.occurrences_of_in t text in 

@@ -6033,7 +6033,7 @@ Snippet 55 : Find all modules whose ml file contains a certain substring
 ************************************************************************************************************************)
 open Needed_values ;;
 
-let z1 = Fw_with_dependencies.all_mlx_files (!ucs) ;;
+let z1 = Fw_with_dependencies.all_moduled_mlx_files (!ucs) ;;
 let z2 = List.filter (fun mlx -> (Dfn_full.to_ending mlx)= Dfa_ending.ml ) z1 ;;
 let z3 = Explicit.filter (
    fun mlx -> 
