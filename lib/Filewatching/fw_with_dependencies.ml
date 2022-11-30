@@ -1037,10 +1037,10 @@ end ;;
    let mods=Image.image fst (Order.get fw) in
    List.flatten(Image.image(acolytes_at_module fw) mods);;                
        
- let all_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
+ let all_moduled_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
 
  let list_values_from_module fw module_name=
- let temp1=all_mlx_paths fw in
+ let temp1=all_moduled_mlx_paths fw in
  let temp2=Image.image (fun ap->
   let ttemp1=Look_for_module_names.list_values_from_module_in_file module_name ap in
   Set_of_strings.image (fun x->(x,ap) ) ttemp1
@@ -1057,7 +1057,7 @@ end ;;
 
 let show_value_occurrences fw t=
  let m=String.length(Dfa_root.connectable_to_subpath (root fw)) in
- let temp1=all_mlx_paths fw in
+ let temp1=all_moduled_mlx_paths fw in
  let temp2=Image.image (fun ap->
     let text = Io.read_whole_file ap in   
     let temp3=Substring.occurrences_of_in t text in 

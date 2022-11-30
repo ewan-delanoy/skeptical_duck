@@ -224,12 +224,17 @@ module Private = struct
       let (_,u_files,_) = canonical_tripartition fw all_files in 
       u_files ;;        
 
+   let archived_files fw  =
+      let all_files = Image.image fst (watched_files fw) in 
+      let (a_files,_,_) = canonical_tripartition fw all_files in 
+      a_files ;;     
      
    let check_that_no_change_has_occurred fw =
       File_watcher.check_that_no_change_has_occurred (parent fw) ;; 
       
 end ;;
 
+let archived_files = Private.archived_files ;; 
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let compute_all_small_details = Private.compute_all_small_details ;;
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;

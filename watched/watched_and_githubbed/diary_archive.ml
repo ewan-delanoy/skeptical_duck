@@ -304,7 +304,7 @@ and current_offset = ref 100 ;;
 
 (current_letter:="s";current_offset:=300) ;;
 
-let see_commands = Coherent_pdf.Command.mass_rename 
+let see_commands () = Coherent_pdf.Command.mass_rename 
    ~old_prefix:(!current_letter) ~new_prefix:"p" (!current_offset);; 
 
 let act () = Coherent_pdf.mass_rename 
