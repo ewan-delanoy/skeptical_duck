@@ -51,6 +51,12 @@ let pointed_case=
   Alternative_str.create_centered_regexp left_part center_part right_part;; 
 
 let moodle_cases=[include_case;open_case;moodle_case;pointed_case];;
+
+let decorated_moodle_cases=
+   [include_case;
+    open_case;
+    moodle_case;pointed_case];;
+
 let index_for_include_case=1;;
 let index_for_open_case=2;;
 let index_for_moodle_case=3;;
