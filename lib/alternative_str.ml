@@ -60,7 +60,7 @@ let unpack=function
 None->failwith("Void is not unpackable")
 |Some(x)->x;;   
    
-let rec find_and_stop f l=
+let find_and_stop f l=
  let rec find_and_stop0=(function
   da_ober->match da_ober with
    []->None
@@ -92,14 +92,16 @@ let centered_regexp_match ((a,b,c):centered_regexp) s i0=
   if opt3=None then None else   
   Some(i1,i2-1);;
    
- 
-let centered_regexp_list_match l s i0=
-  let temp1=index_everything l in
-  find_and_stop(fun (pattern_idx,rgxp)->
+let centered_regexp_decorated_list_match decorated_l s i0=
+  find_and_stop(fun (pattern_name,rgxp)->
     match centered_regexp_match rgxp s i0 with
-     Some(i_start,i_end)->Some(pattern_idx,(i_start,i_end))
+     Some(i_start,i_end)->Some(pattern_name,(i_start,i_end))
     |None->None
-  ) temp1;;   
+  ) decorated_l;;   
+  
+let centered_regexp_list_match l s i0=
+   centered_regexp_decorated_list_match (index_everything l) s i0 ;;
+  
    
  let find_all_occurrences l s i0=
   let n=String.length s in
