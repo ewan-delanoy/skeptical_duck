@@ -23,7 +23,7 @@ let inside_string replacings s=
     fun j->
       if (j mod 2)=1
       then xy_substring j
-      else Overwriter.to_string(snd(List.nth replacings ((j-2)/2)))
+      else snd(List.nth replacings ((j-2)/2))
   ) 1 (2*r+1) in
   String.concat "" all_parts;;
 

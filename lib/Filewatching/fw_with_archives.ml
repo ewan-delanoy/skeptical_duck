@@ -208,7 +208,7 @@ module Private = struct
       let replacer=(Cull_string.before_rightmost replacee '.')^
           "."^pre_replacer in 
       let _=Rename_moduled_value_in_file.rename_moduled_value_in_file 
-         preceding_files replacee (Overwriter.of_string pre_replacer) 
+         preceding_files replacee pre_replacer 
            path in 
       let old_parent = parent old_fw in   
       let rootless = Dfn_common.decompose_absolute_path_using_root path 

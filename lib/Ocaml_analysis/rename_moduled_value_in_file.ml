@@ -26,8 +26,8 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    let temp3_again=Read_ocaml_files.read_ocaml_files preceding_files in
    let beheaded_name=Cull_string.cobeginning j old_name in
    let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
-   (Cull_string.before_rightmost beheaded_name '.',Overwriter.to_string new_name) in
-   let new_beheaded_name=Overwriter.of_string s_new_beheaded_name in
+   (Cull_string.before_rightmost beheaded_name '.',new_name) in
+   let new_beheaded_name=s_new_beheaded_name in
    let s_new_full_name=module_name^"."^s_new_beheaded_name in
    let temp4_again=Listennou.force_find (fun itm->
      (itm.Ocaml_gsyntax_item.name)=s_new_full_name
@@ -44,8 +44,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
               let replacings=Image.image (fun p->(p,new_beheaded_name)) isoc in
               let new_txt=Overwrite_at_intervals.inside_string
                    replacings txt in
-             Some(itm.Ocaml_gsyntax_item.interval_for_content,
-                  Overwriter.of_string new_txt)
+             Some(itm.Ocaml_gsyntax_item.interval_for_content,new_txt)
         else None   
    ) temp5 in
    Overwrite_at_intervals.inside_file temp6 path;;
