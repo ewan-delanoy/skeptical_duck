@@ -156,12 +156,12 @@ let overwrite_and_dump_markers_inside_file
 
 
  overwrite_between_markers_inside_string
-  (Overwriter.of_string "456")
+  (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;    
    
 overwrite_and_dump_markers_inside_string
-  (Overwriter.of_string "456")
+  (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;       
    

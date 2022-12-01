@@ -178,7 +178,7 @@ let rec find_and_stop0=(function
 ) in
 find_and_stop0 a;;
 
-let constant_list n x=scale (function j->x) 1 n;;
+let constant_list n x=scale (function _j->x) 1 n;;
 
 let describe_fibers_as_intervals f a b=
  if (a>b) then [] else
@@ -1834,28 +1834,6 @@ end;;
 
 
 
-module Assistance_overwriter=struct
-
-(*
-
-#use"lib/overwriter.ml";;
-
-*)
-
-
-type t=Ovw of string;;
-
-let of_string s=Ovw(s);;
-let to_string (Ovw s)=s;;
-             
-
-end;;
-
-
-
-
-
-
 module Assistance_replace_inside=struct
 
 (*
@@ -1909,11 +1887,11 @@ let text_for_number_of_replacements k=
   if k = 1 then "1 replacement made" else 
   (string_of_int k)^" replacements made" ;;   
 
-let my_global_replace ?(display_number_of_matches=true) (a,b) old_s  =
+let my_global_replace display_number_of_matches (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
-      then print_string("\n"^(text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
+      then print_string((text_for_number_of_replacements count)^" for "^a^" -> "^b^"\n"); 
            flush stdout 
    ) in 
    new_s ;; 
@@ -1933,43 +1911,31 @@ end ;;
 
 
 
-let replace_inside_string (a,b) s=
-  Private.my_global_replace (a,b) s ~display_number_of_matches:true;;
+let replace_inside_string ?(display_number_of_matches=true) (a,b) s=
+  Private.my_global_replace display_number_of_matches (a,b) s ;;
  
-let silently_replace_inside_string (a,b) s=
-  Private.my_global_replace (a,b) s ~display_number_of_matches:false;;
-
-let replace_several_inside_string l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace (a,b) s  ~display_number_of_matches:false) t l;;  
+let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
+(fun s (a,b)->Private.my_global_replace display_number_of_matches (a,b) s ) t l;;  
  
-let replace_inside_file (a,b) fn=
+let replace_inside_file ?(display_number_of_matches=true) (a,b) fn=
     let s1=Assistance_io.read_whole_file fn in
     let la=String.length(a) in
     if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string (a,b) s1 in
-         Assistance_io.overwrite_with fn s2
-    else ();; 
-    
-let silently_replace_inside_file (a,b) fn=
-    let s1=Assistance_io.read_whole_file fn in
-    let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_int_range.range 0 ((String.length s1)-la))
-    then let s2=silently_replace_inside_string (a,b) s1 in
+    then let s2=replace_inside_string ~display_number_of_matches (a,b) s1 in
          Assistance_io.overwrite_with fn s2
     else ();; 
 
 
-let replace_several_inside_file l fn=
+let replace_several_inside_file ?(display_number_of_matches=false) l fn=
     let s1=Assistance_io.read_whole_file fn in
-    let s2=replace_several_inside_string l s1  in
+    let s2=replace_several_inside_string ~display_number_of_matches l s1  in
     Assistance_io.overwrite_with fn s2;; 
 
 exception Absent_beginning_marker of string;;
 exception Absent_ending_marker of string;; 
  
-let overwrite_between_markers_inside_string ovw_b (bm,em)
+let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
    s1=
-     let b=Assistance_overwriter.to_string ovw_b in
      if (bm,em)=("","") then b else
      let substring_leftmost_index_from=(fun x y i0->
       let lx=String.length(x) and ly=String.length(y) in
@@ -1989,16 +1955,15 @@ let overwrite_between_markers_inside_string ovw_b (bm,em)
      before^b^after ;; 
      
 let overwrite_between_markers_inside_file 
-   ovw_b (bm,em)
+   ~overwriter:b (bm,em)
    fn =
     let s1=Assistance_io.read_whole_file fn in
-    let s2=overwrite_between_markers_inside_string ovw_b (bm,em) s1 in
+    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
     Assistance_io.overwrite_with fn s2;;      
 
 
-let overwrite_and_dump_markers_inside_string ovw_b (bm,em)
+let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
    s1=
-     let b=Assistance_overwriter.to_string ovw_b in
      if (bm,em)=("","") then b else
      let substring_leftmost_index_from=(fun x y i0->
       let lx=String.length(x) and ly=String.length(y) in
@@ -2019,22 +1984,22 @@ let overwrite_and_dump_markers_inside_string ovw_b (bm,em)
      before^b^after ;; 
      
 let overwrite_and_dump_markers_inside_file 
-   ovw_b (bm,em)
+~overwriter:b (bm,em)
    fn =
     let s1=Assistance_io.read_whole_file fn in
-    let s2=overwrite_and_dump_markers_inside_string ovw_b (bm,em) s1 in
+    let s2=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) s1 in
     Assistance_io.overwrite_with fn s2;;      
  
 (* 
 
 
  overwrite_between_markers_inside_string
-  (Overwriter.of_string "456")
+  (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;    
    
 overwrite_and_dump_markers_inside_string
-  (Overwriter.of_string "456")
+  (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;       
    
@@ -2046,8 +2011,8 @@ let at_char_intervals_inside_string s l=
   let n=String.length s in
   let temp1=Assistance_listennou.universal_delta_list l 
   and ((i_first,_),_)=List.hd(l)
-  and ((i_last,j_last),rep_last)=List.hd(List.rev l) in
-  let temp2=Assistance_image.image (fun (((i1,j1),rep1),((i2,j2),rep2))->
+  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
+  let temp2=Assistance_image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
       rep1^(String.sub s j1 (i2-j1-1))
   ) temp1 in
   let first_part=(String.sub s 0 (i_first-1))
@@ -2098,12 +2063,12 @@ let replacement_salt =
   String.concat "" ["b"; "Z"; "3"; "v"; "l"; "m"; "x"; "E"; "A"; "z"; "L"; "e"];;
 
 let decode (Assistance_encoded_string_t.E(encoded_s))=
-   Assistance_replace_inside.silently_replace_inside_string (replacement_salt,salt) encoded_s;;
+   Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (replacement_salt,salt) encoded_s;;
 
 let encode s=
    if Assistance_substring.is_a_substring_of replacement_salt s 
    then raise(Forbidden_substring)
-   else let encoded_s=Assistance_replace_inside.silently_replace_inside_string (salt,replacement_salt) s in 
+   else let encoded_s=Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (salt,replacement_salt) s in 
         if  Assistance_substring.is_a_substring_of salt encoded_s 
         then raise(Forbidden_substring)
         else Assistance_encoded_string_t.E(encoded_s);;
@@ -3762,13 +3727,12 @@ let to_concrete_object (Assistance_dfn_rootless_t.J(s,m,e))=
    ) ;;
 
 
-
 end ;; 
 
 
-let is_compilable (Assistance_dfn_rootless_t.J(s,m,e))= Assistance_dfa_ending.is_compilable e;;
+let is_compilable (Assistance_dfn_rootless_t.J(_s,_m,e))= Assistance_dfa_ending.is_compilable e;;
 
-let is_in (Assistance_dfn_rootless_t.J(s,m,e)) sd = Assistance_dfa_subdirectory.begins_with s sd;;
+let is_in (Assistance_dfn_rootless_t.J(s,_m,_e)) sd = Assistance_dfa_subdirectory.begins_with s sd;;
 
 let list_of_concrete_object crobj=
   Assistance_crobj_converter_combinator.to_list Private.of_concrete_object crobj ;;
@@ -3788,7 +3752,7 @@ let pair_list_to_concrete_object l=
   Assistance_crobj_converter_combinator.of_pair_list Private.to_concrete_object Private.to_concrete_object l;;
 
 
-let relocate_to (Assistance_dfn_rootless_t.J(old_subdir,m,e)) new_subdir=Assistance_dfn_rootless_t.J(new_subdir,m,e);;
+let relocate_to (Assistance_dfn_rootless_t.J(_old_subdir,m,e)) new_subdir=Assistance_dfn_rootless_t.J(new_subdir,m,e);;
 
 let rename_module_as  (old_m,new_m) old_path=
    let (Assistance_dfn_rootless_t.J(s,m,e))=old_path in 
@@ -3809,17 +3773,17 @@ let soak (old_subdir,new_subdir) (Assistance_dfn_rootless_t.J(s,m,e)) =
 
 let to_concrete_object = Private.to_concrete_object ;;
 
-let to_ending (Assistance_dfn_rootless_t.J(s,m,e))=e;;
+let to_ending (Assistance_dfn_rootless_t.J(_s,_m,e))=e;;
 
 let to_line (Assistance_dfn_rootless_t.J(s,m,e))=
    (Assistance_dfa_subdirectory.connectable_to_subpath s)^
    (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
 
-let to_middle (Assistance_dfn_rootless_t.J(s,m,e))=Assistance_dfn_middle_t.J(s,m);;
+let to_middle (Assistance_dfn_rootless_t.J(s,m,_e))=Assistance_dfn_middle_t.J(s,m);;
 
-let to_module (Assistance_dfn_rootless_t.J(s,m,e))=m;;
+let to_module (Assistance_dfn_rootless_t.J(_s,m,_e))=m;;
 
-let to_subdirectory (Assistance_dfn_rootless_t.J(s,m,e))=s;;
+let to_subdirectory (Assistance_dfn_rootless_t.J(s,_m,_e))=s;;
 
 
 
@@ -4615,7 +4579,7 @@ type backtrack_length=int;;
 
 type regexp=M of string*(Str.regexp)*backtrack_length;;
 
-let unveil (M(s,_,b))=s;;
+let unveil (M(s,_,_b))=s;;
 let veil s=M(s,Str.regexp s,0);;
 
 let set_backtrack (b:backtrack_length) (M(s,rgxp,_))=M(s,rgxp,b);;
@@ -4662,7 +4626,7 @@ let unpack=function
 None->failwith("Void is not unpackable")
 |Some(x)->x;;   
    
-let rec find_and_stop f l=
+let find_and_stop f l=
  let rec find_and_stop0=(function
   da_ober->match da_ober with
    []->None
@@ -4694,25 +4658,24 @@ let centered_regexp_match ((a,b,c):centered_regexp) s i0=
   if opt3=None then None else   
   Some(i1,i2-1);;
    
- 
-let centered_regexp_list_match l s i0=
-  let temp1=index_everything l in
-  find_and_stop(fun (pattern_idx,rgxp)->
+let centered_regexp_decorated_list_match decorated_l s i0=
+  find_and_stop(fun (pattern_name,rgxp)->
     match centered_regexp_match rgxp s i0 with
-     Some(i_start,i_end)->Some(pattern_idx,(i_start,i_end))
+     Some(i_start,i_end)->Some(pattern_name,(i_start,i_end))
     |None->None
-  ) temp1;;   
-   
- let find_all_occurrences l s i0=
-  let n=String.length s in
-  let rec tempf=(fun (graet,j)->
-    if j>n then List.rev(graet) else
-    let opt=centered_regexp_list_match l s j in
-    if opt=None then tempf(graet,j+1) else
-    let (pattern_idx,(i_start,i_end))=unpack(opt) in
-    tempf((pattern_idx,(i_start,i_end))::graet,i_end+1)
-  ) in
-  tempf([],i0);;
+  ) decorated_l;;   
+  
+  
+let find_all_decorated_occurrences decorated_l s i0=
+   let n=String.length s in
+   let rec tempf=(fun (graet,j)->
+     if j>n then List.rev(graet) else
+     let opt=centered_regexp_decorated_list_match decorated_l s j in
+     if opt=None then tempf(graet,j+1) else
+     let (pattern_idx,(i_start,i_end))=unpack(opt) in
+     tempf((pattern_idx,(i_start,i_end))::graet,i_end+1)
+   ) in
+   tempf([],i0);;
 
    
    
@@ -4736,6 +4699,32 @@ let search_forward (M(_,rgxp,b)) s i0=
    let j2=j1+(String.length(Str.matched_string s))-b-1 in
    (j1,j2);;
   *)            
+
+end;;
+
+
+
+
+
+
+module Assistance_modulekeyword_use_case_t=struct
+
+(*
+
+Enumerate the ways in which the "module" keyword can be used in OCaml.
+
+#use"lib/modulekeyword_use_case_t.ml";;
+
+*)
+
+type t =
+    Include 
+  | Open
+  | Duplicate 
+  | Pointed ;; 
+
+
+ 
 
 end;;
 
@@ -4798,11 +4787,16 @@ let pointed_case=
   and right_part=Assistance_alternative_str.regexp_string "." in
   Assistance_alternative_str.create_centered_regexp left_part center_part right_part;; 
 
-let moodle_cases=[include_case;open_case;moodle_case;pointed_case];;
-let index_for_include_case=1;;
-let index_for_open_case=2;;
-let index_for_moodle_case=3;;
-let index_for_pointed_case=4;;
+
+
+let decorated_moodle_cases=
+   [
+   Assistance_modulekeyword_use_case_t.Include,include_case;
+   Assistance_modulekeyword_use_case_t.Open,open_case;
+   Assistance_modulekeyword_use_case_t.Duplicate,moodle_case;
+   Assistance_modulekeyword_use_case_t.Pointed,pointed_case
+   ];;
+
 
 
 (*
@@ -4934,17 +4928,19 @@ type state={
     rightmost_backslash_count_is_even : bool;
     penultchar_is_a_left_paren        : bool;
     interval_start : int;
-    accumulator : (int*int*string) list;
+    line_count : int;
+    line_count_at_interval_start : int;
+    accumulator : (int*int*string*int) list;
 };;
 
 
-let one_more_step s n j c x=
+let one_more_step s n next_idx next_char x=
    let d=x.depth in 
-   let comment_opened_now=(x.lastchar_is_a_left_paren)&&(c='*')&&(not(x.string_mode))
+   let comment_opened_now=(x.lastchar_is_a_left_paren)&&(next_char='*')&&(not(x.string_mode))
    and comment_closed_now=
             (not(x.penultchar_is_a_left_paren))
             &&(x.lastchar_is_a_star)
-            &&(c=')')
+            &&(next_char=')')
             &&(not(x.string_mode)) in
    let new_depth=(
    		if x.string_mode
@@ -4958,10 +4954,10 @@ let one_more_step s n j c x=
         else  d
    
    ) in
-   let string_opened_now=(c='"')&&(not(x.string_mode))&&
+   let string_opened_now=(next_char='"')&&(not(x.string_mode))&&
        (not(x.lastchar_is_a_backslash))&&
        (not(x.lastchar_is_a_tick))
-   and string_closed_now=(c='"')&&(x.string_mode)&&(
+   and string_closed_now=(next_char='"')&&(x.string_mode)&&(
       if x.lastchar_is_a_backslash
       then x.rightmost_backslash_count_is_even
       else true
@@ -4977,13 +4973,13 @@ let one_more_step s n j c x=
        then None
        else
        if string_opened_now
-       then Some(j-1)
+       then Some(next_idx-1)
        else
        if comment_opened_now
-       then Some(j-2)
+       then Some(next_idx-2)
        else 
-       if (j=n)&&(not(x.string_mode))
-       then Some(j)
+       if (next_idx=n)&&(not(x.string_mode))
+       then Some(next_idx)
        else None
     ) in
     let old_accu=x.accumulator in  
@@ -4995,23 +4991,26 @@ let one_more_step s n j c x=
            if lower_bound>upper_bound
            then old_accu
            else let new_itv=Assistance_cull_string.interval s lower_bound upper_bound in 
-               (lower_bound,upper_bound,new_itv)::old_accu
+               (lower_bound,upper_bound,new_itv,x.line_count_at_interval_start)::old_accu
     ) in  
+    let new_line_count = x.line_count + (if next_char = '\n' then 1 else 0) in 
       
   {
     depth =new_depth;
     string_mode    =(if string_opened_now then true else
                      if string_closed_now then false else
                      x.string_mode);
-    lastchar_is_a_left_paren   =(c='(');
-    lastchar_is_a_star         =(c='*');
-    lastchar_is_a_backslash    =(c='\\');
-    lastchar_is_a_tick    =(c='\'');
-    rightmost_backslash_count_is_even=(if c<>'\\' 
+    lastchar_is_a_left_paren   =(next_char='(');
+    lastchar_is_a_star         =(next_char='*');
+    lastchar_is_a_backslash    =(next_char='\\');
+    lastchar_is_a_tick    =(next_char='\'');
+    rightmost_backslash_count_is_even=(if next_char<>'\\' 
                                        then true 
                                        else not(x.rightmost_backslash_count_is_even) );
     penultchar_is_a_left_paren =x.lastchar_is_a_left_paren;
-    interval_start=(if new_start then j+1 else x.interval_start);
+    interval_start=(if new_start then next_idx+1 else x.interval_start);
+    line_count = new_line_count;
+    line_count_at_interval_start = (if new_start then new_line_count else x.line_count_at_interval_start);
     accumulator=new_accu;
 };;
 
@@ -5026,13 +5025,15 @@ let initial_state=
     rightmost_backslash_count_is_even=true;
     penultchar_is_a_left_paren =false;
     interval_start=1;
+    line_count=1;
+    line_count_at_interval_start =1;
     accumulator=[];
 };;
 
-let rec iterator (s,n,j,st)=
-    if j>n
+let rec iterator (s,n,next_idx,st)=
+    if next_idx>n
     then List.rev(st.accumulator)
-    else iterator(s,n,j+1,one_more_step s n j (String.get s (j-1)) st);;
+    else iterator(s,n,next_idx+1,one_more_step s n next_idx (String.get s (next_idx-1)) st);;
     
 let good_substrings s=iterator(s,String.length s,1,initial_state);;    
 
@@ -5344,10 +5345,11 @@ module Private = struct
 
 let indices_in_ml_ocamlcode code=
   let temp1=Assistance_outside_comments_and_strings.good_substrings code in
-  let temp2=Assistance_image.image (fun (a,b,t)->
-     let ttemp3=Assistance_alternative_str.find_all_occurrences Assistance_alternative_str_example.moodle_cases t 1 in
+  let temp2=Assistance_image.image (fun (a,_b,t,line_nbr)->
+     let ttemp3=Assistance_alternative_str.find_all_decorated_occurrences 
+       Assistance_alternative_str_example.decorated_moodle_cases t 1 in
      Assistance_image.image (fun (case_index,(u,v))->
-        (case_index,(u+a-1,v+a-1))
+        (case_index,(u+a-1,v+a-1,line_nbr))
      ) ttemp3
   ) temp1 in
   List.flatten temp2;;
@@ -5371,10 +5373,10 @@ let indices_in_ml_file file=indices_in_ml_ocamlcode(Assistance_io.read_whole_fil
 let names_in_mlx_file ap=
   let temp1=indices_in_mlx_file ap in
   let text = Assistance_io.read_whole_file ap in 
-  let temp2=Assistance_image.image (fun (_,(a,b))->String.sub text (a-1) (b-a+1) ) temp1 in
+  let temp2=Assistance_image.image (fun (_,(a,b,_))->String.sub text (a-1) (b-a+1) ) temp1 in
   let temp3=Assistance_three_parts.generic temp2 in
-  let temp4=List.filter (fun (x,y,z)->not(List.mem y x)) temp3 in
-  let temp5=Assistance_image.image (fun (x,y,z)->Assistance_dfa_module.of_line 
+  let temp4=List.filter (fun (x,y,_z)->not(List.mem y x)) temp3 in
+  let temp5=Assistance_image.image (fun (_x,y,_z)->Assistance_dfa_module.of_line 
       (String.uncapitalize_ascii  y)) temp4 in
   temp5;;
 
@@ -5386,11 +5388,11 @@ let change_module_name_in_ml_ocamlcode
    and new_name=String.capitalize_ascii(Assistance_dfa_module.to_line(new_naked_name)) in
    let itv=(fun a b->String.sub old_code (a-1) (b-a+1)) in
    let temp1=indices_in_ml_ocamlcode old_code in
-   let temp2=List.filter (fun (j,(a,b))->(itv a b)=old_name ) temp1 in
+   let temp2=List.filter (fun (_j,(a,b,_))->(itv a b)=old_name ) temp1 in
    if temp2=[]
    then old_code
    else
-   let temp3 = Assistance_image.image (fun (j,(a,b))->((a,b),new_name) ) temp2 in  
+   let temp3 = Assistance_image.image (fun (_j,(a,b,_))->((a,b),new_name) ) temp2 in  
    Assistance_strung.replace_ranges_in temp3 old_code;;
  
   
@@ -5423,11 +5425,11 @@ let change_several_module_names_in_ml_file l_changes file=
 let list_values_from_module_in_file module_name file=
    let s=Assistance_io.read_whole_file file in
    let temp1=indices_in_mlx_file file in
-   let temp2=List.filter (fun (t,(i,j))->
-     (t=Assistance_alternative_str_example.index_for_pointed_case)&&
+   let temp2=List.filter (fun (t,(i,j,_line_nbr))->
+     (t=Assistance_modulekeyword_use_case_t.Pointed)&&
      (Assistance_cull_string.interval s i j=(String.capitalize_ascii module_name))
    ) temp1 in
-   let temp3=Assistance_image.image(fun (t,(i,j))->
+   let temp3=Assistance_image.image(fun (_t,(_i,j,_line_nbr))->
     let opt=Assistance_after.after_star 
      Assistance_charset.ocaml_modulename_nonfirst_letters
      s (j+2) in
@@ -5583,7 +5585,7 @@ let compute ap =
     let full_text = Assistance_io.read_whole_file ap in 
     let used_mods = Assistance_look_for_module_names.names_in_mlx_file ap in 
     let snippets = Assistance_outside_comments_and_strings.good_substrings full_text in 
-    let printer_exists = List.exists (fun (i,j,subtext)->
+    let printer_exists = List.exists (fun (_i,_j,subtext,_linenbr)->
            (Assistance_detect_printer_declaration_in_text.detect subtext)<>None 
          ) snippets  in 
     let used_libs = Assistance_ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
@@ -7383,7 +7385,7 @@ let unchronometered_explore_tree f l=
          then (a::graet,p-1,q+1,peurrest)
          else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
     ) and 
-    tester=(fun (graet,p,q,da_ober)->da_ober<>[]) 
+    tester=(fun (_graet,p,q,da_ober)->da_ober<>[]) 
     and
     shower=(
      fun (graet,p,q,da_ober)->
@@ -7651,11 +7653,11 @@ let naive_extension ap=
    (Assistance_cull_string.cobeginning (i+1) s);; 
    
 let extension x=try (naive_extension x) with 
-  any_exception->"";;
+  _any_exception->"";;
   
  let is_a_directory ap=
    let s=Assistance_absolute_path.to_string ap in
-   try (function x->true)(Sys.readdir s) with any_exception->false;;
+   try (function _x->true)(Sys.readdir s) with _any_exception->false;;
  
  let father ap=
    let s=Assistance_absolute_path.to_string ap in
@@ -7683,10 +7685,10 @@ let extension x=try (naive_extension x) with
    )() in
    let temp1=Array.to_list(Sys.readdir(s)) in
    let tempf=(function w->try (Some(Assistance_absolute_path.of_string(s_with_slash^w))) with
-   any_exception->None) in
+   _any_exception->None) in
    Assistance_option.filter_and_unpack tempf temp1;;
    
- let ls x=try (naive_ls x) with any_exception->[];;  
+ let ls x=try (naive_ls x) with _any_exception->[];;  
  
  let test_for_cleaniness=function ap->
   let s=Assistance_absolute_path.to_string ap in
@@ -8062,8 +8064,9 @@ let debugging_subdir=
 let watched_subdir=
   Assistance_dfa_subdirectory.of_line "watched";;
 
-let dune_build_subdir=
-  Assistance_dfa_subdirectory.of_line "_build";;
+let dune_bin_subdir= Assistance_dfa_subdirectory.of_line "bin";;  
+let dune_build_subdir= Assistance_dfa_subdirectory.of_line "_build";;
+let dune_test_subdir= Assistance_dfa_subdirectory.of_line "test";;
 
 let nonml_files_subdir=
   Assistance_dfa_subdirectory.of_line "nonml_files";;
@@ -8112,7 +8115,9 @@ let rootless_path_for_ocamlinit = Assistance_dfn_rootless.of_line ".ocamlinit";;
 let git_ignored_subdirectories =
   [
      build_subdir;
+     dune_bin_subdir;
      dune_build_subdir;
+     dune_test_subdir;
      watched_not_githubbed_subdir;
      nongithubbed_nonml_files_subdir;
      directives_subdir;
@@ -8979,7 +8984,7 @@ let inside_string replacings s=
     fun j->
       if (j mod 2)=1
       then xy_substring j
-      else Assistance_overwriter.to_string(snd(List.nth replacings ((j-2)/2)))
+      else snd(List.nth replacings ((j-2)/2))
   ) 1 (2*r+1) in
   String.concat "" all_parts;;
 
@@ -10485,8 +10490,8 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    let temp3_again=Assistance_read_ocaml_files.read_ocaml_files preceding_files in
    let beheaded_name=Assistance_cull_string.cobeginning j old_name in
    let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
-   (Assistance_cull_string.before_rightmost beheaded_name '.',Assistance_overwriter.to_string new_name) in
-   let new_beheaded_name=Assistance_overwriter.of_string s_new_beheaded_name in
+   (Assistance_cull_string.before_rightmost beheaded_name '.',new_name) in
+   let new_beheaded_name=s_new_beheaded_name in
    let s_new_full_name=module_name^"."^s_new_beheaded_name in
    let temp4_again=Assistance_listennou.force_find (fun itm->
      (itm.Assistance_ocaml_gsyntax_item.name)=s_new_full_name
@@ -10503,8 +10508,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
               let replacings=Assistance_image.image (fun p->(p,new_beheaded_name)) isoc in
               let new_txt=Assistance_overwrite_at_intervals.inside_string
                    replacings txt in
-             Some(itm.Assistance_ocaml_gsyntax_item.interval_for_content,
-                  Assistance_overwriter.of_string new_txt)
+             Some(itm.Assistance_ocaml_gsyntax_item.interval_for_content,new_txt)
         else None   
    ) temp5 in
    Assistance_overwrite_at_intervals.inside_file temp6 path;;
@@ -10606,8 +10610,6 @@ let of_root root_dir =
       ~ignored_files:[]
     ;; 
 
-
-
 let test_for_admissibility data rl=
   (List.mem (
     (Assistance_dfn_rootless.to_ending rl)
@@ -10643,7 +10645,6 @@ module Assistance_file_watcher=struct
 exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
-
 
 module Private = struct
 
@@ -10689,7 +10690,7 @@ let announce_missing_files missing_files=
      else (print_string(message_about_missing_files missing_files);flush stdout);;
             
 
-let helper1_during_inspection fw accu (rl,old_mtime,new_mtime)=
+let helper1_during_inspection _fw accu (rl,old_mtime,new_mtime)=
    let _ = (if new_mtime <> old_mtime then accu:=rl::(!accu)) in 
    (rl,new_mtime);;
 
@@ -10779,7 +10780,7 @@ let of_configuration_and_list config to_be_watched =
 let update_in_list_of_pairs fw  to_be_updated pairs  =
 Assistance_image.image (
    fun pair -> 
-     let (rootless,mtime)=pair in 
+     let (rootless,_mtime)=pair in 
      if List.mem rootless to_be_updated 
      then recompute_all_info fw rootless 
      else pair
@@ -10833,7 +10834,7 @@ let apply_text_transformation_on_some_files fw tr l=
 
    
 let check_that_no_change_has_occurred fw =
-  let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
+  let (_new_files,changed_files)= compute_changes_and_announce_them fw ~verbose:true in
   if changed_files <> []
   then raise(Change_has_occurred)
   else () ;;       
@@ -11104,7 +11105,7 @@ module Private = struct
           Assistance_file_watcher.inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
-      let (a_files,u_files,nc_files) = announce_changes new_fw changed_files in 
+      let (a_files,u_files,_nc_files) = announce_changes new_fw changed_files in 
       (new_fw,changed_files,(a_files,u_files)) ;;   
 
    let latest_changes fw = 
@@ -11131,7 +11132,7 @@ module Private = struct
          
    let rename_module_on_filename_level old_fw (old_module,new_module) = 
       let all_files = Assistance_image.image fst (watched_files old_fw) in 
-      let (a_files,u_files,nc_files) = canonical_tripartition old_fw all_files in 
+      let (_a_files,u_files,_nc_files) = canonical_tripartition old_fw all_files in 
       let acolytes = List.filter (
                    fun rl -> (Assistance_dfn_rootless.to_module rl) = old_module 
       ) u_files in
@@ -11173,7 +11174,7 @@ module Private = struct
    let replace_string old_fw (replacee,replacer) = 
       let apply = (fun par files->
          Assistance_file_watcher.apply_text_transformation_on_some_files par 
-         (Assistance_replace_inside.silently_replace_inside_string (replacee,replacer)) files
+         (Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (replacee,replacer)) files
       ) in 
       let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
       let old_parent = parent old_fw in    
@@ -11195,7 +11196,7 @@ module Private = struct
       let replacer=(Assistance_cull_string.before_rightmost replacee '.')^
           "."^pre_replacer in 
       let _=Assistance_rename_moduled_value_in_file.rename_moduled_value_in_file 
-         preceding_files replacee (Assistance_overwriter.of_string pre_replacer) 
+         preceding_files replacee pre_replacer 
            path in 
       let old_parent = parent old_fw in   
       let rootless = Assistance_dfn_common.decompose_absolute_path_using_root path 
@@ -11211,12 +11212,17 @@ module Private = struct
       let (_,u_files,_) = canonical_tripartition fw all_files in 
       u_files ;;        
 
+   let archived_files fw  =
+      let all_files = Assistance_image.image fst (watched_files fw) in 
+      let (a_files,_,_) = canonical_tripartition fw all_files in 
+      a_files ;;     
      
    let check_that_no_change_has_occurred fw =
       Assistance_file_watcher.check_that_no_change_has_occurred (parent fw) ;; 
       
 end ;;
 
+let archived_files = Private.archived_files ;; 
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred;;
 let compute_all_small_details = Private.compute_all_small_details ;;
 let compute_small_details_on_one_file = Private.compute_small_details_on_one_file ;;
@@ -11534,7 +11540,7 @@ let lex_order = ((fun (Assistance_dfa_module_t.M m1) (Assistance_dfa_module_t.M 
 let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Assistance_image.image (fun (rl,details)->(Assistance_dfn_rootless.to_ending rl,(rl,details))) l in 
    let temp2 = Assistance_listennou.partition_according_to_fst temp1 in 
-   let should_be_empty = List.filter (fun (edg,l_rl)->List.length(l_rl)>1) temp2 in 
+   let should_be_empty = List.filter (fun (_edg,l_rl)->List.length(l_rl)>1) temp2 in 
    if should_be_empty<>[]
    then let clearer_picture = Assistance_image.image (fun (edg,detailed_l) -> (edg,Assistance_image.image fst detailed_l) ) 
                        should_be_empty in 
@@ -11544,7 +11550,7 @@ let compute_details_from_acolytes_list_for_one_module l=
       (Assistance_dfa_ocaml_ending.of_ending edg,List.hd l_rl)
       ) temp2   in 
    let (temp4,temp5) = List.partition 
-    (function (edg,rl)->edg=Assistance_dfa_ocaml_ending_t.Mli) temp3 in 
+    (function (edg,_rl)->edg=Assistance_dfa_ocaml_ending_t.Mli) temp3 in 
    if (temp3=[]) || (List.length(temp5)>1)
    then raise(Nonadmissible_acolytes_list(Assistance_image.image (fun (_,(rl,_))->rl) temp3))
    else        
@@ -11871,6 +11877,7 @@ module Assistance_fw_with_dependencies=struct
 
 *)
 
+
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Assistance_dfa_subdirectory_t.t list) ;;
@@ -12021,7 +12028,7 @@ module Modularized_details = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Cached.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
@@ -12031,11 +12038,11 @@ let inspect_and_update old_fw  =
  let visible = Cached.inspect_and_update old_fw  in 
  let (new_fw,extra) = visible in 
  let old_val = get old_fw in 
- let ((a_files,u_files),changed_u_files,changed_files) = extra in 
+ let ((_,_),changed_u_files,_) = extra in 
  let tempf = (
    fun old_pair ->
-    let (mn,details) = old_pair in 
-    let temp1 = List.filter (fun (rl,details2)->
+    let (mn,_) = old_pair in 
+    let temp1 = List.filter (fun (rl,_)->
        (Assistance_dfn_rootless.to_module rl)= mn
       ) changed_u_files in 
  if temp1 <> []
@@ -12067,8 +12074,8 @@ let overwrite_file_if_it_exists old_fw pair =
       |Some(change) ->
  let tempf = (
         fun old_pair -> 
-          let (mn,details) = old_pair in 
-          let temp1 = List.filter (fun (rl,details2)->
+          let (mn,_) = old_pair in 
+          let temp1 = List.filter (fun (rl,_)->
              (Assistance_dfn_rootless.to_module rl)= mn
             ) [change] in
           if temp1 <> []
@@ -12090,14 +12097,14 @@ let register_rootless_paths old_fw rootlesses =
  let visible = Cached.register_rootless_paths old_fw rootlesses in 
  let (new_fw,extra) = visible in 
   let old_val = get old_fw in 
-  let ((a_files,u_files,nc_files),new_details) = extra in 
+  let (_,new_details) = extra in 
   let old_mods = Assistance_image.image fst old_val in 
   let (overlapping,nonoverlapping) = List.partition (
      fun (rl,_) -> List.mem (Assistance_dfn_rootless.to_module rl) old_mods 
   ) new_details in 
   let tempf1 = (
     fun old_pair -> 
-      let (mn,details) = old_pair in 
+      let (mn,_) = old_pair in 
       let temp1 = Assistance_option.filter_and_unpack (fun (rl,details2)->
          if (Assistance_dfn_rootless.to_module rl)= mn
          then Some(rl,Some(rl,details2))
@@ -12119,8 +12126,8 @@ let relocate_module_to old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -12138,8 +12145,8 @@ let remove_files old_fw files_to_be_removed =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= mn
        ) extra in
      if temp1 <> []
@@ -12157,8 +12164,8 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
  let (old_mn,new_mn,_) = triple in 
  let tempf = (
    fun old_pair -> 
-     let (pre_mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (pre_mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= pre_mn
        ) (fst extra) in
      if temp1 <> []
@@ -12177,8 +12184,8 @@ let rename_subdirectory_as old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -12196,8 +12203,8 @@ let replace_string old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -12215,8 +12222,8 @@ let replace_value old_fw pair =
  let old_val = get old_fw in 
  let tempf = (
    fun old_pair -> 
-     let (mn,details) = old_pair in 
-     let temp1 = List.filter (fun (rl,new_pair_for_rl)->
+     let (mn,_) = old_pair in 
+     let temp1 = List.filter (fun (rl,_)->
         (Assistance_dfn_rootless.to_module rl)= mn
        ) (fst extra) in
      if temp1 <> []
@@ -12246,7 +12253,7 @@ module Order = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Modularized_details.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun (mn,_)->not(List.mem mn mods_to_be_erased)) old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
@@ -12254,7 +12261,7 @@ let forget_modules old_fw mods_to_be_erased =
 
 let inspect_and_update old_fw  =  
  let visible = Modularized_details.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Assistance_image.image fst old_val in 
  let details_in_old_order = Assistance_ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -12277,7 +12284,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Modularized_details.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Assistance_image.image fst old_val in 
  let details_in_old_order = Assistance_ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -12294,7 +12301,7 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Modularized_details.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let extended_details_list = Modularized_details.get new_fw in 
  let new_details = Assistance_listennou.big_tail (List.length old_val) extended_details_list in
@@ -12308,21 +12315,21 @@ let register_rootless_paths old_fw rootlesses =
 
 let relocate_module_to old_fw pair =  
  let visible = Modularized_details.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Modularized_details.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Modularized_details.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in  
@@ -12334,14 +12341,14 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Modularized_details.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_string old_fw pair =  
  let visible = Modularized_details.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Assistance_image.image fst old_val in 
  let details_in_old_order = Assistance_ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -12352,7 +12359,7 @@ let replace_string old_fw pair =
 
 let replace_value old_fw pair =  
  let visible = Modularized_details.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let modules_in_old_order = Assistance_image.image fst old_val in 
  let details_in_old_order = Assistance_ordered_misc.reorder_list_of_pairs_using_list_of_singles
@@ -12387,14 +12394,14 @@ module Needed_dirs = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Order.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Order.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12413,7 +12420,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Order.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12426,28 +12433,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Order.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Order.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Order.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Order.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in 
@@ -12457,7 +12464,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Order.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let rep = (fun sdir ->
    match Assistance_dfa_subdirectory.soak pair sdir with 
@@ -12470,14 +12477,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = Order.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Order.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12508,14 +12515,14 @@ module Needed_libs = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_dirs.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_dirs.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12534,7 +12541,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Needed_dirs.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12547,28 +12554,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = Needed_dirs.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Needed_dirs.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Needed_dirs.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Needed_dirs.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = (fun mn->if mn = old_mname then new_mname else mn) in 
@@ -12578,21 +12585,21 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Needed_dirs.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_string old_fw pair =  
  let visible = Needed_dirs.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Needed_dirs.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12605,7 +12612,7 @@ module All_subdirectories = struct
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
  let force_get fw =  let details = Modularized_details.get fw in 
  Assistance_ordered.sort Assistance_total_ordering.standard (Assistance_image.image (
-  fun (mn,details_on_mn) ->
+  fun (_,details_on_mn) ->
   Assistance_fw_module_small_details.subdirectory(details_on_mn)
 ) details) ;;
  let get fw = 
@@ -12619,14 +12626,14 @@ module All_subdirectories = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = Needed_libs.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let inspect_and_update old_fw  =  
  let visible = Needed_libs.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12645,7 +12652,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = Needed_libs.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12662,35 +12669,35 @@ let register_rootless_paths old_fw rootlesses =
  let old_val = get old_fw in 
  let (_,novelties) = extra in 
  let possibly_new = Assistance_ordered.sort Assistance_total_ordering.standard 
-   (Assistance_image.image (fun (rl,dets)->Assistance_dfn_rootless.to_subdirectory rl  ) novelties) in 
+   (Assistance_image.image (fun (rl,_)->Assistance_dfn_rootless.to_subdirectory rl  ) novelties) in 
  let answer = Assistance_ordered.merge Assistance_total_ordering.standard possibly_new old_val in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = Needed_libs.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = Needed_libs.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = Needed_libs.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_subdirectory_as old_fw pair =  
  let visible = Needed_libs.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let rep = (fun sdir ->
    match Assistance_dfa_subdirectory.soak pair sdir with 
@@ -12703,14 +12710,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = Needed_libs.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = Needed_libs.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12745,7 +12752,7 @@ module All_printables = struct
 
 let forget_modules old_fw mods_to_be_erased =  
  let visible = All_subdirectories.forget_modules old_fw mods_to_be_erased in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let answer = List.filter (fun middle->
     not(List.mem (Assistance_dfn_middle.to_module middle) mods_to_be_erased)) old_val in 
@@ -12754,7 +12761,7 @@ let forget_modules old_fw mods_to_be_erased =
 
 let inspect_and_update old_fw  =  
  let visible = All_subdirectories.inspect_and_update old_fw  in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12773,7 +12780,7 @@ let of_configuration_and_list pair =
 
 let overwrite_file_if_it_exists old_fw pair =  
  let visible = All_subdirectories.overwrite_file_if_it_exists old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12786,28 +12793,28 @@ let plunge_fw_configuration config =
 
 let register_rootless_paths old_fw rootlesses =  
  let visible = All_subdirectories.register_rootless_paths old_fw rootlesses in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let relocate_module_to old_fw pair =  
  let visible = All_subdirectories.relocate_module_to old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
   let answer = get old_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let remove_files old_fw files_to_be_removed =  
  let visible = All_subdirectories.remove_files old_fw files_to_be_removed in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let visible = All_subdirectories.rename_module_on_filename_level_and_in_files old_fw triple in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_mname,new_mname,_) = triple in
  let rep = Assistance_dfn_middle.rename_module (old_mname,new_mname) in 
@@ -12817,7 +12824,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
 
 let rename_subdirectory_as old_fw pair =  
  let visible = All_subdirectories.rename_subdirectory_as old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let (old_sdir,new_sdir) = pair in
  let s_new_sdir = Assistance_dfa_subdirectory.without_trailing_slash new_sdir in 
@@ -12828,14 +12835,14 @@ let rename_subdirectory_as old_fw pair =
 
 let replace_string old_fw pair =  
  let visible = All_subdirectories.replace_string old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
 
 let replace_value old_fw pair =  
  let visible = All_subdirectories.replace_value old_fw pair in 
- let (new_fw,extra) = visible in 
+ let (new_fw,_) = visible in 
  let answer = force_get new_fw in 
  let _ = Hashtbl.add the_hashtbl (index new_fw) answer in 
  visible ;;
@@ -12899,11 +12906,21 @@ end ;;
       else None
     ) Assistance_dfa_ocaml_ending.all ;;
 
-  let all_mlx_files fw=
+  let all_moduled_mlx_files fw=
    let mods=Assistance_image.image fst (Order.get fw) in
    List.flatten(Assistance_image.image(acolytes_at_module fw) mods);;                
        
- let all_mlx_paths cs=Assistance_image.image Assistance_dfn_full.to_absolute_path (all_mlx_files cs);;  
+ let all_moduled_mlx_paths cs=Assistance_image.image Assistance_dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
+
+let archived_mlx_paths cs = Assistance_option.filter_and_unpack (
+   fun rl -> let edg = Assistance_dfn_rootless.to_ending rl in 
+     if List.mem edg Assistance_dfa_ending.all_ocaml_endings 
+     then let full = Assistance_dfn_join.root_to_rootless (root cs) rl in 
+           Some(Assistance_dfn_full.to_absolute_path full)
+     else None   
+) (Assistance_fw_with_archives.archived_files cs);;
+
+let all_mlx_paths cs = (archived_mlx_paths cs) @ (all_moduled_mlx_paths cs) ;;
 
  let list_values_from_module fw module_name=
  let temp1=all_mlx_paths fw in
@@ -12925,14 +12942,15 @@ let show_value_occurrences fw t=
  let m=String.length(Assistance_dfa_root.connectable_to_subpath (root fw)) in
  let temp1=all_mlx_paths fw in
  let temp2=Assistance_image.image (fun ap->
-    let text = Assistance_io.read_whole_file ap in   
-    let temp3=Assistance_substring.occurrences_of_in t text in 
-    let closeups = Assistance_image.image (fun j->Assistance_cull_string.closeup_around_index 
-        text j
-    ) temp3 in
-    let mname=Assistance_cull_string.cobeginning(m)(Assistance_absolute_path.to_string ap) in
-    Assistance_image.image (fun x->mname^":\n"^x ) closeups
- ) temp1 in
+  let text = Assistance_io.read_whole_file ap in   
+  let temp3=Assistance_substring.occurrences_of_in t text in 
+  let mname=Assistance_cull_string.cobeginning(m)(Assistance_absolute_path.to_string ap) in
+  Assistance_image.image (fun occ_idx ->
+    let line_idx = Assistance_strung.number_of_lines_before text occ_idx in 
+    let closeup = Assistance_cull_string.closeup_around_index text occ_idx in 
+    mname^", line "^(string_of_int line_idx)^" :\n"^closeup
+  ) temp3
+) temp1 in
  let temp4=List.flatten temp2 in
  let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
  print_string temp5;; 
@@ -13039,7 +13057,7 @@ let decipher_module fw capitalized_or_not_x=
           then Assistance_put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
         Assistance_unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;      
 
-    let all_ml_absolute_paths fw =  
+    let all_moduled_ml_absolute_paths fw =  
         Assistance_option.filter_and_unpack (fun (mn,_)->
           if not(check_ending_in_at_module Assistance_dfa_ocaml_ending_t.Ml fw mn)
           then None
@@ -13087,8 +13105,8 @@ end ;;
 let above = Private.above ;;
 let acolytes_at_module = Private.acolytes_at_module ;;
 let all_endinglesses = Private.all_endinglesses ;;
-let all_ml_absolute_paths = Private.all_ml_absolute_paths ;;
-let all_mlx_files = Private.all_mlx_files ;;
+let all_moduled_ml_absolute_paths = Private.all_moduled_ml_absolute_paths ;;
+let all_moduled_mlx_files = Private.all_moduled_mlx_files ;;
 let all_subdirectories fw = Private.All_subdirectories.get fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.Order.get fw)) ;;
 let below = Private.below ;;
@@ -13408,9 +13426,9 @@ module Private = struct
   let command_for_module_separate_compilation cmod fw eless pr_ending = 
      match pr_ending with 
       Assistance_dfa_ocaml_ending_t.Mli -> command_for_mli_module_separate_compilation cmod fw eless
-     |Ml -> command_for_ml_module_separate_compilation cmod fw eless
-     |Mll -> command_for_mll_module_separate_compilation cmod fw eless
-     |Mly -> command_for_mly_module_separate_compilation cmod fw eless
+     |Assistance_dfa_ocaml_ending_t.Ml -> command_for_ml_module_separate_compilation cmod fw eless
+     |Assistance_dfa_ocaml_ending_t.Mll -> command_for_mll_module_separate_compilation cmod fw eless
+     |Assistance_dfa_ocaml_ending_t.Mly -> command_for_mly_module_separate_compilation cmod fw eless
     ;;
 
 
@@ -13474,7 +13492,7 @@ module Private = struct
       and last_ending=Assistance_compilation_mode.ending_for_last_module cmod 
       and product_ending=Assistance_compilation_mode.ending_for_final_product cmod  in
       let cm_elements_but_the_last = Assistance_image.image (
-        fun (subdir,nm)->(Assistance_dfa_module.to_line nm)^ending
+        fun (_subdir,nm)->(Assistance_dfa_module.to_line nm)^ending
       ) nm_deps_with_subdirs in 
       let unpointed_short_path = Assistance_cull_string.before_rightmost rootless_path '.' in 
       let nm_name = (Assistance_cull_string.after_rightmost unpointed_short_path '/') in 
@@ -13560,7 +13578,6 @@ module Assistance_fw_with_batch_compilation=struct
 #use"lib/Filewatching/fw_with_batch_compilation.ml";;
 
 *)
-
    
 exception Rename_string_or_value_exn of string ;;
 
@@ -13682,7 +13699,8 @@ module Private = struct
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
      match cmod with 
      Assistance_compilation_mode_t.Usual->Assistance_option.unpack opt_modnames
-     |_->let rootless_path=Assistance_option.unpack opt_rootless_path in 
+     |Assistance_compilation_mode_t.Debug
+     |Assistance_compilation_mode_t.Executable->let rootless_path=Assistance_option.unpack opt_rootless_path in 
          let full_path=Assistance_absolute_path.of_string(
           (Assistance_dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Assistance_look_for_module_names.names_in_mlx_file full_path in 
@@ -13706,7 +13724,7 @@ module Private = struct
      match cmod with 
       Assistance_compilation_mode_t.Usual
      |Assistance_compilation_mode_t.Executable ->[] 
-     |_->
+     |Assistance_compilation_mode_t.Debug->
         let rootless_path=Assistance_option.unpack opt_rootless_path in 
         Command.predebuggable fw rootless_path) in 
      cmds;;
@@ -13716,7 +13734,8 @@ module Private = struct
      let cmds=(
      match cmod with 
      Assistance_compilation_mode_t.Usual->[] 
-     |_->
+     |Assistance_compilation_mode_t.Debug
+     |Assistance_compilation_mode_t.Executable->
         let rootless_path=Assistance_option.unpack opt_rootless_path in 
         Command.debuggable_or_executable cmod fw rootless_path) in 
      cmds;;   
@@ -13736,7 +13755,8 @@ module Private = struct
   let end_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path)=
     match cmod with 
      Assistance_compilation_mode_t.Usual->()
-     |_->
+     |Assistance_compilation_mode_t.Debug
+     |Assistance_compilation_mode_t.Executable->
        let all_cmds=
          (list_of_commands_for_connecting_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path))@
          (list_of_commands_for_end_part_of_feydeau cmod fw (opt_modnames,opt_rootless_path)) in 
@@ -13819,14 +13839,14 @@ module Private = struct
   
   let modern_recompile fw changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then fw else
-      let (all_deps,new_deps,changed_modules) = 
+      let (all_deps,new_deps,_changed_modules) = 
         Assistance_fw_with_dependencies.below_several (parent fw) changed_modules_in_any_order in     
       let _ = Assistance_strung.announce 
       ~trailer:("The following modules need to be recompiled \n"^
       "because they depend on directly changed modules :")
          ~printer:Assistance_dfa_module.to_line ~items:new_deps 
          ~separator: ", " in 
-      let (fw2,rejected_pairs,accepted_pairs)=
+      let (fw2,_,_)=
         Ocaml_target_making.usual_feydeau fw all_deps in 
       fw2 ;;
 
@@ -13848,7 +13868,7 @@ module Private = struct
       set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
-      let (new_parent,((changed_archived_compilables,changed_usual_compilables),_,changed_files))
+      let (new_parent,((_changed_archived_compilables,changed_usual_compilables),_,changed_files))
          =Assistance_fw_with_dependencies.inspect_and_update (parent fw) in   
       (set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
@@ -13865,14 +13885,14 @@ module Private = struct
       let initial_parent = Assistance_fw_with_dependencies.of_configuration config in 
       let fw = of_fw_with_dependencies initial_parent in 
       let mods = Assistance_fw_with_dependencies.dep_ordered_modules initial_parent in 
-      let (fw2,rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
+      let (fw2,_rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
         let cmpl_results = Assistance_image.image (
              fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
            ) mods in 
       set_cmpl_results fw2 cmpl_results ;; 
    
    let register_rootless_paths fw rps=
-      let (new_parent,((ac_paths,uc_paths,nc_paths),_))=
+      let (new_parent,((_ac_paths,uc_paths,_nc_paths),_))=
        Assistance_fw_with_dependencies.register_rootless_paths (parent fw) rps in   
       let old_list_of_cmpl_results= get_cmpl_results fw in 
      let new_list_of_cmpl_results = Assistance_image.image (
@@ -13906,7 +13926,7 @@ module Private = struct
     let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Assistance_image.image (
          fun old_pair -> 
-           let (mn,cmpl_result) = old_pair in 
+           let (mn,_cmpl_result) = old_pair in 
            if mn = old_nm 
            then (new_nm,false)
            else old_pair    
@@ -13951,8 +13971,12 @@ module Private = struct
 
   let usual_recompile fw = 
     let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
-    let unordered_mods = Assistance_image.image Assistance_dfn_rootless.to_module changed_uc in  
+    let fw2 = fw1 in 
+    (*
+    When not using dune, replace the above line with : 
+    let unordered_mods = Image.image Dfn_rootless.to_module changed_uc in  
     let fw2 = modern_recompile fw1 unordered_mods  in 
+    *)
     (fw2,(changed_uc,changed_files)) ;;   
 
   
@@ -14119,12 +14143,11 @@ module Private = struct
  
    
   let usual_recompile fw opt_comment = 
-    let (new_parent,(changed_uc,changed_files)) = Assistance_fw_with_batch_compilation.usual_recompile (parent fw)  in 
+    let (new_parent,(_changed_uc,changed_files)) = Assistance_fw_with_batch_compilation.usual_recompile (parent fw)  in 
     let diff = Assistance_dircopy_diff.add_changes Assistance_dircopy_diff.empty_one changed_files in 
     let _ = Assistance_transmit_change_to_github.backup (Assistance_fw_poly.to_github_configuration fw) diff opt_comment in 
     set_parent ~child:fw ~new_parent ;;
     
-
 end;;  
       
 
@@ -14221,10 +14244,9 @@ module Private=struct
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
        Assistance_replace_inside.overwrite_between_markers_inside_file
-       (Assistance_overwriter.of_string s)
+       ~overwriter:s
        (beg_mark,end_mark)
        (Assistance_dfn_full.to_absolute_path lm);;
-    
     
   
     let save_targetfile rootless_path_for_targetfile root_dir crobj_form=

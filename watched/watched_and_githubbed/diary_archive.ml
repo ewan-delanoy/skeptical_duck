@@ -956,7 +956,7 @@ let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Origina
 let u1 = Io.read_whole_file ap1 ;;
 let u2 = Lines_in_string.interval u1 110 236 ;;
 let u3 = Outside_comments_and_strings.good_substrings u2 ;; 
-let u4 = String.concat " " (Image.image (fun (_,_,s)->s) u3) ;;
+let u4 = String.concat " " (Image.image (fun (_,_,s,_)->s) u3) ;;
 let u5 = Substring.occurrences_of_in "%token" u4 ;; 
 let last_elt_in_u5 = List.hd(List.rev u5) ;; 
 let u6 = (Listennou.universal_delta_list u5) @ [last_elt_in_u5,(String.length u4)+1];; 
@@ -3844,7 +3844,7 @@ let act () =
    "    ("^ocamlese_uple^") ;;  "; ] in 
   let preproduced_text = "\n\n\n"^(String.concat "\n" lines_in_preproduced_text)^"\n\n\n" in 
   Replace_inside.overwrite_between_markers_inside_file 
-      (Overwriter.of_string preproduced_text)
+      ~overwriter:preproduced_text
       ("(* Pre-"^"processed part starts here *)","(* Pre-"^"processed part ends here *)")
       transmitter_file ;;
 
@@ -3962,7 +3962,7 @@ let preproduced_text = "\n\n\n"^(String.concat "\n" lines_in_preproduced_text)^"
 
 let prprpr () = 
     Replace_inside.overwrite_between_markers_inside_file 
-      (Overwriter.of_string preproduced_text)
+      ~overwriter:preproduced_text
       ("(* Pre-"^"processed part starts here *)","(* Pre-"^"processed part ends here *)")
       transmitter_file ;;
 
@@ -6771,7 +6771,7 @@ let copy_whole spice=
    let corrected_whole = Replace_inside.replace_several_inside_string
     (!ref_for_replacements) whole in 
    Replace_inside.overwrite_between_markers_inside_file
-   (Overwriter.of_string corrected_whole)
+   ~overwriter:corrected_whole
    ("(* Beginning of "^s^" *)\n\n","\n\n(* End of "^s^" *)")
    (Absolute_path.of_string "Fads/pan.ml") ;;
 
@@ -7931,7 +7931,7 @@ let adjusted_text = Replace_inside.replace_several_inside_string
     "\226\130\172","E"] full_text ;;   
  
 Replace_inside.overwrite_between_markers_inside_file 
-  (Overwriter.of_string adjusted_text) ("% BEGINNING MARKER","%END MARKER") tex_ap;;
+  ~overwriter:adjusted_text ("% BEGINNING MARKER","%END MARKER") tex_ap;;
 
 
 let text1 = Io.read_whole_file tex_ap ;;
@@ -8213,7 +8213,7 @@ let ap1 = Absolute_path.of_string (home^"/Teuliou/LaTeX/Moullapl/archipelago.tex
 
 let act () = 
 Replace_inside.overwrite_between_markers_inside_file 
-  (Overwriter.of_string z2)
+  ~overwriter:z2
   ("\\begin{document}","\\end{document}") ap1;;
 
 (************************************************************************************************************************
