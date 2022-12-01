@@ -1069,14 +1069,15 @@ let show_value_occurrences fw t=
  let m=String.length(Dfa_root.connectable_to_subpath (root fw)) in
  let temp1=all_mlx_paths fw in
  let temp2=Image.image (fun ap->
-    let text = Io.read_whole_file ap in   
-    let temp3=Substring.occurrences_of_in t text in 
-    let closeups = Image.image (fun j->Cull_string.closeup_around_index 
-        text j
-    ) temp3 in
-    let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
-    Image.image (fun x->mname^":\n"^x ) closeups
- ) temp1 in
+  let text = Io.read_whole_file ap in   
+  let temp3=Substring.occurrences_of_in t text in 
+  let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
+  Image.image (fun occ_idx ->
+    let line_idx = Strung.number_of_lines_before text occ_idx in 
+    let closeup = Cull_string.closeup_around_index text occ_idx in 
+    mname^", line "^(string_of_int line_idx)^" :\n"^closeup
+  ) temp3
+) temp1 in
  let temp4=List.flatten temp2 in
  let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
  print_string temp5;; 
