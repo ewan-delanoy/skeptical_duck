@@ -209,7 +209,7 @@ let show_lightweight_commands ll=
       let txt = "\n\n\n"^(commands_for_one_heavy_block true (lvl,pair)) 
       and markers = markers_for_level lvl in 
       Replace_inside.overwrite_between_markers_inside_file  
-        (Overwriter.of_string txt) markers this_file
+        ~overwriter:txt markers this_file
       ) ll in 
       show_lightweight_commands_without_reacting ll ;;  
     ;;

@@ -840,7 +840,7 @@ let text_for_all_subdmodules () =
 let write_all_to_file file =
       let text = text_for_all_subdmodules () in 
       Replace_inside.overwrite_between_markers_inside_file 
-          (Overwriter.of_string text) 
+          ~overwriter:text
            ("(* Pre-processed text starts here *)",
             "(* Pre-processed text ends here *)") 
            file ;;     

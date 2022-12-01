@@ -267,7 +267,7 @@ let ap_for_this_file =
 let update_head () = 
     let new_text = Io.read_whole_file ap_for_this_file in 
     Replace_inside.overwrite_between_markers_inside_file 
-     (Overwriter.of_string new_text) 
+     ~overwriter:new_text 
         (
           "(*"^" Reproduced stab starts here *)",
           "(*"^" Reproduced stab ends here *)"
