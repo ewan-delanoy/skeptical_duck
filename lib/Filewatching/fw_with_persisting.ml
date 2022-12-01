@@ -67,10 +67,9 @@ module Private=struct
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
        Replace_inside.overwrite_between_markers_inside_file
-       (Overwriter.of_string s)
+       ~overwriter:s
        (beg_mark,end_mark)
        (Dfn_full.to_absolute_path lm);;
-    
     
   
     let save_targetfile rootless_path_for_targetfile root_dir crobj_form=

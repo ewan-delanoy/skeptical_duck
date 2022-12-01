@@ -20,7 +20,9 @@ let followed_values_from_items l=
       | Ocaml_gsyntax_category.Type
       | Ocaml_gsyntax_category.Exception->
               Some(x.Ocaml_gsyntax_item.name,x.Ocaml_gsyntax_item.content)
-      | _->None
+      | Ocaml_gsyntax_category.Module_opener
+      | Ocaml_gsyntax_category.Module_closer
+      | Ocaml_gsyntax_category.Module_inclusion ->None
   ) l in
   let temp2=Ordered.sort order_for_string_pairs temp1 in
   Followed_ocaml_values.F(temp2);;

@@ -35,7 +35,7 @@ let get_markers () = match (!the_markers) with
 let persist_onto_datafile () = 
     let reps_in_ocamlese = ocamlese_for_replist (!the_replacements) in 
     Replace_inside.overwrite_between_markers_inside_file
-      (Overwriter.of_string reps_in_ocamlese) (get_markers()) (get_replacements_datafile ()) ;;
+      ~overwriter:reps_in_ocamlese (get_markers()) (get_replacements_datafile ()) ;;
 
 let set_replacements_datafile filename = ( the_replacement_datafile:=Some filename) ;;
 let set_markers a b = ( the_markers:=Some (a,b)) ;;

@@ -96,9 +96,8 @@ let replace_several_inside_file ?(display_number_of_matches=false) l fn=
 exception Absent_beginning_marker of string;;
 exception Absent_ending_marker of string;; 
  
-let overwrite_between_markers_inside_string ovw_b (bm,em)
+let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
    s1=
-     let b=Overwriter.to_string ovw_b in
      if (bm,em)=("","") then b else
      let substring_leftmost_index_from=(fun x y i0->
       let lx=String.length(x) and ly=String.length(y) in
@@ -118,16 +117,15 @@ let overwrite_between_markers_inside_string ovw_b (bm,em)
      before^b^after ;; 
      
 let overwrite_between_markers_inside_file 
-   ovw_b (bm,em)
+   ~overwriter:b (bm,em)
    fn =
     let s1=Io.read_whole_file fn in
-    let s2=overwrite_between_markers_inside_string ovw_b (bm,em) s1 in
+    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
     Io.overwrite_with fn s2;;      
 
 
-let overwrite_and_dump_markers_inside_string ovw_b (bm,em)
+let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
    s1=
-     let b=Overwriter.to_string ovw_b in
      if (bm,em)=("","") then b else
      let substring_leftmost_index_from=(fun x y i0->
       let lx=String.length(x) and ly=String.length(y) in
@@ -148,10 +146,10 @@ let overwrite_and_dump_markers_inside_string ovw_b (bm,em)
      before^b^after ;; 
      
 let overwrite_and_dump_markers_inside_file 
-   ovw_b (bm,em)
+~overwriter:b (bm,em)
    fn =
     let s1=Io.read_whole_file fn in
-    let s2=overwrite_and_dump_markers_inside_string ovw_b (bm,em) s1 in
+    let s2=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) s1 in
     Io.overwrite_with fn s2;;      
  
 (* 
