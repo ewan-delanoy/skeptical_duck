@@ -219,9 +219,8 @@ let fq4 = Q (ep,[],[1;2;4]) ;;
 let fq5 = Q (ep,[],[1;3;4]) ;;
 let fq6 = Q (ep,[],[1;2;4;5]) ;;
 
-let vq1_3 n = Q (vp1(n-3), [], [n-1; n]) ;; 
-let vq1_2 n = Q (vp1(n-2), [], [n]) ;; 
-let vq1_1 n = Q (vp1(n-1), [], []) ;; 
+let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;; 
+
 
 
 (* Lists of qualified points *)
@@ -234,9 +233,9 @@ let vql1 n =
  | 5 -> [fq6]
  | _ ->
  (match n mod 3 with 
- 0 ->  [vq1_3(n);vq1_2(n);vq1_1(n)]
-|1 ->  [vq1_3(n);vq1_2(n)]
-|2 ->  [vq1_3(n)]
+ 0 ->  [vvq1 3 n;vvq1 2 n;vvq1 1 n]
+|1 ->  [vvq1 3 n;vvq1 2 n]
+|2 ->  [vvq1 3 n]
 |_ -> failwith("Impossible remainder by 3")) ;; 
 
 (*
