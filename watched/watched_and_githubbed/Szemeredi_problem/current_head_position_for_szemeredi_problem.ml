@@ -219,14 +219,11 @@ let check_vsu1 =
 
 (* Qualified points *)
 
-let fq1 = Q (ep,[],[1;2]) ;;
-let fq2 = Q (ep,[],[1;3]) ;;
-let fq3 = Q (ep,[],[2;3]) ;;
-let fq4 = Q (ep,[],[1;2;4]) ;;
-let fq5 = Q (ep,[],[1;3;4]) ;;
-let fq6 = Q (ep,[],[1;2;4;5]) ;;
-
 let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;; 
+
+let vq0_1 n = Q (ep,[],[1;2]@(Int_range.range 4 n)) ;;
+let vq0_2 n = Q (ep,[],[1;3]@(Int_range.range 4 n)) ;;
+let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
 
 
@@ -235,9 +232,9 @@ let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;;
 let vql1 n =  
   match n with 
  1 | 2 -> [] 
- | 3 -> [fq3;fq2;fq1]
- | 4 -> [fq5;fq4]
- | 5 -> [fq6]
+ | 3 -> [vq0_3 3;vq0_2 3;vq0_1 3]
+ | 4 -> [vq0_2 4;vq0_1 4]
+ | 5 -> [vq0_1 5]
  | _ ->
  (match n mod 3 with 
  0 ->  [vvq1 3 n;vvq1 2 n;vvq1 1 n]
@@ -458,19 +455,31 @@ let compute_bulk_result pt =
 (* Reproduced stab ends here *)
 
 open Example ;; 
+(*
+let fq1 = Q (ep,[],[1;2]) ;;
+let fq2 = Q (ep,[],[1;3]) ;;
+let fq3 = Q (ep,[],[2;3]) ;;
 
+let fq4 = Q (ep,[],[1;2;4]) ;;
+let fq5 = Q (ep,[],[1;3;4]) ;;
+
+let fq6 = Q (ep,[],[1;2;4;5]) ;;
 let fq7 = Q (ep,[],[1;3;4;5]) ;;
 let fq8 = Q (ep,[],[2;3;4;5]) ;;
+
 let fq9  = Q (ep,[],[1;2;4;5;6]) ;;
 let fq10 = Q (ep,[],[1;3;4;5;6]) ;;
 let fq11 = Q (ep,[],[2;3;4;5;6]) ;;
+
 let fq12  = Q (ep,[],[1;2;4;5;6;7]) ;;
 let fq13  = Q (ep,[],[1;3;4;5;6;7]) ;;
 let fq14  = Q (ep,[],[2;3;4;5;6;7]) ;;
+
+
 let fq15  = Q (ep,[],[1;2;4;5;6;7;8]) ;;
 let fq16  = Q (ep,[],[1;3;4;5;6;7;8]) ;;
 let fq18  = Q (ep,[],[1;2;4;5;6;7;8;9]) ;;
-
+*)
 
 (* When d = 4 *)
 
@@ -486,9 +495,9 @@ let tf6 n = let (M(_,qpoints)) = tf3 n in qpoints ;;
 let vql2 n =  
   match n with 
    4 -> [] 
- | 5 -> [fq8;fq7;fq6]
- | 6 -> [fq10;fq9]
- | 7 -> [fq12]
+ | 5 -> [vq0_3 5;vq0_2 5;vq0_1 5]
+ | 6 -> [vq0_2 6;vq0_1 6]
+ | 7 -> [vq0_1 7]
  | _ ->
  (match n mod 3 with 
  0 ->  [vvq1 5 n;vvq1 4 n]
@@ -548,9 +557,9 @@ let tf5 n = let (M(_,qpoints)) = tf3 n in qpoints ;;
 let vql3 n =  
   match n with 
    5 -> [] 
- | 6 -> [fq11;fq10;fq9] 
- | 7 -> [fq13;fq12]
- | 8 -> [fq15] 
+ | 6 -> [vq0_3 6;vq0_2 6;vq0_1 6]
+ | 7 -> [vq0_2 7;vq0_1 7]
+ | 8 -> [vq0_1 8]  
  | _ -> 
  (match n mod 3 with 
  0 ->  [vvq1 6 n;vvq1 5 n;vvq1 4 n]
@@ -610,9 +619,9 @@ let tf5 n = let (M(_,qpoints)) = tf3 n in qpoints ;;
 let vql4 n =  
   match n with 
    6 -> [] 
- | 7 -> [fq14;fq13;fq12] 
- | 8 -> [fq16;fq15]
- | 9 -> [fq18] 
+ | 7 -> [vq0_3 7;vq0_2 7;vq0_1 7]
+ | 8 -> [vq0_2 8;vq0_1 8]
+ | 9 -> [vq0_1 9]    
  | _ -> 
  (match n mod 3 with 
  0 ->  [vvq1 7 n]

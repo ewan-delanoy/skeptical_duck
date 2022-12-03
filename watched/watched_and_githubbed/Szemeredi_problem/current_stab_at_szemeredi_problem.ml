@@ -212,14 +212,11 @@ let check_vsu1 =
 
 (* Qualified points *)
 
-let fq1 = Q (ep,[],[1;2]) ;;
-let fq2 = Q (ep,[],[1;3]) ;;
-let fq3 = Q (ep,[],[2;3]) ;;
-let fq4 = Q (ep,[],[1;2;4]) ;;
-let fq5 = Q (ep,[],[1;3;4]) ;;
-let fq6 = Q (ep,[],[1;2;4;5]) ;;
-
 let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;; 
+
+let vq0_1 n = Q (ep,[],[1;2]@(Int_range.range 4 n)) ;;
+let vq0_2 n = Q (ep,[],[1;3]@(Int_range.range 4 n)) ;;
+let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
 
 
@@ -228,9 +225,9 @@ let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;;
 let vql1 n =  
   match n with 
  1 | 2 -> [] 
- | 3 -> [fq3;fq2;fq1]
- | 4 -> [fq5;fq4]
- | 5 -> [fq6]
+ | 3 -> [vq0_3 3;vq0_2 3;vq0_1 3]
+ | 4 -> [vq0_2 4;vq0_1 4]
+ | 5 -> [vq0_1 5]
  | _ ->
  (match n mod 3 with 
  0 ->  [vvq1 3 n;vvq1 2 n;vvq1 1 n]
