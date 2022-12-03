@@ -200,7 +200,7 @@ let vsu1 n=
 
 (*
    
-let check_sr1 = 
+let check_vsu1 = 
    let temp1 = Int_range.scale (
      fun k->(k,
      Bulk_result.superficial_part(compute_bulk_result (P(2,0,k,[]))),
@@ -208,6 +208,71 @@ let check_sr1 =
    ) 1 30 in 
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
+*)
+
+(* Qualified points *)
+
+let fq1 = Q (ep,[],[1;2]) ;;
+let fq2 = Q (ep,[],[1;3]) ;;
+let fq3 = Q (ep,[],[2;3]) ;;
+let fq4 = Q (ep,[],[1;2;4]) ;;
+let fq5 = Q (ep,[],[1;3;4]) ;;
+let fq6 = Q (ep,[],[1;2;4;5]) ;;
+
+let vq1_3 n = Q (vp1(n-3), [], [n-1; n]) ;; 
+let vq1_2 n = Q (vp1(n-2), [], [n]) ;; 
+let vq1_1 n = Q (vp1(n-1), [], []) ;; 
+
+
+(* Lists of qualified points *)
+
+let vql1 n =  
+  match n with 
+ 1 | 2 -> [] 
+ | 3 -> [fq3;fq2;fq1]
+ | 4 -> [fq5;fq4]
+ | 5 -> [fq6]
+ | _ ->
+ (match n mod 3 with 
+ 0 ->  [vq1_3(n);vq1_2(n);vq1_1(n)]
+|1 ->  [vq1_3(n);vq1_2(n)]
+|2 ->  [vq1_3(n)]
+|_ -> failwith("Impossible remainder by 3")) ;; 
+
+(*
+let check_vql1 = 
+  let temp1 = Int_range.scale (
+    fun k->
+    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(2,0,k,[]))) in   
+      (k,ql,Example.vql1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)  
+
+(* Molds *)
+
+let vm1 n= M([vso1(n)],vql1(n));;
+
+(*
+let check_vm1 = 
+  let temp1 = Int_range.scale (
+    fun k->(k,
+    Bulk_result.mold(compute_bulk_result (P(2,0,k,[]))),
+    Example.vm1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)
+
+(* Bulk results *)
+let vbr1 n = BR(vsu1 n,vm1 n) ;;
+(*
+let check_vbr1 = 
+  let temp1 = Int_range.scale (
+    fun k->(k,
+    compute_bulk_result (P(2,0,k,[])),
+    Example.vbr1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)
 
 end ;;  
