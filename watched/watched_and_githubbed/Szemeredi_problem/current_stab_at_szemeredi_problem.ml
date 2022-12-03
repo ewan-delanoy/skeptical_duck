@@ -137,6 +137,7 @@ let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;;
 let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
 
 let superficial_part (BR(sr,_)) = sr ;; 
+let mold (BR(_,md)) = md ;; 
 
 let extend_with pt (BR(old_sr,mold)) extension = 
  let new_sr = (if extension <> []
@@ -175,6 +176,8 @@ let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
 let cstr1 n = C [n-2; n-1; n] ;; 
 
+let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
+
 module Superficial_Example = struct 
 
 let sr1 n= 
@@ -207,13 +210,13 @@ end ;;
 
 module Parametrized_Example = struct 
     
-let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
+
 let sf2 n = List.filter (fun t->List.mem(t mod 3)[0;1]) (Int_range.range 1 n) ;;  
 
 (*
 let check_sf1 = 
   let temp1 = Int_range.scale (fun n->
-   let (DBR(opt,M(reps,_))) = force_compute (P(2,0,n,[])) in 
+   let (BR(_,M(reps,_))) = compute_bulk_result (P(2,0,n,[])) in 
    (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
   List.filter (fun (n,a,b)->a<>b) temp1 ;; 
 *)  
