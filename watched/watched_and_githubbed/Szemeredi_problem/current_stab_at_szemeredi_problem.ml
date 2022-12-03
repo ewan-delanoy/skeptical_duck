@@ -185,6 +185,25 @@ let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;
 
 
 (* Superficial results *)  
+let vvsu1 d n= 
+  if n = d then Atomic else 
+  Decomposable(P(1,n-d,n-(d-2),[]),Int_range.range (n-(d-3)) n);; 
+
+(*
+   
+let check_vvsu1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->((d,k),
+      Bulk_result.superficial_part(compute_bulk_result (P(1,k-d,k,[]))),
+      Example.vvsu1 d k)
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
 let vsu1 n= 
   match n with 
   1 | 2 -> Atomic 

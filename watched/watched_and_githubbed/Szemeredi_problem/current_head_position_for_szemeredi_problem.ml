@@ -192,6 +192,25 @@ let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;
 
 
 (* Superficial results *)  
+let vvsu1 d n= 
+  if n = d then Atomic else 
+  Decomposable(P(1,n-d,n-(d-2),[]),Int_range.range (n-(d-3)) n);; 
+
+(*
+   
+let check_vvsu1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->((d,k),
+      Bulk_result.superficial_part(compute_bulk_result (P(1,k-d,k,[]))),
+      Example.vvsu1 d k)
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
 let vsu1 n= 
   match n with 
   1 | 2 -> Atomic 
@@ -455,31 +474,7 @@ let compute_bulk_result pt =
 (* Reproduced stab ends here *)
 
 open Example ;; 
-(*
-let fq1 = Q (ep,[],[1;2]) ;;
-let fq2 = Q (ep,[],[1;3]) ;;
-let fq3 = Q (ep,[],[2;3]) ;;
 
-let fq4 = Q (ep,[],[1;2;4]) ;;
-let fq5 = Q (ep,[],[1;3;4]) ;;
-
-let fq6 = Q (ep,[],[1;2;4;5]) ;;
-let fq7 = Q (ep,[],[1;3;4;5]) ;;
-let fq8 = Q (ep,[],[2;3;4;5]) ;;
-
-let fq9  = Q (ep,[],[1;2;4;5;6]) ;;
-let fq10 = Q (ep,[],[1;3;4;5;6]) ;;
-let fq11 = Q (ep,[],[2;3;4;5;6]) ;;
-
-let fq12  = Q (ep,[],[1;2;4;5;6;7]) ;;
-let fq13  = Q (ep,[],[1;3;4;5;6;7]) ;;
-let fq14  = Q (ep,[],[2;3;4;5;6;7]) ;;
-
-
-let fq15  = Q (ep,[],[1;2;4;5;6;7;8]) ;;
-let fq16  = Q (ep,[],[1;3;4;5;6;7;8]) ;;
-let fq18  = Q (ep,[],[1;2;4;5;6;7;8;9]) ;;
-*)
 
 (* When d = 4 *)
 
@@ -529,19 +524,7 @@ let check_vso2 =
   ) 4 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;;  
 
-let vsu2 n= 
-match n with 
- 4 -> Atomic
- | _ -> 
-Decomposable(P(1,n-4,n-2,[]),[n-1;n]);; 
 
-let check_vsu2 = 
-  let temp1 = Int_range.scale (
-    fun k->(k,
-    Bulk_result.superficial_part(compute_bulk_result (P(1,k-4,k,[]))),
-    vsu2 k)
-  ) 4 30 in 
-  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
 (* When d = 5 *)
 
@@ -593,19 +576,6 @@ let check_vso3 =
   ) 5 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;;  
 
-let vsu3 n= 
-match n with 
- 5 -> Atomic
- | _ -> 
-Decomposable(P(1,n-5,n-3,[]),[n-2;n-1;n]);; 
-
-let check_vsu3 = 
-  let temp1 = Int_range.scale (
-    fun k->(k,
-    Bulk_result.superficial_part(compute_bulk_result (P(1,k-5,k,[]))),
-    vsu3 k)
-  ) 5 30 in 
-  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
 
 (* When d = 6 *)
@@ -652,16 +622,5 @@ let check_vso4 =
   ) 6 30 in 
   List.filter (fun (n,(x,y))->x<>y) temp1 ;; 
 
-let vsu4 n= 
-match n with 
- 6 -> Atomic
- | _ -> 
-Decomposable(P(1,n-6,n-4,[]),[n-3;n-2;n-1;n]);; 
 
-let check_vsu4 = 
-  let temp1 = Int_range.scale (
-    fun k->(k,
-    Bulk_result.superficial_part(compute_bulk_result (P(1,k-6,k,[]))),
-    vsu4 k)
-  ) 6 30 in 
-  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
