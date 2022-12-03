@@ -177,17 +177,22 @@ module Parametrized = struct
       
     
     end ;;   
-    
+
+module Example = struct     
+(* Points *)    
 let ep = Empty_point ;;
 let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
-let cstr1 n = C [n-2; n-1; n] ;; 
 
-let sf1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
+(* Constraints *)
+let vcstr1 n = C [n-2; n-1; n] ;; 
 
-module Superficial_Example = struct 
+(* Sets of integers *)
+let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
-let sr1 n= 
+
+(* Superficial results *)  
+let vsu1 n= 
   match n with 
   1 | 2 -> Atomic 
   | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
@@ -197,7 +202,7 @@ let sr1 n=
   [(vp1(n-3), [n-1; n]);
    (vp1(n-2), [n]);
    (vp1(n-1), [])]
- |1|2 ->  Contraction (vp2(n), cstr1 n)
+ |1|2 ->  Contraction (vp2(n), vcstr1 n)
  |_ -> failwith("Impossible remainder by 3")) ;; 
 
 (*
@@ -216,18 +221,6 @@ end ;;
 
 
 module Parametrized_Example = struct 
-    
-
-let sf2 n = List.filter (fun t->List.mem(t mod 3)[0;1]) (Int_range.range 1 n) ;;  
-
-(*
-let check_sf1 = 
-  let temp1 = Int_range.scale (fun n->
-   let (BR(_,M(reps,_))) = compute_bulk_result (P(2,0,n,[])) in 
-   (n,reps,[Parametrized_Example.sf1 n])) 1 40 in 
-  List.filter (fun (n,a,b)->a<>b) temp1 ;; 
-*)  
-
 
 
 end ;;   
@@ -429,12 +422,38 @@ tf4 6 =
  Q (vp1(4), [], [6]);
  Q (vp1(5), [], [])] ;;
 
- let mold1 n= 
+let vql1 n =  
+  match n with 
+ 1 | 2 -> [] 
+ | _ ->
+ (match n mod 3 with 
+ 0 -> [vq1_3(n);vq1_2(n);vq1_1(n)]
+|1 ->  [vq1_3(n);vq1_2(n)]
+|2 ->  [vq1_3(n)]
+|_ -> failwith("Impossible remainder by 3")) ;; 
+
+let check_vql1 = 
+  let temp1 = Int_range.scale (
+    fun k->
+    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(2,0,k,[]))) in   
+      (k,ql,vql1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
+ let vm1 n= 
  (match n mod 3 with 
  0 -> M([sf1(n)],[vq1_3(n);vq1_2(n);vq1_1(n);])
 |1 ->  M([sf1(n)],[vq1_3(n);vq1_2(n)])
 |2 ->  M([sf1(n)],[vq1_3(n)])
 |_ -> failwith("Impossible remainder by 3")) ;; 
+
+let check_vm1 = 
+  let temp1 = Int_range.scale (
+    fun k->(k,
+    Bulk_result.mold(compute_bulk_result (P(2,0,k,[]))),
+    vm1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
 
 let sr1 n= 
