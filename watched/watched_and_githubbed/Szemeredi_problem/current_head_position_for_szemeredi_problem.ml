@@ -191,6 +191,53 @@ let vcstr1 n = C [n-2; n-1; n] ;;
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
 
+let vvso1 d n =
+  match (n-d) mod 3 with 
+  0 -> (vso1(n-(d-2)))@(Int_range.range (n-(d-3)) n)
+ |1 -> if d = 3 then vso1 n else
+       (vso1(n-(d-4)))@(Int_range.range (n-(d-5)) n)
+ |2 -> (vso1(n-(d-3)))@(Int_range.range (n-(d-4)) n)
+ |_ -> failwith("Impossible remainder by 3") ;;
+
+(*
+   
+let check_vvso1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 3 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->
+      let (M(sols,_)) = Bulk_result.mold(compute_bulk_result (P(1,k-d,k,[]))) in     
+      ((d,k),sols,[Example.vvso1 d k])
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+let vvso2 b n = 
+  if b=0 
+  then Int_range.range 1 n
+  else     
+  if b<=n-3
+  then vvso1 (n-b) n 
+  else vso1 n;;
+
+(*
+   
+let check_vvso2 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product 
+      (Int_range.range 0 bound) (Int_range.range 1 bound) in 
+  let temp1 = Image.image (
+      fun (b,n)->
+      let (M(sols,_)) = Bulk_result.mold(compute_bulk_result (P(1,b,n,[]))) in     
+      ((b,n),sols,[Example.vvso2 b n])
+    ) all_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
 (* Superficial results *)  
 let vvsu1 d n= 
   if n = d then Atomic else 
@@ -236,6 +283,30 @@ let check_vsu1 =
 
 *)
 
+let vvsu2 b n = 
+  if b=0 
+  then Atomic
+  else     
+  if b<=n-3
+  then vvsu1 (n-b) n 
+  else vsu1 n;;
+
+(*
+   
+let check_vvsu2 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product 
+      (Int_range.range 0 bound) (Int_range.range 1 bound) in 
+  let temp1 = Image.image (
+      fun (b,n)->
+      let sr = Bulk_result.superficial_part(compute_bulk_result (P(1,b,n,[]))) in     
+      ((b,n),sr,Example.vvsu2 b n)
+    ) all_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
 (* Qualified points *)
 
 let vvq1 d n = Q (vp1(n-d), [], Int_range.range (n-(d-2)) n) ;; 
@@ -269,7 +340,7 @@ Some (funs)->Image.image (fun f->f n) funs
    
 let check_vvql1 = 
   let bound = 30 in 
-  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let all_pairs = Cartesian.square (Int_range.range 3 bound) in 
   let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
   let temp1 = Image.image (
       fun (d,k)->
@@ -304,22 +375,50 @@ let check_vql1 =
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)  
 
-(* Molds *)
-
-let vm1 n= M([vso1(n)],vql1(n));;
+let vvql2 b n = 
+  if b=0 
+  then []
+  else     
+  if b<=n-3
+  then vvql1 (n-b) n 
+  else vql1 n;;
 
 (*
-let check_vm1 = 
-  let temp1 = Int_range.scale (
-    fun k->(k,
-    Bulk_result.mold(compute_bulk_result (P(2,0,k,[]))),
-    Example.vm1 k)
-  ) 1 30 in 
-  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+   
+let check_vvql2 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product 
+      (Int_range.range 0 bound) (Int_range.range 1 bound) in 
+  let temp1 = Image.image (
+      fun (b,n)->
+      let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,b,n,[]))) in     
+      ((b,n),ql,Example.vvql2 b n)
+    ) all_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
 *)
 
 (* Bulk results *)
-let vbr1 n = BR(vsu1 n,vm1 n) ;;
+
+let vvbr1 b n = BR(vvsu2 b n,M([vvso2 b n],vvql2 b n)) ;;
+
+(*
+   
+let check_vvbr1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product 
+      (Int_range.range 0 bound) (Int_range.range 1 bound) in 
+  let temp1 = Image.image (
+      fun (b,n)->
+      let br = compute_bulk_result (P(1,b,n,[])) in     
+      ((b,n),br,Example.vvbr1 b n)
+    ) all_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
+let vbr1 n = BR(vsu1 n,M([vso1(n)],vql1(n))) ;;
 (*
 let check_vbr1 = 
   let temp1 = Int_range.scale (
@@ -335,6 +434,8 @@ end ;;
 
 module Parametrized_Example = struct 
 
+let width_1_no_scrappers =
+    Usual_fobas Example.vvbr1 ;;
 
 end ;;   
       
@@ -504,6 +605,7 @@ let compute_bulk_result pt =
    let subcomps = needed_subcomputations ([],[pt]) in 
    List.assoc pt subcomps ;;   
 
+rose_add (1,[]) Parametrized_Example.width_1_no_scrappers;;
 (* Reproduced stab ends here *)
 
 open Example ;; 
@@ -511,10 +613,21 @@ open Example ;;
 
 (* When d = 4 *)
 
-let tf1 n = compute_bulk_result (P(1,n-4,n,[])) ;; 
+let tf1 n = compute_bulk_result (P(1,n-3,n,[])) ;; 
 let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
 let tf3 n = let (BR(_,mold)) = tf1 n in mold ;; 
 let tf5 n = let (M(sols,_)) = tf3 n in sols ;; 
 let tf6 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
 
-let n0 = 15 ;;
+let tg1 (b,n) = compute_bulk_result (P(1,b,n,[])) ;;
+
+let check1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product (Int_range.range 0 bound)
+      (Int_range.range 3 bound) in 
+  let concerned_pairs = List.filter (fun (b,n)->b>=n-2) all_pairs in 
+  let temp1 = Image.image (
+      fun (b,n)->
+      ((b,n),tg1(b,n),tg1(n-2,n))
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
