@@ -184,6 +184,29 @@ let vcstr1 n = C [n-2; n-1; n] ;;
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
 
+let vvso1 d n =
+  match (n-d) mod 3 with 
+  0 -> (vso1(n-(d-2)))@(Int_range.range (n-(d-3)) n)
+ |1 -> (vso1(n-(d-4)))@(Int_range.range (n-(d-5)) n)
+ |2 -> (vso1(n-(d-3)))@(Int_range.range (n-(d-4)) n)
+ |_ -> failwith("Impossible remainder by 3") ;;
+
+(*
+   
+let check_vvso1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->
+      let (M(sols,_)) = Bulk_result.mold(compute_bulk_result (P(1,k-d,k,[]))) in     
+      ((d,k),sols,[Example.vvso1 d k])
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
 (* Superficial results *)  
 let vvsu1 d n= 
   if n = d then Atomic else 
