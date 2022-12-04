@@ -248,6 +248,39 @@ let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
 (* Lists of qualified points *)
 
+let vvql1 d n =  
+  match List.assoc_opt (n-d) [
+    0,[];
+    1,[vq0_3;vq0_2;vq0_1];
+    2,[vq0_2;vq0_1];
+    3,[vq0_1]
+  ]  with 
+  Some (funs)->Image.image (fun f->f n) funs 
+ | None ->
+ (match List.assoc_opt ((n-d) mod 3) [
+  0,[vvq1 (d+1)];
+  1,[vvq1 (d+1);vvq1 d;vvq1 (d-1)];
+  2,[vvq1 (d+1);vvq1 d];
+] with 
+Some (funs)->Image.image (fun f->f n) funs 
+|None -> failwith("Impossible remainder by 3")) ;;
+
+(*
+   
+let check_vvql1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->
+      let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,k-d,k,[]))) in   
+      ((d,k),ql,Example.vvql1 d k)
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
 let vql1 n =  
   match n with 
  1 | 2 -> [] 
@@ -484,43 +517,18 @@ let tf3 n = let (BR(_,mold)) = tf1 n in mold ;;
 let tf5 n = let (M(sols,_)) = tf3 n in sols ;; 
 let tf6 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
 
-
-
-
-let vql2 n =  
-  match n with 
-   4 -> [] 
- | 5 -> [vq0_3 5;vq0_2 5;vq0_1 5]
- | 6 -> [vq0_2 6;vq0_1 6]
- | 7 -> [vq0_1 7]
- | _ ->
- (match n mod 3 with 
- 0 ->  [vvq1 5 n;vvq1 4 n]
-|1 ->  [vvq1 5 n]
-|2 ->  [vvq1 5 n;vvq1 4 n;vvq1 3 n]
-|_ -> failwith("Impossible remainder by 3")) ;; 
-
-
-let check_vql2 = 
-  let temp1 = Int_range.scale (
-    fun k->
-    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,k-4,k,[]))) in   
-      (k,ql,vql2 k)
-  ) 4 30 in 
-  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
-
-let vso2 n =
+let avso4 n =
   match n mod 3 with 
   0 -> (vso1(n-1))@[n]
  |1 -> (vso1(n-2))@[n-1;n] 
  |2 -> vso1(n)
  |_ -> failwith("Impossible remainder by 3") ;;
 
-let check_vso2 = 
+let check_avso4 = 
   let temp1 = Int_range.scale (
     fun k->
       let (M(sols,_))=Bulk_result.mold(compute_bulk_result (P(1,k-4,k,[]))) in 
-      (k,sols,[vso2 k])
+      (k,sols,[avso4 k])
   ) 4 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;;  
 
@@ -534,45 +542,18 @@ let tf3 n = let (BR(_,mold)) = tf1 n in mold ;;
 let tf4 n = let (M(sols,_)) = tf3 n in sols ;; 
 let tf5 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
 
-
-
-
-let vql3 n =  
-  match n with 
-   5 -> [] 
- | 6 -> [vq0_3 6;vq0_2 6;vq0_1 6]
- | 7 -> [vq0_2 7;vq0_1 7]
- | 8 -> [vq0_1 8]  
- | _ -> 
- (match n mod 3 with 
- 0 ->  [vvq1 6 n;vvq1 5 n;vvq1 4 n]
-|1 ->  [vvq1 6 n;vvq1 5 n]
-|2 ->  [vvq1 6 n]
-|_ -> failwith("Impossible remainder by 3")) ;; 
-
-
-let check_vql3 = 
-  let temp1 = Int_range.scale (
-    fun k->
-    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,k-5,k,[]))) in   
-      (k,(ql,vql3 k))
-  ) 5 30 in 
-  List.filter (fun (n,(x,y))->x<>y) temp1 ;; 
-
-
-
-let vso3 n =
+let avso5 n =
   match n mod 3 with 
   0 -> (vso1(n-1))@[n]
  |1 -> (vso1(n-2))@[n-1;n] 
  |2 -> (vso1(n-3))@[n-2;n-1;n] 
  |_ -> failwith("Impossible remainder by 3") ;;
 
-let check_vso3 = 
+let check_avso5 = 
   let temp1 = Int_range.scale (
     fun k->
       let (M(sols,_))=Bulk_result.mold(compute_bulk_result (P(1,k-5,k,[]))) in 
-      (k,sols,[vso3 k])
+      (k,sols,[avso5 k])
   ) 5 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;;  
 
@@ -586,41 +567,42 @@ let tf3 n = let (BR(_,mold)) = tf1 n in mold ;;
 let tf4 n = let (M(sols,_)) = tf3 n in sols ;; 
 let tf5 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
 
-let vql4 n =  
-  match n with 
-   6 -> [] 
- | 7 -> [vq0_3 7;vq0_2 7;vq0_1 7]
- | 8 -> [vq0_2 8;vq0_1 8]
- | 9 -> [vq0_1 9]    
- | _ -> 
- (match n mod 3 with 
- 0 ->  [vvq1 7 n]
-|1 ->  [vvq1 7 n;vvq1 6 n;vvq1 5 n]
-|2 ->  [vvq1 7 n;vvq1 6 n]
-|_ -> failwith("Impossible remainder by 3")) ;; 
-
-let check_vql4 = 
-  let temp1 = Int_range.scale (
-    fun k->
-    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,k-6,k,[]))) in   
-      (k,(ql,vql4 k))
-  ) 6 30 in 
-  List.filter (fun (n,(x,y))->x<>y) temp1 ;; 
-
-let vso4 n =
+let avso6 n =
   match n mod 3 with 
   0 -> (vso1(n-4))@[n-3;n-2;n-1;n]
  |1 -> (vso1(n-2))@[n-1;n] 
  |2 -> (vso1(n-3))@[n-2;n-1;n] 
  |_ -> failwith("Impossible remainder by 3") ;;
 
-let check_vso4 = 
+let check_avso6 = 
   let temp1 = Int_range.scale (
     fun k->
       let (M(sols,_))=Bulk_result.mold(compute_bulk_result (P(1,k-6,k,[]))) in 
-      (k,(sols,[vso4 k]))
+      (k,(sols,[avso6 k]))
   ) 6 30 in 
   List.filter (fun (n,(x,y))->x<>y) temp1 ;; 
 
 
+(* When d = 7 *)
 
+let tf1 n = compute_bulk_result (P(1,n-7,n,[])) ;; 
+let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
+let tf3 n = let (BR(_,mold)) = tf1 n in mold ;; 
+let tf4 n = let (M(sols,_)) = tf3 n in sols ;; 
+let tf5 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
+
+
+let avso7 n =
+  match n mod 3 with 
+  0 -> (vso1(n-1))@[n]
+ |1 -> (vso1(n-2))@[n-1;n] 
+ |2 -> vso1(n)
+ |_ -> failwith("Impossible remainder by 3") ;;
+
+let check_avso7 = 
+  let temp1 = Int_range.scale (
+    fun k->
+      let (M(sols,_))=Bulk_result.mold(compute_bulk_result (P(1,k-7,k,[]))) in 
+      (k,sols,[avso7 k])
+  ) 4 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;;  

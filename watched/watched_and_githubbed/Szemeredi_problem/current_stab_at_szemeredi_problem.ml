@@ -241,6 +241,39 @@ let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
 (* Lists of qualified points *)
 
+let vvql1 d n =  
+  match List.assoc_opt (n-d) [
+    0,[];
+    1,[vq0_3;vq0_2;vq0_1];
+    2,[vq0_2;vq0_1];
+    3,[vq0_1]
+  ]  with 
+  Some (funs)->Image.image (fun f->f n) funs 
+ | None ->
+ (match List.assoc_opt ((n-d) mod 3) [
+  0,[vvq1 (d+1)];
+  1,[vvq1 (d+1);vvq1 d;vvq1 (d-1)];
+  2,[vvq1 (d+1);vvq1 d];
+] with 
+Some (funs)->Image.image (fun f->f n) funs 
+|None -> failwith("Impossible remainder by 3")) ;;
+
+(*
+   
+let check_vvql1 = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.square (Int_range.range 4 bound) in 
+  let concerned_pairs = List.filter (fun (d,k)->d<=k) all_pairs in 
+  let temp1 = Image.image (
+      fun (d,k)->
+      let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(1,k-d,k,[]))) in   
+      ((d,k),ql,Example.vvql1 d k)
+    ) concerned_pairs in 
+  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
+
+
 let vql1 n =  
   match n with 
  1 | 2 -> [] 
