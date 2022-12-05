@@ -14,5 +14,3 @@ let image f l=
    |a::peurrest->tempf(f(a)::graet,peurrest)
   ) in
   tempf([],l);;
-
-let xmg = 9 ;; 
