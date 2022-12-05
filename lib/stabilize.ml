@@ -80,7 +80,7 @@ let pusher_for_hierarchization (graet,hollad,da_ober)=
   then Succeeded(List.rev_map Set_of_polys.forget_order graet)
   else 
   let temp1=Image.image (fun (x,y)->(x,Set_of_polys.setminus y hollad)) da_ober in
-  let (temp2,temp3)=List.partition (fun (x,z)->Set_of_polys.length z=0) temp1 in
+  let (temp2,temp3)=List.partition (fun (_x,z)->Set_of_polys.length z=0) temp1 in
   if temp2=[]
   then Failed(graet,hollad,da_ober)
   else
@@ -97,13 +97,15 @@ let try_hierarchizing (f: 'a list_of_ancestors_map) l=
     let y=pusher_for_hierarchization x in
     match y  with
     Normal(a,b,c)->tempf(a,b,c)
-    |_->y) in
+    |Failed(_,_,_)
+    |Succeeded(_) ->y) in
   tempf ([],Set_of_polys.empty_set,temp1);;
   
 let hierarchize f l=
   match try_hierarchizing f l with
    Succeeded(l)->l
-  |_->failwith("Direct hierarchizing fails, there is a cycle. Try hierarchize instead");;
+   |Normal(_,_,_)
+   |Failed(_,_,_)->failwith("Direct hierarchizing fails, there is a cycle. Try hierarchize instead");;
   
   
 

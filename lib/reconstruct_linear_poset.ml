@@ -58,11 +58,11 @@ let iterator coat
          [],not_yet_checked2,None) 
     else 
     (*see if we can close the cycle *)
-    match Option.seek(fun (x,y)->Set_of_polys.mem x temp1) between with
+    match Option.seek(fun (x,_y)->Set_of_polys.mem x temp1) between with
      None->(checked,checked_union,cycles,cycles_union,
      		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->
-        let (before,_,after)=Three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
+        let (before,_,_after)=Three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
         let temp2=Image.image fst before in
         let new_cycle=(fst p)::(temp2@[a]) in
         let ordered_cycle=Set_of_polys.sort new_cycle in
