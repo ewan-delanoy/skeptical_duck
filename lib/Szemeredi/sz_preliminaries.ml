@@ -88,7 +88,7 @@ let careful_translate d x = if d=0 then x else Image.image (fun t->t+d) x ;;
 
 let translation_decomposition x = match x with 
     [] -> (0, [])
-    | first_elt::others -> 
+    | first_elt::_others -> 
         let d = (first_elt-1) in 
         (d,careful_translate (-d) x) ;;
 
@@ -107,7 +107,7 @@ let evaluate_using_translation_and_distancing max_dist f_opt x=
      None -> (None,Some (d,y))
     |Some sy ->(Some(careful_translate d sy),None)
     ) temp0 in 
-  let (good_temp1,bad_temp1) = List.partition (fun (opt_good,opt_bad)->opt_bad=None) temp1 in 
+  let (_good_temp1,bad_temp1) = List.partition (fun (_opt_good,opt_bad)->opt_bad=None) temp1 in 
   if bad_temp1 = []
   then let full_solution = List.flatten(Image.image (fun (opt_good,_)->Option.unpack opt_good) temp1) in 
         (Some full_solution,None) 

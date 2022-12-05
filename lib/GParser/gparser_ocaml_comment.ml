@@ -154,7 +154,7 @@ end;;
 let main_prsr
    (comment_opener,comment_closer)
      (quote_opener,quote_closer)=
-   let rec tempf=(fun s i->
+   let tempf=(fun s i->
         if not(Substring.is_a_substring_located_at comment_opener s i)
         then None 
         else 

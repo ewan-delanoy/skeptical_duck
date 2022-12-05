@@ -273,7 +273,7 @@ let pusher_inside_nested_parentheses_parsing
 let iterator_inside_nested_parentheses_parsing 
     (s,joiners,seeker) =
      let rec tempf=(fun state ->
-     let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
+     let (opt_result,_nbr_of_openers_so_far,_items_so_far,_current_item_start,_world_start,_idx)=state in 
      match opt_result with 
      Some(result)->result 
      |None -> tempf(pusher_inside_nested_parentheses_parsing (s,joiners,seeker) state )) in 

@@ -15,3 +15,4 @@ let image f l=
   ) in
   tempf([],l);;
 
+let gmx = 7 ;; 
