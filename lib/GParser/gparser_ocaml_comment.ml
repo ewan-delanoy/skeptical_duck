@@ -109,7 +109,7 @@ let second_case_in_hwd (m,wlkr)=
         });;
 
 let pusher_for_hwd w=
-  let (m,wlkr)=w in
+  let (_m,wlkr)=w in
   if wlkr.answer=None
   then 
        (

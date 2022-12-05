@@ -32,7 +32,7 @@ let first_analysis text= Image.image (fun (opt,content)->
 
 let rewrite_first_result text (opt,content) = match opt with 
   None -> (None,content) 
-  |Some (_,(p1,p2)) -> let (i,j) = p1 in 
+  |Some (_,(p1,_p2)) -> let (i,j) = p1 in 
                        if j=i+6 then (Some"",content) else 
                        (Some(Cull_string.interval text (i+15) (j-2)),content);;
 
@@ -83,7 +83,7 @@ let push_seed_item (done_in_concat,todo_in_concat) =
               else W(usual_state,author,[],temp,[],done_in_concat,others,None);;   
 
 let push_usual_item_in_short_case 
-(current_author,done_in_quote,todo_in_quote,pending_quotes,
+(current_author,done_in_quote,_todo_in_quote,pending_quotes,
       done_in_concat,todo_in_concat) = 
   let new_result = Phpbb_text_with_quotes_t.Quoted(current_author,
                           Phpbb_text_with_quotes_t.Concatenated(List.rev done_in_quote)) in
@@ -136,8 +136,8 @@ let push_item item =
 
 let rec iterate_on_item item =
  let 
-  (W(state_idx,author,done_in_quote,todo_in_quote,pending_quotes,
-      done_in_concat,todo_in_concat,opt_final_result)) = item in 
+  (W(_state_idx,_author,_done_in_quote,_todo_in_quote,_pending_quotes,
+      _done_in_concat,_todo_in_concat,opt_final_result)) = item in 
   match opt_final_result with 
   Some(final_result) -> final_result 
   |None -> iterate_on_item (push_item item);;
@@ -154,8 +154,8 @@ let parse text =
 
 let rec unparse = function 
     Phpbb_text_with_quotes_t.Atom(text) -> text 
-   |Concatenated l -> String.concat "" (Image.image unparse l)
-   |Quoted(author,compound) ->
+   |Phpbb_text_with_quotes_t.Concatenated l -> String.concat "" (Image.image unparse l)
+   |Phpbb_text_with_quotes_t.Quoted(author,compound) ->
       let content = unparse compound in 
       if author="" 
       then "<QUOTE>"^content^"</QUOTE>"

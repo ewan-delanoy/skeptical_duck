@@ -60,7 +60,7 @@ module Private = struct
   let copy_interval_from_string_to_string (i,j)  src dest =
      let src_linelength = List.length (lines src) in 
      let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
-     let (before,in_between,after) = tripartition_associated_to_interval temp1 i j in 
+     let (before,_in_between,after) = tripartition_associated_to_interval temp1 i j in 
      before^(interval src i j)^after;;
 
       
