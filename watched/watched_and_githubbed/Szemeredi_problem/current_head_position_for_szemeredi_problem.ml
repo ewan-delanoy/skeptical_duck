@@ -613,7 +613,7 @@ open Example ;;
 
 (* When d = 4 *)
 
-let tf1 n = compute_bulk_result (P(1,n-3,n,[])) ;; 
+let tf1 n = compute_bulk_result (P(3,0,n,[])) ;; 
 let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
 let tf3 n = let (BR(_,mold)) = tf1 n in mold ;; 
 let tf5 n = let (M(sols,_)) = tf3 n in sols ;; 
