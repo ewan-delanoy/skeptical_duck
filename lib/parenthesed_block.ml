@@ -33,10 +33,10 @@ let initial_data={
 
 
 let test_for_left_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=Substring.is_a_substring_located_at lparen s i;;
+   s i ((lparen,_rparen):parenthesis_pair)=Substring.is_a_substring_located_at lparen s i;;
  
 let test_for_right_paren_at_index 
-   s i ((lparen,rparen):parenthesis_pair)=Substring.is_a_substring_located_at rparen s i;;
+   s i ((_lparen,rparen):parenthesis_pair)=Substring.is_a_substring_located_at rparen s i;;
  
 let look_for_left_paren_at_index app s i=
    let rec finder=(fun
@@ -53,7 +53,7 @@ let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
     |Some(paren)->
-                let (lparen,rparen)=paren in
+                let (lparen,_rparen)=paren in
                let _=(
                if data.currently_open_pars=[]
                then let i_start=data.smallest_unprocessed_index
@@ -149,7 +149,7 @@ module With_associator=struct
                 )
            )
     |Some(paren)->
-               let (lparen,rparen)=paren in
+               let (lparen,_rparen)=paren in
                let temp1=List.filter (fun par->fst(par)=lparen) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+String.length(lparen)
@@ -164,7 +164,7 @@ let process_with_open_pars app  s data=
           match look_for_left_paren_at_index app s data.cursor_location with
      	  None->(data.cursor_location<-data.cursor_location+1)
         |Some(paren)->
-               let (lparen,rparen)=paren in
+               let (lparen,_rparen)=paren in
                let temp1=List.filter (fun par->fst(par)=lparen) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+String.length(lparen)
@@ -172,7 +172,7 @@ let process_with_open_pars app  s data=
         )
   else (
        let best_paren=Option.unpack opt1 in
-       let (lparen,rparen)=best_paren 
+       let (_lparen,rparen)=best_paren 
        and new_list=List.tl(data.currently_open_pars) in
        data.currently_open_pars<-new_list;
        data.cursor_location<-data.cursor_location+String.length(rparen)
