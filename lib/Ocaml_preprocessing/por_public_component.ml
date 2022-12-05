@@ -140,7 +140,7 @@ module Private = struct
 end ;;
 
 let main por = 
-        Por_public_definition.expand_list (
+        Opor_public_definition.expand_list (
           (Private.annotated_text_for_getters por)@
           (Private.annotated_text_for_setters por)@
           (Private.annotated_text_for_crobj_symlinks)@
