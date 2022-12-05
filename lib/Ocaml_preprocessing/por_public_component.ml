@@ -13,7 +13,7 @@ module Private = struct
        (field:Old_polymorphic_ocaml_record_t.field_t) =
        let fn = field.Old_polymorphic_ocaml_record_t.field_name in 
        {
-        Por_public_definition_t.value_name = fn ;
+        Opor_public_definition_t.value_name = fn ;
         lines_in_definition = ["let "^fn^" x = x."^
         (String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" ;;"];
@@ -25,7 +25,7 @@ module Private = struct
        let fn = field.Old_polymorphic_ocaml_record_t.field_name 
        and vn = field.Old_polymorphic_ocaml_record_t.var_name in 
        {
-        Por_public_definition_t.value_name = "set_"^fn ;
+        Opor_public_definition_t.value_name = "set_"^fn ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
         (String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" = "^vn^"} ;;"];
@@ -42,11 +42,11 @@ module Private = struct
    let annotated_text_for_crobj_symlinks  = 
     [
       {
-        Por_public_definition_t.value_name = "of_concrete_object" ;
+        Opor_public_definition_t.value_name = "of_concrete_object" ;
         lines_in_definition = ["let of_concrete_object = Private.Crobj.of_concrete_object ;;"];
       } ;
       {
-        Por_public_definition_t.value_name = "to_concrete_object" ;
+        Opor_public_definition_t.value_name = "to_concrete_object" ;
         lines_in_definition = ["let to_concrete_object = Private.Crobj.to_concrete_object ;;"];
       } ;
     ] ;;
@@ -55,7 +55,7 @@ module Private = struct
           fun (before_ext,after_ext) ->
             let ext_name = Opor_common.extender_name (before_ext,after_ext) in 
             {
-        Por_public_definition_t.value_name = ext_name ;
+        Opor_public_definition_t.value_name = ext_name ;
         lines_in_definition = ["let extend_"^ext_name^"  = Private.Extender."^ext_name^" ;;"];
       } 
       ) (Opor_common.extensions_from_different_sources por) ;;
@@ -63,11 +63,11 @@ module Private = struct
       let annotated_text_for_parenting_symlinks _por=
       [
         {
-          Por_public_definition_t.value_name = "parent" ;
+          Opor_public_definition_t.value_name = "parent" ;
           lines_in_definition = ["let parent  = Private.Parent.get ;;"];
         } ;
         {
-          Por_public_definition_t.value_name = "set_parent" ;
+          Opor_public_definition_t.value_name = "set_parent" ;
           lines_in_definition = ["let set_parent  = Private.Parent.set ;;"];
         } ;
        ] ;; 
@@ -75,7 +75,7 @@ module Private = struct
        let annotated_text_for_typeinfo_symlinks _por=
        [
          {
-           Por_public_definition_t.value_name = "show_fields" ;
+           Opor_public_definition_t.value_name = "show_fields" ;
            lines_in_definition = ["let show_fields  = Private.Type_information.show_fields ;;"];
          } ;
         ] ;;  
@@ -97,7 +97,7 @@ module Private = struct
       let vars = String.concat " " indexed_and_labeled in 
       let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in  
       {
-        Por_public_definition_t.value_name = constructor_name ;
+        Opor_public_definition_t.value_name = constructor_name ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
         (String.make 3 ' ')^"Private.origin with ";
         (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
@@ -113,7 +113,7 @@ module Private = struct
     let restr_name = "to_"^after_restr in 
     let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in  
     {
-      Por_public_definition_t.value_name = restr_name ;
+      Opor_public_definition_t.value_name = restr_name ;
       lines_in_definition = ["let "^restr_name^" fw  = ";
       (String.make 2 ' ')^"let tname = fw."^main_module_name^"_t.type_name in ";
       (String.make 2 ' ')^"let _ = Private.Type_information.check_inclusion \""^after_restr^"\" tname in ";
@@ -132,7 +132,7 @@ module Private = struct
  let annotated_definition_for_print_out por =
   let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in 
   {
-    Por_public_definition_t.value_name = "print_out" ;
+    Opor_public_definition_t.value_name = "print_out" ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
     "Format.fprintf fmt \"@[%s@]\" (\"< \"^(fw."^main_module_name^"_t.type_name)^\" >\") ;;";];
   } ;;  
