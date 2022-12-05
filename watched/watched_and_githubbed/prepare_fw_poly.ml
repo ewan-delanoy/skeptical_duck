@@ -41,7 +41,7 @@ open Needed_values ;;
 
    let private_followed_by_public por = 
       (Por_private_component.main por)^"\n\n"^
-      (Por_public_component.main por)  ;;
+      (Opor_public_component.main por)  ;;
 
 
       let initial_comment_in_implementation_file por =
