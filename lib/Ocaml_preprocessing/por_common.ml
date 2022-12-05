@@ -17,7 +17,7 @@ let check_inclusion small_list large_list =
   else () ;;  
   
   let indexed_varname_for_field (j,fd)=
-  "v"^(string_of_int j)^"_"^(fd.Polymorphic_ocaml_record_t.var_name) ;;
+  "v"^(string_of_int j)^"_"^(fd.Old_polymorphic_ocaml_record_t.var_name) ;;
 
 
 let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext)^"_to_"^(String.uncapitalize_ascii after_ext) ;;
@@ -25,19 +25,19 @@ let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 
   Ordered.sort (Total_ordering.product lfs lfs)
-  (por.Polymorphic_ocaml_record_t.extensions @
-  (Image.image (fun (x,y)->(y,x)) por.Polymorphic_ocaml_record_t.designated_parents)) ;; 
+  (por.Old_polymorphic_ocaml_record_t.extensions @
+  (Image.image (fun (x,y)->(y,x)) por.Old_polymorphic_ocaml_record_t.designated_parents)) ;; 
 
 let get_field por fd_name =
-  match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.field_name = fd_name)
-          por.Polymorphic_ocaml_record_t.fields with 
+  match Option.seek (fun fd->fd.Old_polymorphic_ocaml_record_t.field_name = fd_name)
+          por.Old_polymorphic_ocaml_record_t.fields with 
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
     
 let get_instance por inst_name =
-  match Option.seek (fun fd->fd.Polymorphic_ocaml_record_t.instance_name = inst_name)
-            por.Polymorphic_ocaml_record_t.instances with 
+  match Option.seek (fun fd->fd.Old_polymorphic_ocaml_record_t.instance_name = inst_name)
+            por.Old_polymorphic_ocaml_record_t.instances with 
     Some answer -> answer 
   | None -> raise ( Get_instance_exn(inst_name)) ;;    
     

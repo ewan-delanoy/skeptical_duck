@@ -10,10 +10,10 @@ module Private = struct
       module Crobj = struct 
       
       let text_for_label 
-            (_por:Polymorphic_ocaml_record_t.t) 
+            (_por:Old_polymorphic_ocaml_record_t.t) 
               max_namesize
-             (field:Polymorphic_ocaml_record_t.field_t) = 
-             let fn = field.Polymorphic_ocaml_record_t.field_name in 
+             (field:Old_polymorphic_ocaml_record_t.field_t) = 
+             let fn = field.Old_polymorphic_ocaml_record_t.field_name in 
              let offset = String.make (max_namesize-String.length fn) ' ' in 
              "let label_for_"^fn^offset^" = salt ^ \""^fn^"\" ;;" ;;
           
@@ -21,13 +21,13 @@ module Private = struct
       let fields_with_crobj_conversion por =
              Option.filter_and_unpack (
                fun fld ->
-                match fld.Polymorphic_ocaml_record_t.crobj_converters with 
+                match fld.Old_polymorphic_ocaml_record_t.crobj_converters with 
                 None -> None 
                 |Some(of_crobj,to_crobj) -> Some(fld,(of_crobj,to_crobj))
-             ) por.Polymorphic_ocaml_record_t.fields  ;;
+             ) por.Old_polymorphic_ocaml_record_t.fields  ;;
        
       let special_type_name_field = {
-                Polymorphic_ocaml_record_t.field_name = "type_name" ;
+                Old_polymorphic_ocaml_record_t.field_name = "type_name" ;
                 field_type = "" ;
                 var_name = "" ;
                 default_value = "" ;
@@ -37,26 +37,26 @@ module Private = struct
       let text_for_labels por =
            let crobjed_fields = special_type_name_field ::(Image.image fst (fields_with_crobj_conversion por)) in 
            let max_namesize = snd (Max.maximize_it (fun fd->
-             String.length(fd.Polymorphic_ocaml_record_t.field_name)) crobjed_fields) in 
+             String.length(fd.Old_polymorphic_ocaml_record_t.field_name)) crobjed_fields) in 
            String.concat "\n"
              ("let salt = \"Fw_poly_t.\" ;;" ::
            (Image.image (text_for_label por max_namesize) crobjed_fields)) ;;  
           
       let text_for_ofcrobj_element 
-           (_por:Polymorphic_ocaml_record_t.t) 
+           (_por:Old_polymorphic_ocaml_record_t.t) 
            fld = 
            let vowel = (
-             match fld.Polymorphic_ocaml_record_t.crobj_converters with 
-             None ->  (fld.Polymorphic_ocaml_record_t.default_value) 
+             match fld.Old_polymorphic_ocaml_record_t.crobj_converters with 
+             None ->  (fld.Old_polymorphic_ocaml_record_t.default_value) 
            | Some(of_crobj,_to_crobj) ->
-               of_crobj^" (g label_for_"^(fld.Polymorphic_ocaml_record_t.field_name)^") "
+               of_crobj^" (g label_for_"^(fld.Old_polymorphic_ocaml_record_t.field_name)^") "
            ) in 
-               (String.make 3 ' ')^(fld.Polymorphic_ocaml_record_t.field_name)^" = "^
+               (String.make 3 ' ')^(fld.Old_polymorphic_ocaml_record_t.field_name)^" = "^
                vowel^" ;" ;;
        
       let text_for_ofcrobj_converter por = 
-           let all_fields = por.Polymorphic_ocaml_record_t.fields in 
-           let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
+           let all_fields = por.Old_polymorphic_ocaml_record_t.fields in 
+           let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name)^
            "_t.type_name = Crobj_converter.string_of_concrete_object (g label_for_type_name) ;" 
            and temp2 = Image.image (text_for_ofcrobj_element por) all_fields in 
            String.concat "\n"
@@ -72,18 +72,18 @@ module Private = struct
              ]) ;;
        
       let text_for_tocrobj_element 
-             (por:Polymorphic_ocaml_record_t.t) 
+             (por:Old_polymorphic_ocaml_record_t.t) 
              (fld,(_of_crobj,to_crobj)) = 
-             let field_name  = fld.Polymorphic_ocaml_record_t.field_name in 
+             let field_name  = fld.Old_polymorphic_ocaml_record_t.field_name in 
                  (String.make 4 ' ')^" label_for_"^field_name^", "^ 
-                 to_crobj^" fw."^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^"_t."^
+                 to_crobj^" fw."^(String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name)^"_t."^
                  field_name^" ;" ;;    
        
       let text_for_tocrobj_converter por = 
            let fields_with_crobj = fields_with_crobj_conversion por  in 
            let temp1 = (String.make 4 ' ')^" label_for_type_name,"^ 
            " Crobj_converter.string_to_concrete_object fw."^
-            (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^"_t.type_name ;"
+            (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name)^"_t.type_name ;"
            and temp2 = Image.image (text_for_tocrobj_element por) fields_with_crobj in 
            String.concat "\n"
            ( 
@@ -103,7 +103,7 @@ module Private = struct
       
       
       let full_text por =
-            if not(por.Polymorphic_ocaml_record_t.has_crobj_conversion)
+            if not(por.Old_polymorphic_ocaml_record_t.has_crobj_conversion)
             then ""  
             else
             "module Crobj = struct \n"^
@@ -120,14 +120,14 @@ module Private = struct
             let ext_name = Por_common.extender_name (before_ext,after_ext) in 
             let inst_before = Por_common.get_instance por before_ext 
             and inst_after = Por_common.get_instance por after_ext  in 
-            let field_names_before = inst_before.Polymorphic_ocaml_record_t.instance_fields 
-            and field_names_after = inst_after.Polymorphic_ocaml_record_t.instance_fields in 
+            let field_names_before = inst_before.Old_polymorphic_ocaml_record_t.instance_fields 
+            and field_names_after = inst_after.Old_polymorphic_ocaml_record_t.instance_fields in 
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
             let indexed_extra_fields = Int_range.index_everything extra_fields in 
             let indexed_and_labeled = Image.image (fun (j,fd)->
-                     (fd.Polymorphic_ocaml_record_t.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+                     (fd.Old_polymorphic_ocaml_record_t.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
             (ext_name,indexed_and_labeled);;   
       
       let snippet_for_element (field_name,indexed_varname) = 
@@ -140,7 +140,7 @@ module Private = struct
           let joined_indexes_and_labels = Image.image (fun (field_name,indexed_varname)->
              "~"^field_name^":"^indexed_varname) indexed_and_labeled in 
           let vars = String.concat " " joined_indexes_and_labels in 
-          let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+          let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in 
           String.concat "\n" (["let "^ext_name^" fw "^vars^" = {";
             (String.make 3 ' ')^"fw with ";
             (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
@@ -148,7 +148,7 @@ module Private = struct
             @["} ;;"]);;  
        
        let full_text por = 
-          String.concat "\n" (Image.image (text_for_extender por) por.Polymorphic_ocaml_record_t.extensions)
+          String.concat "\n" (Image.image (text_for_extender por) por.Old_polymorphic_ocaml_record_t.extensions)
        ;;       
             
        let full_text por =
@@ -166,7 +166,7 @@ module Private = struct
       module Parent = struct
       
       let text_for_main_list por =
-            let l = por.Polymorphic_ocaml_record_t.designated_parents in 
+            let l = por.Old_polymorphic_ocaml_record_t.designated_parents in 
             let tempf = (fun r-> Strung.enclose(String.capitalize_ascii r)) in 
             let temp1 = Image.image (fun (s,t)->
                   (String.make 4 ' ')^(tempf s)^" , "^(tempf t)^" ;"
@@ -184,7 +184,7 @@ module Private = struct
             ] ;; 
               
       let text_for_get_parent_name por = 
-            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+            let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in 
             String.concat "\n"
             ([
                   "let get_parent_name fw = ";
@@ -195,7 +195,7 @@ module Private = struct
             ]);;
          
       let text_for_parent_setter por (sibling,parent) =   
-            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) 
+            let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) 
             and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in  
             let uc_sibling = String.uncapitalize_ascii sibling in  
             String.concat "\n"
@@ -210,10 +210,10 @@ module Private = struct
       
       let text_for_parent_setters por = 
          String.concat "\n"   
-        (Image.image (text_for_parent_setter por) por.Polymorphic_ocaml_record_t.designated_parents);;
+        (Image.image (text_for_parent_setter por) por.Old_polymorphic_ocaml_record_t.designated_parents);;
       
       let text_for_main_parent_setter por = 
-            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in   
+            let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in   
             String.concat "\n"
             ([
                   "let set ~child ~new_parent = ";
@@ -224,7 +224,7 @@ module Private = struct
                   let c_sibling = String.capitalize_ascii sibling 
                   and uc_sibling = String.uncapitalize_ascii sibling in 
                  (String.make 3 ' ')^(Strung.enclose c_sibling)^" , sp_for_"^uc_sibling^" child new_parent ;" ) 
-                 por.Polymorphic_ocaml_record_t.designated_parents
+                 por.Old_polymorphic_ocaml_record_t.designated_parents
             )@[
                " ] with "; 
                "  Some(answer) ->answer";
@@ -233,7 +233,7 @@ module Private = struct
             ]) ;;   
 
       let text_for_main_parent_getter por = 
-            let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in   
+            let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in   
             String.concat "\n"
             ([
                   "let get child = ";
@@ -242,7 +242,7 @@ module Private = struct
             ]) ;;         
 
       let full_text por =
-            if por.Polymorphic_ocaml_record_t.designated_parents = []
+            if por.Old_polymorphic_ocaml_record_t.designated_parents = []
             then ""  
             else
             "module Parent = struct \n"^
@@ -259,15 +259,15 @@ module Private = struct
       module Origin = struct 
             
       let snippet
-        (_por:Polymorphic_ocaml_record_t.t) 
-          (field:Polymorphic_ocaml_record_t.field_t) = 
-             (String.make 3 ' ')^(field.Polymorphic_ocaml_record_t.field_name)^" = "^
-             (field.Polymorphic_ocaml_record_t.default_value)^" ;" ;;
+        (_por:Old_polymorphic_ocaml_record_t.t) 
+          (field:Old_polymorphic_ocaml_record_t.field_t) = 
+             (String.make 3 ' ')^(field.Old_polymorphic_ocaml_record_t.field_name)^" = "^
+             (field.Old_polymorphic_ocaml_record_t.default_value)^" ;" ;;
           
       let  text por =
-            let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name)^
+            let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name)^
                         "_t.type_name = \"\" ;" 
-            and temp2 = Image.image (snippet por) por.Polymorphic_ocaml_record_t.fields in 
+            and temp2 = Image.image (snippet por) por.Old_polymorphic_ocaml_record_t.fields in 
              (String.concat "\n" 
              (["let origin = {";]@
                ( temp1 :: temp2 )
@@ -284,9 +284,9 @@ module Private = struct
 
       let  text_for_fields_for_instances por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Polymorphic_ocaml_record_t.instance_name,
-                  inst.Polymorphic_ocaml_record_t.instance_fields)
-            ) por.Polymorphic_ocaml_record_t.instances in 
+              inst -> (inst.Old_polymorphic_ocaml_record_t.instance_name,
+                  inst.Old_polymorphic_ocaml_record_t.instance_fields)
+            ) por.Old_polymorphic_ocaml_record_t.instances in 
             
              (
              "let fields_for_instances = [\n"^
@@ -295,7 +295,7 @@ module Private = struct
              );;      
       
       let text_for_get_fields por = 
-            let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in 
+            let module_name = String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name) in 
             ( String.concat "\n"
             [
               "exception Get_fields_exn of string ;;\n";
@@ -312,9 +312,9 @@ module Private = struct
 
       let  text_for_data_for_fields por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Polymorphic_ocaml_record_t.field_name,
-                  inst.Polymorphic_ocaml_record_t.field_type)
-            ) por.Polymorphic_ocaml_record_t.fields in 
+              inst -> (inst.Old_polymorphic_ocaml_record_t.field_name,
+                  inst.Old_polymorphic_ocaml_record_t.field_type)
+            ) por.Old_polymorphic_ocaml_record_t.fields in 
             
              (
              "let data_for_fields = [\n"^
@@ -337,7 +337,7 @@ module Private = struct
       
 
       let  text_for_show_fields por =
-            let module_name = String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name) in  
+            let module_name = String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name) in  
               ( String.concat "\n"
               [
                "let element_in_show_fields (fd_name,fd_type) = (String.make 3 ' ') ^ fd_name ^ \" : \" ^ fd_type ;;\n";

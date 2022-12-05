@@ -9,31 +9,31 @@ open Needed_values ;;
 
 
   
-   let pair_for_field (porf:Polymorphic_ocaml_record_t.field_t) =
+   let pair_for_field (porf:Old_polymorphic_ocaml_record_t.field_t) =
      (String.make 3 ' ')^
-     porf.Polymorphic_ocaml_record_t.field_name^" : "^
-     porf.Polymorphic_ocaml_record_t.field_type^" ;" ;;
+     porf.Old_polymorphic_ocaml_record_t.field_name^" : "^
+     porf.Old_polymorphic_ocaml_record_t.field_type^" ;" ;;
    
    let initial_comment_in_type_signature_file por =
-       let ap = por.Polymorphic_ocaml_record_t.type_signature_file 
+       let ap = por.Old_polymorphic_ocaml_record_t.type_signature_file 
        and root = Coma_big_constant.This_World.root in 
        let s_ap=Absolute_path.to_string ap in 
        let s_cdir=Dfa_root.connectable_to_subpath root in 
        let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
        "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;
    
-   let text_for_type_signature_file (por:Polymorphic_ocaml_record_t.t) = 
+   let text_for_type_signature_file (por:Old_polymorphic_ocaml_record_t.t) = 
      let pairs = 
        ((String.make 3 ' ')^"subtype_name : string ;")::
-       (Image.image pair_for_field por.Polymorphic_ocaml_record_t.fields) in 
+       (Image.image pair_for_field por.Old_polymorphic_ocaml_record_t.fields) in 
      (initial_comment_in_type_signature_file por)^
-     "type "^(por.Polymorphic_ocaml_record_t.main_type_name)^" = { \n"^ 
+     "type "^(por.Old_polymorphic_ocaml_record_t.main_type_name)^" = { \n"^ 
      (String.concat "\n" pairs) ^ 
      "\n} ;;" ;;
    
-   let write_to_type_signature_file (por:Polymorphic_ocaml_record_t.t) = 
+   let write_to_type_signature_file (por:Old_polymorphic_ocaml_record_t.t) = 
        let text = text_for_type_signature_file por 
-       and file = por.Polymorphic_ocaml_record_t.type_signature_file in 
+       and file = por.Old_polymorphic_ocaml_record_t.type_signature_file in 
        Io.overwrite_with file text ;;
   
    
@@ -45,20 +45,20 @@ open Needed_values ;;
 
 
       let initial_comment_in_implementation_file por =
-        let ap = por.Polymorphic_ocaml_record_t.implementation_file 
+        let ap = por.Old_polymorphic_ocaml_record_t.implementation_file 
         and root = Coma_big_constant.This_World.root in 
         let s_ap=Absolute_path.to_string ap in 
         let s_cdir=Dfa_root.connectable_to_subpath root in 
         let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
         "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
 
-   let text_for_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
+   let text_for_implementation_file (por:Old_polymorphic_ocaml_record_t.t) = 
       (initial_comment_in_implementation_file por)^
       (private_followed_by_public por) ;;
     
-   let write_to_implementation_file (por:Polymorphic_ocaml_record_t.t) = 
+   let write_to_implementation_file (por:Old_polymorphic_ocaml_record_t.t) = 
       let text = text_for_implementation_file por 
-      and file = por.Polymorphic_ocaml_record_t.implementation_file in 
+      and file = por.Old_polymorphic_ocaml_record_t.implementation_file in 
       Io.overwrite_with file text ;;
 
   let decode_pair_of_converters s =
@@ -70,7 +70,7 @@ open Needed_values ;;
 
    let field_list_constructor l = Image.image (
       fun (a,b,c,d,e) -> {
-       Polymorphic_ocaml_record_t.field_name = a ;
+       Old_polymorphic_ocaml_record_t.field_name = a ;
        field_type = b ;
        var_name =c ;
        default_value = d ;
@@ -114,7 +114,7 @@ open Needed_values ;;
 
    let instance_list_constructor l = Image.image (
       fun (a,b) -> {
-       Polymorphic_ocaml_record_t.instance_name = a ;
+       Old_polymorphic_ocaml_record_t.instance_name = a ;
        instance_fields = b ;
     }
    ) l;;
@@ -141,7 +141,7 @@ open Needed_values ;;
       ) temp1 ;;
 
   let root_field = Listennou.force_find (fun fd->
-      fd.Polymorphic_ocaml_record_t.field_name = "root"
+      fd.Old_polymorphic_ocaml_record_t.field_name = "root"
     ) fields_for_fw_configuration ;;
 
    let second_base = [
@@ -152,17 +152,17 @@ open Needed_values ;;
    
    let instance_list_constructor l = Image.image (
       fun (a,b) -> {
-        Polymorphic_ocaml_record_t.instance_name = a ;
-        instance_fields = Image.image (fun fd->fd.Polymorphic_ocaml_record_t.field_name ) b ;
+        Old_polymorphic_ocaml_record_t.instance_name = a ;
+        instance_fields = Image.image (fun fd->fd.Old_polymorphic_ocaml_record_t.field_name ) b ;
       }
    ) l;;
 
    let field_order = ((fun fld1 fld2 ->
       let trial1 = Total_ordering.lex_for_strings 
-         fld1.Polymorphic_ocaml_record_t.field_name fld2.Polymorphic_ocaml_record_t.field_name in 
+         fld1.Old_polymorphic_ocaml_record_t.field_name fld2.Old_polymorphic_ocaml_record_t.field_name in 
       if trial1<> Total_ordering_result_t.Equal then trial1 else
          Total_ordering.standard fld1 fld2         
-   ) : Polymorphic_ocaml_record_t.field_t Total_ordering_t.t);;
+   ) : Old_polymorphic_ocaml_record_t.field_t Total_ordering_t.t);;
    
    
       
@@ -174,7 +174,7 @@ open Needed_values ;;
       let file_there = (fun s-> 
         Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/Ordinary/Filewatching/"^s^".ml")) in 
      {
-       Polymorphic_ocaml_record_t.main_type_name = "t" ;
+       Old_polymorphic_ocaml_record_t.main_type_name = "t" ;
        module_name = "fw_poly" ;
        fields = Ordered.sort field_order all_fields ;
        instances = instance_list_constructor full_base ;

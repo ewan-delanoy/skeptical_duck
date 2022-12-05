@@ -9,25 +9,25 @@ module Private = struct
 
 
   let annotated_text_for_field_getter 
-     (por:Polymorphic_ocaml_record_t.t) 
-       (field:Polymorphic_ocaml_record_t.field_t) =
-       let fn = field.Polymorphic_ocaml_record_t.field_name in 
+     (por:Old_polymorphic_ocaml_record_t.t) 
+       (field:Old_polymorphic_ocaml_record_t.field_t) =
+       let fn = field.Old_polymorphic_ocaml_record_t.field_name in 
        {
         Por_public_definition_t.value_name = fn ;
         lines_in_definition = ["let "^fn^" x = x."^
-        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        (String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" ;;"];
      } ;;
           
    let annotated_text_for_field_setter 
-     (por:Polymorphic_ocaml_record_t.t) 
-       (field:Polymorphic_ocaml_record_t.field_t) =
-       let fn = field.Polymorphic_ocaml_record_t.field_name 
-       and vn = field.Polymorphic_ocaml_record_t.var_name in 
+     (por:Old_polymorphic_ocaml_record_t.t) 
+       (field:Old_polymorphic_ocaml_record_t.field_t) =
+       let fn = field.Old_polymorphic_ocaml_record_t.field_name 
+       and vn = field.Old_polymorphic_ocaml_record_t.var_name in 
        {
         Por_public_definition_t.value_name = "set_"^fn ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
-        (String.capitalize_ascii(por.Polymorphic_ocaml_record_t.module_name))^
+        (String.capitalize_ascii(por.Old_polymorphic_ocaml_record_t.module_name))^
         "_t."^fn^" = "^vn^"} ;;"];
      } ;;
      
@@ -36,9 +36,9 @@ module Private = struct
    
    
    let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
-     por.Polymorphic_ocaml_record_t.fields ;;
+     por.Old_polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
-     por.Polymorphic_ocaml_record_t.fields ;;
+     por.Old_polymorphic_ocaml_record_t.fields ;;
    let annotated_text_for_crobj_symlinks  = 
     [
       {
@@ -82,20 +82,20 @@ module Private = struct
      
       let snippet_for_constructor_element (j,fd) = 
         let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
-        (String.make 3 ' ')^(fd.Polymorphic_ocaml_record_t.field_name)^" = "^
+        (String.make 3 ' ')^(fd.Old_polymorphic_ocaml_record_t.field_name)^" = "^
         var_name^" ;" ;;     
    
     let annotated_definition_for_constructor por constructed_instance =
       let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
       let full_instance = Por_common.get_instance por constructed_instance  in 
-      let field_names = full_instance.Polymorphic_ocaml_record_t.instance_fields in 
+      let field_names = full_instance.Old_polymorphic_ocaml_record_t.instance_fields in 
       let fields = Image.image (Por_common.get_field por)field_names in 
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
-         "~"^(fd.Polymorphic_ocaml_record_t.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
+         "~"^(fd.Old_polymorphic_ocaml_record_t.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
-      let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
+      let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in  
       {
         Por_public_definition_t.value_name = constructor_name ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
@@ -106,12 +106,12 @@ module Private = struct
       } ;;  
 
     let annotated_text_for_constructors por = 
-      Image.image (annotated_definition_for_constructor por) por.Polymorphic_ocaml_record_t.constructors
+      Image.image (annotated_definition_for_constructor por) por.Old_polymorphic_ocaml_record_t.constructors
    ;;     
    
    let annotated_definition_for_restrictor por after_restr =
     let restr_name = "to_"^after_restr in 
-    let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in  
+    let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in  
     {
       Por_public_definition_t.value_name = restr_name ;
       lines_in_definition = ["let "^restr_name^" fw  = ";
@@ -125,12 +125,12 @@ module Private = struct
 
 
    let annotated_text_for_restrictors por = 
-    Image.image (annotated_definition_for_restrictor por) por.Polymorphic_ocaml_record_t.restrictions
+    Image.image (annotated_definition_for_restrictor por) por.Old_polymorphic_ocaml_record_t.restrictions
  ;;     
 
 
  let annotated_definition_for_print_out por =
-  let main_module_name = (String.capitalize_ascii por.Polymorphic_ocaml_record_t.module_name) in 
+  let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in 
   {
     Por_public_definition_t.value_name = "print_out" ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^
