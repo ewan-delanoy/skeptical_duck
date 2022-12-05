@@ -5,19 +5,19 @@
 
 *)
 
-let begins_with (Dfn_endingless_t.J(r,s,m)) subdir=
+let begins_with (Dfn_endingless_t.J(_r,s,_m)) subdir=
    Dfa_subdirectory.begins_with s subdir;;
 
-let to_root (Dfn_endingless_t.J(r,s,m))=r;;
-let to_subdirectory  (Dfn_endingless_t.J(r,s,m))=s;;
-let to_module  (Dfn_endingless_t.J(r,s,m))=m;;
+let to_root (Dfn_endingless_t.J(r,_s,_m))=r;;
+let to_subdirectory  (Dfn_endingless_t.J(_r,s,_m))=s;;
+let to_module  (Dfn_endingless_t.J(_r,_s,m))=m;;
    
 let to_line (Dfn_endingless_t.J(r,s,m))=
    (Dfa_root.connectable_to_subpath r)^
    (Dfa_subdirectory.connectable_to_subpath s)^
    (Dfa_module.to_line m);;
 
-let to_middle (Dfn_endingless_t.J(r,s,m)) = Dfn_middle_t.J(s,m) ;;
+let to_middle (Dfn_endingless_t.J(_r,s,m)) = Dfn_middle_t.J(s,m) ;;
 
 let rename_endsubdirectory 
    (old_subdir,new_subdirname) 
