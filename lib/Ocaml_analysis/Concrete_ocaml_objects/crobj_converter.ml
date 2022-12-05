@@ -19,11 +19,23 @@ let bool_to_concrete_object bowl =
 let int_of_concrete_object ccrt_obj =
     match ccrt_obj with 
      Concrete_object_t.Int(i)->i 
-    |_->raise(Unwrap_int_exn(ccrt_obj)) ;;
+    |Concrete_object_t.String(_)
+    |Concrete_object_t.Uple(_)
+    |Concrete_object_t.List(_)
+    |Concrete_object_t.Array(_)
+    |Concrete_object_t.Record(_)
+    |Concrete_object_t.Variant(_)
+      ->raise(Unwrap_int_exn(ccrt_obj)) ;;
 let int_to_concrete_object i = Concrete_object_t.Int i ;;       
 
 let string_of_concrete_object ccrt_obj =
        match ccrt_obj with 
        Concrete_object_t.String(encoded_s)->Encoded_string.decode encoded_s 
-       |_->raise(Unwrap_string_exn(ccrt_obj)) ;;
+       |Concrete_object_t.Int(_)
+       |Concrete_object_t.Uple(_)
+       |Concrete_object_t.List(_)
+       |Concrete_object_t.Array(_)
+       |Concrete_object_t.Record(_)
+       |Concrete_object_t.Variant(_)
+         ->raise(Unwrap_string_exn(ccrt_obj)) ;;
 let string_to_concrete_object s = Concrete_object_t.String(Encoded_string.encode s) ;;       

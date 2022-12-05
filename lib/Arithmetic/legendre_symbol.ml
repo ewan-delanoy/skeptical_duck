@@ -84,7 +84,7 @@ let big_a=4*abs(ka) in
 let temp3=Int_range.range(1)(big_a-1) in
 let temp4=List.filter(function x->List.filter(function p->(x mod p)=0)(2::temp2)=[])(temp3) in
 let temp5=find_many_prime_equivalents(big_a)(temp4) in
-let temp6=List.filter(function (z,pz)->naive_legendre_symbol(a)(pz)=1)(temp5) in
+let temp6=List.filter(function (_z,pz)->naive_legendre_symbol(a)(pz)=1)(temp5) in
 (big_a,temp6);;
 
 let gcd_for_three a b c=Gcd.gcd(a)(Gcd.gcd(b)(c));;

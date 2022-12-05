@@ -29,7 +29,7 @@ let check_for_open_close_mismatch openers closers =
 let check_for_overlapping_intervals indexed_lines pairs =
   let temp1 = Listennou.universal_delta_list pairs in 
   match Option.seek (
-    fun ((i1_open,i2_close),(i3_open,i4_close)) -> 
+    fun ((_i1_open,i2_close),(i3_open,_i4_close)) -> 
       i3_open < i2_close
   ) temp1 with 
    (Some((i1_open,i2_close),(i3_open,i4_close)))->
