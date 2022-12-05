@@ -17,7 +17,6 @@ type instance_t = {
       instance_fields : string list ;
 } ;;
    
-
 type t = {
       main_type_name : string ;
       module_name : string ;
