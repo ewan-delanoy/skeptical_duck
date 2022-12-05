@@ -33,10 +33,10 @@ let initial_data={
 
 
 let test_for_left_paren_at_index 
-   s i (P(lparen,rparen))=Substring.is_a_substring_located_at lparen s i;;
+   s i (P(lparen,_rparen))=Substring.is_a_substring_located_at lparen s i;;
  
 let test_for_right_paren_at_index 
-   s i (P(lparen,rparen))=Substring.is_a_substring_located_at rparen s i;;
+   s i (P(_lparen,rparen))=Substring.is_a_substring_located_at rparen s i;;
  
 let look_for_left_paren_at_index app s i=
    let rec finder=(fun
@@ -53,7 +53,7 @@ let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
     |Some(paren)->
-                let (P(lparen,rparen))=paren in
+                let (P(lparen,_rparen))=paren in
                let _=(
                if data.currently_open_pars=[]
                then let i_start=data.smallest_unprocessed_index
@@ -65,7 +65,7 @@ let process_without_open_pars app  s data=
                     	 data.partial_result<-new_result::(data.partial_result)
                ) in
                let temp1=Option.filter_and_unpack (fun pair->
-                  let (P(l_par,r_par)) = pair in 
+                  let (P(l_par,_r_par)) = pair in 
                   if l_par=lparen
                   then Some(pair,data.cursor_location)
                   else None) app in
@@ -77,7 +77,7 @@ let process_without_open_pars app  s data=
 let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.seek (fun (paren,idx)->test_for_right_paren_at_index s i paren) temp1 in
+  let opt1=Option.seek (fun (paren,_idx)->test_for_right_paren_at_index s i paren) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 

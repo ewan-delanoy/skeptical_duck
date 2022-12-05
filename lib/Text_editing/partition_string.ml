@@ -53,7 +53,7 @@ module Private = struct
 
     let has_text_at_beginning l= match l with 
         [] -> false
-        |elt::others ->
+        |elt::_others ->
             (match elt with  
               Str.Delim(_) -> false
               |Str.Text(_) -> true
@@ -66,7 +66,7 @@ module Private = struct
     
     let has_delim_at_end l= match List.rev l with 
     [] -> false
-    |elt::others ->
+    |elt::_others ->
         (match elt with  
           Str.Delim(_) -> true
           |Str.Text(_) -> false
