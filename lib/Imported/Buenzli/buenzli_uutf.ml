@@ -370,7 +370,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         if d.t_len < 3
         then ret decode_utf_8 (malformed d.t 0 d.t_len) d.t_len d
         else (d.t_need <- 4; t_fill t_decode_utf_8 d)
-    | n -> assert false ;;
+    | _ -> assert false ;;
   
   let guessed_utf_16 d be v =     (* start decoder after `UTF_16{BE,LE} guess. *)
     let decode_utf_16, t_decode_utf_16, t_decode_utf_16_lo, j0, j1 =
@@ -537,14 +537,14 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
   type encode = [ `Await | `End | `Uchar of Uchar.t ] ;;
   type encoder =
     { dst : dst;                                        (* output destination. *)
-      encoding : encoding;                                (* encoded encoding. *)
+      encoder_encoding : encoding;                                (* encoded encoding. *)
       mutable o : Bytes.t;                            (* current output chunk. *)
       mutable o_pos : int;                   (* next output position to write. *)
       mutable o_max : int;                (* maximal output position to write. *)
-      t : Bytes.t;                (* four bytes buffer for overlapping writes. *)
+      encoder_t : Bytes.t;                (* four bytes buffer for overlapping writes. *)
       mutable t_pos : int;                    (* next position to read in [t]. *)
       mutable t_max : int;                 (* maximal position to read in [t]. *)
-      mutable k :                                     (* encoder continuation. *)
+      mutable encoder_k :                                     (* encoder continuation. *)
         encoder -> encode -> [ `Ok | `Partial ] } ;;
   
   (* On encodes that overlap two (or more) [e.o] buffers, we encode the
@@ -560,7 +560,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
   
   let partial k e = function `Await -> k e | `Uchar _ | `End -> invalid_encode () ;;
   let flush k e = match e.dst with(* get free storage in [d.o] and [k]ontinue. *)
-  | `Manual -> e.k <- partial k; `Partial
+  | `Manual -> e.encoder_k <- partial k; `Partial
   | `Channel oc -> output oc e.o 0 e.o_pos; e.o_pos <- 0; k e
   | `Buffer b ->
       let o = Bytes.unsafe_to_string e.o in
@@ -570,7 +570,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
   let t_range e max = e.t_pos <- 0; e.t_max <- max ;;
   let rec t_flush k e =               (* flush [d.t] up to [d.t_max] in [d.i]. *)
     let blit e l =
-      unsafe_blit e.t e.t_pos e.o e.o_pos l;
+      unsafe_blit e.encoder_t e.t_pos e.o e.o_pos l;
       e.o_pos <- e.o_pos + l; e.t_pos <- e.t_pos + l
     in
     let rem = o_rem e in
@@ -580,7 +580,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
   (* Encoders. *)
   
   let rec encode_utf_8 e v =
-    let k e = e.k <- encode_utf_8; `Ok in
+    let k e = e.encoder_k <- encode_utf_8; `Ok in
     match v with
     | `Await -> k e
     | `End -> flush k e
@@ -593,7 +593,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         else if u <= 0x07FF then
         begin
           let s, j, k =
-            if rem < 2 then (t_range e 1; e.t, 0, t_flush k) else
+            if rem < 2 then (t_range e 1; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 2; e.o, j, k)
           in
           unsafe_set_byte s j (0xC0 lor (u lsr 6));
@@ -603,7 +603,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         else if u <= 0xFFFF then
         begin
           let s, j, k =
-            if rem < 3 then (t_range e 2; e.t, 0, t_flush k) else
+            if rem < 3 then (t_range e 2; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 3; e.o, j, k)
           in
           unsafe_set_byte s j (0xE0 lor (u lsr 12));
@@ -614,7 +614,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         else
         begin
           let s, j, k =
-            if rem < 4 then (t_range e 3; e.t, 0, t_flush k) else
+            if rem < 4 then (t_range e 3; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 4; e.o, j, k)
           in
           unsafe_set_byte s j (0xF0 lor (u lsr 18));
@@ -625,7 +625,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         end ;;
   
   let rec encode_utf_16be e v =
-    let k e = e.k <- encode_utf_16be; `Ok in
+    let k e = e.encoder_k <- encode_utf_16be; `Ok in
     match v with
     | `Await -> k e
     | `End -> flush k e
@@ -635,7 +635,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         if u < 0x10000 then
         begin
           let s, j, k =
-            if rem < 2 then (t_range e 1; e.t, 0, t_flush k) else
+            if rem < 2 then (t_range e 1; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 2; e.o, j, k)
           in
           unsafe_set_byte s j (u lsr 8);
@@ -643,7 +643,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
           k e
         end else begin
           let s, j, k =
-            if rem < 4 then (t_range e 3; e.t, 0, t_flush k) else
+            if rem < 4 then (t_range e 3; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 4; e.o, j, k)
           in
           let u' = u - 0x10000 in
@@ -657,7 +657,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         end ;;
   
   let rec encode_utf_16le e v =         (* encode_uft_16be with bytes swapped. *)
-    let k e = e.k <- encode_utf_16le; `Ok in
+    let k e = e.encoder_k <- encode_utf_16le; `Ok in
     match v with
     | `Await -> k e
     | `End -> flush k e
@@ -667,7 +667,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         if u < 0x10000 then
           begin
             let s, j, k =
-              if rem < 2 then (t_range e 1; e.t, 0, t_flush k) else
+              if rem < 2 then (t_range e 1; e.encoder_t, 0, t_flush k) else
               let j = e.o_pos in (e.o_pos <- e.o_pos + 2; e.o, j, k)
             in
             unsafe_set_byte s j (u land 0xFF);
@@ -677,7 +677,7 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
         else
         begin
           let s, j, k =
-            if rem < 4 then (t_range e 3; e.t, 0, t_flush k) else
+            if rem < 4 then (t_range e 3; e.encoder_t, 0, t_flush k) else
             let j = e.o_pos in (e.o_pos <- e.o_pos + 4; e.o, j, k)
           in
           let u' = u - 0x10000 in
@@ -702,11 +702,11 @@ adapted from  https://erratique.ch/repos/uutf/tree/src/uutf.ml?h=v1.0.2
     | `Buffer _
     | `Channel _ -> Bytes.create io_buffer_size, 0, io_buffer_size - 1
     in
-    { dst = (dst :> dst); encoding = (encoding :> encoding); o; o_pos; o_max;
-      t = Bytes.create 4; t_pos = 1; t_max = 0; k = encode_fun encoding} ;;
+    { dst = (dst :> dst); encoder_encoding = (encoding :> encoding); o; o_pos; o_max;
+      encoder_t = Bytes.create 4; t_pos = 1; t_max = 0; encoder_k = encode_fun encoding} ;;
   
-  let encode e v = e.k e (v :> encode) ;;
-  let encoder_encoding e = e.encoding ;;
+  let encode e v = e.encoder_k e (v :> encode) ;;
+  let encoder_encoding e = e.encoder_encoding ;;
   let encoder_dst e = e.dst ;;
   
   (* Manual sources and destinations. *)
