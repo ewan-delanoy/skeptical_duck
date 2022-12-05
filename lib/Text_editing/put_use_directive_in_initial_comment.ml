@@ -29,7 +29,7 @@ let detect_initial_comment_in_file  fn =  detect_initial_comment_in_text  (Io.re
 let in_text ~new_directive text =
   match detect_initial_comment_in_text text  with 
   None -> text 
-  |Some(i1,line1,i2) ->
+  |Some(i1,_line1,_i2) ->
     let old_lines = Lines_in_string.indexed_lines text in 
     let new_lines = Image.image (fun (line_idx,line)->
         if line_idx = i1 then new_directive else line
@@ -40,7 +40,7 @@ let in_file ~new_directive fn =
    let text = Io.read_whole_file fn in 
    match detect_initial_comment_in_text text  with 
   None -> () 
-  |Some(i1,line1,i2) ->
+  |Some(i1,_line1,_i2) ->
     let old_lines = Lines_in_string.indexed_lines text in 
     let new_lines = Image.image (fun (line_idx,line)->
         if line_idx = i1 then new_directive else line

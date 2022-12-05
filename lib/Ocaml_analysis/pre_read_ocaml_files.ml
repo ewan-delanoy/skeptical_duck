@@ -35,7 +35,7 @@ module Private=struct
   
   let read1 s= try uncatched_read1 s with Unreadable(t)->raise(Read1_exn(t));;
     
-  let describe_value_item s (i,j)=
+  let describe_value_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_value_making s i in
        let res=Option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 
@@ -53,7 +53,7 @@ module Private=struct
             (i2,j2-2)
             false;;
   
-  let describe_type_item s (i,j)=
+  let describe_type_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_type_making s i in
        let res=Option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 3
@@ -69,7 +69,7 @@ module Private=struct
             (i2,j2-2)
             false;;
   
-  let describe_exception_item s (i,j)=
+  let describe_exception_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_exception_making s i in
        let res=Option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2
@@ -85,7 +85,7 @@ module Private=struct
             (i2,j2-2)
             false;;
   
-  let describe_module_opener_item s (i,j)=
+  let describe_module_opener_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_module_opener s i in
        let res=Option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2
@@ -111,7 +111,7 @@ module Private=struct
             false;;
   
   
-  let describe_module_inclusion_item s (i,j)=
+  let describe_module_inclusion_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_module_inclusion s i in
        let res=Option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2 
