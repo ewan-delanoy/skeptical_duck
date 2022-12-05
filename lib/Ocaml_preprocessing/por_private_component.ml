@@ -117,17 +117,17 @@ module Private = struct
       module Extender = struct 
       
       let extender_data por (before_ext,after_ext) =
-            let ext_name = Por_common.extender_name (before_ext,after_ext) in 
-            let inst_before = Por_common.get_instance por before_ext 
-            and inst_after = Por_common.get_instance por after_ext  in 
+            let ext_name = Opor_common.extender_name (before_ext,after_ext) in 
+            let inst_before = Opor_common.get_instance por before_ext 
+            and inst_after = Opor_common.get_instance por after_ext  in 
             let field_names_before = inst_before.Old_polymorphic_ocaml_record_t.instance_fields 
             and field_names_after = inst_after.Old_polymorphic_ocaml_record_t.instance_fields in 
-            let _ = Por_common.check_inclusion field_names_before field_names_after in 
+            let _ = Opor_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
-            let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
+            let extra_fields = Image.image (Opor_common.get_field por) extra_field_names in 
             let indexed_extra_fields = Int_range.index_everything extra_fields in 
             let indexed_and_labeled = Image.image (fun (j,fd)->
-                     (fd.Old_polymorphic_ocaml_record_t.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+                     (fd.Old_polymorphic_ocaml_record_t.field_name,Opor_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
             (ext_name,indexed_and_labeled);;   
       
       let snippet_for_element (field_name,indexed_varname) = 
@@ -152,7 +152,7 @@ module Private = struct
        ;;       
             
        let full_text por =
-            let l = Por_common.extensions_from_different_sources por in 
+            let l = Opor_common.extensions_from_different_sources por in 
             if l = []
             then ""  
             else

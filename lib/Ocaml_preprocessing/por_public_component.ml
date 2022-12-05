@@ -53,12 +53,12 @@ module Private = struct
     let annotated_text_for_extender_symlinks por=
       Image.image (
           fun (before_ext,after_ext) ->
-            let ext_name = Por_common.extender_name (before_ext,after_ext) in 
+            let ext_name = Opor_common.extender_name (before_ext,after_ext) in 
             {
         Por_public_definition_t.value_name = ext_name ;
         lines_in_definition = ["let extend_"^ext_name^"  = Private.Extender."^ext_name^" ;;"];
       } 
-      ) (Por_common.extensions_from_different_sources por) ;;
+      ) (Opor_common.extensions_from_different_sources por) ;;
 
       let annotated_text_for_parenting_symlinks _por=
       [
@@ -81,19 +81,19 @@ module Private = struct
         ] ;;  
      
       let snippet_for_constructor_element (j,fd) = 
-        let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
+        let var_name  = Opor_common.indexed_varname_for_field (j,fd) in 
         (String.make 3 ' ')^(fd.Old_polymorphic_ocaml_record_t.field_name)^" = "^
         var_name^" ;" ;;     
    
     let annotated_definition_for_constructor por constructed_instance =
       let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
-      let full_instance = Por_common.get_instance por constructed_instance  in 
+      let full_instance = Opor_common.get_instance por constructed_instance  in 
       let field_names = full_instance.Old_polymorphic_ocaml_record_t.instance_fields in 
-      let fields = Image.image (Por_common.get_field por)field_names in 
+      let fields = Image.image (Opor_common.get_field por)field_names in 
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
-         "~"^(fd.Old_polymorphic_ocaml_record_t.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
+         "~"^(fd.Old_polymorphic_ocaml_record_t.field_name)^":"^(Opor_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
       let main_module_name = (String.capitalize_ascii por.Old_polymorphic_ocaml_record_t.module_name) in  
       {
