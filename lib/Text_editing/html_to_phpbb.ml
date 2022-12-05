@@ -23,8 +23,8 @@ let merge_two_lists_indexed_by_disjoint_ranges l1 l2 =
             match part2 with 
             [] -> List.rev_append already_treated part1 
            |elt2 :: rest_of_part2 -> 
-               let ((i1,j1),data1) = elt1 
-               and ((i2,j2),data2) = elt2 in 
+               let ((i1,j1),_data1) = elt1 
+               and ((i2,j2),_data2) = elt2 in 
                if i1=i2 then raise(Nondisjoint_ranges((i1,j1),(i2,j2))) else 
                if i1<i2 then tempf(elt1::already_treated,rest_of_part1,part2)
                         else tempf(elt2::already_treated,part1,rest_of_part2)       

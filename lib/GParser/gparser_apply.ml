@@ -292,7 +292,7 @@ let detailed_star prsr=
 let one_or_more prsr=chain [prsr;star prsr];;
 
 let optional prsr=
-   let rec tempf=(fun s i->
+   let tempf=(fun s i->
       match prsr s i with
        Some(res)->Some(
             Gparser_result.veil

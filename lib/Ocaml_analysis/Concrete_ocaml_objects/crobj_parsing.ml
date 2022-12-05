@@ -136,7 +136,7 @@ let next_basic_increase  s idx=
    then next_basic_increase_in_push_string_case s idx
    else 
    match Option.seek (fun 
-      (text,action)->Substring.is_a_substring_located_at text s idx
+      (text,_action)->Substring.is_a_substring_located_at text s idx
    ) list_for_preludeless_increasers with 
    None -> raise(Unreadable_increase(idx,s))
    |Some(text,action)->(action,idx+(String.length text));;
@@ -162,7 +162,9 @@ let first_step s =
     Crobj_basic_increase_t.Push_int(i)->(Some(Concrete_object_t.Int(i)),None,next_idx)
    |Crobj_basic_increase_t.Push_string(encoded_s)->(Some(Concrete_object.wrap_encoded_string(encoded_s)),None,next_idx)
    |Crobj_basic_increase_t.Open(opening)->(None,Some(Double_partial_crobj.initialize(opening)),next_idx)
-   |_->raise(First_step_exn(action));;
+   |Crobj_basic_increase_t.Push_field_name(_)
+   |Crobj_basic_increase_t.Separate(_)
+   |Crobj_basic_increase_t.Close(_) ->raise(First_step_exn(action));;
 
 exception Ends_too_soon of Concrete_object_t.t * string ;; 
 
@@ -188,16 +190,16 @@ let parse s =
 
 let rec unparse = function 
    Concrete_object_t.Int(i)->string_of_int i 
-   |String(t)->string_opener^(Encoded_string.store t)^string_closer
-   |Uple(l)->let temp1=Image.image unparse l in 
+   |Concrete_object_t.String(t)->string_opener^(Encoded_string.store t)^string_closer
+   |Concrete_object_t.Uple(l)->let temp1=Image.image unparse l in 
              uple_opener^(String.concat uple_separator temp1)^uple_closer
-   |List(l)->let temp1=Image.image unparse l in 
+   |Concrete_object_t.List(l)->let temp1=Image.image unparse l in 
              list_opener^(String.concat list_separator temp1)^list_closer 
-   |Array(l)->let temp1=Image.image unparse l in 
+   |Concrete_object_t.Array(l)->let temp1=Image.image unparse l in 
              array_opener^(String.concat array_separator temp1)^array_closer
-   |Record(l)->let temp1=Image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
+   |Concrete_object_t.Record(l)->let temp1=Image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
              record_opener^(String.concat record_separator temp1)^record_closer          
-   |Variant(constructor,l)->let temp1=Image.image unparse l in 
+   |Concrete_object_t.Variant(constructor,l)->let temp1=Image.image unparse l in 
              constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
 
 end;;

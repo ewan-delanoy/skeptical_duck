@@ -16,4 +16,4 @@ let of_line line =
 let to_line (Dfn_short_t.J(m,e))=
    (Dfa_module.to_line m)^(Dfa_ending.connectable_to_modulename e);;
 
-let to_module (Dfn_short_t.J(m,e))=m;;
+let to_module (Dfn_short_t.J(m,_e))=m;;
