@@ -34,11 +34,11 @@ let initial_data={
 
 
 let test_for_left_paren_at_index 
-   s i ((lbl,lparen_f,rparen_f):parenthesis_triple)=
+   s i ((_lbl,lparen_f,_rparen_f):parenthesis_triple)=
        lparen_f s i;;
  
 let test_for_right_paren_at_index 
-   s i ((lbl,lparen_f,rparen_f):parenthesis_triple)=
+   s i ((_lbl,_lparen_f,rparen_f):parenthesis_triple)=
       rparen_f s i;;
  
 let look_for_left_paren_at_index app s i=
@@ -56,8 +56,8 @@ let look_for_left_paren_at_index app s i=
 let process_without_open_pars app  s data=
    match look_for_left_paren_at_index app s data.cursor_location with
      None->(data.cursor_location<-data.cursor_location+1)
-    |Some(paren,lparen_length,addenda)->
-                let (lbl,lparen,rparen)=paren in
+    |Some(paren,lparen_length,_addenda)->
+                let (lbl,_lparen,_rparen)=paren in
                let _=(
                if data.currently_open_pars=[]
                then let i_start=data.smallest_unprocessed_index
@@ -156,14 +156,14 @@ module With_associator=struct
                 data.smallest_unprocessed_index<-data.cursor_location
                 )
            )
-    |Some(paren,lparen_length,addenda)->
-               let (lbl,lparen,rparen)=paren in
+    |Some(paren,lparen_length,_addenda)->
+               let (lbl,_lparen,_rparen)=paren in
                let temp1=List.filter (fun (lbl2,_,_)->(fst lbl2)=(fst lbl)) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
                ;;
                
-let process_with_open_pars (asc:associator) app  s data=
+let process_with_open_pars (_asc:associator) app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
   let opt1=Option.find_and_stop (fun paren->
@@ -174,15 +174,15 @@ let process_with_open_pars (asc:associator) app  s data=
   then (
           match look_for_left_paren_at_index app s data.cursor_location with
      	  None->(data.cursor_location<-data.cursor_location+1)
-        |Some(paren,lparen_length,addenda)->
-               let (lbl,lparen,rparen)=paren in
+        |Some(paren,lparen_length,_addenda)->
+               let (lbl,_lparen,_rparen)=paren in
                let temp1=List.filter (fun (lbl2,_,_)->(fst lbl2)=(fst lbl)) app in
                data.currently_open_pars<-(temp1::data.currently_open_pars);
                data.cursor_location<-data.cursor_location+lparen_length
               
         )
   else (
-       let (best_paren,(rparen_length,addenda))=Option.unpack opt1 in
+       let (_best_paren,(rparen_length,_addenda))=Option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        data.currently_open_pars<-new_list;
        data.cursor_location<-data.cursor_location+rparen_length
