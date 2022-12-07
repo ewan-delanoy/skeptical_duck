@@ -20,7 +20,7 @@ let rec uncurrified_rev_append (x,y)=match x with
 []->y
 |a::peurrest->uncurrified_rev_append (peurrest,a::y);;
 
-let rec uncurrified_append (x,y)=uncurrified_rev_append (List.rev x,y);;
+let uncurrified_append (x,y)=uncurrified_rev_append (List.rev x,y);;
 
 let factor (x,y)=
     let rec factor0=(fun
@@ -246,7 +246,7 @@ let partition_from_set_of_ranges l n=
     let (last_i,last_j)=List.hd(List.rev l) 
     and (first_i,_)=List.hd l in
     let temp2=universal_delta_list l in  
-    let temp3=Image.image (fun ((i1,j1),(i2,j2))->
+    let temp3=Image.image (fun ((i1,j1),(i2,_j2))->
       [(i1,j1,true);(j1+1,i2-1,false)]
     ) temp2 in 
     let middle_part=List.flatten temp3 in
@@ -391,7 +391,7 @@ let partition_according_to_fst pairs=
        match to_be_treated with 
         [] -> List.rev already_treated 
        |(a0,_) :: _ ->
-         let (part1,part2) = List.partition (fun (a,b)->a=a0) to_be_treated in 
+         let (part1,part2) = List.partition (fun (a,_b)->a=a0) to_be_treated in 
          tempf ((a0,Image.image snd part1)::already_treated,part2)     
    ) in 
    tempf ([],pairs) ;;

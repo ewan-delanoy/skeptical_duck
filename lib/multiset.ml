@@ -8,7 +8,7 @@ type 'a t=M of ('a*int) list;;
 let to_list (M l)=Image.image(fst)(l);;
 
 let filter_odd_multiplicities (M l)=
-   let temp1=List.filter(function (x,j)->(j mod 2)=1)(l) in
+   let temp1=List.filter(function (_x,j)->(j mod 2)=1)(l) in
    Image.image(fst)(temp1);;
             
 let length (M l)=Basic.fold_sum(Image.image snd l);;            

@@ -58,11 +58,11 @@ let initialize opening =
 
 let increase = function 
    Crobj_basic_increase_t.Push_int(i)->Private.push_int i 
-    |Push_string(encoded_s)->Private.push_string encoded_s 
-    |Push_field_name(rcdname)->Private.push_field_name rcdname
-    |Open(opening) -> Private.open_new opening
-    |Separate(cat) -> Private.push_separator cat 
-    |Close(cat) -> Private.close cat;;
+    |Crobj_basic_increase_t.Push_string(encoded_s)->Private.push_string encoded_s 
+    |Crobj_basic_increase_t.Push_field_name(rcdname)->Private.push_field_name rcdname
+    |Crobj_basic_increase_t.Open(opening) -> Private.open_new opening
+    |Crobj_basic_increase_t.Separate(cat) -> Private.push_separator cat 
+    |Crobj_basic_increase_t.Close(cat) -> Private.close cat;;
         
 
 

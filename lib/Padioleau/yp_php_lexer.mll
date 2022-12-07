@@ -313,6 +313,188 @@ let set_mode mode =
 let push_token tok =
   _pending_tokens := tok::!_pending_tokens ;;
 
+let name_of_token_variant = function 
+        EOF(_) -> "EOF"
+      | LDots(_) -> "LDots"
+      | RDots(_) -> "RDots"
+      | TAND(_) -> "TAND"
+      | TANTISLASH(_) -> "TANTISLASH"
+      | TBACKQUOTE(_) -> "TBACKQUOTE"
+      | TBANG(_) -> "TBANG"
+      | TCBRA(_) -> "TCBRA"
+      | TCBRACE(_) -> "TCBRACE"
+      | TCommentPP(_) -> "TCommentPP"
+      | TCOLCOL(_) -> "TCOLCOL"
+      | TCOLON(_) -> "TCOLON"
+      | TCOMMA(_) -> "TCOMMA"
+      | TCPAR(_) -> "TCPAR"
+      | TDIV(_) -> "TDIV"
+      | TDOLLAR(_) -> "TDOLLAR"
+      | TDOLLARDOLLAR(_) -> "TDOLLARDOLLAR"
+      | TDOT(_) -> "TDOT"
+      | TEQ(_) -> "TEQ"
+      | TGREATER(_) -> "TGREATER"
+      | TGUIL(_) -> "TGUIL"
+      | TMINUS(_) -> "TMINUS"
+      | TMOD(_) -> "TMOD"
+      | TMUL(_) -> "TMUL"
+      | TNewline(_) -> "TNewline"
+      | TOATTR(_) -> "TOATTR"
+      | TOBRA(_) -> "TOBRA"
+      | TOBRACE(_) -> "TOBRACE"
+      | TOPAR(_) -> "TOPAR"
+      | TOR(_) -> "TOR"
+      | TPLUS(_) -> "TPLUS"
+      | TPOW(_) -> "TPOW"
+      | TQUESTION(_) -> "TQUESTION"
+      | TSEMICOLON(_) -> "TSEMICOLON"
+      | TSMALLER(_) -> "TSMALLER"
+      | TSpaces(_) -> "TSpaces"
+      | TTILDE(_) -> "TTILDE"
+      | TUnknown(_) -> "TUnknown"
+      | TXOR(_) -> "TXOR"
+      | T_ABSTRACT(_) -> "T_ABSTRACT"
+      | T_AND_EQUAL(_) -> "T_AND_EQUAL"
+      | T_ARRAY(_) -> "T_ARRAY"
+      | T_ARRAY_CAST(_) -> "T_ARRAY_CAST"
+      | T_ARROW(_) -> "T_ARROW"
+      | T_AS(_) -> "T_AS"
+      | T_ASYNC(_) -> "T_ASYNC"
+      | T_AWAIT(_) -> "T_AWAIT"
+      | T_BOOL(_,_) -> "T_BOOL"
+      | T_BOOLEAN_AND(_) -> "T_BOOLEAN_AND"
+      | T_BOOLEAN_OR(_) -> "T_BOOLEAN_OR"
+      | T_BOOLEAN_PIPE(_) -> "T_BOOLEAN_PIPE"
+      | T_BOOL_CAST(_) -> "T_BOOL_CAST"
+      | T_BREAK(_) -> "T_BREAK"
+      | T_CASE(_) -> "T_CASE"
+      | T_CATCH(_) -> "T_CATCH"
+      | T_CLASS(_) -> "T_CLASS"
+      | T_CLASS_C(_) -> "T_CLASS_C"
+      | T_CLONE(_) -> "T_CLONE"
+      | T_CLOSE_TAG(_) -> "T_CLOSE_TAG"
+      | T_CLOSE_TAG_OF_ECHO(_) -> "T_CLOSE_TAG_OF_ECHO"
+      | T_COMMENT(_) -> "T_COMMENT"
+      | T_CONCAT_EQUAL(_) -> "T_CONCAT_EQUAL"
+      | T_CONST(_) -> "T_CONST"
+      | T_CONSTANT_ENCAPSED_STRING(_,_) -> "T_CONSTANT_ENCAPSED_STRING"
+      | T_CONTINUE(_) -> "T_CONTINUE"
+      | T_CURLY_OPEN(_) -> "T_CURLY_OPEN"
+      | T_DEC(_) -> "T_DEC"
+      | T_DECLARE(_) -> "T_DECLARE"
+      | T_DEFAULT(_) -> "T_DEFAULT"
+      | T_DIR(_) -> "T_DIR"
+      | T_DIV_EQUAL(_) -> "T_DIV_EQUAL"
+      | T_DNUMBER(_,_) -> "T_DNUMBER"
+      | T_DO(_) -> "T_DO"
+      | T_DOC_COMMENT(_) -> "T_DOC_COMMENT"
+      | T_DOLLAR_OPEN_CURLY_BRACES(_) -> "T_DOLLAR_OPEN_CURLY_BRACES"
+      | T_DOUBLE_ARROW(_) -> "T_DOUBLE_ARROW"
+      | T_DOUBLE_CAST(_) -> "T_DOUBLE_CAST"
+      | T_ECHO(_) -> "T_ECHO"
+      | T_ELLIPSIS(_) -> "T_ELLIPSIS"
+      | T_ELSE(_) -> "T_ELSE"
+      | T_ELSEIF(_) -> "T_ELSEIF"
+      | T_EMPTY(_) -> "T_EMPTY"
+      | T_ENCAPSED_AND_WHITESPACE(_,_) -> "T_ENCAPSED_AND_WHITESPACE"
+      | T_ENDDECLARE(_) -> "T_ENDDECLARE"
+      | T_ENDFOR(_) -> "T_ENDFOR"
+      | T_ENDFOREACH(_) -> "T_ENDFOREACH"
+      | T_ENDIF(_) -> "T_ENDIF"
+      | T_ENDSWITCH(_) -> "T_ENDSWITCH"
+      | T_ENDWHILE(_) -> "T_ENDWHILE"
+      | T_END_HEREDOC(_) -> "T_END_HEREDOC"
+      | T_ENUM(_) -> "T_ENUM"
+      | T_EVAL(_) -> "T_EVAL"
+      | T_EXIT(_) -> "T_EXIT"
+      | T_EXTENDS(_) -> "T_EXTENDS"
+      | T_FILE(_) -> "T_FILE"
+      | T_FINAL(_) -> "T_FINAL"
+      | T_FINALLY(_) -> "T_FINALLY"
+      | T_FOR(_) -> "T_FOR"
+      | T_FOREACH(_) -> "T_FOREACH"
+      | T_FROM(_) -> "T_FROM"
+      | T_FUNCTION(_) -> "T_FUNCTION"
+      | T_FUNC_C(_) -> "T_FUNC_C"
+      | T_GLOBAL(_) -> "T_GLOBAL"
+      | T_GOTO(_) -> "T_GOTO"
+      | T_IDENT(_,_) -> "T_IDENT"
+      | T_IF(_) -> "T_IF"
+      | T_IMPLEMENTS(_) -> "T_IMPLEMENTS"
+      | T_INC(_) -> "T_INC"
+      | T_INCLUDE(_) -> "T_INCLUDE"
+      | T_INCLUDE_ONCE(_) -> "T_INCLUDE_ONCE"
+      | T_INLINE_HTML(_,_) -> "T_INLINE_HTML"
+      | T_INSTANCEOF(_) -> "T_INSTANCEOF"
+      | T_INSTEADOF(_) -> "T_INSTEADOF"
+      | T_INTERFACE(_) -> "T_INTERFACE"
+      | T_INT_CAST(_) -> "T_INT_CAST"
+      | T_ISSET(_) -> "T_ISSET"
+      | T_IS_EQUAL(_) -> "T_IS_EQUAL"
+      | T_IS_GREATER_OR_EQUAL(_) -> "T_IS_GREATER_OR_EQUAL"
+      | T_IS_IDENTICAL(_) -> "T_IS_IDENTICAL"
+      | T_IS_NOT_EQUAL(_) -> "T_IS_NOT_EQUAL"
+      | T_IS_NOT_IDENTICAL(_) -> "T_IS_NOT_IDENTICAL"
+      | T_IS_SMALLER_OR_EQUAL(_) -> "T_IS_SMALLER_OR_EQUAL"
+      | T_LAMBDA_CPAR(_) -> "T_LAMBDA_CPAR"
+      | T_LAMBDA_OPAR(_) -> "T_LAMBDA_OPAR"
+      | T_LINE(_) -> "T_LINE"
+      | T_LIST(_) -> "T_LIST"
+      | T_LNUMBER(_,_) -> "T_LNUMBER"
+      | T_LOGICAL_AND(_) -> "T_LOGICAL_AND"
+      | T_LOGICAL_OR(_) -> "T_LOGICAL_OR"
+      | T_LOGICAL_XOR(_) -> "T_LOGICAL_XOR"
+      | T_METAVAR(_,_) -> "T_METAVAR"
+      | T_METHOD_C(_) -> "T_METHOD_C"
+      | T_MINUS_EQUAL(_) -> "T_MINUS_EQUAL"
+      | T_MOD_EQUAL(_) -> "T_MOD_EQUAL"
+      | T_MUL_EQUAL(_) -> "T_MUL_EQUAL"
+      | T_NAMESPACE(_) -> "T_NAMESPACE"
+      | T_NAMESPACE_C(_) -> "T_NAMESPACE_C"
+      | T_NEW(_) -> "T_NEW"
+      | T_NUM_STRING(_,_) -> "T_NUM_STRING"
+      | T_OBJECT_CAST(_) -> "T_OBJECT_CAST"
+      | T_OBJECT_OPERATOR(_) -> "T_OBJECT_OPERATOR"
+      | T_OPEN_TAG(_) -> "T_OPEN_TAG"
+      | T_OPEN_TAG_WITH_ECHO(_) -> "T_OPEN_TAG_WITH_ECHO"
+      | T_OR_EQUAL(_) -> "T_OR_EQUAL"
+      | T_PARENT(_) -> "T_PARENT"
+      | T_PLUS_EQUAL(_) -> "T_PLUS_EQUAL"
+      | T_PRINT(_) -> "T_PRINT"
+      | T_PRIVATE(_) -> "T_PRIVATE"
+      | T_PROTECTED(_) -> "T_PROTECTED"
+      | T_PUBLIC(_) -> "T_PUBLIC"
+      | T_REQUIRE(_) -> "T_REQUIRE"
+      | T_REQUIRE_ONCE(_) -> "T_REQUIRE_ONCE"
+      | T_RETURN(_) -> "T_RETURN"
+      | T_ROCKET(_) -> "T_ROCKET"
+      | T_SELF(_) -> "T_SELF"
+      | T_SL(_) -> "T_SL"
+      | T_SL_EQUAL(_) -> "T_SL_EQUAL"
+      | T_SR(_) -> "T_SR"
+      | T_SR_EQUAL(_) -> "T_SR_EQUAL"
+      | T_START_HEREDOC(_) -> "T_START_HEREDOC"
+      | T_STATIC(_) -> "T_STATIC"
+      | T_STRING_CAST(_) -> "T_STRING_CAST"
+      | T_STRING_VARNAME(_,_) -> "T_STRING_VARNAME"
+      | T_SUPER(_) -> "T_SUPER"
+      | T_SWITCH(_) -> "T_SWITCH"
+      | T_THROW(_) -> "T_THROW"
+      | T_TRAIT(_) -> "T_TRAIT"
+      | T_TRAIT_C(_) -> "T_TRAIT_C"
+      | T_TRY(_) -> "T_TRY"
+      | T_TYPE(_) -> "T_TYPE"
+      | T_UNSET(_) -> "T_UNSET"
+      | T_UNSET_CAST(_) -> "T_UNSET_CAST"
+      | T_USE(_) -> "T_USE"
+      | T_VAR(_) -> "T_VAR"
+      | T_VARIABLE(_,_) -> "T_VARIABLE"
+      | T_WHILE(_) -> "T_WHILE"
+      | T_XOR_EQUAL(_) -> "T_XOR_EQUAL"
+      | T_YIELD(_) -> "T_YIELD"
+      | T__AT(_) -> "T__AT"
+  ;;
+     
 
 (* ugly: in code like 'function foo( (function(string):string) $callback){}'
  * we want to parse the '(string)' not as a T_STRING_CAST but
@@ -324,13 +506,14 @@ let lang_ext_or_cast t lexbuf =
   if !Flag_php.facebook_lang_extensions
   then
     (match !_last_non_whitespace_like_token with
-    | Some (T_FUNCTION _) ->
-      let s = tok lexbuf in
-      (* just keep the open parenthesis *)
-      yyback (String.length s - 1) lexbuf;
-      TOPAR (tokinfo lexbuf)
-    | _ ->
-      t
+      Some (towk) ->
+      if name_of_token_variant towk = "T_FUNCTION" 
+      then let s = tok lexbuf in
+           (* just keep the open parenthesis *)
+           yyback (String.length s - 1) lexbuf;
+           TOPAR (tokinfo lexbuf)
+      else t     
+    | _ -> t
     )
   else t ;;
 }
@@ -757,8 +940,15 @@ rule st_in_scripting = parse
           | ST_IN_SCRIPTING2 ->
               set_mode INITIAL;
               T_CLOSE_TAG_OF_ECHO(tokinfo lexbuf)
-          | _ ->
-              raise Impossible
+          | INITIAL
+          | ST_DOUBLE_QUOTES
+          | ST_BACKQUOTE
+          | ST_LOOKING_FOR_PROPERTY
+          | ST_LOOKING_FOR_VARNAME
+          | ST_VAR_OFFSET
+          | ST_START_HEREDOC (_)
+          | ST_START_NOWDOC (_)  
+                 -> raise Impossible
         }
 
   (* ----------------------------------------------------------------------- *)
@@ -1138,6 +1328,8 @@ and st_one_line_comment = parse
       }
 {
 
+   
+
    let next lexbuf =
      match current_mode () with 
     INITIAL -> initial lexbuf
@@ -1158,9 +1350,9 @@ and st_one_line_comment = parse
     let _ =(while (!should_continue) do 
     (
       let next_token = next lex_stream in 
-      match next_token with 
-      (Yp_php_token_t.EOF(_)) -> should_continue := false    
-      | _ -> accu := next_token :: (!accu)) 
+      if (name_of_token_variant next_token)="EOF"
+      then should_continue := false    
+      else accu := next_token :: (!accu)) 
     done ) in  
     List.rev (!accu) ;; 
 

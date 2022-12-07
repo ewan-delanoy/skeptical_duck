@@ -6,8 +6,10 @@
 
 
 let filewatching = 
+      let home = Sys.getenv "HOME" in 
       let file_there = (fun s-> 
-            Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/Ordinary/Filewatching/"^s^".ml")) in       
+            Absolute_path.create_file_if_absent(home^
+            "/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in       
       
 {
       Por_types.space_name = "Filewatching" ;

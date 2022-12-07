@@ -97,7 +97,7 @@ module Private = struct
            else tempf (new_item::treated,others)  
          ) in tempf ;;    
        
-  let rec helper2_for_minimal_elements_selection (cmpr:'a Total_ordering_t.t)  =
+  let helper2_for_minimal_elements_selection (cmpr:'a Total_ordering_t.t)  =
           let rec tempf = (fun 
          (treated,to_be_treated) -> match to_be_treated with 
           [] -> List.rev treated 
@@ -173,7 +173,7 @@ module Private = struct
   
   let is_included_in = Private.is_included_in ;;
   
-  let rec mem (cmpr:'a Total_ordering_t.t) x ol=
+  let mem (cmpr:'a Total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false
       |a::others->match cmpr(x)(a) with

@@ -16,5 +16,5 @@ let extract_from_iteration f v0=
 
 let extract_from_list f l =
    let temp1 = Int_range.index_everything l in 
-   let tempf= (fun (j,elt)->detect_exception f elt) in 
+   let tempf= (fun (_j,elt)->detect_exception f elt) in 
    Listennou.force_find tempf temp1 ;; 
