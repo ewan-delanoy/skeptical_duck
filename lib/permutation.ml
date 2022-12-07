@@ -194,7 +194,7 @@ module Private = struct
        let w = order perm in 
        if w=1 then [perm] else
        let walker = ref (perm,[]) in 
-       let _ =for k=1 to w do
+       let _ =for _=1 to w do
          let (to_be_treated,treated) = (!walker) in 
          let new_val = product perm to_be_treated in 
          walker:=(new_val,to_be_treated::treated)

@@ -22,7 +22,7 @@ type walker={
 
 
 let new_walker_in_first_case_in_hwd (m,wlkr)=
-   let opt1=Option.seek(fun (opener,closer)->
+   let opt1=Option.seek(fun (opener,_closer)->
      Substring.is_a_substring_located_at opener 
         m.processed_argument wlkr.current_index
    ) m.other_enclosers in
@@ -96,7 +96,7 @@ let second_case_in_hwd (m,wlkr)=
         });;
 
 let pusher_for_hwd w=
-  let (m,wlkr)=w in
+  let (_m,wlkr)=w in
   if wlkr.answer=None
   then 
        (
@@ -137,7 +137,7 @@ end;;
 let hwd
    (main_opener,main_closer)
      other_enclosers=
-   let rec tempf=(fun s i->
+   let tempf=(fun s i->
         if not(Substring.is_a_substring_located_at main_opener s i)
         then None 
         else 

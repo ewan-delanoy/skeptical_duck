@@ -96,7 +96,7 @@ let combine=((fun ~tried_first ~tried_second->
           else h z1 z2
  ): ('a*'b*'c) Total_ordering_t.t);;
  
- let rec lex_compare (f:'a Total_ordering_t.t)=
+ let lex_compare (f:'a Total_ordering_t.t)=
   let rec tempf=(
     fun l1 l2->
      match l1 with 
