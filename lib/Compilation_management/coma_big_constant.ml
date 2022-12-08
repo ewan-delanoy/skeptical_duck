@@ -7,7 +7,7 @@ let home = Sys.getenv "HOME" ;;
 
 module This_World=struct
 
-let root=Dfa_root.of_line (home^"/Teuliou/OCaml/skeptical_duck");;
+let root=Dfa_root.of_line (home^"/Teuliou/OCaml/skeptical_duck/lib");;
 let backup_dir=Dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
 let githubbing=true;;
 let triple = (root,backup_dir,githubbing);;
