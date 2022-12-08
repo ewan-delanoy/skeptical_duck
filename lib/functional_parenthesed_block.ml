@@ -77,14 +77,14 @@ let process_without_open_pars app  s data=
 let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.find_and_stop (fun paren->
+  let opt1=More_option.find_and_stop (fun paren->
     match (test_for_right_paren_at_index s i paren) with 
     Some(rparen_length,rparen_range)->Some(paren,rparen_length,rparen_range)
     |None ->None ) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let (best_paren,rparen_length,rparen_range)=Option.unpack opt1 in
+       let (best_paren,rparen_length,rparen_range)=More_option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        let _=(
           data.currently_open_pars<-new_list;
@@ -94,7 +94,7 @@ let process_with_open_pars app  s data=
        then ()
        else let old_start = data.smallest_unprocessed_index in 
             let (old_lparen_length,lparen_range) = 
-                Option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
+                More_option.unpack(test_for_left_paren_at_index s old_start best_paren) in 
             let i_start=old_start + old_lparen_length
             and i_end=i-1 in
             let enclosed_substring=Cull_string.interval s i_start i_end in
@@ -166,7 +166,7 @@ module With_associator=struct
 let process_with_open_pars (_asc:associator) app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.find_and_stop (fun paren->
+  let opt1=More_option.find_and_stop (fun paren->
     match (test_for_right_paren_at_index s i paren) with 
     Some(rparen_length)->Some(paren,rparen_length)
     |None ->None ) temp1 in
@@ -182,7 +182,7 @@ let process_with_open_pars (_asc:associator) app  s data=
               
         )
   else (
-       let (_best_paren,(rparen_length,_addenda))=Option.unpack opt1 in
+       let (_best_paren,(rparen_length,_addenda))=More_option.unpack opt1 in
        let new_list=List.tl(data.currently_open_pars) in
        data.currently_open_pars<-new_list;
        data.cursor_location<-data.cursor_location+rparen_length
@@ -224,7 +224,7 @@ let decompose_with_associator=
 
 let decompose app s=
   let temp1=decompose_without_taking_blanks_into_account app s in
-  let temp2=Option.filter_and_unpack (
+  let temp2=More_option.filter_and_unpack (
      fun (lab,t)->
        let u=Cull_string.trim_spaces t in
        if lab<>None then Some[lab,u] else

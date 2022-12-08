@@ -187,7 +187,7 @@ exception Bad_merger of (int list) * (int list) ;;
 
 let check_for_partition x parts =
   let temp1 = Uple.list_of_pairs parts in 
-  match Option.seek (fun (part1,part2)->i_intersects part1 part2) temp1 with
+  match More_option.seek (fun (part1,part2)->i_intersects part1 part2) temp1 with
   Some(part3,part4) -> raise(Nondisjoint_parts(part3,part4))
   |None ->
   let merger = i_fold_merge parts in 
@@ -262,10 +262,10 @@ let rec patient_measure x =
   match opt_good with 
    Some old_answer -> old_answer 
     |None ->
-       let (whole,bad_part) = Option.unpack opt_bad in 
+       let (whole,bad_part) = More_option.unpack opt_bad in 
        let fixed_bad_part = Image.image (fun
          (opt_good2,opt_bad2) ->
-            let (_,y) = Option.unpack opt_bad2 in 
+            let (_,y) = More_option.unpack opt_bad2 in 
             let z = force_compute_patient_measure patient_measure y in 
             let _ = Hashtbl.add hashtbl_for_patient_measure y z in 
             (y,force_compute_patient_measure patient_measure y)
@@ -273,7 +273,7 @@ let rec patient_measure x =
        let parts = Image.image (
          fun (opt_good3,opt_bad3) -> match opt_good3 with 
            Some old_answer2 -> old_answer2 
-           | None -> let (d2,y2) = Option.unpack opt_bad3 in 
+           | None -> let (d2,y2) = More_option.unpack opt_bad3 in 
                      let z2 = List.assoc y2 fixed_bad_part in 
                      Image.image (fun t->t+d2) z2  
        ) whole in 
@@ -299,9 +299,9 @@ let  impatient_measure x =
     match opt_good with 
      Some old_answer -> old_answer 
       |None -> 
-        let (whole,bad_part) = Option.unpack opt_bad in 
+        let (whole,bad_part) = More_option.unpack opt_bad in 
         let summary_of_bad = Image.image (fun 
-          (opt_good2,opt_bad2) -> snd(Option.unpack opt_bad2)
+          (opt_good2,opt_bad2) -> snd(More_option.unpack opt_bad2)
         ) bad_part in 
         raise(Impatient_measure_exn(current_level,List.hd summary_of_bad)) ;;    
 
@@ -392,7 +392,7 @@ let add_ramification x obs =
 let start_decomposing  x = 
   let n = List.length x 
   and m =List.length (patient_measure x) in 
-  Option.seek (
+  More_option.seek (
      fun k->
        let (rleft,right) = Listennou.big_rht k x in
        let left = List.rev rleft in 
@@ -446,7 +446,7 @@ let extended_old_patient_measure = Memoized.recursive( fun old_f (x,extra_obstru
 let compute_ramification x=
   let obses = current_obstructions x in 
   let n = List.length obses and m=List.length(patient_measure x) in 
-  match Option.seek (
+  match More_option.seek (
     fun k->
        let limited_obses = Listennou.big_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m
@@ -511,7 +511,7 @@ let analize lx =
     (helper_for_analysis ([],lx)) in
    let data_for_current_level = Ordered.sort Detailed_solution.order unordered_data_for_current_level in 
    if data_for_current_level = [] then [] else  
-   let related_to_preceding_level = Option.filter_and_unpack (
+   let related_to_preceding_level = More_option.filter_and_unpack (
       fun  dsol -> 
         let arg = dsol.Detailed_solution.argument in 
         if (dsol.Detailed_solution.case = Case.Compatible)&&(old_measure_opt arg=None) 

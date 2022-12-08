@@ -64,7 +64,7 @@ let helper2_during_inspection fw accu l_pairs =
        fun (_,_,opt) -> opt <> None 
    ) temp1 in
    let good_pairs = Image.image (fun 
-     (rl,old_mtime,opt) -> (rl,old_mtime,Option.unpack opt)
+     (rl,old_mtime,opt) -> (rl,old_mtime,More_option.unpack opt)
    ) good_temp1 
    and missing_files = Image.image (fun (rl,_,_)->rl) bad_temp1 in
    let _ = announce_missing_files missing_files in 
@@ -216,7 +216,7 @@ let first_init config =
    let the_root = Fw_poly.root config in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
-   let list2 = Option.filter_and_unpack(
+   let list2 = More_option.filter_and_unpack(
             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 
    ) list1 in
@@ -248,7 +248,7 @@ let overwrite_file_if_it_exists fw rootless new_content =
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Dfa_root.connectable_to_subpath (Fw_poly.root fw) in
-   let nonexistent_paths = Option.filter_and_unpack (
+   let nonexistent_paths = More_option.filter_and_unpack (
       fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
       if not(Sys.file_exists s_full_path)
       then Some(s_full_path)

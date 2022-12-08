@@ -404,7 +404,7 @@ let replace_if_possible l x=
 
 let complement_of_singleton l k = 
      let temp1 = Int_range.index_everything l in 
-     Option.filter_and_unpack (fun (j,x)->if j=k then None else Some x) temp1 ;;
+     More_option.filter_and_unpack (fun (j,x)->if j=k then None else Some x) temp1 ;;
 
 (* complement_of_singleton (Ennig.ennig 1 7) 3 ;; *)
 

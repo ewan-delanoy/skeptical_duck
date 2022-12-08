@@ -12,7 +12,7 @@ let old_text = Io.read_whole_file ap1;;
 let (before_u1,u1,after_u1) = Lines_in_string.tripartition_associated_to_interval old_text 1142 1320 ;; 
 let u2 = Lines_in_string.lines u1 ;; 
 let u3 = Image.image (fun line->
-  Option.unpack(Cull_string.before_and_after " of " line)) u2 ;; 
+  More_option.unpack(Cull_string.before_and_after " of " line)) u2 ;; 
 let u4 = Ordered.sort Total_ordering.silex_for_strings  (Image.image snd u3) ;; 
 let u5 = [
   "Yp_token_info_t.t", "(_)"; 
@@ -23,7 +23,7 @@ let u5 = [
   "float option * Yp_token_info_t.t", "(_,_)";] ;;
 let u6 = Image.image (
    fun (before_ov,after_ov) ->
-     let (_,name) = Option.unpack(Cull_string.before_and_after "| " before_ov) in 
+     let (_,name) = More_option.unpack(Cull_string.before_and_after "| " before_ov) in 
      let circled = List.assoc after_ov u5 in 
      before_ov^circled^" -> \""^name^"\""
 ) u3 ;;
@@ -243,7 +243,7 @@ let z2 = List.filter Formal_subgroup.is_solvable Formal_subgroup.all ;;
 let z3 = Image.image Formal_subgroup.to_list z2 ;; 
 let maximalities = Ordered_misc.maximal_elts_wrt_inclusion (il_sort z3) ;; 
 let z4 = Explicit.image (fun x->(x,all_conjugates_of_set x)) maximalities ;;
-let maximalities_up_to_conjugation = Option.filter_and_unpack (fun (x,y)->if x=List.hd y then Some x else None) z4;;
+let maximalities_up_to_conjugation = More_option.filter_and_unpack (fun (x,y)->if x=List.hd y then Some x else None) z4;;
 
 let four_cycles = List.filter (fun k->order(k)=4) 
    (Int_range.range 1 base_size) ;;
@@ -446,12 +446,12 @@ let descendants walker =
      [] -> first_pfrac
      |(predecessor,_) :: _ -> next_pfrac predecessor 
    ) in 
-   let already_used_indices = i_sort (Option.filter_and_unpack (
+   let already_used_indices = i_sort (More_option.filter_and_unpack (
      fun ((_,n),j) -> if n=n0 then Some j else None 
    ) pairs) 
    and whole = Int_range.range 1 n0 in 
    let unused_indices = i_setminus whole already_used_indices in 
-   Option.filter_and_unpack (
+   More_option.filter_and_unpack (
     fun j-> impose_value (k0,n0) j  walker
    ) unused_indices ;;  
 
@@ -478,7 +478,7 @@ let ff = Walker_list.main ;;
 let u1 = ff 10000 ;; 
 let (W(u2,L u3)) = List.hd u1 ;; 
 let u4 = List.rev u2 ;; 
-let gg n = Option.filter_and_unpack 
+let gg n = More_option.filter_and_unpack 
    (fun ((_,m),j)->if m=n then Some j else None) u4 ;;
 
 let tt n =  (Walker.descendants(List.hd(ff n))=[]) ;;  
@@ -1166,7 +1166,7 @@ let sp l1 l2 =
    
 
 let ker uple =
-    Option.filter_and_unpack (
+    More_option.filter_and_unpack (
      fun (j,uple2) -> if sp uple uple2 = 0 then Some j else None
     ) indexed_base;; 
 
@@ -1391,7 +1391,7 @@ let u4 = Int_range.index_everything u3 ;;
 let sp (a1,a2,a3,a4) (b1,b2,b3,b4) = a1*b1 + a2*b2 + a3*b3 + a4 * b4 ;;
 
 let ker uple =
-    Option.filter_and_unpack (
+    More_option.filter_and_unpack (
      fun (j,uple2) -> if sp uple uple2 = 0 then Some j else None
     ) u4;; 
 
@@ -1409,7 +1409,7 @@ let elementary_extension l j =
     if j= new_idx
     then Some(l @ [j,naive_possibilities_for_j])
     else 
-    let possibilities_for_j = i_fold_intersect (naive_possibilities_for_j::(Option.filter_and_unpack (
+    let possibilities_for_j = i_fold_intersect (naive_possibilities_for_j::(More_option.filter_and_unpack (
       fun (k,vals) -> if k=j then Some vals else None
      ) l)) in 
     if possibilities_for_j = [] then None else 
@@ -1419,7 +1419,7 @@ let elementary_extension l j =
 
 let all_elementary_extensions  l = 
    let older_indices = i_sort(Image.image fst l) in      
-   Option.filter_and_unpack (
+   More_option.filter_and_unpack (
     elementary_extension l
    ) (older_indices@[ (List.length l)+1]) ;;
 
@@ -1460,7 +1460,7 @@ let conj x g = pr g (pr x (iv g)) ;;
 let cube x = pr x (pr x x) ;;
 let nonfixed_items perm = 
     let temp1 = Int_range.index_everything perm in 
-    Option.filter_and_unpack (fun (x,y)->if x=y then None else Some x)temp1 ;;
+    More_option.filter_and_unpack (fun (x,y)->if x=y then None else Some x)temp1 ;;
 let is_good x= 
  (nonfixed_items(cube x)=[]) && (List.length(nonfixed_items x)=3) ;;
 
@@ -1698,7 +1698,7 @@ let eval selector l =
         not(i_is_included_in [b;b+width;b+2*width] z) 
     )  (List.hd l)
      | Boundary_increment_selector(width,breadth,n) ->
-     Option.filter_and_unpack (fun z->
+     More_option.filter_and_unpack (fun z->
             let new_z = z @ [n] in 
             if test_for_admissiblity width breadth new_z 
              then Some new_z
@@ -1936,7 +1936,7 @@ let try_tool_quickly old_getter width breadth (n,scrappers) tool =
   ) temp1 in 
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,[]) else 
-  let args = Image.image (fun (_,opt)->Option.unpack opt) successes in 
+  let args = Image.image (fun (_,opt)->More_option.unpack opt) successes in 
   ([],Selector_for_hook.eval selector args) ;;  
 
 
@@ -2053,7 +2053,7 @@ let exhaust_new_line (width,breadth,scrappers) =
       (carrier_get mutilated_carrier) w b (n,s) in 
       (n,hook_opt)
     ) temp1 in 
-    let selector = (fun l->Option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
+    let selector = (fun l->More_option.filter_and_unpack  (fun (n,pair_opt)->match pair_opt with 
       None -> None |Some pair ->Some(n,pair)) l) in 
     let temp3 = selector temp2 in 
     let temp4 = Int_range.scale (fun n->
@@ -2459,9 +2459,9 @@ let compute_from_below (width,breadth,n,scrappers) tool =
      Boundary_increment -> 
       let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
       if opt1 = None then raise(Boundary_increment_exn1(width,breadth,n,scrappers)) else  
-      let pre1 = Option.unpack opt1 in 
+      let pre1 = More_option.unpack opt1 in 
       if List.mem n scrappers then raise(Boundary_increment_exn2(width,breadth,n,scrappers)) else
-      let temp1 = Option.filter_and_unpack (fun z->
+      let temp1 = More_option.filter_and_unpack (fun z->
          let new_z = z @ [n] in 
          if test_for_admissiblity width breadth new_z 
           then Some new_z
@@ -2472,7 +2472,7 @@ let compute_from_below (width,breadth,n,scrappers) tool =
       | Passive_repeat ->
         let opt5 = access width (breadth-1) (n,scrappers)  in 
         if opt5 = None then raise(Passive_repeat_exn1(width,breadth,n,scrappers)) else     
-        let pre5 = Option.unpack opt5 and b = breadth in   
+        let pre5 = More_option.unpack opt5 and b = breadth in   
         let temp5 = List.filter (fun z->
           not(i_is_included_in [b;b+width;b+2*width] z) 
        )  pre5 in 
@@ -2489,7 +2489,7 @@ let compute_from_below (width,breadth,n,scrappers) tool =
       if opt2 = None then raise(Fork_exn1(width,breadth,n,scrappers)) else  
       if opt3 = None then raise(Fork_exn2(width,breadth,n,scrappers)) else    
       if opt4 = None then raise(Fork_exn3(width,breadth,n,scrappers)) else   
-      let temp3 = List.flatten (Image.image Option.unpack [opt2;opt3;opt4]) in 
+      let temp3 = List.flatten (Image.image More_option.unpack [opt2;opt3;opt4]) in 
       let (_,temp4) = Max.maximize_it_with_care List.length temp3 in 
       il_sort temp4 ;; 
 
@@ -2509,7 +2509,7 @@ let rose_add (width,breadth) summary =
 let find_remote_stumbling_block_or_immediate_working_tool width breadth (n,scrappers) = 
   let opt5 = access width (breadth-1) (n,scrappers)  in 
   if opt5 = None then (Some(width,breadth-1,n,scrappers),None) else     
-  let pre5 = Option.unpack opt5 and b = breadth in   
+  let pre5 = More_option.unpack opt5 and b = breadth in   
   let temp5 = List.filter (fun z->
       not(i_is_included_in [b;b+width;b+2*width] z) 
   )  pre5 in 
@@ -2520,8 +2520,8 @@ let find_remote_stumbling_block_or_immediate_working_tool width breadth (n,scrap
     | None -> 
       let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
       if opt1 = None then (Some(width,breadth,n-1,scrappers),None) else  
-      let pre1 = Option.unpack opt1 in 
-      let temp1 = Option.filter_and_unpack (fun z->
+      let pre1 = More_option.unpack opt1 in 
+      let temp1 = More_option.filter_and_unpack (fun z->
          let new_z = z @ [n] in 
          if test_for_admissiblity width breadth new_z 
           then Some new_z
@@ -2929,7 +2929,7 @@ let current_width = 2 ;;
 let is_admissible = Sz_preliminaries.test_for_admissibility 
       (Sz_max_width_t.MW current_width) ;;
 
-let force_insert_in m old_data = Option.filter_and_unpack (
+let force_insert_in m old_data = More_option.filter_and_unpack (
         fun old_elt ->
           let new_elt = old_elt @ [m] in 
           if is_admissible new_elt 
@@ -3841,7 +3841,7 @@ let index_from_x unadbridged_x_form =
 
 let indices_from_xlist xlist =
   let parts = Str.split (Str.regexp_string "+") xlist in  
-  i_sort(Option.filter_and_unpack index_from_x parts);;
+  i_sort(More_option.filter_and_unpack index_from_x parts);;
 
 let temporary_store=Absolute_path.of_string (Needed_values.home^"/Downloads/temp.txt") ;;
 let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
@@ -3955,7 +3955,7 @@ let index_from_x unadbridged_x_form =
 
 let indices_from_xlist xlist =
   let parts = Str.split (Str.regexp_string "+") xlist in  
-  i_sort(Option.filter_and_unpack index_from_x parts);;
+  i_sort(More_option.filter_and_unpack index_from_x parts);;
 
 let temporary_store=Absolute_path.of_string (home^"/Downloads/temp.txt") ;;
 let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
@@ -4244,7 +4244,7 @@ let measure = Memoized.make(fun l->
 ) ;;
 
 let adrien_analysis (l,bound) = 
-    Option.seek (fun (h,l2)->
+    More_option.seek (fun (h,l2)->
       (measure [h]) + (List.length l2) >= bound  
     )  (Three_parts.beheaded_tails l) ;;
     
@@ -4267,8 +4267,8 @@ let partial_analysis_without_writing l =
      and bound = (measure l)-1 in 
     let temp2 = Image.image (fun l2-> (l2,adrien_analysis (l2,bound)) ) temp1 in 
     let (good_temp2,bad_temp2) = List.partition (fun (l2,opt)->opt<>None) temp2 in 
-    let temp3 = Image.image (fun (l2,opt)->(l2,Option.unpack opt)) good_temp2 in 
-    let temp4 = Option.filter_and_unpack (
+    let temp3 = Image.image (fun (l2,opt)->(l2,More_option.unpack opt)) good_temp2 in 
+    let temp4 = More_option.filter_and_unpack (
       fun (l2,_) -> 
         if Hashtbl.find_opt hashtbl_for_impatient_main l2 = None 
         then Some l2 
@@ -4508,7 +4508,7 @@ let expand_move  = function
    and bound = (impatient_measure l)-1 in 
   let temp2 = Image.image (fun l2-> (l2,adrien_analysis (l2,bound)) ) temp1 in 
   let (good_temp2,bad_temp2) = List.partition (fun (l2,opt)->opt<>None) temp2 in 
-  let pointed_ones = Image.image (fun (l2,opt)->Option.unpack opt) good_temp2 in 
+  let pointed_ones = Image.image (fun (l2,opt)->More_option.unpack opt) good_temp2 in 
   let temp4 = Image.image  fst bad_temp2 in 
   EP(l,bound+1,pointed_ones,temp4) ;; 
 
@@ -4716,17 +4716,17 @@ let union (M x) (M y) = M (Ordered.merge Atom.order x y);;
 let delta mx my = union (setminus mx my) (setminus my mx) ;; 
 
 let of_set set_idx =
-    M( Option.filter_and_unpack (
+    M( More_option.filter_and_unpack (
        fun (atm_idx,l)->if List.mem set_idx l then Some atm_idx else None
     ) Atom.table_for_sets_containing_a_given_atom ) ;;
 
 let complement_of_set set_idx = 
-  M( Option.filter_and_unpack (
+  M( More_option.filter_and_unpack (
     fun (atm_idx,l)->if not(List.mem set_idx l) then Some atm_idx else None
  ) Atom.table_for_sets_containing_a_given_atom ) ;;
 
 let of_boolean_combination constraints =
-  M(Option.filter_and_unpack (
+  M(More_option.filter_and_unpack (
     fun (atm_idx,l)->if Atom.check_boolean_constraints constraints atm_idx then Some atm_idx else None
  ) Atom.table_for_sets_containing_a_given_atom) ;;
 
@@ -4770,7 +4770,7 @@ let tab = Molecule.unveil veiled_tab ;;
 let check_tab  = i_setminus tab (i_fold_merge(Image.image (fun (a,b,m)->m) z2));;
 
 let z3 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab)) z2 ;;
-let get (a0,b0) = Option.unpack(Option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
+let get (a0,b0) = More_option.unpack(More_option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
 let part1 = (get ([4],[3;4]));;
 let tab2 = i_setminus tab part1 ;;
 
@@ -4779,7 +4779,7 @@ let v1 = List.tl(il_sort(Image.image (fun (a,b,m)->m) z4)) ;;
 let v2 = List.rev v1 ;;
 
 let v3 = List.hd v2 ;;
-let v4 = Option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None) z4 ;;
+let v4 = More_option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None) z4 ;;
 (*
 
 let veiled_tab = Molecule.setminus fab (Molecule.union faa fbb) ;;
@@ -4987,7 +4987,7 @@ let individual kfk (a,b) =
    else None ;;
 
 let total kfk = 
-   Option.find_and_stop (individual kfk) u9 ;;
+   More_option.find_and_stop (individual kfk) u9 ;;
 
 
 end ;;  
@@ -5020,8 +5020,8 @@ end ;;
 
 module That_kafka = struct 
 
-let share x = let _ = This_kafka.share x in snd(Option.unpack(This_kafka.final_haddock ())) ;;
-let declare_empty x = let _ = This_kafka.declare_empty x in snd(Option.unpack(This_kafka.final_haddock ())) ;;
+let share x = let _ = This_kafka.share x in snd(More_option.unpack(This_kafka.final_haddock ())) ;;
+let declare_empty x = let _ = This_kafka.declare_empty x in snd(More_option.unpack(This_kafka.final_haddock ())) ;;
 
 let act road = let _ = This_kafka.act road in  This_kafka.final_haddock () ;;
 
@@ -5103,12 +5103,12 @@ let u3 = Int_range.index_everything u2 ;;
 let ts l= 
    String.concat "+" (Image.image (fun j->"t"^(string_of_int j)) l);;
 
-let s1 i = (ts(Option.filter_and_unpack (fun (idx,l)->
+let s1 i = (ts(More_option.filter_and_unpack (fun (idx,l)->
     if (List.nth l (i-1) = 1) 
     then Some(idx)
     else None    
   ) u3)) ^ "-" ^(string_of_int m1);;
-let s2 (i,j) = (ts(Option.filter_and_unpack (fun (idx,l)->
+let s2 (i,j) = (ts(More_option.filter_and_unpack (fun (idx,l)->
     if (List.nth l (i-1) = 1) && (List.nth l (j-1) = 1)
     then Some(idx)
     else None    
@@ -5417,7 +5417,7 @@ let original_minimal_carriers carriers sols =
   let indexed_carriers = Int_range.index_everything carriers in 
   let shadow = (
       fun sol ->
-         Option.filter_and_unpack (
+         More_option.filter_and_unpack (
           fun (idx,carrier) -> 
              if i_is_included_in carrier sol 
              then Some idx 
@@ -5456,7 +5456,7 @@ let set_of_minimal_carriers_with_extra carriers sols =
  Nonunique_set_of_minimal_carriers(nonunique) -> (None, Some nonunique)   ;;
 
 let remains_of_obstructions_in_positing_case x=
-  Option.filter_and_unpack (fun j->
+  More_option.filter_and_unpack (fun j->
       let k=(current_width+1)-j in 
       if x>2*k 
       then  Some [x-2*k;x-k]
@@ -5480,7 +5480,7 @@ let analize_sheaf2 (left,bound,right) =
   let (good_opt,bad_opt) = analize_sheaf1(left,bound,right) in 
   (
     match good_opt with 
-     None -> raise(Troublesome_aftersheaf(left,bound,right,Option.unpack bad_opt)) 
+     None -> raise(Troublesome_aftersheaf(left,bound,right,More_option.unpack bad_opt)) 
     |Some usual -> 
       let _ = (ref_for_missing_sheaves:=[left,bound,usual]) in
       raise(Missing_sheaves [left,bound,usual])
@@ -5500,8 +5500,8 @@ let add_carrier_to_another (x,bound) carrier old_carrier =
    let carrier2 = u_product carrier old_carrier in 
    let (good_opt,bad_opt) = set_of_minimal_carriers_with_extra carrier2 (sl x bound) in 
    if good_opt<>None
-   then [Option.unpack good_opt]
-   else raise (Two_carriers_exn(x,bound,carrier,old_carrier,Option.unpack bad_opt));; 
+   then [More_option.unpack good_opt]
+   else raise (Two_carriers_exn(x,bound,carrier,old_carrier,More_option.unpack bad_opt));; 
 
 exception Add_carrier_exn of (int list) * int * (int list list) * (int list list list) ;;
 
@@ -5528,7 +5528,7 @@ let consult_sheaves (left,bound,right) =
   match Hashtbl.find_opt hashtbl_for_sheaves (left,bound)  with 
      None -> None
    | Some (sheaves) -> 
-     Option.seek (fun sheaf->
+     More_option.seek (fun sheaf->
        List.for_all (fun z->is_not_admissible (z@right)) sheaf
       ) sheaves
   ;;        
@@ -5588,7 +5588,7 @@ let commonest_decomposition (x,bound,carriers) =
     (_,(good_opt,bad_opt)) -> good_opt <> None
   ) temp3 in 
   (
-    Image.image (fun ((y,bound,_),(good_opt,bad_opt))->(y,bound,Option.unpack good_opt) ) temp3_good,
+    Image.image (fun ((y,bound,_),(good_opt,bad_opt))->(y,bound,More_option.unpack good_opt) ) temp3_good,
     Image.image (fun (tr,(good_opt,bad_opt))->tr ) temp3_bad,
     dirty_temp
   );;   
@@ -5722,13 +5722,13 @@ let induction_in_solve_case old_f triple =
       let temp4 = List.filter (
           fun tr -> (consult_sheaves_and_double_check tr) = None
       )  temp3 in  
-      let temp5 = Option.filter_and_unpack old_solve temp4 in 
+      let temp5 = More_option.filter_and_unpack old_solve temp4 in 
       if temp5 = []
       then None  
       else Some(List.hd(List.rev temp5))
     ) in 
     let _ = (if opt_sol <>None 
-      then Hashtbl.add hashtbl_for_solving triple (Option.unpack opt_sol)) in 
+      then Hashtbl.add hashtbl_for_solving triple (More_option.unpack opt_sol)) in 
     solve_ret opt_sol
   );;
 
@@ -5904,9 +5904,9 @@ let special_obstructions =
 
 let find_initial_obstruction_opt sorted_l =
      let a =List.hd sorted_l and b = List.hd(List.rev sorted_l) in 
-     match Option.seek (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
+     match More_option.seek (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
         (Int_range.range a (b/4)) with 
-     None -> Option.seek (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
+     None -> More_option.seek (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
      |Some(j) -> Some [j;2*j;3*j;4*j];;   
 
 
@@ -5924,14 +5924,14 @@ module Sensitive = struct
      match opt_bad with 
      Some obstr ->  raise( Sore_wound(obstr,x,stv))
       |None ->
-     let new_sorted = Option.unpack opt_good in   
+     let new_sorted = More_option.unpack opt_good in   
    {
       unsorted = (x,data_for_x) :: stv.unsorted;
       sorted = new_sorted ;
    }   ;;
 
    let coming_from_last_element stv last_elt =
-       let temp1 = Option.filter_and_unpack (fun (x,_)-> 
+       let temp1 = More_option.filter_and_unpack (fun (x,_)-> 
          let y= last_elt -x in 
          if (x>1)&&(x<=y)&&(List.exists (fun (z,_)->z=y) stv.unsorted) 
          then Some(x*y,[x,y])
@@ -6016,7 +6016,7 @@ for j= 1 to 1000 do let _ = push () in () done ;;
 
 let (a,b,c) = (!walker) ;;
 
-let d = List.rev (Option.filter_and_unpack (fun (x,l)->
+let d = List.rev (More_option.filter_and_unpack (fun (x,l)->
     if l=[] then Some x else None) a.unsorted);;
 
 
@@ -7250,7 +7250,7 @@ let remove_module_wrapper_in_text text =
   let (i2,_)= Listennou.force_find (fun (_,line)->
     Supstring.begins_with (Cull_string.trim_spaces line) "end"
   ) (List.rev lines) in 
-  let selected_lines = Option.filter_and_unpack (
+  let selected_lines = More_option.filter_and_unpack (
     fun (i,line)->if List.mem i [i1;i2] then None else Some line
   ) lines in 
   String.concat "\n" selected_lines ;;
@@ -7538,7 +7538,7 @@ let act1 () = Image.image Sys.command cmds1 ;;
 let reached_page_numbers = Ordered.sort Total_ordering.for_integers (Image.image snd u3) ;; 
 
 let u4 = Int_range.scale (
-   fun p->(p,Option.filter_and_unpack (fun (s,q)->if q=p then Some s else None) u3)
+   fun p->(p,More_option.filter_and_unpack (fun (s,q)->if q=p then Some s else None) u3)
 ) min_pageNumber max_pageNumber;;
 
 let u5 = List.filter (fun (p,representatives) -> List.length(representatives)>1) u4 ;;
@@ -7547,7 +7547,7 @@ let bad_ones2 =List.flatten
 let cmds2 = Image.image (fun s->"rm "^downloads_s_dir^"/"^s) bad_ones2;;
 let act2 () = Image.image Sys.command cmds2 ;;
 
-let bad_ones3 = Option.filter_and_unpack 
+let bad_ones3 = More_option.filter_and_unpack 
   (fun (p,representatives) -> 
      if List.length(representatives)=0 then Some p else None) u4 ;;
 
@@ -8004,7 +8004,7 @@ let small_n=1;;
 
 let u1 = Cartesian.fifth_power (Int_range.range 0 small_n);;
 
-let u2 = Option.filter_and_unpack (
+let u2 = More_option.filter_and_unpack (
   fun (a1,a2,a3,a4,a5)->
       let a6 = a3+a4-a5
       and a7 = a2+a4-a5
@@ -8027,7 +8027,7 @@ let supporting_rel uple uple2 =
      
 let supporters uple = List.filter (supporting_rel uple ) u3;;
 
-let u4 = Option.filter_and_unpack (
+let u4 = More_option.filter_and_unpack (
    fun uple -> let r= supporters uple in 
    if r<>[]
     then Some(uple,r)
@@ -8091,7 +8091,7 @@ let cl_tag_length = (String.length html_par_closing_tag)-1 ;;
 
 let detect_nested_paragraphs l=
    let temp1 = Listennou.universal_delta_list l in 
-   match Option.seek (fun 
+   match More_option.seek (fun 
      (((i1,j1),(i2,j2)),((i3,j3),(i4,j4)))->i3<j2
    ) temp1 with 
    None -> ()
@@ -8183,7 +8183,7 @@ let full_text = Htmlize.pages partial_texts ;;
 Io.overwrite_with full_ap full_text;;
 
 let (page1,page2,ranges_for_lfm,ranges_for_fm) =
-   Option.unpack(!(Htmlize.Private.error_handling_ref ));;
+   More_option.unpack(!(Htmlize.Private.error_handling_ref ));;
 
 (* Re-indexed version *)
 

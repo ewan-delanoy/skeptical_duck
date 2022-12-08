@@ -10,7 +10,7 @@ let unsharped_content hm=
     if Sys.file_exists((Absolute_path.to_string ap_ml)^"l")
     then (
            let temp1=Str.split (Str.regexp_string "\n") naive_content in
-           let temp2=Option.filter_and_unpack (
+           let temp2=More_option.filter_and_unpack (
                 fun t->
                  if t="" then Some("") else
                  if String.get t 0='#' then None else Some(t) 

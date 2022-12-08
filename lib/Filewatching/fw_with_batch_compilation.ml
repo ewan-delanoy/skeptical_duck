@@ -123,9 +123,9 @@ module Private = struct
   
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
      match cmod with 
-     Compilation_mode_t.Usual->Option.unpack opt_modnames
+     Compilation_mode_t.Usual->More_option.unpack opt_modnames
      |Compilation_mode_t.Debug
-     |Compilation_mode_t.Executable->let rootless_path=Option.unpack opt_rootless_path in 
+     |Compilation_mode_t.Executable->let rootless_path=More_option.unpack opt_rootless_path in 
          let full_path=Absolute_path.of_string(
           (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
@@ -150,7 +150,7 @@ module Private = struct
       Compilation_mode_t.Usual
      |Compilation_mode_t.Executable ->[] 
      |Compilation_mode_t.Debug->
-        let rootless_path=Option.unpack opt_rootless_path in 
+        let rootless_path=More_option.unpack opt_rootless_path in 
         Command.predebuggable fw rootless_path) in 
      cmds;;
   
@@ -161,7 +161,7 @@ module Private = struct
      Compilation_mode_t.Usual->[] 
      |Compilation_mode_t.Debug
      |Compilation_mode_t.Executable->
-        let rootless_path=Option.unpack opt_rootless_path in 
+        let rootless_path=More_option.unpack opt_rootless_path in 
         Command.debuggable_or_executable cmod fw rootless_path) in 
      cmds;;   
   
@@ -252,7 +252,7 @@ module Private = struct
   let show_value_occurrences fw mn = Fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
 
   let up_to_date_elesses fw =
-    Option.filter_and_unpack (
+    More_option.filter_and_unpack (
       fun mn->
         if last_compilation_result_for_module fw mn
         then Some(Fw_with_dependencies.endingless_at_module fw mn)
@@ -339,7 +339,7 @@ module Private = struct
      let old_nm=Dfn_middle.to_module old_middle_name in
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
      let old_parent = parent fw in 
-     let separated_acolytes_below=Option.filter_and_unpack(
+     let separated_acolytes_below=More_option.filter_and_unpack(
        fun mn->
         if List.mem old_nm (Fw_with_dependencies.ancestors_for_module old_parent mn)
        then Some(Image.image (Dfn_full.to_rootless) (Fw_with_dependencies.acolytes_at_module old_parent mn))

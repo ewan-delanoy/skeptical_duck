@@ -21,7 +21,7 @@
   let leftmost_index_of_in x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) in
-      try (Option.unpack(Int_range.find_it tester 0 (String.length(y)-lx))+1) with
+      try (More_option.unpack(Int_range.find_it tester 0 (String.length(y)-lx))+1) with
       _->(-1);;
   
   let rightmost_index_of_in x y=
@@ -65,13 +65,13 @@ let leftmost_linedex_of_in_from x y i=
 let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
     let n=String.length(whole_string) in
     let temp1=Int_range.index_everything patterns in 
-    let tester =(fun idx->Option.find_and_stop (
+    let tester =(fun idx->More_option.find_and_stop (
          fun (patt_nbr,patt)->
            if is_a_substring_located_at patt whole_string idx 
            then Some(patt_nbr,idx)
            else None
        ) temp1) in
-    Option.find_and_stop tester (Int_range.range start_idx n);;          
+    More_option.find_and_stop tester (Int_range.range start_idx n);;          
       
 (*
 

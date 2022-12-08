@@ -115,7 +115,7 @@ let extend_with (M(reps,qpoints)) extension =
 
 let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
   M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
-     Option.filter_and_unpack (
+     More_option.filter_and_unpack (
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints) ;; 
   

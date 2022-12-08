@@ -12,7 +12,7 @@ exception Non_directory of string;;
 exception File_not_found of string * (Directory_name_t.t list);;
 
 let find_file_with_directory_list fname l=
-  match Option.find_and_stop (
+  match More_option.find_and_stop (
      fun (Directory_name_t.D s_dir) ->
       let full_path = s_dir^"/"^fname in 
       if Sys.file_exists full_path 

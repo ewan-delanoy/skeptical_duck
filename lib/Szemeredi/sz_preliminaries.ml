@@ -62,7 +62,7 @@ module Private = struct
   let force_subset_in_arbitrary_set (Sz_max_width_t.MW width) subset soi =
       let old_obses = look_for_arithmetic_progressions_in_with_width_up_to 
       (Sz_max_width_t.MW width) soi in 
-      let new_obses = Option.filter_and_unpack (
+      let new_obses = More_option.filter_and_unpack (
         fun old_obstruction ->
           let new_obstruction = i_setminus old_obstruction subset in
           if (new_obstruction = old_obstruction) || (new_obstruction = []) 
@@ -74,7 +74,7 @@ module Private = struct
   
   let force_subset_in_interval (Sz_max_width_t.MW width) subset interval =
       let old_obses = arithmetic_progressions_with_width_up_to_in_interval interval (Sz_max_width_t.MW width) in 
-      let new_obses = Option.filter_and_unpack (
+      let new_obses = More_option.filter_and_unpack (
         fun old_obstruction ->
           let new_obstruction = i_setminus old_obstruction subset in
           if (new_obstruction = old_obstruction) || (new_obstruction = []) 
@@ -109,7 +109,7 @@ let evaluate_using_translation_and_distancing max_dist f_opt x=
     ) temp0 in 
   let (_good_temp1,bad_temp1) = List.partition (fun (_opt_good,opt_bad)->opt_bad=None) temp1 in 
   if bad_temp1 = []
-  then let full_solution = List.flatten(Image.image (fun (opt_good,_)->Option.unpack opt_good) temp1) in 
+  then let full_solution = List.flatten(Image.image (fun (opt_good,_)->More_option.unpack opt_good) temp1) in 
         (Some full_solution,None) 
   else (None,Some (temp1,bad_temp1));;
 

@@ -9,7 +9,7 @@ module Private = struct
 
 let compute_all_needed_elesses cs needed_modules needed_subdirs =
     let all_elesses = Fw_with_dependencies.all_endinglesses cs in 
-    let step1_modules = Option.filter_and_unpack 
+    let step1_modules = More_option.filter_and_unpack 
     (fun eless->
       if List.mem (Dfn_endingless.to_subdirectory eless) needed_subdirs
     then Some(Dfn_endingless.to_module eless)

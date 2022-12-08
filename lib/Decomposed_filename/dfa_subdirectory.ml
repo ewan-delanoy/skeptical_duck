@@ -12,7 +12,7 @@ module Private = struct
    let of_line s=
       let n = String.length s in 
       let indices = List.rev(Int_range.range 1 n) in 
-      let limit_idx=(match Option.seek(fun j->(Strung.get s j)<>'/')(indices) with 
+      let limit_idx=(match More_option.seek(fun j->(Strung.get s j)<>'/')(indices) with 
          None -> 0 |Some(j)->j
       ) in 
       Dfa_subdirectory_t.SD (Cull_string.beginning limit_idx s);;   

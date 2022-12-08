@@ -110,7 +110,7 @@ module Bare = struct
             (Supstring.begins_with fn pdf_name_start)&&
             (Supstring.ends_with fn ending)
       ) temp1 in 
-      let temp3=Option.filter_and_unpack (
+      let temp3=More_option.filter_and_unpack (
          fun fn->
            let temp3=Cull_string.two_sided_cutting (pdf_name_start,ending) fn in 
            try (fun i->Some(i,fn))(int_of_string temp3) with 
@@ -122,7 +122,7 @@ module Bare = struct
 
   let implode_following_a_special_order (pdf_name_start,pdf_name_end) special_order=
       let ending = pdf_name_end^".pdf" in 
-      let temp1=Option.filter_and_unpack (
+      let temp1=More_option.filter_and_unpack (
          fun k->
           let full_filename = pdf_name_start^(string_of_int k)^ending in 
           let full_path = (!workspace_directory)^"/"^full_filename in 
@@ -135,7 +135,7 @@ module Bare = struct
   
   let cleanup_after_special_order (pdf_name_start,pdf_name_end) special_order=
       let ending = pdf_name_end^".pdf" in 
-      Option.filter_and_unpack (
+      More_option.filter_and_unpack (
          fun k->
           let full_filename = pdf_name_start^(string_of_int k)^ending in 
           let full_path = (!workspace_directory)^"/"^full_filename in 
@@ -146,7 +146,7 @@ module Bare = struct
    
   let mass_rename ?(range=(1,500)) ~old_prefix ~new_prefix offset  =
     let (range_start,range_end) = range in 
-        Option.filter_and_unpack (
+        More_option.filter_and_unpack (
         fun k-> 
            let old_fn = old_prefix ^ (string_of_int k) ^ ".pdf" 
            and new_fn = new_prefix ^ (string_of_int (k+offset)) ^ ".pdf" in 

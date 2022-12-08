@@ -44,7 +44,7 @@ let decompose_according_to_end_markers f l =
      fun (treated,to_be_treated)->
        let (before,opt,after)=select_center_element f to_be_treated in 
        if opt=None then (List.rev treated,before) else 
-       tempf((before,Option.unpack opt)::treated,after)
+       tempf((before,More_option.unpack opt)::treated,after)
   ) in 
   tempf([],l);;
 

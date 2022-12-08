@@ -135,7 +135,7 @@ let next_basic_increase  s idx=
    if Substring.is_a_substring_located_at string_opener s idx 
    then next_basic_increase_in_push_string_case s idx
    else 
-   match Option.seek (fun 
+   match More_option.seek (fun 
       (text,_action)->Substring.is_a_substring_located_at text s idx
    ) list_for_preludeless_increasers with 
    None -> raise(Unreadable_increase(idx,s))
@@ -174,7 +174,7 @@ let parse s =
     Some (res)-> if next_idx < (String.length s)
                  then raise(Ends_too_soon(res,s)) 
                  else res 
-    |None -> let start_partial_obj = Option.unpack opt_start in   
+    |None -> let start_partial_obj = More_option.unpack opt_start in   
              let machine = {
                 Crobj_parsing_machine_t.parsed_one = s ;
                 Crobj_parsing_machine_t.current_index = next_idx ;
@@ -183,7 +183,7 @@ let parse s =
              let rec iterator = (fun mach ->
                 let (opt_sol,opt_term) = prudent_push mach in 
                 match opt_term with 
-                None -> Option.unpack opt_sol 
+                None -> More_option.unpack opt_sol 
                 |Some(term)->iterator(term) 
              ) in 
              iterator machine;;

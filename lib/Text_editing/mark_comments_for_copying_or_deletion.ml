@@ -28,7 +28,7 @@ let check_for_open_close_mismatch openers closers =
 
 let check_for_overlapping_intervals indexed_lines pairs =
   let temp1 = Listennou.universal_delta_list pairs in 
-  match Option.seek (
+  match More_option.seek (
     fun ((_i1_open,i2_close),(i3_open,_i4_close)) -> 
       i3_open < i2_close
   ) temp1 with 
@@ -49,13 +49,13 @@ let check_for_overlapping_intervals indexed_lines pairs =
 
 let ranges_for_marked_comments text =
    let indexed_lines = Lines_in_string.indexed_lines text in 
-   let openers = Option.filter_and_unpack (
+   let openers = More_option.filter_and_unpack (
       fun (line_idx,line) ->
        if is_an_opening_line line
        then Some(line_idx)
        else None   
    )  indexed_lines 
-   and closers = Option.filter_and_unpack (
+   and closers = More_option.filter_and_unpack (
     fun (line_idx,line) ->
      if is_a_closing_line line
      then Some(line_idx)
@@ -144,7 +144,7 @@ let delete_in_string src =
   let is_to_be_kept = (fun idx ->
     List.for_all (fun (a,b)->(idx<a)||(b<idx)) ranges
   ) in 
-  let kept_lines = Option.filter_and_unpack (
+  let kept_lines = More_option.filter_and_unpack (
     fun (linedex,line) ->
        if is_to_be_kept linedex 
        then Some line 

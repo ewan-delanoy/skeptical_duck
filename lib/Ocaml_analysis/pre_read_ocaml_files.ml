@@ -19,7 +19,7 @@ module Private=struct
   let uncatched_read1 s=
     let opt=Gparser_apply.apply Gparser_for_ocaml_language.main_prsr s 1 in
     if opt=None then accuse_final_excerpt s 1 else
-    let res=Option.unpack opt in 
+    let res=More_option.unpack opt in 
     let p=Gparser_result.final_cursor_position res in
     if p<=(String.length s) 
     then accuse_final_excerpt s p
@@ -27,8 +27,8 @@ module Private=struct
     let temp1=Gparser_result.important_ranges res in
     Image.image (fun (i,j)->
       let opt=Gparser_apply.apply Gparser_for_ocaml_language.elt_prsr s i in
-      let res=Option.unpack opt in
-      ((i,j),Option.unpack(Gparser_result.disjunction_index res))
+      let res=More_option.unpack opt in
+      ((i,j),More_option.unpack(Gparser_result.disjunction_index res))
     ) temp1;;
   
   exception Read1_exn of string;;
@@ -37,7 +37,7 @@ module Private=struct
     
   let describe_value_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_value_making s i in
-       let res=Option.unpack opt in
+       let res=More_option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 
             (Gparser_for_ocaml_language.index_for_name_in_value_parser-1)
        and (i2,j2)=List.nth(Gparser_result.important_ranges res) 
@@ -55,7 +55,7 @@ module Private=struct
   
   let describe_type_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_type_making s i in
-       let res=Option.unpack opt in
+       let res=More_option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 3
        and (i2,j2)=List.nth(Gparser_result.important_ranges res) 6 
        and (i3,j3)=Gparser_result.whole_range res in
@@ -71,7 +71,7 @@ module Private=struct
   
   let describe_exception_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_exception_making s i in
-       let res=Option.unpack opt in
+       let res=More_option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2
        and (i2,j2)=List.nth(Gparser_result.important_ranges res) 3 
        and (i3,j3)=Gparser_result.whole_range res in
@@ -87,7 +87,7 @@ module Private=struct
   
   let describe_module_opener_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_module_opener s i in
-       let res=Option.unpack opt in
+       let res=More_option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2
        and (i3,j3)=Gparser_result.whole_range res in 
          Ocaml_gsyntax_item.make
@@ -113,7 +113,7 @@ module Private=struct
   
   let describe_module_inclusion_item s (i,_j)=
        let opt=Gparser_apply.apply Gparser_for_ocaml_language.prsr_for_module_inclusion s i in
-       let res=Option.unpack opt in
+       let res=More_option.unpack opt in
        let (i1,j1)=List.nth(Gparser_result.important_ranges res) 2 
        and (i3,j3)=Gparser_result.whole_range res in 
          Ocaml_gsyntax_item.make
@@ -146,7 +146,7 @@ module Private=struct
      else None;;
      
   let uncatched_read2 s=
-     Option.filter_and_unpack (describe_item s) (read1 s);;   
+     More_option.filter_and_unpack (describe_item s) (read1 s);;   
      
   
   

@@ -38,7 +38,7 @@ let compute_dependencies  l =
   let _ = treat_circular_dependencies cycles in
   let coatoms = Memoized.make (fun mname ->
     let old_order = coatoms_in_lex_order mname in 
-    Option.filter_and_unpack (fun (mn,_)->
+    More_option.filter_and_unpack (fun (mn,_)->
        if Ordered.mem lex_order mn old_order 
        then Some mn 
        else None  
@@ -63,7 +63,7 @@ let rec iterator_for_ancestor_computation (treated,to_be_treated) =
    | (mn,coat_mn) :: others ->
       let temp1 = (coat_mn) :: (Image.image (fun mn2->snd(List.assoc mn2 treated)) coat_mn) in 
       let ancestors_in_lex_order = Ordered.sort lex_order (List.flatten temp1) in 
-      let ancestors_mn = Option.filter_and_unpack (
+      let ancestors_mn = More_option.filter_and_unpack (
          fun (mn3,_) ->
             if Ordered.mem lex_order mn3  ancestors_in_lex_order 
             then Some mn3 

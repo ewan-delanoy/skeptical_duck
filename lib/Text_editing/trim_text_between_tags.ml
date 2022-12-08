@@ -64,7 +64,7 @@ let process_without_open_pars app  s data=
                     	 let new_result=(None,enclosed_substring) in
                     	 data.partial_result<-new_result::(data.partial_result)
                ) in
-               let temp1=Option.filter_and_unpack (fun pair->
+               let temp1=More_option.filter_and_unpack (fun pair->
                   let (P(l_par,_r_par)) = pair in 
                   if l_par=lparen
                   then Some(pair,data.cursor_location)
@@ -77,11 +77,11 @@ let process_without_open_pars app  s data=
 let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=Option.seek (fun (paren,_idx)->test_for_right_paren_at_index s i paren) temp1 in
+  let opt1=More_option.seek (fun (paren,_idx)->test_for_right_paren_at_index s i paren) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let (best_paren,_)=Option.unpack opt1 in
+       let (best_paren,_)=More_option.unpack opt1 in
        let (P(lparen,rparen))=best_paren 
        and new_list=List.tl(data.currently_open_pars) in
        let _=(

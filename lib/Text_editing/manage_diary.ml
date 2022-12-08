@@ -33,13 +33,13 @@ module Private = struct
   
   let snippet_analysis text =
      let temp1 = Substring.occurrences_of_in snippet_keyword text in 
-     Option.filter_and_unpack (snippet_analysis_at_index text) temp1 ;;
+     More_option.filter_and_unpack (snippet_analysis_at_index text) temp1 ;;
   
   let apply_replacements_to_snippet replacements absolute_idx sn_descr sn_indices = 
       if sn_indices = []  
       then ("Snippet ")^(string_of_int absolute_idx)^" : "^sn_descr 
       else
-        let changes_to_be_made = Option.filter_and_unpack (
+        let changes_to_be_made = More_option.filter_and_unpack (
            fun (i_start,i_end,snippet_idx) ->
             match List.assoc_opt snippet_idx replacements with 
             None -> None 
@@ -133,7 +133,7 @@ module Private = struct
         (sn_descr,sn_content,snippet_analysis sn_descr)
       ) pairs in 
       let temp2 = Int_range.index_everything temp1 in 
-      let replacements = Option.filter_and_unpack (
+      let replacements = More_option.filter_and_unpack (
         fun (absolute_idx,(_sn_descr,_sn_content,sn_indices)) ->
            match sn_indices with 
            [] -> None 
@@ -150,7 +150,7 @@ module Private = struct
   
   let remove_snippets (D pairs) indices=
     let temp1 = Int_range.index_everything pairs in 
-    let pairs2 = Option.filter_and_unpack (fun 
+    let pairs2 = More_option.filter_and_unpack (fun 
        (idx,pair) -> 
         if List.mem idx indices then None else Some pair
     ) temp1 in 

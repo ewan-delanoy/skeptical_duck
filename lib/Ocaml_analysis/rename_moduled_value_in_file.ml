@@ -14,13 +14,13 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    else 
    let module_name=Cull_string.beginning (j-1) old_name in
    let temp3=Read_ocaml_files.read_ocaml_files preceding_files in
-   let opt_temp4=Option.seek (fun itm->
+   let opt_temp4=More_option.seek (fun itm->
      (itm.Ocaml_gsyntax_item.name)=old_name
    ) temp3 in
    if opt_temp4=None
    then raise(No_value_with_name(old_name))
    else
-   let temp4=Option.unpack(opt_temp4) in
+   let temp4=More_option.unpack(opt_temp4) in
    let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
    let _=Overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
    let temp3_again=Read_ocaml_files.read_ocaml_files preceding_files in
@@ -34,7 +34,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    ) temp3_again in
    let k1=Listennou.find_index temp4_again temp3_again in
    let temp5=Listennou.big_tail k1 temp3_again in
-   let temp6=Option.filter_and_unpack(
+   let temp6=More_option.filter_and_unpack(
       fun itm->
         let txt=itm.Ocaml_gsyntax_item.content in
         let ttemp7=Isolated_occurrences.of_in 

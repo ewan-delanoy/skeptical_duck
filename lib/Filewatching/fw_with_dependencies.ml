@@ -232,7 +232,7 @@ let register_rootless_paths old_fw rootlesses =
   let tempf1 = (
     fun old_pair -> 
       let (mn,_) = old_pair in 
-      let temp1 = Option.filter_and_unpack (fun (rl,details2)->
+      let temp1 = More_option.filter_and_unpack (fun (rl,details2)->
          if (Dfn_rootless.to_module rl)= mn
          then Some(rl,Some(rl,details2))
          else None 
@@ -855,7 +855,7 @@ end ;;
 module All_printables = struct 
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
- let force_get fw =  let mods_without_subdirs = Option.filter_and_unpack (
+ let force_get fw =  let mods_without_subdirs = More_option.filter_and_unpack (
   fun (mn,details) ->
  if Fw_module_small_details.has_printer details
   then Some mn
@@ -994,7 +994,7 @@ end ;;
    then Fw_module_small_details.mli_present (details_for_module fw mn) 
    else false;;
   let modules_with_their_ancestors fw l=
-   let temp1=Option.filter_and_unpack (
+   let temp1=More_option.filter_and_unpack (
      fun (nm,_)->if List.mem nm l then Some nm else None
      ) (Order.get fw )   in 
    let temp2=Image.image (
@@ -1026,7 +1026,7 @@ end ;;
 
   let acolytes_at_module fw mn=
     let eless = endingless_at_module fw mn in
-    Option.filter_and_unpack (fun 
+    More_option.filter_and_unpack (fun 
     edg->
       if check_ending_in_at_module edg fw mn
       then Some(Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending edg))
@@ -1039,7 +1039,7 @@ end ;;
        
  let all_moduled_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
 
-let archived_mlx_paths cs = Option.filter_and_unpack (
+let archived_mlx_paths cs = More_option.filter_and_unpack (
    fun rl -> let edg = Dfn_rootless.to_ending rl in 
      if List.mem edg Dfa_ending.all_ocaml_endings 
      then let full = Dfn_join.root_to_rootless (root cs) rl in 
@@ -1059,7 +1059,7 @@ let all_mlx_paths cs = (archived_mlx_paths cs) @ (all_moduled_mlx_paths cs) ;;
  let temp4=Image.image fst temp3 in 
  let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
  Image.image (
-    fun x->(x,Option.filter_and_unpack(
+    fun x->(x,More_option.filter_and_unpack(
       fun (y,ap)->if y=x then Some(ap) else None
     ) temp3)
  ) temp5 ;;
@@ -1087,7 +1087,7 @@ let number_of_modules fw = List.length (Order.get fw) ;;
 let below fw eless=
   let mods_in_order = Order.get fw in 
   let mn0=Dfn_endingless.to_module eless  in
-  Option.filter_and_unpack(fun (mn,_)->
+  More_option.filter_and_unpack(fun (mn,_)->
     if List.mem mn0 (snd(List.assoc mn mods_in_order))
     then Some(mn)
     else None) mods_in_order;;
@@ -1106,7 +1106,7 @@ let decipher_path fw x=Find_suitable_ending.find_file_location
 let decipher_module fw capitalized_or_not_x=
   let x=String.uncapitalize_ascii capitalized_or_not_x in 
   let s=Cull_string.before_rightmost_possibly_all x '.' in
-  match (Option.find_and_stop(
+  match (More_option.find_and_stop(
       fun edg->
       let t=s^(Dfa_ending.connectable_to_modulename edg) in 
       try(Some(decipher_path fw t)) with _->None
@@ -1121,7 +1121,7 @@ let decipher_module fw capitalized_or_not_x=
 
   let below fw mn0 =
         let ordered_data = Order.get fw in 
-        Option.filter_and_unpack(fun (mn,_)->
+        More_option.filter_and_unpack(fun (mn,_)->
             let ancestors_for_mn = snd (List.assoc mn ordered_data) in 
             if List.mem mn0 ancestors_for_mn
             then Some(mn)
@@ -1129,7 +1129,7 @@ let decipher_module fw capitalized_or_not_x=
    
   let directly_below fw mn0 =
     let ordered_data = Order.get fw in 
-    Option.filter_and_unpack(fun (mn,_)->
+    More_option.filter_and_unpack(fun (mn,_)->
       let fathers_for_mn = fst (List.assoc mn ordered_data) in 
         if List.mem mn0 fathers_for_mn
         then Some(mn)
@@ -1137,7 +1137,7 @@ let decipher_module fw capitalized_or_not_x=
 
 
   let modules_using_value fw value_name =
-    Option.filter_and_unpack (fun (mn,_)->
+    More_option.filter_and_unpack (fun (mn,_)->
       let eless=endingless_at_module fw mn
       and pr_end=Fw_module_small_details.principal_ending (details_for_module fw mn) in
       let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
@@ -1185,7 +1185,7 @@ let decipher_module fw capitalized_or_not_x=
         Unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;      
 
     let all_moduled_ml_absolute_paths fw =  
-        Option.filter_and_unpack (fun (mn,_)->
+        More_option.filter_and_unpack (fun (mn,_)->
           if not(check_ending_in_at_module Dfa_ocaml_ending_t.Ml fw mn)
           then None
           else 
@@ -1217,7 +1217,7 @@ let test_for_foreign root ap =
 
 
 let check_module_sequence_for_forgettability fw l=
- let modules_below = Option.filter_and_unpack (
+ let modules_below = More_option.filter_and_unpack (
    fun (mn,(_,ancestors_for_mn)) -> 
     if List.exists (fun mn2->
        List.mem mn2 ancestors_for_mn

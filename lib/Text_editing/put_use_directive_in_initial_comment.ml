@@ -8,7 +8,7 @@ let detect_initial_comment_in_text text =
   let lines = Lines_in_string.indexed_lines text in 
   let first_line = snd (List.hd lines) in 
   if (Cull_string.trim_spaces first_line) <> "(*" then None else 
-  match Option.seek (fun (line_idx,line)->
+  match More_option.seek (fun (line_idx,line)->
      if (line_idx<=1) then false else
      let trimmed_line = Cull_string.trim_spaces line in 
      Supstring.begins_with trimmed_line "#use"
@@ -16,7 +16,7 @@ let detect_initial_comment_in_text text =
   None -> None 
   |Some(i1,line1) ->
  (
-  match Option.seek (fun (line_idx,line)->
+  match More_option.seek (fun (line_idx,line)->
     if (line_idx<=i1) then false else
     let trimmed_line = Cull_string.trim_spaces line in 
     trimmed_line = "*)"

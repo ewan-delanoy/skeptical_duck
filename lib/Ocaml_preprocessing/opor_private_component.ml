@@ -19,7 +19,7 @@ module Private = struct
           
        
       let fields_with_crobj_conversion por =
-             Option.filter_and_unpack (
+             More_option.filter_and_unpack (
                fun fld ->
                 match fld.Old_polymorphic_ocaml_record_t.crobj_converters with 
                 None -> None 

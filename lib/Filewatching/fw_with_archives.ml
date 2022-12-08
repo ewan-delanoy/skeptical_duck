@@ -62,7 +62,7 @@ module Private = struct
       canonical_tripartition fw all_files ;;
 
    let compilable_files fw =
-      Option.filter_and_unpack (
+      More_option.filter_and_unpack (
          fun (rl,_)->
             if Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
             then Some rl 

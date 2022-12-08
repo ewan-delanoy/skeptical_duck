@@ -39,7 +39,7 @@ let iterator coat
     then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in
          let ordered_set_version=Set_of_polys.fold_merge(temp3) in
-         let temp4=Option.filter_and_unpack (
+         let temp4=More_option.filter_and_unpack (
            fun (b,_)->if Set_of_polys.mem b ordered_set_version
              then Some(b)
              else None
@@ -58,7 +58,7 @@ let iterator coat
          [],not_yet_checked2,None) 
     else 
     (*see if we can close the cycle *)
-    match Option.seek(fun (x,_y)->Set_of_polys.mem x temp1) between with
+    match More_option.seek(fun (x,_y)->Set_of_polys.mem x temp1) between with
      None->(checked,checked_union,cycles,cycles_union,
      		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->
@@ -75,7 +75,7 @@ let reconstruct_linear_poset coat l=
   let rec tempf=(fun
   (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt)->
     if opt<>None
-    then Option.unpack opt
+    then More_option.unpack opt
     else tempf(iterator coat 
     (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt))
     ) in

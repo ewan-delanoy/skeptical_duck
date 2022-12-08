@@ -8,7 +8,7 @@ let compute_deleted_in_diff sourcedir destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
    let temp1=More_unix.quick_beheaded_complete_ls s_destdir in
-   Option.filter_and_unpack(
+   More_option.filter_and_unpack(
        fun s->if (s<>"README")
               &&(not(Supstring.begins_with s ".git/")) 
               &&(not(Sys.file_exists(s_sourcedir^s)))
@@ -69,7 +69,7 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
       (Dfa_root.without_trailing_slash sourcedir) in
    let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
    let ignored_subdirs1=Image.image Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
-   Option.filter_and_unpack (fun ap->
+   More_option.filter_and_unpack (fun ap->
      let s_ap = Absolute_path.to_string ap in 
      let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
      if (List.exists(Supstring.begins_with s_rootless) ignored_subdirs1) ||
@@ -89,7 +89,7 @@ let commands_for_update (source_dir,destination_dir) diff=
    else 
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Dircopy_diff.recently_created diff  in
-   let temp2=Option.filter_and_unpack
+   let temp2=More_option.filter_and_unpack
    (fun rl->
      let fn = Dfn_rootless.to_line rl in 
      if String.contains fn '/'

@@ -25,7 +25,7 @@ module Private = struct
     let check_for_overlapping_occurrences pattern txt indices=
       let p = String.length pattern in 
       let temp1 = Listennou.universal_delta_list indices in 
-      match Option.seek (fun (i,j)->j-i<p) temp1 with 
+      match More_option.seek (fun (i,j)->j-i<p) temp1 with 
       None -> ()
       |Some(i0,j0) -> raise(Overlapping_occurrences(Cull_string.interval txt i0 (j0+p-1)));;
 

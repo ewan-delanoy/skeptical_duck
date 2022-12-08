@@ -31,9 +31,9 @@ if na=1 then single_char_special_case (String.get a 0,b) s else
 let indices=Substring.occurrences_of_in a s in
 if indices=[] then (s,0) else
 let delta_indices = Listennou.universal_delta_list indices in 
-let opt_ambiguity=Option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
+let opt_ambiguity=More_option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
 if  opt_ambiguity<>None
-then let (start1,start2)=Option.unpack opt_ambiguity in 
+then let (start1,start2)=More_option.unpack opt_ambiguity in 
      raise(Ambiguity(a,start1,start2))
 else  
 let m=List.length indices in 

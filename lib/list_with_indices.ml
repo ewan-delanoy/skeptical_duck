@@ -8,7 +8,7 @@ exception Bad_set_of_indices;;
 
 let list_with_indices l=
   let n=List.length l in
-  let temp1=Int_range.scale (fun i->Option.seek(fun p->fst(p)=i) l) 1 n in
+  let temp1=Int_range.scale (fun i->More_option.seek(fun p->fst(p)=i) l) 1 n in
   if List.mem None temp1
   then raise(Bad_set_of_indices)
   else
