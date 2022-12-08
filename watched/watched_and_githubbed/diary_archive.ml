@@ -1,7 +1,38 @@
 (************************************************************************************************************************
-Snippet 111 : 
+Snippet 112 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
+
+
+(************************************************************************************************************************
+Snippet 111 : Cleanup unused modules
+************************************************************************************************************************)
+open Needed_values ;; 
+
+let z1 = ae () ;; 
+let z2 = Image.image (fun el->
+  (Dfa_module.to_line(Dfn_endingless.to_module el),el)) z1 ;; 
+let z3 =  (Explicit.image (fun (mn,el)->
+  (mn,vfm mn,el)  
+)) z2 ;; 
+let z4 = More_option.filter_and_unpack (fun (mn,v,el)->
+    if v = [] then Some(mn,el) else None
+  ) z3 ;; 
+let pre_z5 = Image.image fst z4 ;;   
+let kept_modules = [
+  "yp_token_info"; "yp_flag_parsing_php"; "tested_module_four";
+   "tested_module_five"; "sy_token_info_t"; "buenzli_uutf";
+   "legendre_symbol"; 
+   "self_contained_module_copy"; "node_project"; 
+   "tools_for_debugging"; "yp_php_lexer";
+   "por_types"
+] ;; 
+let z6 = List.filter (fun x->not(List.mem x kept_modules)) pre_z5 ;;
+
+let check_z6 = List.filter (fun x->bel(x)<>[]) z6 ;;
+
+let cs1 = Usual_coma_state.Private.main_ref ;;
+
 
 (************************************************************************************************************************
 Snippet 110 : Construct a get_variant_name function from a long type definition 
