@@ -1,8 +1,35 @@
 (************************************************************************************************************************
-Snippet 110 : 
+Snippet 111 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 
+(************************************************************************************************************************
+Snippet 110 : Construct a get_variant_name function from a long type definition 
+************************************************************************************************************************)
+
+let ap1 = Absolute_path.of_string "lib/Padioleau/yp_php_lexer.mll" ;; 
+let old_text = Io.read_whole_file ap1;;
+let (before_u1,u1,after_u1) = Lines_in_string.tripartition_associated_to_interval old_text 1142 1320 ;; 
+let u2 = Lines_in_string.lines u1 ;; 
+let u3 = Image.image (fun line->
+  Option.unpack(Cull_string.before_and_after " of " line)) u2 ;; 
+let u4 = Ordered.sort Total_ordering.silex_for_strings  (Image.image snd u3) ;; 
+let u5 = [
+  "Yp_token_info_t.t", "(_)"; 
+  "Yp_token_info_t.t ", "(_)"; 
+  "bool * Yp_token_info_t.t", "(_,_)";
+  "string * Yp_token_info_t.t", "(_,_)";
+  "int option * Yp_token_info_t.t", "(_,_)";
+  "float option * Yp_token_info_t.t", "(_,_)";] ;;
+let u6 = Image.image (
+   fun (before_ov,after_ov) ->
+     let (_,name) = Option.unpack(Cull_string.before_and_after "| " before_ov) in 
+     let circled = List.assoc after_ov u5 in 
+     before_ov^circled^" -> \""^name^"\""
+) u3 ;;
+let u7 = String.concat "\n" u6 ;; 
+let new_text = before_u1 ^ u7 ^ after_u1 ;; 
+Io.overwrite_with ap1 new_text ;; 
 
 (************************************************************************************************************************
 Snippet 110 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
