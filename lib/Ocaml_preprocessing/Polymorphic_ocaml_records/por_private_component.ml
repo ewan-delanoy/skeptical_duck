@@ -117,10 +117,12 @@ module Private = struct
       
       let extender_data por (before_ext,after_ext) =
             let ext_name = Por_common.extender_name (before_ext,after_ext) in 
-            let inst_before = Por_common.get_subclass por before_ext 
-            and inst_after = Por_common.get_subclass por after_ext  in 
-            let field_names_before = inst_before.Por_subclass_t.adbridged_subclass_fields 
-            and field_names_after = inst_after.Por_subclass_t.adbridged_subclass_fields in 
+            let subcl_before = Por_common.get_subclass por before_ext 
+            and subcl_after = Por_common.get_subclass por after_ext  in 
+            let fields_before = subcl_before.Por_subclass_t.subclass_fields 
+            and fields_after = subcl_after.Por_subclass_t.subclass_fields in 
+            let field_names_before = Image.image (fun fd->fd.Por_types.field_name) fields_before 
+            and field_names_after = Image.image (fun fd->fd.Por_types.field_name) fields_after in
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
@@ -277,19 +279,20 @@ module Private = struct
       
       module Type_information = struct
 
-      let element_in_fields_for_subclasss (inst_name,inst_fields)=
-         let temp1 = Image.image Strung.enclose inst_fields in 
-         (Strung.enclose (String.capitalize_ascii inst_name))^" , ["^(String.concat ";" temp1)^"]" ;;
+      let element_in_fields_for_subclasss (subcl_name,subcl_fields)=
+         let temp1 = Image.image Strung.enclose subcl_fields in 
+         (Strung.enclose (String.capitalize_ascii subcl_name))^" , ["^(String.concat ";" temp1)^"]" ;;
 
       let  text_for_fields_for_subclasss por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Por_subclass_t.adbridged_subclass_name,
-                  inst.Por_subclass_t.adbridged_subclass_fields)
+              inst -> (inst.Por_subclass_t.subclass_name,
+                 Image.image (fun fd->fd.Por_types.field_name) inst.Por_subclass_t.subclass_fields)
             ) por.Por_space_t.subclasses in 
             
              (
              "let fields_for_subclasss = [\n"^
-               ( String.concat ";\n" (Image.image element_in_fields_for_subclasss temp1 ))
+               ( String.concat ";\n" 
+               (Image.image element_in_fields_for_subclasss temp1 ))
                ^"\n] ;;"
              );;      
       

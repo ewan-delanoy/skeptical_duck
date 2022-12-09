@@ -26,10 +26,10 @@ let field_order = ((fun fld1 fld2 ->
        Total_ordering.standard fld1 fld2         
   ) : Por_types.field_t Total_ordering_t.t);;
 
-let all_fields subclasses =
+let all_fields por =
   let to_be_flattened = Image.image (
     fun scl -> scl.Por_subclass_t.subclass_fields
-  ) (* porsp.Por_space_t. *) subclasses in 
+  ) por.Por_space_t.subclasses in 
   let unordered_fields = List.flatten to_be_flattened in 
       Ordered.sort field_order unordered_fields ;; 
 
@@ -42,15 +42,15 @@ let extensions_from_different_sources por =
   (por.Por_space_t.extensions @
   (Image.image (fun (x,y)->(y,x)) por.Por_space_t.designated_parents)) ;; 
 
-let get_field por fd_name =
-  match List.find_opt (fun fd->fd.Por_types.field_name = fd_name)
-          por.Por_space_t.fields with 
+let get_field por fd_name = 
+  let fields = all_fields por in 
+  match List.find_opt (fun fd->fd.Por_types.field_name = fd_name) fields with 
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
     
 let get_subclass por inst_name =
-  match List.find_opt (fun fd->fd.Por_subclass_t.adbridged_subclass_name = inst_name)
+  match List.find_opt (fun fd->fd.Por_subclass_t.subclass_name = inst_name)
             por.Por_space_t.subclasses with 
     Some answer -> answer 
   | None -> raise ( Get_subclass_exn(inst_name)) ;;    
