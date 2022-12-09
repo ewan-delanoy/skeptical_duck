@@ -11,17 +11,15 @@ module Private = struct
      None -> None 
    |Some idx -> Some(Cull_string.beginning idx s,Cull_string.cobeginning (idx+1) s) ;;
  
+   let field_constructor  (a,b,c,d,e) = {
+     Por_types.field_name = a ;
+     field_type = b ;
+     var_name =c ;
+     default_value = d ;
+     crobj_converters = decode_pair_of_converters e ;
+  } ;;
 
-
-let field_list_constructor l = Image.image (
-  fun (a,b,c,d,e) -> {
-   Por_types.field_name = a ;
-   field_type = b ;
-   var_name =c ;
-   default_value = d ;
-   crobj_converters = decode_pair_of_converters e ;
-}
-) l;;
+let field_list_constructor l = Image.image field_constructor l;;
 
 
 let fields_for_gw_configuration = field_list_constructor [
@@ -95,10 +93,17 @@ let second_base = [
 
 let full_base =  cumulative_first_base @ second_base ;;     
 
-let subclass_list_constructor l = Image.image (
+let adbridged_subclass_list_constructor l = Image.image (
   fun (a,b) -> {
     Por_subclass_t.adbridged_subclass_name = a ;
     adbridged_subclass_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
+  }
+) l;;
+
+let subclass_list_constructor l = Image.image (
+  fun (a,b) -> {
+    Por_subclass_t.subclass_name = a ;
+    subclass_fields = b ;
   }
 ) l;;
 
@@ -109,10 +114,15 @@ let field_order = ((fun fld1 fld2 ->
      Total_ordering.standard fld1 fld2         
 ) : Por_types.field_t Total_ordering_t.t);;
 
+let fields_in_order = Ordered.sort field_order all_fields ;; 
 
+let select_field fd_name =
+   List.find (
+    fun fd -> fd.Por_types.field_name = fd_name
+   ) 
+   fields_in_order ;;
   
-
-
+let unabridged_subclasses = subclass_list_constructor full_base ;; 
 
 let example = 
   let home = Sys.getenv "HOME" in 
@@ -122,7 +132,7 @@ let example =
    Por_space_t.main_type_name = "t" ;
    module_name = "gw_poly" ;
    fields = Ordered.sort field_order all_fields ;
-   subclasses = subclass_list_constructor full_base ;
+   subclasses = adbridged_subclass_list_constructor full_base ;
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
