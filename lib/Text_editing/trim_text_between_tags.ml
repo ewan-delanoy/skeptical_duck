@@ -81,7 +81,7 @@ let process_with_open_pars app  s data=
   if opt1=None
   then process_without_open_pars app  s data
   else 
-       let (best_paren,_)=More_option.unpack opt1 in
+       let (best_paren,_)=Option.get opt1 in
        let (P(lparen,rparen))=best_paren 
        and new_list=List.tl(data.currently_open_pars) in
        let _=(

@@ -21,7 +21,7 @@
   let leftmost_index_of_in x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) in
-      try (More_option.unpack(Int_range.find_it tester 0 (String.length(y)-lx))+1) with
+      try (Option.get(Int_range.find_it tester 0 (String.length(y)-lx))+1) with
       _->(-1);;
   
   let rightmost_index_of_in x y=

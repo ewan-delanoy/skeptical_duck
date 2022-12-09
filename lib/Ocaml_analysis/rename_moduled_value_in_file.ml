@@ -20,7 +20,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    if opt_temp4=None
    then raise(No_value_with_name(old_name))
    else
-   let temp4=More_option.unpack(opt_temp4) in
+   let temp4=Option.get(opt_temp4) in
    let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
    let _=Overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
    let temp3_again=Read_ocaml_files.read_ocaml_files preceding_files in

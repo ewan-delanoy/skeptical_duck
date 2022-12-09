@@ -27,7 +27,7 @@ let new_walker_in_first_case_in_hwd (m,wlkr)=
         m.processed_argument wlkr.current_index
    ) m.other_enclosers in
    if opt1<>None
-   then let (op1,cl1)=More_option.unpack opt1 in
+   then let (op1,cl1)=Option.get opt1 in
         {
         	current_index =wlkr.current_index+(String.length op1);
             current_depth =wlkr.current_depth;
@@ -79,7 +79,7 @@ let first_case_in_hwd
    (m,wlkr)=(m,new_walker_in_first_case_in_hwd (m,wlkr));;
   
 let second_case_in_hwd (m,wlkr)=
-  let rparen=More_option.unpack wlkr.awaited_closer in
+  let rparen=Option.get wlkr.awaited_closer in
   if Substring.is_a_substring_located_at rparen 
       m.processed_argument wlkr.current_index
   then (m,{

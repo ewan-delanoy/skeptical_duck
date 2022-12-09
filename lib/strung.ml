@@ -244,7 +244,7 @@ let pusher_inside_nested_parentheses_parsing
      if opt = None 
      then raise(Unfinished_expression(idx,s))
      else 
-     let (case,new_idx)=More_option.unpack opt in
+     let (case,new_idx)=Option.get opt in
      let joiner=List.nth joiners (case-1) in 
      let idx2=new_idx+String.length(joiner) in 
      if case=1
@@ -296,7 +296,7 @@ let parse_nested_parentheses
     if opt1=None 
     then raise(Missing_opener(openr,s))
     else  
-    let (case1,idx1)=More_option.unpack opt1 in
+    let (case1,idx1)=Option.get opt1 in
     if case1<>1
     then raise(Started_by_nonopener(case1,s))
     else 

@@ -123,9 +123,9 @@ module Private = struct
   
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
      match cmod with 
-     Compilation_mode_t.Usual->More_option.unpack opt_modnames
+     Compilation_mode_t.Usual->Option.get opt_modnames
      |Compilation_mode_t.Debug
-     |Compilation_mode_t.Executable->let rootless_path=More_option.unpack opt_rootless_path in 
+     |Compilation_mode_t.Executable->let rootless_path=Option.get opt_rootless_path in 
          let full_path=Absolute_path.of_string(
           (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
@@ -150,7 +150,7 @@ module Private = struct
       Compilation_mode_t.Usual
      |Compilation_mode_t.Executable ->[] 
      |Compilation_mode_t.Debug->
-        let rootless_path=More_option.unpack opt_rootless_path in 
+        let rootless_path=Option.get opt_rootless_path in 
         Command.predebuggable fw rootless_path) in 
      cmds;;
   
@@ -161,7 +161,7 @@ module Private = struct
      Compilation_mode_t.Usual->[] 
      |Compilation_mode_t.Debug
      |Compilation_mode_t.Executable->
-        let rootless_path=More_option.unpack opt_rootless_path in 
+        let rootless_path=Option.get opt_rootless_path in 
         Command.debuggable_or_executable cmod fw rootless_path) in 
      cmds;;   
   

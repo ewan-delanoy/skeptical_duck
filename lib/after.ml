@@ -196,13 +196,13 @@ let after_abstract_class s i0=
   else
   let opt1=after_whites s (i0+8) in
   if opt1=None then None else
-  let i1=More_option.unpack opt1 in
+  let i1=Option.get opt1 in
   if not(Substring.is_a_substring_located_at "class" s i1)
   then None
   else 
   let opt2=after_classlike_declaration s (i1+5) in
   if opt2=None then None else
-  let i2=More_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;
 
@@ -218,13 +218,13 @@ let after_final_class s i0=
   else
   let opt1=after_whites s (i0+5) in
   if opt1=None then None else
-  let i1=More_option.unpack opt1 in
+  let i1=Option.get opt1 in
   if not(Substring.is_a_substring_located_at "class" s i1)
   then None
   else 
   let opt2=after_classlike_declaration s (i1+5) in
   if opt2=None then None else
-  let i2=More_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;     
 
@@ -240,7 +240,7 @@ let after_usual_class s i0=
   else 
   let opt2=after_classlike_declaration s (i0+5) in
   if opt2=None then None else
-  let i2=More_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;     
 
@@ -257,7 +257,7 @@ let after_interface s i0=
   else 
   let opt2=after_classlike_declaration s (i0+5) in
   if opt2=None then None else
-  let i2=More_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;  
 
@@ -291,12 +291,12 @@ let after_classlike_block_with_linebreak s i=
   let n=String.length s in
   let opt1=after_classlike_block s i in
   if opt1=None then None else
-  let i1=More_option.unpack opt1 in
+  let i1=Option.get opt1 in
   let opt2=More_option.seek(fun j->
      not(List.mem (Strung.get s j) [' ';'\r';'\t']) )
   (Int_range.range i1 n) in
   if opt2=None then None else
-  let i2=More_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if Strung.get s i2='\n'
   then Some(i2+1)
   else None;;

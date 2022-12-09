@@ -64,7 +64,7 @@ let helper2_during_inspection fw accu l_pairs =
        fun (_,_,opt) -> opt <> None 
    ) temp1 in
    let good_pairs = Image.image (fun 
-     (rl,old_mtime,opt) -> (rl,old_mtime,More_option.unpack opt)
+     (rl,old_mtime,opt) -> (rl,old_mtime,Option.get opt)
    ) good_temp1 
    and missing_files = Image.image (fun (rl,_,_)->rl) bad_temp1 in
    let _ = announce_missing_files missing_files in 

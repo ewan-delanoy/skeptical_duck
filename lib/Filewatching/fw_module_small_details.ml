@@ -42,7 +42,7 @@ let compute_details_from_acolytes_list_for_one_module l=
       else Some(snd(List.hd temp4))) in
    let principal_detailed_rless = (
       if temp5=[]
-      then More_option.unpack opt_mli_detailed_rless 
+      then Option.get opt_mli_detailed_rless 
       else snd(List.hd temp5)    
    ) in     
    let (principal_rless,principal_details) = principal_detailed_rless in 

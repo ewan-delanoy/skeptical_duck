@@ -262,10 +262,10 @@ let rec patient_measure x =
   match opt_good with 
    Some old_answer -> old_answer 
     |None ->
-       let (whole,bad_part) = More_option.unpack opt_bad in 
+       let (whole,bad_part) = Option.get opt_bad in 
        let fixed_bad_part = Image.image (fun
          (opt_good2,opt_bad2) ->
-            let (_,y) = More_option.unpack opt_bad2 in 
+            let (_,y) = Option.get opt_bad2 in 
             let z = force_compute_patient_measure patient_measure y in 
             let _ = Hashtbl.add hashtbl_for_patient_measure y z in 
             (y,force_compute_patient_measure patient_measure y)
@@ -273,7 +273,7 @@ let rec patient_measure x =
        let parts = Image.image (
          fun (opt_good3,opt_bad3) -> match opt_good3 with 
            Some old_answer2 -> old_answer2 
-           | None -> let (d2,y2) = More_option.unpack opt_bad3 in 
+           | None -> let (d2,y2) = Option.get opt_bad3 in 
                      let z2 = List.assoc y2 fixed_bad_part in 
                      Image.image (fun t->t+d2) z2  
        ) whole in 
@@ -299,9 +299,9 @@ let  impatient_measure x =
     match opt_good with 
      Some old_answer -> old_answer 
       |None -> 
-        let (whole,bad_part) = More_option.unpack opt_bad in 
+        let (whole,bad_part) = Option.get opt_bad in 
         let summary_of_bad = Image.image (fun 
-          (opt_good2,opt_bad2) -> snd(More_option.unpack opt_bad2)
+          (opt_good2,opt_bad2) -> snd(Option.get opt_bad2)
         ) bad_part in 
         raise(Impatient_measure_exn(current_level,List.hd summary_of_bad)) ;;    
 

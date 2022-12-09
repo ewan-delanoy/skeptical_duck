@@ -75,7 +75,7 @@ let reconstruct_linear_poset coat l=
   let rec tempf=(fun
   (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt)->
     if opt<>None
-    then More_option.unpack opt
+    then Option.get opt
     else tempf(iterator coat 
     (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt))
     ) in

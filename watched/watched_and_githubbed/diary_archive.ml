@@ -108,7 +108,7 @@ let old_text = Io.read_whole_file ap1;;
 let (before_u1,u1,after_u1) = Lines_in_string.tripartition_associated_to_interval old_text 1142 1320 ;; 
 let u2 = Lines_in_string.lines u1 ;; 
 let u3 = Image.image (fun line->
-  More_option.unpack(Cull_string.before_and_after " of " line)) u2 ;; 
+  Option.get(Cull_string.before_and_after " of " line)) u2 ;; 
 let u4 = Ordered.sort Total_ordering.silex_for_strings  (Image.image snd u3) ;; 
 let u5 = [
   "Yp_token_info_t.t", "(_)"; 
@@ -119,7 +119,7 @@ let u5 = [
   "float option * Yp_token_info_t.t", "(_,_)";] ;;
 let u6 = Image.image (
    fun (before_ov,after_ov) ->
-     let (_,name) = More_option.unpack(Cull_string.before_and_after "| " before_ov) in 
+     let (_,name) = Option.get(Cull_string.before_and_after "| " before_ov) in 
      let circled = List.assoc after_ov u5 in 
      before_ov^circled^" -> \""^name^"\""
 ) u3 ;;
@@ -2032,7 +2032,7 @@ let try_tool_quickly old_getter width breadth (n,scrappers) tool =
   ) temp1 in 
   let missing_data = Image.image fst failures in 
   if missing_data <> [] then (missing_data,[]) else 
-  let args = Image.image (fun (_,opt)->More_option.unpack opt) successes in 
+  let args = Image.image (fun (_,opt)->Option.get opt) successes in 
   ([],Selector_for_hook.eval selector args) ;;  
 
 
@@ -2555,7 +2555,7 @@ let compute_from_below (width,breadth,n,scrappers) tool =
      Boundary_increment -> 
       let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
       if opt1 = None then raise(Boundary_increment_exn1(width,breadth,n,scrappers)) else  
-      let pre1 = More_option.unpack opt1 in 
+      let pre1 = Option.get opt1 in 
       if List.mem n scrappers then raise(Boundary_increment_exn2(width,breadth,n,scrappers)) else
       let temp1 = More_option.filter_and_unpack (fun z->
          let new_z = z @ [n] in 
@@ -2568,7 +2568,7 @@ let compute_from_below (width,breadth,n,scrappers) tool =
       | Passive_repeat ->
         let opt5 = access width (breadth-1) (n,scrappers)  in 
         if opt5 = None then raise(Passive_repeat_exn1(width,breadth,n,scrappers)) else     
-        let pre5 = More_option.unpack opt5 and b = breadth in   
+        let pre5 = Option.get opt5 and b = breadth in   
         let temp5 = List.filter (fun z->
           not(i_is_included_in [b;b+width;b+2*width] z) 
        )  pre5 in 
@@ -2585,7 +2585,7 @@ let compute_from_below (width,breadth,n,scrappers) tool =
       if opt2 = None then raise(Fork_exn1(width,breadth,n,scrappers)) else  
       if opt3 = None then raise(Fork_exn2(width,breadth,n,scrappers)) else    
       if opt4 = None then raise(Fork_exn3(width,breadth,n,scrappers)) else   
-      let temp3 = List.flatten (Image.image More_option.unpack [opt2;opt3;opt4]) in 
+      let temp3 = List.flatten (Image.image Option.get [opt2;opt3;opt4]) in 
       let (_,temp4) = Max.maximize_it_with_care List.length temp3 in 
       il_sort temp4 ;; 
 
@@ -2605,7 +2605,7 @@ let rose_add (width,breadth) summary =
 let find_remote_stumbling_block_or_immediate_working_tool width breadth (n,scrappers) = 
   let opt5 = access width (breadth-1) (n,scrappers)  in 
   if opt5 = None then (Some(width,breadth-1,n,scrappers),None) else     
-  let pre5 = More_option.unpack opt5 and b = breadth in   
+  let pre5 = Option.get opt5 and b = breadth in   
   let temp5 = List.filter (fun z->
       not(i_is_included_in [b;b+width;b+2*width] z) 
   )  pre5 in 
@@ -2616,7 +2616,7 @@ let find_remote_stumbling_block_or_immediate_working_tool width breadth (n,scrap
     | None -> 
       let opt1 = access width breadth (remove_one_element (n,scrappers) n) in 
       if opt1 = None then (Some(width,breadth,n-1,scrappers),None) else  
-      let pre1 = More_option.unpack opt1 in 
+      let pre1 = Option.get opt1 in 
       let temp1 = More_option.filter_and_unpack (fun z->
          let new_z = z @ [n] in 
          if test_for_admissiblity width breadth new_z 
@@ -4363,7 +4363,7 @@ let partial_analysis_without_writing l =
      and bound = (measure l)-1 in 
     let temp2 = Image.image (fun l2-> (l2,adrien_analysis (l2,bound)) ) temp1 in 
     let (good_temp2,bad_temp2) = List.partition (fun (l2,opt)->opt<>None) temp2 in 
-    let temp3 = Image.image (fun (l2,opt)->(l2,More_option.unpack opt)) good_temp2 in 
+    let temp3 = Image.image (fun (l2,opt)->(l2,Option.get opt)) good_temp2 in 
     let temp4 = More_option.filter_and_unpack (
       fun (l2,_) -> 
         if Hashtbl.find_opt hashtbl_for_impatient_main l2 = None 
@@ -4604,7 +4604,7 @@ let expand_move  = function
    and bound = (impatient_measure l)-1 in 
   let temp2 = Image.image (fun l2-> (l2,adrien_analysis (l2,bound)) ) temp1 in 
   let (good_temp2,bad_temp2) = List.partition (fun (l2,opt)->opt<>None) temp2 in 
-  let pointed_ones = Image.image (fun (l2,opt)->More_option.unpack opt) good_temp2 in 
+  let pointed_ones = Image.image (fun (l2,opt)->Option.get opt) good_temp2 in 
   let temp4 = Image.image  fst bad_temp2 in 
   EP(l,bound+1,pointed_ones,temp4) ;; 
 
@@ -4866,7 +4866,7 @@ let tab = Molecule.unveil veiled_tab ;;
 let check_tab  = i_setminus tab (i_fold_merge(Image.image (fun (a,b,m)->m) z2));;
 
 let z3 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab)) z2 ;;
-let get (a0,b0) = More_option.unpack(More_option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
+let get (a0,b0) = Option.get(More_option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
 let part1 = (get ([4],[3;4]));;
 let tab2 = i_setminus tab part1 ;;
 
@@ -5116,8 +5116,8 @@ end ;;
 
 module That_kafka = struct 
 
-let share x = let _ = This_kafka.share x in snd(More_option.unpack(This_kafka.final_haddock ())) ;;
-let declare_empty x = let _ = This_kafka.declare_empty x in snd(More_option.unpack(This_kafka.final_haddock ())) ;;
+let share x = let _ = This_kafka.share x in snd(Option.get(This_kafka.final_haddock ())) ;;
+let declare_empty x = let _ = This_kafka.declare_empty x in snd(Option.get(This_kafka.final_haddock ())) ;;
 
 let act road = let _ = This_kafka.act road in  This_kafka.final_haddock () ;;
 
@@ -5576,7 +5576,7 @@ let analize_sheaf2 (left,bound,right) =
   let (good_opt,bad_opt) = analize_sheaf1(left,bound,right) in 
   (
     match good_opt with 
-     None -> raise(Troublesome_aftersheaf(left,bound,right,More_option.unpack bad_opt)) 
+     None -> raise(Troublesome_aftersheaf(left,bound,right,Option.get bad_opt)) 
     |Some usual -> 
       let _ = (ref_for_missing_sheaves:=[left,bound,usual]) in
       raise(Missing_sheaves [left,bound,usual])
@@ -5596,8 +5596,8 @@ let add_carrier_to_another (x,bound) carrier old_carrier =
    let carrier2 = u_product carrier old_carrier in 
    let (good_opt,bad_opt) = set_of_minimal_carriers_with_extra carrier2 (sl x bound) in 
    if good_opt<>None
-   then [More_option.unpack good_opt]
-   else raise (Two_carriers_exn(x,bound,carrier,old_carrier,More_option.unpack bad_opt));; 
+   then [Option.get good_opt]
+   else raise (Two_carriers_exn(x,bound,carrier,old_carrier,Option.get bad_opt));; 
 
 exception Add_carrier_exn of (int list) * int * (int list list) * (int list list list) ;;
 
@@ -5684,7 +5684,7 @@ let commonest_decomposition (x,bound,carriers) =
     (_,(good_opt,bad_opt)) -> good_opt <> None
   ) temp3 in 
   (
-    Image.image (fun ((y,bound,_),(good_opt,bad_opt))->(y,bound,More_option.unpack good_opt) ) temp3_good,
+    Image.image (fun ((y,bound,_),(good_opt,bad_opt))->(y,bound,Option.get good_opt) ) temp3_good,
     Image.image (fun (tr,(good_opt,bad_opt))->tr ) temp3_bad,
     dirty_temp
   );;   
@@ -5824,7 +5824,7 @@ let induction_in_solve_case old_f triple =
       else Some(List.hd(List.rev temp5))
     ) in 
     let _ = (if opt_sol <>None 
-      then Hashtbl.add hashtbl_for_solving triple (More_option.unpack opt_sol)) in 
+      then Hashtbl.add hashtbl_for_solving triple (Option.get opt_sol)) in 
     solve_ret opt_sol
   );;
 
@@ -6020,7 +6020,7 @@ module Sensitive = struct
      match opt_bad with 
      Some obstr ->  raise( Sore_wound(obstr,x,stv))
       |None ->
-     let new_sorted = More_option.unpack opt_good in   
+     let new_sorted = Option.get opt_good in   
    {
       unsorted = (x,data_for_x) :: stv.unsorted;
       sorted = new_sorted ;
@@ -8279,7 +8279,7 @@ let full_text = Htmlize.pages partial_texts ;;
 Io.overwrite_with full_ap full_text;;
 
 let (page1,page2,ranges_for_lfm,ranges_for_fm) =
-   More_option.unpack(!(Htmlize.Private.error_handling_ref ));;
+   Option.get(!(Htmlize.Private.error_handling_ref ));;
 
 (* Re-indexed version *)
 

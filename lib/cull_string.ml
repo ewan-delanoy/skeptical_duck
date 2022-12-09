@@ -101,7 +101,7 @@ let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
    let n=String.length s in
    let opt1=More_option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in
    if opt1=None then "" else
-   let i1=More_option.unpack opt1 in
+   let i1=Option.get opt1 in
    let k1=Listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;

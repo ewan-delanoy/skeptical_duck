@@ -31,4 +31,4 @@ let find_file_location dir l_subdir old_x=
   let opt=More_option.find_and_stop tempf temp1 in
   if opt=None
   then raise(No_suitable_location(dir ,l_subdir,x))
-  else  More_option.unpack(opt);;           
+  else  Option.get(opt);;           
