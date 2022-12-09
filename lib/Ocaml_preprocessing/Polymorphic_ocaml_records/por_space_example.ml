@@ -55,12 +55,7 @@ let fields_for_gw_with_githubbing = field_list_constructor [
  "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object";
 ] ;; 
 
-let subclass_list_constructor l = Image.image (
-  fun (a,b) -> {
-   Por_subclass_t.adbridged_subclass_name = a ;
-   adbridged_subclass_fields = b ;
-}
-) l;;
+
 
 let first_base =  [
 "gw_configuration",fields_for_gw_configuration ;
@@ -92,13 +87,6 @@ let second_base = [
 ] ;; 
 
 let full_base =  cumulative_first_base @ second_base ;;     
-
-let adbridged_subclass_list_constructor l = Image.image (
-  fun (a,b) -> {
-    Por_subclass_t.adbridged_subclass_name = a ;
-    adbridged_subclass_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
-  }
-) l;;
 
 let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
