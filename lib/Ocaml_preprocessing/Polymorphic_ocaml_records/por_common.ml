@@ -19,6 +19,20 @@ let check_inclusion small_list large_list =
   let indexed_varname_for_field (j,fd)=
   "v"^(string_of_int j)^"_"^(fd.Por_types.var_name) ;;
 
+let field_order = ((fun fld1 fld2 ->
+    let trial1 = Total_ordering.lex_for_strings 
+       fld1.Por_types.field_name fld2.Por_types.field_name in 
+    if trial1<> Total_ordering_result_t.Equal then trial1 else
+       Total_ordering.standard fld1 fld2         
+  ) : Por_types.field_t Total_ordering_t.t);;
+
+let all_fields subclasses =
+  let to_be_flattened = Image.image (
+    fun scl -> scl.Por_subclass_t.subclass_fields
+  ) (* porsp.Por_space_t. *) subclasses in 
+  let unordered_fields = List.flatten to_be_flattened in 
+      Ordered.sort field_order unordered_fields ;; 
+
 
 let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext)^"_to_"^(String.uncapitalize_ascii after_ext) ;;
 
