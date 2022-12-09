@@ -1,8 +1,73 @@
 (************************************************************************************************************************
-Snippet 112 : 
+Snippet 113 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 
+
+(************************************************************************************************************************
+Snippet 112 : Successive renamings
+************************************************************************************************************************)
+
+(*    
+let z1 = ae () ;; 
+let z2 = Image.image (fun el->
+  (Dfa_module.to_line(Dfn_endingless.to_module el),el)) z1 ;; 
+let z3 = List.filter (
+  fun (mn,el)->
+      Supstring.begins_with mn "opor_"
+) z2 ;; 
+*)
+
+let renamings = ref [
+  "Old_polymorphic_ocaml_record_t","Por_types";
+  "Opor_public_definition_t","Por_public_definition_t";
+  "Opor_common","Por_common";
+  "Opor_private_component","Por_private_component";
+  "Opor_public_definition","Por_public_definition";
+  "Opor_public_component","Por_public_component";
+
+  "fw_poly","gw_poly" ;
+  "fw_configuration","gw_configuration" ;
+  "file_watcher","gw_life_watcher" ;
+  "fw_with_archives","gw_with_archives" ;
+  "fw_with_small_details","gw_with_small_details" ;
+  "fw_with_dependencies","gw_with_dependencies" ;
+  "fw_with_batch_compilation","gw_with_batch_compilation" ;
+  "fw_with_githubbing","gw_with_githubbing" ;
+  "github_configuration","gw_guthib_configuration";
+] ;;
+
+let rename_in_ap ap =
+    Replace_inside.replace_several_inside_file (!renamings) ap ;; 
+
+let ap1 = Absolute_path.of_string 
+"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_common.ml";;  
+
+let ap2 = Absolute_path.of_string 
+"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_private_component.ml";;  
+
+let ap3 = Absolute_path.of_string 
+"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_public_definition.ml";;
+
+let ap4 = Absolute_path.of_string 
+"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_public_component.ml";;
+
+let ap5 = Absolute_path.of_string 
+"watched/watched_and_githubbed/prepare_gw_poly.ml";;
+
+let ap6 = Absolute_path.of_string 
+"watched/watched_and_githubbed/prepare_gw_with_dependencies.ml";;
+
+let z4 = 
+["opor_public_definition_t"; "opor_common"; "opor_private_component";
+ "opor_public_definition"; "opor_public_component"] ;;
+
+
+dm "opor_public_definition_t" "por_public_definition_t" ;;
+dm "opor_common" "por_common" ;;
+dm "opor_private_component" "por_private_component" ;;
+dm "opor_public_definition" "por_public_definition" ;;
+dm "opor_public_component" "por_public_component" ;;
 
 (************************************************************************************************************************
 Snippet 111 : Cleanup unused modules
