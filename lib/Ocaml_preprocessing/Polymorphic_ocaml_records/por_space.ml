@@ -6,22 +6,6 @@
 
 module Private = struct 
 
-  let field_order = ((fun fld1 fld2 ->
-    let trial1 = Total_ordering.lex_for_strings 
-       fld1.Por_types.field_name fld2.Por_types.field_name in 
-    if trial1<> Total_ordering_result_t.Equal then trial1 else
-       Total_ordering.standard fld1 fld2         
-  ) : Por_types.field_t Total_ordering_t.t);;
-
-   let all_fields porsp =
-      let unordered_fields = List.flatten(Image.image (
-        fun scl -> Image.image (fun fd_name->
-           Por_common.get_field porsp fd_name
-          )
-        (scl.Por_subclass_t.adbridged_subclass_fields)
-      ) porsp.Por_space_t.subclasses) in 
-      Ordered.sort field_order unordered_fields ;; 
-
   let pair_for_field (porf:Por_types.field_t) =
     (String.make 3 ' ')^
     porf.Por_types.field_name^" : "^
@@ -83,6 +67,5 @@ module Private = struct
 
 
 end ;;   
-
-let all_fields = Private.all_fields ;; 
+ 
 let write = Private.write ;; 
