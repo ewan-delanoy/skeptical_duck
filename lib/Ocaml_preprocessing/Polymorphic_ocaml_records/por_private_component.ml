@@ -283,7 +283,7 @@ module Private = struct
 
       let  text_for_fields_for_subclasss por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Por_subclass_t.subclass_name,
+              inst -> (inst.Por_subclass_t.adbridged_subclass_name,
                   inst.Por_subclass_t.adbridged_subclass_fields)
             ) por.Por_space_t.subclasses in 
             
