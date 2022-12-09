@@ -41,7 +41,7 @@ let fields_for_gw_with_small_details = field_list_constructor [
 ] ;; 
 
 let fields_for_gw_with_dependencies = field_list_constructor [
- "index_for_caching", "Fw_subclass_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_indexer.make_full_subclass ())", "";
+ "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_indexer.make_full_instance ())", "";
 ] ;; 
 
 let fields_for_gw_with_batch_compilation = field_list_constructor [
