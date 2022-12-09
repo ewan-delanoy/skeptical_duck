@@ -34,7 +34,7 @@ let pusher_for_far_apart_components
         else (d,treated,new_elt,last_elt::in_progress,other_elts)  ;;   
 
 let rec iterator_for_far_apart_components uple =
-    let (d,treated,last_elt,in_progress,to_be_treated) = uple in        
+    let (_d,treated,last_elt,in_progress,to_be_treated) = uple in        
     match to_be_treated with 
     [] ->  List.rev(List.rev(last_elt::in_progress)::treated)
     | _ -> iterator_for_far_apart_components(pusher_for_far_apart_components uple);;

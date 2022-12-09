@@ -71,7 +71,7 @@ else if f(a)
   then Some(a)
   else find_it f (a+1) b;;	  
 
-let rec find_and_stop f a b=
+let find_and_stop f a b=
 let rec find_and_stop0=(function
  j->if (j>b)
     then None

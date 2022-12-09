@@ -44,7 +44,7 @@ let helper_for_iterated_container j0 s=
 exception Too_many_double_points;;  
  
  let iterated_container j0 s=try helper_for_iterated_container j0 s with
-   any_exn->raise(Too_many_double_points);;
+   _any_exn->raise(Too_many_double_points);;
 
 exception Blank_filename;;
 
@@ -75,7 +75,7 @@ let parse_unix_filename_shortcuts_from_dir dir s0=
   |'.'->if s1="." 
         then dir_without_the_slash
         else dir^(String.sub s1 2 (String.length(s1)-2))
-  |arall->dir^s1;;
+  |_other->dir^s1;;
 
 let parse_unix_filename_shortcuts =
   parse_unix_filename_shortcuts_from_dir ((Sys.getcwd())^"/");;
