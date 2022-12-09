@@ -17,18 +17,3 @@ type subclass_t = {
       subclass_fields : string list;
 } ;;
 
-(*
-type t = {
-      main_type_name : string;
-      module_name : string;
-      fields : field_t list;
-      subclasses : subclass_t list;
-      type_signature_file : Absolute_path.t;
-      implementation_file : Absolute_path.t;
-      has_crobj_conversion : bool;
-      extensions : (string * string) list;
-      restrictions : string list;
-      constructors : string list;
-      designated_parents : (string * string) list;
-} ;; 
-*)
