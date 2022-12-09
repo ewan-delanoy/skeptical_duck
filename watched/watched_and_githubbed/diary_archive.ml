@@ -4866,7 +4866,7 @@ let tab = Molecule.unveil veiled_tab ;;
 let check_tab  = i_setminus tab (i_fold_merge(Image.image (fun (a,b,m)->m) z2));;
 
 let z3 = Image.image (fun (a,b,m)->(a,b,i_intersection m tab)) z2 ;;
-let get (a0,b0) = Option.get(More_option.find_and_stop (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
+let get (a0,b0) = Option.get(List.find_map (fun (a,b,m)->if (a,b)=(a0,b0) then Some(m) else None) z3) ;;
 let part1 = (get ([4],[3;4]));;
 let tab2 = i_setminus tab part1 ;;
 
@@ -5083,7 +5083,7 @@ let individual kfk (a,b) =
    else None ;;
 
 let total kfk = 
-   More_option.find_and_stop (individual kfk) u9 ;;
+   List.find_map (individual kfk) u9 ;;
 
 
 end ;;  

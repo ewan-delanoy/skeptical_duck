@@ -1106,7 +1106,7 @@ let decipher_path fw x=Find_suitable_ending.find_file_location
 let decipher_module fw capitalized_or_not_x=
   let x=String.uncapitalize_ascii capitalized_or_not_x in 
   let s=Cull_string.before_rightmost_possibly_all x '.' in
-  match (More_option.find_and_stop(
+  match (List.find_map(
       fun edg->
       let t=s^(Dfa_ending.connectable_to_modulename edg) in 
       try(Some(decipher_path fw t)) with _->None

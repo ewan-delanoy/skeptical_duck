@@ -83,7 +83,7 @@ let find_one_of_several_in_at_idx candidates s idx =
            then Some(idx,candidate)
            else None
    ) in 
-   More_option.find_and_stop tester candidates;;
+   List.find_map tester candidates;;
   
 (*
 
@@ -93,7 +93,7 @@ find_one_of_several_in_at_idx ["ba";"ab"] "123ab67" 4;;
 
 let find_one_of_several_in_from_idx candidates s idx =
   let n=String.length s in 
-  More_option.find_and_stop (
+  List.find_map (
     find_one_of_several_in_at_idx candidates s
   ) (Int_range.range idx n);;
 

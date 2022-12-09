@@ -19,16 +19,6 @@ let filter_and_unpack f l=
  ) in
  filter0([],l);;
 
-let  find_and_stop f l=
- let rec find_and_stop0=(function
-  da_ober->match da_ober with
-   []->None
-   |a::peurrest->match f(a) with
-		None->find_and_stop0(peurrest)
-		|Some(x)->Some(x)
- ) in
- find_and_stop0(l);;
-
 
 
 
