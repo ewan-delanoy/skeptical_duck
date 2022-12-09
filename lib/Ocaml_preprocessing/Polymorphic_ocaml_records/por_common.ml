@@ -29,14 +29,14 @@ let extensions_from_different_sources por =
   (Image.image (fun (x,y)->(y,x)) por.Por_types.designated_parents)) ;; 
 
 let get_field por fd_name =
-  match More_option.seek (fun fd->fd.Por_types.field_name = fd_name)
+  match List.find_opt (fun fd->fd.Por_types.field_name = fd_name)
           por.Por_types.fields with 
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
     
 let get_instance por inst_name =
-  match More_option.seek (fun fd->fd.Por_types.instance_name = inst_name)
+  match List.find_opt (fun fd->fd.Por_types.instance_name = inst_name)
             por.Por_types.instances with 
     Some answer -> answer 
   | None -> raise ( Get_instance_exn(inst_name)) ;;    

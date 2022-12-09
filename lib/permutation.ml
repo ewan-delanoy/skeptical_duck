@@ -108,7 +108,7 @@ module Private = struct
 
    let find_cycle_inside perm =
        let n = List.length perm in 
-       match More_option.seek (fun d->
+       match List.find_opt (fun d->
          let t = n+1-d in List.nth perm (t-1) <> t   
       ) (Int_range.range 1 n) with 
        None -> None 
@@ -160,7 +160,7 @@ module Private = struct
    let product_of_cycles cycles = 
        let n = Max.list (List.flatten cycles) in 
        Int_range.scale (fun k->
-         match More_option.seek (List.mem k) cycles with 
+         match List.find_opt (List.mem k) cycles with 
          None -> k
          | Some cycle ->
             evaluate_cycle_at_point cycle k

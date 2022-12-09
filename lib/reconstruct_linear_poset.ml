@@ -58,7 +58,7 @@ let iterator coat
          [],not_yet_checked2,None) 
     else 
     (*see if we can close the cycle *)
-    match More_option.seek(fun (x,_y)->Set_of_polys.mem x temp1) between with
+    match List.find_opt(fun (x,_y)->Set_of_polys.mem x temp1) between with
      None->(checked,checked_union,cycles,cycles_union,
      		(a,Set_of_polys.hd temp1)::between,not_yet_checked,None)
     |Some(p)->

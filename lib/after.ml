@@ -183,7 +183,7 @@ let next_in_list l s=
 
 
 let after_classlike_declaration s i=
-    More_option.seek(
+    List.find_opt(
      fun j->not(List.mem 
          (String.get s (j-1)) Charset.classlike_declaration_chars
      )
@@ -292,7 +292,7 @@ let after_classlike_block_with_linebreak s i=
   let opt1=after_classlike_block s i in
   if opt1=None then None else
   let i1=Option.get opt1 in
-  let opt2=More_option.seek(fun j->
+  let opt2=List.find_opt(fun j->
      not(List.mem (Strung.get s j) [' ';'\r';'\t']) )
   (Int_range.range i1 n) in
   if opt2=None then None else

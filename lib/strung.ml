@@ -213,7 +213,7 @@ let leftmost_difference s1 s2=
    let n1=String.length s1 
    and n2=String.length s2 in
    let n=min(n1)(n2) in 
-   match More_option.seek(fun j->
+   match List.find_opt(fun j->
       (get s1 j)<>(get s2 j)
    )(Int_range.range 1 n) with 
    None->None 

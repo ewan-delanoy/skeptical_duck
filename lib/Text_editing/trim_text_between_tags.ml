@@ -77,7 +77,7 @@ let process_without_open_pars app  s data=
 let process_with_open_pars app  s data=
   let temp1=List.hd(data.currently_open_pars) 
   and i=data.cursor_location in
-  let opt1=More_option.seek (fun (paren,_idx)->test_for_right_paren_at_index s i paren) temp1 in
+  let opt1=List.find_opt (fun (paren,_idx)->test_for_right_paren_at_index s i paren) temp1 in
   if opt1=None
   then process_without_open_pars app  s data
   else 

@@ -105,7 +105,7 @@ let ref_for_main_list = ref [
 
 
 let seek_russian_char (already_treated,text,cursor) =
-    match More_option.seek (fun long_char->
+    match List.find_opt (fun long_char->
        Substring.is_a_substring_located_at  long_char text cursor
     ) (!ref_for_main_list) with
      None -> None 

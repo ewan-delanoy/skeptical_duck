@@ -81,7 +81,7 @@ module Exn = struct
    
    
    let wrap_lonely_variant l_pairs unwrapped=
-      match More_option.seek(fun (key,vaal)->key=unwrapped) l_pairs with
+      match List.find_opt(fun (key,vaal)->key=unwrapped) l_pairs with
          None->raise(Exn.Wrap_lonely_variant_exn)
         |Some(_,constructor)->Concrete_object_t.Variant(constructor,[]) ;;
    
@@ -90,7 +90,7 @@ module Exn = struct
       match ccrt_obj with 
       Concrete_object_t.Variant(constructor,l)->
          if  l<>[] then raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj)) else 
-         (match More_option.seek(fun (_,key)->key=constructor) l_pairs with
+         (match List.find_opt(fun (_,key)->key=constructor) l_pairs with
          None->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj))
         |Some(vaal,_)->vaal) 
       |_->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;

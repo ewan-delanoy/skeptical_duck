@@ -135,7 +135,7 @@ let next_basic_increase  s idx=
    if Substring.is_a_substring_located_at string_opener s idx 
    then next_basic_increase_in_push_string_case s idx
    else 
-   match More_option.seek (fun 
+   match List.find_opt (fun 
       (text,_action)->Substring.is_a_substring_located_at text s idx
    ) list_for_preludeless_increasers with 
    None -> raise(Unreadable_increase(idx,s))

@@ -14,7 +14,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    else 
    let module_name=Cull_string.beginning (j-1) old_name in
    let temp3=Read_ocaml_files.read_ocaml_files preceding_files in
-   let opt_temp4=More_option.seek (fun itm->
+   let opt_temp4=List.find_opt (fun itm->
      (itm.Ocaml_gsyntax_item.name)=old_name
    ) temp3 in
    if opt_temp4=None

@@ -75,7 +75,7 @@ extract_intervals_in_wrt_separator "123a4ab56ab789ab" "ab" ;;
 
 let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
-      match More_option.seek(fun j->
+      match List.find_opt(fun j->
           not(List.mem (String.get s (j-1)) l)
       )(Int_range.range 1 n) with
       None->""
@@ -83,7 +83,7 @@ let remove_chars_in_set_on_the_left l s=
 
 let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
-      match More_option.seek(fun j->
+      match List.find_opt(fun j->
           not(List.mem (String.get s (n-j)) l)
       )(Int_range.range 1 n) with
       None->""
@@ -99,7 +99,7 @@ let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
 
  let trim_spaces s=
    let n=String.length s in
-   let opt1=More_option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in
+   let opt1=List.find_opt(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in
    if opt1=None then "" else
    let i1=Option.get opt1 in
    let k1=Listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in 

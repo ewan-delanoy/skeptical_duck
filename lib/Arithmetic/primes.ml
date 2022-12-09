@@ -14,7 +14,7 @@ let list_of_small_primes=List_of_small_primes.list_of_small_primes;;
 
 
 let mp=((Memoized.make(fun n->
-  match More_option.seek(fun p->n mod p=0)(list_of_small_primes) with
+  match List.find_opt(fun p->n mod p=0)(list_of_small_primes) with
   None->n
   |Some(p)->p
 )):ii);;

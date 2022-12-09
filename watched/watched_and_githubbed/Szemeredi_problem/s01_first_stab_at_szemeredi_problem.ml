@@ -187,7 +187,7 @@ exception Bad_merger of (int list) * (int list) ;;
 
 let check_for_partition x parts =
   let temp1 = Uple.list_of_pairs parts in 
-  match More_option.seek (fun (part1,part2)->i_intersects part1 part2) temp1 with
+  match List.find_opt (fun (part1,part2)->i_intersects part1 part2) temp1 with
   Some(part3,part4) -> raise(Nondisjoint_parts(part3,part4))
   |None ->
   let merger = i_fold_merge parts in 
@@ -392,7 +392,7 @@ let add_ramification x obs =
 let start_decomposing  x = 
   let n = List.length x 
   and m =List.length (patient_measure x) in 
-  More_option.seek (
+  List.find_opt (
      fun k->
        let (rleft,right) = Listennou.big_rht k x in
        let left = List.rev rleft in 
@@ -446,7 +446,7 @@ let extended_old_patient_measure = Memoized.recursive( fun old_f (x,extra_obstru
 let compute_ramification x=
   let obses = current_obstructions x in 
   let n = List.length obses and m=List.length(patient_measure x) in 
-  match More_option.seek (
+  match List.find_opt (
     fun k->
        let limited_obses = Listennou.big_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m

@@ -28,7 +28,7 @@ let check_for_open_close_mismatch openers closers =
 
 let check_for_overlapping_intervals indexed_lines pairs =
   let temp1 = Listennou.universal_delta_list pairs in 
-  match More_option.seek (
+  match List.find_opt (
     fun ((_i1_open,i2_close),(i3_open,_i4_close)) -> 
       i3_open < i2_close
   ) temp1 with 

@@ -32,7 +32,7 @@ end ;;
 let all = Image.image fst Private.capitalized_correspondances ;;
 
 let of_ending (Dfa_ending_t.E(e)) = 
-   match More_option.seek (fun (_cml_edg,e2)->e2=e) Private.capitalized_correspondances with 
+   match List.find_opt (fun (_cml_edg,e2)->e2=e) Private.capitalized_correspondances with 
    None -> raise(Not_an_ocaml_ending(e)) 
    |(Some(cml_edg,_)) -> cml_edg ;; 
    

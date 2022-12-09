@@ -4340,7 +4340,7 @@ let measure = Memoized.make(fun l->
 ) ;;
 
 let adrien_analysis (l,bound) = 
-    More_option.seek (fun (h,l2)->
+    List.find_opt (fun (h,l2)->
       (measure [h]) + (List.length l2) >= bound  
     )  (Three_parts.beheaded_tails l) ;;
     
@@ -5624,7 +5624,7 @@ let consult_sheaves (left,bound,right) =
   match Hashtbl.find_opt hashtbl_for_sheaves (left,bound)  with 
      None -> None
    | Some (sheaves) -> 
-     More_option.seek (fun sheaf->
+     List.find_opt (fun sheaf->
        List.for_all (fun z->is_not_admissible (z@right)) sheaf
       ) sheaves
   ;;        
@@ -6000,9 +6000,9 @@ let special_obstructions =
 
 let find_initial_obstruction_opt sorted_l =
      let a =List.hd sorted_l and b = List.hd(List.rev sorted_l) in 
-     match More_option.seek (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
+     match List.find_opt (fun j->Ordered.is_included_in oi [j;2*j;3*j;4*j] sorted_l) 
         (Int_range.range a (b/4)) with 
-     None -> More_option.seek (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
+     None -> List.find_opt (fun obstr-> Ordered.is_included_in oi obstr sorted_l) special_obstructions
      |Some(j) -> Some [j;2*j;3*j;4*j];;   
 
 
@@ -8187,7 +8187,7 @@ let cl_tag_length = (String.length html_par_closing_tag)-1 ;;
 
 let detect_nested_paragraphs l=
    let temp1 = Listennou.universal_delta_list l in 
-   match More_option.seek (fun 
+   match List.find_opt (fun 
      (((i1,j1),(i2,j2)),((i3,j3),(i4,j4)))->i3<j2
    ) temp1 with 
    None -> ()
