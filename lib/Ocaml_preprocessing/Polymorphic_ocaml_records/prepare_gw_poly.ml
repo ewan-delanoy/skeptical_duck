@@ -20,7 +20,6 @@ let submodules = [
 ] ;; 
 
 (*
-
 Each uple in the list is as follows :
 
 method_name (string),
@@ -61,7 +60,7 @@ let extract_initial_plus_symbol_if_present s=
   then Cull_string.cobeginning 1 s 
   else s ;;  
 
-let list_of_arguments (meth_name,ancestor_is_here,other_args,opt_extra) opt_parent =
+let list_of_arguments (_meth_name,ancestor_is_here,other_args,_opt_extra) opt_parent =
    let ancestor_part = (
       if ancestor_is_here 
       then opt_parent^" "  
@@ -79,7 +78,7 @@ module Entrance = struct
      |Some(pre_extra) ->  Supstring.begins_with pre_extra "+" ;;
 
    let text_for_method meth_uple =
-      let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
+      let (meth_name,_ancestor_is_here,_other_args,opt_extra) = meth_uple in 
       let args = Common.list_of_arguments meth_uple in 
       if extra_value_added opt_extra
       then "let "^meth_name^" "^(args "old_fw")^" = (Fw_with_small_details."^meth_name^" "^(args "old_fw")^",()) ;;"   
@@ -99,7 +98,7 @@ module Entrance = struct
 module Cached = struct 
 
 let optional_line_for_old_parent meth_uple =
-   let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
+   let (_meth_name,ancestor_is_here,_other_args,_opt_extra) = meth_uple in 
    if ancestor_is_here 
    then [
          " let old_parent = parent old_fw in ";
@@ -114,7 +113,7 @@ let data_from_opt_extra opt_extra new_fw_name=
        (" ( "," ,"^extra^" ) ;; ","("^new_fw_name^","^extra^")") ;;
 
 let index_determination meth_uple =
-   let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in 
+   let (_meth_name,ancestor_is_here,_other_args,_opt_extra) = meth_uple in 
    if ancestor_is_here 
    then [
          " let instance_idx = fst( index old_fw ) in ";
@@ -129,7 +128,7 @@ let index_determination meth_uple =
 
 
 let text_for_method meth_uple =
-   let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple in
+   let (meth_name,_ancestor_is_here,_other_args,opt_extra) = meth_uple in
    let (left,right,old_res) = data_from_opt_extra opt_extra "new_parent"
    and args = Common.list_of_arguments meth_uple in 
    String.concat "\n" 
@@ -179,7 +178,7 @@ let data_from_opt_extra opt_extra rest_of_line newer_extra=
 
 
 let text_for_method modname meth_uple modmeth_uple =
-   let (meth_name,ancestor_is_here,other_args,opt_extra) = meth_uple 
+   let (meth_name,_ancestor_is_here,_other_args,opt_extra) = meth_uple 
    and (lines_before_answer,addendum_modifier) = modmeth_uple in
    let args = Common.list_of_arguments meth_uple 
    and prmod = preceding_module modname in 
