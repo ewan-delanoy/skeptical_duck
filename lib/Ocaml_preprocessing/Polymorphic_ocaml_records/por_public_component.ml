@@ -84,10 +84,10 @@ module Private = struct
         (String.make 3 ' ')^(fd.Por_types.field_name)^" = "^
         var_name^" ;" ;;     
    
-    let annotated_definition_for_constructor por constructed_instance =
-      let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_instance) in 
-      let full_instance = Por_common.get_instance por constructed_instance  in 
-      let field_names = full_instance.Por_types.instance_fields in 
+    let annotated_definition_for_constructor por constructed_subclass =
+      let constructor_name = "construct_"^(String.uncapitalize_ascii constructed_subclass) in 
+      let full_subclass = Por_common.get_subclass por constructed_subclass  in 
+      let field_names = full_subclass.Por_types.subclass_fields in 
       let fields = Image.image (Por_common.get_field por)field_names in 
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
@@ -99,7 +99,7 @@ module Private = struct
         Por_public_definition_t.value_name = constructor_name ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
         (String.make 3 ' ')^"Private.origin with ";
-        (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_instance)^"\" ;"]@
+        (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_subclass)^"\" ;"]@
           filling_fields
         @["} ;;"];
       } ;;  

@@ -12,16 +12,16 @@ type field_t = {
       crobj_converters : (string * string) option;
 } ;;
     
-type instance_t = {
-      instance_name : string;
-      instance_fields : string list;
+type subclass_t = {
+      subclass_name : string;
+      subclass_fields : string list;
 } ;;
 
 type t = {
       main_type_name : string;
       module_name : string;
       fields : field_t list;
-      instances : instance_t list;
+      subclasses : subclass_t list;
       type_signature_file : Absolute_path.t;
       implementation_file : Absolute_path.t;
       has_crobj_conversion : bool;

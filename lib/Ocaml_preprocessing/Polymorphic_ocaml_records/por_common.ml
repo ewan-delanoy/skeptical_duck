@@ -7,7 +7,7 @@
 
 
 exception Get_field_exn of string ;;
-exception Get_instance_exn of string ;; 
+exception Get_subclass_exn of string ;; 
 exception Check_inclusion_exn of (string list) * (string list) * (string list) ;;
     
 let check_inclusion small_list large_list =
@@ -35,9 +35,9 @@ let get_field por fd_name =
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
     
-let get_instance por inst_name =
-  match List.find_opt (fun fd->fd.Por_types.instance_name = inst_name)
-            por.Por_types.instances with 
+let get_subclass por inst_name =
+  match List.find_opt (fun fd->fd.Por_types.subclass_name = inst_name)
+            por.Por_types.subclasses with 
     Some answer -> answer 
-  | None -> raise ( Get_instance_exn(inst_name)) ;;    
+  | None -> raise ( Get_subclass_exn(inst_name)) ;;    
     

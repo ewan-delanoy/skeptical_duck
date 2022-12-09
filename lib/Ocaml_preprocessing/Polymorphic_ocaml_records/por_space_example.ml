@@ -43,7 +43,7 @@ let fields_for_gw_with_small_details = field_list_constructor [
 ] ;; 
 
 let fields_for_gw_with_dependencies = field_list_constructor [
- "index_for_caching", "Fw_instance_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_indexer.make_full_instance ())", "";
+ "index_for_caching", "Fw_subclass_index_t.t * Fw_state_index_t.t", "cache_idx", "(Fw_indexer.make_full_subclass ())", "";
 ] ;; 
 
 let fields_for_gw_with_batch_compilation = field_list_constructor [
@@ -57,10 +57,10 @@ let fields_for_gw_with_githubbing = field_list_constructor [
  "encoding_protected_files","(Dfn_rootless_t.t * Dfn_rootless_t.t) list","protected_pairs","[]","Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object#Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object";
 ] ;; 
 
-let instance_list_constructor l = Image.image (
+let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
-   Por_types.instance_name = a ;
-   instance_fields = b ;
+   Por_types.subclass_name = a ;
+   subclass_fields = b ;
 }
 ) l;;
 
@@ -95,10 +95,10 @@ let second_base = [
 
 let full_base =  cumulative_first_base @ second_base ;;     
 
-let instance_list_constructor l = Image.image (
+let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
-    Por_types.instance_name = a ;
-    instance_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
+    Por_types.subclass_name = a ;
+    subclass_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
   }
 ) l;;
 
@@ -122,7 +122,7 @@ let example =
    Por_types.main_type_name = "t" ;
    module_name = "gw_poly" ;
    fields = Ordered.sort field_order all_fields ;
-   instances = instance_list_constructor full_base ;
+   subclasses = subclass_list_constructor full_base ;
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
