@@ -238,7 +238,7 @@ let current_obstructions x =
 
 let latest_obstruction x = 
   let temp0 = List.rev_map (fun t->[t-2*current_width;t-current_width;t]) x in 
-  Listennou.force_find (fun obstruction -> i_is_included_in obstruction x) temp0 ;;
+  List.find (fun obstruction -> i_is_included_in obstruction x) temp0 ;;
 
 let hashtbl_for_patient_measure = 
   (( Hashtbl.create 100 ):  

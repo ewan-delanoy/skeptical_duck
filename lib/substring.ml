@@ -28,7 +28,7 @@
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 
       and temp1=List.rev(Int_range.range(0)(String.length(y)-lx)) in
-      try ((Listennou.force_find tester temp1)+1) with
+      try ((List.find tester temp1)+1) with
       _->(-1);;
   
    let leftmost_index_of_in_from x y i=

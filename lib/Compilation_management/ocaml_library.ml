@@ -16,10 +16,10 @@ let capitalized_correspondances =Image.image (
 exception Unknown_lib of string;;
 
 let of_string s=
-  try (fst(Listennou.force_find (fun (_x,y)->y=s) correspondances))
+  try (fst(List.find (fun (_x,y)->y=s) correspondances))
   with _->raise(Unknown_lib(s));;
 
-let to_string lib=snd(Listennou.force_find (fun (x,_y)->x=lib) correspondances);;  
+let to_string lib=snd(List.find (fun (x,_y)->x=lib) correspondances);;  
 
 
 let short_name=function

@@ -211,7 +211,7 @@ let seek_in_cartesian submod methd =
 exception Seek_method of string ;;
     
 let seek_method methd =
-   try Listennou.force_find (fun (methd2,_,_,_)->methd2 = methd) methods with 
+   try List.find (fun (methd2,_,_,_)->methd2 = methd) methods with 
    _ -> raise(Seek_method(methd));;
 
 

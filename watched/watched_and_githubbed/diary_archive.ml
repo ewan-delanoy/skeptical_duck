@@ -380,7 +380,7 @@ let x0 = 18 and y0 = 10 ;;
 
 let sg_x0 = generated_subgroup [x0] ;; 
 let sel_x0 w =
-   Listennou.force_find (fun (i,j)->compose(power 34 i)(power x0 j)=w) base2 ;;
+   List.find (fun (i,j)->compose(power 34 i)(power x0 j)=w) base2 ;;
 
 let z13 = Cartesian.product sg_t sg_x0 ;; 
 let z14 = Image.image (fun (u,v)->(compose u v,(u,v))) z13 ;;
@@ -3116,7 +3116,7 @@ let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
 let u6 = Int_range.index_everything (Image.image snd u4) ;;
 exception Doherty_exn of int list ;;
 let doherty_index =Memoized.make(fun x ->
-    try fst(Listennou.force_find (fun (idx,y)->List.mem x y) u6)  with 
+    try fst(List.find (fun (idx,y)->List.mem x y) u6)  with 
     _ -> raise (Doherty_exn(x))
 )  ;;   
 let waters_index x=
@@ -3167,7 +3167,7 @@ let check_u5 = List.filter (fun (l,y)->List.length(y)>1 ) u5;;
 let u6 = Int_range.index_everything (Image.image snd u4) ;;
 exception Doherty_exn of int list ;;
 let doherty_index =Memoized.make(fun x ->
-    try fst(Listennou.force_find (fun (idx,y)->List.mem x y) u6)  with 
+    try fst(List.find (fun (idx,y)->List.mem x y) u6)  with 
     _ -> raise (Doherty_exn(x))
 )  ;;   
 let waters_index x=
@@ -3782,7 +3782,7 @@ let u3 = Image.image (fun (x,y)->(max (abs x) (abs y),(x,y)) ) u2 ;;
 let (Set_of_poly_pairs_t.S u4) = Set_of_poly_pairs.sort u3 ;;
 let u5 = Image.image snd u4 ;;
 
-let tf1 (a,b) = Listennou.force_find (fun (z2,z4)->
+let tf1 (a,b) = List.find (fun (z2,z4)->
   abs((a*a-4*a-1)*(z2*z2)+2*(a-2)*b*z2*z4+(b*b)*(z4*z4))<b*b 
   ) u5 ;;
 
@@ -7340,10 +7340,10 @@ Snippet  24 : Removing module wrappers in a set of files
 ************************************************************************************************************************)
 let remove_module_wrapper_in_text text =
   let lines = Lines_in_string.indexed_lines text in 
-  let (i1,_)= Listennou.force_find (fun (_,line)->
+  let (i1,_)= List.find (fun (_,line)->
     Supstring.begins_with (Cull_string.trim_spaces line) "module "
   ) lines in
-  let (i2,_)= Listennou.force_find (fun (_,line)->
+  let (i2,_)= List.find (fun (_,line)->
     Supstring.begins_with (Cull_string.trim_spaces line) "end"
   ) (List.rev lines) in 
   let selected_lines = More_option.filter_and_unpack (
