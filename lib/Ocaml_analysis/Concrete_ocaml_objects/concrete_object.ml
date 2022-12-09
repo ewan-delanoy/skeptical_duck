@@ -32,19 +32,37 @@ module Exn = struct
    let unwrap_list ccrt_obj=
       match ccrt_obj with 
       Concrete_object_t.List(l)->l 
-      |_->raise(Exn.Unwrap_list_exn(ccrt_obj));;
+      |Concrete_object_t.Int(_)
+         |Concrete_object_t.String (_)
+         |Concrete_object_t.Uple (_)
+         |Concrete_object_t.Array (_)
+         |Concrete_object_t.Record (_)   
+         |Concrete_object_t.Variant (_,_)  
+      ->raise(Exn.Unwrap_list_exn(ccrt_obj));;
    
    let unwrap_array ccrt_obj=
       match ccrt_obj with 
       Concrete_object_t.Array(l)->Array.of_list l 
-      |_->raise(Exn.Unwrap_array_exn(ccrt_obj));;
+      |Concrete_object_t.Int(_)
+         |Concrete_object_t.String (_)
+         |Concrete_object_t.Uple (_)
+         |Concrete_object_t.List (_)
+         |Concrete_object_t.Record (_)  
+         |Concrete_object_t.Variant (_,_)   
+      ->raise(Exn.Unwrap_array_exn(ccrt_obj));;
    
    let get_record ccrt_obj field =
       match ccrt_obj with 
       Concrete_object_t.Record(l)->
            (try List.assoc field l with 
            _ ->raise(Exn.Get_record_absent_key_exn(field)))
-      |_->raise(Exn.Get_record_bad_type_exn(ccrt_obj));;
+           |Concrete_object_t.Int(_)
+           |Concrete_object_t.String (_)
+           |Concrete_object_t.Uple (_)
+           |Concrete_object_t.List (_)
+           |Concrete_object_t.Array (_) 
+           |Concrete_object_t.Variant (_,_)    
+      ->raise(Exn.Get_record_bad_type_exn(ccrt_obj));;
    
    let unwrap_bounded_uple ccrt_obj=
      match ccrt_obj with 
@@ -59,7 +77,13 @@ module Exn = struct
          and i7=(if n<7 then 1 else 7) in
          let get=(fun k->List.nth l (k-1)) in 
          (get 1,get 2,get i3,get i4,get i5,get i6,get i7)
-      | _-> raise(Exn.Unwrap_bounded_uple_exn(ccrt_obj));;
+      |Concrete_object_t.Int(_)
+      |Concrete_object_t.String (_)
+      |Concrete_object_t.List (_)
+      |Concrete_object_t.Array (_)
+      |Concrete_object_t.Record (_)
+      |Concrete_object_t.Variant (_,_)
+      -> raise(Exn.Unwrap_bounded_uple_exn(ccrt_obj));;
    
    
    
@@ -77,11 +101,17 @@ module Exn = struct
          and i7=(if n<7 then 1 else 7) in
          let get=(fun k->List.nth l (k-1)) in 
          (constructor,(get 1,get i2,get i3,get i4,get i5,get i6,get i7))
-      | _-> raise(Exn.Unwrap_bounded_variant_exn(ccrt_obj));;
+         |Concrete_object_t.Int(_)
+         |Concrete_object_t.String (_)
+         |Concrete_object_t.Uple (_)
+         |Concrete_object_t.List (_)
+         |Concrete_object_t.Array (_)
+         |Concrete_object_t.Record (_)   
+            -> raise(Exn.Unwrap_bounded_variant_exn(ccrt_obj));;
    
    
    let wrap_lonely_variant l_pairs unwrapped=
-      match List.find_opt(fun (key,vaal)->key=unwrapped) l_pairs with
+      match List.find_opt(fun (key,_vaal)->key=unwrapped) l_pairs with
          None->raise(Exn.Wrap_lonely_variant_exn)
         |Some(_,constructor)->Concrete_object_t.Variant(constructor,[]) ;;
    
@@ -93,5 +123,11 @@ module Exn = struct
          (match List.find_opt(fun (_,key)->key=constructor) l_pairs with
          None->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj))
         |Some(vaal,_)->vaal) 
-      |_->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
+      |Concrete_object_t.Int(_)
+      |Concrete_object_t.String (_)
+      |Concrete_object_t.Uple (_)
+      |Concrete_object_t.List (_)
+      |Concrete_object_t.Array (_)
+      |Concrete_object_t.Record (_)
+      ->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
    
