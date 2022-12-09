@@ -24,7 +24,7 @@ let complemented_points l=List.rev_map(function (kleiz,x,dehou)->
 (x,List.rev_append(kleiz)(dehou)))
 (generic l);;
 
-let beheaded_tails l=List.rev_map (function (kleiz,x,dehou)->(x,dehou) )(generic l);;
+let beheaded_tails l=List.rev_map (function (_kleiz,x,dehou)->(x,dehou) )(generic l);;
 
 let select_center_element_and_reverse_left f l=
   let rec tempf=(fun (graet,da_ober)->match da_ober with
