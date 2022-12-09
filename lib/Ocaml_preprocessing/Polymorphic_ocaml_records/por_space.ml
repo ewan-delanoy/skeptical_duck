@@ -22,7 +22,7 @@ module Private = struct
   let text_for_type_signature_file (por:Por_space_t.t) = 
     let pairs = 
       ((String.make 3 ' ')^"type_name : string ;")::
-      (Image.image pair_for_field por.Por_space_t.fields) in 
+      (Image.image pair_for_field (Por_common.all_fields por)) in 
     (initial_comment_in_type_signature_file por)^
     "type "^(por.Por_space_t.main_type_name)^" = { \n"^ 
     (String.concat "\n" pairs) ^ 

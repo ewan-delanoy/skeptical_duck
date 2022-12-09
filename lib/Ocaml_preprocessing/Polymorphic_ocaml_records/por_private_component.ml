@@ -23,7 +23,7 @@ module Private = struct
                 match fld.Por_types.crobj_converters with 
                 None -> None 
                 |Some(of_crobj,to_crobj) -> Some(fld,(of_crobj,to_crobj))
-             ) por.Por_space_t.fields  ;;
+             ) (Por_common.all_fields por)  ;;
        
       let special_type_name_field = {
                 Por_types.field_name = "type_name" ;
@@ -54,7 +54,7 @@ module Private = struct
                vowel^" ;" ;;
        
       let text_for_ofcrobj_converter por = 
-           let all_fields = por.Por_space_t.fields in 
+           let all_fields = (Por_common.all_fields por) in 
            let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_space_t.module_name)^
            "_t.type_name = Crobj_converter.string_of_concrete_object (g label_for_type_name) ;" 
            and temp2 = Image.image (text_for_ofcrobj_element por) all_fields in 
@@ -268,7 +268,7 @@ module Private = struct
       let  text por =
             let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_space_t.module_name)^
                         "_t.type_name = \"\" ;" 
-            and temp2 = Image.image (snippet por) por.Por_space_t.fields in 
+            and temp2 = Image.image (snippet por) (Por_common.all_fields por) in 
              (String.concat "\n" 
              (["let origin = {";]@
                ( temp1 :: temp2 )
@@ -316,7 +316,7 @@ module Private = struct
             let temp1 = Image.image (fun 
               inst -> (inst.Por_types.field_name,
                   inst.Por_types.field_type)
-            ) por.Por_space_t.fields in 
+            ) (Por_common.all_fields por) in 
             
              (
              "let data_for_fields = [\n"^

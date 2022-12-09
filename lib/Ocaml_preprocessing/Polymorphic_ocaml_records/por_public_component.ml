@@ -35,9 +35,9 @@ module Private = struct
    
    
    let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
-     por.Por_space_t.fields ;;
+   (Por_common.all_fields por) ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
-     por.Por_space_t.fields ;;
+   (Por_common.all_fields por) ;;
    let annotated_text_for_crobj_symlinks  = 
     [
       {
