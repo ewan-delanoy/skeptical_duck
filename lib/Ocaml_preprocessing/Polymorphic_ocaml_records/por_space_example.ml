@@ -92,6 +92,10 @@ let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
     Por_subclass_t.subclass_name = a ;
     subclass_fields = b ;
+    parent = None;
+    extensions_leading_here = [];
+    has_restriction = false;
+    has_constructor = false;
   }
 ) l;;
 
