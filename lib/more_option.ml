@@ -4,22 +4,12 @@
 
 *) 
 
-exception Unpackable of string;;
-
-module Private = struct 
-
-let unpack_with_error_message s=function
-None->raise(Unpackable(s))
-|Some(x)->x;;
-
-end ;;
-
 
 let add_element_on_the_right l x=match x with
   None->l
   |Some(a)->l@[a];;
  
-let rec filter_and_unpack f l=
+let filter_and_unpack f l=
  let rec filter0=(function
   (graet,da_ober)->match da_ober with
    []->List.rev(graet)
@@ -42,13 +32,6 @@ let  find_and_stop f l=
 let propagate f=function
 None->None
 |Some(x)->Some(f(x));;
-
-let rec seek f =function
-[]->None
-|a::b->if f(a) then Some(a) else seek(f)(b);;
-
-let unpack x =Private.unpack_with_error_message "void is not unpackable" x;;
-
 
 
 
