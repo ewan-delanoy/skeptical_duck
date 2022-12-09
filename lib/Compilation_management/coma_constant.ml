@@ -15,6 +15,9 @@ let debugging_subdir=
 let watched_subdir=
   Dfa_subdirectory.of_line "watched";;
 
+let outer_subdir=
+  Dfa_subdirectory.of_line "qfff";;
+
 let dune_bin_subdir= Dfa_subdirectory.of_line "bin";;  
 let dune_build_subdir= Dfa_subdirectory.of_line "_build";;
 let dune_test_subdir= Dfa_subdirectory.of_line "test";;
@@ -73,6 +76,7 @@ let git_ignored_subdirectories =
      nongithubbed_nonml_files_subdir;
      directives_subdir;
      debugging_subdir;
+     outer_subdir
   ];;
 
 
