@@ -4,10 +4,6 @@
 
 *) 
 
-
-let add_element_on_the_right l x=match x with
-  None->l
-  |Some(a)->l@[a];;
  
 let argument_on_the_right f x opt_y=match opt_y with
   None->x
