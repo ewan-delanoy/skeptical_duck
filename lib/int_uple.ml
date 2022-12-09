@@ -51,7 +51,7 @@ let inclusive_list_of_pairs=Memoized.make(function n->
         let accu=ref([],(1,1))
         and number_of_iterations=(n*(n+1))/2 
         and iterator=(function (l,c)->(c::l,next_inclusive_pair(c)) ) in
-        let _=(for k=1 to number_of_iterations do
+        let _=(for _=1 to number_of_iterations do
         accu:=iterator(!accu)
         done) in
         List.rev(fst (!accu)));;
@@ -61,7 +61,7 @@ if n<2 then [] else
 let accu=ref([],(1,2))
 and number_of_iterations=(n*(n-1))/2 
 and iterator=(function (l,c)->(c::l,next_pair(c)) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 List.rev(fst (!accu)));;
@@ -71,7 +71,7 @@ if n<3 then [] else
 let accu=ref([],(1,2,3))
 and number_of_iterations=(n*(n-1)*(n-2))/6 
 and iterator=(function (l,c)->(c::l,next_triple(c)) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 List.rev(fst (!accu)));;
@@ -81,7 +81,7 @@ if n<4 then [] else
 let accu=ref([],(1,2,3,4))
 and number_of_iterations=(n*(n-1)*(n-2)*(n-3))/24 
 and iterator=(function (l,c)->(c::l,next_fourtuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 List.rev(fst (!accu)));;
@@ -92,7 +92,7 @@ if n<5 then [] else
 let accu=ref([],(1,2,3,4,5))
 and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4))/120 
 and iterator=(function (l,c)->(c::l,next_fiftuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 List.rev(fst (!accu)));;
@@ -103,7 +103,7 @@ if n<6 then [] else
 let accu=ref([],(1,2,3,4,5,6))
 and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4)*(n-5))/720 
 and iterator=(function (l,c)->(c::l,next_sixtuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 List.rev(fst (!accu)));;
@@ -120,7 +120,7 @@ and iterator=(function (y0,lx,c)->
    else if y=y0
         then (y0,tc::lx,nc)
         else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
@@ -140,7 +140,7 @@ and iterator=(function (y0,lx,c)->
    else if y=y0
         then (y0,tc::lx,nc)
         else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
@@ -160,7 +160,7 @@ and iterator=(function (y0,lx,c)->
    else if y=y0
         then (y0,tc::lx,nc)
         else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
@@ -180,7 +180,7 @@ and iterator=(function (y0,lx,c)->
    else if y=y0
         then (y0,tc::lx,nc)
         else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
@@ -200,7 +200,7 @@ and iterator=(function (y0,lx,c)->
    else if y=y0
         then (y0,tc::lx,nc)
         else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
+let _=(for _=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
