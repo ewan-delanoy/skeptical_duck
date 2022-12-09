@@ -44,7 +44,7 @@ let all_constructors por =
       else None
 ) por.Por_space_t.subclasses ;; 
 
-let all_extensions por = 
+let all_nonparenting_extensions por = 
   List.flatten (Image.image (
     fun scl ->
       let extending_one = scl.Por_subclass_t.subclass_name in 
@@ -73,8 +73,9 @@ let all_restrictions por =
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 
   Ordered.sort (Total_ordering.product lfs lfs)
-  (por.Por_space_t.extensions @
-  (Image.image (fun (x,y)->(y,x)) por.Por_space_t.designated_parents)) ;; 
+  ((all_nonparenting_extensions por) @
+  (Image.image (fun (x,y)->(y,x)) 
+  (all_parentings por))) ;; 
 
 let get_field por fd_name = 
   let fields = all_fields por in 

@@ -149,7 +149,8 @@ module Private = struct
             @["} ;;"]);;  
        
        let full_text por = 
-          String.concat "\n" (Image.image (text_for_extender por) por.Por_space_t.extensions)
+          String.concat "\n" (Image.image (text_for_extender por) 
+          (Por_common.all_nonparenting_extensions por))
        ;;       
             
        let full_text por =
@@ -167,7 +168,7 @@ module Private = struct
       module Parent = struct
       
       let text_for_main_list por =
-            let l = por.Por_space_t.designated_parents in 
+            let l = (Por_common.all_parentings por) in 
             let tempf = (fun r-> Strung.enclose(String.capitalize_ascii r)) in 
             let temp1 = Image.image (fun (s,t)->
                   (String.make 4 ' ')^(tempf s)^" , "^(tempf t)^" ;"
@@ -211,7 +212,9 @@ module Private = struct
       
       let text_for_parent_setters por = 
          String.concat "\n"   
-        (Image.image (text_for_parent_setter por) por.Por_space_t.designated_parents);;
+        (Image.image (text_for_parent_setter por) 
+        (Por_common.all_parentings por)
+        );;
       
       let text_for_main_parent_setter por = 
             let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in   
@@ -225,7 +228,7 @@ module Private = struct
                   let c_sibling = String.capitalize_ascii sibling 
                   and uc_sibling = String.uncapitalize_ascii sibling in 
                  (String.make 3 ' ')^(Strung.enclose c_sibling)^" , sp_for_"^uc_sibling^" child new_parent ;" ) 
-                 por.Por_space_t.designated_parents
+                 (Por_common.all_parentings por)
             )@[
                " ] with "; 
                "  Some(answer) ->answer";
@@ -243,7 +246,7 @@ module Private = struct
             ]) ;;         
 
       let full_text por =
-            if por.Por_space_t.designated_parents = []
+            if Por_common.all_parentings por = []
             then ""  
             else
             "module Parent = struct \n"^

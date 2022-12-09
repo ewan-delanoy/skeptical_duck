@@ -155,10 +155,6 @@ let example =
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
-   extensions = list_for_extensions ;
-   restrictions = list_for_restrictions ;
-   constructors = list_for_constructors ;
-   designated_parents = list_for_parenting ;
 } ;;  
 
 end ;;   

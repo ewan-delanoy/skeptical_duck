@@ -11,9 +11,5 @@ type t = {
       implementation_file : Absolute_path.t;
       has_crobj_conversion : bool;
       subclasses : Por_subclass_t.t list;
-      extensions : (string * string) list;
-      restrictions : string list;
-      constructors : string list;
-      designated_parents : (string * string) list;
 } ;; 
 

@@ -105,7 +105,8 @@ module Private = struct
       } ;;  
 
     let annotated_text_for_constructors por = 
-      Image.image (annotated_definition_for_constructor por) por.Por_space_t.constructors
+      Image.image (annotated_definition_for_constructor por) 
+      (Por_common.all_constructors por)
    ;;     
    
    let annotated_definition_for_restrictor por after_restr =
@@ -124,7 +125,8 @@ module Private = struct
 
 
    let annotated_text_for_restrictors por = 
-    Image.image (annotated_definition_for_restrictor por) por.Por_space_t.restrictions
+    Image.image (annotated_definition_for_restrictor por) 
+    (Por_common.all_restrictions por)
  ;;     
 
 
