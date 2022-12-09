@@ -36,7 +36,7 @@ let get_field por fd_name =
 
     
 let get_subclass por inst_name =
-  match List.find_opt (fun fd->fd.Por_types.subclass_name = inst_name)
+  match List.find_opt (fun fd->fd.Por_subclass_t.subclass_name = inst_name)
             por.Por_space_t.subclasses with 
     Some answer -> answer 
   | None -> raise ( Get_subclass_exn(inst_name)) ;;    

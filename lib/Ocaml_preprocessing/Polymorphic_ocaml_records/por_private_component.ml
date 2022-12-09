@@ -119,8 +119,8 @@ module Private = struct
             let ext_name = Por_common.extender_name (before_ext,after_ext) in 
             let inst_before = Por_common.get_subclass por before_ext 
             and inst_after = Por_common.get_subclass por after_ext  in 
-            let field_names_before = inst_before.Por_types.subclass_fields 
-            and field_names_after = inst_after.Por_types.subclass_fields in 
+            let field_names_before = inst_before.Por_subclass_t.subclass_fields 
+            and field_names_after = inst_after.Por_subclass_t.subclass_fields in 
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
@@ -283,8 +283,8 @@ module Private = struct
 
       let  text_for_fields_for_subclasss por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Por_types.subclass_name,
-                  inst.Por_types.subclass_fields)
+              inst -> (inst.Por_subclass_t.subclass_name,
+                  inst.Por_subclass_t.subclass_fields)
             ) por.Por_space_t.subclasses in 
             
              (

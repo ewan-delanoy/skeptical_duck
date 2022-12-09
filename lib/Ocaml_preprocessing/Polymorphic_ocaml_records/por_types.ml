@@ -11,9 +11,3 @@ type field_t = {
       default_value : string;
       crobj_converters : (string * string) option;
 } ;;
-    
-type subclass_t = {
-      subclass_name : string;
-      subclass_fields : string list;
-} ;;
-
