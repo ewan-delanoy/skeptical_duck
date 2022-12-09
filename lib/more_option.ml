@@ -9,6 +9,10 @@ let add_element_on_the_right l x=match x with
   None->l
   |Some(a)->l@[a];;
  
+let argument_on_the_right f x opt_y=match opt_y with
+  None->x
+  |Some(y)->f x y;;
+
 let filter_and_unpack f l=
  let rec filter0=(function
   (graet,da_ober)->match da_ober with
@@ -29,9 +33,6 @@ let  find_and_stop f l=
  ) in
  find_and_stop0(l);;
 
-let propagate f=function
-None->None
-|Some(x)->Some(f(x));;
 
 
 
