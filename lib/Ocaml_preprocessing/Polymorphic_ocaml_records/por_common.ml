@@ -36,6 +36,40 @@ let all_fields por =
 
 let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext)^"_to_"^(String.uncapitalize_ascii after_ext) ;;
 
+let all_constructors por = 
+  More_option.filter_and_unpack (
+    fun scl ->
+      if scl.Por_subclass_t.has_constructor 
+      then Some scl.Por_subclass_t.subclass_name
+      else None
+) por.Por_space_t.subclasses ;; 
+
+let all_extensions por = 
+  List.flatten (Image.image (
+    fun scl ->
+      let extending_one = scl.Por_subclass_t.subclass_name in 
+      Image.image (fun 
+        extended_one->(extended_one,extending_one)
+      ) scl.Por_subclass_t.extensions_leading_here
+  ) por.Por_space_t.subclasses) ;;
+
+let all_parentings por = 
+  More_option.filter_and_unpack (
+    fun scl ->
+      match scl.Por_subclass_t.parent with 
+      Some parent_name -> Some (scl.Por_subclass_t.subclass_name,parent_name)
+      |None -> None
+) por.Por_space_t.subclasses ;;  
+
+let all_restrictions por = 
+    More_option.filter_and_unpack (
+      fun scl ->
+        if scl.Por_subclass_t.has_restriction 
+        then Some scl.Por_subclass_t.subclass_name
+        else None
+  ) por.Por_space_t.subclasses ;;  
+
+
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 
   Ordered.sort (Total_ordering.product lfs lfs)
