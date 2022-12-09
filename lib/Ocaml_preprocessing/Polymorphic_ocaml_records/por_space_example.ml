@@ -119,7 +119,7 @@ let example =
   let file_there = (fun s-> 
     Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in 
  {
-   Por_types.main_type_name = "t" ;
+   Por_space_t.main_type_name = "t" ;
    module_name = "gw_poly" ;
    fields = Ordered.sort field_order all_fields ;
    subclasses = subclass_list_constructor full_base ;

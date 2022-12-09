@@ -25,19 +25,19 @@ let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext
 let extensions_from_different_sources por =
    let lfs = Total_ordering.lex_for_strings in 
   Ordered.sort (Total_ordering.product lfs lfs)
-  (por.Por_types.extensions @
-  (Image.image (fun (x,y)->(y,x)) por.Por_types.designated_parents)) ;; 
+  (por.Por_space_t.extensions @
+  (Image.image (fun (x,y)->(y,x)) por.Por_space_t.designated_parents)) ;; 
 
 let get_field por fd_name =
   match List.find_opt (fun fd->fd.Por_types.field_name = fd_name)
-          por.Por_types.fields with 
+          por.Por_space_t.fields with 
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
     
 let get_subclass por inst_name =
   match List.find_opt (fun fd->fd.Por_types.subclass_name = inst_name)
-            por.Por_types.subclasses with 
+            por.Por_space_t.subclasses with 
     Some answer -> answer 
   | None -> raise ( Get_subclass_exn(inst_name)) ;;    
     

@@ -1,8 +1,30 @@
 (************************************************************************************************************************
-Snippet 113 : 
+Snippet 114 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
+
+
+(************************************************************************************************************************
+Snippet 113 : Periodically remove a file in a fixed directory.
+************************************************************************************************************************)
+
+let calc () = let _ = Ordered.sort Total_ordering.silex_for_intlists
+  (Listennou.power_set (Int_range.range 1 16)) in ();;
+
+Chronometer.it calc () ;; 
+
+let g1 = "rm -f "^home^"/Downloads/Building_site/Older_pages/Untitled*.png" ;;
+
+let circular () = 
+  let counter = ref 0 in 
+  while true do let _ = Sys.command g1 in 
+  calc();
+  counter:=((!counter)+1);
+   print_string((string_of_int(!counter)));
+   print_string("\n");
+   flush stdout ;
+  done ;;
 
 (************************************************************************************************************************
 Snippet 112 : Successive renamings

@@ -17,6 +17,7 @@ type subclass_t = {
       subclass_fields : string list;
 } ;;
 
+(*
 type t = {
       main_type_name : string;
       module_name : string;
@@ -30,4 +31,4 @@ type t = {
       constructors : string list;
       designated_parents : (string * string) list;
 } ;; 
-
+*)

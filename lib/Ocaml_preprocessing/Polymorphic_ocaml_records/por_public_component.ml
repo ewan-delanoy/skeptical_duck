@@ -8,25 +8,25 @@
 module Private = struct 
 
   let annotated_text_for_field_getter 
-     (por:Por_types.t) 
+     (por:Por_space_t.t) 
        (field:Por_types.field_t) =
        let fn = field.Por_types.field_name in 
        {
         Por_public_definition_t.value_name = fn ;
         lines_in_definition = ["let "^fn^" x = x."^
-        (String.capitalize_ascii(por.Por_types.module_name))^
+        (String.capitalize_ascii(por.Por_space_t.module_name))^
         "_t."^fn^" ;;"];
      } ;;
           
    let annotated_text_for_field_setter 
-     (por:Por_types.t) 
+     (por:Por_space_t.t) 
        (field:Por_types.field_t) =
        let fn = field.Por_types.field_name 
        and vn = field.Por_types.var_name in 
        {
         Por_public_definition_t.value_name = "set_"^fn ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
-        (String.capitalize_ascii(por.Por_types.module_name))^
+        (String.capitalize_ascii(por.Por_space_t.module_name))^
         "_t."^fn^" = "^vn^"} ;;"];
      } ;;
      
@@ -35,9 +35,9 @@ module Private = struct
    
    
    let annotated_text_for_getters por = Image.image (annotated_text_for_field_getter por)
-     por.Por_types.fields ;;
+     por.Por_space_t.fields ;;
    let annotated_text_for_setters por = Image.image (annotated_text_for_field_setter por)
-     por.Por_types.fields ;;
+     por.Por_space_t.fields ;;
    let annotated_text_for_crobj_symlinks  = 
     [
       {
@@ -94,7 +94,7 @@ module Private = struct
       let indexed_and_labeled = Image.image (fun (j,fd)->
          "~"^(fd.Por_types.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
-      let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in  
+      let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in  
       {
         Por_public_definition_t.value_name = constructor_name ;
         lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
@@ -105,12 +105,12 @@ module Private = struct
       } ;;  
 
     let annotated_text_for_constructors por = 
-      Image.image (annotated_definition_for_constructor por) por.Por_types.constructors
+      Image.image (annotated_definition_for_constructor por) por.Por_space_t.constructors
    ;;     
    
    let annotated_definition_for_restrictor por after_restr =
     let restr_name = "to_"^after_restr in 
-    let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in  
+    let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in  
     {
       Por_public_definition_t.value_name = restr_name ;
       lines_in_definition = ["let "^restr_name^" fw  = ";
@@ -124,12 +124,12 @@ module Private = struct
 
 
    let annotated_text_for_restrictors por = 
-    Image.image (annotated_definition_for_restrictor por) por.Por_types.restrictions
+    Image.image (annotated_definition_for_restrictor por) por.Por_space_t.restrictions
  ;;     
 
 
  let annotated_definition_for_print_out por =
-  let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in 
+  let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in 
   {
     Por_public_definition_t.value_name = "print_out" ;
     lines_in_definition = ["let print_out (fmt:Format.formatter) fw  = "^

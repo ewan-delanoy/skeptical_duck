@@ -12,25 +12,25 @@ module Private = struct
     porf.Por_types.field_type^" ;" ;;
   
   let initial_comment_in_type_signature_file por =
-      let ap = por.Por_types.type_signature_file 
+      let ap = por.Por_space_t.type_signature_file 
       and root = Coma_big_constant.This_World.root in 
       let s_ap=Absolute_path.to_string ap in 
       let s_cdir=Dfa_root.connectable_to_subpath root in 
       let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
       "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;
   
-  let text_for_type_signature_file (por:Por_types.t) = 
+  let text_for_type_signature_file (por:Por_space_t.t) = 
     let pairs = 
       ((String.make 3 ' ')^"type_name : string ;")::
-      (Image.image pair_for_field por.Por_types.fields) in 
+      (Image.image pair_for_field por.Por_space_t.fields) in 
     (initial_comment_in_type_signature_file por)^
-    "type "^(por.Por_types.main_type_name)^" = { \n"^ 
+    "type "^(por.Por_space_t.main_type_name)^" = { \n"^ 
     (String.concat "\n" pairs) ^ 
     "\n} ;;" ;;
   
-  let write_to_type_signature_file (por:Por_types.t) = 
+  let write_to_type_signature_file (por:Por_space_t.t) = 
       let text = text_for_type_signature_file por 
-      and file = por.Por_types.type_signature_file in 
+      and file = por.Por_space_t.type_signature_file in 
       Io.overwrite_with file text ;;
  
   
@@ -42,20 +42,20 @@ module Private = struct
 
 
      let initial_comment_in_implementation_file por =
-       let ap = por.Por_types.implementation_file 
+       let ap = por.Por_space_t.implementation_file 
        and root = Coma_big_constant.This_World.root in 
        let s_ap=Absolute_path.to_string ap in 
        let s_cdir=Dfa_root.connectable_to_subpath root in 
        let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
        "(*\n\n#use\""^shortened_path^"\";"^";\n\n*)\n\n\n" ;;  
 
-  let text_for_implementation_file (por:Por_types.t) = 
+  let text_for_implementation_file (por:Por_space_t.t) = 
      (initial_comment_in_implementation_file por)^
      (private_followed_by_public por) ;;
    
-  let write_to_implementation_file (por:Por_types.t) = 
+  let write_to_implementation_file (por:Por_space_t.t) = 
      let text = text_for_implementation_file por 
-     and file = por.Por_types.implementation_file in 
+     and file = por.Por_space_t.implementation_file in 
      Io.overwrite_with file text ;;
 
   let write por = 

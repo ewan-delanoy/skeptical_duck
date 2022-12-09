@@ -9,7 +9,7 @@ module Private = struct
       module Crobj = struct 
       
       let text_for_label 
-            (_por:Por_types.t) 
+            (_por:Por_space_t.t) 
               max_namesize
              (field:Por_types.field_t) = 
              let fn = field.Por_types.field_name in 
@@ -23,7 +23,7 @@ module Private = struct
                 match fld.Por_types.crobj_converters with 
                 None -> None 
                 |Some(of_crobj,to_crobj) -> Some(fld,(of_crobj,to_crobj))
-             ) por.Por_types.fields  ;;
+             ) por.Por_space_t.fields  ;;
        
       let special_type_name_field = {
                 Por_types.field_name = "type_name" ;
@@ -42,7 +42,7 @@ module Private = struct
            (Image.image (text_for_label por max_namesize) crobjed_fields)) ;;  
           
       let text_for_ofcrobj_element 
-           (_por:Por_types.t) 
+           (_por:Por_space_t.t) 
            fld = 
            let vowel = (
              match fld.Por_types.crobj_converters with 
@@ -54,8 +54,8 @@ module Private = struct
                vowel^" ;" ;;
        
       let text_for_ofcrobj_converter por = 
-           let all_fields = por.Por_types.fields in 
-           let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_types.module_name)^
+           let all_fields = por.Por_space_t.fields in 
+           let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_space_t.module_name)^
            "_t.type_name = Crobj_converter.string_of_concrete_object (g label_for_type_name) ;" 
            and temp2 = Image.image (text_for_ofcrobj_element por) all_fields in 
            String.concat "\n"
@@ -71,18 +71,18 @@ module Private = struct
              ]) ;;
        
       let text_for_tocrobj_element 
-             (por:Por_types.t) 
+             (por:Por_space_t.t) 
              (fld,(_of_crobj,to_crobj)) = 
              let field_name  = fld.Por_types.field_name in 
                  (String.make 4 ' ')^" label_for_"^field_name^", "^ 
-                 to_crobj^" fw."^(String.capitalize_ascii por.Por_types.module_name)^"_t."^
+                 to_crobj^" fw."^(String.capitalize_ascii por.Por_space_t.module_name)^"_t."^
                  field_name^" ;" ;;    
        
       let text_for_tocrobj_converter por = 
            let fields_with_crobj = fields_with_crobj_conversion por  in 
            let temp1 = (String.make 4 ' ')^" label_for_type_name,"^ 
            " Crobj_converter.string_to_concrete_object fw."^
-            (String.capitalize_ascii por.Por_types.module_name)^"_t.type_name ;"
+            (String.capitalize_ascii por.Por_space_t.module_name)^"_t.type_name ;"
            and temp2 = Image.image (text_for_tocrobj_element por) fields_with_crobj in 
            String.concat "\n"
            ( 
@@ -102,7 +102,7 @@ module Private = struct
       
       
       let full_text por =
-            if not(por.Por_types.has_crobj_conversion)
+            if not(por.Por_space_t.has_crobj_conversion)
             then ""  
             else
             "module Crobj = struct \n"^
@@ -139,7 +139,7 @@ module Private = struct
           let joined_indexes_and_labels = Image.image (fun (field_name,indexed_varname)->
              "~"^field_name^":"^indexed_varname) indexed_and_labeled in 
           let vars = String.concat " " joined_indexes_and_labels in 
-          let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in 
+          let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in 
           String.concat "\n" (["let "^ext_name^" fw "^vars^" = {";
             (String.make 3 ' ')^"fw with ";
             (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii after_ext)^"\" ;"]@
@@ -147,7 +147,7 @@ module Private = struct
             @["} ;;"]);;  
        
        let full_text por = 
-          String.concat "\n" (Image.image (text_for_extender por) por.Por_types.extensions)
+          String.concat "\n" (Image.image (text_for_extender por) por.Por_space_t.extensions)
        ;;       
             
        let full_text por =
@@ -165,7 +165,7 @@ module Private = struct
       module Parent = struct
       
       let text_for_main_list por =
-            let l = por.Por_types.designated_parents in 
+            let l = por.Por_space_t.designated_parents in 
             let tempf = (fun r-> Strung.enclose(String.capitalize_ascii r)) in 
             let temp1 = Image.image (fun (s,t)->
                   (String.make 4 ' ')^(tempf s)^" , "^(tempf t)^" ;"
@@ -183,7 +183,7 @@ module Private = struct
             ] ;; 
               
       let text_for_get_parent_name por = 
-            let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in 
+            let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in 
             String.concat "\n"
             ([
                   "let get_parent_name fw = ";
@@ -194,7 +194,7 @@ module Private = struct
             ]);;
          
       let text_for_parent_setter por (sibling,parent) =   
-            let main_module_name = (String.capitalize_ascii por.Por_types.module_name) 
+            let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) 
             and (ext_name,indexed_and_labeled) = Extender.extender_data por (parent,sibling) in  
             let uc_sibling = String.uncapitalize_ascii sibling in  
             String.concat "\n"
@@ -209,10 +209,10 @@ module Private = struct
       
       let text_for_parent_setters por = 
          String.concat "\n"   
-        (Image.image (text_for_parent_setter por) por.Por_types.designated_parents);;
+        (Image.image (text_for_parent_setter por) por.Por_space_t.designated_parents);;
       
       let text_for_main_parent_setter por = 
-            let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in   
+            let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in   
             String.concat "\n"
             ([
                   "let set ~child ~new_parent = ";
@@ -223,7 +223,7 @@ module Private = struct
                   let c_sibling = String.capitalize_ascii sibling 
                   and uc_sibling = String.uncapitalize_ascii sibling in 
                  (String.make 3 ' ')^(Strung.enclose c_sibling)^" , sp_for_"^uc_sibling^" child new_parent ;" ) 
-                 por.Por_types.designated_parents
+                 por.Por_space_t.designated_parents
             )@[
                " ] with "; 
                "  Some(answer) ->answer";
@@ -232,7 +232,7 @@ module Private = struct
             ]) ;;   
 
       let text_for_main_parent_getter por = 
-            let main_module_name = (String.capitalize_ascii por.Por_types.module_name) in   
+            let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in   
             String.concat "\n"
             ([
                   "let get child = ";
@@ -241,7 +241,7 @@ module Private = struct
             ]) ;;         
 
       let full_text por =
-            if por.Por_types.designated_parents = []
+            if por.Por_space_t.designated_parents = []
             then ""  
             else
             "module Parent = struct \n"^
@@ -258,15 +258,15 @@ module Private = struct
       module Origin = struct 
             
       let snippet
-        (_por:Por_types.t) 
+        (_por:Por_space_t.t) 
           (field:Por_types.field_t) = 
              (String.make 3 ' ')^(field.Por_types.field_name)^" = "^
              (field.Por_types.default_value)^" ;" ;;
           
       let  text por =
-            let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_types.module_name)^
+            let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_space_t.module_name)^
                         "_t.type_name = \"\" ;" 
-            and temp2 = Image.image (snippet por) por.Por_types.fields in 
+            and temp2 = Image.image (snippet por) por.Por_space_t.fields in 
              (String.concat "\n" 
              (["let origin = {";]@
                ( temp1 :: temp2 )
@@ -285,7 +285,7 @@ module Private = struct
             let temp1 = Image.image (fun 
               inst -> (inst.Por_types.subclass_name,
                   inst.Por_types.subclass_fields)
-            ) por.Por_types.subclasses in 
+            ) por.Por_space_t.subclasses in 
             
              (
              "let fields_for_subclasss = [\n"^
@@ -294,7 +294,7 @@ module Private = struct
              );;      
       
       let text_for_get_fields por = 
-            let module_name = String.capitalize_ascii(por.Por_types.module_name) in 
+            let module_name = String.capitalize_ascii(por.Por_space_t.module_name) in 
             ( String.concat "\n"
             [
               "exception Get_fields_exn of string ;;\n";
@@ -313,7 +313,7 @@ module Private = struct
             let temp1 = Image.image (fun 
               inst -> (inst.Por_types.field_name,
                   inst.Por_types.field_type)
-            ) por.Por_types.fields in 
+            ) por.Por_space_t.fields in 
             
              (
              "let data_for_fields = [\n"^
@@ -336,7 +336,7 @@ module Private = struct
       
 
       let  text_for_show_fields por =
-            let module_name = String.capitalize_ascii(por.Por_types.module_name) in  
+            let module_name = String.capitalize_ascii(por.Por_space_t.module_name) in  
               ( String.concat "\n"
               [
                "let element_in_show_fields (fd_name,fd_type) = (String.make 3 ' ') ^ fd_name ^ \" : \" ^ fd_type ;;\n";
