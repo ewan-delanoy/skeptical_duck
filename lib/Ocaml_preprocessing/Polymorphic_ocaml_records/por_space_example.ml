@@ -88,14 +88,42 @@ let second_base = [
 
 let full_base =  cumulative_first_base @ second_base ;;     
 
+
+
+
+
+let list_for_constructors = 
+   ["gw_configuration";"gw_guthib_configuration"] ;;
+
+let list_for_extensions =   
+   ["gw_configuration","gw_life_watcher"] ;;
+
+let list_for_parenting =
+[
+  "gw_with_archives","gw_life_watcher";
+  "gw_with_small_details","gw_with_archives";                       
+  "gw_with_dependencies","gw_with_small_details";
+  "gw_with_batch_compilation","gw_with_dependencies";
+  "gw_with_githubbing","gw_with_batch_compilation";
+] ;;
+
+let list_for_restrictions = 
+  ["gw_guthib_configuration";"gw_configuration"] ;;
+
 let subclass_list_constructor l = Image.image (
-  fun (a,b) -> {
-    Por_subclass_t.subclass_name = a ;
-    subclass_fields = b ;
-    parent = None;
-    extensions_leading_here = [];
-    has_restriction = false;
-    has_constructor = false;
+  fun (scl_name,scl_fields) -> {
+    Por_subclass_t.subclass_name = scl_name ;
+    subclass_fields = scl_fields ;
+    parent = List.assoc_opt scl_name list_for_parenting;
+    extensions_leading_here = 
+      More_option.filter_and_unpack (
+        fun (x,y)->
+          if y=scl_name  
+          then Some x 
+          else None  
+      ) list_for_extensions ;
+    has_restriction = List.mem scl_name list_for_restrictions;
+    has_constructor = List.mem scl_name list_for_constructors;
   }
 ) l;;
 
@@ -127,16 +155,10 @@ let example =
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
-   extensions = ["gw_configuration","gw_life_watcher"] ;
-   restrictions = ["gw_guthib_configuration";
-                   "gw_configuration"] ;
-   constructors = ["gw_configuration";"gw_guthib_configuration"] ;
-   designated_parents = ["gw_with_archives","gw_life_watcher";
-                         "gw_with_small_details","gw_with_archives";                       
-                         "gw_with_dependencies","gw_with_small_details";
-                         "gw_with_batch_compilation","gw_with_dependencies";
-                         "gw_with_githubbing","gw_with_batch_compilation";
-                         ] ;
+   extensions = list_for_extensions ;
+   restrictions = list_for_restrictions ;
+   constructors = list_for_constructors ;
+   designated_parents = list_for_parenting ;
 } ;;  
 
 end ;;   
