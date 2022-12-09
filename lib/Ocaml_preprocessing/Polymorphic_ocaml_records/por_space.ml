@@ -18,7 +18,7 @@ module Private = struct
         fun scl -> Image.image (fun fd_name->
            Por_common.get_field porsp fd_name
           )
-        (scl.Por_subclass_t.subclass_fields)
+        (scl.Por_subclass_t.adbridged_subclass_fields)
       ) porsp.Por_space_t.subclasses) in 
       Ordered.sort field_order unordered_fields ;; 
 

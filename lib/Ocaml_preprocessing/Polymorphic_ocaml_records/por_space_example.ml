@@ -60,7 +60,7 @@ let fields_for_gw_with_githubbing = field_list_constructor [
 let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
    Por_subclass_t.subclass_name = a ;
-   subclass_fields = b ;
+   adbridged_subclass_fields = b ;
 }
 ) l;;
 
@@ -98,7 +98,7 @@ let full_base =  cumulative_first_base @ second_base ;;
 let subclass_list_constructor l = Image.image (
   fun (a,b) -> {
     Por_subclass_t.subclass_name = a ;
-    subclass_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
+    adbridged_subclass_fields = Image.image (fun fd->fd.Por_types.field_name ) b ;
   }
 ) l;;
 
