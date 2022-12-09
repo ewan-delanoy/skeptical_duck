@@ -6,7 +6,7 @@
 
 *)
 
-let f x y=
+let f _x _y=
   let e=9+10 in
   let g=Tested_module_one.f 11 12 in
   e+g;;

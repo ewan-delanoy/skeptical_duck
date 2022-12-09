@@ -124,8 +124,8 @@ let _=(for k=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+let final_y=(function (y,_lx,_c)->y)(last_term)
+and final_list=(function (_y,lx,_c)->List.rev lx)(last_term) in
 (final_y,final_list);;
   
 let maximize_on_triples f a b=
@@ -144,8 +144,8 @@ let _=(for k=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+let final_y=(function (y,_lx,_c)->y)(last_term)
+and final_list=(function (_y,lx,_c)->List.rev lx)(last_term) in
 (final_y,final_list);;  
   
 let maximize_on_fourtuples f a b=
@@ -164,8 +164,8 @@ let _=(for k=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+let final_y=(function (y,_lx,_c)->y)(last_term)
+and final_list=(function (_y,lx,_c)->List.rev lx)(last_term) in
 (final_y,final_list);;
 
 let maximize_on_fiftuples f a b=
@@ -184,8 +184,8 @@ let _=(for k=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+let final_y=(function (y,_lx,_c)->y)(last_term)
+and final_list=(function (_y,lx,_c)->List.rev lx)(last_term) in
 (final_y,final_list);;
   
 let maximize_on_sixtuples f a b=
@@ -204,8 +204,8 @@ let _=(for k=1 to number_of_iterations do
 accu:=iterator(!accu)
 done) in
 let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
+let final_y=(function (y,_lx,_c)->y)(last_term)
+and final_list=(function (_y,lx,_c)->List.rev lx)(last_term) in
 (final_y,final_list);;
     
   
