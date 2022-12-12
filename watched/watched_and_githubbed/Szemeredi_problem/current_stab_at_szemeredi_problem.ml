@@ -179,6 +179,7 @@ let vp2 n = P (1, n-3, n, []) ;;
 
 (* Constraints *)
 let vcstr1 n = C [n-2; n-1; n] ;; 
+let vcstr2 n = C [n-4; n-2; n] ;; 
 
 (* Sets of integers *)
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
