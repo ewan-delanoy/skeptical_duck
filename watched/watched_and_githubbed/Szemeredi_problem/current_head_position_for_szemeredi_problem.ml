@@ -183,9 +183,11 @@ module Example = struct
 let ep = Empty_point ;;
 let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
+let vp3 n = P (1, n-5, n, []) ;;  
 
 (* Constraints *)
 let vcstr1 n = C [n-2; n-1; n] ;; 
+let vcstr2 n = C [n-4; n-2; n] ;; 
 
 (* Sets of integers *)
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
@@ -277,7 +279,7 @@ let check_vsu1 =
    let temp1 = Int_range.scale (
      fun k->(k,
      Bulk_result.superficial_part(compute_bulk_result (P(2,0,k,[]))),
-     Superficial_Example.sr1 k)
+     Example.vsu1 k)
    ) 1 30 in 
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
@@ -619,15 +621,28 @@ let tf3 n = let (BR(_,mold)) = tf1 n in mold ;;
 let tf5 n = let (M(sols,_)) = tf3 n in sols ;; 
 let tf6 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
 
-let tg1 (b,n) = compute_bulk_result (P(1,b,n,[])) ;;
+let tg1 (b,n) = compute_bulk_result (P(2,b,n,[])) ;;
+let vsu2 n= 
+  match n with 
+  1 | 2 -> Atomic 
+  | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
+  | _ -> 
+  (match n mod 3 with 
+  0 -> Fork
+  [(vp1(n-3), [n-1; n]);
+   (vp1(n-2), [n]);
+   (vp1(n-1), [])]
+ |1|2 ->  Contraction (vp2(n), vcstr1 n)
+ |_ -> failwith("Impossible remainder by 3")) ;; 
 
-let check1 = 
-  let bound = 30 in 
-  let all_pairs = Cartesian.product (Int_range.range 0 bound)
-      (Int_range.range 3 bound) in 
-  let concerned_pairs = List.filter (fun (b,n)->b>=n-2) all_pairs in 
-  let temp1 = Image.image (
-      fun (b,n)->
-      ((b,n),tg1(b,n),tg1(n-2,n))
-    ) concerned_pairs in 
-  List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+(*
+   
+let check_vsu2 = 
+   let temp1 = Int_range.scale (
+     fun k->(k,
+     Bulk_result.superficial_part(compute_bulk_result (P(3,0,k,[]))),
+     Example.vsu2 k)
+   ) 1 30 in 
+   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
+*)

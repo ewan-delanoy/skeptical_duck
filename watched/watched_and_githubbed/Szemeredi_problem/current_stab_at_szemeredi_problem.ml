@@ -176,6 +176,7 @@ module Example = struct
 let ep = Empty_point ;;
 let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
+let vp3 n = P (1, n-5, n, []) ;;  
 
 (* Constraints *)
 let vcstr1 n = C [n-2; n-1; n] ;; 
@@ -271,7 +272,7 @@ let check_vsu1 =
    let temp1 = Int_range.scale (
      fun k->(k,
      Bulk_result.superficial_part(compute_bulk_result (P(2,0,k,[]))),
-     Superficial_Example.sr1 k)
+     Example.vsu1 k)
    ) 1 30 in 
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
