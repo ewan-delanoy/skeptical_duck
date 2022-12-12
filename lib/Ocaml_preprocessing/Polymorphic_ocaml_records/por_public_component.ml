@@ -59,7 +59,10 @@ module Private = struct
       } 
       ) (Por_common.extensions_from_different_sources por) ;;
 
-      let annotated_text_for_parenting_symlinks _por=
+      let annotated_text_for_parenting_symlinks por=
+        if Por_common.all_parentings por = []
+        then []  
+        else
       [
         {
           Por_public_definition_t.value_name = "parent" ;

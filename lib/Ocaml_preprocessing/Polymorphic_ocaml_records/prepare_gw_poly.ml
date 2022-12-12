@@ -57,7 +57,8 @@ let gw_configuration_subclass =
    has_constructor = true} ;;           
             
 
-let act () = Por_space.write full_example ;;
+let current_gw = (!Por_space_example.filewatching) ;;    
+let act () = Por_space.write (!Por_space_example.filewatching) ;;
 
 let submodules = [
    "Modularized_details";
