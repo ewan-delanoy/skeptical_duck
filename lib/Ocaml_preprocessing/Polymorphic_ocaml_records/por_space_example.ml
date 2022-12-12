@@ -173,3 +173,15 @@ let bare_filewatching =
 end ;;   
 
 let full_example = Private.full_example ;; 
+
+let filewatching = 
+  let home = Sys.getenv "HOME" in 
+  let file_there = (fun s-> 
+    Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in 
+Por_space.make  
+~main_type_name:"t" 
+  ~module_name:"gw_poly"
+   ~type_signature_file:(file_there "gw_poly_t") 
+     ~implementation_file:(file_there "gw_poly") 
+       ~has_crobj_conversion:true ;;  
+
