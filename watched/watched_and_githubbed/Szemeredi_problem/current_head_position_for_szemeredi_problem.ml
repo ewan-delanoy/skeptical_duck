@@ -183,7 +183,7 @@ module Example = struct
 let ep = Empty_point ;;
 let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
-let vp3 n = P (1, n-5, n, []) ;;  
+let vp3 n = P (2, n-5, n, []) ;;  
 
 (* Constraints *)
 let vcstr1 n = C [n-2; n-1; n] ;; 
@@ -626,14 +626,7 @@ let vsu2 n=
   match n with 
   1 | 2 -> Atomic 
   | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
-  | _ -> 
-  (match n mod 3 with 
-  0 -> Fork
-  [(vp1(n-3), [n-1; n]);
-   (vp1(n-2), [n]);
-   (vp1(n-1), [])]
- |1|2 ->  Contraction (vp2(n), vcstr1 n)
- |_ -> failwith("Impossible remainder by 3")) ;; 
+  | _ ->  Contraction (vp3(n), vcstr2 n) ;; 
 
 (*
    
@@ -641,7 +634,7 @@ let check_vsu2 =
    let temp1 = Int_range.scale (
      fun k->(k,
      Bulk_result.superficial_part(compute_bulk_result (P(3,0,k,[]))),
-     Example.vsu2 k)
+     vsu2 k)
    ) 1 30 in 
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 

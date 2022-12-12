@@ -176,7 +176,7 @@ module Example = struct
 let ep = Empty_point ;;
 let vp1 n = P (1, n-2, n, []) ;;
 let vp2 n = P (1, n-3, n, []) ;;    
-let vp3 n = P (1, n-5, n, []) ;;  
+let vp3 n = P (2, n-5, n, []) ;;  
 
 (* Constraints *)
 let vcstr1 n = C [n-2; n-1; n] ;; 
