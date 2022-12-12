@@ -402,7 +402,25 @@ let vq0_1 n = Q (ep,[],[1;2]@(Int_range.range 4 n)) ;;
 let vq0_2 n = Q (ep,[],[1;3]@(Int_range.range 4 n)) ;;
 let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
+let vq1_1 n = 
+  match n with 
+   3 -> Q(ep,[],[2;3]) 
+  |4 -> Q(ep,[],[1;3;4]) 
+  |5 -> Q(ep,[],[1;2;4;5])
+  |_ ->  Q(vp1(n-3),vcl1 n,[n-1;n]) ;;
 
+(*  
+let check_vq1_1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = 
+          (List.nth_opt qpoints 0) in 
+        (k,res,vq1_1 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
 
 (* Lists of qualified points *)
 

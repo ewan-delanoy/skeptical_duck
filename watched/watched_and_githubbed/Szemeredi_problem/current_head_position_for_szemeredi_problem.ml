@@ -232,6 +232,25 @@ let check_vcl2 =
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
 *)    
 
+let vcl3 n = 
+  if n<4 then [] else
+  helper1_for_constraints_lists [] (n-5) ;;
+
+(*
+let check_vcl3 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
+          (List.nth_opt qpoints 2) in 
+        (k,res,Example.vcl3 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
+
+
+
 (* Sets of integers *)
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
@@ -390,7 +409,25 @@ let vq0_1 n = Q (ep,[],[1;2]@(Int_range.range 4 n)) ;;
 let vq0_2 n = Q (ep,[],[1;3]@(Int_range.range 4 n)) ;;
 let vq0_3 n = Q (ep,[],[2;3]@(Int_range.range 4 n)) ;;
 
+let vq1_1 n = 
+  match n with 
+   3 -> Q(ep,[],[2;3]) 
+  |4 -> Q(ep,[],[1;3;4]) 
+  |5 -> Q(ep,[],[1;2;4;5])
+  |_ ->  Q(vp1(n-3),vcl1 n,[n-1;n]) ;;
 
+(*  
+let check_vq1_1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = 
+          (List.nth_opt qpoints 0) in 
+        (k,res,vq1_1 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
 
 (* Lists of qualified points *)
 
@@ -694,30 +731,34 @@ let bulk3 n = let (BR(_,mold)) = bulk1 n in mold ;;
 let tf2 n = let (M(sols,_)) = bulk3 n in sols ;; 
 let tf3 n = let (M(_,qpoints)) = bulk3 n in qpoints ;; 
 let tf4 n = 
-  Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
-   (List.nth_opt (tf3 n) 2)  ;;
+  (* Option.map (fun (Q(p,l_cstr,_)) -> p) *)
+   (List.nth_opt (tf3 n) 0)  ;;
 
 
 let shelper1 l r = Some(helper1_for_constraints_lists l r) ;; 
 
-(tf4 3) = Some [] ;; 
-(tf4 6)= shelper1 [] 1 ;;
-(tf4 9)= shelper1 [] 4 ;;
-(tf4 12)=shelper1 [] 7 ;;
-(tf4 13)=shelper1 [[9;11]] 6 ;;
+(tf4 3) = Some (Q(ep,[],[2;3])) ;; 
+(tf4 4) = Some (Q(ep,[],[1;3;4])) ;; 
+(tf4 5) = Some (Q(ep,[],[1;2;4;5])) ;; 
+(tf4 6) = Some (Q(vp1(3),vcl1 6,[5;6])) ;; 
+(tf4 7) = Some (Q(vp1(4),vcl1 7,[6;7])) ;; 
+(tf4 8) = Some (Q(vp1(5),vcl1 8,[7;8])) ;; 
 
-let vcl3 n = 
-  if n<4 then [] else
-  helper1_for_constraints_lists [] (n-5) ;;
+let vq1_1 n = 
+  match n with 
+   3 -> Q(ep,[],[2;3]) 
+  |4 -> Q(ep,[],[1;3;4]) 
+  |5 -> Q(ep,[],[1;2;4;5])
+  |_ ->  Q(vp1(n-3),vcl1 n,[n-1;n]) ;;
 
-let check_vcl3 = 
+let check_vq1_1 = 
     let bound = 30 in 
     let temp1 = Int_range.scale (
         fun k->
         let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
-        let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
-          (List.nth_opt qpoints 2) in 
-        (k,res,vcl3 k)
+        let res = 
+          (List.nth_opt qpoints 0) in 
+        (k,res,vq1_1 k)
       ) 1 bound in 
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
 
