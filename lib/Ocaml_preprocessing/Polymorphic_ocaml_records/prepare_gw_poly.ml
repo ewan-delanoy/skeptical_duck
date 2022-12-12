@@ -8,6 +8,8 @@
 
 let example = Por_space_example.full_example ;;   
    
+let subclasses0 = example.Por_space_t.subclasses ;;  
+
 let act () = Por_space.write example ;;
 
 let submodules = [

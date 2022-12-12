@@ -67,5 +67,18 @@ module Private = struct
 
 
 end ;;   
+
+
+let make 
+   ~main_type_name ~module_name 
+   ~type_signature_file ~implementation_file 
+   ~has_crobj_conversion = {
+  Por_space_t.main_type_name = main_type_name ;
+  module_name = module_name ;
+  subclasses = [] ;
+  type_signature_file = type_signature_file;
+  implementation_file = implementation_file ;
+  has_crobj_conversion = has_crobj_conversion ;
+} ;;  
  
 let write = Private.write ;; 
