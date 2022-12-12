@@ -144,7 +144,7 @@ let select_field fd_name =
   
 let unabridged_subclasses = subclass_list_constructor full_base ;; 
 
-let example = 
+let full_example = 
   let home = Sys.getenv "HOME" in 
   let file_there = (fun s-> 
     Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in 
@@ -159,4 +159,4 @@ let example =
 
 end ;;   
 
-let example = Private.example ;; 
+let full_example = Private.full_example ;; 

@@ -6,7 +6,7 @@
 
 
 
-let example = Por_space_example.example ;;   
+let example = Por_space_example.full_example ;;   
    
 let act () = Por_space.write example ;;
 
