@@ -194,5 +194,17 @@ let suppress_linebreaks_in_interval_in_file fn i j=
 
 let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
 
+let unindent_interval_in_string (i,j) ~text  =
+   let old_lines = indexed_lines text  in 
+   let new_lines = Image.image (
+       fun (k,line) -> 
+         if (k<i)||(k>j)
+         then line
+        else Cull_string.trim_spaces_on_the_left line
+   ) old_lines in 
+   String.concat "\n" new_lines ;;
 
-
+let unindent_interval_in_file (i,j) fn =
+   let old_text=Io.read_whole_file fn in
+   let new_text=unindent_interval_in_string (i,j) ~text:old_text   in
+   Io.overwrite_with fn new_text;;   

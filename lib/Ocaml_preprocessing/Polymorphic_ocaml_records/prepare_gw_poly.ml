@@ -6,11 +6,49 @@
 
 
 
-let example = Por_space_example.full_example ;;   
+let full_example = Por_space_example.full_example ;;   
    
-let subclasses0 = example.Por_space_t.subclasses ;;  
+let subclasses0 = full_example.Por_space_t.subclasses ;;  
 
-let act () = Por_space.write example ;;
+let subclass = List.hd subclasses0 ;; 
+let fields = subclass.Por_subclass_t.subclass_fields ;; 
+
+let field1 = List.nth fields 0 ;;
+let field2 = List.nth fields 1 ;;
+let field3 = List.nth fields 2 ;;
+
+let r_field1 =
+{Por_types.field_name = "root";
+   field_type = "Dfa_root_t.t"; 
+   var_name = "r";
+   default_value = "Dfa_root.of_line \"dummy\"";
+   crobj_converters =
+    Some ("Dfa_root.of_concrete_object", 
+    "Dfa_root.to_concrete_object")} ;; 
+
+let r_field2 =
+{Por_types.field_name = "ignored_subdirectories";
+   field_type = "Dfa_subdirectory_t.t list"; 
+   var_name = "ign_subdirs";
+   default_value = "[]";
+   crobj_converters =
+          Some ("Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object", 
+          "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object")} ;;     
+
+
+          let r_field2 =
+            {Por_types.field_name = "ignored_subdirectories";
+               field_type = "Dfa_subdirectory_t.t list"; 
+               var_name = "ign_subdirs";
+               default_value = "[]";
+               crobj_converters =
+                      Some ("Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object", 
+                      "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object")} ;;     
+            
+            
+            
+
+let act () = Por_space.write full_example ;;
 
 let submodules = [
    "Modularized_details";
