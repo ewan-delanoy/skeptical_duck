@@ -17,7 +17,7 @@ let field1 = List.nth fields 0 ;;
 let field2 = List.nth fields 1 ;;
 let field3 = List.nth fields 2 ;;
 
-let r_field1 =
+let root_field =
 {Por_types.field_name = "root";
    field_type = "Dfa_root_t.t"; 
    var_name = "r";
@@ -26,7 +26,7 @@ let r_field1 =
     Some ("Dfa_root.of_concrete_object", 
     "Dfa_root.to_concrete_object")} ;; 
 
-let r_field2 =
+let ignored_subdirectories_field =
 {Por_types.field_name = "ignored_subdirectories";
    field_type = "Dfa_subdirectory_t.t list"; 
    var_name = "ign_subdirs";
@@ -36,16 +36,25 @@ let r_field2 =
           "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object")} ;;     
 
 
-          let r_field2 =
-            {Por_types.field_name = "ignored_subdirectories";
-               field_type = "Dfa_subdirectory_t.t list"; 
-               var_name = "ign_subdirs";
-               default_value = "[]";
-               crobj_converters =
-                      Some ("Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object", 
-                      "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object")} ;;     
+let ignored_files_field =
+{Por_types.field_name = "ignored_files";
+field_type = "Dfn_rootless_t.t list"; 
+var_name = "ign_files";
+default_value = "[]";
+crobj_converters =
+Some ("Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object", 
+"Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object")} ;;     
             
-            
+let gw_configuration_subclass =
+{Por_subclass_t.subclass_name = "gw_configuration";
+   subclass_fields =
+    [root_field;
+     ignored_subdirectories_field;
+     ignored_files_field];
+   parent = None; 
+   extensions_leading_here = []; 
+   has_restriction = true;
+   has_constructor = true} ;;           
             
 
 let act () = Por_space.write full_example ;;

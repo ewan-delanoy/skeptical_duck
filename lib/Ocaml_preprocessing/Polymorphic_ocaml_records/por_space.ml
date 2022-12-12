@@ -68,4 +68,13 @@ module Private = struct
 
 end ;;   
  
+let add_subclass por_ref scl = 
+  let old_por = (!por_ref) in 
+  let old_subclasses = old_por.Por_space_t.subclasses in 
+  let new_por ={
+   old_por with 
+   Por_space_t.subclasses = old_subclasses @ [scl] ;
+  } in 
+  por_ref := new_por ;;
+
 let write = Private.write ;; 
