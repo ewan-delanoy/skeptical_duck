@@ -695,45 +695,31 @@ let tf2 n = let (M(sols,_)) = bulk3 n in sols ;;
 let tf3 n = let (M(_,qpoints)) = bulk3 n in qpoints ;; 
 let tf4 n = 
   Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
-   (List.nth_opt (tf3 n) 1)  ;;
+   (List.nth_opt (tf3 n) 2)  ;;
 
 
 let shelper1 l r = Some(helper1_for_constraints_lists l r) ;; 
 
-
-(tf4 7)= shelper1 [[3;5]] 0 ;;
-(tf4 9)= shelper1 [[5;7]] 2 ;;
-(tf4 10)=shelper1 [[6;8]] 3 ;;
-(tf4 12)=shelper1 [[8;10]] 5 ;;
+(tf4 3) = Some [] ;; 
+(tf4 6)= shelper1 [] 1 ;;
+(tf4 9)= shelper1 [] 4 ;;
+(tf4 12)=shelper1 [] 7 ;;
 (tf4 13)=shelper1 [[9;11]] 6 ;;
 
-let vcl2 n = 
-  if n<5 then [] else
-  helper1_for_constraints_lists [[n-4;n-2]] (n-7) ;;
+let vcl3 n = 
+  if n<4 then [] else
+  helper1_for_constraints_lists [] (n-5) ;;
 
-let check_vcl2 = 
+let check_vcl3 = 
     let bound = 30 in 
     let temp1 = Int_range.scale (
         fun k->
         let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
         let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
-          (List.nth_opt qpoints 1) in 
-        (k,res,vcl2 k)
+          (List.nth_opt qpoints 2) in 
+        (k,res,vcl3 k)
       ) 1 bound in 
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
-
-
-
-let helper l r=
-  (Image.image (fun x->C x) l) 
-  @ (Int_range.scale (fun t->C[t;t+2;t+4]) 1 r) ;; 
-
-(tf4 6)=helper [[1;3]] 0 ;;
-(tf4 7)=helper [[2;4]] 0 ;;
-(tf4 8)=helper [[3;5]] 0 ;;
-(tf4 9)=helper [[4;6]] 1 ;;
-(tf4 10)=helper [[5;7]] 2 ;;
-(tf4 11)=helper [[6;8]] 3 ;;
 
 
 
