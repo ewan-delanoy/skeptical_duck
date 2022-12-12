@@ -517,6 +517,26 @@ let check_vql1 =
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)  
 
+let vql2 n =  
+ match n with 
+ 1 | 2 -> [] 
+ | _ ->
+ (match n mod 3 with 
+ 0 ->  [vq1_1 n;vq1_2 n;vq1_3 n]
+|1 ->  [vq1_1 n;vq1_2 n]
+|2 ->  [vq1_1 n]
+|_ -> failwith("Impossible remainder by 3")) ;; 
+
+(*
+let check_vql2 = 
+  let temp1 = Int_range.scale (
+    fun k->
+    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in   
+      (k,ql,Example.vql2 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)
+
 let vvql2 b n = 
   if b=0 
   then []
@@ -559,14 +579,15 @@ let check_vvbr1 =
 
 *)
 
+(* P(2,0,n,[]) is BR(vsu1 n,M([vso1(n)],vql1(n))) *)
 
-let vbr1 n = BR(vsu1 n,M([vso1(n)],vql1(n))) ;;
+let temp_vbr1 n = BR(vsu2 n,M([vso1(n)],vql2(n))) ;;
 (*
-let check_vbr1 = 
+let check_temp_vbr1 = 
   let temp1 = Int_range.scale (
     fun k->(k,
-    compute_bulk_result (P(2,0,k,[])),
-    Example.vbr1 k)
+    compute_bulk_result (P(3,0,k,[])),
+    Example.temp_vbr1 k)
   ) 1 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)

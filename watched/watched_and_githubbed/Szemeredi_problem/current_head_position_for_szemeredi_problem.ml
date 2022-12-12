@@ -524,6 +524,26 @@ let check_vql1 =
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)  
 
+let vql2 n =  
+ match n with 
+ 1 | 2 -> [] 
+ | _ ->
+ (match n mod 3 with 
+ 0 ->  [vq1_1 n;vq1_2 n;vq1_3 n]
+|1 ->  [vq1_1 n;vq1_2 n]
+|2 ->  [vq1_1 n]
+|_ -> failwith("Impossible remainder by 3")) ;; 
+
+(*
+let check_vql2 = 
+  let temp1 = Int_range.scale (
+    fun k->
+    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in   
+      (k,ql,Example.vql2 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)
+
 let vvql2 b n = 
   if b=0 
   then []
@@ -566,14 +586,15 @@ let check_vvbr1 =
 
 *)
 
+(* P(2,0,n,[]) is BR(vsu1 n,M([vso1(n)],vql1(n))) *)
 
-let vbr1 n = BR(vsu1 n,M([vso1(n)],vql1(n))) ;;
+let temp_vbr1 n = BR(vsu2 n,M([vso1(n)],vql2(n))) ;;
 (*
-let check_vbr1 = 
+let check_temp_br1 = 
   let temp1 = Int_range.scale (
     fun k->(k,
-    compute_bulk_result (P(2,0,k,[])),
-    Example.vbr1 k)
+    compute_bulk_result (P(3,0,k,[])),
+    Example.temp_vbr1 k)
   ) 1 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)
@@ -770,7 +791,7 @@ let bulk3 n = let (M(_,qpoints)) = bulk2 n in qpoints ;;
 let tf4 n = 
   (* Option.map (fun (Q(p,l_cstr,_)) -> p) *)
    (List.nth_opt (bulk3 n) 2)  ;;
-
+let tf5 n = List.length(bulk3 n) ;;    
 
 let shelper1 l r = Some(helper1_for_constraints_lists l r) ;; 
 
@@ -781,21 +802,25 @@ let shelper1 l r = Some(helper1_for_constraints_lists l r) ;;
 (tf4 7) = Some (Q(vp1(4),vcl1 7,[6;7])) ;; 
 (tf4 8) = Some (Q(vp1(5),vcl1 8,[7;8])) ;; 
 
-let vq1_3 n = 
-  match n with 
-   3 -> Q(ep,[],[1;2]) 
-  |_ ->  Q(vp1(n-1),vcl3 n,[]) ;;
+let vql2 n =  
+ match n with 
+ 1 | 2 -> [] 
+ | _ ->
+ (match n mod 3 with 
+ 0 ->  [vq1_1 n;vq1_2 n;vq1_3 n]
+|1 ->  [vq1_1 n;vq1_2 n]
+|2 ->  [vq1_1 n]
+|_ -> failwith("Impossible remainder by 3")) ;; 
 
-let check_vq1_3 = 
-    let bound = 30 in 
-    let temp1 = Int_range.scale (
-        fun k->
-        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
-        let res = 
-          (List.nth_opt qpoints 2) in 
-        (k,res,vq1_3 k)
-      ) 1 bound in 
-    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+
+let check_vql2 = 
+  let temp1 = Int_range.scale (
+    fun k->
+    let (M(_,ql)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in   
+      (k,ql,vql2 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+
 
 
 
