@@ -189,9 +189,46 @@ let vp3 n = P (2, n-5, n, []) ;;
 let vcstr1 n = C [n-2; n-1; n] ;; 
 let vcstr2 n = C [n-4; n-2; n] ;; 
 
+(* Set of constraints *)
+
+let helper1_for_constraints_lists l r=
+   (Image.image (fun x->C x) l) 
+   @ (Int_range.scale (fun t->C[t;t+2;t+4]) 1 r) ;; 
+
+let vcl1 n = 
+  if n<6 then [] else 
+  let m = (if n<8 then 0 else n-8) in 
+  helper1_for_constraints_lists [[n-5;n-3]] m ;;
+
+(*  
+let check_vcl1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
+          (List.nth_opt qpoints 0) in 
+           
+        (k,res,Example.vcl1 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
+
 (* Sets of integers *)
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
+(*
+   
+let check_vso1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(sols,_)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        (k,sols,[Example.vso1 k])
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->x<>y) temp1 ;; 
+
+*)
 
 let vvso1 d n =
   match (n-d) mod 3 with 
@@ -633,11 +670,51 @@ open Example ;;
 
 (* When d = 4 *)
 
-let tf1 n = compute_bulk_result (P(3,0,n,[])) ;; 
-let tf2 n = let (BR(sr,_)) = tf1 n in sr ;; 
-let tf3 n = let (BR(_,mold)) = tf1 n in mold ;; 
-let tf5 n = let (M(sols,_)) = tf3 n in sols ;; 
-let tf6 n = let (M(_,qpoints)) = tf3 n in qpoints ;; 
+let bulk1 n = compute_bulk_result (P(3,0,n,[])) ;; 
+let tf1 n = let (BR(sr,_)) = bulk1 n in sr ;; 
+let bulk3 n = let (BR(_,mold)) = bulk1 n in mold ;; 
+let tf2 n = let (M(sols,_)) = bulk3 n in sols ;; 
+let tf3 n = let (M(_,qpoints)) = bulk3 n in qpoints ;; 
+let tf4 n = 
+   match List.nth_opt (tf3 n) 0 with 
+    None -> []
+   | Some(Q(_,l_cstr,_))-> l_cstr ;;
+
+let helper1_for_constraints_lists l r=
+   (Image.image (fun x->C x) l) 
+   @ (Int_range.scale (fun t->C[t;t+2;t+4]) 1 r) ;; 
+
+let vcl1 n = 
+  if n<6 then [] else 
+  let m = (if n<8 then 0 else n-8) in 
+  helper1_for_constraints_lists [[n-5;n-3]] m ;;
+
+let check_vcl1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
+          (List.nth_opt qpoints 0) in 
+           
+        (k,res,vcl1 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+
+
+
+let helper l r=
+  (Image.image (fun x->C x) l) 
+  @ (Int_range.scale (fun t->C[t;t+2;t+4]) 1 r) ;; 
+
+(tf4 6)=helper [[1;3]] 0 ;;
+(tf4 7)=helper [[2;4]] 0 ;;
+(tf4 8)=helper [[3;5]] 0 ;;
+(tf4 9)=helper [[4;6]] 1 ;;
+(tf4 10)=helper [[5;7]] 2 ;;
+(tf4 11)=helper [[6;8]] 3 ;;
+
+
 
 let tg1 (b,n) = compute_bulk_result (P(2,b,n,[])) ;;
 let vsu2 n= 
@@ -648,12 +725,12 @@ let vsu2 n=
   | _ ->  Contraction (vp3(n), vcstr2 n) ;; 
 
 
-   
-let check_vsu2 = 
-   let temp1 = Int_range.scale (
-     fun k->(k,
-     Bulk_result.superficial_part(compute_bulk_result (P(3,0,k,[]))),
-     vsu2 k)
-   ) 1 30 in 
-   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
+let check_vso1 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(sols,_)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        (k,sols,[Example.vso1 k])
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->x<>y) temp1 ;; 
