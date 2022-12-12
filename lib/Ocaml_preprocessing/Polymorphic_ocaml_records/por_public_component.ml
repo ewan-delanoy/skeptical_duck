@@ -92,19 +92,28 @@ module Private = struct
       let full_subclass = Por_common.get_subclass por constructed_subclass  in 
       let fields = full_subclass.Por_subclass_t.subclass_fields in 
       (* let field_names = Image.image (fun fd->fd.Por_types.field_name) fields in *)
+      let totality_of_fields = Por_common.all_fields por in 
+      let subclass_is_not_full = (
+         List.exists (fun fd->not(List.mem fd fields)) totality_of_fields
+      ) in 
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
          "~"^(fd.Por_types.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
       let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in  
+      let line_for_origin_if_needed = 
+        (if subclass_is_not_full 
+          then [(String.make 3 ' ')^"Private.origin with "]
+          else []) in 
+      let lines = ["let "^constructor_name^" "^vars^" = {"; ]@
+      line_for_origin_if_needed
+      @[(String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_subclass)^"\" ;"]@
+        filling_fields
+      @["} ;;"] in 
       {
         Por_public_definition_t.value_name = constructor_name ;
-        lines_in_definition = ["let "^constructor_name^" "^vars^" = {";
-        (String.make 3 ' ')^"Private.origin with ";
-        (String.make 3 ' ')^main_module_name^"_t.type_name = \""^(String.capitalize_ascii constructed_subclass)^"\" ;"]@
-          filling_fields
-        @["} ;;"];
+        lines_in_definition = lines;
       } ;;  
 
     let annotated_text_for_constructors por = 
