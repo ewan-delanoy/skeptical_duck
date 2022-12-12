@@ -207,6 +207,24 @@ let check_vcl1 =
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
 *)
 
+
+let vcl2 n = 
+  if n<5 then [] else
+  helper1_for_constraints_lists [[n-4;n-2]] (n-7) ;;
+
+(*  
+let check_vcl2 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = Option.map (fun (Q(_,l_cstr,_)) -> l_cstr) 
+          (List.nth_opt qpoints 1) in 
+        (k,res,Example.vcl2 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)    
+
 (* Sets of integers *)
 let vso1 n = List.filter (fun t->List.mem(t mod 3)[1;2]) (Int_range.range 1 n) ;;
 
