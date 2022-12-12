@@ -429,6 +429,43 @@ let check_vq1_1 =
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
 *)
 
+let vq1_2 n = 
+  match n with 
+   3 -> Q(ep,[],[1;3]) 
+  |4 -> Q(ep,[],[1;2;4]) 
+  |_ ->  Q(vp1(n-2),vcl2 n,[n]) ;;
+
+(*  
+let check_vq1_2 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = 
+          (List.nth_opt qpoints 1) in 
+        (k,res,Example.vq1_2 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
+
+let vq1_3 n = 
+  match n with 
+   3 -> Q(ep,[],[1;2]) 
+  |_ ->  Q(vp1(n-1),vcl3 n,[]) ;;
+
+(*  
+let check_vq1_3 = 
+    let bound = 30 in 
+    let temp1 = Int_range.scale (
+        fun k->
+        let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
+        let res = 
+          (List.nth_opt qpoints 2) in 
+        (k,res,Example.vq1_3 k)
+      ) 1 bound in 
+    List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
+*)
+
 (* Lists of qualified points *)
 
 let vvql1 d n =  
@@ -727,38 +764,36 @@ open Example ;;
 
 let bulk1 n = compute_bulk_result (P(3,0,n,[])) ;; 
 let tf1 n = let (BR(sr,_)) = bulk1 n in sr ;; 
-let bulk3 n = let (BR(_,mold)) = bulk1 n in mold ;; 
-let tf2 n = let (M(sols,_)) = bulk3 n in sols ;; 
-let tf3 n = let (M(_,qpoints)) = bulk3 n in qpoints ;; 
+let bulk2 n = let (BR(_,mold)) = bulk1 n in mold ;; 
+let tf2 n = let (M(sols,_)) = bulk2 n in sols ;; 
+let bulk3 n = let (M(_,qpoints)) = bulk2 n in qpoints ;; 
 let tf4 n = 
   (* Option.map (fun (Q(p,l_cstr,_)) -> p) *)
-   (List.nth_opt (tf3 n) 0)  ;;
+   (List.nth_opt (bulk3 n) 2)  ;;
 
 
 let shelper1 l r = Some(helper1_for_constraints_lists l r) ;; 
 
-(tf4 3) = Some (Q(ep,[],[2;3])) ;; 
-(tf4 4) = Some (Q(ep,[],[1;3;4])) ;; 
-(tf4 5) = Some (Q(ep,[],[1;2;4;5])) ;; 
-(tf4 6) = Some (Q(vp1(3),vcl1 6,[5;6])) ;; 
+(tf4 3) = Some (Q(ep,[],[1;2])) ;;  
+(tf4 6) = Some (Q(vp1(5),vcl3 6,[])) ;; 
+(tf4 9) = Some (Q(vp1(8),vcl3 9,[])) ;; 
+
 (tf4 7) = Some (Q(vp1(4),vcl1 7,[6;7])) ;; 
 (tf4 8) = Some (Q(vp1(5),vcl1 8,[7;8])) ;; 
 
-let vq1_1 n = 
+let vq1_3 n = 
   match n with 
-   3 -> Q(ep,[],[2;3]) 
-  |4 -> Q(ep,[],[1;3;4]) 
-  |5 -> Q(ep,[],[1;2;4;5])
-  |_ ->  Q(vp1(n-3),vcl1 n,[n-1;n]) ;;
+   3 -> Q(ep,[],[1;2]) 
+  |_ ->  Q(vp1(n-1),vcl3 n,[]) ;;
 
-let check_vq1_1 = 
+let check_vq1_3 = 
     let bound = 30 in 
     let temp1 = Int_range.scale (
         fun k->
         let (M(_,qpoints)) = Bulk_result.mold(compute_bulk_result (P(3,0,k,[]))) in     
         let res = 
-          (List.nth_opt qpoints 0) in 
-        (k,res,vq1_1 k)
+          (List.nth_opt qpoints 2) in 
+        (k,res,vq1_3 k)
       ) 1 bound in 
     List.filter (fun (p,x,y)->(x<>None)&&(x<>Some y)) temp1 ;; 
 
