@@ -285,6 +285,24 @@ let check_vsu1 =
 
 *)
 
+let vsu2 n= 
+  match n with 
+  1 | 2 -> Atomic 
+  | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
+  | 4 -> Contraction (vp2 4, C[2;3;4])
+  | _ ->  Contraction (vp3(n), vcstr2 n) ;; 
+
+
+(*   
+let check_vsu2 = 
+   let temp1 = Int_range.scale (
+     fun k->(k,
+     Bulk_result.superficial_part(compute_bulk_result (P(3,0,k,[]))),
+     Example.vsu2 k)
+   ) 1 30 in 
+   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)
+
 let vvsu2 b n = 
   if b=0 
   then Atomic
@@ -626,9 +644,10 @@ let vsu2 n=
   match n with 
   1 | 2 -> Atomic 
   | 3 -> Fork [(ep, [2;3]);(ep, [1;3]);(ep, [1;2])]
+  | 4 -> Contraction (vp2 4, C[2;3;4])
   | _ ->  Contraction (vp3(n), vcstr2 n) ;; 
 
-(*
+
    
 let check_vsu2 = 
    let temp1 = Int_range.scale (
@@ -638,4 +657,3 @@ let check_vsu2 =
    ) 1 30 in 
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 
-*)
