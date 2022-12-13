@@ -11,8 +11,8 @@ module Private = struct
       let text_for_label 
             (_por:Por_space_t.t) 
               max_namesize
-             (field:Por_types.field_t) = 
-             let fn = field.Por_types.field_name in 
+             (field:Por_field_t.field_t) = 
+             let fn = field.Por_field_t.field_name in 
              let offset = String.make (max_namesize-String.length fn) ' ' in 
              "let label_for_"^fn^offset^" = salt ^ \""^fn^"\" ;;" ;;
           
@@ -20,13 +20,13 @@ module Private = struct
       let fields_with_crobj_conversion por =
              More_option.filter_and_unpack (
                fun fld ->
-                match fld.Por_types.crobj_converters with 
+                match fld.Por_field_t.crobj_converters with 
                 None -> None 
                 |Some(of_crobj,to_crobj) -> Some(fld,(of_crobj,to_crobj))
              ) (Por_common.all_fields por)  ;;
        
       let special_type_name_field = {
-                Por_types.field_name = "type_name" ;
+                Por_field_t.field_name = "type_name" ;
                 field_type = "" ;
                 var_name = "" ;
                 default_value = "" ;
@@ -36,7 +36,7 @@ module Private = struct
       let text_for_labels por =
            let crobjed_fields = special_type_name_field ::(Image.image fst (fields_with_crobj_conversion por)) in 
            let max_namesize = snd (Max.maximize_it (fun fd->
-             String.length(fd.Por_types.field_name)) crobjed_fields) in 
+             String.length(fd.Por_field_t.field_name)) crobjed_fields) in 
            String.concat "\n"
              ("let salt = \"Fw_poly_t.\" ;;" ::
            (Image.image (text_for_label por max_namesize) crobjed_fields)) ;;  
@@ -45,12 +45,12 @@ module Private = struct
            (_por:Por_space_t.t) 
            fld = 
            let vowel = (
-             match fld.Por_types.crobj_converters with 
-             None ->  (fld.Por_types.default_value) 
+             match fld.Por_field_t.crobj_converters with 
+             None ->  (fld.Por_field_t.default_value) 
            | Some(of_crobj,_to_crobj) ->
-               of_crobj^" (g label_for_"^(fld.Por_types.field_name)^") "
+               of_crobj^" (g label_for_"^(fld.Por_field_t.field_name)^") "
            ) in 
-               (String.make 3 ' ')^(fld.Por_types.field_name)^" = "^
+               (String.make 3 ' ')^(fld.Por_field_t.field_name)^" = "^
                vowel^" ;" ;;
        
       let text_for_ofcrobj_converter por = 
@@ -73,7 +73,7 @@ module Private = struct
       let text_for_tocrobj_element 
              (por:Por_space_t.t) 
              (fld,(_of_crobj,to_crobj)) = 
-             let field_name  = fld.Por_types.field_name in 
+             let field_name  = fld.Por_field_t.field_name in 
                  (String.make 4 ' ')^" label_for_"^field_name^", "^ 
                  to_crobj^" fw."^(String.capitalize_ascii por.Por_space_t.module_name)^"_t."^
                  field_name^" ;" ;;    
@@ -121,14 +121,14 @@ module Private = struct
             and subcl_after = Por_common.get_subclass por after_ext  in 
             let fields_before = subcl_before.Por_subclass_t.subclass_fields 
             and fields_after = subcl_after.Por_subclass_t.subclass_fields in 
-            let field_names_before = Image.image (fun fd->fd.Por_types.field_name) fields_before 
-            and field_names_after = Image.image (fun fd->fd.Por_types.field_name) fields_after in
+            let field_names_before = Image.image (fun fd->fd.Por_field_t.field_name) fields_before 
+            and field_names_after = Image.image (fun fd->fd.Por_field_t.field_name) fields_after in
             let _ = Por_common.check_inclusion field_names_before field_names_after in 
             let extra_field_names = List.filter (fun fdn->not(List.mem fdn field_names_before)) field_names_after in 
             let extra_fields = Image.image (Por_common.get_field por) extra_field_names in 
             let indexed_extra_fields = Int_range.index_everything extra_fields in 
             let indexed_and_labeled = Image.image (fun (j,fd)->
-                     (fd.Por_types.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
+                     (fd.Por_field_t.field_name,Por_common.indexed_varname_for_field (j,fd))) indexed_extra_fields in 
             (ext_name,indexed_and_labeled);;   
       
       let snippet_for_element (field_name,indexed_varname) = 
@@ -264,9 +264,9 @@ module Private = struct
             
       let snippet
         (_por:Por_space_t.t) 
-          (field:Por_types.field_t) = 
-             (String.make 3 ' ')^(field.Por_types.field_name)^" = "^
-             (field.Por_types.default_value)^" ;" ;;
+          (field:Por_field_t.field_t) = 
+             (String.make 3 ' ')^(field.Por_field_t.field_name)^" = "^
+             (field.Por_field_t.default_value)^" ;" ;;
           
       let  text por =
             let temp1 = (String.make 3 ' ')^(String.capitalize_ascii por.Por_space_t.module_name)^
@@ -289,7 +289,7 @@ module Private = struct
       let  text_for_fields_for_subclasss por =
             let temp1 = Image.image (fun 
               inst -> (inst.Por_subclass_t.subclass_name,
-                 Image.image (fun fd->fd.Por_types.field_name) inst.Por_subclass_t.subclass_fields)
+                 Image.image (fun fd->fd.Por_field_t.field_name) inst.Por_subclass_t.subclass_fields)
             ) por.Por_space_t.subclasses in 
             
              (
@@ -317,8 +317,8 @@ module Private = struct
 
       let  text_for_data_for_fields por =
             let temp1 = Image.image (fun 
-              inst -> (inst.Por_types.field_name,
-                  inst.Por_types.field_type)
+              inst -> (inst.Por_field_t.field_name,
+                  inst.Por_field_t.field_type)
             ) (Por_common.all_fields por) in 
             
              (

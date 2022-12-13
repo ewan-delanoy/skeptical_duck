@@ -17,14 +17,14 @@ let check_inclusion small_list large_list =
   else () ;;  
   
   let indexed_varname_for_field (j,fd)=
-  "v"^(string_of_int j)^"_"^(fd.Por_types.var_name) ;;
+  "v"^(string_of_int j)^"_"^(fd.Por_field_t.var_name) ;;
 
 let field_order = ((fun fld1 fld2 ->
     let trial1 = Total_ordering.lex_for_strings 
-       fld1.Por_types.field_name fld2.Por_types.field_name in 
+       fld1.Por_field_t.field_name fld2.Por_field_t.field_name in 
     if trial1<> Total_ordering_result_t.Equal then trial1 else
        Total_ordering.standard fld1 fld2         
-  ) : Por_types.field_t Total_ordering_t.t);;
+  ) : Por_field_t.field_t Total_ordering_t.t);;
 
 let all_fields por =
   let to_be_flattened = Image.image (
@@ -79,7 +79,7 @@ let extensions_from_different_sources por =
 
 let get_field por fd_name = 
   let fields = all_fields por in 
-  match List.find_opt (fun fd->fd.Por_types.field_name = fd_name) fields with 
+  match List.find_opt (fun fd->fd.Por_field_t.field_name = fd_name) fields with 
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 

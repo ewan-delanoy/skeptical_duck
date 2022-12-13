@@ -9,8 +9,8 @@ module Private = struct
 
   let annotated_text_for_field_getter 
      (por:Por_space_t.t) 
-       (field:Por_types.field_t) =
-       let fn = field.Por_types.field_name in 
+       (field:Por_field_t.field_t) =
+       let fn = field.Por_field_t.field_name in 
        {
         Por_public_definition_t.value_name = fn ;
         lines_in_definition = ["let "^fn^" x = x."^
@@ -20,9 +20,9 @@ module Private = struct
           
    let annotated_text_for_field_setter 
      (por:Por_space_t.t) 
-       (field:Por_types.field_t) =
-       let fn = field.Por_types.field_name 
-       and vn = field.Por_types.var_name in 
+       (field:Por_field_t.field_t) =
+       let fn = field.Por_field_t.field_name 
+       and vn = field.Por_field_t.var_name in 
        {
         Por_public_definition_t.value_name = "set_"^fn ;
         lines_in_definition = ["let set_"^fn^" x "^vn^" = { x with "^
@@ -84,7 +84,7 @@ module Private = struct
      
       let snippet_for_constructor_element (j,fd) = 
         let var_name  = Por_common.indexed_varname_for_field (j,fd) in 
-        (String.make 3 ' ')^(fd.Por_types.field_name)^" = "^
+        (String.make 3 ' ')^(fd.Por_field_t.field_name)^" = "^
         var_name^" ;" ;;     
    
     let annotated_definition_for_constructor por constructed_subclass =
@@ -99,7 +99,7 @@ module Private = struct
       let indexed_fields = Int_range.index_everything fields in 
       let filling_fields = Image.image snippet_for_constructor_element indexed_fields in 
       let indexed_and_labeled = Image.image (fun (j,fd)->
-         "~"^(fd.Por_types.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
+         "~"^(fd.Por_field_t.field_name)^":"^(Por_common.indexed_varname_for_field (j,fd))) indexed_fields in 
       let vars = String.concat " " indexed_and_labeled in 
       let main_module_name = (String.capitalize_ascii por.Por_space_t.module_name) in  
       let line_for_origin_if_needed = 

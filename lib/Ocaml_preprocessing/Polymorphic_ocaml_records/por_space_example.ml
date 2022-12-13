@@ -12,7 +12,7 @@ module Private = struct
    |Some idx -> Some(Cull_string.beginning idx s,Cull_string.cobeginning (idx+1) s) ;;
  
    let field_constructor  (a,b,c,d,e) = {
-     Por_types.field_name = a ;
+     Por_field_t.field_name = a ;
      field_type = b ;
      var_name =c ;
      default_value = d ;
@@ -79,7 +79,7 @@ List.rev_map (fun (b,a,_)->
   ) temp1 ;;
 
 let root_field = List.find (fun fd->
-  fd.Por_types.field_name = "root"
+  fd.Por_field_t.field_name = "root"
 ) fields_for_gw_configuration ;;
 
 let second_base = [
@@ -129,16 +129,16 @@ let subclass_list_constructor l = Image.image (
 
 let field_order = ((fun fld1 fld2 ->
   let trial1 = Total_ordering.lex_for_strings 
-     fld1.Por_types.field_name fld2.Por_types.field_name in 
+     fld1.Por_field_t.field_name fld2.Por_field_t.field_name in 
   if trial1<> Total_ordering_result_t.Equal then trial1 else
      Total_ordering.standard fld1 fld2         
-) : Por_types.field_t Total_ordering_t.t);;
+) : Por_field_t.field_t Total_ordering_t.t);;
 
 let fields_in_order = Ordered.sort field_order all_fields ;; 
 
 let select_field fd_name =
    List.find (
-    fun fd -> fd.Por_types.field_name = fd_name
+    fun fd -> fd.Por_field_t.field_name = fd_name
    ) 
    fields_in_order ;;
   

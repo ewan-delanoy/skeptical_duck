@@ -8,10 +8,10 @@ exception Duplicate_subclass_name of string ;;
 
 module Private = struct 
 
-  let pair_for_field (porf:Por_types.field_t) =
+  let pair_for_field (porf:Por_field_t.field_t) =
     (String.make 3 ' ')^
-    porf.Por_types.field_name^" : "^
-    porf.Por_types.field_type^" ;" ;;
+    porf.Por_field_t.field_name^" : "^
+    porf.Por_field_t.field_type^" ;" ;;
   
   let initial_comment_in_type_signature_file por =
       let ap = por.Por_space_t.type_signature_file 

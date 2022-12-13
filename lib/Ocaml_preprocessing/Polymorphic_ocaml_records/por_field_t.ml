@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_types.ml";;
+#use"lib/Ocaml_preprocessing/Polymorphic_ocaml_records/por_field_t.ml";;
 
 *)
 

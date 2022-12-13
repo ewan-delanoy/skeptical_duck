@@ -18,7 +18,7 @@ let field2 = List.nth fields 1 ;;
 let field3 = List.nth fields 2 ;;
 
 let root_field =
-{Por_types.field_name = "root";
+{Por_field_t.field_name = "root";
    field_type = "Dfa_root_t.t"; 
    var_name = "r";
    default_value = "Dfa_root.of_line \"dummy\"";
@@ -27,7 +27,7 @@ let root_field =
     "Dfa_root.to_concrete_object")} ;; 
 
 let ignored_subdirectories_field =
-{Por_types.field_name = "ignored_subdirectories";
+{Por_field_t.field_name = "ignored_subdirectories";
    field_type = "Dfa_subdirectory_t.t list"; 
    var_name = "ign_subdirs";
    default_value = "[]";
@@ -37,7 +37,7 @@ let ignored_subdirectories_field =
 
 
 let ignored_files_field =
-{Por_types.field_name = "ignored_files";
+{Por_field_t.field_name = "ignored_files";
 field_type = "Dfn_rootless_t.t list"; 
 var_name = "ign_files";
 default_value = "[]";
