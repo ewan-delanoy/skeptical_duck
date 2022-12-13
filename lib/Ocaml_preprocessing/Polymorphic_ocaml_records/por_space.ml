@@ -4,6 +4,8 @@
 
 *)
 
+exception Duplicate_subclass_name of string ;;
+
 module Private = struct 
 
   let pair_for_field (porf:Por_types.field_t) =
@@ -62,19 +64,24 @@ module Private = struct
     (
       write_to_type_signature_file por;
       write_to_implementation_file por
-    )
+    ) ;;
      
-
+let add_subclass_on_nonref old_por scl = 
+      let old_subclasses = old_por.Por_space_t.subclasses 
+      and scl_name = scl.Por_subclass_t.subclass_name  in 
+      if (Por_common.get_subclass_opt old_por scl_name)<>None 
+      then raise(Duplicate_subclass_name scl_name)
+      else     
+      {
+       old_por with 
+       Por_space_t.subclasses = old_subclasses @ [scl] ;
+      }  ;;
 
 end ;;   
+
  
 let add_subclass por_ref scl = 
   let old_por = (!por_ref) in 
-  let old_subclasses = old_por.Por_space_t.subclasses in 
-  let new_por ={
-   old_por with 
-   Por_space_t.subclasses = old_subclasses @ [scl] ;
-  } in 
-  por_ref := new_por ;;
+  por_ref := (Private.add_subclass_on_nonref old_por scl) ;;
 
 let write = Private.write ;; 
