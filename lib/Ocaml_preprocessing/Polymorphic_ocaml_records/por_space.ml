@@ -8,7 +8,7 @@ exception Duplicate_subclass_name of string ;;
 
 module Private = struct 
 
-  let pair_for_field (porf:Por_field_t.field_t) =
+  let pair_for_field (porf:Por_field_t.t) =
     (String.make 3 ' ')^
     porf.Por_field_t.field_name^" : "^
     porf.Por_field_t.field_type^" ;" ;;

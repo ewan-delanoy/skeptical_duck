@@ -132,7 +132,7 @@ let field_order = ((fun fld1 fld2 ->
      fld1.Por_field_t.field_name fld2.Por_field_t.field_name in 
   if trial1<> Total_ordering_result_t.Equal then trial1 else
      Total_ordering.standard fld1 fld2         
-) : Por_field_t.field_t Total_ordering_t.t);;
+) : Por_field_t.t Total_ordering_t.t);;
 
 let fields_in_order = Ordered.sort field_order all_fields ;; 
 

@@ -9,7 +9,7 @@ module Private = struct
 
   let annotated_text_for_field_getter 
      (por:Por_space_t.t) 
-       (field:Por_field_t.field_t) =
+       (field:Por_field_t.t) =
        let fn = field.Por_field_t.field_name in 
        {
         Por_public_definition_t.value_name = fn ;
@@ -20,7 +20,7 @@ module Private = struct
           
    let annotated_text_for_field_setter 
      (por:Por_space_t.t) 
-       (field:Por_field_t.field_t) =
+       (field:Por_field_t.t) =
        let fn = field.Por_field_t.field_name 
        and vn = field.Por_field_t.var_name in 
        {

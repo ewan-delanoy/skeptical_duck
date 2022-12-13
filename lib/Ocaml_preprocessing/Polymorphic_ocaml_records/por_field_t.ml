@@ -4,7 +4,7 @@
 
 *)
 
-type field_t = {
+type t = {
       field_name : string;
       field_type : string;
       var_name : string;

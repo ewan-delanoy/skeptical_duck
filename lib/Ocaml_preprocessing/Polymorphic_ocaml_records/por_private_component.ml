@@ -11,7 +11,7 @@ module Private = struct
       let text_for_label 
             (_por:Por_space_t.t) 
               max_namesize
-             (field:Por_field_t.field_t) = 
+             (field:Por_field_t.t) = 
              let fn = field.Por_field_t.field_name in 
              let offset = String.make (max_namesize-String.length fn) ' ' in 
              "let label_for_"^fn^offset^" = salt ^ \""^fn^"\" ;;" ;;
@@ -264,7 +264,7 @@ module Private = struct
             
       let snippet
         (_por:Por_space_t.t) 
-          (field:Por_field_t.field_t) = 
+          (field:Por_field_t.t) = 
              (String.make 3 ' ')^(field.Por_field_t.field_name)^" = "^
              (field.Por_field_t.default_value)^" ;" ;;
           
