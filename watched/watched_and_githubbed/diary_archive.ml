@@ -1,9 +1,88 @@
 (************************************************************************************************************************
-Snippet 114 : 
+Snippet 115 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 
+(************************************************************************************************************************
+Snippet 114 : 
+************************************************************************************************************************)
+
+let print_out_field (fmt:Format.formatter) fd=
+   Format.fprintf fmt "@[%s@]" (fd.Por_field_t.field_name);;
+
+(* #install_printer print_out_field ;; *)
+
+let gfd k = {
+  Por_field_t.field_name = "fd"^(string_of_int k);
+  field_type = "";
+  var_name ="";
+  default_value ="";
+  crobj_converters =None;
+} ;;
+
+let gscl (parent_opt,scl_name,field_indices) = {
+  Por_subclass_t.subclass_name = scl_name;
+   subclass_fields = Image.image gfd field_indices;
+   parent = parent_opt;
+   extensions_leading_here = [];
+   has_restriction = false;
+   has_constructor = false;
+} ;; 
+
+
+let g1= gscl (Some "g7","g1",[1]);;
+let g2= gscl (Some "g6","g2",[2]);;
+let g3= gscl (Some "g7","g3",[3]);;
+let g4= gscl (Some "g1","g4",[4]);;
+let g5= gscl (Some "g3","g5",[5]);;
+let g6= gscl (Some "g7","g6",[6]);;
+let g7 = gscl (None,"g7",[7]);;
+
+let origin = 
+  let home = Sys.getenv "HOME" in 
+  let file_there = (fun s-> 
+    Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in 
+ {
+   Por_space_t.main_type_name = "main" ;
+   module_name = "main" ;
+   subclasses = [] ;
+   type_signature_file = (file_there "gw_poly_t") ;
+   implementation_file = (file_there "gw_poly") ;
+   has_crobj_conversion = false ;
+   incomplete_extensions = [];
+} ;;  
+
+let main_ref = ref origin ;; 
+Por_space.add_extension main_ref "g7" g1;;
+Por_space.add_extension main_ref "g6" g2;;
+Por_space.add_extension main_ref "g7" g3;;
+Por_space.add_extension main_ref "g1" g4;;
+Por_space.add_extension main_ref "g3" g5;;
+Por_space.add_extension main_ref "g7" g6;;
+
+let old_por = (!main_ref) ;;
+let new_por = Por_space.Private.add_subclass_on_nonref old_por g7;; 
+
+(*
+let scl = g7 ;;
+let old_subclasses = old_por.Por_space_t.subclasses 
+and scl_name = scl.Por_subclass_t.subclass_name ;;
+let initial_complete_subclasses = old_subclasses @ [scl] 
+and initial_incomplete_subclasses = old_por.Por_space_t.incomplete_extensions ;;
+let bad1 = Por_common.exhaust_possible_linkings
+~complete:initial_complete_subclasses
+~incomplete:initial_incomplete_subclasses ;;
+let v0 = (false,List.rev initial_complete_subclasses,initial_incomplete_subclasses) ;;
+let ff = Memoized.small 
+Por_common.pusher_for_possible_linkings_exhaustion v0 ;; 
+let gg n = let (b,a,c) = ff n in (b,
+Image.image (fun sc->sc.Por_subclass_t.subclass_name) a,
+Image.image (fun (_,sc)->sc.Por_subclass_t.subclass_name) c
+);;
+*)
+
+Por_space.add_subclass main_ref g7;;
 
 (************************************************************************************************************************
 Snippet 113 : Periodically remove a file in a fixed directory.
