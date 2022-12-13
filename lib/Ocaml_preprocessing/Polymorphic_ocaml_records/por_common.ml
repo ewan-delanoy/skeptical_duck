@@ -101,3 +101,28 @@ let link_extension
     Por_subclass_t.subclass_fields = old_fields @ new_fields 
   } ;; 
 
+let pusher_for_possible_linkings_exhaustion 
+  (_,complete_subclasses,incomplete_subclasses) =
+  match List.find_map (
+     fun (parent_name,extension) ->
+       Option.map (fun parent_scl->(parent_scl,parent_name,extension))
+       (List.find_opt (fun scl->scl.Por_subclass_t.subclass_name = parent_name) complete_subclasses)
+  ) incomplete_subclasses with 
+  None -> (true,complete_subclasses,incomplete_subclasses) 
+  |Some(parent_scl,parent_name,extension)->
+    let new_complete_subclass = link_extension 
+    ~parent:parent_scl ~incomplete_child:extension 
+    and fewer_incomplete_subclasses = List.filter (
+      fun (parent_name2,_) -> parent_name2 <> parent_name
+    ) incomplete_subclasses in 
+    (false,new_complete_subclass::complete_subclasses,fewer_incomplete_subclasses) ;; 
+
+let rec iterator_for_possible_linkings_exhaustion walker =
+  let (check_finished,complete_subclasses,incomplete_subclasses) = walker in 
+  if check_finished 
+  then (List.rev complete_subclasses,incomplete_subclasses)  
+  else iterator_for_possible_linkings_exhaustion (walker);;
+
+let exhaust_possible_linkings (complete_subclasses,incomplete_subclasses) =
+  iterator_for_possible_linkings_exhaustion 
+  (false,List.rev complete_subclasses,incomplete_subclasses) ;;
