@@ -72,9 +72,15 @@ let add_subclass_on_nonref old_por scl =
       if (Por_common.get_subclass_opt old_por scl_name)<>None 
       then raise(Duplicate_subclass_name scl_name)
       else     
+      let initial_complete_subclasses = old_subclasses @ [scl] 
+      and initial_incomplete_subclasses = old_por.Por_space_t.incomplete_extensions in 
+      let (final_complete_subclasses,final_incomplete_subclasses) =
+         Por_common.exhaust_possible_linkings
+         (initial_complete_subclasses,initial_incomplete_subclasses) in 
       {
        old_por with 
-       Por_space_t.subclasses = old_subclasses @ [scl] ;
+       Por_space_t.subclasses = final_complete_subclasses ;
+       incomplete_extensions = final_incomplete_subclasses ;
       }  ;;
 
    
