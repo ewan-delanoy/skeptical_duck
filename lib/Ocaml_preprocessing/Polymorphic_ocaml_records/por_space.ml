@@ -77,9 +77,27 @@ let add_subclass_on_nonref old_por scl =
        Por_space_t.subclasses = old_subclasses @ [scl] ;
       }  ;;
 
+   
+let add_extension_on_nonref old_por parent_name scl = 
+  match Por_common.get_subclass_opt old_por parent_name with 
+   None -> let old_ie = old_por.Por_space_t.incomplete_extensions in 
+           {
+              old_por with 
+              Por_space_t.incomplete_extensions = (parent_name,scl) :: old_ie ;
+           }
+  |Some parent_subclass ->
+     let final_child = 
+        Por_common.link_extension 
+          ~parent:parent_subclass ~incomplete_child:scl in         
+      add_subclass_on_nonref old_por final_child;;
+
+
 end ;;   
 
- 
+let add_extension por_ref parent_name scl = 
+  let old_por = (!por_ref) in 
+  por_ref := (Private.add_extension_on_nonref old_por parent_name scl) ;;
+
 let add_subclass por_ref scl = 
   let old_por = (!por_ref) in 
   por_ref := (Private.add_subclass_on_nonref old_por scl) ;;
