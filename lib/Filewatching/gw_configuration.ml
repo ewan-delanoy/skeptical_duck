@@ -48,10 +48,6 @@ let root_field =
 
 Por_space.add_subclass Por_space_example.filewatching gw_configuration_subclass ;;
 
-(* Hack to ensure that some modules are compiled after this one *)
-
-let marker = () ;;
-
 end ;; 
 
 

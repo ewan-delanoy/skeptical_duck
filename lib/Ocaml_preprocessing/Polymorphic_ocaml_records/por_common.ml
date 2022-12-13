@@ -83,10 +83,21 @@ let get_field por fd_name =
     Some answer -> answer 
   | None -> raise ( Get_field_exn(fd_name)) ;;    
 
-    
-let get_subclass por inst_name =
-  match List.find_opt (fun fd->fd.Por_subclass_t.subclass_name = inst_name)
-            por.Por_space_t.subclasses with 
+let get_subclass_opt por scl_name =
+    List.find_opt (fun fd->fd.Por_subclass_t.subclass_name = scl_name)
+              por.Por_space_t.subclasses ;; 
+  
+let get_subclass por scl_name =
+  match get_subclass_opt por scl_name with 
     Some answer -> answer 
-  | None -> raise ( Get_subclass_exn(inst_name)) ;;    
+  | None -> raise ( Get_subclass_exn(scl_name)) ;;    
     
+let link_extension 
+  ~parent ~incomplete_child = 
+   let old_fields = incomplete_child.Por_subclass_t.subclass_fields 
+   and new_fields = parent.Por_subclass_t.subclass_fields in 
+  {
+    incomplete_child with 
+    Por_subclass_t.subclass_fields = old_fields @ new_fields 
+  } ;; 
+

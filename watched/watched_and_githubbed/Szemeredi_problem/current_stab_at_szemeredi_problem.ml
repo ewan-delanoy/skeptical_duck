@@ -579,15 +579,26 @@ let check_vvbr1 =
 
 *)
 
-(* P(2,0,n,[]) is BR(vsu1 n,M([vso1(n)],vql1(n))) *)
 
-let temp_vbr1 n = BR(vsu2 n,M([vso1(n)],vql2(n))) ;;
+let vbr1 n = BR(vsu1 n,M([vso1(n)],vql1(n))) ;;
 (*
-let check_temp_vbr1 = 
+let check_vbr1 = 
+  let temp1 = Int_range.scale (
+    fun k->(k,
+    compute_bulk_result (P(2,0,k,[])),
+    Example.vbr1 k)
+  ) 1 30 in 
+  List.filter (fun (n,x,y)->x<>y) temp1 ;; 
+*)
+
+
+let vbr2 n = BR(vsu2 n,M([vso1(n)],vql2(n))) ;;
+(*
+let check_vbr2 = 
   let temp1 = Int_range.scale (
     fun k->(k,
     compute_bulk_result (P(3,0,k,[])),
-    Example.temp_vbr1 k)
+    Example.vbr2 k)
   ) 1 30 in 
   List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)

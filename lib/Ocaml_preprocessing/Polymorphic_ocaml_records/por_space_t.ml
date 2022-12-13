@@ -11,5 +11,6 @@ type t = {
       implementation_file : Absolute_path.t;
       has_crobj_conversion : bool;
       subclasses : Por_subclass_t.t list;
+      incomplete_extensions : (string * Por_subclass_t.t) list;
 } ;; 
 

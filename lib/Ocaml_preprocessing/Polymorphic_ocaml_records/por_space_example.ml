@@ -155,6 +155,7 @@ let full_example =
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
+   incomplete_extensions = [];
 } ;;  
 
 let bare_filewatching = 
@@ -168,6 +169,7 @@ let bare_filewatching =
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
+   incomplete_extensions = [];
 } ;;  
 
 end ;;   
@@ -185,5 +187,6 @@ let filewatching =
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
+   incomplete_extensions = [];
 }) ;;  
 
