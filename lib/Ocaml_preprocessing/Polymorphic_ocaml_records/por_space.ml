@@ -76,7 +76,8 @@ let add_subclass_on_nonref old_por scl =
       and initial_incomplete_subclasses = old_por.Por_space_t.incomplete_extensions in 
       let (final_complete_subclasses,final_incomplete_subclasses) =
          Por_common.exhaust_possible_linkings
-         (initial_complete_subclasses,initial_incomplete_subclasses) in 
+         ~complete:initial_complete_subclasses
+         ~incomplete:initial_incomplete_subclasses in 
       {
        old_por with 
        Por_space_t.subclasses = final_complete_subclasses ;

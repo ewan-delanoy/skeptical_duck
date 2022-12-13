@@ -123,6 +123,8 @@ let rec iterator_for_possible_linkings_exhaustion walker =
   then (List.rev complete_subclasses,incomplete_subclasses)  
   else iterator_for_possible_linkings_exhaustion (pusher_for_possible_linkings_exhaustion walker);;
 
-let exhaust_possible_linkings (complete_subclasses,incomplete_subclasses) =
+let exhaust_possible_linkings 
+  ~complete:complete_subclasses 
+   ~incomplete:incomplete_subclasses =
   iterator_for_possible_linkings_exhaustion 
   (false,List.rev complete_subclasses,incomplete_subclasses) ;;
