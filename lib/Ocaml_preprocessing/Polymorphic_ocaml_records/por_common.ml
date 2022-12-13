@@ -109,11 +109,12 @@ let pusher_for_possible_linkings_exhaustion
        (List.find_opt (fun scl->scl.Por_subclass_t.subclass_name = parent_name) complete_subclasses)
   ) incomplete_subclasses with 
   None -> (true,complete_subclasses,incomplete_subclasses) 
-  |Some(parent_scl,parent_name,extension)->
+  |Some(parent_scl,_parent_name,extension)->
+    let child_name = extension.Por_subclass_t.subclass_name in 
     let new_complete_subclass = link_extension 
     ~parent:parent_scl ~incomplete_child:extension 
     and fewer_incomplete_subclasses = List.filter (
-      fun (parent_name2,_) -> parent_name2 <> parent_name
+      fun (_,inc_sc) ->inc_sc.Por_subclass_t.subclass_name <> child_name
     ) incomplete_subclasses in 
     (false,new_complete_subclass::complete_subclasses,fewer_incomplete_subclasses) ;; 
 
