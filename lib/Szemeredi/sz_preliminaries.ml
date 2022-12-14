@@ -62,7 +62,7 @@ module Private = struct
   let force_subset_in_arbitrary_set (Sz_max_width_t.MW width) subset soi =
       let old_obses = look_for_arithmetic_progressions_in_with_width_up_to 
       (Sz_max_width_t.MW width) soi in 
-      let new_obses = More_option.filter_and_unpack (
+      let new_obses = List.filter_map (
         fun old_obstruction ->
           let new_obstruction = i_setminus old_obstruction subset in
           if (new_obstruction = old_obstruction) || (new_obstruction = []) 
@@ -74,7 +74,7 @@ module Private = struct
   
   let force_subset_in_interval (Sz_max_width_t.MW width) subset interval =
       let old_obses = arithmetic_progressions_with_width_up_to_in_interval interval (Sz_max_width_t.MW width) in 
-      let new_obses = More_option.filter_and_unpack (
+      let new_obses = List.filter_map (
         fun old_obstruction ->
           let new_obstruction = i_setminus old_obstruction subset in
           if (new_obstruction = old_obstruction) || (new_obstruction = []) 

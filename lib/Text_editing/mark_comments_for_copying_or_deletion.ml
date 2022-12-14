@@ -49,13 +49,13 @@ let check_for_overlapping_intervals indexed_lines pairs =
 
 let ranges_for_marked_comments text =
    let indexed_lines = Lines_in_string.indexed_lines text in 
-   let openers = More_option.filter_and_unpack (
+   let openers = List.filter_map (
       fun (line_idx,line) ->
        if is_an_opening_line line
        then Some(line_idx)
        else None   
    )  indexed_lines 
-   and closers = More_option.filter_and_unpack (
+   and closers = List.filter_map (
     fun (line_idx,line) ->
      if is_a_closing_line line
      then Some(line_idx)
@@ -144,7 +144,7 @@ let delete_in_string src =
   let is_to_be_kept = (fun idx ->
     List.for_all (fun (a,b)->(idx<a)||(b<idx)) ranges
   ) in 
-  let kept_lines = More_option.filter_and_unpack (
+  let kept_lines = List.filter_map (
     fun (linedex,line) ->
        if is_to_be_kept linedex 
        then Some line 

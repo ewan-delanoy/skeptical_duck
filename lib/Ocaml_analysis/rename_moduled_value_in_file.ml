@@ -34,7 +34,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    ) temp3_again in
    let k1=Listennou.find_index temp4_again temp3_again in
    let temp5=Listennou.big_tail k1 temp3_again in
-   let temp6=More_option.filter_and_unpack(
+   let temp6=List.filter_map(
       fun itm->
         let txt=itm.Ocaml_gsyntax_item.content in
         let ttemp7=Isolated_occurrences.of_in 

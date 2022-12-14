@@ -97,11 +97,11 @@ module Private = struct
      let (temp2,temp3)=Hurried.partition_in_two_parts(fun k->k<j) temp1 in
      let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
      and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
-     (a,String.sub s (a-1) (b-a));;
+     (a,String.sub s a (b-a));;
 
   let closeup_around_index text idx =
      let (char_idx,subtext) = naive_closeup_around_index text idx in 
-     let startline_idx = (Strung.number_of_lines_before text char_idx)-1 in 
+     let startline_idx = (Strung.number_of_lines_before text char_idx) in 
      let lines = indexed_lines subtext in 
      let decorated_lines = Image.image (
        fun (idx2,line)->
@@ -109,7 +109,7 @@ module Private = struct
             Strung.insert_repetitive_offset_on_the_left ' ' 4 (string_of_int (idx2+startline_idx)) in 
           prefix^": "^line  
      ) lines in
-     String.concat "\n" decorated_lines ;; 
+     String.concat "\n" (""::decorated_lines) ;; 
 
 
   end ;;   

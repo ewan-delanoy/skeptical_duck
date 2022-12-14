@@ -146,7 +146,7 @@ module Private=struct
      else None;;
      
   let uncatched_read2 s=
-     More_option.filter_and_unpack (describe_item s) (read1 s);;   
+     List.filter_map (describe_item s) (read1 s);;   
      
   
   

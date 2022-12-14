@@ -39,7 +39,7 @@ let iterator coat
     then let temp3=coatoms_of_a::(Image.image (fun z->snd(List.assoc z checked)) 
                       (coat_a)) in
          let ordered_set_version=Set_of_polys.fold_merge(temp3) in
-         let temp4=More_option.filter_and_unpack (
+         let temp4=List.filter_map (
            fun (b,_)->if Set_of_polys.mem b ordered_set_version
              then Some(b)
              else None

@@ -554,7 +554,7 @@ let analize lx =
     (helper_for_analysis ([],lx)) in
    let data_for_current_level = Ordered.sort Detailed_solution.order unordered_data_for_current_level in 
    if data_for_current_level = [] then [] else  
-   let related_to_preceding_level = More_option.filter_and_unpack (
+   let related_to_preceding_level = List.filter_map (
       fun  dsol -> 
         let arg = dsol.Detailed_solution.argument in 
         if (dsol.Detailed_solution.case = Case.Compatible)&&(old_measure_opt arg=None) 

@@ -99,7 +99,7 @@ let explain  x=
      then None
      else Some(msg^" "^(String.concat "," l)^".")
    ) in
-   let temp1=More_option.filter_and_unpack tempf
+   let temp1=List.filter_map tempf
    (* we use infinitives for github format *)
    [
      "Delete",Private.summarize_rootless_path_list  (x.Dircopy_diff_t.recently_deleted);

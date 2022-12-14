@@ -14,7 +14,7 @@ let commands_for_backup config diff=
    and destination_dir = Fw_poly.dir_for_backup config in 
    let s_destination=Dfa_root.connectable_to_subpath destination_dir in
    let created_ones=Image.image Dfn_rootless.to_line (Dircopy_diff.recently_created diff) in
-   let temp2=More_option.filter_and_unpack
+   let temp2=List.filter_map
    (fun fn->
      if String.contains fn '/'
      then let dn=Cull_string.before_rightmost fn '/' in

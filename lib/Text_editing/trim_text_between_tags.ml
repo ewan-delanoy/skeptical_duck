@@ -64,7 +64,7 @@ let process_without_open_pars app  s data=
                     	 let new_result=(None,enclosed_substring) in
                     	 data.partial_result<-new_result::(data.partial_result)
                ) in
-               let temp1=More_option.filter_and_unpack (fun pair->
+               let temp1=List.filter_map (fun pair->
                   let (P(l_par,_r_par)) = pair in 
                   if l_par=lparen
                   then Some(pair,data.cursor_location)

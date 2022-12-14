@@ -32,7 +32,7 @@ module Private = struct
     let bad_linedices = List.filter (fun j->
         (is_bad1 j)||(is_bad2 j)||(is_bad3 j)
       ) (Int_range.range 1 m) in 
-   let good_lines = More_option.filter_and_unpack (fun (linedex,line)->
+   let good_lines = List.filter_map (fun (linedex,line)->
      if List.mem linedex bad_linedices then None else Some line
     ) indexed_lines  in 
    String.concat "\n" good_lines ;;

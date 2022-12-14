@@ -46,7 +46,7 @@ let extension x=try (naive_extension x) with
    let temp1=Array.to_list(Sys.readdir(s)) in
    let tempf=(function w->try (Some(Absolute_path.of_string(s_with_slash^w))) with
    _any_exception->None) in
-   More_option.filter_and_unpack tempf temp1;;
+   List.filter_map tempf temp1;;
    
  let ls x=try (naive_ls x) with _any_exception->[];;  
  
@@ -58,7 +58,7 @@ let extension x=try (naive_extension x) with
    List.filter test_for_cleaniness (ls x);;
    
 let select_by_prefix subdir forbidden_subdirs =
-  More_option.filter_and_unpack (
+  List.filter_map (
      fun forb_subdir -> 
         if Supstring.begins_with forb_subdir subdir 
         then Some(Cull_string.two_sided_cutting (subdir,"") forb_subdir)
@@ -67,7 +67,7 @@ let select_by_prefix subdir forbidden_subdirs =
 
 let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
    let temp1 = Array.to_list (Sys.readdir dir) in
-   let temp2 = More_option.filter_and_unpack (
+   let temp2 = List.filter_map (
       fun fname -> if List.for_all (
           fun forb_subdir -> 
            not(Supstring.begins_with fname forb_subdir)
@@ -115,7 +115,7 @@ let complete_ls_with_ignored_subdirs dir forbidden_subdirs verbose=
 
 let ls_with_directories_only dir=
    let temp1 = cleaned_ls dir in 
-   More_option.filter_and_unpack (
+   List.filter_map (
      fun ap -> 
        if is_a_directory ap 
        then let s_ap = Absolute_path.to_string ap in 
@@ -208,7 +208,7 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
          "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
    ) subdirs in 
    let _=Image.image Sys.command cmds1 in 
-   let temp1=More_option.filter_and_unpack (
+   let temp1=List.filter_map (
      fun (rootless,content)->
         let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
         if Sys.file_exists full_path 

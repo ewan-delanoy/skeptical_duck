@@ -252,7 +252,7 @@ module Private = struct
   let show_value_occurrences fw mn = Fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
 
   let up_to_date_elesses fw =
-    More_option.filter_and_unpack (
+    List.filter_map (
       fun mn->
         if last_compilation_result_for_module fw mn
         then Some(Fw_with_dependencies.endingless_at_module fw mn)
@@ -339,7 +339,7 @@ module Private = struct
      let old_nm=Dfn_middle.to_module old_middle_name in
      let new_nm=Dfa_module.of_line (No_slashes.to_string new_nonslashed_name) in  
      let old_parent = parent fw in 
-     let separated_acolytes_below=More_option.filter_and_unpack(
+     let separated_acolytes_below=List.filter_map(
        fun mn->
         if List.mem old_nm (Fw_with_dependencies.ancestors_for_module old_parent mn)
        then Some(Image.image (Dfn_full.to_rootless) (Fw_with_dependencies.acolytes_at_module old_parent mn))

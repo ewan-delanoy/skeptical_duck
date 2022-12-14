@@ -203,7 +203,7 @@ let prepare_sections_for_posts topic_idx idx =
   let temp1 = get_post (topic_idx,idx) in   
   let temp2 = Functional_parenthesed_block.decompose_without_taking_blanks_into_account 
       [("php","bb"),detect_phpbb_url_start_at_index,detect_phpbb_url_end_at_index] temp1 in 
-  let temp3 = More_option.filter_and_unpack (dissect topic_idx idx) temp2 in 
+  let temp3 = List.filter_map (dissect topic_idx idx) temp2 in 
   let (last_mentioned_idx,last_section) = List.hd (List.rev temp3) in 
   let last_range = Int_range.scale (fun i->(i,last_section)) last_mentioned_idx (List.length indices)
   and temp4 = Listennou.universal_delta_list temp3 in 

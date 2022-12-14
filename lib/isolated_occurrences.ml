@@ -87,7 +87,7 @@ let of_in substr s=
       ( Private.rightmost_small_test s (k+l_substr) )
       
   ) in
-  More_option.filter_and_unpack(
+  List.filter_map(
      fun k->
        if main_test k
        then Some(k,k+l_substr-1)

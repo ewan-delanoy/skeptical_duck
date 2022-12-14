@@ -224,7 +224,7 @@ let decompose_with_associator=
 
 let decompose app s=
   let temp1=decompose_without_taking_blanks_into_account app s in
-  let temp2=More_option.filter_and_unpack (
+  let temp2=List.filter_map (
      fun (lab,t)->
        let u=Cull_string.trim_spaces t in
        if lab<>None then Some[lab,u] else

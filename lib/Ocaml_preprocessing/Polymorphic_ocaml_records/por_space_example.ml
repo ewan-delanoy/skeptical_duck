@@ -116,7 +116,7 @@ let subclass_list_constructor l = Image.image (
     subclass_fields = scl_fields ;
     parent = List.assoc_opt scl_name list_for_parenting;
     extensions_leading_here = 
-      More_option.filter_and_unpack (
+      List.filter_map (
         fun (x,y)->
           if y=scl_name  
           then Some x 

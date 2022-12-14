@@ -37,7 +37,7 @@ let all_fields por =
 let extender_name (before_ext,after_ext) = (String.uncapitalize_ascii before_ext)^"_to_"^(String.uncapitalize_ascii after_ext) ;;
 
 let all_constructors por = 
-  More_option.filter_and_unpack (
+  List.filter_map (
     fun scl ->
       if scl.Por_subclass_t.has_constructor 
       then Some scl.Por_subclass_t.subclass_name
@@ -54,7 +54,7 @@ let all_nonparenting_extensions por =
   ) por.Por_space_t.subclasses) ;;
 
 let all_parentings por = 
-  More_option.filter_and_unpack (
+  List.filter_map (
     fun scl ->
       match scl.Por_subclass_t.parent with 
       Some parent_name -> Some (scl.Por_subclass_t.subclass_name,parent_name)
@@ -62,7 +62,7 @@ let all_parentings por =
 ) por.Por_space_t.subclasses ;;  
 
 let all_restrictions por = 
-    More_option.filter_and_unpack (
+    List.filter_map (
       fun scl ->
         if scl.Por_subclass_t.has_restriction 
         then Some scl.Por_subclass_t.subclass_name
