@@ -5,7 +5,7 @@
 *)
 
 exception Duplicate_subclass_name of string ;;
-exception Missing_crobj_converters of string * (string list);; 
+
 
 module Private = struct 
 
@@ -72,16 +72,6 @@ let add_subclass_on_nonref old_por scl =
       and scl_name = scl.Por_subclass_t.subclass_name  in 
       if (Por_common.get_subclass_opt old_por scl_name)<>None 
       then raise(Duplicate_subclass_name scl_name)
-      else   
-      let fields_without_crobj_converters =
-          List.filter_map (fun fd->
-            if fd.Por_field_t.crobj_converters = None 
-            then Some fd.Por_field_t.field_name 
-            else None    
-          ) scl.Por_subclass_t.subclass_fields in 
-      if (old_por.Por_space_t.has_crobj_conversion)
-           && ( fields_without_crobj_converters<>[] )
-      then raise(Missing_crobj_converters(scl_name,fields_without_crobj_converters))
       else     
       let initial_complete_subclasses = old_subclasses @ [scl] 
       and initial_incomplete_subclasses = old_por.Por_space_t.incomplete_extensions in 
