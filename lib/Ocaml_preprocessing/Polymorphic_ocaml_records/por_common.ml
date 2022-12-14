@@ -94,8 +94,8 @@ let get_subclass por scl_name =
     
 let link_extension 
   ~parent ~incomplete_child = 
-   let old_fields = incomplete_child.Por_subclass_t.subclass_fields 
-   and new_fields = parent.Por_subclass_t.subclass_fields in 
+   let old_fields = parent.Por_subclass_t.subclass_fields 
+   and new_fields = incomplete_child.Por_subclass_t.subclass_fields in 
   {
     incomplete_child with 
     Por_subclass_t.subclass_fields = old_fields @ new_fields 
