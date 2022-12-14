@@ -111,9 +111,26 @@ module Private = struct
      ) lines in
      String.concat "\n" (""::decorated_lines) ;; 
 
+     let change_indentation_in_interval_in_string ~indent (i,j) ~text  =
+     let old_lines = indexed_lines text  in 
+     let new_lines = Image.image (
+         fun (k,line) -> 
+           if (k<i)||(k>j)
+           then line
+          else (String.make indent ' ')^(Cull_string.trim_spaces_on_the_left line)
+     ) old_lines in 
+     String.concat "\n" new_lines ;;
+   
+   let change_indentation_in_interval_in_file ~indent (i,j) fn =
+     let old_text=Io.read_whole_file fn in
+     let new_text=change_indentation_in_interval_in_string ~indent (i,j) ~text:old_text   in
+     Io.overwrite_with fn new_text;;     
+   
 
   end ;;   
-  
+
+let change_indentation_in_interval_in_file = Private.change_indentation_in_interval_in_file ;;   
+
   let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
   let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
@@ -215,17 +232,3 @@ let suppress_linebreaks_in_interval_in_file fn i j=
 
 let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
 
-let unindent_interval_in_string (i,j) ~text  =
-   let old_lines = indexed_lines text  in 
-   let new_lines = Image.image (
-       fun (k,line) -> 
-         if (k<i)||(k>j)
-         then line
-        else Cull_string.trim_spaces_on_the_left line
-   ) old_lines in 
-   String.concat "\n" new_lines ;;
-
-let unindent_interval_in_file (i,j) fn =
-   let old_text=Io.read_whole_file fn in
-   let new_text=unindent_interval_in_string (i,j) ~text:old_text   in
-   Io.overwrite_with fn new_text;;   
