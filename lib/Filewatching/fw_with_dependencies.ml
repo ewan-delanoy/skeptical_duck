@@ -1074,7 +1074,7 @@ let show_value_occurrences fw t=
   let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
   Image.image (fun occ_idx ->
     let line_idx = (Strung.number_of_lines_before text occ_idx)+1 in 
-    let closeup = Cull_string.closeup_around_index text occ_idx in 
+    let (_,_,closeup) = Cull_string.closeup_around_index text occ_idx in 
     mname^", line "^(string_of_int line_idx)^" :\n"^closeup
   ) temp3
 ) temp1 in
