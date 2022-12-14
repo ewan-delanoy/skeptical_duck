@@ -123,14 +123,7 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 
 *)      
 
- let closeup_around_index s j=
-   let n=String.length s in
-   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Int_range.range 1 n) in
-   let (temp2,temp3)=Hurried.partition_in_two_parts(fun k->k<j) temp1 in
-   let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
-   and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
-   (a,String.sub s (a-1) (b-a));;
-   
+
 exception Absent_beginning_marker of string;;
 exception Absent_ending_marker of string;; 
  
