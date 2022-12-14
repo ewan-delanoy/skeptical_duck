@@ -91,9 +91,21 @@ module Private = struct
      let new_text = duplicate_interval_in_string (i,j) old_text in 
      Io.overwrite_with src_file new_text ;; 
 
-  
+  let closeup_around_index ~line_idx text idx =
+     let subtext = Cull_string.closeup_around_index text idx in 
+     let lines = indexed_lines subtext in 
+     let decorated_lines = Image.image (
+       fun (idx2,line)->
+          let prefix = 
+            Strung.insert_repetitive_offset_on_the_left ' ' 4 (string_of_int (idx2+line_idx)) in 
+          prefix^": "^line  
+     ) lines in
+     String.concat "\n" decorated_lines ;; 
+
+
   end ;;   
   
+  let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
   let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
 
