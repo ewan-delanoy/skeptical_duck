@@ -143,7 +143,11 @@ let replace_value old_fw pair =
 module Modularized_details = struct 
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
- let force_get fw = Fw_module_small_details.modularize_details (parent fw)
+ let force_get fw = 
+  let par_fw = parent fw in 
+  let u_files=Fw_with_small_details.usual_compilable_files par_fw 
+  and small_details = Fw_poly.small_details_in_files par_fw in 
+  Fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;
  let get fw = 
    let idx = index fw in 
    match Hashtbl.find_opt the_hashtbl idx with 
