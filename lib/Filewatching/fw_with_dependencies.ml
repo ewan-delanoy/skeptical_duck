@@ -211,7 +211,8 @@ let overwrite_file_if_it_exists old_fw pair =
             ) [change] in
           if temp1 <> []
           then let new_parent = parent new_fw in 
-               (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+               (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent)
+                    mn temp1)
           else old_pair 
       ) in 
  Image.image tempf old_val) in 
@@ -243,7 +244,7 @@ let register_rootless_paths old_fw rootlesses =
         ) overlapping in
       if temp1 <> []
       then let new_parent = parent new_fw in 
-           (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+           (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
       else old_pair 
   ) in 
   let answer = (Image.image tempf1 old_val)@
@@ -263,7 +264,7 @@ let relocate_module_to old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -282,7 +283,7 @@ let remove_files old_fw files_to_be_removed =
        ) extra in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -302,7 +303,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      if temp1 <> []
      then let new_parent = parent new_fw in 
           let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -321,7 +322,7 @@ let rename_subdirectory_as old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -340,7 +341,7 @@ let replace_string old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -359,7 +360,7 @@ let replace_value old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 

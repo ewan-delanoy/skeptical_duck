@@ -93,14 +93,6 @@ let is_overriden_by_item rl (rl2,opt) =
 
 let is_overriden_by_list rl l = List.exists (is_overriden_by_item rl) l ;;    
 
-let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
-   let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
-   let extra_data = List.filter (
-          fun (rl,_) ->
-          ((Dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
-      ) ( Fw_with_small_details.small_details_in_files fw) in 
-      compute_details_from_acolytes_list_for_one_module ((List.filter_map snd l)@extra_data) ;;     
-
 let recompute_details_for_module small_details mod_name unfiltered_l =
    let l = List.filter (fun (rl,_)->(Dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
    let extra_data = List.filter (
@@ -134,7 +126,6 @@ let opt_mli_modification_time fw = fw.Fw_module_small_details_t.mli_modification
 let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;; 
 let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
 let recompute_details_for_module = Private.recompute_details_for_module ;; 
-let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
 let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
 let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;  
 let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
