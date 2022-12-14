@@ -8,9 +8,12 @@
 
 let full_example = Por_space_example.full_example ;;   
    
-let subclasses0 = full_example.Por_space_t.subclasses ;;  
+let all_subclasses = full_example.Por_space_t.subclasses ;;  
 
-let subclass = List.hd subclasses0 ;; 
+let current_example = () ;; 
+
+
+let subclass = List.hd all_subclasses ;; 
 let fields = subclass.Por_subclass_t.subclass_fields ;; 
 
 let field1 = List.nth fields 0 ;;
