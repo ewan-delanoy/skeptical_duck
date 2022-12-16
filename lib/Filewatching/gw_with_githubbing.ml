@@ -11,45 +11,10 @@ module Background = struct
 let fw_space = Por_space_example.filewatching ;; 
 
 
-let dir_for_backup_field =
-  {Por_field_t.field_name = "dir_for_backup";
-  field_type = "Dfa_root_t.t"; var_name = "backup_dir";
-  default_value = "Dfa_root.of_line \"dummy\"";
-  crobj_converters =
-   Some ("Dfa_root.of_concrete_object", "Dfa_root.to_concrete_object")}
-;;
-
-let gitpush_after_backup_field =
-  {Por_field_t.field_name = "gitpush_after_backup";
-  field_type = "bool"; var_name = "gab"; default_value = "false";
-  crobj_converters =
-   Some
-    ("Crobj_converter.bool_of_concrete_object",
-     "Crobj_converter.bool_to_concrete_object")}
-;;
-
-let github_url_field =
-  {Por_field_t.field_name = "github_url";
-  field_type = "string"; var_name = "url"; default_value = "\"\"";
-  crobj_converters =
-   Some
-    ("Crobj_converter.string_of_concrete_object",
-     "Crobj_converter.string_to_concrete_object")}
-;;
-
-
-let encoding_protected_files_field =
-  {Por_field_t.field_name = "encoding_protected_files";
-  field_type = "(Dfn_rootless_t.t * Dfn_rootless_t.t) list";
-  var_name = "protected_pairs"; default_value = "[]";
-  crobj_converters =
-   Some
-    ("Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object",
-     "Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object")}
-
-;;
-
-
+let dir_for_backup_field = Gw_guthib_configuration.Background.dir_for_backup_field ;; 
+let gitpush_after_backup_field = Gw_guthib_configuration.Background.gitpush_after_backup_field ;;
+let github_url_field = Gw_guthib_configuration.Background.github_url_field ;;
+let encoding_protected_files_field = Gw_guthib_configuration.Background.encoding_protected_files_field ;;
 
 let gw_with_githubbing_extension =
   {Por_subclass_t.subclass_name = "gw_with_githubbing";
@@ -216,7 +181,7 @@ module Private = struct
     let descr = String.concat " , " (Image.image Dfa_module.to_line mods) in 
     let msg="delete "^descr in 
     let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
-    let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in     
+    let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in     
     set_parent ~child:fw ~new_parent ;;     
 
   let forget_nonmodular_rootlesses fw rootless_paths=
@@ -224,7 +189,7 @@ module Private = struct
       let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
       let msg="delete "^descr in 
       let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
-      let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in     
+      let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in     
       set_parent ~child:fw ~new_parent ;;     
     
   
@@ -233,7 +198,7 @@ module Private = struct
       let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
       let msg="register "^descr in 
       let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
-      let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in     
+      let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in     
       set_parent ~child:fw ~new_parent ;;  
 
    
@@ -242,7 +207,7 @@ module Private = struct
       let (new_parent,(_,replacements)) = Gw_with_batch_compilation.relocate_module_to (parent fw) mod_name new_subdir in 
       let msg="move "^(Dfa_module.to_line mod_name)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
       let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
-      let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in     
+      let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in     
       set_parent ~child:fw ~new_parent ;; 
 
   let rename_module fw old_middle_name new_nonslashed_name = 
@@ -251,7 +216,7 @@ module Private = struct
               " as "^(No_slashes.to_string new_nonslashed_name) in       
       let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
       let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
-      let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff2 (Some msg) in     
+      let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff2 (Some msg) in     
       set_parent ~child:fw ~new_parent ;;    
 
   let rename_subdirectory_as fw (old_subdir,new_subdir) = 
@@ -260,7 +225,7 @@ module Private = struct
     let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
           " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
     let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
-    let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in     
+    let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in     
     set_parent ~child:fw ~new_parent ;; 
 
   
@@ -270,7 +235,7 @@ module Private = struct
       let new_parent = Gw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
       let msg="rename "^old_s^" as "^new_s in 
       let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changed_files in 
-      let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in 
+      let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in 
       set_parent ~child:fw ~new_parent ;;
 
   let replace_value fw ((preceding_files,path),(old_v,new_v)) = 
@@ -279,14 +244,14 @@ module Private = struct
         let new_parent = Gw_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
         let msg="rename "^old_v^" as "^new_v in 
         let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changes in 
-        let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff (Some msg) in 
+        let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff (Some msg) in 
         set_parent ~child:fw ~new_parent ;; 
  
    
   let usual_recompile fw opt_comment = 
     let (new_parent,(_changed_uc,changed_files)) = Gw_with_batch_compilation.usual_recompile (parent fw)  in 
     let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
-    let _ = Transmit.backup (Gw_poly.to_gw_configuration fw) diff opt_comment in 
+    let _ = Transmit.backup (Gw_poly.to_gw_guthib_configuration fw) diff opt_comment in 
     set_parent ~child:fw ~new_parent ;;
     
 end;;  
