@@ -37,7 +37,7 @@ let index_for_caching_field =
   var_name = "cache_idx";
   default_value = "(Fw_indexer.make_full_instance ())";
   crobj_converters = None;
-  dependency_data = None;} ;;
+  } ;;
 
 
 let gw_with_dependencies_extension =

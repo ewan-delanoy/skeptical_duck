@@ -15,7 +15,7 @@ let root_field =
      crobj_converters =
       Some ("Dfa_root.of_concrete_object", 
       "Dfa_root.to_concrete_object");
-      dependency_data = None;} ;; 
+      } ;; 
   
   let ignored_subdirectories_field =
   {Por_field_t.field_name = "ignored_subdirectories";
@@ -25,10 +25,10 @@ let root_field =
      crobj_converters =
             Some ("Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object", 
             "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object");
-     dependency_data = None;} ;;     
+     } ;;     
   
   
-  let ignored_files_field =
+let ignored_files_field =
   {Por_field_t.field_name = "ignored_files";
   field_type = "Dfn_rootless_t.t list"; 
   var_name = "ign_files";
@@ -36,7 +36,7 @@ let root_field =
   crobj_converters =
   Some ("Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object", 
   "Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object");
-  dependency_data = None;} ;;     
+  } ;;     
               
   let gw_configuration_subclass =
   {Por_subclass_t.subclass_name = "gw_configuration";

@@ -17,7 +17,7 @@ module Background = struct
     default_value = "Dfa_root.of_line \"dummy\"";
     crobj_converters =
      Some ("Dfa_root.of_concrete_object", "Dfa_root.to_concrete_object");
-     dependency_data = None;}
+     }
   ;;
   
   let gitpush_after_backup_field =
@@ -27,7 +27,7 @@ module Background = struct
      Some
       ("Crobj_converter.bool_of_concrete_object",
        "Crobj_converter.bool_to_concrete_object");
-    dependency_data = None;}
+    }
   ;;
   
   let github_url_field =
@@ -37,7 +37,7 @@ module Background = struct
      Some
       ("Crobj_converter.string_of_concrete_object",
        "Crobj_converter.string_to_concrete_object");
-    dependency_data = None;}
+    }
   ;;
   
   
@@ -49,7 +49,7 @@ module Background = struct
      Some
       ("Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object",
        "Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object");
-    dependency_data = None;}
+    }
   
   ;;
   
