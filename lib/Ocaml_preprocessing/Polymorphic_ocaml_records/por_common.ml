@@ -131,9 +131,7 @@ let exhaust_possible_linkings
   (false,List.rev complete_subclasses,incomplete_subclasses) ;;
 
 let subclass_has_dependencies scl =
-  List.exists 
-    (fun fd->fd.Por_field_t.dependency_data <>None) 
-       scl.Por_subclass_t.subclass_fields ;; 
+       (scl.Por_subclass_t.subclass_dependencies<>[]) ;; 
 
 let space_has_dependencies por =
   List.exists subclass_has_dependencies  por.Por_space_t.subclasses ;; 
