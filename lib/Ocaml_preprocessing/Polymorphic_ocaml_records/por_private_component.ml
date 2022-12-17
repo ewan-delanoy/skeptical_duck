@@ -399,15 +399,26 @@ module Private = struct
 
       end ;;      
 
+      module Update_dependencies = struct 
+
+      let full_text por =
+        if not(Por_common.space_has_dependencies por) 
+        then ""  
+        else "module Update_dependencies = struct \n"^
+             "end;; \n\n\n"     ;;       
+
       end ;;      
+
+end ;;      
       
       
          
-      let main por =   
-            "module Private = struct \n\n"^
-                 (Private.Crobj.full_text por)^"\n\n"^
-                 (Private.Extender.full_text por)^"\n\n"^
-                 (Private.Parent.full_text por)^"\n\n"^
-                 (Private.Origin.text por)^"\n\n"^
-                 (Private.Type_information.full_text por)^"\n\n"^
-                 "\nend;; \n\n\n" ;;
+let main por =   
+      "module Private = struct \n\n"^
+            (Private.Crobj.full_text por)^"\n\n"^
+            (Private.Extender.full_text por)^"\n\n"^
+            (Private.Parent.full_text por)^"\n\n"^
+            (Private.Origin.text por)^"\n\n"^
+            (Private.Type_information.full_text por)^"\n\n"^
+            (Private.Update_dependencies.full_text por)^"\n\n"^
+            "\nend;; \n\n\n" ;;
