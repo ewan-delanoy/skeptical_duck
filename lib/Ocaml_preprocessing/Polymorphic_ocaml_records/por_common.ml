@@ -130,6 +130,13 @@ let exhaust_possible_linkings
   iterator_for_possible_linkings_exhaustion 
   (false,List.rev complete_subclasses,incomplete_subclasses) ;;
 
-let has_dependencies por =
-   let fields = all_fields por in 
-   List.exists (fun fd->fd.Por_field_t.dependency_data <>None) fields ;; 
+let subclass_has_dependencies scl =
+  List.exists 
+    (fun fd->fd.Por_field_t.dependency_data <>None) 
+       scl.Por_subclass_t.subclass_fields ;; 
+
+let space_has_dependencies por =
+  List.exists subclass_has_dependencies  por.Por_space_t.subclasses ;; 
+
+let see_subclasses por =
+  Image.image (fun scl->scl.Por_subclass_t.subclass_name) por.Por_space_t.subclasses  ;; 
