@@ -17,6 +17,7 @@ module Private = struct
      var_name =c ;
      default_value = d ;
      crobj_converters = decode_pair_of_converters e ;
+     dependency_data = None;
   } ;;
 
 let field_list_constructor l = Image.image field_constructor l;;

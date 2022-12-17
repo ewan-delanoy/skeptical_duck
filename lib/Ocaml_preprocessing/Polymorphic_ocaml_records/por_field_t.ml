@@ -10,4 +10,5 @@ type t = {
       var_name : string;
       default_value : string;
       crobj_converters : (string * string) option;
+      dependency_data : Por_dependency_data_t.t option;
 } ;;

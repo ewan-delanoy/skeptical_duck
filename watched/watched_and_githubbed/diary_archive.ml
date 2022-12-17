@@ -19,6 +19,7 @@ let gfd k = {
   var_name ="";
   default_value ="";
   crobj_converters =None;
+  dependency_data = None;
 } ;;
 
 let gscl (parent_opt,scl_name,field_indices) = {

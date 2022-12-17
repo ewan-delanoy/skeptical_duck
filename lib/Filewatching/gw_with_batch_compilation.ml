@@ -18,7 +18,8 @@ let last_compilation_result_for_module_field =
   crobj_converters =
    Some
     ("Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object",
-     "Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object")}
+     "Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object");
+  dependency_data = None;}
 ;;
 
 let gw_with_batch_compilation_extension =

@@ -31,6 +31,7 @@ module Private = struct
                 var_name = "" ;
                 default_value = "" ;
                 crobj_converters = None ;
+                dependency_data = None;
              } ;;
        
       let text_for_labels por =

@@ -18,7 +18,8 @@ let subdirs_for_archived_mlx_files_field =
    crobj_converters =
     Some
      ("Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object",
-      "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object")} ;;
+      "Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object");
+   dependency_data = None;} ;;
 
 let gw_with_archives_extension =
    {Por_subclass_t.subclass_name = "gw_with_archives";
