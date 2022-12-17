@@ -25,6 +25,7 @@ let gfd k = {
 let gscl (parent_opt,scl_name,field_indices) = {
   Por_subclass_t.subclass_name = scl_name;
    subclass_fields = Image.image gfd field_indices;
+   subclass_dependencies = [];  
    parent = parent_opt;
    extensions_leading_here = [];
    has_restriction = false;

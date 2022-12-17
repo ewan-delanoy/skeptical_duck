@@ -58,6 +58,7 @@ module Background = struct
   let gw_guthib_configuration_subclass =
     {Por_subclass_t.subclass_name = "gw_guthib_configuration";
     subclass_fields = [root_field;dir_for_backup_field;gitpush_after_backup_field;github_url_field;encoding_protected_files_field];
+    subclass_dependencies = [];  
     parent = None; 
     extensions_leading_here = [];
     has_restriction = true; 

@@ -25,6 +25,7 @@ let last_compilation_result_for_module_field =
 let gw_with_batch_compilation_extension =
   {Por_subclass_t.subclass_name = "gw_with_batch_compilation";
   subclass_fields = [last_compilation_result_for_module_field];
+  subclass_dependencies = [];  
   parent = Some "gw_with_dependencies"; 
   extensions_leading_here = [];
   has_restriction = false; 

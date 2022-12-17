@@ -25,6 +25,7 @@ let gw_life_watcher_extension =
       {Por_subclass_t.subclass_name = "gw_life_watcher";
       subclass_fields =
        [watched_files_field];
+      subclass_dependencies = [];   
       parent = None; 
       extensions_leading_here = ["gw_configuration"];
       has_restriction = false; 

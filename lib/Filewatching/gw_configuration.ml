@@ -44,6 +44,7 @@ let root_field =
       [root_field;
        ignored_subdirectories_field;
        ignored_files_field];
+     subclass_dependencies = [];  
      parent = None; 
      extensions_leading_here = []; 
      has_restriction = true;
