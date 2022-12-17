@@ -10,6 +10,26 @@ module Background = struct
 
 let fw_space = Por_space_example.filewatching ;; 
 
+(*
+let d_small_details_for_module_data = {
+  Por_dependency_data_t.definition = ("d_small_details_for_module",
+  "let fw = \n"^
+  "  let par_fw = parent fw in \n"^ 
+  "  let u_files=Gw_with_small_details.usual_compilable_files par_fw \n"^
+  "  and small_details = Gw_poly.small_details_in_files par_fw in \n"^
+  "   Fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;");
+  shortcuts =[];
+};;
+
+let d_small_details_for_module_field =
+  {Por_field_t.field_name = "d_small_details_for_module";
+  field_type = "(Dfa_module_t.t * Fw_module_small_details_t.t) list";
+  var_name = "small_dets";
+  default_value = "[]";
+  crobj_converters = None;
+  dependency_data = Some d_small_details_for_module_data;} ;;
+*)
+
 
 let index_for_caching_field =
   {Por_field_t.field_name = "index_for_caching";
