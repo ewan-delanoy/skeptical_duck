@@ -129,3 +129,7 @@ let exhaust_possible_linkings
    ~incomplete:incomplete_subclasses =
   iterator_for_possible_linkings_exhaustion 
   (false,List.rev complete_subclasses,incomplete_subclasses) ;;
+
+let has_dependencies por =
+   let fields = all_fields por in 
+   List.exists (fun fd->fd.Por_field_t.dependency_data <>None) fields ;; 
