@@ -12,6 +12,7 @@ let filewatching =
    Por_space_t.main_type_name = "t" ;
    module_name = "gw_poly" ;
    subclasses = [] ;
+   dependencies = [] ;
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = true ;
