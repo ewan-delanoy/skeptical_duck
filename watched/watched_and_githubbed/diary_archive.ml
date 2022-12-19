@@ -11,7 +11,7 @@ Snippet 115 : Ramsey-like combinatorial musing
 
 
 (************************************************************************************************************************
-Snippet 114 : Test Por_space.add_subclass
+Snippet 114 : Test the Por_space.add_subclass feature 
 ************************************************************************************************************************)
 
 let print_out_field (fmt:Format.formatter) fd=
