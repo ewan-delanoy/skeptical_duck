@@ -130,11 +130,14 @@ let exhaust_possible_linkings
   iterator_for_possible_linkings_exhaustion 
   (false,List.rev complete_subclasses,incomplete_subclasses) ;;
 
-let subclass_has_dependencies scl =
-       (scl.Por_subclass_t.subclass_dependencies<>[]) ;; 
+  
 
-let space_has_dependencies por =
+
+let space_has_dependencies _por =
+  false ;; (* for now *)
+(*  
   List.exists subclass_has_dependencies  por.Por_space_t.subclasses ;; 
+*)
 
 let see_subclasses por =
   Image.image (fun scl->scl.Por_subclass_t.subclass_name) por.Por_space_t.subclasses  ;; 

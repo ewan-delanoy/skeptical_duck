@@ -1,11 +1,17 @@
 (************************************************************************************************************************
-Snippet 115 : 
+Snippet 116 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
-open Needed_values ;; 
+open Needed_values ;;
 
 (************************************************************************************************************************
-Snippet 114 : 
+Snippet 115 : Ramsey-like combinatorial musing 
+************************************************************************************************************************)
+
+
+
+(************************************************************************************************************************
+Snippet 114 : Test Por_space.add_subclass
 ************************************************************************************************************************)
 
 let print_out_field (fmt:Format.formatter) fd=
@@ -23,8 +29,7 @@ let gfd k = {
 
 let gscl (parent_opt,scl_name,field_indices) = {
   Por_subclass_t.subclass_name = scl_name;
-   subclass_fields = Image.image gfd field_indices;
-   subclass_dependencies = [];  
+   subclass_fields = Image.image gfd field_indices; 
    parent = parent_opt;
    extensions_leading_here = [];
    has_restriction = false;

@@ -9,6 +9,7 @@ type t = {
       dependency_type : string;
       var_name : string;
       crobj_converters : (string * string) option;
+      ingredients : string list ; (* field names *)
       dependency_definition : string;
       shortcuts : (string * string) list;
 } ;;

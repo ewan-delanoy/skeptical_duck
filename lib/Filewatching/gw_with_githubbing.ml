@@ -19,7 +19,6 @@ let encoding_protected_files_field = Gw_guthib_configuration.Background.encoding
 let gw_with_githubbing_extension =
   {Por_subclass_t.subclass_name = "gw_with_githubbing";
   subclass_fields = [dir_for_backup_field;gitpush_after_backup_field;github_url_field;encoding_protected_files_field];
-  subclass_dependencies = [];  
   parent = Some "gw_with_batch_compilation"; 
   extensions_leading_here = [];
   has_restriction = false; 

@@ -43,7 +43,6 @@ let index_for_caching_field =
 let gw_with_dependencies_extension =
   {Por_subclass_t.subclass_name = "gw_with_dependencies";
   subclass_fields = [index_for_caching_field];
-  subclass_dependencies = [];  
   parent = Some "gw_with_small_details"; 
   extensions_leading_here = [];
   has_restriction = false; 
