@@ -53,6 +53,7 @@ let origin =
    Por_space_t.main_type_name = "main" ;
    module_name = "main" ;
    subclasses = [] ;
+   dependencies = [] ;
    type_signature_file = (file_there "gw_poly_t") ;
    implementation_file = (file_there "gw_poly") ;
    has_crobj_conversion = false ;

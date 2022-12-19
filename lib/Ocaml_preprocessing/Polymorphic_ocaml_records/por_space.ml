@@ -99,8 +99,21 @@ let add_extension_on_nonref old_por parent_name scl =
           ~parent:parent_subclass ~incomplete_child:scl in         
       add_subclass_on_nonref old_por final_child;;
 
+     
+let add_dependencies_on_nonref old_por new_deps = 
+  let old_deps = old_por.Por_space_t.dependencies  in 
+  {
+    old_por with 
+         Por_space_t.dependencies = old_deps @ new_deps ;
+  }  ;;
+  
+
 
 end ;;   
+
+let add_dependencies por_ref new_deps = 
+  let old_por = (!por_ref) in 
+  por_ref := (Private.add_dependencies_on_nonref old_por new_deps) ;;
 
 let add_extension por_ref parent_name scl = 
   let old_por = (!por_ref) in 
