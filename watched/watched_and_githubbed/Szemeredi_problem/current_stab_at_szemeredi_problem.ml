@@ -370,6 +370,33 @@ let check_vsu2 =
    List.filter (fun (n,x,y)->x<>y) temp1 ;; 
 *)
 
+let vsu3 n = 
+  match List.assoc_opt n
+    [ 
+    1,Atomic;  
+    2,Atomic;  
+    3,  Fork [(ep, [2; 3]);(ep, [1; 3]);(ep, [1; 2])] ; 
+    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
+   Some answer -> answer
+   | None -> 
+   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;;
+
+(*   
+let check_vsu3 = 
+    let bound = 30 in 
+    let all_pairs = Cartesian.product 
+        (Int_range.range 0 bound) (Int_range.range 1 bound) in 
+    let some_pairs = List.filter (fun (b,n)->b>n-5) all_pairs in     
+    let temp1 = Image.image (
+        fun (b,n)->
+        let sr = Bulk_result.superficial_part
+         (compute_bulk_result (P(2,b,n,[]))) in     
+        ((b,n),(sr,Example.vsu3 n))
+      ) some_pairs in 
+    List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
+*)
+
+
 let vvsu2 b n = 
   if b=0 
   then Atomic
