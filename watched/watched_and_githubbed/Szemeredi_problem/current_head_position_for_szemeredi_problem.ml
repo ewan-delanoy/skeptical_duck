@@ -19,12 +19,13 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz_types ;; 
 open Sz_preliminaries_for_stab ;;
-
+open Example ;;
 
 let tf1 b n =
    Bulk_result.superficial_part (compute_bulk_result (P(2,b,n,[]))) ;;
 
 let vvsu3 b n = 
+  if b+4>=n then vsu3 n else 
   if b>0 
   then Contraction (P (2, b-1, n, []), C [b; b+2; b+4])
   else 
@@ -39,46 +40,18 @@ let vvsu3 b n =
 let check_vvsu3 = 
     let bound = 30 in 
     let all_pairs = Cartesian.product 
-        (Int_range.range 0 bound) (Int_range.range 1 bound) in 
-    let some_pairs = List.filter (fun (b,n)->b<=n-5) all_pairs in     
+        (Int_range.range 0 bound) (Int_range.range 1 bound) in     
     let temp1 = Image.image (
         fun (b,n)->
         let sr = Bulk_result.superficial_part
          (compute_bulk_result (P(2,b,n,[]))) in     
         ((b,n),(sr,vvsu3 b n))
-      ) some_pairs in 
+      ) all_pairs in 
     List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
 
 let u1 = Image.image fst check_vvsu3 ;; 
 
-let vsu3 n = 
-  match List.assoc_opt n
-    [ 
-    1,Atomic;  
-    2,Atomic;  
-    3,  Fork
-    [(Empty_point, [2; 3]);
-     (Empty_point, [1; 3]);
-     (Empty_point, [1; 2])] ; 
-    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;;
 
-let check_vsu3 = 
-    let bound = 30 in 
-    let all_pairs = Cartesian.product 
-        (Int_range.range 0 bound) (Int_range.range 1 bound) in 
-    let some_pairs = List.filter (fun (b,n)->b>n-5) all_pairs in     
-    let temp1 = Image.image (
-        fun (b,n)->
-        let sr = Bulk_result.superficial_part
-         (compute_bulk_result (P(2,b,n,[]))) in     
-        ((b,n),(sr,vsu3 n))
-      ) some_pairs in 
-    List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
-
-let u1 = Image.image fst check_vvsu3 ;; 
 
 
 

@@ -420,6 +420,32 @@ let check_vvsu2 =
 
 *)
 
+let vvsu3 b n = 
+  if b+4>=n then vsu3 n else 
+  if b>0 
+  then Contraction (P (2, b-1, n, []), C [b; b+2; b+4])
+  else 
+  (* if we get here, b=0 *)
+  if (n mod 3)=0
+  then  Fork
+      [(P (1, n-5, n-3, []), [n-1; n]);
+       (P (1, n-4, n-2, []), [n]);
+       (P (1, n-3, n-1, []), [])]    
+  else Contraction (P (1, n-3, n, []), C [n-2; n-1; n]);;
+
+(*  
+let check_vvsu3 = 
+    let bound = 30 in 
+    let all_pairs = Cartesian.product 
+        (Int_range.range 0 bound) (Int_range.range 1 bound) in     
+    let temp1 = Image.image (
+        fun (b,n)->
+        let sr = Bulk_result.superficial_part
+         (compute_bulk_result (P(2,b,n,[]))) in     
+        ((b,n),(sr,Example.vvsu3 b n))
+      ) all_pairs in 
+    List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
+*)
 
 (* Qualified points *)
 
