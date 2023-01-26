@@ -4,7 +4,7 @@
 
 *)
 
-type point = Sz_types.point = 
+type point = Sz_types_for_third_stab.point = 
    Empty_point 
   |P of int * int * int * int list ;;  
 

@@ -1775,7 +1775,7 @@ type hungarian_adjuster =
 type level_two_t = Quick of int list ;; 
 end ;;  
 
-open Sz_types ;;
+open Sz_types_for_third_stab ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -1920,24 +1920,24 @@ module Parametrized = struct
 let eval_uniform_subrange usr n =
   List.filter (
      fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
+      if i_mem k usr.Sz_types_for_third_stab.usr_negative_exceptions then false else  
+      if i_mem k usr.Sz_types_for_third_stab.usr_positive_exceptions then true  else 
+      i_mem (k mod usr.Sz_types_for_third_stab.usr_modulus)
+      usr.Sz_types_for_third_stab.usr_usual
   ) (Int_range.range 1 n) ;; 
 
 let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
+   match List.assoc_opt n sr.Sz_types_for_third_stab.ps_exceptions with 
    Some answer -> answer 
    | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+    eval_uniform_subrange sr.Sz_types_for_third_stab.ps_usual n  ;;
 
 let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
+  match List.assoc_opt n psl.Sz_types_for_third_stab.pl_exceptions with 
   Some answer -> answer 
   | None ->
    Image.image (fun sr->eval_subrange sr n) 
-   psl.Sz_types.pl_usual ;;    
+   psl.Sz_types_for_third_stab.pl_usual ;;    
 
 let eval_level_two (Quick l) scrappers n =
   let z = concretize (n,scrappers) in 
@@ -1953,19 +1953,19 @@ end ;;
 module Parametrized_Example = struct 
 
   let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
+    Sz_types_for_third_stab.usr_positive_exceptions = pe ;
     usr_negative_exceptions = ne ; 
     usr_modulus = mdl;
     usr_usual = usu ;
   };; 
   
   let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
+    Sz_types_for_third_stab.ps_exceptions = sr_exns ;
     ps_usual = uniform_subrange pe ne mdl usu ;
   };; 
   
   let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
+    Sz_types_for_third_stab.pl_exceptions = psl_exns ;
     pl_usual = Image.image subrange psl_usu ;
   };; 
 
@@ -2424,7 +2424,7 @@ type level_two_t = Quick of int list ;;
 
 end ;;
 
-open Sz_types ;;
+open Sz_types_for_third_stab ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -2468,24 +2468,24 @@ module Parametrized = struct
 let eval_uniform_subrange usr n =
   List.filter (
      fun k->
-      if i_mem k usr.Sz_types.usr_negative_exceptions then false else  
-      if i_mem k usr.Sz_types.usr_positive_exceptions then true  else 
-      i_mem (k mod usr.Sz_types.usr_modulus)
-      usr.Sz_types.usr_usual
+      if i_mem k usr.Sz_types_for_third_stab.usr_negative_exceptions then false else  
+      if i_mem k usr.Sz_types_for_third_stab.usr_positive_exceptions then true  else 
+      i_mem (k mod usr.Sz_types_for_third_stab.usr_modulus)
+      usr.Sz_types_for_third_stab.usr_usual
   ) (Int_range.range 1 n) ;; 
 
 let eval_subrange sr n =
-   match List.assoc_opt n sr.Sz_types.ps_exceptions with 
+   match List.assoc_opt n sr.Sz_types_for_third_stab.ps_exceptions with 
    Some answer -> answer 
    | None ->
-    eval_uniform_subrange sr.Sz_types.ps_usual n  ;;
+    eval_uniform_subrange sr.Sz_types_for_third_stab.ps_usual n  ;;
 
 let eval_ps_list psl n =
-  match List.assoc_opt n psl.Sz_types.pl_exceptions with 
+  match List.assoc_opt n psl.Sz_types_for_third_stab.pl_exceptions with 
   Some answer -> answer 
   | None ->
    Image.image (fun sr->eval_subrange sr n) 
-   psl.Sz_types.pl_usual ;;    
+   psl.Sz_types_for_third_stab.pl_usual ;;    
 
 let eval_level_two (Quick l) scrappers n =
   let z = concretize (n,scrappers) in 
@@ -2501,19 +2501,19 @@ end ;;
 module Parametrized_Example = struct 
 
   let uniform_subrange pe ne mdl usu = {
-    Sz_types.usr_positive_exceptions = pe ;
+    Sz_types_for_third_stab.usr_positive_exceptions = pe ;
     usr_negative_exceptions = ne ; 
     usr_modulus = mdl;
     usr_usual = usu ;
   };; 
   
   let subrange (sr_exns,pe,ne,mdl,usu) = {
-    Sz_types.ps_exceptions = sr_exns ;
+    Sz_types_for_third_stab.ps_exceptions = sr_exns ;
     ps_usual = uniform_subrange pe ne mdl usu ;
   };; 
   
   let ps_list psl_exns psl_usu = {
-    Sz_types.pl_exceptions = psl_exns ;
+    Sz_types_for_third_stab.pl_exceptions = psl_exns ;
     pl_usual = Image.image subrange psl_usu ;
   };; 
 

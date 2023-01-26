@@ -71,7 +71,7 @@ let vvq2 b n=
 
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
-open Sz_types ;; 
+open Sz_types_for_third_stab ;; 
 open Sz_preliminaries_for_stab ;;
 open Example ;;
 

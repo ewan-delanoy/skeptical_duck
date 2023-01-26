@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Szemeredi/sz_types.ml";;
+#use"lib/Szemeredi/sz_types_for_third_stab.ml";;
 
 *)
 
