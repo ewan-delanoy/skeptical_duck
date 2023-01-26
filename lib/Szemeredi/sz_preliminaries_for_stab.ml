@@ -140,3 +140,17 @@ let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
 *)
 
 end ;;  
+
+
+module Rose = struct 
+
+  type rose_type = ( int -> int -> Sz_types_for_third_stab.bulk_result) ;;  
+  let rose_hashtbl = ((Hashtbl.create 50) : (int * int list, rose_type) Hashtbl.t) ;;
+  let try_precomputed_results pt =
+     let (width,breadth,n,scrappers) = Point.unveil pt in 
+     match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+     Some summary_f -> Some (summary_f breadth n)
+    | None -> None ;;   
+  
+  
+end ;;  

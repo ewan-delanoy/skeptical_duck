@@ -8,10 +8,23 @@ any value of the Szemeredi function.
 
 *)
 
+
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 open Sz_types_for_third_stab ;; 
 open Sz_preliminaries_for_stab ;;
+
+module Rose = struct 
+
+  let rose_hashtbl = Hashtbl.create 50 ;;
+  let try_precomputed_results pt =
+     let (width,breadth,n,scrappers) = Point.unveil pt in 
+     match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+     Some summary_f -> Some (summary_f breadth n)
+    | None -> None ;;   
+  
+  
+end ;;  
 
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
@@ -160,17 +173,6 @@ end ;;
 
 let low_hashtbl = Hashtbl.create 50 ;;
   
-module Rose = struct 
-
-let rose_hashtbl = Hashtbl.create 50 ;;
-let try_precomputed_results pt =
-   let (width,breadth,n,scrappers) = Point.unveil pt in 
-   match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-   Some summary_f -> Some (summary_f breadth n)
-  | None -> None ;;   
-
-
-end ;;  
 
 let access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
