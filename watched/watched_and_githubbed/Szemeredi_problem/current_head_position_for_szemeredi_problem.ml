@@ -15,6 +15,60 @@ any value of the Szemeredi function.
 
 *)
 
+(*    
+let generic_length n=
+  if n<3 then 0 else 
+    List.assoc (n mod 3) [0,3;1,2;2,1] ;;
+let check_lengths = 
+      let bound = 30 in 
+      let all_pairs = Cartesian.product 
+          (Int_range.range 0 bound) (Int_range.range 1 bound) in     
+      let temp1 = Image.image (
+          fun (b,n)->
+          let (M(_,qpoints)) = Bulk_result.mold
+           (compute_bulk_result (P(2,b,n,[]))) in     
+          ((b,n),(List.length qpoints,generic_length n))
+        ) all_pairs in 
+      List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
+let u1 = Image.image fst check_lengths ;; 
+
+*)
+
+
+
+(*
+let check_solutions = 
+  let bound = 30 in 
+  let all_pairs = Cartesian.product 
+      (Int_range.range 0 bound) (Int_range.range 1 bound) in     
+  let temp1 = Image.image (
+      fun (b,n)->
+      let (M(l_sol,_)) = Bulk_result.mold
+       (compute_bulk_result (P(2,b,n,[]))) in     
+      ((b,n),(l_sol,[Example.vso1 n]))
+    ) all_pairs in 
+  List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
+*)
+
+let vvq2 b n= 
+  let pt = ( if (b,n)=(0,5) 
+             then ep 
+             else P (1, n-5, n-3, []) 
+  )
+  and l_cstr= (
+    if b<=n-7
+    then (Int_range.scale (fun j->C[j;j+2;j+4]) 1 b)  
+    else if b=n-6 
+         then (Int_range.scale (fun j->C[j;j+2;j+4]) 1 (b-1))
+         else (* b=n-5 *)
+              (C [n-5; n-3])::(Int_range.scale 
+              (fun j->C[j;j+2;j+4]) 1 (n-8))
+  ) 
+  and extra=(if (b,n)=(0,5) 
+             then [1;2;4;5]
+             else ) in 
+  Q (pt,l_cstr,extra) ;; 
+
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 open Sz_types ;; 
@@ -22,145 +76,107 @@ open Sz_preliminaries_for_stab ;;
 open Example ;;
 
 let tf1 b n =
-   Bulk_result.superficial_part (compute_bulk_result (P(2,b,n,[]))) ;;
+   let (M(_,qpoints)) =
+     Bulk_result.mold (compute_bulk_result (P(2,b,n,[]))) in 
+    List.nth qpoints 0;;
 
-let vvsu3 b n = 
-  if b+4>=n then vsu3 n else 
-  if b>0 
-  then Contraction (P (2, b-1, n, []), C [b; b+2; b+4])
-  else 
-  (* if we get here, b=0 *)
-  if (n mod 3)=0
-  then  Fork
-      [(P (1, n-5, n-3, []), [n-1; n]);
-       (P (1, n-4, n-2, []), [n]);
-       (P (1, n-3, n-1, []), [])]    
-  else Contraction (P (1, n-3, n, []), C [n-2; n-1; n]);;
 
-let check_vvsu3 = 
-    let bound = 30 in 
-    let all_pairs = Cartesian.product 
-        (Int_range.range 0 bound) (Int_range.range 1 bound) in     
+(* when d=9 *)
+
+let tf2 n = tf1 (n-9) n ;; 
+
+let rtf2 n=
+  let pt = P (1, n-5, n-3, []) 
+  and l_cstr = (Int_range.scale 
+  (fun j->C[j;j+2;j+4]) 1 (n-9)) in
+Q (pt,l_cstr,[n-1;n]);;
+
+let check_rtf2 = 
+    let base = Int_range.range 9 30 in 
     let temp1 = Image.image (
-        fun (b,n)->
-        let sr = Bulk_result.superficial_part
-         (compute_bulk_result (P(2,b,n,[]))) in     
-        ((b,n),(sr,vvsu3 b n))
-      ) all_pairs in 
-    List.filter (fun (p,(x,y))->x<>y) temp1 ;; 
+      fun n->((n-9,n),(tf2 n,rtf2 n))
+    ) base in 
+    List.filter (fun (p,(x,y))->x<>y ) temp1 ;;
 
-let u1 = Image.image fst check_vvsu3 ;; 
+let see = List.hd(List.rev check_rtf2) ;; 
+
+(* when d=8 *)
+
+let tf2 n = tf1 (n-8) n ;; 
+
+let rtf2 n=
+  let pt = P (1, n-5, n-3, []) 
+  and l_cstr = (Int_range.scale 
+  (fun j->C[j;j+2;j+4]) 1 (n-8)) in
+Q (pt,l_cstr,[n-1;n]);;
+
+let check_rtf2 = 
+    let base = Int_range.range 8 30 in 
+    let temp1 = Image.image (
+      fun n->((n-8,n),(tf2 n,rtf2 n))
+    ) base in 
+    List.filter (fun (p,(x,y))->x<>y ) temp1 ;;
+
+
+(* when d=7 *)
+
+let tf2 n = tf1 (n-7) n ;; 
+
+let rtf2 n=
+  let pt = P (1, n-5, n-3, []) 
+  and l_cstr = (Int_range.scale 
+  (fun j->C[j;j+2;j+4]) 1 (n-7)) in
+Q (pt,l_cstr,[n-1;n]);;
+
+let check_rtf2 = 
+    let base = Int_range.range 7 30 in 
+    let temp1 = Image.image (
+      fun n->((n-7,n),(tf2 n,rtf2 n))
+    ) base in 
+    List.filter (fun (p,(x,y))->x<>y ) temp1 ;;
+
+
+(* when d=6 *)
+
+let tf2 n = tf1 (n-6) n ;; 
+
+let rtf2 n=
+  let pt = P (1, n-5, n-3, []) 
+  and l_cstr = (Int_range.scale 
+  (fun j->C[j;j+2;j+4]) 1 (n-7)) in
+Q (pt,l_cstr,[n-1;n]);;
+
+let check_rtf2 = 
+    let base = Int_range.range 6 30 in 
+    let temp1 = Image.image (
+      fun n->((n-6,n),(tf2 n,rtf2 n))
+    ) base in 
+    List.filter (fun (p,(x,y))->x<>y ) temp1 ;;
 
 
 
+(* when d=5 *)
+
+let tf2 n = tf1 (n-5) n ;; 
+
+let rtf2 n=
+  match List.assoc_opt n 
+  [
+     5, Q (ep, [], [1; 2; 4; 5])
+  ] with 
+  Some answer -> answer
+  | None ->
+  let pt = P (1, n-5, n-3, []) 
+  and l_cstr = (C [n-5; n-3])::(Int_range.scale 
+  (fun j->C[j;j+2;j+4]) 1 (n-8)) in
+Q (pt,l_cstr,[n-1;n]);;
+
+let check_rtf2 = 
+    let base = Int_range.range 5 30 in 
+    let temp1 = Image.image (
+      fun n->((n-5,n),(tf2 n,rtf2 n))
+    ) base in 
+    List.filter (fun (p,(x,y))->x<>y ) temp1 ;;
 
 
 
-(* when g=5 *)
-
-let tf2 n = tf1 (n-5+5) n ;;   
-
-let rtf2 n = 
-   match List.assoc_opt n
-    [ 
-    1,Atomic;  
-    2,Atomic;  
-    3,  Fork
-    [(Empty_point, [2; 3]);
-     (Empty_point, [1; 3]);
-     (Empty_point, [1; 2])] ; 
-    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;; 
-
-let check_rtf2 =
-   let temp1 = Image.image  (fun k->(k,(tf2 k,rtf2 k))) 
-     (Int_range.range 1 30) in 
-   List.filter (fun (k,(x,y))->y<>x) temp1;;
-
-(* when g=4 *)
-
-let tf2 n = tf1 (n-5+4) n ;;   
-
-let rtf2 n = 
-   let b = n-5+4 in 
-   match List.assoc_opt n
-    [ 
-    1,Atomic;  
-    2,Atomic;  
-    3,  Fork
-    [(Empty_point, [2; 3]);
-     (Empty_point, [1; 3]);
-     (Empty_point, [1; 2])] ; 
-    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;; 
-
-let check_rtf2 =
-   let temp1 = Image.image  (fun k->(k,(tf2 k,rtf2 k))) 
-     (Int_range.range 1 30) in 
-   List.filter (fun (k,(x,y))->y<>x) temp1;;
-
-(* when g=3 *)
-
-let tf2 n = tf1 (n-5+3) n ;;   
-
-let rtf2 n = 
-   let b = n-5+3 in 
-   match List.assoc_opt n
-    [ 
-    2,Atomic;  
-    3,  Fork
-    [(Empty_point, [2; 3]);
-     (Empty_point, [1; 3]);
-     (Empty_point, [1; 2])] ; 
-    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;; 
-
-let check_rtf2 =
-   let temp1 = Image.image  (fun k->(k,(tf2 k,rtf2 k))) 
-     (Int_range.range 2 30) in 
-   List.filter (fun (k,(x,y))->y<>x) temp1;;
-
-(* when g=2 *)
-
-let tf2 n = tf1 (n-5+2) n ;;   
-
-let rtf2 n = 
-   let b = n-5+2 in 
-   match List.assoc_opt n
-    [ 
-    3,  Fork
-    [(Empty_point, [2; 3]);
-     (Empty_point, [1; 3]);
-     (Empty_point, [1; 2])] ; 
-    4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;; 
-
-let check_rtf2 =
-   let temp1 = Image.image  (fun k->(k,(tf2 k,rtf2 k))) 
-     (Int_range.range 3 30) in 
-   List.filter (fun (k,(x,y))->y<>x) temp1;;
-
-(* when g=1 *)
-
-let tf2 n = tf1 (n-5+1) n ;;   
-
-let rtf2 n = 
-   let b = n-5+1 in 
-   match List.assoc_opt n
-    [ 4, Contraction (P (1, 1, 4, []), C [n-2; n-1; n])] with 
-   Some answer -> answer
-   | None -> 
-   Contraction (P (2, n-5, n, []), C [n-4; n-2; n]) ;; 
-
-let check_rtf2 =
-   let temp1 = Image.image  (fun k->(k,(tf2 k,rtf2 k))) 
-     (Int_range.range 4 30) in 
-   List.filter (fun (k,(x,y))->y<>x) temp1;;
