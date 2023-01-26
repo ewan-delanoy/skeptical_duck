@@ -669,6 +669,18 @@ end ;;
 
 let low_hashtbl = Hashtbl.create 50 ;;
   
+module Rose = struct 
+
+let rose_hashtbl = Hashtbl.create 50 ;;
+let try_precomputed_results pt =
+   let (width,breadth,n,scrappers) = Point.unveil pt in 
+   match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
+   Some summary -> Some (Parametrized.eval_fobas summary breadth n)
+  | None -> None ;;   
+
+
+end ;;  
+
 let rose_hashtbl = Hashtbl.create 50 ;;
 let medium_hashtbl = Hashtbl.create 50 ;;
 
