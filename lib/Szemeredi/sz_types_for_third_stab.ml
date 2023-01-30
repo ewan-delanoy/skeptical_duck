@@ -4,9 +4,13 @@
 
 *)
 
+type breadth = B of int ;; 
+
+type size = S of int ;;
+
 type point = 
   Empty_point
- |P of int * int * int * (int list) ;;
+ |P of int *  (int list) * breadth * size  ;;
 
 type constraint_t = C of int list ;; 
 

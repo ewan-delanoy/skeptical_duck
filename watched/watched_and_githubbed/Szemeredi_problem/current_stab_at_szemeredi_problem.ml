@@ -14,17 +14,6 @@ open Needed_values ;;
 open Sz_types_for_third_stab ;; 
 open Sz_preliminaries_for_stab ;;
 
-module Rose = struct 
-
-  let rose_hashtbl = Hashtbl.create 50 ;;
-  let try_precomputed_results pt =
-     let (width,breadth,n,scrappers) = Point.unveil pt in 
-     match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-     Some summary_f -> Some (summary_f breadth n)
-    | None -> None ;;   
-  
-  
-end ;;  
 
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
@@ -38,12 +27,12 @@ let test_for_admissiblity width breadth z =
    (List.for_all (fun t->
     not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
 
-let remove_one_element (n,scrappers) k=
+let remove_one_element (S n,scrappers) k=
   let new_scrappers = i_insert k scrappers in 
-  if k <> n then (n,new_scrappers) else 
-  let new_z =  Finite_int_set.of_pair (n,new_scrappers) in 
+  if k <> n then (S n,new_scrappers) else 
+  let new_z =  Finite_int_set.of_pair (S n,new_scrappers) in 
   let new_max = List.hd(List.rev new_z) in 
-  (new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
+  (S new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
 
 
 (*
@@ -53,46 +42,6 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 *)
 
 
-
-module Constraint = struct  
-
-let satisfied_by_individual l_constr l =
-  List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
-
-let satisfied_by_all_in_list l_constr ll=
-  List.for_all (satisfied_by_individual l_constr) ll ;;
-
-let merge_constraints l_constr1 l_constr2 = 
-    let simplifier = Image.image (fun (C x)->x) in
-    Image.image (fun x->C x)
-    (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
-     (simplifier l_constr1) (simplifier l_constr2))) ;;
-
-let insert_new domain (old_constraints,extension) (C new_constraint)= 
-  let remaining_constraint = i_setminus new_constraint extension in 
-  if remaining_constraint = [] 
-  then None 
-  else 
-  if (i_setminus remaining_constraint domain)<>[] 
-  then Some (old_constraints)    
-  else Some (merge_constraints [C remaining_constraint] old_constraints) ;;  
-   
-let insert_several  domain (old_constraints,extension) new_constraints =
-   let rec tempf = (
-      fun (constraints_walker,to_be_treated) ->
-         match to_be_treated with 
-         [] -> Some constraints_walker 
-         | new_constraint :: others ->  
-        (match  insert_new domain (constraints_walker,extension) new_constraint with    
-           None -> None 
-          | Some new_walker -> tempf(new_walker,others) 
-        )
-   ) in 
-   tempf(old_constraints,new_constraints);;
-   
-
-
-end ;;  
 
 module Qualified_point = struct 
 
@@ -205,8 +154,8 @@ let update_head () =
         ) ap_for_head ;; 
    
 let superificial_result_in_jump_case  pt_after_jump =
-  let (width,breadth,n,scrappers) = Point.unveil pt_after_jump in 
-  let pt_before_jump = P(width-1,n-2*(width-1),n,scrappers) in  
+  let (width,scrappers,B breadth, S n) = Point.unveil pt_after_jump in 
+  let pt_before_jump = P(width-1,scrappers,B(n-2*(width-1)),S n) in  
   let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
   ([],Some(Decomposable(pt2,adj2))) ;; 
     
@@ -217,7 +166,7 @@ let access_with_helper_opt pt helper =
 
 let compute_superficial_result_partially pt helper =  
   if pt = Empty_point then ([],Some Atomic) else
-  let (width,breadth,n,scrappers) = Point.unveil pt in 
+  let (width,scrappers,B breadth,n) = Point.unveil pt in 
   let (pt2,adj2) = Simplest_reduction.decompose pt in 
   if ((width,breadth)=(1,0))||(pt2=Empty_point)
   then ([],Some Atomic)
@@ -228,17 +177,17 @@ let compute_superficial_result_partially pt helper =
   if breadth = 0
   then superificial_result_in_jump_case pt   
   else
-  let (width2,breadth2,n2,scrappers2) = Point.unveil pt2 in 
+  let (width2,scrappers2,B breadth2,n2) = Point.unveil pt2 in   
   let _ = assert(breadth2>0) in 
   let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
-  and preceding_point = P(width2,breadth2-1,n2,scrappers2) in 
+  and preceding_point = P(width2,scrappers2,B(breadth2-1),n2) in 
   match access_with_helper_opt  preceding_point helper with 
     None -> ([preceding_point],None)
    |Some bres ->
        (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
        None -> let tooths = Int_range.scale (fun k->
                 let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
-                let pt3 = P(width2,breadth2-1,m,scr) in 
+                let pt3 = P(width2,scr,B(breadth2-1),m) in 
                 Simplest_reduction.decompose(pt3) 
                ) 0 2  in 
               ([],Some(Fork tooths))

@@ -4,9 +4,12 @@
 
 *)
 
+type breadth = Sz_types_for_third_stab.breadth = B of int ;;
+type size = Sz_types_for_third_stab.size = S of int ;;
+
 type point = Sz_types_for_third_stab.point = 
    Empty_point 
-  |P of int * int * int * int list ;;  
+  |P of int * (int list) * breadth * size   ;;  
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -45,12 +48,12 @@ end ;;
 
 module Finite_int_set = struct 
 
-  let of_pair (n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
+  let of_pair ( S n,scrappers) = i_setminus (Int_range.range 1 n) scrappers ;; 
   
   let to_pair domain =
-       if domain = [] then (0,[]) else 
+       if domain = [] then (S 0,[]) else 
        let n = List.hd(List.rev domain) in 
-       (n,i_setminus (Int_range.range 1 n) domain) ;;   
+       (S n,i_setminus (Int_range.range 1 n) domain) ;;   
   
 end ;;    
 
@@ -59,14 +62,14 @@ module Point = struct
    exception Empty_point_cannot_be_unveiled ;; 
   let unveil =function 
    Empty_point -> raise(Empty_point_cannot_be_unveiled) 
-   |P(w,b,n,s) ->  (w,b,n,s) ;; 
+   |P(w,s,b,n) ->  (w,s,b,n) ;; 
   let width p = let (w,_,_,_) = unveil p in w ;; 
-  let breadth p = let (_,b,_,_) = unveil p in b ;;  
+  let scrappers p = let (_,s,_,_) = unveil p in s ;;   
+  let breadth p = let (_,_,b,_) = unveil p in b ;;  
   let size p = let (_,_,n,_) = unveil p in n ;;   
-  let scrappers p = let (_,_,_,s) = unveil p in s ;;   
   let enumerate_supporting_set = function
      Empty_point -> []
-    |P(_w,_b,n,s) -> Finite_int_set.of_pair (n,s) ;; 
+    |P(_w,s,_b, n) -> Finite_int_set.of_pair (n,s) ;; 
 
 end ;;  
 
@@ -124,13 +127,13 @@ module Simplest_reduction = struct
 
 
   let decompose pt =
-      let (old_width,old_breadth,n,scrappers) = Point.unveil pt in 
+      let (old_width,scrappers,B old_breadth,n) = Point.unveil pt in 
       let domain = Finite_int_set.of_pair (n,scrappers) in 
       match For_nonparametrized_sets.decompose (old_width,old_breadth) domain with
       None -> (Empty_point,domain)
     | (Some((new_width,new_breadth),(new_domain,adjustment))) -> 
        let (new_n,new_scrappers) = Finite_int_set.to_pair new_domain in 
-        (P(new_width,new_breadth,new_n,new_scrappers),adjustment);;
+        (P(new_width,new_scrappers,B new_breadth,new_n),adjustment);;
     
 (*
    
@@ -144,13 +147,57 @@ end ;;
 
 module Rose = struct 
 
-  type rose_type = ( int -> int -> Sz_types_for_third_stab.bulk_result) ;;  
+  type rose_type = ( breadth -> size -> Sz_types_for_third_stab.bulk_result) ;;  
   let rose_hashtbl = ((Hashtbl.create 50) : (int * int list, rose_type) Hashtbl.t) ;;
   let try_precomputed_results pt =
-     let (width,breadth,n,scrappers) = Point.unveil pt in 
+     let (width,scrappers,breadth,n) = Point.unveil pt in 
      match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
      Some summary_f -> Some (summary_f breadth n)
     | None -> None ;;   
   
   
 end ;;  
+
+
+
+module Constraint = struct  
+
+  type t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+
+  let satisfied_by_individual l_constr l =
+    List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
+  
+  let satisfied_by_all_in_list l_constr ll=
+    List.for_all (satisfied_by_individual l_constr) ll ;;
+  
+  let merge_constraints l_constr1 l_constr2 = 
+      let simplifier = Image.image (fun (C x)->x) in
+      Image.image (fun x->C x)
+      (Ordered_misc.minimal_elts_wrt_inclusion (il_merge 
+       (simplifier l_constr1) (simplifier l_constr2))) ;;
+  
+  let insert_new domain (old_constraints,extension) (C new_constraint)= 
+    let remaining_constraint = i_setminus new_constraint extension in 
+    if remaining_constraint = [] 
+    then None 
+    else 
+    if (i_setminus remaining_constraint domain)<>[] 
+    then Some (old_constraints)    
+    else Some (merge_constraints [C remaining_constraint] old_constraints) ;;  
+     
+  let insert_several  domain (old_constraints,extension) new_constraints =
+     let rec tempf = (
+        fun (constraints_walker,to_be_treated) ->
+           match to_be_treated with 
+           [] -> Some constraints_walker 
+           | new_constraint :: others ->  
+          (match  insert_new domain (constraints_walker,extension) new_constraint with    
+             None -> None 
+            | Some new_walker -> tempf(new_walker,others) 
+          )
+     ) in 
+     tempf(old_constraints,new_constraints);;
+     
+  
+  
+  end ;;  
