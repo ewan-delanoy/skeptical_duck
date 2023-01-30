@@ -43,23 +43,6 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 
 
 
-module Qualified_point = struct 
-
-let extend_with qp extension =  
-  match qp with 
-  Q(pt,old_constraints,extension2) -> 
-  Q(pt,old_constraints,i_merge extension extension2)   ;;
- 
-
-let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
-  (match Constraint.insert_several (Point.enumerate_supporting_set pt) (old_constraints,extension) new_constraints 
-  with
-    None -> None 
-   |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension)))) ;; 
-
-
-end ;;  
-
 module Mold = struct 
 
 (* it is assumed that compatibility has already been checked *)   

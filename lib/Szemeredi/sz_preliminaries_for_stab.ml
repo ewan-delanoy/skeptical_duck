@@ -197,7 +197,30 @@ module Constraint = struct
           )
      ) in 
      tempf(old_constraints,new_constraints);;
-     
-  
-  
+
   end ;;  
+
+
+module Qualified_point = struct 
+
+    type point = Sz_types_for_third_stab.point 
+     =Empty_point | P of int * int list * breadth * size ;;
+    type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+    type extension_data =  int list ;;
+    type t = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+
+    let extend_with qp extension =  
+      match qp with 
+      Q(pt,old_constraints,extension2) -> 
+      Q(pt,old_constraints,i_merge extension extension2)   ;;
+     
+    
+    let insert_several_constraints new_constraints (Q(pt,old_constraints,extension)) =
+      (match Constraint.insert_several (Point.enumerate_supporting_set pt) (old_constraints,extension) new_constraints 
+      with
+        None -> None 
+       |(Some final_constraints) ->  Some((Q(pt,final_constraints,extension)))) ;; 
+    
+    
+end ;;  
+    
