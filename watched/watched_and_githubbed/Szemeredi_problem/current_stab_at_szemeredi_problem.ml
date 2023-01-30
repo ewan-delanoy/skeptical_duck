@@ -42,32 +42,7 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 *)
 
 
-module Bulk_result = struct     
 
-let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
-
-let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
-
-let superficial_part (BR(sr,_)) = sr ;; 
-let mold (BR(_,md)) = md ;; 
-
-let extend_with pt (BR(old_sr,mold)) extension = 
- let new_sr = (if extension <> []
- then Decomposable(pt,extension)
- else old_sr) in
- BR(new_sr,Mold.extend_with mold extension);;
-
-let extend_with_opt pt bres_opt extension = match bres_opt with 
-      None -> None 
-      |Some bres -> Some (extend_with pt bres extension) ;;    
-
-let impose_one_more_constraint_opt pt cstr (BR(sr,mold)) =
-    match Mold.insert_several_constraints_carefully [cstr] mold with 
-     None -> None
-    | Some new_mold -> Some(BR(Contraction(pt,cstr),new_mold)) ;;
-     
-
-end ;;  
 
 
 let low_hashtbl = Hashtbl.create 50 ;;

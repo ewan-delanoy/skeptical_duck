@@ -230,9 +230,9 @@ module Mold = struct
 
   type point = Sz_types_for_third_stab.point 
      =Empty_point | P of int * int list * breadth * size ;;
-    type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
-    type extension_data =  int list ;;
-    type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type extension_data =  int list ;;
+  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
   type solution = int list ;;
   type t = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
 
@@ -263,7 +263,46 @@ module Mold = struct
   
 end ;;
   
-    
+module Bulk_result = struct     
+
+  type point = Sz_types_for_third_stab.point 
+     =Empty_point | P of int * int list * breadth * size ;;
+  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type extension_data =  int list ;;
+  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type solution = int list ;;
+  type mold = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
+  type superficial_result = Sz_types_for_third_stab.superficial_result = 
+        Atomic
+      | Decomposable of point * extension_data
+      | Contraction of point * constraint_t
+      | Fork of (point * extension_data) list ;; 
+  type t = Sz_types_for_third_stab.bulk_result = BR of superficial_result * mold ;;
+
+  let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
+  
+  let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
+  
+  let superficial_part (BR(sr,_)) = sr ;; 
+  let mold (BR(_,md)) = md ;; 
+  
+  let extend_with pt (BR(old_sr,mold)) extension = 
+   let new_sr = (if extension <> []
+   then Decomposable(pt,extension)
+   else old_sr) in
+   BR(new_sr,Mold.extend_with mold extension);;
+  
+  let extend_with_opt pt bres_opt extension = match bres_opt with 
+        None -> None 
+        |Some bres -> Some (extend_with pt bres extension) ;;    
+  
+  let impose_one_more_constraint_opt pt cstr (BR(_sr,mold)) =
+      match Mold.insert_several_constraints_carefully [cstr] mold with 
+       None -> None
+      | Some new_mold -> Some(BR(Contraction(pt,cstr),new_mold)) ;;
+       
+  
+end ;;      
   
   
 
