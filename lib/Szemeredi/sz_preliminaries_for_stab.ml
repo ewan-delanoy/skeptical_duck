@@ -223,4 +223,48 @@ module Qualified_point = struct
     
     
 end ;;  
+
+
+
+module Mold = struct 
+
+  type point = Sz_types_for_third_stab.point 
+     =Empty_point | P of int * int list * breadth * size ;;
+    type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+    type extension_data =  int list ;;
+    type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type solution = int list ;;
+  type t = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
+
+  (* it is assumed that compatibility has already been checked *)   
+  let extend_with (M(reps,qpoints)) extension =
+    M(Image.image (i_merge extension) reps,
+    Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
+    ) ;;  
+  
+  let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
+    M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
+       List.filter_map (
+        Qualified_point.insert_several_constraints extra_constraints
+       ) qpoints) ;; 
+    
+  exception Insert_several_constraints_carefully_exn of constraint_t list * t ;;
+  
+  let insert_several_constraints_carefully extra_constraints old_mold =
+     let new_mold = insert_several_constraints extra_constraints old_mold in 
+     let (M(new_reps,new_qpoints)) = new_mold in     
+      if new_qpoints = [] 
+      then None 
+      else
+      if new_reps = []
+      then raise(Insert_several_constraints_carefully_exn(extra_constraints,old_mold))
+      else Some new_mold ;;          
+  
+  
+end ;;
+  
+    
+  
+  
+
     

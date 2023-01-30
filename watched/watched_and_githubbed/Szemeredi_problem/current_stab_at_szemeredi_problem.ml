@@ -42,39 +42,6 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 *)
 
 
-
-module Mold = struct 
-
-(* it is assumed that compatibility has already been checked *)   
-let extend_with (M(reps,qpoints)) extension =
-  M(Image.image (i_merge extension) reps,
-  Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
-  ) ;;  
-
-let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
-  M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
-     List.filter_map (
-      Qualified_point.insert_several_constraints extra_constraints
-     ) qpoints) ;; 
-  
-exception Insert_several_constraints_carefully_exn of constraint_t list * mold ;;
-
-let insert_several_constraints_carefully extra_constraints old_mold =
-   let new_mold = insert_several_constraints extra_constraints old_mold in 
-   let (M(new_reps,new_qpoints)) = new_mold in     
-    if new_qpoints = [] 
-    then None 
-    else
-    if new_reps = []
-    then raise(Insert_several_constraints_carefully_exn(extra_constraints,old_mold))
-    else Some new_mold ;;          
-
-
-end ;;
-
-  
- 
-
 module Bulk_result = struct     
 
 let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
