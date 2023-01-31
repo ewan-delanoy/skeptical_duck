@@ -47,7 +47,6 @@ remove_one_element (10,[3;7;8;9]) 10 ;;
 
 let low_hashtbl = Hashtbl.create 50 ;;
   
-
 let access_opt  pt = 
  let (pt2,adj) = Simplest_reduction.decompose pt in 
  if pt2 = Empty_point 

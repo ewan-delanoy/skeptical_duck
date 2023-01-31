@@ -147,13 +147,51 @@ end ;;
 
 module Rose = struct 
 
-  type rose_type = ( breadth -> size -> Sz_types_for_third_stab.bulk_result) ;;  
-  let rose_hashtbl = ((Hashtbl.create 50) : (int * int list, rose_type) Hashtbl.t) ;;
+  type point = Sz_types_for_third_stab.point 
+     =Empty_point | P of int * int list * breadth * size ;;
+  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type extension_data =  int list ;;
+  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type solution = int list ;;
+  type mold = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
+  type superficial_result = Sz_types_for_third_stab.superficial_result = 
+        Atomic
+      | Decomposable of point * extension_data
+      | Contraction of point * constraint_t
+      | Fork of (point * extension_data) list ;; 
+  type bulk_result = Sz_types_for_third_stab.bulk_result = BR of superficial_result * mold ;; 
+
+  let for_homemade_part_1 = (* returns a superficial_result *)
+    ((Hashtbl.create 50) : (int * int list, 
+    breadth -> size -> Sz_types_for_third_stab.superficial_result) Hashtbl.t) ;;
+
+  let get_part1 pt =
+    let (width,scrappers,breadth,n) = Point.unveil pt in 
+    Hashtbl.find for_homemade_part_1 (width,scrappers) breadth n ;; 
+
+  let for_homemade_part_2 = (* returns a solution list *)
+    ((Hashtbl.create 50) : (int * int list, 
+    breadth -> size -> Sz_types_for_third_stab.solution list) Hashtbl.t) ;;  
+ 
+  let get_part2 pt =
+    let (width,scrappers,breadth,n) = Point.unveil pt in 
+    Hashtbl.find for_homemade_part_2 (width,scrappers) breadth n ;; 
+
+  let for_homemade_part_3 = (* returns a qualified_point list *)
+    ((Hashtbl.create 50) : (int * int list, 
+    breadth -> size -> Sz_types_for_third_stab.qualified_point list) Hashtbl.t) ;;  
+  
+  let get_part3 pt =
+    let (width,scrappers,breadth,n) = Point.unveil pt in 
+    Hashtbl.find for_homemade_part_3 (width,scrappers) breadth n ;;   
+
+  let for_delegated_whole =  ((ref []):(int * int list) list ref) ;;  
+  
   let try_precomputed_results pt =
-     let (width,scrappers,breadth,n) = Point.unveil pt in 
-     match Hashtbl.find_opt rose_hashtbl (width,scrappers) with 
-     Some summary_f -> Some (summary_f breadth n)
-    | None -> None ;;   
+     let (width,scrappers,_breadth,_n) = Point.unveil pt in 
+     if List.mem (width,scrappers) (!for_delegated_whole) 
+     then Some(BR(get_part1 pt,M(get_part2 pt,get_part3 pt)))
+     else None ;;   
   
   
 end ;;  
