@@ -4,14 +4,25 @@
 
 *)
 
+type breadth = Sz_types_for_third_stab.breadth = B of int ;;
+type size = Sz_types_for_third_stab.size = S of int ;;
+
+type point = 
+   Sz_types_for_third_stab.point = 
+    Empty_point | P of int * int list * breadth * size ;; 
+
+type dynamized_type_t = unit ;; 
+
 type homemade_node_t = {
    homemade_node_name : string ; 
    out_data_type : string ;
+   homemade_slow_computer : point -> dynamized_type_t ; 
 } ;;
 
 type delegated_node_t = {
     delegated_node_name : string ; 
     details : string list ;
+    delegated_slow_computer : point -> dynamized_type_t ; 
 } ;;
 
 type node_t =
@@ -44,8 +55,8 @@ let code_for_homemade_node idx (nd:homemade_node_t) =
     "\n";
     "let get_"^full_name^" pt = ";
     " let (width,scrappers,breadth,n) = Point.unveil pt in ";
-    " if List.mem (width,scrappers) (!for_"^full_name^"delegated_whole) 
-      then Some("
+    " if List.mem (width,scrappers) (!for_"^full_name^"delegated_whole) ";
+    "  then Some("
    ]
    @(nd.details)
    @
@@ -68,8 +79,9 @@ let listify_homemade_node (nd:homemade_node_t) list_size=
   (Int_range.scale ( 
     fun k->
       {
-       homemade_node_name = (nd.homemade_node_name)^"_li"^(string_of_int k) ; 
+        homemade_node_name = (nd.homemade_node_name)^"_li"^(string_of_int k) ; 
         out_data_type = unlistified_out_type ;
+        homemade_slow_computer = (fun _ -> ()) ;
       }
   ) 1 list_size) @
   [
