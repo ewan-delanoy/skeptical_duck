@@ -23,4 +23,12 @@ let create_root_node root_node =
     then raise(Create_root_node_exn root_node) 
     else ref_for_nodes_successively_created:=[(root_node,"no_division","")] ;;
 
-create_root_node "whole" ;;     
+let node1_name = "whole" ;;
+
+create_root_node node1_name ;;     
+
+let node2_name = "superficial_result" ;;
+let node3_name = "selected_solutions" ;;
+let node4_name = "qpoint_list" ;;
+
+add_one_more_division node1_name "tripartite" [node2_name;node3_name;node4_name];; 
