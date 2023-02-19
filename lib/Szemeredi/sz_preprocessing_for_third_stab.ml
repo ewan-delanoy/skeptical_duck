@@ -35,6 +35,11 @@ let decompose_list_node_according_to_rangeset old_node ranges =
        add_one_more_division old_node (r^"_for_"^old_node) [old_node^"_"^r] 
   ) ranges ;;
   
+let cut_breadth_size_node_in_two old_node = 
+  (add_one_more_division old_node ("upper_half_for_"^old_node) [old_node^"_upper_half"] ;
+   add_one_more_division old_node ("lower_half_for_"^old_node) [old_node^"_lower_half"]) ;; 
+
+
 
 let node1_name = "whole" ;;
 
