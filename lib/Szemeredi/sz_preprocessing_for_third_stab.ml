@@ -6,6 +6,7 @@
 
 let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
 let ref_for_nodes_successively_created = ref ([]: (string * string * string) list) ;; 
+let ref_for_undivided_nodes = ref ([]: (string * string * string) list) ;; 
 
 let refs () = (!ref_for_divisions_successively_made,!ref_for_nodes_successively_created) ;;
 
@@ -18,7 +19,7 @@ let add_one_more_division old_node division new_nodes =
     (new_node,division,old_node)::(!ref_for_nodes_successively_created)
     ) new_nodes ;;
 
-let add_typical_name old_node appendix = 
+let add_typical_division old_node appendix = 
   add_one_more_division old_node (appendix ^ "_for_"^old_node) [old_node^"_"^ appendix] ;; 
 
 exception Create_root_node_exn of string ;;
@@ -35,12 +36,12 @@ let decompose_list_node_according_to_rangeset old_node ranges =
        let s_min = string_of_int i_min 
        and s_max = string_of_int i_max in 
        let r = "range_"^s_min^"_"^s_max in 
-       add_one_more_division old_node (r^"_for_"^old_node) [old_node^"_"^r] 
+       add_typical_division old_node r 
   ) ranges ;;
   
 let cut_breadth_size_node_in_two old_node = 
-  (add_one_more_division old_node ("upper_half_for_"^old_node) [old_node^"_upper_half"] ;
-   add_one_more_division old_node ("lower_half_for_"^old_node) [old_node^"_lower_half"]) ;; 
+  (add_typical_division old_node "upper_half" ;
+   add_typical_division old_node "lower_half") ;; 
 
 
 
