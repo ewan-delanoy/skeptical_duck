@@ -18,6 +18,9 @@ let add_one_more_division old_node division new_nodes =
     (new_node,division,old_node)::(!ref_for_nodes_successively_created)
     ) new_nodes ;;
 
+let add_typical_name old_node appendix = 
+  add_one_more_division old_node (appendix ^ "_for_"^old_node) [old_node^"_"^ appendix] ;; 
+
 exception Create_root_node_exn of string ;;
 
 let create_root_node root_node =
