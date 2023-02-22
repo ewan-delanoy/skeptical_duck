@@ -21,6 +21,8 @@ let no_division = {
   division_name = "no_division"
 } ;; 
 
+let node_of_string s = { node_name = s } ;; 
+
 let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
 let ref_for_nodes_successively_created = ref ([]: (string * string * string) list) ;; 
 let ref_for_undivided_nodes = ref ([]: (string * string * string) list) ;; 
