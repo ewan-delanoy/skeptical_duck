@@ -71,3 +71,5 @@ let node4_name = "qpoint_list" ;;
 add_one_more_division node1_name "tripartite" [node2_name;node3_name;node4_name];; 
 
 decompose_list_node_according_to_rangeset node4_name [(1,1);(2,2);(3,100)] ;;
+
+cut_all_breadth_size_nodes_in_two () ;; 
