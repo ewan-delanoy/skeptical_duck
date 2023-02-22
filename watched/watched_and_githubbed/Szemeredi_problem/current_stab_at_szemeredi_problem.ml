@@ -12,7 +12,7 @@ any value of the Szemeredi function.
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 open Sz3_types ;; 
-open Sz_preliminaries_for_stab ;;
+open Sz3_preliminaries ;;
 
 
 let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
