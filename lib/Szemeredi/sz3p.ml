@@ -15,6 +15,7 @@ type division = Sz3p_types.division = {
   division_name : string ; 
 } ;;
 
+let node_eq nd1 nd2 = ( (nd1.node_name) = (nd2.node_name) ) ;; 
 
 let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
 let ref_for_nodes_successively_created = ref ([]: (string * string * string) list) ;; 
