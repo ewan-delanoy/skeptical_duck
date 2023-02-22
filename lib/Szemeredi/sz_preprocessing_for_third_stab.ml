@@ -2,6 +2,9 @@
 
 #use"lib/Szemeredi/sz_preprocessing_for_third_stab.ml";;
 
+We make an exception to the rule of not having numbers in module names.
+Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
+
 *)
 
 let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
