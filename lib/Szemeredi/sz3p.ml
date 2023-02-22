@@ -15,6 +15,13 @@ type division = Sz3p_types.division = {
   division_name : string ; 
 } ;;
 
+type node_system =  Sz3p_types.node_system = {
+  divisions_successively_made : (node * division * node list) list ;
+  nodes_successively_created : (node * division * node) list ;
+  undivided_nodes : (node * division * node) list ; 
+} ;; 
+
+
 let node_eq nd1 nd2 = ( (nd1.node_name) = (nd2.node_name) ) ;; 
 
 let no_division = {
