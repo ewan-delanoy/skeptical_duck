@@ -21,6 +21,10 @@ let no_division = {
   division_name = "no_division"
 } ;; 
 
+let tripartite_division = {
+  division_name = "no_division"
+} ;; 
+
 let node_of_string s = { node_name = s } ;; 
 
 let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
