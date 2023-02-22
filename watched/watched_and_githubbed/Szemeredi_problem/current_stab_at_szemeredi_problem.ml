@@ -11,7 +11,7 @@ any value of the Szemeredi function.
 
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
-open Sz_types_for_third_stab ;; 
+open Sz3_types ;; 
 open Sz_preliminaries_for_stab ;;
 
 

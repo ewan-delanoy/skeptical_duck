@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Szemeredi/sz_types_for_third_stab.ml";;
+#use"lib/Szemeredi/sz3_types.ml";;
 
 We make an exception to the rule of not having numbers in module names.
 Sz3 is short for "third stab at Szemeredi problem".

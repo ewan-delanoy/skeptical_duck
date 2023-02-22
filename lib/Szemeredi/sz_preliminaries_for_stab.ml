@@ -7,10 +7,10 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 *)
 
-type breadth = Sz_types_for_third_stab.breadth = B of int ;;
-type size = Sz_types_for_third_stab.size = S of int ;;
+type breadth = Sz3_types.breadth = B of int ;;
+type size = Sz3_types.size = S of int ;;
 
-type point = Sz_types_for_third_stab.point = 
+type point = Sz3_types.point = 
    Empty_point 
   |P of int * (int list) * breadth * size   ;;  
 
@@ -150,23 +150,23 @@ end ;;
 
 module Rose = struct 
 
-  type point = Sz_types_for_third_stab.point 
+  type point = Sz3_types.point 
      =Empty_point | P of int * int list * breadth * size ;;
-  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type constraint_t = Sz3_types.constraint_t = C of int list ;; 
   type extension_data =  int list ;;
-  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type qualified_point = Sz3_types.qualified_point = Q of point * constraint_t list * extension_data ;;
   type solution = int list ;;
-  type mold = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
-  type superficial_result = Sz_types_for_third_stab.superficial_result = 
+  type mold = Sz3_types.mold = M of solution list * qualified_point list ;;
+  type superficial_result = Sz3_types.superficial_result = 
         Atomic
       | Decomposable of point * extension_data
       | Contraction of point * constraint_t
       | Fork of (point * extension_data) list ;; 
-  type bulk_result = Sz_types_for_third_stab.bulk_result = BR of superficial_result * mold ;; 
+  type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 
   let for_homemade_part_1 = (* returns a superficial_result *)
     ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz_types_for_third_stab.superficial_result) Hashtbl.t) ;;
+    breadth -> size -> Sz3_types.superficial_result) Hashtbl.t) ;;
 
   let get_part1 pt =
     let (width,scrappers,breadth,n) = Point.unveil pt in 
@@ -174,7 +174,7 @@ module Rose = struct
 
   let for_homemade_part_2 = (* returns a solution list *)
     ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz_types_for_third_stab.solution list) Hashtbl.t) ;;  
+    breadth -> size -> Sz3_types.solution list) Hashtbl.t) ;;  
  
   let get_part2 pt =
     let (width,scrappers,breadth,n) = Point.unveil pt in 
@@ -182,7 +182,7 @@ module Rose = struct
 
   let for_homemade_part_3 = (* returns a qualified_point list *)
     ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz_types_for_third_stab.qualified_point list) Hashtbl.t) ;;  
+    breadth -> size -> Sz3_types.qualified_point list) Hashtbl.t) ;;  
   
   let get_part3 pt =
     let (width,scrappers,breadth,n) = Point.unveil pt in 
@@ -203,7 +203,7 @@ end ;;
 
 module Constraint = struct  
 
-  type t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type t = Sz3_types.constraint_t = C of int list ;; 
 
   let satisfied_by_individual l_constr l =
     List.for_all (fun (C constr)->not(i_is_included_in constr l)) l_constr
@@ -244,11 +244,11 @@ module Constraint = struct
 
 module Qualified_point = struct 
 
-    type point = Sz_types_for_third_stab.point 
+    type point = Sz3_types.point 
      =Empty_point | P of int * int list * breadth * size ;;
-    type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+    type constraint_t = Sz3_types.constraint_t = C of int list ;; 
     type extension_data =  int list ;;
-    type t = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+    type t = Sz3_types.qualified_point = Q of point * constraint_t list * extension_data ;;
 
     let extend_with qp extension =  
       match qp with 
@@ -269,13 +269,13 @@ end ;;
 
 module Mold = struct 
 
-  type point = Sz_types_for_third_stab.point 
+  type point = Sz3_types.point 
      =Empty_point | P of int * int list * breadth * size ;;
-  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type constraint_t = Sz3_types.constraint_t = C of int list ;; 
   type extension_data =  int list ;;
-  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type qualified_point = Sz3_types.qualified_point = Q of point * constraint_t list * extension_data ;;
   type solution = int list ;;
-  type t = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
+  type t = Sz3_types.mold = M of solution list * qualified_point list ;;
 
   (* it is assumed that compatibility has already been checked *)   
   let extend_with (M(reps,qpoints)) extension =
@@ -306,19 +306,19 @@ end ;;
   
 module Bulk_result = struct     
 
-  type point = Sz_types_for_third_stab.point 
+  type point = Sz3_types.point 
      =Empty_point | P of int * int list * breadth * size ;;
-  type constraint_t = Sz_types_for_third_stab.constraint_t = C of int list ;; 
+  type constraint_t = Sz3_types.constraint_t = C of int list ;; 
   type extension_data =  int list ;;
-  type qualified_point = Sz_types_for_third_stab.qualified_point = Q of point * constraint_t list * extension_data ;;
+  type qualified_point = Sz3_types.qualified_point = Q of point * constraint_t list * extension_data ;;
   type solution = int list ;;
-  type mold = Sz_types_for_third_stab.mold = M of solution list * qualified_point list ;;
-  type superficial_result = Sz_types_for_third_stab.superficial_result = 
+  type mold = Sz3_types.mold = M of solution list * qualified_point list ;;
+  type superficial_result = Sz3_types.superficial_result = 
         Atomic
       | Decomposable of point * extension_data
       | Contraction of point * constraint_t
       | Fork of (point * extension_data) list ;; 
-  type t = Sz_types_for_third_stab.bulk_result = BR of superficial_result * mold ;;
+  type t = Sz3_types.bulk_result = BR of superficial_result * mold ;;
 
   let atomic_case pt = BR (Atomic,M([Point.enumerate_supporting_set pt],[])) ;; 
   
