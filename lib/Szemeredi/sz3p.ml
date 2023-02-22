@@ -27,9 +27,9 @@ let tripartite_division = {
 
 let node_of_string s = { node_name = s } ;; 
 
-let ref_for_divisions_successively_made = ref ([]: (string * string * string list) list) ;; 
-let ref_for_nodes_successively_created = ref ([]: (string * string * string) list) ;; 
-let ref_for_undivided_nodes = ref ([]: (string * string * string) list) ;; 
+let ref_for_divisions_successively_made = ref ([]: (node * division * node list) list) ;; 
+let ref_for_nodes_successively_created = ref ([]: (node * division * node) list) ;; 
+let ref_for_undivided_nodes = ref ([]: (node * division * node) list) ;; 
 
 let refs () = (!ref_for_divisions_successively_made,
                !ref_for_nodes_successively_created,
@@ -54,19 +54,27 @@ let add_one_more_division old_node division new_nodes =
     ) new_nodes;;
 
 let add_typical_division old_node appendix = 
-  add_one_more_division old_node (appendix ^ "_for_"^old_node) [old_node^"_"^ appendix] ;; 
+  let old_name = old_node.node_name in 
+  let new_node = {
+    node_name = old_name^"_"^ appendix 
+  }
+  and new_division = {
+    division_name = appendix ^ "_for_"^old_name
+  } in 
+  add_one_more_division old_node new_division [new_node]  ;; 
 
 exception Create_root_node_exn of string ;;
 
 let create_root_node root_node =
     if ((!ref_for_divisions_successively_made),(!ref_for_nodes_successively_created))<>([],[])
-    then raise(Create_root_node_exn root_node) 
-    else (ref_for_nodes_successively_created:=[(root_node,"no_division","")];
-          ref_for_undivided_nodes:=[(root_node,"no_division","")]; 
+    then raise(Create_root_node_exn root_node.node_name) 
+    else let empty_node = node_of_string "" in  
+        (ref_for_nodes_successively_created:=[(root_node,no_division,empty_node)];
+          ref_for_undivided_nodes:=[(root_node,no_division,empty_node)]; 
          ) ;;
 
 let decompose_list_node_according_to_rangeset old_node ranges = 
-  let _ = add_one_more_division old_node ("length_for_"^old_node) [old_node^"_length"] in 
+  let _ = add_typical_division old_node "length" in 
   List.iter (
     fun (i_min,i_max) ->
        let s_min = string_of_int i_min 
@@ -83,16 +91,16 @@ let cut_all_breadth_size_nodes_in_two () =
   let undivided_nodes = Image.image (fun (node,_,_)->node) (!ref_for_undivided_nodes) in 
   List.iter cut_breadth_size_node_in_two undivided_nodes ;;
 
-let node1_name = "whole" ;;
+let node1 = node_of_string "whole" ;;
 
-create_root_node node1_name ;;     
+create_root_node node1 ;;     
 
-let node2_name = "superficial_result" ;;
-let node3_name = "selected_solutions" ;;
-let node4_name = "qpoint_list" ;;
+let node2 = node_of_string "superficial_result" ;;
+let node3 = node_of_string "selected_solutions" ;;
+let node4 = node_of_string "qpoint_list" ;;
 
-add_one_more_division node1_name "tripartite" [node2_name;node3_name;node4_name];; 
+add_one_more_division node1 tripartite_division [node2;node3;node4];; 
 
-decompose_list_node_according_to_rangeset node4_name [(1,1);(2,2);(3,100)] ;;
+decompose_list_node_according_to_rangeset node4 [(1,1);(2,2);(3,100)] ;;
 
 cut_all_breadth_size_nodes_in_two () ;; 
