@@ -34,6 +34,12 @@ let tripartite_division = {
 
 let node_of_string s = { node_name = s } ;; 
 
+let empty_node_system = {
+  divisions_successively_made = [] ;
+  nodes_successively_created = [] ;
+  undivided_nodes = [] ; 
+} ;; 
+
 let ref_for_divisions_successively_made = ref ([]: (node * division * node list) list) ;; 
 let ref_for_nodes_successively_created = ref ([]: (node * division * node) list) ;; 
 let ref_for_undivided_nodes = ref ([]: (node * division * node) list) ;; 
