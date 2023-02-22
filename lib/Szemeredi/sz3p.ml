@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Szemeredi/sz_preprocessing_for_third_stab.ml";;
+#use"lib/Szemeredi/sz3p.ml";;
 
 We make an exception to the rule of not having numbers in module names.
 Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
