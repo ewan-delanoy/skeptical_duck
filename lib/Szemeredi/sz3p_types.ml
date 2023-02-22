@@ -15,3 +15,8 @@ type division = {
   division_name : string ; 
 } ;;
 
+type node_system = {
+  divisions_successively_made : (node * division * node list) list ;
+  nodes_successively_created : (node * division * node) list ;
+  undivided_nodes : (node * division * node) list ; 
+} ;; 
