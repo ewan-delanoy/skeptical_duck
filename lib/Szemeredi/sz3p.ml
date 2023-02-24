@@ -11,9 +11,11 @@ type node = Sz3p_types.node ={
    node_name : string ;
 } ;;
 
-type division = Sz3p_types.division = {
-  division_name : string ; 
-} ;;
+type division = Sz3p_types.division = 
+     Bulk_result_by_definition 
+   | List_by_rangeset of (int * int) list
+   | Breadth_n_size_by_two ;;
+
 
 type node_system = Sz3p_types.node_system = {
   width_and_scrappers : int * (int list) ;
@@ -25,9 +27,6 @@ type node_system = Sz3p_types.node_system = {
 
 let node_eq nd1 nd2 = ( (nd1.node_name) = (nd2.node_name) ) ;; 
 
-let tripartite_division = {
-  division_name = "tripartite_division"
-} ;; 
 
 let node_of_string s = { node_name = s } ;; 
 
@@ -78,19 +77,16 @@ let add_one_more_division old_syst old_node division new_nodes =
   !syst_ref;;
 
 
-let add_typical_division old_syst old_node appendix = 
+let add_typical_division old_syst old_node appendix new_division = 
   let old_name = old_node.node_name in 
   let new_node = {
     node_name = old_name^"_"^ appendix 
-  }
-  and new_division = {
-    division_name = appendix ^ "_for_"^old_name
   } in 
   add_one_more_division old_syst old_node new_division [new_node]  ;; 
 
-let create_root_node (i,j) root_node =
+let create_root_node (width,scrappers) root_node =
   {
-    width_and_scrappers = (i,j) ;
+    width_and_scrappers = (width,scrappers) ;
     divisions_successively_made = [];
     nodes_successively_created=[(root_node,None)];
     undivided_nodes=[(root_node,None)]; 
@@ -100,19 +96,19 @@ let create_root_node (i,j) root_node =
 let decompose_list_node_according_to_rangeset old_syst old_node ranges = 
   let syst_ref = ref old_syst in 
   let _ = 
-    (syst_ref:=add_typical_division (!syst_ref) old_node "length"; 
+    (syst_ref:=add_typical_division (!syst_ref) old_node "length" (List_by_rangeset ranges); 
   List.iter (
     fun (i_min,i_max) ->
        let s_min = string_of_int i_min 
        and s_max = string_of_int i_max in 
        let r = "range_"^s_min^"_"^s_max in 
-       syst_ref:=add_typical_division (!syst_ref) old_node r 
+       syst_ref:=add_typical_division (!syst_ref) old_node r (List_by_rangeset ranges)
   ) ranges) in 
  !syst_ref;;
   
 let cut_breadth_size_node_in_two old_syst old_node = 
-  let syst1 = add_typical_division old_syst old_node "upper_half" in 
-  add_typical_division syst1 old_node "lower_half" ;; 
+  let syst1 = add_typical_division old_syst old_node "upper_half" Breadth_n_size_by_two in 
+  add_typical_division syst1 old_node "lower_half" Breadth_n_size_by_two ;; 
 
 let cut_all_breadth_size_nodes_in_two old_syst = 
   let undivided_nodes = 
@@ -132,7 +128,7 @@ let node2 = node_of_string "superficial_result" ;;
 let node3 = node_of_string "selected_solutions" ;;
 let node4 = node_of_string "qpoint_list" ;;
 
-let example2 = add_one_more_division example node1 tripartite_division [node2;node3;node4];; 
+let example2 = add_one_more_division example node1 Bulk_result_by_definition [node2;node3;node4];; 
 
 let example3 = decompose_list_node_according_to_rangeset example2 node4 [(1,1);(2,2);(3,100)] ;;
 

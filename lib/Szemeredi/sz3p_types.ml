@@ -11,9 +11,10 @@ type node = {
    node_name : string ;
 } ;;
 
-type division = {
-  division_name : string ; 
-} ;;
+type division = 
+     Bulk_result_by_definition 
+   | List_by_rangeset of (int * int) list
+   | Breadth_n_size_by_two ;;  
 
 type node_system = {
   width_and_scrappers : int * (int list) ;
