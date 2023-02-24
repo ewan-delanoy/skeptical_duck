@@ -18,6 +18,6 @@ type division = {
 type node_system = {
   width_and_scrappers : int * (int list) ;
   divisions_successively_made : (node * division * node list) list ;
-  nodes_successively_created : (node * division * node) list ;
-  undivided_nodes : (node * division * node) list ; 
+  nodes_successively_created : (node * ((division * node) option) ) list ;
+  undivided_nodes : (node * ((division * node) option) ) list ; 
 } ;; 

@@ -18,8 +18,8 @@ type division = Sz3p_types.division = {
 type node_system = Sz3p_types.node_system = {
   width_and_scrappers : int * (int list) ;
   divisions_successively_made : (node * division * node list) list ;
-  nodes_successively_created : (node * division * node) list ;
-  undivided_nodes : (node * division * node) list ; 
+  nodes_successively_created : (node * ((division * node) option) ) list ;
+  undivided_nodes : (node * ((division * node) option) ) list ; 
 } ;; 
 
 
@@ -56,7 +56,7 @@ let add_triple_to_nodes_successively_created syst_ref triple =
 let remove_from_undivides_nodes syst_ref old_node = 
   syst_ref:={(!syst_ref) with 
   undivided_nodes =
-  List.filter (fun (node1,_,_)->
+  List.filter (fun (node1,_)->
     node1 <> old_node
   ) ((!syst_ref).undivided_nodes)
  } ;; 
@@ -71,11 +71,11 @@ let add_one_more_division old_syst old_node division new_nodes =
    let _ = 
     (add_triple_to_divisions_successively_made syst_ref (old_node,division,new_nodes);
      List.iter (fun new_node ->
-      add_triple_to_nodes_successively_created syst_ref (new_node,division,old_node)
+      add_triple_to_nodes_successively_created syst_ref (new_node,Some(division,old_node))
     ) new_nodes;
     remove_from_undivides_nodes syst_ref old_node;
     List.iter (fun new_node ->
-      add_triple_to_undivided_nodes syst_ref (new_node,division,old_node)
+      add_triple_to_undivided_nodes syst_ref (new_node,Some(division,old_node))
     ) new_nodes;
     )
   in 
@@ -93,13 +93,12 @@ let add_typical_division old_syst old_node appendix =
   add_one_more_division old_syst old_node new_division [new_node]  ;; 
 
 let create_root_node (i,j) root_node =
-    let empty_node = node_of_string "" in  
-         {
-          width_and_scrappers = (i,j) ;
-          divisions_successively_made = [];
-          nodes_successively_created=[(root_node,no_division,empty_node)];
-          undivided_nodes=[(root_node,no_division,empty_node)]; 
-         }
+  {
+    width_and_scrappers = (i,j) ;
+    divisions_successively_made = [];
+    nodes_successively_created=[(root_node,None)];
+    undivided_nodes=[(root_node,None)]; 
+  }
   ;;
 
 let decompose_list_node_according_to_rangeset old_syst old_node ranges = 
@@ -121,7 +120,7 @@ let cut_breadth_size_node_in_two old_syst old_node =
 
 let cut_all_breadth_size_nodes_in_two old_syst () = 
   let undivided_nodes = 
-    Image.image (fun (node,_,_)->node) (old_syst.undivided_nodes) in 
+    Image.image (fun (node,_)->node) (old_syst.undivided_nodes) in 
   let syst_ref = ref old_syst in   
   let _ =List.iter (
     fun node->
