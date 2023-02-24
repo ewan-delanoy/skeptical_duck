@@ -118,7 +118,7 @@ let cut_breadth_size_node_in_two old_syst old_node =
   let syst1 = add_typical_division old_syst old_node "upper_half" in 
   add_typical_division syst1 old_node "lower_half" ;; 
 
-let cut_all_breadth_size_nodes_in_two old_syst () = 
+let cut_all_breadth_size_nodes_in_two old_syst = 
   let undivided_nodes = 
     Image.image (fun (node,_)->node) (old_syst.undivided_nodes) in 
   let syst_ref = ref old_syst in   
