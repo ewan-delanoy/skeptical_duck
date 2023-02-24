@@ -25,10 +25,6 @@ type node_system = Sz3p_types.node_system = {
 
 let node_eq nd1 nd2 = ( (nd1.node_name) = (nd2.node_name) ) ;; 
 
-let no_division = {
-  division_name = "no_division"
-} ;; 
-
 let tripartite_division = {
   division_name = "tripartite_division"
 } ;; 
