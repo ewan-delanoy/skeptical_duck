@@ -16,6 +16,7 @@ type division = Sz3p_types.division = {
 } ;;
 
 type node_system = Sz3p_types.node_system = {
+  width_and_scrappers : int * (int list) ;
   divisions_successively_made : (node * division * node list) list ;
   nodes_successively_created : (node * division * node) list ;
   undivided_nodes : (node * division * node) list ; 
@@ -29,12 +30,13 @@ let no_division = {
 } ;; 
 
 let tripartite_division = {
-  division_name = "no_division"
+  division_name = "tripartite_division"
 } ;; 
 
 let node_of_string s = { node_name = s } ;; 
 
-let empty_node_system = {
+let empty_node_system (i,j) = {
+  width_and_scrappers = (i,j) ;
   divisions_successively_made = [] ;
   nodes_successively_created = [] ;
   undivided_nodes = [] ; 
@@ -90,9 +92,10 @@ let add_typical_division old_syst old_node appendix =
   } in 
   add_one_more_division old_syst old_node new_division [new_node]  ;; 
 
-let create_root_node root_node =
+let create_root_node (i,j) root_node =
     let empty_node = node_of_string "" in  
          {
+          width_and_scrappers = (i,j) ;
           divisions_successively_made = [];
           nodes_successively_created=[(root_node,no_division,empty_node)];
           undivided_nodes=[(root_node,no_division,empty_node)]; 
@@ -128,7 +131,7 @@ let cut_all_breadth_size_nodes_in_two old_syst () =
 
 let node1 = node_of_string "whole" ;;
 
-let example=create_root_node node1;;     
+let example=create_root_node (1,[]) node1;;     
 
 let node2 = node_of_string "superficial_result" ;;
 let node3 = node_of_string "selected_solutions" ;;
