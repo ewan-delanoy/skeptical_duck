@@ -11,7 +11,7 @@ type node = Sz3p_types.node ={
    node_name : string ;
 } ;;
 
-type division = Sz3p_types.division = 
+type upwards_division = Sz3p_types.upwards_division = 
      Bulk_result_by_definition 
    | List_by_rangeset of (int * int) list
    | Breadth_n_size_by_two ;;
@@ -19,9 +19,9 @@ type division = Sz3p_types.division =
 
 type node_system = Sz3p_types.node_system = {
   width_and_scrappers : int * (int list) ;
-  divisions_successively_made : (node * division * node list) list ;
-  nodes_successively_created : (node * ((division * node) option) ) list ;
-  undivided_nodes : (node * ((division * node) option) ) list ; 
+  divisions_successively_made : (node * upwards_division * node list) list ;
+  nodes_successively_created : (node * ((upwards_division * node) option) ) list ;
+  undivided_nodes : (node * ((upwards_division * node) option) ) list ; 
 } ;; 
 
 

@@ -1,12 +1,288 @@
 (************************************************************************************************************************
-Snippet 117 : 
+Snippet 118 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 (************************************************************************************************************************
-Snippet 116 : 
+Snippet 117 : Interpolation in {0,1}^n 
 ************************************************************************************************************************)
+
+(*
+#require"zarith";;
+
+#install_printer Z.pp_print ;; 
+*)
+
+let i_order = Total_ordering.for_integers ;;
+let i_intersect  = Ordered.intersect i_order ;;
+let i_merge  = Ordered.merge i_order ;;
+let i_setminus  = Ordered.setminus i_order ;;
+let i_sort  = Ordered.sort i_order ;;
+let i_is_included_in = Ordered.is_included_in i_order;;
+
+let il_order = Total_ordering.silex_compare  i_order ;;
+let il_sort  = Ordered.sort il_order ;;
+
+module Z = struct 
+  type t = int ;;
+  let abs x = x ;;
+  let add x y = x + y;;
+  let mul x y = x * y;;
+  let div x y = x * y;;
+  let fac x = x ;;
+  let zero = 0 ;; 
+  let one = 1 ;;
+  let minus_one = (-1) ;; 
+  let of_int x = x;;
+  let equal x y = (x=y) ;; 
+  let lt x y = (x<y) ;; 
+  let neg x = x;;
+end;;  
+
+let z_order =((fun x y ->
+   if Z.lt x y then Total_ordering_result_t.Lower else 
+   if Z.lt y x then Total_ordering_result_t.Greater else  
+    Total_ordering_result_t.Equal): Z.t Total_ordering_t.t) ;;
+
+let z_intersect  = Ordered.intersect z_order ;;    
+let z_sort  = Ordered.sort z_order ;;
+
+
+let product_on_interval = Memoized.recursive(fun old_f (i,j,accu)->
+    if i>j then accu else old_f(i,j-1,Z.mul (Z.of_int j) accu)
+) ;;
+
+let early_binomial = Memoized.make(fun (n,p)->
+  Z.div(product_on_interval (n-p+1,n,Z.one))(Z.fac p)      
+) ;; 
+
+let uncurried_binomial = Memoized.make(fun (n,p)->
+  if 2*p<=n 
+  then early_binomial (n,p)      
+  else early_binomial (n,n-p) 
+) ;; 
+
+let binomial n p = uncurried_binomial (n,p) ;; 
+
+let alternating_sign j = if j mod 2 = 0 then Z.one else Z.minus_one ;; 
+
+let z_fold_sum l = List.fold_left Z.add Z.zero l ;; 
+
+let z_minimize_it f=function
+[]->failwith("min on empty set undefined")
+|x::y->
+ let rec minimize_it0=(function
+  (current_candidate,current_value,da_ober)->match da_ober with
+  []->(current_candidate,current_value)
+  |a::peurrest->let va=f(a) in
+                if (Z.lt va current_value)
+				then minimize_it0(a,va,peurrest)
+				else minimize_it0(current_candidate,current_value,peurrest)
+ ) 
+in
+ minimize_it0(x,f(x),y);;
+
+let tf1 n j = 
+   Z.mul (alternating_sign(j-1))
+     (binomial(n-1)(j-1)) ;; 
+
+
+let is_uniform l = let h = List.hd l in  List.for_all (fun x-> h=x) l;;
+
+let main_image shed indices =
+  (* n = List.length arr *)
+   z_fold_sum(Image.image (fun k->List.nth shed (k-1)) indices);; 
+ 
+let neighbors n l =
+   let temp1 = Three_parts.complemented_points l 
+   and outside_l = i_setminus (Int_range.range 1 n) l in 
+   let temp2 = Image.image (
+     fun (p,others)->
+       Image.image (fun q->i_merge [q] others) outside_l 
+   ) temp1 in 
+   il_sort(List.flatten temp2) ;; 
+   
+(* neighbors 25 [1;2;3;4;5] ;; *)
+
+let interesting_modifications (n,shed) (indices,img) =
+  let close_neighbors = neighbors n indices in 
+  List.filter_map (
+     fun indices2 ->
+     let new_img = main_image shed indices2 in 
+     if Z.lt (Z.abs new_img) (Z.abs img)
+     then Some(indices2,new_img)
+     else None  
+  ) close_neighbors ;;
+
+let rec iterator (n,shed,indices,img) =
+    let temp1 = interesting_modifications (n,shed) (indices,img) in 
+    if temp1=[] 
+    then (indices,img)
+    else 
+    let ((indices2,_),img2) = z_minimize_it snd temp1 in 
+    iterator (n,shed,indices2,img2) ;; 
+
+let tf2 =Memoized.make(fun n -> Int_range.scale (tf1 n) 1 n );; 
+
+let tf3 = Memoized.make(fun (n,d)->
+  let temp1 = tf2 n in 
+  Int_range.scale (fun k->List.nth temp1 ((k*d) mod n) ) 1 n 
+) ;; 
+
+let seed n r d= 
+  let temp1 = Int_range.range 1 r 
+  and temp2 = tf3(n,d) in 
+  (n,temp2,temp1,main_image temp2 temp1);; 
+
+let ff n r d= iterator (seed n r d) ;; 
+
+let u1 = tf2 25 ;; 
+let u1_pos = Int_range.scale (fun t->List.nth u1 (2*t)) 0 12 ;;  
+let u1_neg =  Int_range.scale (fun t->(Z.neg(List.nth u1 (2*t-1)))) 1 12 ;;  
+
+let s1_pos=z_sort u1_pos ;; 
+let s2_pos=z_sort(Image.image (fun (a1,a2)->z_fold_sum [a1;a2])
+   (Uple.list_of_pairs u1_pos)) ;;
+let s3_pos=z_sort(Image.image (fun (a1,a2,a3)->z_fold_sum [a1;a2;a3])
+(Uple.list_of_triples u1_pos)) ;;
+let s4_pos=z_sort(Image.image (fun (a1,a2,a3,a4)->z_fold_sum [a1;a2;a3;a4])
+(Uple.list_of_fourtuples u1_pos)) ;;
+
+
+let s1_neg=z_sort u1_neg ;; 
+let s2_neg=z_sort(Image.image (fun (a1,a2)->z_fold_sum [a1;a2])
+   (Uple.list_of_pairs u1_neg)) ;;
+let s3_neg=z_sort(Image.image (fun (a1,a2,a3)->z_fold_sum [a1;a2;a3])
+(Uple.list_of_triples u1_neg)) ;;
+let s4_neg=z_sort(Image.image (fun (a1,a2,a3,a4)->z_fold_sum [a1;a2;a3;a4])
+(Uple.list_of_fourtuples u1_neg)) ;;
+
+
+let g1 = z_intersect s1_pos s4_neg ;; 
+let g2 = z_intersect s2_pos s3_neg ;;
+let g3 = z_intersect s3_pos s2_neg ;;
+let g4 = z_intersect s4_pos s1_neg ;;
+
+let test (a1,a2,a3) = List.for_all (fun x->List.mem x [0;1])
+[a1 + (-3*a2 + 3*a3); 3*a1 + (-8*a2 + 6*a3); 6*a1 + (-15*a2 + 10*a3)];;
+let res1 = List.filter test (Cartesian.cube [0;1]) ;; 
+
+let v0 = [1;-24] ;; 
+let v1 = v0 @ v0 ;; 
+let v2 = Listennou.power_set v1 ;; 
+let v3 = i_sort (Image.image Basic.fold_sum v2) ;; 
+
+let v0 = [1;-24;276] ;; 
+let v1 = v0 @ v0 ;; 
+let v2 = Listennou.power_set v1 ;; 
+let v3 = i_sort (Image.image Basic.fold_sum v2) ;; 
+
+
+
+
+
+(************************************************************************************************************************
+Snippet 116 : Interpolation in {0,1}^n 
+************************************************************************************************************************)
+
+(*
+#require"zarith";;
+
+#install_printer Z.pp_print ;; 
+*)
+
+module Z = struct 
+  let abs x = x ;;
+  let add x y = x + y;;
+  let mul x y = x * y;;
+  let div x y = x * y;;
+  let fac x = x ;;
+  let zero = 0 ;; 
+  let one = 1 ;;
+  let minus_one = (-1) ;; 
+  let of_int x = x;;
+  let equal x y = (x=y) ;; 
+  let lt x y = (x<y) ;; 
+end;;  
+
+let product_on_interval = Memoized.recursive(fun old_f (i,j,accu)->
+    if i>j then accu else old_f(i,j-1,Z.mul (Z.of_int j) accu)
+) ;;
+
+let early_binomial = Memoized.make(fun (n,p)->
+  Z.div(product_on_interval (n-p+1,n,Z.one))(Z.fac p)      
+) ;; 
+
+let uncurried_binomial = Memoized.make(fun (n,p)->
+  if 2*p<=n 
+  then early_binomial (n,p)      
+  else early_binomial (n,n-p) 
+) ;; 
+
+let binomial n p = uncurried_binomial (n,p) ;; 
+
+let alternating_sign j = if j mod 2 = 0 then Z.one else Z.minus_one ;; 
+
+let z_fold_sum l = List.fold_left Z.add Z.zero l ;; 
+
+let z_minimize_it f=function
+[]->failwith("min on empty set undefined")
+|x::y->
+ let rec minimize_it0=(function
+  (current_candidate,current_value,da_ober)->match da_ober with
+  []->(current_candidate,current_value)
+  |a::peurrest->let va=f(a) in
+                if (Z.lt va current_value)
+				then minimize_it0(a,va,peurrest)
+				else minimize_it0(current_candidate,current_value,peurrest)
+ ) 
+in
+ minimize_it0(x,f(x),y);;
+
+let tf1 n j = 
+   Z.mul (alternating_sign(j-1))
+     (binomial(n-1)(j-1)) ;; 
+
+let tf2 =Memoized.make(fun n -> Int_range.scale (tf1 n) 1 n );; 
+
+let is_uniform l = let h = List.hd l in  List.for_all (fun x-> h=x) l;;
+
+let main_image n arr =
+  (* n = List.length arr *)
+   let temp1 = List.combine arr (tf2 n) in 
+   z_fold_sum(Image.image (fun (v,z_nbr)->
+      if v=0 then Z.zero else z_nbr
+    ) temp1);;
+   
+let try_modify_at_index (n,arr,v_arr) j = 
+    let indexed_arr = Int_range.index_everything arr in 
+    let modified_arr = Image.image (fun (k,v)->
+       if k=j then 1-v else v
+      ) indexed_arr in 
+    if is_uniform modified_arr then None else 
+    let new_v_arr= main_image n modified_arr in 
+    if Z.lt (Z.abs new_v_arr) (Z.abs v_arr)
+    then Some(modified_arr,new_v_arr)
+    else None ;;        
+
+let interesting_modifications (n,arr,v_arr) =
+   List.filter_map (try_modify_at_index (n,arr,v_arr)) (Int_range.range 1 n) ;;
+
+let rec iterator (n,arr,v_arr) =
+    let temp1 = interesting_modifications (n,arr,v_arr) in 
+    if temp1=[] 
+    then (arr,v_arr)
+    else 
+    let ((arr2,_),v_arr2) = z_minimize_it snd temp1 in 
+    iterator (n,arr2,v_arr2) ;; 
+
+let seed n = 
+  let temp1 = Int_range.scale (fun k->if k=(n/2) then 1 else 0) 1 n in 
+  (n,temp1,main_image n temp1);; 
+
+let ff n = iterator (seed n) ;; 
+
 
 (************************************************************************************************************************
 Snippet 115 : Musings on primes of the form 5p+2
@@ -606,8 +882,9 @@ end ;;
 *)
 
 (*
-#install_printer Q.pp_print ;; 
+#install_printer Z.pp_print ;; 
 *)
+
 
 let i_order = Total_ordering.for_integers ;; 
 let i_setminus = Ordered.setminus Total_ordering.for_integers ;;
