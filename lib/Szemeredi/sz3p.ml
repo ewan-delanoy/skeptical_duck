@@ -155,11 +155,12 @@ let cut_all_breadth_size_nodes_in_two old_syst =
 
 exception Apply_division_exn of node * downwards_division ;; 
 
-let apply_division syst node d_division =
+let apply_division syst node d_division = 
+   let pair = (d_division,node) in 
    match List.find_map  (
-     fun (_node1,opt1) -> match opt1 with 
+     fun (node1,opt1) -> match opt1 with 
       None -> None
-     |Some(div1,node2) -> if div1=d_division then Some node2 else None
+     |Some(div1,node2) -> if (div1,node2)=pair then Some node1 else None
    ) syst.nodes_successively_created with 
    None -> raise(Apply_division_exn(node,d_division))
    |Some(node3) -> node3 ;;    
@@ -176,8 +177,10 @@ let (example2,l_nodes2) = add_two_sided_division example origin_node
    Bulk_result_to_solution_list;
    Bulk_result_to_qualified_point_list] ;; 
 
+let qlist_node =
+   apply_division example2 origin_node Bulk_result_to_qualified_point_list ;;    
+
 let (example3,l_nodes3) = decompose_list_node_according_to_rangeset 
-      example2 (List.nth l_nodes2 2) [(1,1);(2,2);(3,100)] ;;
-
-
+      example2 qlist_node [(1,1);(2,2);(3,100)] ;;
+      
 let example4 = cut_all_breadth_size_nodes_in_two example3 ;; 
