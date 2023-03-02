@@ -20,7 +20,8 @@ type upwards_division =
 type downwards_division = 
    Bulk_result_to_superficial_result
  | Bulk_result_to_solution_list
- | Bulk_result_to_qualified_point_list    
+ | Bulk_result_to_qualified_point_list   
+ | List_to_length  
  | List_to_range of (int * int)
  | Breadth_n_size_to_upper_half
  | Breadth_n_size_to_lower_half ;;  
@@ -29,6 +30,6 @@ type downwards_division =
 type node_system = {
   width_and_scrappers : int * (int list) ;
   divisions_successively_made : (node * upwards_division * node list) list ;
-  nodes_successively_created : (node * ((upwards_division * node) option) ) list ;
-  undivided_nodes : (node * ((upwards_division * node) option) ) list ; 
+  nodes_successively_created : (node * ((downwards_division * node) option) ) list ;
+  undivided_nodes : (node * ((downwards_division * node) option) ) list ; 
 } ;; 
