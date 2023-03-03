@@ -126,7 +126,8 @@ let add_two_sided_division old_syst old_node d_divisions =
 
 
 
-let create_root_node (width,scrappers) root_node =
+let create_root_node (width,scrappers) = 
+  let root_node = node_of_string "whole" in 
   {
     width_and_scrappers = (width,scrappers) ;
     divisions_successively_made = [];
@@ -168,9 +169,20 @@ let apply_division syst node d_division =
 let apply_divisions syst node d_divisions =
     List.fold_left (apply_division syst) node d_divisions ;; 
 
-let origin_node = node_of_string "whole" ;;
+exception Get_origin_exn ;; 
 
-let example=create_root_node (1,[]) origin_node;;     
+let get_origin syst = 
+      match List.find_map  (
+        fun (node1,opt1) -> match opt1 with 
+         None -> Some node1
+        |Some(_,_) -> None
+      ) syst.nodes_successively_created with 
+      None -> raise(Get_origin_exn)
+      |Some(node2) -> node2 ;;   
+
+let example=create_root_node (1,[]) ;;     
+
+let origin_node = get_origin example ;;
 
 let (example2,l_nodes2) = add_two_sided_division example origin_node 
   [Bulk_result_to_superficial_result;
@@ -182,5 +194,5 @@ let qlist_node =
 
 let (example3,l_nodes3) = decompose_list_node_according_to_rangeset 
       example2 qlist_node [(1,1);(2,2);(3,100)] ;;
-      
+
 let example4 = cut_all_breadth_size_nodes_in_two example3 ;; 
