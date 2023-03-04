@@ -175,6 +175,18 @@ let apply_division syst node d_division =
 let apply_divisions syst node d_divisions =
     List.fold_left (apply_division syst) node d_divisions ;; 
 
+exception Get_producing_division_exn ;; 
+
+let get_producing_division syst node = 
+      match List.find_map  (
+        fun (node1,opt1) -> 
+          if node1 = node 
+          then opt1  
+          else None
+      ) syst.nodes_successively_created with 
+      None -> raise(Get_producing_division_exn)
+      |Some(div2,node2) -> (div2,node2) ;;   
+
 exception Get_origin_exn ;; 
 
 let get_origin syst = 
