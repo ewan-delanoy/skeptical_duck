@@ -1,8 +1,68 @@
 (************************************************************************************************************************
-Snippet 118 : 
+Snippet 119 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+(************************************************************************************************************************
+Snippet 118 : Doing the accounts 
+************************************************************************************************************************)
+
+let data = 
+  [
+     2574,"Keus";
+     8400,"Tren A&M";
+     1600,"Tren Ewan";
+     1820,"Tren Ewan";
+     2500,"Tren Ewan";
+     1050,"Pakad Usana Mamm";
+     1180,"Pesk";
+     1212,"Keus";
+     1279,"Kig";
+     1184,"Amann";
+     818,"Pato";
+     1750,"Pesk";
+     6274,"Kig";
+     2000,"Bara";
+     1976,"Pesk";
+     2336,"Kig";
+     860,"Pesk";
+     675,"Chalotez da hadan";
+     526,"Kig";
+     1727,"Pesk";
+     561,"Pato";
+     1570,"Edeier";
+     1297,"Keus";
+     1190,"Kig";
+     2659,"Gwin";
+     856,"Produioù evit netaat";
+     1640,"Kig";
+     2263,"Kig";
+     1013,"Chalotez da hadan";
+     1000,"Pesk";
+     1149,"Pesk";
+     2656,"Kig";
+     835,"Produioù evit netaat";
+     2045,"Planioù pato";
+     1200,"Pesk";
+  ] ;; 
+
+let total = Basic.fold_sum (Image.image fst data) ;;   
+
+let labels = Ordered.sort Total_ordering.lex_for_strings 
+(Image.image snd data) ;; 
+
+let data2 = Image.image (
+  fun lbl -> (lbl,List.filter_map (fun (x,y)->if y=lbl then Some x else None) data)
+) labels ;;
+
+let data3 = Image.image (
+  fun (lbl,prices) -> (Basic.fold_sum prices,lbl) )
+data2 ;;
+
+let data4 = (List.rev(Ordered.sort Total_ordering.standard2 data3)) ;; 
+
+let total2 = Basic.fold_sum (Image.image fst data3) ;;   
 
 (************************************************************************************************************************
 Snippet 117 : Interpolation in {0,1}^n 
@@ -192,6 +252,7 @@ Snippet 116 : Interpolation in {0,1}^n
 #install_printer Z.pp_print ;; 
 *)
 
+module Container116 = struct
 module Z = struct 
   let abs x = x ;;
   let add x y = x + y;;
@@ -283,6 +344,7 @@ let seed n =
 
 let ff n = iterator (seed n) ;; 
 
+end ;;
 
 (************************************************************************************************************************
 Snippet 115 : Musings on primes of the form 5p+2
@@ -856,6 +918,8 @@ Coherent_pdf.implode ("p","") ;;
 (************************************************************************************************************************
 Snippet 106 : Musing on discrepancy problem
 ************************************************************************************************************************)
+
+module Container106 = struct 
 module Z = struct
 
 type t = Big of int ;;
@@ -996,6 +1060,8 @@ let gg n = List.filter_map
 let tt n =  (Walker.descendants(List.hd(ff n))=[]) ;;  
 
 let z1 = List.filter tt (Int_range.range 1 2000) ;;
+
+end ;; 
 
 (************************************************************************************************************************
 Snippet 105 : Examples of "translating" ppx_deriving into usual OCaml code

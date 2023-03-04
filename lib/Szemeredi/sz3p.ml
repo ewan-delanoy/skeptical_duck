@@ -127,14 +127,20 @@ let add_two_sided_division old_syst old_node d_divisions =
 
 
 let create_root_node (width,scrappers) = 
-  let root_node = node_of_string "whole" in 
+  let s_scrappers = (
+    if scrappers = []
+    then "empty"
+    else "s"^(String.concat "_" (Image.image string_of_int scrappers))^"s"
+  ) in 
+  let node_name =
+     "f"^(string_of_int width)^"_"^s_scrappers in
+  let root_node = node_of_string node_name in 
   {
     width_and_scrappers = (width,scrappers) ;
     divisions_successively_made = [];
     nodes_successively_created=[(root_node,None)];
     undivided_nodes=[(root_node,None)]; 
-  }
-  ;;
+  } ;;
 
 let decompose_list_node_according_to_rangeset old_syst old_node ranges = 
   let d_divisions = List_to_length :: (Image.image (fun (x,y)->List_to_range(x,y) ) ranges) in 
