@@ -2,14 +2,12 @@
 
 #use"lib/Szemeredi/sz3p.ml";;
 
-We make an exception to the rule of not having numbers in module names.
+We make an exception here to the rule of not having numbers in module names.
 Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
 
 *)
 
-type node = Sz3p_types.node ={
-   node_name : string ;
-} ;;
+
 
 type upwards_division = Sz3p_types.upwards_division = 
      Bulk_result_by_definition 
@@ -25,18 +23,15 @@ type downwards_division = Sz3p_types.downwards_division =
  | Breadth_n_size_to_upper_half
  | Breadth_n_size_to_lower_half ;;  
 
-type node_system = Sz3p_types.node_system = {
-  width_and_scrappers : int * (int list) ;
-  divisions_successively_made : (node * upwards_division * node list) list ;
-  nodes_successively_created : (node * ((downwards_division * node) option) ) list ;
-  undivided_nodes : (node * ((downwards_division * node) option) ) list ; 
-} ;; 
+ type node_name = string ;;
 
+ type node_system = Sz3p_types.node_system = {
+   width_and_scrappers : int * (int list) ;
+   divisions_successively_made : (node_name * upwards_division * node_name list) list ;
+   nodes_successively_created : (node_name * ((downwards_division * node_name) option) ) list ;
+   undivided_nodes : (node_name * ((downwards_division * node_name) option) ) list ; 
+ } ;; 
 
-let node_eq nd1 nd2 = ( (nd1.node_name) = (nd2.node_name) ) ;; 
-
-
-let node_of_string s = { node_name = s } ;; 
 
 let empty_node_system (i,j) = {
   width_and_scrappers = (i,j) ;
@@ -99,14 +94,11 @@ let upwards_version l = match List.hd l with
 
 
 let add_two_sided_division old_syst old_node d_divisions = 
-   let old_name = old_node.node_name in  
    let u_division = upwards_version d_divisions 
    and pairs = Image.image (
     fun d_division ->
        let appendix = appendix_for_downwards_division d_division in 
-       let new_node = {
-          node_name = old_name^"_"^ appendix 
-        } in 
+       let new_node =  old_node^"_"^ appendix  in 
         (d_division,new_node) 
    ) d_divisions in 
    let new_nodes = Image.image snd pairs in 
@@ -132,9 +124,7 @@ let create_root_node (width,scrappers) =
     then "empty"
     else "s"^(String.concat "_" (Image.image string_of_int scrappers))^"s"
   ) in 
-  let node_name =
-     "f"^(string_of_int width)^"_"^s_scrappers in
-  let root_node = node_of_string node_name in 
+  let root_node = "f"^(string_of_int width)^"_"^s_scrappers in
   {
     width_and_scrappers = (width,scrappers) ;
     divisions_successively_made = [];
@@ -160,7 +150,7 @@ let cut_all_breadth_size_nodes_in_two old_syst =
   undivided_nodes in 
   !syst_ref ;;
 
-exception Apply_division_exn of node * downwards_division ;; 
+exception Apply_division_exn of node_name * downwards_division ;; 
 
 let apply_division syst node d_division = 
    let pair = (d_division,node) in 
@@ -175,7 +165,7 @@ let apply_division syst node d_division =
 let apply_divisions syst node d_divisions =
     List.fold_left (apply_division syst) node d_divisions ;; 
 
-exception Get_producing_division_exn ;; 
+exception Get_producing_division_exn of node_name ;; 
 
 let get_producing_division syst node = 
       match List.find_map  (
@@ -184,7 +174,7 @@ let get_producing_division syst node =
           then opt1  
           else None
       ) syst.nodes_successively_created with 
-      None -> raise(Get_producing_division_exn)
+      None -> raise(Get_producing_division_exn(node))
       |Some(div2,node2) -> (div2,node2) ;;   
 
 exception Get_origin_exn ;; 
@@ -197,6 +187,11 @@ let get_origin syst =
       ) syst.nodes_successively_created with 
       None -> raise(Get_origin_exn)
       |Some(node2) -> node2 ;;   
+
+(*      
+let code_for_nonomptimized syst node =
+   "let "^node^" =" ;; 
+*)
 
 let example=create_root_node (1,[]) ;;     
 
