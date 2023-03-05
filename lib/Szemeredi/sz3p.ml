@@ -25,11 +25,19 @@ type downwards_division = Sz3p_types.downwards_division =
 
  type node_name = string ;;
 
+ type domain_kind = Sz3p_types.domain_kind = 
+ Full_two_dimensional
+|Upper_half_two_dimensional
+|Lower_half_two_dimensional 
+|Upper_half_one_dimensional of int 
+|Lower_half_one_dimensional of int ;; 
+
  type node_system = Sz3p_types.node_system = {
    width_and_scrappers : int * (int list) ;
    divisions_successively_made : (node_name * upwards_division * node_name list) list ;
    nodes_successively_created : (node_name * ((downwards_division * node_name) option) ) list ;
    undivided_nodes : (node_name * ((downwards_division * node_name) option) ) list ; 
+   domains_for_nodes : (node_name * domain_kind) list ; 
  } ;; 
 
 
@@ -38,6 +46,7 @@ let empty_node_system (i,j) = {
   divisions_successively_made = [] ;
   nodes_successively_created = [] ;
   undivided_nodes = [] ; 
+  domains_for_nodes = [] ;
 } ;; 
 
 let add_triple_to_divisions_successively_made syst_ref triple =
@@ -63,6 +72,7 @@ let remove_from_undivides_nodes syst_ref old_node =
   undivided_nodes=
    triple::((!syst_ref).undivided_nodes)
  } ;; 
+
 
 let appendix_for_downwards_division = function 
   Bulk_result_to_superficial_result -> "superficial_result"
@@ -130,6 +140,7 @@ let create_root_node (width,scrappers) =
     divisions_successively_made = [];
     nodes_successively_created=[(root_node,None)];
     undivided_nodes=[(root_node,None)]; 
+    domains_for_nodes=[root_node,Full_two_dimensional];
   } ;;
 
 let decompose_list_node_according_to_rangeset old_syst old_node ranges = 

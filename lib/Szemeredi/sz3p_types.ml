@@ -37,4 +37,5 @@ type node_system = {
   divisions_successively_made : (node_name * upwards_division * node_name list) list ;
   nodes_successively_created : (node_name * ((downwards_division * node_name) option) ) list ;
   undivided_nodes : (node_name * ((downwards_division * node_name) option) ) list ; 
+  domains_for_nodes : (node_name * domain_kind) list ; 
 } ;; 
