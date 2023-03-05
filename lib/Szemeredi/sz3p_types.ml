@@ -25,6 +25,13 @@ type downwards_division =
 
 type node_name =  string ;;
 
+type domain_kind =
+   Full_two_dimensional
+  |Upper_half_two_dimensional
+  |Lower_half_two_dimensional 
+  |Upper_half_one_dimensional of int 
+  |Lower_half_one_dimensional of int ;; 
+
 type node_system = {
   width_and_scrappers : int * (int list) ;
   divisions_successively_made : (node_name * upwards_division * node_name list) list ;
