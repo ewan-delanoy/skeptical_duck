@@ -118,6 +118,7 @@ let deduce_domain l = match List.hd l with
 
 let add_two_sided_division old_syst old_node d_divisions = 
    let u_division = upwards_version d_divisions 
+   and dom = deduce_domain d_divisions 
    and pairs = Image.image (
     fun d_division ->
        let appendix = appendix_for_downwards_division d_division in 
@@ -135,6 +136,7 @@ let add_two_sided_division old_syst old_node d_divisions =
     List.iter (fun (d_division,new_node) ->
       add_triple_to_undivided_nodes syst_ref (new_node,Some(d_division,old_node))
     ) pairs;
+    add_pair_to_domains_for_nodes syst_ref (old_node,dom)
     )
   in 
   (!syst_ref,new_nodes);;
