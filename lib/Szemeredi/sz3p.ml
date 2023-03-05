@@ -107,6 +107,14 @@ let upwards_version l = match List.hd l with
 | Breadth_n_size_to_upper_half 
 | Breadth_n_size_to_lower_half -> Breadth_n_size_by_two ;;  
 
+let deduce_domain l = match List.hd l with 
+  Bulk_result_to_superficial_result 
+| Bulk_result_to_solution_list 
+| Bulk_result_to_qualified_point_list   
+| List_to_length 
+| List_to_range (_,_) -> Full_two_dimensional
+| Breadth_n_size_to_upper_half -> Upper_half_two_dimensional
+| Breadth_n_size_to_lower_half -> Lower_half_two_dimensional ;; 
 
 let add_two_sided_division old_syst old_node d_divisions = 
    let u_division = upwards_version d_divisions 
