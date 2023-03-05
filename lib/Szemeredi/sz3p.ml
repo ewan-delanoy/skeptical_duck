@@ -72,6 +72,11 @@ let remove_from_undivides_nodes syst_ref old_node =
   undivided_nodes=
    triple::((!syst_ref).undivided_nodes)
  } ;; 
+ let add_pair_to_domains_for_nodes syst_ref pair =
+  syst_ref:={(!syst_ref) with 
+  domains_for_nodes=
+   pair::((!syst_ref).domains_for_nodes)
+ } ;; 
 
 
 let appendix_for_downwards_division = function 
