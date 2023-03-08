@@ -7,20 +7,84 @@ Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
 
 *)
 
+type width_and_scrappers = int * (int list) ;; 
+
+type subfunction_without_width_and_scrappers = 
+  Sz3p_types.subfunction_without_width_and_scrappers = 
+    Whole 
+   |Superficial_result 
+   |Solution_list 
+   |Qualified_point_list 
+   |Qpl_length
+   |Qpl_interval of int * int 
+   |Sr_upper_half 
+   |Sr_lower_half 
+   |Sl_upper_half 
+   |Sl_lower_half 
+   |Qpll_upper_half  
+   |Qpll_lower_half 
+   |Qpli_upper_half of int * int 
+   |Qpli_lower_half of int * int  ;; 
+
+type subfunction = 
+  subfunction_without_width_and_scrappers * width_and_scrappers ;;   
+
+
+type downwards_division = Sz3p_types.downwards_division = 
+    Bulk_result_to_superficial_result
+  | Bulk_result_to_solution_list
+  | Bulk_result_to_qualified_point_list    
+  | List_to_length 
+  | List_to_range of (int * int)
+  | Breadth_n_size_to_upper_half
+  | Breadth_n_size_to_lower_half ;;  
+
+(*  
+module Downwards_division = struct 
+
+let apply_dd = function 
+   Whole 
+  |Superficial_result 
+  |Solution_list 
+  |Qualified_point_list 
+  |Qpl_length
+  |Qpl_interval (_,_)
+  |Sr_upper_half 
+  |Sr_lower_half 
+  |Sl_upper_half 
+  |Sl_lower_half 
+  |Qpll_upper_half  
+  |Qpll_lower_half 
+  |Qpli_upper_half (_,_) 
+  |Qpli_lower_half (_,_) -> ()  ;; 
+
+let apply_dd_bulk_result_to_superficial_result = function 
+  Whole 
+ |Superficial_result 
+ |Solution_list 
+ |Qualified_point_list 
+ |Qpl_length
+ |Qpl_interval (_,_)
+ |Sr_upper_half 
+ |Sr_lower_half 
+ |Sl_upper_half 
+ |Sl_lower_half 
+ |Qpll_upper_half  
+ |Qpll_lower_half 
+ |Qpli_upper_half (_,_) 
+ |Qpli_lower_half (_,_) -> ()  ;; 
+
+
+end ;;  
+*)
+
+
 (*
 type upwards_division = Sz3p_types.upwards_division = 
      Bulk_result_by_definition 
    | List_by_rangeset of (int * int) list
    | Breadth_n_size_by_two ;;
 
-type downwards_division = Sz3p_types.downwards_division = 
-   Bulk_result_to_superficial_result
- | Bulk_result_to_solution_list
- | Bulk_result_to_qualified_point_list    
- | List_to_length 
- | List_to_range of (int * int)
- | Breadth_n_size_to_upper_half
- | Breadth_n_size_to_lower_half ;;  
 
  type node_name = string ;;
 

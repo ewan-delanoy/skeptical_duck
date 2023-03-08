@@ -28,6 +28,15 @@ type subfunction_without_width_and_scrappers =
 type subfunction = 
   subfunction_without_width_and_scrappers * width_and_scrappers ;;   
 
+type downwards_division = 
+    Bulk_result_to_superficial_result
+  | Bulk_result_to_solution_list
+  | Bulk_result_to_qualified_point_list   
+  | List_to_length  
+  | List_to_range of (int * int)
+  | Breadth_n_size_to_upper_half
+  | Breadth_n_size_to_lower_half ;;  
+
 
 (*
 
@@ -36,15 +45,6 @@ type upwards_division =
    | List_by_rangeset of (int * int) list
    | Breadth_n_size_by_two ;;  
 
-
-type downwards_division = 
-   Bulk_result_to_superficial_result
- | Bulk_result_to_solution_list
- | Bulk_result_to_qualified_point_list   
- | List_to_length  
- | List_to_range of (int * int)
- | Breadth_n_size_to_upper_half
- | Breadth_n_size_to_lower_half ;;  
 
 type node_name =  string ;;
 
