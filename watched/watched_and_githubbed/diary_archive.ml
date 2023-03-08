@@ -914,6 +914,8 @@ let see_indices () = Coherent_pdf.present_indices "p" ;;
 
 Coherent_pdf.implode ("p","") ;; 
   
+Coherent_pdf.workspace_directory := (home ^ "/Downloads/MOM/Suilding_bite") ;;
+
 
 (************************************************************************************************************************
 Snippet 106 : Musing on discrepancy problem
