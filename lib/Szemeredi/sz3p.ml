@@ -7,8 +7,7 @@ Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
 
 *)
 
-
-
+(*
 type upwards_division = Sz3p_types.upwards_division = 
      Bulk_result_by_definition 
    | List_by_rangeset of (int * int) list
@@ -216,7 +215,7 @@ let get_origin syst =
 
 (*      
 let code_for_nonomptimized syst node =
-   "let "^node^" =" ;; 
+   "let "^node^" = " ;; 
 *)
 
 let example=create_root_node (1,[]) ;;     
@@ -235,3 +234,4 @@ let (example3,l_nodes3) = decompose_list_node_according_to_rangeset
       example2 qlist_node [(1,1);(2,2);(3,100)] ;;
 
 let example4 = cut_all_breadth_size_nodes_in_two example3 ;; 
+*)

@@ -7,6 +7,29 @@ Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
 
 *)
 
+type width_and_scrappers = int * (int list) ;; 
+
+type subfunction_without_width_and_scrappers =
+    Whole 
+   |Superficial_result 
+   |Solution_list 
+   |Qualified_point_list 
+   |Qpl_length
+   |Qpl_interval of int * int 
+   |Sr_upper_half 
+   |Sr_lower_half 
+   |Sl_upper_half 
+   |Sl_lower_half 
+   |Qpll_upper_half  
+   |Qpll_lower_half 
+   |Qpli_upper_half of int * int 
+   |Qpli_lower_half of int * int  ;; 
+
+type subfunction = 
+  subfunction_without_width_and_scrappers * width_and_scrappers ;;   
+
+
+(*
 
 type upwards_division = 
      Bulk_result_by_definition 
@@ -39,3 +62,5 @@ type node_system = {
   undivided_nodes : (node_name * ((downwards_division * node_name) option) ) list ; 
   domains_for_nodes : (node_name * domain_kind) list ; 
 } ;; 
+
+*)
