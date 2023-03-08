@@ -26,7 +26,7 @@ type subfunction_without_width_and_scrappers =
    |Qpli_lower_half of int * int  ;; 
 
 type subfunction = 
-  subfunction_without_width_and_scrappers * width_and_scrappers ;;   
+  SF of subfunction_without_width_and_scrappers * width_and_scrappers ;;   
 
 type downwards_division = 
     Bulk_result_to_superficial_result
