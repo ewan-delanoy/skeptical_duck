@@ -7,6 +7,37 @@ Sz3p is short for "Preprocessing for third stab at Szemeredi problem".
 
 *)
 
+
+type node_kind = Sz3p_types.node_kind =
+    Whole 
+    (* depth 1 *)
+   |Superficial_result 
+   |Solution_list 
+   |Qualified_point_list 
+   (* depth 2 *)
+   |Qpl_length
+   |Qpl_interval 
+   (* depth 3 *)  
+   |Sr_upper_half 
+   |Sr_lower_half 
+   |Sl_upper_half 
+   |Sl_lower_half 
+   |Qpll_upper_half  
+   |Qpll_lower_half 
+   |Qpli_upper_half  
+   |Qpli_lower_half 
+   (* depth 4 *)  
+   |Sr_upper_half_atomized 
+   |Sr_lower_half_atomized 
+   |Sl_upper_half_atomized 
+   |Sl_lower_half_atomized 
+   |Qpll_upper_half_atomized  
+   |Qpll_lower_half_atomized 
+   |Qpli_upper_half_atomized  
+   |Qpli_lower_half_atomized ;; 
+
+(*
+
 type width_and_scrappers = int * (int list) ;; 
 
 type subfunction_without_width_and_scrappers = 
@@ -40,11 +71,30 @@ type downwards_division = Sz3p_types.downwards_division =
   | Breadth_n_size_to_upper_half
   | Breadth_n_size_to_lower_half ;;  
 
-(*  
+
 module Downwards_division = struct 
 
-let apply_dd = function 
-   Whole 
+let canonical_decomposition_opt sf = match sf with 
+  Whole -> None 
+ |Superficial_result -> Some(Bulk_result_to_superficial_result,Whole) 
+ |Solution_list -> Some(Bulk_result_to_solution_list,Whole)
+ |Qualified_point_list -> Some(Bulk_result_to_qualified_point_list,Whole)
+ |Qpl_length -> Some(List_to_length,Qualified_point_list)
+ |Qpl_interval (i,j) -> Some(List_to_range(i,j),Qualified_point_list)
+ |Sr_upper_half -> Some(Breadth_n_size_to_upper_half,Superficial_result)
+ |Sr_lower_half -> Some(Breadth_n_size_to_lower_half,Superficial_result)
+ |Sl_upper_half -> Some(Breadth_n_size_to_upper_half,Solution_list)
+ |Sl_lower_half -> Some(Breadth_n_size_to_lower_half,Solution_list)
+ |Qpll_upper_half -> Some(Breadth_n_size_to_upper_half,Qpl_length) 
+ |Qpll_lower_half -> Some(Breadth_n_size_to_lower_half,Qpl_length) 
+ |Qpli_upper_half (i,j) -> Some(Breadth_n_size_to_upper_half,Qpl_interval (i,j)) 
+ |Qpli_lower_half (i,j) -> Some(Breadth_n_size_to_upper_half,Qpl_interval (i,j))  ;; 
+
+exception Apply_downwards_division_exn of downwards_division * subfunction_without_width_and_scrappers ;;
+
+
+let apply_dd_bulk_result_to_superficial_result sf = match sf with 
+   Whole -> Superficial_result
   |Superficial_result 
   |Solution_list 
   |Qualified_point_list 
@@ -57,9 +107,41 @@ let apply_dd = function
   |Qpll_upper_half  
   |Qpll_lower_half 
   |Qpli_upper_half (_,_) 
-  |Qpli_lower_half (_,_) -> ()  ;; 
+  |Qpli_lower_half (_,_) -> raise(Apply_downwards_division_exn(Bulk_result_to_superficial_result,sf))  ;; 
 
-let apply_dd_bulk_result_to_superficial_result = function 
+let apply_dd_bulk_result_to_solution_list sf = match sf with 
+  Whole -> Solution_list
+ |Superficial_result 
+ |Solution_list 
+ |Qualified_point_list 
+ |Qpl_length
+ |Qpl_interval (_,_)
+ |Sr_upper_half 
+ |Sr_lower_half 
+ |Sl_upper_half 
+ |Sl_lower_half 
+ |Qpll_upper_half  
+ |Qpll_lower_half 
+ |Qpli_upper_half (_,_) 
+ |Qpli_lower_half (_,_) -> raise(Apply_downwards_division_exn(Bulk_result_to_solution_list,sf))  ;; 
+
+let apply_dd_bulk_result_to_qualified_point_list sf = match sf with 
+ Whole -> Qualified_point_list
+|Superficial_result 
+|Solution_list 
+|Qualified_point_list 
+|Qpl_length
+|Qpl_interval (_,_)
+|Sr_upper_half 
+|Sr_lower_half 
+|Sl_upper_half 
+|Sl_lower_half 
+|Qpll_upper_half  
+|Qpll_lower_half 
+|Qpli_upper_half (_,_) 
+|Qpli_lower_half (_,_) -> raise(Apply_downwards_division_exn(Bulk_result_to_qualified_point_list,sf))  ;; 
+
+let apply_dd_list_to_length sf = match sf with 
   Whole 
  |Superficial_result 
  |Solution_list 
@@ -73,14 +155,14 @@ let apply_dd_bulk_result_to_superficial_result = function
  |Qpll_upper_half  
  |Qpll_lower_half 
  |Qpli_upper_half (_,_) 
- |Qpli_lower_half (_,_) -> ()  ;; 
+ |Qpli_lower_half (_,_) -> raise(Apply_downwards_division_exn(Bulk_result_to_superficial_result,sf))  ;; 
 
 
 end ;;  
-*)
 
 
-(*
+
+
 type upwards_division = Sz3p_types.upwards_division = 
      Bulk_result_by_definition 
    | List_by_rangeset of (int * int) list
