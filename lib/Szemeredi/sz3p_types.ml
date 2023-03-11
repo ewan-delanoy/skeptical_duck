@@ -36,6 +36,16 @@ type node_kind =
    |Qpli_upper_half_atomized  
    |Qpli_lower_half_atomized ;; 
 
+type division = 
+   Bulk_result_to_superficial_result
+ | Bulk_result_to_solution_list
+ | Bulk_result_to_qualified_point_list   
+ | List_to_length  
+ | List_to_range of (int * int)
+ | Breadth_n_size_to_upper_half
+ | Breadth_n_size_to_lower_half 
+ | Atomize of int ;;  
+
 
 (*
 type width_and_scrappers = int * (int list) ;; 
