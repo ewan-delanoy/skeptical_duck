@@ -36,31 +36,120 @@ type node_kind = Sz3p_types.node_kind =
    |Qpli_upper_half_atomized  
    |Qpli_lower_half_atomized ;; 
 
+let depth = function 
+   Whole -> 0
+   (* depth 1 *)
+  |Superficial_result 
+  |Solution_list 
+  |Qualified_point_list -> 1 
+  (* depth 2 *)
+  |Qpl_length
+  |Qpl_interval -> 2
+  (* depth 3 *)  
+  |Sr_upper_half 
+  |Sr_lower_half 
+  |Sl_upper_half 
+  |Sl_lower_half 
+  |Qpll_upper_half  
+  |Qpll_lower_half 
+  |Qpli_upper_half  
+  |Qpli_lower_half -> 3
+  (* depth 4 *)  
+  |Sr_upper_half_atomized 
+  |Sr_lower_half_atomized 
+  |Sl_upper_half_atomized 
+  |Sl_lower_half_atomized 
+  |Qpll_upper_half_atomized  
+  |Qpll_lower_half_atomized 
+  |Qpli_upper_half_atomized  
+  |Qpli_lower_half_atomized -> 4 ;;  
+
+
 (*
+ 
 
-type width_and_scrappers = int * (int list) ;; 
+module Node = struct 
 
-type subfunction_without_width_and_scrappers = 
-  Sz3p_types.subfunction_without_width_and_scrappers = 
-    Whole 
-   |Superficial_result 
-   |Solution_list 
-   |Qualified_point_list 
-   |Qpl_length
-   |Qpl_interval of int * int 
-   |Sr_upper_half 
-   |Sr_lower_half 
-   |Sl_upper_half 
-   |Sl_lower_half 
-   |Qpll_upper_half  
-   |Qpll_lower_half 
-   |Qpli_upper_half of int * int 
-   |Qpli_lower_half of int * int  ;; 
+   type t = {
+    kind : node_kind ;
+    range_start : int ;
+    range_end : int ;
+    atomization_parameter : int ; 
+    width : int ;
+    scrappers : int ;
+  } ;; 
 
-type subfunction = 
-  Sz3p_types.subfunction = 
-   SF of subfunction_without_width_and_scrappers * width_and_scrappers ;;   
+  let constructor (k,rs,re,ap,w,scr) = {
+    kind = k ;
+    range_start = rs ;
+    range_end = re ;
+    atomization_parameter = ap ; 
+    width = w ;
+    scrappers = scr ;
+  } ;; 
 
+let whole (w,scr) = constructor (Whole,0,0,0,w,scr) ;;
+let superficial_result (w,scr) = constructor (Superficial_result,0,0,0,w,scr) ;;
+let solution_list (w,scr) = constructor (Solution_list,0,0,0,w,scr) ;;
+let qualified_point_list (w,scr) = constructor (Qualified_point_list,0,0,0,w,scr) ;;
+let qpl_length (w,scr) = constructor (Qpl_length,0,0,0,w,scr) ;;
+let qpl_interval (w,scr) (i,j) = constructor (Qpl_interval,i,j,0,w,scr) ;;
+let sr_upper_half (w,scr) = constructor (Sr_upper_half,0,0,0,w,scr) ;;
+let sr_lower_half (w,scr) = constructor (Sr_lower_half,0,0,0,w,scr) ;;
+let sl_upper_half (w,scr) = constructor (Sl_upper_half,0,0,0,w,scr) ;;
+let sl_lower_half (w,scr) = constructor (Sl_lower_half,0,0,0,w,scr) ;;
+let qpll_upper_half (w,scr) = constructor (Qpll_upper_half,0,0,0,w,scr) ;;
+let qpll_lower_half (w,scr) = constructor (Qpll_lower_half,0,0,0,w,scr) ;;
+let qpli_upper_half (w,scr) (i,j) = constructor (Qpli_upper_half,i,j,0,w,scr) ;;
+let qpli_lower_half (w,scr) (i,j) = constructor (Qpli_lower_half,i,j,0,w,scr) ;;
+let sr_upper_half_atomized (w,scr) = constructor (Sr_upper_half_atomized,0,0,0,w,scr) ;;
+let sr_lower_half_atomized (w,scr) = constructor (Sr_lower_half_atomized,0,0,0,w,scr) ;;
+let sl_upper_half_atomized (w,scr) = constructor (Sl_upper_half_atomized,0,0,0,w,scr) ;;
+let sl_lower_half_atomized (w,scr) = constructor (Sl_lower_half_atomized,0,0,0,w,scr) ;;
+let qpll_upper_half_atomized (w,scr) a = constructor (Qpll_upper_half_atomized,0,0,a,w,scr) ;;
+let qpll_lower_half_atomized (w,scr) a = constructor (Qpll_lower_half_atomized,0,0,a,w,scr) ;;
+let qpli_upper_half_atomized (w,scr) (i,j) a = constructor (Qpli_upper_half_atomized,i,j,a,w,scr) ;;
+let qpli_lower_half_atomized (w,scr) (i,j) a = constructor (Qpli_lower_half_atomized,i,j,a,w,scr) ;;
+
+
+end ;;
+
+
+type division = (* Sz3p_types.downwards_division = *)
+    Bulk_result_to_superficial_result
+  | Bulk_result_to_solution_list
+  | Bulk_result_to_qualified_point_list    
+  | List_to_length 
+  | List_to_range of (int * int)
+  | Breadth_n_size_to_upper_half
+  | Breadth_n_size_to_lower_half 
+  | Atomized of int ;;  
+
+let canonical_decomposition_opt sf = match sf with 
+  Whole -> None 
+ |Superficial_result -> Some(Bulk_result_to_superficial_result,Whole) 
+ |Solution_list -> Some(Bulk_result_to_solution_list,Whole)
+ |Qualified_point_list -> Some(Bulk_result_to_qualified_point_list,Whole)
+ |Qpl_length -> Some(List_to_length,Qualified_point_list)
+ |Qpl_interval  -> Some(List_to_range,Qualified_point_list)
+ |Sr_upper_half -> Some(Breadth_n_size_to_upper_half,Superficial_result)
+ |Sr_lower_half -> Some(Breadth_n_size_to_lower_half,Superficial_result)
+ |Sl_upper_half -> Some(Breadth_n_size_to_upper_half,Solution_list)
+ |Sl_lower_half -> Some(Breadth_n_size_to_lower_half,Solution_list)
+ |Qpll_upper_half -> Some(Breadth_n_size_to_upper_half,Qpl_length) 
+ |Qpll_lower_half -> Some(Breadth_n_size_to_lower_half,Qpl_length) 
+ |Qpli_upper_half  -> Some(Breadth_n_size_to_upper_half,Qpl_interval) 
+ |Qpli_lower_half  -> Some(Breadth_n_size_to_upper_half,Qpl_interval)  
+ |Sr_upper_half_atomized -> Some(Breadth_n_size_to_upper_half,Qpl_interval)  
+ |Sr_lower_half_atomized 
+ |Sl_upper_half_atomized 
+ |Sl_lower_half_atomized 
+ |Qpll_upper_half_atomized  
+ |Qpll_lower_half_atomized 
+ |Qpli_upper_half_atomized  
+ |Qpli_lower_half_atomized ;; 
+
+;; 
 
 type downwards_division = Sz3p_types.downwards_division = 
     Bulk_result_to_superficial_result
