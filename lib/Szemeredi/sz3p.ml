@@ -253,3 +253,28 @@ let examples8 = Image.image (
    fun nd->Node.divide_by  nd (Atomize(1))
 ) examples7 ;;
 
+(*
+   
+we start with the following task : 
+
+1) compute f(n,scr)=main(1,[],n,scr)
+
+We have two choices : we can either decompose the range of f or the image of f. 
+By convention, the image has priority over the range set. 
+
+So f(n,scr) is BR(f1(n,scr),M(f2(n,scr),f3(n,scr))) 
+
+Tasks : 
+
+compute f1 -> rf1 
+compute f2 -> rf2 
+compute f3 -> rf3 
+join f1,f2,f3 in f
+
+
+
+
+
+
+
+*)

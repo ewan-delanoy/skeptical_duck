@@ -1,8 +1,87 @@
 (************************************************************************************************************************
-Snippet 119 : 
+Snippet 120 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 119 : Preprocessing code for a variant type
+************************************************************************************************************************)
+
+let this_root = Coma_big_constant.This_World.root ;;
+let s_ap1 = (Dfa_root.connectable_to_subpath this_root) ^ "lib/Szemeredi/sz3p.ml";;
+let ap1 = Absolute_path.of_string s_ap1 ;; 
+
+let z1 = Io.read_whole_file ap1 ;; 
+let z2 = Lines_in_string.interval z1 60 81 ;; 
+let z3 = Lines_in_string.lines z2 ;; 
+let z4 = Image.image (
+  fun line -> 
+    let line2 = Cull_string.trim_spaces line in 
+    let line3 = Replace_inside.replace_inside_string ("|","") line2 in 
+    line3 
+) z3 ;;
+let z4 = ["Whole"; "Superficial_result"; "Solution_list"; "Qualified_point_list";
+"Qpl_length"; "Qpl_interval"; "Sr_upper_half"; "Sr_lower_half";
+"Sl_upper_half"; "Sl_lower_half"; "Qpll_upper_half"; "Qpll_lower_half";
+"Qpli_upper_half"; "Qpli_lower_half"; "Sr_upper_half_atomized";
+"Sr_lower_half_atomized"; "Sl_upper_half_atomized"; "Sl_lower_half_atomized";
+"Qpll_upper_half_atomized"; "Qpll_lower_half_atomized";
+"Qpli_upper_half_atomized"; "Qpli_lower_half_atomized"] ;;
+let z5 = Image.image (
+  fun variant -> 
+    let lowercase_variant = String.uncapitalize_ascii variant in 
+    "let "^lowercase_variant^" (w,scr) = constructor "^
+    "("^variant^",,,,w,scr) ;;" 
+) z4 ;;
+let z6 = "\n\n\n" ^ (String.concat "\n" z5) ^ "\n\n\n" ;; 
+
+let expand_abbreviation text =
+   try List.assoc text [
+     "Qpl","Qualified_point_list";
+     "Sr","Superficial_result";
+     "Sl","Solution_list";
+     "Qpll","Qpl_length";
+     "Qpli","Qpl_interval";
+   ] with Not_found -> text;; 
+
+let main_array =
+[
+  "_length",("(List_to_length_k,");
+  "_interval",("(List_to_range_k,");
+  "_upper_half",("(Breadth_n_size_to_upper_half_k,");
+  "_lower_half",("(Breadth_n_size_to_upper_half_k,");
+  "_atomized",("(Atomize_k,");
+] ;; 
+
+let secondary_array = 
+[
+  "Superficial_result","Bulk_result_to_superficial_result_k";
+  "Solution_list","Bulk_result_to_solution_list_k";
+  "Qualified_point_list","Bulk_result_to_qualified_point_list_k";
+] ;; 
+
+let canonical_decomposition variant = 
+  match List.find_map (
+    fun (appendix,other_ending) -> 
+      if Supstring.ends_with variant appendix 
+      then let sub_variant = 
+            expand_abbreviation(Cull_string.two_sided_cutting ("",appendix) variant) in 
+           Some("("^variant^",Some"^other_ending ^ sub_variant ^ "));" )
+      else None  
+  ) main_array with 
+  Some final_ending -> final_ending 
+  | None -> 
+    if variant = "Whole" then "(Whole,None);" else
+    "("^variant^",Some("^(List.assoc variant secondary_array) ^ ",Whole));" ;;
+
+let z7 = Image.image canonical_decomposition z4 ;;
+let z8 = "\n\n\n" ^ (String.concat "\n" z7) ^ "\n\n\n" ;; 
+let z9 () = print_string z8 ;; 
+
+
+
 
 (************************************************************************************************************************
 Snippet 118 : Doing the accounts 
@@ -3301,7 +3380,7 @@ let f =  check_pages_and_footnotes ;;
 
 
 (************************************************************************************************************************
-Snippet 87 : Code to OCR-size PDF's into .html  (see also 91 for .txt instead of html)
+Snippet 87 : Code to OCR-size PDF's into .html  (see also Snippet 84 for .txt instead of html)
 ************************************************************************************************************************)
 open Needed_values ;; 
 
