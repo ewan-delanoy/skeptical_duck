@@ -9,6 +9,8 @@ open Needed_values ;;
 Snippet 119 : Preprocessing code for a variant type
 ************************************************************************************************************************)
 
+1
+
 let this_root = Coma_big_constant.This_World.root ;;
 let s_ap1 = (Dfa_root.connectable_to_subpath this_root) ^ "lib/Szemeredi/sz3p.ml";;
 let ap1 = Absolute_path.of_string s_ap1 ;; 
