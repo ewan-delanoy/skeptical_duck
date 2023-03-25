@@ -118,6 +118,22 @@ extract_all_pages
 
 *)
 
+let merge_all_pages pairs =
+  let temp1 = Image.image(
+    fun (page_nbr,page_content) -> 
+      "\n%\n% Page "^(string_of_int page_nbr)^" \n%\n"^page_content
+  ) pairs in 
+  String.concat "\n" temp1 ;;
+
+(*
+
+let text1 = "A\n%\n% Page 5 \n%\nB\nC\nD\n%\n% Page 6 \n%\nE\nF\nG\n%\n% Page 7 \n%\nH\nI\nJ";;
+let pairs1 = extract_all_pages true text1 ;;
+let text2 = merge_all_pages pairs1 ;;
+
+*)  
+
+
 let modify_string_pagewise f old_text = 
   let indexed_pages =extract_all_pages true old_text in 
   String.concat "\n" (Image.image (
@@ -144,6 +160,7 @@ let modify_file_pagewise f file =
   let new_text = Private.modify_string_pagewise f old_text  in
   Io.overwrite_with file new_text ;;  
 
+let merge_all_pages = Private.merge_all_pages ;;  
 let modify_string_pagewise = Private.modify_string_pagewise ;;
 let read_number_of_first_page = Private.read_number_of_first_page ;;
 
