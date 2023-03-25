@@ -2,7 +2,7 @@
 
 #use"lib/Text_editing/percent_pagination.ml";;
 
-Page number i is preced by three lines, each starting with a percent. 
+Page number i is preceded by three lines, each starting with a percent. 
 The middle line also contains the mention "Page i" after its percent. 
 
 *)

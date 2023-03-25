@@ -1,8 +1,191 @@
 (************************************************************************************************************************
-Snippet 120 : 
+Snippet 121 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 120 : Multi-lingual OCR on cropped pngs 
+************************************************************************************************************************)
+
+type spanish_or_latin = Spanish | Latin ;; 
+
+let u1 = 
+  let bs = home ^ "/Downloads/Building_site/" in 
+  if Sys.file_exists bs 
+  then More_unix.quick_beheaded_complete_ls bs
+  else [] ;; 
+
+
+let (u2,u3) = List.partition (fun fn->Supstring.ends_with fn ".png" ) u1 ;; 
+exception Bad_length of string list ;;
+let check_length l = if not(List.mem (List.length l) [3;4]) then raise(Bad_length(l)) else () ;; 
+exception Optional_fourth_elt of string list ;; 
+let look_at_optional_fourth_elt l = 
+  if List.length(l)>=4 
+  then let z = List.nth l 3 in 
+       if z<>"sn" then raise(Optional_fourth_elt(l)) else true
+  else false ;;
+exception Parse_sol_exn of string list ;;   
+let parse_sol l = 
+  let z = List.nth l 2 in 
+  match List.assoc_opt z ["l",Latin;"s",Spanish] with 
+  Some sol -> sol 
+  | None -> raise(Parse_sol_exn l) ;;  
+let sol_to_long_string = function 
+  Spanish -> "spa" 
+  |Latin -> "lat" ;;   
+exception Read_integers_exn of string list ;; 
+let read_integers l = 
+   try (int_of_string(List.nth l 0),int_of_string(List.nth l 1)) with 
+   _-> raise(Read_integers_exn(l)) ;; 
+
+let parse_filename fn =
+    let temp1 = Cull_string.coending 4 fn in 
+    let temp2 = Str.split (Str.regexp "_") temp1 in 
+    let _ = check_length temp2 in 
+    (read_integers temp2,
+    (parse_sol temp2,
+    look_at_optional_fourth_elt temp2)) ;;
+(*    
+let parse_filename_is_not_ok fn = 
+   try (fun _->false)(parse_filename fn) with _ -> true ;;      
+let pre_u4 = List.filter parse_filename_is_not_ok u2 ;;    
+*)
+let u4 = Image.image  parse_filename u2 ;; 
+let order_for_ints = Total_ordering.for_integers ;; 
+let order_for_int_pairs = Total_ordering.product order_for_ints order_for_ints ;; 
+let final_order = Total_ordering.product order_for_int_pairs Total_ordering.standard ;; 
+let u5 = Ordered.sort final_order u4 ;; 
+let u6 =Int_range.index_everything u5 ;; 
+
+let dir_for_texts = "Text_building_site/"
+let num_of_pngs = (string_of_int(List.length u6)) ;; 
+
+let write1 (main_idx,((fn_idx,inner_idx),(sol,is_beginning))) =
+   let s_main = string_of_int main_idx 
+   and s_idx = string_of_int fn_idx 
+   and s_inner = string_of_int inner_idx 
+   and long_s_sol = sol_to_long_string sol 
+   and optional_ending = (if is_beginning then "_sn" else "") in 
+   let full_filename = s_idx^"_"^s_inner^"_"^(Cull_string.beginning 1 long_s_sol)^optional_ending in 
+   "tesseract -l "^long_s_sol^" "^full_filename^".png "^full_filename^"\n"^
+   "mv "^full_filename^".txt /media/sf_Downloads/"^dir_for_texts^" \n"^
+   "echo \""^s_main^" of "^num_of_pngs^":"^full_filename^"\"";;
+
+
+let text1 = "\n\n\n"^(String.concat "\n" 
+ (Image.image write1 u6))^"\n\n\n" ;;   
+   
+let act1 () = 
+  let ap1 = Absolute_path.create_file_if_absent (home^"/Downloads/script.sh") in 
+  Io.overwrite_with ap1 text1;;
+
+(* After the OCR has been applied *)
+ 
+let v1 = More_unix.quick_beheaded_complete_ls 
+  (home ^ "/Downloads/Text_building_site/") ;; 
+let (v2,v3) = List.partition (fun fn->Supstring.ends_with fn ".txt" ) v1 ;; 
+(*    
+let parse_filename_is_not_ok fn = 
+   try (fun _->false)(parse_filename fn) with _ -> true ;;      
+let pre_v4 = List.filter parse_filename_is_not_ok v2 ;;    
+*)
+let v4 = Image.image  parse_filename v2 ;; 
+let v5 = Ordered.sort final_order v4 ;; 
+(* By the way, v5 = u5 *)
+
+let pages_concerned = Ordered.sort 
+ order_for_ints
+ (Image.image (fun (x,_)->fst x) v5);;
+
+let v6 = Image.image (
+   fun page_nbr -> 
+    (page_nbr,List.filter_map (
+     fun ((page_nbr2,inner_idx),(sol,is_beginning)) ->
+       if page_nbr2 = page_nbr 
+       then Some(inner_idx,sol,is_beginning) 
+       else None
+    ) v5)
+) pages_concerned ;;
+
+let compute_footnote_data triples = 
+   let temp1 = Three_parts.generic triples in 
+   List.rev_map (
+    fun (before,center,after)->
+       let (inner_idx,sol,is_beginning) = center in 
+       let number_of_beginning_markers_before =
+         List.length(List.filter (fun (_,_,is_beginning2)->is_beginning2) before)   
+       and is_ending = (
+         match after with 
+           [] -> true 
+         | (_,_,is_beginning3) :: _ -> is_beginning3 
+       ) in 
+       let current_footnote_idx = (
+          if is_beginning 
+          then number_of_beginning_markers_before + 1 
+          else  number_of_beginning_markers_before  
+       ) in   
+       (inner_idx,sol,current_footnote_idx,is_beginning,is_ending)
+   ) temp1 ;; 
+
+let v7 = Image.image (fun (page_nbr,triples) -> 
+  (page_nbr,compute_footnote_data triples)
+) v6;;
+
+let v8 = Explicit.image (fun (page_nbr,fiftuples) -> 
+  let temp1 = Image.image (
+    fun (inner_idx,sol,footnote_idx,is_beginning,is_ending) -> 
+      let s_page = string_of_int page_nbr
+      and s_inner = string_of_int inner_idx 
+      and long_s_sol = sol_to_long_string sol 
+      and optional_ending = (if is_beginning then "_sn" else "") in 
+  let full_filename = s_page^"_"^s_inner^"_"^
+      (Cull_string.beginning 1 long_s_sol)^optional_ending^".txt" in 
+  let beginning_part = (
+     if is_beginning 
+     then "\n\n[size=90][b][color=blue]("^(string_of_int footnote_idx)^")[/color][/b]"
+     else "" 
+  ) and end_part = (
+    if is_ending 
+    then "[/size]"
+    else "" 
+ )  in  
+ let ap = Absolute_path.of_string (home ^ "/Downloads/Text_building_site/" ^ full_filename) in 
+  beginning_part^(Io.read_whole_file ap)^end_part
+  ) fiftuples in 
+  (page_nbr,String.concat "\n" temp1) 
+) v7;;
+
+let building_site = home^"/Teuliou/html_files/Translations/Building_site/";;
+
+let old_emptiable_ap = Absolute_path.of_string (building_site^"old_emptiable_cmist.txt") ;;
+
+let emptiable_ap = Absolute_path.of_string (building_site^"emptiable_cmist.txt") ;;
+
+let original_text = Io.read_whole_file emptiable_ap ;; 
+
+let original_pages = Percent_pagination.extract_all_pages ~verbose:true original_text ;; 
+
+let ampersands = String.make 100 '@' ;;
+
+let trailer = "\n\n\n"^ampersands^"\n\nREGNUM DEUS INTRA VOS EST\n\n"^ampersands^"\n\n\n" ;; 
+
+let new_pages = Explicit.image (
+  fun (page_nbr,old_content) -> 
+     match List.assoc_opt page_nbr v8 with 
+     None -> (page_nbr,old_content) 
+     | Some new_content -> 
+      (page_nbr,old_content^trailer^new_content) 
+) original_pages ;; 
+ 
+let new_text = Percent_pagination.merge_all_pages new_pages ;; 
+
+let act2 () = Io.overwrite_with emptiable_ap new_text ;; 
+
+
+
 
 
 (************************************************************************************************************************
