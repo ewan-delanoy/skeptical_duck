@@ -84,6 +84,10 @@ module Point = struct
   let enumerate_supporting_set = function
      Empty_point -> []
     |P(_w,s,_b, n) -> Finite_int_set.of_pair (n,s) ;; 
+  let is_in_upper_half p= 
+    let (w,_,B(b),S(n)) = unveil p in 
+    n >= b + 2*w ;; 
+
 
 end ;;  
 
@@ -161,41 +165,29 @@ end ;;
 
 module Rose = struct 
 
+  exception Not_defined_yet ;;
   
+  let not_defined_yet _x = raise Not_defined_yet ;;
 
-  let for_homemade_part_1 = (* returns a superficial_result *)
-    ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz3_types.superficial_result) Hashtbl.t) ;;
-
-  let get_part1 pt =
-    let (width,scrappers,breadth,n) = Point.unveil pt in 
-    Hashtbl.find for_homemade_part_1 (width,scrappers) breadth n ;; 
-
-  let for_homemade_part_2 = (* returns a solution list *)
-    ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz3_types.solution list) Hashtbl.t) ;;  
- 
-  let get_part2 pt =
-    let (width,scrappers,breadth,n) = Point.unveil pt in 
-    Hashtbl.find for_homemade_part_2 (width,scrappers) breadth n ;; 
-
-  let for_homemade_part_3 = (* returns a qualified_point list *)
-    ((Hashtbl.create 50) : (int * int list, 
-    breadth -> size -> Sz3_types.qualified_point list) Hashtbl.t) ;;  
+  (*
+  let bulk_result pt = 
+     let (good_opt1,bad_opt1) = superficial_result pt in 
+     if bad_opt1<>None then (None,bad_opt1) else 
+     let (good_opt2,bad_opt2) = solution_list pt in 
+     if bad_opt2<>None then (None,bad_opt2) else  
+     let (good_opt3,bad_opt3) = qualified_point_list pt in 
+     if bad_opt3<>None then (None,bad_opt3) else  
+     let superficial_result_r = Option.unpack good_opt1 
+     and solution_list_r = Option.unpack good_opt2 
+     and qualified_point_list_r = Option.unpack good_opt3  in     
+     (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
+   ;;   
+  *)  
   
-  let get_part3 pt =
-    let (width,scrappers,breadth,n) = Point.unveil pt in 
-    Hashtbl.find for_homemade_part_3 (width,scrappers) breadth n ;;   
+  let bulk_result = not_defined_yet ;;
 
-  let for_delegated_whole =  ((ref []):(int * int list) list ref) ;;  
-  
-  let try_precomputed_results pt =
-     let (width,scrappers,_breadth,_n) = Point.unveil pt in 
-     if List.mem (width,scrappers) (!for_delegated_whole) 
-     then Some(BR(get_part1 pt,M(get_part2 pt,get_part3 pt)))
-     else None ;;   
-  
-  
+  let try_precomputed_results pt = fst(bulk_result pt) ;;
+
 end ;;  
 
 
