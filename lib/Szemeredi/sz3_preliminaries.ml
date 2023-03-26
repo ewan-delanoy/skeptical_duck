@@ -164,12 +164,55 @@ end ;;
 
 
 module Rose = struct 
-
   exception Not_defined_yet ;;
   
   let not_defined_yet _x = raise Not_defined_yet ;;
 
   (*
+
+  let access_named_hashtbl (error_msg,hashtbl) pt = 
+    let (width,scrappers,breadth,size) = Point.unveil p in 
+    let opt = (Hashtbl.find_opt hashtbl (width,scrappers)) (breadth,size) in 
+    let opt_msg = (if opt=None then Some error_msg else None) in 
+    (opt,opt_msg) ;; 
+
+  let qpl_elements = [] ;; 
+
+  let superficial_result pt = 
+     if Point.is_in_upper_half pt 
+     then superficial_result_upper_half pt 
+     else superficial_result_lower_half pt ;;
+     
+  let solution_list pt = 
+      if Point.is_in_upper_half pt 
+      then solution_list_upper_half pt 
+      else solution_list_lower_half pt ;;   
+  
+  let qualified_point_list pt =
+    let (good_opt1,bad_opt1) =qpl_length pt in 
+    if bad_opt1<>None then (None,bad_opt1) else 
+    let length_r = Option.get good_opt1 
+    and m = List.length(qpl_elements) in 
+    if length_r > m 
+    then (None,Some "Insufficient length")  
+    else 
+      let (width,scrappers,B(breadth),S(n)) = Point.unveil p in 
+      let eltwise_results = Int_range.scale (
+          fun k-> access_named_hashtbl (List.nth qpl_elements (k-1)) pt
+      )  1 length_r in  
+      let bad_ones = List.filter (
+        fun (good_opt,bad_opt) -> good_opt = None
+      ) eltwise_results in 
+      if bad_ones <> [] 
+      then List.hd bad_ones 
+      else 
+      let temp1 = Image.image (fun (good_opt,bad_opt) ->Option.get good_opt) eltwise_results in 
+      let final_result = List.concat temp1 in 
+
+
+    
+
+
   let bulk_result pt = 
      let (good_opt1,bad_opt1) = superficial_result pt in 
      if bad_opt1<>None then (None,bad_opt1) else 
@@ -177,14 +220,14 @@ module Rose = struct
      if bad_opt2<>None then (None,bad_opt2) else  
      let (good_opt3,bad_opt3) = qualified_point_list pt in 
      if bad_opt3<>None then (None,bad_opt3) else  
-     let superficial_result_r = Option.unpack good_opt1 
-     and solution_list_r = Option.unpack good_opt2 
-     and qualified_point_list_r = Option.unpack good_opt3  in     
+     let superficial_result_r = Option.get good_opt1 
+     and solution_list_r = Option.get good_opt2 
+     and qualified_point_list_r = Option.get good_opt3  in     
      (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
    ;;   
-  *)  
+  *) 
   
-  let bulk_result = not_defined_yet ;;
+  let bulk_result = not_defined_yet ;; 
 
   let try_precomputed_results pt = fst(bulk_result pt) ;;
 

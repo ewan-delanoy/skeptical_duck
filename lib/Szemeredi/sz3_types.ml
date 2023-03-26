@@ -34,4 +34,4 @@ type superficial_result =
 
 type bulk_result = BR of superficial_result * mold ;;  
 
-
+type half = Lower_half | Upper_half ;;
