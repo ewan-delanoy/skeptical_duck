@@ -176,36 +176,72 @@ module Rose = struct
     None -> (None,Some error_msg) 
     | Some f -> (Some(f breadth size),None) ;; 
 
+  let index_for_missing_data = ref 0 ;; 
+
+  let access_parametrized_named_hashtbl (error_msg,hashtbl) k pt = 
+    let (width,scrappers,breadth,size) = Point.unveil pt in 
+    match Hashtbl.find_opt hashtbl (width,scrappers,k) with 
+    None -> let _ = (index_for_missing_data:=k) in 
+             (None,Some error_msg) 
+    | Some f -> (Some(f breadth size),None) ;; 
   
-  let insufficient_length_idx = 0 ;; 
-  
+    
   let superficial_result_upper_half_idx = 1 ;;  
-  let hashtbl1 = Hashtbl.create 50 ;;
+  let hashtbl1 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
   let pair_for_superficial_result_upper_half = (superficial_result_upper_half_idx,hashtbl1) ;;
   let superficial_result_lower_half_idx = 2 ;;  
-  let hashtbl2 = Hashtbl.create 50 ;;
+  let hashtbl2 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
   let pair_for_superficial_result_lower_half = (superficial_result_lower_half_idx,hashtbl2) ;;
   let solution_list_upper_half_idx = 3 ;; 
-  let hashtbl3 = Hashtbl.create 50 ;;
+  let hashtbl3 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
   let pair_for_solution_list_upper_half = (solution_list_upper_half_idx,hashtbl3) ;;
   let solution_list_lower_half_idx = 4 ;; 
-  let hashtbl4 = Hashtbl.create 50 ;;
+  let hashtbl4 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
   let pair_for_solution_list_lower_half = (solution_list_lower_half_idx,hashtbl4) ;; 
   let qpl_length_upper_half_idx = 5 ;;  
-  let hashtbl5 = Hashtbl.create 50 ;;
+  let hashtbl5 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
   let pair_for_qpl_length_upper_half = (qpl_length_upper_half_idx,hashtbl5) ;;
   let qpl_length_lower_half_idx = 6 ;;  
-  let hashtbl6 = Hashtbl.create 50 ;;
+  let hashtbl6 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
   let pair_for_qpl_length_lower_half = (qpl_length_lower_half_idx,hashtbl6) ;;
+  let qpe_core_upper_half_idx = 7 ;;  
+  let hashtbl7 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
+  let pair_for_qpe_core_upper_half = (qpe_core_upper_half_idx,hashtbl7) ;;
+  let qpe_core_lower_half_idx = 8 ;;  
+  let hashtbl8 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
+  let pair_for_qpe_core_lower_half = (qpe_core_lower_half_idx,hashtbl8) ;; 
+  let qpe_constraints_upper_half_idx = 9 ;;  
+  let hashtbl9 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let pair_for_qpe_constraints_upper_half = (qpe_constraints_upper_half_idx,hashtbl9) ;;
+  let qpe_constraints_lower_half_idx = 10 ;;  
+  let hashtbl10 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let pair_for_qpe_constraints_lower_half = (qpe_constraints_lower_half_idx,hashtbl10) ;; 
+  let qpe_extension_upper_half_idx = 11 ;;  
+  let hashtbl11 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
+  let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl11) ;;
+  let qpe_extension_lower_half_idx = 12 ;;  
+  let hashtbl12 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
+  let pair_for_qpe_extension_lower_half = (qpe_extension_lower_half_idx,hashtbl12) ;; 
+
+  let qualified_point_core half k pt = match half with 
+    Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_core_lower_half k pt 
+   |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_core_upper_half k pt;;
+
+  let qualified_point_constraints half k pt = match half with 
+   Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_constraints_lower_half k pt 
+  |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_constraints_upper_half k pt;;
 
 
-  let qpl_elements = [] ;; 
+  let qualified_point_extension half k pt = match half with 
+    Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_extension_lower_half k pt 
+   |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_extension_upper_half k pt;;
+
+
 
   let qpl_length half pt = match half with 
     Lower_half -> access_named_hashtbl pair_for_qpl_length_lower_half pt 
    |Upper_half -> access_named_hashtbl pair_for_qpl_length_upper_half pt;;
 
-  (* 
   let qualified_point_element half k pt = 
     let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
@@ -217,10 +253,7 @@ module Rose = struct
     and constraints_r = Option.get good_opt2 
     and extension_r = Option.get good_opt3 in 
     (Some(Q(core_r,constraints_r,extension_r)),None) ;;   
-  *)
   
-  let qualified_point_element half k pt = let _=(half,k,pt) in raise Not_defined_yet ;; 
-
   let superficial_result half pt = match half with 
      Lower_half -> access_named_hashtbl pair_for_superficial_result_lower_half pt 
     |Upper_half -> access_named_hashtbl pair_for_superficial_result_upper_half pt;;
@@ -229,27 +262,22 @@ module Rose = struct
     Lower_half -> access_named_hashtbl pair_for_solution_list_lower_half pt 
    |Upper_half -> access_named_hashtbl pair_for_solution_list_upper_half pt;;
   
+   
   let qualified_point_list half pt =
     let (good_opt1,bad_opt1) =qpl_length half pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
-    let length_r = Option.get good_opt1 
-    and m = List.length(qpl_elements) in 
-    if length_r > m 
-    then (None,Some insufficient_length_idx)  
-    else 
-      let eltwise_results = Int_range.scale (
+  let length_r = Option.get good_opt1 in 
+  let eltwise_results = Int_range.scale (
           fun k-> qualified_point_element half k pt
-      )  1 length_r in  
-      let bad_ones = List.filter (
+  )  1 length_r in  
+  let bad_ones = List.filter (
         fun (good_opt,_bad_opt) -> good_opt = None
-      ) eltwise_results in 
-      if bad_ones <> [] 
-      then List.hd bad_ones 
-      else 
-      let temp1 = Image.image (fun (good_opt,_bad_opt) ->Option.get good_opt) eltwise_results in 
-      let final_result = List.concat temp1 in 
-      (Some final_result,None) ;;  
-    
+  ) eltwise_results in 
+  if bad_ones <> [] 
+  then (None,snd(List.hd bad_ones)) 
+  else 
+  let final_result = Image.image (fun (good_opt,_bad_opt) ->Option.get good_opt) eltwise_results in 
+  (Some final_result,None) ;;  
 
 
   let bulk_result half pt = 
@@ -270,6 +298,11 @@ module Rose = struct
     if Point.is_in_upper_half pt 
     then bulk_result Upper_half pt 
     else bulk_result Lower_half pt ;;    
+
+
+  (*
+  let nonhalved_bulk_result _pt = raise Not_defined_yet ;;  
+  *)
 
   let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
 
