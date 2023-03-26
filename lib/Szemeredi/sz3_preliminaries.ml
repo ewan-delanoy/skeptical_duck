@@ -23,7 +23,7 @@ type superficial_result = Sz3_types.superficial_result =
    | Contraction of point * constraint_t
    | Fork of (point * extension_data) list ;; 
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
-
+type half = Sz3_types.half = Lower_half | Upper_half ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -168,68 +168,110 @@ module Rose = struct
   
   let not_defined_yet _x = raise Not_defined_yet ;;
 
-  (*
+
 
   let access_named_hashtbl (error_msg,hashtbl) pt = 
-    let (width,scrappers,breadth,size) = Point.unveil p in 
-    let opt = (Hashtbl.find_opt hashtbl (width,scrappers)) (breadth,size) in 
-    let opt_msg = (if opt=None then Some error_msg else None) in 
-    (opt,opt_msg) ;; 
+    let (width,scrappers,breadth,size) = Point.unveil pt in 
+    match Hashtbl.find_opt hashtbl (width,scrappers) with 
+    None -> (None,Some error_msg) 
+    | Some f -> (Some(f breadth size),None) ;; 
+
+  
+  let insufficient_length_idx = 0 ;; 
+  
+  let superficial_result_upper_half_idx = 1 ;;  
+  let hashtbl1 = Hashtbl.create 50 ;;
+  let pair_for_superficial_result_upper_half = (superficial_result_upper_half_idx,hashtbl1) ;;
+  let superficial_result_lower_half_idx = 2 ;;  
+  let hashtbl2 = Hashtbl.create 50 ;;
+  let pair_for_superficial_result_lower_half = (superficial_result_lower_half_idx,hashtbl2) ;;
+  let solution_list_upper_half_idx = 3 ;; 
+  let hashtbl3 = Hashtbl.create 50 ;;
+  let pair_for_solution_list_upper_half = (solution_list_upper_half_idx,hashtbl3) ;;
+  let solution_list_lower_half_idx = 4 ;; 
+  let hashtbl4 = Hashtbl.create 50 ;;
+  let pair_for_solution_list_lower_half = (solution_list_lower_half_idx,hashtbl4) ;; 
+  let qpl_length_upper_half_idx = 5 ;;  
+  let hashtbl5 = Hashtbl.create 50 ;;
+  let pair_for_qpl_length_upper_half = (qpl_length_upper_half_idx,hashtbl5) ;;
+  let qpl_length_lower_half_idx = 6 ;;  
+  let hashtbl6 = Hashtbl.create 50 ;;
+  let pair_for_qpl_length_lower_half = (qpl_length_lower_half_idx,hashtbl6) ;;
+
 
   let qpl_elements = [] ;; 
 
-  let superficial_result pt = 
-     if Point.is_in_upper_half pt 
-     then superficial_result_upper_half pt 
-     else superficial_result_lower_half pt ;;
-     
-  let solution_list pt = 
-      if Point.is_in_upper_half pt 
-      then solution_list_upper_half pt 
-      else solution_list_lower_half pt ;;   
+  let qpl_length half pt = match half with 
+    Lower_half -> access_named_hashtbl pair_for_qpl_length_lower_half pt 
+   |Upper_half -> access_named_hashtbl pair_for_qpl_length_upper_half pt;;
+
+  (* 
+  let qualified_point_element half k pt = 
+    let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
+    if bad_opt1<>None then (None,bad_opt1) else 
+    let (good_opt2,bad_opt2) = qualified_point_constraints half k pt in 
+    if bad_opt2<>None then (None,bad_opt2) else   
+    let (good_opt3,bad_opt3) = qualified_point_extension half k pt in 
+    if bad_opt3<>None then (None,bad_opt3) else     
+    let core_r = Option.get good_opt1 
+    and constraints_r = Option.get good_opt2 
+    and extension_r = Option.get good_opt3 in 
+    (Some(Q(core_r,constraints_r,extension_r)),None) ;;   
+  *)
   
-  let qualified_point_list pt =
-    let (good_opt1,bad_opt1) =qpl_length pt in 
+  let qualified_point_element half k pt = let _=(half,k,pt) in raise Not_defined_yet ;; 
+
+  let superficial_result half pt = match half with 
+     Lower_half -> access_named_hashtbl pair_for_superficial_result_lower_half pt 
+    |Upper_half -> access_named_hashtbl pair_for_superficial_result_upper_half pt;;
+     
+  let solution_list half pt = match half with 
+    Lower_half -> access_named_hashtbl pair_for_solution_list_lower_half pt 
+   |Upper_half -> access_named_hashtbl pair_for_solution_list_upper_half pt;;
+  
+  let qualified_point_list half pt =
+    let (good_opt1,bad_opt1) =qpl_length half pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
     let length_r = Option.get good_opt1 
     and m = List.length(qpl_elements) in 
     if length_r > m 
-    then (None,Some "Insufficient length")  
+    then (None,Some insufficient_length_idx)  
     else 
-      let (width,scrappers,B(breadth),S(n)) = Point.unveil p in 
       let eltwise_results = Int_range.scale (
-          fun k-> access_named_hashtbl (List.nth qpl_elements (k-1)) pt
+          fun k-> qualified_point_element half k pt
       )  1 length_r in  
       let bad_ones = List.filter (
-        fun (good_opt,bad_opt) -> good_opt = None
+        fun (good_opt,_bad_opt) -> good_opt = None
       ) eltwise_results in 
       if bad_ones <> [] 
       then List.hd bad_ones 
       else 
-      let temp1 = Image.image (fun (good_opt,bad_opt) ->Option.get good_opt) eltwise_results in 
+      let temp1 = Image.image (fun (good_opt,_bad_opt) ->Option.get good_opt) eltwise_results in 
       let final_result = List.concat temp1 in 
-
-
+      (Some final_result,None) ;;  
     
 
 
-  let bulk_result pt = 
-     let (good_opt1,bad_opt1) = superficial_result pt in 
+  let bulk_result half pt = 
+     let (good_opt1,bad_opt1) = superficial_result half pt in 
      if bad_opt1<>None then (None,bad_opt1) else 
-     let (good_opt2,bad_opt2) = solution_list pt in 
+     let (good_opt2,bad_opt2) = solution_list half pt in 
      if bad_opt2<>None then (None,bad_opt2) else  
-     let (good_opt3,bad_opt3) = qualified_point_list pt in 
+     let (good_opt3,bad_opt3) = qualified_point_list half pt in 
      if bad_opt3<>None then (None,bad_opt3) else  
      let superficial_result_r = Option.get good_opt1 
      and solution_list_r = Option.get good_opt2 
      and qualified_point_list_r = Option.get good_opt3  in     
      (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
    ;;   
-  *) 
-  
-  let bulk_result = not_defined_yet ;; 
 
-  let try_precomputed_results pt = fst(bulk_result pt) ;;
+
+  let nonhalved_bulk_result pt = 
+    if Point.is_in_upper_half pt 
+    then bulk_result Upper_half pt 
+    else bulk_result Lower_half pt ;;    
+
+  let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
 
 end ;;  
 
