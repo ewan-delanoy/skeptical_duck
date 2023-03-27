@@ -50,7 +50,8 @@ let apply_all () =
     List.iter (
        fun file -> 
        Replace_inside.replace_several_inside_file
-       ~display_number_of_matches:true (!the_replacements) file
+       ~display_number_of_matches:true 
+       ~silent_on_ambiguity:true (!the_replacements) file
     ) (!the_receiving_files) ;; 
 
 let add_new_replacement new_rep=      
