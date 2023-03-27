@@ -409,6 +409,7 @@ module Bulk_result = struct
   
   let superficial_part (BR(sr,_)) = sr ;; 
   let solution_list (BR(_,md)) = let (M(reps,_qpoints)) = md in reps ;; 
+  let qualified_points (BR(_,md)) = let (M(_reps,qpoints)) = md in qpoints ;; 
   let mold (BR(_,md)) = md ;; 
   
   let extend_with pt (BR(old_sr,mold)) extension = 
