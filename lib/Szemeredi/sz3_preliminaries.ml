@@ -24,6 +24,7 @@ type superficial_result = Sz3_types.superficial_result =
    | Fork of (point * extension_data) list ;; 
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 type half = Sz3_types.half = Lower_half | Upper_half ;;
+type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -186,40 +187,40 @@ module Rose = struct
     | Some f -> (Some(f breadth size),None) ;; 
   
     
-  let superficial_result_upper_half_idx = 1 ;;  
+  let superficial_result_upper_half_idx = KMP 1 ;;  
   let hashtbl1 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
   let pair_for_superficial_result_upper_half = (superficial_result_upper_half_idx,hashtbl1) ;;
-  let superficial_result_lower_half_idx = 2 ;;  
+  let superficial_result_lower_half_idx = KMP 2 ;;  
   let hashtbl2 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
   let pair_for_superficial_result_lower_half = (superficial_result_lower_half_idx,hashtbl2) ;;
-  let solution_list_upper_half_idx = 3 ;; 
+  let solution_list_upper_half_idx = KMP 3 ;; 
   let hashtbl3 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
   let pair_for_solution_list_upper_half = (solution_list_upper_half_idx,hashtbl3) ;;
-  let solution_list_lower_half_idx = 4 ;; 
+  let solution_list_lower_half_idx = KMP 4 ;; 
   let hashtbl4 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
   let pair_for_solution_list_lower_half = (solution_list_lower_half_idx,hashtbl4) ;; 
-  let qpl_length_upper_half_idx = 5 ;;  
+  let qpl_length_upper_half_idx = KMP 5 ;;  
   let hashtbl5 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
   let pair_for_qpl_length_upper_half = (qpl_length_upper_half_idx,hashtbl5) ;;
-  let qpl_length_lower_half_idx = 6 ;;  
+  let qpl_length_lower_half_idx = KMP 6 ;;  
   let hashtbl6 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
   let pair_for_qpl_length_lower_half = (qpl_length_lower_half_idx,hashtbl6) ;;
-  let qpe_core_upper_half_idx = 7 ;;  
+  let qpe_core_upper_half_idx = KMP 7 ;;  
   let hashtbl7 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
   let pair_for_qpe_core_upper_half = (qpe_core_upper_half_idx,hashtbl7) ;;
-  let qpe_core_lower_half_idx = 8 ;;  
+  let qpe_core_lower_half_idx = KMP 8 ;;  
   let hashtbl8 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
   let pair_for_qpe_core_lower_half = (qpe_core_lower_half_idx,hashtbl8) ;; 
-  let qpe_constraints_upper_half_idx = 9 ;;  
+  let qpe_constraints_upper_half_idx = KMP 9 ;;  
   let hashtbl9 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
   let pair_for_qpe_constraints_upper_half = (qpe_constraints_upper_half_idx,hashtbl9) ;;
-  let qpe_constraints_lower_half_idx = 10 ;;  
+  let qpe_constraints_lower_half_idx = KMP 10 ;;  
   let hashtbl10 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
   let pair_for_qpe_constraints_lower_half = (qpe_constraints_lower_half_idx,hashtbl10) ;; 
-  let qpe_extension_upper_half_idx = 11 ;;  
+  let qpe_extension_upper_half_idx = KMP 11 ;;  
   let hashtbl11 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl11) ;;
-  let qpe_extension_lower_half_idx = 12 ;;  
+  let qpe_extension_lower_half_idx = KMP 12 ;;  
   let hashtbl12 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_lower_half = (qpe_extension_lower_half_idx,hashtbl12) ;; 
 
