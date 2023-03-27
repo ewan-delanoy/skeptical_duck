@@ -25,6 +25,15 @@ type superficial_result = Sz3_types.superficial_result =
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 type half = Sz3_types.half = Lower_half | Upper_half ;;
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
+type visualization_result = Sz3_types.visualization_result = 
+    VR1 of ((breadth * size) * superficial_result) list 
+  |VR2 of ((breadth * size) * solution list) list 
+  |VR3 of ((breadth * size) * int) list 
+  |VR4 of ((breadth * size) * point) list 
+  |VR5 of ((breadth * size) * constraint_t list) list 
+  |VR6 of ((breadth * size) * extension_data) list ;; 
+   
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -677,43 +686,59 @@ let check10 (w,s,i) g = lower_selector (w,s) (original10 (w,s,i)) g  ;;
 let check11 (w,s,i) g = upper_selector (w,s) (original11 (w,s,i)) g  ;; 
 let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;; 
 
-let visualize1 (w,scr) d = Image.image (
+let visualize1 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original1 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize2 (w,scr) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize2 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original2 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize3 (w,scr) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize3 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original3 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize4 (w,scr) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize4 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original4 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize5 (w,scr) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize5 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original5 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize6 (w,scr) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize6 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original6 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d)) ;;
-let visualize7 (w,s,i) d = Image.image (
+) (linear_upper_range (w,scr,d))) ;;
+let visualize7 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original7 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
-let visualize8 (w,s,i) d = Image.image (
+) (linear_upper_range (w,s,d))) ;;
+let visualize8 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original8 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
-let visualize9 (w,s,i) d = Image.image (
+) (linear_upper_range (w,s,d))) ;;
+let visualize9 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original9 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
-let visualize10 (w,s,i) d = Image.image (
+) (linear_upper_range (w,s,d))) ;;
+let visualize10 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original10 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
-let visualize11 (w,s,i) d = Image.image (
+) (linear_upper_range (w,s,d))) ;;
+let visualize11 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original11 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
-let visualize12 (w,s,i) d = Image.image (
+) (linear_upper_range (w,s,d))) ;;
+let visualize12 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original12 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d)) ;;
+) (linear_upper_range (w,s,d))) ;;
 
+exception Bad_kmp_index of int ;; 
+
+let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with 
+    1 -> visualize1 (w,s) d 
+   |2 -> visualize2 (w,s) d 
+   |3 -> visualize3 (w,s) d 
+   |4 -> visualize4 (w,s) d 
+   |5 -> visualize5 (w,s) d 
+   |6 -> visualize6 (w,s) d 
+   |7  -> visualize7  (w,s,i) d 
+   |8  -> visualize8  (w,s,i) d 
+   |9  -> visualize9  (w,s,i) d 
+   |10 -> visualize10 (w,s,i) d 
+   |11 -> visualize11 (w,s,i) d 
+   |12 -> visualize12 (w,s,i) d 
+   |_ -> raise(Bad_kmp_index(i_kmp));; 
 
 end ;;  
 
@@ -735,6 +760,9 @@ let get_status () = match (!ref_for_status) with
       let _ = (ref_for_status := Some answer) in 
       answer ;;
 
-
+let next_look () =
+    let (kmp,idx,pt) = get_status () in 
+    let (w,s,_,_) = Point.unveil pt in 
+    ((w,s),Verify.visualize kmp (w,s,idx));;  
 
 end ;; 
