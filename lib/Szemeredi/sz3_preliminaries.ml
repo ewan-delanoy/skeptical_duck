@@ -603,7 +603,7 @@ let global_verification_for_single_pair (width,scrappers) =
          (
           let (good_opt,bad_opt) = Rose.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
           if good_opt = None 
-          then bad_opt
+          then Some(Option.get bad_opt,(b,n))
           else tempf others     
          )
     ) in
@@ -613,7 +613,7 @@ let rec global_verification = function
     [] -> None 
    | ws :: others -> 
       match global_verification_for_single_pair ws with 
-       Some res -> Some res    
+       Some (i,(b,n)) -> Some (i,P(fst ws,snd ws,b,n))   
       | None -> global_verification others ;; 
 
 
@@ -674,10 +674,9 @@ let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;;
 end ;;  
 
 
-(*
+
 module Overall = struct 
 
-
+let goal = [(1,[]);(2,[]);(3,[]);(4,[]);(5,[])] ;; 
 
 end ;; 
-*)
