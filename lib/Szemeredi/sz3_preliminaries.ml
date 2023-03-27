@@ -408,6 +408,7 @@ module Bulk_result = struct
   let is_not_atomic (BR(sr,_)) = sr <> Atomic ;; 
   
   let superficial_part (BR(sr,_)) = sr ;; 
+  let solution_list (BR(_,md)) = let (M(reps,_qpoints)) = md in reps ;; 
   let mold (BR(_,md)) = md ;; 
   
   let extend_with pt (BR(old_sr,mold)) extension = 
@@ -589,4 +590,36 @@ module Untamed = struct
   
 end ;;  
 
-    
+(*
+module Verify = struct 
+  
+let current_width = ref 1 ;;
+let current_scrappers = ref [] ;; 
+
+let bound = 40 ;; 
+
+let breadths = Int_range.scale (fun b->B b) 0 bound ;;
+let sizes = Int_range.scale (fun n->S n) 1 bound ;;
+
+let whole_range = Cartesian.product breadths sizes ;; 
+
+let (upper_range,lower_range) = List.partition (fun 
+  (breadth,size) -> let p = P(!current_width,!current_scrappers,breadth,size) in 
+     Point.is_in_upper_half p
+) whole_range ;;
+
+
+let original1 (b,n)=
+  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(!current_width,!current_scrappers,b,n))) ;;
+let original2 = original1 ;;
+let original3 (b,n)=
+  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(!current_width,!current_scrappers,b,n))) ;;
+let original4 = original3 ;;
+
+
+       
+
+
+end ;;  
+
+*)
