@@ -35,3 +35,5 @@ type superficial_result =
 type bulk_result = BR of superficial_result * mold ;;  
 
 type half = Lower_half | Upper_half ;;
+
+type kind_of_missing_part = KMP of int ;; 

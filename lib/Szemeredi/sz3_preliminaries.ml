@@ -626,9 +626,9 @@ let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;;
 let lower_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
 
 let linear_upper_range (w,_scr,d) =
-      Int_range.scale (fun b->(b,b+2*w-1+d)) (max(2-2*w) 0) (bound-2*w+d+1) ;;
+      Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w) 0) (bound-2*w+d+1) ;;
 let linear_lower_range (w,_scr,d) =
-      Int_range.scale (fun n->(n-2*w+d,n)) (max(d-2*w) 1) (bound-2*w+d) ;;      
+      Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(d-2*w) 1) (bound-2*w+d) ;;      
 
 let bivariate_selector f g l= 
   let temp1 = Image.image (fun x->(x,f x,g x)) l in 
@@ -675,6 +675,44 @@ let check9  (w,s,i) g = upper_selector (w,s) (original9  (w,s,i)) g  ;;
 let check10 (w,s,i) g = lower_selector (w,s) (original10 (w,s,i)) g  ;; 
 let check11 (w,s,i) g = upper_selector (w,s) (original11 (w,s,i)) g  ;; 
 let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;; 
+
+let visualize1 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original1 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize2 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original2 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize3 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original3 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize4 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original4 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize5 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original5 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize6 (w,scr) d = Image.image (
+   fun (b,n) -> ((b,n),original6 (w,scr) (b,n))
+) (linear_upper_range (w,scr,d)) ;;
+let visualize7 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original7 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+let visualize8 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original8 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+let visualize9 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original9 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+let visualize10 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original10 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+let visualize11 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original11 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+let visualize12 (w,s,i) d = Image.image (
+   fun (b,n) -> ((b,n),original12 (w,s,i) (b,n))
+) (linear_upper_range (w,s,d)) ;;
+
 
 end ;;  
 
