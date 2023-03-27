@@ -37,3 +37,12 @@ type bulk_result = BR of superficial_result * mold ;;
 type half = Lower_half | Upper_half ;;
 
 type kind_of_missing_part = KMP of int ;; 
+
+type visualization_result =
+    VR1 of ((breadth * size) * superficial_result) list 
+   |VR2 of ((breadth * size) * solution list) list 
+   |VR3 of ((breadth * size) * point) list 
+   |VR4 of ((breadth * size) * constraint_t) list 
+   |VR5 of ((breadth * size) * extension_data) list ;; 
+   
+   

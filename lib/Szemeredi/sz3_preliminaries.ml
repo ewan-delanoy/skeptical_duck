@@ -728,9 +728,12 @@ let ref_for_status = ref None ;;
 let get_status () = match (!ref_for_status) with 
    Some status -> status 
    | None -> 
-      let opt =  Verify.global_verification goal in 
-      let _ = (ref_for_status := opt) in 
-      Option.get opt ;;
+      let opt =  Verify.global_verification goal 
+      and idx = (!(Rose.index_for_missing_data)) in 
+      let (kmp,pt) = Option.get opt in 
+      let answer = (kmp,idx,pt) in 
+      let _ = (ref_for_status := Some answer) in 
+      answer ;;
 
 
 
