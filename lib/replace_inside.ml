@@ -49,7 +49,7 @@ let text_for_number_of_replacements k=
   if k = 1 then "1 replacement made" else 
   (string_of_int k)^" replacements made" ;;   
 
-let my_global_replace display_number_of_matches (a,b) old_s  =
+let my_global_replace_with_raising display_number_of_matches (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
@@ -57,6 +57,16 @@ let my_global_replace display_number_of_matches (a,b) old_s  =
            flush stdout 
    ) in 
    new_s ;; 
+
+let my_global_replace_without_raising display_number_of_matches (a,b) old_s  =
+   try my_global_replace_with_raising display_number_of_matches (a,b) old_s with 
+   Ambiguity(_,_,_) -> old_s ;; 
+
+let my_global_replace display_number_of_matches silent_on_ambiguity (a,b) old_s  = 
+  if silent_on_ambiguity 
+  then my_global_replace_without_raising display_number_of_matches (a,b) old_s 
+  else my_global_replace_with_raising display_number_of_matches (a,b) old_s ;;   
+  
 
 (*  
 my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679";; 
@@ -73,24 +83,24 @@ end ;;
 
 
 
-let replace_inside_string ?(display_number_of_matches=true) (a,b) s=
-  Private.my_global_replace display_number_of_matches (a,b) s ;;
+let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) s=
+  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ;;
  
-let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace display_number_of_matches (a,b) s ) t l;;  
+let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
+(fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
  
-let replace_inside_file ?(display_number_of_matches=true) (a,b) fn=
+let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
     let s1=Io.read_whole_file fn in
     let la=String.length(a) in
     if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string ~display_number_of_matches (a,b) s1 in
+    then let s2=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) s1 in
          Io.overwrite_with fn s2
     else ();; 
 
 
-let replace_several_inside_file ?(display_number_of_matches=false) l fn=
+let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
     let s1=Io.read_whole_file fn in
-    let s2=replace_several_inside_string ~display_number_of_matches l s1  in
+    let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
     Io.overwrite_with fn s2;; 
 
 exception Absent_beginning_marker of string;;
