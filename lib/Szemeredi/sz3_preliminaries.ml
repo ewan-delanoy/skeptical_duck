@@ -591,12 +591,9 @@ module Untamed = struct
   
 end ;;  
 
-(*
+
 module Verify = struct 
   
-let current_width = ref 1 ;;
-let current_scrappers = ref [] ;; 
-
 let bound = 40 ;; 
 
 let breadths = Int_range.scale (fun b->B b) 0 bound ;;
@@ -604,23 +601,59 @@ let sizes = Int_range.scale (fun n->S n) 1 bound ;;
 
 let whole_range = Cartesian.product breadths sizes ;; 
 
-let (upper_range,lower_range) = List.partition (fun 
-  (breadth,size) -> let p = P(!current_width,!current_scrappers,breadth,size) in 
+let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun 
+  (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
      Point.is_in_upper_half p
-) whole_range ;;
+) whole_range );;
 
+let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
+let lower_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
 
-let original1 (b,n)=
-  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(!current_width,!current_scrappers,b,n))) ;;
+let bivariate_selector f g l= 
+  let temp1 = Image.image (fun x->(x,f x,g x)) l in 
+  List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
+
+let upper_selector (width,scrappers) f g = bivariate_selector f g (upper_range (width,scrappers)) ;;  
+let lower_selector (width,scrappers) f g = bivariate_selector f g (lower_range (width,scrappers)) ;;  
+
+let original1 (width,scrappers) (b,n)=
+  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
 let original2 = original1 ;;
-let original3 (b,n)=
-  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(!current_width,!current_scrappers,b,n))) ;;
+let original3 (width,scrappers) (b,n)=
+  Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
 let original4 = original3 ;;
+let original5 (width,scrappers) (b,n)=
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  List.length ql;;
+let original6 = original5 ;;
+let original7 (width,scrappers,ql_idx) (b,n)=
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
+  pt ;;
+let original8 = original7 ;;
+let original9 (width,scrappers,ql_idx) (b,n)=
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
+  ql_constraints ;;
+let original10 = original9 ;;       
+let original11 (width,scrappers,ql_idx) (b,n)=
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
+  extension ;;
+let original12 = original11 ;;   
 
-
-       
-
+let check1 pair g = upper_selector pair (original1 pair) g  ;; 
+let check2 pair g = lower_selector pair (original2 pair) g  ;; 
+let check3 pair g = upper_selector pair (original3 pair) g  ;; 
+let check4 pair g = lower_selector pair (original4 pair) g  ;; 
+let check5 pair g = upper_selector pair (original5 pair) g  ;; 
+let check6 pair g = lower_selector pair (original6 pair) g  ;; 
+let check7  (w,s,i) g = upper_selector (w,s) (original7  (w,s,i)) g  ;; 
+let check8  (w,s,i) g = lower_selector (w,s) (original8  (w,s,i)) g  ;; 
+let check9  (w,s,i) g = upper_selector (w,s) (original9  (w,s,i)) g  ;; 
+let check10 (w,s,i) g = lower_selector (w,s) (original10 (w,s,i)) g  ;; 
+let check11 (w,s,i) g = upper_selector (w,s) (original11 (w,s,i)) g  ;; 
+let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;; 
 
 end ;;  
 
-*)
