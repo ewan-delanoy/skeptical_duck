@@ -625,6 +625,11 @@ let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun
 let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
 let lower_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
 
+let linear_upper_range (w,_scr,d) =
+      Int_range.scale (fun b->(b,b+2*w-1+d)) (max(2-2*w) 0) (bound-2*w+d+1) ;;
+let linear_lower_range (w,_scr,d) =
+      Int_range.scale (fun n->(n-2*w+d,n)) (max(d-2*w) 1) (bound-2*w+d) ;;      
+
 let bivariate_selector f g l= 
   let temp1 = Image.image (fun x->(x,f x,g x)) l in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
@@ -678,5 +683,16 @@ end ;;
 module Overall = struct 
 
 let goal = [(1,[]);(2,[]);(3,[]);(4,[]);(5,[])] ;; 
+
+let ref_for_status = ref None ;; 
+
+let get_status () = match (!ref_for_status) with 
+   Some status -> status 
+   | None -> 
+      let opt =  Verify.global_verification goal in 
+      let _ = (ref_for_status := opt) in 
+      Option.get opt ;;
+
+
 
 end ;; 
