@@ -299,11 +299,6 @@ module Rose = struct
     then bulk_result Upper_half pt 
     else bulk_result Lower_half pt ;;    
 
-
-  (*
-  let nonhalved_bulk_result _pt = raise Not_defined_yet ;;  
-  *)
-
   let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
 
 end ;;  
@@ -601,6 +596,27 @@ let sizes = Int_range.scale (fun n->S n) 1 bound ;;
 
 let whole_range = Cartesian.product breadths sizes ;; 
 
+let global_verification_for_single_pair (width,scrappers) =
+    let rec tempf = (fun l->match l with 
+      [] -> None 
+      | (b,n) :: others ->
+         (
+          let (good_opt,bad_opt) = Rose.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          if good_opt = None 
+          then bad_opt
+          else tempf others     
+         )
+    ) in
+    tempf whole_range ;; 
+
+let rec global_verification = function 
+    [] -> None 
+   | ws :: others -> 
+      match global_verification_for_single_pair ws with 
+       Some res -> Some res    
+      | None -> global_verification others ;; 
+
+
 let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun 
   (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
      Point.is_in_upper_half p
@@ -657,3 +673,11 @@ let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;;
 
 end ;;  
 
+
+(*
+module Overall = struct 
+
+
+
+end ;; 
+*)
