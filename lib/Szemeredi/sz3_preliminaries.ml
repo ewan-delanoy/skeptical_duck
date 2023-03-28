@@ -329,7 +329,37 @@ module Warehouse = struct
 
 end ;;  
 
+module Fill_Warehouse = struct 
 
+
+let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
+    match List.assoc_opt n 
+       [1,Atomic;
+        2,Atomic;
+        3,Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])]]  with    
+      Some answer -> answer 
+   | None ->
+    (match (n mod 3) with 
+    0 -> Fork([( P(1,[],B(n-5),S(n-3)),[n-1;n] );
+               ( P(1,[],B(n-4),S(n-2)),[n] );
+               ( P(1,[],B(n-3),S(n-1)),[] )])
+   |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
+   |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
+   |_-> failwith("bad reminder by 3"))
+    ;;       
+  
+(*
+  
+  Overall.check (CE1 f_1_empty_set_superficial_result_lower_half) ;; 
+  
+*)
+
+Hashtbl.add 
+  (snd(Warehouse.pair_for_superficial_result_lower_half)) (1,[]) 
+    f_1_empty_set_superficial_result_lower_half;;
+
+
+end ;;   
 
 module Constraint = struct  
 
