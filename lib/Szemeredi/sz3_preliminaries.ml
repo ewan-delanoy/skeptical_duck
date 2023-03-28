@@ -705,11 +705,14 @@ let for_vr1_element ((B b,S n),sr) =
 let for_vr2_element ((B b,S n),sl) = 
     "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_solution_list sl)^")" ;; 
 
+let for_vr3_element ((B b,S n),k) = 
+      "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(string_of_int k)^")" ;;  
+  
 
 let for_visualization_result = function 
    VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
   |VR2(l)->"VR2[\n"^(String.concat ";\n" (Image.image for_vr2_element l))^"\n]"
-  |VR3(_l)->"..."
+  |VR3(_l)->"VR3[\n"^(String.concat ";\n" (Image.image for_vr3_element l))^"\n]"
   |VR4(_l)->"..."
   |VR5(_l)->"..."
   |VR6(_l)->"..." ;;
