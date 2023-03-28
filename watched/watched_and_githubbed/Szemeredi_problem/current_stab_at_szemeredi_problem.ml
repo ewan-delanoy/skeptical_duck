@@ -13,6 +13,5 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz3_preliminaries ;;
 
-let see1 = Verify.global_verification Overall.goal ;; 
 
-let tf1 = Overall.next_look () ;; 
+let see1 = Overall.next_look 1 ;; 

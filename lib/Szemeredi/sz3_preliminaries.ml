@@ -598,7 +598,29 @@ end ;;
 
 module Pretty_printer = struct 
 
-let for_vr1_element ((_a,_b),_c) = "..." ;;  
+module Private = struct 
+
+let for_int_list l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;;
+
+let for_constraint (C l) = "C"^(for_int_list l);;
+
+let for_point = function 
+    Empty_point -> "Empty_point" 
+  | P(w,s,B b,S n) -> "P("^(string_of_int w)^","^(for_int_list s)^",B("^(string_of_int b)^"),S("^(string_of_int n)^"))";;
+
+let for_fork_element 
+(pt,ext_data) = "( "^(for_point pt)^","^(for_int_list ext_data)^" )" ;; 
+  
+
+let for_superficial_result = function
+    Atomic -> "Atomic"
+  | Decomposable (pt,ext_data) -> "Decomposable( "^(for_point pt)^","^(for_int_list ext_data)^" )"
+  | Contraction (pt,cstr) -> "Contraction( "^(for_point pt)^","^(for_constraint cstr)^" )"
+  | Fork (l) -> "Fork(["^(String.concat ";" (Image.image for_fork_element l))^"])" ;;
+
+
+let for_vr1_element ((B b,S n),sr) = 
+    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_superficial_result sr)^")" ;;  
 
 let for_visualization_result = function 
    VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
@@ -607,6 +629,10 @@ let for_visualization_result = function
   |VR4(_l)->"..."
   |VR5(_l)->"..."
   |VR6(_l)->"..." ;;
+
+end ;; 
+
+let for_visualization_result = Private.for_visualization_result ;;
 
 end ;;   
 
@@ -789,6 +815,6 @@ let next_look d =
     let answer = Verify.visualize kmp (w,s,idx) d in 
     let msg2 = "\n\n\n"^(Pretty_printer.for_visualization_result answer)^"\n\n\n" in  
     let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
-    answer ;;  
+    (fun ()->answer) ;;  
 
 end ;; 
