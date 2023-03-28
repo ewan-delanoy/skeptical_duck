@@ -904,12 +904,12 @@ let get_status () = match (!ref_for_status) with
       let opt =  Verify.global_verification goal 
       and idx = (!(Warehouse.index_for_missing_data)) in 
       let (kmp,pt) = Option.get opt in 
-      let answer = (kmp,idx,pt) in 
+      let answer = (kmp,Warehouse.read_missing_part kmp,idx,pt) in 
       let _ = (ref_for_status := Some answer) in 
       answer ;;
 
 let next_look d =
-    let (kmp,idx,pt) = get_status () in 
+    let (kmp,_,idx,pt) = get_status () in 
     let (w,s,_,_) = Point.unveil pt in 
     let msg1 = "Current goal is ("^(string_of_int w)^
                 ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
@@ -921,7 +921,7 @@ let next_look d =
 
 
 let check tagged_f = 
-  let (kmp,idx,pt) = get_status () in 
+  let (kmp,_,idx,pt) = get_status () in 
   let (w,s,_,_) = Point.unveil pt in 
   let msg1 = "Current goal is ("^(string_of_int w)^
               ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
