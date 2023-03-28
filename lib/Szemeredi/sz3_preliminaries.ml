@@ -676,7 +676,7 @@ let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun
 ) whole_range );;
 
 let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
-let lower_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
+let lower_range (width,scrappers) = snd(halves (width,scrappers)) ;; 
 
 let linear_upper_range (w,_scr,d) =
       Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w) 0) (bound-2*w+d+1) ;;
