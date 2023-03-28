@@ -100,4 +100,6 @@ let u1 = Image.image (fun ((B b,S n),_,_)->b-n+2) check_rfi ;;
 let u2 = Multiset.diforchan u1 ;;   
 let u3 = List.filter (fun ((B b,S n),_,_)->b-n+2=2) check_rfi ;; 
 
-Bulk_result.superficial_part( Untamed.compute_bulk_result (P(1,[],B 7,S 7)))
+Bulk_result.superficial_part( Untamed.compute_bulk_result (P(1,[],B 7,S 7))) ;;
+
+let u4 = Verify.Private.lower_range(1,[]) ;; 
