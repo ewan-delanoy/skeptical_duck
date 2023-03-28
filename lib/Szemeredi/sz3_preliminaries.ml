@@ -392,6 +392,32 @@ Hashtbl.add
     f_1_empty_set_solution_list_lower_half;;
 
 
+
+let f_1_empty_set_qpl_length_lower_half (B _b) (S n) = 
+  match List.assoc_opt n [1,0;2,0]  with    
+    Some answer -> answer 
+  | None ->
+    (match (n mod 3) with 
+       0 -> 3
+      |1-> 2   
+      |2-> 1  
+      |_-> failwith("bad reminder by 3"));; 
+
+
+(*
+
+Verify.check 
+(fst(Warehouse.pair_for_qpl_length_lower_half))
+(1,[],IMD 0) (CE3 f_1_empty_set_qpl_length_lower_half) ;; 
+
+*)
+
+Hashtbl.add 
+(snd(Warehouse.pair_for_qpl_length_lower_half)) (1,[]) 
+f_1_empty_set_qpl_length_lower_half;;
+
+
+
 end ;;   
 
 module Constraint = struct  
@@ -712,7 +738,7 @@ let for_vr3_element ((B b,S n),k) =
 let for_visualization_result = function 
    VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
   |VR2(l)->"VR2[\n"^(String.concat ";\n" (Image.image for_vr2_element l))^"\n]"
-  |VR3(_l)->"VR3[\n"^(String.concat ";\n" (Image.image for_vr3_element l))^"\n]"
+  |VR3(l)->"VR3[\n"^(String.concat ";\n" (Image.image for_vr3_element l))^"\n]"
   |VR4(_l)->"..."
   |VR5(_l)->"..."
   |VR6(_l)->"..." ;;

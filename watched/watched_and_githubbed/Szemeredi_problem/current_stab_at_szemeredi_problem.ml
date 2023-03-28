@@ -20,18 +20,53 @@ let unvr = function (VR3 l)->l | _ -> failwith("aaa") ;;
 let res1 = unvr(Overall.next_look 1 ()) ;; 
 let rf1 (B b,S n) =
   match List.assoc_opt n 
-     [
-      1,Atomic;
-      2,Atomic;
-      3,Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])]]  with    
+     [1,0;2,0]  with    
     Some answer -> answer 
  | None ->
     (match (n mod 3) with 
-    0 -> Fork([( P(1,[],B(n-5),S(n-3)),[n-1;n] );
-               ( P(1,[],B(n-4),S(n-2)),[n] );
-               ( P(1,[],B(n-3),S(n-1)),[] )])
-   |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
-   |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
+    0 -> 3
+   |1-> 2   
+   |2-> 1  
    |_-> failwith("bad reminder by 3"));;       
 let check_rf1 = List.filter (fun (x,y)->y<> rf1 x) res1 ;;     
 
+let res2 = unvr(Overall.next_look 2 ()) ;; 
+let rf2 (B b,S n) =
+  match List.assoc_opt n 
+     [1,0;2,0]  with    
+    Some answer -> answer 
+ | None ->
+    (match (n mod 3) with 
+    0 -> 3
+   |1-> 2   
+   |2-> 1  
+   |_-> failwith("bad reminder by 3"));;       
+let check_rf2 = List.filter (fun (x,y)->y<> rf2 x) res2 ;;   
+
+
+
+let f_1_empty_set_qpl_length_lower_half (B _b) (S n) = match List.assoc_opt n 
+[1,0;2,0]  with    
+Some answer -> answer 
+| None ->
+(match (n mod 3) with 
+0 -> 3
+|1-> 2   
+|2-> 1  
+|_-> failwith("bad reminder by 3"));; 
+
+    
+(*
+    
+  Verify.check 
+    (fst(Warehouse.pair_for_qpl_length_lower_half))
+    (1,[],IMD 0) (CE3 f_1_empty_set_qpl_length_lower_half) ;; 
+    
+*)
+    
+Hashtbl.add 
+  (snd(Warehouse.pair_for_qpl_length_lower_half)) (1,[]) 
+    f_1_empty_set_qpl_length_lower_half;;
+
+Lines_in_string.change_indentation_in_interval_in_file ~indent:0 (395,419)
+  (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml");;
