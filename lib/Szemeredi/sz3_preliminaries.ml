@@ -25,6 +25,7 @@ type superficial_result = Sz3_types.superficial_result =
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 type half = Sz3_types.half = Lower_half | Upper_half ;;
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
+type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
 type visualization_result = Sz3_types.visualization_result = 
     VR1 of ((breadth * size) * superficial_result) list 
   |VR2 of ((breadth * size) * solution list) list 
@@ -186,7 +187,7 @@ module Rose = struct
     None -> (None,Some error_msg) 
     | Some f -> (Some(f breadth size),None) ;; 
 
-  let index_for_missing_data = ref 0 ;; 
+  let index_for_missing_data = ref (IMD(0)) ;; 
 
   let access_parametrized_named_hashtbl (error_msg,hashtbl) k pt = 
     let (width,scrappers,breadth,size) = Point.unveil pt in 
@@ -215,22 +216,22 @@ module Rose = struct
   let hashtbl6 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
   let pair_for_qpl_length_lower_half = (qpl_length_lower_half_idx,hashtbl6) ;;
   let qpe_core_upper_half_idx = KMP 7 ;;  
-  let hashtbl7 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
+  let hashtbl7 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
   let pair_for_qpe_core_upper_half = (qpe_core_upper_half_idx,hashtbl7) ;;
   let qpe_core_lower_half_idx = KMP 8 ;;  
-  let hashtbl8 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> point) Hashtbl.t) ;;
+  let hashtbl8 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
   let pair_for_qpe_core_lower_half = (qpe_core_lower_half_idx,hashtbl8) ;; 
   let qpe_constraints_upper_half_idx = KMP 9 ;;  
-  let hashtbl9 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let hashtbl9 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
   let pair_for_qpe_constraints_upper_half = (qpe_constraints_upper_half_idx,hashtbl9) ;;
   let qpe_constraints_lower_half_idx = KMP 10 ;;  
-  let hashtbl10 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let hashtbl10 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
   let pair_for_qpe_constraints_lower_half = (qpe_constraints_lower_half_idx,hashtbl10) ;; 
   let qpe_extension_upper_half_idx = KMP 11 ;;  
-  let hashtbl11 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
+  let hashtbl11 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl11) ;;
   let qpe_extension_lower_half_idx = KMP 12 ;;  
-  let hashtbl12 = ((Hashtbl.create 50): (int * int list * int, breadth -> size -> int list) Hashtbl.t) ;;
+  let hashtbl12 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_lower_half = (qpe_extension_lower_half_idx,hashtbl12) ;; 
 
   let qualified_point_core half k pt = match half with 
@@ -278,7 +279,7 @@ module Rose = struct
     if bad_opt1<>None then (None,bad_opt1) else 
   let length_r = Option.get good_opt1 in 
   let eltwise_results = Int_range.scale (
-          fun k-> qualified_point_element half k pt
+          fun k-> qualified_point_element half (IMD k) pt
   )  1 length_r in  
   let bad_ones = List.filter (
         fun (good_opt,_bad_opt) -> good_opt = None
@@ -657,17 +658,17 @@ let original5 (width,scrappers) (b,n)=
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   List.length ql;;
 let original6 = original5 ;;
-let original7 (width,scrappers,ql_idx) (b,n)=
+let original7 (width,scrappers,IMD ql_idx) (b,n)=
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   pt ;;
 let original8 = original7 ;;
-let original9 (width,scrappers,ql_idx) (b,n)=
+let original9 (width,scrappers,IMD ql_idx) (b,n)=
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   ql_constraints ;;
 let original10 = original9 ;;       
-let original11 (width,scrappers,ql_idx) (b,n)=
+let original11 (width,scrappers,IMD ql_idx) (b,n)=
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
   extension ;;

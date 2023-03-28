@@ -38,6 +38,8 @@ type half = Lower_half | Upper_half ;;
 
 type kind_of_missing_part = KMP of int ;; 
 
+type index_of_missing_data = IMD of int ;;
+
 type visualization_result =
     VR1 of ((breadth * size) * superficial_result) list 
    |VR2 of ((breadth * size) * solution list) list 
