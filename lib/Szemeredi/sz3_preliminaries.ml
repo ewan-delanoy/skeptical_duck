@@ -649,6 +649,8 @@ let for_int_list l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;
 
 let for_constraint (C l) = "C"^(for_int_list l);;
 
+let for_solution_list l = "["^(String.concat ";" (Image.image for_int_list l))^"]" ;;
+
 let for_point = function 
     Empty_point -> "Empty_point" 
   | P(w,s,B b,S n) -> "P("^(string_of_int w)^","^(for_int_list s)^",B("^(string_of_int b)^"),S("^(string_of_int n)^"))";;
@@ -667,9 +669,13 @@ let for_superficial_result = function
 let for_vr1_element ((B b,S n),sr) = 
     "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_superficial_result sr)^")" ;;  
 
+let for_vr2_element ((B b,S n),sl) = 
+    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_solution_list sl)^")" ;; 
+
+
 let for_visualization_result = function 
    VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
-  |VR2(_l)->"..."
+  |VR2(l)->"VR2[\n"^(String.concat ";\n" (Image.image for_vr2_element l))^"\n]"
   |VR3(_l)->"..."
   |VR4(_l)->"..."
   |VR5(_l)->"..."
