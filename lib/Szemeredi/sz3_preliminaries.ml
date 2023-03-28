@@ -40,7 +40,6 @@ type check_entry = Sz3_types.check_entry =
  |CE4 of ( breadth -> size -> point) 
  |CE5 of ( breadth -> size -> constraint_t list) 
  |CE6 of ( breadth -> size -> extension_data);;  
-
 type check_result = Sz3_types.check_result =
   CR1 of ((breadth * size) * superficial_result * superficial_result) list 
  |CR2 of ((breadth * size) * solution list * solution list) list 
@@ -700,37 +699,37 @@ let linear_lower_range (w,_scr,d) =
       Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
 
 let bivariate_selector f g l= 
-  let temp1 = Image.image (fun x->(x,f x,g x)) l in 
+  let temp1 = Image.image (fun x->let (b,n)=x in (x,f b n,g b n)) l in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
 
 let upper_selector (width,scrappers) f g = bivariate_selector f g (upper_range (width,scrappers)) ;;  
 let lower_selector (width,scrappers) f g = bivariate_selector f g (lower_range (width,scrappers)) ;;  
 
-let original1 (width,scrappers) (b,n)=
+let original1 (width,scrappers) b n =
   Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
 let original2 = original1 ;;
-let original3 (width,scrappers) (b,n)=
+let original3 (width,scrappers) b n =
   Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
 let original4 = original3 ;;
-let original5 (width,scrappers) (b,n)=
+let original5 (width,scrappers) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   List.length ql;;
 let original6 = original5 ;;
-let original7 (width,scrappers,IMD ql_idx) (b,n)=
+let original7 (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   pt ;;
 let original8 = original7 ;;
-let original9 (width,scrappers,IMD ql_idx) (b,n)=
+let original9 (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   ql_constraints ;;
 let original10 = original9 ;;       
-let original11 (width,scrappers,IMD ql_idx) (b,n)=
+let original11 (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
   extension ;;
-let original12 = original11 ;;   
+let original12 = original11 ;; 
 
 let check1 pair g = upper_selector pair (original1 pair) g  ;; 
 let check2 pair g = lower_selector pair (original2 pair) g  ;; 
@@ -746,41 +745,73 @@ let check11 (w,s,i) g = upper_selector (w,s) (original11 (w,s,i)) g  ;;
 let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;; 
 
 let visualize1 (w,scr) d = VR1(Image.image (
-   fun (b,n) -> ((b,n),original1 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original1 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
 let visualize2 (w,scr) d = VR1(Image.image (
-   fun (b,n) -> ((b,n),original2 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original2 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize3 (w,scr) d = VR2(Image.image (
-   fun (b,n) -> ((b,n),original3 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original3 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
 let visualize4 (w,scr) d = VR2(Image.image (
-   fun (b,n) -> ((b,n),original4 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original4 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize5 (w,scr) d = VR3(Image.image (
-   fun (b,n) -> ((b,n),original5 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original5 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
 let visualize6 (w,scr) d = VR3(Image.image (
-   fun (b,n) -> ((b,n),original6 (w,scr) (b,n))
+   fun (b,n) -> ((b,n),original6 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize7 (w,s,i) d = VR4(Image.image (
-   fun (b,n) -> ((b,n),original7 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original7 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
 let visualize8 (w,s,i) d = VR4(Image.image (
-   fun (b,n) -> ((b,n),original8 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original8 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
 let visualize9 (w,s,i) d = VR5(Image.image (
-   fun (b,n) -> ((b,n),original9 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original9 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
 let visualize10 (w,s,i) d = VR5(Image.image (
-   fun (b,n) -> ((b,n),original10 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original10 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
 let visualize11 (w,s,i) d = VR6(Image.image (
-   fun (b,n) -> ((b,n),original11 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original11 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
 let visualize12 (w,s,i) d = VR6(Image.image (
-   fun (b,n) -> ((b,n),original12 (w,s,i) (b,n))
+   fun (b,n) -> ((b,n),original12 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
+
+let unwrap_check_entry = function 
+   CE1(f1)->(Some f1,None,None,None,None,None)
+  |CE2(f2)->(None,Some f2,None,None,None,None)
+  |CE3(f3)->(None,None,Some f3,None,None,None)
+  |CE4(f4)->(None,None,None,Some f4,None,None)
+  |CE5(f5)->(None,None,None,None,Some f5,None)
+  |CE6(f6)->(None,None,None,None,None,Some f6) ;; 
+
+let unwrap_check_entry1 f = let (opt1,_opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt1 ;;
+let unwrap_check_entry2 f = let (_opt1,opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt2 ;;
+let unwrap_check_entry3 f = let (_opt1,_opt2,opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt3 ;;
+let unwrap_check_entry4 f = let (_opt1,_opt2,_opt3,opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt4 ;;
+let unwrap_check_entry5 f = let (_opt1,_opt2,_opt3,_opt4,opt5,_opt6) = unwrap_check_entry f in Option.get opt5 ;;
+let unwrap_check_entry6 f = let (_opt1,_opt2,_opt3,_opt4,_opt5,opt6) = unwrap_check_entry f in Option.get opt6 ;;
+
+
+
+let check (KMP i_kmp) (w,s,i) tagged_f = match i_kmp with 
+    1 -> CR1(check1 (w,s) (unwrap_check_entry1 tagged_f))
+   |2 -> CR1(check2 (w,s) (unwrap_check_entry1 tagged_f))
+   |3 -> CR2(check3 (w,s) (unwrap_check_entry2 tagged_f))
+   |4 -> CR2(check4 (w,s) (unwrap_check_entry2 tagged_f)) 
+   |5 -> CR3(check5 (w,s) (unwrap_check_entry3 tagged_f))
+   |6 -> CR3(check6 (w,s) (unwrap_check_entry3 tagged_f))
+   |7  -> CR4(check7  (w,s,i) (unwrap_check_entry4 tagged_f)) 
+   |8  -> CR4(check8  (w,s,i) (unwrap_check_entry4 tagged_f)) 
+   |9  -> CR5(check9  (w,s,i) (unwrap_check_entry5 tagged_f))
+   |10 -> CR5(check10 (w,s,i) (unwrap_check_entry5 tagged_f))
+   |11 -> CR6(check11 (w,s,i) (unwrap_check_entry6 tagged_f))
+   |12 -> CR6(check12 (w,s,i) (unwrap_check_entry6 tagged_f))
+   |_ -> raise(Bad_kmp_index(i_kmp));; 
 
 let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with 
     1 -> visualize1 (w,s) d 
@@ -799,6 +830,7 @@ let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with
 
 end ;;
 
+let check = Private.check ;; 
 let global_verification = Private.global_verification ;; 
 let visualize = Private.visualize ;;
 
