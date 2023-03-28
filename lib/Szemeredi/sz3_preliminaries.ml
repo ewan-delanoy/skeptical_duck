@@ -731,18 +731,18 @@ let original11 (width,scrappers,IMD ql_idx) b n =
   extension ;;
 let original12 = original11 ;; 
 
-let check1 pair g = upper_selector pair (original1 pair) g  ;; 
-let check2 pair g = lower_selector pair (original2 pair) g  ;; 
-let check3 pair g = upper_selector pair (original3 pair) g  ;; 
-let check4 pair g = lower_selector pair (original4 pair) g  ;; 
-let check5 pair g = upper_selector pair (original5 pair) g  ;; 
-let check6 pair g = lower_selector pair (original6 pair) g  ;; 
-let check7  (w,s,i) g = upper_selector (w,s) (original7  (w,s,i)) g  ;; 
-let check8  (w,s,i) g = lower_selector (w,s) (original8  (w,s,i)) g  ;; 
-let check9  (w,s,i) g = upper_selector (w,s) (original9  (w,s,i)) g  ;; 
-let check10 (w,s,i) g = lower_selector (w,s) (original10 (w,s,i)) g  ;; 
-let check11 (w,s,i) g = upper_selector (w,s) (original11 (w,s,i)) g  ;; 
-let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;; 
+let check1 pair g = lower_selector pair (original1 pair) g  ;; 
+let check2 pair g = upper_selector pair (original2 pair) g  ;; 
+let check3 pair g = lower_selector pair (original3 pair) g  ;; 
+let check4 pair g = upper_selector pair (original4 pair) g  ;; 
+let check5 pair g = lower_selector pair (original5 pair) g  ;; 
+let check6 pair g = upper_selector pair (original6 pair) g  ;; 
+let check7  (w,s,i) g = lower_selector (w,s) (original7  (w,s,i)) g  ;; 
+let check8  (w,s,i) g = upper_selector (w,s) (original8  (w,s,i)) g  ;; 
+let check9  (w,s,i) g = lower_selector (w,s) (original9  (w,s,i)) g  ;; 
+let check10 (w,s,i) g = upper_selector (w,s) (original10 (w,s,i)) g  ;; 
+let check11 (w,s,i) g = lower_selector (w,s) (original11 (w,s,i)) g  ;; 
+let check12 (w,s,i) g = upper_selector (w,s) (original12 (w,s,i)) g  ;; 
 
 let visualize1 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original1 (w,scr) b n)
