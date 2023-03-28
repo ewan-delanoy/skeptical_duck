@@ -48,4 +48,11 @@ type visualization_result =
    |VR5 of ((breadth * size) * constraint_t list) list 
    |VR6 of ((breadth * size) * extension_data) list ;; 
    
+type check_result =
+   CR1 of ((breadth * size) * superficial_result * superficial_result) list 
+  |CR2 of ((breadth * size) * solution list * solution list) list 
+  |CR3 of ((breadth * size) * int * int) list 
+  |CR4 of ((breadth * size) * point * point) list 
+  |CR5 of ((breadth * size) * constraint_t list * constraint_t list) list 
+  |CR6 of ((breadth * size) * extension_data * extension_data) list ;;    
    
