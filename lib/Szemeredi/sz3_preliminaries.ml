@@ -592,14 +592,30 @@ module Untamed = struct
   let compute_bulk_result pt =
      let subcomps = needed_subcomputations ([],[pt]) in 
      List.assoc pt subcomps ;;   
-  
-  
-  
+    
 end ;;  
 
 
+module Pretty_printer = struct 
+
+let for_vr1_element ((_a,_b),_c) = "..." ;;  
+
+let for_visualization_result = function 
+   VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
+  |VR2(_l)->"..."
+  |VR3(_l)->"..."
+  |VR4(_l)->"..."
+  |VR5(_l)->"..."
+  |VR6(_l)->"..." ;;
+
+end ;;   
+
 module Verify = struct 
   
+exception Bad_kmp_index of int ;; 
+
+module Private = struct 
+
 let bound = 40 ;; 
 
 let breadths = Int_range.scale (fun b->B b) 0 bound ;;
@@ -724,8 +740,6 @@ let visualize12 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original12 (w,s,i) (b,n))
 ) (linear_upper_range (w,s,d))) ;;
 
-exception Bad_kmp_index of int ;; 
-
 let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with 
     1 -> visualize1 (w,s) d 
    |2 -> visualize2 (w,s) d 
@@ -740,6 +754,11 @@ let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with
    |11 -> visualize11 (w,s,i) d 
    |12 -> visualize12 (w,s,i) d 
    |_ -> raise(Bad_kmp_index(i_kmp));; 
+
+end ;;
+
+let global_verification = Private.global_verification ;; 
+let visualize = Private.visualize ;;
 
 end ;;  
 
@@ -761,9 +780,15 @@ let get_status () = match (!ref_for_status) with
       let _ = (ref_for_status := Some answer) in 
       answer ;;
 
-let next_look () =
+let next_look d =
     let (kmp,idx,pt) = get_status () in 
     let (w,s,_,_) = Point.unveil pt in 
-    ((w,s),Verify.visualize kmp (w,s,idx));;  
+    let msg1 = "Current goal is ("^(string_of_int w)^
+                ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
+    let _ = (print_string("\n\n"^msg1^"\n\n");flush stdout) in 
+    let answer = Verify.visualize kmp (w,s,idx) d in 
+    let msg2 = "\n\n\n"^(Pretty_printer.for_visualization_result answer)^"\n\n\n" in  
+    let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
+    answer ;;  
 
 end ;; 
