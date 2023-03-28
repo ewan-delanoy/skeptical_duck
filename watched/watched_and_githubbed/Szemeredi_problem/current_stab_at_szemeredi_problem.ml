@@ -129,29 +129,10 @@ let u4 = Verify.Private.lower_range(1,[]) ;;
 
 
 
-let f_1_empty_set_kmp1 (B b) (S n) =
-  match List.assoc_opt n 
-     [1,Atomic;
-      2,Atomic;
-      3,Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])]]  with    
-    Some answer -> answer 
- | None ->
-  (match (n mod 3) with 
-  0 -> Fork([( P(1,[],B(n-5),S(n-3)),[n-1;n] );
-             ( P(1,[],B(n-4),S(n-2)),[n] );
-             ( P(1,[],B(n-3),S(n-1)),[] )])
- |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
- |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
- |_-> failwith("bad reminder by 3"))
-  ;;       
 
-(*
-
-Overall.check (CE1 f_1_empty_set_kmp1) ;; 
-
-*)  
 
 let g1 = Overall.check (CE1 f_1_empty_set_kmp1) ;; 
 let g2 = (function (CR1 x)->x |_->failwith("aaa")) g1 ;;  
 
 Bulk_result.superficial_part( Untamed.compute_bulk_result (P(1,[],B 0,S 7))) ;;
+

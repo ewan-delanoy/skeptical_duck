@@ -377,6 +377,21 @@ Hashtbl.add
     f_1_empty_set_superficial_result_lower_half;;
 
 
+let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;       
+    
+(*
+    
+  Verify.check 
+    (fst(Warehouse.pair_for_solution_list_lower_half))
+    (1,[],IMD 0) (CE2 f_1_empty_set_solution_list_lower_half) ;; 
+    
+*)
+    
+Hashtbl.add 
+  (snd(Warehouse.pair_for_solution_list_lower_half)) (1,[]) 
+    f_1_empty_set_solution_list_lower_half;;
+
+
 end ;;   
 
 module Constraint = struct  
