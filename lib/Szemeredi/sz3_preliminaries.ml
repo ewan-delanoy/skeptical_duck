@@ -679,9 +679,9 @@ let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;;
 let lower_range (width,scrappers) = snd(halves (width,scrappers)) ;; 
 
 let linear_upper_range (w,_scr,d) =
-      Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w) 0) (bound-2*w+d+1) ;;
+      Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
 let linear_lower_range (w,_scr,d) =
-      Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(d-2*w) 1) (bound-2*w+d) ;;      
+      Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
 
 let bivariate_selector f g l= 
   let temp1 = Image.image (fun x->(x,f x,g x)) l in 

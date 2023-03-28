@@ -76,7 +76,7 @@ let check_rf5 = List.filter (fun (x,y)->y<> rf5 x) res5 ;;
 
 let rfi (B b,S n) =
    if b=0 then Atomic else 
-   if n=b+2  
+   if b=n-1  
    then  (match (n mod 3) with 
     0 -> Fork([( P(1,[],B(n-5),S(n-3)),[n-1;n] );
                ( P(1,[],B(n-4),S(n-2)),[n] );
@@ -96,4 +96,8 @@ let help_with_check_rfi =
 
 let check_rfi = List.filter (fun (x,y1,y2)->y1<>y2)  help_with_check_rfi ;; 
 
-  
+let u1 = Image.image (fun ((B b,S n),_,_)->b-n+2) check_rfi ;; 
+let u2 = Multiset.diforchan u1 ;;   
+let u3 = List.filter (fun ((B b,S n),_,_)->b-n+2=2) check_rfi ;; 
+
+Bulk_result.superficial_part( Untamed.compute_bulk_result (P(1,[],B 7,S 7)))
