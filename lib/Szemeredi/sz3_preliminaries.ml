@@ -865,4 +865,13 @@ let next_look d =
     let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
     (fun ()->answer) ;;  
 
+
+let check tagged_f = 
+  let (kmp,idx,pt) = get_status () in 
+  let (w,s,_,_) = Point.unveil pt in 
+  let msg1 = "Current goal is ("^(string_of_int w)^
+              ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
+  let _ = (print_string("\n\n"^msg1^"\n\n");flush stdout) in 
+  Verify.check kmp (w,s,idx) tagged_f ;; 
+
 end ;; 
