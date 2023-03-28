@@ -188,7 +188,7 @@ let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
 end ;;  
 
 
-module Rose = struct 
+module Warehouse = struct 
   exception Not_defined_yet ;;
   
   let not_defined_yet _x = raise Not_defined_yet ;;
@@ -490,7 +490,7 @@ module Untamed = struct
    if pt2 = Empty_point 
    then Some (Bulk_result.atomic_case pt)
    else
-   let pre_res=Rose.try_precomputed_results pt2 in 
+   let pre_res=Warehouse.try_precomputed_results pt2 in 
    Bulk_result.extend_with_opt pt2 pre_res adj ;;
      
   let superificial_result_in_jump_case  pt_after_jump =
@@ -669,7 +669,7 @@ let global_verification_for_single_pair (width,scrappers) =
       [] -> None 
       | (b,n) :: others ->
          (
-          let (good_opt,bad_opt) = Rose.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
           if good_opt = None 
           then Some(Option.get bad_opt,(b,n))
           else tempf others     
@@ -848,7 +848,7 @@ let get_status () = match (!ref_for_status) with
    Some status -> status 
    | None -> 
       let opt =  Verify.global_verification goal 
-      and idx = (!(Rose.index_for_missing_data)) in 
+      and idx = (!(Warehouse.index_for_missing_data)) in 
       let (kmp,pt) = Option.get opt in 
       let answer = (kmp,idx,pt) in 
       let _ = (ref_for_status := Some answer) in 
