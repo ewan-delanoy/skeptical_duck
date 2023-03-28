@@ -245,6 +245,8 @@ module Warehouse = struct
   let hashtbl12 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl12) ;; 
 
+  let length_watcher = hashtbl5 ;; 
+
   let read_missing_part (KMP i) = 
       match List.assoc_opt (KMP i)  
       [
@@ -362,7 +364,7 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
                ( P(1,[],B(n-3),S(n-1)),[] )])
    |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
    |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
-   |_-> failwith("bad reminder by 3")) ;;       
+   |_-> failwith("bad remainder by 3")) ;;       
   
 (*
   
@@ -375,6 +377,40 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
 Hashtbl.add 
   (snd(Warehouse.pair_for_superficial_result_lower_half)) (1,[]) 
     f_1_empty_set_superficial_result_lower_half;;
+
+
+
+let f_1_empty_set_superficial_result_upper_half (B b) (S n) = 
+  if b=0 then Atomic else
+  if n=3 then Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])] else 
+  if n=b+2 
+  then (match (n mod 3) with 
+            0 -> Fork([( P(1,[],B(n-5),S(n-3)),[n-1;n] );
+                       ( P(1,[],B(n-4),S(n-2)),[n] );
+                       ( P(1,[],B(n-3),S(n-1)),[] )])
+           |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
+           |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
+           |_-> failwith("bad remainder by 3")) 
+  else Decomposable (P (1, [], B (b), S (b+2)), Int_range.range (b+3) n) ;;   
+    
+   
+(*
+   
+   Verify.check 
+    (fst(Warehouse.pair_for_superficial_result_upper_half))
+    (1,[],IMD 0) (CE1 f_1_empty_set_superficial_result_upper_half) ;; 
+   
+*)
+   
+Hashtbl.add 
+   (snd(Warehouse.pair_for_superficial_result_upper_half)) (1,[]) 
+     f_1_empty_set_superficial_result_upper_half;;
+   
+
+
+
+
+
 
 
 let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;       
@@ -401,7 +437,7 @@ let f_1_empty_set_qpl_length_lower_half (B _b) (S n) =
        0 -> 3
       |1-> 2   
       |2-> 1  
-      |_-> failwith("bad reminder by 3"));; 
+      |_-> failwith("bad remainder by 3"));; 
 
 
 (*
@@ -796,12 +832,23 @@ let linear_upper_range (w,_scr,d) =
 let linear_lower_range (w,_scr,d) =
       Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
 
+let restricted_upper_range (width,scrappers,IMD ql_idx,watchman) = 
+  List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (upper_range (width,scrappers)) ;;
+
+let restricted_lower_range (width,scrappers,IMD ql_idx,watchman) = 
+  List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (lower_range (width,scrappers)) ;;
+
+
 let bivariate_selector f g l= 
   let temp1 = Image.image (fun x->let (b,n)=x in (x,f b n,g b n)) l in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
 
 let upper_selector (width,scrappers) f g = bivariate_selector f g (upper_range (width,scrappers)) ;;  
 let lower_selector (width,scrappers) f g = bivariate_selector f g (lower_range (width,scrappers)) ;;  
+
+let restricted_upper_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (restricted_upper_range (width,scrappers,IMD ql_idx,watchman)) ;;  
+let restricted_lower_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (restricted_lower_range (width,scrappers,IMD ql_idx,watchman)) ;;  
+
 
 let original1 (width,scrappers) b n =
   Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
@@ -829,18 +876,20 @@ let original11 (width,scrappers,IMD ql_idx) b n =
   extension ;;
 let original12 = original11 ;; 
 
+let lw = Warehouse.length_watcher ;; 
 let check1 pair g = lower_selector pair (original1 pair) g  ;; 
 let check2 pair g = upper_selector pair (original2 pair) g  ;; 
 let check3 pair g = lower_selector pair (original3 pair) g  ;; 
 let check4 pair g = upper_selector pair (original4 pair) g  ;; 
 let check5 pair g = lower_selector pair (original5 pair) g  ;; 
 let check6 pair g = upper_selector pair (original6 pair) g  ;; 
-let check7  (w,s,i) g = lower_selector (w,s) (original7  (w,s,i)) g  ;; 
-let check8  (w,s,i) g = upper_selector (w,s) (original8  (w,s,i)) g  ;; 
-let check9  (w,s,i) g = lower_selector (w,s) (original9  (w,s,i)) g  ;; 
-let check10 (w,s,i) g = upper_selector (w,s) (original10 (w,s,i)) g  ;; 
-let check11 (w,s,i) g = lower_selector (w,s) (original11 (w,s,i)) g  ;; 
-let check12 (w,s,i) g = upper_selector (w,s) (original12 (w,s,i)) g  ;; 
+let check7  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original7  (w,s,i)) g  ;; 
+let check8  (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original8  (w,s,i)) g  ;; 
+let check9  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original9  (w,s,i)) g  ;; 
+let check10 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original10 (w,s,i)) g  ;; 
+let check11 (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original11 (w,s,i)) g  ;; 
+let check12 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original12 (w,s,i)) g  ;; 
+
 
 let visualize1 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original1 (w,scr) b n)
