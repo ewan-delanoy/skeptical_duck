@@ -33,6 +33,14 @@ type visualization_result = Sz3_types.visualization_result =
   |VR4 of ((breadth * size) * point) list 
   |VR5 of ((breadth * size) * constraint_t list) list 
   |VR6 of ((breadth * size) * extension_data) list ;; 
+type check_entry = Sz3_types.check_entry = 
+  CE1 of ( breadth -> size -> superficial_result) 
+ |CE2 of ( breadth -> size -> solution list) 
+ |CE3 of ( breadth -> size -> int) 
+ |CE4 of ( breadth -> size -> point) 
+ |CE5 of ( breadth -> size -> constraint_t list) 
+ |CE6 of ( breadth -> size -> extension_data);;  
+
 type check_result = Sz3_types.check_result =
   CR1 of ((breadth * size) * superficial_result * superficial_result) list 
  |CR2 of ((breadth * size) * solution list * solution list) list 
