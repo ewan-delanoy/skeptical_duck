@@ -331,6 +331,8 @@ end ;;
 
 module Fill_Warehouse = struct 
 
+let simplest_example n = List.filter (fun j->(j mod 3)<>0) (Int_range.range 1 n) ;; 
+let simplest_list n = [simplest_example n] ;; 
 
 let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
     match List.assoc_opt n 
@@ -345,12 +347,13 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
                ( P(1,[],B(n-3),S(n-1)),[] )])
    |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
    |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
-   |_-> failwith("bad reminder by 3"))
-    ;;       
+   |_-> failwith("bad reminder by 3")) ;;       
   
 (*
   
-  Overall.check (CE1 f_1_empty_set_superficial_result_lower_half) ;; 
+  Verify.check 
+   (fst(Warehouse.pair_for_superficial_result_lower_half))
+   (1,[],IMD 0) (CE1 f_1_empty_set_superficial_result_lower_half) ;; 
   
 *)
 
