@@ -732,37 +732,37 @@ let check12 (w,s,i) g = lower_selector (w,s) (original12 (w,s,i)) g  ;;
 
 let visualize1 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original1 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d))) ;;
+) (linear_lower_range (w,scr,d))) ;;
 let visualize2 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original2 (w,scr) (b,n))
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize3 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original3 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d))) ;;
+) (linear_lower_range (w,scr,d))) ;;
 let visualize4 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original4 (w,scr) (b,n))
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize5 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original5 (w,scr) (b,n))
-) (linear_upper_range (w,scr,d))) ;;
+) (linear_lower_range (w,scr,d))) ;;
 let visualize6 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original6 (w,scr) (b,n))
 ) (linear_upper_range (w,scr,d))) ;;
 let visualize7 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original7 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d))) ;;
+) (linear_lower_range (w,s,d))) ;;
 let visualize8 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original8 (w,s,i) (b,n))
 ) (linear_upper_range (w,s,d))) ;;
 let visualize9 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original9 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d))) ;;
+) (linear_lower_range (w,s,d))) ;;
 let visualize10 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original10 (w,s,i) (b,n))
 ) (linear_upper_range (w,s,d))) ;;
 let visualize11 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original11 (w,s,i) (b,n))
-) (linear_upper_range (w,s,d))) ;;
+) (linear_lower_range (w,s,d))) ;;
 let visualize12 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original12 (w,s,i) (b,n))
 ) (linear_upper_range (w,s,d))) ;;
