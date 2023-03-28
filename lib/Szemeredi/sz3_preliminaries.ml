@@ -189,11 +189,8 @@ end ;;
 
 
 module Warehouse = struct 
-  exception Not_defined_yet ;;
   
-  let not_defined_yet _x = raise Not_defined_yet ;;
-
-
+  exception Bad_kmp_index of int ;; 
 
   let access_named_hashtbl (error_msg,hashtbl) pt = 
     let (width,scrappers,breadth,size) = Point.unveil pt in 
@@ -248,6 +245,24 @@ module Warehouse = struct
   let hashtbl12 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
   let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl12) ;; 
 
+  let read_missing_part (KMP i) = 
+      match List.assoc_opt (KMP i)  
+      [
+        (fst pair_for_superficial_result_lower_half),"superficial_result_lower_half";
+        (fst pair_for_superficial_result_upper_half),"superficial_result_upper_half";
+        (fst pair_for_solution_list_lower_half),"solution_list_lower_half";
+        (fst pair_for_solution_list_upper_half),"solution_list_upper_half";
+        (fst pair_for_qpl_length_lower_half),"qpl_length_lower_half";
+        (fst pair_for_qpl_length_upper_half),"qpl_length_upper_half";
+        (fst pair_for_qpe_core_lower_half),"qpe_core_lower_half";
+        (fst pair_for_qpe_core_upper_half),"qpe_core_upper_half";
+        (fst pair_for_qpe_constraints_lower_half),"qpe_constraints_lower_half";
+        (fst pair_for_qpe_constraints_upper_half),"qpe_constraints_upper_half";
+        (fst pair_for_qpe_extension_lower_half),"qpe_extension_lower_half";
+        (fst pair_for_qpe_extension_upper_half),"qpe_extension_upper_half";
+      ] with 
+      Some answer -> answer 
+      |None -> raise(Bad_kmp_index(i)) ;; 
 
   let qualified_point_core half k pt = match half with 
     Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_core_lower_half k pt 
