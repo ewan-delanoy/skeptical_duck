@@ -40,7 +40,7 @@ type kind_of_missing_part = KMP of int ;;
 
 type index_of_missing_data = IMD of int ;;
 
-type visualization_result =
+type to_be_deprecated_visualization_result =
     VR1 of ((breadth * size) * superficial_result) list 
    |VR2 of ((breadth * size) * solution list) list 
    |VR3 of ((breadth * size) * int) list 
@@ -48,7 +48,7 @@ type visualization_result =
    |VR5 of ((breadth * size) * constraint_t list) list 
    |VR6 of ((breadth * size) * extension_data) list ;; 
 
-type check_entry =
+type to_be_deprecated_check_entry =
    CE1 of ( breadth -> size -> superficial_result) 
   |CE2 of ( breadth -> size -> solution list) 
   |CE3 of ( breadth -> size -> int) 
@@ -56,7 +56,7 @@ type check_entry =
   |CE5 of ( breadth -> size -> constraint_t list) 
   |CE6 of ( breadth -> size -> extension_data);;    
 
-type check_result =
+type to_be_deprecated_check_result =
    CR1 of ((breadth * size) * superficial_result * superficial_result) list 
   |CR2 of ((breadth * size) * solution list * solution list) list 
   |CR3 of ((breadth * size) * int * int) list 
