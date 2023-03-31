@@ -26,6 +26,27 @@ type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;;
 type half = Sz3_types.half = Lower_half | Upper_half ;;
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
+type kind_of_component = Sz3_types.kind_of_component = 
+    Superficial_result
+   |Solution_list 
+   |Int 
+   |Point 
+   |Constraint_list
+   |Extension_data ;; 
+type result_component = Sz3_types.result_component = {
+    kind : kind_of_component ; 
+    sr_aspect : superficial_result ;
+    sl_aspect : solution list ; 
+    i_aspect : int ;
+    p_aspect : point ;
+    cl_aspect : constraint_t list ;
+    xt_aspect : extension_data ;
+}  ;;   
+type visualization_result =  Sz3_types.visualization_result = VR of kind_of_component * (result_component list);;
+type subject_to_checking =  Sz3_types.subject_to_checking = STC of kind_of_component * (breadth -> size -> result_component);;
+type check_result =  Sz3_types.check_result = CR of kind_of_component * (result_component list);;
+
+
 type to_be_deprecated_visualization_result = Sz3_types.to_be_deprecated_visualization_result = 
    VR1 of ((breadth * size) * superficial_result) list 
   |VR2 of ((breadth * size) * solution list) list 
