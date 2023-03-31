@@ -129,7 +129,7 @@ let rf5 (B b,S n) =
   if ((n mod 3)=1) then [simplest_example(n-5)@(Int_range.range (n-3) n)] else  
                         [simplest_example(n-6)@(Int_range.range (n-4) n)] ;;         
 let check_rf5 = List.filter (fun (x,y)->y<> rf5 x) res5 ;; 
-
+ 
 
 let res6 = unvr(Overall.next_look 6 ()) ;;
 let rf6 (B b,S n) = 

@@ -56,9 +56,9 @@ type result_component = {
     cl_aspect : constraint_t list ;
     xt_aspect : extension_data ;
 }  ;;   
-type visualization_result = VR of kind_of_component * (result_component list);;
+type visualization_result = VR of kind_of_component * (((breadth * size) * result_component) list);;
 type subject_to_checking = STC of kind_of_component * (breadth -> size -> result_component);;
-type check_result = CR of kind_of_component * (result_component list);;
+type check_result = CR of kind_of_component * (((breadth * size) * result_component * result_component) list);;
 
 
 type to_be_deprecated_visualization_result =
