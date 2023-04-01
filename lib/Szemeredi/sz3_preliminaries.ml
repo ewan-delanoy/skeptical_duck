@@ -1350,6 +1350,10 @@ let get_status () = match (!ref_for_status) with
       let (((koc,half),imd),pt) = Option.get opt in 
       let answer = (koc,half,imd,pt) in 
       let _ = (ref_for_status := Some answer) in 
+      let msg = "\n\n\n To get started, do : \n\n"^
+                "open "^(Kind_of_component.to_capitalized_string(koc))^"_"^
+                        (Half.to_string half)^"_mode ;;\n\n\n" in 
+      let _ = (print_string msg;flush stdout) in                   
       answer ;;
 
 
