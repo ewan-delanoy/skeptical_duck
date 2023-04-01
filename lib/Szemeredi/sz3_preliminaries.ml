@@ -353,6 +353,166 @@ module Irimboro = struct
 
 end ;;  
 
+
+
+module Warehouse = struct 
+  
+  exception Bad_kmp_index of int ;; 
+
+  let access_named_hashtbl (error_handling,hashtbl) pt = 
+    let (width,scrappers,breadth,size) = Point.unveil pt in 
+    match Hashtbl.find_opt hashtbl (width,scrappers) with 
+    None -> (None,Some (error_handling,IMD 0)) 
+    | Some f -> (Some(f breadth size),None) ;; 
+
+  let access_parametrized_named_hashtbl (error_handling,hashtbl) k pt = 
+    let (width,scrappers,breadth,size) = Point.unveil pt in 
+    match Hashtbl.find_opt hashtbl (width,scrappers,k) with 
+    None -> (None,Some (error_handling,k)) 
+    | Some f -> (Some(f breadth size),None) ;; 
+  
+    
+  
+  let hashtbl_for_superficial_result_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
+  let try_get_superficial_result_lower_half = 
+     access_named_hashtbl ((Superficial_result,Lower_half),
+        hashtbl_for_superficial_result_lower_half) ;; 
+  
+  let hashtbl_for_superficial_result_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
+  let try_get_superficial_result_upper_half = 
+      access_named_hashtbl ((Superficial_result,Upper_half),
+        hashtbl_for_superficial_result_upper_half) ;; 
+
+  let hashtbl_for_solution_list_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
+  let try_get_solution_list_lower_half = 
+      access_named_hashtbl ((Solution_list,Lower_half),
+        hashtbl_for_solution_list_lower_half) ;; 
+
+  let hashtbl_for_solution_list_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
+  let try_get_solution_list_upper_half = 
+      access_named_hashtbl ((Solution_list,Upper_half),
+        hashtbl_for_solution_list_upper_half) ;; 
+
+  let hashtbl_for_qpl_length_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> int) Hashtbl.t) ;;
+  let try_get_qpl_length_lower_half = 
+    access_named_hashtbl ((Qpl_length,Lower_half),
+      hashtbl_for_qpl_length_lower_half) ;; 
+
+  let hashtbl_for_qpl_length_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> int) Hashtbl.t) ;;
+  let try_get_qpl_length_upper_half = 
+    access_named_hashtbl ((Qpl_length,Upper_half),
+      hashtbl_for_qpl_length_upper_half) ;; 
+      
+  let hashtbl_for_qpe_core_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
+  let try_get_qpe_core_lower_half = 
+   access_parametrized_named_hashtbl ((Qpe_core,Lower_half),
+      hashtbl_for_qpe_core_lower_half) ;; 
+
+  let hashtbl_for_qpe_core_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
+  let try_get_qpe_core_upper_half = 
+    access_parametrized_named_hashtbl ((Qpe_core,Upper_half),
+      hashtbl_for_qpe_core_upper_half) ;; 
+      
+        
+  let hashtbl_for_qpe_constraints_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let try_get_qpe_constraints_lower_half = 
+    access_parametrized_named_hashtbl ((Qpe_constraints,Lower_half),
+      hashtbl_for_qpe_constraints_lower_half) ;; 
+
+  let hashtbl_for_qpe_constraints_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
+  let try_get_qpe_constraints_upper_half = 
+    access_parametrized_named_hashtbl ((Qpe_constraints,Upper_half),
+      hashtbl_for_qpe_constraints_upper_half) ;; 
+
+  let hashtbl_for_qpe_extension_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> extension_data) Hashtbl.t) ;;
+  let try_get_qpe_extension_lower_half = 
+    access_parametrized_named_hashtbl ((Qpe_extension,Lower_half),
+      hashtbl_for_qpe_extension_lower_half) ;; 
+
+  let hashtbl_for_qpe_extension_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> extension_data) Hashtbl.t) ;;
+  let try_get_qpe_extension_upper_half = 
+    access_parametrized_named_hashtbl ((Qpe_extension,Upper_half),
+      hashtbl_for_qpe_extension_upper_half) ;; 
+
+  let qualified_point_core half k pt = match half with 
+    Lower_half -> try_get_qpe_core_lower_half k pt 
+   |Upper_half -> try_get_qpe_core_upper_half k pt;;
+
+  let qualified_point_constraints half k pt = match half with 
+   Lower_half -> try_get_qpe_constraints_lower_half k pt 
+  |Upper_half -> try_get_qpe_constraints_upper_half k pt;;
+
+
+  let qualified_point_extension half k pt = match half with 
+    Lower_half -> try_get_qpe_extension_lower_half k pt 
+   |Upper_half -> try_get_qpe_extension_upper_half k pt;;
+
+  let qpl_length half pt = match half with 
+    Lower_half -> try_get_qpl_length_lower_half pt 
+   |Upper_half -> try_get_qpl_length_upper_half pt;;
+
+  let qualified_point_element half k pt = 
+    let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
+    if bad_opt1<>None then (None,bad_opt1) else 
+    let (good_opt2,bad_opt2) = qualified_point_constraints half k pt in 
+    if bad_opt2<>None then (None,bad_opt2) else   
+    let (good_opt3,bad_opt3) = qualified_point_extension half k pt in 
+    if bad_opt3<>None then (None,bad_opt3) else     
+    let core_r = Option.get good_opt1 
+    and constraints_r = Option.get good_opt2 
+    and extension_r = Option.get good_opt3 in 
+    (Some(Q(core_r,constraints_r,extension_r)),None) ;;   
+  
+  let superficial_result half pt = match half with 
+     Lower_half -> try_get_superficial_result_lower_half pt 
+    |Upper_half -> try_get_superficial_result_upper_half pt;;
+     
+  let solution_list half pt = match half with 
+    Lower_half -> try_get_solution_list_lower_half pt 
+   |Upper_half -> try_get_solution_list_upper_half pt;;
+  
+   
+  let qualified_point_list half pt =
+    let (good_opt1,bad_opt1) =qpl_length half pt in 
+    if bad_opt1<>None then (None,bad_opt1) else 
+  let length_r = Option.get good_opt1 in 
+  let eltwise_results = Int_range.scale (
+          fun k-> qualified_point_element half (IMD k) pt
+  )  1 length_r in  
+  let bad_ones = List.filter (
+        fun (good_opt,_bad_opt) -> good_opt = None
+  ) eltwise_results in 
+  if bad_ones <> [] 
+  then (None,snd(List.hd bad_ones)) 
+  else 
+  let final_result = Image.image (fun (good_opt,_bad_opt) ->Option.get good_opt) eltwise_results in 
+  (Some final_result,None) ;;  
+
+
+  let bulk_result half pt = 
+     let (good_opt1,bad_opt1) = superficial_result half pt in 
+     if bad_opt1<>None then (None,bad_opt1) else 
+     let (good_opt2,bad_opt2) = solution_list half pt in 
+     if bad_opt2<>None then (None,bad_opt2) else  
+     let (good_opt3,bad_opt3) = qualified_point_list half pt in 
+     if bad_opt3<>None then (None,bad_opt3) else  
+     let superficial_result_r = Option.get good_opt1 
+     and solution_list_r = Option.get good_opt2 
+     and qualified_point_list_r = Option.get good_opt3  in     
+     (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
+   ;;   
+
+
+  let nonhalved_bulk_result pt = 
+    if Point.is_in_upper_half pt 
+    then bulk_result Upper_half pt 
+    else bulk_result Lower_half pt ;;    
+
+  let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
+
+end ;;  
+
+
 module Fill_Warehouse = struct 
 
 let simplest_example n = List.filter (fun j->(j mod 3)<>0) (Int_range.range 1 n) ;; 
