@@ -13,11 +13,10 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz3_preliminaries ;;
 
+
 let see0 = Overall.get_status () ;; 
 
-let unvr = function (VR1 l)->l | _ -> failwith("aaa") ;; 
-
-let res1 = unvr(Overall.next_look 1 ()) ;; 
+let res2 = Overall.next_look 2 ;; 
 let rf1 (B b,S n) =
   match List.assoc_opt n 
        [

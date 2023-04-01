@@ -40,28 +40,7 @@ type kind_of_missing_part = KMP of int ;;
 
 type index_of_missing_data = IMD of int ;;
 
-type kind_of_component = 
-    Superficial_result
-   |Solution_list 
-   |Int 
-   |Point 
-   |Constraint_list
-   |Extension_data ;; 
-type result_component = {
-    kind : kind_of_component ; 
-    sr_aspect : superficial_result ;
-    sl_aspect : solution list ; 
-    i_aspect : int ;
-    p_aspect : point ;
-    cl_aspect : constraint_t list ;
-    xt_aspect : extension_data ;
-}  ;;   
-type visualization_result = VR of kind_of_component * (((breadth * size) * result_component) list);;
-type subject_to_checking = STC of kind_of_component * (breadth -> size -> result_component);;
-type check_result = CR of kind_of_component * (((breadth * size) * result_component * result_component) list);;
-
-
-type to_be_deprecated_visualization_result =
+type visualization_result =
     VR1 of ((breadth * size) * superficial_result) list 
    |VR2 of ((breadth * size) * solution list) list 
    |VR3 of ((breadth * size) * int) list 
@@ -69,7 +48,7 @@ type to_be_deprecated_visualization_result =
    |VR5 of ((breadth * size) * constraint_t list) list 
    |VR6 of ((breadth * size) * extension_data) list ;; 
 
-type to_be_deprecated_check_entry =
+type check_entry =
    CE1 of ( breadth -> size -> superficial_result) 
   |CE2 of ( breadth -> size -> solution list) 
   |CE3 of ( breadth -> size -> int) 
@@ -77,7 +56,7 @@ type to_be_deprecated_check_entry =
   |CE5 of ( breadth -> size -> constraint_t list) 
   |CE6 of ( breadth -> size -> extension_data);;    
 
-type to_be_deprecated_check_result =
+type check_result =
    CR1 of ((breadth * size) * superficial_result * superficial_result) list 
   |CR2 of ((breadth * size) * solution list * solution list) list 
   |CR3 of ((breadth * size) * int * int) list 

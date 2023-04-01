@@ -7,7 +7,6 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 *)
 
-
 type breadth = Sz3_types.breadth = B of int ;;
 type size = Sz3_types.size = S of int ;;
 
@@ -27,25 +26,28 @@ type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;;
 type half = Sz3_types.half = Lower_half | Upper_half ;;
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
-type kind_of_component = Sz3_types.kind_of_component = 
-    Superficial_result
-   |Solution_list 
-   |Int 
-   |Point 
-   |Constraint_list
-   |Extension_data ;; 
-type result_component = Sz3_types.result_component = {
-    kind : kind_of_component ; 
-    sr_aspect : superficial_result ;
-    sl_aspect : solution list ; 
-    i_aspect : int ;
-    p_aspect : point ;
-    cl_aspect : constraint_t list ;
-    xt_aspect : extension_data ;
-}  ;;   
-type visualization_result =  Sz3_types.visualization_result = VR of kind_of_component * (((breadth * size) * result_component) list);;
-type subject_to_checking =  Sz3_types.subject_to_checking = STC of kind_of_component * (breadth -> size -> result_component);;
-type check_result =  Sz3_types.check_result = CR of kind_of_component * (((breadth * size) * result_component * result_component) list);;
+type visualization_result = Sz3_types.visualization_result = 
+   VR1 of ((breadth * size) * superficial_result) list 
+  |VR2 of ((breadth * size) * solution list) list 
+  |VR3 of ((breadth * size) * int) list 
+  |VR4 of ((breadth * size) * point) list 
+  |VR5 of ((breadth * size) * constraint_t list) list 
+  |VR6 of ((breadth * size) * extension_data) list ;; 
+type check_entry = Sz3_types.check_entry = 
+  CE1 of ( breadth -> size -> superficial_result) 
+ |CE2 of ( breadth -> size -> solution list) 
+ |CE3 of ( breadth -> size -> int) 
+ |CE4 of ( breadth -> size -> point) 
+ |CE5 of ( breadth -> size -> constraint_t list) 
+ |CE6 of ( breadth -> size -> extension_data);;  
+type check_result = Sz3_types.check_result =
+  CR1 of ((breadth * size) * superficial_result * superficial_result) list 
+ |CR2 of ((breadth * size) * solution list * solution list) list 
+ |CR3 of ((breadth * size) * int * int) list 
+ |CR4 of ((breadth * size) * point * point) list 
+ |CR5 of ((breadth * size) * constraint_t list * constraint_t list) list 
+ |CR6 of ((breadth * size) * extension_data * extension_data) list ;;    
+     
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -733,38 +735,6 @@ module Untamed = struct
     
 end ;;  
 
-module Result_Component = struct 
-
-module Private = struct 
-
-let origin = {
-      kind = Int ;
-      sr_aspect = Atomic ;
-      sl_aspect = [];
-      i_aspect = 0;
-      p_aspect = Empty_point ;
-      cl_aspect = [];
-      xt_aspect = [];
-    }
-  
-end ;;   
-
-let of_constraint_list cl = {Private.origin with kind = Constraint_list;cl_aspect=cl;} ;;        
-let of_extension_data xt = {Private.origin with kind = Extension_data;xt_aspect=xt;} ;;         
-let of_int i = {Private.origin with kind = Int;i_aspect=i;} ;;  
-let of_point p = {Private.origin with kind = Int;p_aspect=p;} ;;    
-let of_solution_list sl = {Private.origin with kind = Solution_list;sl_aspect=sl;} ;; 
-let of_superficial_result sr = {Private.origin with kind = Solution_list;sr_aspect=sr;} ;;
-
-let to_constraint_list rc = rc.cl_aspect ;;        
-let to_extension_data rc = rc.xt_aspect ;;         
-let to_int rc = rc.i_aspect ;;  
-let to_point rc = rc.p_aspect ;;    
-let to_solution_list rc = rc.sl_aspect ;; 
-let to_superficial_result rc = rc.sr_aspect ;;
-
-end ;;   
-
 
 module Pretty_printer = struct 
 
@@ -774,57 +744,44 @@ let for_int_list l = "["^(String.concat ";" (Image.image string_of_int l))^"]" ;
 
 let for_constraint (C l) = "C"^(for_int_list l);;
 
-let for_constraint_list l = "["^(String.concat ";" (Image.image for_constraint l))^"]" ;;
-
 let for_solution_list l = "["^(String.concat ";" (Image.image for_int_list l))^"]" ;;
 
 let for_point = function 
     Empty_point -> "Empty_point" 
   | P(w,s,B b,S n) -> "P("^(string_of_int w)^","^(for_int_list s)^",B("^(string_of_int b)^"),S("^(string_of_int n)^"))";;
 
-let for_extension_data (l:extension_data) = for_int_list l ;; 
-
-let for_int = string_of_int ;;
-
 let for_fork_element 
 (pt,ext_data) = "( "^(for_point pt)^","^(for_int_list ext_data)^" )" ;; 
   
+
 let for_superficial_result = function
     Atomic -> "Atomic"
   | Decomposable (pt,ext_data) -> "Decomposable( "^(for_point pt)^","^(for_int_list ext_data)^" )"
   | Contraction (pt,cstr) -> "Contraction( "^(for_point pt)^","^(for_constraint cstr)^" )"
   | Fork (l) -> "Fork(["^(String.concat ";" (Image.image for_fork_element l))^"])" ;;
 
-let for_element rc = match rc.kind with 
-    Superficial_result -> for_superficial_result (Result_Component.to_superficial_result rc)
-  | Solution_list -> for_solution_list(Result_Component.to_solution_list rc)
-  | Int -> for_int(Result_Component.to_int rc)
-  | Point -> for_point(Result_Component.to_point rc)
-  | Constraint_list -> for_constraint_list(Result_Component.to_constraint_list rc)
-  | Extension_data -> for_extension_data(Result_Component.to_extension_data rc) ;; 
 
+let for_vr1_element ((B b,S n),sr) = 
+    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_superficial_result sr)^")" ;;  
 
-let for_vr_element ((B b,S n),sr) = 
-    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_element sr)^")" ;;
+let for_vr2_element ((B b,S n),sl) = 
+    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_solution_list sl)^")" ;; 
+
+let for_vr3_element ((B b,S n),k) = 
+      "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(string_of_int k)^")" ;;  
   
-let for_cr_element ((B b,S n),sr1,sr2) = 
-      "((B "^(string_of_int b)^",S "^(string_of_int n)^
-       "),"^(for_element sr1)^","^(for_element sr2)^")" ;;    
 
-let for_visualization_result (VR(_kind,l))= 
- "[\n"^(String.concat ";\n" (Image.image for_vr_element l))^"\n]" ;; 
-  
-let for_check_result (CR(_kind,l))= 
- "[\n"^(String.concat ";\n" (Image.image for_cr_element l))^"\n]" ;; 
+let for_visualization_result = function 
+   VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
+  |VR2(l)->"VR2[\n"^(String.concat ";\n" (Image.image for_vr2_element l))^"\n]"
+  |VR3(l)->"VR3[\n"^(String.concat ";\n" (Image.image for_vr3_element l))^"\n]"
+  |VR4(_l)->"..."
+  |VR5(_l)->"..."
+  |VR6(_l)->"..." ;;
 
 end ;; 
 
-
-let print_out_visualization_result (fmt:Format.formatter) vr=
-   Format.fprintf fmt "@[%s@]" (Private.for_visualization_result vr);;
-
-let print_out_check_result (fmt:Format.formatter) cr=
-   Format.fprintf fmt "@[%s@]" (Private.for_check_result cr);;   
+let for_visualization_result = Private.for_visualization_result ;;
 
 end ;;   
 
@@ -920,131 +877,87 @@ let original11 (width,scrappers,IMD ql_idx) b n =
 let original12 = original11 ;; 
 
 let lw = Warehouse.length_watcher ;; 
-let pre_check1 pair g = lower_selector pair (original1 pair) g  ;; 
-let pre_check2 pair g = upper_selector pair (original2 pair) g  ;; 
-let pre_check3 pair g = lower_selector pair (original3 pair) g  ;; 
-let pre_check4 pair g = upper_selector pair (original4 pair) g  ;; 
-let pre_check5 pair g = lower_selector pair (original5 pair) g  ;; 
-let pre_check6 pair g = upper_selector pair (original6 pair) g  ;; 
-let pre_check7  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original7  (w,s,i)) g  ;; 
-let pre_check8  (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original8  (w,s,i)) g  ;; 
-let pre_check9  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original9  (w,s,i)) g  ;; 
-let pre_check10 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original10 (w,s,i)) g  ;; 
-let pre_check11 (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original11 (w,s,i)) g  ;; 
-let pre_check12 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original12 (w,s,i)) g  ;; 
+let check1 pair g = lower_selector pair (original1 pair) g  ;; 
+let check2 pair g = upper_selector pair (original2 pair) g  ;; 
+let check3 pair g = lower_selector pair (original3 pair) g  ;; 
+let check4 pair g = upper_selector pair (original4 pair) g  ;; 
+let check5 pair g = lower_selector pair (original5 pair) g  ;; 
+let check6 pair g = upper_selector pair (original6 pair) g  ;; 
+let check7  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original7  (w,s,i)) g  ;; 
+let check8  (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original8  (w,s,i)) g  ;; 
+let check9  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original9  (w,s,i)) g  ;; 
+let check10 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original10 (w,s,i)) g  ;; 
+let check11 (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original11 (w,s,i)) g  ;; 
+let check12 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original12 (w,s,i)) g  ;; 
 
-let check1 pair f = Image.image (fun (bn,sr1,sr2)->(bn,
-    Result_Component.of_superficial_result sr1,
-    Result_Component.of_superficial_result sr2) )
-(pre_check1 pair (fun b n->Result_Component.to_superficial_result(f b n))) ;;
 
-let check2 pair f = Image.image (fun (bn,sr1,sr2)->(bn,
-    Result_Component.of_superficial_result sr1,
-    Result_Component.of_superficial_result sr2) )
-(pre_check2 pair (fun b n->Result_Component.to_superficial_result(f b n))) ;;
-
-let check3 pair f = Image.image (fun (bn,sl1,sl2)->(bn,
-    Result_Component.of_solution_list sl1,
-    Result_Component.of_solution_list sl2) )
-(pre_check3 pair (fun b n->Result_Component.to_solution_list(f b n))) ;;
-
-let check4 pair f = Image.image (fun (bn,sl1,sl2)->(bn,
-    Result_Component.of_solution_list sl1,
-    Result_Component.of_solution_list sl2) )
-(pre_check4 pair (fun b n->Result_Component.to_solution_list(f b n))) ;;
-
-let check5 pair f = Image.image (fun (bn,i1,i2)->(bn,
-    Result_Component.of_int i1,
-    Result_Component.of_int i2) )
-(pre_check5 pair (fun b n->Result_Component.to_int(f b n))) ;;
-
-let check6 pair f = Image.image (fun (bn,i1,i2)->(bn,
-    Result_Component.of_int i1,
-    Result_Component.of_int i2) )
-(pre_check6 pair (fun b n->Result_Component.to_int(f b n))) ;;
-
-let check7 triple f = Image.image (fun (bn,pt1,pt2)->(bn,
-    Result_Component.of_point pt1,
-    Result_Component.of_point pt2) )
-(pre_check7 triple (fun b n->Result_Component.to_point(f b n))) ;;
-
-let check8 triple f = Image.image (fun (bn,pt1,pt2)->(bn,
-    Result_Component.of_point pt1,
-    Result_Component.of_point pt2) )
-(pre_check8 triple (fun b n->Result_Component.to_point(f b n))) ;;
-
-let check9 triple f = Image.image (fun (bn,cl1,cl2)->(bn,
-    Result_Component.of_constraint_list cl1,
-    Result_Component.of_constraint_list cl2) )
-(pre_check9 triple (fun b n->Result_Component.to_constraint_list(f b n))) ;;
-
-let check10 triple f = Image.image (fun (bn,cl1,cl2)->(bn,
-    Result_Component.of_constraint_list cl1,
-    Result_Component.of_constraint_list cl2) )
-(pre_check10 triple (fun b n->Result_Component.to_constraint_list(f b n))) ;;
-
-let check11 triple f = Image.image (fun (bn,ed1,ed2)->(bn,
-    Result_Component.of_extension_data ed1,
-    Result_Component.of_extension_data ed2) )
-(pre_check11 triple (fun b n->Result_Component.to_extension_data(f b n))) ;;
-
-let check12 triple f = Image.image (fun (bn,ed1,ed2)->(bn,
-    Result_Component.of_extension_data ed1,
-    Result_Component.of_extension_data ed2) )
-(pre_check12 triple (fun b n->Result_Component.to_extension_data(f b n))) ;;
-
-let visualize1 (w,scr) d = VR(Superficial_result,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_superficial_result(original1 (w,scr) b n))
+let visualize1 (w,scr) d = VR1(Image.image (
+   fun (b,n) -> ((b,n),original1 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
-let visualize2 (w,scr) d = VR(Superficial_result,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_superficial_result(original2 (w,scr) b n))
+let visualize2 (w,scr) d = VR1(Image.image (
+   fun (b,n) -> ((b,n),original2 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
-let visualize3 (w,scr) d = VR(Solution_list,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_solution_list(original3 (w,scr) b n))
+let visualize3 (w,scr) d = VR2(Image.image (
+   fun (b,n) -> ((b,n),original3 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
-let visualize4 (w,scr) d = VR(Solution_list,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_solution_list(original4 (w,scr) b n))
+let visualize4 (w,scr) d = VR2(Image.image (
+   fun (b,n) -> ((b,n),original4 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
-let visualize5 (w,scr) d = VR(Int,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_int(original5 (w,scr) b n))
+let visualize5 (w,scr) d = VR3(Image.image (
+   fun (b,n) -> ((b,n),original5 (w,scr) b n)
 ) (linear_lower_range (w,scr,d))) ;;
-let visualize6 (w,scr) d = VR(Int,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_int(original6 (w,scr) b n))
+let visualize6 (w,scr) d = VR3(Image.image (
+   fun (b,n) -> ((b,n),original6 (w,scr) b n)
 ) (linear_upper_range (w,scr,d))) ;;
-let visualize7 (w,s,i) d = VR(Point,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_point(original7 (w,s,i) b n))
+let visualize7 (w,s,i) d = VR4(Image.image (
+   fun (b,n) -> ((b,n),original7 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
-let visualize8 (w,s,i) d = VR(Point,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_point(original8 (w,s,i) b n))
+let visualize8 (w,s,i) d = VR4(Image.image (
+   fun (b,n) -> ((b,n),original8 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
-let visualize9 (w,s,i) d = VR(Constraint_list,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_constraint_list(original9 (w,s,i) b n))
+let visualize9 (w,s,i) d = VR5(Image.image (
+   fun (b,n) -> ((b,n),original9 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
-let visualize10 (w,s,i) d = VR(Constraint_list,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_constraint_list(original10 (w,s,i) b n))
+let visualize10 (w,s,i) d = VR5(Image.image (
+   fun (b,n) -> ((b,n),original10 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
-let visualize11 (w,s,i) d = VR(Extension_data,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_extension_data(original11 (w,s,i) b n))
+let visualize11 (w,s,i) d = VR6(Image.image (
+   fun (b,n) -> ((b,n),original11 (w,s,i) b n)
 ) (linear_lower_range (w,s,d))) ;;
-let visualize12 (w,s,i) d = VR(Extension_data,Image.image (
-   fun (b,n) -> ((b,n),Result_Component.of_extension_data(original12 (w,s,i) b n))
+let visualize12 (w,s,i) d = VR6(Image.image (
+   fun (b,n) -> ((b,n),original12 (w,s,i) b n)
 ) (linear_upper_range (w,s,d))) ;;
 
+let unwrap_check_entry = function 
+   CE1(f1)->(Some f1,None,None,None,None,None)
+  |CE2(f2)->(None,Some f2,None,None,None,None)
+  |CE3(f3)->(None,None,Some f3,None,None,None)
+  |CE4(f4)->(None,None,None,Some f4,None,None)
+  |CE5(f5)->(None,None,None,None,Some f5,None)
+  |CE6(f6)->(None,None,None,None,None,Some f6) ;; 
+
+let unwrap_check_entry1 f = let (opt1,_opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt1 ;;
+let unwrap_check_entry2 f = let (_opt1,opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt2 ;;
+let unwrap_check_entry3 f = let (_opt1,_opt2,opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt3 ;;
+let unwrap_check_entry4 f = let (_opt1,_opt2,_opt3,opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt4 ;;
+let unwrap_check_entry5 f = let (_opt1,_opt2,_opt3,_opt4,opt5,_opt6) = unwrap_check_entry f in Option.get opt5 ;;
+let unwrap_check_entry6 f = let (_opt1,_opt2,_opt3,_opt4,_opt5,opt6) = unwrap_check_entry f in Option.get opt6 ;;
 
 
-let check (KMP i_kmp) (w,s,i) f = match i_kmp with 
-    1 -> CR(Superficial_result,check1 (w,s) f)
-   |2 -> CR(Superficial_result,check2 (w,s) f)
-   |3 -> CR(Solution_list,check3 (w,s) f)
-   |4 -> CR(Solution_list,check4 (w,s) f)
-   |5 -> CR(Int,check5 (w,s) f)
-   |6 -> CR(Int,check6 (w,s) f)
-   |7  -> CR(Point,check7 (w,s,i) f) 
-   |8  -> CR(Point,check8 (w,s,i) f) 
-   |9  -> CR(Constraint_list,check9 (w,s,i) f) 
-   |10 -> CR(Constraint_list,check10 (w,s,i) f) 
-   |11 -> CR(Extension_data,check11 (w,s,i) f) 
-   |12 -> CR(Extension_data,check12 (w,s,i) f) 
+
+let check (KMP i_kmp) (w,s,i) tagged_f = match i_kmp with 
+    1 -> CR1(check1 (w,s) (unwrap_check_entry1 tagged_f))
+   |2 -> CR1(check2 (w,s) (unwrap_check_entry1 tagged_f))
+   |3 -> CR2(check3 (w,s) (unwrap_check_entry2 tagged_f))
+   |4 -> CR2(check4 (w,s) (unwrap_check_entry2 tagged_f)) 
+   |5 -> CR3(check5 (w,s) (unwrap_check_entry3 tagged_f))
+   |6 -> CR3(check6 (w,s) (unwrap_check_entry3 tagged_f))
+   |7  -> CR4(check7  (w,s,i) (unwrap_check_entry4 tagged_f)) 
+   |8  -> CR4(check8  (w,s,i) (unwrap_check_entry4 tagged_f)) 
+   |9  -> CR5(check9  (w,s,i) (unwrap_check_entry5 tagged_f))
+   |10 -> CR5(check10 (w,s,i) (unwrap_check_entry5 tagged_f))
+   |11 -> CR6(check11 (w,s,i) (unwrap_check_entry6 tagged_f))
+   |12 -> CR6(check12 (w,s,i) (unwrap_check_entry6 tagged_f))
    |_ -> raise(Bad_kmp_index(i_kmp));; 
 
 let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with 
@@ -1094,7 +1007,10 @@ let next_look d =
     let msg1 = "Current goal is ("^(string_of_int w)^
                 ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
     let _ = (print_string("\n\n"^msg1^"\n\n");flush stdout) in 
-    Verify.visualize kmp (w,s,idx) d ;;  
+    let answer = Verify.visualize kmp (w,s,idx) d in 
+    let msg2 = "\n\n\n"^(Pretty_printer.for_visualization_result answer)^"\n\n\n" in  
+    let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
+    (fun ()->answer) ;;  
 
 
 let check tagged_f = 
