@@ -216,166 +216,6 @@ let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
 end ;;  
 
 
-module Irimboro = struct 
-  
-  exception Bad_kmp_index of int ;; 
-
-  let access_named_hashtbl (error_msg,hashtbl) pt = 
-    let (width,scrappers,breadth,size) = Point.unveil pt in 
-    match Hashtbl.find_opt hashtbl (width,scrappers) with 
-    None -> (None,Some error_msg) 
-    | Some f -> (Some(f breadth size),None) ;; 
-
-  let index_for_missing_data = ref (IMD(0)) ;; 
-
-  let access_parametrized_named_hashtbl (error_msg,hashtbl) k pt = 
-    let (width,scrappers,breadth,size) = Point.unveil pt in 
-    match Hashtbl.find_opt hashtbl (width,scrappers,k) with 
-    None -> let _ = (index_for_missing_data:=k) in 
-             (None,Some error_msg) 
-    | Some f -> (Some(f breadth size),None) ;; 
-  
-    
-  let superficial_result_lower_half_idx = KMP 1 ;;  
-  let hashtbl1 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
-  let pair_for_superficial_result_lower_half = (superficial_result_lower_half_idx,hashtbl1) ;;
-  let superficial_result_upper_half_idx = KMP 2 ;;  
-  let hashtbl2 = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
-  let pair_for_superficial_result_upper_half = (superficial_result_upper_half_idx,hashtbl2) ;;
-  let solution_list_lower_half_idx = KMP 3 ;; 
-  let hashtbl3 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
-  let pair_for_solution_list_lower_half = (solution_list_lower_half_idx,hashtbl3) ;;
-  let solution_list_upper_half_idx = KMP 4 ;; 
-  let hashtbl4 = ((Hashtbl.create 50): (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
-  let pair_for_solution_list_upper_half = (solution_list_upper_half_idx,hashtbl4) ;; 
-  let qpl_length_lower_half_idx = KMP 5 ;;  
-  let hashtbl5 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
-  let pair_for_qpl_length_lower_half = (qpl_length_lower_half_idx,hashtbl5) ;;
-  let qpl_length_upper_half_idx = KMP 6 ;;  
-  let hashtbl6 = ((Hashtbl.create 50): (int * int list, breadth -> size -> int) Hashtbl.t) ;;
-  let pair_for_qpl_length_upper_half = (qpl_length_upper_half_idx,hashtbl6) ;;
-  let qpe_core_lower_half_idx = KMP 7 ;;  
-  let hashtbl7 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
-  let pair_for_qpe_core_lower_half = (qpe_core_lower_half_idx,hashtbl7) ;;
-  let qpe_core_upper_half_idx = KMP 8 ;;  
-  let hashtbl8 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
-  let pair_for_qpe_core_upper_half = (qpe_core_upper_half_idx,hashtbl8) ;; 
-  let qpe_constraints_lower_half_idx = KMP 9 ;;  
-  let hashtbl9 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
-  let pair_for_qpe_constraints_lower_half = (qpe_constraints_lower_half_idx,hashtbl9) ;;
-  let qpe_constraints_upper_half_idx = KMP 10 ;;  
-  let hashtbl10 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
-  let pair_for_qpe_constraints_upper_half = (qpe_constraints_upper_half_idx,hashtbl10) ;; 
-  let qpe_extension_lower_half_idx = KMP 11 ;;  
-  let hashtbl11 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
-  let pair_for_qpe_extension_lower_half = (qpe_extension_lower_half_idx,hashtbl11) ;;
-  let qpe_extension_upper_half_idx = KMP 12 ;;  
-  let hashtbl12 = ((Hashtbl.create 50): (int * int list * index_of_missing_data, breadth -> size -> int list) Hashtbl.t) ;;
-  let pair_for_qpe_extension_upper_half = (qpe_extension_upper_half_idx,hashtbl12) ;; 
-
-  let length_watcher = hashtbl5 ;; 
-
-  let read_missing_part (KMP i) = 
-      match List.assoc_opt (KMP i)  
-      [
-        (fst pair_for_superficial_result_lower_half),"superficial_result_lower_half";
-        (fst pair_for_superficial_result_upper_half),"superficial_result_upper_half";
-        (fst pair_for_solution_list_lower_half),"solution_list_lower_half";
-        (fst pair_for_solution_list_upper_half),"solution_list_upper_half";
-        (fst pair_for_qpl_length_lower_half),"qpl_length_lower_half";
-        (fst pair_for_qpl_length_upper_half),"qpl_length_upper_half";
-        (fst pair_for_qpe_core_lower_half),"qpe_core_lower_half";
-        (fst pair_for_qpe_core_upper_half),"qpe_core_upper_half";
-        (fst pair_for_qpe_constraints_lower_half),"qpe_constraints_lower_half";
-        (fst pair_for_qpe_constraints_upper_half),"qpe_constraints_upper_half";
-        (fst pair_for_qpe_extension_lower_half),"qpe_extension_lower_half";
-        (fst pair_for_qpe_extension_upper_half),"qpe_extension_upper_half";
-      ] with 
-      Some answer -> answer 
-      |None -> raise(Bad_kmp_index(i)) ;; 
-
-  let qualified_point_core half k pt = match half with 
-    Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_core_lower_half k pt 
-   |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_core_upper_half k pt;;
-
-  let qualified_point_constraints half k pt = match half with 
-   Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_constraints_lower_half k pt 
-  |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_constraints_upper_half k pt;;
-
-
-  let qualified_point_extension half k pt = match half with 
-    Lower_half -> access_parametrized_named_hashtbl pair_for_qpe_extension_lower_half k pt 
-   |Upper_half -> access_parametrized_named_hashtbl pair_for_qpe_extension_upper_half k pt;;
-
-
-
-  let qpl_length half pt = match half with 
-    Lower_half -> access_named_hashtbl pair_for_qpl_length_lower_half pt 
-   |Upper_half -> access_named_hashtbl pair_for_qpl_length_upper_half pt;;
-
-  let qualified_point_element half k pt = 
-    let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
-    if bad_opt1<>None then (None,bad_opt1) else 
-    let (good_opt2,bad_opt2) = qualified_point_constraints half k pt in 
-    if bad_opt2<>None then (None,bad_opt2) else   
-    let (good_opt3,bad_opt3) = qualified_point_extension half k pt in 
-    if bad_opt3<>None then (None,bad_opt3) else     
-    let core_r = Option.get good_opt1 
-    and constraints_r = Option.get good_opt2 
-    and extension_r = Option.get good_opt3 in 
-    (Some(Q(core_r,constraints_r,extension_r)),None) ;;   
-  
-  let superficial_result half pt = match half with 
-     Lower_half -> access_named_hashtbl pair_for_superficial_result_lower_half pt 
-    |Upper_half -> access_named_hashtbl pair_for_superficial_result_upper_half pt;;
-     
-  let solution_list half pt = match half with 
-    Lower_half -> access_named_hashtbl pair_for_solution_list_lower_half pt 
-   |Upper_half -> access_named_hashtbl pair_for_solution_list_upper_half pt;;
-  
-   
-  let qualified_point_list half pt =
-    let (good_opt1,bad_opt1) =qpl_length half pt in 
-    if bad_opt1<>None then (None,bad_opt1) else 
-  let length_r = Option.get good_opt1 in 
-  let eltwise_results = Int_range.scale (
-          fun k-> qualified_point_element half (IMD k) pt
-  )  1 length_r in  
-  let bad_ones = List.filter (
-        fun (good_opt,_bad_opt) -> good_opt = None
-  ) eltwise_results in 
-  if bad_ones <> [] 
-  then (None,snd(List.hd bad_ones)) 
-  else 
-  let final_result = Image.image (fun (good_opt,_bad_opt) ->Option.get good_opt) eltwise_results in 
-  (Some final_result,None) ;;  
-
-
-  let bulk_result half pt = 
-     let (good_opt1,bad_opt1) = superficial_result half pt in 
-     if bad_opt1<>None then (None,bad_opt1) else 
-     let (good_opt2,bad_opt2) = solution_list half pt in 
-     if bad_opt2<>None then (None,bad_opt2) else  
-     let (good_opt3,bad_opt3) = qualified_point_list half pt in 
-     if bad_opt3<>None then (None,bad_opt3) else  
-     let superficial_result_r = Option.get good_opt1 
-     and solution_list_r = Option.get good_opt2 
-     and qualified_point_list_r = Option.get good_opt3  in     
-     (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
-   ;;   
-
-
-  let nonhalved_bulk_result pt = 
-    if Point.is_in_upper_half pt 
-    then bulk_result Upper_half pt 
-    else bulk_result Lower_half pt ;;    
-
-  let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
-
-end ;;  
-
-
-
 module Warehouse = struct 
   
   exception Bad_kmp_index of int ;; 
@@ -472,6 +312,22 @@ module Warehouse = struct
     Lower_half -> try_get_qpl_length_lower_half pt 
    |Upper_half -> try_get_qpl_length_upper_half pt;;
 
+  let clear_all_hashtables () = 
+(
+  Hashtbl.clear hashtbl_for_superficial_result_lower_half;
+  Hashtbl.clear hashtbl_for_superficial_result_upper_half; 
+  Hashtbl.clear hashtbl_for_solution_list_lower_half; 
+  Hashtbl.clear hashtbl_for_solution_list_upper_half; 
+  Hashtbl.clear hashtbl_for_qpl_length_lower_half; 
+  Hashtbl.clear hashtbl_for_qpl_length_upper_half; 
+  Hashtbl.clear hashtbl_for_qpe_core_lower_half; 
+  Hashtbl.clear hashtbl_for_qpe_core_upper_half; 
+  Hashtbl.clear hashtbl_for_qpe_constraints_lower_half; 
+  Hashtbl.clear hashtbl_for_qpe_constraints_upper_half; 
+  Hashtbl.clear hashtbl_for_qpe_extension_lower_half ; 
+  Hashtbl.clear hashtbl_for_qpe_extension_upper_half ; 
+) ;; 
+
   let qualified_point_element half k pt = 
     let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
@@ -560,14 +416,13 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
   
 (*
   
-  Verify.check 
-   (fst(Warehouse.pair_for_superficial_result_lower_half))
-   (1,[],IMD 0) (CE1 f_1_empty_set_superficial_result_lower_half) ;; 
+  Abstract_superficial_result_mode.global_check 
+   (1,[],IMD 0,Lower_half) f_1_empty_set_superficial_result_lower_half ;; 
   
 *)
 
 Hashtbl.add 
-  (snd(Irimboro.pair_for_superficial_result_lower_half)) (1,[]) 
+  Warehouse.hashtbl_for_superficial_result_lower_half (1,[]) 
     f_1_empty_set_superficial_result_lower_half;;
 
 
@@ -588,14 +443,13 @@ let f_1_empty_set_superficial_result_upper_half (B b) (S n) =
    
 (*
    
-   Verify.check 
-    (fst(Warehouse.pair_for_superficial_result_upper_half))
-    (1,[],IMD 0) (CE1 f_1_empty_set_superficial_result_upper_half) ;; 
+   Abstract_superficial_result_mode.global_check 
+   (1,[],IMD 0,Upper_half) f_1_empty_set_superficial_result_upper_half ;; 
    
 *)
    
 Hashtbl.add 
-   (snd(Irimboro.pair_for_superficial_result_upper_half)) (1,[]) 
+  Warehouse.hashtbl_for_superficial_result_upper_half (1,[]) 
      f_1_empty_set_superficial_result_upper_half;;
    
 
@@ -616,7 +470,7 @@ let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
 *)
     
 Hashtbl.add 
-  (snd(Irimboro.pair_for_solution_list_lower_half)) (1,[]) 
+  Warehouse.hashtbl_for_solution_list_lower_half (1,[]) 
     f_1_empty_set_solution_list_lower_half;;
 
 
@@ -641,7 +495,7 @@ Verify.check
 *)
 
 Hashtbl.add 
-(snd(Irimboro.pair_for_qpl_length_lower_half)) (1,[]) 
+ Warehouse.hashtbl_for_qpl_length_lower_half (1,[]) 
 f_1_empty_set_qpl_length_lower_half;;
 
 
@@ -807,7 +661,7 @@ module Untamed = struct
    if pt2 = Empty_point 
    then Some (Bulk_result.atomic_case pt)
    else
-   let pre_res=Irimboro.try_precomputed_results pt2 in 
+   let pre_res=Warehouse.try_precomputed_results pt2 in 
    Bulk_result.extend_with_opt pt2 pre_res adj ;;
      
   let superificial_result_in_jump_case  pt_after_jump =
@@ -954,25 +808,6 @@ let for_superficial_result = function
   | Contraction (pt,cstr) -> "Contraction( "^(for_point pt)^","^(for_constraint cstr)^" )"
   | Fork (l) -> "Fork(["^(String.concat ";" (Image.image for_fork_element l))^"])" ;;
 
-
-let for_vr1_element ((B b,S n),sr) = 
-    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_superficial_result sr)^")" ;;  
-
-let for_vr2_element ((B b,S n),sl) = 
-    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(for_solution_list sl)^")" ;; 
-
-let for_vr3_element ((B b,S n),k) = 
-      "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(string_of_int k)^")" ;;  
-  
-
-let for_visualization_result = function 
-   VR1(l)->"VR1[\n"^(String.concat ";\n" (Image.image for_vr1_element l))^"\n]"
-  |VR2(l)->"VR2[\n"^(String.concat ";\n" (Image.image for_vr2_element l))^"\n]"
-  |VR3(l)->"VR3[\n"^(String.concat ";\n" (Image.image for_vr3_element l))^"\n]"
-  |VR4(_l)->"..."
-  |VR5(_l)->"..."
-  |VR6(_l)->"..." ;;
-
 end ;; 
 
 let for_constraint_list = Private.for_constraint_list ;; 
@@ -980,7 +815,7 @@ let for_extension_data = Private.for_int_list ;;
 let for_point = Private.for_point ;; 
 let for_solution_list = Private.for_solution_list ;; 
 let for_superficial_result = Private.for_superficial_result ;; 
-let for_visualization_result = Private.for_visualization_result ;;
+
 
 end ;;   
 
@@ -997,29 +832,13 @@ let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun
       (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
          Point.is_in_upper_half p
     ) whole_range );;
-    
-let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
-let lower_range (width,scrappers) = snd(halves (width,scrappers)) ;; 
-    
-
-
-let linear_upper_range (w,_scr,d) =
-          Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
-let linear_lower_range (w,_scr,d) =
-          Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
-    
-let restricted_upper_range (width,scrappers,IMD ql_idx,watchman) = 
-      List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (upper_range (width,scrappers)) ;;
-    
-let restricted_lower_range (width,scrappers,IMD ql_idx,watchman) = 
-      List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (lower_range (width,scrappers)) ;;    
 
 let er_range (width,scrappers) = function 
    Lower_half -> snd(halves (width,scrappers)) 
   |Upper_half -> snd(halves (width,scrappers)) ;;
 
 let restricted_range (width,scrappers,IMD ql_idx) half = 
-  List.filter (fun (b,n)->(Hashtbl.find Irimboro.length_watcher (width,scrappers) b n)>=ql_idx)
+  List.filter (fun (b,n)->Warehouse.length_watcher (P(width,scrappers,b,n))>=ql_idx)
   (er_range (width,scrappers) half);;
 let linear_range (w,_scr,d) = function 
   Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
@@ -1030,156 +849,6 @@ Lower_half ->  b+2*w-n
 |Upper_half -> n-b-2*w+1 ;;
 
 end ;;  
-
-module Verify = struct 
-  
-exception Bad_kmp_index of int ;; 
-
-module Private = struct 
-
-
-let bivariate_selector f g l= 
-  let temp1 = Image.image (fun x->let (b,n)=x in (x,f b n,g b n)) l in 
-  List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
-
-let upper_selector (width,scrappers) f g = bivariate_selector f g (Range.upper_range (width,scrappers)) ;;  
-let lower_selector (width,scrappers) f g = bivariate_selector f g (Range.lower_range (width,scrappers)) ;;  
-
-let restricted_upper_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (Range.restricted_upper_range (width,scrappers,IMD ql_idx,watchman)) ;;  
-let restricted_lower_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (Range.restricted_lower_range (width,scrappers,IMD ql_idx,watchman)) ;;  
-
-
-let original1 (width,scrappers) b n =
-  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
-let original2 = original1 ;;
-let original3 (width,scrappers) b n =
-  Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
-let original4 = original3 ;;
-let original5 (width,scrappers) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
-  List.length ql;;
-let original6 = original5 ;;
-let original7 (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
-  let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
-  pt ;;
-let original8 = original7 ;;
-let original9 (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
-  let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
-  ql_constraints ;;
-let original10 = original9 ;;       
-let original11 (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
-  let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
-  extension ;;
-let original12 = original11 ;; 
-
-let lw = Irimboro.length_watcher ;; 
-let check1 pair g = lower_selector pair (original1 pair) g  ;; 
-let check2 pair g = upper_selector pair (original2 pair) g  ;; 
-let check3 pair g = lower_selector pair (original3 pair) g  ;; 
-let check4 pair g = upper_selector pair (original4 pair) g  ;; 
-let check5 pair g = lower_selector pair (original5 pair) g  ;; 
-let check6 pair g = upper_selector pair (original6 pair) g  ;; 
-let check7  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original7  (w,s,i)) g  ;; 
-let check8  (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original8  (w,s,i)) g  ;; 
-let check9  (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original9  (w,s,i)) g  ;; 
-let check10 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original10 (w,s,i)) g  ;; 
-let check11 (w,s,i) g = restricted_lower_selector (w,s,i,lw) (original11 (w,s,i)) g  ;; 
-let check12 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original12 (w,s,i)) g  ;; 
-
-
-let visualize1 (w,scr) d = VR1(Image.image (
-   fun (b,n) -> ((b,n),original1 (w,scr) b n)
-) (Range.linear_lower_range (w,scr,d))) ;;
-let visualize2 (w,scr) d = VR1(Image.image (
-   fun (b,n) -> ((b,n),original2 (w,scr) b n)
-) (Range.linear_upper_range (w,scr,d))) ;;
-let visualize3 (w,scr) d = VR2(Image.image (
-   fun (b,n) -> ((b,n),original3 (w,scr) b n)
-) (Range.linear_lower_range (w,scr,d))) ;;
-let visualize4 (w,scr) d = VR2(Image.image (
-   fun (b,n) -> ((b,n),original4 (w,scr) b n)
-) (Range.linear_upper_range (w,scr,d))) ;;
-let visualize5 (w,scr) d = VR3(Image.image (
-   fun (b,n) -> ((b,n),original5 (w,scr) b n)
-) (Range.linear_lower_range (w,scr,d))) ;;
-let visualize6 (w,scr) d = VR3(Image.image (
-   fun (b,n) -> ((b,n),original6 (w,scr) b n)
-) (Range.linear_upper_range (w,scr,d))) ;;
-let visualize7 (w,s,i) d = VR4(Image.image (
-   fun (b,n) -> ((b,n),original7 (w,s,i) b n)
-) (Range.linear_lower_range (w,s,d))) ;;
-let visualize8 (w,s,i) d = VR4(Image.image (
-   fun (b,n) -> ((b,n),original8 (w,s,i) b n)
-) (Range.linear_upper_range (w,s,d))) ;;
-let visualize9 (w,s,i) d = VR5(Image.image (
-   fun (b,n) -> ((b,n),original9 (w,s,i) b n)
-) (Range.linear_lower_range (w,s,d))) ;;
-let visualize10 (w,s,i) d = VR5(Image.image (
-   fun (b,n) -> ((b,n),original10 (w,s,i) b n)
-) (Range.linear_upper_range (w,s,d))) ;;
-let visualize11 (w,s,i) d = VR6(Image.image (
-   fun (b,n) -> ((b,n),original11 (w,s,i) b n)
-) (Range.linear_lower_range (w,s,d))) ;;
-let visualize12 (w,s,i) d = VR6(Image.image (
-   fun (b,n) -> ((b,n),original12 (w,s,i) b n)
-) (Range.linear_upper_range (w,s,d))) ;;
-
-let unwrap_check_entry = function 
-   CE1(f1)->(Some f1,None,None,None,None,None)
-  |CE2(f2)->(None,Some f2,None,None,None,None)
-  |CE3(f3)->(None,None,Some f3,None,None,None)
-  |CE4(f4)->(None,None,None,Some f4,None,None)
-  |CE5(f5)->(None,None,None,None,Some f5,None)
-  |CE6(f6)->(None,None,None,None,None,Some f6) ;; 
-
-let unwrap_check_entry1 f = let (opt1,_opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt1 ;;
-let unwrap_check_entry2 f = let (_opt1,opt2,_opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt2 ;;
-let unwrap_check_entry3 f = let (_opt1,_opt2,opt3,_opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt3 ;;
-let unwrap_check_entry4 f = let (_opt1,_opt2,_opt3,opt4,_opt5,_opt6) = unwrap_check_entry f in Option.get opt4 ;;
-let unwrap_check_entry5 f = let (_opt1,_opt2,_opt3,_opt4,opt5,_opt6) = unwrap_check_entry f in Option.get opt5 ;;
-let unwrap_check_entry6 f = let (_opt1,_opt2,_opt3,_opt4,_opt5,opt6) = unwrap_check_entry f in Option.get opt6 ;;
-
-
-
-let check (KMP i_kmp) (w,s,i) tagged_f = match i_kmp with 
-    1 -> CR1(check1 (w,s) (unwrap_check_entry1 tagged_f))
-   |2 -> CR1(check2 (w,s) (unwrap_check_entry1 tagged_f))
-   |3 -> CR2(check3 (w,s) (unwrap_check_entry2 tagged_f))
-   |4 -> CR2(check4 (w,s) (unwrap_check_entry2 tagged_f)) 
-   |5 -> CR3(check5 (w,s) (unwrap_check_entry3 tagged_f))
-   |6 -> CR3(check6 (w,s) (unwrap_check_entry3 tagged_f))
-   |7  -> CR4(check7  (w,s,i) (unwrap_check_entry4 tagged_f)) 
-   |8  -> CR4(check8  (w,s,i) (unwrap_check_entry4 tagged_f)) 
-   |9  -> CR5(check9  (w,s,i) (unwrap_check_entry5 tagged_f))
-   |10 -> CR5(check10 (w,s,i) (unwrap_check_entry5 tagged_f))
-   |11 -> CR6(check11 (w,s,i) (unwrap_check_entry6 tagged_f))
-   |12 -> CR6(check12 (w,s,i) (unwrap_check_entry6 tagged_f))
-   |_ -> raise(Bad_kmp_index(i_kmp));; 
-
-let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with 
-    1 -> visualize1 (w,s) d 
-   |2 -> visualize2 (w,s) d 
-   |3 -> visualize3 (w,s) d 
-   |4 -> visualize4 (w,s) d 
-   |5 -> visualize5 (w,s) d 
-   |6 -> visualize6 (w,s) d 
-   |7  -> visualize7  (w,s,i) d 
-   |8  -> visualize8  (w,s,i) d 
-   |9  -> visualize9  (w,s,i) d 
-   |10 -> visualize10 (w,s,i) d 
-   |11 -> visualize11 (w,s,i) d 
-   |12 -> visualize12 (w,s,i) d 
-   |_ -> raise(Bad_kmp_index(i_kmp));; 
-
-end ;;
-
-let check = Private.check ;;  
-let visualize = Private.visualize ;;
-
-end ;; 
 
 module Tools_for_mode_modules = struct 
 
@@ -1275,6 +944,10 @@ let partial_range (w,s,i,half) d = List.filter (
       Seed.extra_condition_for_range (w,s,i) )
     (Range.linear_range (w,s,d) half) ;;
 
+let total_range (w,s,i,half)= List.filter (
+  Seed.extra_condition_for_range (w,s,i)
+) (Range.er_range (w,s) half) ;;
+
 let data_for_visualization (w,s,i,half) d = Image.image (
       fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
    ) (Range.linear_range (w,s,d) half) ;;
@@ -1296,14 +969,14 @@ let partial_check (w,s,i,half) d f =
   ) (Private.partial_range (w,s,i,half) d) in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1;;   
 
-let global_check (w,s,i,half) d g = 
+let global_check (w,s,i,half) g = 
     let temp1 = Image.image (
     fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
-    ) (Range.linear_range (w,s,d) half) in 
+    ) (Private.total_range (w,s,i,half)) in 
     let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
     if temp2=[] then ([],[]) else
     let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
-        Range.compute_enumerator_index w pair) temp2 in 
+        Range.compute_enumerator_index w pair half) temp2 in 
     (temp2,temp3);;   
 
 
