@@ -13,7 +13,7 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz3_preliminaries ;;
 
-
+(*
 let see0 = Overall.get_status () ;; 
 
 let res2 = Overall.next_look 2 ;; 
@@ -176,4 +176,4 @@ let g2 =(function (CR2 x)->x |_->failwith("bbb")) g1 ;;
 let g3 = Image.image (fun (a,b,c)->a) g2;;
 let g4 = Image.image (fun (B b,S n)->n-b-1) g3;;
 
-
+*)

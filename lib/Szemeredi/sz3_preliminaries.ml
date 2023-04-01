@@ -753,6 +753,8 @@ let for_constraint (C l) = "C"^(for_int_list l);;
 
 let for_solution_list l = "["^(String.concat ";" (Image.image for_int_list l))^"]" ;;
 
+let for_constraint_list l = "["^(String.concat ";" (Image.image for_constraint l))^"]" ;;
+
 let for_point = function 
     Empty_point -> "Empty_point" 
   | P(w,s,B b,S n) -> "P("^(string_of_int w)^","^(for_int_list s)^",B("^(string_of_int b)^"),S("^(string_of_int n)^"))";;
@@ -788,9 +790,57 @@ let for_visualization_result = function
 
 end ;; 
 
+let for_constraint_list = Private.for_constraint_list ;; 
+let for_extension_data = Private.for_int_list ;; 
+let for_point = Private.for_point ;; 
+let for_solution_list = Private.for_solution_list ;; 
+let for_superficial_result = Private.for_superficial_result ;; 
 let for_visualization_result = Private.for_visualization_result ;;
 
 end ;;   
+
+module Range = struct 
+
+let bound = 40 ;; 
+    
+let breadths = Int_range.scale (fun b->B b) 0 bound ;;
+let sizes = Int_range.scale (fun n->S n) 1 bound ;;
+    
+let whole_range = Cartesian.product breadths sizes ;; 
+    
+
+    
+let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun 
+      (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
+         Point.is_in_upper_half p
+    ) whole_range );;
+    
+let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
+let lower_range (width,scrappers) = snd(halves (width,scrappers)) ;; 
+    
+
+
+let linear_upper_range (w,_scr,d) =
+          Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
+let linear_lower_range (w,_scr,d) =
+          Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
+    
+let restricted_upper_range (width,scrappers,IMD ql_idx,watchman) = 
+      List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (upper_range (width,scrappers)) ;;
+    
+let restricted_lower_range (width,scrappers,IMD ql_idx,watchman) = 
+      List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (lower_range (width,scrappers)) ;;    
+
+let er_range (width,scrappers) = function 
+   Lower_half -> snd(halves (width,scrappers)) 
+  |Upper_half -> snd(halves (width,scrappers)) ;;
+
+let restricted_range (width,scrappers,IMD ql_idx) half = 
+  List.filter (fun (b,n)->(Hashtbl.find Warehouse.length_watcher (width,scrappers) b n)>=ql_idx)
+  (er_range (width,scrappers) half);;
+    
+
+end ;;  
 
 module Verify = struct 
   
@@ -798,63 +848,16 @@ exception Bad_kmp_index of int ;;
 
 module Private = struct 
 
-let bound = 40 ;; 
-
-let breadths = Int_range.scale (fun b->B b) 0 bound ;;
-let sizes = Int_range.scale (fun n->S n) 1 bound ;;
-
-let whole_range = Cartesian.product breadths sizes ;; 
-
-let global_verification_for_single_pair (width,scrappers) =
-    let rec tempf = (fun l->match l with 
-      [] -> None 
-      | (b,n) :: others ->
-         (
-          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
-          if good_opt = None 
-          then Some(Option.get bad_opt,(b,n))
-          else tempf others     
-         )
-    ) in
-    tempf whole_range ;; 
-
-let rec global_verification = function 
-    [] -> None 
-   | ws :: others -> 
-      match global_verification_for_single_pair ws with 
-       Some (i,(b,n)) -> Some (i,P(fst ws,snd ws,b,n))   
-      | None -> global_verification others ;; 
-
-
-let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun 
-  (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
-     Point.is_in_upper_half p
-) whole_range );;
-
-let upper_range (width,scrappers) = fst(halves (width,scrappers)) ;; 
-let lower_range (width,scrappers) = snd(halves (width,scrappers)) ;; 
-
-let linear_upper_range (w,_scr,d) =
-      Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
-let linear_lower_range (w,_scr,d) =
-      Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) ;;      
-
-let restricted_upper_range (width,scrappers,IMD ql_idx,watchman) = 
-  List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (upper_range (width,scrappers)) ;;
-
-let restricted_lower_range (width,scrappers,IMD ql_idx,watchman) = 
-  List.filter (fun (b,n)->(Hashtbl.find watchman (width,scrappers) b n)>=ql_idx) (lower_range (width,scrappers)) ;;
-
 
 let bivariate_selector f g l= 
   let temp1 = Image.image (fun x->let (b,n)=x in (x,f b n,g b n)) l in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
 
-let upper_selector (width,scrappers) f g = bivariate_selector f g (upper_range (width,scrappers)) ;;  
-let lower_selector (width,scrappers) f g = bivariate_selector f g (lower_range (width,scrappers)) ;;  
+let upper_selector (width,scrappers) f g = bivariate_selector f g (Range.upper_range (width,scrappers)) ;;  
+let lower_selector (width,scrappers) f g = bivariate_selector f g (Range.lower_range (width,scrappers)) ;;  
 
-let restricted_upper_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (restricted_upper_range (width,scrappers,IMD ql_idx,watchman)) ;;  
-let restricted_lower_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (restricted_lower_range (width,scrappers,IMD ql_idx,watchman)) ;;  
+let restricted_upper_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (Range.restricted_upper_range (width,scrappers,IMD ql_idx,watchman)) ;;  
+let restricted_lower_selector (width,scrappers,IMD ql_idx,watchman) f g = bivariate_selector f g (Range.restricted_lower_range (width,scrappers,IMD ql_idx,watchman)) ;;  
 
 
 let original1 (width,scrappers) b n =
@@ -900,40 +903,40 @@ let check12 (w,s,i) g = restricted_upper_selector (w,s,i,lw) (original12 (w,s,i)
 
 let visualize1 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original1 (w,scr) b n)
-) (linear_lower_range (w,scr,d))) ;;
+) (Range.linear_lower_range (w,scr,d))) ;;
 let visualize2 (w,scr) d = VR1(Image.image (
    fun (b,n) -> ((b,n),original2 (w,scr) b n)
-) (linear_upper_range (w,scr,d))) ;;
+) (Range.linear_upper_range (w,scr,d))) ;;
 let visualize3 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original3 (w,scr) b n)
-) (linear_lower_range (w,scr,d))) ;;
+) (Range.linear_lower_range (w,scr,d))) ;;
 let visualize4 (w,scr) d = VR2(Image.image (
    fun (b,n) -> ((b,n),original4 (w,scr) b n)
-) (linear_upper_range (w,scr,d))) ;;
+) (Range.linear_upper_range (w,scr,d))) ;;
 let visualize5 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original5 (w,scr) b n)
-) (linear_lower_range (w,scr,d))) ;;
+) (Range.linear_lower_range (w,scr,d))) ;;
 let visualize6 (w,scr) d = VR3(Image.image (
    fun (b,n) -> ((b,n),original6 (w,scr) b n)
-) (linear_upper_range (w,scr,d))) ;;
+) (Range.linear_upper_range (w,scr,d))) ;;
 let visualize7 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original7 (w,s,i) b n)
-) (linear_lower_range (w,s,d))) ;;
+) (Range.linear_lower_range (w,s,d))) ;;
 let visualize8 (w,s,i) d = VR4(Image.image (
    fun (b,n) -> ((b,n),original8 (w,s,i) b n)
-) (linear_upper_range (w,s,d))) ;;
+) (Range.linear_upper_range (w,s,d))) ;;
 let visualize9 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original9 (w,s,i) b n)
-) (linear_lower_range (w,s,d))) ;;
+) (Range.linear_lower_range (w,s,d))) ;;
 let visualize10 (w,s,i) d = VR5(Image.image (
    fun (b,n) -> ((b,n),original10 (w,s,i) b n)
-) (linear_upper_range (w,s,d))) ;;
+) (Range.linear_upper_range (w,s,d))) ;;
 let visualize11 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original11 (w,s,i) b n)
-) (linear_lower_range (w,s,d))) ;;
+) (Range.linear_lower_range (w,s,d))) ;;
 let visualize12 (w,s,i) d = VR6(Image.image (
    fun (b,n) -> ((b,n),original12 (w,s,i) b n)
-) (linear_upper_range (w,s,d))) ;;
+) (Range.linear_upper_range (w,s,d))) ;;
 
 let unwrap_check_entry = function 
    CE1(f1)->(Some f1,None,None,None,None,None)
@@ -984,15 +987,117 @@ let visualize (KMP i_kmp) (w,s,i) d = match i_kmp with
 
 end ;;
 
-let check = Private.check ;; 
-let global_verification = Private.global_verification ;; 
+let check = Private.check ;;  
 let visualize = Private.visualize ;;
 
-end ;;  
+end ;; 
 
+module Tools_for_mode_modules = struct 
+
+let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
+let check_length (width,scrappers,IMD ql_idx) (b,n) = 
+  (Hashtbl.find Warehouse.length_watcher (width,scrappers) b n)>=ql_idx;;
+
+end ;;   
+
+module type MODE_SEED = sig 
+  type current_t 
+  val original : int * int list * index_of_missing_data -> breadth -> size -> current_t
+  val extra_condition_in_partial_range : int * int list  * index_of_missing_data -> breadth * size -> bool
+  val current_printer : current_t -> string
+end ;; 
+
+module Superficial_result_seed = ((struct
+
+type current_t = superficial_result ;;
+let original (width,scrappers,_) b n =
+  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
+let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+let current_printer = Pretty_printer.for_superficial_result ;; 
+
+end) : MODE_SEED with type current_t = superficial_result) ;;
+
+
+module Solution_list_seed = ((struct
+
+type current_t = solution list ;;
+let original (width,scrappers,_) b n =
+  Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
+  let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+let current_printer = Pretty_printer.for_solution_list ;; 
+
+end) : MODE_SEED with type current_t = solution list) ;;
+
+module Qpl_length_seed = ((struct
+
+type current_t = int ;;
+let original (width,scrappers,_)  b n =
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  List.length ql;; ;;
+  let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+let current_printer = string_of_int ;; 
+
+end) : MODE_SEED with type current_t = int) ;;
+
+module Qpe_core_seed = ((struct
+
+type current_t = point ;;
+let original (width,scrappers,IMD ql_idx) b n =
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
+  pt ;;
+let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let current_printer = Pretty_printer.for_point ;; 
+
+end) : MODE_SEED with type current_t = point) ;;
+
+module Qpe_constraints_seed = ((struct
+
+type current_t = constraint_t list ;;
+let original (width,scrappers,IMD ql_idx) b n =
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
+  ql_constraints ;;
+let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let current_printer = Pretty_printer.for_constraint_list ;; 
+
+end) : MODE_SEED with type current_t = constraint_t list) ;;
+
+module Qpe_extension_seed = ((struct
+
+type current_t = extension_data ;;
+let original (width,scrappers,IMD ql_idx) b n =
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
+  extension ;;
+let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let current_printer = Pretty_printer.for_extension_data ;; 
+
+end) : MODE_SEED with type current_t = extension_data) ;;
 
 
 module Overall = struct 
+
+let global_verification_for_single_pair (width,scrappers) =
+    let rec tempf = (fun l->match l with 
+      [] -> None 
+      | (b,n) :: others ->
+         (
+          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          if good_opt = None 
+          then Some(Option.get bad_opt,(b,n))
+          else tempf others     
+         )
+    ) in
+    tempf Range.whole_range ;; 
+
+let rec global_verification = function 
+    [] -> None 
+   | ws :: others -> 
+      match global_verification_for_single_pair ws with 
+       Some (i,(b,n)) -> Some (i,P(fst ws,snd ws,b,n))   
+      | None -> global_verification others ;; 
+
 
 let goal = [(1,[]);(2,[]);(3,[]);(4,[]);(5,[])] ;; 
 
@@ -1001,7 +1106,7 @@ let ref_for_status = ref None ;;
 let get_status () = match (!ref_for_status) with 
    Some status -> status 
    | None -> 
-      let opt =  Verify.global_verification goal 
+      let opt =  global_verification goal 
       and idx = (!(Warehouse.index_for_missing_data)) in 
       let (kmp,pt) = Option.get opt in 
       let answer = (kmp,Warehouse.read_missing_part kmp,idx,pt) in 
