@@ -502,6 +502,10 @@ module Warehouse = struct
      (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
    ;;   
 
+  let length_watcher pt = 
+    if Point.is_in_upper_half pt 
+    then Option.get(fst(qpl_length Upper_half pt)) 
+    else Option.get(fst(qpl_length Lower_half pt)) ;;    
 
   let nonhalved_bulk_result pt = 
     if Point.is_in_upper_half pt 
@@ -1160,7 +1164,7 @@ module Tools_for_mode_modules = struct
 
 let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
 let check_length (width,scrappers,IMD ql_idx) (b,n) = 
-  (Hashtbl.find Irimboro.length_watcher (width,scrappers) b n)>=ql_idx;;
+  (Option.get(Warehouse.length_watcher (P(width,scrappers,b,n)))>=ql_idx;;
 
 end ;;   
 
