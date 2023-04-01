@@ -103,6 +103,27 @@ module Finite_int_set = struct
   
 end ;;    
 
+module Kind_of_component = struct 
+
+let to_capitalized_string = function 
+  Superficial_result -> "Superficial_result"
+| Solution_list -> "Solution_list"
+| Qpl_length -> "Qpl_length"
+| Qpe_core -> "Qpe_core"
+| Qpe_constraints -> "Qpe_constraints"
+| Qpe_extension -> "Qpe_extension" ;; 
+
+end ;;   
+
+module Half = struct 
+
+let to_string = function 
+    Lower_half -> "lower_half" 
+   |Upper_half -> "upper_half" ;; 
+
+end ;;  
+
+
 module Point = struct 
   
    exception Empty_point_cannot_be_unveiled ;; 
