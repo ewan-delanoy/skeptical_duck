@@ -807,9 +807,7 @@ let breadths = Int_range.scale (fun b->B b) 0 bound ;;
 let sizes = Int_range.scale (fun n->S n) 1 bound ;;
     
 let whole_range = Cartesian.product breadths sizes ;; 
-    
-
-    
+  
 let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun 
       (breadth,size) -> let p = P(width,scrappers,breadth,size) in 
          Point.is_in_upper_half p
@@ -838,7 +836,13 @@ let er_range (width,scrappers) = function
 let restricted_range (width,scrappers,IMD ql_idx) half = 
   List.filter (fun (b,n)->(Hashtbl.find Warehouse.length_watcher (width,scrappers) b n)>=ql_idx)
   (er_range (width,scrappers) half);;
-    
+let linear_range (w,_scr,d) = function 
+  Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
+  |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
+
+let compute_enumerator_index w (B b,S n) = function 
+Lower_half ->  b+2*w-n
+|Upper_half -> n-b-2*w+1 ;;
 
 end ;;  
 
@@ -1003,7 +1007,7 @@ end ;;
 module type MODE_SEED = sig 
   type current_t 
   val original : int * int list * index_of_missing_data -> breadth -> size -> current_t
-  val extra_condition_in_partial_range : int * int list  * index_of_missing_data -> breadth * size -> bool
+  val extra_condition_for_range : int * int list  * index_of_missing_data -> breadth * size -> bool
   val current_printer : current_t -> string
 end ;; 
 
@@ -1012,7 +1016,7 @@ module Superficial_result_seed = ((struct
 type current_t = superficial_result ;;
 let original (width,scrappers,_) b n =
   Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
-let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_superficial_result ;; 
 
 end) : MODE_SEED with type current_t = superficial_result) ;;
@@ -1023,7 +1027,7 @@ module Solution_list_seed = ((struct
 type current_t = solution list ;;
 let original (width,scrappers,_) b n =
   Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
-  let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+  let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_solution_list ;; 
 
 end) : MODE_SEED with type current_t = solution list) ;;
@@ -1034,7 +1038,7 @@ type current_t = int ;;
 let original (width,scrappers,_)  b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   List.length ql;; ;;
-  let extra_condition_in_partial_range = Tools_for_mode_modules.no_extra_condition ;;
+  let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = string_of_int ;; 
 
 end) : MODE_SEED with type current_t = int) ;;
@@ -1046,7 +1050,7 @@ let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   pt ;;
-let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
 let current_printer = Pretty_printer.for_point ;; 
 
 end) : MODE_SEED with type current_t = point) ;;
@@ -1058,7 +1062,7 @@ let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   ql_constraints ;;
-let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
 let current_printer = Pretty_printer.for_constraint_list ;; 
 
 end) : MODE_SEED with type current_t = constraint_t list) ;;
@@ -1070,15 +1074,66 @@ let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
   extension ;;
-let extra_condition_in_partial_range = Tools_for_mode_modules.check_length ;;  
+let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
 let current_printer = Pretty_printer.for_extension_data ;; 
 
 end) : MODE_SEED with type current_t = extension_data) ;;
 
+module Mode_grow = functor (Seed:MODE_SEED) -> struct 
+
+module Private = struct  
+
+let print_vr_element ((B b,S n),elt) = 
+    "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(Seed.current_printer elt)^")" ;;  
+
+let partial_range (w,s,i,half) d = List.filter ( 
+      Seed.extra_condition_for_range (w,s,i) )
+    (Range.linear_range (w,s,d) half) ;;
+
+let data_for_visualization (w,s,i,half) d = Image.image (
+      fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
+   ) (Range.linear_range (w,s,d) half) ;;
+   
+let pretty_print_visualization_data l = 
+       "[\n"^(String.concat ";\n" (Image.image print_vr_element l))^"\n]" ;;
+
+end ;;  
+
+let visualize (w,s,i,half) d = 
+  let answer = Private.data_for_visualization (w,s,i,half) d in 
+  let msg = "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" in 
+  let _ = (print_string msg;flush stdout) in 
+  (fun ()->answer) ;; 
+
+let partial_check (w,s,i,half) d f = 
+  let temp1 = Image.image (
+  fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,f b n)
+  ) (Private.partial_range (w,s,i,half) d) in 
+  List.filter (fun (_,y1,y2)->y1<>y2) temp1;;   
+
+let global_check (w,s,i,half) d g = 
+    let temp1 = Image.image (
+    fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
+    ) (Range.linear_range (w,s,d) half) in 
+    let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
+    if temp2=[] then ([],[]) else
+    let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
+        Range.compute_enumerator_index w pair) temp2 in 
+    (temp2,temp3);;   
+
+
+end ;;  
+
+module Abstract_superficial_result_mode = Mode_grow(Superficial_result_seed);;
+module Abstract_solution_list_mode = Mode_grow(Solution_list_seed);;
+module Abstract_qpl_length_mode = Mode_grow(Qpl_length_seed);;
+module Abstract_qpe_core_mode = Mode_grow(Qpe_core_seed);;
+module Abstract_qpe_constraints_mode = Mode_grow(Qpe_constraints_seed);;
+module Abstract_qpe_extension_mode = Mode_grow(Qpe_constraints_seed);;
 
 module Overall = struct 
 
-let global_verification_for_single_pair (width,scrappers) =
+let tour_for_single_pair (width,scrappers) =
     let rec tempf = (fun l->match l with 
       [] -> None 
       | (b,n) :: others ->
@@ -1091,12 +1146,12 @@ let global_verification_for_single_pair (width,scrappers) =
     ) in
     tempf Range.whole_range ;; 
 
-let rec global_verification = function 
+let rec tour = function 
     [] -> None 
    | ws :: others -> 
-      match global_verification_for_single_pair ws with 
+      match tour_for_single_pair ws with 
        Some (i,(b,n)) -> Some (i,P(fst ws,snd ws,b,n))   
-      | None -> global_verification others ;; 
+      | None -> tour others ;; 
 
 
 let goal = [(1,[]);(2,[]);(3,[]);(4,[]);(5,[])] ;; 
@@ -1106,7 +1161,7 @@ let ref_for_status = ref None ;;
 let get_status () = match (!ref_for_status) with 
    Some status -> status 
    | None -> 
-      let opt =  global_verification goal 
+      let opt =  tour goal 
       and idx = (!(Warehouse.index_for_missing_data)) in 
       let (kmp,pt) = Option.get opt in 
       let answer = (kmp,Warehouse.read_missing_part kmp,idx,pt) in 
