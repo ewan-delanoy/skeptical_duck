@@ -1164,7 +1164,7 @@ module Tools_for_mode_modules = struct
 
 let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
 let check_length (width,scrappers,IMD ql_idx) (b,n) = 
-  (Option.get(Warehouse.length_watcher (P(width,scrappers,b,n)))>=ql_idx;;
+  (Warehouse.length_watcher (P(width,scrappers,b,n)))>=ql_idx;;
 
 end ;;   
 
@@ -1302,7 +1302,7 @@ let tour_for_single_pair (width,scrappers) =
       [] -> None 
       | (b,n) :: others ->
          (
-          let (good_opt,bad_opt) = Irimboro.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
           if good_opt = None 
           then Some(Option.get bad_opt,(b,n))
           else tempf others     
@@ -1314,7 +1314,7 @@ let rec tour = function
     [] -> None 
    | ws :: others -> 
       match tour_for_single_pair ws with 
-       Some (i,(b,n)) -> Some (i,P(fst ws,snd ws,b,n))   
+       Some (data,(b,n)) -> Some (data,P(fst ws,snd ws,b,n))   
       | None -> tour others ;; 
 
 
@@ -1325,22 +1325,172 @@ let ref_for_status = ref None ;;
 let get_status () = match (!ref_for_status) with 
    Some status -> status 
    | None -> 
-      let opt =  tour goal 
-      and idx = (!(Irimboro.index_for_missing_data)) in 
-      let (kmp,pt) = Option.get opt in 
-      let answer = (kmp,Irimboro.read_missing_part kmp,idx,pt) in 
+      let opt =  tour goal in 
+      let (((koc,half),imd),pt) = Option.get opt in 
+      let answer = (koc,half,imd,pt) in 
       let _ = (ref_for_status := Some answer) in 
       answer ;;
 
-let next_look d =
-    let (kmp,_,idx,pt) = get_status () in 
-    let (w,s,_,_) = Point.unveil pt in 
-    let msg1 = "Current goal is ("^(string_of_int w)^
-                ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
-    let _ = (print_string("\n\n"^msg1^"\n\n");flush stdout) in 
-    let answer = Verify.visualize kmp (w,s,idx) d in 
-    let msg2 = "\n\n\n"^(Pretty_printer.for_visualization_result answer)^"\n\n\n" in  
-    let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
-    (fun ()->answer) ;;  
 
 end ;; 
+
+module Superficial_result_lower_half_mode = struct 
+
+let current_data () =
+    let (_koc,_half,imd,pt) = Overall.get_status () in 
+    (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+
+let visualize = Abstract_superficial_result_mode.visualize (current_data()) ;;
+let partial_check = Abstract_superficial_result_mode.partial_check (current_data()) ;;
+let global_check = Abstract_superficial_result_mode.global_check (current_data()) ;;
+
+end ;;
+
+
+module Superficial_result_upper_half_mode = struct 
+
+let current_data () =
+    let (_koc,_half,imd,pt) = Overall.get_status () in 
+    (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+  
+let visualize = Abstract_superficial_result_mode.visualize (current_data()) ;;
+let partial_check = Abstract_superficial_result_mode.partial_check (current_data()) ;;
+let global_check = Abstract_superficial_result_mode.global_check (current_data()) ;;
+  
+end ;;
+  
+
+module Solution_list_lower_half_mode = struct 
+
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+  
+  let visualize = Abstract_solution_list_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_solution_list_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_solution_list_mode.global_check (current_data()) ;;
+  
+  end ;;
+  
+  
+module Solution_list_upper_half_mode = struct 
+  
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+    
+  let visualize = Abstract_solution_list_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_solution_list_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_solution_list_mode.global_check (current_data()) ;;
+    
+end ;;
+  
+
+module Qpl_length_lower_half_mode = struct 
+
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+  
+  let visualize = Abstract_qpl_length_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpl_length_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpl_length_mode.global_check (current_data()) ;;
+  
+end ;;
+  
+  
+module Qpl_length_upper_half_mode = struct 
+  
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+    
+  let visualize = Abstract_qpl_length_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpl_length_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpl_length_mode.global_check (current_data()) ;;
+    
+end ;;
+
+
+module Qpe_core_lower_half_mode = struct 
+
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+  
+  let visualize = Abstract_qpe_core_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_core_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_core_mode.global_check (current_data()) ;;
+  
+end ;;
+  
+  
+module Qpe_core_upper_half_mode = struct 
+  
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+    
+  let visualize = Abstract_qpe_core_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_core_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_core_mode.global_check (current_data()) ;;
+    
+end ;;
+
+
+module Qpe_constraints_lower_half_mode = struct 
+
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+  
+  let visualize = Abstract_qpe_constraints_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_constraints_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_constraints_mode.global_check (current_data()) ;;
+  
+end ;;
+  
+  
+module Qpe_constraints_upper_half_mode = struct 
+  
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+    
+  let visualize = Abstract_qpe_constraints_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_constraints_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_constraints_mode.global_check (current_data()) ;;
+    
+end ;;
+
+
+
+module Qpe_extension_lower_half_mode = struct 
+
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
+  
+  let visualize = Abstract_qpe_extension_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_extension_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_extension_mode.global_check (current_data()) ;;
+  
+end ;;
+  
+  
+module Qpe_extension_upper_half_mode = struct 
+  
+  let current_data () =
+      let (_koc,_half,imd,pt) = Overall.get_status () in 
+      (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
+    
+  let visualize = Abstract_qpe_extension_mode.visualize (current_data()) ;;
+  let partial_check = Abstract_qpe_extension_mode.partial_check (current_data()) ;;
+  let global_check = Abstract_qpe_extension_mode.global_check (current_data()) ;;
+    
+end ;;
+
+
+
+
+
