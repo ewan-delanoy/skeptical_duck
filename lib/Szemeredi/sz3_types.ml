@@ -36,6 +36,14 @@ type bulk_result = BR of superficial_result * mold ;;
 
 type half = Lower_half | Upper_half ;;
 
+type kind_of_component = 
+    Superficial_result
+   |Solution_list 
+   |Int 
+   |Point 
+   |Constraint_list
+   |Extension_data ;; 
+
 type kind_of_missing_part = KMP of int ;; 
 
 type index_of_missing_data = IMD of int ;;

@@ -24,6 +24,13 @@ type superficial_result = Sz3_types.superficial_result =
    | Fork of (point * extension_data) list ;; 
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 type half = Sz3_types.half = Lower_half | Upper_half ;;
+type kind_of_component = Sz3_types.kind_of_component = 
+    Superficial_result
+   |Solution_list 
+   |Int 
+   |Point 
+   |Constraint_list
+   |Extension_data ;; 
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
 type visualization_result = Sz3_types.visualization_result = 
