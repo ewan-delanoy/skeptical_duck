@@ -39,10 +39,10 @@ type half = Lower_half | Upper_half ;;
 type kind_of_component = 
     Superficial_result
    |Solution_list 
-   |Int 
-   |Point 
-   |Constraint_list
-   |Extension_data ;; 
+   |Qpl_length 
+   |Qpe_core
+   |Qpe_constraints
+   |Qpe_extension ;; 
 
 type kind_of_missing_part = KMP of int ;; 
 

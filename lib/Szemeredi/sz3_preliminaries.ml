@@ -25,12 +25,12 @@ type superficial_result = Sz3_types.superficial_result =
 type bulk_result = Sz3_types.bulk_result = BR of superficial_result * mold ;; 
 type half = Sz3_types.half = Lower_half | Upper_half ;;
 type kind_of_component = Sz3_types.kind_of_component = 
-    Superficial_result
-   |Solution_list 
-   |Int 
-   |Point 
-   |Constraint_list
-   |Extension_data ;; 
+     Superficial_result
+    |Solution_list 
+    |Qpl_length 
+    |Qpe_core
+    |Qpe_constraints
+    |Qpe_extension ;; 
 type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
 type visualization_result = Sz3_types.visualization_result = 
@@ -195,7 +195,7 @@ let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
 end ;;  
 
 
-module Warehouse = struct 
+module Irimboro = struct 
   
   exception Bad_kmp_index of int ;; 
 
@@ -382,7 +382,7 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add 
-  (snd(Warehouse.pair_for_superficial_result_lower_half)) (1,[]) 
+  (snd(Irimboro.pair_for_superficial_result_lower_half)) (1,[]) 
     f_1_empty_set_superficial_result_lower_half;;
 
 
@@ -410,7 +410,7 @@ let f_1_empty_set_superficial_result_upper_half (B b) (S n) =
 *)
    
 Hashtbl.add 
-   (snd(Warehouse.pair_for_superficial_result_upper_half)) (1,[]) 
+   (snd(Irimboro.pair_for_superficial_result_upper_half)) (1,[]) 
      f_1_empty_set_superficial_result_upper_half;;
    
 
@@ -431,7 +431,7 @@ let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
 *)
     
 Hashtbl.add 
-  (snd(Warehouse.pair_for_solution_list_lower_half)) (1,[]) 
+  (snd(Irimboro.pair_for_solution_list_lower_half)) (1,[]) 
     f_1_empty_set_solution_list_lower_half;;
 
 
@@ -456,7 +456,7 @@ Verify.check
 *)
 
 Hashtbl.add 
-(snd(Warehouse.pair_for_qpl_length_lower_half)) (1,[]) 
+(snd(Irimboro.pair_for_qpl_length_lower_half)) (1,[]) 
 f_1_empty_set_qpl_length_lower_half;;
 
 
@@ -622,7 +622,7 @@ module Untamed = struct
    if pt2 = Empty_point 
    then Some (Bulk_result.atomic_case pt)
    else
-   let pre_res=Warehouse.try_precomputed_results pt2 in 
+   let pre_res=Irimboro.try_precomputed_results pt2 in 
    Bulk_result.extend_with_opt pt2 pre_res adj ;;
      
   let superificial_result_in_jump_case  pt_after_jump =
@@ -834,7 +834,7 @@ let er_range (width,scrappers) = function
   |Upper_half -> snd(halves (width,scrappers)) ;;
 
 let restricted_range (width,scrappers,IMD ql_idx) half = 
-  List.filter (fun (b,n)->(Hashtbl.find Warehouse.length_watcher (width,scrappers) b n)>=ql_idx)
+  List.filter (fun (b,n)->(Hashtbl.find Irimboro.length_watcher (width,scrappers) b n)>=ql_idx)
   (er_range (width,scrappers) half);;
 let linear_range (w,_scr,d) = function 
   Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
@@ -890,7 +890,7 @@ let original11 (width,scrappers,IMD ql_idx) b n =
   extension ;;
 let original12 = original11 ;; 
 
-let lw = Warehouse.length_watcher ;; 
+let lw = Irimboro.length_watcher ;; 
 let check1 pair g = lower_selector pair (original1 pair) g  ;; 
 let check2 pair g = upper_selector pair (original2 pair) g  ;; 
 let check3 pair g = lower_selector pair (original3 pair) g  ;; 
@@ -1000,7 +1000,7 @@ module Tools_for_mode_modules = struct
 
 let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
 let check_length (width,scrappers,IMD ql_idx) (b,n) = 
-  (Hashtbl.find Warehouse.length_watcher (width,scrappers) b n)>=ql_idx;;
+  (Hashtbl.find Irimboro.length_watcher (width,scrappers) b n)>=ql_idx;;
 
 end ;;   
 
@@ -1138,7 +1138,7 @@ let tour_for_single_pair (width,scrappers) =
       [] -> None 
       | (b,n) :: others ->
          (
-          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          let (good_opt,bad_opt) = Irimboro.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
           if good_opt = None 
           then Some(Option.get bad_opt,(b,n))
           else tempf others     
@@ -1162,9 +1162,9 @@ let get_status () = match (!ref_for_status) with
    Some status -> status 
    | None -> 
       let opt =  tour goal 
-      and idx = (!(Warehouse.index_for_missing_data)) in 
+      and idx = (!(Irimboro.index_for_missing_data)) in 
       let (kmp,pt) = Option.get opt in 
-      let answer = (kmp,Warehouse.read_missing_part kmp,idx,pt) in 
+      let answer = (kmp,Irimboro.read_missing_part kmp,idx,pt) in 
       let _ = (ref_for_status := Some answer) in 
       answer ;;
 
@@ -1178,14 +1178,5 @@ let next_look d =
     let msg2 = "\n\n\n"^(Pretty_printer.for_visualization_result answer)^"\n\n\n" in  
     let _ = (print_string("\n\n\n"^msg2^"\n\n\n");flush stdout) in 
     (fun ()->answer) ;;  
-
-
-let check tagged_f = 
-  let (kmp,_,idx,pt) = get_status () in 
-  let (w,s,_,_) = Point.unveil pt in 
-  let msg1 = "Current goal is ("^(string_of_int w)^
-              ",["^(String.concat "," (Image.image string_of_int s))^"])"  in 
-  let _ = (print_string("\n\n"^msg1^"\n\n");flush stdout) in 
-  Verify.check kmp (w,s,idx) tagged_f ;; 
 
 end ;; 
