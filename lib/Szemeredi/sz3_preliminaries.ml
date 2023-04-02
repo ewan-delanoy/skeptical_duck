@@ -429,20 +429,13 @@ Hashtbl.add
   Warehouse.hashtbl_for_superficial_result_upper_half (1,[]) 
      f_1_empty_set_superficial_result_upper_half;;
    
-
-
-
-
-
-
-
 let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;       
     
 (*
     
-  Verify.check 
-    (fst(Warehouse.pair_for_solution_list_lower_half))
-    (1,[],IMD 0) (CE2 f_1_empty_set_solution_list_lower_half) ;; 
+  Abstract_solution_list_mode.global_check 
+   (1,[],IMD 0,Lower_half) f_1_empty_set_solution_list_lower_half ;; 
+  
     
 *)
     
@@ -465,9 +458,9 @@ let f_1_empty_set_qpl_length_lower_half (B _b) (S n) =
 
 (*
 
-Verify.check 
-(fst(Warehouse.pair_for_qpl_length_lower_half))
-(1,[],IMD 0) (CE3 f_1_empty_set_qpl_length_lower_half) ;; 
+Abstract_qpl_length_mode.global_check 
+   (1,[],IMD 0,Lower_half) f_1_empty_set_qpl_length_lower_half ;; 
+  
 
 *)
 
