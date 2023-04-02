@@ -31,30 +31,7 @@ type kind_of_component = Sz3_types.kind_of_component =
     |Qpe_core
     |Qpe_constraints
     |Qpe_extension ;; 
-type kind_of_missing_part = Sz3_types.kind_of_missing_part = KMP of int ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
-type visualization_result = Sz3_types.visualization_result = 
-   VR1 of ((breadth * size) * superficial_result) list 
-  |VR2 of ((breadth * size) * solution list) list 
-  |VR3 of ((breadth * size) * int) list 
-  |VR4 of ((breadth * size) * point) list 
-  |VR5 of ((breadth * size) * constraint_t list) list 
-  |VR6 of ((breadth * size) * extension_data) list ;; 
-type check_entry = Sz3_types.check_entry = 
-  CE1 of ( breadth -> size -> superficial_result) 
- |CE2 of ( breadth -> size -> solution list) 
- |CE3 of ( breadth -> size -> int) 
- |CE4 of ( breadth -> size -> point) 
- |CE5 of ( breadth -> size -> constraint_t list) 
- |CE6 of ( breadth -> size -> extension_data);;  
-type check_result = Sz3_types.check_result =
-  CR1 of ((breadth * size) * superficial_result * superficial_result) list 
- |CR2 of ((breadth * size) * solution list * solution list) list 
- |CR3 of ((breadth * size) * int * int) list 
- |CR4 of ((breadth * size) * point * point) list 
- |CR5 of ((breadth * size) * constraint_t list * constraint_t list) list 
- |CR6 of ((breadth * size) * extension_data * extension_data) list ;;    
-     
 
 
 let i_order = Total_ordering.for_integers ;;
