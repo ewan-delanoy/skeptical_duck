@@ -1009,7 +1009,7 @@ let current_data () =
     let (_koc,_half,imd,pt) = Overall.get_status () in 
     (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
 
-    let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
+    let visualize d = Abstract_superficial_result_mode.visualize (current_data()) d  ;;
     let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
     let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
 end ;;
@@ -1021,7 +1021,7 @@ let current_data () =
     let (_koc,_half,imd,pt) = Overall.get_status () in 
     (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
   
-    let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
+    let visualize d = Abstract_superficial_result_mode.visualize (current_data()) d  ;;
     let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
     let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
 end ;;
@@ -1033,9 +1033,9 @@ module Solution_list_lower_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d  = Abstract_solution_list_mode.visualize (current_data()) d ;;
+      let partial_check d f = Abstract_solution_list_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_solution_list_mode.global_check (current_data()) g ;;
   end ;;
   
   
@@ -1045,9 +1045,9 @@ module Solution_list_upper_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
     
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d  = Abstract_solution_list_mode.visualize (current_data()) d  ;;
+      let partial_check d f = Abstract_solution_list_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_solution_list_mode.global_check (current_data()) g ;;
 end ;;
   
 
@@ -1057,9 +1057,9 @@ module Qpl_length_lower_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpl_length_mode.visualize (current_data()) d ;;
+      let partial_check d f = Abstract_qpl_length_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpl_length_mode.global_check (current_data()) g ;;
 end ;;
   
   
@@ -1069,9 +1069,9 @@ module Qpl_length_upper_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
     
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpl_length_mode.visualize (current_data()) d  ;;
+      let partial_check d f = Abstract_qpl_length_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpl_length_mode.global_check (current_data()) g ;;
 end ;;
 
 
@@ -1081,9 +1081,9 @@ module Qpe_core_lower_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpe_core_mode.visualize (current_data()) d  ;;
+      let partial_check d f = Abstract_qpe_core_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_core_mode.global_check (current_data()) g ;;
 end ;;
   
   
@@ -1093,9 +1093,9 @@ module Qpe_core_upper_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
     
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpe_core_mode.visualize (current_data()) d ;;
+      let partial_check d f = Abstract_qpe_core_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_core_mode.global_check (current_data()) g ;;
 end ;;
 
 
@@ -1105,9 +1105,9 @@ module Qpe_constraints_lower_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpe_constraints_mode.visualize (current_data()) d  ;;
+      let partial_check d f = Abstract_qpe_constraints_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_constraints_mode.global_check (current_data()) g ;;
 end ;;
   
   
@@ -1117,9 +1117,9 @@ module Qpe_constraints_upper_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
     
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpe_constraints_mode.visualize (current_data()) d ;;
+      let partial_check d f = Abstract_qpe_constraints_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_constraints_mode.global_check (current_data()) g ;;
 end ;;
 
 
@@ -1130,7 +1130,7 @@ module Qpe_extension_lower_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
+      let visualize d = Abstract_qpe_extension_mode.visualize (current_data()) d  ;;
       let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
       let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
 end ;;
@@ -1142,9 +1142,9 @@ module Qpe_extension_upper_half_mode = struct
       let (_koc,_half,imd,pt) = Overall.get_status () in 
       (Point.width pt,Point.scrappers pt,imd,Upper_half) ;;     
     
-      let visualize d () = Abstract_superficial_result_mode.visualize (current_data()) d () ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let visualize d = Abstract_qpe_extension_mode.visualize (current_data()) d  ;;
+      let partial_check d f = Abstract_qpe_extension_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_extension_mode.global_check (current_data()) g ;;
     
 end ;;
 

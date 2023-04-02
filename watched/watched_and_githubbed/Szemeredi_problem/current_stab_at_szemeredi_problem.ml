@@ -13,11 +13,14 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz3_preliminaries ;;
 
-(*
+
 let see0 = Overall.get_status () ;; 
 
-let res2 = Overall.next_look 2 ;; 
-let rf1 (B b,S n) =
+open Solution_list_upper_half_mode ;;
+
+let vz1 = visualize 1 ;;
+
+let rf1 (B b) (S n) =
   match List.assoc_opt n 
        [
         2,Atomic;
@@ -31,7 +34,7 @@ let rf1 (B b,S n) =
    |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
    |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
    |_-> failwith("bad remainder by 3")) ;;         
-let check_rf1 = List.filter (fun (x,y)->y<> rf1 x) res1 ;;     
+let check_rf1 = partial_check rf1 ;;     
 
 
 let res2 = unvr(Overall.next_look 2 ()) ;; 
