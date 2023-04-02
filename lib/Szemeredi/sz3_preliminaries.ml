@@ -812,7 +812,7 @@ let halves = Memoized.make (fun (width,scrappers) -> List.partition (fun
 
 let er_range (width,scrappers) = function 
    Lower_half -> snd(halves (width,scrappers)) 
-  |Upper_half -> snd(halves (width,scrappers)) ;;
+  |Upper_half -> fst(halves (width,scrappers)) ;;
 
 let restricted_range (width,scrappers,IMD ql_idx) half = 
   List.filter (fun (b,n)->Warehouse.length_watcher (P(width,scrappers,b,n))>=ql_idx)
