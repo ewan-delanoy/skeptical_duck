@@ -885,6 +885,12 @@ let text_for_new_item (w,s,i,half) component =
   String.concat "\n\n" 
     [first_line;part1;part2;part3;last_line] ;;
 
+let markers_for_warehouse_filler=
+ (
+    "(* Beginning of warehouse fillings. Do not modify this line *)",
+    "(* End of warehouse fillings. Do not modify this line *)"
+ ) ;;
+
 let main (w,s,i,half) component = 
     let _text = text_for_new_item (w,s,i,half) component in 
     ();;
