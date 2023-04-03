@@ -821,6 +821,26 @@ Lower_half ->  b+2*w-n
 
 end ;;  
 
+module Side_effects_after_successful_global_check = struct 
+
+let string_of_imd (IMD i) =
+    if i=0 then "" else 
+    "_i"^(string_of_int i)^"_" ;;   
+
+let string_of_intlist l=
+ if l=[] then "empty" else 
+ "l_"^(String.concat "_" (Image.image string_of_int l))^"_l";;
+
+let name_for_reconstructed_function (w,s,i,half) = 
+    "f_"^(string_of_int w)^"_"^ 
+     (string_of_intlist s)^ 
+     (string_of_imd i)^"_"^(Half.to_string half) ;;
+
+
+let main (_w,_s,_i,_half) = ();;
+
+end ;;  
+
 module Tools_for_mode_modules = struct 
 
 let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
@@ -946,9 +966,18 @@ let global_check (w,s,i,half) g =
     ) (Private.total_range (w,s,i,half)) in 
     let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
     if temp2=[] then ([],[]) else
-    let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
-        Range.compute_enumerator_index w pair half) temp2 in 
-    (temp2,temp3);;   
+    let temp3 = 
+      (if temp2=[] 
+       then [] 
+       else
+     snd(Min.minimize_it_with_care (fun (pair,_,_)->
+        Range.compute_enumerator_index w pair half) temp2)) in 
+    let answer =(temp2,temp3) in 
+    let _ = 
+    (if temp2=[] 
+    then Side_effects_after_successful_global_check.main (w,s,i,half)) 
+    in 
+    answer;;   
 
 
 end ;;  
