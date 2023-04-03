@@ -845,6 +845,8 @@ let string_of_fourtuple (w,s,IMD i,half)=
       "IMD("^(string_of_int i)^"),"^
       (String.capitalize_ascii(Half.to_string half))^")" ;; 
 
+let markers_for_items=("(* Beginning of item *)","(* End of item *)") ;; 
+  
 
 let main (_w,_s,_i,_half) _component = ();;
 

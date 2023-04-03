@@ -77,15 +77,19 @@ let part1 = Replace_inside.replace_inside_string
 let s_component = String.uncapitalize_ascii (Kind_of_component.to_capitalized_string component) ;;          
 let s_fourtuple = string_of_fourtuple (w,s,i,half) ;; 
 let in_part2=[
-  "Abstract_"^s_component^".mode_global_check";
+  "Abstract_"^s_component^"_mode.global_check";
+  " "^s_fourtuple^" "^f_name^" ;;"
 ] ;;          
 let inside_of_part2 = String.concat "\n" 
 (Image.image (fun x->(String.make 3 ' ')^x) in_part2) ;;
 let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" ;;
+let ws_string = "("^(string_of_int w)^","^(string_of_intlist s)^")" ;;
+let in_part3=[
+  "Hashtbl.add";
+  " Warehouse.hashtbl_for_"^s_component^"_"^(Half.to_string half);
+  "   "^ws_string^" "^f_name^" ;;"
+] ;;          
+let part3 = String.concat "\n" in_part3 ;;
+let final_text = String.concat "\n" [part1;part2;part3] ;;
+print_string final_text ;; 
 
-          (*
-  
-  Abstract_superficial_result_mode.global_check 
-   (1,[],IMD 0,Lower_half) f_1_empty_set_superficial_result_lower_half ;; 
-  
-*)
