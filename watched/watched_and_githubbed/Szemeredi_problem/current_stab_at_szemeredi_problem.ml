@@ -72,8 +72,8 @@ let text_from_stab = Io.read_whole_file stab_ap ;;
 let original_rfi_code = Cull_string.between_markers 
     ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab ;; 
 let f_name = name_for_reconstructed_function (w,s,i,half) ;; 
-let part1 = Replace_inside.replace_inside_string
-          (" rfi "," "^f_name^" ") original_rfi_code ;; 
+let part1 = Cull_string.trim_spaces_on_the_left(Replace_inside.replace_inside_string
+          (" rfi "," "^f_name^" ") original_rfi_code);; 
 let s_component = String.uncapitalize_ascii (Kind_of_component.to_capitalized_string component) ;;          
 let s_fourtuple = string_of_fourtuple (w,s,i,half) ;; 
 let in_part2=[
@@ -90,6 +90,7 @@ let in_part3=[
   "   "^ws_string^" "^f_name^" ;;"
 ] ;;          
 let part3 = String.concat "\n" in_part3 ;;
-let final_text = String.concat "\n" [part1;part2;part3] ;;
+let final_text = String.concat "\n" 
+ [fst(markers_for_items);part1;part2;"";part3;"";snd(markers_for_items)] ;;
 print_string final_text ;; 
 
