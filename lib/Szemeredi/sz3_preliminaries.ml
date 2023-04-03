@@ -91,6 +91,9 @@ let to_capitalized_string = function
 | Qpe_constraints -> "Qpe_constraints"
 | Qpe_extension -> "Qpe_extension" ;; 
 
+let to_uncapitalized_string koc = 
+    String.uncapitalize_ascii (to_capitalized_string koc) ;; 
+
 end ;;   
 
 module Half = struct 
@@ -373,10 +376,12 @@ end ;;
 
 
 module Fill_Warehouse = struct 
+(* Beginning of warehouse fillings. Do not modify this line *)
 
 let simplest_example n = List.filter (fun j->(j mod 3)<>0) (Int_range.range 1 n) ;; 
 let simplest_list n = [simplest_example n] ;; 
 
+(* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
     match List.assoc_opt n 
        [1,Atomic;
@@ -402,7 +407,7 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
 Hashtbl.add 
   Warehouse.hashtbl_for_superficial_result_lower_half (1,[]) 
     f_1_empty_set_superficial_result_lower_half;;
-
+(* End of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 
 
 let f_1_empty_set_superficial_result_upper_half (B b) (S n) = 
@@ -470,7 +475,7 @@ Hashtbl.add
 f_1_empty_set_qpl_length_lower_half;;
 
 
-
+(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -831,10 +836,12 @@ let string_of_intlist_inside_name l=
  if l=[] then "empty" else 
  "l_"^(String.concat "_" (Image.image string_of_int l))^"_l";;
 
-let name_for_reconstructed_function (w,s,i,half) = 
+let name_for_reconstructed_function (w,s,i,component,half) = 
     "f_"^(string_of_int w)^"_"^ 
      (string_of_intlist_inside_name s)^ 
-     (string_of_imd_inside_name i)^"_"^(Half.to_string half) ;;
+     (string_of_imd_inside_name i)^
+     "_"^(Kind_of_component.to_uncapitalized_string component)^
+     "_"^(Half.to_string half) ;;
 
 let string_of_intlist l=
   "["^(String.concat ";" (Image.image string_of_int l))^"]";;
@@ -844,6 +851,13 @@ let string_of_fourtuple (w,s,IMD i,half)=
       (string_of_intlist s)^","^
       "IMD("^(string_of_int i)^"),"^
       (String.capitalize_ascii(Half.to_string half))^")" ;; 
+
+let string_of_fiftuple (w,s,IMD i,component,half)=
+  "("^(string_of_int w)^","^
+     (string_of_intlist s)^","^
+      "IMD("^(string_of_int i)^"),"^
+      (Kind_of_component.to_capitalized_string component)^","^
+    (String.capitalize_ascii(Half.to_string half))^")" ;; 
 
 let pre_markers_for_items=
   ("(* Beginning of item at ","(* End of item at ") ;; 
@@ -859,13 +873,14 @@ let text_for_new_item (w,s,i,half) component =
   let text_from_stab = Io.read_whole_file stab_ap in 
   let original_rfi_code = Cull_string.between_markers 
     ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
-  let f_name = name_for_reconstructed_function (w,s,i,half) in 
+  let f_name = name_for_reconstructed_function (w,s,i,component,half) in 
   let pre_part1 = Replace_inside.replace_inside_string
         (" rfi "," "^f_name^" ") original_rfi_code in 
   let part1 = Cull_string.trim_spaces pre_part1 in 
-  let s_component = String.uncapitalize_ascii 
-   (Kind_of_component.to_capitalized_string component) in          
-  let s_fourtuple = string_of_fourtuple (w,s,i,half) in 
+  let s_component = 
+    Kind_of_component.to_uncapitalized_string component in          
+  let s_fourtuple = string_of_fourtuple (w,s,i,half) 
+  and s_fiftuple = string_of_fiftuple (w,s,i,component,half) in 
   let in_part2=[
   "Abstract_"^s_component^"_mode.global_check";
   " "^s_fourtuple^" "^f_name^" ;;"
@@ -880,8 +895,8 @@ let text_for_new_item (w,s,i,half) component =
     "   "^ws_string^" "^f_name^" ;;"
   ] in          
   let part3 = String.concat "\n" in_part3 in
-  let first_line=(fst pre_markers_for_items)^" "^s_fourtuple^" *)"
-  and last_line=(snd pre_markers_for_items)^" "^s_fourtuple^" *)" in 
+  let first_line=(fst pre_markers_for_items)^" "^s_fiftuple^" *)"
+  and last_line=(snd pre_markers_for_items)^" "^s_fiftuple^" *)" in 
   String.concat "\n\n" 
     [first_line;part1;part2;part3;last_line] ;;
 
