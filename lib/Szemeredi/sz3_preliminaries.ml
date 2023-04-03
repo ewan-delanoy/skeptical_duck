@@ -409,7 +409,7 @@ Hashtbl.add
     f_1_empty_set_superficial_result_lower_half;;
 (* End of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 
-
+(* Beginning of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)
 let f_1_empty_set_superficial_result_upper_half (B b) (S n) = 
   if b=0 then Atomic else
   if n=3 then Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])] else 
@@ -434,7 +434,10 @@ let f_1_empty_set_superficial_result_upper_half (B b) (S n) =
 Hashtbl.add 
   Warehouse.hashtbl_for_superficial_result_upper_half (1,[]) 
      f_1_empty_set_superficial_result_upper_half;;
-   
+
+(* End of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)     
+
+(* Beginning of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
 let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;       
     
 (*
@@ -449,8 +452,9 @@ Hashtbl.add
   Warehouse.hashtbl_for_solution_list_lower_half (1,[]) 
     f_1_empty_set_solution_list_lower_half;;
 
+(* End of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
 
-
+(* Beginning of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
 let f_1_empty_set_qpl_length_lower_half (B _b) (S n) = 
   match List.assoc_opt n [1,0;2,0]  with    
     Some answer -> answer 
@@ -473,7 +477,7 @@ Abstract_qpl_length_mode.global_check
 Hashtbl.add 
  Warehouse.hashtbl_for_qpl_length_lower_half (1,[]) 
 f_1_empty_set_qpl_length_lower_half;;
-
+(* End of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
 
 (* End of warehouse fillings. Do not modify this line *)
 end ;;   
