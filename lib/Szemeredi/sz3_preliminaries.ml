@@ -851,6 +851,7 @@ end ;;
 
 module type MODE_SEED = sig 
   type current_t 
+  val current_component : kind_of_component
   val original : int * int list * index_of_missing_data -> breadth -> size -> current_t
   val extra_condition_for_range : int * int list  * index_of_missing_data -> breadth * size -> bool
   val current_printer : current_t -> string
@@ -859,6 +860,7 @@ end ;;
 module Superficial_result_seed = ((struct
 
 type current_t = superficial_result ;;
+let current_component = Superficial_result ;; 
 let original (width,scrappers,_) b n =
   Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
 let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
@@ -870,6 +872,7 @@ end) : MODE_SEED with type current_t = superficial_result) ;;
 module Solution_list_seed = ((struct
 
 type current_t = solution list ;;
+let current_component = Solution_list ;; 
 let original (width,scrappers,_) b n =
   Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
   let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
@@ -880,6 +883,7 @@ end) : MODE_SEED with type current_t = solution list) ;;
 module Qpl_length_seed = ((struct
 
 type current_t = int ;;
+let current_component = Qpl_length ;; 
 let original (width,scrappers,_)  b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   List.length ql;; ;;
@@ -891,6 +895,7 @@ end) : MODE_SEED with type current_t = int) ;;
 module Qpe_core_seed = ((struct
 
 type current_t = point ;;
+let current_component = Qpe_core ;; 
 let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
@@ -903,6 +908,7 @@ end) : MODE_SEED with type current_t = point) ;;
 module Qpe_constraints_seed = ((struct
 
 type current_t = constraint_t list ;;
+let current_component = Qpe_constraints ;; 
 let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
@@ -915,6 +921,7 @@ end) : MODE_SEED with type current_t = constraint_t list) ;;
 module Qpe_extension_seed = ((struct
 
 type current_t = extension_data ;;
+let current_component = Qpe_extension ;; 
 let original (width,scrappers,IMD ql_idx) b n =
   let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
