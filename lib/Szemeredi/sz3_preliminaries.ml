@@ -848,8 +848,46 @@ let string_of_fourtuple (w,s,IMD i,half)=
 let pre_markers_for_items=
   ("(* Beginning of item at ","(* End of item at ") ;; 
   
+let text_for_new_item (w,s,i,half) component = 
+  let base_path = Dfa_root.connectable_to_subpath 
+  (Coma_big_constant.This_World.root) in 
+  let s_stab_ap = base_path ^ 
+  "watched/watched_and_githubbed/Szemeredi_problem/" ^
+   "current_stab_at_szemeredi_problem.ml" in 
+  if not (Sys.file_exists s_stab_ap) then "" else 
+  let stab_ap = Absolute_path.of_string s_stab_ap in  
+  let text_from_stab = Io.read_whole_file stab_ap in 
+  let original_rfi_code = Cull_string.between_markers 
+    ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
+  let f_name = name_for_reconstructed_function (w,s,i,half) in 
+  let pre_part1 = Replace_inside.replace_inside_string
+        (" rfi "," "^f_name^" ") original_rfi_code in 
+  let part1 = Cull_string.trim_spaces pre_part1 in 
+  let s_component = String.uncapitalize_ascii 
+   (Kind_of_component.to_capitalized_string component) in          
+  let s_fourtuple = string_of_fourtuple (w,s,i,half) in 
+  let in_part2=[
+  "Abstract_"^s_component^"_mode.global_check";
+  " "^s_fourtuple^" "^f_name^" ;;"
+  ] in 
+  let inside_of_part2 = String.concat "\n" 
+  (Image.image (fun x->(String.make 3 ' ')^x) in_part2) in 
+  let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" in 
+  let ws_string = "("^(string_of_int w)^","^(string_of_intlist s)^")" in 
+  let in_part3=[
+    "Hashtbl.add";
+    " Warehouse.hashtbl_for_"^s_component^"_"^(Half.to_string half);
+    "   "^ws_string^" "^f_name^" ;;"
+  ] in          
+  let part3 = String.concat "\n" in_part3 in
+  let first_line=(fst pre_markers_for_items)^" "^s_fourtuple^" *)"
+  and last_line=(snd pre_markers_for_items)^" "^s_fourtuple^" *)" in 
+  String.concat "\n\n" 
+    [first_line;part1;part2;part3;last_line] ;;
 
-let main (_w,_s,_i,_half) _component = ();;
+let main (w,s,i,half) component = 
+    let _text = text_for_new_item (w,s,i,half) component in 
+    ();;
 
 end ;;  
 
