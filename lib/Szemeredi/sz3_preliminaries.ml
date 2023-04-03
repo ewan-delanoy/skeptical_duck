@@ -823,21 +823,30 @@ end ;;
 
 module Side_effects_after_successful_global_check = struct 
 
-let string_of_imd (IMD i) =
+let string_of_imd_inside_name (IMD i) =
     if i=0 then "" else 
     "_i"^(string_of_int i)^"_" ;;   
 
-let string_of_intlist l=
+let string_of_intlist_inside_name l=
  if l=[] then "empty" else 
  "l_"^(String.concat "_" (Image.image string_of_int l))^"_l";;
 
 let name_for_reconstructed_function (w,s,i,half) = 
     "f_"^(string_of_int w)^"_"^ 
-     (string_of_intlist s)^ 
-     (string_of_imd i)^"_"^(Half.to_string half) ;;
+     (string_of_intlist_inside_name s)^ 
+     (string_of_imd_inside_name i)^"_"^(Half.to_string half) ;;
+
+let string_of_intlist l=
+  "["^(String.concat ";" (Image.image string_of_int l))^"]";;
+
+let string_of_fourtuple (w,s,IMD i,half)=
+  "("^(string_of_int w)^","^
+      (string_of_intlist s)^","^
+      "IMD("^(string_of_int i)^"),"^
+      (String.capitalize_ascii(Half.to_string half))^")" ;; 
 
 
-let main (_w,_s,_i,_half) = ();;
+let main (_w,_s,_i,_half) _component = ();;
 
 end ;;  
 
@@ -982,7 +991,7 @@ let global_check (w,s,i,half) g =
     let answer =(temp2,temp3) in 
     let _ = 
     (if temp2=[] 
-    then Side_effects_after_successful_global_check.main (w,s,i,half)) 
+    then Side_effects_after_successful_global_check.main (w,s,i,half) Seed.current_component) 
     in 
     answer;;   
 

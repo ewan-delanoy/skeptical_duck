@@ -54,6 +54,7 @@ let check_rfi = global_check rfi ;;
 
 open Side_effects_after_successful_global_check ;; 
 
+let component = Solution_list ;; 
 let (w,s,i,half) = Solution_list_upper_half_mode.current_data() ;; 
 
 let base_path = Dfa_root.connectable_to_subpath 
@@ -73,7 +74,14 @@ let original_rfi_code = Cull_string.between_markers
 let f_name = name_for_reconstructed_function (w,s,i,half) ;; 
 let part1 = Replace_inside.replace_inside_string
           (" rfi "," "^f_name^" ") original_rfi_code ;; 
-
+let s_component = String.uncapitalize_ascii (Kind_of_component.to_capitalized_string component) ;;          
+let s_fourtuple = string_of_fourtuple (w,s,i,half) ;; 
+let in_part2=[
+  "Abstract_"^s_component^".mode_global_check";
+] ;;          
+let inside_of_part2 = String.concat "\n" 
+(Image.image (fun x->(String.make 3 ' ')^x) in_part2) ;;
+let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" ;;
 
           (*
   
