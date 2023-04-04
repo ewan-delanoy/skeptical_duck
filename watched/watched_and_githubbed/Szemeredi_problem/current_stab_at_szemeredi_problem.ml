@@ -30,6 +30,28 @@ let rfi (B b) (S n) =
 (* RFI END *)
 (* let check_rfi = global_check rfi ;; *)
 
+
+(* let inactive1 = Solution_list_upper_half_mode.global_check rfi ;; *)
+let c_data = Solution_list_upper_half_mode.current_data () ;; 
+(* let inactive2 = Abstract_solution_list_mode.global_check c_data rfi ;; *)
+let (w,s,i,half) = c_data ;;
+let temp1 = Image.image (
+  fun (b,n) -> ((b,n),Solution_list_seed.original (w,s,i) b n,rfi b n)
+  ) (Abstract_solution_list_mode.Private.total_range (w,s,i,half)) ;; 
+let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 ;;
+let temp3 = 
+  (if temp2=[] 
+   then [] 
+   else
+ snd(Min.minimize_it_with_care (fun (pair,_,_)->
+    Range.compute_enumerator_index w pair half) temp2));;
+let answer =(temp2,temp3)  ;;  
+
+(* let inactive3 = Side_effects_after_successful_global_check.main (w,s,i,Solution_list_seed.current_component,half) ;; *)
+
+
+
+(*
 open Side_effects_after_successful_global_check ;; 
 
 let component = Solution_list ;; 
@@ -66,3 +88,4 @@ let after = String.concat "\n" (Image.image snd lines_after) ;;
 let new_wafi_text = String.concat "\n" [before;new_item;after] ;; 
 Replace_inside.overwrite_between_markers_inside_file 
 ~overwriter:new_wafi_text markers_for_warehouse_filler this_ap ;;
+*)
