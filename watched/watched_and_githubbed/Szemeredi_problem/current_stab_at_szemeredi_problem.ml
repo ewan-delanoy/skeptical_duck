@@ -16,12 +16,8 @@ open Needed_values ;;
 open Sz3_preliminaries ;;
 let see0 = Overall.get_status () ;; 
 open Tools_for_warehouse ;; 
-open Solution_list_upper_half_mode ;;
+(* open Solution_list_upper_half_mode ;; *)
 
-
-let vz1 = visualize 1 ;;
-let rf1 (B b) (S n) = simplest_list n;;         
-let check_rf1 = partial_check 1 rf1 ;;     
 
 (* RFI BEGIN *)
 
