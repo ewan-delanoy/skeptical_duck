@@ -1202,7 +1202,74 @@ let global_check (w,s,i,half) g =
 end ;;  
 
 module Abstract_superficial_result_mode = Mode_grow(Superficial_result_seed);;
-module Abstract_solution_list_mode = Mode_grow(Solution_list_seed);;
+(* module Abstract_solution_list_mode = Mode_grow(Solution_list_seed);; *)
+
+
+module Abstract_solution_list_mode = struct 
+
+  module Seed = Solution_list_seed ;;
+  
+  module Private = struct  
+  
+  let print_vr_element ((B b,S n),elt) = 
+      "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(Seed.current_printer elt)^")" ;;  
+  
+  let partial_range (w,s,i,half) d = List.filter ( 
+        Seed.extra_condition_for_range (w,s,i) )
+      (Range.linear_range (w,s,d) half) ;;
+  
+  let total_range (w,s,i,half)= List.filter (
+    Seed.extra_condition_for_range (w,s,i)
+  ) (Range.er_range (w,s) half) ;;
+  
+  let data_for_visualization (w,s,i,half) d = Image.image (
+        fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
+     ) (Range.linear_range (w,s,d) half) ;;
+     
+  let pretty_print_visualization_data l = 
+         "[\n"^(String.concat ";\n" (Image.image print_vr_element l))^"\n]" ;;
+  
+  end ;;  
+  
+  let visualize (w,s,i,half) d = 
+    let answer = Private.data_for_visualization (w,s,i,half) d in 
+    let msg = "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" in 
+    let _ = (print_string msg;flush stdout) in 
+    (fun ()->answer) ;; 
+  
+  let partial_check (w,s,i,half) d f = 
+    let temp1 = Image.image (
+    fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,f b n)
+    ) (Private.partial_range (w,s,i,half) d) in 
+    List.filter (fun (_,y1,y2)->y1<>y2) temp1;;   
+  
+  let global_check (w,s,i,half) g = 
+      let temp1 = Image.image (
+      fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
+      ) (Private.total_range (w,s,i,half)) in 
+      let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
+      if temp2=[] then ([],[]) else
+      let temp3 = 
+        (if temp2=[] 
+         then [] 
+         else
+       snd(Min.minimize_it_with_care (fun (pair,_,_)->
+          Range.compute_enumerator_index w pair half) temp2)) in 
+      let answer =(temp2,temp3) in 
+      let _ = 
+      (if temp2=[] 
+      then (print_string("\n Liebe schwester \n");
+           flush stdout;
+            Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half)) 
+      else (print_string("\n Abraham Lincoln \n");
+          flush stdout;)) 
+      in 
+      answer;;   
+  
+  
+  end ;;  
+
+
 module Abstract_qpl_length_mode = Mode_grow(Qpl_length_seed);;
 module Abstract_qpe_core_mode = Mode_grow(Qpe_core_seed);;
 module Abstract_qpe_constraints_mode = Mode_grow(Qpe_constraints_seed);;
