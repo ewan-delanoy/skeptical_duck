@@ -966,6 +966,7 @@ let adhoc_order_for_intlists scr1 scr2 =
     Total_ordering_result_t.Greater -> Total_ordering_result_t.Lower 
    |Total_ordering_result_t.Lower -> Total_ordering_result_t.Greater 
    |Total_ordering_result_t.Equal -> 
+    if scr1=[] then Total_ordering_result_t.Equal else
     let try1 = Total_ordering.for_integers (Max.list scr1) (Max.list scr2) in 
     if try1 <> Total_ordering_result_t.Equal then try1 else       
     Total_ordering.silex_for_intlists scr1 scr2 ;; 
