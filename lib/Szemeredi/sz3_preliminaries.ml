@@ -484,6 +484,25 @@ Hashtbl.add
     f_1_empty_set_solution_list_lower_half;;
 
 (* End of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
+(* Beginning of item at  (1,[],IMD(0),Solution_list,Upper_half) *)
+
+let f_1_empty_solution_list_upper_half (B b) (S n) = 
+  if List.mem (n-b,n mod 3) [(2,0);(2,1);(2,2);(3,1);(3,2);(4,2)] 
+  then simplest_list n  
+  else [(simplest_example (b+2))@(Int_range.range (b+3) n)] ;;
+
+(* 
+
+   Abstract_solution_list_mode.global_check
+    (1,[],IMD(0),Upper_half) f_1_empty_solution_list_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_solution_list_upper_half
+   (1,[]) f_1_empty_solution_list_upper_half ;;
+
+(* End of item at  (1,[],IMD(0),Solution_list,Upper_half) *)
 
 
 (* Beginning of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
