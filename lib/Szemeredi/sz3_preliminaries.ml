@@ -1206,7 +1206,7 @@ module Abstract_solution_list_mode = Mode_grow(Solution_list_seed);;
 module Abstract_qpl_length_mode = Mode_grow(Qpl_length_seed);;
 module Abstract_qpe_core_mode = Mode_grow(Qpe_core_seed);;
 module Abstract_qpe_constraints_mode = Mode_grow(Qpe_constraints_seed);;
-module Abstract_qpe_extension_mode = Mode_grow(Qpe_constraints_seed);;
+module Abstract_qpe_extension_mode = Mode_grow(Qpe_extension_seed);;
 
 module Overall = struct 
 
