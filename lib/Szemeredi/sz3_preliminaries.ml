@@ -959,7 +959,7 @@ let extract_fiftuple_from_beginning_line line =
  let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 in  
  let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) in  
  let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
- (w,scr,imd,component,half) ;;
+ (w,scr,IMD(imd),component,half) ;;
 
 let adhoc_order_for_intlists scr1 scr2 =
    match Total_ordering.for_integers (List.length scr1) (List.length scr2) with 
