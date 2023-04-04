@@ -18,8 +18,9 @@ let see0 = Overall.get_status () ;;
 open Tools_for_warehouse ;; 
 open Solution_list_upper_half_mode ;;
 
+
 let vz1 = visualize 1 ;;
-let rf1 (B b) (S n) = Fill_Warehouse.simplest_list n;;         
+let rf1 (B b) (S n) = simplest_list n;;         
 let check_rf1 = partial_check 1 rf1 ;;     
 
 (* RFI BEGIN *)
@@ -53,42 +54,3 @@ let answer =(temp2,temp3)  ;;
 (* let inactive3 = Side_effects_after_successful_global_check.main (w,s,i,Solution_list_seed.current_component,half) ;; *)
 
 
-
-(*
-open Side_effects_after_successful_global_check ;; 
-
-let component = Solution_list ;; 
-let (w,s,i,half) = Solution_list_upper_half_mode.current_data() ;; 
-
-let new_item = text_for_new_item (w,s,i,half) component ;;
-
-let base_path = Dfa_root.connectable_to_subpath 
-(Coma_big_constant.This_World.root) ;; 
-let s_this_ap = base_path ^ 
-     "lib/Szemeredi/sz3_preliminaries.ml";; 
-if not (Sys.file_exists s_this_ap) then () ;; 
-let this_ap = Absolute_path.of_string s_this_ap ;; 
-let this_text = Io.read_whole_file this_ap ;; 
-let wafi_full_text = 
-    Cull_string.between_markers markers_for_warehouse_filler
-       this_text ;; 
-let lines_in_wafi = Lines_in_string.lines wafi_full_text ;;        
-let indexed_lines = Int_range.index_everything lines_in_wafi ;; 
-let beginnings = List.filter (fun (_,line)->
-    Supstring.begins_with line (fst(pre_markers_for_items))
-  ) indexed_lines ;; 
-let endings = List.filter (fun (_,line)->
-  Supstring.begins_with line (snd(pre_markers_for_items))
-) indexed_lines ;; 
-if (List.length beginnings)<>(List.length endings) then failwith("zzz") ;; 
-let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings ;; 
-let new_fiftuple = (w,s,i,component,half)  ;;
-let ii = compute_insertion_index new_fiftuple fiftuples;;
-let max_linedex_before = fst(List.nth endings (ii-1)) ;; 
-let (lines_before,lines_after)=List.partition (fun (j,line)->j<=max_linedex_before) indexed_lines ;;  
-let before = String.concat "\n" (Image.image snd lines_before) ;; 
-let after = String.concat "\n" (Image.image snd lines_after) ;; 
-let new_wafi_text = String.concat "\n" [before;new_item;after] ;; 
-Replace_inside.overwrite_between_markers_inside_file 
-~overwriter:new_wafi_text markers_for_warehouse_filler this_ap ;;
-*)
