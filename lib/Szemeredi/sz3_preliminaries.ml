@@ -890,7 +890,7 @@ let string_of_fiftuple (w,s,IMD i,component,half)=
 let pre_markers_for_items=
   ("(* Beginning of item at ","(* End of item at ") ;; 
   
-let text_for_new_item (w,s,i,half) component = 
+let text_for_new_item (w,s,i,component,half) = 
   let base_path = Dfa_root.connectable_to_subpath 
   (Coma_big_constant.This_World.root) in 
   let s_stab_ap = base_path ^ 
@@ -1004,9 +1004,40 @@ let rec helper_for_insertion_index (counter,new_fiftuple,untreated) =
 let compute_insertion_index new_fiftuple old_fiftuples =
   helper_for_insertion_index (0,new_fiftuple,old_fiftuples) ;;     
 
-let main (w,s,i,half) component = 
-    let _text = text_for_new_item (w,s,i,half) component in 
-    ();;
+exception Write_new_item_to_this_file_exn ;; 
+
+let write_new_item_to_this_file new_fiftuple new_item =
+  let base_path = Dfa_root.connectable_to_subpath 
+  (Coma_big_constant.This_World.root) in  
+  let s_this_ap = base_path ^ "lib/Szemeredi/sz3_preliminaries.ml" in  
+  if not (Sys.file_exists s_this_ap) then () else
+  let this_ap = Absolute_path.of_string s_this_ap in  
+  let this_text = Io.read_whole_file this_ap in  
+  let wafi_full_text = Cull_string.between_markers markers_for_warehouse_filler this_text in  
+  let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
+  let indexed_lines = Int_range.index_everything lines_in_wafi in  
+  let beginnings = List.filter (fun (_,line)->
+    Supstring.begins_with line (fst(pre_markers_for_items))
+  ) indexed_lines in  
+  let endings = List.filter (fun (_,line)->
+    Supstring.begins_with line (snd(pre_markers_for_items))
+  ) indexed_lines in  
+  if (List.length beginnings)<>(List.length endings) then raise Write_new_item_to_this_file_exn else 
+  let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings in  
+  let ii = compute_insertion_index new_fiftuple fiftuples in 
+  let max_linedex_before = fst(List.nth endings (ii-1)) in  
+  let (lines_before,lines_after)=
+     List.partition (fun (j,_line)->j<=max_linedex_before) indexed_lines in   
+  let before = String.concat "\n" (Image.image snd lines_before) in  
+  let after = String.concat "\n" (Image.image snd lines_after) in  
+  let new_wafi_text = String.concat "\n" [before;new_item;after] in  
+  Replace_inside.overwrite_between_markers_inside_file 
+    ~overwriter:new_wafi_text markers_for_warehouse_filler this_ap ;; 
+
+
+let main new_fiftuple = 
+    let new_item = text_for_new_item new_fiftuple in 
+    write_new_item_to_this_file new_fiftuple new_item;;
 
 end ;;  
 
@@ -1151,7 +1182,7 @@ let global_check (w,s,i,half) g =
     let answer =(temp2,temp3) in 
     let _ = 
     (if temp2=[] 
-    then Side_effects_after_successful_global_check.main (w,s,i,half) Seed.current_component) 
+    then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half) ) 
     in 
     answer;;   
 

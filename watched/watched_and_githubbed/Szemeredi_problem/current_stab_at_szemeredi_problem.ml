@@ -35,9 +35,7 @@ open Side_effects_after_successful_global_check ;;
 let component = Solution_list ;; 
 let (w,s,i,half) = Solution_list_upper_half_mode.current_data() ;; 
 
-let text1 = text_for_new_item (w,s,i,half) component ;;
-
-print_string text1 ;; 
+let new_item = text_for_new_item (w,s,i,half) component ;;
 
 let base_path = Dfa_root.connectable_to_subpath 
 (Coma_big_constant.This_World.root) ;; 
@@ -61,4 +59,10 @@ if (List.length beginnings)<>(List.length endings) then failwith("zzz") ;;
 let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings ;; 
 let new_fiftuple = (w,s,i,component,half)  ;;
 let ii = compute_insertion_index new_fiftuple fiftuples;;
-
+let max_linedex_before = fst(List.nth endings (ii-1)) ;; 
+let (lines_before,lines_after)=List.partition (fun (j,line)->j<=max_linedex_before) indexed_lines ;;  
+let before = String.concat "\n" (Image.image snd lines_before) ;; 
+let after = String.concat "\n" (Image.image snd lines_after) ;; 
+let new_wafi_text = String.concat "\n" [before;new_item;after] ;; 
+Replace_inside.overwrite_between_markers_inside_file 
+~overwriter:new_wafi_text markers_for_warehouse_filler this_ap ;;
