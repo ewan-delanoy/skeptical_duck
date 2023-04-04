@@ -549,7 +549,7 @@ Hashtbl.add
 (* End of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 
-let f_1_empty_i1__qpe_core_upper_half (B b) (S _n) = 
+let f_1_empty_i1_qpe_core_upper_half (B b) (S _n) = 
   if b<=3 then Empty_point else
     P(1,[],B(b-3),S(b-1))  ;;
 
@@ -562,7 +562,7 @@ let f_1_empty_i1__qpe_core_upper_half (B b) (S _n) =
 
 Hashtbl.add
  Warehouse.hashtbl_for_qpe_core_upper_half
-   (1,[]) f_1_empty_i1__qpe_core_upper_half ;;
+   (1,[],IMD(1)) f_1_empty_i1_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 
@@ -921,7 +921,7 @@ module Side_effects_after_successful_global_check = struct
 
 let string_of_imd_inside_name (IMD i) =
     if i=0 then "" else 
-    "_i"^(string_of_int i)^"_" ;;   
+    "_i"^(string_of_int i) ;;   
 
 let string_of_intlist_inside_name l=
  if l=[] then "empty" else 
@@ -949,6 +949,12 @@ let string_of_fiftuple (w,s,IMD i,component,half)=
       "IMD("^(string_of_int i)^"),"^
       (Kind_of_component.to_capitalized_string component)^","^
     (String.capitalize_ascii(Half.to_string half))^")" ;; 
+
+let string_of_imd_inside_wsi (IMD i) =
+      if i=0 then "" else ",IMD("^(string_of_int i)^")" ;;  
+
+let compute_wsi_string (w,s,imd) =
+  "("^(string_of_int w)^","^(string_of_intlist s)^(string_of_imd_inside_wsi imd)^")" ;;
 
 let pre_markers_for_items=
   ("(* Beginning of item at ","(* End of item at ") ;; 
@@ -979,11 +985,11 @@ let text_for_new_item (w,s,i,component,half) =
   let inside_of_part2 = String.concat "\n" 
   (Image.image (fun x->(String.make 3 ' ')^x) in_part2) in 
   let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" in 
-  let ws_string = "("^(string_of_int w)^","^(string_of_intlist s)^")" in 
+  let wsi_string = compute_wsi_string (w,s,i) in 
   let in_part3=[
     "Hashtbl.add";
     " Warehouse.hashtbl_for_"^s_component^"_"^(Half.to_string half);
-    "   "^ws_string^" "^f_name^" ;;"
+    "   "^wsi_string^" "^f_name^" ;;"
   ] in          
   let part3 = String.concat "\n" in_part3 in
   let first_line=(fst pre_markers_for_items)^" "^s_fiftuple^" *)"
