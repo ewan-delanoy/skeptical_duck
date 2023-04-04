@@ -107,6 +107,7 @@ let of_string s =
   List.assoc s 
   (Image.image (fun k->(to_capitalized_string k,k)) all);;
   
+let compare = Total_ordering.from_list all ;;
 
 end ;;   
 
@@ -122,6 +123,8 @@ let of_string s =
       "Lower_half",Lower_half;
       "Upper_half",Upper_half;
     ] ;; 
+
+let compare = Total_ordering.from_list [Lower_half;Upper_half] ;; 
 
 end ;;  
 
