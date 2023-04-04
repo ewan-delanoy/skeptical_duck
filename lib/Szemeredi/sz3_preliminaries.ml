@@ -955,6 +955,30 @@ let extract_fiftuple_from_beginning_line line =
  let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
  (w,scr,imd,component,half) ;;
 
+let adhoc_order_for_intlists scr1 scr2 =
+   match Total_ordering.for_integers (List.length scr1) (List.length scr2) with 
+    Total_ordering_result_t.Greater -> Total_ordering_result_t.Lower 
+   |Total_ordering_result_t.Lower -> Total_ordering_result_t.Greater 
+   |Total_ordering_result_t.Equal -> 
+    let try1 = Total_ordering.for_integers (Max.list scr1) (Max.list scr2) in 
+    if try1 <> Total_ordering_result_t.Equal then try1 else       
+    Total_ordering.silex_for_intlists scr1 scr2 ;; 
+
+
+(* 
+let pre_compare_fiftuples (w1,scr1,IMD(imd1),component1,half1) (w2,scr2,IMD(imd2),component2,half2) =
+   let try1 = Total_ordering.for_integers w1 w2 in 
+   if try1 <> Total_ordering_result_t.Equal then try1 else 
+   let try2 = adhoc_order_for_intlists scr1 scr2 in 
+   if try2 <> Total_ordering_result_t.Equal then try2 else  
+   let try3 = Total_ordering.for_integers imd1 imd2 in 
+   if try3 <> Total_ordering_result_t.Equal then try3 else 
+   let try4 = Kind_of_component.compare component1 component2 in 
+   if try4 <> Total_ordering_result_t.Equal then try4 else 
+  Half.compare half1 half2 ;;
+  
+*)  
+
 let main (w,s,i,half) component = 
     let _text = text_for_new_item (w,s,i,half) component in 
     ();;

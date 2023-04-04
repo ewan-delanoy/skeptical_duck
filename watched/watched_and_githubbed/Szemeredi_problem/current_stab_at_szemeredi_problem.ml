@@ -59,3 +59,4 @@ let endings = List.filter (fun (_,line)->
 ) indexed_lines ;; 
 if (List.length beginnings)<>(List.length endings) then failwith("zzz") ;; 
 let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings ;; 
+let new_fiftuple = (w,s,i,component,half)  ;;
