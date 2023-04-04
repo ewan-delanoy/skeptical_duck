@@ -547,6 +547,24 @@ Hashtbl.add
    (1,[]) f_1_empty_qpl_length_upper_half ;;
 
 (* End of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
+
+let f_1_empty_i1__qpe_core_upper_half (B b) (S _n) = 
+  if b<=3 then Empty_point else
+    P(1,[],B(b-3),S(b-1))  ;;
+
+(* 
+
+   Abstract_qpe_core_mode.global_check
+    (1,[],IMD(1),Upper_half) f_1_empty_i1__qpe_core_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_core_upper_half
+   (1,[]) f_1_empty_i1__qpe_core_upper_half ;;
+
+(* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 
 (* End of warehouse fillings. Do not modify this line *)
 end ;;   
