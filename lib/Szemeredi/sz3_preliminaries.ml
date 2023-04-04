@@ -94,6 +94,17 @@ let to_capitalized_string = function
 let to_uncapitalized_string koc = 
     String.uncapitalize_ascii (to_capitalized_string koc) ;; 
 
+let of_string s = 
+  List.assoc s 
+  [
+    "Superficial_result",Superficial_result;
+    "Solution_list",Solution_list;
+    "Qpl_length",Qpl_length;
+    "Qpe_core",Qpe_core;
+    "Qpe_constraints",Qpe_constraints;
+    "Qpe_extension",Qpe_extension;
+  ] ;; 
+
 end ;;   
 
 module Half = struct 
@@ -101,6 +112,13 @@ module Half = struct
 let to_string = function 
     Lower_half -> "lower_half" 
    |Upper_half -> "upper_half" ;; 
+
+let of_string s = 
+    List.assoc s 
+    [
+      "Lower_half",Lower_half;
+      "Upper_half",Upper_half;
+    ] ;; 
 
 end ;;  
 

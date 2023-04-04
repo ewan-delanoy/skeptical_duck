@@ -69,4 +69,10 @@ let i1 = Substring.leftmost_index_of_in_from "," temp2 1 ;;
 let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) ;; 
 let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 ;; 
 let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 ;; 
-let temp3 = Cull_string.interval temp2 (i2+1) (i3-1) ;; 
+let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) ;;
+let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 ;; 
+let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 ;; 
+let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 ;; 
+let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) ;; 
+
+Kind_of_component.to_capitalized_string  ;;
