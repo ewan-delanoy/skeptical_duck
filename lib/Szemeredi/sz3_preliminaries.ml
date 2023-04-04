@@ -581,6 +581,26 @@ Hashtbl.add
    (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_constraints,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
+
+let f_1_empty_i1_qpe_extension_upper_half (B b) (S n) = 
+  match List.assoc_opt b
+  [2,1::(Int_range.range 3 (n-b+2));3,[1;2]@(Int_range.range 4 (n-b+3))] with 
+  Some answer -> answer 
+  |None -> Int_range.range (b+1) n ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check
+    (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_extension_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_extension_upper_half
+   (1,[],IMD(1)) f_1_empty_i1_qpe_extension_upper_half ;;
+
+(* End of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
 
 (* End of warehouse fillings. Do not modify this line *)
 end ;;   
