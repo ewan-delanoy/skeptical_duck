@@ -74,5 +74,11 @@ let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 ;;
 let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 ;; 
 let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 ;; 
 let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) ;; 
+let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 ;; 
+let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) ;; 
+let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 ;; 
+let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) ;; 
+let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) ;; 
+let answer = (w,scr,imd,component,half) ;; 
 
-Kind_of_component.to_capitalized_string  ;;
+

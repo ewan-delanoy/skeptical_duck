@@ -936,7 +936,24 @@ let parse_inside_of_intlist  comma_separated_ints =
     (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
  Image.image int_of_spaced_string between_commas ;;
  
-
+let extract_fiftuple line =  
+ let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line in 
+ let temp2 = Cull_string.trim_spaces temp1 in  
+ let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
+ let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
+ let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 in  
+ let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 in  
+ let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) in 
+ let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 in  
+ let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 in  
+ let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 in  
+ let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) in  
+ let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 in  
+ let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) in  
+ let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 in  
+ let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) in  
+ let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
+ (w,scr,imd,component,half) ;;
 
 let main (w,s,i,half) component = 
     let _text = text_for_new_item (w,s,i,half) component in 
