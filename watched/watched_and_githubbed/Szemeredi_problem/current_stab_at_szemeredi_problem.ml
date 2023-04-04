@@ -66,13 +66,7 @@ let line =
 let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line ;;
 let temp2 = Cull_string.trim_spaces temp1 ;; 
 let i1 = Substring.leftmost_index_of_in_from "," temp2 1 ;; 
-let w = int_of_string(Cull_string.interval temp2 2 (i1-1)) ;; 
+let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) ;; 
 let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 ;; 
 let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 ;; 
 let temp3 = Cull_string.interval temp2 (i2+1) (i3-1) ;; 
-
-let comma_separated_ints = temp3 ;; 
-let comma_indices = Substring.occurrences_of_in "," comma_separated_ints ;; 
-let between_commas = Cull_string.complement_union_of_ranges 
-   (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints ;; 
-let answer = Image.image (fun s->int_of_string(Cull_string.trim_spaces s)) between_commas ;;

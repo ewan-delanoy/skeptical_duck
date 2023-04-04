@@ -910,11 +910,13 @@ let markers_for_warehouse_filler=
     "(* End of warehouse fillings. Do not modify this line *)"
  ) ;;
 
+ let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
+
 let parse_inside_of_intlist  comma_separated_ints = 
  let comma_indices = Substring.occurrences_of_in "," comma_separated_ints in 
  let between_commas = Cull_string.complement_union_of_ranges 
     (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
- Image.image (fun s->int_of_string(Cull_string.trim_spaces s)) between_commas ;;
+ Image.image int_of_spaced_string between_commas ;;
  
 
 
