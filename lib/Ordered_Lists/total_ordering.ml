@@ -312,10 +312,23 @@ let cardinality_then_diameter =((fun l1 l2->
   else lex_compare for_integers l1 l2
 ): (int list) Total_ordering_t.t );;
 
+let index_in_list x ll=
+  let rec sub_f=
+  (function (j,l)->match l with
+  []->(-1)      
+  |u::v->if u=x then j else sub_f(j+1,v)) in
+  sub_f(1,ll);;
+
+
+let from_list (l:'a list)=((fun x1 x2->
+   for_integers (index_in_list x1 l) (index_in_list x2 l)   
+) : 'a Total_ordering_t.t) ;; 
+
 end ;;
 
 let cardinality_then_diameter = Private.cardinality_then_diameter ;;
 let for_integers = Private.for_integers ;;
+let from_list = Private.from_list ;; 
 let lex_compare = Private.lex_compare ;;
 let lex_for_strings = Private.lex_for_strings ;;
 let product = Private.product ;;

@@ -83,6 +83,15 @@ end ;;
 
 module Kind_of_component = struct 
 
+let all = [
+  Superficial_result;
+  Solution_list;
+  Qpl_length;
+  Qpe_core;
+  Qpe_constraints;
+  Qpe_extension
+] ;; 
+
 let to_capitalized_string = function 
   Superficial_result -> "Superficial_result"
 | Solution_list -> "Solution_list"
@@ -96,14 +105,8 @@ let to_uncapitalized_string koc =
 
 let of_string s = 
   List.assoc s 
-  [
-    "Superficial_result",Superficial_result;
-    "Solution_list",Solution_list;
-    "Qpl_length",Qpl_length;
-    "Qpe_core",Qpe_core;
-    "Qpe_constraints",Qpe_constraints;
-    "Qpe_extension",Qpe_extension;
-  ] ;; 
+  (Image.image (fun k->(to_capitalized_string k,k)) all);;
+  
 
 end ;;   
 
