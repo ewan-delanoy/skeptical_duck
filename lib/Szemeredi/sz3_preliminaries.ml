@@ -399,11 +399,18 @@ module Warehouse = struct
 end ;;  
 
 
-module Fill_Warehouse = struct 
-(* Beginning of warehouse fillings. Do not modify this line *)
+module Tools_for_warehouse = struct 
 
 let simplest_example n = List.filter (fun j->(j mod 3)<>0) (Int_range.range 1 n) ;; 
 let simplest_list n = [simplest_example n] ;; 
+
+
+end ;;  
+
+module Fill_Warehouse = struct 
+(* Beginning of warehouse fillings. Do not modify this line *)
+
+open Tools_for_warehouse ;; 
 
 (* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
