@@ -1202,10 +1202,9 @@ let global_check (w,s,i,half) g =
     let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
     let answer = 
       (if temp2=[] 
-       then [] 
-       else
-     snd(Min.minimize_it_with_care (fun (pair,_,_)->
-        Range.compute_enumerator_index w pair half) temp2)) in 
+       then (0,[]) 
+       else Min.minimize_it_with_care (fun (pair,_,_)->
+             Range.compute_enumerator_index w pair half) temp2) in 
     let _ = 
     (if temp2=[] 
     then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half))  
