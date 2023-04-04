@@ -531,7 +531,7 @@ f_1_empty_set_qpl_length_lower_half;;
 (* End of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
 
-let f_1_empty_qpl_length_upper_half (B b) (S n) = 
+let f_1_empty_qpl_length_upper_half (B b) (S _n) = 
   if b=0 then 0 else
   List.assoc (b mod 3) [0,1;1,3;2,2] ;;
 
@@ -1194,7 +1194,7 @@ let total_range (w,s,i,half)= List.filter (
 
 let data_for_visualization (w,s,i,half) d = Image.image (
       fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
-   ) (Range.linear_range (w,s,d) half) ;;
+   ) (partial_range (w,s,i,half) d) ;;
    
 let pretty_print_visualization_data l = 
        "[\n"^(String.concat ";\n" (Image.image print_vr_element l))^"\n]" ;;

@@ -17,8 +17,9 @@ open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
 
-open Qpl_length_upper_half_mode ;; 
+open Qpe_core_upper_half_mode ;; 
 
+(*
 let vz1 = visualize 1 ;; 
 let rf1 (B b) (S n) = 
   if n=2 then 0 else
@@ -58,3 +59,5 @@ let rfi (B b) (S n) =
 
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
+
+*)
