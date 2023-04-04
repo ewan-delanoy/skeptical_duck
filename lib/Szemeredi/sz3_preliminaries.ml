@@ -970,8 +970,6 @@ let adhoc_order_for_intlists scr1 scr2 =
     if try1 <> Total_ordering_result_t.Equal then try1 else       
     Total_ordering.silex_for_intlists scr1 scr2 ;; 
 
-
-(* 
 let pre_compare_fiftuples (w1,scr1,IMD(imd1),component1,half1) (w2,scr2,IMD(imd2),component2,half2) =
    let try1 = Total_ordering.for_integers w1 w2 in 
    if try1 <> Total_ordering_result_t.Equal then try1 else 
@@ -983,7 +981,27 @@ let pre_compare_fiftuples (w1,scr1,IMD(imd1),component1,half1) (w2,scr2,IMD(imd2
    if try4 <> Total_ordering_result_t.Equal then try4 else 
   Half.compare half1 half2 ;;
   
-*)  
+let compare_fiftuples = (pre_compare_fiftuples: (int * int list * index_of_missing_data *
+kind_of_component * half) Total_ordering_t.t) ;; 
+
+exception Insertion_index of int * int list * index_of_missing_data *
+kind_of_component * half ;;
+
+let rec helper_for_insertion_index (counter,new_fiftuple,untreated) =
+   match untreated with 
+   [] -> counter 
+   | fiftuple :: others ->
+    (
+     match compare_fiftuples new_fiftuple fiftuple with 
+     Total_ordering_result_t.Equal -> 
+      let (w1,scr1,IMD(imd1),component1,half1) = fiftuple in
+      raise(Insertion_index((w1,scr1,IMD(imd1),component1,half1)))
+     |Total_ordering_result_t.Lower -> counter 
+     |Total_ordering_result_t.Greater -> helper_for_insertion_index (counter+1,new_fiftuple,others) 
+    );;
+
+let compute_insertion_index new_fiftuple old_fiftuples =
+  helper_for_insertion_index (0,new_fiftuple,old_fiftuples) ;;     
 
 let main (w,s,i,half) component = 
     let _text = text_for_new_item (w,s,i,half) component in 
