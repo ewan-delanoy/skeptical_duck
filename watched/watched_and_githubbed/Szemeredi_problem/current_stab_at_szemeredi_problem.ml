@@ -46,6 +46,10 @@ let temp3 =
  snd(Min.minimize_it_with_care (fun (pair,_,_)->
     Range.compute_enumerator_index w pair half) temp2));;
 let answer =(temp2,temp3)  ;;  
+let _ = 
+  (if temp2=[] 
+  then Side_effects_after_successful_global_check.main (w,s,i,Solution_list_seed.current_component,half) ) ;;
+
 
 (* let inactive3 = Side_effects_after_successful_global_check.main (w,s,i,Solution_list_seed.current_component,half) ;; *)
 
