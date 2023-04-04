@@ -923,7 +923,7 @@ let text_for_new_item (w,s,i,component,half) =
   let s_stab_ap = base_path ^ 
   "watched/watched_and_githubbed/Szemeredi_problem/" ^
    "current_stab_at_szemeredi_problem.ml" in 
-  if not (Sys.file_exists s_stab_ap) then "" else 
+  if not (Sys.file_exists s_stab_ap) then ("","") else 
   let stab_ap = Absolute_path.of_string s_stab_ap in  
   let text_from_stab = Io.read_whole_file stab_ap in 
   let original_rfi_code = Cull_string.between_markers 
@@ -952,8 +952,8 @@ let text_for_new_item (w,s,i,component,half) =
   let part3 = String.concat "\n" in_part3 in
   let first_line=(fst pre_markers_for_items)^" "^s_fiftuple^" *)"
   and last_line=(snd pre_markers_for_items)^" "^s_fiftuple^" *)" in 
-  String.concat "\n\n" 
-    [first_line;part1;part2;part3;last_line] ;;
+  (String.concat "\n\n" 
+    [first_line;part1;part2;part3;last_line],f_name) ;;
 
 let markers_for_warehouse_filler=
  (
@@ -1063,8 +1063,9 @@ let write_new_item_to_this_file new_fiftuple new_item =
 
 
 let main new_fiftuple = 
-    let new_item = text_for_new_item new_fiftuple in 
-    write_new_item_to_this_file new_fiftuple new_item;;
+    let (new_item,f_name) = text_for_new_item new_fiftuple in 
+    let _ =write_new_item_to_this_file new_fiftuple new_item in 
+    Usual_coma_state.recompile (Some (" add new reconstructed function "^f_name)) ;;
 
 end ;;  
 
@@ -1199,13 +1200,12 @@ let global_check (w,s,i,half) g =
     fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
     ) (Private.total_range (w,s,i,half)) in 
     let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
-    let temp3 = 
+    let answer = 
       (if temp2=[] 
        then [] 
        else
      snd(Min.minimize_it_with_care (fun (pair,_,_)->
         Range.compute_enumerator_index w pair half) temp2)) in 
-    let answer =(temp2,temp3) in 
     let _ = 
     (if temp2=[] 
     then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half))  
