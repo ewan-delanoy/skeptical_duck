@@ -529,6 +529,24 @@ Hashtbl.add
  Warehouse.hashtbl_for_qpl_length_lower_half (1,[]) 
 f_1_empty_set_qpl_length_lower_half;;
 (* End of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
+(* Beginning of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
+
+let f_1_empty_qpl_length_upper_half (B b) (S n) = 
+  if b=0 then 0 else
+  List.assoc (b mod 3) [0,1;1,3;2,2] ;;
+
+(* 
+
+   Abstract_qpl_length_mode.global_check
+    (1,[],IMD(0),Upper_half) f_1_empty_qpl_length_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpl_length_upper_half
+   (1,[]) f_1_empty_qpl_length_upper_half ;;
+
+(* End of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
 
 (* End of warehouse fillings. Do not modify this line *)
 end ;;   

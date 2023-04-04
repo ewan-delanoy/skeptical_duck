@@ -54,7 +54,7 @@ let check_rf2 = partial_check 2 rf2 ;;
 
 let rfi (B b) (S n) = 
   if b=0 then 0 else
-  List.assoc (b mod 3) [0,1;1,0;2,2] ;;  
+  List.assoc (b mod 3) [0,1;1,3;2,2] ;;  
 
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
