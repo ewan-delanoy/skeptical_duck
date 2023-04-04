@@ -57,28 +57,5 @@ let beginnings = List.filter (fun (_,line)->
 let endings = List.filter (fun (_,line)->
   Supstring.begins_with line (snd(pre_markers_for_items))
 ) indexed_lines ;; 
-
-let line = snd(List.nth beginnings 1) ;; 
-
-let line = 
-  "(* Beginning of item at  ( 1 , [ 2, 71 , 83 ],  IMD( 56 ), Superficial_result ,   Upper_half ) *)" ;;
-
-let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line ;;
-let temp2 = Cull_string.trim_spaces temp1 ;; 
-let i1 = Substring.leftmost_index_of_in_from "," temp2 1 ;; 
-let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) ;; 
-let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 ;; 
-let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 ;; 
-let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) ;;
-let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 ;; 
-let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 ;; 
-let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 ;; 
-let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) ;; 
-let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 ;; 
-let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) ;; 
-let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 ;; 
-let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) ;; 
-let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) ;; 
-let answer = (w,scr,imd,component,half) ;; 
-
-
+if (List.length beginnings)<>(List.length endings) then failwith("zzz") ;; 
+let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings ;; 

@@ -936,7 +936,7 @@ let parse_inside_of_intlist  comma_separated_ints =
     (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
  Image.image int_of_spaced_string between_commas ;;
  
-let extract_fiftuple line =  
+let extract_fiftuple_from_beginning_line line =  
  let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line in 
  let temp2 = Cull_string.trim_spaces temp1 in  
  let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
