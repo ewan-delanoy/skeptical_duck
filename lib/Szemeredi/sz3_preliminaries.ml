@@ -1003,11 +1003,10 @@ module Prepared_pages = struct
   let markers_for_pair (component,half) =
      let s_koc= Kind_of_component.to_capitalized_string component 
      and s_half = String.capitalize_ascii(Half.to_string half) in 
-     let end_of_line = " of prepared page for ("^s_koc^","^s_half^") *)"  in 
-     let tempf = (fun s->"(* "^s^end_of_line) in 
-     (tempf "Beginning",tempf "End") ;; 
+     let common_part = " of prepared page for ("^s_koc^","^s_half^") *)"  in 
+     ("(* Beginning"^common_part^"(*","*)(* End"^common_part) ;; 
 
-  let fill_prepared_page (component,half) = 
+  let update_prepared_page (component,half) = 
      let outside_content = Io.read_whole_file File.stab_file in 
      let markers = markers_for_pair (component,half) in 
      Replace_inside.overwrite_between_markers_inside_file
@@ -1018,7 +1017,7 @@ module Prepared_pages = struct
       let this_content = Io.read_whole_file File.this_file in 
       Cull_string.between_markers markers this_content ;; 
 
-  let copy_prepared_page (component,half) = 
+  let use_prepared_page (component,half) = 
       let extracted_content = get_prepared_page (component,half) in 
       if (Cull_string.trim_spaces(extracted_content)) <> ""
       then Io.overwrite_with File.stab_file extracted_content ;; 
@@ -1202,7 +1201,11 @@ let write_new_item_to_this_file new_fiftuple new_item =
 
 let main new_fiftuple = 
     let (new_item,f_name) = text_for_new_item new_fiftuple in 
-    let _ =write_new_item_to_this_file new_fiftuple new_item in 
+    let (_w,_scr,_imd,component,half) = new_fiftuple in
+    let _ =
+      (write_new_item_to_this_file new_fiftuple new_item;
+       Prepared_pages.update_prepared_page (component,half)
+      ) in 
     Usual_coma_state.recompile (Some (" add new reconstructed function "^f_name)) ;;
 
 end ;;  
@@ -1397,7 +1400,7 @@ let get_status () = match (!ref_for_status) with
       let answer = (koc,half,imd,pt) in 
       let _ = (
          ref_for_status := Some answer; 
-         Prepared_pages.copy_prepared_page (koc,half)
+         Prepared_pages.use_prepared_page (koc,half)
       ) in 
       let msg = "\n\n\n To get started, do : \n\n"^
                 "open "^(Kind_of_component.to_capitalized_string(koc))^"_"^
@@ -1553,29 +1556,29 @@ module Qpe_extension_upper_half_mode = struct
     
 end ;;
 
+(* Beginning of prepared page for (Superficial_result,Lower_half) *)(*
+*)(* End of prepared page for (Superficial_result,Lower_half) *)
+(* Beginning of prepared page for (Superficial_result,Upper_half) *)(*
+*)(* End of prepared page for (Superficial_result,Upper_half) *)
+(* Beginning of prepared page for (Solution_list,Lower_half) *)(*
+*)(* End of prepared page for (Solution_list,Lower_half) *)
+(* Beginning of prepared page for (Solution_list,Upper_half) *)(*
+*)(* End of prepared page for (Solution_list,Upper_half) *)
+(* Beginning of prepared page for (Qpl_length,Lower_half) *)(*
+*)(* End of prepared page for (Qpl_length,Lower_half) *)
+(* Beginning of prepared page for (Qpl_length,Upper_half) *)(*
+*)(* End of prepared page for (Qpl_length,Upper_half) *)
+(* Beginning of prepared page for (Qpe_core,Lower_half) *)(*
+*)(* End of prepared page for (Qpe_core,Lower_half) *)
+(* Beginning of prepared page for (Qpe_core,Upper_half) *)(*
+*)(* End of prepared page for (Qpe_core,Upper_half) *)
+(* Beginning of prepared page for (Qpe_constraints,Lower_half) *)(*
+*)(* End of prepared page for (Qpe_constraints,Lower_half) *)
+(* Beginning of prepared page for (Qpe_constraints,Upper_half) *)(*
+*)(* End of prepared page for (Qpe_constraints,Upper_half) *)
+(* Beginning of prepared page for (Qpe_extension,Lower_half) *)(*
+*)(* End of prepared page for (Qpe_extension,Lower_half) *)
+(* Beginning of prepared page for (Qpe_extension,Upper_half) *)(*
+*)(* End of prepared page for (Qpe_extension,Upper_half) *)
 
-(* Beginning of prepared page for (Superficial_result,Lower_half) *)
-(* End of prepared page for (Superficial_result,Lower_half) *)
-(* Beginning of prepared page for (Superficial_result,Upper_half) *)
-(* End of prepared page for (Superficial_result,Upper_half) *)
-(* Beginning of prepared page for (Solution_list,Lower_half) *)
-(* End of prepared page for (Solution_list,Lower_half) *)
-(* Beginning of prepared page for (Solution_list,Upper_half) *)
-(* End of prepared page for (Solution_list,Upper_half) *)
-(* Beginning of prepared page for (Qpl_length,Lower_half) *)
-(* End of prepared page for (Qpl_length,Lower_half) *)
-(* Beginning of prepared page for (Qpl_length,Upper_half) *)
-(* End of prepared page for (Qpl_length,Upper_half) *)
-(* Beginning of prepared page for (Qpe_core,Lower_half) *)
-(* End of prepared page for (Qpe_core,Lower_half) *)
-(* Beginning of prepared page for (Qpe_core,Upper_half) *)
-(* End of prepared page for (Qpe_core,Upper_half) *)
-(* Beginning of prepared page for (Qpe_constraints,Lower_half) *)
-(* End of prepared page for (Qpe_constraints,Lower_half) *)
-(* Beginning of prepared page for (Qpe_constraints,Upper_half) *)
-(* End of prepared page for (Qpe_constraints,Upper_half) *)
-(* Beginning of prepared page for (Qpe_extension,Lower_half) *)
-(* End of prepared page for (Qpe_extension,Lower_half) *)
-(* Beginning of prepared page for (Qpe_extension,Upper_half) *)
-(* End of prepared page for (Qpe_extension,Upper_half) *)
 

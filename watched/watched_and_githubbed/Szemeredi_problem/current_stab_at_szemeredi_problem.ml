@@ -37,6 +37,13 @@ let rf2 (B b) (S n) =
   |None -> Int_range.range (b+2) n ;;
 let check_rf2 = partial_check 2 rf2 ;; 
 
+let vz3 = visualize 3 ;; 
+let rf2 (B b) (S n) = 
+  match List.assoc_opt b
+  [1,1::(Int_range.range 3 (n-b+1));2,[1;2]@(Int_range.range 4 (n-b+2))] with 
+  Some answer -> answer 
+  |None -> Int_range.range (b+2) n ;;
+let check_rf2 = partial_check 2 rf2 ;; 
 
 
 
