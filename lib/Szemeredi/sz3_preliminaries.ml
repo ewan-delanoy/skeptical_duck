@@ -1395,7 +1395,10 @@ let get_status () = match (!ref_for_status) with
       let opt =  tour goal in 
       let (((koc,half),imd),pt) = Option.get opt in 
       let answer = (koc,half,imd,pt) in 
-      let _ = (ref_for_status := Some answer) in 
+      let _ = (
+         ref_for_status := Some answer; 
+         Prepared_pages.copy_prepared_page (koc,half)
+      ) in 
       let msg = "\n\n\n To get started, do : \n\n"^
                 "open "^(Kind_of_component.to_capitalized_string(koc))^"_"^
                         (Half.to_string half)^"_mode ;;\n\n\n" in 
