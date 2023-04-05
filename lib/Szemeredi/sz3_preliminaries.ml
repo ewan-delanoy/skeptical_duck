@@ -585,7 +585,7 @@ Hashtbl.add
 (* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
 
-let f_1_empty_i1_qpe_constraints_lower_half (B b) (S _n) = 
+let f_1_empty_i1_qpe_constraints_lower_half (B _b) (S _n) = 
   [];;
 
 (* 
@@ -1649,8 +1649,8 @@ module Qpe_extension_lower_half_mode = struct
       (Point.width pt,Point.scrappers pt,imd,Lower_half) ;;     
   
       let visualize d = Abstract_qpe_extension_mode.visualize (current_data()) d  ;;
-      let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
+      let partial_check d f = Abstract_qpe_extension_mode.partial_check (current_data()) d f ;;
+      let global_check g = Abstract_qpe_extension_mode.global_check (current_data()) g ;;
 end ;;
   
   
