@@ -803,7 +803,7 @@ Hashtbl.add
 (* End of item at  (1,[],IMD(3),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_constraints,Lower_half) *)
 
-let f_1_empty_i3_qpe_constraints_lower_half (B b) (S _n) = 
+let f_1_empty_i3_qpe_constraints_lower_half (B _b) (S _n) = 
   [];;
 
 (* 
@@ -835,6 +835,26 @@ Hashtbl.add
    (1,[],IMD(3)) f_1_empty_i3_qpe_constraints_upper_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_constraints,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(3),Qpe_extension,Lower_half) *)
+
+let f_1_empty_i3_qpe_extension_lower_half (B _b) (S n) = 
+  match List.assoc_opt n
+  [3,[1;2]] with 
+  Some answer -> answer 
+  |None -> Int_range.range (n+1) n ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check
+    (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_extension_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_extension_lower_half
+   (1,[],IMD(3)) f_1_empty_i3_qpe_extension_lower_half ;;
+
+(* End of item at  (1,[],IMD(3),Qpe_extension,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_extension,Upper_half) *)
 
 let f_1_empty_i3_qpe_extension_upper_half (B b) (S n) = 
@@ -2040,9 +2060,9 @@ let check_rf3 = partial_check 2 rf3 ;;
 
 let rfi (B _b) (S n) = 
   match List.assoc_opt n
-  [3,[1;3];4,[1;2;4]] with 
+  [3,[1;2]] with 
   Some answer -> answer 
-  |None -> Int_range.range n n ;; 
+  |None -> Int_range.range (n+1) n ;; 
 
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
