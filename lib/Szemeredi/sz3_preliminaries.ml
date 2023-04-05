@@ -1007,7 +1007,21 @@ module Prepared_pages = struct
      let tempf = (fun s->"(* "^s^end_of_line) in 
      (tempf "Beginning",tempf "End") ;; 
 
-  (* let fill_prepared_page (component,half) = () ;;   *)
+  let fill_prepared_page (component,half) = 
+     let outside_content = Io.read_whole_file File.stab_file in 
+     let markers = markers_for_pair (component,half) in 
+     Replace_inside.overwrite_between_markers_inside_file
+     ~overwriter:outside_content markers File.this_file ;;
+  
+  let get_prepared_page (component,half) = 
+      let markers = markers_for_pair (component,half) in 
+      let this_content = Io.read_whole_file File.this_file in 
+      Cull_string.between_markers markers this_content ;; 
+
+  let copy_prepared_page (component,half) = 
+      let extracted_content = get_prepared_page (component,half) in 
+      if extracted_content <> ""
+      then Io.overwrite_with File.stab_file extracted_content ;; 
   
 end ;;  
 
