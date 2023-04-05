@@ -1541,3 +1541,28 @@ module Qpe_extension_upper_half_mode = struct
 end ;;
 
 
+(* Beginning of prepared page for (Superficial_result,Lower_half) *)
+(* End of prepared page for (Superficial_result,Lower_half) *)
+(* Beginning of prepared page for (Superficial_result,Upper_half) *)
+(* End of prepared page for (Superficial_result,Upper_half) *)
+(* Beginning of prepared page for (Solution_list,Lower_half) *)
+(* End of prepared page for (Solution_list,Lower_half) *)
+(* Beginning of prepared page for (Solution_list,Upper_half) *)
+(* End of prepared page for (Solution_list,Upper_half) *)
+(* Beginning of prepared page for (Qpl_length,Lower_half) *)
+(* End of prepared page for (Qpl_length,Lower_half) *)
+(* Beginning of prepared page for (Qpl_length,Upper_half) *)
+(* End of prepared page for (Qpl_length,Upper_half) *)
+(* Beginning of prepared page for (Qpe_core,Lower_half) *)
+(* End of prepared page for (Qpe_core,Lower_half) *)
+(* Beginning of prepared page for (Qpe_core,Upper_half) *)
+(* End of prepared page for (Qpe_core,Upper_half) *)
+(* Beginning of prepared page for (Qpe_constraints,Lower_half) *)
+(* End of prepared page for (Qpe_constraints,Lower_half) *)
+(* Beginning of prepared page for (Qpe_constraints,Upper_half) *)
+(* End of prepared page for (Qpe_constraints,Upper_half) *)
+(* Beginning of prepared page for (Qpe_extension,Lower_half) *)
+(* End of prepared page for (Qpe_extension,Lower_half) *)
+(* Beginning of prepared page for (Qpe_extension,Upper_half) *)
+(* End of prepared page for (Qpe_extension,Upper_half) *)
+
