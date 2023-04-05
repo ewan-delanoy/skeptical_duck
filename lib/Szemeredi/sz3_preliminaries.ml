@@ -656,6 +656,24 @@ Hashtbl.add
    (1,[],IMD(1)) f_1_empty_i1_qpe_extension_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(2),Qpe_core,Lower_half) *)
+
+let f_1_empty_i2_qpe_core_lower_half (B _b) (S n) = 
+  if n<=4 then Empty_point else
+    P(1,[],B(n-4),S(n-2));;
+
+(* 
+
+   Abstract_qpe_core_mode.global_check
+    (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_core_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_core_lower_half
+   (1,[],IMD(2)) f_1_empty_i2_qpe_core_lower_half ;;
+
+(* End of item at  (1,[],IMD(2),Qpe_core,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
 
 let f_1_empty_i2_qpe_core_upper_half (B b) (S _n) = 
@@ -1744,8 +1762,8 @@ let check_rf3 = partial_check 2 rf3 ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n<=5 then Empty_point else
-    P(1,[],B(n-5),S(n-3));; 
+  if n<=4 then Empty_point else
+    P(1,[],B(n-4),S(n-2));; 
 
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
