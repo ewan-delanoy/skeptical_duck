@@ -987,6 +987,31 @@ Lower_half ->  b+2*w-n
 
 end ;;  
 
+module File = struct 
+
+let base_path = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) ;;  
+let stab_filename = base_path ^ "watched/watched_and_githubbed/Szemeredi_problem/" ^
+   "current_stab_at_szemeredi_problem.ml" ;;
+let stab_file = Absolute_path.of_string stab_filename ;;  
+let this_filename = base_path ^ "lib/Szemeredi/sz3_preliminaries.ml" ;;
+let this_file =  Absolute_path.of_string this_filename ;;  
+
+end ;;   
+
+module Prepared_pages = struct 
+
+  let markers_for_pair (component,half) =
+     let s_koc= Kind_of_component.to_capitalized_string component 
+     and s_half = String.capitalize_ascii(Half.to_string half) in 
+     let end_of_line = " of prepared page for ("^s_koc^","^s_half^") *)"  in 
+     let tempf = (fun s->"(* "^s^end_of_line) in 
+     (tempf "Beginning",tempf "End") ;; 
+
+  (* let fill_prepared_page (component,half) = () ;;   *)
+  
+end ;;  
+
+
 module Side_effects_after_successful_global_check = struct 
 
 let string_of_imd_inside_name (IMD i) =
@@ -1030,14 +1055,7 @@ let pre_markers_for_items=
   ("(* Beginning of item at ","(* End of item at ") ;; 
   
 let text_for_new_item (w,s,i,component,half) = 
-  let base_path = Dfa_root.connectable_to_subpath 
-  (Coma_big_constant.This_World.root) in 
-  let s_stab_ap = base_path ^ 
-  "watched/watched_and_githubbed/Szemeredi_problem/" ^
-   "current_stab_at_szemeredi_problem.ml" in 
-  if not (Sys.file_exists s_stab_ap) then ("","") else 
-  let stab_ap = Absolute_path.of_string s_stab_ap in  
-  let text_from_stab = Io.read_whole_file stab_ap in 
+  let text_from_stab = Io.read_whole_file File.stab_file in 
   let original_rfi_code = Cull_string.between_markers 
     ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
   let f_name = name_for_reconstructed_function (w,s,i,component,half) in 
@@ -1145,13 +1163,8 @@ let compute_insertion_index new_fiftuple old_fiftuples =
 
 exception Write_new_item_to_this_file_exn ;; 
 
-let write_new_item_to_this_file new_fiftuple new_item =
-  let base_path = Dfa_root.connectable_to_subpath 
-  (Coma_big_constant.This_World.root) in  
-  let s_this_ap = base_path ^ "lib/Szemeredi/sz3_preliminaries.ml" in  
-  if not (Sys.file_exists s_this_ap) then () else
-  let this_ap = Absolute_path.of_string s_this_ap in  
-  let this_text = Io.read_whole_file this_ap in  
+let write_new_item_to_this_file new_fiftuple new_item = 
+  let this_text = Io.read_whole_file File.this_file in  
   let wafi_full_text = Cull_string.between_markers markers_for_warehouse_filler this_text in  
   let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
   let indexed_lines = Int_range.index_everything lines_in_wafi in  
@@ -1171,8 +1184,7 @@ let write_new_item_to_this_file new_fiftuple new_item =
   let after = String.concat "\n" (Image.image snd lines_after) in  
   let new_wafi_text = String.concat "\n" [before;new_item;after] in  
   Replace_inside.overwrite_between_markers_inside_file 
-    ~overwriter:new_wafi_text markers_for_warehouse_filler this_ap ;; 
-
+    ~overwriter:new_wafi_text markers_for_warehouse_filler File.this_file ;; 
 
 let main new_fiftuple = 
     let (new_item,f_name) = text_for_new_item new_fiftuple in 
@@ -1181,23 +1193,7 @@ let main new_fiftuple =
 
 end ;;  
 
-module Prepared_pages = struct 
 
-let markers_for_pair (component,half) =
-   let s_koc= Kind_of_component.to_capitalized_string component 
-   and s_half = String.capitalize_ascii(Half.to_string half) in 
-   let end_of_line = " of prepared page for ("^s_koc^","^s_half^") *)"  in 
-   let tempf = (fun s->"(* "^s^end_of_line) in 
-   (tempf "Beginning",tempf "End") ;; 
-
-(*   
-let all = Cartesian.product Kind_of_component.all [Lower_half;Upper_half] ;; 
-let u1 = Image.image markers_for_pair all ;; 
-let u2 = List.flatten(Image.image (fun (a,b)->[a;b]) u1);;
-let u3 = "\n\n\n" ^ (String.concat "\n" u2) ^ "\n\n\n" ;; 
-*)
-
-end ;;  
 
 
 module Tools_for_mode_modules = struct 
