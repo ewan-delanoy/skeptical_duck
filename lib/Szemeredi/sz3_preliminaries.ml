@@ -621,7 +621,7 @@ Hashtbl.add
 (* End of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
 
-let f_1_empty_i2_qpe_constraints_upper_half (B b) (S _n) = [];;
+let f_1_empty_i2_qpe_constraints_upper_half (B _b) (S _n) = [];;
 
 (* 
 
@@ -1180,6 +1180,25 @@ let main new_fiftuple =
     Usual_coma_state.recompile (Some (" add new reconstructed function "^f_name)) ;;
 
 end ;;  
+
+module Prepared_pages = struct 
+
+let markers_for_pair (component,half) =
+   let s_koc= Kind_of_component.to_capitalized_string component 
+   and s_half = String.capitalize_ascii(Half.to_string half) in 
+   let end_of_line = " of prepared page for ("^s_koc^","^s_half^") *)"  in 
+   let tempf = (fun s->"(* "^s^end_of_line) in 
+   (tempf "Beginning",tempf "End") ;; 
+
+(*   
+let all = Cartesian.product Kind_of_component.all [Lower_half;Upper_half] ;; 
+let u1 = Image.image markers_for_pair all ;; 
+let u2 = List.flatten(Image.image (fun (a,b)->[a;b]) u1);;
+let u3 = "\n\n\n" ^ (String.concat "\n" u2) ^ "\n\n\n" ;; 
+*)
+
+end ;;  
+
 
 module Tools_for_mode_modules = struct 
 

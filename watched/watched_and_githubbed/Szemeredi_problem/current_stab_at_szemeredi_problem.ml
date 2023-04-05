@@ -17,28 +17,27 @@ open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
 
-open Qpe_constraints_upper_half_mode ;; 
+
+open Qpe_extension_upper_half_mode ;;
 
 
 let vz1 = visualize 1 ;; 
 let rf1 (B b) (S n) = 
-  if b<=2 then Empty_point else 
-  P(1,[],B(b-2),S(n-2));; 
+  match List.assoc_opt b
+  [1,1::(Int_range.range 3 3);2,[1;2]@(Int_range.range 4 4)] with 
+  Some answer -> answer 
+  |None -> Int_range.range (b+2) n ;;
 let check_rf1 = partial_check 1 rf1 ;; 
 
 let vz2 = visualize 2 ;; 
 let rf2 (B b) (S n) = 
-  if b<=2 then Empty_point else 
-    P(1,[],B(b-2),S(b));;  
+  match List.assoc_opt b
+  [1,1::(Int_range.range 3 (n-b+1));2,[1;2]@(Int_range.range 4 (n-b+2))] with 
+  Some answer -> answer 
+  |None -> Int_range.range (b+2) n ;;
 let check_rf2 = partial_check 2 rf2 ;; 
 
 
-
-let vz3 = visualize 3 ;; 
-let rf3 (B b) (S n) = 
-  if b<=2 then Empty_point else 
-    P(1,[],B(b-2),S(b));;  
-let check_rf3 = partial_check 3 rf3 ;; 
 
 
 (* RFI BEGIN *)
