@@ -17,7 +17,7 @@ open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
 
-open Qpe_core_upper_half_mode ;; 
+open Qpe_constraints_upper_half_mode ;; 
 
 
 let vz1 = visualize 1 ;; 
@@ -43,9 +43,7 @@ let check_rf3 = partial_check 3 rf3 ;;
 
 (* RFI BEGIN *)
 
-let rfi (B b) (S _n) = 
-  if b<=2 then Empty_point else 
-    P(1,[],B(b-2),S(b));;   
+let rfi (B b) (S _n) = [];;   
 
 (* RFI END *)
 let check_rfi = global_check rfi ;; 

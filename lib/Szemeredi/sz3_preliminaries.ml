@@ -619,6 +619,22 @@ Hashtbl.add
    (1,[],IMD(2)) f_1_empty_i2_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
+
+let f_1_empty_i2_qpe_constraints_upper_half (B b) (S _n) = [];;
+
+(* 
+
+   Abstract_qpe_constraints_mode.global_check
+    (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_constraints_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_constraints_upper_half
+   (1,[],IMD(2)) f_1_empty_i2_qpe_constraints_upper_half ;;
+
+(* End of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
 
 (* End of warehouse fillings. Do not modify this line *)
 end ;;   
