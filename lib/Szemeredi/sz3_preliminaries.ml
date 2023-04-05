@@ -1020,7 +1020,7 @@ module Prepared_pages = struct
 
   let copy_prepared_page (component,half) = 
       let extracted_content = get_prepared_page (component,half) in 
-      if extracted_content <> ""
+      if (Cull_string.trim_spaces(extracted_content)) <> ""
       then Io.overwrite_with File.stab_file extracted_content ;; 
   
 end ;;  
