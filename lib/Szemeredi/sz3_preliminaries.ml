@@ -583,6 +583,23 @@ Hashtbl.add
    (1,[],IMD(1)) f_1_empty_i1_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
+
+let f_1_empty_i1_qpe_constraints_lower_half (B b) (S _n) = 
+  [];;
+
+(* 
+
+   Abstract_qpe_constraints_mode.global_check
+    (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_constraints_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.hashtbl_for_qpe_constraints_lower_half
+   (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_lower_half ;;
+
+(* End of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_constraints,Upper_half) *)
 
 let f_1_empty_i1_qpe_constraints_upper_half (B _b) (S _n) = [] ;;
@@ -1765,7 +1782,53 @@ let rfi (B b) (S _n) =
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
 *)(* End of prepared page for (Qpe_core,Upper_half) *)
-(* Beginning of prepared page for (Qpe_constraints,Lower_half) *)(*
+(* Beginning of prepared page for (Qpe_constraints,Lower_half) *)(*(*
+
+#use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+
+
+An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. 
+
+*)
+
+
+open Skeptical_duck_lib ;; 
+open Needed_values ;; 
+
+
+open Sz3_preliminaries ;;
+open Tools_for_warehouse ;; 
+let see0 = Overall.get_status () ;; 
+
+
+open Qpe_constraints_lower_half_mode ;;
+
+
+let vz1 = visualize 1 ;; 
+let rf1 (B b) (S _n) = 
+   [];;
+let check_rf1 = partial_check 1 rf1 ;; 
+
+let vz2 = visualize 2 ;; 
+let rf2 (B b) (S n) = 
+  [];;
+let check_rf2 = partial_check 2 rf2 ;; 
+
+let vz3 = visualize 3 ;; 
+let rf3 (B b) (S n) = 
+  [];;
+let check_rf3 = partial_check 2 rf3 ;; 
+
+
+
+(* RFI BEGIN *)
+
+let rfi (B b) (S _n) = 
+  [];; 
+
+(* RFI END *)
+let check_rfi = global_check rfi ;; 
 *)(* End of prepared page for (Qpe_constraints,Lower_half) *)
 (* Beginning of prepared page for (Qpe_constraints,Upper_half) *)(*(*
 
