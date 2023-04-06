@@ -231,7 +231,7 @@ end ;;
 
 module Warehouse = struct 
   
-  exception Bad_kmp_index of int ;; 
+  let insertions_in_wet_hash_tables = ref ([]: (int * int list * index_of_missing_data * kind_of_component * half) list ) ;; 
 
   let access_named_hashtbl (error_handling,hashtbl) pt = 
     let (width,scrappers,breadth,size) = Point.unveil pt in 
