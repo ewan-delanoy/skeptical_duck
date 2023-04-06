@@ -112,10 +112,10 @@ let compare = Total_ordering.from_list all ;;
 let needs_qpl_list_index = function 
   Superficial_result 
 | Solution_list 
-| Qpl_length -> true
+| Qpl_length -> false
 | Qpe_core 
 | Qpe_constraints 
-| Qpe_extension -> false ;; 
+| Qpe_extension -> true ;; 
 
 end ;;   
 
@@ -2135,4 +2135,3 @@ let rfi (B b) (S n) =
 (* RFI END *)
 let check_rfi = global_check rfi ;; 
 *)(* End of prepared page for (Qpe_extension,Upper_half) *)
-
