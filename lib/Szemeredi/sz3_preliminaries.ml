@@ -33,7 +33,7 @@ type kind_of_component = Sz3_types.kind_of_component =
     |Qpe_constraints
     |Qpe_extension ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
-
+type wet_or_dry = Sz3_types.wet_or_dry = Wet | Dry ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;

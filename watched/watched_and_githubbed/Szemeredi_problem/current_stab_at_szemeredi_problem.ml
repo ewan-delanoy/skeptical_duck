@@ -17,6 +17,10 @@ open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
 
+let g1 = Range.whole_range ;; 
+
+let g2 = Untamed.compute_bulk_result ;; 
+
 open Qpe_extension_lower_half_mode ;;
 
 
