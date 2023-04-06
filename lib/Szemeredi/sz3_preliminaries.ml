@@ -228,6 +228,38 @@ let check2 = (decompose (P(1,3,6,[])) =  (P (1, 3, 5, []), [6])) ;;
 
 end ;;  
 
+module Order_for_uples = struct 
+
+  let adhoc_order_for_intlists scr1 scr2 =
+    match Total_ordering.for_integers (List.length scr1) (List.length scr2) with 
+     Total_ordering_result_t.Greater -> Total_ordering_result_t.Lower 
+    |Total_ordering_result_t.Lower -> Total_ordering_result_t.Greater 
+    |Total_ordering_result_t.Equal -> 
+     if scr1=[] then Total_ordering_result_t.Equal else
+     let try1 = Total_ordering.for_integers (Max.list scr1) (Max.list scr2) in 
+     if try1 <> Total_ordering_result_t.Equal then try1 else       
+     Total_ordering.silex_for_intlists scr1 scr2 ;; 
+ 
+  let compare_ws_pairs =((fun (w1,scr1) (w2,scr2) ->
+      let try1 = Total_ordering.for_integers w1 w2 in 
+      if try1 <> Total_ordering_result_t.Equal then try1 else 
+      adhoc_order_for_intlists scr1 scr2 ): (int * int list) Total_ordering_t.t);;
+
+ let pre_compare_fiftuples (w1,scr1,IMD(imd1),component1,half1) (w2,scr2,IMD(imd2),component2,half2) =
+    let try1 = compare_ws_pairs (w1,scr1) (w2,scr2) in 
+    if try1 <> Total_ordering_result_t.Equal then try1 else 
+    let try2 = Total_ordering.for_integers imd1 imd2 in 
+    if try2 <> Total_ordering_result_t.Equal then try2 else 
+    let try3 = Kind_of_component.compare component1 component2 in 
+    if try3 <> Total_ordering_result_t.Equal then try3 else 
+   Half.compare half1 half2 ;;
+   
+ let compare_fiftuples = (pre_compare_fiftuples: (int * int list * index_of_missing_data *
+ kind_of_component * half) Total_ordering_t.t) ;; 
+ 
+
+end ;;  
+
 
 module Warehouse = struct 
   
@@ -245,7 +277,7 @@ module Warehouse = struct
     None -> (None,Some (error_handling,k)) 
     | Some f -> (Some(f breadth size),None) ;; 
   
-    
+  (* mys *)    
   
   let hashtbl_for_superficial_result_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
   let try_get_superficial_result_lower_half = 
@@ -1379,29 +1411,6 @@ let extract_fiftuple_from_beginning_line line =
  let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
  (w,scr,IMD(imd),component,half) ;;
 
-let adhoc_order_for_intlists scr1 scr2 =
-   match Total_ordering.for_integers (List.length scr1) (List.length scr2) with 
-    Total_ordering_result_t.Greater -> Total_ordering_result_t.Lower 
-   |Total_ordering_result_t.Lower -> Total_ordering_result_t.Greater 
-   |Total_ordering_result_t.Equal -> 
-    if scr1=[] then Total_ordering_result_t.Equal else
-    let try1 = Total_ordering.for_integers (Max.list scr1) (Max.list scr2) in 
-    if try1 <> Total_ordering_result_t.Equal then try1 else       
-    Total_ordering.silex_for_intlists scr1 scr2 ;; 
-
-let pre_compare_fiftuples (w1,scr1,IMD(imd1),component1,half1) (w2,scr2,IMD(imd2),component2,half2) =
-   let try1 = Total_ordering.for_integers w1 w2 in 
-   if try1 <> Total_ordering_result_t.Equal then try1 else 
-   let try2 = adhoc_order_for_intlists scr1 scr2 in 
-   if try2 <> Total_ordering_result_t.Equal then try2 else  
-   let try3 = Total_ordering.for_integers imd1 imd2 in 
-   if try3 <> Total_ordering_result_t.Equal then try3 else 
-   let try4 = Kind_of_component.compare component1 component2 in 
-   if try4 <> Total_ordering_result_t.Equal then try4 else 
-  Half.compare half1 half2 ;;
-  
-let compare_fiftuples = (pre_compare_fiftuples: (int * int list * index_of_missing_data *
-kind_of_component * half) Total_ordering_t.t) ;; 
 
 exception Insertion_index of int * int list * index_of_missing_data *
 kind_of_component * half ;;
@@ -1411,7 +1420,7 @@ let rec helper_for_insertion_index (counter,new_fiftuple,untreated) =
    [] -> counter 
    | fiftuple :: others ->
     (
-     match compare_fiftuples new_fiftuple fiftuple with 
+     match Order_for_uples.compare_fiftuples new_fiftuple fiftuple with 
      Total_ordering_result_t.Equal -> 
       let (w1,scr1,IMD(imd1),component1,half1) = fiftuple in
       raise(Insertion_index((w1,scr1,IMD(imd1),component1,half1)))
