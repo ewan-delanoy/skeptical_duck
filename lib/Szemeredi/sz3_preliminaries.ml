@@ -276,130 +276,277 @@ module Warehouse = struct
     match Hashtbl.find_opt hashtbl (width,scrappers,k) with 
     None -> (None,Some (error_handling,k)) 
     | Some f -> (Some(f breadth size),None) ;; 
-  
-  (* mys *)    
-  
-  let hashtbl_for_superficial_result_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
-  let try_get_superficial_result_lower_half = 
-     access_named_hashtbl ((Superficial_result,Lower_half),
-        hashtbl_for_superficial_result_lower_half) ;; 
-  
-  let hashtbl_for_superficial_result_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> superficial_result) Hashtbl.t) ;;
-  let try_get_superficial_result_upper_half = 
-      access_named_hashtbl ((Superficial_result,Upper_half),
-        hashtbl_for_superficial_result_upper_half) ;; 
 
-  let hashtbl_for_solution_list_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
-  let try_get_solution_list_lower_half = 
-      access_named_hashtbl ((Solution_list,Lower_half),
-        hashtbl_for_solution_list_lower_half) ;; 
-
-  let hashtbl_for_solution_list_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> solution list) Hashtbl.t) ;;
-  let try_get_solution_list_upper_half = 
-      access_named_hashtbl ((Solution_list,Upper_half),
-        hashtbl_for_solution_list_upper_half) ;; 
-
-  let hashtbl_for_qpl_length_lower_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> int) Hashtbl.t) ;;
-  let try_get_qpl_length_lower_half = 
-    access_named_hashtbl ((Qpl_length,Lower_half),
-      hashtbl_for_qpl_length_lower_half) ;; 
-
-  let hashtbl_for_qpl_length_upper_half = ((Hashtbl.create 50) : (int * int list, breadth -> size -> int) Hashtbl.t) ;;
-  let try_get_qpl_length_upper_half = 
-    access_named_hashtbl ((Qpl_length,Upper_half),
-      hashtbl_for_qpl_length_upper_half) ;; 
-      
-  let hashtbl_for_qpe_core_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
-  let try_get_qpe_core_lower_half = 
-   access_parametrized_named_hashtbl ((Qpe_core,Lower_half),
-      hashtbl_for_qpe_core_lower_half) ;; 
-
-  let hashtbl_for_qpe_core_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> point) Hashtbl.t) ;;
-  let try_get_qpe_core_upper_half = 
-    access_parametrized_named_hashtbl ((Qpe_core,Upper_half),
-      hashtbl_for_qpe_core_upper_half) ;; 
-      
-        
-  let hashtbl_for_qpe_constraints_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
-  let try_get_qpe_constraints_lower_half = 
-    access_parametrized_named_hashtbl ((Qpe_constraints,Lower_half),
-      hashtbl_for_qpe_constraints_lower_half) ;; 
-
-  let hashtbl_for_qpe_constraints_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> constraint_t list) Hashtbl.t) ;;
-  let try_get_qpe_constraints_upper_half = 
-    access_parametrized_named_hashtbl ((Qpe_constraints,Upper_half),
-      hashtbl_for_qpe_constraints_upper_half) ;; 
-
-  let hashtbl_for_qpe_extension_lower_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> extension_data) Hashtbl.t) ;;
-  let try_get_qpe_extension_lower_half = 
-    access_parametrized_named_hashtbl ((Qpe_extension,Lower_half),
-      hashtbl_for_qpe_extension_lower_half) ;; 
-
-  let hashtbl_for_qpe_extension_upper_half = ((Hashtbl.create 50) : (int * int list * index_of_missing_data, breadth -> size -> extension_data) Hashtbl.t) ;;
-  let try_get_qpe_extension_upper_half = 
-    access_parametrized_named_hashtbl ((Qpe_extension,Upper_half),
-      hashtbl_for_qpe_extension_upper_half) ;; 
-
-  let qualified_point_core half k pt = match half with 
-    Lower_half -> try_get_qpe_core_lower_half k pt 
-   |Upper_half -> try_get_qpe_core_upper_half k pt;;
-
-  let qualified_point_constraints half k pt = match half with 
-   Lower_half -> try_get_qpe_constraints_lower_half k pt 
-  |Upper_half -> try_get_qpe_constraints_upper_half k pt;;
+    let wet_hashtbl_for_superficial_result_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> superficial_result) Hashtbl.t) ;;
+    let dry_hashtbl_for_superficial_result_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> superficial_result) Hashtbl.t) ;;
+    let hashtbl_for_superficial_result_lower_half = function 
+        Wet -> wet_hashtbl_for_superficial_result_lower_half
+       |Dry -> dry_hashtbl_for_superficial_result_lower_half ;;
+    let try_get_superficial_result_lower_half w_or_d = 
+        access_named_hashtbl ((Superficial_result,Lower_half),
+          (hashtbl_for_superficial_result_lower_half w_or_d)) ;;
 
 
-  let qualified_point_extension half k pt = match half with 
-    Lower_half -> try_get_qpe_extension_lower_half k pt 
-   |Upper_half -> try_get_qpe_extension_upper_half k pt;;
+    let wet_hashtbl_for_superficial_result_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> superficial_result) Hashtbl.t) ;;
+    let dry_hashtbl_for_superficial_result_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> superficial_result) Hashtbl.t) ;;
+    let hashtbl_for_superficial_result_upper_half = function 
+        Wet -> wet_hashtbl_for_superficial_result_upper_half
+       |Dry -> dry_hashtbl_for_superficial_result_upper_half ;;
+    let try_get_superficial_result_upper_half w_or_d = 
+        access_named_hashtbl ((Superficial_result,Upper_half),
+          (hashtbl_for_superficial_result_upper_half w_or_d)) ;;
 
-  let qpl_length half pt = match half with 
-    Lower_half -> try_get_qpl_length_lower_half pt 
-   |Upper_half -> try_get_qpl_length_upper_half pt;;
 
-  let clear_all_hashtables () = 
-(
-  Hashtbl.clear hashtbl_for_superficial_result_lower_half;
-  Hashtbl.clear hashtbl_for_superficial_result_upper_half; 
-  Hashtbl.clear hashtbl_for_solution_list_lower_half; 
-  Hashtbl.clear hashtbl_for_solution_list_upper_half; 
-  Hashtbl.clear hashtbl_for_qpl_length_lower_half; 
-  Hashtbl.clear hashtbl_for_qpl_length_upper_half; 
-  Hashtbl.clear hashtbl_for_qpe_core_lower_half; 
-  Hashtbl.clear hashtbl_for_qpe_core_upper_half; 
-  Hashtbl.clear hashtbl_for_qpe_constraints_lower_half; 
-  Hashtbl.clear hashtbl_for_qpe_constraints_upper_half; 
-  Hashtbl.clear hashtbl_for_qpe_extension_lower_half ; 
-  Hashtbl.clear hashtbl_for_qpe_extension_upper_half ; 
-) ;; 
+    let wet_hashtbl_for_solution_list_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> solution list) Hashtbl.t) ;;
+    let dry_hashtbl_for_solution_list_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> solution list) Hashtbl.t) ;;
+    let hashtbl_for_solution_list_lower_half = function 
+        Wet -> wet_hashtbl_for_solution_list_lower_half
+       |Dry -> dry_hashtbl_for_solution_list_lower_half ;;
+    let try_get_solution_list_lower_half w_or_d = 
+        access_named_hashtbl ((Solution_list,Lower_half),
+          (hashtbl_for_solution_list_lower_half w_or_d)) ;;
 
-  let qualified_point_element half k pt = 
-    let (good_opt1,bad_opt1) = qualified_point_core half k pt in 
+
+    let wet_hashtbl_for_solution_list_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> solution list) Hashtbl.t) ;;
+    let dry_hashtbl_for_solution_list_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> solution list) Hashtbl.t) ;;
+    let hashtbl_for_solution_list_upper_half = function 
+        Wet -> wet_hashtbl_for_solution_list_upper_half
+       |Dry -> dry_hashtbl_for_solution_list_upper_half ;;
+    let try_get_solution_list_upper_half w_or_d = 
+        access_named_hashtbl ((Solution_list,Upper_half),
+          (hashtbl_for_solution_list_upper_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpl_length_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> int) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpl_length_lower_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> int) Hashtbl.t) ;;
+    let hashtbl_for_qpl_length_lower_half = function 
+        Wet -> wet_hashtbl_for_qpl_length_lower_half
+       |Dry -> dry_hashtbl_for_qpl_length_lower_half ;;
+    let try_get_qpl_length_lower_half w_or_d = 
+        access_named_hashtbl ((Qpl_length,Lower_half),
+          (hashtbl_for_qpl_length_lower_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpl_length_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> int) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpl_length_upper_half = 
+        ((Hashtbl.create 50) : (int * int list, 
+              breadth -> size -> int) Hashtbl.t) ;;
+    let hashtbl_for_qpl_length_upper_half = function 
+        Wet -> wet_hashtbl_for_qpl_length_upper_half
+       |Dry -> dry_hashtbl_for_qpl_length_upper_half ;;
+    let try_get_qpl_length_upper_half w_or_d = 
+        access_named_hashtbl ((Qpl_length,Upper_half),
+          (hashtbl_for_qpl_length_upper_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_core_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> point) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_core_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> point) Hashtbl.t) ;;
+    let hashtbl_for_qpe_core_lower_half = function 
+        Wet -> wet_hashtbl_for_qpe_core_lower_half
+       |Dry -> dry_hashtbl_for_qpe_core_lower_half ;;
+    let try_get_qpe_core_lower_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_core,Lower_half),
+          (hashtbl_for_qpe_core_lower_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_core_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> point) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_core_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> point) Hashtbl.t) ;;
+    let hashtbl_for_qpe_core_upper_half = function 
+        Wet -> wet_hashtbl_for_qpe_core_upper_half
+       |Dry -> dry_hashtbl_for_qpe_core_upper_half ;;
+    let try_get_qpe_core_upper_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_core,Upper_half),
+          (hashtbl_for_qpe_core_upper_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_constraints_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> constraint_t list) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_constraints_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> constraint_t list) Hashtbl.t) ;;
+    let hashtbl_for_qpe_constraints_lower_half = function 
+        Wet -> wet_hashtbl_for_qpe_constraints_lower_half
+       |Dry -> dry_hashtbl_for_qpe_constraints_lower_half ;;
+    let try_get_qpe_constraints_lower_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_constraints,Lower_half),
+          (hashtbl_for_qpe_constraints_lower_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_constraints_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> constraint_t list) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_constraints_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> constraint_t list) Hashtbl.t) ;;
+    let hashtbl_for_qpe_constraints_upper_half = function 
+        Wet -> wet_hashtbl_for_qpe_constraints_upper_half
+       |Dry -> dry_hashtbl_for_qpe_constraints_upper_half ;;
+    let try_get_qpe_constraints_upper_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_constraints,Upper_half),
+          (hashtbl_for_qpe_constraints_upper_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_extension_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> extension_data) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_extension_lower_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> extension_data) Hashtbl.t) ;;
+    let hashtbl_for_qpe_extension_lower_half = function 
+        Wet -> wet_hashtbl_for_qpe_extension_lower_half
+       |Dry -> dry_hashtbl_for_qpe_extension_lower_half ;;
+    let try_get_qpe_extension_lower_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_extension,Lower_half),
+          (hashtbl_for_qpe_extension_lower_half w_or_d)) ;;
+
+
+    let wet_hashtbl_for_qpe_extension_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> extension_data) Hashtbl.t) ;;
+    let dry_hashtbl_for_qpe_extension_upper_half = 
+        ((Hashtbl.create 50) : (int * int list * index_of_missing_data, 
+              breadth -> size -> extension_data) Hashtbl.t) ;;
+    let hashtbl_for_qpe_extension_upper_half = function 
+        Wet -> wet_hashtbl_for_qpe_extension_upper_half
+       |Dry -> dry_hashtbl_for_qpe_extension_upper_half ;;
+    let try_get_qpe_extension_upper_half w_or_d = 
+        access_parametrized_named_hashtbl ((Qpe_extension,Upper_half),
+          (hashtbl_for_qpe_extension_upper_half w_or_d)) ;;
+
+
+
+
+
+let copy_lower_half_triple_from_wet_to_dry (w,scr,imd)= function 
+    | Superficial_result -> 
+      Hashtbl.add dry_hashtbl_for_superficial_result_lower_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_superficial_result_lower_half (w,scr))
+    | Solution_list -> 
+      Hashtbl.add dry_hashtbl_for_solution_list_lower_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_solution_list_lower_half (w,scr))
+    | Qpl_length -> 
+      Hashtbl.add dry_hashtbl_for_qpl_length_lower_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_qpl_length_lower_half (w,scr))
+    | Qpe_core -> 
+      Hashtbl.add dry_hashtbl_for_qpe_core_lower_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_core_lower_half (w,scr,imd))
+    | Qpe_constraints -> 
+      Hashtbl.add dry_hashtbl_for_qpe_constraints_lower_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_constraints_lower_half (w,scr,imd))
+    | Qpe_extension -> 
+      Hashtbl.add dry_hashtbl_for_qpe_extension_lower_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_extension_lower_half (w,scr,imd)) ;;
+
+
+let copy_upper_half_triple_from_wet_to_dry (w,scr,imd)= function 
+    | Superficial_result -> 
+      Hashtbl.add dry_hashtbl_for_superficial_result_upper_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_superficial_result_upper_half (w,scr))
+    | Solution_list -> 
+      Hashtbl.add dry_hashtbl_for_solution_list_upper_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_solution_list_upper_half (w,scr))
+    | Qpl_length -> 
+      Hashtbl.add dry_hashtbl_for_qpl_length_upper_half (w,scr) 
+      (Hashtbl.find wet_hashtbl_for_qpl_length_upper_half (w,scr))
+    | Qpe_core -> 
+      Hashtbl.add dry_hashtbl_for_qpe_core_upper_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_core_upper_half (w,scr,imd))
+    | Qpe_constraints -> 
+      Hashtbl.add dry_hashtbl_for_qpe_constraints_upper_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_constraints_upper_half (w,scr,imd))
+    | Qpe_extension -> 
+      Hashtbl.add dry_hashtbl_for_qpe_extension_upper_half (w,scr,imd) 
+      (Hashtbl.find wet_hashtbl_for_qpe_extension_upper_half (w,scr,imd)) ;;
+
+  let copy_fiftuple_from_wet_to_dry (w,scr,imd,component,half)=match half with 
+     Lower_half -> copy_lower_half_triple_from_wet_to_dry (w,scr,imd) component 
+    |Upper_half -> copy_upper_half_triple_from_wet_to_dry (w,scr,imd) component ;;
+    
+  let copy_fiftuples_from_wet_to_dry_up_to (w_max,scr_max) =
+      let allowed_copies = List.filter (
+         fun (w,s,_,_,_) ->
+           Order_for_uples.compare_ws_pairs (w,s) (w_max,scr_max) <>
+             Total_ordering_result_t.Greater
+      ) (!insertions_in_wet_hash_tables) in 
+      List.iter copy_fiftuple_from_wet_to_dry allowed_copies ;;
+
+
+
+  let qualified_point_core w_or_d half k pt = match half with 
+    Lower_half -> try_get_qpe_core_lower_half w_or_d k pt 
+   |Upper_half -> try_get_qpe_core_upper_half w_or_d k pt;;
+
+  let qualified_point_constraints w_or_d half k pt = match half with 
+   Lower_half -> try_get_qpe_constraints_lower_half w_or_d k pt 
+  |Upper_half -> try_get_qpe_constraints_upper_half w_or_d k pt;;
+
+
+  let qualified_point_extension w_or_d half k pt = match half with 
+    Lower_half -> try_get_qpe_extension_lower_half w_or_d k pt 
+   |Upper_half -> try_get_qpe_extension_upper_half w_or_d k pt;;
+
+  let qpl_length w_or_d half pt = match half with 
+    Lower_half -> try_get_qpl_length_lower_half w_or_d pt 
+   |Upper_half -> try_get_qpl_length_upper_half w_or_d pt;;
+
+  let qualified_point_element w_or_d half k pt = 
+    let (good_opt1,bad_opt1) = qualified_point_core w_or_d half k pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
-    let (good_opt2,bad_opt2) = qualified_point_constraints half k pt in 
+    let (good_opt2,bad_opt2) = qualified_point_constraints w_or_d half k pt in 
     if bad_opt2<>None then (None,bad_opt2) else   
-    let (good_opt3,bad_opt3) = qualified_point_extension half k pt in 
+    let (good_opt3,bad_opt3) = qualified_point_extension w_or_d half k pt in 
     if bad_opt3<>None then (None,bad_opt3) else     
     let core_r = Option.get good_opt1 
     and constraints_r = Option.get good_opt2 
     and extension_r = Option.get good_opt3 in 
     (Some(Q(core_r,constraints_r,extension_r)),None) ;;   
   
-  let superficial_result half pt = match half with 
-     Lower_half -> try_get_superficial_result_lower_half pt 
-    |Upper_half -> try_get_superficial_result_upper_half pt;;
+  let superficial_result w_or_d half pt = match half with 
+     Lower_half -> try_get_superficial_result_lower_half w_or_d pt 
+    |Upper_half -> try_get_superficial_result_upper_half w_or_d pt;;
      
-  let solution_list half pt = match half with 
-    Lower_half -> try_get_solution_list_lower_half pt 
-   |Upper_half -> try_get_solution_list_upper_half pt;;
+  let solution_list w_or_d half pt = match half with 
+    Lower_half -> try_get_solution_list_lower_half w_or_d pt 
+   |Upper_half -> try_get_solution_list_upper_half w_or_d pt;;
   
    
-  let qualified_point_list half pt =
-    let (good_opt1,bad_opt1) =qpl_length half pt in 
+  let qualified_point_list w_or_d half pt =
+    let (good_opt1,bad_opt1) =qpl_length w_or_d half pt in 
     if bad_opt1<>None then (None,bad_opt1) else 
   let length_r = Option.get good_opt1 in 
   let eltwise_results = Int_range.scale (
-          fun k-> qualified_point_element half (IMD k) pt
+          fun k-> qualified_point_element w_or_d half (IMD k) pt
   )  1 length_r in  
   let bad_ones = List.filter (
         fun (good_opt,_bad_opt) -> good_opt = None
@@ -411,12 +558,12 @@ module Warehouse = struct
   (Some final_result,None) ;;  
 
 
-  let bulk_result half pt = 
-     let (good_opt1,bad_opt1) = superficial_result half pt in 
+  let bulk_result w_or_d half pt = 
+     let (good_opt1,bad_opt1) = superficial_result w_or_d half pt in 
      if bad_opt1<>None then (None,bad_opt1) else 
-     let (good_opt2,bad_opt2) = solution_list half pt in 
+     let (good_opt2,bad_opt2) = solution_list w_or_d half pt in 
      if bad_opt2<>None then (None,bad_opt2) else  
-     let (good_opt3,bad_opt3) = qualified_point_list half pt in 
+     let (good_opt3,bad_opt3) = qualified_point_list w_or_d half pt in 
      if bad_opt3<>None then (None,bad_opt3) else  
      let superficial_result_r = Option.get good_opt1 
      and solution_list_r = Option.get good_opt2 
@@ -424,17 +571,17 @@ module Warehouse = struct
      (Some(BR(superficial_result_r,M(solution_list_r,qualified_point_list_r))),None)
    ;;   
 
-  let length_watcher pt = 
+  let wet_length_watcher pt = 
     if Point.is_in_upper_half pt 
-    then Option.get(fst(qpl_length Upper_half pt)) 
-    else Option.get(fst(qpl_length Lower_half pt)) ;;    
+    then Option.get(fst(qpl_length Wet Upper_half pt)) 
+    else Option.get(fst(qpl_length Wet Lower_half pt)) ;;    
 
-  let nonhalved_bulk_result pt = 
+  let nonhalved_bulk_result w_or_d pt = 
     if Point.is_in_upper_half pt 
-    then bulk_result Upper_half pt 
-    else bulk_result Lower_half pt ;;    
+    then bulk_result w_or_d Upper_half pt 
+    else bulk_result w_or_d Lower_half pt ;;    
 
-  let try_precomputed_results pt = fst(nonhalved_bulk_result pt) ;;
+  let try_precomputed_results w_or_d pt = fst(nonhalved_bulk_result w_or_d pt) ;;
 
 end ;;  
 
@@ -476,7 +623,7 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add 
-  Warehouse.hashtbl_for_superficial_result_lower_half (1,[]) 
+  Warehouse.wet_hashtbl_for_superficial_result_lower_half (1,[]) 
     f_1_empty_set_superficial_result_lower_half;;
 (* End of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 
@@ -503,7 +650,7 @@ let f_1_empty_set_superficial_result_upper_half (B b) (S n) =
 *)
    
 Hashtbl.add 
-  Warehouse.hashtbl_for_superficial_result_upper_half (1,[]) 
+  Warehouse.wet_hashtbl_for_superficial_result_upper_half (1,[]) 
      f_1_empty_set_superficial_result_upper_half;;
 
 (* End of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)     
@@ -519,8 +666,8 @@ let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
     
 *)
     
-Hashtbl.add 
-  Warehouse.hashtbl_for_solution_list_lower_half (1,[]) 
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_solution_list_lower_half (1,[]) 
     f_1_empty_set_solution_list_lower_half;;
 
 (* End of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
@@ -539,7 +686,7 @@ let f_1_empty_solution_list_upper_half (B b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_solution_list_upper_half
+ Warehouse.wet_hashtbl_for_solution_list_upper_half
    (1,[]) f_1_empty_solution_list_upper_half ;;
 
 (* End of item at  (1,[],IMD(0),Solution_list,Upper_half) *)
@@ -566,7 +713,7 @@ Abstract_qpl_length_mode.global_check
 *)
 
 Hashtbl.add 
- Warehouse.hashtbl_for_qpl_length_lower_half (1,[]) 
+ Warehouse.wet_hashtbl_for_qpl_length_lower_half (1,[]) 
 f_1_empty_set_qpl_length_lower_half;;
 (* End of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
@@ -583,7 +730,7 @@ let f_1_empty_qpl_length_upper_half (B b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpl_length_upper_half
+ Warehouse.wet_hashtbl_for_qpl_length_upper_half
    (1,[]) f_1_empty_qpl_length_upper_half ;;
 
 (* End of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
@@ -601,7 +748,7 @@ let f_1_empty_i1_qpe_core_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_lower_half
+ Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_core_lower_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_core,Lower_half) *)
@@ -619,7 +766,7 @@ let f_1_empty_i1_qpe_core_upper_half (B b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_upper_half
+ Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
@@ -636,7 +783,7 @@ let f_1_empty_i1_qpe_constraints_lower_half (B _b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_lower_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_lower_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
@@ -652,7 +799,7 @@ let f_1_empty_i1_qpe_constraints_upper_half (B _b) (S _n) = [] ;;
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_upper_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_constraints,Upper_half) *)
@@ -672,7 +819,7 @@ let f_1_empty_i1_qpe_extension_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_lower_half
+ Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_extension_lower_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_extension,Lower_half) *)
@@ -692,7 +839,7 @@ let f_1_empty_i1_qpe_extension_upper_half (B b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_upper_half
+ Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_extension_upper_half ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
@@ -710,7 +857,7 @@ let f_1_empty_i2_qpe_core_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_lower_half
+ Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_core_lower_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_core,Lower_half) *)
@@ -728,7 +875,7 @@ let f_1_empty_i2_qpe_core_upper_half (B b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_upper_half
+ Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
@@ -745,7 +892,7 @@ let f_1_empty_i2_qpe_constraints_lower_half (B _b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_lower_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_constraints_lower_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_constraints,Lower_half) *)
@@ -761,7 +908,7 @@ let f_1_empty_i2_qpe_constraints_upper_half (B _b) (S _n) = [];;
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_upper_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_constraints_upper_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
@@ -781,7 +928,7 @@ let f_1_empty_i2_qpe_extension_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_lower_half
+ Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_extension_lower_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_extension,Lower_half) *)
@@ -801,7 +948,7 @@ let f_1_empty_i2_qpe_extension_upper_half (B b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_upper_half
+ Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_extension_upper_half ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_extension,Upper_half) *)
@@ -819,7 +966,7 @@ let f_1_empty_i3_qpe_core_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_lower_half
+ Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_core_lower_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_core,Lower_half) *)
@@ -837,7 +984,7 @@ let f_1_empty_i3_qpe_core_upper_half (B b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_core_upper_half
+ Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_core_upper_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_core,Upper_half) *)
@@ -854,7 +1001,7 @@ let f_1_empty_i3_qpe_constraints_lower_half (B _b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_lower_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_constraints_lower_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_constraints,Lower_half) *)
@@ -871,7 +1018,7 @@ let f_1_empty_i3_qpe_constraints_upper_half (B _b) (S _n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_constraints_upper_half
+ Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_constraints_upper_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_constraints,Upper_half) *)
@@ -891,7 +1038,7 @@ let f_1_empty_i3_qpe_extension_lower_half (B _b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_lower_half
+ Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_extension_lower_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_extension,Lower_half) *)
@@ -911,7 +1058,7 @@ let f_1_empty_i3_qpe_extension_upper_half (B b) (S n) =
 *)
 
 Hashtbl.add
- Warehouse.hashtbl_for_qpe_extension_upper_half
+ Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_extension_upper_half ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_extension,Upper_half) *)
@@ -1071,14 +1218,19 @@ module Untamed = struct
   
   
   
-  let low_hashtbl = Hashtbl.create 50 ;;
+  let wet_hashtbl = Hashtbl.create 50 ;;
+  let dry_hashtbl = Hashtbl.create 50 ;;
     
-  let access_opt  pt = 
+   let choose_hashtbl = function 
+      Wet -> wet_hashtbl 
+     |Dry -> dry_hashtbl ;; 
+
+  let access_opt w_or_d pt = 
    let (pt2,adj) = Simplest_reduction.decompose pt in 
    if pt2 = Empty_point 
    then Some (Bulk_result.atomic_case pt)
    else
-   let pre_res=Warehouse.try_precomputed_results pt2 in 
+   let pre_res=Warehouse.try_precomputed_results w_or_d pt2 in 
    Bulk_result.extend_with_opt pt2 pre_res adj ;;
      
   let superificial_result_in_jump_case  pt_after_jump =
@@ -1087,12 +1239,12 @@ module Untamed = struct
     let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
     ([],Some(Decomposable(pt2,adj2))) ;; 
       
-  let access_with_helper_opt pt helper =
+  let access_with_helper_opt w_or_d pt helper =
       match List.assoc_opt pt helper with 
       Some answer -> Some answer
-      | None ->  access_opt pt ;;
+      | None ->  access_opt w_or_d pt ;;
   
-  let compute_superficial_result_partially pt helper =  
+  let compute_superficial_result_partially w_or_d pt helper =  
     if pt = Empty_point then ([],Some Atomic) else
     let (width,_scrappers,B breadth,_n) = Point.unveil pt in 
     let (pt2,adj2) = Simplest_reduction.decompose pt in 
@@ -1109,7 +1261,7 @@ module Untamed = struct
     let _ = assert(breadth2>0) in 
     let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
     and preceding_point = P(width2,scrappers2,B(breadth2-1),n2) in 
-    match access_with_helper_opt  preceding_point helper with 
+    match access_with_helper_opt w_or_d preceding_point helper with 
       None -> ([preceding_point],None)
      |Some bres ->
          (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
@@ -1135,22 +1287,22 @@ module Untamed = struct
   
   exception Bad_contraction of point * constraint_t ;; 
   
-  let rec compute_bulk_result_partially pt helper=  
+  let rec compute_bulk_result_partially w_or_d pt helper=  
     if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-     let partial_res1 = compute_superficial_result_partially pt helper in 
+     let partial_res1 = compute_superficial_result_partially w_or_d pt helper in 
      match snd partial_res1 with 
       None -> (fst partial_res1,None) 
      |Some sr ->(match sr with 
        Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
      | Decomposable(pt2,adj2) -> 
-         let partial_res2 = compute_bulk_result_partially pt2 helper in 
+         let partial_res2 = compute_bulk_result_partially w_or_d pt2 helper in 
          (
           match snd partial_res2 with 
           None -> (fst partial_res2,None) 
          |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
          )
      | Contraction (pt5,cstr) ->
-      let partial_res4 = compute_bulk_result_partially pt5 helper in 
+      let partial_res4 = compute_bulk_result_partially w_or_d pt5 helper in 
       (
        match snd partial_res4 with 
        None -> (fst partial_res4,None) 
@@ -1160,7 +1312,7 @@ module Untamed = struct
           |Some new_br4 ->([],Some new_br4)
       ) 
      | Fork cases ->
-      fork_case_in_bulk_result_computation compute_bulk_result_partially cases helper
+      fork_case_in_bulk_result_computation (compute_bulk_result_partially w_or_d) cases helper
      ) ;; 
   
      
@@ -1171,29 +1323,29 @@ module Untamed = struct
   
   exception Pusher_stop ;;
   
-  let pusher_for_needed_subcomputations  
+  let pusher_for_needed_subcomputations w_or_d 
      (treated,to_be_treated) = match to_be_treated with 
            [] -> raise Pusher_stop
            | pt1 :: other_pts ->
-             let partial_res1 = compute_bulk_result_partially pt1 treated in 
+             let partial_res1 = compute_bulk_result_partially w_or_d pt1 treated in 
              match snd partial_res1 with 
               None -> (treated,(fst partial_res1)@to_be_treated)
              |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
   
-  let rec needed_subcomputations walker =
+  let rec needed_subcomputations w_or_d walker =
       let (treated,to_be_treated) = walker in 
       let subcomps =( match to_be_treated with 
       [] -> treated
-      | _ -> needed_subcomputations (pusher_for_needed_subcomputations walker) ) in 
+      | _ -> needed_subcomputations w_or_d (pusher_for_needed_subcomputations w_or_d walker) ) in 
       let new_subcomps = List.filter (
       fun (_,bres) -> Bulk_result.is_not_atomic bres
      ) subcomps in 
      let _ = List.iter (fun (pt2,bres)->
-      Hashtbl.replace low_hashtbl pt2 bres ) new_subcomps in 
+      Hashtbl.replace (choose_hashtbl w_or_d) pt2 bres ) new_subcomps in 
       subcomps ;;
   
-  let compute_bulk_result pt =
-     let subcomps = needed_subcomputations ([],[pt]) in 
+  let compute_bulk_result w_or_d pt =
+     let subcomps = needed_subcomputations w_or_d ([],[pt]) in 
      List.assoc pt subcomps ;;   
     
 end ;;  
@@ -1255,7 +1407,7 @@ let er_range (width,scrappers) = function
   |Upper_half -> fst(halves (width,scrappers)) ;;
 
 let restricted_range (width,scrappers,IMD ql_idx) half = 
-  List.filter (fun (b,n)->Warehouse.length_watcher (P(width,scrappers,b,n))>=ql_idx)
+  List.filter (fun (b,n)->Warehouse.wet_length_watcher (P(width,scrappers,b,n))>=ql_idx)
   (er_range (width,scrappers) half);;
 let linear_range (w,_scr,d) = function 
   Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
@@ -1474,7 +1626,7 @@ module Tools_for_mode_modules = struct
 
 let no_extra_condition (_width,_scrappers,_) (B _b,S _n) = true ;;
 let check_length (width,scrappers,IMD ql_idx) (b,n) = 
-  (Warehouse.length_watcher (P(width,scrappers,b,n)))>=ql_idx;;
+  (Warehouse.wet_length_watcher (P(width,scrappers,b,n)))>=ql_idx;;
 
 end ;;   
 
@@ -1491,7 +1643,7 @@ module Superficial_result_seed = ((struct
 type current_t = superficial_result ;;
 let current_component = Superficial_result ;; 
 let original (width,scrappers,_) b n =
-  Bulk_result.superficial_part( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
+  Bulk_result.superficial_part( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) ;;
 let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_superficial_result ;; 
 
@@ -1503,7 +1655,7 @@ module Solution_list_seed = ((struct
 type current_t = solution list ;;
 let current_component = Solution_list ;; 
 let original (width,scrappers,_) b n =
-  Bulk_result.solution_list( Untamed.compute_bulk_result (P(width,scrappers,b,n))) ;;
+  Bulk_result.solution_list( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) ;;
   let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_solution_list ;; 
 
@@ -1514,7 +1666,7 @@ module Qpl_length_seed = ((struct
 type current_t = int ;;
 let current_component = Qpl_length ;; 
 let original (width,scrappers,_)  b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
   List.length ql;; ;;
   let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = string_of_int ;; 
@@ -1526,7 +1678,7 @@ module Qpe_core_seed = ((struct
 type current_t = point ;;
 let current_component = Qpe_core ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   pt ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
@@ -1539,7 +1691,7 @@ module Qpe_constraints_seed = ((struct
 type current_t = constraint_t list ;;
 let current_component = Qpe_constraints ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   ql_constraints ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
@@ -1552,7 +1704,7 @@ module Qpe_extension_seed = ((struct
 type current_t = extension_data ;;
 let current_component = Qpe_extension ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
   extension ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
@@ -1629,7 +1781,7 @@ let tour_for_single_pair (width,scrappers) =
       [] -> None 
       | (b,n) :: others ->
          (
-          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result (P(width,scrappers,b,n)) in 
+          let (good_opt,bad_opt) = Warehouse.nonhalved_bulk_result Wet (P(width,scrappers,b,n)) in 
           if good_opt = None 
           then Some(Option.get bad_opt,(b,n))
           else tempf others     
