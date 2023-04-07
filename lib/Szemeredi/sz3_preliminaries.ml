@@ -1460,6 +1460,90 @@ module Prepared_pages = struct
   
 end ;;  
 
+module Warehouse_content = struct
+
+  module Private = struct
+  
+  let pre_markers_for_items=
+    ("(* Beginning of item at ","(* End of item at ") ;; 
+  
+  let markers_for_warehouse_filler=
+   (
+      "(* Beginning of warehouse fillings. Do not modify this line *)",
+      "(* End of warehouse fillings. Do not modify this line *)"
+   ) ;;
+  
+   let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
+  
+   let parse_inside_of_intlist  comma_separated_ints = 
+    let comma_indices = Substring.occurrences_of_in "," comma_separated_ints in 
+    let between_commas = Cull_string.complement_union_of_ranges 
+       (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
+    Image.image int_of_spaced_string between_commas ;;
+  
+   let extract_fiftuple_from_beginning_line line =  
+    let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line in 
+    let temp2 = Cull_string.trim_spaces temp1 in  
+    let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
+    let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
+    let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 in  
+    let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 in  
+    let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) in 
+    let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 in  
+    let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 in  
+    let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 in  
+    let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) in  
+    let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 in  
+    let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) in  
+    let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 in  
+    let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) in  
+    let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
+    (w,scr,IMD(imd),component,half) ;;
+  
+  let extract_new_data_from_item item_text =
+    let i1 = Substring.leftmost_index_of_in_from "let " item_text 1 in  
+    let i2 = Substring.leftmost_index_of_in_from ";;" item_text (i1+1) in 
+    Cull_string.interval item_text i1 (i2+2);;
+  
+  exception Read_exn ;; 
+  
+  let read () = 
+    let this_text = Io.read_whole_file File.this_file in  
+    let wafi_full_text = Cull_string.between_markers markers_for_warehouse_filler this_text in  
+    let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
+    let indexed_lines = Int_range.index_everything lines_in_wafi in  
+    let beginnings = List.filter (fun (_,line)->
+      Supstring.begins_with line (fst(pre_markers_for_items))
+    ) indexed_lines in  
+    let endings = List.filter (fun (_,line)->
+      Supstring.begins_with line (snd(pre_markers_for_items))
+    ) indexed_lines in  
+    if (List.length beginnings)<>(List.length endings) then raise Read_exn else 
+    if beginnings = []
+    then {
+          prelude = wafi_full_text ;
+          warehouse_items = [] ;
+         }
+    else     
+    let first_beginning_linedex = fst(List.hd beginnings) in  
+    let lines_before_first_beginning=
+       List.filter (fun (j,_line)->j<=first_beginning_linedex) indexed_lines in 
+    let before_first_beginning = String.concat "\n" (Image.image snd lines_before_first_beginning) in 
+    let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings in  
+    let enclosers = List.combine (Image.image snd beginnings) (Image.image snd endings) in 
+    let functions = Image.image (fun markers ->
+         extract_new_data_from_item(Cull_string.between_markers markers wafi_full_text)
+      ) enclosers in 
+    {
+          prelude = before_first_beginning ;
+          warehouse_items = List.combine functions fiftuples ;
+    } ;; 
+  
+  end ;;
+  
+  let read = Private.read ;;
+  
+  end ;;
 
 module Side_effects_after_successful_global_check = struct 
 
@@ -1540,7 +1624,7 @@ let markers_for_warehouse_filler=
     "(* End of warehouse fillings. Do not modify this line *)"
  ) ;;
 
- let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
+let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
 
 let parse_inside_of_intlist  comma_separated_ints = 
  let comma_indices = Substring.occurrences_of_in "," comma_separated_ints in 
