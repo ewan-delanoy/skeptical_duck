@@ -1620,10 +1620,14 @@ module Warehouse_content = struct
           warehouse_items = List.combine functions fiftuples ;
     } ;; 
   
+  let write wc = String.concat "\n"
+    (wc.prelude::(Image.image Warehouse_item.write wc.warehouse_items));;
+
   end ;;
   
   let read = Private.read ;;
-  
+  let write = Private.write ;; 
+
   end ;;
 
 module Side_effects_after_successful_global_check = struct 
@@ -1635,8 +1639,7 @@ let text_for_new_item (w,s,i,component,half) =
   let f_name = Warehouse_item.name_for_reconstructed_function (w,s,i,component,half) in 
   let function_descr = Replace_inside.replace_inside_string
         (" rfi "," "^f_name^" ") original_rfi_code in 
-  let full_text = Warehouse_item.write(function_descr,(w,s,i,component,half)) in  
-  (full_text,f_name) ;;
+  Warehouse_item.write(function_descr,(w,s,i,component,half)) ;;
 
 
 let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
@@ -1712,7 +1715,8 @@ let write_new_item_to_this_file new_fiftuple new_item =
     ~overwriter:new_wafi_text Warehouse_markers.markers_for_warehouse_filler File.this_file ;; 
 
 let main new_fiftuple = 
-    let (new_item,f_name) = text_for_new_item new_fiftuple in 
+    let f_name = Warehouse_item.name_for_reconstructed_function new_fiftuple in 
+    let new_item = text_for_new_item new_fiftuple in 
     let (_w,_scr,_imd,component,half) = new_fiftuple in
     let _ =
       (write_new_item_to_this_file new_fiftuple new_item;
