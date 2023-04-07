@@ -1,9 +1,38 @@
 (************************************************************************************************************************
-Snippet 123 : 
+Snippet 124 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
+
+(************************************************************************************************************************
+Snippet 123 : Check identity of results with two different computation methods
+************************************************************************************************************************)
+
+module Snip123=struct
+
+  open Sz3_preliminaries ;; 
+
+  let u1 = Range.whole_range ;; 
+
+  let u2 = Chronometer.it 
+   (Explicit.image (fun (b,n)->
+    let pt = P(1,[],b,n) in 
+    Untamed.compute_bulk_result Dry pt)) u1 ;; 
+  
+  let u3 = Chronometer.it 
+    (Explicit.image (fun (b,n)->
+     let pt = P(1,[],b,n) in 
+     ((b,n),
+      Untamed.compute_bulk_result Dry pt,
+      Untamed.compute_bulk_result Wet pt))) u1 ;;   
+  
+  let check = List.filter (fun (x,y,z)->y<>z) u3 ;;     
+  
+  Manage_diary.fix_indexation ;; 
+
+
+end ;;
 
 
 (************************************************************************************************************************
