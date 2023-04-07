@@ -609,7 +609,6 @@ module Fill_Warehouse = struct
 open Tools_for_warehouse ;; 
 
 (* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
-(* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 
 let f_1_empty_superficial_result_lower_half (B _b) (S n) =
     match List.assoc_opt n 
