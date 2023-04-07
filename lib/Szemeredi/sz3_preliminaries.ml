@@ -1460,18 +1460,24 @@ module Prepared_pages = struct
   
 end ;;  
 
+module Warehouse_markers = struct
+
+let pre_markers_for_items=
+  ("(* Beginning of item at ","(* End of item at ") ;; 
+
+let markers_for_warehouse_filler=
+ (
+    "(* Beginning of warehouse fillings. Do not modify this line *)",
+    "(* End of warehouse fillings. Do not modify this line *)"
+ ) ;;
+
+end ;;   
+
 module Warehouse_content = struct
 
   module Private = struct
   
-  let pre_markers_for_items=
-    ("(* Beginning of item at ","(* End of item at ") ;; 
   
-  let markers_for_warehouse_filler=
-   (
-      "(* Beginning of warehouse fillings. Do not modify this line *)",
-      "(* End of warehouse fillings. Do not modify this line *)"
-   ) ;;
   
    let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
   
@@ -1482,7 +1488,7 @@ module Warehouse_content = struct
     Image.image int_of_spaced_string between_commas ;;
   
    let extract_fiftuple_from_beginning_line line =  
-    let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line in 
+    let temp1 = Cull_string.two_sided_cutting (fst(Warehouse_markers.pre_markers_for_items)," *)") line in 
     let temp2 = Cull_string.trim_spaces temp1 in  
     let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
     let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
@@ -1509,14 +1515,14 @@ module Warehouse_content = struct
   
   let read () = 
     let this_text = Io.read_whole_file File.this_file in  
-    let wafi_full_text = Cull_string.between_markers markers_for_warehouse_filler this_text in  
+    let wafi_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
     let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
     let indexed_lines = Int_range.index_everything lines_in_wafi in  
     let beginnings = List.filter (fun (_,line)->
-      Supstring.begins_with line (fst(pre_markers_for_items))
+      Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
     ) indexed_lines in  
     let endings = List.filter (fun (_,line)->
-      Supstring.begins_with line (snd(pre_markers_for_items))
+      Supstring.begins_with line (snd(Warehouse_markers.pre_markers_for_items))
     ) indexed_lines in  
     if (List.length beginnings)<>(List.length endings) then raise Read_exn else 
     if beginnings = []
@@ -1584,9 +1590,7 @@ let string_of_imd_inside_wsi (IMD i) =
 let compute_wsi_string (w,s,imd) =
   "("^(string_of_int w)^","^(string_of_intlist s)^(string_of_imd_inside_wsi imd)^")" ;;
 
-let pre_markers_for_items=
-  ("(* Beginning of item at ","(* End of item at ") ;; 
-  
+
 let text_for_new_item (w,s,i,component,half) = 
   let text_from_stab = Io.read_whole_file File.stab_file in 
   let original_rfi_code = Cull_string.between_markers 
@@ -1613,16 +1617,11 @@ let text_for_new_item (w,s,i,component,half) =
     "   "^wsi_string^" "^f_name^" ;;"
   ] in          
   let part3 = String.concat "\n" in_part3 in
-  let first_line=(fst pre_markers_for_items)^" "^s_fiftuple^" *)"
-  and last_line=(snd pre_markers_for_items)^" "^s_fiftuple^" *)" in 
+  let first_line=(fst Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)"
+  and last_line=(snd Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)" in 
   (String.concat "\n\n" 
     [first_line;part1;part2;part3;last_line],f_name) ;;
 
-let markers_for_warehouse_filler=
- (
-    "(* Beginning of warehouse fillings. Do not modify this line *)",
-    "(* End of warehouse fillings. Do not modify this line *)"
- ) ;;
 
 let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
 
@@ -1633,7 +1632,7 @@ let parse_inside_of_intlist  comma_separated_ints =
  Image.image int_of_spaced_string between_commas ;;
  
 let extract_fiftuple_from_beginning_line line =  
- let temp1 = Cull_string.two_sided_cutting (fst(pre_markers_for_items)," *)") line in 
+ let temp1 = Cull_string.two_sided_cutting (fst(Warehouse_markers.pre_markers_for_items)," *)") line in 
  let temp2 = Cull_string.trim_spaces temp1 in  
  let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
  let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
@@ -1675,14 +1674,14 @@ exception Write_new_item_to_this_file_exn ;;
 
 let write_new_item_to_this_file new_fiftuple new_item = 
   let this_text = Io.read_whole_file File.this_file in  
-  let wafi_full_text = Cull_string.between_markers markers_for_warehouse_filler this_text in  
+  let wafi_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
   let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
   let indexed_lines = Int_range.index_everything lines_in_wafi in  
   let beginnings = List.filter (fun (_,line)->
-    Supstring.begins_with line (fst(pre_markers_for_items))
+    Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
   ) indexed_lines in  
   let endings = List.filter (fun (_,line)->
-    Supstring.begins_with line (snd(pre_markers_for_items))
+    Supstring.begins_with line (snd(Warehouse_markers.pre_markers_for_items))
   ) indexed_lines in  
   if (List.length beginnings)<>(List.length endings) then raise Write_new_item_to_this_file_exn else 
   let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings in  
@@ -1694,7 +1693,7 @@ let write_new_item_to_this_file new_fiftuple new_item =
   let after = String.concat "\n" (Image.image snd lines_after) in  
   let new_wafi_text = String.concat "\n" [before;new_item;after] in  
   Replace_inside.overwrite_between_markers_inside_file 
-    ~overwriter:new_wafi_text markers_for_warehouse_filler File.this_file ;; 
+    ~overwriter:new_wafi_text Warehouse_markers.markers_for_warehouse_filler File.this_file ;; 
 
 let main new_fiftuple = 
     let (new_item,f_name) = text_for_new_item new_fiftuple in 
