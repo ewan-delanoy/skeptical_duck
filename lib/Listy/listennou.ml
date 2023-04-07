@@ -81,6 +81,8 @@ let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)))
 
 let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
 
+let before_and_after r l = let (b,a) = big_rht r l in (List.rev b,a) ;; 
+
 let remove_element_at_idx l k=
    let (kleiz,dehou)=big_rht k l in 
    List.rev_append (List.tl kleiz) dehou;;

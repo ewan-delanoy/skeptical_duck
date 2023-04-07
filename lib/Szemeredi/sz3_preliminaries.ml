@@ -1623,8 +1623,38 @@ module Warehouse_content = struct
   let write wc = String.concat "\n"
     (wc.prelude::(Image.image Warehouse_item.write wc.warehouse_items));;
 
+    exception Insertion_index of int * int list * index_of_missing_data *
+    kind_of_component * half ;;
+    
+  let rec helper_for_insertion_index (counter,new_fiftuple,untreated) =
+       match untreated with 
+       [] -> counter 
+       | fiftuple :: others ->
+        (
+         match Order_for_uples.compare_fiftuples new_fiftuple fiftuple with 
+         Total_ordering_result_t.Equal -> 
+          let (w1,scr1,IMD(imd1),component1,half1) = fiftuple in
+          raise(Insertion_index((w1,scr1,IMD(imd1),component1,half1)))
+         |Total_ordering_result_t.Lower -> counter 
+         |Total_ordering_result_t.Greater -> helper_for_insertion_index (counter+1,new_fiftuple,others) 
+        );;
+    
+  let compute_insertion_index new_fiftuple old_fiftuples =
+      helper_for_insertion_index (0,new_fiftuple,old_fiftuples) ;;    
+
+  let insert new_item old_wc =
+      let old_items = old_wc.warehouse_items in 
+      let old_fiftuples = Image.image snd old_items in 
+      let ii = compute_insertion_index (snd new_item) old_fiftuples in 
+      let (before,after) = Listennou.before_and_after ii old_items in 
+      {
+          old_wc with 
+          warehouse_items = before @ [new_item] @ after
+      } ;;
+
   end ;;
   
+  let insert = Private.insert ;; 
   let read = Private.read ;;
   let write = Private.write ;; 
 
