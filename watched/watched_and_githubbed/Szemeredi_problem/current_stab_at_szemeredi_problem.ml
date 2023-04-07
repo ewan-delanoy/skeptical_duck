@@ -52,4 +52,4 @@ let rfi (B _b) (S n) =
     |None -> Contraction(P(2,[],B(n-5),S(n)),C[n-4;n-2;n] ) ;; 
 
 (* RFI END *)
-let check_rfi = global_check (Superficial_result_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Superficial_result_ARG rfi) ;; 
