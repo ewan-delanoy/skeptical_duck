@@ -160,7 +160,7 @@ module Private = struct
      let n = List.length(older_snippets) + 1 in 
      let sn_descr = "Snippet "^(string_of_int n)^" : " 
      and snm_descr = "Snippet "^(string_of_int (n-1))^" : " 
-     and default_content = "\nm"^"odule Snip^"^(string_of_int (n-1))^"=struct\n\n\n\n\nend ;;\n\n" in 
+     and default_content = "\nm"^"odule Snip"^(string_of_int (n-1))^"=struct\n\n\n\n\nend ;;\n\n" in 
      let older_snippets_but_the_last = List.rev(List.tl(List.rev older_snippets)) 
      and default_prologue = "open Skeptical_duck_lib ;; \nopen Needed_values ;;\n\n" in 
      D(older_snippets_but_the_last @ 
