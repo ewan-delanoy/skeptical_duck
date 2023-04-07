@@ -1539,10 +1539,50 @@ module Warehouse_item = struct
     let first_line=(fst Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)"
     and last_line=(snd Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)" in 
     String.concat "\n\n" [first_line;part1;part2;part3;last_line] ;;
+
+    let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
   
-    end ;;
+   let parse_inside_of_intlist  comma_separated_ints = 
+    let comma_indices = Substring.occurrences_of_in "," comma_separated_ints in 
+    let between_commas = Cull_string.complement_union_of_ranges 
+       (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
+    Image.image int_of_spaced_string between_commas ;;
+  
+   let extract_fiftuple_from_beginning_line line =  
+    let temp1 = Cull_string.two_sided_cutting (fst(Warehouse_markers.pre_markers_for_items)," *)") line in 
+    let temp2 = Cull_string.trim_spaces temp1 in  
+    let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
+    let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
+    let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 in  
+    let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 in  
+    let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) in 
+    let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 in  
+    let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 in  
+    let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 in  
+    let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) in  
+    let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 in  
+    let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) in  
+    let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 in  
+    let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) in  
+    let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
+    (w,scr,IMD(imd),component,half) ;;
+  
+  let extract_function_descr_from_item item_text =
+    let i1 = Substring.leftmost_index_of_in_from "let " item_text 1 in  
+    let i2 = Substring.leftmost_index_of_in_from ";;" item_text (i1+1) in 
+    Cull_string.interval item_text i1 (i2+2);;
+  
+  let read item_text =
+    let beginning_line = List.find(fun line->
+      Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
+    ) (Lines_in_string.lines item_text) 
+    and function_descr = extract_function_descr_from_item item_text in 
+    (function_descr,extract_fiftuple_from_beginning_line beginning_line) ;;
+
+  end ;;
   
   let name_for_reconstructed_function = Private.name_for_reconstructed_function ;;    
+  let read = Private.read ;; 
   let write = Private.write ;;   
   
 end ;;  
@@ -1551,8 +1591,6 @@ end ;;
 module Warehouse_content = struct
 
   module Private = struct
-  
-  
   
    let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
   
@@ -1723,8 +1761,10 @@ exception Write_new_item_to_this_file_exn ;;
 
 let write_new_item_to_this_file new_fiftuple new_item = 
   let this_text = Io.read_whole_file File.this_file in  
-  let wafi_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
-  let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
+  let wc_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
+  (* let old_wc = Warehouse_content.read wc_full_text in 
+  let new_wc = Warehouse_content.insert new_item old_wc in *)
+  let lines_in_wafi = Lines_in_string.lines wc_full_text in         
   let indexed_lines = Int_range.index_everything lines_in_wafi in  
   let beginnings = List.filter (fun (_,line)->
     Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
