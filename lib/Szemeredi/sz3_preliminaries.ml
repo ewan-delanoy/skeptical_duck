@@ -1626,10 +1626,8 @@ module Warehouse_content = struct
   
   exception Read_exn ;; 
   
-  let read () = 
-    let this_text = Io.read_whole_file File.this_file in  
-    let wafi_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
-    let lines_in_wafi = Lines_in_string.lines wafi_full_text in         
+  let read text = 
+    let lines_in_wafi = Lines_in_string.lines text in         
     let indexed_lines = Int_range.index_everything lines_in_wafi in  
     let beginnings = List.filter (fun (_,line)->
       Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
@@ -1640,7 +1638,7 @@ module Warehouse_content = struct
     if (List.length beginnings)<>(List.length endings) then raise Read_exn else 
     if beginnings = []
     then {
-          prelude = wafi_full_text ;
+          prelude = text ;
           warehouse_items = [] ;
          }
     else     
@@ -1648,14 +1646,15 @@ module Warehouse_content = struct
     let lines_before_first_beginning=
        List.filter (fun (j,_line)->j<=first_beginning_linedex) indexed_lines in 
     let before_first_beginning = String.concat "\n" (Image.image snd lines_before_first_beginning) in 
-    let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings in  
     let enclosers = List.combine (Image.image snd beginnings) (Image.image snd endings) in 
-    let functions = Image.image (fun markers ->
-         extract_new_data_from_item(Cull_string.between_markers markers wafi_full_text)
+    let items = Image.image (fun (m_begin,m_end) ->
+         let between = Cull_string.between_markers (m_begin,m_end) text in 
+         let whole = m_begin^between^m_end in 
+         Warehouse_item.read whole 
       ) enclosers in 
     {
           prelude = before_first_beginning ;
-          warehouse_items = List.combine functions fiftuples ;
+          warehouse_items = items ;
     } ;; 
   
   let write wc = String.concat "\n"
@@ -1700,99 +1699,36 @@ module Warehouse_content = struct
 
 module Side_effects_after_successful_global_check = struct 
 
-let text_for_new_item (w,s,i,component,half) = 
-  let text_from_stab = Io.read_whole_file File.stab_file in 
-  let original_rfi_code = Cull_string.between_markers 
-    ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
-  let f_name = Warehouse_item.name_for_reconstructed_function (w,s,i,component,half) in 
-  let function_descr = Replace_inside.replace_inside_string
-        (" rfi "," "^f_name^" ") original_rfi_code in 
-  Warehouse_item.write(function_descr,(w,s,i,component,half)) ;;
+let fetch_new_item (w,s,i,component,half) = 
+    let text_from_stab = Io.read_whole_file File.stab_file in 
+    let original_rfi_code = Cull_string.between_markers 
+      ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
+    let f_name = Warehouse_item.name_for_reconstructed_function (w,s,i,component,half) in 
+    let function_descr = Replace_inside.replace_inside_string
+          (" rfi "," "^f_name^" ") original_rfi_code in 
+    (function_descr,(w,s,i,component,half)) ;;
 
+let fetch_old_content () = 
+  let file_text = Io.read_whole_file File.this_file in  
+  let wc_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler file_text in  
+  Warehouse_content.read wc_text ;; 
 
-let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
-
-let parse_inside_of_intlist  comma_separated_ints = 
- let comma_indices = Substring.occurrences_of_in "," comma_separated_ints in 
- let between_commas = Cull_string.complement_union_of_ranges 
-    (Image.image (fun i->(i,i)) comma_indices) comma_separated_ints in
- Image.image int_of_spaced_string between_commas ;;
- 
-let extract_fiftuple_from_beginning_line line =  
- let temp1 = Cull_string.two_sided_cutting (fst(Warehouse_markers.pre_markers_for_items)," *)") line in 
- let temp2 = Cull_string.trim_spaces temp1 in  
- let i1 = Substring.leftmost_index_of_in_from "," temp2 1 in  
- let w = int_of_spaced_string(Cull_string.interval temp2 2 (i1-1)) in  
- let i2 = Substring.leftmost_index_of_in_from "[" temp2 i1 in  
- let i3 = Substring.leftmost_index_of_in_from "]" temp2 i2 in  
- let scr = parse_inside_of_intlist(Cull_string.interval temp2 (i2+1) (i3-1)) in 
- let i4 = Substring.leftmost_index_of_in_from "IMD" temp2 i3 in  
- let i5 = Substring.leftmost_index_of_in_from "(" temp2 i4 in  
- let i6 = Substring.leftmost_index_of_in_from ")" temp2 i5 in  
- let imd = int_of_spaced_string(Cull_string.interval temp2 (i5+1) (i6-1)) in  
- let i7 = Substring.leftmost_index_of_in_from "," temp2 i6 in  
- let i8 = Substring.leftmost_index_of_in_from "," temp2 (i7+1) in  
- let i9 = Substring.leftmost_index_of_in_from ")" temp2 i8 in  
- let component = Kind_of_component.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i7+1) (i8-1))) in  
- let half = Half.of_string(Cull_string.trim_spaces(Cull_string.interval temp2 (i8+1) (i9-1))) in  
- (w,scr,IMD(imd),component,half) ;;
-
-
-exception Insertion_index of int * int list * index_of_missing_data *
-kind_of_component * half ;;
-
-let rec helper_for_insertion_index (counter,new_fiftuple,untreated) =
-   match untreated with 
-   [] -> counter 
-   | fiftuple :: others ->
-    (
-     match Order_for_uples.compare_fiftuples new_fiftuple fiftuple with 
-     Total_ordering_result_t.Equal -> 
-      let (w1,scr1,IMD(imd1),component1,half1) = fiftuple in
-      raise(Insertion_index((w1,scr1,IMD(imd1),component1,half1)))
-     |Total_ordering_result_t.Lower -> counter 
-     |Total_ordering_result_t.Greater -> helper_for_insertion_index (counter+1,new_fiftuple,others) 
-    );;
-
-let compute_insertion_index new_fiftuple old_fiftuples =
-  helper_for_insertion_index (0,new_fiftuple,old_fiftuples) ;;     
-
-exception Write_new_item_to_this_file_exn ;; 
-
-let write_new_item_to_this_file new_fiftuple new_item = 
-  let this_text = Io.read_whole_file File.this_file in  
-  let wc_full_text = Cull_string.between_markers Warehouse_markers.markers_for_warehouse_filler this_text in  
-  (* let old_wc = Warehouse_content.read wc_full_text in 
-  let new_wc = Warehouse_content.insert new_item old_wc in *)
-  let lines_in_wafi = Lines_in_string.lines wc_full_text in         
-  let indexed_lines = Int_range.index_everything lines_in_wafi in  
-  let beginnings = List.filter (fun (_,line)->
-    Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
-  ) indexed_lines in  
-  let endings = List.filter (fun (_,line)->
-    Supstring.begins_with line (snd(Warehouse_markers.pre_markers_for_items))
-  ) indexed_lines in  
-  if (List.length beginnings)<>(List.length endings) then raise Write_new_item_to_this_file_exn else 
-  let fiftuples = Image.image (fun (_,line)->extract_fiftuple_from_beginning_line  line) beginnings in  
-  let ii = compute_insertion_index new_fiftuple fiftuples in 
-  let max_linedex_before = fst(List.nth endings (ii-1)) in  
-  let (lines_before,lines_after)=
-     List.partition (fun (j,_line)->j<=max_linedex_before) indexed_lines in   
-  let before = String.concat "\n" (Image.image snd lines_before) in  
-  let after = String.concat "\n" (Image.image snd lines_after) in  
-  let new_wafi_text = String.concat "\n" [before;new_item;after] in  
+let replace_warehouse_content_in_this_file new_content = 
+  let new_text = Warehouse_content.write new_content in 
   Replace_inside.overwrite_between_markers_inside_file 
-    ~overwriter:new_wafi_text Warehouse_markers.markers_for_warehouse_filler File.this_file ;; 
+    ~overwriter:new_text Warehouse_markers.markers_for_warehouse_filler File.this_file ;; 
+
 
 let main new_fiftuple = 
-    let f_name = Warehouse_item.name_for_reconstructed_function new_fiftuple in 
-    let new_item = text_for_new_item new_fiftuple in 
     let (_w,_scr,_imd,component,half) = new_fiftuple in
-    let _ =
-      (write_new_item_to_this_file new_fiftuple new_item;
-       Prepared_pages.update_prepared_page (component,half)
-      ) in 
-    Usual_coma_state.recompile (Some (" add new reconstructed function "^f_name)) ;;
+    let f_name = Warehouse_item.name_for_reconstructed_function new_fiftuple in 
+    let new_item = fetch_new_item new_fiftuple 
+    and old_content = fetch_old_content () in 
+    let new_content = Warehouse_content.insert new_item old_content in 
+      (replace_warehouse_content_in_this_file new_content;
+       Prepared_pages.update_prepared_page (component,half);
+       Usual_coma_state.recompile (Some (" add new reconstructed function "^f_name))
+      ) ;;
 
 end ;;  
 
