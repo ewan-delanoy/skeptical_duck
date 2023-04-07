@@ -48,7 +48,7 @@ type index_of_missing_data = IMD of int ;;
 
 type wet_or_dry = Wet | Dry ;; 
 
-type warehouse_filler = {
+type warehouse_content = {
   prelude : string ;
-  items : (string * ((int * int list * index_of_missing_data * kind_of_component * half))) list
+  warehouse_items : (string * ((int * int list * index_of_missing_data * kind_of_component * half))) list
 } ;; 
