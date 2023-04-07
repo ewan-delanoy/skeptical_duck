@@ -628,7 +628,7 @@ let f_1_empty_superficial_result_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Superficial_result_mode.global_check
     (1,[],IMD(0),Lower_half) f_1_empty_superficial_result_lower_half ;; 
 
 *)
@@ -657,7 +657,7 @@ let f_1_empty_superficial_result_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Superficial_result_mode.global_check
     (1,[],IMD(0),Upper_half) f_1_empty_superficial_result_upper_half ;; 
 
 *)
@@ -675,7 +675,7 @@ let f_1_empty_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Solution_list_mode.global_check
     (1,[],IMD(0),Lower_half) f_1_empty_solution_list_lower_half ;; 
 
 *)
@@ -696,7 +696,7 @@ let f_1_empty_solution_list_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Solution_list_mode.global_check
     (1,[],IMD(0),Upper_half) f_1_empty_solution_list_upper_half ;; 
 
 *)
@@ -722,7 +722,7 @@ let f_1_empty_qpl_length_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Qpl_length_mode.global_check
     (1,[],IMD(0),Lower_half) f_1_empty_qpl_length_lower_half ;; 
 
 *)
@@ -742,7 +742,7 @@ let f_1_empty_qpl_length_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Qpl_length_mode.global_check
     (1,[],IMD(0),Upper_half) f_1_empty_qpl_length_upper_half ;; 
 
 *)
@@ -762,7 +762,7 @@ let f_1_empty_i1_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_core_lower_half ;; 
 
 *)
@@ -782,7 +782,7 @@ let f_1_empty_i1_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_core_upper_half ;; 
 
 *)
@@ -801,7 +801,7 @@ let f_1_empty_i1_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_constraints_lower_half ;; 
 
 *)
@@ -819,7 +819,7 @@ let f_1_empty_i1_qpe_constraints_upper_half (B _b) (S _n) = [] ;;
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_constraints_upper_half ;; 
 
 *)
@@ -841,7 +841,7 @@ let f_1_empty_i1_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_extension_lower_half ;; 
 
 *)
@@ -863,7 +863,7 @@ let f_1_empty_i1_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_extension_upper_half ;; 
 
 *)
@@ -883,7 +883,7 @@ let f_1_empty_i2_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_core_lower_half ;; 
 
 *)
@@ -903,7 +903,7 @@ let f_1_empty_i2_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_core_upper_half ;; 
 
 *)
@@ -922,7 +922,7 @@ let f_1_empty_i2_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_constraints_lower_half ;; 
 
 *)
@@ -940,7 +940,7 @@ let f_1_empty_i2_qpe_constraints_upper_half (B _b) (S _n) = [];;
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_constraints_upper_half ;; 
 
 *)
@@ -962,7 +962,7 @@ let f_1_empty_i2_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_extension_lower_half ;; 
 
 *)
@@ -984,7 +984,7 @@ let f_1_empty_i2_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_extension_upper_half ;; 
 
 *)
@@ -1004,7 +1004,7 @@ let f_1_empty_i3_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_core_lower_half ;; 
 
 *)
@@ -1024,7 +1024,7 @@ let f_1_empty_i3_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Qpe_core_mode.global_check
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_core_upper_half ;; 
 
 *)
@@ -1043,7 +1043,7 @@ let f_1_empty_i3_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_constraints_lower_half ;; 
 
 *)
@@ -1062,7 +1062,7 @@ let f_1_empty_i3_qpe_constraints_upper_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Qpe_constraints_mode.global_check
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_constraints_upper_half ;; 
 
 *)
@@ -1084,7 +1084,7 @@ let f_1_empty_i3_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_extension_lower_half ;; 
 
 *)
@@ -1106,7 +1106,7 @@ let f_1_empty_i3_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Qpe_extension_mode.global_check
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_extension_upper_half ;; 
 
 *)
@@ -1931,12 +1931,12 @@ let global_check (w,s,i,half) g =
 
 end ;;  
 
-module Abstract_superficial_result_mode = Mode_grow(Superficial_result_seed);;
-module Abstract_solution_list_mode = Mode_grow(Solution_list_seed);; 
-module Abstract_qpl_length_mode = Mode_grow(Qpl_length_seed);;
-module Abstract_qpe_core_mode = Mode_grow(Qpe_core_seed);;
-module Abstract_qpe_constraints_mode = Mode_grow(Qpe_constraints_seed);;
-module Abstract_qpe_extension_mode = Mode_grow(Qpe_extension_seed);;
+module Superficial_result_mode = Mode_grow(Superficial_result_seed);;
+module Solution_list_mode = Mode_grow(Solution_list_seed);; 
+module Qpl_length_mode = Mode_grow(Qpl_length_seed);;
+module Qpe_core_mode = Mode_grow(Qpe_core_seed);;
+module Qpe_constraints_mode = Mode_grow(Qpe_constraints_seed);;
+module Qpe_extension_mode = Mode_grow(Qpe_extension_seed);;
 
 module Overall = struct 
 
@@ -1974,87 +1974,17 @@ let get_status () = match (!ref_for_status) with
       let _ = (
          ref_for_status := Some answer; 
          Prepared_pages.use_prepared_page (koc,half)
-      ) in 
-      let msg = "\n\n\n To get started, do : \n\n"^
-                "open "^(Kind_of_component.to_capitalized_string(koc))^"_mode ;;\n\n\n" in 
-      let _ = (print_string msg;flush stdout) in                   
+      ) in                   
       answer ;;
 
 
 end ;; 
 
 
-module Superficial_result_mode = struct 
-
-let current_data () =
-    let (_koc,half,imd,pt) = Overall.get_status () in 
-    (Point.width pt,Point.scrappers pt,imd,half) ;;     
-  
-    let visualize d = Abstract_superficial_result_mode.visualize (current_data()) d  ;;
-    let partial_check d f = Abstract_superficial_result_mode.partial_check (current_data()) d f ;;
-    let global_check g = Abstract_superficial_result_mode.global_check (current_data()) g ;;
-end ;;
-  
-  
-module Solution_list_mode = struct 
-  
-  let current_data () =
-      let (_koc,half,imd,pt) = Overall.get_status () in 
-      (Point.width pt,Point.scrappers pt,imd,half) ;;     
-    
-      let visualize d  = Abstract_solution_list_mode.visualize (current_data()) d  ;;
-      let partial_check d f = Abstract_solution_list_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_solution_list_mode.global_check (current_data()) g ;;
-end ;;
-    
-module Qpl_length_mode = struct 
-  
-  let current_data () =
-      let (_koc,half,imd,pt) = Overall.get_status () in 
-      (Point.width pt,Point.scrappers pt,imd,half) ;;     
-    
-      let visualize d = Abstract_qpl_length_mode.visualize (current_data()) d  ;;
-      let partial_check d f = Abstract_qpl_length_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_qpl_length_mode.global_check (current_data()) g ;;
-end ;;
+ 
 
 
-module Qpe_core_mode = struct 
-  
-  let current_data () =
-      let (_koc,half,imd,pt) = Overall.get_status () in 
-      (Point.width pt,Point.scrappers pt,imd,half) ;;     
-    
-      let visualize d = Abstract_qpe_core_mode.visualize (current_data()) d ;;
-      let partial_check d f = Abstract_qpe_core_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_qpe_core_mode.global_check (current_data()) g ;;
-end ;;
-
-
-    
-module Qpe_constraints_mode = struct 
-  
-  let current_data () =
-      let (_koc,half,imd,pt) = Overall.get_status () in 
-      (Point.width pt,Point.scrappers pt,imd,half) ;;     
-    
-      let visualize d = Abstract_qpe_constraints_mode.visualize (current_data()) d ;;
-      let partial_check d f = Abstract_qpe_constraints_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_qpe_constraints_mode.global_check (current_data()) g ;;
-end ;;
-
-  
-module Qpe_extension_mode = struct 
-  
-  let current_data () =
-      let (_koc,half,imd,pt) = Overall.get_status () in 
-      (Point.width pt,Point.scrappers pt,imd,half) ;;     
-    
-      let visualize d = Abstract_qpe_extension_mode.visualize (current_data()) d  ;;
-      let partial_check d f = Abstract_qpe_extension_mode.partial_check (current_data()) d f ;;
-      let global_check g = Abstract_qpe_extension_mode.global_check (current_data()) g ;;
-    
-end ;;
+ 
 
 module Unimode = struct 
 
@@ -2083,40 +2013,40 @@ type check_result =
 let visualize d = 
   let (koc,_half,_imd,_pt) = Overall.get_status () in 
   match koc with 
-    Superficial_result -> Abstract_superficial_result_mode.visualize (current_data()) d  
-  | Solution_list -> Abstract_solution_list_mode.visualize (current_data()) d 
-  | Qpl_length -> Abstract_qpl_length_mode.visualize (current_data()) d 
-  | Qpe_core -> Abstract_qpe_core_mode.visualize (current_data()) d 
-  | Qpe_constraints -> Abstract_qpe_constraints_mode.visualize (current_data()) d
-  | Qpe_extension -> Abstract_qpe_extension_mode.visualize (current_data()) d
+    Superficial_result -> Superficial_result_mode.visualize (current_data()) d  
+  | Solution_list -> Solution_list_mode.visualize (current_data()) d 
+  | Qpl_length -> Qpl_length_mode.visualize (current_data()) d 
+  | Qpe_core -> Qpe_core_mode.visualize (current_data()) d 
+  | Qpe_constraints -> Qpe_constraints_mode.visualize (current_data()) d
+  | Qpe_extension -> Qpe_extension_mode.visualize (current_data()) d
 
   let partial_check d = function 
-    Superficial_result_ARG(f) -> Superficial_result_CR(Abstract_superficial_result_mode.partial_check (current_data()) d f)
-  | Solution_list_ARG(f) -> Solution_list_CR(Abstract_solution_list_mode.partial_check (current_data()) d f)
-  | Qpl_length_ARG(f) -> Qpl_length_CR(Abstract_qpl_length_mode.partial_check (current_data()) d f)
-  | Qpe_core_ARG(f) -> Qpe_core_CR(Abstract_qpe_core_mode.partial_check (current_data()) d f)
-  | Qpe_constraints_ARG(f) -> Qpe_constraints_CR(Abstract_qpe_constraints_mode.partial_check (current_data()) d f)
-  | Qpe_extension_ARG(f) -> Qpe_extension_CR(Abstract_qpe_extension_mode.partial_check (current_data()) d f) ;; 
+    Superficial_result_ARG(f) -> Superficial_result_CR(Superficial_result_mode.partial_check (current_data()) d f)
+  | Solution_list_ARG(f) -> Solution_list_CR(Solution_list_mode.partial_check (current_data()) d f)
+  | Qpl_length_ARG(f) -> Qpl_length_CR(Qpl_length_mode.partial_check (current_data()) d f)
+  | Qpe_core_ARG(f) -> Qpe_core_CR(Qpe_core_mode.partial_check (current_data()) d f)
+  | Qpe_constraints_ARG(f) -> Qpe_constraints_CR(Qpe_constraints_mode.partial_check (current_data()) d f)
+  | Qpe_extension_ARG(f) -> Qpe_extension_CR(Qpe_extension_mode.partial_check (current_data()) d f) ;; 
 
 
   let global_check = function 
     Superficial_result_ARG(f) -> 
-            let (i,l) = Abstract_superficial_result_mode.global_check (current_data()) f in    
+            let (i,l) = Superficial_result_mode.global_check (current_data()) f in    
             (i,Superficial_result_CR(l))
   | Solution_list_ARG(f) -> 
-            let (i,l) = Abstract_solution_list_mode.global_check (current_data()) f in    
+            let (i,l) = Solution_list_mode.global_check (current_data()) f in    
             (i,Solution_list_CR(l))
   | Qpl_length_ARG(f) -> 
-            let (i,l) = Abstract_qpl_length_mode.global_check (current_data()) f in    
+            let (i,l) = Qpl_length_mode.global_check (current_data()) f in    
             (i,Qpl_length_CR(l))
   | Qpe_core_ARG(f) -> 
-            let (i,l) = Abstract_qpe_core_mode.global_check (current_data()) f in    
+            let (i,l) = Qpe_core_mode.global_check (current_data()) f in    
             (i,Qpe_core_CR(l)) 
   | Qpe_constraints_ARG(f) -> 
-            let (i,l) = Abstract_qpe_constraints_mode.global_check (current_data()) f in    
+            let (i,l) = Qpe_constraints_mode.global_check (current_data()) f in    
             (i,Qpe_constraints_CR(l)) 
   | Qpe_extension_ARG(f) -> 
-            let (i,l) = Abstract_qpe_extension_mode.global_check (current_data()) f in    
+            let (i,l) = Qpe_extension_mode.global_check (current_data()) f in    
             (i,Qpe_extension_CR(l))  ;; 
 
 end ;;  
