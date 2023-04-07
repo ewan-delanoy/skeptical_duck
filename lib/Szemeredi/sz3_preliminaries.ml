@@ -1528,7 +1528,7 @@ module Warehouse_item = struct
     let s_fourtuple = string_of_fourtuple (w,s,i,half) 
     and s_fiftuple = string_of_fiftuple (w,s,i,component,half) in 
     let in_part2=[
-    "Abstract_"^s_component^"_mode.global_check";
+    "A"^"bstract_"^s_component^"_mode.global_check";
     " "^s_fourtuple^" "^f_name^" ;;"
     ] in 
     let inside_of_part2 = String.concat "\n" 
@@ -1536,14 +1536,15 @@ module Warehouse_item = struct
     let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" in 
     let wsi_string = compute_wsi_string (w,s,i) in 
     let in_part3=[
-      "Hashtbl.add";
-      " Warehouse.wet_hashtbl_for_"^s_component^"_"^(Half.to_string half);
+      "H"^"ashtbl.add";
+      " W"^"arehouse.wet_hashtbl_for_"^s_component^"_"^(Half.to_string half);
       "   "^wsi_string^" "^f_name^" ;;"
     ] in          
-    let part3 = String.concat "\n" in_part3 in
+    let part3 = String.concat "\n" in_part3 in 
+    let part4 = "W"^"arehouse.record_one_more_insertion "^s_fiftuple^" ;;" in 
     let first_line=(fst Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)"
     and last_line=(snd Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)" in 
-    String.concat "\n\n" [first_line;part1;part2;part3;last_line] ;;
+    String.concat "\n\n" [first_line;part1;part2;part3;part4;last_line] ;;
 
     let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
   
