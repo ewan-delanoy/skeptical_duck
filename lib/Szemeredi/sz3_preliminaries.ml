@@ -1628,74 +1628,15 @@ module Warehouse_content = struct
 
 module Side_effects_after_successful_global_check = struct 
 
-let string_of_imd_inside_name (IMD i) =
-    if i=0 then "" else 
-    "_i"^(string_of_int i) ;;   
-
-let string_of_intlist_inside_name l=
- if l=[] then "empty" else 
- "l_"^(String.concat "_" (Image.image string_of_int l))^"_l";;
-
-let name_for_reconstructed_function (w,s,i,component,half) = 
-    "f_"^(string_of_int w)^"_"^ 
-     (string_of_intlist_inside_name s)^ 
-     (string_of_imd_inside_name i)^
-     "_"^(Kind_of_component.to_uncapitalized_string component)^
-     "_"^(Half.to_string half) ;;
-
-let string_of_intlist l=
-  "["^(String.concat ";" (Image.image string_of_int l))^"]";;
-
-let string_of_fourtuple (w,s,IMD i,half)=
-  "("^(string_of_int w)^","^
-      (string_of_intlist s)^","^
-      "IMD("^(string_of_int i)^"),"^
-      (String.capitalize_ascii(Half.to_string half))^")" ;; 
-
-let string_of_fiftuple (w,s,IMD i,component,half)=
-  "("^(string_of_int w)^","^
-     (string_of_intlist s)^","^
-      "IMD("^(string_of_int i)^"),"^
-      (Kind_of_component.to_capitalized_string component)^","^
-    (String.capitalize_ascii(Half.to_string half))^")" ;; 
-
-let string_of_imd_inside_wsi (IMD i) =
-      if i=0 then "" else ",IMD("^(string_of_int i)^")" ;;  
-
-let compute_wsi_string (w,s,imd) =
-  "("^(string_of_int w)^","^(string_of_intlist s)^(string_of_imd_inside_wsi imd)^")" ;;
-
-
 let text_for_new_item (w,s,i,component,half) = 
   let text_from_stab = Io.read_whole_file File.stab_file in 
   let original_rfi_code = Cull_string.between_markers 
     ("(* RFI BEGIN *)","(* RFI END *)") text_from_stab in 
-  let f_name = name_for_reconstructed_function (w,s,i,component,half) in 
-  let pre_part1 = Replace_inside.replace_inside_string
+  let f_name = Warehouse_item.name_for_reconstructed_function (w,s,i,component,half) in 
+  let function_descr = Replace_inside.replace_inside_string
         (" rfi "," "^f_name^" ") original_rfi_code in 
-  let part1 = Cull_string.trim_spaces pre_part1 in 
-  let s_component = 
-    Kind_of_component.to_uncapitalized_string component in          
-  let s_fourtuple = string_of_fourtuple (w,s,i,half) 
-  and s_fiftuple = string_of_fiftuple (w,s,i,component,half) in 
-  let in_part2=[
-  "Abstract_"^s_component^"_mode.global_check";
-  " "^s_fourtuple^" "^f_name^" ;;"
-  ] in 
-  let inside_of_part2 = String.concat "\n" 
-  (Image.image (fun x->(String.make 3 ' ')^x) in_part2) in 
-  let part2 = "(* \n\n"^inside_of_part2 ^" \n\n*)" in 
-  let wsi_string = compute_wsi_string (w,s,i) in 
-  let in_part3=[
-    "Hashtbl.add";
-    " Warehouse.hashtbl_for_"^s_component^"_"^(Half.to_string half);
-    "   "^wsi_string^" "^f_name^" ;;"
-  ] in          
-  let part3 = String.concat "\n" in_part3 in
-  let first_line=(fst Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)"
-  and last_line=(snd Warehouse_markers.pre_markers_for_items)^" "^s_fiftuple^" *)" in 
-  (String.concat "\n\n" 
-    [first_line;part1;part2;part3;last_line],f_name) ;;
+  let full_text = Warehouse_item.write(function_descr,(w,s,i,component,half)) in  
+  (full_text,f_name) ;;
 
 
 let int_of_spaced_string s = int_of_string(Cull_string.trim_spaces s) ;; 
