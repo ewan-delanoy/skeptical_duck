@@ -1,9 +1,146 @@
 (************************************************************************************************************************
-Snippet 121 : 
+Snippet 122 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
+(************************************************************************************************************************
+Snippet 121 : Preprocessing for writing enum-type-parametrized functions in Sz3_preliminaries 
+************************************************************************************************************************)
+
+module Snip121 = struct 
+
+  open Sz3_preliminaries ;; 
+  open Warehouse ;; 
+  
+  let to_type = function 
+    Superficial_result -> "superficial_result"
+  | Solution_list -> "solution list"
+  | Qpl_length -> "int"
+  | Qpe_core -> "point"
+  | Qpe_constraints -> "constraint_t list"
+  | Qpe_extension -> "extension_data" ;; 
+  
+  
+  
+  let base = Cartesian.product Kind_of_component.all [Lower_half;Upper_half] ;; 
+  
+  let line1 (wet_or_dry,component,half) = 
+    let s_component = Kind_of_component.to_uncapitalized_string component 
+    and s_half = Half.to_string half 
+    and s_type = to_type component in 
+    let optional_imd = 
+       (if not(Kind_of_component.needs_qpl_list_index  component) 
+        then "" 
+        else " * index_of_missing_data") in
+     ["let "^wet_or_dry^"_hashtbl_for_"^s_component^"_"^s_half^" = ";
+     "    ((Hashtbl.create 50) : (int * int list"^optional_imd^", ";
+     "          breadth -> size -> "^s_type^") Hashtbl.t) ;;"] ;;
+  
+  let line2 (component,half) = 
+    let s_component = Kind_of_component.to_uncapitalized_string component 
+    and s_half = Half.to_string half in 
+     ["let hashtbl_for_"^s_component^"_"^s_half^" = function ";
+     "    Wet -> wet_hashtbl_for_"^s_component^"_"^s_half;
+     "   |Dry -> dry_hashtbl_for_"^s_component^"_"^s_half^" ;;"] ;;
+  
+  let line3 (component,half) = 
+    let s_component = Kind_of_component.to_uncapitalized_string component 
+    and s_half = Half.to_string half in 
+    let cs_component = String.capitalize_ascii s_component 
+    and cs_half = String.capitalize_ascii s_half in 
+    let optional_param = 
+      (if not(Kind_of_component.needs_qpl_list_index  component) 
+       then "" 
+       else "_parametrized") in
+    ["let try_get_"^s_component^"_"^s_half^" w_or_d = ";
+     "    access"^optional_param^"_named_hashtbl (("^cs_component^","^cs_half^"),";
+     "      (hashtbl_for_"^s_component^"_"^s_half^" w_or_d)) ;;"] ;;   
+  
+  
+  let full_item1 (component,half) =
+    let not_indented =
+      (line1 ("wet",component,half))
+     @(line1 ("dry",component,half))
+     @(line2 (component,half))
+     @(line3 (component,half)) in 
+     ""::""::(Image.image (fun line->(String.make 4 ' ')^line) not_indented) ;; 
+  
+  let all_lines_in_text1 = List.flatten(Image.image full_item1 base);;   
+  
+  let line4 (component,half) = 
+    let s_component = Kind_of_component.to_uncapitalized_string component 
+    and s_half = Half.to_string half in 
+    let cs_component = String.capitalize_ascii s_component 
+    and cs_half = String.capitalize_ascii s_half in 
+    let optional_param = 
+      (if not(Kind_of_component.needs_qpl_list_index  component) 
+       then "" 
+       else "_parametrized") in
+    ["let try_get_"^s_component^"_"^s_half^" w_or_d = ";
+     "    access"^optional_param^"_named_hashtbl (("^cs_component^","^cs_half^"),";
+     "      (hashtbl_for_"^s_component^"_"^s_half^" w_or_d)) ;;"] ;;   
+  
+  let text1 = (String.concat "\n" all_lines_in_text1) ^ "\n\n\n" ;; 
+  
+  
+  let tab =String.make 3 ' ' ;;
+  
+  let line5 half component = 
+    let s_component = Kind_of_component.to_uncapitalized_string component 
+    and s_half = Half.to_string half in 
+    let suffix = "hashtbl_for_"^s_component^"_"^s_half in 
+    let cs_component = String.capitalize_ascii s_component  in 
+    let arg = 
+      (if not(Kind_of_component.needs_qpl_list_index  component) 
+       then "(w,scr)" 
+       else "(w,scr,imd)") in
+    [
+      "| "^cs_component^" -> ";
+      "  Hashtbl.add dry_"^suffix^" "^arg^" ";
+      "  (Hashtbl.find wet_"^suffix^" "^arg^")"
+    ] ;;   
+  
+  let full_item2 half =
+    let s_half = Half.to_string half in 
+    let not_indented = List.flatten (Image.image (line5 half) Kind_of_component.all) in 
+    let lines=
+      [
+        "let copy_"^s_half^"_triple_from_wet_to_dry (w,scr,imd)= function "
+      ]@(Image.image (fun line->(String.make 4 ' ')^line) not_indented) in 
+    let n = List.length lines and indexed_lines = Int_range.index_everything lines in 
+    Image.image (
+      fun (j,line) -> if j=n then line^" ;;" else line
+    ) indexed_lines
+     ;; 
+  
+  let all_lines_in_text2=
+     (full_item2 Lower_half) @ ["";""] @ (full_item2 Upper_half) ;;
+  
+  let text2 = "\n\n\n" ^ (String.concat "\n" all_lines_in_text2) ^ "\n\n\n" ;; 
+  
+  
+  let see text = print_string text ;; 
+  let this_ap = Absolute_path.of_string "watched/watched_not_githubbed/sirloin.ml";;
+  let act1 text = Io.append_string_to_file text this_ap ;;
+  let other_ap = Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml";;
+  let act2 text = Replace_inside.overwrite_between_markers_inside_file
+     ~overwriter:text ("(* mys *)","(* sym *)") other_ap ;;
+      
+  
+  let g1 = Io.read_whole_file other_ap ;; 
+  let g2 = Lines_in_string.indexed_lines g1 ;; 
+  let g3 = List.assoc 669 g2 ;; 
+  let g4 = List.assoc 670 g2 ;; 
+  
+  let g5 = g3^"\n"^(Cull_string.beginning 20 g4) ;; 
+  
+  let act () = Replace_inside.replace_inside_file
+   ("Hashtbl.add \n  Warehouse.hashtbl_","Hashtbl.add\n Warehouse.wet_hashtbl_")
+     other_ap ;;   
+
+
+end ;;   
 
 (************************************************************************************************************************
 Snippet 120 : Multi-lingual OCR on cropped pngs 
