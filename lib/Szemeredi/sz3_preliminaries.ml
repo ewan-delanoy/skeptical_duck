@@ -34,9 +34,11 @@ type kind_of_component = Sz3_types.kind_of_component =
     |Qpe_extension ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
 type wet_or_dry = Sz3_types.wet_or_dry = Wet | Dry ;; 
+type warehouse_item = Sz3_types.warehouse_item = 
+   WI of string * ((int * int list * index_of_missing_data * kind_of_component * half)) ;; 
 type warehouse_content = Sz3_types.warehouse_content = {
   prelude : string ;
-  warehouse_items : (string * ((int * int list * index_of_missing_data * kind_of_component * half))) list
+  warehouse_items : warehouse_item list
 } ;; 
 
 let i_order = Total_ordering.for_integers ;;
@@ -1515,7 +1517,7 @@ module Warehouse_item = struct
   "("^(string_of_int w)^","^(string_of_intlist s)^(string_of_imd_inside_wsi imd)^")" ;;
   
   
-  let write (function_descr,(w,s,i,component,half)) = 
+  let write (WI(function_descr,(w,s,i,component,half))) = 
     let f_name = name_for_reconstructed_function (w,s,i,component,half) in 
     let part1 = Cull_string.trim_spaces function_descr in 
     let s_component = 
@@ -1577,7 +1579,7 @@ module Warehouse_item = struct
       Supstring.begins_with line (fst(Warehouse_markers.pre_markers_for_items))
     ) (Lines_in_string.lines item_text) 
     and function_descr = extract_function_descr_from_item item_text in 
-    (function_descr,extract_fiftuple_from_beginning_line beginning_line) ;;
+    WI(function_descr,extract_fiftuple_from_beginning_line beginning_line) ;;
 
   end ;;
   
@@ -1681,8 +1683,9 @@ module Warehouse_content = struct
 
   let insert new_item old_wc =
       let old_items = old_wc.warehouse_items in 
-      let old_fiftuples = Image.image snd old_items in 
-      let ii = compute_insertion_index (snd new_item) old_fiftuples in 
+      let old_fiftuples = Image.image (fun (WI(_descr,uple))->uple) old_items 
+      and (WI(_,new_uple))=new_item in 
+      let ii = compute_insertion_index new_uple old_fiftuples in 
       let (before,after) = Listennou.before_and_after ii old_items in 
       {
           old_wc with 
@@ -1706,7 +1709,7 @@ let fetch_new_item (w,s,i,component,half) =
     let f_name = Warehouse_item.name_for_reconstructed_function (w,s,i,component,half) in 
     let function_descr = Replace_inside.replace_inside_string
           (" rfi "," "^f_name^" ") original_rfi_code in 
-    (function_descr,(w,s,i,component,half)) ;;
+    WI(function_descr,(w,s,i,component,half)) ;;
 
 let fetch_old_content () = 
   let file_text = Io.read_whole_file File.this_file in  
