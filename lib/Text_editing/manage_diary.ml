@@ -156,10 +156,16 @@ module Private = struct
     ) temp1 in 
     fix_indexation (D pairs2) true ;;
   
-  let absorb_new_snippet (prologue,D older_snippets) = 
+  let append_fresh_snippet (_prologue,D older_snippets) = 
      let n = List.length(older_snippets) + 1 in 
-     let sn_descr = "Snippet "^(string_of_int n)^" : " in 
-     D(older_snippets @ [sn_descr,prologue]);; 
+     let sn_descr = "Snippet "^(string_of_int n)^" : " 
+     and snm_descr = "Snippet "^(string_of_int (n-1))^" : " 
+     and default_content = "\nm"^"odule Snip^"^(string_of_int (n-1))^"=struct\n\n\n\n\nend ;;\n\n" in 
+     let older_snippets_but_the_last = List.rev(List.tl(List.rev older_snippets)) 
+     and default_prologue = "open Skeptical_duck_lib ;; \nopen Needed_values ;;\n\n" in 
+     D(older_snippets_but_the_last @ 
+       [snm_descr,default_content;
+        sn_descr,default_prologue]);; 
 
    let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
 
@@ -179,9 +185,9 @@ module Private = struct
   
     (* File versions of the functions *)
 
-    let absorb_new_snippet_in_file fn =
+    let append_fresh_snippet_in_file fn =
       let (prologue,old_pairs) = read_and_parse fn in 
-      let new_pairs = absorb_new_snippet (prologue,old_pairs) in 
+      let new_pairs = append_fresh_snippet (prologue,old_pairs) in 
       unparse_and_write_to new_pairs fn ;;   
 
     let extract_and_append_to_file dy k fn =
@@ -214,7 +220,7 @@ module Private = struct
 
   end ;; 
   
-  
+  let append_fresh_snippet () = Private.append_fresh_snippet_in_file Private.usual_path;;
   let extract_at_index_and_append_to_file idx fn =
      let the_diary = snd(Private.read_and_parse Private.usual_path) in 
      Private.extract_and_append_to_file the_diary idx fn;;

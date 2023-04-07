@@ -1,8 +1,23 @@
 (************************************************************************************************************************
-Snippet 122 : 
+Snippet 123 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 122 : Upgrade actions in Sz3_preliminaries.Side_effects_after_successful_global_check
+************************************************************************************************************************)
+
+module Snip122= struct
+
+open Sz3_preliminaries ;; 
+
+let g1 = Side_effects_after_successful_global_check.fetch_old_content () ;; 
+let g2 = Warehouse_content.write g1 ;; 
+let act1 () = Side_effects_after_successful_global_check.replace_warehouse_content_in_this_file g1 ;;
+
+end ;;
 
 (************************************************************************************************************************
 Snippet 121 : Preprocessing for writing enum-type-parametrized functions in Sz3_preliminaries 
