@@ -271,6 +271,9 @@ module Warehouse = struct
   
   let insertions_in_wet_hash_tables = ref ([]: (int * int list * index_of_missing_data * kind_of_component * half) list ) ;; 
 
+  let record_one_more_insertion uple =
+      (insertions_in_wet_hash_tables:=uple::(!insertions_in_wet_hash_tables)) ;;
+
   let access_named_hashtbl (error_handling,hashtbl) pt = 
     let (width,scrappers,breadth,size) = Point.unveil pt in 
     match Hashtbl.find_opt hashtbl (width,scrappers) with 
