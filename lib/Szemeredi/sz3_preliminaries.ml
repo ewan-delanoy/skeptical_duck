@@ -34,6 +34,10 @@ type kind_of_component = Sz3_types.kind_of_component =
     |Qpe_extension ;; 
 type index_of_missing_data = Sz3_types.index_of_missing_data = IMD of int ;;
 type wet_or_dry = Sz3_types.wet_or_dry = Wet | Dry ;; 
+type warehouse_filler = Sz3_types.warehouse_filler = {
+  prelude : string ;
+  items : (string * ((int * int list * index_of_missing_data * kind_of_component * half))) list
+} ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
