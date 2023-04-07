@@ -1977,8 +1977,7 @@ let get_status () = match (!ref_for_status) with
          Prepared_pages.use_prepared_page (koc,half)
       ) in 
       let msg = "\n\n\n To get started, do : \n\n"^
-                "open "^(Kind_of_component.to_capitalized_string(koc))^"_"^
-                        (Half.to_string half)^"_mode ;;\n\n\n" in 
+                "open "^(Kind_of_component.to_capitalized_string(koc))^"_mode ;;\n\n\n" in 
       let _ = (print_string msg;flush stdout) in                   
       answer ;;
 
@@ -2057,6 +2056,40 @@ module Qpe_extension_mode = struct
       let global_check g = Abstract_qpe_extension_mode.global_check (current_data()) g ;;
     
 end ;;
+
+module Unimode = struct 
+
+type visualization_result = 
+  Superficial_result_VR of (((breadth * size) * superficial_result) list)
+| Solution_list_VR of (((breadth * size) * solution list) list)
+| Qpl_length_VR of (((breadth * size) * int) list)
+| Qpe_core_VR of (((breadth * size) * point) list)
+| Qpe_constraints_VR of (((breadth * size) * (constraint_t list)) list)
+| Qpe_extension_VR of (((breadth * size) * extension_data) list) ;; 
+
+type argument = 
+  Superficial_result_ARG of (breadth -> size -> superficial_result)
+| Solution_list_ARG of (breadth -> size -> solution list)
+| Qpl_length_ARG of (breadth -> size -> solution list)
+| Qpe_core_ARG of (breadth -> size -> point)
+| Qpe_constraints_ARG of (breadth -> size -> (constraint_t list))
+| Qpe_extension_ARG of (breadth -> size -> extension_data) ;; 
+
+type check_result = 
+  Superficial_result_CR of (((breadth * size) * superficial_result * superficial_result) list)
+| Solution_list_CR of (((breadth * size) * solution list * solution list) list)
+| Qpl_length_CR of (((breadth * size) * int * int) list)
+| Qpe_core_CR of (((breadth * size) * point * point) list)
+| Qpe_constraints_CR of (((breadth * size) * (constraint_t list) * (constraint_t list)) list)
+| Qpe_extension_CR of (((breadth * size) * extension_data * extension_data) list) ;; 
+
+
+  let current_data () =
+    let (_koc,half,imd,pt) = Overall.get_status () in 
+    (Point.width pt,Point.scrappers pt,imd,half) ;;  
+
+
+end ;;  
 
 (* Beginning of prepared page for (Superficial_result,Lower_half) *)(*
 *)(* End of prepared page for (Superficial_result,Lower_half) *)
