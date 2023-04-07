@@ -609,7 +609,9 @@ module Fill_Warehouse = struct
 open Tools_for_warehouse ;; 
 
 (* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
-let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
+(* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
+
+let f_1_empty_superficial_result_lower_half (B _b) (S n) =
     match List.assoc_opt n 
        [1,Atomic;
         2,Atomic;
@@ -622,22 +624,25 @@ let f_1_empty_set_superficial_result_lower_half (B _b) (S n) =
                ( P(1,[],B(n-3),S(n-1)),[] )])
    |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
    |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
-   |_-> failwith("bad remainder by 3")) ;;       
-  
-(*
-  
-  Abstract_superficial_result_mode.global_check 
-   (1,[],IMD 0,Lower_half) f_1_empty_set_superficial_result_lower_half ;; 
-  
+   |_-> failwith("bad remainder by 3")) ;;
+
+(* 
+
+   Abstract_superficial_result_mode.global_check
+    (1,[],IMD(0),Lower_half) f_1_empty_superficial_result_lower_half ;; 
+
 *)
 
-Hashtbl.add 
-  Warehouse.wet_hashtbl_for_superficial_result_lower_half (1,[]) 
-    f_1_empty_set_superficial_result_lower_half;;
-(* End of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_superficial_result_lower_half
+   (1,[]) f_1_empty_superficial_result_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(0),Superficial_result,Lower_half) ;;
+
+(* End of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)
-let f_1_empty_set_superficial_result_upper_half (B b) (S n) = 
+
+let f_1_empty_superficial_result_upper_half (B b) (S n) = 
   if b=0 then Atomic else
   if n=3 then Fork [(Empty_point, [2; 3]); (Empty_point, [1; 3]); (Empty_point, [1; 2])] else 
   if n=b+2 
@@ -648,36 +653,38 @@ let f_1_empty_set_superficial_result_upper_half (B b) (S n) =
            |1-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] )  
            |2-> Contraction( P(1,[],B(n-3),S(n)),C[n-2;n-1;n] ) 
            |_-> failwith("bad remainder by 3")) 
-  else Decomposable (P (1, [], B (b), S (b+2)), Int_range.range (b+3) n) ;;   
-    
-   
-(*
-   
-   Abstract_superficial_result_mode.global_check 
-   (1,[],IMD 0,Upper_half) f_1_empty_set_superficial_result_upper_half ;; 
-   
-*)
-   
-Hashtbl.add 
-  Warehouse.wet_hashtbl_for_superficial_result_upper_half (1,[]) 
-     f_1_empty_set_superficial_result_upper_half;;
+  else Decomposable (P (1, [], B (b), S (b+2)), Int_range.range (b+3) n) ;;
 
-(* End of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)     
+(* 
 
-(* Beginning of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
-let f_1_empty_set_solution_list_lower_half (B _b) (S n) = simplest_list n ;;       
-    
-(*
-    
-  Abstract_solution_list_mode.global_check 
-   (1,[],IMD 0,Lower_half) f_1_empty_set_solution_list_lower_half ;; 
-  
-    
+   Abstract_superficial_result_mode.global_check
+    (1,[],IMD(0),Upper_half) f_1_empty_superficial_result_upper_half ;; 
+
 *)
-    
+
 Hashtbl.add
- Warehouse.wet_hashtbl_for_solution_list_lower_half (1,[]) 
-    f_1_empty_set_solution_list_lower_half;;
+ Warehouse.wet_hashtbl_for_superficial_result_upper_half
+   (1,[]) f_1_empty_superficial_result_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(0),Superficial_result,Upper_half) ;;
+
+(* End of item at  (1,[],IMD(0),Superficial_result,Upper_half) *)
+(* Beginning of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
+
+let f_1_empty_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
+
+(* 
+
+   Abstract_solution_list_mode.global_check
+    (1,[],IMD(0),Lower_half) f_1_empty_solution_list_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_solution_list_lower_half
+   (1,[]) f_1_empty_solution_list_lower_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(0),Solution_list,Lower_half) ;;
 
 (* End of item at  (1,[],IMD(0),Solution_list,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(0),Solution_list,Upper_half) *)
@@ -698,11 +705,12 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_solution_list_upper_half
    (1,[]) f_1_empty_solution_list_upper_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(0),Solution_list,Upper_half) ;;
+
 (* End of item at  (1,[],IMD(0),Solution_list,Upper_half) *)
-
-
 (* Beginning of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
-let f_1_empty_set_qpl_length_lower_half (B _b) (S n) = 
+
+let f_1_empty_qpl_length_lower_half (B _b) (S n) = 
   match List.assoc_opt n [1,0;2,0]  with    
     Some answer -> answer 
   | None ->
@@ -710,20 +718,21 @@ let f_1_empty_set_qpl_length_lower_half (B _b) (S n) =
        0 -> 3
       |1-> 2   
       |2-> 1  
-      |_-> failwith("bad remainder by 3"));; 
+      |_-> failwith("bad remainder by 3"));;
 
+(* 
 
-(*
-
-Abstract_qpl_length_mode.global_check 
-   (1,[],IMD 0,Lower_half) f_1_empty_set_qpl_length_lower_half ;; 
-  
+   Abstract_qpl_length_mode.global_check
+    (1,[],IMD(0),Lower_half) f_1_empty_qpl_length_lower_half ;; 
 
 *)
 
-Hashtbl.add 
- Warehouse.wet_hashtbl_for_qpl_length_lower_half (1,[]) 
-f_1_empty_set_qpl_length_lower_half;;
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpl_length_lower_half
+   (1,[]) f_1_empty_qpl_length_lower_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(0),Qpl_length,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(0),Qpl_length,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
 
@@ -741,6 +750,8 @@ let f_1_empty_qpl_length_upper_half (B b) (S _n) =
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpl_length_upper_half
    (1,[]) f_1_empty_qpl_length_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(0),Qpl_length,Upper_half) ;;
 
 (* End of item at  (1,[],IMD(0),Qpl_length,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_core,Lower_half) *)
@@ -760,6 +771,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_core_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_core,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(1),Qpe_core,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 
@@ -770,13 +783,15 @@ let f_1_empty_i1_qpe_core_upper_half (B b) (S _n) =
 (* 
 
    Abstract_qpe_core_mode.global_check
-    (1,[],IMD(1),Upper_half) f_1_empty_i1__qpe_core_upper_half ;; 
+    (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_core_upper_half ;; 
 
 *)
 
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_core_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_core,Upper_half) ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
@@ -795,6 +810,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_constraints,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(1),Qpe_constraints,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_constraints,Upper_half) *)
 
@@ -810,6 +827,8 @@ let f_1_empty_i1_qpe_constraints_upper_half (B _b) (S _n) = [] ;;
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_constraints_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_constraints,Upper_half) ;;
 
 (* End of item at  (1,[],IMD(1),Qpe_constraints,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_extension,Lower_half) *)
@@ -831,6 +850,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_extension_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_extension,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(1),Qpe_extension,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
 
@@ -851,6 +872,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(1)) f_1_empty_i1_qpe_extension_upper_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(1),Qpe_extension,Upper_half) ;;
+
 (* End of item at  (1,[],IMD(1),Qpe_extension,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_core,Lower_half) *)
 
@@ -868,6 +891,8 @@ let f_1_empty_i2_qpe_core_lower_half (B _b) (S n) =
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_core_lower_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_core,Lower_half) ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_core,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
@@ -887,6 +912,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_core_upper_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_core,Upper_half) ;;
+
 (* End of item at  (1,[],IMD(2),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_constraints,Lower_half) *)
 
@@ -904,6 +931,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_constraints_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_constraints,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(2),Qpe_constraints,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
 
@@ -919,6 +948,8 @@ let f_1_empty_i2_qpe_constraints_upper_half (B _b) (S _n) = [];;
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_constraints_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_constraints,Upper_half) ;;
 
 (* End of item at  (1,[],IMD(2),Qpe_constraints,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_extension,Lower_half) *)
@@ -940,6 +971,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_extension_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_extension,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(2),Qpe_extension,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(2),Qpe_extension,Upper_half) *)
 
@@ -960,6 +993,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(2)) f_1_empty_i2_qpe_extension_upper_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(2),Qpe_extension,Upper_half) ;;
+
 (* End of item at  (1,[],IMD(2),Qpe_extension,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_core,Lower_half) *)
 
@@ -977,6 +1012,8 @@ let f_1_empty_i3_qpe_core_lower_half (B _b) (S n) =
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_core_lower_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_core,Lower_half) ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_core,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_core,Upper_half) *)
@@ -996,6 +1033,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_core_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_core_upper_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_core,Upper_half) ;;
+
 (* End of item at  (1,[],IMD(3),Qpe_core,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_constraints,Lower_half) *)
 
@@ -1013,6 +1052,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_constraints_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_constraints,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(3),Qpe_constraints,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_constraints,Upper_half) *)
 
@@ -1029,6 +1070,8 @@ let f_1_empty_i3_qpe_constraints_upper_half (B _b) (S _n) =
 Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_constraints_upper_half ;;
+
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_constraints,Upper_half) ;;
 
 (* End of item at  (1,[],IMD(3),Qpe_constraints,Upper_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_extension,Lower_half) *)
@@ -1050,6 +1093,8 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_lower_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_extension_lower_half ;;
 
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_extension,Lower_half) ;;
+
 (* End of item at  (1,[],IMD(3),Qpe_extension,Lower_half) *)
 (* Beginning of item at  (1,[],IMD(3),Qpe_extension,Upper_half) *)
 
@@ -1070,9 +1115,9 @@ Hashtbl.add
  Warehouse.wet_hashtbl_for_qpe_extension_upper_half
    (1,[],IMD(3)) f_1_empty_i3_qpe_extension_upper_half ;;
 
-(* End of item at  (1,[],IMD(3),Qpe_extension,Upper_half) *)
+Warehouse.record_one_more_insertion (1,[],IMD(3),Qpe_extension,Upper_half) ;;
 
-(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (1,[],IMD(3),Qpe_extension,Upper_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
