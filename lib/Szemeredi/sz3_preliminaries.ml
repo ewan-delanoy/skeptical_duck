@@ -1904,8 +1904,7 @@ end ;;
 let visualize (w,s,i,half) d = 
   let answer = Private.data_for_visualization (w,s,i,half) d in 
   let msg = "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" in 
-  let _ = (print_string msg;flush stdout) in 
-  (fun ()->answer) ;; 
+  (print_string msg;flush stdout)  ;; 
 
 let partial_check (w,s,i,half) d f = 
   let temp1 = Image.image (
