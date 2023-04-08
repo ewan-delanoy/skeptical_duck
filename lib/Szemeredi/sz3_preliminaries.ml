@@ -628,7 +628,7 @@ let f_1_empty_superficial_result_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Abstract_superficial_result_mode.global_check_by_d
     (1,[],IMD(0),Lower_half) f_1_empty_superficial_result_lower_half ;; 
 
 *)
@@ -657,7 +657,7 @@ let f_1_empty_superficial_result_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Abstract_superficial_result_mode.global_check_by_d
     (1,[],IMD(0),Upper_half) f_1_empty_superficial_result_upper_half ;; 
 
 *)
@@ -675,7 +675,7 @@ let f_1_empty_solution_list_lower_half (B _b) (S n) = simplest_list n ;;
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Abstract_solution_list_mode.global_check_by_d
     (1,[],IMD(0),Lower_half) f_1_empty_solution_list_lower_half ;; 
 
 *)
@@ -696,7 +696,7 @@ let f_1_empty_solution_list_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Abstract_solution_list_mode.global_check_by_d
     (1,[],IMD(0),Upper_half) f_1_empty_solution_list_upper_half ;; 
 
 *)
@@ -722,7 +722,7 @@ let f_1_empty_qpl_length_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Abstract_qpl_length_mode.global_check_by_d
     (1,[],IMD(0),Lower_half) f_1_empty_qpl_length_lower_half ;; 
 
 *)
@@ -742,7 +742,7 @@ let f_1_empty_qpl_length_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Abstract_qpl_length_mode.global_check_by_d
     (1,[],IMD(0),Upper_half) f_1_empty_qpl_length_upper_half ;; 
 
 *)
@@ -762,7 +762,7 @@ let f_1_empty_i1_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_core_lower_half ;; 
 
 *)
@@ -782,7 +782,7 @@ let f_1_empty_i1_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_core_upper_half ;; 
 
 *)
@@ -801,7 +801,7 @@ let f_1_empty_i1_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_constraints_lower_half ;; 
 
 *)
@@ -819,7 +819,7 @@ let f_1_empty_i1_qpe_constraints_upper_half (B _b) (S _n) = [] ;;
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_constraints_upper_half ;; 
 
 *)
@@ -841,7 +841,7 @@ let f_1_empty_i1_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(1),Lower_half) f_1_empty_i1_qpe_extension_lower_half ;; 
 
 *)
@@ -863,7 +863,7 @@ let f_1_empty_i1_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(1),Upper_half) f_1_empty_i1_qpe_extension_upper_half ;; 
 
 *)
@@ -883,7 +883,7 @@ let f_1_empty_i2_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_core_lower_half ;; 
 
 *)
@@ -903,7 +903,7 @@ let f_1_empty_i2_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_core_upper_half ;; 
 
 *)
@@ -922,7 +922,7 @@ let f_1_empty_i2_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_constraints_lower_half ;; 
 
 *)
@@ -940,7 +940,7 @@ let f_1_empty_i2_qpe_constraints_upper_half (B _b) (S _n) = [];;
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_constraints_upper_half ;; 
 
 *)
@@ -962,7 +962,7 @@ let f_1_empty_i2_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(2),Lower_half) f_1_empty_i2_qpe_extension_lower_half ;; 
 
 *)
@@ -984,7 +984,7 @@ let f_1_empty_i2_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(2),Upper_half) f_1_empty_i2_qpe_extension_upper_half ;; 
 
 *)
@@ -1004,7 +1004,7 @@ let f_1_empty_i3_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_core_lower_half ;; 
 
 *)
@@ -1024,7 +1024,7 @@ let f_1_empty_i3_qpe_core_upper_half (B b) (S _n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_core_upper_half ;; 
 
 *)
@@ -1043,7 +1043,7 @@ let f_1_empty_i3_qpe_constraints_lower_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_constraints_lower_half ;; 
 
 *)
@@ -1062,7 +1062,7 @@ let f_1_empty_i3_qpe_constraints_upper_half (B _b) (S _n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_constraints_upper_half ;; 
 
 *)
@@ -1084,7 +1084,7 @@ let f_1_empty_i3_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(3),Lower_half) f_1_empty_i3_qpe_extension_lower_half ;; 
 
 *)
@@ -1106,7 +1106,7 @@ let f_1_empty_i3_qpe_extension_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (1,[],IMD(3),Upper_half) f_1_empty_i3_qpe_extension_upper_half ;; 
 
 *)
@@ -1130,7 +1130,7 @@ let f_2_empty_superficial_result_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Abstract_superficial_result_mode.global_check_by_d
     (2,[],IMD(0),Lower_half) f_2_empty_superficial_result_lower_half ;; 
 
 *)
@@ -1158,7 +1158,7 @@ let f_2_empty_superficial_result_upper_half (B b) (S n) =
 
 (* 
 
-   Abstract_superficial_result_mode.global_check
+   Abstract_superficial_result_mode.global_check_by_d
     (2,[],IMD(0),Upper_half) f_2_empty_superficial_result_upper_half ;; 
 
 *)
@@ -1177,7 +1177,7 @@ let f_2_empty_solution_list_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Abstract_solution_list_mode.global_check_by_d
     (2,[],IMD(0),Lower_half) f_2_empty_solution_list_lower_half ;; 
 
 *)
@@ -1197,7 +1197,7 @@ let f_2_empty_solution_list_upper_half (B _b) (S n) =
 
 (* 
 
-   Abstract_solution_list_mode.global_check
+   Abstract_solution_list_mode.global_check_by_d
     (2,[],IMD(0),Upper_half) f_2_empty_solution_list_upper_half ;; 
 
 *)
@@ -1216,7 +1216,7 @@ let f_2_empty_qpl_length_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Abstract_qpl_length_mode.global_check_by_d
     (2,[],IMD(0),Lower_half) f_2_empty_qpl_length_lower_half ;; 
 
 *)
@@ -1235,7 +1235,7 @@ let f_2_empty_qpl_length_upper_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpl_length_mode.global_check
+   Abstract_qpl_length_mode.global_check_by_d
     (2,[],IMD(0),Upper_half) f_2_empty_qpl_length_upper_half ;; 
 
 *)
@@ -1255,7 +1255,7 @@ let f_2_empty_i1_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (2,[],IMD(1),Lower_half) f_2_empty_i1_qpe_core_lower_half ;; 
 
 *)
@@ -1276,7 +1276,7 @@ let f_2_empty_i1_qpe_core_upper_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (2,[],IMD(1),Upper_half) f_2_empty_i1_qpe_core_upper_half ;; 
 
 *)
@@ -1297,7 +1297,7 @@ let f_2_empty_i1_qpe_constraints_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (2,[],IMD(1),Lower_half) f_2_empty_i1_qpe_constraints_lower_half ;; 
 
 *)
@@ -1309,6 +1309,28 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(1),Qpe_constraints,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(1),Qpe_constraints,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(1),Qpe_constraints,Upper_half) *)
+
+let f_2_empty_i1_qpe_constraints_upper_half (B b) (S n) =  
+    if n=b+4 then (if b<=1 then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))) else 
+    if n=b+5 then (if b=0  then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))) else   
+    if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
+      Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;
+
+(* 
+
+   Abstract_qpe_constraints_mode.global_check_by_d
+    (2,[],IMD(1),Upper_half) f_2_empty_i1_qpe_constraints_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
+   (2,[],IMD(1)) f_2_empty_i1_qpe_constraints_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(1),Qpe_constraints,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(1),Qpe_constraints,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(1),Qpe_extension,Lower_half) *)
 
 let f_2_empty_i1_qpe_extension_lower_half (B _b) (S n) = 
@@ -1318,7 +1340,7 @@ let f_2_empty_i1_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (2,[],IMD(1),Lower_half) f_2_empty_i1_qpe_extension_lower_half ;; 
 
 *)
@@ -1338,7 +1360,7 @@ let f_2_empty_i2_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (2,[],IMD(2),Lower_half) f_2_empty_i2_qpe_core_lower_half ;; 
 
 *)
@@ -1359,7 +1381,7 @@ let f_2_empty_i2_qpe_constraints_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (2,[],IMD(2),Lower_half) f_2_empty_i2_qpe_constraints_lower_half ;; 
 
 *)
@@ -1380,7 +1402,7 @@ let f_2_empty_i2_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (2,[],IMD(2),Lower_half) f_2_empty_i2_qpe_extension_lower_half ;; 
 
 *)
@@ -1400,7 +1422,7 @@ let f_2_empty_i3_qpe_core_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_core_mode.global_check
+   Abstract_qpe_core_mode.global_check_by_d
     (2,[],IMD(3),Lower_half) f_2_empty_i3_qpe_core_lower_half ;; 
 
 *)
@@ -1420,7 +1442,7 @@ let f_2_empty_i3_qpe_constraints_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_constraints_mode.global_check
+   Abstract_qpe_constraints_mode.global_check_by_d
     (2,[],IMD(3),Lower_half) f_2_empty_i3_qpe_constraints_lower_half ;; 
 
 *)
@@ -1440,7 +1462,7 @@ let f_2_empty_i3_qpe_extension_lower_half (B _b) (S n) =
 
 (* 
 
-   Abstract_qpe_extension_mode.global_check
+   Abstract_qpe_extension_mode.global_check_by_d
     (2,[],IMD(3),Lower_half) f_2_empty_i3_qpe_extension_lower_half ;; 
 
 *)
@@ -2967,35 +2989,75 @@ open Needed_values ;;
 open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
+open Unimode ;;
+
+let vz = visualize_by_b ;;
+Chronometer.it (Int_range.scale vz 0) 9 ;; 
 
 
-open Qpe_constraints_upper_half_mode ;;
 
+let rf0 (B b) (S _n) = 
+  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
+  ;;  
+let check_rf0 = partial_check_by_b 0 (Qpe_constraints_ARG rf0) ;; 
 
-let vz1 = visualize 1 ;; 
-let rf1 (B b) (S _n) = 
-   [];;
-let check_rf1 = partial_check 1 rf1 ;; 
+let rf1 (B b) (S n) = 
+  if List.mem n [5;7] then [] else 
+  if n=6 then [C[1;3]] else   
+  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
+  ;;  
+let check_rf1 = partial_check_by_b 1 (Qpe_constraints_ARG rf1) ;; 
 
-let vz2 = visualize 2 ;; 
 let rf2 (B b) (S n) = 
-  [];;
-let check_rf2 = partial_check 2 rf2 ;; 
+  if List.mem n [6;7] then [C[n-5;n-3]] else 
+  if n=8 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else  
+  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
+  ;; 
+let check_rf2 = partial_check_by_b 2 (Qpe_constraints_ARG rf2) ;; 
 
-let vz3 = visualize 3 ;; 
+
 let rf3 (B b) (S n) = 
-  [];;
-let check_rf3 = partial_check 2 rf3 ;; 
+  if List.mem n [7;8] then [C[n-5;n-3]] else 
+    if n=9 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else  
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) 
+  ;;   
+let check_rf3 = partial_check_by_b 3 (Qpe_constraints_ARG rf3) ;; 
 
+let rf4 (B b) (S n) = 
+  if n=b+4 then [C[3;5]] else 
+  if n=b+5 then [C[4;6];C[1;3;5]] else   
+  if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
+let check_rf4 = partial_check_by_b 4 (Qpe_constraints_ARG rf4) ;; 
 
+let rf5 (B b) (S n) = 
+  if n=b+4 then [C[4;6];C[1;3;5]] else 
+  if n=b+5 then [C[5;7];C[1;3;5];C[2;4;6]] else   
+  if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;     
+let check_rf5 = partial_check_by_b 5 (Qpe_constraints_ARG rf5) ;; 
+
+let rf6 (B b) (S n) = 
+  if n=b+4 then C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5)) else 
+  if n=b+5 then C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4)) else   
+  if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
+let check_rf6 = partial_check_by_b 6 (Qpe_constraints_ARG rf6) ;; 
+
+let rf7 = rf6 ;;   
+let check_rf7 = partial_check_by_b 7 (Qpe_constraints_ARG rf7) ;; 
 
 (* RFI BEGIN *)
 
-let rfi (B b) (S _n) = 
-  [];; 
+let rfi (B b) (S n) =  
+    if n=b+4 then (if b<=1 then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))) else 
+    if n=b+5 then (if b=0  then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))) else   
+    if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
+      Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
 
 (* RFI END *)
-let check_rfi = global_check rfi ;; 
+let check_rfi = Chronometer.it global_check_by_b (Qpe_constraints_ARG rfi) ;; 
+
 *)(* End of prepared page for (Qpe_constraints,Upper_half) *)
 (* Beginning of prepared page for (Qpe_extension,Lower_half) *)(*(*
 

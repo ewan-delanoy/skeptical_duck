@@ -78,7 +78,7 @@ let check_rf7 = partial_check_by_b 7 (Qpe_constraints_ARG rf7) ;;
 
 let rfi (B b) (S n) =  
     if n=b+4 then (if b<=1 then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))) else 
-    if n=b+5 then (if b=0  then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4)) else   
+    if n=b+5 then (if b=0  then [] else C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))) else   
     if n=b+6 then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else 
       Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
 
