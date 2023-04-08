@@ -1963,10 +1963,9 @@ let pretty_print_visualization_data l =
 
 end ;;  
 
-let visualize (w,s,i,half) d = 
+let data_to_be_visualized (w,s,i,half) d = 
   let answer = Private.data_for_visualization (w,s,i,half) d in 
-  let msg = "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" in 
-  (print_string msg;flush stdout)  ;; 
+  "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" ;; 
 
 let partial_check (w,s,i,half) d f = 
   let temp1 = Image.image (
@@ -2072,15 +2071,18 @@ type check_result =
     let (_koc,half,imd,pt) = Overall.get_status () in 
     (Point.width pt,Point.scrappers pt,imd,half) ;;  
 
-let visualize d = 
-  let (koc,_half,_imd,_pt) = Overall.get_status () in 
-  match koc with 
-    Superficial_result -> Superficial_result_mode.visualize (current_data()) d  
-  | Solution_list -> Solution_list_mode.visualize (current_data()) d 
-  | Qpl_length -> Qpl_length_mode.visualize (current_data()) d 
-  | Qpe_core -> Qpe_core_mode.visualize (current_data()) d 
-  | Qpe_constraints -> Qpe_constraints_mode.visualize (current_data()) d
-  | Qpe_extension -> Qpe_extension_mode.visualize (current_data()) d
+
+  let data_to_be_visualized =Memoized.make(fun d -> 
+      let (koc,_half,_imd,_pt) = Overall.get_status () in 
+      match koc with 
+        Superficial_result -> Superficial_result_mode.data_to_be_visualized (current_data()) d  
+      | Solution_list -> Solution_list_mode.data_to_be_visualized (current_data()) d 
+      | Qpl_length -> Qpl_length_mode.data_to_be_visualized (current_data()) d 
+      | Qpe_core -> Qpe_core_mode.data_to_be_visualized (current_data()) d 
+      | Qpe_constraints -> Qpe_constraints_mode.data_to_be_visualized (current_data()) d
+      | Qpe_extension -> Qpe_extension_mode.data_to_be_visualized (current_data()) d );;
+
+  let visualize d = print_string(data_to_be_visualized d) ;;     
 
   let partial_check d = function 
     Superficial_result_ARG(f) -> Superficial_result_CR(Superficial_result_mode.partial_check (current_data()) d f)
