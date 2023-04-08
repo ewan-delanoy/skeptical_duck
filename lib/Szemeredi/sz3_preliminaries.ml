@@ -2283,6 +2283,11 @@ module Private = struct
 let print_vr_element ((B b,S n),elt) = 
     "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(Seed.current_printer elt)^")" ;;  
 
+let print_cr_element ((B b,S n),elt1,elt2) = 
+      "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"
+       ^(Seed.current_printer elt1)^","
+       ^(Seed.current_printer elt2)^")" ;; 
+
 let partial_range_by_b (w,s,i,half) b = List.filter ( 
       Seed.extra_condition_for_range (w,s,i) )
     (Range.linear_range_by_b (w,s,b) half) ;;    
@@ -2306,6 +2311,9 @@ let data_for_visualization_by_d (w,s,i,half) d = Image.image (
 let pretty_print_visualization_data l = 
        "[\n"^(String.concat ";\n" (Image.image print_vr_element l))^"\n]" ;;
 
+let pretty_print_check_data l = 
+      "[\n"^(String.concat ";\n" (Image.image print_cr_element l))^"\n]" ;;
+
 end ;;  
 
 let data_to_be_visualized_by_b (w,s,i,half) d = 
@@ -2328,16 +2336,13 @@ let global_check (w,s,i,half) g =
     fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
     ) (Private.total_range (w,s,i,half)) in 
     let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
-    let answer = 
-      (if temp2=[] 
-       then (0,[]) 
-       else Min.minimize_it_with_care (fun (pair,_,_)->
-             Range.compute_enumerator_index w pair half) temp2) in 
-    let _ = 
-    (if temp2=[] 
-    then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half))  
-    in 
-    answer;;   
+    if temp2=[] 
+    then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half)  
+    else 
+    let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
+      Range.compute_enumerator_index w pair half) temp2 in 
+    let msg = "\n\n\n"^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
+    (print_string msg;flush stdout);;   
 
 
 end ;;  
@@ -2455,24 +2460,12 @@ let data_to_be_visualized_by_d =Memoized.make(fun d ->
 
 
   let global_check = function 
-    Superficial_result_ARG(f) -> 
-            let (i,l) = Superficial_result_mode.global_check (current_data()) f in    
-            (i,Superficial_result_CR(l))
-  | Solution_list_ARG(f) -> 
-            let (i,l) = Solution_list_mode.global_check (current_data()) f in    
-            (i,Solution_list_CR(l))
-  | Qpl_length_ARG(f) -> 
-            let (i,l) = Qpl_length_mode.global_check (current_data()) f in    
-            (i,Qpl_length_CR(l))
-  | Qpe_core_ARG(f) -> 
-            let (i,l) = Qpe_core_mode.global_check (current_data()) f in    
-            (i,Qpe_core_CR(l)) 
-  | Qpe_constraints_ARG(f) -> 
-            let (i,l) = Qpe_constraints_mode.global_check (current_data()) f in    
-            (i,Qpe_constraints_CR(l)) 
-  | Qpe_extension_ARG(f) -> 
-            let (i,l) = Qpe_extension_mode.global_check (current_data()) f in    
-            (i,Qpe_extension_CR(l))  ;; 
+    Superficial_result_ARG(f) -> Superficial_result_mode.global_check (current_data()) f 
+  | Solution_list_ARG(f) -> Solution_list_mode.global_check (current_data()) f 
+  | Qpl_length_ARG(f) ->  Qpl_length_mode.global_check (current_data()) f 
+  | Qpe_core_ARG(f) -> Qpe_core_mode.global_check (current_data()) f 
+  | Qpe_constraints_ARG(f) -> Qpe_constraints_mode.global_check (current_data()) f 
+  | Qpe_extension_ARG(f) -> Qpe_extension_mode.global_check (current_data()) f   ;; 
 
 end ;;  
 
