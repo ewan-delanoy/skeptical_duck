@@ -20,34 +20,20 @@ open Unimode ;;
 
 
 Int_range.scale visualize 1 3;; 
-let rf1 (B b) (S _n) = 
-   []
-   ;;
-let check_rf1 = partial_check 1 (Solution_list_ARG rf1) ;; 
+let rf1 (B _b) (S n) = 
+  if n<=2 then 0 else  3-(n mod 3) ;; 
+let check_rf1 = partial_check 1 (Qpl_length_ARG rf1) ;; 
 
+let rf2 (B _b) (S n) = 
+  if n<=2 then 0 else  3-(n mod 3) ;; 
+let check_rf2 = partial_check 2 (Qpl_length_ARG rf2) ;; 
 
-let rf2 (B b) (S n) = 
-  []
-    ;; 
-let check_rf2 = partial_check 2 (Solution_list_ARG rf2) ;; 
-
-
-let rf3 (B b) (S n) = 
-  []
-    ;; 
-let check_rf3 = partial_check 3 (Solution_list_ARG rf3) ;; 
-
-let rf4 (B b) (S n) = 
-   []
-    ;; 
-let check_rf4 = partial_check 4 (Solution_list_ARG rf4) ;; 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-   simplest_list n
-    ;;   
+   3-(n mod 3) ;; 
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check (Solution_list_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpl_length_ARG rfi) ;; 

@@ -1228,6 +1228,25 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(0),Qpl_length,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(0),Qpl_length,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(0),Qpl_length,Upper_half) *)
+
+let f_2_empty_qpl_length_upper_half (B _b) (S n) = 
+   3-(n mod 3) ;;
+
+(* 
+
+   Abstract_qpl_length_mode.global_check
+    (2,[],IMD(0),Upper_half) f_2_empty_qpl_length_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpl_length_upper_half
+   (2,[]) f_2_empty_qpl_length_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(0),Qpl_length,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(0),Qpl_length,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(1),Qpe_core,Lower_half) *)
 
 let f_2_empty_i1_qpe_core_lower_half (B _b) (S n) = 
@@ -2651,8 +2670,45 @@ let rfi (B _b) (S n) =
 (* RFI END *)
 let check_rfi = Chronometer.it global_check (Qpl_length_ARG rfi) ;; 
 *)(* End of prepared page for (Qpl_length,Lower_half) *)
-(* Beginning of prepared page for (Qpl_length,Upper_half) *)(*
-*)(* End of prepared page for (Qpl_length,Upper_half) *)
+(* Beginning of prepared page for (Qpl_length,Upper_half) *)(*(*
+
+#use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+
+
+An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. 
+
+*)
+
+
+open Skeptical_duck_lib ;; 
+open Needed_values ;; 
+
+
+open Sz3_preliminaries ;;
+open Tools_for_warehouse ;; 
+let see0 = Overall.get_status () ;; 
+open Unimode ;;
+
+
+Int_range.scale visualize 1 3;; 
+let rf1 (B _b) (S n) = 
+  if n<=2 then 0 else  3-(n mod 3) ;; 
+let check_rf1 = partial_check 1 (Qpl_length_ARG rf1) ;; 
+
+let rf2 (B _b) (S n) = 
+  if n<=2 then 0 else  3-(n mod 3) ;; 
+let check_rf2 = partial_check 2 (Qpl_length_ARG rf2) ;; 
+
+
+
+(* RFI BEGIN *)
+
+let rfi (B _b) (S n) = 
+   3-(n mod 3) ;; 
+
+(* RFI END *)
+let check_rfi = Chronometer.it global_check (Qpl_length_ARG rfi) ;; *)(* End of prepared page for (Qpl_length,Upper_half) *)
 (* Beginning of prepared page for (Qpe_core,Lower_half) *)(*(*
 
 #use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
@@ -2917,9 +2973,7 @@ open Needed_values ;;
 open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
-
-
-open Qpe_extension_upper_half_mode ;;
+open Unimode ;;
 
 
 let vz1 = visualize 1 ;; 
