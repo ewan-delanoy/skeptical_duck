@@ -2295,9 +2295,9 @@ let total_range (w,s,i,half)= List.filter (
   Seed.extra_condition_for_range (w,s,i)
 ) (Range.er_range (w,s) half) ;;
 
-let data_for_visualization_by_b (w,s,i,half) d = Image.image (
+let data_for_visualization_by_b (w,s,i,half) b = Image.image (
       fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
-   ) (partial_range_by_d (w,s,i,half) d) ;;
+   ) (partial_range_by_b (w,s,i,half) b) ;;
 
 let data_for_visualization_by_d (w,s,i,half) d = Image.image (
       fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
