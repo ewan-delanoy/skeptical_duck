@@ -608,7 +608,7 @@ module Fill_Warehouse = struct
 
 open Tools_for_warehouse ;; 
 
-(* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
+
 (* Beginning of item at  (1,[],IMD(0),Superficial_result,Lower_half) *)
 
 let f_1_empty_superficial_result_lower_half (B _b) (S n) =
@@ -1719,7 +1719,7 @@ module Warehouse_content = struct
     else     
     let first_beginning_linedex = fst(List.hd beginnings) in  
     let lines_before_first_beginning=
-       List.filter (fun (j,_line)->j<=first_beginning_linedex) indexed_lines in 
+       List.filter (fun (j,_line)->j<first_beginning_linedex) indexed_lines in 
     let before_first_beginning = String.concat "\n" (Image.image snd lines_before_first_beginning) in 
     let enclosers = List.combine (Image.image snd beginnings) (Image.image snd endings) in 
     let items = Image.image (fun (m_begin,m_end) ->
