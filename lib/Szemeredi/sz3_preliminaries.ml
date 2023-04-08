@@ -2324,14 +2324,36 @@ let data_to_be_visualized_by_d (w,s,i,half) d =
   let answer = Private.data_for_visualization_by_d (w,s,i,half) d in 
   "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" ;;
 
+let partial_check_by_b (w,s,i,half) first_b f = 
+  let temp1 = Image.image (
+    fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,f b n)
+  ) (Private.partial_range_by_b (w,s,i,half) first_b) in 
+  let data = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
+  let msg = "\n\n\n"^(Private.pretty_print_check_data data)^"\n\n\n" in 
+  (print_string msg;flush stdout) ;; 
 
-let partial_check (w,s,i,half) d f = 
+let partial_check_by_d (w,s,i,half) d f = 
   let temp1 = Image.image (
   fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,f b n)
   ) (Private.partial_range_by_d (w,s,i,half) d) in 
-  List.filter (fun (_,y1,y2)->y1<>y2) temp1;;   
+  let data = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
+  let msg = "\n\n\n"^(Private.pretty_print_check_data data)^"\n\n\n" in 
+  (print_string msg;flush stdout) ;;  
 
-let global_check (w,s,i,half) g = 
+let global_check_by_b (w,s,i,half) g = 
+    let temp1 = Image.image (
+    fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
+    ) (Private.total_range (w,s,i,half)) in 
+    let temp2 = List.filter (fun (_,y1,y2)->y1<>y2) temp1 in 
+    if temp2=[] 
+    then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half)  
+    else 
+    let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
+      Range.compute_enumerator_index w pair half) temp2 in 
+    let msg = "\n\n\n"^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
+    (print_string msg;flush stdout);;   
+
+let global_check_by_d (w,s,i,half) g = 
     let temp1 = Image.image (
     fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,g b n)
     ) (Private.total_range (w,s,i,half)) in 
@@ -2450,22 +2472,42 @@ let data_to_be_visualized_by_d =Memoized.make(fun d ->
   let visualize_by_b b = print_string(data_to_be_visualized_by_b b) ;; 
   let visualize_by_d d = print_string(data_to_be_visualized_by_d d) ;;     
 
-  let partial_check d = function 
-    Superficial_result_ARG(f) -> Superficial_result_CR(Superficial_result_mode.partial_check (current_data()) d f)
-  | Solution_list_ARG(f) -> Solution_list_CR(Solution_list_mode.partial_check (current_data()) d f)
-  | Qpl_length_ARG(f) -> Qpl_length_CR(Qpl_length_mode.partial_check (current_data()) d f)
-  | Qpe_core_ARG(f) -> Qpe_core_CR(Qpe_core_mode.partial_check (current_data()) d f)
-  | Qpe_constraints_ARG(f) -> Qpe_constraints_CR(Qpe_constraints_mode.partial_check (current_data()) d f)
-  | Qpe_extension_ARG(f) -> Qpe_extension_CR(Qpe_extension_mode.partial_check (current_data()) d f) ;; 
+let partial_check_by_b b = function 
+  Superficial_result_ARG(f) -> Superficial_result_mode.partial_check_by_b  (current_data()) b f
+| Solution_list_ARG(f) -> Solution_list_mode.partial_check_by_b  (current_data()) b f
+| Qpl_length_ARG(f) -> Qpl_length_mode.partial_check_by_b  (current_data()) b f
+| Qpe_core_ARG(f) -> Qpe_core_mode.partial_check_by_b  (current_data()) b f
+| Qpe_constraints_ARG(f) -> Qpe_constraints_mode.partial_check_by_b  (current_data()) b f
+| Qpe_extension_ARG(f) -> Qpe_extension_mode.partial_check_by_b  (current_data()) b f ;; 
 
 
-  let global_check = function 
-    Superficial_result_ARG(f) -> Superficial_result_mode.global_check (current_data()) f 
-  | Solution_list_ARG(f) -> Solution_list_mode.global_check (current_data()) f 
-  | Qpl_length_ARG(f) ->  Qpl_length_mode.global_check (current_data()) f 
-  | Qpe_core_ARG(f) -> Qpe_core_mode.global_check (current_data()) f 
-  | Qpe_constraints_ARG(f) -> Qpe_constraints_mode.global_check (current_data()) f 
-  | Qpe_extension_ARG(f) -> Qpe_extension_mode.global_check (current_data()) f   ;; 
+  
+let partial_check_by_d d = function 
+Superficial_result_ARG(f) -> Superficial_result_mode.partial_check_by_d (current_data()) d f
+| Solution_list_ARG(f) -> Solution_list_mode.partial_check_by_d (current_data()) d f
+| Qpl_length_ARG(f) -> Qpl_length_mode.partial_check_by_d (current_data()) d f
+| Qpe_core_ARG(f) -> Qpe_core_mode.partial_check_by_d (current_data()) d f
+| Qpe_constraints_ARG(f) -> Qpe_constraints_mode.partial_check_by_d (current_data()) d f
+| Qpe_extension_ARG(f) -> Qpe_extension_mode.partial_check_by_d (current_data()) d f ;; 
+
+
+let global_check_by_b = function 
+  Superficial_result_ARG(f) -> Superficial_result_mode.global_check_by_b  (current_data()) f
+| Solution_list_ARG(f) -> Solution_list_mode.global_check_by_b  (current_data()) f
+| Qpl_length_ARG(f) -> Qpl_length_mode.global_check_by_b  (current_data()) f
+| Qpe_core_ARG(f) -> Qpe_core_mode.global_check_by_b  (current_data()) f
+| Qpe_constraints_ARG(f) -> Qpe_constraints_mode.global_check_by_b  (current_data()) f
+| Qpe_extension_ARG(f) -> Qpe_extension_mode.global_check_by_b  (current_data()) f ;; 
+
+
+let global_check_by_d = function 
+  Superficial_result_ARG(f) -> Superficial_result_mode.global_check_by_d  (current_data()) f
+| Solution_list_ARG(f) -> Solution_list_mode.global_check_by_d  (current_data()) f
+| Qpl_length_ARG(f) -> Qpl_length_mode.global_check_by_d  (current_data()) f
+| Qpe_core_ARG(f) -> Qpe_core_mode.global_check_by_d  (current_data()) f
+| Qpe_constraints_ARG(f) -> Qpe_constraints_mode.global_check_by_d  (current_data()) f
+| Qpe_extension_ARG(f) -> Qpe_extension_mode.global_check_by_d  (current_data()) f ;; 
+
 
 end ;;  
 
