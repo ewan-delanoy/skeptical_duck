@@ -1261,7 +1261,28 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_core,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(2),Qpe_core,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(2),Qpe_core,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(2),Qpe_constraints,Lower_half) *)
+
+let f_2_empty_i2_qpe_constraints_lower_half (B _b) (S n) = 
+  if n<=4 then [] else 
+  if n<=8 then [C[n-4;n-2]] else
+  C[n-4;n-2] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-8))   ;;
+
+(* 
+
+   Abstract_qpe_constraints_mode.global_check
+    (2,[],IMD(2),Lower_half) f_2_empty_i2_qpe_constraints_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_constraints_lower_half
+   (2,[],IMD(2)) f_2_empty_i2_qpe_constraints_lower_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_constraints,Lower_half) ;;
+
+(* End of item at  (2,[],IMD(2),Qpe_constraints,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -2526,12 +2547,12 @@ let check_rf3 = partial_check 2 (Qpe_constraints_ARG rf3) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n<=5 then [] else 
-  if n<=8 then [C[n-5;n-3]] else
-  C[n-5;n-3] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-9))   ;;
+  if n<=4 then [] else 
+  if n<=8 then [C[n-4;n-2]] else
+  C[n-4;n-2] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-8))   ;;
 
 (* RFI END *)
-let check_rfi = global_check (Qpe_constraints_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpe_constraints_ARG rfi) ;; 
 *)(* End of prepared page for (Qpe_constraints,Lower_half) *)
 (* Beginning of prepared page for (Qpe_constraints,Upper_half) *)(*(*
 
