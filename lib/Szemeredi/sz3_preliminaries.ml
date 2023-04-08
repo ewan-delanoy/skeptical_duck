@@ -1484,6 +1484,27 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_extension,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(2),Qpe_extension,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(2),Qpe_extension,Upper_half) *)
+
+let f_2_empty_i2_qpe_extension_upper_half (B _b) (S n) = 
+  if n=4 then [1;2;4] else 
+    [n] 
+  ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check_by_d
+    (2,[],IMD(2),Upper_half) f_2_empty_i2_qpe_extension_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_extension_upper_half
+   (2,[],IMD(2)) f_2_empty_i2_qpe_extension_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_extension,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(2),Qpe_extension,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(3),Qpe_core,Lower_half) *)
 
 let f_2_empty_i3_qpe_core_lower_half (B _b) (S n) = 
@@ -3179,15 +3200,13 @@ let vz = visualize_by_d ;;
 Int_range.scale vz 1 4;; 
 
 let rf1 (B b) (S n) = 
-   if n=4 then [1;3;4] else 
-   if n=5 then [1;2;4;5] else 
-   [n-1;n] 
+   if n=4 then [1;2;4] else 
+   [n] 
   ;;
 let check_rf1 = partial_check_by_d 1 (Qpe_extension_ARG rf1) ;; 
 
 let rf2 (B b) (S n) = 
-  if n=5 then [1;2;4;5] else 
-  [n-1;n] 
+  [n] 
  ;;
 let check_rf2 = partial_check_by_d 2 (Qpe_extension_ARG rf2) ;; 
 
@@ -3195,10 +3214,10 @@ let check_rf2 = partial_check_by_d 2 (Qpe_extension_ARG rf2) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=4 then [1;3;4] else 
-  if n=5 then [1;2;4;5] else 
-  [n-1;n]  ;;  
-
+  if n=4 then [1;2;4] else 
+    [n] 
+  ;;
+  
 (* RFI END *)
 let check_rfi = global_check_by_d (Qpe_extension_ARG rfi) ;; 
 *)(* End of prepared page for (Qpe_extension,Upper_half) *)
