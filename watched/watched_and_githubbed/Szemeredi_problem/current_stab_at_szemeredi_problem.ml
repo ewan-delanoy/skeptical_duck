@@ -42,8 +42,8 @@ let check_rf3 = partial_check 2 (Qpe_core_ARG rf3) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n<=3 then Empty_point else
-    P(1,[],B(n-3),S(n-1));; 
+  if n<=5 then Empty_point else
+    P(1,[],B(n-5),S(n-3));; 
 
 (* RFI END *)
 let check_rfi = global_check (Qpe_core_ARG rfi) ;; 

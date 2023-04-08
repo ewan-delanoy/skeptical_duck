@@ -1179,7 +1179,27 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(0),Qpl_length,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(0),Qpl_length,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(0),Qpl_length,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(1),Qpe_core,Lower_half) *)
+
+let f_2_empty_i1_qpe_core_lower_half (B _b) (S n) = 
+  if n<=5 then Empty_point else
+    P(1,[],B(n-5),S(n-3));;
+
+(* 
+
+   Abstract_qpe_core_mode.global_check
+    (2,[],IMD(1),Lower_half) f_2_empty_i1_qpe_core_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_core_lower_half
+   (2,[],IMD(1)) f_2_empty_i1_qpe_core_lower_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(1),Qpe_core,Lower_half) ;;
+
+(* End of item at  (2,[],IMD(1),Qpe_core,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -2277,39 +2297,37 @@ open Needed_values ;;
 open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
+open Unimode ;;
 
 
-open Qpe_core_lower_half_mode ;;
-
-
-let vz1 = visualize 1 ;; 
+visualize 1 ;; 
 let rf1 (B b) (S _n) = 
   if b=1 then Empty_point else
     P(1,[],B(b-1),S(b+1));;
-let check_rf1 = partial_check 1 rf1 ;; 
+let check_rf1 = partial_check 1 (Qpe_core_ARG rf1) ;; 
 
-let vz2 = visualize 2 ;; 
+
 let rf2 (B b) (S n) = 
   if b=1 then Empty_point else
     P(1,[],B(b-1),S(b+1));;
-let check_rf2 = partial_check 2 rf2 ;; 
+let check_rf2 = partial_check 2 (Qpe_core_ARG rf2) ;; 
 
-let vz3 = visualize 3 ;; 
+
 let rf3 (B b) (S n) = 
   if b=1 then Empty_point else
     P(1,[],B(b-1),S(b+1));;
-let check_rf3 = partial_check 2 rf3 ;; 
+let check_rf3 = partial_check 2 (Qpe_core_ARG rf3) ;; 
 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n<=3 then Empty_point else
-    P(1,[],B(n-3),S(n-1));; 
+  if n<=5 then Empty_point else
+    P(1,[],B(n-5),S(n-3));; 
 
 (* RFI END *)
-let check_rfi = global_check rfi ;; 
+let check_rfi = global_check (Qpe_core_ARG rfi) ;; 
 *)(* End of prepared page for (Qpe_core,Lower_half) *)
 (* Beginning of prepared page for (Qpe_core,Upper_half) *)(*(*
 
