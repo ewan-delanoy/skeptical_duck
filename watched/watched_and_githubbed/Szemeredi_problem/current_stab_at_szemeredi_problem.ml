@@ -18,30 +18,30 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
-
-let vz = visualize_by_d ;;
+let vz = visualize_by_d ;; 
 Int_range.scale vz 1 4;; 
 
-let rf1 (B b) (S n) = 
-   if n=4 then [1;3;4] else 
-   if n=5 then [1;2;4;5] else 
-   [n-1;n] 
-  ;;
-let check_rf1 = partial_check_by_d 1 (Qpe_extension_ARG rf1) ;; 
+let rf1 (B _b) (S n) = 
+   if n=4 then Empty_point else 
+    P(1,[],B(n-4),S(n-2))
+;; 
+let check_rf1 = partial_check_by_d 1 (Qpe_core_ARG rf1) ;; 
 
-let rf2 (B b) (S n) = 
-  if n=5 then [1;2;4;5] else 
-  [n-1;n] 
- ;;
-let check_rf2 = partial_check_by_d 2 (Qpe_extension_ARG rf2) ;; 
+let rf2 (B _b) (S n) = 
+   Empty_point 
+;; 
+let check_rf2 = partial_check_by_d 2 (Qpe_core_ARG rf2) ;; 
+
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=4 then [1;3;4] else 
-  if n=5 then [1;2;4;5] else 
-  [n-1;n]  ;;  
+  if n=4 then Empty_point else 
+    P(1,[],B(n-4),S(n-2))
+  ;; 
 
 (* RFI END *)
-let check_rfi = global_check_by_d (Qpe_extension_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check_by_d (Qpe_core_ARG rfi) ;; 
+
+

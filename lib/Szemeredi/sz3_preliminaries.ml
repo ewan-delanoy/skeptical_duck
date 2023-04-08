@@ -1393,6 +1393,27 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_core,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(2),Qpe_core,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(2),Qpe_core,Upper_half) *)
+
+let f_2_empty_i2_qpe_core_upper_half (B _b) (S n) = 
+  if n=4 then Empty_point else 
+    P(1,[],B(n-4),S(n-2))
+  ;;
+
+(* 
+
+   Abstract_qpe_core_mode.global_check_by_d
+    (2,[],IMD(2),Upper_half) f_2_empty_i2_qpe_core_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_core_upper_half
+   (2,[],IMD(2)) f_2_empty_i2_qpe_core_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_core,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(2),Qpe_core,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(2),Qpe_constraints,Lower_half) *)
 
 let f_2_empty_i2_qpe_constraints_lower_half (B _b) (S n) = 
@@ -2920,29 +2941,34 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
+let vz = visualize_by_d ;; 
+Int_range.scale vz 1 4;; 
 
-Int_range.scale visualize 1 3;; 
 let rf1 (B _b) (S n) = 
-   Empty_point 
+   if n=4 then Empty_point else 
+    P(1,[],B(n-4),S(n-2))
 ;; 
-let check_rf1 = partial_check 1 (Qpe_core_ARG rf1) ;; 
+let check_rf1 = partial_check_by_d 1 (Qpe_core_ARG rf1) ;; 
 
 let rf2 (B _b) (S n) = 
    Empty_point 
 ;; 
-let check_rf2 = partial_check 2 (Qpe_core_ARG rf2) ;; 
+let check_rf2 = partial_check_by_d 2 (Qpe_core_ARG rf2) ;; 
 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-   if n<=5 then Empty_point else
-    P(1,[],B(n-5),S(n-3))
+  if n=4 then Empty_point else 
+    P(1,[],B(n-4),S(n-2))
   ;; 
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check (Qpe_core_ARG rfi) ;; *)(* End of prepared page for (Qpe_core,Upper_half) *)
+let check_rfi = Chronometer.it global_check_by_d (Qpe_core_ARG rfi) ;; 
+
+
+*)(* End of prepared page for (Qpe_core,Upper_half) *)
 (* Beginning of prepared page for (Qpe_constraints,Lower_half) *)(*(*
 
 #use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
