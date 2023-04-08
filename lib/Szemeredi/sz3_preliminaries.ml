@@ -1220,7 +1220,28 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(1),Qpe_constraints,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(1),Qpe_constraints,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(1),Qpe_constraints,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(1),Qpe_extension,Lower_half) *)
+
+let f_2_empty_i1_qpe_extension_lower_half (B _b) (S n) = 
+  if n=4 then [1;3;4] else 
+  if n=5 then [1;2;4;5] else 
+  [n-1;n]   ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check
+    (2,[],IMD(1),Lower_half) f_2_empty_i1_qpe_extension_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_extension_lower_half
+   (2,[],IMD(1)) f_2_empty_i1_qpe_extension_lower_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(1),Qpe_extension,Lower_half) ;;
+
+(* End of item at  (2,[],IMD(1),Qpe_extension,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -2558,46 +2579,35 @@ open Needed_values ;;
 open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
+open Unimode ;;
 
-open Qpe_extension_lower_half_mode ;;
+
+visualize 1 ;; 
+let rf1 (B b) (S _n) = 
+   [];;
+let check_rf1 = partial_check 1 (Qpe_extension_ARG rf1) ;; 
 
 
-let vz1 = visualize 1 ;; 
-let rf1 (B _b) (S n) = 
-  match List.assoc_opt n
-  [4,1::(Int_range.range 3 4);5,[1;2]@(Int_range.range 4 5)] with 
-  Some answer -> answer 
-  |None -> Int_range.range (n-1) n ;;
-let check_rf1 = partial_check 1 rf1 ;; 
-
-let vz2 = visualize 2 ;; 
 let rf2 (B b) (S n) = 
-  match List.assoc_opt n
-  [4,1::(Int_range.range 3 4);5,[1;2]@(Int_range.range 4 5)] with 
-  Some answer -> answer 
-  |None -> Int_range.range (n-1) n ;;
-let check_rf2 = partial_check 2 rf2 ;; 
+  []  ;; 
+let check_rf2 = partial_check 2 (Qpe_extension_ARG rf2) ;; 
 
-let vz3 = visualize 3 ;; 
+
 let rf3 (B b) (S n) = 
-  match List.assoc_opt b
-  [1,1::(Int_range.range 3 (n-b+1));2,[1;2]@(Int_range.range 4 (n-b+2))] with 
-  Some answer -> answer 
-  |None -> Int_range.range (b+2) n ;;
-let check_rf3 = partial_check 2 rf3 ;; 
+  [];;
+let check_rf3 = partial_check 2 (Qpe_extension_ARG rf3) ;; 
 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  match List.assoc_opt n
-  [3,[1;2]] with 
-  Some answer -> answer 
-  |None -> Int_range.range (n+1) n ;; 
+  if n=4 then [1;3;4] else 
+  if n=5 then [1;2;4;5] else 
+  [n-1;n]   ;;
 
 (* RFI END *)
-let check_rfi = global_check rfi ;; 
+let check_rfi = global_check (Qpe_extension_ARG rfi) ;; 
 *)(* End of prepared page for (Qpe_extension,Lower_half) *)
 (* Beginning of prepared page for (Qpe_extension,Upper_half) *)(*(*
 
