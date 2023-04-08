@@ -1238,6 +1238,17 @@ module Constraint = struct
      ) in 
      tempf(old_constraints,new_constraints);;
 
+   let test_for_translation_relation (C l1) (C l2) = 
+     let n1 = List.length(l1) and n2 = List.length(l2) in 
+     if (n1<>n2)||(n1=0)||(n2=0)
+     then None 
+     else let temp1 = List.combine l1 l2 in 
+           let (x1,x2) = List.hd temp1 in 
+           let d= x2-x1 in 
+           if List.for_all (fun (x,y)->y=x+d) temp1 
+           then Some d 
+           else None ;;   
+
   end ;;  
 
 
@@ -1497,7 +1508,36 @@ let for_constraint (C l) = "C"^(for_int_list l);;
 
 let for_solution_list l = "["^(String.concat ";" (Image.image for_int_list l))^"]" ;;
 
-let for_constraint_list l = "["^(String.concat ";" (Image.image for_constraint l))^"]" ;;
+let rec iterator_for_case1 asker (t,remaining_items) = match remaining_items with 
+  [] -> (t,remaining_items)
+  | item :: others ->
+     if (Constraint.test_for_translation_relation asker item) = Some t 
+     then iterator_for_case1 asker (t+1,others)
+     else (t,remaining_items) ;;  
+
+let case1_analysis l= 
+  if List.length(l)<2 then None else 
+  let asker = List.nth l 1 
+  and beheaded_l = List.tl(List.tl l) in 
+  let (t,remaining_items) = iterator_for_case1 asker (1,beheaded_l) in 
+  if t<2 then None else 
+  Some(List.hd l,asker,t,remaining_items) ;; 
+
+let for_naive_constraint_list l = "["^(String.concat ";" (Image.image for_constraint l))^"]" ;;
+
+let for_case1_constraint_list (elt1,elt2,t,remaining_items) =
+"["^(for_constraint elt1)^";"^
+    (for_constraint elt2)^"+k,0<=k<="^(string_of_int (t-1))^";"^
+    (String.concat ";" (Image.image for_constraint remaining_items))^"]" ;;
+
+let for_constraint_list l = 
+   let opt1 = case1_analysis l in 
+   if opt1<>None 
+   then let (elt1,elt2,t,remaining_items) = Option.get opt1 in 
+         for_case1_constraint_list (elt1,elt2,t,remaining_items) 
+   else for_naive_constraint_list l ;;     
+
+
 
 let for_point = function 
     Empty_point -> "Empty_point" 
