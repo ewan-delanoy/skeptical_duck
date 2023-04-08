@@ -1972,7 +1972,7 @@ module Warehouse_item = struct
     let s_fourtuple = string_of_fourtuple (w,s,i,half) 
     and s_fiftuple = string_of_fiftuple (w,s,i,component,half) in 
     let in_part2=[
-    "A"^"bstract_"^s_component^"_mode.global_check";
+    "A"^"bstract_"^s_component^"_mode.global_check_by_d";
     " "^s_fourtuple^" "^f_name^" ;;"
     ] in 
     let inside_of_part2 = String.concat "\n" 
@@ -2348,8 +2348,7 @@ let global_check_by_b (w,s,i,half) g =
     if temp2=[] 
     then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half)  
     else 
-    let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
-      Range.compute_enumerator_index w pair half) temp2 in 
+    let (_,temp3) = Min.minimize_it_with_care (fun ((B b,_n),_,_)->b) temp2 in 
     let msg = "\n\n\n"^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
     (print_string msg;flush stdout);;   
 
