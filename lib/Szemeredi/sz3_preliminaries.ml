@@ -1854,7 +1854,10 @@ let er_range (width,scrappers) = function
 let restricted_range (width,scrappers,IMD ql_idx) half = 
   List.filter (fun (b,n)->Warehouse.wet_length_watcher (P(width,scrappers,b,n))>=ql_idx)
   (er_range (width,scrappers) half);;
-let linear_range (w,_scr,d) = function 
+let linear_range_by_d (w,_scr,d) = function 
+  Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
+  |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
+let linear_range_by_b (w,_scr,d) = function 
   Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
   |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
 
@@ -2275,31 +2278,44 @@ module Private = struct
 let print_vr_element ((B b,S n),elt) = 
     "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(Seed.current_printer elt)^")" ;;  
 
-let partial_range (w,s,i,half) d = List.filter ( 
+let partial_range_by_b (w,s,i,half) d = List.filter ( 
       Seed.extra_condition_for_range (w,s,i) )
-    (Range.linear_range (w,s,d) half) ;;
+    (Range.linear_range_by_d (w,s,d) half) ;;    
+
+let partial_range_by_d (w,s,i,half) d = List.filter ( 
+      Seed.extra_condition_for_range (w,s,i) )
+    (Range.linear_range_by_d (w,s,d) half) ;;
 
 let total_range (w,s,i,half)= List.filter (
   Seed.extra_condition_for_range (w,s,i)
 ) (Range.er_range (w,s) half) ;;
 
-let data_for_visualization (w,s,i,half) d = Image.image (
+let data_for_visualization_by_b (w,s,i,half) d = Image.image (
       fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
-   ) (partial_range (w,s,i,half) d) ;;
+   ) (partial_range_by_d (w,s,i,half) d) ;;
+
+let data_for_visualization_by_d (w,s,i,half) d = Image.image (
+      fun (b,n) -> ((b,n),Seed.original (w,s,i) b n)
+   ) (partial_range_by_d (w,s,i,half) d) ;;
    
 let pretty_print_visualization_data l = 
        "[\n"^(String.concat ";\n" (Image.image print_vr_element l))^"\n]" ;;
 
 end ;;  
 
-let data_to_be_visualized (w,s,i,half) d = 
-  let answer = Private.data_for_visualization (w,s,i,half) d in 
+let data_to_be_visualized_by_b (w,s,i,half) d = 
+  let answer = Private.data_for_visualization_by_b (w,s,i,half) d in 
   "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" ;; 
+
+let data_to_be_visualized_by_d (w,s,i,half) d = 
+  let answer = Private.data_for_visualization_by_d (w,s,i,half) d in 
+  "\n\n\n"^(Private.pretty_print_visualization_data answer)^"\n\n\n" ;;
+
 
 let partial_check (w,s,i,half) d f = 
   let temp1 = Image.image (
   fun (b,n) -> ((b,n),Seed.original (w,s,i) b n,f b n)
-  ) (Private.partial_range (w,s,i,half) d) in 
+  ) (Private.partial_range_by_d (w,s,i,half) d) in 
   List.filter (fun (_,y1,y2)->y1<>y2) temp1;;   
 
 let global_check (w,s,i,half) g = 
@@ -2400,18 +2416,29 @@ type check_result =
     let (_koc,half,imd,pt) = Overall.get_status () in 
     (Point.width pt,Point.scrappers pt,imd,half) ;;  
 
+  
+ let data_to_be_visualized_by_b =Memoized.make(fun b -> 
+  let (koc,_half,_imd,_pt) = Overall.get_status () in 
+  match koc with 
+    Superficial_result -> Superficial_result_mode.data_to_be_visualized_by_b (current_data()) b  
+  | Solution_list -> Solution_list_mode.data_to_be_visualized_by_b (current_data()) b 
+  | Qpl_length -> Qpl_length_mode.data_to_be_visualized_by_b (current_data()) b 
+  | Qpe_core -> Qpe_core_mode.data_to_be_visualized_by_b (current_data()) b 
+  | Qpe_constraints -> Qpe_constraints_mode.data_to_be_visualized_by_b (current_data()) b
+  | Qpe_extension -> Qpe_extension_mode.data_to_be_visualized_by_b (current_data()) b );;
 
-  let data_to_be_visualized =Memoized.make(fun d -> 
-      let (koc,_half,_imd,_pt) = Overall.get_status () in 
-      match koc with 
-        Superficial_result -> Superficial_result_mode.data_to_be_visualized (current_data()) d  
-      | Solution_list -> Solution_list_mode.data_to_be_visualized (current_data()) d 
-      | Qpl_length -> Qpl_length_mode.data_to_be_visualized (current_data()) d 
-      | Qpe_core -> Qpe_core_mode.data_to_be_visualized (current_data()) d 
-      | Qpe_constraints -> Qpe_constraints_mode.data_to_be_visualized (current_data()) d
-      | Qpe_extension -> Qpe_extension_mode.data_to_be_visualized (current_data()) d );;
+let data_to_be_visualized_by_d =Memoized.make(fun d -> 
+  let (koc,_half,_imd,_pt) = Overall.get_status () in 
+  match koc with 
+    Superficial_result -> Superficial_result_mode.data_to_be_visualized_by_d (current_data()) d  
+  | Solution_list -> Solution_list_mode.data_to_be_visualized_by_d (current_data()) d 
+  | Qpl_length -> Qpl_length_mode.data_to_be_visualized_by_d (current_data()) d 
+  | Qpe_core -> Qpe_core_mode.data_to_be_visualized_by_d (current_data()) d 
+  | Qpe_constraints -> Qpe_constraints_mode.data_to_be_visualized_by_d (current_data()) d
+  | Qpe_extension -> Qpe_extension_mode.data_to_be_visualized_by_d (current_data()) d );;
 
-  let visualize d = print_string(data_to_be_visualized d) ;;     
+  let visualize_by_b b = print_string(data_to_be_visualized_by_b b) ;; 
+  let visualize_by_d d = print_string(data_to_be_visualized_by_d d) ;;     
 
   let partial_check d = function 
     Superficial_result_ARG(f) -> Superficial_result_CR(Superficial_result_mode.partial_check (current_data()) d f)

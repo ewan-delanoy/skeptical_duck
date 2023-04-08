@@ -18,6 +18,8 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
+Int_range.scale visualize 1 9 ;; 
+
 let rf1 (B b) (S _n) = 
   if (b=0)||(b=1) then [] else 
     C[b-1;b+1] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))
@@ -37,12 +39,12 @@ let rf3 (B b) (S n) =
     Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) ;;   
 let check_rf3 = partial_check 3 (Qpe_constraints_ARG rf3) ;; 
 
-let rf4 = rf3 ;;
+let rf4 (B b) (S n) = 
+  if (b=0) then [] else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
 let check_rf4 = partial_check 4 (Qpe_constraints_ARG rf4) ;; 
 
-let rf5 (B b) (S n) = 
-  if n=8 then [] else 
-    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-9) ;;   
+let rf5  = rf4 ;;   
 let check_rf5 = partial_check 5 (Qpe_constraints_ARG rf5) ;; 
 
 let rf6 (B b) (S n) = 
@@ -52,13 +54,22 @@ let check_rf6 = partial_check 6 (Qpe_constraints_ARG rf6) ;;
 
 let rf7 (B b) (S n) = 
   if b=0 then [] else 
-    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
+  if b=1 then (
+                  if (n=5)||(n=7) then [] else
+                  if n=6 then [C[1;3]] else 
+                  [C[1;3;5]]   
+                ) else  [] ;;   
 let check_rf7 = partial_check 7 (Qpe_constraints_ARG rf7) ;; 
 
 (* RFI BEGIN *)
 
-let rfi (B b) (S _n) = 
+let rfi (B b) (S n) = 
   if b=0 then [] else 
+  if b=1 then (
+                if (n=5)||(n=7) then [] else
+                if n=6 then [C[1;3]] else 
+                  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)  
+              ) else  
   Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
 ;;
 
