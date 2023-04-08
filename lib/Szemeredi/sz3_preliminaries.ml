@@ -1565,6 +1565,28 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_constraints,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(3),Qpe_constraints,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(3),Qpe_constraints,Upper_half) *)
+
+let f_2_empty_i3_qpe_constraints_upper_half (B b) (S n) =    
+  if n=b+4
+  then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2)         
+  else Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) 
+;;
+
+(* 
+
+   Abstract_qpe_constraints_mode.global_check_by_d
+    (2,[],IMD(3),Upper_half) f_2_empty_i3_qpe_constraints_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_constraints_upper_half
+   (2,[],IMD(3)) f_2_empty_i3_qpe_constraints_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_constraints,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(3),Qpe_constraints,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(3),Qpe_extension,Lower_half) *)
 
 let f_2_empty_i3_qpe_extension_lower_half (B _b) (S n) = 
@@ -3131,20 +3153,14 @@ let check_rf3 = partial_check_by_d 3 (Qpe_constraints_ARG rf3) ;;
 
 (* RFI BEGIN *)
 
-let rfi (B b) (S n) =  
-  if n=b+4 
-  then (
-        if b=0 then [] else
-        if b=2 then [C[2;4]] else               
-        C[n-4;n-2]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))
-       )
-  else
-  if n=b+5 then  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) else          
-  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) 
+let rfi (B b) (S n) =    
+  if n=b+4
+  then Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2)         
+  else Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) 
 ;;
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check_by_b (Qpe_constraints_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check_by_d (Qpe_constraints_ARG rfi) ;; 
 
 *)(* End of prepared page for (Qpe_constraints,Upper_half) *)
 (* Beginning of prepared page for (Qpe_extension,Lower_half) *)(*(*
