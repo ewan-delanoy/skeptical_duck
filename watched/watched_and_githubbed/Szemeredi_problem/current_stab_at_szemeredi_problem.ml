@@ -21,27 +21,29 @@ open Unimode ;;
 
 Int_range.scale visualize 1 3;; 
 let rf1 (B b) (S _n) = 
-   [];;
-let check_rf1 = partial_check 1 (Qpe_extension_ARG rf1) ;; 
+  if b=1 then Empty_point else
+    P(1,[],B(b-1),S(b+1));;
+let check_rf1 = partial_check 1 (Qpe_core_ARG rf1) ;; 
 
 
 let rf2 (B b) (S n) = 
-  []  ;; 
-let check_rf2 = partial_check 2 (Qpe_extension_ARG rf2) ;; 
+  if b=1 then Empty_point else
+    P(1,[],B(b-1),S(b+1));;
+let check_rf2 = partial_check 2 (Qpe_core_ARG rf2) ;; 
 
 
 let rf3 (B b) (S n) = 
-  [];;
-let check_rf3 = partial_check 2 (Qpe_extension_ARG rf3) ;; 
+  if b=1 then Empty_point else
+    P(1,[],B(b-1),S(b+1));;
+let check_rf3 = partial_check 2 (Qpe_core_ARG rf3) ;; 
 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=3 then [1;3] else 
-  if n=4 then [1;2;4] else 
-  [n]   ;;
+  if n<=3 then Empty_point else
+    P(1,[],B(n-3),S(n-1));; 
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check (Qpe_extension_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpe_core_ARG rfi) ;; 
