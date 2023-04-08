@@ -1141,7 +1141,26 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(0),Superficial_result,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(0),Superficial_result,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(0),Superficial_result,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(0),Solution_list,Lower_half) *)
+
+let f_2_empty_solution_list_lower_half (B _b) (S n) = 
+  simplest_list n ;;
+
+(* 
+
+   Abstract_solution_list_mode.global_check
+    (2,[],IMD(0),Lower_half) f_2_empty_solution_list_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_solution_list_lower_half
+   (2,[]) f_2_empty_solution_list_lower_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(0),Solution_list,Lower_half) ;;
+
+(* End of item at  (2,[],IMD(0),Solution_list,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -2133,7 +2152,46 @@ let check_rfi = Chronometer.it global_check (Superficial_result_ARG rfi) ;;
 *)(* End of prepared page for (Superficial_result,Lower_half) *)
 (* Beginning of prepared page for (Superficial_result,Upper_half) *)(*
 *)(* End of prepared page for (Superficial_result,Upper_half) *)
-(* Beginning of prepared page for (Solution_list,Lower_half) *)(*
+(* Beginning of prepared page for (Solution_list,Lower_half) *)(*(*
+
+#use "watched/watched_and_githubbed/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
+
+
+An attempt at creating an algorithm that (given enough time) can compute sytematically
+any value of the Szemeredi function. 
+
+*)
+
+
+open Skeptical_duck_lib ;; 
+open Needed_values ;; 
+
+
+open Sz3_preliminaries ;;
+open Tools_for_warehouse ;; 
+let see0 = Overall.get_status () ;; 
+open Unimode ;;
+
+
+
+let vz = visualize 1 ;; 
+let rf1 (B _b) (S n) = 
+  simplest_list n ;; 
+let check_rf1 = partial_check 1 (Solution_list_ARG rf1) ;; 
+
+let rf2 (B _b) (S n) = 
+  simplest_list n ;; 
+let check_rf2 = partial_check 2 (Solution_list_ARG rf2) ;; 
+
+
+
+(* RFI BEGIN *)
+
+let rfi (B _b) (S n) = 
+  simplest_list n ;; 
+
+(* RFI END *)
+let check_rfi = Chronometer.it global_check (Solution_list_ARG rfi) ;; 
 *)(* End of prepared page for (Solution_list,Lower_half) *)
 (* Beginning of prepared page for (Solution_list,Upper_half) *)(*
 *)(* End of prepared page for (Solution_list,Upper_half) *)
