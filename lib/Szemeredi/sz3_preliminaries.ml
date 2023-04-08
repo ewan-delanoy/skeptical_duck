@@ -1525,6 +1525,26 @@ Hashtbl.add
 Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_core,Lower_half) ;;
 
 (* End of item at  (2,[],IMD(3),Qpe_core,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(3),Qpe_core,Upper_half) *)
+
+let f_2_empty_i3_qpe_core_upper_half (B _b) (S n) = 
+    P(1,[],B(n-3),S(n-1))
+  ;;
+
+(* 
+
+   Abstract_qpe_core_mode.global_check_by_d
+    (2,[],IMD(3),Upper_half) f_2_empty_i3_qpe_core_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_core_upper_half
+   (2,[],IMD(3)) f_2_empty_i3_qpe_core_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_core,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(3),Qpe_core,Upper_half) *)
 (* Beginning of item at  (2,[],IMD(3),Qpe_constraints,Lower_half) *)
 
 let f_2_empty_i3_qpe_constraints_lower_half (B _b) (S n) = 
@@ -3009,8 +3029,7 @@ let check_rf2 = partial_check_by_d 2 (Qpe_core_ARG rf2) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=4 then Empty_point else 
-    P(1,[],B(n-4),S(n-2))
+    P(1,[],B(n-3),S(n-1))
   ;; 
 
 (* RFI END *)
