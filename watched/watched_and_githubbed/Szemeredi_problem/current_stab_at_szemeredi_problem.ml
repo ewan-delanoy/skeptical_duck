@@ -18,26 +18,50 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
-
-Int_range.scale visualize 1 3;; 
-let rf1 (B _b) (S n) = 
-   Empty_point 
-;; 
-let check_rf1 = partial_check 1 (Qpe_core_ARG rf1) ;; 
-
-let rf2 (B _b) (S n) = 
-   Empty_point 
-;; 
-let check_rf2 = partial_check 2 (Qpe_core_ARG rf2) ;; 
+let rf1 (B b) (S _n) = 
+  if (b=0)||(b=1) then [] else 
+    C[b-1;b+1] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))
+  ;;  
+let check_rf1 = partial_check 1 (Qpe_constraints_ARG rf1) ;; 
 
 
+let rf2 (B b) (S _n) = 
+  if (b=0) then [] else 
+    C[b;b+2] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))
+  ;; 
+let check_rf2 = partial_check 2 (Qpe_constraints_ARG rf2) ;; 
+
+
+let rf3 (B b) (S n) = 
+  if (b=0)||(b=1) then [] else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-2) ;;   
+let check_rf3 = partial_check 3 (Qpe_constraints_ARG rf3) ;; 
+
+let rf4 = rf3 ;;
+let check_rf4 = partial_check 4 (Qpe_constraints_ARG rf4) ;; 
+
+let rf5 (B b) (S n) = 
+  if n=8 then [] else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-9) ;;   
+let check_rf5 = partial_check 5 (Qpe_constraints_ARG rf5) ;; 
+
+let rf6 (B b) (S n) = 
+  if n=9 then [] else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-10) ;;   
+let check_rf6 = partial_check 6 (Qpe_constraints_ARG rf6) ;; 
+
+let rf7 (B b) (S n) = 
+  if b=0 then [] else 
+    Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1) ;;   
+let check_rf7 = partial_check 7 (Qpe_constraints_ARG rf7) ;; 
 
 (* RFI BEGIN *)
 
-let rfi (B _b) (S n) = 
-   if n<=5 then Empty_point else
-    P(1,[],B(n-5),S(n-3))
-  ;; 
+let rfi (B b) (S _n) = 
+  if b=0 then [] else 
+  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
+;;
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check (Qpe_core_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpe_constraints_ARG rfi) ;; 
+
