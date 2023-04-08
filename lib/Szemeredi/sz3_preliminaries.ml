@@ -1835,10 +1835,11 @@ end ;;
 
 module Range = struct 
 
-let bound = 40 ;; 
+let bound_for_b = 40 ;;
+let bound_for_n = 40 ;; 
     
-let breadths = Int_range.scale (fun b->B b) 0 bound ;;
-let sizes = Int_range.scale (fun n->S n) 1 bound ;;
+let breadths = Int_range.scale (fun b->B b) 0 bound_for_b ;;
+let sizes = Int_range.scale (fun n->S n) 1 bound_for_n ;;
     
 let whole_range = Cartesian.product breadths sizes ;; 
   
@@ -1854,12 +1855,16 @@ let er_range (width,scrappers) = function
 let restricted_range (width,scrappers,IMD ql_idx) half = 
   List.filter (fun (b,n)->Warehouse.wet_length_watcher (P(width,scrappers,b,n))>=ql_idx)
   (er_range (width,scrappers) half);;
+(* In the lower half, we have n<b+2*w and b=n-2*w+d *)
+(* In the upper half, we have n>=b+2*w and n=(b+2*w-1)+d *)  
 let linear_range_by_d (w,_scr,d) = function 
-  Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
-  |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
-let linear_range_by_b (w,_scr,d) = function 
-  Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) (bound-2*w+d) 
-  |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) (bound-2*w+d+1) ;;
+  Lower_half -> Int_range.scale (fun n->(B(n-2*w+d),S(n))) (max(2*w-d) 1) 
+                (min bound_for_n (bound_for_b+2*w-d)) 
+  |Upper_half -> Int_range.scale (fun b->(B(b),S(b+2*w-1+d))) (max(2-2*w-d) 0) 
+                (bound_for_b-2*w-d+1) ;;
+let linear_range_by_b (w,_scr,b) = function 
+  Lower_half -> Int_range.scale (fun n->(B(b),S(n))) 1 (b+2*w-1)  
+  |Upper_half -> Int_range.scale (fun n->(B(b),S(n))) (b+2*w) bound_for_n  ;;
 
 let compute_enumerator_index w (B b,S n) = function 
 Lower_half ->  b+2*w-n

@@ -18,7 +18,8 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
-Int_range.scale visualize 1 9 ;; 
+Chronometer.it (Int_range.scale visualize_by_d 1) 9 ;; 
+Chronometer.it (Int_range.scale visualize_by_b 0) 9 ;; 
 
 let rf1 (B b) (S _n) = 
   if (b=0)||(b=1) then [] else 
