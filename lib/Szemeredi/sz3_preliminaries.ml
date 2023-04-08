@@ -2283,9 +2283,9 @@ module Private = struct
 let print_vr_element ((B b,S n),elt) = 
     "((B "^(string_of_int b)^",S "^(string_of_int n)^"),"^(Seed.current_printer elt)^")" ;;  
 
-let partial_range_by_b (w,s,i,half) d = List.filter ( 
+let partial_range_by_b (w,s,i,half) b = List.filter ( 
       Seed.extra_condition_for_range (w,s,i) )
-    (Range.linear_range_by_d (w,s,d) half) ;;    
+    (Range.linear_range_by_b (w,s,b) half) ;;    
 
 let partial_range_by_d (w,s,i,half) d = List.filter ( 
       Seed.extra_condition_for_range (w,s,i) )

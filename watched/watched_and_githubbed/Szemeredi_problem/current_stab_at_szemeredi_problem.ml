@@ -21,6 +21,8 @@ open Unimode ;;
 Chronometer.it (Int_range.scale visualize_by_d 1) 9 ;; 
 Chronometer.it (Int_range.scale visualize_by_b 0) 9 ;; 
 
+
+
 let rf1 (B b) (S _n) = 
   if (b=0)||(b=1) then [] else 
     C[b-1;b+1] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-5))
@@ -64,14 +66,26 @@ let check_rf7 = partial_check 7 (Qpe_constraints_ARG rf7) ;;
 
 (* RFI BEGIN *)
 
-let rfi (B b) (S n) = 
-  if b=0 then [] else 
-  if b=1 then (
-                if (n=5)||(n=7) then [] else
-                if n=6 then [C[1;3]] else 
-                  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)  
-              ) else  
-  Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
+let rfi (B b) (S n) =  
+  if b=0  
+  then (
+         if n<=5 then [] else 
+         if n<=7 then [C[n-5;n-3]] else 
+         C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-6))  
+       ) 
+  else 
+  if (b=1)||(b=2) 
+  then (
+         if n<=5 then [] else 
+         if n<=7 then [C[n-5;n-3]] else 
+         C[n-5;n-3]::(Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))  
+       ) 
+  else    
+  if b=3
+  then (
+          if n<=7 then [] else 
+          Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-4))  
+  else Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (b-1)
 ;;
 
 (* RFI END *)
