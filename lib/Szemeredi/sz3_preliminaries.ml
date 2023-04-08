@@ -1282,7 +1282,28 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_constraints,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(2),Qpe_constraints,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(2),Qpe_constraints,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(2),Qpe_extension,Lower_half) *)
+
+let f_2_empty_i2_qpe_extension_lower_half (B _b) (S n) = 
+  if n=3 then [1;3] else 
+  if n=4 then [1;2;4] else 
+  [n]   ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check
+    (2,[],IMD(2),Lower_half) f_2_empty_i2_qpe_extension_lower_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_extension_lower_half
+   (2,[],IMD(2)) f_2_empty_i2_qpe_extension_lower_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(2),Qpe_extension,Lower_half) ;;
+
+(* End of item at  (2,[],IMD(2),Qpe_extension,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -2623,7 +2644,7 @@ let see0 = Overall.get_status () ;;
 open Unimode ;;
 
 
-visualize 1 ;; 
+Int_range.scale visualize 1 3;; 
 let rf1 (B b) (S _n) = 
    [];;
 let check_rf1 = partial_check 1 (Qpe_extension_ARG rf1) ;; 
@@ -2643,12 +2664,12 @@ let check_rf3 = partial_check 2 (Qpe_extension_ARG rf3) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=4 then [1;3;4] else 
-  if n=5 then [1;2;4;5] else 
-  [n-1;n]   ;;
+  if n=3 then [1;3] else 
+  if n=4 then [1;2;4] else 
+  [n]   ;;
 
 (* RFI END *)
-let check_rfi = global_check (Qpe_extension_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpe_extension_ARG rfi) ;; 
 *)(* End of prepared page for (Qpe_extension,Lower_half) *)
 (* Beginning of prepared page for (Qpe_extension,Upper_half) *)(*(*
 

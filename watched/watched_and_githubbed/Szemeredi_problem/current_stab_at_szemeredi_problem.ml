@@ -19,31 +19,29 @@ let see0 = Overall.get_status () ;;
 open Unimode ;;
 
 
-visualize 1 ;; 
+Int_range.scale visualize 1 3;; 
 let rf1 (B b) (S _n) = 
    [];;
-let check_rf1 = partial_check 1 (Qpe_constraints_ARG rf1) ;; 
+let check_rf1 = partial_check 1 (Qpe_extension_ARG rf1) ;; 
 
 
 let rf2 (B b) (S n) = 
-  if n<=5 then [] else 
-  if n<=8 then [C[n-5;n-3]] else
-    C[n-5;n-3] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-9))   ;; 
-let check_rf2 = partial_check 2 (Qpe_constraints_ARG rf2) ;; 
+  []  ;; 
+let check_rf2 = partial_check 2 (Qpe_extension_ARG rf2) ;; 
 
 
 let rf3 (B b) (S n) = 
   [];;
-let check_rf3 = partial_check 2 (Qpe_constraints_ARG rf3) ;; 
+let check_rf3 = partial_check 2 (Qpe_extension_ARG rf3) ;; 
 
 
 
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n<=4 then [] else 
-  if n<=8 then [C[n-4;n-2]] else
-  C[n-4;n-2] :: (Int_range.scale (fun j->C[j+1;j+3;j+5]) 0 (n-8))   ;;
+  if n=3 then [1;3] else 
+  if n=4 then [1;2;4] else 
+  [n]   ;;
 
 (* RFI END *)
-let check_rfi = Chronometer.it global_check (Qpe_constraints_ARG rfi) ;; 
+let check_rfi = Chronometer.it global_check (Qpe_extension_ARG rfi) ;; 
