@@ -2349,7 +2349,8 @@ let global_check_by_b (w,s,i,half) g =
     then Side_effects_after_successful_global_check.main (w,s,i,Seed.current_component,half)  
     else 
     let (_,temp3) = Min.minimize_it_with_care (fun ((B b,_n),_,_)->b) temp2 in 
-    let msg = "\n\n\n"^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
+    let msg = "\n\n\n"^(Private.pretty_print_check_data temp2)^"\n\n\n" 
+             ^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
     (print_string msg;flush stdout);;   
 
 let global_check_by_d (w,s,i,half) g = 
@@ -2362,7 +2363,8 @@ let global_check_by_d (w,s,i,half) g =
     else 
     let (_,temp3) = Min.minimize_it_with_care (fun (pair,_,_)->
       Range.compute_enumerator_index w pair half) temp2 in 
-    let msg = "\n\n\n"^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
+    let msg = "\n\n\n"^(Private.pretty_print_check_data temp2)^"\n\n\n" 
+      ^(Private.pretty_print_check_data temp3)^"\n\n\n" in 
     (print_string msg;flush stdout);;   
 
 
