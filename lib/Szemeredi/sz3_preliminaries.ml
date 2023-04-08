@@ -1606,7 +1606,28 @@ Hashtbl.add
 
 Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_extension,Lower_half) ;;
 
-(* End of item at  (2,[],IMD(3),Qpe_extension,Lower_half) *)(* End of warehouse fillings. Do not modify this line *)
+(* End of item at  (2,[],IMD(3),Qpe_extension,Lower_half) *)
+(* Beginning of item at  (2,[],IMD(3),Qpe_extension,Upper_half) *)
+
+let f_2_empty_i3_qpe_extension_upper_half (B _b) (S n) = 
+  if n=3 then [1;2] else 
+    [] 
+  ;;
+
+(* 
+
+   Abstract_qpe_extension_mode.global_check_by_d
+    (2,[],IMD(3),Upper_half) f_2_empty_i3_qpe_extension_upper_half ;; 
+
+*)
+
+Hashtbl.add
+ Warehouse.wet_hashtbl_for_qpe_extension_upper_half
+   (2,[],IMD(3)) f_2_empty_i3_qpe_extension_upper_half ;;
+
+Warehouse.record_one_more_insertion (2,[],IMD(3),Qpe_extension,Upper_half) ;;
+
+(* End of item at  (2,[],IMD(3),Qpe_extension,Upper_half) *)(* End of warehouse fillings. Do not modify this line *)
 end ;;   
 
 module Constraint = struct  
@@ -3249,8 +3270,8 @@ let check_rf2 = partial_check_by_d 2 (Qpe_extension_ARG rf2) ;;
 (* RFI BEGIN *)
 
 let rfi (B _b) (S n) = 
-  if n=4 then [1;2;4] else 
-    [n] 
+  if n=3 then [1;2] else 
+    [] 
   ;;
   
 (* RFI END *)
