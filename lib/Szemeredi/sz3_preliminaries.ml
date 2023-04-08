@@ -2435,14 +2435,6 @@ type argument =
 | Qpe_constraints_ARG of (breadth -> size -> (constraint_t list))
 | Qpe_extension_ARG of (breadth -> size -> extension_data) ;; 
 
-type check_result = 
-  Superficial_result_CR of (((breadth * size) * superficial_result * superficial_result) list)
-| Solution_list_CR of (((breadth * size) * solution list * solution list) list)
-| Qpl_length_CR of (((breadth * size) * int * int) list)
-| Qpe_core_CR of (((breadth * size) * point * point) list)
-| Qpe_constraints_CR of (((breadth * size) * (constraint_t list) * (constraint_t list)) list)
-| Qpe_extension_CR of (((breadth * size) * extension_data * extension_data) list) ;; 
-
 
   let current_data () =
     let (_koc,half,imd,pt) = Overall.get_status () in 

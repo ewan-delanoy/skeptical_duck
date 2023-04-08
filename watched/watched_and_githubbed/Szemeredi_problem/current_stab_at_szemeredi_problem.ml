@@ -18,7 +18,7 @@ open Tools_for_warehouse ;;
 let see0 = Overall.get_status () ;; 
 open Unimode ;;
 
-Chronometer.it (Int_range.scale visualize_by_d 1) 9 ;; 
+
 Chronometer.it (Int_range.scale visualize_by_b 0) 9 ;; 
 
 
