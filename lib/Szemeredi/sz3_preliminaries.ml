@@ -96,6 +96,17 @@ module Finite_int_set = struct
        let new_max = List.hd(List.rev new_z) in 
        (S new_max,List.filter (fun t->t<new_max) new_scrappers) ;;     
   
+  
+  (*
+  
+  remove_one_element (10,[3;7;8;9]) 10 ;;
+  
+  *)
+  
+  
+  
+
+
 end ;;    
 
 module Kind_of_component = struct 
@@ -1785,7 +1796,7 @@ let pushings_for_expansions = [] ;;
 
 end ;;  
   
-module Untamed = struct 
+module Compute_bulk_result = struct 
 
   let test_for_admissibility_up_to_max_with max_width z =
     if max_width<1 then true else 
@@ -1796,17 +1807,6 @@ module Untamed = struct
      &&
      (List.for_all (fun t->
       not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
-  
-  
-  
-  (*
-  
-  remove_one_element (10,[3;7;8;9]) 10 ;;
-  
-  *)
-  
-  
-  
   
   
   let wet_hashtbl = Hashtbl.create 50 ;;
@@ -1935,12 +1935,15 @@ module Untamed = struct
       Hashtbl.replace (choose_hashtbl w_or_d) pt2 bres ) new_subcomps in 
       subcomps ;;
   
-  let compute_bulk_result w_or_d pt =
+  let main w_or_d pt =
      let subcomps = needed_subcomputations w_or_d ([],[pt]) in 
      List.assoc pt subcomps ;;   
-    
+end ;;    
+
+module Untamed = struct
+
   let uncurried_all_representatives =Memoized.recursive(fun old_f (w_or_d,pt) ->
-     let bres= compute_bulk_result w_or_d pt 
+     let bres= Compute_bulk_result.main w_or_d pt 
      and gluer = (fun  (pt4,adj4)->Image.image (i_merge adj4)(old_f (w_or_d,pt4)))  in 
      let sr = Bulk_result.superficial_part bres in 
      match sr with 
@@ -2416,7 +2419,7 @@ module Superficial_result_seed = ((struct
 type current_t = superficial_result ;;
 let current_component = Superficial_result ;; 
 let original (width,scrappers,_) b n =
-  Bulk_result.superficial_part( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) ;;
+  Bulk_result.superficial_part( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) ;;
 let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_superficial_result ;; 
 
@@ -2428,7 +2431,7 @@ module Solution_list_seed = ((struct
 type current_t = solution list ;;
 let current_component = Solution_list ;; 
 let original (width,scrappers,_) b n =
-  Bulk_result.solution_list( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) ;;
+  Bulk_result.solution_list( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) ;;
   let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = Pretty_printer.for_solution_list ;; 
 
@@ -2439,7 +2442,7 @@ module Qpl_length_seed = ((struct
 type current_t = int ;;
 let current_component = Qpl_length ;; 
 let original (width,scrappers,_)  b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) in 
   List.length ql;; ;;
   let extra_condition_for_range = Tools_for_mode_modules.no_extra_condition ;;
 let current_printer = string_of_int ;; 
@@ -2451,7 +2454,7 @@ module Qpe_core_seed = ((struct
 type current_t = point ;;
 let current_component = Qpe_core ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) in 
   let (Q(pt,_ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   pt ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
@@ -2464,7 +2467,7 @@ module Qpe_constraints_seed = ((struct
 type current_t = constraint_t list ;;
 let current_component = Qpe_constraints ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) in 
   let (Q(_pt,ql_constraints,_extension)) = List.nth ql (ql_idx-1) in 
   ql_constraints ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
@@ -2477,7 +2480,7 @@ module Qpe_extension_seed = ((struct
 type current_t = extension_data ;;
 let current_component = Qpe_extension ;; 
 let original (width,scrappers,IMD ql_idx) b n =
-  let ql = Bulk_result.qualified_points( Untamed.compute_bulk_result Wet (P(width,scrappers,b,n))) in 
+  let ql = Bulk_result.qualified_points( Compute_bulk_result.main Wet (P(width,scrappers,b,n))) in 
   let (Q(_pt,_ql_constraints,extension)) = List.nth ql (ql_idx-1) in 
   extension ;;
 let extra_condition_for_range = Tools_for_mode_modules.check_length ;;  
