@@ -1769,6 +1769,12 @@ module Bulk_result = struct
        raise(Impose_one_more_constraint_opt_exn(pt,cstr))
       ;;
 end ;;      
+
+module Referee = struct 
+
+let items = [] ;;
+
+end ;;  
   
 module Untamed = struct 
   
@@ -1857,7 +1863,7 @@ module Untamed = struct
                 ([],Some(Fork tooths))
         |Some _bres2 -> ([],Some(Contraction(preceding_point,front_constraint)))) ;; 
   
-  let fork_case_in_bulk_result_computation old_f cases helper = 
+  let fork_case_in_bulk_result_computation old_f _pt cases helper = 
         let (last_pt,last_adj) = List.nth cases 2 in 
         let partial_res5 = old_f last_pt helper in 
         match snd partial_res5 with 
@@ -1896,7 +1902,7 @@ module Untamed = struct
           |Some new_br4 ->([],Some new_br4)
       ) 
      | Fork cases ->
-      fork_case_in_bulk_result_computation (compute_bulk_result_partially w_or_d) cases helper
+      fork_case_in_bulk_result_computation (compute_bulk_result_partially w_or_d) pt cases helper
      ) ;; 
   
      

@@ -12,7 +12,7 @@ any value of the Szemeredi function.
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
 
-
+(*
 open Sz3_preliminaries ;;
 open Tools_for_warehouse ;; 
 let see0 = Overall.get_status () ;; 
@@ -53,3 +53,4 @@ let rfi (B _b) (S n) =
 
 (* RFI END *)
 let check_rfi = Chronometer.it global_check (Superficial_result_ARG rfi) ;; 
+*)
