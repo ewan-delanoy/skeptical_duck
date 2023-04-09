@@ -1753,12 +1753,18 @@ module Bulk_result = struct
         None -> None 
         |Some bres -> Some (extend_with pt bres extension) ;;    
   
-  let impose_one_more_constraint_opt pt cstr (BR(_sr,mold)) =
+  let nonraising_impose_one_more_constraint_opt pt cstr (BR(_sr,mold)) =
       match Mold.insert_several_constraints_carefully [cstr] mold with 
        None -> None
       | Some new_mold -> Some(BR(Contraction(pt,cstr),new_mold)) ;;
        
-  
+  exception Impose_one_more_constraint_opt_exn of point * constraint_t ;; 
+
+  let impose_one_more_constraint_opt pt cstr bres =   
+      try nonraising_impose_one_more_constraint_opt pt cstr bres  with 
+      Mold.Insert_several_constraints_carefully_exn(_,_) ->
+       raise(Impose_one_more_constraint_opt_exn(pt,cstr))
+      ;;
 end ;;      
   
 module Untamed = struct 

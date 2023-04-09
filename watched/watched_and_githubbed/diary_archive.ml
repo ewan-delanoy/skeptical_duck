@@ -17,7 +17,7 @@ module Snip123=struct
 
   let u2 = Chronometer.it 
    (Explicit.image (fun (b,n)->
-    let pt = P(1,[],b,n) in 
+    let pt = P(2,[],b,n) in 
     Untamed.compute_bulk_result Dry pt)) u1 ;; 
   
   let u3 = Chronometer.it 
@@ -28,9 +28,6 @@ module Snip123=struct
       Untamed.compute_bulk_result Wet pt))) u1 ;;   
   
   let check = List.filter (fun (x,y,z)->y<>z) u3 ;;     
-  
-  Manage_diary.fix_indexation ;; 
-
 
 end ;;
 
