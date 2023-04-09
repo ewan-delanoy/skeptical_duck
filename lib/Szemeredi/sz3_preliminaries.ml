@@ -45,7 +45,8 @@ type walker_for_bulk_result_computation = Sz3_types.walker_for_bulk_result_compu
   to_be_treated : point list ;
 } ;; 
 type mode_in_bulk_result_computation = Sz3_types.mode_in_bulk_result_computation =
-    Bulk_comp 
+    Bulk_comp_with_remembrance
+   |Bulk_comp_without_remembrance  
    |Superficial_comp ;; 
 
 let i_order = Total_ordering.for_integers ;;

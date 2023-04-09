@@ -61,5 +61,6 @@ type walker_for_bulk_result_computation = {
 } ;; 
 
 type mode_in_bulk_result_computation =
-    Bulk_comp 
+    Bulk_comp_with_remembrance
+   |Bulk_comp_without_remembrance  
    |Superficial_comp ;; 
