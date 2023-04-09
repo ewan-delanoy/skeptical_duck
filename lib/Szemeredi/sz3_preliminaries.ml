@@ -40,10 +40,13 @@ type warehouse_content = Sz3_types.warehouse_content = {
   prelude : string ;
   warehouse_items : warehouse_item list
 } ;; 
-type helper_for_bulk_result_computation = Sz3_types.helper_for_bulk_result_computation = {
+type walker_for_bulk_result_computation = Sz3_types.walker_for_bulk_result_computation = {
   already_treated : ( point * bulk_result ) list ;
   to_be_treated : point list ;
 } ;; 
+type mode_in_bulk_result_computation = Sz3_types.mode_in_bulk_result_computation =
+    Bulk_comp 
+   |Superficial_comp ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;

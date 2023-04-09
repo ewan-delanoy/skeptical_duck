@@ -55,7 +55,11 @@ type warehouse_content = {
   warehouse_items : warehouse_item list
 } ;; 
 
-type helper_for_bulk_result_computation = {
+type walker_for_bulk_result_computation = {
     already_treated : ( point * bulk_result ) list ;
     to_be_treated : point list ;
 } ;; 
+
+type mode_in_bulk_result_computation =
+    Bulk_comp 
+   |Superficial_comp ;; 
