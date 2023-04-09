@@ -55,6 +55,7 @@ type warehouse_content = {
   warehouse_items : warehouse_item list
 } ;; 
 
-type referee_item = 
-   Push_representative of point * point * solution 
-  |Push_expansion of point * point ;; 
+type helper_for_bulk_result_computation = {
+    already_treated : ( point * bulk_result ) list ;
+    to_be_treated : point list ;
+} ;; 

@@ -40,9 +40,10 @@ type warehouse_content = Sz3_types.warehouse_content = {
   prelude : string ;
   warehouse_items : warehouse_item list
 } ;; 
-type referee_item = Sz3_types.referee_item = 
-   Push_representative of point * point * solution 
-  |Push_expansion of point * point ;; 
+type helper_for_bulk_result_computation = Sz3_types.helper_for_bulk_result_computation = {
+  already_treated : ( point * bulk_result ) list ;
+  to_be_treated : point list ;
+} ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -87,6 +88,13 @@ module Finite_int_set = struct
        if domain = [] then (S 0,[]) else 
        let n = List.hd(List.rev domain) in 
        (S n,i_setminus (Int_range.range 1 n) domain) ;;   
+
+  let remove_one_element (S n,scrappers) k=
+       let new_scrappers = i_insert k scrappers in 
+       if k <> n then (S n,new_scrappers) else 
+       let new_z =  of_pair (S n,new_scrappers) in 
+       let new_max = List.hd(List.rev new_z) in 
+       (S new_max,List.filter (fun t->t<new_max) new_scrappers) ;;     
   
 end ;;    
 
@@ -1772,13 +1780,12 @@ end ;;
 
 module Referee = struct 
 
-let items = [] ;;
+let pushings_for_representatives = [] ;;
+let pushings_for_expansions = [] ;;
 
 end ;;  
   
 module Untamed = struct 
-  
-  let cil_order = ((fun (C x) (C y)->il_order x y) : constraint_t Total_ordering_t.t) ;;
 
   let test_for_admissibility_up_to_max_with max_width z =
     if max_width<1 then true else 
@@ -1790,12 +1797,6 @@ module Untamed = struct
      (List.for_all (fun t->
       not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
   
-  let remove_one_element (S n,scrappers) k=
-    let new_scrappers = i_insert k scrappers in 
-    if k <> n then (S n,new_scrappers) else 
-    let new_z =  Finite_int_set.of_pair (S n,new_scrappers) in 
-    let new_max = List.hd(List.rev new_z) in 
-    (S new_max,List.filter (fun t->t<new_max) new_scrappers) ;;
   
   
   (*
@@ -1856,7 +1857,7 @@ module Untamed = struct
      |Some bres ->
          (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
          None -> let tooths = Int_range.scale (fun k->
-                  let (m,scr) = remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
+                  let (m,scr) = Finite_int_set.remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
                   let pt3 = P(width2,scr,B(breadth2-1),m) in 
                   Simplest_reduction.decompose(pt3) 
                  ) 0 2  in 
