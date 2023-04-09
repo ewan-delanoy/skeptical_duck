@@ -1789,6 +1789,20 @@ module Bulk_result = struct
       ;;
 end ;;      
 
+module Test_for_admissibility = struct 
+
+let up_to_max_with max_width z =
+    if max_width<1 then true else 
+    Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
+  
+let main width breadth z =
+     (up_to_max_with (width-1) z)
+     &&
+     (List.for_all (fun t->
+      not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
+
+end ;;  
+
 module Referee = struct 
 
 let pushings_for_representatives = [] ;;
@@ -1798,17 +1812,6 @@ end ;;
   
 module Compute_bulk_result = struct 
 
-  let test_for_admissibility_up_to_max_with max_width z =
-    if max_width<1 then true else 
-    Sz_preliminaries.test_for_admissibility (Sz_max_width_t.MW (max_width)) z ;;
-  
-  let test_for_admissiblity width breadth z =
-     (test_for_admissibility_up_to_max_with (width-1) z)
-     &&
-     (List.for_all (fun t->
-      not(i_is_included_in [t;t+width;t+2*width] z)) (Int_range.range 1 breadth))  ;;
-  
-  
   let wet_hashtbl = Hashtbl.create 50 ;;
   let dry_hashtbl = Hashtbl.create 50 ;;
     
