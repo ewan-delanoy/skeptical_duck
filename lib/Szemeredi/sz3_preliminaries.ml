@@ -1929,6 +1929,23 @@ module Untamed = struct
      let subcomps = needed_subcomputations w_or_d ([],[pt]) in 
      List.assoc pt subcomps ;;   
     
+  let uncurried_all_representatives =Memoized.recursive(fun old_f (w_or_d,pt) ->
+     let bres= compute_bulk_result w_or_d pt 
+     and gluer = (fun  (pt4,adj4)->Image.image (i_merge adj4)(old_f (w_or_d,pt4)))  in 
+     let sr = Bulk_result.superficial_part bres in 
+     match sr with 
+       Atomic -> [Point.enumerate_supporting_set pt]
+      |Decomposable(pt2,adj) -> gluer(pt2,adj)
+      |Contraction(pt3,cstr) ->
+           let temp2 = old_f (w_or_d,pt3) in     
+           List.filter (Constraint.satisfied_by_individual [cstr]) temp2
+      |Fork l ->
+          let temp3 = Image.image gluer l in 
+          il_fold_merge temp3);;       
+   
+  let all_representatives w_or_d pt = uncurried_all_representatives (w_or_d,pt) ;; 
+
+
 end ;;  
 
 
