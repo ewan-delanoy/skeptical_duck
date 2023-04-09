@@ -54,3 +54,7 @@ type warehouse_content = {
   prelude : string ;
   warehouse_items : warehouse_item list
 } ;; 
+
+type referee_item = 
+   Push_representative of point * point * solution 
+  |Push_expansion of point * point ;; 

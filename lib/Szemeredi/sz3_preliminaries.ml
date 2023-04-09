@@ -40,6 +40,9 @@ type warehouse_content = Sz3_types.warehouse_content = {
   prelude : string ;
   warehouse_items : warehouse_item list
 } ;; 
+type referee_item = Sz3_types.referee_item = 
+   Push_representative of point * point * solution 
+  |Push_expansion of point * point ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
