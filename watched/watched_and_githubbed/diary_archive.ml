@@ -18,14 +18,14 @@ module Snip123=struct
   let u2 = Chronometer.it 
    (Explicit.image (fun (b,n)->
     let pt = P(2,[],b,n) in 
-    Untamed.compute_bulk_result Dry pt)) u1 ;; 
+    Compute_bulk_result.main Dry pt)) u1 ;; 
   
   let u3 = Chronometer.it 
     (Explicit.image (fun (b,n)->
      let pt = P(1,[],b,n) in 
      ((b,n),
-      Untamed.compute_bulk_result Dry pt,
-      Untamed.compute_bulk_result Wet pt))) u1 ;;   
+     Compute_bulk_result.main Dry pt,
+     Compute_bulk_result.main Wet pt))) u1 ;;   
   
   let check = List.filter (fun (x,y,z)->y<>z) u3 ;;     
 

@@ -242,7 +242,8 @@ module Simplest_reduction = struct
     end ;;  
 
 
-  let decompose pt =
+  let decompose pt = 
+    if pt = Empty_point then (Empty_point,[]) else 
       let (old_width,scrappers,B old_breadth,n) = Point.unveil pt in 
       let domain = Finite_int_set.of_pair (n,scrappers) in 
       match For_nonparametrized_sets.decompose (old_width,old_breadth) domain with
@@ -1888,14 +1889,39 @@ let (opt_answer,opt_pt2) = easy_superficial_result_opt pt in
                 Fork tooths
     |Some _ -> Contraction(preceding_point,front_constraint) ;;     
 
-let fork_case old_f w_or_d cases =       
-let (pt4,adj4) = List.nth cases 2 in 
-let br4 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt4))  in 
-let (BR(_,M(reps,_))) = Bulk_result.extend_with pt4 br4 adj4 in 
-let new_mold = M(reps,Image.image (
-      fun (pt5,adj5)-> Q(pt5,[],adj5)
-) cases) in 
-BR(Fork cases,new_mold) ;;
+exception Bad_representative_referee1 of point * point * int list * ((point * extension_data) list) ;;
+exception Bad_representative_referee2 of point * point * int list * ((point * extension_data) list) ;;
+
+let additional_reps_in_fork_case old_f w_or_d pt cases = List.filter_map (
+    fun (pt3,pt4,sol) ->
+      if pt3<>pt then None else 
+      match List.find_opt (fun (pt5,_)->pt5=pt4) cases with 
+       None -> raise(Bad_representative_referee1(pt3,pt4,sol,cases))
+      |Some(_,adj5) ->
+        let br7 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt4))  in 
+        let sols7 = Bulk_result.solution_list br7 in 
+        if (not(List.mem sol sols7))
+        then raise(Bad_representative_referee1(pt3,pt4,sol,cases)) 
+        else Some(i_merge sol adj5)  
+  ) Referee.pushings_for_representatives ;;
+
+let individual_qpoint_in_fork_case old_f w_or_d pt (pt1,adj1) = 
+  if List.mem (pt,pt1) Referee.pushings_for_expansions
+  then let br2 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt1)) in 
+       Bulk_result.qualified_points br2 
+  else [Q(pt1,[],adj1)] ;; 
+
+let qpoint_list_in_fork_case old_f w_or_d pt cases = 
+  List.flatten(Image.image (individual_qpoint_in_fork_case old_f w_or_d pt) cases) ;;
+
+let fork_case old_f w_or_d pt cases =       
+  let (pt2,adj2) = List.nth cases 2 in 
+  let br2 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt2))  in 
+  let (BR(_,M(old_reps,_))) = Bulk_result.extend_with pt2 br2 adj2 in 
+  let additional_reps = additional_reps_in_fork_case old_f w_or_d pt cases in 
+  let final_reps = il_sort (old_reps@additional_reps) in 
+  let final_qpoints = qpoint_list_in_fork_case old_f w_or_d pt cases in 
+  BR(Fork cases,M(final_reps,final_qpoints)) ;;
 
 exception Unforeseen_atomic of point * bulk_result ;;
 exception Unforeseen_constraint of point * constraint_t ;; 
@@ -1913,7 +1939,7 @@ let compute_bulk_and_do_nothing old_f w_or_d pt =
     None -> raise(Unforeseen_constraint(pt3,cstr))
     |Some new_br3 -> new_br3
    )
-  | Fork cases -> fork_case old_f w_or_d cases ;;
+  | Fork cases -> fork_case old_f w_or_d pt cases ;;
 
 let compute_bulk_and_remember old_f w_or_d pt = 
   match access_with_extra_accumulator_opt w_or_d pt with 
