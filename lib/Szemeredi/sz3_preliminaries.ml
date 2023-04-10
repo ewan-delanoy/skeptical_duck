@@ -1816,135 +1816,125 @@ end ;;
   
 module Compute_bulk_result = struct 
 
-  let wet_hashtbl = Hashtbl.create 50 ;;
-  let dry_hashtbl = Hashtbl.create 50 ;;
-    
-   let choose_hashtbl = function 
-      Wet -> wet_hashtbl 
-     |Dry -> dry_hashtbl ;; 
+  type bulk_or_superficial =
+  Bu of bulk_result 
+ |Su of superficial_result ;; 
 
-  let access_opt w_or_d pt = 
-   let (pt2,adj) = Simplest_reduction.decompose pt in 
-   if pt2 = Empty_point 
-   then Some (Bulk_result.atomic_case pt)
-   else
-   let pre_res=Warehouse.try_precomputed_results w_or_d pt2 in 
-   Bulk_result.extend_with_opt pt2 pre_res adj ;;
-     
-  let superificial_result_in_jump_case  pt_after_jump =
-    let (width,scrappers,B _breadth, S n) = Point.unveil pt_after_jump in 
-    let pt_before_jump = P(width-1,scrappers,B(n-2*(width-1)),S n) in  
-    let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
-    ([],Some(Decomposable(pt2,adj2))) ;; 
-      
-  let access_with_helper_opt w_or_d pt helper =
-      match List.assoc_opt pt helper with 
-      Some answer -> Some answer
-      | None ->  access_opt w_or_d pt ;;
-  
-  let compute_superficial_result_partially w_or_d pt helper =  
-    if pt = Empty_point then ([],Some Atomic) else
-    let (width,_scrappers,B breadth,_n) = Point.unveil pt in 
-    let (pt2,adj2) = Simplest_reduction.decompose pt in 
-    if ((width,breadth)=(1,0))||(pt2=Empty_point)
-    then ([],Some Atomic)
-    else 
-    if adj2<>[]
-    then ([],Some(Decomposable(pt2,adj2)))
-    else     
-    if breadth = 0
-    then superificial_result_in_jump_case pt   
-    else
+exception Extract_exn of bulk_or_superficial ;;
+
+let to_bulk = function x->match x with Bu(bu)->bu |Su(_) -> raise(Extract_exn(x));;
+let to_superficial = function x->match x with Su(su)->su |Bu(_) -> raise(Extract_exn(x));;
+
+
+let wet_hashtbl = Hashtbl.create 50 ;;
+let dry_hashtbl = Hashtbl.create 50 ;;
+
+let choose_hashtbl = function 
+  Wet -> wet_hashtbl 
+ |Dry -> dry_hashtbl ;; 
+
+let extra_accumulator = ref [] ;; (* use is internal to this module only *)
+
+let access_opt w_or_d pt = 
+let (pt2,adj) = Simplest_reduction.decompose pt in 
+if pt2 = Empty_point 
+then Some (Bulk_result.atomic_case pt)
+else
+let pre_res=Warehouse.try_precomputed_results w_or_d pt2 in 
+Bulk_result.extend_with_opt pt2 pre_res adj ;;
+ 
+let access_with_extra_accumulator_opt w_or_d pt =
+match List.assoc_opt pt (!extra_accumulator) with 
+Some answer -> Some answer
+| None ->  access_opt w_or_d pt ;;
+
+let superficial_result_in_jump_case  pt_after_jump =
+let (width,scrappers,B _breadth, S n) = Point.unveil pt_after_jump in 
+let pt_before_jump = P(width-1,scrappers,B(n-2*(width-1)),S n) in  
+let (pt2,adj2) = Simplest_reduction.decompose pt_before_jump in 
+Decomposable(pt2,adj2) ;;    
+
+let easy_superficial_result_opt pt =  
+  if pt = Empty_point then (Some Atomic,None) else
+  let (width,_scrappers,B breadth,_n) = Point.unveil pt in 
+  let (pt2,adj2) = Simplest_reduction.decompose pt in 
+  if ((width,breadth)=(1,0))||(pt2=Empty_point)
+  then (Some Atomic,None)
+  else 
+  if adj2<>[]
+  then (Some(Decomposable(pt2,adj2)),None)
+  else     
+  if breadth = 0
+  then (Some(superficial_result_in_jump_case pt),None)   
+  else (None,Some pt2) ;;
+
+let compute_superficial old_f w_or_d pt =  
+let (opt_answer,opt_pt2) = easy_superficial_result_opt pt in  
+  match opt_answer with 
+  Some easy_answer -> easy_answer 
+ |None -> 
+    let pt2 = Option.get opt_pt2 in 
     let (width2,scrappers2,B breadth2,n2) = Point.unveil pt2 in   
     let _ = assert(breadth2>0) in 
     let front_constraint = C [breadth2;breadth2+width2;breadth2+2*width2] 
     and preceding_point = P(width2,scrappers2,B(breadth2-1),n2) in 
-    match access_with_helper_opt w_or_d preceding_point helper with 
-      None -> ([preceding_point],None)
-     |Some bres ->
-         (match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
-         None -> let tooths = Int_range.scale (fun k->
+    let bres = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance ,preceding_point)) in 
+    match Bulk_result.impose_one_more_constraint_opt preceding_point front_constraint bres  with 
+     None -> let tooths = Int_range.scale (fun k->
                   let (m,scr) = Finite_int_set.remove_one_element  (n2,scrappers2)  (breadth2+k*width2) in 
                   let pt3 = P(width2,scr,B(breadth2-1),m) in 
                   Simplest_reduction.decompose(pt3) 
                  ) 0 2  in 
-                ([],Some(Fork tooths))
-        |Some _bres2 -> ([],Some(Contraction(preceding_point,front_constraint)))) ;; 
+                Fork tooths
+    |Some _ -> Contraction(preceding_point,front_constraint) ;;     
+
+let fork_case old_f w_or_d cases =       
+let (pt4,adj4) = List.nth cases 2 in 
+let br4 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt4))  in 
+let (BR(_,M(reps,_))) = Bulk_result.extend_with pt4 br4 adj4 in 
+let new_mold = M(reps,Image.image (
+      fun (pt5,adj5)-> Q(pt5,[],adj5)
+) cases) in 
+BR(Fork cases,new_mold) ;;
+
+exception Unforeseen_atomic of point * bulk_result ;;
+exception Unforeseen_constraint of point * constraint_t ;; 
+
+let compute_bulk_and_do_nothing old_f w_or_d pt = 
+  match to_superficial(old_f w_or_d (Superficial_comp,pt)) with 
+   Atomic -> raise(Unforeseen_atomic(pt,Bulk_result.atomic_case pt))
+ | Decomposable(pt2,adj2) -> 
+  let br2 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt2))  in 
+  (Bulk_result.extend_with pt2 br2 adj2)
+ |Contraction (pt3,cstr) ->
+  let br3 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt3))  in 
+   (
+    match Bulk_result.impose_one_more_constraint_opt pt3 cstr br3 with 
+    None -> raise(Unforeseen_constraint(pt3,cstr))
+    |Some new_br3 -> new_br3
+   )
+  | Fork cases -> fork_case old_f w_or_d cases ;;
+
+let compute_bulk_and_remember old_f w_or_d pt = 
+  match access_with_extra_accumulator_opt w_or_d pt with 
+  Some old_answer -> old_answer
+  |None ->
+   let new_answer = to_bulk(old_f w_or_d (Bulk_comp_without_remembrance,pt)) in 
+   let _ = (extra_accumulator:=(pt,new_answer)::(!extra_accumulator)) in 
+   new_answer ;;
+
+let rec compute_bulk_or_superficial w_or_d (mode,pt) = match mode with 
+ Bulk_comp_without_remembrance -> Bu(compute_bulk_and_do_nothing compute_bulk_or_superficial w_or_d pt) 
+|Bulk_comp_with_remembrance -> Bu(compute_bulk_and_remember compute_bulk_or_superficial w_or_d pt)  
+|Superficial_comp -> Su(compute_superficial compute_bulk_or_superficial w_or_d pt) ;;
+
+let main w_or_d pt = 
+ let _=(extra_accumulator:=[]) in 
+ let answer = to_bulk(compute_bulk_or_superficial w_or_d (Bulk_comp_with_remembrance,pt)) in 
+ let _ = List.iter (fun (pt2,bres)->
+  Hashtbl.replace (choose_hashtbl w_or_d) pt2 bres ) (!extra_accumulator) in     
+  answer ;;   
   
-  let fork_case_in_bulk_result_computation old_f _pt cases helper = 
-        let (last_pt,last_adj) = List.nth cases 2 in 
-        let partial_res5 = old_f last_pt helper in 
-        match snd partial_res5 with 
-        None -> (fst partial_res5,None) 
-       |Some br5 -> 
-         let (BR(_,M(reps,_))) = Bulk_result.extend_with last_pt br5 last_adj in 
-         let new_mold = M(reps,Image.image (
-          fun (pt6,adj6)-> Q(pt6,[],adj6)
-        ) cases) in 
-        ([],Some (BR(Fork cases,new_mold))) ;; 
-  
-  exception Bad_contraction of point * constraint_t ;; 
-  
-  let rec compute_bulk_result_partially w_or_d pt helper=  
-    if pt = Empty_point then ([],Some(Bulk_result.atomic_case pt)) else 
-     let partial_res1 = compute_superficial_result_partially w_or_d pt helper in 
-     match snd partial_res1 with 
-      None -> (fst partial_res1,None) 
-     |Some sr ->(match sr with 
-       Atomic -> ([],Some(Bulk_result.atomic_case pt)) 
-     | Decomposable(pt2,adj2) -> 
-         let partial_res2 = compute_bulk_result_partially w_or_d pt2 helper in 
-         (
-          match snd partial_res2 with 
-          None -> (fst partial_res2,None) 
-         |Some br2 -> ([],Some (Bulk_result.extend_with pt2 br2 adj2))
-         )
-     | Contraction (pt5,cstr) ->
-      let partial_res4 = compute_bulk_result_partially w_or_d pt5 helper in 
-      (
-       match snd partial_res4 with 
-       None -> (fst partial_res4,None) 
-      |Some br4 -> 
-        match Bulk_result.impose_one_more_constraint_opt pt5 cstr br4 with 
-          None -> raise(Bad_contraction(pt5,cstr))
-          |Some new_br4 ->([],Some new_br4)
-      ) 
-     | Fork cases ->
-      fork_case_in_bulk_result_computation (compute_bulk_result_partially w_or_d) pt cases helper
-     ) ;; 
-  
-     
-  let add_if_necessary (a,b) assoc_list = 
-    if List.mem_assoc a assoc_list 
-    then assoc_list 
-    else (a,b) :: assoc_list ;;   
-  
-  exception Pusher_stop ;;
-  
-  let pusher_for_needed_subcomputations w_or_d 
-     (treated,to_be_treated) = match to_be_treated with 
-           [] -> raise Pusher_stop
-           | pt1 :: other_pts ->
-             let partial_res1 = compute_bulk_result_partially w_or_d pt1 treated in 
-             match snd partial_res1 with 
-              None -> (treated,(fst partial_res1)@to_be_treated)
-             |Some answer -> (add_if_necessary (pt1,answer) treated,other_pts) ;;
-  
-  let rec needed_subcomputations w_or_d walker =
-      let (treated,to_be_treated) = walker in 
-      let subcomps =( match to_be_treated with 
-      [] -> treated
-      | _ -> needed_subcomputations w_or_d (pusher_for_needed_subcomputations w_or_d walker) ) in 
-      let new_subcomps = List.filter (
-      fun (_,bres) -> Bulk_result.is_not_atomic bres
-     ) subcomps in 
-     let _ = List.iter (fun (pt2,bres)->
-      Hashtbl.replace (choose_hashtbl w_or_d) pt2 bres ) new_subcomps in 
-      subcomps ;;
-  
-  let main w_or_d pt =
-     let subcomps = needed_subcomputations w_or_d ([],[pt]) in 
-     List.assoc pt subcomps ;;   
 end ;;    
 
 module Untamed = struct
