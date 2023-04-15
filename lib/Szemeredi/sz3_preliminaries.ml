@@ -1811,7 +1811,12 @@ end ;;
 module Referee = struct 
 
 let pushings_for_representatives = [] ;;
-let pushings_for_expansions = [] ;;
+let pushings_for_expansions = [
+  (*
+  (P(1,[],B 4,S 6),P(1,[],B 2,S 4));
+  (P(1,[],B 4,S 6),P(1,[],B 3,S 5));
+  *)
+] ;;
 
 end ;;  
   
