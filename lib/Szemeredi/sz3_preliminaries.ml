@@ -1737,11 +1737,19 @@ module Mold = struct
     ) ;;  
   
   let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
-    M(List.filter (Constraint.satisfied_by_individual extra_constraints) reps,
-       List.filter_map (
-        Qualified_point.insert_several_constraints extra_constraints
-       ) qpoints) ;; 
-    
+    let final_reps = List.filter (Constraint.satisfied_by_individual extra_constraints) reps
+    and naive_qplist = List.filter_map (
+      Qualified_point.insert_several_constraints extra_constraints
+     ) qpoints in 
+    if final_reps = [] then M([],naive_qplist) else  
+    let m = List.length(List.hd final_reps) in 
+    let checked_qplist = List.filter (
+      fun (Q(pt,constraints,extension))->
+         if (pt,constraints)<>(Empty_point,[]) then true else 
+         List.length(extension)=m 
+    ) naive_qplist in    
+    M(final_reps,checked_qplist) ;; 
+
   exception Insert_several_constraints_carefully_exn of constraint_t list * t ;;
   
   let insert_several_constraints_carefully extra_constraints old_mold =
