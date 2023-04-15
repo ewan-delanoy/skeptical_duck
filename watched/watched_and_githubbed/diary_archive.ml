@@ -1,14 +1,121 @@
 (************************************************************************************************************************
-Snippet 124 : 
+Snippet 126 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 123 : Check identity of results with two different computation methods
+Snippet 125 : Debuggins session on Sz3_preliminaries.Simplest_reduction.decompose
 ************************************************************************************************************************)
 
+module Snip125=struct
+
+  open Sz3_preliminaries ;; 
+
+  let pt1 = P (2, [7], B 3, S 8) ;;
+  let bad1 = Simplest_reduction.decompose pt1 ;; 
+  
+  module Fns = Simplest_reduction.For_nonparametrized_sets ;;
+  
+  let (old_width,scrappers,B old_breadth,n) = Point.unveil pt1 ;; 
+  let domain = Finite_int_set.of_pair (n,scrappers) ;; 
+  let bad2 = Fns.decompose (old_width,old_breadth) domain ;;
+  let (width,breadth) = Fns.Private.find_meaningful_obstruction (old_width,old_breadth) domain ;;
+  let bad3 = Fns.Private.detach (width,breadth) domain ;;
+  let max_in_domain = List.hd(List.rev domain) ;;
+  let bad_obstr1 = Fns.Private.iterator_for_meaningful_obstruction 
+       (domain,max_in_domain,old_width,old_breadth) ;;
+  let (w0,b0) = (old_width,old_breadth) ;;      
+  let see1 = Parameter_pair_for_obstruction.check_for_meaningful_obstruction (w0,b0) domain  ;;
+  
+       let rec iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) =
+        if Parameter_pair_for_obstruction.check_for_meaningful_obstruction (w,b) domain 
+        then Some(w,b)
+        else
+        match Parameter_pair_for_obstruction.predecessor max_in_domain (w,b) with 
+         None -> None  
+         |Some(new_w,new_b) -> iterator_for_meaningful_obstruction (domain,max_in_domain,new_w,new_b) ;;
+  
+  (*
+  let find_meaningful_obstruction (w,b) domain = 
+    if domain = [] then None else 
+    let max_in_domain = List.hd(List.rev domain) in 
+    iterator_for_meaningful_obstruction (domain,max_in_domain,w,b) ;; 
+  *)
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 124 : Debugging session on Sz3_preliminaries
+************************************************************************************************************************)
+module Snip124=struct
+
+  open Sz3_preliminaries ;;
+
+  let pt1 = P (2, [7], B 4, S 8) ;;
+  (* let bad1 = Compute_bulk_result.main Dry pt1 ;; *)
+  
+  let act1 = (Compute_bulk_result.extra_accumulator:=[]) ;;
+  (* let bad2 = Compute_bulk_result.compute_bulk_or_superficial Dry (Bulk_comp_with_remembrance,pt1) ;; *)
+  let old_f = Compute_bulk_result.compute_bulk_or_superficial ;; 
+  (* let bad3 = Compute_bulk_result.compute_bulk_and_remember old_f Dry pt1 ;; *)
+  let see1 = Compute_bulk_result.access_with_extra_accumulator_opt Dry pt1;;
+  (* let bad4 = old_f Dry (Bulk_comp_without_remembrance,pt1) ;; *)
+  (* let bad5 = Compute_bulk_result.compute_bulk_and_do_nothing old_f Dry pt1 ;; *)
+  let see2 = Compute_bulk_result.to_superficial(old_f Dry (Superficial_comp,pt1)) ;;
+  let (pt3,cstr)= (function (Contraction (pt3,cstr))->(pt3,cstr) |_->failwith("uuu")) see2 ;; 
+  let br3 = Compute_bulk_result.to_bulk(old_f Dry (Bulk_comp_with_remembrance,pt3)) ;;
+  let bad6 = Bulk_result.impose_one_more_constraint_opt pt3 cstr br3 ;;
+  
+  (*
+     
+  let compute_bulk_and_do_nothing old_f w_or_d pt = 
+    match to_superficial(old_f w_or_d (Superficial_comp,pt)) with 
+     Atomic -> raise(Unforeseen_atomic(pt,Bulk_result.atomic_case pt))
+   | Decomposable(pt2,adj2) -> 
+    let br2 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt2))  in 
+    (Bulk_result.extend_with pt2 br2 adj2)
+   |Contraction (pt3,cstr) ->
+    let br3 = to_bulk(old_f w_or_d (Bulk_comp_with_remembrance,pt3))  in 
+     (
+      match Bulk_result.impose_one_more_constraint_opt pt3 cstr br3 with 
+      None -> raise(Unforeseen_constraint(pt3,cstr))
+      |Some new_br3 -> new_br3
+     )
+    | Fork cases -> fork_case old_f w_or_d pt cases ;;
+  
+  *)
+  
+  (*
+  let compute_bulk_and_remember old_f w_or_d pt = 
+    match access_with_extra_accumulator_opt w_or_d pt with 
+    Some old_answer -> old_answer
+    |None ->
+     let new_answer = to_bulk(old_f w_or_d (Bulk_comp_without_remembrance,pt)) in 
+     let _ = (extra_accumulator:=(pt,new_answer)::(!extra_accumulator)) in 
+     new_answer ;;
+  
+  *)
+  
+  (*
+  let rec compute_bulk_or_superficial w_or_d (mode,pt) = match mode with 
+   Bulk_comp_without_remembrance -> Bu(compute_bulk_and_do_nothing compute_bulk_or_superficial w_or_d pt) 
+  |Bulk_comp_with_remembrance -> Bu(compute_bulk_and_remember compute_bulk_or_superficial w_or_d pt)  
+  |Superficial_comp -> Su(compute_superficial compute_bulk_or_superficial w_or_d pt) ;;
+  *)
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 123 : Check identity of results with two different computation methods
+************************************************************************************************************************)
 module Snip123=struct
 
   open Sz3_preliminaries ;; 
