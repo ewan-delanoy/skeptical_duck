@@ -1736,19 +1736,23 @@ module Mold = struct
     Image.image (fun qpoint->Qualified_point.extend_with qpoint extension) qpoints
     ) ;;  
   
+  let use_size_constraint naive_mold =
+     let (M(final_reps,naive_qplist)) = naive_mold in 
+     if final_reps = [] then naive_mold else  
+      let m = List.length(List.hd final_reps) in 
+      let checked_qplist = List.filter (
+        fun (Q(pt,constraints,extension))->
+           if (pt,constraints)<>(Empty_point,[]) then true else 
+           List.length(extension)=m 
+      ) naive_qplist in    
+      M(final_reps,checked_qplist) ;;    
+
   let insert_several_constraints extra_constraints (M(reps,qpoints)) = 
     let final_reps = List.filter (Constraint.satisfied_by_individual extra_constraints) reps
     and naive_qplist = List.filter_map (
       Qualified_point.insert_several_constraints extra_constraints
      ) qpoints in 
-    if final_reps = [] then M([],naive_qplist) else  
-    let m = List.length(List.hd final_reps) in 
-    let checked_qplist = List.filter (
-      fun (Q(pt,constraints,extension))->
-         if (pt,constraints)<>(Empty_point,[]) then true else 
-         List.length(extension)=m 
-    ) naive_qplist in    
-    M(final_reps,checked_qplist) ;; 
+    use_size_constraint(M(final_reps,naive_qplist)) ;; 
 
   exception Insert_several_constraints_carefully_exn of constraint_t list * t ;;
   
@@ -1891,9 +1895,9 @@ let pushings_for_expansions = [
   (P(1,[] ,B 4,S 6),P(1,[] ,B 2,S 4));
   (P(1,[] ,B 4,S 6),P(1,[] ,B 3,S 5));
   (P(2,[] ,B 0,S 7),P(1,[] ,B 4,S 6));
-  (*
   (P(1,[1],B 5,S 7),P(1,[1],B 3,S 5));
   (P(1,[1],B 5,S 7),P(1,[1],B 4,S 6));
+  (*
   (P(1,[4],B 5,S 7),P(1,[ ],B 1,S 3));
   (P(2,[] ,B 0,S 6),P(1,[ ],B 1,S 3));
   (P(2,[] ,B 0,S 6),P(1,[ ],B 2,S 4));
@@ -2008,8 +2012,8 @@ let fork_case old_f w_or_d pt cases =
   let (BR(_,M(old_reps,_))) = Bulk_result.extend_with pt2 br2 adj2 in 
   let additional_reps = additional_reps_in_fork_case old_f w_or_d pt cases in 
   let final_reps = il_sort (old_reps@additional_reps) in 
-  let final_qpoints = qpoint_list_in_fork_case old_f w_or_d pt cases in 
-  BR(Fork cases,M(final_reps,final_qpoints)) ;;
+  let naive_final_qpoints = qpoint_list_in_fork_case old_f w_or_d pt cases in 
+  BR(Fork cases,Mold.use_size_constraint(M(final_reps,naive_final_qpoints))) ;;
 
 exception Unforeseen_atomic of point * bulk_result ;;
 exception Unforeseen_constraint of point * constraint_t ;; 
