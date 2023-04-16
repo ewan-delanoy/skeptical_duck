@@ -1808,10 +1808,10 @@ module Flatten = struct
   
     module Private = struct 
       let empty_point =  ((-1,[],-1,-1):point_t) ;;
-      let atomic_idx = 1 ;;
-      let decomposable_idx =2 ;;
-      let contraction_idx =3;;
-      let fork_idx = 4 ;; 
+      let atomic_idx = "Atomic" ;;
+      let decomposable_idx = "Decomposable" ;;
+      let contraction_idx = "Contraction";;
+      let fork_idx = "Fork" ;; 
       end ;;
   
   
@@ -1824,9 +1824,9 @@ module Flatten = struct
      Empty_point ->  Private.empty_point
     |(P (w,scr,B b,S n)) -> ((w,scr,b,n):point_t) ;; 
   
-  type superficial_result_t = int * (( point_t * (int list)) list) ;;
+  type superficial_result_t = string * (( point_t * (int list)) list) ;;
   
-  exception To_superficial_result_exn of int ;; 
+  exception To_superficial_result_exn of string ;; 
   
   
   let to_superficial_result ((idx,l):superficial_result_t) = 
