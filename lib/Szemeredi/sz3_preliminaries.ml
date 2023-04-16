@@ -1802,6 +1802,74 @@ module Bulk_result = struct
       ;;
 end ;;      
 
+module Flatten = struct 
+
+  type point_t = int * (int list) * int * int ;;
+  
+    module Private = struct 
+      let empty_point =  ((-1,[],-1,-1):point_t) ;;
+      let atomic_idx = 1 ;;
+      let decomposable_idx =2 ;;
+      let contraction_idx =3;;
+      let fork_idx = 4 ;; 
+      end ;;
+  
+  
+  let to_point (pt:point_t) =
+     if pt = Private.empty_point 
+     then Empty_point 
+     else let (w,scr,b,n)=pt in 
+     P (w,scr,B b,S n) ;;
+  let of_point =function 
+     Empty_point ->  Private.empty_point
+    |(P (w,scr,B b,S n)) -> ((w,scr,b,n):point_t) ;; 
+  
+  type superficial_result_t = int * (( point_t * (int list)) list) ;;
+  
+  exception To_superficial_result_exn of int ;; 
+  
+  
+  let to_superficial_result ((idx,l):superficial_result_t) = 
+    if idx = Private.atomic_idx then Atomic  else 
+    if idx = Private.decomposable_idx 
+    then let (pt,ext) = List.hd l in 
+         Decomposable(to_point pt,ext)   
+    else     
+    if idx = Private.contraction_idx 
+    then let (pt,cstr) = List.hd l in 
+         Contraction(to_point pt,C cstr) 
+    else   
+    if idx = Private.fork_idx 
+    then Fork(Image.image (fun (pt,ext)->(to_point pt,ext)) l)
+    else raise(To_superficial_result_exn(idx)) ;;     
+  
+  let of_superficial_result = ((function 
+      Atomic -> (Private.atomic_idx,[])
+     |Decomposable(ppt,ext) -> (Private.decomposable_idx,[of_point ppt,ext])
+     |Contraction(ppt,C l) -> (Private.contraction_idx,[of_point ppt,l])
+     |Fork cases ->(Private.fork_idx,Image.image (fun (ppt,l)->(of_point ppt,l)) cases)): superficial_result -> superficial_result_t) ;; 
+     
+  type qualified_point_t = point_t * (int list list) * (int list) ;;
+  
+  let to_qualified_point (pt,ll,ext) = Q(to_point pt,Image.image (fun l->C l) ll,ext);;
+  
+  let of_qualified_point (Q(ppt,ll,ext)) = ((of_point ppt,Image.image (fun (C l)->l) ll,ext):qualified_point_t);;
+  
+  type mold_t =  (int list list) * qualified_point_t list ;;
+  
+  let to_mold ((ll,ql):mold_t) = M(ll,Image.image to_qualified_point ql) ;; 
+  
+  let of_mold (M(ll,ql)) = ((ll,Image.image of_qualified_point ql):mold_t)
+  
+  type bulk_result_t = superficial_result_t * mold_t ;;
+  
+  let to_bulk_result ((sr,m):bulk_result_t) = BR(to_superficial_result sr,to_mold m);;
+  
+  let of_bulk_result (BR(sr,m)) = ((of_superficial_result sr,of_mold m):bulk_result_t);;
+  
+end ;;  
+  
+
 module Test_for_admissibility = struct 
 
 let up_to_max_with max_width z =
@@ -1823,12 +1891,14 @@ let pushings_for_expansions = [
   (P(1,[] ,B 4,S 6),P(1,[] ,B 2,S 4));
   (P(1,[] ,B 4,S 6),P(1,[] ,B 3,S 5));
   (P(2,[] ,B 0,S 7),P(1,[] ,B 4,S 6));
+  (*
   (P(1,[1],B 5,S 7),P(1,[1],B 3,S 5));
   (P(1,[1],B 5,S 7),P(1,[1],B 4,S 6));
   (P(1,[4],B 5,S 7),P(1,[ ],B 1,S 3));
   (P(2,[] ,B 0,S 6),P(1,[ ],B 1,S 3));
   (P(2,[] ,B 0,S 6),P(1,[ ],B 2,S 4));
   (P(2,[] ,B 0,S 6),P(1,[ ],B 3,S 5));
+  *)
 ] ;;
 
 end ;;  
