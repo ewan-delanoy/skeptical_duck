@@ -12,7 +12,7 @@ type width = W of int ;;
 
 type finite_set = FIS of int * (int list) ;; 
 
-type constraint_t = int list ;; 
+type constraint_t = C of int list ;; 
 
 type extension_data = int list ;; 
 

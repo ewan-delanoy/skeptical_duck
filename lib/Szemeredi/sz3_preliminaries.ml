@@ -11,7 +11,7 @@ type width = Sz3_types.width = W of int ;;
 
 type finite_set = Sz3_types.finite_set = FIS of int * (int list) ;; 
 
-type constraint_t = Sz3_types.constraint_t ;; 
+type constraint_t = Sz3_types.constraint_t = C of int list;; 
 
 type extension_data = Sz3_types.extension_data  ;; 
 
