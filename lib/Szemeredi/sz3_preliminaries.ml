@@ -65,21 +65,25 @@ let rec helper_for_exact_width (W w,domain,to_be_treated) =
    |p::others ->
       if p<=2*w then None else 
       if i_is_included_in [p-2*w;p-w] domain 
-      then Some [p-2*w;p-w;p]
+      then Some (C[p-2*w;p-w;p])
       else helper_for_exact_width (W w,domain,others) ;;     
 
-let rec helper_with_maximal_width (W w,domain) =
+let rec helper_for_maximal_width (W w,domain) =
   match helper_for_exact_width (W w,domain,List.rev domain) with 
   Some answer -> Some(W w,answer)
   |None ->
      if w<2 then None else 
-    helper_with_maximal_width (W (w-1),domain) ;;  
+    helper_for_maximal_width (W (w-1),domain) ;;  
 
 end ;;  
 
+(*
 let with_exact_width (W w) domain = 
   Private.helper_for_exact_width (W w,domain,List.rev domain) ;; 
-   
+*)   
+
+let with_maximal_width (W w) domain = 
+  Private.helper_for_maximal_width (W w,domain) ;;   
 
 end ;;   
 
@@ -106,12 +110,20 @@ module Finite_int_set = struct
   
   *)
   
-  
-  
-
+  let head_constraint max_width fis_domain =
+    Find_constraint.with_maximal_width max_width (to_usual_int_list fis_domain) ;; 
 
 end ;;    
 
+(*
+module Level1 = struct 
+
+let easy_case_opt fis_domain = 
+   
+
+
+end ;;  
+*)
 
  
 
