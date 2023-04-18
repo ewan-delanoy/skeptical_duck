@@ -55,6 +55,34 @@ module Parameter_pair_for_obstruction = struct
   
 end ;;  
 
+module Find_constraint = struct 
+
+module Private = struct 
+
+let rec helper_for_exact_width (W w,domain,to_be_treated) =
+   match to_be_treated with 
+   [] -> None 
+   |p::others ->
+      if p<=2*w then None else 
+      if i_is_included_in [p-2*w;p-w] domain 
+      then Some [p-2*w;p-w;p]
+      else helper_for_exact_width (W w,domain,others) ;;     
+
+let rec helper_with_maximal_width (W w,domain) =
+  match helper_for_exact_width (W w,domain,List.rev domain) with 
+  Some answer -> Some(W w,answer)
+  |None ->
+     if w<2 then None else 
+    helper_with_maximal_width (W (w-1),domain) ;;  
+
+end ;;  
+
+let with_exact_width (W w) domain = 
+  Private.helper_for_exact_width (W w,domain,List.rev domain) ;; 
+   
+
+end ;;   
+
 module Finite_int_set = struct 
 
   let to_usual_int_list (FIS(n,scrappers)) = i_setminus (Int_range.range 1 n) scrappers ;; 
