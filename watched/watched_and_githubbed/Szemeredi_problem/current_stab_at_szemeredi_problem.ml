@@ -11,46 +11,22 @@ any value of the Szemeredi function.
 
 open Skeptical_duck_lib ;; 
 open Needed_values ;; 
-
-(*
 open Sz3_preliminaries ;;
-open Tools_for_warehouse ;; 
-let see0 = Overall.get_status () ;; 
-open Unimode ;;
 
+let ff n = Level1.needed_computations (FIS(n,[])) ;; 
 
+let fis_domain = FIS(3,[]) ;; 
+let long1 = Level1.needed_computations fis_domain ;; 
+let helper = [] ;; 
+let to_be_treated = [fis_domain] ;; 
+let long2 = Level1.helper_for_needed_computations (helper,to_be_treated) ;;
 
-let vz = visualize 1 ;; 
-let rf1 (B _b) (S n) = 
-  if n<=2 then Atomic else  
-  match List.assoc_opt n
-  [3,Fork([( Empty_point,[2;3] );( Empty_point,[1;3] );( Empty_point,[1;2] )]);
-   4,Contraction( P(1,[],B(1),S(4)),C[2;3;4] )] with 
-  Some answer -> answer 
-  |None -> Contraction(P(2,[],B(n-5),S(n)),C[n-4;n-2;n] ) ;;
-let check_rf1 = partial_check 1 (Superficial_result_ARG rf1) ;; 
-
-let rf2 (B _b) (S n) = 
-  if n<=2 then Atomic else  
-  match List.assoc_opt n
-  [3,Fork([( Empty_point,[2;3] );( Empty_point,[1;3] );( Empty_point,[1;2] )]);
-   4,Contraction( P(1,[],B(1),S(4)),C[2;3;4] )] with 
-  Some answer -> answer 
-  |None -> Contraction(P(2,[],B(n-5),S(n)),C[n-4;n-2;n] ) ;;
-let check_rf2 = partial_check 2 (Superficial_result_ARG rf2) ;; 
-
-
-
-(* RFI BEGIN *)
-
-let rfi (B _b) (S n) = 
-  if n<=2 then Atomic else  
-    match List.assoc_opt n
-    [3,Fork([( Empty_point,[2;3] );( Empty_point,[1;3] );( Empty_point,[1;2] )]);
-     4,Contraction( P(1,[],B(1),S(4)),C[2;3;4] )] with 
-    Some answer -> answer 
-    |None -> Contraction(P(2,[],B(n-5),S(n)),C[n-4;n-2;n] ) ;; 
-
-(* RFI END *)
-let check_rfi = Chronometer.it global_check (Superficial_result_ARG rfi) ;; 
-*)
+let (fis_domain,others) = Listennou.ht to_be_treated ;; 
+let (opt_answer,should_remember,to_be_treated_later) = 
+   Level1.full_pusher_in_computation helper fis_domain ;;
+let (opt_easy_case,opt_cstr_data) =  Level1.partial_pusher_in_computation helper fis_domain ;;   
+let (fis_tail,n) = Finite_int_set.tail_and_head fis_domain ;;
+       let (opt_easy_case2,_opt_cstr_data2) =  partial_pusher_in_computation helper fis_tail in 
+       end_of_full_pusher 
+         helper fis_domain fis_tail n 
+         opt_easy_case2 opt_cstr_data ;;
