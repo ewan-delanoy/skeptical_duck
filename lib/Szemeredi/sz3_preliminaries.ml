@@ -121,6 +121,7 @@ module Finite_int_set = struct
 end ;;    
 
 exception Get_below_exn of int * finite_set ;;
+exception Compute_fast_exn of int * finite_set ;;
 
 module Level1 = struct 
 
@@ -240,6 +241,18 @@ let rec helper_for_needed_computations (helper,to_be_treated)= match to_be_treat
  let needed_computations fis_domain =
   helper_for_needed_computations ([],[fis_domain]) ;;
 
+ let compute_fast fis_domain = 
+    let (opt,_,_) =full_pusher_in_computation [] fis_domain in 
+    match opt with 
+     Some answer -> answer 
+    |None -> raise (Compute_fast_exn (1,fis_domain)) ;;
+
+  let compute_reasonably_fast fis_domain = 
+    compute_fast fis_domain ;; 
+
+  let treat fis_domain =
+      Hashtbl.replace main_hashtbl 
+         fis_domain (compute_reasonably_fast fis_domain) ;;    
 
 end ;;  
 
