@@ -126,41 +126,29 @@ module Level1 = struct
 
 let current_width = 1 ;; 
 
-let no_constraint_opt fis_domain = 
-   match Finite_int_set.head_constraint (W current_width) fis_domain with 
-   Some cstr -> (None,Some cstr)
-  |None -> let domain = Finite_int_set.to_usual_int_list fis_domain in 
-           (Some(M([domain],domain)),None);; 
-
-
 let force_get_below fis_domain = raise(Get_below_exn(0,fis_domain));;
 
 let main_hashtbl = Hashtbl.create 50 ;; 
 
-let access_opt fis_domain =
-   match fst(no_constraint_opt fis_domain) with 
-   Some answer -> Some answer 
-   | None -> Hashtbl.find_opt main_hashtbl fis_domain ;; 
+let try_all_obvious_accesses helper fis_domain = 
+  match List.assoc_opt fis_domain helper with 
+    Some answer1 -> (Some answer1,None) 
+  | None ->
+     (
+        match  Hashtbl.find_opt main_hashtbl fis_domain with 
+        Some answer2 -> (Some answer2,None) 
+      | None -> 
+       (match Finite_int_set.head_constraint (W current_width) fis_domain with 
+        None -> let domain = Finite_int_set.to_usual_int_list fis_domain in 
+               (Some(M([domain],domain)),None)
+       |Some (W w,cstr) ->   
+          if w<current_width 
+          then (Some(force_get_below fis_domain),None)   
+          else (* return the constraint for subsequent fork analysis *)
+               (None,Some (W w,cstr))          
+       )
+     ) ;; 
 
-let access_with_helper_opt fis_domain helper =
-   match List.assoc_opt fis_domain helper with 
-   Some answer -> Some answer 
-   | None -> access_opt fis_domain ;; 
-
-let partial_pusher_in_computation helper fis_domain =
-    let domain = Finite_int_set.to_usual_int_list fis_domain in 
-    let opt = Finite_int_set.head_constraint (W current_width) fis_domain in 
-    match opt with 
-     None -> 
-            (Some(M([domain],domain)),None)
-    |Some (W w,C _cstr) -> 
-        (match  access_with_helper_opt fis_domain helper with 
-          Some answer -> (Some answer,opt) 
-          | None -> 
-            if w<current_width 
-            then (Some(force_get_below fis_domain),opt)   
-            else (None,opt)
-        );;
 
 let analysis_on_tail sols2 ext2 n = 
   let interval = Int_range.range 1 current_width in 
@@ -186,7 +174,7 @@ let fork_analysis helper fis_domain  cstr =
      fun i-> Finite_int_set.remove_one_element fis_domain i
   ) cstr in 
   let candidates2 = Image.image (
-    fun cand ->(cand,fst(partial_pusher_in_computation helper fis_domain))
+    fun cand ->(cand,fst(try_all_obvious_accesses helper fis_domain))
   ) candidates in 
   let bad_ones = List.filter (
     fun (_cand,opt) -> opt<>None
@@ -222,13 +210,14 @@ let end_of_full_pusher
     let (_,C cstr) = Option.get opt_cstr_data in 
     fork_analysis helper fis_domain  cstr;;    
 
+ 
 let full_pusher_in_computation helper fis_domain =
-  let (opt_easy_case,opt_cstr_data) =  partial_pusher_in_computation helper fis_domain in 
+  let (opt_easy_case,opt_cstr_data) =  try_all_obvious_accesses helper fis_domain in 
   match opt_easy_case with 
    Some(answer) -> (Some answer,false,[])
   |None -> 
      let (fis_tail,n) = Finite_int_set.tail_and_head fis_domain in 
-     let (opt_easy_case2,_opt_cstr_data2) =  partial_pusher_in_computation helper fis_tail in 
+     let (opt_easy_case2,_opt_cstr_data2) = try_all_obvious_accesses helper fis_tail in 
      end_of_full_pusher 
        helper fis_domain fis_tail n 
        opt_easy_case2 opt_cstr_data ;;
@@ -241,7 +230,7 @@ let rec helper_for_needed_computations (helper,to_be_treated)= match to_be_treat
          full_pusher_in_computation helper fis_domain in 
       match opt_answer with 
       None ->
-        helper_for_needed_computations (helper,to_be_treated_later@others)
+        helper_for_needed_computations (helper,to_be_treated_later@to_be_treated)
      |Some answer -> 
        let new_helper = 
           (if should_remember then (fis_domain,answer)::helper else helper) in 
@@ -250,6 +239,7 @@ let rec helper_for_needed_computations (helper,to_be_treated)= match to_be_treat
    
  let needed_computations fis_domain =
   helper_for_needed_computations ([],[fis_domain]) ;;
+
 
 end ;;  
 
