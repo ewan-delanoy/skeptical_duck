@@ -23,6 +23,11 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
+type peek_result = Sz3_types.peek_result =
+    P_Success of mold 
+   |P_Failure
+   |P_Unfinished_computation of finite_int_set_with_extra_constraints list ;;
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -133,6 +138,11 @@ module Finite_int_set = struct
     (d,of_usual_int_list core_domain) ;; 
 
 end ;;    
+
+module With_extra_constraints = struct 
+
+
+end ;;   
 
 exception Get_below_exn of int * finite_int_set ;;
 exception Compute_fast_exn of int * finite_int_set ;;

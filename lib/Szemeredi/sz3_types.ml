@@ -23,3 +23,8 @@ type solution = int list ;;
 
 type mold = M of (solution list) * extension_data ;;
   
+type peek_result = 
+    P_Success of mold 
+   |P_Failure
+   |P_Unfinished_computation of finite_int_set_with_extra_constraints list ;;
+
