@@ -141,6 +141,10 @@ end ;;
 
 module With_extra_constraints = struct 
 
+let remove_one_element (WEC(fis,extra_constr)) k=
+   WEC(Finite_int_set.remove_one_element fis k,
+     List.filter (fun ( C l)->not(List.mem k l)) extra_constr
+   );;
 
 end ;;   
 
