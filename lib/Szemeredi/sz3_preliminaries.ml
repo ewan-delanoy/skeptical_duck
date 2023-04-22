@@ -9,9 +9,13 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 type width = Sz3_types.width = W of int ;; 
 
-type finite_set = Sz3_types.finite_set = FIS of int * (int list) ;; 
+type finite_int_set = Sz3_types.finite_int_set = FIS of int * (int list) ;; 
 
 type constraint_t = Sz3_types.constraint_t = C of int list;; 
+
+type finite_int_set_with_extra_constraints = 
+    Sz3_types.finite_int_set_with_extra_constraints =
+      WEC of finite_int_set * (constraint_t list) ;;
 
 type extension_data = Sz3_types.extension_data  ;; 
 
@@ -130,8 +134,8 @@ module Finite_int_set = struct
 
 end ;;    
 
-exception Get_below_exn of int * finite_set ;;
-exception Compute_fast_exn of int * finite_set ;;
+exception Get_below_exn of int * finite_int_set ;;
+exception Compute_fast_exn of int * finite_int_set ;;
 
 module Level1 = struct 
 

@@ -10,9 +10,12 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 type width = W of int ;; 
 
-type finite_set = FIS of int * (int list) ;; 
+type finite_int_set = FIS of int * (int list) ;; 
 
 type constraint_t = C of int list ;; 
+
+type finite_int_set_with_extra_constraints =
+      WEC of finite_int_set * (constraint_t list) ;;
 
 type extension_data = int list ;; 
 
