@@ -118,6 +118,16 @@ module Finite_int_set = struct
      let (FIS(n,_scrappers)) = fis_domain in 
      (remove_one_element fis_domain n,n);;
 
+  let decompose_wrt_translation fis_domain = 
+    let domain = to_usual_int_list fis_domain in 
+    let (d,core_domain) = (match domain with 
+      [] -> (0,[])
+      | h :: _ -> (h-1, if h=1 then domain else 
+                    Image.image (fun x->x-(h-1)) domain 
+                   )
+    ) in 
+    (d,of_usual_int_list core_domain) ;; 
+
 end ;;    
 
 exception Get_below_exn of int * finite_set ;;
