@@ -14,8 +14,10 @@ type finite_int_set = FIS of int * (int list) ;;
 
 type constraint_t = C of int list ;; 
 
-type finite_int_set_with_extra_constraints =
-      WEC of finite_int_set * (constraint_t list) ;;
+type upper_bound_for_constraints = UBC of int * int ;; 
+
+type finite_int_set_with_upper_bound_for_constraints =
+      WEC of finite_int_set * upper_bound_for_constraints ;;
 
 type extension_data = int list ;; 
 
@@ -26,5 +28,5 @@ type mold = M of (solution list) * extension_data ;;
 type peek_result = 
     P_Success of mold 
    |P_Failure
-   |P_Unfinished_computation of finite_int_set_with_extra_constraints list ;;
+   |P_Unfinished_computation of finite_int_set_with_upper_bound_for_constraints list ;;
 
