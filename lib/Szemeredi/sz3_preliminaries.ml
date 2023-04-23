@@ -186,7 +186,7 @@ let remove_one_element (old_fis,upper_bound) k=
 
 let tail_and_head (fis,upper_bound) =
     let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
-    remove_one_element (fis,upper_bound) n ;;   
+    (n,remove_one_element (fis,upper_bound) n) ;;   
 
 end ;;   
 
