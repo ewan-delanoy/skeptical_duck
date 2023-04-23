@@ -57,6 +57,13 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
+module Mold = struct 
+
+let translate d (M(sols,ext)) =
+    let tr = (fun x->Image.image(fun t->t+d) x) in 
+    M(Image.image tr sols,tr ext) ;; 
+
+end ;;
 
 
 module Find_constraint = struct 
@@ -236,6 +243,30 @@ module Level1 = struct
          )
        ) ;; 
   
+  (*
+   
+  We use translations as little as possible. Most of the functions
+  of this module are supposed to work on arguments where translation
+  does not apply. The function below is an exception.
+  
+  *)
+
+  exception Using_translation_exn ;;
+
+  let peek_for_obvious_accesses_using_translation 
+      helper original_fis_with_ub = 
+    let (d,translated_fis_with_ub) = 
+        With_upper_bound.decompose_wrt_translation original_fis_with_ub in 
+    let (peek_res,to_be_remembered) = 
+          peek_for_obvious_accesses helper translated_fis_with_ub in 
+        match peek_res with 
+       P_Unfinished_computation(_)  -> raise(Using_translation_exn)
+      |P_Failure -> None
+      |P_Success(translated_answer) ->
+         let answer_to_original = Mold.translate d translated_answer in 
+         Some(d,answer_to_original,
+           (translated_fis_with_ub,translated_answer),to_be_remembered);; 
+
   exception Peek_for_cumulative_case_should_never_happen_1_exn ;; 
 
   let peek_for_cumulative_case helper old_fis_with_ub = 
