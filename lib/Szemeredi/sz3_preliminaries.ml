@@ -333,5 +333,12 @@ let peek_for_fork_case helper old_fis_with_ub =
             (new_helper,others)
         )  ;;     
 
+   let rec iterator_for_needed_subcomputations walker = 
+      if snd walker = [] then List.rev(fst walker) else 
+      let new_walker = pusher_for_needed_subcomputations walker in      
+      iterator_for_needed_subcomputations new_walker ;;
+
+   let needed_subcomputations items = 
+    iterator_for_needed_subcomputations ([],items) ;;          
 
 end ;;  
