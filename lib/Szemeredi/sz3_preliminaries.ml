@@ -198,7 +198,8 @@ module Level1 = struct
 
   let current_width = 1 ;; 
   
-  let force_get_below fs_with_ub = raise(Get_below_exn(0,fs_with_ub));;
+  let force_get_below fs_with_ub = 
+       raise(Get_below_exn(current_width-1,fs_with_ub));;
   
   let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
   
@@ -290,6 +291,47 @@ let peek_for_fork_case helper old_fis_with_ub =
         let ext5 = Image.image (fun (k,_)->List.nth cstr_l (k-1)) min_indices in 
         P_Success(M(sols5,ext5));;    
     
+
+  exception Multiple_peek_exn ;; 
+
+  let multiple_peek helper old_fis_with_ub = 
+    let (peek_res1,to_be_remembered) = peek_for_obvious_accesses helper old_fis_with_ub in 
+      match peek_res1 with 
+      P_Success (_) -> (peek_res1,to_be_remembered)
+    | P_Unfinished_computation (_) -> (peek_res1,false)  
+    | P_Failure ->
+    let peek_res2= peek_for_cumulative_case helper old_fis_with_ub in 
+      match peek_res2 with 
+      P_Success (_) -> (peek_res2,true)
+    | P_Unfinished_computation (_) -> (peek_res2,false)  
+    | P_Failure -> 
+    let peek_res3= peek_for_fork_case helper old_fis_with_ub in 
+      match peek_res3 with 
+      P_Success (_) -> (peek_res3,true)
+    | P_Unfinished_computation (_) -> (peek_res3,false)  
+    | P_Failure -> raise(Multiple_peek_exn) ;; 
+        
+  exception Pusher_for_needed_subcomputations_exn_1 ;; 
+  exception Pusher_for_needed_subcomputations_exn_2 ;;  
+
+  let pusher_for_needed_subcomputations (helper,to_be_treated) =
+      match to_be_treated with 
+       [] -> raise Pusher_for_needed_subcomputations_exn_1 
+      |fis_with_ub :: others ->
+        let (peek_res,to_be_remembered)= multiple_peek helper fis_with_ub in
+        (
+          match peek_res with 
+          P_Failure -> raise Pusher_for_needed_subcomputations_exn_2
+        | P_Unfinished_computation (new_to_be_treated) -> 
+             (helper,new_to_be_treated@to_be_treated)
+        | P_Success (answer) -> 
+            let new_helper =(
+               if to_be_remembered 
+               then (fis_with_ub,answer) :: helper 
+               else helper 
+            ) in 
+            (new_helper,others)
+        )  ;;     
 
 
 end ;;  
