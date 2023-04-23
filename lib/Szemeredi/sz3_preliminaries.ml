@@ -92,6 +92,13 @@ let natural_upper_bound domain (W w) =
     |Some (W wmax,C l)->
          Some(UBC(List.hd l,W wmax)) ;; 
 
+
+let with_upper_bound domain (UBC(b,W w)) =
+    let u = b + 2*w in 
+    let temp1 = List.rev domain in 
+    let temp2 = List.filter (fun t->t<=u) temp1 in 
+    helper_for_exact_width (W w,domain,temp2) ;;     
+
 end ;;  
 
 (*
@@ -104,7 +111,7 @@ let natural_upper_bound = Private.natural_upper_bound ;;
 let with_maximal_width (W w) domain = 
   Private.helper_for_maximal_width (W w,domain) ;;   
 
-
+let with_upper_bound = Private.with_upper_bound ;; 
     
 
 end ;;   
@@ -152,6 +159,9 @@ module Finite_int_set = struct
 
    let natural_upper_bound fis_domain w =
       Find_constraint.natural_upper_bound (to_usual_int_list fis_domain) w;;
+   
+   let relative_head_constraint fis_domain upper_bound =
+    Find_constraint.with_upper_bound (to_usual_int_list fis_domain) upper_bound ;;    
 
 end ;;    
 
