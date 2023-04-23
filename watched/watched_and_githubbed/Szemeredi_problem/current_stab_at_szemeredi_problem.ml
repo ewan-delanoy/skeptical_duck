@@ -13,5 +13,4 @@ open Skeptical_duck_lib ;;
 open Needed_values ;; 
 open Sz3_preliminaries ;;
 
-let ff n = Level1.needed_computations (FIS(n,[])) ;; 
 

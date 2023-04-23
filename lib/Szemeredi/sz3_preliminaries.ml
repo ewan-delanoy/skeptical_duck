@@ -363,7 +363,8 @@ let peek_for_fork_case helper old_fis_with_ub =
       match compute_reasonably_fast_opt fis_with_ub with 
       None -> raise(Add_exn fis_with_ub)
     |Some answer ->
-        Hashtbl.replace main_hashtbl fis_with_ub answer ;; 
+        let _ = Hashtbl.replace main_hashtbl fis_with_ub answer in 
+        answer ;; 
 
    let add_usual (n,scrappers) =
        add (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
