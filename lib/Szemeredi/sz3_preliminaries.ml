@@ -290,6 +290,23 @@ module Level1 = struct
         else P_Failure
     ;;
 
+let partition_leaves_in_fork_case helper leaves =
+  let leaves2 = Image.image (
+    fun cand ->
+      let (peek_res,_) = peek_for_obvious_accesses helper cand in 
+      let res_opt = (
+          match peek_res with 
+            P_Success (mold) -> Some mold
+          | P_Failure
+          | P_Unfinished_computation (_) -> None
+      ) in 
+      (cand,res_opt)
+  ) leaves in 
+  let (bad_leaves,good_leaves) = 
+    List.partition (fun (_,opt) -> opt = None ) leaves2 in 
+  (Image.image (fun (cand, opt)->(cand,Option.get opt)) good_leaves,
+   Image.image (fun (cand,_opt)-> cand                ) bad_leaves) ;; 
+
 exception Peek_for_fork_case_should_never_happen_1_exn ;;
 
 let peek_for_fork_case helper old_fis_with_ub = 
@@ -302,36 +319,20 @@ let peek_for_fork_case helper old_fis_with_ub =
   let candidates = Image.image (
          fun i-> With_upper_bound.remove_one_element old_fis_with_ub i
   ) cstr_l in 
-  let candidates2 = Image.image (
-        fun cand ->
-          let (peek_res,_) = peek_for_obvious_accesses helper cand in 
-          let res_opt = (
-              match peek_res with 
-                P_Success (mold) -> Some mold
-              | P_Failure
-              | P_Unfinished_computation (_) -> None
-          ) in 
-          (cand,res_opt)
-      ) candidates in 
-      let bad_ones = List.filter (
-        fun (_cand,opt) -> opt<>None
-      ) candidates2 in 
-      if bad_ones <> []
-      then P_Unfinished_computation(Image.image fst bad_ones)
-      else 
-      let candidates3 = Image.image (
-       fun (cand,opt) ->(cand,Option.get opt)
-      ) candidates2 in     
-      let lengths = Image.image (fun (_cand,M(sols,_ext))->
-          List.length(List.hd sols)) candidates3 in 
-      let indexed_lengths = Int_range.index_everything lengths in 
-      let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
-      and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
-    if min1 = max1 
-    then let (M(sols4,_)) = snd(List.hd(List.rev candidates3)) in 
+  let (candidates2,bad_ones) = partition_leaves_in_fork_case helper candidates in 
+  if bad_ones <> []
+  then P_Unfinished_computation(bad_ones)
+  else   
+  let lengths = Image.image (fun (_cand,M(sols,_ext))->
+          List.length(List.hd sols)) candidates2 in 
+  let indexed_lengths = Int_range.index_everything lengths in 
+  let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
+  and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
+  if min1 = max1 
+  then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
          P_Success(M(sols4,[]))
-    else let (max_idx,_) = List.hd(List.rev max_indices) in 
-        let (M(sols5,_)) = snd(List.nth candidates3 (max_idx-1) ) in  
+  else let (max_idx,_) = List.hd(List.rev max_indices) in 
+        let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
         let ext5 = Image.image (fun (k,_)->List.nth cstr_l (k-1)) min_indices in 
         P_Success(M(sols5,ext5));;    
     
