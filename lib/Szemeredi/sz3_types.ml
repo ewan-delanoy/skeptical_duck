@@ -21,9 +21,11 @@ type extension_data = int list ;;
 type solution = int list ;; 
 
 type mold = M of (solution list) * extension_data ;;
+
+type key = finite_int_set * upper_bound_for_constraints ;;  
   
 type peek_result = 
-    P_Success of mold 
+    P_Success of mold  
    |P_Failure
-   |P_Unfinished_computation of (finite_int_set * upper_bound_for_constraints) list ;;
+   |P_Unfinished_computation of key list ;;
 

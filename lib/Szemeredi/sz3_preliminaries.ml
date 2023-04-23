@@ -24,10 +24,12 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
+type key = finite_int_set * upper_bound_for_constraints ;;  
+  
 type peek_result = Sz3_types.peek_result =
     P_Success of mold 
    |P_Failure
-   |P_Unfinished_computation of (finite_int_set * upper_bound_for_constraints) list ;;
+   |P_Unfinished_computation of key list ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -175,6 +177,11 @@ end ;;
 
 module With_upper_bound = struct 
 
+let decompose_wrt_translation (old_fis,UBC(b,W w)) = 
+   let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
+   (d,(new_fis,UBC(b-d,W w))) ;;
+
+
 let remove_one_element (old_fis,upper_bound) k=
    let (UBC(_,W w)) = upper_bound 
    and new_fis = Finite_int_set.remove_one_element old_fis k in 
@@ -235,7 +242,7 @@ module Level1 = struct
       let (n,new_fis_ub) = With_upper_bound.tail_and_head old_fis_with_ub in 
       let (peek_res,_) = peek_for_obvious_accesses helper new_fis_ub in 
         match peek_res with 
-       P_Unfinished_computation(_) -> raise(Peek_for_cumulative_case_should_never_happen_1_exn)
+       P_Unfinished_computation(_)  -> raise(Peek_for_cumulative_case_should_never_happen_1_exn)
       |P_Failure -> P_Unfinished_computation([new_fis_ub]) 
       |P_Success(M(sols2,ext2)) ->
         let (_,old_ub) = old_fis_with_ub in 
