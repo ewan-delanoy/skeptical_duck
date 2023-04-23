@@ -49,6 +49,13 @@ let t_order = Total_ordering.triple_product
    i_order i_order (Total_ordering.silex_for_intlists) ;;
 
 
+module Constraint = struct 
+
+let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
+
+end ;;  
+
+
 module Parameter_pair_for_obstruction = struct 
 
   let predecessor max_in_set (width,breadth) = 
