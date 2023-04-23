@@ -190,4 +190,34 @@ let tail_and_head (fis,upper_bound) =
 
 end ;;   
 
+exception Get_below_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
+exception Compute_fast_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
 
+module Level1 = struct 
+
+  let current_width = 1 ;; 
+  
+  let force_get_below fs_with_ub = raise(Get_below_exn(0,fs_with_ub));;
+  
+  let main_hashtbl = Hashtbl.create 50 ;; 
+  
+  let peek_for_obvious_accesses helper (fis_domain,upper_bound) = 
+    match List.assoc_opt fis_domain helper with 
+      Some answer1 -> (P_Success(answer1),false) 
+    | None ->
+       (
+          match  Hashtbl.find_opt main_hashtbl fis_domain with 
+          Some answer2 -> (P_Success(answer2),false)
+        | None -> 
+         (match Finite_int_set.relative_head_constraint fis_domain upper_bound with 
+          None -> let domain = Finite_int_set.to_usual_int_list fis_domain in 
+                   (P_Success(M([domain],domain)),false)
+         |Some (cstr) ->   
+            let (W w) = Constraint.width cstr in
+            if w<current_width 
+            then (P_Success(force_get_below (fis_domain,upper_bound)),true)   
+            else (P_Failure,false)          
+         )
+       ) ;; 
+  
+end ;;  
