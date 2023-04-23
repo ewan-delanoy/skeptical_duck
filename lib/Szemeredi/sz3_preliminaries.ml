@@ -165,17 +165,22 @@ module Finite_int_set = struct
 
 end ;;    
 
-(*
-module With_extra_constraints = struct 
 
-let remove_one_element (WEC(fis,extra_constr)) k=
-   WEC(Finite_int_set.remove_one_element fis k,
-     List.filter (fun ( C l)->not(List.mem k l)) extra_constr
-   );;
+module With_upper_bound = struct 
 
-let tail_and_head (WEC(fis,extra_constr)) =
-    let (fis_tail,)   
+let remove_one_element (old_fis,upper_bound) k=
+   let (UBC(_,W w)) = upper_bound 
+   and new_fis = Finite_int_set.remove_one_element old_fis k in 
+   let new_bound =(match Finite_int_set.natural_upper_bound new_fis (W w) with 
+   None -> upper_bound 
+   | Some better_bound -> better_bound
+   ) in  
+   (new_fis,new_bound) ;; 
+
+let tail_and_head (fis,upper_bound) =
+    let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
+    remove_one_element (fis,upper_bound) n ;;   
 
 end ;;   
-*)
+
 
