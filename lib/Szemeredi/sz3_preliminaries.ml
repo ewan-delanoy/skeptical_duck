@@ -356,5 +356,16 @@ let peek_for_fork_case helper old_fis_with_ub =
 
    let compute_reasonably_fast_opt fis_with_ub = 
     compute_fast_opt fis_with_ub ;;    
+  
+   exception Add_exn of  (finite_int_set * upper_bound_for_constraints) ;;
+
+   let add fis_with_ub = 
+      match compute_reasonably_fast_opt fis_with_ub with 
+      None -> raise(Add_exn fis_with_ub)
+    |Some answer ->
+        Hashtbl.replace main_hashtbl fis_with_ub answer ;; 
+
+   let add_usual (n,scrappers) =
+       add (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
 
 end ;;  
