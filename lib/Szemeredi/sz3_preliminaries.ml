@@ -17,9 +17,6 @@ type upper_bound_for_constraints =
     Sz3_types.upper_bound_for_constraints = 
     UBC of int * int ;; 
 
-type finite_int_set_with_upper_bound_for_constraints = 
-    Sz3_types.finite_int_set_with_upper_bound_for_constraints =
-      WEC of finite_int_set * upper_bound_for_constraints ;;
 
 type extension_data = Sz3_types.extension_data  ;; 
 
@@ -30,7 +27,7 @@ type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 type peek_result = Sz3_types.peek_result =
     P_Success of mold 
    |P_Failure
-   |P_Unfinished_computation of finite_int_set_with_upper_bound_for_constraints list ;;
+   |P_Unfinished_computation of (finite_int_set * upper_bound_for_constraints) list ;;
 
 
 let i_order = Total_ordering.for_integers ;;
