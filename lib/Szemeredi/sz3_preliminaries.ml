@@ -56,21 +56,6 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 end ;;  
 
 
-module Parameter_pair_for_obstruction = struct 
-
-  let predecessor max_in_set (width,breadth) = 
-    if breadth < 1 
-    then (if width < 2 then None else Some(width-1,max_in_set-2*(width-1)) )  
-    else (Some(width,breadth-1)) ;;
-    
-  let check_for_meaningful_obstruction (width,breadth) domain =
-     if breadth < 1 
-     then false 
-     else Ordered.is_included_in 
-           Total_ordering.for_integers 
-         [breadth;breadth+width;breadth+2*width] domain ;;  
-  
-end ;;  
 
 module Find_constraint = struct 
 
@@ -104,9 +89,22 @@ let with_upper_bound domain (UBC(b,W w)) =
     let u = b + 2*w in 
     let temp1 = List.rev domain in 
     let temp2 = List.filter (fun t->t<=u) temp1 in 
-    helper_for_exact_width (W w,domain,temp2) ;;     
+    match helper_for_exact_width (W w,domain,temp2) with 
+    Some (C l) -> Some(C l,UBC(List.hd l,W w)) 
+   |None ->
+     (
+        match helper_for_maximal_width (W (w-1),domain) with 
+        Some(W w2,C l2) -> Some(C l2,UBC(List.hd l2,W w2)) 
+        | None -> None
+     );;     
+
+(*    
+let test upper_bound candidate = 
+    match 
+*)
 
 end ;;  
+
 
 (*
 let with_exact_width (W w) domain = 
@@ -188,6 +186,7 @@ let tail_and_head (fis,upper_bound) =
     let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
     (n,remove_one_element (fis,upper_bound) n) ;;   
 
+
 end ;;   
 
 exception Get_below_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
@@ -199,25 +198,27 @@ module Level1 = struct
   
   let force_get_below fs_with_ub = raise(Get_below_exn(0,fs_with_ub));;
   
-  let main_hashtbl = Hashtbl.create 50 ;; 
+  let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
   
-  let peek_for_obvious_accesses helper (fis_domain,upper_bound) = 
-    match List.assoc_opt fis_domain helper with 
+  let peek_for_obvious_accesses helper fis_with_ub = 
+    match List.assoc_opt fis_with_ub helper with 
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt main_hashtbl fis_domain with 
+          match  Hashtbl.find_opt main_hashtbl fis_with_ub with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
-         (match Finite_int_set.relative_head_constraint fis_domain upper_bound with 
-          None -> let domain = Finite_int_set.to_usual_int_list fis_domain in 
+          let (fis,upper_bound) = fis_with_ub in 
+         (match Finite_int_set.relative_head_constraint fis upper_bound with 
+          None -> let domain = Finite_int_set.to_usual_int_list fis in 
                    (P_Success(M([domain],domain)),false)
-         |Some (cstr) ->   
+         |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then (P_Success(force_get_below (fis_domain,upper_bound)),true)   
+            then (P_Success(force_get_below (fis,upper_bound)),true)   
             else (P_Failure,false)          
          )
        ) ;; 
   
+
 end ;;  
