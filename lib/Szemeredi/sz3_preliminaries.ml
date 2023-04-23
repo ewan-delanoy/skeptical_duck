@@ -98,10 +98,10 @@ let with_upper_bound domain (UBC(b,W w)) =
         | None -> None
      );;     
 
-(*    
-let test upper_bound candidate = 
-    match 
-*)
+ 
+let is_admissible upper_bound candidate = 
+    ((with_upper_bound candidate upper_bound)=None);;
+
 
 end ;;  
 
@@ -110,6 +110,8 @@ end ;;
 let with_exact_width (W w) domain = 
   Private.helper_for_exact_width (W w,domain,List.rev domain) ;; 
 *)   
+
+let is_admissible = Private.is_admissible ;; 
 
 let natural_upper_bound = Private.natural_upper_bound ;; 
 
