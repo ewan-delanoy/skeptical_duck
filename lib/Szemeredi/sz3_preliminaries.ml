@@ -339,6 +339,16 @@ let peek_for_fork_case helper old_fis_with_ub =
       iterator_for_needed_subcomputations new_walker ;;
 
    let needed_subcomputations items = 
-    iterator_for_needed_subcomputations ([],items) ;;          
+    iterator_for_needed_subcomputations ([],items) ;;  
+    
+   let compute_fast_opt fis_with_ub =
+    let (peek_res,_) =multiple_peek [] fis_with_ub in
+      match peek_res with 
+      P_Success (answer) -> Some answer
+    | P_Unfinished_computation (_)  
+    | P_Failure -> None ;;
+
+   let compute_reasonably_fast_opt fis_with_ub = 
+    compute_fast_opt fis_with_ub ;;    
 
 end ;;  
