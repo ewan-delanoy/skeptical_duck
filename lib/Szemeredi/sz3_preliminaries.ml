@@ -188,7 +188,13 @@ let tail_and_head (fis,upper_bound) =
     let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
     (n,remove_one_element (fis,upper_bound) n) ;;   
 
-
+let usual_pair (n,scrappers,W w) =
+    let fis = FIS(n,scrappers) in
+    let upper_bound =(match Finite_int_set.natural_upper_bound fis (W w) with 
+     None -> UBC(max(1)(n-2*w),W w)
+    |Some answer -> answer
+    ) in 
+    (fis,upper_bound) ;;
 end ;;   
 
 exception Get_below_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
