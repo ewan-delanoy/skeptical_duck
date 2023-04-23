@@ -85,14 +85,12 @@ let rec helper_for_maximal_width (W w,domain) =
      if w<2 then None else 
     helper_for_maximal_width (W (w-1),domain) ;;  
 
-(*    
+ 
 let natural_upper_bound domain (W w) = 
     match helper_for_maximal_width (W w,domain) with 
      None -> None 
-    |Some (C l)->
-         let nth = (fun k->List.nth l (k-1)) in 
-         Some(UBC(nth 1,W((nth 2)-(nth 1)))) ;; 
-*)
+    |Some (W wmax,C l)->
+         Some(UBC(List.hd l,W wmax)) ;; 
 
 end ;;  
 
@@ -100,6 +98,8 @@ end ;;
 let with_exact_width (W w) domain = 
   Private.helper_for_exact_width (W w,domain,List.rev domain) ;; 
 *)   
+
+let natural_upper_bound = Private.natural_upper_bound ;; 
 
 let with_maximal_width (W w) domain = 
   Private.helper_for_maximal_width (W w,domain) ;;   
@@ -149,6 +149,9 @@ module Finite_int_set = struct
                    )
     ) in 
     (d,of_usual_int_list core_domain) ;; 
+
+   let natural_upper_bound fis_domain w =
+      Find_constraint.natural_upper_bound (to_usual_int_list fis_domain) w;;
 
 end ;;    
 
