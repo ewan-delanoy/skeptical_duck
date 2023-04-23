@@ -222,5 +222,27 @@ module Level1 = struct
          )
        ) ;; 
   
+  exception Peek_for_cumulative_case_should_never_happen_1_exn ;; 
+
+  let peek_for_cumulative_case helper old_fis_with_ub = 
+      let (n,new_fis_ub) = With_upper_bound.tail_and_head old_fis_with_ub in 
+      let (peek_res,_) = peek_for_obvious_accesses helper new_fis_ub in 
+        match peek_res with 
+       P_Unfinished_computation(_) -> raise(Peek_for_cumulative_case_should_never_happen_1_exn)
+      |P_Failure -> P_Unfinished_computation([new_fis_ub]) 
+      |P_Success(M(sols2,ext2)) ->
+        let (_,old_ub) = old_fis_with_ub in 
+        if not(Find_constraint.is_admissible old_ub (ext2@[n]))
+        then P_Success(M(sols2,[]))
+        else
+        let sols3 = List.filter_map (fun sol->
+                    if Find_constraint.is_admissible old_ub (sol@[n]) 
+                    then Some(sol@[n]) 
+                    else None    
+        ) sols2 in 
+        if sols3 <> [] 
+        then P_Success(M(sols3,ext2@[n]))  
+        else P_Failure
+    ;;
 
 end ;;  
