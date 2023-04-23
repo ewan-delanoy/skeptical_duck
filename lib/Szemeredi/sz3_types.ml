@@ -14,7 +14,7 @@ type finite_int_set = FIS of int * (int list) ;;
 
 type constraint_t = C of int list ;; 
 
-type upper_bound_for_constraints = UBC of int * int ;; 
+type upper_bound_for_constraints = UBC of int * width ;; 
 
 type extension_data = int list ;; 
 

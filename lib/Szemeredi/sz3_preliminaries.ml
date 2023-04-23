@@ -15,7 +15,7 @@ type constraint_t = Sz3_types.constraint_t = C of int list;;
 
 type upper_bound_for_constraints = 
     Sz3_types.upper_bound_for_constraints = 
-    UBC of int * int ;; 
+    UBC of int * width ;; 
 
 
 type extension_data = Sz3_types.extension_data  ;; 
@@ -85,6 +85,15 @@ let rec helper_for_maximal_width (W w,domain) =
      if w<2 then None else 
     helper_for_maximal_width (W (w-1),domain) ;;  
 
+(*    
+let natural_upper_bound domain (W w) = 
+    match helper_for_maximal_width (W w,domain) with 
+     None -> None 
+    |Some (C l)->
+         let nth = (fun k->List.nth l (k-1)) in 
+         Some(UBC(nth 1,W((nth 2)-(nth 1)))) ;; 
+*)
+
 end ;;  
 
 (*
@@ -94,6 +103,9 @@ let with_exact_width (W w) domain =
 
 let with_maximal_width (W w) domain = 
   Private.helper_for_maximal_width (W w,domain) ;;   
+
+
+    
 
 end ;;   
 
@@ -153,145 +165,4 @@ let tail_and_head (WEC(fis,extra_constr)) =
 
 end ;;   
 *)
-
-exception Get_below_exn of int * finite_int_set ;;
-exception Compute_fast_exn of int * finite_int_set ;;
-
-module Level1 = struct 
-
-let current_width = 1 ;; 
-
-let force_get_below fis_domain = raise(Get_below_exn(0,fis_domain));;
-
-let main_hashtbl = Hashtbl.create 50 ;; 
-
-let try_all_obvious_accesses helper fis_domain = 
-  match List.assoc_opt fis_domain helper with 
-    Some answer1 -> (Some answer1,None) 
-  | None ->
-     (
-        match  Hashtbl.find_opt main_hashtbl fis_domain with 
-        Some answer2 -> (Some answer2,None) 
-      | None -> 
-       (match Finite_int_set.head_constraint (W current_width) fis_domain with 
-        None -> let domain = Finite_int_set.to_usual_int_list fis_domain in 
-               (Some(M([domain],domain)),None)
-       |Some (W w,cstr) ->   
-          if w<current_width 
-          then (Some(force_get_below fis_domain),None)   
-          else (* return the constraint for subsequent fork analysis *)
-               (None,Some (W w,cstr))          
-       )
-     ) ;; 
-
-
-let analysis_on_tail sols2 ext2 n = 
-  let interval = Int_range.range 1 current_width in 
-    let is_admissible = (fun x->List.for_all(fun d->
-           not(i_is_included_in [n-(2*d);n-d] x) 
-    ) interval) in 
-    if not(is_admissible ext2)
-    then Some(Some(M(sols2,[])),true,[])  
-    else 
-    let sols3 = List.filter_map (fun sol->
-             if is_admissible sol 
-             then Some(sol@[n]) 
-             else None    
-    ) sols2 in 
-    if sols3 <> [] 
-    then Some(Some(M(sols3,ext2@[n])),true,[])  
-    else None
-  ;;
-
-
-let fork_analysis helper fis_domain  cstr = 
-  let candidates = Image.image (
-     fun i-> Finite_int_set.remove_one_element fis_domain i
-  ) cstr in 
-  let candidates2 = Image.image (
-    fun cand ->(cand,fst(try_all_obvious_accesses helper fis_domain))
-  ) candidates in 
-  let bad_ones = List.filter (
-    fun (_cand,opt) -> opt<>None
-  ) candidates2 in 
-  if bad_ones <> []
-  then (None,false,Image.image fst bad_ones)
-  else 
-  let candidates3 = Image.image (
-   fun (cand,opt) ->(cand,Option.get opt)
-  ) candidates2 in     
-  let lengths = Image.image (fun (_cand,M(sols,_ext))->
-      List.length(List.hd sols)) candidates3 in 
-  let indexed_lengths = Int_range.index_everything lengths in 
-  let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
-  and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
-if min1 = max1 
-then let (M(sols4,_)) = snd(List.hd(List.rev candidates3)) in 
-    (Some (M(sols4,[])),true,[])
-else let (max_idx,_) = List.hd(List.rev max_indices) in 
-    let (M(sols5,_)) = snd(List.nth candidates3 (max_idx-1) ) in  
-    let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-    (Some (M(sols5,ext5)),true,[]);;    
-
-
-let end_of_full_pusher 
-       helper fis_domain fis_tail n 
-       opt_easy_case2 opt_cstr_data = 
-  match opt_easy_case2 with 
-   None -> (None,false,[fis_tail])
-  |Some(M(sols2,ext2)) ->
-    let opt1 = analysis_on_tail sols2 ext2 n in 
-    if opt1<>None then Option.get opt1 else
-    let (_,C cstr) = Option.get opt_cstr_data in 
-    fork_analysis helper fis_domain  cstr;;    
-
- 
-let full_pusher_in_computation helper fis_domain =
-  let (opt_easy_case,opt_cstr_data) =  try_all_obvious_accesses helper fis_domain in 
-  match opt_easy_case with 
-   Some(answer) -> (Some answer,false,[])
-  |None -> 
-     let (fis_tail,n) = Finite_int_set.tail_and_head fis_domain in 
-     let (opt_easy_case2,_opt_cstr_data2) = try_all_obvious_accesses helper fis_tail in 
-     end_of_full_pusher 
-       helper fis_domain fis_tail n 
-       opt_easy_case2 opt_cstr_data ;;
-
-       
-let rec helper_for_needed_computations (helper,to_be_treated)= match to_be_treated with 
-    [] -> List.rev(helper)
-   | fis_domain :: others -> 
-      let (opt_answer,should_remember,to_be_treated_later) = 
-         full_pusher_in_computation helper fis_domain in 
-      match opt_answer with 
-      None ->
-        helper_for_needed_computations (helper,to_be_treated_later@to_be_treated)
-     |Some answer -> 
-       let new_helper = 
-          (if should_remember then (fis_domain,answer)::helper else helper) in 
-       helper_for_needed_computations (new_helper,others) 
-       ;;      
-   
- let needed_computations fis_domain =
-  helper_for_needed_computations ([],[fis_domain]) ;;
-
- let compute_fast fis_domain = 
-    let (opt,_,_) =full_pusher_in_computation [] fis_domain in 
-    match opt with 
-     Some answer -> answer 
-    |None -> raise (Compute_fast_exn (1,fis_domain)) ;;
-
-  let compute_reasonably_fast fis_domain = 
-    compute_fast fis_domain ;; 
-
-  let treat fis_domain =
-      Hashtbl.replace main_hashtbl 
-         fis_domain (compute_reasonably_fast fis_domain) ;;    
-
-end ;;  
-
-
- 
-
-
 
