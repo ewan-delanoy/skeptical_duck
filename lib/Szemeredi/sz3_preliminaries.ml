@@ -253,19 +253,17 @@ module Level1 = struct
 
   exception Using_translation_exn ;;
 
-  let peek_for_obvious_accesses_using_translation 
+  let seek_obvious_accesses_using_translation 
       helper original_fis_with_ub = 
     let (d,translated_fis_with_ub) = 
         With_upper_bound.decompose_wrt_translation original_fis_with_ub in 
-    let (peek_res,to_be_remembered) = 
-          peek_for_obvious_accesses helper translated_fis_with_ub in 
+    let (peek_res,_) = peek_for_obvious_accesses helper translated_fis_with_ub in 
         match peek_res with 
        P_Unfinished_computation(_)  -> raise(Using_translation_exn)
-      |P_Failure -> None
+      |P_Failure -> (None,Some translated_fis_with_ub)
       |P_Success(translated_answer) ->
          let answer_to_original = Mold.translate d translated_answer in 
-         Some(d,answer_to_original,
-           (translated_fis_with_ub,translated_answer),to_be_remembered);; 
+         (Some(answer_to_original),None);; 
 
   exception Peek_for_cumulative_case_should_never_happen_1_exn ;; 
 
@@ -306,6 +304,17 @@ let partition_leaves_in_fork_case helper leaves =
     List.partition (fun (_,opt) -> opt = None ) leaves2 in 
   (Image.image (fun (cand, opt)->(cand,Option.get opt)) good_leaves,
    Image.image (fun (cand,_opt)-> cand                ) bad_leaves) ;; 
+
+let partition_leaves_in_fork_case helper leaves =
+  let leaves2 = Image.image (
+      fun cand ->
+        (cand,seek_obvious_accesses_using_translation helper cand)
+  ) leaves in 
+  let (bad_leaves,good_leaves) = 
+      List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
+  (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
+   Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
+
 
 exception Peek_for_fork_case_should_never_happen_1_exn ;;
 
