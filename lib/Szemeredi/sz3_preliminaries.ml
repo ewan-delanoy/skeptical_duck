@@ -246,7 +246,8 @@ module Level1 = struct
     ) intervals in 
     M([List.flatten sol_components],List.flatten forced_elements);;
 
-  let simpler (fis1,UBC(b,_)) = 
+  let simpler (fis1,UBC(b,W w0)) =
+    if w0>1 then simpler_without_upper_bound fis1 else  
     let domain1 = Finite_int_set.to_usual_int_list fis1 in 
     let (domain2,extra) = List.partition (fun t->t<=(b+2)) domain1 in 
     let fis2 = Finite_int_set.of_usual_int_list domain2 in 
