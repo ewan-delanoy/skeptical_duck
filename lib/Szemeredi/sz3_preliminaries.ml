@@ -466,6 +466,10 @@ let peek_for_fork_case helper old_fis_with_ub =
      let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
      if sols2 = []
      then raise(Import_exn(current_width,(n,scrappers)))
-     else M(sols2,ext);;  
+     else 
+    let answer = M(sols2,ext) in 
+    let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
+    answer ;; 
+
 
 end ;;  
