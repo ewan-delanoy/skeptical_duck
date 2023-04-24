@@ -343,27 +343,10 @@ module Level2 = struct
 
 let partition_leaves_in_fork_case helper leaves =
   let leaves2 = Image.image (
-    fun cand ->
-      let (peek_res,_) = peek_for_obvious_accesses helper cand in 
-      let res_opt = (
-          match peek_res with 
-            P_Success (mold) -> Some mold
-          | P_Failure
-          | P_Unfinished_computation (_) -> None
-      ) in 
-      (cand,res_opt)
-  ) leaves in 
-  let (bad_leaves,good_leaves) = 
-    List.partition (fun (_,opt) -> opt = None ) leaves2 in 
-  (Image.image (fun (cand, opt)->(cand,Option.get opt)) good_leaves,
-   Image.image (fun (cand,_opt)-> cand                ) bad_leaves) ;; 
-
-let partition_leaves_in_fork_case helper leaves =
-  let leaves2 = Image.image (
       fun cand ->
         (cand,seek_obvious_accesses_using_translation helper cand)
   ) leaves in 
-  let (bad_leaves,good_leaves) = 
+  let (good_leaves,bad_leaves) = 
       List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
   (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
    Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
@@ -552,27 +535,10 @@ module Level3 = struct
 
 let partition_leaves_in_fork_case helper leaves =
   let leaves2 = Image.image (
-    fun cand ->
-      let (peek_res,_) = peek_for_obvious_accesses helper cand in 
-      let res_opt = (
-          match peek_res with 
-            P_Success (mold) -> Some mold
-          | P_Failure
-          | P_Unfinished_computation (_) -> None
-      ) in 
-      (cand,res_opt)
-  ) leaves in 
-  let (bad_leaves,good_leaves) = 
-    List.partition (fun (_,opt) -> opt = None ) leaves2 in 
-  (Image.image (fun (cand, opt)->(cand,Option.get opt)) good_leaves,
-   Image.image (fun (cand,_opt)-> cand                ) bad_leaves) ;; 
-
-let partition_leaves_in_fork_case helper leaves =
-  let leaves2 = Image.image (
       fun cand ->
         (cand,seek_obvious_accesses_using_translation helper cand)
   ) leaves in 
-  let (bad_leaves,good_leaves) = 
+  let (good_leaves,bad_leaves) = 
       List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
   (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
    Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
