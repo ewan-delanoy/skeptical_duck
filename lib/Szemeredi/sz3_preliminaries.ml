@@ -221,6 +221,7 @@ exception Pusher_for_needed_subcomputations_exn_1 of int ;;
 exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
 exception Add_exn of  int * (finite_int_set * upper_bound_for_constraints) ;;
 exception Bad_remainder_by_three of int ;; 
+exception Import_exn of int * (int * (int list)) ;;
 
 module Level1 = struct 
 
@@ -458,5 +459,13 @@ let peek_for_fork_case helper old_fis_with_ub =
 
    let add_usual (n,scrappers) =
        add (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
+
+   let import (n,scrappers) =
+     let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
+     let (M(sols,ext))=force_get_below (fis,ub) in 
+     let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
+     if sols2 = []
+     then raise(Import_exn(current_width,(n,scrappers)))
+     else M(sols2,ext);;  
 
 end ;;  
