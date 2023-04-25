@@ -269,6 +269,8 @@ module Level1 = struct
 
 end ;;  
 
+
+(* Beginning of Level2 *)
 module Level2 = struct 
 
   let current_width = 2 ;; 
@@ -468,7 +470,10 @@ let peek_for_fork_case helper old_fis_with_ub =
 
 
 end ;;  
+(* End of Level2 *)
 
+
+(* Beginning of Level3 *)
 module Level3 = struct 
 
   let current_width = 3 ;; 
@@ -669,6 +674,8 @@ let peek_for_fork_case helper old_fis_with_ub =
 
 
 end ;;  
+(* End of Level3 *)
+
 
 exception Bad_index_in_simplified_multiple_peek of int ;; 
 
