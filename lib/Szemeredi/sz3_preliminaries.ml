@@ -224,6 +224,8 @@ exception Add_exn of  int * (finite_int_set * upper_bound_for_constraints) ;;
 exception Bad_remainder_by_three of int ;; 
 exception Import_exn of int * (int * (int list)) ;;
 
+let graded_hashtbl = ((Hashtbl.create 50): (width * key, mold) Hashtbl.t) ;; 
+
 module Level1 = struct 
 
   let current_width = 1 ;; 
