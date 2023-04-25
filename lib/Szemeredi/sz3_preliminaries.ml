@@ -217,6 +217,7 @@ exception Using_translation_exn of int ;;
 exception Peek_for_cumulative_case_should_never_happen_1_exn of int ;; 
 exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
 exception Multiple_peek_exn of int ;; 
+exception Simplified_multiple_peek_exn of int ;;
 exception Pusher_for_needed_subcomputations_exn_1 of int ;; 
 exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
 exception Add_exn of  int * (finite_int_set * upper_bound_for_constraints) ;;
@@ -396,6 +397,14 @@ let peek_for_fork_case helper old_fis_with_ub =
     | P_Unfinished_computation (_) -> (peek_res3,false)  
     | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
         
+  let simplified_multiple_peek helper fis_with_ub =   
+    let (peek_res,_)= multiple_peek helper fis_with_ub in 
+    match peek_res with 
+          P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
+        | P_Unfinished_computation (new_to_be_treated) -> 
+             (None,Some new_to_be_treated)
+        | P_Success (answer) -> 
+            (Some answer,None) ;; 
 
   let pusher_for_needed_subcomputations (helper,to_be_treated) =
       match to_be_treated with 
@@ -463,7 +472,7 @@ module Level3 = struct
   let current_width = 3 ;; 
   
   let force_get_below fis_with_ub = 
-    match Level1.compute_reasonably_fast_opt fis_with_ub with 
+    match Level2.compute_reasonably_fast_opt fis_with_ub with 
     Some answer -> answer  
     |None -> raise(Get_below_exn(current_width-1,fis_with_ub));;
   
@@ -588,6 +597,15 @@ let peek_for_fork_case helper old_fis_with_ub =
     | P_Unfinished_computation (_) -> (peek_res3,false)  
     | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
         
+        
+  let simplified_multiple_peek helper fis_with_ub =   
+      let (peek_res,_)= multiple_peek helper fis_with_ub in 
+      match peek_res with 
+            P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
+          | P_Unfinished_computation (new_to_be_treated) -> 
+               (None,Some new_to_be_treated)
+          | P_Success (answer) -> 
+              (Some answer,None) ;; 
 
   let pusher_for_needed_subcomputations (helper,to_be_treated) =
       match to_be_treated with 
@@ -646,6 +664,37 @@ let peek_for_fork_case helper old_fis_with_ub =
     let answer = M(sols2,ext) in 
     let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
     answer ;; 
+
+
+end ;;  
+
+exception Bad_index_in_simplified_multiple_peek of int ;; 
+
+module High_level = struct 
+
+(*  
+let high_level_hashtbl = Hashtbl.create 50 ;; 
+*)
+
+let basic_multiple_peek (W w) helper fis_with_ub =
+    match w with 
+     1 -> (Level1.compute_fast_opt fis_with_ub,None)
+    |2 -> Level2.simplified_multiple_peek helper fis_with_ub
+    |3 -> Level3.simplified_multiple_peek helper fis_with_ub
+    |_ -> raise(Bad_index_in_simplified_multiple_peek(w)) ;;    
+
+let unprotected_multiple_peek width helper fis_with_ub =
+    let (opt_success,opt_incomplete) = basic_multiple_peek width helper fis_with_ub in 
+    if opt_success <> None then (opt_success,None) else 
+    let data = Image.image 
+      (fun fis_with_ub -> (width,fis_with_ub) ) (Option.get opt_incomplete) in 
+    (None,Some data) ;;  
+
+
+let simplified_multiple_peek helper (width,fis_with_ub) =
+    try unprotected_multiple_peek width helper fis_with_ub with
+    Get_below_exn (width2,fis_with_ub2)->
+        (None,Some([W width2,fis_with_ub2])) ;; 
 
 
 end ;;  
