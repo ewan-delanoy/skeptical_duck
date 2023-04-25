@@ -744,3 +744,15 @@ let compute_and_remember triple =
     List.assoc triple nc ;;
 
 end ;;  
+
+
+module Fill = struct 
+
+let bound = 40 ;; 
+
+let fill () =
+  let _act1 = Int_range.scale (fun k->Level2.import (k,[])) 1 bound in 
+  ()
+  ;;  
+
+end ;;
