@@ -672,15 +672,23 @@ exception Bad_index_in_simplified_multiple_peek of int ;;
 
 module High_level = struct 
 
-(*  
-let high_level_hashtbl = Hashtbl.create 50 ;; 
-*)
+  
+let high_level_hashtbl = ((Hashtbl.create 50): (width * key, mold) Hashtbl.t) ;; 
 
-let basic_multiple_peek (W w) helper fis_with_ub =
+let adjust_helper width high_helper =
+   List.filter_map (
+     fun ((width2,fis_with_ub),mold) ->
+       if width2 = width 
+       then Some (fis_with_ub,mold) 
+       else None  
+   ) high_helper ;; 
+
+let basic_multiple_peek width helper fis_with_ub =
+   let (W w)=width in 
     match w with 
      1 -> (Level1.compute_fast_opt fis_with_ub,None)
-    |2 -> Level2.simplified_multiple_peek helper fis_with_ub
-    |3 -> Level3.simplified_multiple_peek helper fis_with_ub
+    |2 -> Level2.simplified_multiple_peek (adjust_helper width helper) fis_with_ub
+    |3 -> Level3.simplified_multiple_peek (adjust_helper width helper) fis_with_ub
     |_ -> raise(Bad_index_in_simplified_multiple_peek(w)) ;;    
 
 let unprotected_multiple_peek width helper fis_with_ub =
@@ -696,5 +704,43 @@ let simplified_multiple_peek helper (width,fis_with_ub) =
     Get_below_exn (width2,fis_with_ub2)->
         (None,Some([W width2,fis_with_ub2])) ;; 
 
+exception Pusher_for_needed_subcomputations_exn ;; 
+
+let pusher_for_needed_subcomputations (helper,to_be_treated) =
+    match to_be_treated with 
+     [] -> raise (Pusher_for_needed_subcomputations_exn) 
+    |triple :: others ->
+      let opt1 = Hashtbl.find_opt high_level_hashtbl triple  in 
+      if opt1<>None 
+      then (helper,others)
+      else    
+      let opt2 = List.assoc_opt triple helper  in 
+      if opt2<>None 
+      then (helper,others)
+      else     
+      let (opt_success,opt_incomplete)=  
+          simplified_multiple_peek helper triple in 
+      if opt_success<>None 
+      then ((triple,Option.get opt_success)::helper,others)  
+      else (helper,(Option.get opt_incomplete)@to_be_treated) ;;     
+    
+let rec iterator_for_needed_subcomputations walker = 
+          if snd walker = [] then List.rev(fst walker) else 
+          let new_walker = pusher_for_needed_subcomputations walker in      
+          iterator_for_needed_subcomputations new_walker ;;
+    
+let needed_subcomputations items = 
+        iterator_for_needed_subcomputations ([],items) ;;  
+
+let compute_and_remember triple =
+  match Hashtbl.find_opt high_level_hashtbl triple with 
+    Some answer -> answer 
+   |None -> 
+    let nc = needed_subcomputations [triple] in 
+    let _ = List.iter (
+     fun (triple,mold) ->
+        Hashtbl.replace high_level_hashtbl triple mold
+    ) nc in 
+    List.assoc triple nc ;;
 
 end ;;  
