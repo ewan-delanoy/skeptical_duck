@@ -280,6 +280,15 @@ module Level2 = struct
     Some answer -> answer  
     |None -> raise(Get_below_exn(current_width-1,fis_with_ub));;
   
+  let get_below (_hshtbl,stern_mode) fis_with_ub = 
+    match Level1.compute_reasonably_fast_opt fis_with_ub with 
+    Some answer -> (P_Success(answer),true)  
+    |None -> 
+      if stern_mode 
+      then raise(Get_below_exn(current_width-1,fis_with_ub))
+      else (P_Unfinished_computation[fis_with_ub],false);;
+
+
   let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
   
   let peek_for_obvious_accesses helper fis_with_ub = 
