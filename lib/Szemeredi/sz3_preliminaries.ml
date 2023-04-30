@@ -222,7 +222,10 @@ exception Pusher_for_needed_subcomputations_exn_1 of int ;;
 exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
 exception Add_exn of  int * (finite_int_set * upper_bound_for_constraints) ;;
 exception Bad_remainder_by_three of int ;; 
-exception Import_exn of int * (int * (int list)) ;;
+exception Import_no_presolution_exn of int * (int * (int list)) ;;
+exception Import_bad_presolution_exn of int * (int * (int list)) ;;
+
+
 
 let graded_hashtbl = ((Hashtbl.create 50): (width * key, mold) Hashtbl.t) ;; 
 
@@ -275,11 +278,6 @@ module Level2 = struct
 
   let current_width = 2 ;; 
   
-  let force_get_below fis_with_ub = 
-    match Level1.compute_reasonably_fast_opt fis_with_ub with 
-    Some answer -> answer  
-    |None -> raise(Get_below_exn(current_width-1,fis_with_ub));;
-  
   let get_below (_hshtbl,stern_mode) fis_with_ub = 
     match Level1.compute_reasonably_fast_opt fis_with_ub with 
     Some answer -> (P_Success(answer),true)  
@@ -306,7 +304,7 @@ module Level2 = struct
          |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then (P_Success(force_get_below (fis,upper_bound)),true)   
+            then get_below (main_hashtbl,false) (fis,upper_bound)
             else (P_Failure,false)          
          )
        ) ;; 
@@ -468,10 +466,14 @@ let peek_for_fork_case helper old_fis_with_ub =
 
    let import (n,scrappers) =
      let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (M(sols,ext))=force_get_below (fis,ub) in 
+     let (pres,_)= get_below (main_hashtbl,false) (fis,ub) in 
+     match pres with 
+    | P_Unfinished_computation (_)  
+    | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
+    | P_Success (M(sols,ext)) ->
      let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
      if sols2 = []
-     then raise(Import_exn(current_width,(n,scrappers)))
+     then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
     let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
@@ -487,11 +489,15 @@ module Level3 = struct
 
   let current_width = 3 ;; 
   
-  let force_get_below fis_with_ub = 
-    match Level2.compute_reasonably_fast_opt fis_with_ub with 
-    Some answer -> answer  
-    |None -> raise(Get_below_exn(current_width-1,fis_with_ub));;
-  
+  let get_below (_hshtbl,stern_mode) fis_with_ub = 
+    match Level1.compute_reasonably_fast_opt fis_with_ub with 
+    Some answer -> (P_Success(answer),true)  
+    |None -> 
+      if stern_mode 
+      then raise(Get_below_exn(current_width-1,fis_with_ub))
+      else (P_Unfinished_computation[fis_with_ub],false);;
+
+
   let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
   
   let peek_for_obvious_accesses helper fis_with_ub = 
@@ -509,7 +515,7 @@ module Level3 = struct
          |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then (P_Success(force_get_below (fis,upper_bound)),true)   
+            then get_below (main_hashtbl,false) (fis,upper_bound)
             else (P_Failure,false)          
          )
        ) ;; 
@@ -613,15 +619,14 @@ let peek_for_fork_case helper old_fis_with_ub =
     | P_Unfinished_computation (_) -> (peek_res3,false)  
     | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
         
-        
   let simplified_multiple_peek helper fis_with_ub =   
-      let (peek_res,_)= multiple_peek helper fis_with_ub in 
-      match peek_res with 
-            P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
-          | P_Unfinished_computation (new_to_be_treated) -> 
-               (None,Some new_to_be_treated)
-          | P_Success (answer) -> 
-              (Some answer,None) ;; 
+    let (peek_res,_)= multiple_peek helper fis_with_ub in 
+    match peek_res with 
+          P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
+        | P_Unfinished_computation (new_to_be_treated) -> 
+             (None,Some new_to_be_treated)
+        | P_Success (answer) -> 
+            (Some answer,None) ;; 
 
   let pusher_for_needed_subcomputations (helper,to_be_treated) =
       match to_be_treated with 
@@ -672,10 +677,14 @@ let peek_for_fork_case helper old_fis_with_ub =
 
    let import (n,scrappers) =
      let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (M(sols,ext))=force_get_below (fis,ub) in 
+     let (pres,_)= get_below (main_hashtbl,false) (fis,ub) in 
+     match pres with 
+    | P_Unfinished_computation (_)  
+    | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
+    | P_Success (M(sols,ext)) ->
      let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
      if sols2 = []
-     then raise(Import_exn(current_width,(n,scrappers)))
+     then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
     let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
