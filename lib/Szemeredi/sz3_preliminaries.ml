@@ -296,7 +296,7 @@ module Level2 = struct
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt hashtbl fis_with_ub with 
+          match  Hashtbl.find_opt hashtbl (current_width,fis_with_ub) with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -460,7 +460,7 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
       match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
       None -> raise(Add_exn(current_width,fis_with_ub))
     |Some answer ->
-        let _ = Hashtbl.replace hashtbl fis_with_ub answer in 
+        let _ = Hashtbl.replace hashtbl (current_width,fis_with_ub) answer in 
         answer ;; 
 
    let add_usual (hashtbl,severity) (n,scrappers) =
@@ -478,7 +478,7 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
      then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace hashtbl (fis,ub) answer in 
+    let _ = Hashtbl.replace hashtbl (current_width,(fis,ub)) answer in 
     answer ;; 
 
 
@@ -507,7 +507,7 @@ module Level3 = struct
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt hashtbl fis_with_ub with 
+          match  Hashtbl.find_opt hashtbl (current_width,fis_with_ub) with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -671,7 +671,7 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
       match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
       None -> raise(Add_exn(current_width,fis_with_ub))
     |Some answer ->
-        let _ = Hashtbl.replace hashtbl fis_with_ub answer in 
+        let _ = Hashtbl.replace hashtbl (current_width,fis_with_ub) answer in 
         answer ;; 
 
    let add_usual (hashtbl,severity) (n,scrappers) =
@@ -689,7 +689,7 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
      then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace hashtbl (fis,ub) answer in 
+    let _ = Hashtbl.replace hashtbl (current_width,(fis,ub)) answer in 
     answer ;; 
 
 
