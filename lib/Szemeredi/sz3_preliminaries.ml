@@ -31,6 +31,8 @@ type peek_result = Sz3_types.peek_result =
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
+type severity = Sz3_types.severity = Stern | Relaxed ;; 
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
