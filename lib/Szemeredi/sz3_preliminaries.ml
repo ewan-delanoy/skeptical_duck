@@ -289,14 +289,14 @@ module Level2 = struct
       |Relaxed -> (P_Unfinished_computation[fis_with_ub],false);;
 
 
-  let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
+  (* let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;;  *)
   
-  let peek_for_obvious_accesses helper fis_with_ub = 
+  let peek_for_obvious_accesses (hashtbl,severity) helper fis_with_ub = 
     match List.assoc_opt fis_with_ub helper with 
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt main_hashtbl fis_with_ub with 
+          match  Hashtbl.find_opt hashtbl fis_with_ub with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -306,7 +306,7 @@ module Level2 = struct
          |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then get_below (main_hashtbl,Relaxed) (fis,upper_bound)
+            then get_below (hashtbl,severity) (fis,upper_bound)
             else (P_Failure,false)          
          )
        ) ;; 
@@ -322,10 +322,10 @@ module Level2 = struct
   
 
   let seek_obvious_accesses_using_translation 
-      helper original_fis_with_ub = 
+    (hashtbl,severity) helper original_fis_with_ub = 
     let (d,translated_fis_with_ub) = 
         With_upper_bound.decompose_wrt_translation original_fis_with_ub in 
-    let (peek_res,_) = peek_for_obvious_accesses helper translated_fis_with_ub in 
+    let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_fis_with_ub in 
         match peek_res with 
        P_Unfinished_computation(_)  -> raise(Using_translation_exn(current_width))
       |P_Failure -> (None,Some translated_fis_with_ub)
@@ -334,9 +334,9 @@ module Level2 = struct
          (Some(answer_to_original),None);; 
 
   
-  let peek_for_cumulative_case helper old_fis_with_ub = 
+  let peek_for_cumulative_case (hashtbl,severity) helper old_fis_with_ub = 
       let (n,new_fis_ub) = With_upper_bound.tail_and_head old_fis_with_ub in 
-      let (peek_res,_) = peek_for_obvious_accesses helper new_fis_ub in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_fis_ub in 
         match peek_res with 
        P_Unfinished_computation(_)  -> raise(Peek_for_cumulative_case_should_never_happen_1_exn(current_width))
       |P_Failure -> P_Unfinished_computation([new_fis_ub]) 
@@ -355,17 +355,17 @@ module Level2 = struct
         else P_Failure
     ;;
 
-let partition_leaves_in_fork_case helper leaves =
+let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
   let leaves2 = Image.image (
       fun cand ->
-        (cand,seek_obvious_accesses_using_translation helper cand)
+        (cand,seek_obvious_accesses_using_translation (hashtbl,severity) helper cand)
   ) leaves in 
   let (good_leaves,bad_leaves) = 
       List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
   (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
    Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
 
-let peek_for_fork_case helper old_fis_with_ub = 
+let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub = 
   let (fis,upper_bound) = old_fis_with_ub in 
   let opt1 = Finite_int_set.relative_head_constraint fis upper_bound in 
   if opt1=None  
@@ -375,7 +375,7 @@ let peek_for_fork_case helper old_fis_with_ub =
   let candidates = Image.image (
          fun i-> With_upper_bound.remove_one_element old_fis_with_ub i
   ) cstr_l in 
-  let (candidates2,bad_ones) = partition_leaves_in_fork_case helper candidates in 
+  let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
   if bad_ones <> []
   then P_Unfinished_computation(bad_ones)
   else   
@@ -393,25 +393,25 @@ let peek_for_fork_case helper old_fis_with_ub =
         P_Success(M(sols5,ext5));;    
 
 
-  let multiple_peek helper old_fis_with_ub = 
-    let (peek_res1,to_be_remembered) = peek_for_obvious_accesses helper old_fis_with_ub in 
+  let multiple_peek (hashtbl,severity) helper old_fis_with_ub = 
+    let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res1 with 
       P_Success (_) -> (peek_res1,to_be_remembered)
     | P_Unfinished_computation (_) -> (peek_res1,false)  
     | P_Failure ->
-    let peek_res2= peek_for_cumulative_case helper old_fis_with_ub in 
+    let peek_res2= peek_for_cumulative_case (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res2 with 
       P_Success (_) -> (peek_res2,true)
     | P_Unfinished_computation (_) -> (peek_res2,false)  
     | P_Failure -> 
-    let peek_res3= peek_for_fork_case helper old_fis_with_ub in 
+    let peek_res3= peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res3 with 
       P_Success (_) -> (peek_res3,true)
     | P_Unfinished_computation (_) -> (peek_res3,false)  
     | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
         
-  let simplified_multiple_peek helper fis_with_ub =   
-    let (peek_res,_)= multiple_peek helper fis_with_ub in 
+  let simplified_multiple_peek (hashtbl,severity) helper fis_with_ub =   
+    let (peek_res,_)= multiple_peek (hashtbl,severity) helper fis_with_ub in 
     match peek_res with 
           P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
         | P_Unfinished_computation (new_to_be_treated) -> 
@@ -419,11 +419,11 @@ let peek_for_fork_case helper old_fis_with_ub =
         | P_Success (answer) -> 
             (Some answer,None) ;; 
 
-  let pusher_for_needed_subcomputations (helper,to_be_treated) =
+  let pusher_for_needed_subcomputations (hashtbl,severity) (helper,to_be_treated) =
       match to_be_treated with 
        [] -> raise (Pusher_for_needed_subcomputations_exn_1(current_width)) 
       |fis_with_ub :: others ->
-        let (peek_res,to_be_remembered)= multiple_peek helper fis_with_ub in
+        let (peek_res,to_be_remembered)= multiple_peek (hashtbl,severity) helper fis_with_ub in
         (
           match peek_res with 
           P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2(current_width))
@@ -438,37 +438,37 @@ let peek_for_fork_case helper old_fis_with_ub =
             (new_helper,others)
         )  ;;     
 
-   let rec iterator_for_needed_subcomputations walker = 
+   let rec iterator_for_needed_subcomputations (hashtbl,severity) walker = 
       if snd walker = [] then List.rev(fst walker) else 
-      let new_walker = pusher_for_needed_subcomputations walker in      
-      iterator_for_needed_subcomputations new_walker ;;
+      let new_walker = pusher_for_needed_subcomputations (hashtbl,severity) walker in      
+      iterator_for_needed_subcomputations (hashtbl,severity) new_walker ;;
 
-   let needed_subcomputations items = 
-    iterator_for_needed_subcomputations ([],items) ;;  
+   let needed_subcomputations (hashtbl,severity) items = 
+    iterator_for_needed_subcomputations (hashtbl,severity) ([],items) ;;  
     
-   let compute_fast_opt fis_with_ub =
-    let (peek_res,_) =multiple_peek [] fis_with_ub in
+   let compute_fast_opt (hashtbl,severity) fis_with_ub =
+    let (peek_res,_) =multiple_peek (hashtbl,severity) [] fis_with_ub in
       match peek_res with 
       P_Success (answer) -> Some answer
     | P_Unfinished_computation (_)  
     | P_Failure -> None ;;
 
-   let compute_reasonably_fast_opt fis_with_ub = 
-    compute_fast_opt fis_with_ub ;;     
+   let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
+    compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
 
-   let add fis_with_ub = 
-      match compute_reasonably_fast_opt fis_with_ub with 
+   let add (hashtbl,severity) fis_with_ub = 
+      match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
       None -> raise(Add_exn(current_width,fis_with_ub))
     |Some answer ->
-        let _ = Hashtbl.replace main_hashtbl fis_with_ub answer in 
+        let _ = Hashtbl.replace hashtbl fis_with_ub answer in 
         answer ;; 
 
-   let add_usual (n,scrappers) =
-       add (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
+   let add_usual (hashtbl,severity) (n,scrappers) =
+       add (hashtbl,severity) (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
 
-   let import (n,scrappers) =
+   let import (hashtbl,severity) (n,scrappers) =
      let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (pres,_)= get_below (main_hashtbl,Relaxed) (fis,ub) in 
+     let (pres,_)= get_below (hashtbl,severity) (fis,ub) in 
      match pres with 
     | P_Unfinished_computation (_)  
     | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
@@ -478,7 +478,7 @@ let peek_for_fork_case helper old_fis_with_ub =
      then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
+    let _ = Hashtbl.replace hashtbl (fis,ub) answer in 
     answer ;; 
 
 
@@ -491,23 +491,23 @@ module Level3 = struct
 
   let current_width = 3 ;; 
   
-  let get_below (_hshtbl,stern_mode) fis_with_ub = 
+  let get_below (_hshtbl,severity) fis_with_ub = 
     match Level1.compute_reasonably_fast_opt fis_with_ub with 
     Some answer -> (P_Success(answer),true)  
     |None -> 
-      if stern_mode 
-      then raise(Get_below_exn(current_width-1,fis_with_ub))
-      else (P_Unfinished_computation[fis_with_ub],false);;
+      match severity with  
+       Stern -> raise(Get_below_exn(current_width-1,fis_with_ub))
+      |Relaxed -> (P_Unfinished_computation[fis_with_ub],false);;
 
 
-  let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
+  (* let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;;  *)
   
-  let peek_for_obvious_accesses helper fis_with_ub = 
+  let peek_for_obvious_accesses (hashtbl,severity) helper fis_with_ub = 
     match List.assoc_opt fis_with_ub helper with 
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt main_hashtbl fis_with_ub with 
+          match  Hashtbl.find_opt hashtbl fis_with_ub with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -517,7 +517,7 @@ module Level3 = struct
          |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then get_below (main_hashtbl,false) (fis,upper_bound)
+            then get_below (hashtbl,severity) (fis,upper_bound)
             else (P_Failure,false)          
          )
        ) ;; 
@@ -533,10 +533,10 @@ module Level3 = struct
   
 
   let seek_obvious_accesses_using_translation 
-      helper original_fis_with_ub = 
+    (hashtbl,severity) helper original_fis_with_ub = 
     let (d,translated_fis_with_ub) = 
         With_upper_bound.decompose_wrt_translation original_fis_with_ub in 
-    let (peek_res,_) = peek_for_obvious_accesses helper translated_fis_with_ub in 
+    let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_fis_with_ub in 
         match peek_res with 
        P_Unfinished_computation(_)  -> raise(Using_translation_exn(current_width))
       |P_Failure -> (None,Some translated_fis_with_ub)
@@ -545,9 +545,9 @@ module Level3 = struct
          (Some(answer_to_original),None);; 
 
   
-  let peek_for_cumulative_case helper old_fis_with_ub = 
+  let peek_for_cumulative_case (hashtbl,severity) helper old_fis_with_ub = 
       let (n,new_fis_ub) = With_upper_bound.tail_and_head old_fis_with_ub in 
-      let (peek_res,_) = peek_for_obvious_accesses helper new_fis_ub in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_fis_ub in 
         match peek_res with 
        P_Unfinished_computation(_)  -> raise(Peek_for_cumulative_case_should_never_happen_1_exn(current_width))
       |P_Failure -> P_Unfinished_computation([new_fis_ub]) 
@@ -566,17 +566,17 @@ module Level3 = struct
         else P_Failure
     ;;
 
-let partition_leaves_in_fork_case helper leaves =
+let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
   let leaves2 = Image.image (
       fun cand ->
-        (cand,seek_obvious_accesses_using_translation helper cand)
+        (cand,seek_obvious_accesses_using_translation (hashtbl,severity) helper cand)
   ) leaves in 
   let (good_leaves,bad_leaves) = 
       List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
   (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
    Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
 
-let peek_for_fork_case helper old_fis_with_ub = 
+let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub = 
   let (fis,upper_bound) = old_fis_with_ub in 
   let opt1 = Finite_int_set.relative_head_constraint fis upper_bound in 
   if opt1=None  
@@ -586,7 +586,7 @@ let peek_for_fork_case helper old_fis_with_ub =
   let candidates = Image.image (
          fun i-> With_upper_bound.remove_one_element old_fis_with_ub i
   ) cstr_l in 
-  let (candidates2,bad_ones) = partition_leaves_in_fork_case helper candidates in 
+  let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
   if bad_ones <> []
   then P_Unfinished_computation(bad_ones)
   else   
@@ -604,25 +604,25 @@ let peek_for_fork_case helper old_fis_with_ub =
         P_Success(M(sols5,ext5));;    
 
 
-  let multiple_peek helper old_fis_with_ub = 
-    let (peek_res1,to_be_remembered) = peek_for_obvious_accesses helper old_fis_with_ub in 
+  let multiple_peek (hashtbl,severity) helper old_fis_with_ub = 
+    let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res1 with 
       P_Success (_) -> (peek_res1,to_be_remembered)
     | P_Unfinished_computation (_) -> (peek_res1,false)  
     | P_Failure ->
-    let peek_res2= peek_for_cumulative_case helper old_fis_with_ub in 
+    let peek_res2= peek_for_cumulative_case (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res2 with 
       P_Success (_) -> (peek_res2,true)
     | P_Unfinished_computation (_) -> (peek_res2,false)  
     | P_Failure -> 
-    let peek_res3= peek_for_fork_case helper old_fis_with_ub in 
+    let peek_res3= peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub in 
       match peek_res3 with 
       P_Success (_) -> (peek_res3,true)
     | P_Unfinished_computation (_) -> (peek_res3,false)  
     | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
         
-  let simplified_multiple_peek helper fis_with_ub =   
-    let (peek_res,_)= multiple_peek helper fis_with_ub in 
+  let simplified_multiple_peek (hashtbl,severity) helper fis_with_ub =   
+    let (peek_res,_)= multiple_peek (hashtbl,severity) helper fis_with_ub in 
     match peek_res with 
           P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
         | P_Unfinished_computation (new_to_be_treated) -> 
@@ -630,11 +630,11 @@ let peek_for_fork_case helper old_fis_with_ub =
         | P_Success (answer) -> 
             (Some answer,None) ;; 
 
-  let pusher_for_needed_subcomputations (helper,to_be_treated) =
+  let pusher_for_needed_subcomputations (hashtbl,severity) (helper,to_be_treated) =
       match to_be_treated with 
        [] -> raise (Pusher_for_needed_subcomputations_exn_1(current_width)) 
       |fis_with_ub :: others ->
-        let (peek_res,to_be_remembered)= multiple_peek helper fis_with_ub in
+        let (peek_res,to_be_remembered)= multiple_peek (hashtbl,severity) helper fis_with_ub in
         (
           match peek_res with 
           P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2(current_width))
@@ -649,37 +649,37 @@ let peek_for_fork_case helper old_fis_with_ub =
             (new_helper,others)
         )  ;;     
 
-   let rec iterator_for_needed_subcomputations walker = 
+   let rec iterator_for_needed_subcomputations (hashtbl,severity) walker = 
       if snd walker = [] then List.rev(fst walker) else 
-      let new_walker = pusher_for_needed_subcomputations walker in      
-      iterator_for_needed_subcomputations new_walker ;;
+      let new_walker = pusher_for_needed_subcomputations (hashtbl,severity) walker in      
+      iterator_for_needed_subcomputations (hashtbl,severity) new_walker ;;
 
-   let needed_subcomputations items = 
-    iterator_for_needed_subcomputations ([],items) ;;  
+   let needed_subcomputations (hashtbl,severity) items = 
+    iterator_for_needed_subcomputations (hashtbl,severity) ([],items) ;;  
     
-   let compute_fast_opt fis_with_ub =
-    let (peek_res,_) =multiple_peek [] fis_with_ub in
+   let compute_fast_opt (hashtbl,severity) fis_with_ub =
+    let (peek_res,_) =multiple_peek (hashtbl,severity) [] fis_with_ub in
       match peek_res with 
       P_Success (answer) -> Some answer
     | P_Unfinished_computation (_)  
     | P_Failure -> None ;;
 
-   let compute_reasonably_fast_opt fis_with_ub = 
-    compute_fast_opt fis_with_ub ;;     
+   let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
+    compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
 
-   let add fis_with_ub = 
-      match compute_reasonably_fast_opt fis_with_ub with 
+   let add (hashtbl,severity) fis_with_ub = 
+      match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
       None -> raise(Add_exn(current_width,fis_with_ub))
     |Some answer ->
-        let _ = Hashtbl.replace main_hashtbl fis_with_ub answer in 
+        let _ = Hashtbl.replace hashtbl fis_with_ub answer in 
         answer ;; 
 
-   let add_usual (n,scrappers) =
-       add (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
+   let add_usual (hashtbl,severity) (n,scrappers) =
+       add (hashtbl,severity) (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
 
-   let import (n,scrappers) =
+   let import (hashtbl,severity) (n,scrappers) =
      let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (pres,_)= get_below (main_hashtbl,false) (fis,ub) in 
+     let (pres,_)= get_below (hashtbl,severity) (fis,ub) in 
      match pres with 
     | P_Unfinished_computation (_)  
     | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
@@ -689,7 +689,7 @@ let peek_for_fork_case helper old_fis_with_ub =
      then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
      else 
     let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace main_hashtbl (fis,ub) answer in 
+    let _ = Hashtbl.replace hashtbl (fis,ub) answer in 
     answer ;; 
 
 
@@ -702,75 +702,7 @@ exception Bad_index_in_simplified_multiple_peek of int ;;
 module High_level = struct 
 
   
-let high_level_hashtbl = ((Hashtbl.create 50): (width * key, mold) Hashtbl.t) ;; 
 
-let adjust_helper width high_helper =
-   List.filter_map (
-     fun ((width2,fis_with_ub),mold) ->
-       if width2 = width 
-       then Some (fis_with_ub,mold) 
-       else None  
-   ) high_helper ;; 
-
-let basic_multiple_peek width helper fis_with_ub =
-   let (W w)=width in 
-    match w with 
-     1 -> (Level1.compute_fast_opt fis_with_ub,None)
-    |2 -> Level2.simplified_multiple_peek (adjust_helper width helper) fis_with_ub
-    |3 -> Level3.simplified_multiple_peek (adjust_helper width helper) fis_with_ub
-    |_ -> raise(Bad_index_in_simplified_multiple_peek(w)) ;;    
-
-let unprotected_multiple_peek width helper fis_with_ub =
-    let (opt_success,opt_incomplete) = basic_multiple_peek width helper fis_with_ub in 
-    if opt_success <> None then (opt_success,None) else 
-    let data = Image.image 
-      (fun fis_with_ub -> (width,fis_with_ub) ) (Option.get opt_incomplete) in 
-    (None,Some data) ;;  
-
-
-let simplified_multiple_peek helper (width,fis_with_ub) =
-    try unprotected_multiple_peek width helper fis_with_ub with
-    Get_below_exn (width2,fis_with_ub2)->
-        (None,Some([W width2,fis_with_ub2])) ;; 
-
-exception Pusher_for_needed_subcomputations_exn ;; 
-
-let pusher_for_needed_subcomputations (helper,to_be_treated) =
-    match to_be_treated with 
-     [] -> raise (Pusher_for_needed_subcomputations_exn) 
-    |triple :: others ->
-      let opt1 = Hashtbl.find_opt high_level_hashtbl triple  in 
-      if opt1<>None 
-      then (helper,others)
-      else    
-      let opt2 = List.assoc_opt triple helper  in 
-      if opt2<>None 
-      then (helper,others)
-      else     
-      let (opt_success,opt_incomplete)=  
-          simplified_multiple_peek helper triple in 
-      if opt_success<>None 
-      then ((triple,Option.get opt_success)::helper,others)  
-      else (helper,(Option.get opt_incomplete)@to_be_treated) ;;     
-    
-let rec iterator_for_needed_subcomputations walker = 
-          if snd walker = [] then List.rev(fst walker) else 
-          let new_walker = pusher_for_needed_subcomputations walker in      
-          iterator_for_needed_subcomputations new_walker ;;
-    
-let needed_subcomputations items = 
-        iterator_for_needed_subcomputations ([],items) ;;  
-
-let compute_and_remember triple =
-  match Hashtbl.find_opt high_level_hashtbl triple with 
-    Some answer -> answer 
-   |None -> 
-    let nc = needed_subcomputations [triple] in 
-    let _ = List.iter (
-     fun (triple,mold) ->
-        Hashtbl.replace high_level_hashtbl triple mold
-    ) nc in 
-    List.assoc triple nc ;;
 
 end ;;  
 
@@ -779,9 +711,11 @@ module Fill = struct
 
 let bound = 40 ;; 
 
+(*
 let fill () =
   let _act1 = Int_range.scale (fun k->Level2.import (k,[])) 1 bound in 
   ()
   ;;  
+*)
 
 end ;;
