@@ -280,13 +280,13 @@ module Level2 = struct
 
   let current_width = 2 ;; 
   
-  let get_below (_hshtbl,stern_mode) fis_with_ub = 
+  let get_below (_hshtbl,severity) fis_with_ub = 
     match Level1.compute_reasonably_fast_opt fis_with_ub with 
     Some answer -> (P_Success(answer),true)  
     |None -> 
-      if stern_mode 
-      then raise(Get_below_exn(current_width-1,fis_with_ub))
-      else (P_Unfinished_computation[fis_with_ub],false);;
+      match severity with  
+       Stern -> raise(Get_below_exn(current_width-1,fis_with_ub))
+      |Relaxed -> (P_Unfinished_computation[fis_with_ub],false);;
 
 
   let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;; 
@@ -306,7 +306,7 @@ module Level2 = struct
          |Some (cstr,_) ->   
             let (W w) = Constraint.width cstr in
             if w<current_width 
-            then get_below (main_hashtbl,false) (fis,upper_bound)
+            then get_below (main_hashtbl,Relaxed) (fis,upper_bound)
             else (P_Failure,false)          
          )
        ) ;; 
@@ -468,7 +468,7 @@ let peek_for_fork_case helper old_fis_with_ub =
 
    let import (n,scrappers) =
      let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (pres,_)= get_below (main_hashtbl,false) (fis,ub) in 
+     let (pres,_)= get_below (main_hashtbl,Relaxed) (fis,ub) in 
      match pres with 
     | P_Unfinished_computation (_)  
     | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
