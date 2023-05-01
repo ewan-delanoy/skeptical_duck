@@ -33,6 +33,7 @@ type peek_result = Sz3_types.peek_result =
 
 type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
+type breadth_range = Sz3_types.breadth_range = Unrestricted |Up_to of int ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -288,15 +289,13 @@ module Level2 = struct
        Stern -> raise(Get_below_exn(current_width-1,fis_with_ub))
       |Relaxed -> (P_Unfinished_computation[fis_with_ub],false);;
 
-
-  (* let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;;  *)
   
   let peek_for_obvious_accesses (hashtbl,severity) helper fis_with_ub = 
     match List.assoc_opt fis_with_ub helper with 
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt hashtbl (current_width,fis_with_ub) with 
+          match  Hashtbl.find_opt hashtbl (W current_width,fis_with_ub) with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -456,31 +455,7 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
    let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
     compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
 
-   let add (hashtbl,severity) fis_with_ub = 
-      match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
-      None -> raise(Add_exn(current_width,fis_with_ub))
-    |Some answer ->
-        let _ = Hashtbl.replace hashtbl (current_width,fis_with_ub) answer in 
-        answer ;; 
-
-   let add_usual (hashtbl,severity) (n,scrappers) =
-       add (hashtbl,severity) (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
-
-   let import (hashtbl,severity) (n,scrappers) =
-     let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (pres,_)= get_below (hashtbl,severity) (fis,ub) in 
-     match pres with 
-    | P_Unfinished_computation (_)  
-    | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
-    | P_Success (M(sols,ext)) ->
-     let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
-     if sols2 = []
-     then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
-     else 
-    let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace hashtbl (current_width,(fis,ub)) answer in 
-    answer ;; 
-
+   
 
 end ;;  
 (* End of Level2 *)
@@ -499,15 +474,13 @@ module Level3 = struct
        Stern -> raise(Get_below_exn(current_width-1,fis_with_ub))
       |Relaxed -> (P_Unfinished_computation[fis_with_ub],false);;
 
-
-  (* let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;;  *)
   
   let peek_for_obvious_accesses (hashtbl,severity) helper fis_with_ub = 
     match List.assoc_opt fis_with_ub helper with 
       Some answer1 -> (P_Success(answer1),false) 
     | None ->
        (
-          match  Hashtbl.find_opt hashtbl (current_width,fis_with_ub) with 
+          match  Hashtbl.find_opt hashtbl (W current_width,fis_with_ub) with 
           Some answer2 -> (P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
@@ -667,6 +640,8 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
    let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
     compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
 
+   
+
 end ;;  
 (* End of Level3 *)
 
@@ -674,32 +649,33 @@ end ;;
 exception Bad_index_in_selection of int ;; 
 
 module Selector = struct 
+ 
 
-let stern_hashtbl = Hashtbl.create 50 ;; 
-let relaxed_hashtbl = Hashtbl.create 50 ;; 
+let stern_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
+let relaxed_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
 
 let get_hashtbl = function 
    Stern -> stern_hashtbl 
    |Relaxed -> relaxed_hashtbl ;; 
 
-let needed_subcomputations (max_width,severity) key_list=
+let needed_subcomputations (W max_width) key_list=
    match max_width with 
     1 -> []
-   |2 -> Level2.needed_subcomputations (get_hashtbl severity,severity) key_list
-   |3 -> Level3.needed_subcomputations (get_hashtbl severity,severity) key_list 
+   |2 -> Level2.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list
+   |3 -> Level3.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list 
    |_ -> raise(Bad_index_in_selection max_int) ;; 
   
-let compute_reasonably_fast_opt (max_width,severity) key =
+let compute_reasonably_fast_opt (W max_width) key =
   match max_width with 
   1 -> Level1.compute_reasonably_fast_opt key
- |2 -> Level2.compute_reasonably_fast_opt (get_hashtbl severity,severity) key
- |3 -> Level3.compute_reasonably_fast_opt (get_hashtbl severity,severity) key 
+ |2 -> Level2.compute_reasonably_fast_opt (stern_hashtbl,Stern) key
+ |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
  |_ -> raise(Bad_index_in_selection max_int) ;;    
 
-exception Easy_compute_exn of int * key ;;
+exception Easy_compute_exn of width * key ;;
 
 let easy_compute max_width key =
-  match compute_reasonably_fast_opt (max_width,Stern) key with 
+  match compute_reasonably_fast_opt max_width key with 
    Some answer -> answer 
    | None -> raise(Easy_compute_exn(max_width,key)) ;;  
 
@@ -710,26 +686,46 @@ let easy_add max_width key =
       Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
     ) ;;
 
-let import max_width (n,scrappers) =
-      let key = With_upper_bound.usual_pair (n,scrappers,W max_width) in 
-      let answer = easy_compute (max_width-1) key in 
-      (
-      Hashtbl.replace stern_hashtbl (max_width,key) answer ;
-      Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
-    ) ;; 
- 
+exception Import_exn of width * key ;;    
+
+let import (W max_width) key =
+      let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
+      let sols2 = List.filter (Find_constraint.is_admissible (snd key)) sols in 
+      if sols2 = []
+      then raise(Import_exn(W max_width,key))
+      else 
+      let answer = M(sols2,ext) in   
+      let _=  (
+          Hashtbl.replace stern_hashtbl (W max_width,key) answer ;
+          Hashtbl.replace relaxed_hashtbl (W max_width,key) answer 
+        ) in 
+      answer;;
 
 end ;;   
 
 
-(*
-module Simplified_breadth_range_parameter = struct 
 
-  
+module Main = struct 
 
+let expand_definition_of_breadth_range width ((n,scr),breadth_range)=
+  match breadth_range with  
+  Unrestricted -> With_upper_bound.usual_pair (n,scr,width)
+  | Up_to(max_breadth) ->  (FIS(n,scr),UBC(max_breadth,width)) ;; 
+
+let easy_compute  width ((n,scr),breadth_range)= 
+  let fis_with_ub = expand_definition_of_breadth_range width ((n,scr),breadth_range) in 
+    Selector.easy_compute  width fis_with_ub ;;
+
+let easy_add  width ((n,scr),breadth_range)= 
+    let fis_with_ub = expand_definition_of_breadth_range width ((n,scr),breadth_range) in 
+      Selector.easy_add  width fis_with_ub ;;
+
+let import  width ((n,scr),breadth_range)= 
+    let fis_with_ub = expand_definition_of_breadth_range width ((n,scr),breadth_range) in 
+    Selector.import  width fis_with_ub ;;      
 
 end ;;  
-*)
+
 
 
 module Fill = struct 

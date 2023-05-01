@@ -30,3 +30,5 @@ type peek_result =
    |P_Unfinished_computation of key list ;;
 
 type severity = Stern | Relaxed ;; 
+
+type breadth_range = Unrestricted |Up_to of int ;; 
