@@ -732,11 +732,12 @@ module Fill = struct
 
 let bound = 40 ;; 
 
-(*
+
 let fill () =
-  let _act1 = Int_range.scale (fun k->Level2.import (k,[])) 1 bound in 
+  let _act1 = Int_range.scale (fun k->
+    Main.import (W 2) ((k,[]),Unrestricted) ) 1 bound in 
   ()
   ;;  
-*)
+
 
 end ;;
