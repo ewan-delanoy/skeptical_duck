@@ -667,44 +667,69 @@ let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub =
    let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
     compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
 
-   let add (hashtbl,severity) fis_with_ub = 
-      match compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub with 
-      None -> raise(Add_exn(current_width,fis_with_ub))
-    |Some answer ->
-        let _ = Hashtbl.replace hashtbl (current_width,fis_with_ub) answer in 
-        answer ;; 
-
-   let add_usual (hashtbl,severity) (n,scrappers) =
-       add (hashtbl,severity) (With_upper_bound.usual_pair (n,scrappers,W current_width));;     
-
-   let import (hashtbl,severity) (n,scrappers) =
-     let (fis,ub) = With_upper_bound.usual_pair (n,scrappers,W current_width) in 
-     let (pres,_)= get_below (hashtbl,severity) (fis,ub) in 
-     match pres with 
-    | P_Unfinished_computation (_)  
-    | P_Failure -> raise(Import_no_presolution_exn(current_width,(n,scrappers)))
-    | P_Success (M(sols,ext)) ->
-     let sols2 = List.filter (Find_constraint.is_admissible ub) sols in 
-     if sols2 = []
-     then raise(Import_bad_presolution_exn(current_width,(n,scrappers)))
-     else 
-    let answer = M(sols2,ext) in 
-    let _ = Hashtbl.replace hashtbl (current_width,(fis,ub)) answer in 
-    answer ;; 
-
-
 end ;;  
 (* End of Level3 *)
 
 
-exception Bad_index_in_simplified_multiple_peek of int ;; 
+exception Bad_index_in_selection of int ;; 
 
-module High_level = struct 
+module Selector = struct 
+
+let stern_hashtbl = Hashtbl.create 50 ;; 
+let relaxed_hashtbl = Hashtbl.create 50 ;; 
+
+let get_hashtbl = function 
+   Stern -> stern_hashtbl 
+   |Relaxed -> relaxed_hashtbl ;; 
+
+let needed_subcomputations (max_width,severity) key_list=
+   match max_width with 
+    1 -> []
+   |2 -> Level2.needed_subcomputations (get_hashtbl severity,severity) key_list
+   |3 -> Level3.needed_subcomputations (get_hashtbl severity,severity) key_list 
+   |_ -> raise(Bad_index_in_selection max_int) ;; 
+  
+let compute_reasonably_fast_opt (max_width,severity) key =
+  match max_width with 
+  1 -> Level1.compute_reasonably_fast_opt key
+ |2 -> Level2.compute_reasonably_fast_opt (get_hashtbl severity,severity) key
+ |3 -> Level3.compute_reasonably_fast_opt (get_hashtbl severity,severity) key 
+ |_ -> raise(Bad_index_in_selection max_int) ;;    
+
+exception Easy_compute_exn of int * key ;;
+
+let easy_compute max_width key =
+  match compute_reasonably_fast_opt (max_width,Stern) key with 
+   Some answer -> answer 
+   | None -> raise(Easy_compute_exn(max_width,key)) ;;  
+
+let easy_add max_width key =
+    let answer = easy_compute max_width key in 
+    (
+      Hashtbl.replace stern_hashtbl (max_width,key) answer ;
+      Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
+    ) ;;
+
+let import max_width (n,scrappers) =
+      let key = With_upper_bound.usual_pair (n,scrappers,W max_width) in 
+      let answer = easy_compute (max_width-1) key in 
+      (
+      Hashtbl.replace stern_hashtbl (max_width,key) answer ;
+      Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
+    ) ;; 
+ 
+
+end ;;   
+
+
+(*
+module Simplified_breadth_range_parameter = struct 
 
   
 
 
 end ;;  
+*)
 
 
 module Fill = struct 
