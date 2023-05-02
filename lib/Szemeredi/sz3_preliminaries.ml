@@ -24,16 +24,16 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
-type key = finite_int_set * upper_bound_for_constraints ;;  
+type old_key = finite_int_set * upper_bound_for_constraints ;;  
   
-type peek_result = Sz3_types.peek_result =
+type old_peek_result = Sz3_types.old_peek_result =
     P_Success of mold 
    |P_Failure
-   |P_Unfinished_computation of key list ;;
+   |P_Unfinished_computation of old_key list ;;
 
 type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
-type breadth_range = Sz3_types.breadth_range = Unrestricted |Up_to of int ;; 
+type breadth_range = Sz3_types.breadth_range = Br_Unrestricted |Br_Up_to of int ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -229,8 +229,6 @@ exception Import_no_presolution_exn of int * (int * (int list)) ;;
 exception Import_bad_presolution_exn of int * (int * (int list)) ;;
 
 
-
-let graded_hashtbl = ((Hashtbl.create 50): (width * key, mold) Hashtbl.t) ;; 
 
 module Level1 = struct 
 
@@ -651,8 +649,8 @@ exception Bad_index_in_selection of int ;;
 module Selector = struct 
  
 
-let stern_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
-let relaxed_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
+let stern_hashtbl = ((Hashtbl.create 50) : (width * old_key, mold) Hashtbl.t) ;; 
+let relaxed_hashtbl = ((Hashtbl.create 50) : (width * old_key, mold) Hashtbl.t) ;; 
 
 let get_hashtbl = function 
    Stern -> stern_hashtbl 
@@ -672,7 +670,7 @@ let compute_reasonably_fast_opt (W max_width) key =
  |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
  |_ -> raise(Bad_index_in_selection max_int) ;;    
 
-exception Easy_compute_exn of width * key ;;
+exception Easy_compute_exn of width * old_key ;;
 
 let easy_compute max_width key =
   match compute_reasonably_fast_opt max_width key with 
@@ -686,7 +684,7 @@ let easy_add max_width key =
       Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
     ) ;;
 
-exception Import_exn of width * key ;;    
+exception Import_exn of width * old_key ;;    
 
 let import (W max_width) key =
       let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
@@ -709,8 +707,8 @@ module Main = struct
 
 let expand_definition_of_breadth_range width ((n,scr),breadth_range)=
   match breadth_range with  
-  Unrestricted -> With_upper_bound.usual_pair (n,scr,width)
-  | Up_to(max_breadth) ->  (FIS(n,scr),UBC(max_breadth,width)) ;; 
+  Br_Unrestricted -> With_upper_bound.usual_pair (n,scr,width)
+  | Br_Up_to(max_breadth) ->  (FIS(n,scr),UBC(max_breadth,width)) ;; 
 
 let easy_compute  width ((n,scr),breadth_range)= 
   let fis_with_ub = expand_definition_of_breadth_range width ((n,scr),breadth_range) in 
@@ -735,7 +733,7 @@ let bound = 40 ;;
 
 let fill () =
   let _act1 = Int_range.scale (fun k->
-    Main.import (W 2) ((k,[]),Unrestricted) ) 1 bound in 
+    Main.import (W 2) ((k,[]),Br_Unrestricted) ) 1 bound in 
   ()
   ;;  
 

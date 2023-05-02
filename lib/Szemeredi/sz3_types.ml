@@ -22,13 +22,13 @@ type solution = int list ;;
 
 type mold = M of (solution list) * extension_data ;;
 
-type key = finite_int_set * upper_bound_for_constraints ;;  
+type old_key = finite_int_set * upper_bound_for_constraints ;;  
   
-type peek_result = 
+type old_peek_result = 
     P_Success of mold  
    |P_Failure
-   |P_Unfinished_computation of key list ;;
+   |P_Unfinished_computation of old_key list ;;
 
 type severity = Stern | Relaxed ;; 
 
-type breadth_range = Unrestricted |Up_to of int ;; 
+type breadth_range = Br_Unrestricted |Br_Up_to of int ;; 
