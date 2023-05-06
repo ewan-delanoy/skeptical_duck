@@ -230,7 +230,7 @@ exception Import_bad_presolution_exn of int * (int * (int list)) ;;
 
 
 
-module Level1 = struct 
+module Old_Level1 = struct 
 
   let current_width = 1 ;; 
   
@@ -274,13 +274,13 @@ module Level1 = struct
 end ;;  
 
 
-(* Beginning of Level2 *)
-module Level2 = struct 
+(* Beginning of Old_Level2 *)
+module Old_Level2 = struct 
 
   let current_width = 2 ;; 
   
   let get_below (_hshtbl,severity) fis_with_ub = 
-    match Level1.compute_reasonably_fast_opt fis_with_ub with 
+    match Old_Level1.compute_reasonably_fast_opt fis_with_ub with 
     Some answer -> (P_Success(answer),true)  
     |None -> 
       match severity with  
@@ -459,13 +459,13 @@ end ;;
 (* End of Level2 *)
 
 
-(* Beginning of Level3 *)
-module Level3 = struct 
+(* Beginning of Old_Level3 *)
+module Old_Level3 = struct 
 
   let current_width = 3 ;; 
   
-  let get_below (_hshtbl,severity) fis_with_ub = 
-    match Level1.compute_reasonably_fast_opt fis_with_ub with 
+  let get_below (hshtbl,severity) fis_with_ub = 
+    match Old_Level2.compute_reasonably_fast_opt (hshtbl,severity) fis_with_ub with 
     Some answer -> (P_Success(answer),true)  
     |None -> 
       match severity with  
@@ -659,15 +659,15 @@ let get_hashtbl = function
 let needed_subcomputations (W max_width) key_list=
    match max_width with 
     1 -> []
-   |2 -> Level2.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list
-   |3 -> Level3.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list 
+   |2 -> Old_Level2.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list
+   |3 -> Old_Level3.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list 
    |_ -> raise(Bad_index_in_selection max_int) ;; 
   
 let compute_reasonably_fast_opt (W max_width) key =
   match max_width with 
-  1 -> Level1.compute_reasonably_fast_opt key
- |2 -> Level2.compute_reasonably_fast_opt (stern_hashtbl,Stern) key
- |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
+  1 -> Old_Level1.compute_reasonably_fast_opt key
+ |2 -> Old_Level2.compute_reasonably_fast_opt (stern_hashtbl,Stern) key
+ |3 -> Old_Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
  |_ -> raise(Bad_index_in_selection max_int) ;;    
 
 exception Easy_compute_exn of width * old_key ;;
