@@ -4,109 +4,155 @@
 
 *)
 
+type short_or_long = Short | Long ;;
+
 module Private = struct 
+
+   let is_a_harmless_ascii_character c = 
+      let i = int_of_char c in 
+     if  (i<32)||(i>126) then false else 
+     not(List.mem c [' ';'"';'$';'%'; '&';'\'';'?';'^';'`';'|';]) ;; 
+  
+   let is_a_harmless_filename fn =
+       let n = String.length fn in 
+       List.for_all (fun k->
+         is_a_harmless_ascii_character(String.get fn (k-1))) 
+            (Int_range.range 1 n) ;;
+
+   let admissible_files_inside dir =
+       let files_inside = More_unix.beheaded_simple_ls dir in 
+       List.filter (
+         fun fn ->
+            if (not (is_a_harmless_filename fn))
+               ||
+               (not(String.contains fn '.'))
+            then false    
+            else
+              let ending = Cull_string.after_rightmost fn '.' in 
+              List.mem ending ["mp4";"webm"] 
+       ) files_inside ;; 
+
+   let downloads_dir = Directory_name.of_string ("~/Downloads");;     
+   let dir_for_older_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Older_videos";; 
+   let dir_for_short_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/";; 
+   let dir_for_long_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Longer_videos";; 
+   
+  let directory_for_size = function 
+      Short -> dir_for_short_files () 
+      |Long -> dir_for_long_files () ;; 
 
    let char_is_not_a_digit c = 
       let i = int_of_char c in 
       (i<48)||(i>57) ;; 
   
+   let sl_of_char_opt c = List.assoc_opt c 
+    ['S',Short;'L',Long;] ;;
+      
   let detect_indexed_file fn =
      if String.length(fn)<6 then None else 
      if (List.exists (fun k->char_is_not_a_digit(Strung.get fn k)) [2;3;4;5])
         ||
-        (not(List.mem (Strung.get fn 1) ['S';'L']))
-        ||
         ((Strung.get fn 6)<>'_')
      then None else 
-     Some(
-      Cull_string.interval fn 1 1,
+      match sl_of_char_opt (Strung.get fn 1) with 
+      None -> None 
+      |Some s_or_l -> 
+     Some(s_or_l,
       int_of_string(Cull_string.interval fn 2 5),
       Cull_string.cobeginning 6 fn) ;;  
   
   let warn msg =
      let _ = (print_string ("\n\n\n"^msg^"\n\n\n");flush stdout) in None ;; 
   
-  let common_analysis_before_insertion dir = 
-      let temp1 = More_unix.simple_ls dir in 
-      let temp2 = List.filter (fun ap->not(More_unix.is_a_directory ap)) temp1 in 
-      let temp3 = Image.image (fun ap->
-        let s_ap = Absolute_path.to_string ap in 
-        let (basename,fn) = Cull_string.split_wrt_rightmost s_ap '/' in 
-        (basename,fn,detect_indexed_file fn)  
-      ) temp2 in
-      let temp4 = List.filter (
-        fun (_basename,fn,_opt)->fn <> ".DS_Store"
-      ) temp3 in 
-      let (nonindexed,pre_indexed) = List.partition (
-          fun (_basename,_fn,opt)->opt = None
-      ) temp4 in 
-      if nonindexed = [] then warn "Failure : All files are indexed" else 
-      if List.length(nonindexed)>1 then warn "Failure : Too many non-indexed files" else 
-      let indexed = Image.image (
-        fun (basename,_,opt)-> 
-           let (s_or_l,idx,end_fn) = Option.get opt in 
-          (basename,s_or_l,idx,end_fn)
-      ) pre_indexed in 
-      let temp5 = Image.image (fun (_basename,_s_or_l,idx,_end_fn)->idx ) indexed in 
-      let m = List.length temp5 in 
-      if temp5<>Int_range.range 1 m 
+     let index_analysis_before_insertion s_or_l =
+      let dir = directory_for_size s_or_l in  
+      let temp1 = More_unix.beheaded_simple_ls dir in 
+      let indexed_data = List.filter_map detect_indexed_file temp1 in 
+      if indexed_data = [] then warn "Failure : No indexed files" else 
+      let indices = Image.image (fun (_s_or_l,idx,_end_fn)->idx ) indexed_data in 
+      let m = List.length indices in 
+      if indices<>Int_range.range 1 m 
       then warn "Failure: Indexes do not form an initial segment"
       else   
-      let temp6 = Image.image (fun (_basename,s_or_l,_idx,_end_fn)->s_or_l ) indexed in 
-      let s_or_l0=List.hd temp6 in 
-      if List.exists(fun t->t<>s_or_l0) temp6 then warn "Failure : Short files and long files are mixed" else 
-      let (basename0,fn0,_) = List.hd nonindexed in 
-      Some(basename0,fn0,s_or_l0,Image.image (
-        fun (basename,_s_or_l,idx,end_fn)->(basename,idx,end_fn)
-      ) indexed) ;;  
+      if List.exists(fun (s_or_l1,_idx,_end_fn)->s_or_l1<>s_or_l) indexed_data 
+      then warn "Failure : Short files and long files are mixed" 
+      else Some (Image.image (fun (_s_or_l,idx,end_fn)->(idx,end_fn)) indexed_data) ;;  
   
-  let conventional_name (basename,s_or_l,end_fn) idx=
-  basename^"/"^s_or_l^(
-    Strung.insert_repetitive_offset_on_the_left '0' 4   
-  (string_of_int idx))^"_"^end_fn ;;   
+   let basename_of_dir dir =
+       let s_dir = Directory_name.connectable_to_subpath dir in 
+       let without_the_trailing_slash = Cull_string.coending 1 s_dir in  
+       without_the_trailing_slash ;; 
+
+   let conventional_name (s_or_l,idx,end_fn) = 
+     let dir = directory_for_size s_or_l 
+     and s_or_l_str = List.assoc s_or_l 
+       [Short,"S";Long,"L"] in  
+      (Directory_name.connectable_to_subpath dir)^s_or_l_str^(
+      Strung.insert_repetitive_offset_on_the_left '0' 4   
+      (string_of_int idx))^"_"^end_fn ;;   
+
+   let commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l = 
+      match index_analysis_before_insertion s_or_l with 
+       None -> None 
+      |Some indexed_data ->  
+      let short_fn = Cull_string.after_rightmost inserted_one '/'   in 
+      let fst_command = "mv "^inserted_one^" "^(conventional_name (s_or_l,1,short_fn)) 
+      and other_commands= Image.image(fun (idx,end_fn)->
+           let tr= (fun j->conventional_name (s_or_l,j,end_fn)) in 
+           "mv "^(tr idx)^" "^(tr (idx+1))  
+         ) indexed_data in 
+         Some(fst_command :: other_commands) ;;    
+
   
-  
-  let commands_for_upwards_insertion dir =
-    match common_analysis_before_insertion dir with 
-    None -> None 
-    |Some  (basename0,fn0,s_or_l0,indexed) ->  
-     let fst_command = "mv "^basename0^"/"^fn0^" "^(conventional_name (basename0,s_or_l0,fn0) 1) 
-     and other_commands= Image.image(fun (basename,idx,end_fn)->
-      let tr= (basename,s_or_l0,end_fn) in 
-      "mv "^(conventional_name tr idx)^" "^(conventional_name tr (idx+1))  
-    ) indexed in 
-    Some(fst_command :: other_commands) ;; 
-  
-  let do_upwards_insertion dir =
-     match  commands_for_upwards_insertion dir with 
+  let commands_for_upwards_insertion extraction_dir s_or_l = 
+    let admissible_files = admissible_files_inside extraction_dir in 
+    let nbr_of_admissible_files = List.length  admissible_files in 
+    if nbr_of_admissible_files < 1 then warn "Failure : No admissible files" else 
+    if nbr_of_admissible_files > 1 then warn "Failure : Nonunique admissible file" else   
+   let inserted_one = (Directory_name.connectable_to_subpath extraction_dir)^(List.hd admissible_files) in 
+   commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l ;; 
+     
+   let do_upwards_insertion extraction_dir s_or_l = 
+     match  commands_for_upwards_insertion extraction_dir s_or_l with 
       None -> []
      |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
-  let command_for_downwards_insertion dir =
-      match common_analysis_before_insertion dir with 
-      None -> None 
-      |Some  (basename0,fn0,s_or_l0,indexed) ->  
-        let m = List.length(indexed)+1 in 
-       let command 
-        = "mv "^basename0^"/"^fn0^" "^(conventional_name (basename0,s_or_l0,fn0) m) in
-      Some(command) ;; 
+     
+     let commands_for_downwards_insertion_for_inserted_file inserted_one s_or_l = 
+      match index_analysis_before_insertion s_or_l with 
+       None -> None 
+      |Some indexed_data ->  
+      let m = List.length(indexed_data)+1   
+      and short_fn = Cull_string.after_rightmost inserted_one '/'   in 
+      let fst_command = "mv "^inserted_one^" "^(conventional_name (s_or_l,m,short_fn)) in 
+      Some([fst_command]) ;;    
+    
+    
+    let commands_for_downwards_insertion extraction_dir s_or_l = 
+    let admissible_files = admissible_files_inside extraction_dir in 
+    let nbr_of_admissible_files = List.length  admissible_files in 
+    if nbr_of_admissible_files < 1 then warn "Failure : No admissible files" else 
+    if nbr_of_admissible_files > 1 then warn "Failure : Nonunique admissible file" else   
+    let inserted_one = (Directory_name.connectable_to_subpath extraction_dir)^(List.hd admissible_files) in 
+    commands_for_downwards_insertion_for_inserted_file inserted_one s_or_l ;; 
+     
+    let do_downwards_insertion extraction_dir s_or_l = 
+     match  commands_for_downwards_insertion extraction_dir s_or_l with 
+      None -> []
+     |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
-  let do_downwards_insertion dir =
-        match  command_for_downwards_insertion dir with 
-         None -> (-2023)
-        |Some cmd -> Unix_command.hardcore_uc cmd ;;     
-  
-  let usual_dir_for_short_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/";; 
-  let usual_dir_for_long_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Longer_videos";; 
-  
-let long_downwards  () = do_downwards_insertion (usual_dir_for_long_files()) ;; 
-let long_upwards    () = do_upwards_insertion (usual_dir_for_long_files()) ;; 
-let short_downwards () = do_downwards_insertion (usual_dir_for_short_files()) ;; 
-let short_upwards   () = do_upwards_insertion (usual_dir_for_short_files()) ;; 
+
+let old_long    () = do_upwards_insertion (dir_for_older_files()) Long ;; 
+let old_short   () = do_upwards_insertion (dir_for_older_files()) Short ;; 
+
+let young_long  () = do_downwards_insertion downloads_dir Long ;; 
+let young_short () = do_downwards_insertion downloads_dir Short ;; 
+
 
 end ;;   
 
-let long_downwards = Private.long_downwards ;; 
-let long_upwards = Private.long_upwards ;; 
-let short_downwards = Private.short_downwards ;; 
-let short_upwards = Private.short_upwards ;; 
+let old_long = Private.old_long ;; 
+let old_short = Private.old_short ;; 
+
+let young_long = Private.young_long ;; 
+let young_short = Private.young_short ;; 
