@@ -29,7 +29,7 @@ module Private = struct
             then false    
             else
               let ending = Cull_string.after_rightmost fn '.' in 
-              List.mem ending ["mp4";"webm"] 
+              List.mem ending ["mkv";"mp4";"webm"] 
        ) files_inside ;; 
 
    let downloads_dir = Directory_name.of_string ("~/Downloads");;     
