@@ -142,11 +142,12 @@ module Private = struct
      |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
 
-let old_long    () = do_upwards_insertion (dir_for_older_files()) Long ;; 
+let old_long    () = do_downwards_insertion (dir_for_older_files()) Long ;; 
 let old_short   () = do_upwards_insertion (dir_for_older_files()) Short ;; 
 
-let young_long  () = do_downwards_insertion downloads_dir Long ;; 
-let young_short () = do_downwards_insertion downloads_dir Short ;; 
+let young_long  () = do_upwards_insertion downloads_dir Long ;; 
+let young_short_downwards () = do_downwards_insertion downloads_dir Short ;; 
+let young_short_upwards   () = do_upwards_insertion downloads_dir Short ;; 
 
 
 end ;;   
@@ -155,4 +156,5 @@ let old_long = Private.old_long ;;
 let old_short = Private.old_short ;; 
 
 let young_long = Private.young_long ;; 
-let young_short = Private.young_short ;; 
+let young_short_downwards = Private.young_short_downwards ;; 
+let young_short_upwards = Private.young_short_upwards ;; 
