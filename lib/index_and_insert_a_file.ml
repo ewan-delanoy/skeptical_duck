@@ -33,7 +33,6 @@ module Private = struct
        ) files_inside ;; 
 
    let downloads_dir = Directory_name.of_string ("~/Downloads");;     
-   let dir_for_older_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Older_videos";; 
    let dir_for_short_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/";; 
    let dir_for_long_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Longer_videos";; 
    
@@ -142,19 +141,17 @@ module Private = struct
      |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
 
-let old_long    () = do_downwards_insertion (dir_for_older_files()) Long ;; 
-let old_short   () = do_upwards_insertion (dir_for_older_files()) Short ;; 
 
-let young_long  () = do_upwards_insertion downloads_dir Long ;; 
-let young_short_downwards () = do_downwards_insertion downloads_dir Short ;; 
-let young_short_upwards   () = do_upwards_insertion downloads_dir Short ;; 
+
+let long  () = do_upwards_insertion downloads_dir Long ;; 
+let short_downwards () = do_downwards_insertion downloads_dir Short ;; 
+let short_upwards   () = do_upwards_insertion downloads_dir Short ;; 
 
 
 end ;;   
 
-let old_long = Private.old_long ;; 
-let old_short = Private.old_short ;; 
 
-let young_long = Private.young_long ;; 
-let young_short_downwards = Private.young_short_downwards ;; 
-let young_short_upwards = Private.young_short_upwards ;; 
+
+let long = Private.long ;; 
+let short_downwards = Private.short_downwards ;; 
+let short_upwards = Private.short_upwards ;; 
