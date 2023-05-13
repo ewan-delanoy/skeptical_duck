@@ -79,7 +79,7 @@ let translate d (M(sols,ext)) =
 end ;;
 
 
-module Find_constraint = struct 
+module Old_dnif_constraint = struct 
 
 module Private = struct 
 
@@ -170,7 +170,7 @@ module Finite_int_set = struct
   *)
   
   let head_constraint max_width fis_domain =
-    Find_constraint.with_maximal_width max_width (to_usual_int_list fis_domain) ;; 
+    Old_dnif_constraint.with_maximal_width max_width (to_usual_int_list fis_domain) ;; 
 
   let tail_and_head fis_domain =
      let (FIS(n,_scrappers)) = fis_domain in 
@@ -187,10 +187,10 @@ module Finite_int_set = struct
     (d,of_usual_int_list core_domain) ;; 
 
    let natural_upper_bound fis_domain w =
-      Find_constraint.natural_upper_bound (to_usual_int_list fis_domain) w;;
+      Old_dnif_constraint.natural_upper_bound (to_usual_int_list fis_domain) w;;
    
    let relative_head_constraint fis_domain upper_bound =
-    Find_constraint.with_upper_bound (to_usual_int_list fis_domain) upper_bound ;;    
+    Old_dnif_constraint.with_upper_bound (to_usual_int_list fis_domain) upper_bound ;;    
 
 end ;;    
 
@@ -349,11 +349,11 @@ module Old_Level2 = struct
       |Old_P_Failure -> Old_P_Unfinished_computation([new_fis_ub]) 
       |Old_P_Success(M(sols2,ext2)) ->
         let (_,old_ub) = old_fis_with_ub in 
-        if not(Find_constraint.is_admissible old_ub (ext2@[n]))
+        if not(Old_dnif_constraint.is_admissible old_ub (ext2@[n]))
         then Old_P_Success(M(sols2,[]))
         else
         let sols3 = List.filter_map (fun sol->
-                    if Find_constraint.is_admissible old_ub (sol@[n]) 
+                    if Old_dnif_constraint.is_admissible old_ub (sol@[n]) 
                     then Some(sol@[n]) 
                     else None    
         ) sols2 in 
@@ -534,11 +534,11 @@ module Old_Level3 = struct
       |Old_P_Failure -> Old_P_Unfinished_computation([new_fis_ub]) 
       |Old_P_Success(M(sols2,ext2)) ->
         let (_,old_ub) = old_fis_with_ub in 
-        if not(Find_constraint.is_admissible old_ub (ext2@[n]))
+        if not(Old_dnif_constraint.is_admissible old_ub (ext2@[n]))
         then Old_P_Success(M(sols2,[]))
         else
         let sols3 = List.filter_map (fun sol->
-                    if Find_constraint.is_admissible old_ub (sol@[n]) 
+                    if Old_dnif_constraint.is_admissible old_ub (sol@[n]) 
                     then Some(sol@[n]) 
                     else None    
         ) sols2 in 
@@ -698,7 +698,7 @@ exception Import_exn of width * old_key ;;
 
 let import (W max_width) key =
       let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
-      let sols2 = List.filter (Find_constraint.is_admissible (snd key)) sols in 
+      let sols2 = List.filter (Old_dnif_constraint.is_admissible (snd key)) sols in 
       if sols2 = []
       then raise(Import_exn(W max_width,key))
       else 
