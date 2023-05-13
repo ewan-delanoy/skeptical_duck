@@ -17,6 +17,9 @@ type old_upper_bound_for_constraints =
     Sz3_types.old_upper_bound_for_constraints = 
     UBC of int * width ;; 
 
+type upper_bound_on_breadth = 
+    Sz3_types.upper_bound_on_breadth = 
+   Unrestricted |Up_to of int ;; 
 
 type extension_data = Sz3_types.extension_data  ;; 
 
@@ -25,7 +28,9 @@ type solution = Sz3_types.solution ;;
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
 type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
-  
+
+type key = finite_int_set * upper_bound_on_breadth ;; 
+
 type old_peek_result = Sz3_types.old_peek_result =
     P_Success of mold 
    |P_Failure

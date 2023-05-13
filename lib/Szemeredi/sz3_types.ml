@@ -16,6 +16,8 @@ type constraint_t = C of int list ;;
 
 type old_upper_bound_for_constraints = UBC of int * width ;; 
 
+type upper_bound_on_breadth = Unrestricted |Up_to of int ;;  
+
 type extension_data = int list ;; 
 
 type solution = int list ;; 
@@ -24,6 +26,8 @@ type mold = M of (solution list) * extension_data ;;
 
 type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
   
+type key = finite_int_set * upper_bound_on_breadth ;; 
+
 type old_peek_result = 
     P_Success of mold  
    |P_Failure
