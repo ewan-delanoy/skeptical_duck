@@ -29,9 +29,9 @@ type old_key = finite_int_set * old_upper_bound_for_constraints ;;
 type key = finite_int_set * upper_bound_on_breadth ;; 
 
 type old_peek_result = 
-    P_Success of mold  
-   |P_Failure
-   |P_Unfinished_computation of old_key list ;;
+    Old_P_Success of mold  
+   |Old_P_Failure
+   |Old_P_Unfinished_computation of old_key list ;;
 
 type severity = Stern | Relaxed ;; 
 
