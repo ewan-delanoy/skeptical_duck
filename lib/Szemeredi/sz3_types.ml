@@ -14,7 +14,7 @@ type finite_int_set = FIS of int * (int list) ;;
 
 type constraint_t = C of int list ;; 
 
-type upper_bound_for_constraints = UBC of int * width ;; 
+type old_upper_bound_for_constraints = UBC of int * width ;; 
 
 type extension_data = int list ;; 
 
@@ -22,7 +22,7 @@ type solution = int list ;;
 
 type mold = M of (solution list) * extension_data ;;
 
-type old_key = finite_int_set * upper_bound_for_constraints ;;  
+type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
   
 type old_peek_result = 
     P_Success of mold  

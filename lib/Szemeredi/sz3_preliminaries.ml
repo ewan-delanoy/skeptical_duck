@@ -13,8 +13,8 @@ type finite_int_set = Sz3_types.finite_int_set = FIS of int * (int list) ;;
 
 type constraint_t = Sz3_types.constraint_t = C of int list;; 
 
-type upper_bound_for_constraints = 
-    Sz3_types.upper_bound_for_constraints = 
+type old_upper_bound_for_constraints = 
+    Sz3_types.old_upper_bound_for_constraints = 
     UBC of int * width ;; 
 
 
@@ -24,7 +24,7 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
-type old_key = finite_int_set * upper_bound_for_constraints ;;  
+type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
   
 type old_peek_result = Sz3_types.old_peek_result =
     P_Success of mold 
@@ -214,8 +214,8 @@ let usual_pair (n,scrappers,W w) =
     (fis,upper_bound) ;;
 end ;;   
 
-exception Get_below_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
-exception Compute_fast_exn of int * (finite_int_set * upper_bound_for_constraints) ;;
+exception Get_below_exn of int * (finite_int_set * old_upper_bound_for_constraints) ;;
+exception Compute_fast_exn of int * (finite_int_set * old_upper_bound_for_constraints) ;;
 exception Using_translation_exn of int ;;
 exception Peek_for_cumulative_case_should_never_happen_1_exn of int ;; 
 exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
@@ -223,7 +223,7 @@ exception Multiple_peek_exn of int ;;
 exception Simplified_multiple_peek_exn of int ;;
 exception Pusher_for_needed_subcomputations_exn_1 of int ;; 
 exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
-exception Add_exn of  int * (finite_int_set * upper_bound_for_constraints) ;;
+exception Add_exn of  int * (finite_int_set * old_upper_bound_for_constraints) ;;
 exception Bad_remainder_by_three of int ;; 
 exception Import_no_presolution_exn of int * (int * (int list)) ;;
 exception Import_bad_presolution_exn of int * (int * (int list)) ;;
@@ -234,7 +234,7 @@ module Old_Level1 = struct
 
   let current_width = 1 ;; 
   
-  let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * upper_bound_for_constraints, mold) Hashtbl.t) ;;  
+  let main_hashtbl = ((Hashtbl.create 50) : (finite_int_set * old_upper_bound_for_constraints, mold) Hashtbl.t) ;;  
   
   let simpler_without_upper_bound fis =
     let domain = Finite_int_set.to_usual_int_list fis in 
