@@ -13,9 +13,7 @@ type finite_int_set = Sz3_types.finite_int_set = FIS of int * (int list) ;;
 
 type constraint_t = Sz3_types.constraint_t = C of int list;; 
 
-type old_upper_bound_for_constraints = 
-    Sz3_types.old_upper_bound_for_constraints = 
-    UBC of int * width ;; 
+
 
 type upper_bound_on_breadth = 
     Sz3_types.upper_bound_on_breadth = 
@@ -27,16 +25,20 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
-type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
-
 type key = finite_int_set * upper_bound_on_breadth ;; 
+
+type severity = Sz3_types.severity = Stern | Relaxed ;; 
+
+type old_upper_bound_for_constraints = 
+    Sz3_types.old_upper_bound_for_constraints = 
+    Old_UBC of int * width ;; 
+
+type old_key = finite_int_set * old_upper_bound_for_constraints ;; 
 
 type old_peek_result = Sz3_types.old_peek_result =
     Old_P_Success of mold 
    |Old_P_Failure
    |Old_P_Unfinished_computation of old_key list ;;
-
-type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
 type breadth_range = Sz3_types.breadth_range = Br_Unrestricted |Br_Up_to of int ;;
 
@@ -99,19 +101,19 @@ let natural_upper_bound domain (W w) =
     match helper_for_maximal_width (W w,domain) with 
      None -> None 
     |Some (W wmax,C l)->
-         Some(UBC(List.hd l,W wmax)) ;; 
+         Some(Old_UBC(List.hd l,W wmax)) ;; 
 
 
-let with_upper_bound domain (UBC(b,W w)) =
+let with_upper_bound domain (Old_UBC(b,W w)) =
     let u = b + 2*w in 
     let temp1 = List.rev domain in 
     let temp2 = List.filter (fun t->t<=u) temp1 in 
     match helper_for_exact_width (W w,domain,temp2) with 
-    Some (C l) -> Some(C l,UBC(List.hd l,W w)) 
+    Some (C l) -> Some(C l,Old_UBC(List.hd l,W w)) 
    |None ->
      (
         match helper_for_maximal_width (W (w-1),domain) with 
-        Some(W w2,C l2) -> Some(C l2,UBC(List.hd l2,W w2)) 
+        Some(W w2,C l2) -> Some(C l2,Old_UBC(List.hd l2,W w2)) 
         | None -> None
      );;     
 
@@ -192,13 +194,13 @@ end ;;
 
 module With_upper_bound = struct 
 
-let decompose_wrt_translation (old_fis,UBC(b,W w)) = 
+let decompose_wrt_translation (old_fis,Old_UBC(b,W w)) = 
    let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
-   (d,(new_fis,UBC(b-d,W w))) ;;
+   (d,(new_fis,Old_UBC(b-d,W w))) ;;
 
 
 let remove_one_element (old_fis,upper_bound) k=
-   let (UBC(_,W w)) = upper_bound 
+   let (Old_UBC(_,W w)) = upper_bound 
    and new_fis = Finite_int_set.remove_one_element old_fis k in 
    let new_bound =(match Finite_int_set.natural_upper_bound new_fis (W w) with 
    None -> upper_bound 
@@ -213,7 +215,7 @@ let tail_and_head (fis,upper_bound) =
 let usual_pair (n,scrappers,W w) =
     let fis = FIS(n,scrappers) in
     let upper_bound =(match Finite_int_set.natural_upper_bound fis (W w) with 
-     None -> UBC(max(1)(n-2*w),W w)
+     None -> Old_UBC(max(1)(n-2*w),W w)
     |Some answer -> answer
     ) in 
     (fis,upper_bound) ;;
@@ -258,7 +260,7 @@ module Old_Level1 = struct
     ) intervals in 
     M([List.flatten sol_components],List.flatten forced_elements);;
 
-  let simpler (fis1,UBC(b,W w0)) =
+  let simpler (fis1,Old_UBC(b,W w0)) =
     if w0>1 then simpler_without_upper_bound fis1 else  
     let domain1 = Finite_int_set.to_usual_int_list fis1 in 
     let (domain2,extra) = List.partition (fun t->t<=(b+2)) domain1 in 
@@ -713,7 +715,7 @@ module Main = struct
 let expand_definition_of_breadth_range width ((n,scr),breadth_range)=
   match breadth_range with  
   Br_Unrestricted -> With_upper_bound.usual_pair (n,scr,width)
-  | Br_Up_to(max_breadth) ->  (FIS(n,scr),UBC(max_breadth,width)) ;; 
+  | Br_Up_to(max_breadth) ->  (FIS(n,scr),Old_UBC(max_breadth,width)) ;; 
 
 let easy_compute  width ((n,scr),breadth_range)= 
   let fis_with_ub = expand_definition_of_breadth_range width ((n,scr),breadth_range) in 
