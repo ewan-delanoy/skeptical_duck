@@ -9,15 +9,11 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 type width = Sz3_types.width = W of int ;; 
 
+type breadth = Sz3_types.breadth = B of int ;; 
+
 type finite_int_set = Sz3_types.finite_int_set = FIS of int * (int list) ;; 
 
 type constraint_t = Sz3_types.constraint_t = C of int list;; 
-
-
-
-type upper_bound_on_breadth = 
-    Sz3_types.upper_bound_on_breadth = 
-   Unrestricted |Up_to of int ;; 
 
 type extension_data = Sz3_types.extension_data  ;; 
 
@@ -25,7 +21,14 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
-type key = finite_int_set * upper_bound_on_breadth ;; 
+type upper_bound_on_breadth = 
+    Sz3_types.upper_bound_on_breadth = 
+   Unrestricted |Up_to of breadth ;; 
+
+type upper_bound_on_constraint = 
+   Sz3_types.upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
+
+type key = finite_int_set * upper_bound_on_constraint ;; 
 
 type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
