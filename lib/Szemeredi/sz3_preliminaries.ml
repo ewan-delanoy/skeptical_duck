@@ -28,7 +28,14 @@ type upper_bound_on_breadth =
 type upper_bound_on_constraint = 
    Sz3_types.upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
 
-type key = finite_int_set * upper_bound_on_constraint ;; 
+type key = 
+   Sz3_types.key = Key of finite_int_set * upper_bound_on_breadth ;; 
+
+type peek_result = Sz3_types.peek_result = 
+    P_Success of mold  
+   |P_Failure
+   |P_Unfinished_computation of key list ;;
+
 
 type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
@@ -186,10 +193,10 @@ module Finite_int_set = struct
     ) in 
     (d,of_usual_int_list core_domain) ;; 
 
-   let natural_upper_bound fis_domain w =
+   let old_natural_upper_bound fis_domain w =
       Old_dnif_constraint.natural_upper_bound (to_usual_int_list fis_domain) w;;
    
-   let relative_head_constraint fis_domain upper_bound =
+   let old_relative_head_constraint fis_domain upper_bound =
     Old_dnif_constraint.with_upper_bound (to_usual_int_list fis_domain) upper_bound ;;    
 
 end ;;    
@@ -205,7 +212,7 @@ let decompose_wrt_translation (old_fis,Old_UBC(b,W w)) =
 let remove_one_element (old_fis,upper_bound) k=
    let (Old_UBC(_,W w)) = upper_bound 
    and new_fis = Finite_int_set.remove_one_element old_fis k in 
-   let new_bound =(match Finite_int_set.natural_upper_bound new_fis (W w) with 
+   let new_bound =(match Finite_int_set.old_natural_upper_bound new_fis (W w) with 
    None -> upper_bound 
    | Some better_bound -> better_bound
    ) in  
@@ -217,7 +224,7 @@ let tail_and_head (fis,upper_bound) =
 
 let usual_pair (n,scrappers,W w) =
     let fis = FIS(n,scrappers) in
-    let upper_bound =(match Finite_int_set.natural_upper_bound fis (W w) with 
+    let upper_bound =(match Finite_int_set.old_natural_upper_bound fis (W w) with 
      None -> Old_UBC(max(1)(n-2*w),W w)
     |Some answer -> answer
     ) in 
@@ -307,7 +314,7 @@ module Old_Level2 = struct
           Some answer2 -> (Old_P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
-         (match Finite_int_set.relative_head_constraint fis upper_bound with 
+         (match Finite_int_set.old_relative_head_constraint fis upper_bound with 
           None -> let domain = Finite_int_set.to_usual_int_list fis in 
                    (Old_P_Success(M([domain],domain)),false)
          |Some (cstr,_) ->   
@@ -374,7 +381,7 @@ let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
 
 let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub = 
   let (fis,upper_bound) = old_fis_with_ub in 
-  let opt1 = Finite_int_set.relative_head_constraint fis upper_bound in 
+  let opt1 = Finite_int_set.old_relative_head_constraint fis upper_bound in 
   if opt1=None  
   then raise(Peek_for_fork_case_should_never_happen_1_exn(current_width))
   else    
@@ -492,7 +499,7 @@ module Old_Level3 = struct
           Some answer2 -> (Old_P_Success(answer2),false)
         | None -> 
           let (fis,upper_bound) = fis_with_ub in 
-         (match Finite_int_set.relative_head_constraint fis upper_bound with 
+         (match Finite_int_set.old_relative_head_constraint fis upper_bound with 
           None -> let domain = Finite_int_set.to_usual_int_list fis in 
                    (Old_P_Success(M([domain],domain)),false)
          |Some (cstr,_) ->   
@@ -559,7 +566,7 @@ let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
 
 let peek_for_fork_case (hashtbl,severity) helper old_fis_with_ub = 
   let (fis,upper_bound) = old_fis_with_ub in 
-  let opt1 = Finite_int_set.relative_head_constraint fis upper_bound in 
+  let opt1 = Finite_int_set.old_relative_head_constraint fis upper_bound in 
   if opt1=None  
   then raise(Peek_for_fork_case_should_never_happen_1_exn(current_width))
   else    
