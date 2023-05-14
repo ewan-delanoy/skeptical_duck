@@ -394,7 +394,7 @@ end ;;
     let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
     let candidates = Image.image (
            fun i-> Kay.remove_one_element old_key i
-    ) [b-2*w;b-w;b] in 
+    ) [b;b+w;b+2*w] in 
     let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
     if bad_ones <> []
     then P_Unfinished_computation(bad_ones)
@@ -409,7 +409,7 @@ end ;;
           P_Success(M(sols4,[]))
     else let (max_idx,_) = List.hd(List.rev max_indices) in 
           let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
-          let ext5 = Image.image (fun (k,_)->List.nth [b-2*w;b-w;b] (k-1)) min_indices in 
+          let ext5 = Image.image (fun (k,_)->List.nth [b;b+w;b+2*w] (k-1)) min_indices in 
           P_Success(M(sols5,ext5));;    
   
   
@@ -577,7 +577,7 @@ end ;;
     let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
     let candidates = Image.image (
            fun i-> Kay.remove_one_element old_key i
-    ) [b-2*w;b-w;b] in 
+    ) [b;b+w;b+2*w] in 
     let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
     if bad_ones <> []
     then P_Unfinished_computation(bad_ones)
@@ -592,7 +592,7 @@ end ;;
           P_Success(M(sols4,[]))
     else let (max_idx,_) = List.hd(List.rev max_indices) in 
           let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
-          let ext5 = Image.image (fun (k,_)->List.nth [b-2*w;b-w;b] (k-1)) min_indices in 
+          let ext5 = Image.image (fun (k,_)->List.nth [b;b+w;b+2*w] (k-1)) min_indices in 
           P_Success(M(sols5,ext5));;    
   
   
