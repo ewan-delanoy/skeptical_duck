@@ -214,6 +214,8 @@ let list_is_admissible upper_bound candidate =
     let constructor (n,scrappers,w,b) =
         Key(FIS(n,scrappers),UBC(W w,Upper_bound_on_breadth.constructor b)) ;; 
   
+    let width (Key(_,UBC(w,_))) = w ;;
+
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.recoil d ubc)) ;;
