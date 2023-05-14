@@ -28,6 +28,9 @@ type upper_bound_on_breadth =
 type upper_bound_on_constraint = 
    Sz3_types.upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
 
+type partial_key = 
+   Sz3_types.partial_key = PK of finite_int_set * upper_bound_on_breadth ;; 
+
 type key = 
    Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
