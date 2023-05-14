@@ -27,7 +27,7 @@ type upper_bound_on_breadth = Unrestricted |Up_to of breadth ;;
 
 type upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
   
-type key = Key of finite_int_set * upper_bound_on_breadth ;; 
+type key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
 type peek_result = 
     P_Success of mold  
