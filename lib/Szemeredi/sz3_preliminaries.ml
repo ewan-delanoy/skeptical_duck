@@ -201,7 +201,13 @@ module Upper_bound_on_breadth = struct
   
   end ;;  
   
+  module Partial_key = struct 
   
+  let of_key (Key(fis,UBC(_,ub_on_breadth))) = PK(fis,ub_on_breadth) ;;  
+  let to_key (PK(fis,ub_on_breadth)) w  = (Key(fis,UBC(w,ub_on_breadth))) ;;  
+
+  end ;;   
+
   
   module Kay = struct 
   
