@@ -244,7 +244,6 @@ let list_is_admissible upper_bound candidate =
   
     exception Get_below_exn of int * key ;;
     exception Using_translation_exn of int ;;
-    exception Peek_for_cumulative_case_should_never_happen_1_exn of int ;; 
     exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
     exception Multiple_peek_exn of int ;; 
     exception Simplified_multiple_peek_exn of int ;;
@@ -358,7 +357,7 @@ end ;;
         let (n,new_key) = Kay.vertex_decomposition old_key in 
         let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_key in 
           match peek_res with 
-         P_Unfinished_computation(_)  -> raise(Peek_for_cumulative_case_should_never_happen_1_exn(current_width))
+         P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
         |P_Failure -> P_Unfinished_computation([new_key]) 
         |P_Success(M(sols2,ext2)) ->
           let (Key(_,old_ub)) = old_key in 
@@ -487,8 +486,8 @@ end ;;
   
     let current_width = 3 ;; 
     
-    let get_below (hshtbl,severity) key = 
-      match Level2.compute_reasonably_fast_opt (hshtbl,severity) key with 
+    let get_below (_hshtbl,severity) key = 
+      match Level1.compute_reasonably_fast_opt key with 
       Some answer -> (P_Success(answer),true)  
       |None -> 
         match severity with  
@@ -541,7 +540,7 @@ end ;;
         let (n,new_key) = Kay.vertex_decomposition old_key in 
         let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_key in 
           match peek_res with 
-         P_Unfinished_computation(_)  -> raise(Peek_for_cumulative_case_should_never_happen_1_exn(current_width))
+         P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
         |P_Failure -> P_Unfinished_computation([new_key]) 
         |P_Success(M(sols2,ext2)) ->
           let (Key(_,old_ub)) = old_key in 
@@ -650,15 +649,15 @@ end ;;
      let needed_subcomputations (hashtbl,severity) items = 
       iterator_for_needed_subcomputations (hashtbl,severity) ([],items) ;;  
       
-     let compute_fast_opt (hashtbl,severity) fis_with_ub =
-      let (peek_res,_) =multiple_peek (hashtbl,severity) [] fis_with_ub in
+     let compute_fast_opt (hashtbl,severity) key =
+      let (peek_res,_) =multiple_peek (hashtbl,severity) [] key in
         match peek_res with 
         P_Success (answer) -> Some answer
       | P_Unfinished_computation (_)  
       | P_Failure -> None ;;
   
-     let compute_reasonably_fast_opt (hashtbl,severity) fis_with_ub = 
-      compute_fast_opt (hashtbl,severity) fis_with_ub ;;     
+     let compute_reasonably_fast_opt (hashtbl,severity) key = 
+      compute_fast_opt (hashtbl,severity) key ;;     
   
      
   
