@@ -35,14 +35,3 @@ type peek_result =
    |P_Unfinished_computation of key list ;;
 
 type severity = Stern | Relaxed ;; 
-
-type breadth_range = Br_Unrestricted |Br_Up_to of int ;; 
-
-type old_upper_bound_for_constraints = Old_UBC of int * width ;; 
-
-type old_key = finite_int_set * old_upper_bound_for_constraints ;;  
-
-type old_peek_result = 
-    Old_P_Success of mold  
-   |Old_P_Failure
-   |Old_P_Unfinished_computation of old_key list ;;

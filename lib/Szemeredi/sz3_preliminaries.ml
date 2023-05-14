@@ -39,19 +39,6 @@ type peek_result = Sz3_types.peek_result =
 
 type severity = Sz3_types.severity = Stern | Relaxed ;; 
 
-type old_upper_bound_for_constraints = 
-    Sz3_types.old_upper_bound_for_constraints = 
-    Old_UBC of int * width ;; 
-
-type old_key = finite_int_set * old_upper_bound_for_constraints ;; 
-
-type old_peek_result = Sz3_types.old_peek_result =
-    Old_P_Success of mold 
-   |Old_P_Failure
-   |Old_P_Unfinished_computation of old_key list ;;
-
-type breadth_range = Sz3_types.breadth_range = Br_Unrestricted |Br_Up_to of int ;;
-
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
