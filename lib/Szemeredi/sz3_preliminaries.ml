@@ -133,7 +133,7 @@ module Upper_bound_on_breadth = struct
   
   end ;;  
   
-  module Upper_bound_on_constraint = struct 
+module Upper_bound_on_constraint = struct 
   
     exception A_priori_bound_on_breadth_exn ;; 
   
@@ -180,13 +180,22 @@ module Upper_bound_on_breadth = struct
   
   
   
-      let attained_upper_bound_opt fis ub_on_constraint = 
+let attained_upper_bound_opt fis ub_on_constraint = 
         let bmax = Private.a_priori_bound_on_breadth fis ub_on_constraint
         and (UBC(w,_ub_on_breadth)) = ub_on_constraint in 
         Private.attained_upper_bound_opt_for_dissociated_data fis w bmax;;  
-          
+
+let downgrade ub_on_constraint (W other_width) =
+    let (UBC(W w,ub_on_breadth)) = ub_on_constraint in 
+    let wmin = min w other_width in 
+    match ub_on_breadth with 
+     Unrestricted -> UBC(W(wmin),Unrestricted) 
+     |Up_to(_) ->
+       if other_width >= w 
+       then ub_on_constraint 
+       else UBC(W(wmin),Unrestricted) ;;       
       
-  let list_is_admissible upper_bound candidate = 
+let list_is_admissible upper_bound candidate = 
     if candidate = [] then true else 
     let fis =  Finite_int_set.of_usual_int_list candidate in 
    ((attained_upper_bound_opt fis upper_bound)=None);;
@@ -243,7 +252,7 @@ module Upper_bound_on_breadth = struct
     exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
     exception Bad_remainder_by_three of int ;; 
   
-    module Level1 = struct 
+module Level1 = struct 
   
       let current_width = 1 ;; 
       
@@ -288,7 +297,7 @@ module Upper_bound_on_breadth = struct
     
        
     
-    end ;;  
+end ;;  
     
   (* Beginning of Level2 *)
   module Level2 = struct 
@@ -309,7 +318,7 @@ module Upper_bound_on_breadth = struct
         Some answer1 -> (P_Success(answer1),false) 
       | None ->
          (
-            match  Hashtbl.find_opt hashtbl (W current_width,key) with 
+            match  Hashtbl.find_opt hashtbl key with 
             Some answer2 -> (P_Success(answer2),false)
           | None -> 
             let (Key(fis,upper_bound)) = key in 
@@ -492,7 +501,7 @@ module Upper_bound_on_breadth = struct
         Some answer1 -> (P_Success(answer1),false) 
       | None ->
          (
-            match  Hashtbl.find_opt hashtbl (W current_width,key) with 
+            match  Hashtbl.find_opt hashtbl key with 
             Some answer2 -> (P_Success(answer2),false)
           | None -> 
             let (Key(fis,upper_bound)) = key in 
@@ -661,8 +670,8 @@ module Upper_bound_on_breadth = struct
   module Selector = struct 
    
   
-  let stern_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
-  let relaxed_hashtbl = ((Hashtbl.create 50) : (width * key, mold) Hashtbl.t) ;; 
+  let stern_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
+  let relaxed_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
   
   let get_hashtbl = function 
      Stern -> stern_hashtbl 
@@ -692,38 +701,38 @@ module Upper_bound_on_breadth = struct
   let easy_add max_width key =
       let answer = easy_compute max_width key in 
       (
-        Hashtbl.replace stern_hashtbl (max_width,key) answer ;
-        Hashtbl.replace relaxed_hashtbl (max_width,key) answer 
+        Hashtbl.replace stern_hashtbl key answer ;
+        Hashtbl.replace relaxed_hashtbl key answer 
       ) ;;
   
   exception Import_exn of width * key ;;    
   
-  let import (W max_width) key =
-        let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
-        let (Key(_fis,ub_on_constraints)) = key in 
-        let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
-        if sols2 = []
-        then raise(Import_exn(W max_width,key))
-        else 
-        let answer = M(sols2,ext) in   
-        let _=  (
-            Hashtbl.replace stern_hashtbl (W max_width,key) answer ;
-            Hashtbl.replace relaxed_hashtbl (W max_width,key) answer 
+  let import key = 
+     let (Key(_,ub_on_constraints)) = key in 
+     let (UBC(W max_width,_)) = ub_on_constraints in    
+     let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
+     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
+      if sols2 = []
+      then raise(Import_exn(W max_width,key))
+      else 
+      let answer = M(sols2,ext) in   
+      let _=  (
+            Hashtbl.replace stern_hashtbl key answer ;
+            Hashtbl.replace relaxed_hashtbl key answer 
           ) in 
-        answer;;
+      answer;;
   
   end ;;   
   
-  module Fill = struct 
+module Fill = struct 
   
     let bound = 40 ;; 
     
     
     let fill () =
       let _act1 = Int_range.scale (fun k->
-        let _ = Selector.import (W 2) (Kay.constructor(k,[],2,0)) in () ) 1 bound in 
+        let _ = Selector.import (Kay.constructor(k,[],2,0)) in () ) 1 bound in 
       () 
       ;;  
     
-    
-    end ;;
+end ;;
