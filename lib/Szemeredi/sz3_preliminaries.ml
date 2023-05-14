@@ -185,15 +185,10 @@ let attained_upper_bound_opt fis ub_on_constraint =
         and (UBC(w,_ub_on_breadth)) = ub_on_constraint in 
         Private.attained_upper_bound_opt_for_dissociated_data fis w bmax;;  
 
-let downgrade ub_on_constraint (W other_width) =
-    let (UBC(W w,ub_on_breadth)) = ub_on_constraint in 
-    let wmin = min w other_width in 
-    match ub_on_breadth with 
-     Unrestricted -> UBC(W(wmin),Unrestricted) 
-     |Up_to(_) ->
-       if other_width >= w 
-       then ub_on_constraint 
-       else UBC(W(wmin),Unrestricted) ;;       
+let decrement ub_on_constraint =
+    let (UBC(W w,_)) = ub_on_constraint in 
+    UBC(W(w-1),Unrestricted) ;; 
+     
       
 let list_is_admissible upper_bound candidate = 
     if candidate = [] then true else 
@@ -214,6 +209,9 @@ let list_is_admissible upper_bound candidate =
     let constructor (n,scrappers,w,b) =
         Key(FIS(n,scrappers),UBC(W w,Upper_bound_on_breadth.constructor b)) ;; 
   
+    let decrement (Key(fis,ub_on_constraint)) =
+      Key(fis,Upper_bound_on_constraint.decrement ub_on_constraint) ;;  
+
     let width (Key(_,UBC(w,_))) = w ;;
 
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
@@ -679,43 +677,46 @@ end ;;
      Stern -> stern_hashtbl 
      |Relaxed -> relaxed_hashtbl ;; 
   
-  let needed_subcomputations (W max_width) key_list=
+  let needed_subcomputations key_list=
+    let widths = Image.image Kay.width key_list in 
+    let (_,max_width) = Max.maximize_it (fun (W w)->w) widths in 
      match max_width with 
       1 -> []
      |2 -> Level2.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list
      |3 -> Level3.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list 
-     |_ -> raise(Bad_index_in_selection max_int) ;; 
+     |_ -> raise(Bad_index_in_selection max_width) ;; 
     
-  let compute_reasonably_fast_opt (W max_width) key =
+  let compute_reasonably_fast_opt key = 
+    let (W max_width) = Kay.width key in 
     match max_width with 
     1 -> Level1.compute_reasonably_fast_opt key
    |2 -> Level2.compute_reasonably_fast_opt (stern_hashtbl,Stern) key
    |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
-   |_ -> raise(Bad_index_in_selection max_int) ;;    
+   |_ -> raise(Bad_index_in_selection max_width) ;;    
   
-  exception Easy_compute_exn of width * key ;;
+  exception Easy_compute_exn of key ;;
   
-  let easy_compute max_width key =
-    match compute_reasonably_fast_opt max_width key with 
+  let easy_compute key =
+    match compute_reasonably_fast_opt key with 
      Some answer -> answer 
-     | None -> raise(Easy_compute_exn(max_width,key)) ;;  
+     | None -> raise(Easy_compute_exn(key)) ;;  
   
-  let easy_add max_width key =
-      let answer = easy_compute max_width key in 
+  let easy_add key =
+      let answer = easy_compute key in 
       (
         Hashtbl.replace stern_hashtbl key answer ;
         Hashtbl.replace relaxed_hashtbl key answer 
       ) ;;
   
-  exception Import_exn of width * key ;;    
+  exception Import_exn of key ;;    
   
   let import key = 
-     let (Key(_,ub_on_constraints)) = key in 
-     let (UBC(W max_width,_)) = ub_on_constraints in    
-     let (M(sols,ext)) = easy_compute (W(max_width-1)) key in 
+     let new_key = Kay.decrement key 
+     and (Key(_,ub_on_constraints))=key in 
+     let (M(sols,ext)) = easy_compute new_key in 
      let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
       if sols2 = []
-      then raise(Import_exn(W max_width,key))
+      then raise(Import_exn(key))
       else 
       let answer = M(sols2,ext) in   
       let _=  (
