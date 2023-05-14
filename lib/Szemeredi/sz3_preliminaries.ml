@@ -28,9 +28,6 @@ type upper_bound_on_breadth =
 type upper_bound_on_constraint = 
    Sz3_types.upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
 
-type partial_key = 
-   Sz3_types.partial_key = PK of finite_int_set * upper_bound_on_breadth ;; 
-
 type key = 
    Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
@@ -201,13 +198,7 @@ module Upper_bound_on_breadth = struct
   
   end ;;  
   
-  module Partial_key = struct 
   
-  let of_key (Key(fis,UBC(_,ub_on_breadth))) = PK(fis,ub_on_breadth) ;;  
-  let to_key (PK(fis,ub_on_breadth)) w  = (Key(fis,UBC(w,ub_on_breadth))) ;;  
-
-  end ;;   
-
   
   module Kay = struct 
   
