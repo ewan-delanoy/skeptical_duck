@@ -774,8 +774,10 @@ module Level3 = struct
       else None;;   
   
   let combined_quest key = 
-     (rigorous_quest_for_cumulative_case key,
-      rigorous_quest_for_fork_case key) ;; 
+     let part1 = rigorous_quest_for_cumulative_case key 
+     and part2 = rigorous_quest_for_fork_case key in 
+     let part3 = suitable_half_impatient_peek (part1,part2) key in 
+     (part1,part2,part3)  ;; 
 
   end ;;   
   
