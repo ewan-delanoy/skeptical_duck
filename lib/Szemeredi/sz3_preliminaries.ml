@@ -297,8 +297,8 @@ module Level1 = struct
     
 end ;;  
     
-  (* Beginning of Level2 *)
-  module Level2 = struct 
+(* Beginning of Level2 *)
+module Level2 = struct 
   
     let current_width = 2 ;; 
     
@@ -330,7 +330,8 @@ end ;;
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then get_below (hashtbl,patience) key
+              then let simplified_key = Kay.decrement key in 
+                   get_below (hashtbl,patience) simplified_key
               else (P_Failure,false)          
            )
          ) ;; 
@@ -487,7 +488,7 @@ end ;;
   (* End of Level2 *)
   
   (* Beginning of Level3 *)
-  module Level3 = struct 
+module Level3 = struct 
   
     let current_width = 3 ;; 
     
@@ -519,7 +520,8 @@ end ;;
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then get_below (hashtbl,patience) key
+              then let simplified_key = Kay.decrement key in 
+                   get_below (hashtbl,patience) simplified_key
               else (P_Failure,false)          
            )
          ) ;; 
