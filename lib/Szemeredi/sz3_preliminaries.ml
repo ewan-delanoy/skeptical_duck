@@ -243,7 +243,6 @@ let list_is_admissible upper_bound candidate =
     end ;;   
   
     exception Get_below_exn of int * key ;;
-    exception Using_translation_exn of int ;;
     exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
     exception Multiple_peek_exn of int ;; 
     exception Simplified_multiple_peek_exn of int ;;
@@ -751,6 +750,40 @@ end ;;
       ) subcomps in 
       List.assoc key subcomps ;;      
 
+  let rigorous_quest_for_cumulative_case old_key = 
+    let (_n,simpler_key) = Kay.vertex_decomposition old_key in 
+    let res1 = compute_recursively_and_remember simpler_key 
+    and res2 = compute_recursively_and_remember old_key in 
+    let M(sols1,_ext1) = res1 
+    and M(sols2,_ext2) = res2 in 
+    if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
+    then Some(res1,res2)  
+    else None ;;
+
+  exception Rigorous_quest_for_fork_case_should_never_happen_1_exn of key ;; 
+
+  let rigorous_quest_for_fork_case old_key = 
+      let (Key(fis,upper_bound)) = old_key in 
+      let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
+      if opt1=None  
+      then raise(Rigorous_quest_for_fork_case_should_never_happen_1_exn(old_key))
+      else    
+      let UBC(W w,ub_on_breadth) = Option.get opt1 in   
+      let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
+      let candidates = Image.image (
+             fun i-> let candidate = Kay.remove_one_element old_key i in 
+             (candidate,compute_recursively_and_remember candidate)
+      ) [b;b+w;b+2*w] in 
+      let sizes = Image.image (fun (_,M(sol,_ext))->List.length(List.hd sol)) candidates in 
+      let first_size = List.hd sizes in 
+      if List.for_all (fun size->size=first_size) sizes 
+      then Some([b;b+w;b+2*w],candidates)
+      else None;;   
+  
+  let combined_quest key = 
+     (rigorous_quest_for_cumulative_case key,
+      rigorous_quest_for_fork_case key) ;; 
+
   end ;;   
   
 
@@ -759,11 +792,16 @@ module Fill = struct
   
     let bound = 40 ;; 
     
-    
+    exception Fill1_exn of int ;; 
+    let fill1 () = 
+       let _ = Int_range.scale (fun k->
+      try(let _ = Main.import (Kay.constructor(k,[],2,0)) in ())
+      with _->raise(Fill1_exn(k)) ) 1 bound in 
+     ();; 
+
     let fill () =
-      let _act1 = Int_range.scale (fun k->
-        let _ = Main.import (Kay.constructor(k,[],2,0)) in () ) 1 bound in 
-      () 
+      List.iter (fun f->f()) 
+      [fill1]
       ;;  
     
 end ;;
