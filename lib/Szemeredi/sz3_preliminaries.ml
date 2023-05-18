@@ -309,7 +309,12 @@ end ;;
       |None -> 
         match severity with  
          Stern -> raise(Get_below_exn(current_width-1,key))
-        |Relaxed -> (P_Unfinished_computation[key],false);;
+        |Relaxed -> 
+             (*
+                this function get_below is only used when peeking for obvious accesses.
+                If the answer is not immediate, we count it as a failure.   
+             *)
+            (P_Failure,false);;
   
     
     let peek_for_obvious_accesses (hashtbl,severity) helper key = 
@@ -493,7 +498,12 @@ end ;;
       |None -> 
         match severity with  
          Stern -> raise(Get_below_exn(current_width-1,key))
-        |Relaxed -> (P_Unfinished_computation[key],false);;
+        |Relaxed -> 
+             (*
+                this function get_below is only used when peeking for obvious accesses.
+                If the answer is not immediate, we count it as a failure.   
+             *)
+            (P_Failure,false);;
   
     
     let peek_for_obvious_accesses (hashtbl,severity) helper key = 
