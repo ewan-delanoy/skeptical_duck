@@ -715,38 +715,7 @@ end ;;
   end ;;
 
   module Main = struct
-
-
-  exception Easy_compute_exn of key ;;
   
-  let compute_simple key =
-    match Selector.compute_reasonably_fast_opt key with 
-     Some answer -> answer 
-     | None -> raise(Easy_compute_exn(key)) ;;  
-  
-  let add_simple key =
-      let answer = compute_simple key in 
-      (
-        Hashtbl.replace Selector.impatient_hashtbl key answer ;
-        Hashtbl.replace Selector.patient_hashtbl key answer 
-      ) ;;
-  
-  exception Import_exn of key ;;    
-  
-  let import key = 
-     let new_key = Kay.decrement key 
-     and (Key(_,ub_on_constraints))=key in 
-     let (M(sols,ext)) = compute_simple new_key in 
-     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
-      if sols2 = []
-      then raise(Import_exn(key))
-      else 
-      let answer = M(sols2,ext) in   
-      let _=  (
-            Hashtbl.replace Selector.impatient_hashtbl key answer ;
-            Hashtbl.replace Selector.patient_hashtbl key answer 
-          ) in 
-      answer;;
   
   let compute_recursively_and_remember key = 
       match Hashtbl.find_opt Selector.patient_hashtbl key with 
@@ -795,6 +764,57 @@ end ;;
   end ;;   
   
 
+module Small_step = struct 
+
+  exception Compute_simple_exn of key ;;
+
+  let compute_simple key =
+    match Selector.compute_reasonably_fast_opt key with 
+     Some answer -> answer 
+     | None -> raise(Compute_simple_exn(key)) ;;  
+  
+  let add_simple key =
+      let answer = compute_simple key in 
+      (
+        Hashtbl.replace Selector.impatient_hashtbl key answer ;
+        Hashtbl.replace Selector.patient_hashtbl key answer 
+      ) ;;
+  
+  exception Compute_easy_fork_exn of key ;;
+
+  let compute_easy_fork key =
+        match Selector.impatient_peek_for_fork_case key with 
+         P_Success(answer) -> answer 
+        | P_Unfinished_computation(_)
+        | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
+
+  let add_easy_fork key =
+      let answer = compute_easy_fork key in 
+      (
+            Hashtbl.replace Selector.impatient_hashtbl key answer ;
+            Hashtbl.replace Selector.patient_hashtbl key answer 
+      ) ;;
+
+  exception Import_exn of key ;;    
+  
+  let import key = 
+     let new_key = Kay.decrement key 
+     and (Key(_,ub_on_constraints))=key in 
+     let (M(sols,ext)) = compute_simple new_key in 
+     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
+      if sols2 = []
+      then raise(Import_exn(key))
+      else 
+      let answer = M(sols2,ext) in   
+      let _=  (
+            Hashtbl.replace Selector.impatient_hashtbl key answer ;
+            Hashtbl.replace Selector.patient_hashtbl key answer 
+          ) in 
+      answer;;
+  
+
+end ;;   
+
 
 module Fill = struct 
   
@@ -803,7 +823,7 @@ module Fill = struct
     exception Fill1_exn of int ;; 
     let fill1 () = 
        let _ = Int_range.scale (fun k->
-      try(let _ = Main.import (Kay.constructor(k,[],2,0)) in ())
+      try(let _ = Small_step.import (Kay.constructor(k,[],2,0)) in ())
       with _->raise(Fill1_exn(k)) ) 1 bound in 
      ();; 
 
