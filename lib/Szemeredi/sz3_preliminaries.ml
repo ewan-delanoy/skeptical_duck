@@ -730,11 +730,16 @@ module Level3 = struct
    |3 -> Level3.peek_for_fork_case (patient_hashtbl,Patient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;; 
 
-
   end ;;
 
   module Main = struct
   
+    exception Suitable_patient_peek_exn ;;  
+
+    let suitable_patient_peek (opt_cumulative,opt_fork) =
+       if opt_cumulative<> None then Selector.patient_peek_for_cumulative_case else 
+       if opt_fork<> None then Selector.patient_peek_for_fork_case else   
+       raise Suitable_patient_peek_exn ;;   
   
   let compute_recursively_and_remember key = 
       match Hashtbl.find_opt Selector.patient_hashtbl key with 
