@@ -693,18 +693,23 @@ end ;;
    |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
   
+  end ;;
+
+  module Main = struct
+
+
   exception Easy_compute_exn of key ;;
   
   let easy_compute key =
-    match compute_reasonably_fast_opt key with 
+    match Selector.compute_reasonably_fast_opt key with 
      Some answer -> answer 
      | None -> raise(Easy_compute_exn(key)) ;;  
   
   let easy_add key =
       let answer = easy_compute key in 
       (
-        Hashtbl.replace stern_hashtbl key answer ;
-        Hashtbl.replace relaxed_hashtbl key answer 
+        Hashtbl.replace Selector.stern_hashtbl key answer ;
+        Hashtbl.replace Selector.relaxed_hashtbl key answer 
       ) ;;
   
   exception Import_exn of key ;;    
@@ -719,13 +724,25 @@ end ;;
       else 
       let answer = M(sols2,ext) in   
       let _=  (
-            Hashtbl.replace stern_hashtbl key answer ;
-            Hashtbl.replace relaxed_hashtbl key answer 
+            Hashtbl.replace Selector.stern_hashtbl key answer ;
+            Hashtbl.replace Selector.relaxed_hashtbl key answer 
           ) in 
       answer;;
   
+  let compute_recursively_and_remember key = 
+      match Hashtbl.find_opt Selector.relaxed_hashtbl key with 
+      Some(old_answer) -> old_answer
+      | None ->
+      let subcomps = Selector.needed_subcomputations [key] in 
+      let _ = List.iter (fun (key,answer)->
+        Hashtbl.replace Selector.relaxed_hashtbl key answer
+      ) subcomps in 
+      List.assoc key subcomps ;;      
+
   end ;;   
   
+
+
 module Fill = struct 
   
     let bound = 40 ;; 
@@ -733,7 +750,7 @@ module Fill = struct
     
     let fill () =
       let _act1 = Int_range.scale (fun k->
-        let _ = Selector.import (Kay.constructor(k,[],2,0)) in () ) 1 bound in 
+        let _ = Main.import (Kay.constructor(k,[],2,0)) in () ) 1 bound in 
       () 
       ;;  
     
