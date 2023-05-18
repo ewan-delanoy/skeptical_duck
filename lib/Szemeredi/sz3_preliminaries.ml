@@ -714,6 +714,23 @@ module Level3 = struct
    |3 -> Level3.peek_for_fork_case (impatient_hashtbl,Impatient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;;  
 
+  let patient_peek_for_cumulative_case key = 
+    let (W max_width) = Kay.width key in 
+    match max_width with 
+    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
+   |2 -> Level2.peek_for_cumulative_case (patient_hashtbl,Patient) [] key
+   |3 -> Level3.peek_for_cumulative_case (patient_hashtbl,Patient) [] key 
+   |_ -> raise(Bad_index_in_selection max_width) ;; 
+
+  let patient_peek_for_fork_case key = 
+    let (W max_width) = Kay.width key in 
+    match max_width with 
+    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
+   |2 -> Level2.peek_for_fork_case (patient_hashtbl,Patient) [] key
+   |3 -> Level3.peek_for_fork_case (patient_hashtbl,Patient) [] key 
+   |_ -> raise(Bad_index_in_selection max_width) ;; 
+
+
   end ;;
 
   module Main = struct
