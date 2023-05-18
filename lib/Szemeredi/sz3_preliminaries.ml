@@ -706,32 +706,32 @@ module Level3 = struct
    |3 -> Level3.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
   
-  let impatient_peek_for_fork_case key = 
+  let half_impatient_peek_for_fork_case key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
     1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
-   |2 -> Level2.peek_for_fork_case (impatient_hashtbl,Impatient) [] key
-   |3 -> Level3.peek_for_fork_case (impatient_hashtbl,Impatient) [] key 
+   |2 -> Level2.peek_for_fork_case (impatient_hashtbl,Patient) [] key
+   |3 -> Level3.peek_for_fork_case (impatient_hashtbl,Patient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;;  
 
-  let impatient_peek_for_cumulative_case key = 
+  let half_impatient_peek_for_cumulative_case key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
     1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
-   |2 -> Level2.peek_for_cumulative_case (impatient_hashtbl,Impatient) [] key
-   |3 -> Level3.peek_for_cumulative_case (impatient_hashtbl,Impatient) [] key 
+   |2 -> Level2.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key
+   |3 -> Level3.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;; 
 
   end ;;
 
   module Main = struct
   
-    exception Suitable_impatient_peek_exn ;;  
+    exception Suitable_half_impatient_peek_exn ;;  
 
-    let suitable_impatient_peek (opt_cumulative,opt_fork) =
-       if opt_cumulative<> None then Selector.impatient_peek_for_cumulative_case else 
-       if opt_fork<> None then Selector.impatient_peek_for_fork_case else   
-       raise Suitable_impatient_peek_exn ;;   
+    let suitable_half_impatient_peek (opt_cumulative,opt_fork) =
+       if opt_cumulative<> None then Selector.half_impatient_peek_for_cumulative_case else 
+       if opt_fork<> None then Selector.half_impatient_peek_for_fork_case else   
+       raise Suitable_half_impatient_peek_exn ;;   
   
   let compute_recursively_and_remember key = 
       match Hashtbl.find_opt Selector.patient_hashtbl key with 
@@ -799,7 +799,7 @@ module Small_step = struct
   exception Compute_easy_fork_exn of key ;;
 
   let compute_easy_fork key =
-        match Selector.impatient_peek_for_fork_case key with 
+        match Selector.half_impatient_peek_for_fork_case key with 
          P_Success(answer) -> answer 
         | P_Unfinished_computation(_)
         | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
