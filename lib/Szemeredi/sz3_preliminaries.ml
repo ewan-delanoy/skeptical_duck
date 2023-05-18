@@ -827,6 +827,13 @@ module Fill = struct
       with _->raise(Fill1_exn(k)) ) 1 bound in 
      ();; 
 
+     exception Fill2_exn of int ;; 
+     let fill2 () = 
+        let _ = Int_range.scale (fun k->
+       try(let _ = Small_step.import (Kay.constructor(k,[],2,0)) in ())
+       with _->raise(Fill2_exn(k)) ) 1 6 in 
+      ();; 
+
     let fill () =
       List.iter (fun f->f()) 
       [fill1]
