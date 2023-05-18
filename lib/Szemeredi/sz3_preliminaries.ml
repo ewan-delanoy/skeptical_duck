@@ -331,26 +331,6 @@ end ;;
            )
          ) ;; 
     
-    (*
-     
-    We use translations as little as possible. Most of the functions
-    of this module are supposed to work on arguments where translation
-    does not apply. The function below is an exception.
-    
-    *)
-  
-    
-  
-    let seek_obvious_accesses_using_translation 
-      (hashtbl,severity) helper original_key = 
-      let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
-      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
-          match peek_res with 
-         P_Unfinished_computation(_)  -> raise(Using_translation_exn(current_width))
-        |P_Failure -> (None,Some translated_key)
-        |P_Success(translated_answer) ->
-           let answer_to_original = Mold.translate d translated_answer in 
-           (Some(answer_to_original),None);; 
   
     
     let peek_for_cumulative_case (hashtbl,severity) helper old_key = 
@@ -374,6 +354,27 @@ end ;;
           else P_Failure
       ;;
   
+  (*
+     
+    We use translations as little as possible. Most of the functions
+    of this module are supposed to work on arguments where translation
+    does not apply. The function below is an exception.
+    
+    *)
+  
+    
+  
+    let seek_obvious_accesses_using_translation 
+      (hashtbl,severity) helper original_key = 
+      let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
+          match peek_res with 
+         P_Unfinished_computation(_)  -> (None,Some translated_key)
+        |P_Failure -> (None,Some translated_key)
+        |P_Success(translated_answer) ->
+           let answer_to_original = Mold.translate d translated_answer in 
+           (Some(answer_to_original),None);; 
+
   let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
     let leaves2 = Image.image (
         fun cand ->
@@ -514,26 +515,6 @@ end ;;
            )
          ) ;; 
     
-    (*
-     
-    We use translations as little as possible. Most of the functions
-    of this module are supposed to work on arguments where translation
-    does not apply. The function below is an exception.
-    
-    *)
-  
-    
-  
-    let seek_obvious_accesses_using_translation 
-      (hashtbl,severity) helper original_key = 
-      let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
-      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
-          match peek_res with 
-         P_Unfinished_computation(_)  -> raise(Using_translation_exn(current_width))
-        |P_Failure -> (None,Some translated_key)
-        |P_Success(translated_answer) ->
-           let answer_to_original = Mold.translate d translated_answer in 
-           (Some(answer_to_original),None);; 
   
     
     let peek_for_cumulative_case (hashtbl,severity) helper old_key = 
@@ -557,6 +538,27 @@ end ;;
           else P_Failure
       ;;
   
+  (*
+     
+    We use translations as little as possible. Most of the functions
+    of this module are supposed to work on arguments where translation
+    does not apply. The function below is an exception.
+    
+    *)
+  
+    
+  
+    let seek_obvious_accesses_using_translation 
+      (hashtbl,severity) helper original_key = 
+      let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
+          match peek_res with 
+         P_Unfinished_computation(_)  -> (None,Some translated_key)
+        |P_Failure -> (None,Some translated_key)
+        |P_Success(translated_answer) ->
+           let answer_to_original = Mold.translate d translated_answer in 
+           (Some(answer_to_original),None);; 
+
   let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
     let leaves2 = Image.image (
         fun cand ->
