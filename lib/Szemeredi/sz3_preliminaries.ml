@@ -486,8 +486,8 @@ end ;;
   
     let current_width = 3 ;; 
     
-    let get_below (_hshtbl,severity) key = 
-      match Level1.compute_reasonably_fast_opt key with 
+    let get_below (hshtbl,severity) key = 
+      match Level2.compute_reasonably_fast_opt  (hshtbl,severity) key with 
       Some answer -> (P_Success(answer),true)  
       |None -> 
         match severity with  
