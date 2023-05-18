@@ -704,6 +704,14 @@ end ;;
    |3 -> Level3.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
   
+  let impatient_peek_for_fork_case key = 
+    let (W max_width) = Kay.width key in 
+    match max_width with 
+    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
+   |2 -> Level2.peek_for_fork_case (impatient_hashtbl,Impatient) [] key
+   |3 -> Level3.peek_for_fork_case (impatient_hashtbl,Impatient) [] key 
+   |_ -> raise(Bad_index_in_selection max_width) ;;  
+
   end ;;
 
   module Main = struct
@@ -711,13 +719,13 @@ end ;;
 
   exception Easy_compute_exn of key ;;
   
-  let easy_compute key =
+  let compute_simple key =
     match Selector.compute_reasonably_fast_opt key with 
      Some answer -> answer 
      | None -> raise(Easy_compute_exn(key)) ;;  
   
-  let easy_add key =
-      let answer = easy_compute key in 
+  let add_simple key =
+      let answer = compute_simple key in 
       (
         Hashtbl.replace Selector.impatient_hashtbl key answer ;
         Hashtbl.replace Selector.patient_hashtbl key answer 
@@ -728,7 +736,7 @@ end ;;
   let import key = 
      let new_key = Kay.decrement key 
      and (Key(_,ub_on_constraints))=key in 
-     let (M(sols,ext)) = easy_compute new_key in 
+     let (M(sols,ext)) = compute_simple new_key in 
      let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
       if sols2 = []
       then raise(Import_exn(key))
