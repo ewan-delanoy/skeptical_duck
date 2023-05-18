@@ -821,26 +821,43 @@ end ;;
 module Fill = struct 
   
     let bound = 40 ;; 
-    
-    exception Fill1_exn of int ;; 
-    let fill1 () = 
-       let _ = Int_range.scale (fun k->
-      try(let _ = Small_step.import (Kay.constructor(k,[],2,0)) in ())
-      with _->raise(Fill1_exn(k)) ) 1 bound in 
-     ();; 
 
-    let fill2 () = let _ = Small_step.import (Kay.constructor(7,[4],2,0)) in () ;; 
+   module On_level2 = struct 
+   
+   let fill2_1 () = 
+      let _ = Int_range.scale (fun k->
+     let _ = Small_step.import (Kay.constructor(k,[],2,0)) in ()) 1 bound in 
+    ();; 
 
-     exception Fill3_exn of int ;; 
-     let fill3 () = 
-        let _ = Int_range.scale (fun k->
-       try(let _ = Small_step.import (Kay.constructor(k,[],3,0)) in ())
-       with _->raise(Fill3_exn(k)) ) 1 6 in 
-      ();; 
+   let fill2_2 () = let _ = Small_step.import (Kay.constructor(7,[4],2,0)) in () ;;  
 
-    let fill () =
-      List.iter (fun f->f()) 
-      [fill1;fill2;fill3]
-      ;;  
-    
+   let all () =
+    List.iter (fun f->f()) 
+    [fill2_1;fill2_2]
+    ;;  
+
+   end ;;  
+
+   module On_level3 = struct 
+
+  let fill3_1 () = 
+      let _ = Int_range.scale (fun k->
+     let _ = Small_step.import (Kay.constructor(k,[],3,0)) in ()) 1 6 in 
+    ();; 
+
+  let fill3_2 () = let _ = Small_step.add_easy_fork (Kay.constructor(7,[],3,0)) in () ;;  
+
+   let all () =
+    List.iter (fun f->f()) 
+    [fill3_1;fill3_2]
+    ;;    
+
+   end ;; 
+
+   let all () =
+      (
+         On_level2.all ();
+         On_level3.all ();
+      )
+
 end ;;
