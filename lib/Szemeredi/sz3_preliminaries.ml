@@ -37,7 +37,7 @@ type peek_result = Sz3_types.peek_result =
    |P_Unfinished_computation of key list ;;
 
 
-type severity = Sz3_types.severity = Stern | Relaxed ;; 
+type patience = Sz3_types.patience = Impatient | Patient ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -303,13 +303,13 @@ end ;;
   
     let current_width = 2 ;; 
     
-    let get_below (_hshtbl,severity) key = 
+    let get_below (_hshtbl,patience) key = 
       match Level1.compute_reasonably_fast_opt key with 
       Some answer -> (P_Success(answer),true)  
       |None -> 
-        match severity with  
-         Stern -> raise(Get_below_exn(current_width-1,key))
-        |Relaxed -> 
+        match patience with  
+         Impatient -> raise(Get_below_exn(current_width-1,key))
+        |Patient -> 
              (*
                 this function get_below is only used when peeking for obvious accesses.
                 If the answer is not immediate, we count it as a failure.   
@@ -317,7 +317,7 @@ end ;;
             (P_Failure,false);;
   
     
-    let peek_for_obvious_accesses (hashtbl,severity) helper key = 
+    let peek_for_obvious_accesses (hashtbl,patience) helper key = 
       match List.assoc_opt key helper with 
         Some answer1 -> (P_Success(answer1),false) 
       | None ->
@@ -331,16 +331,16 @@ end ;;
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then get_below (hashtbl,severity) key
+              then get_below (hashtbl,patience) key
               else (P_Failure,false)          
            )
          ) ;; 
     
   
     
-    let peek_for_cumulative_case (hashtbl,severity) helper old_key = 
+    let peek_for_cumulative_case (hashtbl,patience) helper old_key = 
         let (n,new_key) = Kay.vertex_decomposition old_key in 
-        let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_key in 
+        let (peek_res,_) = peek_for_obvious_accesses (hashtbl,patience) helper new_key in 
           match peek_res with 
          P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
         |P_Failure -> P_Unfinished_computation([new_key]) 
@@ -370,9 +370,9 @@ end ;;
     
   
     let seek_obvious_accesses_using_translation 
-      (hashtbl,severity) helper original_key = 
+      (hashtbl,patience) helper original_key = 
       let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
-      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,patience) helper translated_key in 
           match peek_res with 
          P_Unfinished_computation(_)  -> (None,Some translated_key)
         |P_Failure -> (None,Some translated_key)
@@ -380,17 +380,17 @@ end ;;
            let answer_to_original = Mold.translate d translated_answer in 
            (Some(answer_to_original),None);; 
 
-  let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
+  let partition_leaves_in_fork_case (hashtbl,patience) helper leaves =
     let leaves2 = Image.image (
         fun cand ->
-          (cand,seek_obvious_accesses_using_translation (hashtbl,severity) helper cand)
+          (cand,seek_obvious_accesses_using_translation (hashtbl,patience) helper cand)
     ) leaves in 
     let (good_leaves,bad_leaves) = 
         List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
     (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
      Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
   
-  let peek_for_fork_case (hashtbl,severity) helper old_key = 
+  let peek_for_fork_case (hashtbl,patience) helper old_key = 
     let (Key(fis,upper_bound)) = old_key in 
     let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
     if opt1=None  
@@ -401,7 +401,7 @@ end ;;
     let candidates = Image.image (
            fun i-> Kay.remove_one_element old_key i
     ) [b;b+w;b+2*w] in 
-    let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
+    let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,patience) helper candidates in 
     if bad_ones <> []
     then P_Unfinished_computation(bad_ones)
     else   
@@ -419,25 +419,25 @@ end ;;
           P_Success(M(sols5,ext5));;    
   
   
-    let multiple_peek (hashtbl,severity) helper old_key = 
-      let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,severity) helper old_key in 
+    let multiple_peek (hashtbl,patience) helper old_key = 
+      let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,patience) helper old_key in 
         match peek_res1 with 
         P_Success (_) -> (peek_res1,to_be_remembered)
       | P_Unfinished_computation (_) -> (peek_res1,false)  
       | P_Failure ->
-      let peek_res2= peek_for_cumulative_case (hashtbl,severity) helper old_key in 
+      let peek_res2= peek_for_cumulative_case (hashtbl,patience) helper old_key in 
         match peek_res2 with 
         P_Success (_) -> (peek_res2,true)
       | P_Unfinished_computation (_) -> (peek_res2,false)  
       | P_Failure -> 
-      let peek_res3= peek_for_fork_case (hashtbl,severity) helper old_key in 
+      let peek_res3= peek_for_fork_case (hashtbl,patience) helper old_key in 
         match peek_res3 with 
         P_Success (_) -> (peek_res3,true)
       | P_Unfinished_computation (_) -> (peek_res3,false)  
       | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
           
-    let simplified_multiple_peek (hashtbl,severity) helper key =   
-      let (peek_res,_)= multiple_peek (hashtbl,severity) helper key in 
+    let simplified_multiple_peek (hashtbl,patience) helper key =   
+      let (peek_res,_)= multiple_peek (hashtbl,patience) helper key in 
       match peek_res with 
             P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
           | P_Unfinished_computation (new_to_be_treated) -> 
@@ -445,11 +445,11 @@ end ;;
           | P_Success (answer) -> 
               (Some answer,None) ;; 
   
-    let pusher_for_needed_subcomputations (hashtbl,severity) (helper,to_be_treated) =
+    let pusher_for_needed_subcomputations (hashtbl,patience) (helper,to_be_treated) =
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1(current_width)) 
         |key :: others ->
-          let (peek_res,to_be_remembered)= multiple_peek (hashtbl,severity) helper key in
+          let (peek_res,to_be_remembered)= multiple_peek (hashtbl,patience) helper key in
           (
             match peek_res with 
             P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2(current_width))
@@ -464,23 +464,23 @@ end ;;
               (new_helper,others)
           )  ;;     
   
-     let rec iterator_for_needed_subcomputations (hashtbl,severity) walker = 
+     let rec iterator_for_needed_subcomputations (hashtbl,patience) walker = 
         if snd walker = [] then List.rev(fst walker) else 
-        let new_walker = pusher_for_needed_subcomputations (hashtbl,severity) walker in      
-        iterator_for_needed_subcomputations (hashtbl,severity) new_walker ;;
+        let new_walker = pusher_for_needed_subcomputations (hashtbl,patience) walker in      
+        iterator_for_needed_subcomputations (hashtbl,patience) new_walker ;;
   
-     let needed_subcomputations (hashtbl,severity) items = 
-      iterator_for_needed_subcomputations (hashtbl,severity) ([],items) ;;  
+     let needed_subcomputations (hashtbl,patience) items = 
+      iterator_for_needed_subcomputations (hashtbl,patience) ([],items) ;;  
       
-     let compute_fast_opt (hashtbl,severity) key =
-      let (peek_res,_) =multiple_peek (hashtbl,severity) [] key in
+     let compute_fast_opt (hashtbl,patience) key =
+      let (peek_res,_) =multiple_peek (hashtbl,patience) [] key in
         match peek_res with 
         P_Success (answer) -> Some answer
       | P_Unfinished_computation (_)  
       | P_Failure -> None ;;
   
-     let compute_reasonably_fast_opt (hashtbl,severity) key = 
-      compute_fast_opt (hashtbl,severity) key ;;     
+     let compute_reasonably_fast_opt (hashtbl,patience) key = 
+      compute_fast_opt (hashtbl,patience) key ;;     
   
      
   
@@ -492,13 +492,13 @@ end ;;
   
     let current_width = 3 ;; 
     
-    let get_below (hshtbl,severity) key = 
-      match Level2.compute_reasonably_fast_opt  (hshtbl,severity) key with 
+    let get_below (hshtbl,patience) key = 
+      match Level2.compute_reasonably_fast_opt  (hshtbl,patience) key with 
       Some answer -> (P_Success(answer),true)  
       |None -> 
-        match severity with  
-         Stern -> raise(Get_below_exn(current_width-1,key))
-        |Relaxed -> 
+        match patience with  
+         Impatient -> raise(Get_below_exn(current_width-1,key))
+        |Patient -> 
              (*
                 this function get_below is only used when peeking for obvious accesses.
                 If the answer is not immediate, we count it as a failure.   
@@ -506,7 +506,7 @@ end ;;
             (P_Failure,false);;
   
     
-    let peek_for_obvious_accesses (hashtbl,severity) helper key = 
+    let peek_for_obvious_accesses (hashtbl,patience) helper key = 
       match List.assoc_opt key helper with 
         Some answer1 -> (P_Success(answer1),false) 
       | None ->
@@ -520,16 +520,16 @@ end ;;
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then get_below (hashtbl,severity) key
+              then get_below (hashtbl,patience) key
               else (P_Failure,false)          
            )
          ) ;; 
     
   
     
-    let peek_for_cumulative_case (hashtbl,severity) helper old_key = 
+    let peek_for_cumulative_case (hashtbl,patience) helper old_key = 
         let (n,new_key) = Kay.vertex_decomposition old_key in 
-        let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper new_key in 
+        let (peek_res,_) = peek_for_obvious_accesses (hashtbl,patience) helper new_key in 
           match peek_res with 
          P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
         |P_Failure -> P_Unfinished_computation([new_key]) 
@@ -559,9 +559,9 @@ end ;;
     
   
     let seek_obvious_accesses_using_translation 
-      (hashtbl,severity) helper original_key = 
+      (hashtbl,patience) helper original_key = 
       let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
-      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,severity) helper translated_key in 
+      let (peek_res,_) = peek_for_obvious_accesses (hashtbl,patience) helper translated_key in 
           match peek_res with 
          P_Unfinished_computation(_)  -> (None,Some translated_key)
         |P_Failure -> (None,Some translated_key)
@@ -569,17 +569,17 @@ end ;;
            let answer_to_original = Mold.translate d translated_answer in 
            (Some(answer_to_original),None);; 
 
-  let partition_leaves_in_fork_case (hashtbl,severity) helper leaves =
+  let partition_leaves_in_fork_case (hashtbl,patience) helper leaves =
     let leaves2 = Image.image (
         fun cand ->
-          (cand,seek_obvious_accesses_using_translation (hashtbl,severity) helper cand)
+          (cand,seek_obvious_accesses_using_translation (hashtbl,patience) helper cand)
     ) leaves in 
     let (good_leaves,bad_leaves) = 
         List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
     (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
      Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
   
-  let peek_for_fork_case (hashtbl,severity) helper old_key = 
+  let peek_for_fork_case (hashtbl,patience) helper old_key = 
     let (Key(fis,upper_bound)) = old_key in 
     let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
     if opt1=None  
@@ -590,7 +590,7 @@ end ;;
     let candidates = Image.image (
            fun i-> Kay.remove_one_element old_key i
     ) [b;b+w;b+2*w] in 
-    let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,severity) helper candidates in 
+    let (candidates2,bad_ones) = partition_leaves_in_fork_case (hashtbl,patience) helper candidates in 
     if bad_ones <> []
     then P_Unfinished_computation(bad_ones)
     else   
@@ -608,25 +608,25 @@ end ;;
           P_Success(M(sols5,ext5));;    
   
   
-    let multiple_peek (hashtbl,severity) helper old_key = 
-      let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,severity) helper old_key in 
+    let multiple_peek (hashtbl,patience) helper old_key = 
+      let (peek_res1,to_be_remembered) = peek_for_obvious_accesses (hashtbl,patience) helper old_key in 
         match peek_res1 with 
         P_Success (_) -> (peek_res1,to_be_remembered)
       | P_Unfinished_computation (_) -> (peek_res1,false)  
       | P_Failure ->
-      let peek_res2= peek_for_cumulative_case (hashtbl,severity) helper old_key in 
+      let peek_res2= peek_for_cumulative_case (hashtbl,patience) helper old_key in 
         match peek_res2 with 
         P_Success (_) -> (peek_res2,true)
       | P_Unfinished_computation (_) -> (peek_res2,false)  
       | P_Failure -> 
-      let peek_res3= peek_for_fork_case (hashtbl,severity) helper old_key in 
+      let peek_res3= peek_for_fork_case (hashtbl,patience) helper old_key in 
         match peek_res3 with 
         P_Success (_) -> (peek_res3,true)
       | P_Unfinished_computation (_) -> (peek_res3,false)  
       | P_Failure -> raise(Multiple_peek_exn(current_width)) ;; 
           
-    let simplified_multiple_peek (hashtbl,severity) helper key =   
-      let (peek_res,_)= multiple_peek (hashtbl,severity) helper key in 
+    let simplified_multiple_peek (hashtbl,patience) helper key =   
+      let (peek_res,_)= multiple_peek (hashtbl,patience) helper key in 
       match peek_res with 
             P_Failure -> raise (Simplified_multiple_peek_exn(current_width))
           | P_Unfinished_computation (new_to_be_treated) -> 
@@ -634,11 +634,11 @@ end ;;
           | P_Success (answer) -> 
               (Some answer,None) ;; 
   
-    let pusher_for_needed_subcomputations (hashtbl,severity) (helper,to_be_treated) =
+    let pusher_for_needed_subcomputations (hashtbl,patience) (helper,to_be_treated) =
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1(current_width)) 
         |key :: others ->
-          let (peek_res,to_be_remembered)= multiple_peek (hashtbl,severity) helper key in
+          let (peek_res,to_be_remembered)= multiple_peek (hashtbl,patience) helper key in
           (
             match peek_res with 
             P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2(current_width))
@@ -653,23 +653,23 @@ end ;;
               (new_helper,others)
           )  ;;     
   
-     let rec iterator_for_needed_subcomputations (hashtbl,severity) walker = 
+     let rec iterator_for_needed_subcomputations (hashtbl,patience) walker = 
         if snd walker = [] then List.rev(fst walker) else 
-        let new_walker = pusher_for_needed_subcomputations (hashtbl,severity) walker in      
-        iterator_for_needed_subcomputations (hashtbl,severity) new_walker ;;
+        let new_walker = pusher_for_needed_subcomputations (hashtbl,patience) walker in      
+        iterator_for_needed_subcomputations (hashtbl,patience) new_walker ;;
   
-     let needed_subcomputations (hashtbl,severity) items = 
-      iterator_for_needed_subcomputations (hashtbl,severity) ([],items) ;;  
+     let needed_subcomputations (hashtbl,patience) items = 
+      iterator_for_needed_subcomputations (hashtbl,patience) ([],items) ;;  
       
-     let compute_fast_opt (hashtbl,severity) key =
-      let (peek_res,_) =multiple_peek (hashtbl,severity) [] key in
+     let compute_fast_opt (hashtbl,patience) key =
+      let (peek_res,_) =multiple_peek (hashtbl,patience) [] key in
         match peek_res with 
         P_Success (answer) -> Some answer
       | P_Unfinished_computation (_)  
       | P_Failure -> None ;;
   
-     let compute_reasonably_fast_opt (hashtbl,severity) key = 
-      compute_fast_opt (hashtbl,severity) key ;;     
+     let compute_reasonably_fast_opt (hashtbl,patience) key = 
+      compute_fast_opt (hashtbl,patience) key ;;     
   
      
   
@@ -681,28 +681,28 @@ end ;;
   module Selector = struct 
    
   
-  let stern_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
-  let relaxed_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
+  let impatient_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
+  let patient_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
   
   let get_hashtbl = function 
-     Stern -> stern_hashtbl 
-     |Relaxed -> relaxed_hashtbl ;; 
+     Impatient -> impatient_hashtbl 
+     |Patient -> patient_hashtbl ;; 
   
   let needed_subcomputations key_list=
     let widths = Image.image Kay.width key_list in 
     let (_,max_width) = Max.maximize_it (fun (W w)->w) widths in 
      match max_width with 
       1 -> []
-     |2 -> Level2.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list
-     |3 -> Level3.needed_subcomputations (relaxed_hashtbl,Relaxed) key_list 
+     |2 -> Level2.needed_subcomputations (patient_hashtbl,Patient) key_list
+     |3 -> Level3.needed_subcomputations (patient_hashtbl,Patient) key_list 
      |_ -> raise(Bad_index_in_selection max_width) ;; 
     
   let compute_reasonably_fast_opt key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
     1 -> Level1.compute_reasonably_fast_opt key
-   |2 -> Level2.compute_reasonably_fast_opt (stern_hashtbl,Stern) key
-   |3 -> Level3.compute_reasonably_fast_opt (stern_hashtbl,Stern) key 
+   |2 -> Level2.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key
+   |3 -> Level3.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
   
   end ;;
@@ -720,8 +720,8 @@ end ;;
   let easy_add key =
       let answer = easy_compute key in 
       (
-        Hashtbl.replace Selector.stern_hashtbl key answer ;
-        Hashtbl.replace Selector.relaxed_hashtbl key answer 
+        Hashtbl.replace Selector.impatient_hashtbl key answer ;
+        Hashtbl.replace Selector.patient_hashtbl key answer 
       ) ;;
   
   exception Import_exn of key ;;    
@@ -736,18 +736,18 @@ end ;;
       else 
       let answer = M(sols2,ext) in   
       let _=  (
-            Hashtbl.replace Selector.stern_hashtbl key answer ;
-            Hashtbl.replace Selector.relaxed_hashtbl key answer 
+            Hashtbl.replace Selector.impatient_hashtbl key answer ;
+            Hashtbl.replace Selector.patient_hashtbl key answer 
           ) in 
       answer;;
   
   let compute_recursively_and_remember key = 
-      match Hashtbl.find_opt Selector.relaxed_hashtbl key with 
+      match Hashtbl.find_opt Selector.patient_hashtbl key with 
       Some(old_answer) -> old_answer
       | None ->
       let subcomps = Selector.needed_subcomputations [key] in 
       let _ = List.iter (fun (key,answer)->
-        Hashtbl.replace Selector.relaxed_hashtbl key answer
+        Hashtbl.replace Selector.patient_hashtbl key answer
       ) subcomps in 
       List.assoc key subcomps ;;      
 

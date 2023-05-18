@@ -34,4 +34,4 @@ type peek_result =
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type severity = Stern | Relaxed ;; 
+type patience = Impatient | Patient ;; 
