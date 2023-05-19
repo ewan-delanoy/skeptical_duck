@@ -339,7 +339,7 @@ module Level2 = struct
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then let simplified_key = Kay.decrement key in 
+              then let simplified_key = Kay.set_to_lower_width key (W w) in 
                    get_below (hashtbl,patience) simplified_key
               else (P_Failure,false)          
            )
@@ -531,7 +531,7 @@ module Level3 = struct
                      (P_Success(M([domain],domain)),false)
            |Some (UBC(W w,_new_ub_on_breadth)) ->   
               if w<current_width 
-              then let simplified_key = Kay.decrement key in 
+              then let simplified_key = Kay.set_to_lower_width key (W w) in 
                    get_below (hashtbl,patience) simplified_key
               else (P_Failure,false)          
            )
