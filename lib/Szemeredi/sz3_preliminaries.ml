@@ -813,6 +813,21 @@ module Small_step = struct
         Hashtbl.replace Selector.patient_hashtbl key answer 
       ) ;;
   
+  exception Compute_easy_cumulative_exn of key ;;
+
+  let compute_easy_cumulative key =
+      match Selector.half_impatient_peek_for_cumulative_case key with 
+     P_Success(answer) -> answer 
+   | P_Unfinished_computation(_)
+   | P_Failure -> raise(Compute_easy_cumulative_exn(key)) ;; 
+    
+  let add_easy_cumulative key =
+      let answer = compute_easy_cumulative key in 
+  (
+    Hashtbl.replace Selector.impatient_hashtbl key answer ;
+    Hashtbl.replace Selector.patient_hashtbl key answer 
+  ) ;;
+
   exception Compute_easy_fork_exn of key ;;
 
   let compute_easy_fork key =
