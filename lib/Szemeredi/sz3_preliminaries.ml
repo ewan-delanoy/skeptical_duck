@@ -39,7 +39,7 @@ type peek_result = Sz3_types.peek_result =
 
 type patience = Sz3_types.patience = Impatient | Patient ;; 
 
-type small_step = Sz3_types.small_step = St_cumulative | St_fork ;; 
+type small_step = Sz3_types.small_step = St_cumulative | St_fork | St_import ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -802,6 +802,9 @@ module Level3 = struct
 module Small_step = struct 
   
   exception Compute_easy_cumulative_exn of key ;;
+  exception Compute_easy_fork_exn of key ;;
+  exception Import_exn1 of key ;;    
+  exception Import_exn2 of key ;;  
 
   let compute_easy_cumulative key =
       match Selector.half_impatient_peek_for_cumulative_case key with 
@@ -815,9 +818,7 @@ module Small_step = struct
     Hashtbl.replace Selector.impatient_hashtbl key answer ;
     Hashtbl.replace Selector.patient_hashtbl key answer 
   ) ;;
-
-  exception Compute_easy_fork_exn of key ;;
-
+ 
   let compute_easy_fork key =
         match Selector.half_impatient_peek_for_fork_case key with 
          P_Success(answer) -> answer 
@@ -830,9 +831,6 @@ module Small_step = struct
             Hashtbl.replace Selector.impatient_hashtbl key answer ;
             Hashtbl.replace Selector.patient_hashtbl key answer 
       ) ;;
-
-  exception Import_exn1 of key ;;    
-  exception Import_exn2 of key ;;  
 
   let import key = 
      let new_key = Kay.decrement key 
@@ -858,8 +856,8 @@ end ;;
 module Fill = struct 
   
   let bound = 40 ;; 
-  let add_easy_fork (n,scr,w,b)= 
-  let _ = Small_step.add_easy_fork (Kay.constructor(n,scr,w,b)) in () ;;
+  let add_easy_fork (n,scr,w,b)= Small_step.add_easy_fork (Kay.constructor(n,scr,w,b)) ;;
+  let add_easy_fork (n,scr,w,b)= Small_step.add_easy_fork (Kay.constructor(n,scr,w,b)) ;;
   let import (n,scr,w,b)= 
     let _ = Small_step.import (Kay.constructor(n,scr,w,b)) in () ;;
 
