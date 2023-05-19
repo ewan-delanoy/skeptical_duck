@@ -782,7 +782,8 @@ module Level3 = struct
      let part2 = (if part1<>None then None else rigorous_quest_for_fork_case key) in 
      let part3 = (try (match suitable_half_impatient_peek (part1,part2) key with 
        P_Unfinished_computation(l) -> l
-       |P_Success(_) |P_Failure -> raise(Combined_quest_exn(key))
+       |P_Success(_) -> [] 
+       |P_Failure -> raise(Combined_quest_exn(key))
      )
       with 
       Suitable_half_impatient_peek_exn -> []
