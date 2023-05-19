@@ -773,23 +773,25 @@ module Level3 = struct
       then Some([b;b+w;b+2*w],candidates,translated_candidates)
       else None;;   
   
-  exception Combined_quest_exn of key ;; 
+  exception Possibly_needed_exn of key ;; 
 
-  let combined_quest key = 
-     match rigorous_quest_for_cumulative_case key with 
-     Some(_,_,candidates)->
-        List.filter (fun cand->
-           (Selector.compute_reasonably_fast_opt cand)=None
-          ) candidates
-     | None ->
-       (
-        match rigorous_quest_for_fork_case key with 
-        Some(_,_,candidates)->
-           List.filter (fun cand->
-              (Selector.compute_reasonably_fast_opt cand)=None
-             ) candidates
-        | None -> raise(Combined_quest_exn(key))
-       );;
+  let possibly_needed key = 
+    match rigorous_quest_for_cumulative_case key with 
+    Some(_,_,candidates)-> candidates
+    | None ->
+      (
+       match rigorous_quest_for_fork_case key with 
+       Some(_,_,candidates)-> candidates
+       | None -> raise(Possibly_needed_exn(key))
+      );;
+
+  
+
+  let directly_needed key = 
+    List.filter (fun cand->
+      (Selector.compute_reasonably_fast_opt cand)=None
+    )(possibly_needed key) ;; 
+
     
 
   end ;;   
