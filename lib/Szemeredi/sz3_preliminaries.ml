@@ -806,6 +806,8 @@ module Small_step = struct
   exception Import_exn1 of key ;;    
   exception Import_exn2 of key ;;  
 
+  module Private = struct
+
   let compute_easy_cumulative key =
       match Selector.half_impatient_peek_for_cumulative_case key with 
      P_Success(answer) -> answer 
@@ -847,8 +849,14 @@ module Small_step = struct
             Hashtbl.replace Selector.impatient_hashtbl key answer ;
             Hashtbl.replace Selector.patient_hashtbl key answer 
           ) in 
-      answer;;
-  
+      ();;
+   
+    end ;;
+
+   let apply = function 
+       St_cumulative -> Private.add_easy_cumulative 
+      |St_fork -> Private.add_easy_fork
+      |St_import -> Private.import ;;      
 
 end ;;   
 
@@ -856,25 +864,25 @@ end ;;
 module Fill = struct 
   
   let bound = 40 ;; 
-  let add_easy_fork (n,scr,w,b)= Small_step.add_easy_fork (Kay.constructor(n,scr,w,b)) ;;
-  let add_easy_fork (n,scr,w,b)= Small_step.add_easy_fork (Kay.constructor(n,scr,w,b)) ;;
-  let import (n,scr,w,b)= 
-    let _ = Small_step.import (Kay.constructor(n,scr,w,b)) in () ;;
+  let apply ((n,scr,w,b),small_step)=
+    Small_step.apply small_step (Kay.constructor(n,scr,w,b)) ;;
+
 
    let for_level2 = [
-        (7,[4],2,0)
+        ((7,[4],2,0),St_import);
    ] ;; 
    
    let for_level3 = [
-
+        ((5,[],3,0),St_import);
+        ((6,[],3,0),St_import);
+        ((7,[],3,0),St_fork);
    ] ;; 
 
    let all () =
-    let _ = Int_range.scale (fun k->import (k,[],2,0)) 1 bound in 
+    let _ = Int_range.scale (fun k->apply ((k,[],2,0),St_import)) 1 bound in 
     (
-    List.iter import for_level2;
-    List.iter import for_level3;
-    add_easy_fork (7,[],3,0)
+    List.iter apply for_level2;
+    List.iter apply for_level3;
     )
     ;;    
 
