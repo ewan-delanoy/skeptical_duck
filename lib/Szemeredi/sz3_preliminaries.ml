@@ -756,13 +756,11 @@ module Level3 = struct
     then Some(res1,res2)  
     else None ;;
 
-  exception Rigorous_quest_for_fork_case_should_never_happen_1_exn of key ;; 
-
   let rigorous_quest_for_fork_case old_key = 
       let (Key(fis,upper_bound)) = old_key in 
       let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
       if opt1=None  
-      then raise(Rigorous_quest_for_fork_case_should_never_happen_1_exn(old_key))
+      then None
       else    
       let UBC(W w,ub_on_breadth) = Option.get opt1 in   
       let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
@@ -776,10 +774,19 @@ module Level3 = struct
       then Some([b;b+w;b+2*w],candidates)
       else None;;   
   
+  exception Combined_quest_exn of key ;; 
+
   let combined_quest key = 
      let part1 = rigorous_quest_for_cumulative_case key in 
      let part2 = (if part1<>None then None else rigorous_quest_for_fork_case key) in 
-     let part3 = suitable_half_impatient_peek (part1,part2) key in 
+     let part3 = (try (match suitable_half_impatient_peek (part1,part2) key with 
+       P_Unfinished_computation(l) -> l
+       |P_Success(_) |P_Failure -> raise(Combined_quest_exn(key))
+     )
+      with 
+      Suitable_half_impatient_peek_exn -> []
+     )
+    in 
      (part1,part2,part3)  ;; 
 
   end ;;   
