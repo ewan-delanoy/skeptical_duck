@@ -738,6 +738,9 @@ module Level3 = struct
       Some(old_answer) -> old_answer
       | None ->
       let subcomps = Selector.needed_subcomputations [key] in 
+      if subcomps = []
+      then Option.get(Selector.compute_reasonably_fast_opt key)
+      else    
       let _ = List.iter (fun (key,answer)->
         Hashtbl.replace Selector.patient_hashtbl key answer
       ) subcomps in 
