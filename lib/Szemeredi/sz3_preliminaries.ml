@@ -707,7 +707,7 @@ module Level3 = struct
    |3 -> Level3.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
   
-  let half_impatient_peek_for_fork_case key = 
+   let half_impatient_peek_for_fork_case key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
     1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
@@ -721,18 +721,12 @@ module Level3 = struct
     1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
    |2 -> Level2.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key
    |3 -> Level3.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key 
-   |_ -> raise(Bad_index_in_selection max_width) ;; 
+   |_ -> raise(Bad_index_in_selection max_width) ;;  
+
 
   end ;;
 
-  module Main = struct
-  
-    exception Suitable_half_impatient_peek_exn ;;  
-
-    let suitable_half_impatient_peek (opt_cumulative,opt_fork) =
-       if opt_cumulative<> None then Selector.half_impatient_peek_for_cumulative_case else 
-       if opt_fork<> None then Selector.half_impatient_peek_for_fork_case else   
-       raise Suitable_half_impatient_peek_exn ;;   
+  module Main = struct 
   
   let compute_recursively_and_remember key = 
       match Hashtbl.find_opt Selector.patient_hashtbl key with 
@@ -754,7 +748,7 @@ module Level3 = struct
     let M(sols1,_ext1) = res1 
     and M(sols2,_ext2) = res2 in 
     if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
-    then Some(res1,res2)  
+    then Some(res1,res2,[simpler_key])  
     else None ;;
 
   let rigorous_quest_for_fork_case old_key = 
@@ -765,31 +759,38 @@ module Level3 = struct
       else    
       let UBC(W w,ub_on_breadth) = Option.get opt1 in   
       let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
+      let bare_candidates = Image.image 
+      (Kay.remove_one_element old_key) [b;b+w;b+2*w] in 
       let candidates = Image.image (
-             fun i-> let candidate = Kay.remove_one_element old_key i in 
-             (candidate,compute_recursively_and_remember candidate)
-      ) [b;b+w;b+2*w] in 
+             fun cand-> (cand,compute_recursively_and_remember cand)
+      ) bare_candidates 
+      and translated_candidates = Image.image (
+        fun cand-> snd(Kay.decompose_wrt_translation cand)
+      ) bare_candidates in 
       let sizes = Image.image (fun (_,M(sol,_ext))->List.length(List.hd sol)) candidates in 
       let first_size = List.hd sizes in 
       if List.for_all (fun size->size=first_size) sizes 
-      then Some([b;b+w;b+2*w],candidates)
+      then Some([b;b+w;b+2*w],candidates,translated_candidates)
       else None;;   
   
   exception Combined_quest_exn of key ;; 
 
   let combined_quest key = 
-     let part1 = rigorous_quest_for_cumulative_case key in 
-     let part2 = (if part1<>None then None else rigorous_quest_for_fork_case key) in 
-     let part3 = (try (match suitable_half_impatient_peek (part1,part2) key with 
-       P_Unfinished_computation(l) -> l
-       |P_Success(_) -> [] 
-       |P_Failure -> raise(Combined_quest_exn(key))
-     )
-      with 
-      Suitable_half_impatient_peek_exn -> []
-     )
-    in 
-     (part1,part2,part3)  ;; 
+     match rigorous_quest_for_cumulative_case key with 
+     Some(_,_,candidates)->
+        List.filter (fun cand->
+           (Selector.compute_reasonably_fast_opt cand)=None
+          ) candidates
+     | None ->
+       (
+        match rigorous_quest_for_fork_case key with 
+        Some(_,_,candidates)->
+           List.filter (fun cand->
+              (Selector.compute_reasonably_fast_opt cand)=None
+             ) candidates
+        | None -> raise(Combined_quest_exn(key))
+       );;
+    
 
   end ;;   
   
