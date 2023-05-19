@@ -39,6 +39,8 @@ type peek_result = Sz3_types.peek_result =
 
 type patience = Sz3_types.patience = Impatient | Patient ;; 
 
+type small_step = Sz3_types.small_step = St_cumulative | St_fork ;; 
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
