@@ -36,4 +36,4 @@ type peek_result =
 
 type patience = Impatient | Patient ;; 
 
-type small_step = St_cumulative | St_fork |St_import ;; 
+type small_step = St_cumulative | St_fork | St_import ;; 

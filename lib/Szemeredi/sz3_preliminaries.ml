@@ -74,6 +74,10 @@ let translate d (M(sols,ext)) =
 
 end ;;
 
+let peek_result_to_mold_opt = function 
+ P_Success (answer) -> Some answer
+| P_Unfinished_computation (_)  
+| P_Failure -> None ;;
 
 
 module Finite_int_set = struct 
@@ -245,13 +249,13 @@ let list_is_admissible upper_bound candidate =
         Key(fis,upper_bound) ;;
     end ;;   
   
-    exception Get_below_exn of int * key ;;
-    exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
-    exception Multiple_peek_exn of int ;; 
-    exception Simplified_multiple_peek_exn of int ;;
-    exception Pusher_for_needed_subcomputations_exn_1 of int ;; 
-    exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
-    exception Bad_remainder_by_three of int ;; 
+exception Get_below_exn of int * key ;;
+exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
+exception Multiple_peek_exn of int ;; 
+exception Simplified_multiple_peek_exn of int ;;
+exception Pusher_for_needed_subcomputations_exn_1 of int ;; 
+exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
+exception Bad_remainder_by_three of int ;; 
   
 module Level1 = struct 
   
@@ -475,15 +479,17 @@ module Level2 = struct
      let needed_subcomputations (hashtbl,patience) items = 
       iterator_for_needed_subcomputations (hashtbl,patience) ([],items) ;;  
       
-     let compute_fast_opt (hashtbl,patience) key =
-      let (peek_res,_) =multiple_peek (hashtbl,patience) [] key in
-        match peek_res with 
-        P_Success (answer) -> Some answer
-      | P_Unfinished_computation (_)  
-      | P_Failure -> None ;;
+     
+
+     let compute_fast_opt (hashtbl,patience) key = 
+      let (W w) = Kay.width(key) in 
+      if w < current_width 
+      then peek_result_to_mold_opt(fst(get_below (hashtbl,Patient) key))
+      else peek_result_to_mold_opt(fst(multiple_peek (hashtbl,patience) [] key))
+      
   
      let compute_reasonably_fast_opt (hashtbl,patience) key = 
-      compute_fast_opt (hashtbl,patience) key ;;     
+       compute_fast_opt (hashtbl,patience) key ;;     
   
      
   
@@ -885,5 +891,12 @@ module Fill = struct
     List.iter apply for_level3;
     )
     ;;    
+
+    let reset () = 
+      (
+         Hashtbl.clear Selector.patient_hashtbl ;
+         Hashtbl.clear Selector.impatient_hashtbl ;
+         all ();
+      ) ;;
 
 end ;;
