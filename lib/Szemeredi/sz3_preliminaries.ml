@@ -671,15 +671,17 @@ module Level3 = struct
      let needed_subcomputations (hashtbl,patience) items = 
       iterator_for_needed_subcomputations (hashtbl,patience) ([],items) ;;  
       
-     let compute_fast_opt (hashtbl,patience) key =
-      let (peek_res,_) =multiple_peek (hashtbl,patience) [] key in
-        match peek_res with 
-        P_Success (answer) -> Some answer
-      | P_Unfinished_computation (_)  
-      | P_Failure -> None ;;
+     
+
+     let compute_fast_opt (hashtbl,patience) key = 
+      let (W w) = Kay.width(key) in 
+      if w < current_width 
+      then peek_result_to_mold_opt(fst(get_below (hashtbl,Patient) key))
+      else peek_result_to_mold_opt(fst(multiple_peek (hashtbl,patience) [] key))
+      
   
      let compute_reasonably_fast_opt (hashtbl,patience) key = 
-      compute_fast_opt (hashtbl,patience) key ;;     
+       compute_fast_opt (hashtbl,patience) key ;;     
   
      
   
