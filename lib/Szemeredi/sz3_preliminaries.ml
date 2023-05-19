@@ -222,12 +222,13 @@ let list_is_admissible upper_bound candidate =
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
        and new_fis = Finite_int_set.remove_one_element old_fis k in 
        let new_upper_bound = (
-       match ub_on_breadth  with 
-         Unrestricted -> old_upper_bound 
-        |Up_to(_max_breadth) ->
        (match Upper_bound_on_constraint.attained_upper_bound_opt new_fis old_upper_bound with 
-        None -> old_upper_bound 
-        | Some upper_bound -> upper_bound)
+        None -> UBC(W 1,Unrestricted)
+        | Some upper_bound -> 
+          if ub_on_breadth = Unrestricted
+          then let (UBC(W smaller_w,_)) = upper_bound in 
+               UBC(W smaller_w,Unrestricted)
+          else upper_bound)
        ) in 
        Key(new_fis,new_upper_bound) ;; 
     
