@@ -800,20 +800,6 @@ module Level3 = struct
   
 
 module Small_step = struct 
-
-  exception Compute_simple_exn of key ;;
-
-  let compute_simple key =
-    match Selector.compute_reasonably_fast_opt key with 
-     Some answer -> answer 
-     | None -> raise(Compute_simple_exn(key)) ;;  
-  
-  let add_simple key =
-      let answer = compute_simple key in 
-      (
-        Hashtbl.replace Selector.impatient_hashtbl key answer ;
-        Hashtbl.replace Selector.patient_hashtbl key answer 
-      ) ;;
   
   exception Compute_easy_cumulative_exn of key ;;
 
@@ -845,15 +831,18 @@ module Small_step = struct
             Hashtbl.replace Selector.patient_hashtbl key answer 
       ) ;;
 
-  exception Import_exn of key ;;    
-  
+  exception Import_exn1 of key ;;    
+  exception Import_exn2 of key ;;  
+
   let import key = 
      let new_key = Kay.decrement key 
      and (Key(_,ub_on_constraints))=key in 
-     let (M(sols,ext)) = compute_simple new_key in 
+     match Selector.compute_reasonably_fast_opt new_key with 
+     None -> raise(Import_exn1(key))
+     |Some(M(sols,ext)) ->    
      let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
       if sols2 = []
-      then raise(Import_exn(key))
+      then raise(Import_exn2(key))
       else 
       let answer = M(sols2,ext) in   
       let _=  (
