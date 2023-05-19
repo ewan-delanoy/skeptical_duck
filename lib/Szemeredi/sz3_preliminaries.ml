@@ -202,8 +202,7 @@ let list_is_admissible upper_bound candidate =
    ((attained_upper_bound_opt fis upper_bound)=None);;
   
   let recoil d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.recoil d b) ;;  
-  
-  
+     
   
   
   end ;;  
@@ -238,6 +237,9 @@ let list_is_admissible upper_bound candidate =
        ) in 
        Key(new_fis,new_upper_bound) ;; 
     
+    let set_to_lower_width (Key(fis,_)) new_width=
+        Key(fis,UBC(new_width,Unrestricted)) ;;  
+
     let vertex_decomposition key =
         let (Key(fis,_upper_bound)) = key in 
         let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
