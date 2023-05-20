@@ -180,8 +180,14 @@ module Upper_bound_on_constraint = struct
          None -> None  
         |Some(UBC(W w1,ub_on_breadth1)) ->
             let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
-            (
-              match attained_upper_bound_opt_for_dissociated_data fis (W w1) (B b1) with 
+            let (preceding_width,preceding_breadth) =
+             (
+              if b1>1 
+              then (W w1, B (b1-1))  
+              else let (FIS(n,_)) = fis in 
+                    (W (w1-1), B (n-2*(w1-1))) 
+             ) in 
+              match attained_upper_bound_opt_for_dissociated_data fis preceding_width preceding_breadth with 
               None -> None  
              |Some(UBC(W w2,ub_on_breadth2)) -> 
                  let adjusted_breadth_bound = 
@@ -190,7 +196,7 @@ module Upper_bound_on_constraint = struct
                     else ub_on_breadth2
                     ) in 
                Some(UBC(W w2,adjusted_breadth_bound),[b1;b1+w1;b1+2*w1])
-            ) ;; 
+             ;; 
   
   
       end ;;
