@@ -4,6 +4,33 @@
 
 *) 
 
+
+module Private = struct 
+
+  exception Pusher_for_exploring_enhanced_tree_exn ;;
+
+  let pusher_for_exploring_enhanced_tree f (treated,to_be_treated) =
+     match to_be_treated with 
+     [] -> raise(Pusher_for_exploring_enhanced_tree_exn)
+    |item :: others ->
+       let pair = f item in 
+       let (_extra_info,descendants) = pair in 
+       ((item,pair)::treated,descendants@others) ;;
+       
+  let rec iterator_for_exploring_enhanced_tree f walker =
+     let  (treated,_to_be_treated) = walker in 
+     if treated = []
+     then List.rev treated 
+     else let next_walker = pusher_for_exploring_enhanced_tree f walker in 
+          iterator_for_exploring_enhanced_tree f next_walker ;;   
+       
+  let explore_enhanced_tree f l = iterator_for_exploring_enhanced_tree f ([],l);;
+  
+
+end ;;  
+
+let explore_enhanced_tree = Private.explore_enhanced_tree ;; 
+
 let explore_tree f l0=
  let modified_l0=List.rev_map(function x->(x,0))(l0) in
  let modified_f=(function (x,j)->
