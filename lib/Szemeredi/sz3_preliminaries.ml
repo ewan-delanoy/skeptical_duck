@@ -188,7 +188,7 @@ module Upper_bound_on_constraint = struct
                     (W (w1-1), B (n-2*(w1-1))) 
              ) in 
               match attained_upper_bound_opt_for_dissociated_data fis preceding_width preceding_breadth with 
-              None -> None  
+              None -> Some(UBC(W 1,Unrestricted),[b1;b1+w1;b1+2*w1]) 
              |Some(UBC(W w2,ub_on_breadth2)) -> 
                  let adjusted_breadth_bound = 
                    (if w2<w1
@@ -544,6 +544,28 @@ module High_level = struct
       ) subcomps in 
       List.assoc key subcomps ;;      
 
+  let measure key =
+     let (M(sols,_)) = compute_recursively_and_remember key in 
+     List.length(List.hd sols) ;;  
+      
+  let rec find_threshhold_triple triple =
+      let ((_,ms),(predecessor,mp),cstr) = triple in 
+       if ms<>mp 
+       then (predecessor,cstr)
+       else let (predecessor2,cstr2) = Kay.predecessor predecessor in 
+            let mp2 = measure predecessor2 in 
+            find_threshhold_triple ((predecessor,mp),(predecessor2,mp2),cstr2) ;;  
+
+  let unchecked_threshhold_decomposition key =
+     let mkey = measure key 
+     and (key2,cstr) = Kay.predecessor key in 
+     let mkey2 = measure key2 in 
+     find_threshhold_triple ((key,mkey),(key2,mkey2),cstr) ;;  
+
+  let threshhold_decomposition_opt key =
+      try Some(unchecked_threshhold_decomposition key) with 
+      _ -> None ;; 
+
   let rigorous_quest_for_cumulative_case old_key = 
     let (_n,simpler_key) = Kay.vertex_decomposition old_key in 
     let res1 = compute_recursively_and_remember simpler_key 
@@ -554,16 +576,12 @@ module High_level = struct
     then Some(res1,res2,[simpler_key])  
     else None ;;
 
-  let rigorous_quest_for_fork_case old_key = 
-      let (Key(fis,upper_bound)) = old_key in 
-      let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
-      if opt1=None  
-      then None
-      else    
-      let UBC(W w,ub_on_breadth) = Option.get opt1 in   
-      let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
+  let rigorous_quest_for_fork_case initial_key = 
+      match threshhold_decomposition_opt initial_key with  
+      None -> None 
+      |Some(_,cstr) -> 
       let bare_candidates = Image.image 
-      (Kay.remove_one_element old_key) [b;b+w;b+2*w] in 
+      (Kay.remove_one_element initial_key) cstr in 
       let candidates = Image.image (
              fun cand-> (cand,compute_recursively_and_remember cand)
       ) bare_candidates 
@@ -573,7 +591,7 @@ module High_level = struct
       let sizes = Image.image (fun (_,M(sol,_ext))->List.length(List.hd sol)) candidates in 
       let first_size = List.hd sizes in 
       if List.for_all (fun size->size=first_size) sizes 
-      then Some([b;b+w;b+2*w],candidates,translated_candidates)
+      then Some(cstr,candidates,translated_candidates)
       else None;;   
   
   exception Assess_exn of key ;; 
@@ -583,11 +601,11 @@ module High_level = struct
       (Compute.impatient_opt Hashtbl_here.cautious cand)=None
     ) in
     match rigorous_quest_for_cumulative_case key with 
-    Some(_,_,candidates)-> (St_cumulative, selector candidates)
+    Some(_,_,candidates)-> ((St_cumulative,[]), selector candidates)
     | None ->
       (
        match rigorous_quest_for_fork_case key with 
-       Some(_,_,candidates)-> (St_fork, selector candidates)
+       Some(cstr,_,candidates)-> ((St_fork,cstr), selector candidates)
        | None -> raise(Assess_exn(key))
       );;
 
