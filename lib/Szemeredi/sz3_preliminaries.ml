@@ -251,13 +251,62 @@ let list_is_admissible upper_bound candidate =
         Key(fis,upper_bound) ;;
     end ;;   
   
+exception Bad_remainder_by_three of int ;; 
+
+module Extra_tools = struct 
+
+module Width_one = struct 
+  
+  let compute_without_upper_bound fis =
+    let domain = Finite_int_set.to_usual_int_list fis in 
+    let intervals = Arithmetic_list.decompose_into_connected_components domain in 
+    let sol_components = Image.image (
+      fun (a,b) ->
+        List.filter(fun k->((k-a+1) mod 3)<>0)(Int_range.range a b)
+    ) intervals 
+    and forced_elements = Image.image (
+      fun (a,b) ->
+        match ((b-a+1) mod 3) with 
+         0 -> []
+        |1 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1])(Int_range.range a b)
+        |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
+        |r -> raise(Bad_remainder_by_three(r)) 
+    ) intervals in 
+    M([List.flatten sol_components],List.flatten forced_elements);;
+
+  let compute (Key(fis1,UBC(W w0,ub_on_breadth))) =
+    if w0>1 then compute_without_upper_bound fis1 else  
+    let domain1 = Finite_int_set.to_usual_int_list fis1 in 
+    let (domain2,extra) = (
+      match ub_on_breadth with 
+      Unrestricted ->(domain1,[])
+      |Up_to(B b)->List.partition (fun t->t<=(b+2)) domain1
+    )  in 
+    let fis2 = Finite_int_set.of_usual_int_list domain2 in 
+    let (M(sols2,ext2))  = compute_without_upper_bound fis2 in 
+    M(Image.image (fun sol->sol@extra) sols2,ext2@extra);; 
+
+   let compute_opt key = Some(compute key) ;; 
+
+end ;;   
+
+let compute_opt key =  
+    match List.assoc_opt (Kay.width key) [
+        W 1, Width_one.compute_opt
+    ] with 
+    None -> None 
+    | Some f -> f key ;;  
+
+end ;;  
+
+
 exception Get_below_exn of int * key ;;
 exception Peek_for_fork_case_should_never_happen_1_exn of int ;;
 exception Multiple_peek_exn of int ;; 
 exception Simplified_multiple_peek_exn of int ;;
 exception Pusher_for_needed_subcomputations_exn_1 of int ;; 
 exception Pusher_for_needed_subcomputations_exn_2 of int ;;  
-exception Bad_remainder_by_three of int ;; 
+
   
 module Level1 = struct 
   
