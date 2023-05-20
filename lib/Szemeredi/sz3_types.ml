@@ -34,6 +34,4 @@ type peek_result =
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type patience = Impatient | Patient ;; 
-
 type small_step = St_cumulative | St_fork | St_import ;; 
