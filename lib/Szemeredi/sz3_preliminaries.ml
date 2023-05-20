@@ -124,7 +124,7 @@ module Upper_bound_on_breadth = struct
       Unrestricted -> raise(Get_exn)
       |Up_to(B b) -> B b ;; 
   
-  let recoil d = function  
+  let untranslate d = function  
     Unrestricted -> Unrestricted 
    |Up_to(B b) -> Up_to(B(b-d)) ;; 
   
@@ -193,7 +193,7 @@ let list_is_admissible upper_bound candidate =
     let fis =  Finite_int_set.of_usual_int_list candidate in 
    ((attained_upper_bound_opt fis upper_bound)=None);;
   
-  let recoil d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.recoil d b) ;;  
+  let untranslate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.untranslate d b) ;;  
      
   
   
@@ -213,7 +213,7 @@ let list_is_admissible upper_bound candidate =
 
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
-       (d,Key(new_fis,Upper_bound_on_constraint.recoil d ubc)) ;;
+       (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
     
     let remove_one_element (Key(old_fis,old_upper_bound)) k=
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
