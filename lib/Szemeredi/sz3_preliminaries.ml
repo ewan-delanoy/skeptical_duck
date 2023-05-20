@@ -235,9 +235,13 @@ let list_is_admissible upper_bound candidate =
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
     
-    
+    exception Predecessor_exn of key ;; 
 
-        
+    let predecessor key =
+        let (Key(fis,ub_on_constraint)) = key in 
+        match Upper_bound_on_constraint.two_steps_back fis ub_on_constraint with 
+        None -> raise(Predecessor_exn(key))
+        |Some(new_ub,cstr)->(Key(fis,new_ub),cstr) ;; 
 
     let remove_one_element (Key(old_fis,old_upper_bound)) k=
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
