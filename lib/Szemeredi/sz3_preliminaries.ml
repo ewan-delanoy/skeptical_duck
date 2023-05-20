@@ -263,8 +263,6 @@ module Level1 = struct
   
       let current_width = 1 ;; 
       
-      let main_hashtbl = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;;  
-      
       let simpler_without_upper_bound fis =
         let domain = Finite_int_set.to_usual_int_list fis in 
         let intervals = Arithmetic_list.decompose_into_connected_components domain in 
@@ -294,13 +292,13 @@ module Level1 = struct
         let (M(sols2,ext2))  = simpler_without_upper_bound fis2 in 
         M(Image.image (fun sol->sol@extra) sols2,ext2@extra);; 
     
-      let compute_fast_opt key =
-        match Hashtbl.find_opt main_hashtbl key with 
+      let compute_fast_opt hashtbl key =
+        match Hashtbl.find_opt hashtbl key with 
         (Some answer) -> Some answer 
         | None -> Some(simpler key);;
     
-       let compute_reasonably_fast_opt fis_with_ub = 
-        compute_fast_opt fis_with_ub ;;     
+       let compute_reasonably_fast_opt hashtbl fis_with_ub = 
+        compute_fast_opt hashtbl fis_with_ub ;;     
     
        
     
@@ -311,8 +309,8 @@ module Level2 = struct
   
     let current_width = 2 ;; 
     
-    let get_below (_hshtbl,patience) key = 
-      match Level1.compute_reasonably_fast_opt key with 
+    let get_below (hashtbl,patience) key = 
+      match Level1.compute_reasonably_fast_opt hashtbl key with 
       Some answer -> (P_Success(answer),true)  
       |None -> 
         match patience with  
@@ -714,7 +712,7 @@ module Level3 = struct
   let compute_reasonably_fast_opt key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
-    1 -> Level1.compute_reasonably_fast_opt key
+    1 -> Level1.compute_reasonably_fast_opt impatient_hashtbl key
    |2 -> Level2.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key
    |3 -> Level3.compute_reasonably_fast_opt (impatient_hashtbl,Impatient) key 
    |_ -> raise(Bad_index_in_selection max_width) ;;    
@@ -722,7 +720,7 @@ module Level3 = struct
    let half_impatient_peek_for_fork_case key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
-    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
+    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt impatient_hashtbl key))
    |2 -> Level2.peek_for_fork_case (impatient_hashtbl,Patient) [] key
    |3 -> Level3.peek_for_fork_case (impatient_hashtbl,Patient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;;  
@@ -730,7 +728,7 @@ module Level3 = struct
   let half_impatient_peek_for_cumulative_case key = 
     let (W max_width) = Kay.width key in 
     match max_width with 
-    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt key))
+    1 -> P_Success(Option.get(Level1.compute_reasonably_fast_opt impatient_hashtbl key))
    |2 -> Level2.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key
    |3 -> Level3.peek_for_cumulative_case (impatient_hashtbl,Patient) [] key 
    |_ -> raise(Bad_index_in_selection max_width) ;;  
