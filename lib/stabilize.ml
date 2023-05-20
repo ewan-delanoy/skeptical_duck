@@ -18,8 +18,8 @@ module Private = struct
        ((item,pair)::treated,descendants@others) ;;
        
   let rec iterator_for_exploring_enhanced_tree f walker =
-     let  (treated,_to_be_treated) = walker in 
-     if treated = []
+     let  (treated,to_be_treated) = walker in 
+     if to_be_treated = []
      then List.rev treated 
      else let next_walker = pusher_for_exploring_enhanced_tree f walker in 
           iterator_for_exploring_enhanced_tree f next_walker ;;   
