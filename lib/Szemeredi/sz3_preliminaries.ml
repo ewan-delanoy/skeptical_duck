@@ -609,10 +609,14 @@ module High_level = struct
        | None -> raise(Assess_exn(key))
       );;
 
+    let needed_nodes key =
+        Stabilize.explore_enhanced_tree assess [key] ;; 
+
     end ;;
     
     let assess = Private.assess ;; 
     let compute = Private.compute_recursively_and_remember ;; 
+    let needed_nodes = Private.needed_nodes ;; 
 
 end ;;   
   
