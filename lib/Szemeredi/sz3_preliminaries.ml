@@ -134,7 +134,9 @@ module Upper_bound_on_breadth = struct
 module Upper_bound_on_constraint = struct 
   
     exception A_priori_bound_on_breadth_exn ;; 
-  
+    exception Two_steps_back_exn_1 of finite_int_set * upper_bound_on_constraint ;;
+    exception Two_steps_back_exn_2 of finite_int_set * upper_bound_on_constraint ;;
+
   module Private = struct
   
   let rec finder_for_exact_width (W w,domain,to_be_treated) =
@@ -170,7 +172,25 @@ module Upper_bound_on_constraint = struct
         match finder_for_exact_width (W w,domain,candidates) with 
        Some (max_breadth2) -> Some(UBC(W w,Up_to max_breadth2))
          |None -> finder_for_maximal_width (W (w-1),domain) ;;  
-     
+  
+      let two_steps_back fis ub_on_constraint =
+         let (UBC(W w,_)) = ub_on_constraint in 
+         let bmax = a_priori_bound_on_breadth fis ub_on_constraint in 
+         match attained_upper_bound_opt_for_dissociated_data fis (W w) bmax with 
+         None -> None  
+        |Some(UBC(W w1,ub_on_breadth1)) ->
+            let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
+            (
+              match attained_upper_bound_opt_for_dissociated_data fis (W w1) (B b1) with 
+              None -> None  
+             |Some(UBC(W w2,ub_on_breadth2)) -> 
+                 let adjusted_breadth_bound = 
+                   (if w2<w1
+                    then Unrestricted 
+                    else ub_on_breadth2
+                    ) in 
+               Some(UBC(W w2,adjusted_breadth_bound),[b1;b1+w1;b1+2*w1])
+            ) ;; 
   
   
       end ;;
@@ -192,7 +212,9 @@ let list_is_admissible upper_bound candidate =
     if candidate = [] then true else 
     let fis =  Finite_int_set.of_usual_int_list candidate in 
    ((attained_upper_bound_opt fis upper_bound)=None);;
-  
+
+ let two_steps_back = Private.two_steps_back ;;   
+
   let untranslate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.untranslate d b) ;;  
      
   
@@ -209,12 +231,14 @@ let list_is_admissible upper_bound candidate =
     let decrement (Key(fis,ub_on_constraint)) =
       Key(fis,Upper_bound_on_constraint.decrement ub_on_constraint) ;;  
 
-    let width (Key(_,UBC(w,_))) = w ;;
-
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
     
+    
+
+        
+
     let remove_one_element (Key(old_fis,old_upper_bound)) k=
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
        and new_fis = Finite_int_set.remove_one_element old_fis k in 
@@ -232,8 +256,11 @@ let list_is_admissible upper_bound candidate =
     let vertex_decomposition key =
         let (Key(fis,_upper_bound)) = key in 
         let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
-        (n,remove_one_element key n) ;;   
-    end ;;   
+        (n,remove_one_element key n) ;;
+        
+    let width (Key(_,UBC(w,_))) = w ;;
+        
+end ;;   
   
 exception Bad_remainder_by_three of int ;; 
 
