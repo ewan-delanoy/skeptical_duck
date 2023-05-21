@@ -1868,7 +1868,7 @@ let float_fold_sum = List.fold_left (fun x y -> x+.y) (0.) ;;
 
 let u1 = Int_range.scale (fun j->3*j-2) 1 6 ;;
 let u2 = Image.image (fun x->snd(measure x)) u1 ;;
-let u3 = Int_range.scale (fun j->float_fold_sum(Listennou.big_head j u2)) 1 6 ;;
+let u3 = Int_range.scale (fun j->float_fold_sum(Listennou.long_head j u2)) 1 6 ;;
 let u4 = Image.image (fun x->fst(measure x)) u1 ;;
 let u5 = Image.image (fun (a,b)->let g=Gcd.gcd a b in (a/g,b/g)) u4 ;; 
 
@@ -2311,7 +2311,7 @@ let pikaboo x =
 
 let pookabi = Memoized.make(fun x ->
    let temp1 = pikaboo x in 
-   let temp2 = Image.image (Listennou.big_head 3) temp1 in 
+   let temp2 = Image.image (Listennou.long_head 3) temp1 in 
    il_sort temp2 );;
 
 let measure z = List.length(List.filter (fun x->x>3) z);;
@@ -5527,13 +5527,13 @@ let find_periodicity l=
   let rl = List.rev l in 
   let (a1,after_a1) = Listennou.ht rl in 
   let j = Listennou.find_index a1 after_a1 in 
-  let inverted_motif = Listennou.big_head j rl in 
+  let inverted_motif = Listennou.long_head j rl in 
   let motif = List.rev inverted_motif in 
   let p = List.length motif in 
   let m0 = Min.list motif in 
   let i0 = Listennou.find_index m0 motif in 
   let after_m0 = Listennou.big_tail i0 motif 
-  and before_m0 = Listennou.big_head (i0-1) motif in
+  and before_m0 = Listennou.long_head (i0-1) motif in
   (p,m0::(after_m0@before_m0)) ;; 
 
 

@@ -77,7 +77,7 @@ match dehou with
 ) in
 tempf(r,[],l);;
 
-let big_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
+let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
 
 let big_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;
 

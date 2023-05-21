@@ -57,7 +57,7 @@ module Private = struct
       let n = List.length perm in 
       if n<2 then sign else 
       let j = Listennou.find_index n perm 
-      and shorter_perm = Listennou.big_head (n-1) perm in 
+      and shorter_perm = Listennou.long_head (n-1) perm in 
       if j = n 
       then helper_for_signature (sign,shorter_perm) 
       else 

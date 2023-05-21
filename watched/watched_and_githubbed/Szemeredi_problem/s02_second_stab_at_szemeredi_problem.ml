@@ -491,7 +491,7 @@ let compute_ramification x=
   let n = List.length obses and m=List.length(patient_measure x) in 
   match List.find_opt (
     fun k->
-       let limited_obses = Listennou.big_head k obses in 
+       let limited_obses = Listennou.long_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m
   )(Int_range.range 1 n) with 
   Some k0 -> List.nth obses (k0-1)
