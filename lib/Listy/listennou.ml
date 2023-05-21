@@ -12,7 +12,7 @@ exception Reposition_second_key_not_found;;
 exception Push_immediately_after_exn;;
 
 
-let ht x=match x with
+let head_with_tail x=match x with
     []->raise(Ht_exn)
     |a::b->(a,b);;
 
@@ -27,8 +27,8 @@ let factor (x,y)=
        (graet,da_ober1,da_ober2)->
        if (da_ober1=[])||(da_ober2=[])
        then (List.rev graet,da_ober1,da_ober2)
-       else let (a1,peurrest1)=ht da_ober1
-            and (a2,peurrest2)=ht da_ober2 in
+       else let (a1,peurrest1)=head_with_tail da_ober1
+            and (a2,peurrest2)=head_with_tail da_ober2 in
             if a1=a2
             then factor0(a1::graet,peurrest1,peurrest2)
             else (List.rev graet,da_ober1,da_ober2)
@@ -91,9 +91,9 @@ let remove_element_at_idx l k=
 
 let decompose_wrt_two_indices l i j=
    let (r_part1,temp1)=long_head_with_tail (i-1) l in 
-   let (ei,temp2)=ht temp1 in 
+   let (ei,temp2)=head_with_tail temp1 in 
    let (r_part2,temp3)=long_head_with_tail (j-i-1) temp2 in 
-   let (ej,part3)=ht temp3 in 
+   let (ej,part3)=head_with_tail temp3 in 
    (List.rev r_part1,ei,List.rev r_part2,ej,part3);;
 
 (* decompose_wrt_two_indices [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)

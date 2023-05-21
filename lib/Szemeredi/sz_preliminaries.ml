@@ -44,7 +44,7 @@ module Private = struct
     then [[]]  
     else 
     let temp1 = List.rev soi in 
-    let (last_elt,temp2) = Listennou.ht temp1 in 
+    let (last_elt,temp2) = Listennou.head_with_tail temp1 in 
     let soi2 = List.rev temp2 in 
     extender max_width (old_f (max_width,soi2)) last_elt  
   );;

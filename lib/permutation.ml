@@ -16,7 +16,7 @@ module Private = struct
         ;;    
    
    let first_decomposition l= 
-      let (a,others) = Listennou.ht (List.rev l) in 
+      let (a,others) = Listennou.head_with_tail (List.rev l) in 
       helper_for_first_decomposition ([],a,others) ;;     
    
    let rec helper_for_second_decomposition (above_pivot,pivot,not_treated_yet) =
@@ -38,7 +38,7 @@ module Private = struct
       None -> None
       |Some(before_pivot,pivot) ->
          let (above_pivot,below_pivot) = second_decomposition (pivot,decreasing_sequence)  in 
-         let (successor,above_successor) = Listennou.ht (List.rev above_pivot) in 
+         let (successor,above_successor) = Listennou.head_with_tail (List.rev above_pivot) in 
          Some(before_pivot@(successor::(List.rev_append below_pivot (pivot::above_successor))));;
          
    

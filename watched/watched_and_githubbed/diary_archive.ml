@@ -4223,7 +4223,7 @@ let next_breaker = Memoized.recursive (fun old_f bound ->
      if bound<=3 then (1,(3,[1; 1; -1],[])) else 
      let m = breaker_tester bound (fst(old_f(bound-1))) in 
      let (_,l) = base_image1 m in 
-     let (a,others) = Listennou.ht l in 
+     let (a,others) = Listennou.head_with_tail l in 
      let sol = see_measure a in 
      (m,(List.length sol,sol,others))
   ) ;;
@@ -4382,7 +4382,7 @@ let decompositions n = Int_range.scale (fun j->(j,n-j)) 1 (n/2) ;;
 
 let try_easier_path old_f l = 
     if List.length (l) < 2 then None else 
-    let (a,others) = Listennou.ht l in   
+    let (a,others) = Listennou.head_with_tail l in   
        let candidate = List.filter (List.mem a) (old_f others ) in 
        if candidate = [] then None else Some candidate ;;
 
@@ -4396,7 +4396,7 @@ let abauzit_order =
      (tempf:>( (int list) Total_ordering_t.t));;
       
 let abauzit_expansion l = 
-    let (n,temp1) = Listennou.ht (List.rev l) in 
+    let (n,temp1) = Listennou.head_with_tail (List.rev l) in 
     let temp2 = List.rev temp1 
     and decs = decompositions n in 
     let temp3 = Image.image (fun (a,b)->i_merge (i_sort [a;b]) temp2) decs in   
@@ -5525,7 +5525,7 @@ Snippet 59 : Problem involving periodicity
 ************************************************************************************************************************)
 let find_periodicity l= 
   let rl = List.rev l in 
-  let (a1,after_a1) = Listennou.ht rl in 
+  let (a1,after_a1) = Listennou.head_with_tail rl in 
   let j = Listennou.find_index a1 after_a1 in 
   let inverted_motif = Listennou.long_head j rl in 
   let motif = List.rev inverted_motif in 
@@ -5739,7 +5739,7 @@ let sheaf_is_not_already_known triple =
 exception Borderline_case of ((int list) * int * ((int list) list)) list ;;
 
 let commonest_decomposition (x,bound,carriers) =
-    let (m,ry) = Listennou.ht(List.rev x) in 
+    let (m,ry) = Listennou.head_with_tail(List.rev x) in 
     let y = List.rev ry in 
    let rem_obstr1 = remains_of_obstructions_in_positing_case m 
    and (pre_rem_obstr3,rem_obstr2) = List.partition (fun z->List.mem m z) carriers in    
@@ -5886,7 +5886,7 @@ let induction_in_solve_case old_f triple =
     let old_solve = (fun tr -> snd (old_f(solve_arg(tr)))) in 
     let opt_sol = (
       let (left,bound,right) = triple in  
-      let (m,ry) = Listennou.ht(List.rev left) in 
+      let (m,ry) = Listennou.head_with_tail(List.rev left) in 
       let y = List.rev ry in 
       if is_not_admissible (m::right)
       then old_solve(y,bound,right)
@@ -5916,7 +5916,7 @@ let induction_in_pre_measure_case old_f whole =
     Some old_answer -> pre_measure_ret(old_answer) 
    |None -> 
    let new_answer = (
-    let (m,ry) = Listennou.ht(List.rev whole) in 
+    let (m,ry) = Listennou.head_with_tail(List.rev whole) in 
    let y = List.rev ry in  
    let sy = fst(old_f(false,y,0,[])) in 
    if is_admissible(sy@[m])
@@ -7245,7 +7245,7 @@ let listify is_a_list name =
     else (wrap_in_parentheses_if_needed name)^" list" ;;     
 
 let add_appendix_to_last_line appendix lines =
-      let (last_line,other_lines) = Listennou.ht (List.rev lines) in 
+      let (last_line,other_lines) = Listennou.head_with_tail (List.rev lines) in 
       List.rev ((last_line^appendix)::other_lines) ;;    
 
 (************************************************************************************************************************

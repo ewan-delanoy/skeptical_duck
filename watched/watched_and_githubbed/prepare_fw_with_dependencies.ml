@@ -235,7 +235,7 @@ let seek_in_ghetto submod =
 
 let text_from_ghetto submod = 
    let lines = seek_in_ghetto submod in 
-   let (first_line,other_lines) = Listennou.ht lines in 
+   let (first_line,other_lines) = Listennou.head_with_tail lines in 
    let all_lines = 
       (" let force_get fw = "^first_line) ::
       (other_lines @
