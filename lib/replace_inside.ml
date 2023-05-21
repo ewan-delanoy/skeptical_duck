@@ -30,7 +30,7 @@ let n=String.length(s) and na=String.length(a) in
 if na=1 then single_char_special_case (String.get a 0,b) s else
 let indices=Substring.occurrences_of_in a s in
 if indices=[] then (s,0) else
-let delta_indices = Listennou.universal_delta_list indices in 
+let delta_indices = List_again.universal_delta_list indices in 
 let opt_ambiguity=List.find_opt (fun (start1,start2)->start2<start1+na) delta_indices in 
 if  opt_ambiguity<>None
 then let (start1,start2)=Option.get opt_ambiguity in 
@@ -181,7 +181,7 @@ overwrite_and_dump_markers_inside_string
 let at_char_intervals_inside_string s l=
   if l=[] then s else
   let n=String.length s in
-  let temp1=Listennou.universal_delta_list l 
+  let temp1=List_again.universal_delta_list l 
   and ((i_first,_),_)=List.hd(l)
   and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
   let temp2=Image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->

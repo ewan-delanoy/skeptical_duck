@@ -182,7 +182,7 @@ let extract_post_index_in_topic s topic_idx =
   let indices =  post_indices_in_topic topic_idx in 
    let i1=Substring.leftmost_index_of_in "p=" s 
    and i2=Substring.leftmost_index_of_in "#" s  in 
-   Listennou.find_index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
+   List_again.find_index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
 
 let extract_section_path s = 
    let i1=Substring.leftmost_index_of_in "." s in 
@@ -206,7 +206,7 @@ let prepare_sections_for_posts topic_idx idx =
   let temp3 = List.filter_map (dissect topic_idx idx) temp2 in 
   let (last_mentioned_idx,last_section) = List.hd (List.rev temp3) in 
   let last_range = Int_range.scale (fun i->(i,last_section)) last_mentioned_idx (List.length indices)
-  and temp4 = Listennou.universal_delta_list temp3 in 
+  and temp4 = List_again.universal_delta_list temp3 in 
   (Image.image (
    fun ((i1,section1),(i2,_)) ->
      Int_range.scale (fun i->(i,section1)) (i1) (i2-1)

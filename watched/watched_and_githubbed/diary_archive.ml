@@ -488,12 +488,12 @@ let res1 = List.filter test (Cartesian.cube [0;1]) ;;
 
 let v0 = [1;-24] ;; 
 let v1 = v0 @ v0 ;; 
-let v2 = Listennou.power_set v1 ;; 
+let v2 = List_again.power_set v1 ;; 
 let v3 = i_sort (Image.image Basic.fold_sum v2) ;; 
 
 let v0 = [1;-24;276] ;; 
 let v1 = v0 @ v0 ;; 
-let v2 = Listennou.power_set v1 ;; 
+let v2 = List_again.power_set v1 ;; 
 let v3 = i_sort (Image.image Basic.fold_sum v2) ;; 
 
 
@@ -727,7 +727,7 @@ Por_space.add_subclass main_ref g7;;
 Snippet 113 : Periodically remove a file in a fixed directory.
 ************************************************************************************************************************)
 let calc () = let _ = Ordered.sort Total_ordering.silex_for_intlists
-  (Listennou.power_set (Int_range.range 1 16)) in ();;
+  (List_again.power_set (Int_range.range 1 16)) in ();;
 
 Chronometer.it calc () ;; 
 
@@ -923,7 +923,7 @@ let inverse_of_list_permutation sigma =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   Listennou.find_index_of_in (compose_list_permutations sigma1 sigma2) base
+   List_again.find_index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -932,7 +932,7 @@ let fold_compose l = List.fold_left compose 1 l ;;
 
 let inverse = Memoized.make(fun i->
     let sigma = List.nth base (i-1)   in 
-    Listennou.find_index_of_in (inverse_of_list_permutation sigma) base
+    List_again.find_index_of_in (inverse_of_list_permutation sigma) base
   ) ;; 
 
 let uncurried_commutator =  Memoized.make(fun (x,y)->
@@ -1051,7 +1051,7 @@ type formal_subgroup = FSG of int ;;
 module Formal_subgroup = struct 
 
 let full_group = FSG(List.length all_subgroups) ;;   
-let of_list l = FSG(Listennou.find_index_of_in l all_subgroups) ;; 
+let of_list l = FSG(List_again.find_index_of_in l all_subgroups) ;; 
 let to_list (FSG k) = List.nth all_subgroups (k-1) ;;
 let derived_subgroup = Memoized.make (fun fsg ->
       of_list(derived_subgroup(to_list fsg))
@@ -1136,7 +1136,7 @@ let act_on_int i_sigma k = List.nth (List.nth base (i_sigma-1)) (k-1) ;;
 let act_on_intlist i_sigma l =  i_sort(Image.image (act_on_int i_sigma) l) ;;
 let collective_on_intlist i_sigma  ll = il_sort (Image.image (act_on_intlist i_sigma) ll);;
 
-let power5 = il_sort (Listennou.power_set (Int_range.range 1 5) );;
+let power5 = il_sort (List_again.power_set (Int_range.range 1 5) );;
 let triples = List.filter (fun x->List.length x=3) power5 ;; 
 
 let frob = generated_subgroup [11;34] ;;
@@ -1821,7 +1821,7 @@ let u3 = Outside_comments_and_strings.good_substrings u2 ;;
 let u4 = String.concat " " (Image.image (fun (_,_,s,_)->s) u3) ;;
 let u5 = Substring.occurrences_of_in "%token" u4 ;; 
 let last_elt_in_u5 = List.hd(List.rev u5) ;; 
-let u6 = (Listennou.universal_delta_list u5) @ [last_elt_in_u5,(String.length u4)+1];; 
+let u6 = (List_again.universal_delta_list u5) @ [last_elt_in_u5,(String.length u4)+1];; 
 let u7 = Image.image (fun (i,j)-> Cull_string.interval u4 i (j-1)) u6;; 
 let u8 = Image.image (
   fun t->
@@ -1868,7 +1868,7 @@ let float_fold_sum = List.fold_left (fun x y -> x+.y) (0.) ;;
 
 let u1 = Int_range.scale (fun j->3*j-2) 1 6 ;;
 let u2 = Image.image (fun x->snd(measure x)) u1 ;;
-let u3 = Int_range.scale (fun j->float_fold_sum(Listennou.long_head j u2)) 1 6 ;;
+let u3 = Int_range.scale (fun j->float_fold_sum(List_again.long_head j u2)) 1 6 ;;
 let u4 = Image.image (fun x->fst(measure x)) u1 ;;
 let u5 = Image.image (fun (a,b)->let g=Gcd.gcd a b in (a/g,b/g)) u4 ;; 
 
@@ -2017,7 +2017,7 @@ let all_complements n ll=
 Image.image (fun z->i_setminus (Int_range.range 1 n) z)  ll ;;
 
 let merged_power_sets ll=
-  let temp1 = Image.image (fun l->il_sort(Listennou.power_set l)) ll in 
+  let temp1 = Image.image (fun l->il_sort(List_again.power_set l)) ll in 
   il_fold_merge temp1 ;; 
 
 let butterfly_operation ll addedum = 
@@ -2311,7 +2311,7 @@ let pikaboo x =
 
 let pookabi = Memoized.make(fun x ->
    let temp1 = pikaboo x in 
-   let temp2 = Image.image (Listennou.long_head 3) temp1 in 
+   let temp2 = Image.image (List_again.long_head 3) temp1 in 
    il_sort temp2 );;
 
 let measure z = List.length(List.filter (fun x->x>3) z);;
@@ -2354,7 +2354,7 @@ Snippet 92 : Define a cycle from list of successive elts
 ************************************************************************************************************************)
 let cycle_from_perm perm =
   let n = List.length perm in 
-  let idx = (fun x->Listennou.find_index_of_in x perm) in 
+  let idx = (fun x->List_again.find_index_of_in x perm) in 
   let next = (fun x->
      let i = idx x in 
      if i = n then List.hd perm else 
@@ -3145,7 +3145,7 @@ let measure x =
  
 
 let syndectical_power_set x = 
-  let temp1 = Listennou.power_set x in 
+  let temp1 = List_again.power_set x in 
   let temp2 = List.filter (fun z->
      if z = [] then false else
      let ttemp3 = (List.hd z) :: (Arithmetic_list.delta z) in 
@@ -3793,7 +3793,7 @@ let ww n =
 
 let small_size = 2 ;;    
 let base1 = List.flatten (Int_range.scale ww 0 (2*small_size));;
-let b_index pair = Listennou.find_index_of_in pair base1  ;;
+let b_index pair = List_again.find_index_of_in pair base1  ;;
 
 let for_two =((fun pair1 pair2 ->
   Total_ordering.for_integers 
@@ -3839,7 +3839,7 @@ let standardize_list l=
    let tempf = (fun k->List.nth temp1 (k-1)) in 
    (mima (tempf 1,tempf 2),mima (tempf 3,tempf 4)) ;;
 let base5 = Image.image standardize_list base4 ;;
-let base6 = Listennou.nonredundant_version base5 ;;
+let base6 = List_again.nonredundant_version base5 ;;
 
 let ff k = List.nth base6 (k-1) ;;
 
@@ -3889,7 +3889,7 @@ let interval_size_is_larger_than frac1 frac2 (p,q) =
    q * (a2*b1-a1*b2) > p * (b1*b2)  ;;
 
 let minmax_using_tor total_ordering x y =
-if (Listennou.find_index_of_in x total_ordering) < (Listennou.find_index_of_in y total_ordering) 
+if (List_again.find_index_of_in x total_ordering) < (List_again.find_index_of_in y total_ordering) 
 then (x,y)
 else (y,x) ;;  
 
@@ -3908,8 +3908,8 @@ let current_k = 3 ;;
 
 let outer_interval_is_too_small  total_ordering =
  let n = List.length total_ordering in 
- let ia = Listennou.find_index_of_in "a" total_ordering 
- and ib = Listennou.find_index_of_in "b" total_ordering in 
+ let ia = List_again.find_index_of_in "a" total_ordering 
+ and ib = List_again.find_index_of_in "b" total_ordering in 
  if List.mem (ia,ib) [1,2;n-1,n] then true else
  if (ia<2)||(ib>=n) then false else 
  let just_below_a = List.nth total_ordering (ia-2) 
@@ -3917,8 +3917,8 @@ let outer_interval_is_too_small  total_ordering =
  interval_size_is_smaller_than just_below_a just_above_b (4,Basic.power 3 current_k) ;; 
 
 let inner_interval_is_too_large  total_ordering =
- let ia = Listennou.find_index_of_in "a" total_ordering 
- and ib = Listennou.find_index_of_in "b" total_ordering in 
+ let ia = List_again.find_index_of_in "a" total_ordering 
+ and ib = List_again.find_index_of_in "b" total_ordering in 
  if ib=ia+1 then false else 
  let just_above_a = List.nth total_ordering ia 
  and just_below_b = List.nth total_ordering (ib-2) in 
@@ -3933,8 +3933,8 @@ let intervals_outside =
 let base1 = List.flatten(Image.image (fun (x,y)->[x;y]) intervals_outside);;
 
 let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
-  let (part1,temp1) = Listennou.long_head_with_tail (idx1-1) l in 
-  let (part2,part3) = Listennou.long_head_with_tail (idx2-idx1) temp1 in 
+  let (part1,temp1) = List_again.long_head_with_tail (idx1-1) l in 
+  let (part2,part3) = List_again.long_head_with_tail (idx2-idx1) temp1 in 
   List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
   
 (* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
@@ -4124,8 +4124,8 @@ let minimal_defects =
     Min.minimize_it_with_care  defect_at_index 
       (Int_range.range 1 dim_before) ;;   
 
-let big_proj shadow = il_sort(Image.image (fun l->Listennou.sublist_with_indices l shadow) base3) ;;  
-let shadows = il_sort (Listennou.power_set (Int_range.range 1 dim_before)) ;;     
+let big_proj shadow = il_sort(Image.image (fun l->List_again.sublist_with_indices l shadow) base3) ;;  
+let shadows = il_sort (List_again.power_set (Int_range.range 1 dim_before)) ;;     
 let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh)) shadows ;;
 
 
@@ -4240,7 +4240,7 @@ let next_breaker = Memoized.recursive (fun old_f bound ->
      if bound<=3 then (1,(3,[1; 1; -1],[])) else 
      let m = breaker_tester bound (fst(old_f(bound-1))) in 
      let (_,l) = base_image1 m in 
-     let (a,others) = Listennou.head_with_tail l in 
+     let (a,others) = List_again.head_with_tail l in 
      let sol = see_measure a in 
      (m,(List.length sol,sol,others))
   ) ;;
@@ -4399,7 +4399,7 @@ let decompositions n = Int_range.scale (fun j->(j,n-j)) 1 (n/2) ;;
 
 let try_easier_path old_f l = 
     if List.length (l) < 2 then None else 
-    let (a,others) = Listennou.head_with_tail l in   
+    let (a,others) = List_again.head_with_tail l in   
        let candidate = List.filter (List.mem a) (old_f others ) in 
        if candidate = [] then None else Some candidate ;;
 
@@ -4413,7 +4413,7 @@ let abauzit_order =
      (tempf:>( (int list) Total_ordering_t.t));;
       
 let abauzit_expansion l = 
-    let (n,temp1) = Listennou.head_with_tail (List.rev l) in 
+    let (n,temp1) = List_again.head_with_tail (List.rev l) in 
     let temp2 = List.rev temp1 
     and decs = decompositions n in 
     let temp3 = Image.image (fun (a,b)->i_merge (i_sort [a;b]) temp2) decs in   
@@ -4563,8 +4563,8 @@ let factor (x,y)=
        (graet,da_ober1,da_ober2)->
        if (da_ober1=[])||(da_ober2=[])
        then (List.rev graet,da_ober1,da_ober2)
-       else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
-            and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+       else let (a1,peurrest1)=List_again.head_with_tail da_ober1
+            and (a2,peurrest2)=List_again.head_with_tail da_ober2 in
             if a1=a2
             then factor0(a1::graet,peurrest1,peurrest2)
             else (List.rev graet,da_ober1,da_ober2)
@@ -4773,7 +4773,7 @@ let cut_into_small_parts  l ~max_part_size =
       fun (treated,to_be_treated,remaining_size) -> 
            if remaining_size <= max_part_size 
            then List.rev(to_be_treated::treated) 
-           else let (reversed_left,right) = Listennou.long_head_with_tail max_part_size to_be_treated in 
+           else let (reversed_left,right) = List_again.long_head_with_tail max_part_size to_be_treated in 
                 let left = List.rev reversed_left in 
                 tempf(left::treated,right,remaining_size-max_part_size)
   ) in 
@@ -4842,7 +4842,7 @@ type set_index = S of int ;;
 
 let n1 = 4 ;;
 let whole = Int_range.range 1 n1 ;;
-let u1 = il_sort (Listennou.power_set whole) ;;
+let u1 = il_sort (List_again.power_set whole) ;;
 let rtl l = List.rev (List.tl l);;
 let u2 = rtl (rtl u1);;
 let normal_form x = 
@@ -4863,7 +4863,7 @@ let order = ((fun (A i) (A j)->Total_ordering.for_integers i j) : t Total_orderi
   
 let table_for_sets_containing_a_given_atom = 
     let temp = Image.image (Image.image (fun i->S i)) 
-    (il_sort(Listennou.power_set (Int_range.range 1 9))) in 
+    (il_sort(List_again.power_set (Int_range.range 1 9))) in 
     Image.image (fun (j,l)->(A j,l)) (Int_range.index_everything temp) ;;
 let all = Image.image fst table_for_sets_containing_a_given_atom ;;
 
@@ -4883,7 +4883,7 @@ let order = ((fun (EA i) (EA j)->Total_ordering.for_integers i j) : t Total_orde
     
 let table_for_sets_containing_a_given_early_atom = 
       let temp = Image.image (Image.image (fun i->S i)) 
-      (il_sort(Listennou.power_set (Int_range.range 1 2))) in 
+      (il_sort(List_again.power_set (Int_range.range 1 2))) in 
       Image.image (fun (j,l)->(EA j,l)) (Int_range.index_everything temp) ;;
 let all = Image.image fst table_for_sets_containing_a_given_early_atom ;;
 
@@ -4911,7 +4911,7 @@ let normal_form x =
     then cx else x ;;
 let all_normal_forms = Image.image normal_form all ;;    
 let table_for_image_sets = Image.image (fun x->
-  (x,S(2+(Listennou.find_index_of_in (normal_form x) all_normal_forms))) 
+  (x,S(2+(List_again.find_index_of_in (normal_form x) all_normal_forms))) 
 ) all ;;
 let image_set x = List.assoc x table_for_image_sets ;;
 let intersection x y = Ordered.intersect Early_atom.order x y;;
@@ -5046,7 +5046,7 @@ let j_merge = Ordered.merge j_order ;;
 
 let n1 = 4 ;;
 let whole = Int_range.range 1 n1 ;;
-let u1 = il_sort (Listennou.power_set whole) ;;
+let u1 = il_sort (List_again.power_set whole) ;;
 let rtl l = List.rev (List.tl l);;
 let u2 = rtl (rtl u1);;
 let normal_form x = 
@@ -5289,7 +5289,7 @@ let i_is_included_in = Ordered.is_included_in i_order ;;
 let il_sort = Ordered.sort il_order ;;
 
 
-let u1 = il_sort (Listennou.power_set [1;2;3]) ;;
+let u1 = il_sort (List_again.power_set [1;2;3]) ;;
 let u2 = Uple.list_of_pairs u1 ;;
 let u3 = List.filter (fun (x,y)->i_intersection x y <> []) u2 ;;
 
@@ -5442,7 +5442,7 @@ let compose_list_permutations sigma1 sigma2 =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   Listennou.find_index_of_in (compose_list_permutations sigma1 sigma2) base
+   List_again.find_index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -5571,15 +5571,15 @@ Snippet 59 : Problem involving periodicity
 ************************************************************************************************************************)
 let find_periodicity l= 
   let rl = List.rev l in 
-  let (a1,after_a1) = Listennou.head_with_tail rl in 
-  let j = Listennou.find_index_of_in a1 after_a1 in 
-  let inverted_motif = Listennou.long_head j rl in 
+  let (a1,after_a1) = List_again.head_with_tail rl in 
+  let j = List_again.find_index_of_in a1 after_a1 in 
+  let inverted_motif = List_again.long_head j rl in 
   let motif = List.rev inverted_motif in 
   let p = List.length motif in 
   let m0 = Min.list motif in 
-  let i0 = Listennou.find_index_of_in m0 motif in 
-  let after_m0 = Listennou.long_tail i0 motif 
-  and before_m0 = Listennou.long_head (i0-1) motif in
+  let i0 = List_again.find_index_of_in m0 motif in 
+  let after_m0 = List_again.long_tail i0 motif 
+  and before_m0 = List_again.long_head (i0-1) motif in
   (p,m0::(after_m0@before_m0)) ;; 
 
 
@@ -5785,7 +5785,7 @@ let sheaf_is_not_already_known triple =
 exception Borderline_case of ((int list) * int * ((int list) list)) list ;;
 
 let commonest_decomposition (x,bound,carriers) =
-    let (m,ry) = Listennou.head_with_tail(List.rev x) in 
+    let (m,ry) = List_again.head_with_tail(List.rev x) in 
     let y = List.rev ry in 
    let rem_obstr1 = remains_of_obstructions_in_positing_case m 
    and (pre_rem_obstr3,rem_obstr2) = List.partition (fun z->List.mem m z) carriers in    
@@ -5932,7 +5932,7 @@ let induction_in_solve_case old_f triple =
     let old_solve = (fun tr -> snd (old_f(solve_arg(tr)))) in 
     let opt_sol = (
       let (left,bound,right) = triple in  
-      let (m,ry) = Listennou.head_with_tail(List.rev left) in 
+      let (m,ry) = List_again.head_with_tail(List.rev left) in 
       let y = List.rev ry in 
       if is_not_admissible (m::right)
       then old_solve(y,bound,right)
@@ -5962,7 +5962,7 @@ let induction_in_pre_measure_case old_f whole =
     Some old_answer -> pre_measure_ret(old_answer) 
    |None -> 
    let new_answer = (
-    let (m,ry) = Listennou.head_with_tail(List.rev whole) in 
+    let (m,ry) = List_again.head_with_tail(List.rev whole) in 
    let y = List.rev ry in  
    let sy = fst(old_f(false,y,0,[])) in 
    if is_admissible(sy@[m])
@@ -6444,8 +6444,8 @@ let factor (x,y)=
        (graet,da_ober1,da_ober2)->
        if (da_ober1=[])||(da_ober2=[])
        then (List.rev graet,da_ober1,da_ober2)
-       else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
-            and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+       else let (a1,peurrest1)=List_again.head_with_tail da_ober1
+            and (a2,peurrest2)=List_again.head_with_tail da_ober2 in
             if a1=a2
             then factor0(a1::graet,peurrest1,peurrest2)
             else (List.rev graet,da_ober1,da_ober2)
@@ -6488,7 +6488,7 @@ let tt = Memoized.make(fun n->
 let ss = Memoized.make(fun n->
   List.filter (
    fun l->
-    let i = Listennou.find_index_of_in (n-1) l in 
+    let i = List_again.find_index_of_in (n-1) l in 
     if (List.mem i [1;n-1;n])
     then false 
     else (List.nth l i)=n   
@@ -7307,7 +7307,7 @@ let listify is_a_list name =
     else (wrap_in_parentheses_if_needed name)^" list" ;;     
 
 let add_appendix_to_last_line appendix lines =
-      let (last_line,other_lines) = Listennou.head_with_tail (List.rev lines) in 
+      let (last_line,other_lines) = List_again.head_with_tail (List.rev lines) in 
       List.rev ((last_line^appendix)::other_lines) ;;    
 
 (************************************************************************************************************************
@@ -8328,7 +8328,7 @@ let op_tag_length = (String.length html_par_opening_tag)-1 ;;
 let cl_tag_length = (String.length html_par_closing_tag)-1 ;;
 
 let detect_nested_paragraphs l=
-   let temp1 = Listennou.universal_delta_list l in 
+   let temp1 = List_again.universal_delta_list l in 
    match List.find_opt (fun 
      (((i1,j1),(i2,j2)),((i3,j3),(i4,j4)))->i3<j2
    ) temp1 with 

@@ -485,7 +485,7 @@ let register_rootless_paths old_fw rootlesses =
  let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let extended_details_list = Modularized_details.get new_fw in 
- let new_details = Listennou.long_tail (List.length old_val) extended_details_list in
+ let new_details = List_again.long_tail (List.length old_val) extended_details_list in
  let new_modules_in_order = Image.image fst (Fw_determine_order.main new_details) in 
  let new_details_in_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
      new_details new_modules_in_order in 
@@ -1056,7 +1056,7 @@ end ;;
        (snd (List.assoc nm (Order.get fw)))@[nm] 
    ) temp1 in 
    let temp3=List.flatten temp2 in 
-   Listennou.nonredundant_version temp3;;
+   List_again.nonredundant_version temp3;;
   
   let root fw = Gw_poly.root  (parent fw) ;;
 

@@ -40,9 +40,9 @@ module Private = struct
 
   let tripartition_associated_to_interval s i j=
       let temp2=lines s in 
-      let (temp3,temp4)=Listennou.long_head_with_tail (i-1) temp2 in 
+      let (temp3,temp4)=List_again.long_head_with_tail (i-1) temp2 in 
       let part1=String.concat "\n" (List.rev temp3) in 
-      let (temp5,temp6)=Listennou.long_head_with_tail (j-i+1) temp4 in 
+      let (temp5,temp6)=List_again.long_head_with_tail (j-i+1) temp4 in 
       let part2=String.concat "\n" (List.rev temp5) in 
       let part3=String.concat "\n" temp6 in 
       (part1^"\n",part2,"\n"^part3);;

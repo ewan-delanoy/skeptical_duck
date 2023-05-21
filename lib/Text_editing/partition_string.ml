@@ -24,7 +24,7 @@ module Private = struct
     
     let check_for_overlapping_occurrences pattern txt indices=
       let p = String.length pattern in 
-      let temp1 = Listennou.universal_delta_list indices in 
+      let temp1 = List_again.universal_delta_list indices in 
       match List.find_opt (fun (i,j)->j-i<p) temp1 with 
       None -> ()
       |Some(i0,j0) -> raise(Overlapping_occurrences(Cull_string.interval txt i0 (j0+p-1)));;
@@ -35,7 +35,7 @@ module Private = struct
         let _= check_for_overlapping_occurrences pattern txt indices in 
         let p = String.length pattern and n = String.length txt 
         and imax=List.hd(List.rev indices) in 
-        let temp1 = Listennou.universal_delta_list ((1-p)::indices) in 
+        let temp1 = List_again.universal_delta_list ((1-p)::indices) in 
         let itv =(fun (i,j)->Cull_string.interval txt (i+p) (j-1)) in 
         Some(Image.image itv temp1,itv (imax,n+1)) ;;
 

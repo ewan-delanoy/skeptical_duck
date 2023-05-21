@@ -155,7 +155,7 @@ end ;;
 module Modular = struct 
 
 let preceding_module modname =
-     let k = Listennou.find_index_of_in modname submodules in 
+     let k = List_again.find_index_of_in modname submodules in 
      if k = 1 then "Cached" else List.nth submodules (k-2) ;;  
 
 let data_from_opt_extra opt_extra rest_of_line newer_extra=
@@ -235,7 +235,7 @@ let seek_in_ghetto submod =
 
 let text_from_ghetto submod = 
    let lines = seek_in_ghetto submod in 
-   let (first_line,other_lines) = Listennou.head_with_tail lines in 
+   let (first_line,other_lines) = List_again.head_with_tail lines in 
    let all_lines = 
       (" let force_get fw = "^first_line) ::
       (other_lines @

@@ -24,7 +24,7 @@ let iterator coat
     if opt1<>None then ([],Set_of_polys.empty_set,[],Set_of_polys.empty_set,[],[],opt1) else
     if (between,not_yet_checked)=([],[]) 
     then ([],Set_of_polys.empty_set,[],Set_of_polys.empty_set,[],[],
-          Some(cycles,Listennou.rev_map (fun (z,p)->(z,fst p)) checked)) 
+          Some(cycles,List_again.rev_map (fun (z,p)->(z,fst p)) checked)) 
     else
     let a=
     	  (if between=[] 

@@ -221,7 +221,7 @@ let list_for_dictionary_order=
 let reindexer_for_dictionary_order i=
     if (i<65)||(i>122) 
     then i 
-    else 64+(Listennou.find_index_of_in i list_for_dictionary_order);;
+    else 64+(List_again.find_index_of_in i list_for_dictionary_order);;
 
 
 let for_characters=let tempf=(fun x y->
@@ -260,8 +260,8 @@ let silex_for_strings=
          (graet,da_ober1,da_ober2)->
          if (da_ober1=[])||(da_ober2=[])
          then (List.rev graet,da_ober1,da_ober2)
-         else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
-              and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+         else let (a1,peurrest1)=List_again.head_with_tail da_ober1
+              and (a2,peurrest2)=List_again.head_with_tail da_ober2 in
               if a1=a2
               then factor0(a1::graet,peurrest1,peurrest2)
               else (List.rev graet,da_ober1,da_ober2)

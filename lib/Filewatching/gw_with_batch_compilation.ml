@@ -417,7 +417,7 @@ let debuggable_or_executable  = Private.command_for_debuggable_or_executable ;;
              ) triples_after in 
              let rejected_siblings_with_redundancies =  
                 Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
-             let rejected_siblings = Listennou.nonredundant_version rejected_siblings_with_redundancies in    
+             let rejected_siblings = List_again.nonredundant_version rejected_siblings_with_redundancies in    
              let newly_rejected = (nm,eless)::rejected_siblings in 
              let newly_rejected_mods = Image.image fst newly_rejected in 
              let old_list_of_cmpl_results= get_cmpl_results fw in 

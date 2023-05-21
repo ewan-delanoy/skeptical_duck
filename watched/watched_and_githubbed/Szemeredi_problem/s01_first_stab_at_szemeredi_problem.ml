@@ -394,7 +394,7 @@ let start_decomposing  x =
   and m =List.length (patient_measure x) in 
   List.find_opt (
      fun k->
-       let (rleft,right) = Listennou.long_head_with_tail k x in
+       let (rleft,right) = List_again.long_head_with_tail k x in
        let left = List.rev rleft in 
        let size_left  = List.length(patient_measure left)
        and size_right = List.length(patient_measure right) in 
@@ -408,7 +408,7 @@ let pusher_for_full_decomposition  (treated,to_be_treated) =
          (match  start_decomposing part with 
           None -> (part::treated,other_parts)
           | Some k ->
-           let (rleft,right) = Listennou.long_head_with_tail k part in
+           let (rleft,right) = List_again.long_head_with_tail k part in
            let left = List.rev rleft in 
            (left::treated,right::other_parts))  ;;
 
@@ -448,7 +448,7 @@ let compute_ramification x=
   let n = List.length obses and m=List.length(patient_measure x) in 
   match List.find_opt (
     fun k->
-       let limited_obses = Listennou.long_head k obses in 
+       let limited_obses = List_again.long_head k obses in 
        List.length(extended_old_patient_measure(x,limited_obses))<=m
   )(Int_range.range 1 n) with 
   Some k0 -> List.nth obses (k0-1)

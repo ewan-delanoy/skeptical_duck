@@ -14,7 +14,7 @@ module Private = struct
 
 let test_for_percent_block list_of_lines = 
     if List.length(list_of_lines)<3 then None else 
-    let (rev_left,right) = Listennou.long_head_with_tail 3 list_of_lines in 
+    let (rev_left,right) = List_again.long_head_with_tail 3 list_of_lines in 
     if List.for_all (fun (_j,line)->Supstring.begins_with line "%") rev_left  
     then Some(List.rev rev_left,right)
     else None ;;  
