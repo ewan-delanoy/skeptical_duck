@@ -668,7 +668,9 @@ module High_level = struct
              (Kay.deconstructor key,small_step)
         ) temp1 in 
         let temp3 = uks_sort temp2 in 
-        temp3;; 
+        let temp4 = Partition_list.according_to_map 
+        temp3 ~assume_connectedness:true (fun ((_,_,w,_),_) ->w)  in 
+        temp4;; 
 
     end ;;
     
