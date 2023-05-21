@@ -1082,7 +1082,7 @@ let z5 = Image.image (
      let sg = generated_subgroup (i_sort [34;k]) in 
      (Formal_subgroup.of_list sg,k)
 ) four_cycles ;;
-let z6 = Partition_list.according_to_fst z5 ;; 
+let z6 = Partition_list.according_to_map z5 fst ;; 
 let z7 = Image.image snd z6 ;; 
 let common_cycles = List.hd z7 ;; 
 
@@ -3183,7 +3183,7 @@ let right_base = sps small_n ;;
 let shadow x = Image.image (diff x) right_base ;;
       
 let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
-let u4 = Partition_list.according_to_fst u3 ;;
+let u4 = Partition_list.according_to_map u3 fst ;;
 
 let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
@@ -3233,7 +3233,7 @@ let right_base = sps small_n ;;
 let shadow x = Image.image (diff x) right_base ;;
       
 let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
-let u4 = Partition_list.according_to_fst  u3 ;;
+let u4 = Partition_list.according_to_map u3 fst ;;
 
 let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
@@ -3944,7 +3944,7 @@ let u1 = Image.image (
    intervals_outside,total_ordering)
 ) good2 ;;
 
-let u2 = Partition_list.according_to_fst  u1 ;; 
+let u2 = Partition_list.according_to_map u1 fst ;; 
 let tf k = List.nth u2 (k-1) ;; 
 
 (************************************************************************************************************************
@@ -6088,7 +6088,7 @@ let oi = Total_ordering.for_integers ;;
 let oi2 = Total_ordering.product oi oi ;; 
 
 let reorder pairs =
-   let temp1 = Partition_list.according_to_fst  pairs in 
+   let temp1 = Partition_list.according_to_map pairs fst in 
    let temp2 = Image.image (fun (x,ll)->
        (x,Ordered.safe_set oi2 (List.flatten ll))
       ) temp1 in 

@@ -4,13 +4,14 @@
 
 *)
 
-let according_to_fst pairs=
+let according_to_map pairs f=
   let rec tempf = (fun (already_treated,to_be_treated)->
        match to_be_treated with 
         [] -> List.rev already_treated 
-       |(a0,_) :: _ ->
-         let (part1,part2) = List.partition (fun (a,_b)->a=a0) to_be_treated in 
-         tempf ((a0,Image.image snd part1)::already_treated,part2)     
+       | pair :: _ ->
+         let img1 = f pair in  
+         let (part1,part2) = List.partition (fun pair2->f pair2=img1) to_be_treated in 
+         tempf ((img1,Image.image snd part1)::already_treated,part2)     
    ) in 
    tempf ([],pairs) ;;
 
