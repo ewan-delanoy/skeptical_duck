@@ -255,10 +255,22 @@ let silex_for_strings=
         else lex_for_strings s1 s2
       ) : string Total_ordering_t.t);;    
 
+      let factor (x,y)=
+      let rec factor0=(fun
+         (graet,da_ober1,da_ober2)->
+         if (da_ober1=[])||(da_ober2=[])
+         then (List.rev graet,da_ober1,da_ober2)
+         else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
+              and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+              if a1=a2
+              then factor0(a1::graet,peurrest1,peurrest2)
+              else (List.rev graet,da_ober1,da_ober2)
+      ) in
+      factor0([],x,y);;      
 
 let lex_for_string_lists=
   ((fun l1 l2->
-      let (_,left_part,right_part)=Listennou.factor (l1,l2) in
+      let (_,left_part,right_part)= factor (l1,l2) in
       if left_part=[] 
       then (if right_part=[] 
            then Total_ordering_result_t.Equal 

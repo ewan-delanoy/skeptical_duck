@@ -4541,8 +4541,24 @@ let simplest_case n sol =
 
 exception Bad_pointed_card_element of (int list) * int * (int list) ;; 
 
+let factor (x,y)=
+    let rec factor0=(fun
+       (graet,da_ober1,da_ober2)->
+       if (da_ober1=[])||(da_ober2=[])
+       then (List.rev graet,da_ober1,da_ober2)
+       else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
+            and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+            if a1=a2
+            then factor0(a1::graet,peurrest1,peurrest2)
+            else (List.rev graet,da_ober1,da_ober2)
+    ) in
+    factor0([],x,y);;
+
+let extends l1 l2=
+   let (_,_,r2)=factor (l1,l2) in r2=[];;
+
 let check_pointed_card_element (l2,(head,passive_part))=
-   if not(Listennou.extends (List.rev l2) (List.rev(head::passive_part))) 
+   if not(extends (List.rev l2) (List.rev(head::passive_part))) 
    then raise(Bad_pointed_card_element(l2,head,passive_part))
    else () ;;
    
@@ -4735,7 +4751,20 @@ let array_in_mathjax l =
 
 let max_part_size = 15 ;;
 
-let parts = Listennou.cut_into_small_parts 
+let cut_into_small_parts  l ~max_part_size =
+  let rec tempf = (
+      fun (treated,to_be_treated,remaining_size) -> 
+           if remaining_size <= max_part_size 
+           then List.rev(to_be_treated::treated) 
+           else let (reversed_left,right) = Listennou.long_head_with_tail max_part_size to_be_treated in 
+                let left = List.rev reversed_left in 
+                tempf(left::treated,right,remaining_size-max_part_size)
+  ) in 
+  tempf ([],l,List.length l) ;;
+
+(* cut_into_small_parts (Ennig.ennig 1 7) ~max_part_size:3 ;; *)
+
+let parts = cut_into_small_parts 
 all_expanded_moves ~max_part_size ;;
 
 let prelude ="/////////////////////////////////////////////////////////\nQuestion : \n/////////////////////////////////////////////////////////\n\n" ;;
@@ -6393,17 +6422,33 @@ let aa = Memoized.make(fun n->
   ) (main (n+1))
 ) ;;
 
+let factor (x,y)=
+    let rec factor0=(fun
+       (graet,da_ober1,da_ober2)->
+       if (da_ober1=[])||(da_ober2=[])
+       then (List.rev graet,da_ober1,da_ober2)
+       else let (a1,peurrest1)=Listennou.head_with_tail da_ober1
+            and (a2,peurrest2)=Listennou.head_with_tail da_ober2 in
+            if a1=a2
+            then factor0(a1::graet,peurrest1,peurrest2)
+            else (List.rev graet,da_ober1,da_ober2)
+    ) in
+    factor0([],x,y);;
+
+let extends l1 l2=
+   let (_,_,r2)=factor (l1,l2) in r2=[];;
+
 let uu = Memoized.make(fun n->
     List.filter (
      fun l->let rl = List.rev l in
-     Listennou.extends rl [n;n-1]
+     extends rl [n;n-1]
     ) (main n)
 ) ;;
 
 let vv = Memoized.make(fun n->
   List.filter (
    fun l->let rl = List.rev l in
-   Listennou.extends rl [n-1;n]
+     extends rl [n-1;n]
   ) (main n)
 ) ;;
 

@@ -31,10 +31,21 @@ else if xv<xu
 ) in
 M(teuzin0(x,y,[]));;
 
+
+let didrochan x=
+let rec didrochan0=
+(function (u,accu1,accu2,bowl)->match u with
+ []->(accu1,accu2)
+ |a::b->if bowl
+        then didrochan0(b,a::accu1,accu2,false)
+        else didrochan0(b,accu1,a::accu2,true))  
+in
+didrochan0(x,[],[],true);;
+
 let rec ddiforchan x=
 if List.length(x)<2
 then M(x)
-else let t1=Listennou.didrochan(x) in
+else let t1=didrochan(x) in
      teuzin(ddiforchan(fst(t1)))(ddiforchan(snd(t1)));;
 
 let diforchan x=
