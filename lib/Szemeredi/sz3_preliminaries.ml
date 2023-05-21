@@ -718,6 +718,12 @@ module High_level = struct
        | None -> raise(Assess_exn(key))
       );;
 
+    let forced_elements key = 
+      let m = measure key 
+      and (Key(fis,_))=key in 
+      let domain = Finite_int_set.to_usual_int_list fis in 
+      List.filter (fun i->measure(Kay.remove_one_element key i)<m) domain ;; 
+
     let needed_nodes key =
         let temp1 = Stabilize.explore_enhanced_tree assess [key] in 
         let temp2 = Image.image (
@@ -730,7 +736,14 @@ module High_level = struct
         let forks = List.filter (
           fun (_key,st)-> Small_step.is_a_fork st
         ) temp3 in 
-        (temp4,forks);; 
+        let bad_forks = List.filter_map (
+          fun (key,_)-> 
+              let forced_elts = forced_elements (Kay.constructor key) in 
+              if forced_elts<>[]
+              then Some(key,forced_elts)
+              else None   
+        ) forks in 
+        (temp4,bad_forks);; 
 
     end ;;
     
