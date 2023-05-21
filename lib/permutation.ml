@@ -73,7 +73,7 @@ module Private = struct
    let rewrite_cycle_with_min_at_the_beginning cycle =
        let m = Min.list cycle in 
        let j = Listennou.find_index  m cycle in 
-       let (before,after) = Listennou.big_rht (j-1) cycle in 
+       let (before,after) = Listennou.long_head_with_tail (j-1) cycle in 
        after @ (List.rev before) ;;
 
    (*

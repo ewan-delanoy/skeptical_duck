@@ -68,7 +68,7 @@ if k=0 then x else morzhol_bihan f (k-1) (f(x));;
 
 exception Big_rht_exn of int*int;;
 
-let big_rht r l=let rec tempf=
+let long_head_with_tail r l=let rec tempf=
 (function (j,kleiz,dehou)->
 if j=0 then (kleiz,dehou) else 
 match dehou with
@@ -77,30 +77,30 @@ match dehou with
 ) in
 tempf(r,[],l);;
 
-let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)));;
+let big_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
 
-let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
+let big_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;
 
-let before_and_after r l = let (b,a) = big_rht r l in (List.rev b,a) ;; 
+let before_and_after r l = let (b,a) = long_head_with_tail r l in (List.rev b,a) ;; 
 
 let remove_element_at_idx l k=
-   let (kleiz,dehou)=big_rht k l in 
+   let (kleiz,dehou)=long_head_with_tail k l in 
    List.rev_append (List.tl kleiz) dehou;;
 
 (* remove_element_at_idx [1; 2; 3; 4; 5; 6; 7] 3;; *)   
 
 let decompose_wrt_two_indices l i j=
-   let (r_part1,temp1)=big_rht (i-1) l in 
+   let (r_part1,temp1)=long_head_with_tail (i-1) l in 
    let (ei,temp2)=ht temp1 in 
-   let (r_part2,temp3)=big_rht (j-i-1) temp2 in 
+   let (r_part2,temp3)=long_head_with_tail (j-i-1) temp2 in 
    let (ej,part3)=ht temp3 in 
    (List.rev r_part1,ei,List.rev r_part2,ej,part3);;
 
 (* decompose_wrt_two_indices [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
 
 let extract_interval l i j=
-  let (r_part1,temp1)=big_rht (i-1) l in 
-  let (r_part2,part3)=big_rht (j-i+1) temp1 in 
+  let (r_part1,temp1)=long_head_with_tail (i-1) l in 
+  let (r_part2,part3)=long_head_with_tail (j-i+1) temp1 in 
   (List.rev r_part1,List.rev r_part2,part3);;
 
 (* extract_interval [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
@@ -419,7 +419,7 @@ let cut_into_small_parts  l ~max_part_size =
       fun (treated,to_be_treated,remaining_size) -> 
            if remaining_size <= max_part_size 
            then List.rev(to_be_treated::treated) 
-           else let (reversed_left,right) = big_rht max_part_size to_be_treated in 
+           else let (reversed_left,right) = long_head_with_tail max_part_size to_be_treated in 
                 let left = List.rev reversed_left in 
                 tempf(left::treated,right,remaining_size-max_part_size)
   ) in 
@@ -432,8 +432,8 @@ let project l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
 (* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
 
 let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
-  let (part1,temp1) = big_rht (idx1-1) l in 
-  let (part2,part3) = big_rht (idx2-idx1) temp1 in 
+  let (part1,temp1) = long_head_with_tail (idx1-1) l in 
+  let (part2,part3) = long_head_with_tail (idx2-idx1) temp1 in 
   List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
   
 (* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)

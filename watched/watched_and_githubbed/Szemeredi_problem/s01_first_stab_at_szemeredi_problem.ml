@@ -394,7 +394,7 @@ let start_decomposing  x =
   and m =List.length (patient_measure x) in 
   List.find_opt (
      fun k->
-       let (rleft,right) = Listennou.big_rht k x in
+       let (rleft,right) = Listennou.long_head_with_tail k x in
        let left = List.rev rleft in 
        let size_left  = List.length(patient_measure left)
        and size_right = List.length(patient_measure right) in 
@@ -408,7 +408,7 @@ let pusher_for_full_decomposition  (treated,to_be_treated) =
          (match  start_decomposing part with 
           None -> (part::treated,other_parts)
           | Some k ->
-           let (rleft,right) = Listennou.big_rht k part in
+           let (rleft,right) = Listennou.long_head_with_tail k part in
            let left = List.rev rleft in 
            (left::treated,right::other_parts))  ;;
 
