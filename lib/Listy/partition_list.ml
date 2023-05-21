@@ -4,16 +4,63 @@
 
 *)
 
-let according_to_map pairs f=
+module Private = struct 
+
+let rec select_first_colleagues f (treated,img,to_be_treated) =   
+    match to_be_treated with 
+    [] -> (List.rev treated,to_be_treated)
+    | item :: others -> 
+        if f item = img 
+        then select_first_colleagues f (item::treated,img,others) 
+        else (List.rev treated,to_be_treated) ;; 
+
+let according_to_map_assuming_connectedness pairs f=
+    let rec tempf = (fun (already_treated,to_be_treated)->
+      match to_be_treated with 
+      [] -> List.rev already_treated 
+    | pair :: others ->
+      let img1 = f pair in  
+      let (part1,part2) = select_first_colleagues f ([pair],img1,others) in 
+               tempf ((img1,part1)::already_treated,part2)     
+    ) in 
+    tempf ([],pairs) ;;
+
+(*
+
+according_to_map_assuming_connectedness [1,7;1,8;2,9;3,10;3,11;1,12] fst ;; 
+
+*)
+
+let according_to_map_without_assuming_connectedness pairs f=
   let rec tempf = (fun (already_treated,to_be_treated)->
        match to_be_treated with 
         [] -> List.rev already_treated 
        | pair :: _ ->
          let img1 = f pair in  
          let (part1,part2) = List.partition (fun pair2->f pair2=img1) to_be_treated in 
-         tempf ((img1,Image.image snd part1)::already_treated,part2)     
+         tempf ((img1,part1)::already_treated,part2)     
    ) in 
    tempf ([],pairs) ;;
+
+(*
+
+according_to_map_without_assuming_connectedness [1,7;1,8;2,9;3,10;3,11;1,12] fst ;; 
+
+*)   
+
+let according_to_map pairs ?(assume_connectedness=false) f  =
+   if assume_connectedness 
+   then according_to_map_assuming_connectedness pairs f
+   else according_to_map_without_assuming_connectedness pairs f ;;  
+
+end ;;  
+
+let according_to_fst ?(assume_connectedness=false) l = 
+    let temp = Private.according_to_map l ~assume_connectedness fst in 
+    Image.image (fun (img,antecs)->(img,Image.image snd antecs)) temp;; 
+
+let according_to_map = Private.according_to_map ;;
+
 
 let from_set_of_ranges l n=
     if l=[] then [1,n,false] else 

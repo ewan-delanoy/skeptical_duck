@@ -21,7 +21,7 @@ let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
 
 let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Image.image (fun (rl,details)->(Dfn_rootless.to_ending rl,(rl,details))) l in 
-   let temp2 = Partition_list.according_to_map temp1 fst in 
+   let temp2 = Partition_list.according_to_fst temp1 ~assume_connectedness:false  in 
    let should_be_empty = List.filter (fun (_edg,l_rl)->List.length(l_rl)>1) temp2 in 
    if should_be_empty<>[]
    then let clearer_picture = Image.image (fun (edg,detailed_l) -> (edg,Image.image fst detailed_l) ) 
@@ -81,7 +81,7 @@ let compute_details_from_acolytes_list_for_several_modules compilable_files =
     let temp1 = Image.image (fun (rless,details)->
        (Dfn_rootless.to_module rless,(rless,details))  
     ) compilable_files in 
-    let temp2 = Partition_list.according_to_map temp1 fst in 
+    let temp2 = Partition_list.according_to_fst temp1  in 
     Image.image (fun (mn,l)->
       (mn,compute_details_from_acolytes_list_for_one_module l)
       ) temp2 ;;
