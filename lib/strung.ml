@@ -143,7 +143,7 @@ let replace_ranges_in l s=
     if l=[] then s else
     let n=String.length s in
     let ranges=Image.image fst l in
-    let partition=Listennou.partition_from_set_of_ranges ranges n in 
+    let partition= Partition_list.from_set_of_ranges ranges n in 
     let temp1=Image.image (
       fun (i,j,will_be_replaced)->
         if will_be_replaced 

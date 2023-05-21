@@ -62,7 +62,7 @@ module Private = struct
   let rec sort (cmpr:'a Total_ordering_t.t) x=
     if List.length(x)<2
     then x
-    else let temp1=Listennou.split_list_in_half(x) in
+    else let temp1=Partition_list.split_in_half(x) in
          let y1=sort(cmpr)(fst temp1)
          and y2=sort(cmpr)(snd temp1) in
          merge cmpr y1 y2;;
