@@ -645,7 +645,12 @@ module High_level = struct
       );;
 
     let needed_nodes key =
-        Stabilize.explore_enhanced_tree assess [key] ;; 
+        let temp1 = Stabilize.explore_enhanced_tree assess [key] in 
+        let temp2 = Image.image (
+          fun (key,(small_step,_)) -> 
+             (Kay.deconstructor key,small_step)
+        ) temp1 in 
+        temp2;; 
 
     end ;;
     
