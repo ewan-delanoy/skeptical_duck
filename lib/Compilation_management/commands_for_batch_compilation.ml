@@ -53,7 +53,7 @@ module Private = struct
                        "mv "^s_fhm^".cm* "^s_root^workdir
                      ]
               ) in 
-              More_option.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;;
+              Option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;;
      
     let hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds =
        (* 
@@ -96,7 +96,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
       else central_cmds)
-      in More_option.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
+      in Option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
     let command_for_cmo_from_mly (cmod:Compilation_mode_t.t) dir fw eless=
       let nm=Dfn_endingless.to_module eless in
@@ -120,7 +120,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
       else central_cmds)
-      in More_option.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
+      in Option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
 
 
@@ -144,7 +144,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds
       else central_cmds)
-      in More_option.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
+      in Option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
 
   
@@ -228,7 +228,7 @@ module Private = struct
       let extension=".cma" in
       let libs=String.concat(" ")
         (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-        More_option.argument_on_the_right (fun x y->x@[y])  
+        Option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         (Compilation_mode.executioner cmod)^
         " -I "^s_root^workdir^" "^
@@ -275,7 +275,7 @@ module Private = struct
       let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
       let libs=String.concat(" ")
         (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-        More_option.argument_on_the_right (fun x y->x@[y])  
+        Option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         ((Compilation_mode.executioner cmod)^
          " -I "^s_root^workdir^" "^
