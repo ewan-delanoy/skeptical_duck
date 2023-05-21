@@ -20,7 +20,7 @@ module Private = struct
   let rec iterator_for_exploring_enhanced_tree f walker =
      let  (treated,to_be_treated) = walker in 
      if to_be_treated = []
-     then List.rev treated 
+     then treated 
      else let next_walker = pusher_for_exploring_enhanced_tree f walker in 
           iterator_for_exploring_enhanced_tree f next_walker ;;   
        
