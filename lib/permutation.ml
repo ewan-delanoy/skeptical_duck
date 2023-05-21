@@ -56,7 +56,7 @@ module Private = struct
      let rec helper_for_signature (sign,perm) =
       let n = List.length perm in 
       if n<2 then sign else 
-      let j = Listennou.find_index n perm 
+      let j = Listennou.find_index_of_in n perm 
       and shorter_perm = Listennou.long_head (n-1) perm in 
       if j = n 
       then helper_for_signature (sign,shorter_perm) 
@@ -72,7 +72,7 @@ module Private = struct
  
    let rewrite_cycle_with_min_at_the_beginning cycle =
        let m = Min.list cycle in 
-       let j = Listennou.find_index  m cycle in 
+       let j = Listennou.find_index_of_in  m cycle in 
        let (before,after) = Listennou.long_head_with_tail (j-1) cycle in 
        after @ (List.rev before) ;;
 
@@ -152,7 +152,7 @@ module Private = struct
 
    let evaluate_cycle_at_point cycle k=
      let m = List.length cycle 
-     and j = Listennou.find_index k cycle in 
+     and j = Listennou.find_index_of_in k cycle in 
      if j = m 
      then List.hd cycle 
      else List.nth cycle j ;;    
@@ -234,7 +234,7 @@ let product_of_cycles = Private.product_of_cycles ;;
        
 let inverse sigma = 
       let n = List.length sigma in 
-      Int_range.scale (fun y->Listennou.find_index y sigma) 1 n ;;
+      Int_range.scale (fun y->Listennou.find_index_of_in y sigma) 1 n ;;
    
 let order = Private.order ;;      
 

@@ -155,7 +155,7 @@ end ;;
 module Modular = struct 
 
 let preceding_module modname =
-     let k = Listennou.find_index modname submodules in 
+     let k = Listennou.find_index_of_in modname submodules in 
      if k = 1 then "Cached" else List.nth submodules (k-2) ;;  
 
 let data_from_opt_extra opt_extra rest_of_line newer_extra=

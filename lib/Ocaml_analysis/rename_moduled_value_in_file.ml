@@ -32,7 +32,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    let temp4_again=List.find (fun itm->
      (itm.Ocaml_gsyntax_item.name)=s_new_full_name
    ) temp3_again in
-   let k1=Listennou.find_index temp4_again temp3_again in
+   let k1=Listennou.find_index_of_in temp4_again temp3_again in
    let temp5=Listennou.long_tail k1 temp3_again in
    let temp6=List.filter_map(
       fun itm->

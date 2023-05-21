@@ -923,7 +923,7 @@ let inverse_of_list_permutation sigma =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   Listennou.find_index (compose_list_permutations sigma1 sigma2) base
+   Listennou.find_index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -932,7 +932,7 @@ let fold_compose l = List.fold_left compose 1 l ;;
 
 let inverse = Memoized.make(fun i->
     let sigma = List.nth base (i-1)   in 
-    Listennou.find_index (inverse_of_list_permutation sigma) base
+    Listennou.find_index_of_in (inverse_of_list_permutation sigma) base
   ) ;; 
 
 let uncurried_commutator =  Memoized.make(fun (x,y)->
@@ -1051,7 +1051,7 @@ type formal_subgroup = FSG of int ;;
 module Formal_subgroup = struct 
 
 let full_group = FSG(List.length all_subgroups) ;;   
-let of_list l = FSG(Listennou.find_index l all_subgroups) ;; 
+let of_list l = FSG(Listennou.find_index_of_in l all_subgroups) ;; 
 let to_list (FSG k) = List.nth all_subgroups (k-1) ;;
 let derived_subgroup = Memoized.make (fun fsg ->
       of_list(derived_subgroup(to_list fsg))
@@ -2354,7 +2354,7 @@ Snippet 92 : Define a cycle from list of successive elts
 ************************************************************************************************************************)
 let cycle_from_perm perm =
   let n = List.length perm in 
-  let idx = (fun x->Listennou.find_index x perm) in 
+  let idx = (fun x->Listennou.find_index_of_in x perm) in 
   let next = (fun x->
      let i = idx x in 
      if i = n then List.hd perm else 
@@ -3793,7 +3793,7 @@ let ww n =
 
 let small_size = 2 ;;    
 let base1 = List.flatten (Int_range.scale ww 0 (2*small_size));;
-let b_index pair = Listennou.find_index pair base1  ;;
+let b_index pair = Listennou.find_index_of_in pair base1  ;;
 
 let for_two =((fun pair1 pair2 ->
   Total_ordering.for_integers 
@@ -3889,7 +3889,7 @@ let interval_size_is_larger_than frac1 frac2 (p,q) =
    q * (a2*b1-a1*b2) > p * (b1*b2)  ;;
 
 let minmax_using_tor total_ordering x y =
-if (Listennou.find_index x total_ordering) < (Listennou.find_index y total_ordering) 
+if (Listennou.find_index_of_in x total_ordering) < (Listennou.find_index_of_in y total_ordering) 
 then (x,y)
 else (y,x) ;;  
 
@@ -3908,8 +3908,8 @@ let current_k = 3 ;;
 
 let outer_interval_is_too_small  total_ordering =
  let n = List.length total_ordering in 
- let ia = Listennou.find_index "a" total_ordering 
- and ib = Listennou.find_index "b" total_ordering in 
+ let ia = Listennou.find_index_of_in "a" total_ordering 
+ and ib = Listennou.find_index_of_in "b" total_ordering in 
  if List.mem (ia,ib) [1,2;n-1,n] then true else
  if (ia<2)||(ib>=n) then false else 
  let just_below_a = List.nth total_ordering (ia-2) 
@@ -3917,8 +3917,8 @@ let outer_interval_is_too_small  total_ordering =
  interval_size_is_smaller_than just_below_a just_above_b (4,Basic.power 3 current_k) ;; 
 
 let inner_interval_is_too_large  total_ordering =
- let ia = Listennou.find_index "a" total_ordering 
- and ib = Listennou.find_index "b" total_ordering in 
+ let ia = Listennou.find_index_of_in "a" total_ordering 
+ and ib = Listennou.find_index_of_in "b" total_ordering in 
  if ib=ia+1 then false else 
  let just_above_a = List.nth total_ordering ia 
  and just_below_b = List.nth total_ordering (ib-2) in 
@@ -4894,7 +4894,7 @@ let normal_form x =
     then cx else x ;;
 let all_normal_forms = Image.image normal_form all ;;    
 let table_for_image_sets = Image.image (fun x->
-  (x,S(2+(Listennou.find_index (normal_form x) all_normal_forms))) 
+  (x,S(2+(Listennou.find_index_of_in (normal_form x) all_normal_forms))) 
 ) all ;;
 let image_set x = List.assoc x table_for_image_sets ;;
 let intersection x y = Ordered.intersect Early_atom.order x y;;
@@ -5425,7 +5425,7 @@ let compose_list_permutations sigma1 sigma2 =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   Listennou.find_index (compose_list_permutations sigma1 sigma2) base
+   Listennou.find_index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -5555,12 +5555,12 @@ Snippet 59 : Problem involving periodicity
 let find_periodicity l= 
   let rl = List.rev l in 
   let (a1,after_a1) = Listennou.head_with_tail rl in 
-  let j = Listennou.find_index a1 after_a1 in 
+  let j = Listennou.find_index_of_in a1 after_a1 in 
   let inverted_motif = Listennou.long_head j rl in 
   let motif = List.rev inverted_motif in 
   let p = List.length motif in 
   let m0 = Min.list motif in 
-  let i0 = Listennou.find_index m0 motif in 
+  let i0 = Listennou.find_index_of_in m0 motif in 
   let after_m0 = Listennou.long_tail i0 motif 
   and before_m0 = Listennou.long_head (i0-1) motif in
   (p,m0::(after_m0@before_m0)) ;; 
@@ -6471,7 +6471,7 @@ let tt = Memoized.make(fun n->
 let ss = Memoized.make(fun n->
   List.filter (
    fun l->
-    let i = Listennou.find_index (n-1) l in 
+    let i = Listennou.find_index_of_in (n-1) l in 
     if (List.mem i [1;n-1;n])
     then false 
     else (List.nth l i)=n   

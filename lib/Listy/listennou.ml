@@ -35,7 +35,7 @@ let rec didrochan0=
 in
 didrochan0(x,[],[],true);;
 
-let find_index x ll=
+let find_index_of_in x ll=
 let rec sub_f=
 (function (j,l)->match l with
 []->(-1)      

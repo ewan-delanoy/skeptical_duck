@@ -182,7 +182,7 @@ let extract_post_index_in_topic s topic_idx =
   let indices =  post_indices_in_topic topic_idx in 
    let i1=Substring.leftmost_index_of_in "p=" s 
    and i2=Substring.leftmost_index_of_in "#" s  in 
-   Listennou.find_index (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
+   Listennou.find_index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
 
 let extract_section_path s = 
    let i1=Substring.leftmost_index_of_in "." s in 

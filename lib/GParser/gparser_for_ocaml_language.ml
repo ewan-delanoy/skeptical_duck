@@ -127,10 +127,10 @@ let list_for_value_making=
   
 end;;
 
-let index_for_name_in_value_parser=Listennou.find_index
+let index_for_name_in_value_parser=Listennou.find_index_of_in
    prsr_for_uncapitalized_word Private.list_for_value_making;;
 
-let index_for_content_in_value_parser=Listennou.find_index
+let index_for_content_in_value_parser=Listennou.find_index_of_in
    (Gparser.Enclosure ("",double_semicolon)) Private.list_for_value_making;; 
    
 
