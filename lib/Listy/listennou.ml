@@ -391,7 +391,7 @@ let cut_into_small_parts  l ~max_part_size =
 
 (* cut_into_small_parts (Ennig.ennig 1 7) ~max_part_size:3 ;; *)
 
-let project l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
+let sublist_with_indices l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
 
 (* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
 

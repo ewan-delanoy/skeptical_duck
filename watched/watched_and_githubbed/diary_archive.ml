@@ -4107,7 +4107,7 @@ let minimal_defects =
     Min.minimize_it_with_care  defect_at_index 
       (Int_range.range 1 dim_before) ;;   
 
-let big_proj shadow = il_sort(Image.image (fun l->Listennou.project l shadow) base3) ;;  
+let big_proj shadow = il_sort(Image.image (fun l->Listennou.sublist_with_indices l shadow) base3) ;;  
 let shadows = il_sort (Listennou.power_set (Int_range.range 1 dim_before)) ;;     
 let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh)) shadows ;;
 
