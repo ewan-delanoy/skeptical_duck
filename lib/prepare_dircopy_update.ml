@@ -7,7 +7,7 @@
 let compute_deleted_in_diff sourcedir destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
-   let temp1=More_unix.quick_beheaded_complete_ls s_destdir in
+   let temp1=Unix_again.quick_beheaded_complete_ls s_destdir in
    List.filter_map(
        fun s->if (s<>"README")
               &&(not(Supstring.begins_with s ".git/")) 
@@ -54,7 +54,7 @@ let compute_diff (sourcedir,l) destdir=
 let greedy_list sourcedir=
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
-   let source_paths=More_unix.complete_ls_with_nondirectories_only converted_to_dir in
+   let source_paths=Unix_again.complete_ls_with_nondirectories_only converted_to_dir in
    Image.image (fun ap->
      let rootless_path = Dfn_common.decompose_absolute_path_using_root ap sourcedir in 
      Dfn_rootless.to_line rootless_path ) 
@@ -67,7 +67,7 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
    let s_dir =  Dfa_root.without_trailing_slash sourcedir in 
    let converted_to_dir=Directory_name.of_string
       (Dfa_root.without_trailing_slash sourcedir) in
-   let absolute_paths1=More_unix.complete_ls_with_nondirectories_only converted_to_dir in 
+   let absolute_paths1=Unix_again.complete_ls_with_nondirectories_only converted_to_dir in 
    let ignored_subdirs1=Image.image Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
    List.filter_map (fun ap->
      let s_ap = Absolute_path.to_string ap in 

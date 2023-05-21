@@ -60,9 +60,9 @@ module Private = struct
         else (Coma_constant.conventional_files_with_minimal_content,
               Coma_constant.minimal_set_of_needed_dirs)
       ) in 
-      let _=More_unix.clear_directory_contents destination in 
+      let _=Unix_again.clear_directory_contents destination in 
 
-      let _=(More_unix.create_subdirs_and_fill_files
+      let _=(Unix_again.create_subdirs_and_fill_files
       destination needed_dirs conv_files) in 
       let (modules_in_good_order,compilables,noncompilables) = 
           Needed_data_summary.expand cs summary in 

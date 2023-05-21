@@ -215,7 +215,7 @@ let check_that_no_change_has_occurred fw =
 let first_init config =
    let the_root = Fw_poly.root config in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
-   let (list1,_) = More_unix.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
+   let (list1,_) = Unix_again.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
    let list2 = List.filter_map(
             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 

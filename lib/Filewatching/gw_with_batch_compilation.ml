@@ -633,7 +633,7 @@ let debuggable_or_executable  = Private.command_for_debuggable_or_executable ;;
 
    let of_configuration config =
       let root = Gw_poly.root config in 
-      let _=(More_unix.create_subdirs_and_fill_files_if_necessary root
+      let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            Coma_constant.conventional_files_with_minimal_content) in 
       let initial_parent = Gw_with_dependencies.of_configuration config in 
