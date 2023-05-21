@@ -41,6 +41,28 @@ let rec iterator_for_far_apart_components uple =
 end ;;
 
 
+let complement_union_of_ranges ranges n=
+   let rec tempf=(fun 
+     (already_treated,a,b,to_be_treated)->
+       match to_be_treated with 
+       []->List.rev((a,b)::already_treated)
+       |(x1,y1)::other_ranges->
+         tempf((a,x1-1)::already_treated,y1+1,b,other_ranges)
+   ) in 
+   let temp1=tempf([],1,n,ranges) in 
+   List.filter (fun (x,y)->x<=y) temp1;;
+
+(*
+
+complement_union_of_ranges [3,7;8,20] 30;;
+complement_union_of_ranges [3,7;9,20] 30;;
+complement_union_of_ranges [1,7;9,20] 30;;
+complement_union_of_ranges [1,7;9,30] 30;;
+complement_union_of_ranges [1,7;8,30] 30;;
+
+*)
+
+
 let decompose_into_connected_components l=
   let rec tempf = (fun 
      (treated,to_be_treated)->

@@ -57,7 +57,7 @@ let before_and_after w x=
 
 let complement_union_of_ranges ranges s=
    let n=String.length s in 
-   let temp1=Listennou.complement_union_of_ranges ranges n in 
+   let temp1=Arithmetic_list.complement_union_of_ranges ranges n in 
    Image.image (fun (u,v)->interval s u v) temp1;;
 
 let extract_intervals_in_wrt_separator s sep =
