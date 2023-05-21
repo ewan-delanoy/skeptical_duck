@@ -575,7 +575,64 @@ module Hashtbl_here = struct
       Hashtbl.replace greedy key answer;;    
 
 end ;;
+
+module Small_step = struct 
   
+  exception Compute_easy_cumulative_exn of key ;;
+  exception Compute_easy_fork_exn of key ;;
+  exception Import_exn1 of key ;;    
+  exception Import_exn2 of key ;;  
+
+  module Private = struct
+
+  let compute_easy_cumulative pivot key =
+     match Peek.cumulative_case Hashtbl_here.cautious [] key pivot with 
+     P_Success(answer) -> answer 
+   | P_Unfinished_computation(_)
+   | P_Failure -> raise(Compute_easy_cumulative_exn(key)) ;; 
+    
+  let add_easy_cumulative pivot key =
+      let answer = compute_easy_cumulative pivot key in 
+      Hashtbl_here.add_to_all key answer ;; 
+ 
+  let compute_easy_fork (i,j,k) key =
+      match Peek.fork_case Hashtbl_here.cautious [] key (i,j,k) with 
+      P_Success(answer) -> answer 
+    | P_Unfinished_computation(_)
+    | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
+
+  let add_easy_fork (i,j,k) key =
+      let answer = compute_easy_fork (i,j,k) key in 
+      Hashtbl_here.add_to_all key answer ;;  
+
+  let import key = 
+     let lower_key = Kay.decrement key 
+     and (Key(_,ub_on_constraints))= key in 
+     match Compute.impatient_opt Hashtbl_here.cautious lower_key with 
+     None -> raise(Import_exn1(key))
+     |Some(M(sols,ext)) ->    
+     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
+      if sols2 = []
+      then raise(Import_exn2(key))
+      else 
+      let answer = M(sols2,ext) in   
+      Hashtbl_here.add_to_all key answer;;
+   
+    end ;;
+
+     let is_a_fork = function 
+    |St_fork(_,_,_) -> true
+    |St_cumulative _
+    |St_import -> false ;;    
+
+   let apply = function 
+       St_cumulative pivot -> Private.add_easy_cumulative pivot
+      |St_fork(i,j,k) -> Private.add_easy_fork (i,j,k)
+      |St_import -> Private.import ;;      
+
+end ;;   
+
+
 module High_level = struct 
 
   module Private = struct 
@@ -670,7 +727,10 @@ module High_level = struct
         let temp3 = uks_sort temp2 in 
         let temp4 = Partition_list.according_to_map 
         temp3 ~assume_connectedness:true (fun ((_,_,w,_),_) ->w)  in 
-        temp4;; 
+        let forks = List.filter (
+          fun (_key,st)-> Small_step.is_a_fork st
+        ) temp3 in 
+        (temp4,forks);; 
 
     end ;;
     
@@ -682,56 +742,6 @@ end ;;
   
 
 
-module Small_step = struct 
-  
-  exception Compute_easy_cumulative_exn of key ;;
-  exception Compute_easy_fork_exn of key ;;
-  exception Import_exn1 of key ;;    
-  exception Import_exn2 of key ;;  
-
-  module Private = struct
-
-  let compute_easy_cumulative pivot key =
-     match Peek.cumulative_case Hashtbl_here.cautious [] key pivot with 
-     P_Success(answer) -> answer 
-   | P_Unfinished_computation(_)
-   | P_Failure -> raise(Compute_easy_cumulative_exn(key)) ;; 
-    
-  let add_easy_cumulative pivot key =
-      let answer = compute_easy_cumulative pivot key in 
-      Hashtbl_here.add_to_all key answer ;; 
- 
-  let compute_easy_fork (i,j,k) key =
-      match Peek.fork_case Hashtbl_here.cautious [] key (i,j,k) with 
-      P_Success(answer) -> answer 
-    | P_Unfinished_computation(_)
-    | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
-
-  let add_easy_fork (i,j,k) key =
-      let answer = compute_easy_fork (i,j,k) key in 
-      Hashtbl_here.add_to_all key answer ;;  
-
-  let import key = 
-     let lower_key = Kay.decrement key 
-     and (Key(_,ub_on_constraints))= key in 
-     match Compute.impatient_opt Hashtbl_here.cautious lower_key with 
-     None -> raise(Import_exn1(key))
-     |Some(M(sols,ext)) ->    
-     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
-      if sols2 = []
-      then raise(Import_exn2(key))
-      else 
-      let answer = M(sols2,ext) in   
-      Hashtbl_here.add_to_all key answer;;
-   
-    end ;;
-
-   let apply = function 
-       St_cumulative pivot -> Private.add_easy_cumulative pivot
-      |St_fork(i,j,k) -> Private.add_easy_fork (i,j,k)
-      |St_import -> Private.import ;;      
-
-end ;;   
 
 
 module Fill = struct 
