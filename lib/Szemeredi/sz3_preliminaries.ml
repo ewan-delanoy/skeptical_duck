@@ -250,6 +250,9 @@ let list_is_admissible upper_bound candidate =
     let decrement (Key(fis,ub_on_constraint)) =
       Key(fis,Upper_bound_on_constraint.decrement ub_on_constraint) ;;  
 
+    let deconstructor (Key(FIS(n,scrappers),UBC(W w,ub_on_breadth))) =
+           (n,scrappers,w,Upper_bound_on_breadth.deconstructor ub_on_breadth) ;;        
+ 
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
