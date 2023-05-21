@@ -133,6 +133,10 @@ module Upper_bound_on_breadth = struct
       Unrestricted -> raise(Get_exn)
       |Up_to(B b) -> B b ;; 
   
+    let deconstructor = function 
+      Unrestricted -> 0
+      |Up_to(B b) -> b ;; 
+
   let untranslate d = function  
     Unrestricted -> Unrestricted 
    |Up_to(B b) -> Up_to(B(b-d)) ;; 
