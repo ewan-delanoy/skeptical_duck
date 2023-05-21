@@ -34,4 +34,4 @@ type peek_result =
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type small_step = St_cumulative | St_fork | St_import ;; 
+type small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 

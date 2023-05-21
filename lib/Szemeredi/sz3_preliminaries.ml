@@ -36,7 +36,7 @@ type peek_result = Sz3_types.peek_result =
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type small_step = Sz3_types.small_step = St_cumulative | St_fork | St_import ;; 
+type small_step = Sz3_types.small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -74,6 +74,8 @@ end ;;
 
 module Finite_int_set = struct 
 
+  module Private = struct
+
   let to_usual_int_list (FIS(n,scrappers)) = i_setminus (Int_range.range 1 n) scrappers ;; 
   
   let of_usual_int_list domain =
@@ -81,10 +83,26 @@ module Finite_int_set = struct
        let n = List.hd(List.rev domain) in 
        FIS(n,i_setminus (Int_range.range 1 n) domain) ;;   
 
+  end ;;
+
+  let decompose_wrt_translation fis_domain = 
+    let domain = Private.to_usual_int_list fis_domain in 
+    let (d,core_domain) = (match domain with 
+      [] -> (0,[])
+      | h :: _ -> (h-1, if h=1 then domain else 
+                    Image.image (fun x->x-(h-1)) domain 
+                   )
+    ) in 
+    (d,Private.of_usual_int_list core_domain) ;; 
+
+  let max (FIS(n,_)) = n ;; 
+
+  let of_usual_int_list = Private.of_usual_int_list ;; 
+
   let remove_one_element (FIS(n,scrappers)) k=
        let new_scrappers = i_insert k scrappers in 
        if k <> n then FIS(n,new_scrappers) else 
-       let new_z =  to_usual_int_list (FIS(n-1,new_scrappers)) in 
+       let new_z =  Private.to_usual_int_list (FIS(n-1,new_scrappers)) in 
        let new_max = List.hd(List.rev new_z) in 
        FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;     
   
@@ -95,17 +113,8 @@ module Finite_int_set = struct
   remove_one_element (FIS(3,[])) 3 ;;
   
   *)
-  
 
-  let decompose_wrt_translation fis_domain = 
-    let domain = to_usual_int_list fis_domain in 
-    let (d,core_domain) = (match domain with 
-      [] -> (0,[])
-      | h :: _ -> (h-1, if h=1 then domain else 
-                    Image.image (fun x->x-(h-1)) domain 
-                   )
-    ) in 
-    (d,of_usual_int_list core_domain) ;; 
+  let to_usual_int_list = Private.to_usual_int_list ;; 
 
 
 end ;;    
@@ -240,7 +249,7 @@ let list_is_admissible upper_bound candidate =
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
-    
+
     exception Predecessor_exn of key ;; 
 
     let predecessor key =
@@ -265,7 +274,7 @@ let list_is_admissible upper_bound candidate =
 
     let vertex_decomposition key =
         let (Key(fis,_upper_bound)) = key in 
-        let n = List.hd(List.rev(Finite_int_set.to_usual_int_list fis)) in 
+        let (FIS(n,_)) = fis in 
         (n,remove_one_element key n) ;;
         
     let width (Key(_,UBC(w,_))) = w ;;
@@ -355,27 +364,33 @@ module Peek = struct
     
     *)
     
-    let for_cumulative_case hashtbl helper old_key = 
-        let (n,new_key) = Kay.vertex_decomposition old_key in 
+    let for_cumulative_case hashtbl helper old_key pivot= 
+        let new_key = Kay.remove_one_element old_key pivot in 
         let peek_res = for_obvious_accesses hashtbl helper new_key in 
           match peek_res with 
          P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
         |P_Failure -> P_Unfinished_computation([new_key]) 
         |P_Success(M(sols2,ext2)) ->
           let (Key(_,old_ub)) = old_key in 
-          if not(Upper_bound_on_constraint.list_is_admissible old_ub (ext2@[n]))
+          if not(Upper_bound_on_constraint.list_is_admissible old_ub (i_insert pivot ext2))
           then P_Success(M(sols2,[]))
           else
           let sols3 = List.filter_map (fun sol->
-                      if Upper_bound_on_constraint.list_is_admissible old_ub (sol@[n]) 
-                      then Some(sol@[n]) 
+                      let increased_sol = i_insert pivot sol in 
+                      if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
+                      then Some(increased_sol) 
                       else None    
           ) sols2 in 
           if sols3 <> [] 
-          then P_Success(M(sols3,ext2@[n]))  
+          then P_Success(M(sols3,i_insert pivot ext2))  
           else P_Failure
       ;;
   
+   let usual_cumulative_case hashtbl helper key =
+        let (Key(fis,_)) = key in 
+        let n =Finite_int_set.max fis in
+        for_cumulative_case  hashtbl helper key n;; 
+
   (*
      
     We use translations as little as possible. Most of the functions
@@ -405,17 +420,11 @@ module Peek = struct
     (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
      Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
   
-  let for_fork_case hashtbl helper old_key = 
-    let (Key(fis,upper_bound)) = old_key in 
-    let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
-    if opt1=None  
-    then raise(For_fork_case_should_never_happen_1_exn(old_key))
-    else    
-    let UBC(W w,ub_on_breadth) = Option.get opt1 in   
-    let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
+  let for_fork_case hashtbl helper old_key (i,j,k)= 
+    let cstr = [i;j;k] in 
     let candidates = Image.image (
            fun i-> Kay.remove_one_element old_key i
-    ) [b;b+w;b+2*w] in 
+    ) cstr in 
     let (candidates2,bad_ones) = partition_leaves_in_fork_case hashtbl helper candidates in 
     if bad_ones <> []
     then P_Unfinished_computation(bad_ones)
@@ -430,9 +439,20 @@ module Peek = struct
           P_Success(M(sols4,[]))
     else let (max_idx,_) = List.hd(List.rev max_indices) in 
           let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
-          let ext5 = Image.image (fun (k,_)->List.nth [b;b+w;b+2*w] (k-1)) min_indices in 
+          let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
           P_Success(M(sols5,ext5));;    
-  
+   
+    
+    
+    let usual_fork_case hashtbl helper key =
+            let (Key(fis,upper_bound)) = key in 
+            let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
+            if opt1=None  
+            then raise(For_fork_case_should_never_happen_1_exn(key))
+            else    
+            let UBC(W w,ub_on_breadth) = Option.get opt1 in   
+            let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
+            for_fork_case  hashtbl helper key (b,b+w,b+2*w);;       
   
     let multiple hashtbl helper old_key = 
       let peek_res1 = for_obvious_accesses hashtbl helper old_key in 
@@ -440,12 +460,12 @@ module Peek = struct
         P_Success (_) 
       | P_Unfinished_computation (_) -> (peek_res1,false)  
       | P_Failure ->
-      let peek_res2= for_cumulative_case hashtbl helper old_key in 
+      let peek_res2= usual_cumulative_case hashtbl helper old_key in 
         match peek_res2 with 
         P_Success (_) -> (peek_res2,true)
       | P_Unfinished_computation (_) -> (peek_res2,false)  
       | P_Failure -> 
-      let peek_res3= for_fork_case hashtbl helper old_key in 
+      let peek_res3= usual_fork_case hashtbl helper old_key in 
         match peek_res3 with 
         P_Success (_) -> (peek_res3,true)
       | P_Unfinished_computation (_) -> (peek_res3,false)  
@@ -460,12 +480,18 @@ module Peek = struct
           | P_Success (answer) -> 
               (Some answer,None) ;; 
 
+    
+
+
     end ;;           
 
 let cumulative_case = Private.for_cumulative_case ;;
+
 let fork_case = Private.for_fork_case ;;
 let multiple = Private.multiple ;; 
 let simplified_multiple = Private.simplified_multiple ;; 
+let usual_cumulative_case = Private.usual_cumulative_case ;;
+let usual_fork_case = Private.usual_fork_case ;;
 
 end ;;  
 
@@ -567,13 +593,13 @@ module High_level = struct
       _ -> None ;; 
 
   let rigorous_quest_for_cumulative_case old_key = 
-    let (_n,simpler_key) = Kay.vertex_decomposition old_key in 
+    let (n,simpler_key) = Kay.vertex_decomposition old_key in 
     let res1 = compute_recursively_and_remember simpler_key 
     and res2 = compute_recursively_and_remember old_key in 
     let M(sols1,_ext1) = res1 
     and M(sols2,_ext2) = res2 in 
     if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
-    then Some(res1,res2,[simpler_key])  
+    then Some([n],(res1,res2),[simpler_key])  
     else None ;;
 
   let rigorous_quest_for_fork_case initial_key = 
@@ -601,11 +627,13 @@ module High_level = struct
       (Compute.impatient_opt Hashtbl_here.cautious cand)=None
     ) in
     match rigorous_quest_for_cumulative_case key with 
-    Some(_,_,candidates)-> ((St_cumulative,[]), selector candidates)
+    Some(single,_,candidates)-> (St_cumulative(List.hd single), selector candidates)
     | None ->
       (
        match rigorous_quest_for_fork_case key with 
-       Some(cstr,_,candidates)-> ((St_fork,cstr), selector candidates)
+       Some(cstr,_,candidates)-> 
+             let elt = (fun k->List.nth cstr (k-1)) in 
+             ((St_fork(elt 1,elt 2,elt 3)), selector candidates)
        | None -> raise(Assess_exn(key))
       );;
 
@@ -631,24 +659,24 @@ module Small_step = struct
 
   module Private = struct
 
-  let compute_easy_cumulative key =
-     match Peek.cumulative_case Hashtbl_here.cautious [] key with 
+  let compute_easy_cumulative pivot key =
+     match Peek.cumulative_case Hashtbl_here.cautious [] key pivot with 
      P_Success(answer) -> answer 
    | P_Unfinished_computation(_)
    | P_Failure -> raise(Compute_easy_cumulative_exn(key)) ;; 
     
-  let add_easy_cumulative key =
-      let answer = compute_easy_cumulative key in 
+  let add_easy_cumulative pivot key =
+      let answer = compute_easy_cumulative pivot key in 
       Hashtbl_here.add_to_all key answer ;; 
  
-  let compute_easy_fork key =
-      match Peek.fork_case Hashtbl_here.cautious [] key with 
+  let compute_easy_fork (i,j,k) key =
+      match Peek.fork_case Hashtbl_here.cautious [] key (i,j,k) with 
       P_Success(answer) -> answer 
     | P_Unfinished_computation(_)
     | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
 
-  let add_easy_fork key =
-      let answer = compute_easy_fork key in 
+  let add_easy_fork (i,j,k) key =
+      let answer = compute_easy_fork (i,j,k) key in 
       Hashtbl_here.add_to_all key answer ;;  
 
   let import key = 
@@ -667,8 +695,8 @@ module Small_step = struct
     end ;;
 
    let apply = function 
-       St_cumulative -> Private.add_easy_cumulative 
-      |St_fork -> Private.add_easy_fork
+       St_cumulative pivot -> Private.add_easy_cumulative pivot
+      |St_fork(i,j,k) -> Private.add_easy_fork (i,j,k)
       |St_import -> Private.import ;;      
 
 end ;;   
@@ -690,7 +718,7 @@ module Fill = struct
    let for_level3 = [
         ((5,[],3,0),St_import);
         ((6,[],3,0),St_import);
-        ((7,[],3,0),St_fork);
+        ((7,[],3,0),St_fork(1,3,7));
    ] ;; 
 
    end ;;
