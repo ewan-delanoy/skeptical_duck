@@ -7804,7 +7804,7 @@ let loop () =
     let _ =Io.overwrite_with tex_ap whole in 
     Sys.command cmd_for_texshop;;
 
-let tr k = More_io.transfer_first_lines_of_to k end_ap beg_ap;;
+let tr k = Io_again.transfer_first_lines_of_to k end_ap beg_ap;;
 
 let ll k = let temp = Lines_in_string.interval (Io.read_whole_file end_ap) k k in 
   (temp,Strung.explode temp);;
