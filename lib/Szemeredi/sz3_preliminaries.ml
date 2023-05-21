@@ -56,6 +56,23 @@ let il_sort = Ordered.sort il_order ;;
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
 
+let uk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
+   let try1 = Total_ordering.for_integers w1 w2 in 
+   if try1 <> Total_ordering_result_t.Equal then try1 else 
+   let try2 = Total_ordering.for_integers n1 n2 in 
+   if try2 <> Total_ordering_result_t.Equal then try2 else  
+   let try3 = Total_ordering.for_integers (List.length scr2) (List.length scr1) in 
+   if try3 <> Total_ordering_result_t.Equal then try3 else  
+   let try4 = Total_ordering.silex_for_intlists scr1 scr2 in 
+   if try4 <> Total_ordering_result_t.Equal then try4 else   
+   Total_ordering.for_integers b1 b2
+) : (int * int list * int * int) Total_ordering_t.t);;  
+     
+let small_step_order = ((fun st1 st2->Total_ordering.standard st1 st2): small_step Total_ordering_t.t);;
+
+let uks_order = Total_ordering.product uk_order small_step_order ;; 
+
+let uks_sort = Ordered.sort uks_order ;;
 
 module Constraint = struct 
 
@@ -650,7 +667,8 @@ module High_level = struct
           fun (key,(small_step,_)) -> 
              (Kay.deconstructor key,small_step)
         ) temp1 in 
-        temp2;; 
+        let temp3 = uks_sort temp2 in 
+        temp3;; 
 
     end ;;
     
