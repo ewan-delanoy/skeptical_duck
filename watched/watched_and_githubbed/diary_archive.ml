@@ -1082,7 +1082,7 @@ let z5 = Image.image (
      let sg = generated_subgroup (i_sort [34;k]) in 
      (Formal_subgroup.of_list sg,k)
 ) four_cycles ;;
-let z6 = Partition_list.according_to_map z5 fst ;; 
+let z6 = Partition_list.according_to_fst z5 ;; 
 let z7 = Image.image snd z6 ;; 
 let common_cycles = List.hd z7 ;; 
 
@@ -3183,7 +3183,7 @@ let right_base = sps small_n ;;
 let shadow x = Image.image (diff x) right_base ;;
       
 let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
-let u4 = Partition_list.according_to_map u3 fst ;;
+let u4 = Partition_list.according_to_fst u3 ;;
 
 let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
@@ -3233,7 +3233,7 @@ let right_base = sps small_n ;;
 let shadow x = Image.image (diff x) right_base ;;
       
 let u3 = Explicit.image  (fun z->(shadow z,z)) left_base ;;
-let u4 = Partition_list.according_to_map u3 fst ;;
+let u4 = Partition_list.according_to_fst u3 ;;
 
 let bigger_n = small_n+1 ;;
 let bigger_right_base = sps bigger_n ;;
@@ -3932,7 +3932,24 @@ let intervals_outside =
 
 let base1 = List.flatten(Image.image (fun (x,y)->[x;y]) intervals_outside);;
 
-let base2 = Listennou.extend_total_ordering_by_adding_two_elements 
+let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
+  let (part1,temp1) = Listennou.long_head_with_tail (idx1-1) l in 
+  let (part2,part3) = Listennou.long_head_with_tail (idx2-idx1) temp1 in 
+  List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
+  
+(* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
+
+
+let extend_total_ordering_by_adding_two_elements old_total_order elt1 elt2 = 
+  let n = (List.length old_total_order)+1 in 
+  Image.image (
+   insert_two_elements_at_indices old_total_order (elt1,elt2)
+  ) (Int_uple.inclusive_list_of_pairs n) ;; 
+
+
+(* extend_total_ordering_by_adding_two_elements  [1; 2; 3; 4; 5; 6] 25 35 ;; *)
+
+let base2 = extend_total_ordering_by_adding_two_elements 
   base1 "a" "b" ;;
 
 let (bad1,good1) = List.partition inner_interval_is_too_large base2 ;; 
@@ -6088,7 +6105,7 @@ let oi = Total_ordering.for_integers ;;
 let oi2 = Total_ordering.product oi oi ;; 
 
 let reorder pairs =
-   let temp1 = Partition_list.according_to_map pairs fst in 
+   let temp1 = Partition_list.according_to_fst pairs in 
    let temp2 = Image.image (fun (x,ll)->
        (x,Ordered.safe_set oi2 (List.flatten ll))
       ) temp1 in 
