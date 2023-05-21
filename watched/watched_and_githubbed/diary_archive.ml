@@ -5532,7 +5532,7 @@ let find_periodicity l=
   let p = List.length motif in 
   let m0 = Min.list motif in 
   let i0 = Listennou.find_index m0 motif in 
-  let after_m0 = Listennou.big_tail i0 motif 
+  let after_m0 = Listennou.long_tail i0 motif 
   and before_m0 = Listennou.long_head (i0-1) motif in
   (p,m0::(after_m0@before_m0)) ;; 
 

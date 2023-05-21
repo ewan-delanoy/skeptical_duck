@@ -474,7 +474,7 @@ order "overwrite_file_if_it_exists" (order_usual_preliminary,"") ;;
 order "register_rootless_paths" ([
    " let old_val = get old_fw in ";
    " let extended_details_list = Modularized_details.get new_fw in ";
-   " let new_details = Listennou.big_tail (List.length old_val) extended_details_list in";
+   " let new_details = Listennou.long_tail (List.length old_val) extended_details_list in";
    " let new_modules_in_order = Image.image fst (Fw_determine_order.main new_details) in ";
    " let new_details_in_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles";
    "     new_details new_modules_in_order in ";

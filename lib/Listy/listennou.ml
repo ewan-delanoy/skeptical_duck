@@ -79,7 +79,7 @@ tempf(r,[],l);;
 
 let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
 
-let big_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;
+let long_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;
 
 let before_and_after r l = let (b,a) = long_head_with_tail r l in (List.rev b,a) ;; 
 
