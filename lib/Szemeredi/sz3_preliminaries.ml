@@ -227,8 +227,31 @@ module Upper_bound_on_constraint = struct
                     else ub_on_breadth2
                     ) in 
                Some(UBC(W w2,adjusted_breadth_bound),[b1;b1+w1;b1+2*w1])
+             ;;    
+
+    let first_nonopt_second_opt fis (W w) bmax =
+         match attained_upper_bound_opt_for_dissociated_data fis (W w) bmax with 
+         None -> None  
+        |Some(UBC(W w1,ub_on_breadth1)) ->
+            let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
+            let (preceding_width,preceding_breadth) =
+             (
+              if b1>1 
+              then (W w1, B (b1-1))  
+              else let (FIS(n,_)) = fis in 
+                    (W (w1-1), B (n-2*(w1-1))) 
+             ) in 
+              match attained_upper_bound_opt_for_dissociated_data fis preceding_width preceding_breadth with 
+              None -> Some([b1;b1+w1;b1+2*w1],None) 
+             |Some(UBC(W w2,ub_on_breadth2)) -> 
+                 let adjusted_breadth_bound = 
+                   (if w2<w1
+                    then Unrestricted 
+                    else ub_on_breadth2
+                    ) in 
+               Some([b1;b1+w1;b1+2*w1],Some(UBC(W w2,adjusted_breadth_bound)))
              ;; 
-  
+
   
       end ;;
   
@@ -244,6 +267,7 @@ let decrement ub_on_constraint =
     let (UBC(W w,_)) = ub_on_constraint in 
     UBC(W(w-1),Unrestricted) ;; 
      
+let first_nonopt_second_opt = Private.first_nonopt_second_opt ;;     
       
 let list_is_admissible upper_bound candidate = 
     if candidate = [] then true else 
@@ -702,12 +726,13 @@ module High_level = struct
       then Some(cstr,candidates,translated_candidates)
       else None;;   
   
+  let selector = List.filter (fun cand->
+      (Compute.impatient_opt Hashtbl_here.cautious cand)=None
+    ) ;;
+
   exception Assess_exn of key ;; 
 
   let assess key = 
-    let selector = List.filter (fun cand->
-      (Compute.impatient_opt Hashtbl_here.cautious cand)=None
-    ) in
     match rigorous_quest_for_cumulative_case key with 
     Some(single,_,candidates)-> (St_cumulative(List.hd single), selector candidates)
     | None ->
