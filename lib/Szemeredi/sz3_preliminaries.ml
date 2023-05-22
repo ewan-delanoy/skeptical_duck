@@ -746,8 +746,35 @@ module High_level = struct
         ) forks in 
         (temp4,bad_forks);; 
 
+    exception All_solutions_exn of key ;;     
+
+    let all_solutions =Memoized.recursive(fun old_f key -> 
+       let (Key(fis,ub_on_constraint)) = key in 
+       let domain = Finite_int_set.to_usual_int_list fis 
+       and is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in 
+       if is_ok domain 
+       then [domain]
+       else
+       let compute_below = (fun t->
+          old_f (Kay.remove_one_element key t)
+       ) in 
+       match fst(assess key) with 
+       St_cumulative(m)->
+          List.filter_map (
+             fun sol->
+               let new_sol = i_insert m sol in 
+               if is_ok new_sol then Some new_sol else None
+          )(compute_below m) 
+       |St_fork(i,j,k)->
+         il_fold_merge(Image.image compute_below [i;j;k])
+       |St_import ->  raise(All_solutions_exn(key))
+    );;    
+       
+
+
     end ;;
     
+    let all_solutions = Private.all_solutions ;;
     let assess = Private.assess ;; 
     let compute = Private.compute_recursively_and_remember ;; 
     let needed_nodes = Private.needed_nodes ;; 
@@ -768,13 +795,23 @@ module Fill = struct
 
 
    let for_level2 = [
-        ((7,[4],2,0),St_import);
+        ((6, [2; 4], 2, 0), St_cumulative 6); 
+        ((6, [2], 2, 0), St_cumulative 6);
+        ((7, [4], 2, 0), St_import); 
+        ((8, [2; 4; 7], 2, 0), St_cumulative 8);
+        ((8, [2; 6; 7], 2, 0), St_cumulative 8);
+        ((8, [2; 4], 2, 0), St_fork (1, 3, 5));
+        ((8, [2; 7], 2, 0), St_fork (4, 6, 8));
+        ((8, [5; 7], 2, 0), St_fork (4, 6, 8))
    ] ;; 
    
    let for_level3 = [
         ((5,[],3,0),St_import);
         ((6,[],3,0),St_import);
         ((7,[],3,0),St_fork(1,3,7));
+        ((8, [2], 3, 0), St_fork (1, 4, 7));
+        ((8, [5], 3, 0), St_fork (1, 4, 7));
+        ((8, [], 3, 0), St_fork (2, 5, 8))
    ] ;; 
 
    end ;;
