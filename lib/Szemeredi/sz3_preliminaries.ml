@@ -72,6 +72,7 @@ let small_step_order = ((fun st1 st2->Total_ordering.standard st1 st2): small_st
 
 let uks_order = Total_ordering.product uk_order small_step_order ;; 
 
+let uks_merge = Ordered.merge uks_order ;;
 let uks_sort = Ordered.sort uks_order ;;
 
 module Constraint = struct 
