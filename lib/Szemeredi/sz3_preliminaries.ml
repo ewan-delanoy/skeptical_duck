@@ -229,28 +229,17 @@ module Upper_bound_on_constraint = struct
                Some(UBC(W w2,adjusted_breadth_bound),[b1;b1+w1;b1+2*w1])
              ;;    
 
-    let first_nonopt_second_opt fis (W w) bmax =
-         match attained_upper_bound_opt_for_dissociated_data fis (W w) bmax with 
-         None -> None  
-        |Some(UBC(W w1,ub_on_breadth1)) ->
-            let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
-            let (preceding_width,preceding_breadth) =
-             (
-              if b1>1 
-              then (W w1, B (b1-1))  
-              else let (FIS(n,_)) = fis in 
-                    (W (w1-1), B (n-2*(w1-1))) 
-             ) in 
-              match attained_upper_bound_opt_for_dissociated_data fis preceding_width preceding_breadth with 
-              None -> Some([b1;b1+w1;b1+2*w1],None) 
-             |Some(UBC(W w2,ub_on_breadth2)) -> 
-                 let adjusted_breadth_bound = 
-                   (if w2<w1
-                    then Unrestricted 
-                    else ub_on_breadth2
-                    ) in 
-               Some([b1;b1+w1;b1+2*w1],Some(UBC(W w2,adjusted_breadth_bound)))
-             ;; 
+      let predecessor_for_dissociated_data_opt fis (W w1) (B b1)= 
+         if b1>1 
+              then Some(W w1, B (b1-1))  
+              else if w1=1 
+                   then None 
+                   else 
+                    let n= Finite_int_set.max fis in 
+                    let new_b = n-2*(w1-1) in 
+                    if new_b < 1 
+                    then None  
+                    else Some(W (w1-1), B (n-2*(w1-1))) ;;    
 
   
       end ;;
@@ -267,12 +256,13 @@ let decrement ub_on_constraint =
     let (UBC(W w,_)) = ub_on_constraint in 
     UBC(W(w-1),Unrestricted) ;; 
      
-let first_nonopt_second_opt = Private.first_nonopt_second_opt ;;     
       
 let list_is_admissible upper_bound candidate = 
     if candidate = [] then true else 
     let fis =  Finite_int_set.of_usual_int_list candidate in 
    ((attained_upper_bound_opt fis upper_bound)=None);;
+
+ let predecessor_for_dissociated_data_opt = Private.predecessor_for_dissociated_data_opt ;; 
 
  let two_steps_back = Private.two_steps_back ;;   
 
@@ -303,6 +293,12 @@ let list_is_admissible upper_bound candidate =
 
     let predecessor key =
         let (Key(fis,ub_on_constraint)) = key in 
+        match Upper_bound_on_constraint.two_steps_back fis ub_on_constraint with 
+        None -> raise(Predecessor_exn(key))
+        |Some(new_ub,cstr)->(Key(fis,new_ub),cstr) ;; 
+
+    let largest_constraint_with_predecessor_opt key =
+       let (Key(fis,ub_on_constraint)) = key in 
         match Upper_bound_on_constraint.two_steps_back fis ub_on_constraint with 
         None -> raise(Predecessor_exn(key))
         |Some(new_ub,cstr)->(Key(fis,new_ub),cstr) ;; 

@@ -1,8 +1,25 @@
 (************************************************************************************************************************
-Snippet 121 : 
+Snippet 122 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 121 : Code to add a prefix to each line in a file
+************************************************************************************************************************)
+
+module Snip121=struct
+
+  let ap1 = Absolute_path.of_string "~/Downloads/stack.txt";;
+  let old_text = Io.read_whole_file ap1 ;; 
+  let old_lines = Lines_in_string.lines old_text ;; 
+  let new_lines = Image.image (fun line->">! "^line) old_lines ;; 
+  let new_text = String.concat "\n" new_lines ;; 
+  let act () = Io.overwrite_with ap1 new_text ;; 
+
+
+end ;;
 
 
 (************************************************************************************************************************
