@@ -204,30 +204,7 @@ module Upper_bound_on_constraint = struct
        Some (max_breadth2) -> Some(UBC(W w,Up_to max_breadth2))
          |None -> finder_for_maximal_width (W (w-1),domain) ;;  
   
-      let two_steps_back fis ub_on_constraint =
-         let (UBC(W w,_)) = ub_on_constraint in 
-         let bmax = a_priori_bound_on_breadth fis ub_on_constraint in 
-         match attained_upper_bound_opt_for_dissociated_data fis (W w) bmax with 
-         None -> None  
-        |Some(UBC(W w1,ub_on_breadth1)) ->
-            let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
-            let (preceding_width,preceding_breadth) =
-             (
-              if b1>1 
-              then (W w1, B (b1-1))  
-              else let (FIS(n,_)) = fis in 
-                    (W (w1-1), B (n-2*(w1-1))) 
-             ) in 
-              match attained_upper_bound_opt_for_dissociated_data fis preceding_width preceding_breadth with 
-              None -> Some(UBC(W 1,Unrestricted),[b1;b1+w1;b1+2*w1]) 
-             |Some(UBC(W w2,ub_on_breadth2)) -> 
-                 let adjusted_breadth_bound = 
-                   (if w2<w1
-                    then Unrestricted 
-                    else ub_on_breadth2
-                    ) in 
-               Some(UBC(W w2,adjusted_breadth_bound),[b1;b1+w1;b1+2*w1])
-             ;;    
+      
 
       let predecessor_for_dissociated_data_opt fis (W w1) (B b1)= 
          if b1>1 
@@ -264,8 +241,6 @@ let list_is_admissible upper_bound candidate =
 
  let predecessor_for_dissociated_data_opt = Private.predecessor_for_dissociated_data_opt ;; 
 
- let two_steps_back = Private.two_steps_back ;;   
-
   let untranslate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.untranslate d b) ;;  
      
   
@@ -289,19 +264,17 @@ let list_is_admissible upper_bound candidate =
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
 
-    exception Predecessor_exn of key ;; 
-
-    let predecessor key =
-        let (Key(fis,ub_on_constraint)) = key in 
-        match Upper_bound_on_constraint.two_steps_back fis ub_on_constraint with 
-        None -> raise(Predecessor_exn(key))
-        |Some(new_ub,cstr)->(Key(fis,new_ub),cstr) ;; 
 
     let largest_constraint_with_predecessor_opt key =
        let (Key(fis,ub_on_constraint)) = key in 
-        match Upper_bound_on_constraint.two_steps_back fis ub_on_constraint with 
-        None -> raise(Predecessor_exn(key))
-        |Some(new_ub,cstr)->(Key(fis,new_ub),cstr) ;; 
+       match Upper_bound_on_constraint.attained_upper_bound_opt fis ub_on_constraint with 
+       None -> None 
+       |Some(UBC(W w1,ub_on_breadth1)) ->
+         let (B b1) = Upper_bound_on_breadth.get ub_on_breadth1 in 
+         let cstr1 = [b1;b1+w1;b1+2*w1] in 
+         match Upper_bound_on_constraint.predecessor_for_dissociated_data_opt fis (W w1) (B b1) with 
+          None -> Some(cstr1,None)         
+         |Some(w2,B b2) ->Some(cstr1,Some(Key(fis,UBC(w2,Up_to(B b2))))) ;; 
 
     let remove_one_element (Key(old_fis,old_upper_bound)) k=
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
@@ -679,20 +652,37 @@ module High_level = struct
   let rec find_threshhold_triple triple =
       let ((_,ms),(predecessor,mp),cstr) = triple in 
        if ms<>mp 
-       then (predecessor,cstr)
-       else let (predecessor2,cstr2) = Kay.predecessor predecessor in 
-            let mp2 = measure predecessor2 in 
-            find_threshhold_triple ((predecessor,mp),(predecessor2,mp2),cstr2) ;;  
+       then Some(cstr,Some predecessor)
+       else match Kay.largest_constraint_with_predecessor_opt predecessor with 
+             None -> None 
+            |Some(cstr2,opt2)->
+               (
+                match opt2 with 
+                 None -> Some(cstr2,None)
+                 |Some predecessor2 ->
+                   let mp2 = measure predecessor2 in 
+                  find_threshhold_triple ((predecessor,mp),(predecessor2,mp2),cstr2)
+               ) ;;  
 
-  let unchecked_threshhold_decomposition key =
-     let mkey = measure key 
-     and (key2,cstr) = Kay.predecessor key in 
-     let mkey2 = measure key2 in 
-     find_threshhold_triple ((key,mkey),(key2,mkey2),cstr) ;;  
+  exception Threshhold_decomposition_exn_1 of key ;; 
+  exception Threshhold_decomposition_exn_2 of key ;; 
 
-  let threshhold_decomposition_opt key =
-      try Some(unchecked_threshhold_decomposition key) with 
-      _ -> None ;; 
+  let threshhold_decomposition key =
+     let mkey = measure key in 
+     match Kay.largest_constraint_with_predecessor_opt key with 
+     None ->  raise(Threshhold_decomposition_exn_1(key))
+     |Some (cstr,opt) ->
+        (
+          match opt with 
+           None -> (cstr,None)
+           |Some key2 -> 
+            let mkey2 = measure key2 in 
+          (
+             match find_threshhold_triple ((key,mkey),(key2,mkey2),cstr) with 
+              None -> raise(Threshhold_decomposition_exn_1(key))
+              |Some(cstr3,opt3) -> (cstr3,opt3)
+          )   
+        ) ;;  
 
   let rigorous_quest_for_cumulative_case old_key = 
     let (n,simpler_key) = Kay.vertex_decomposition old_key in 
@@ -705,9 +695,7 @@ module High_level = struct
     else None ;;
 
   let rigorous_quest_for_fork_case initial_key = 
-      match threshhold_decomposition_opt initial_key with  
-      None -> None 
-      |Some(_,cstr) -> 
+      let (cstr,_) = threshhold_decomposition initial_key in 
       let bare_candidates = Image.image 
       (Kay.remove_one_element initial_key) cstr in 
       let candidates = Image.image (
