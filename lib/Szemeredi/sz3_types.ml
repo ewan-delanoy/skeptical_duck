@@ -35,3 +35,5 @@ type peek_result =
    |P_Unfinished_computation of key list ;;
 
 type small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 
+
+type triple_chooser = TC of (key -> (int * int * int) option) ;;

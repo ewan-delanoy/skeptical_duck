@@ -38,6 +38,8 @@ type peek_result = Sz3_types.peek_result =
 
 type small_step = Sz3_types.small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 
 
+type triple_chooser = TC of (key -> (int * int * int) option) ;;
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
