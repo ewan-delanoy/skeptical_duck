@@ -278,6 +278,8 @@ let list_is_admissible upper_bound candidate =
           None -> Some(cstr1,None)         
          |Some(w2,B b2) ->Some(cstr1,Some(Key(fis,UBC(w2,Up_to(B b2))))) ;; 
 
+    let max (Key(fis,_)) = Finite_int_set.max fis ;; 
+
     let remove_one_element (Key(old_fis,old_upper_bound)) k=
        let (UBC(W _w,ub_on_breadth)) = old_upper_bound 
        and new_fis = Finite_int_set.remove_one_element old_fis k in 
@@ -464,35 +466,44 @@ module Peek = struct
    
     
     
-    let usual_fork_case hashtbl helper key =
-            let (Key(fis,upper_bound)) = key in 
-            let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
+    let fork_case_with_triple_chooser hashtbl helper key (TC f)=
+            (* let (Key(fis,upper_bound)) = key in 
+               let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
             if opt1=None  
             then raise(For_fork_case_should_never_happen_1_exn(key))
-            else    
-            let UBC(W w,ub_on_breadth) = Option.get opt1 in   
+            else let UBC(W w,ub_on_breadth) = Option.get opt1 in   
             let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
-            for_fork_case  hashtbl helper key (b,b+w,b+2*w);;       
+            for_fork_case  hashtbl helper key (b,b+w,b+2*w)   
+              *)
+            match f key with 
+            None ->   raise(For_fork_case_should_never_happen_1_exn(key)) 
+            |Some(i,j,k) ->
+            for_fork_case  hashtbl helper key (i,j,k);;       
   
-    let multiple hashtbl helper old_key = 
+    exception Multiple_should_never_happen_1_exn of key ;;
+
+    let multiple hashtbl helper old_key (TC chooser)= 
       let peek_res1 = for_obvious_accesses hashtbl helper old_key in 
         match peek_res1 with 
         P_Success (_) 
-      | P_Unfinished_computation (_) -> (peek_res1,false)  
+      | P_Unfinished_computation (_) -> (peek_res1,false,None)  
       | P_Failure ->
       let peek_res2= usual_cumulative_case hashtbl helper old_key in 
         match peek_res2 with 
-        P_Success (_) -> (peek_res2,true)
-      | P_Unfinished_computation (_) -> (peek_res2,false)  
+        P_Success (_) -> (peek_res2,true,Some (St_cumulative(Kay.max old_key)))
+      | P_Unfinished_computation (_) -> (peek_res2,false,None)  
       | P_Failure -> 
-      let peek_res3= usual_fork_case hashtbl helper old_key in 
+      match chooser old_key with 
+      None ->  raise(Multiple_should_never_happen_1_exn(old_key))  
+      |Some(i,j,k) ->
+      let peek_res3= for_fork_case hashtbl helper old_key (i,j,k) in 
         match peek_res3 with 
-        P_Success (_) -> (peek_res3,true)
-      | P_Unfinished_computation (_) -> (peek_res3,false)  
+        P_Success (_) -> (peek_res3,true,Some(St_fork(i,j,k)))
+      | P_Unfinished_computation (_) -> (peek_res3,false,None)  
       | P_Failure -> raise(Multiple_exn(old_key)) ;; 
           
-    let simplified_multiple hashtbl helper key =   
-      let (peek_res,_)= multiple hashtbl helper key in 
+    let simplified_multiple hashtbl helper key triple_chooser=   
+      let (peek_res,_,_)= multiple hashtbl helper key triple_chooser in 
       match peek_res with 
             P_Failure -> raise (Simplified_multiple_exn(key))
           | P_Unfinished_computation (new_to_be_treated) -> 
@@ -505,13 +516,19 @@ module Peek = struct
 
     end ;;           
 
+(*
+
 let cumulative_case = Private.for_cumulative_case ;;
 
 let fork_case = Private.for_fork_case ;;
-let multiple = Private.multiple ;; 
+
 let simplified_multiple = Private.simplified_multiple ;; 
 let usual_cumulative_case = Private.usual_cumulative_case ;;
 let usual_fork_case = Private.usual_fork_case ;;
+
+*)
+
+let multiple = Private.multiple ;; 
 
 end ;;  
 
@@ -520,14 +537,11 @@ module Compute = struct
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
 
-    let impatient_opt hashtbl key = 
-        fst(Peek.simplified_multiple hashtbl [] key);;
-
-    let pusher_for_needed_subcomputations hashtbl (helper,to_be_treated) =
+    let pusher_for_needed_subcomputations (hashtbl,triple_chooser) (helper,to_be_treated) =
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1) 
         |key :: others ->
-          let (peek_res,to_be_remembered)= Peek.multiple hashtbl helper key in
+          let (peek_res,to_be_remembered,_)= Peek.multiple hashtbl helper key triple_chooser in
           (
             match peek_res with 
             P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2)
@@ -551,10 +565,10 @@ module Compute = struct
       iterator_for_needed_subcomputations hashtbl ([],items) ;;  
       
      
-     
   
   end ;;  
 
+(*
 
 module Hashtbl_here = struct 
 
@@ -843,3 +857,5 @@ module Fill = struct
     ) ;;
 
 end ;;
+
+*)
