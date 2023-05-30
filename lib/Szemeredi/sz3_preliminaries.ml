@@ -492,11 +492,12 @@ module Peek_and_seek = struct
 
 end ;;   
 
-(*
+
 module Compute = struct 
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
+    exception Pusher_for_needed_subcomputations_exn_3 ;; 
 
     let pusher_for_needed_subcomputations (hashtbl,hook_finder) (helper,to_be_treated) =
         match to_be_treated with 
@@ -505,37 +506,32 @@ module Compute = struct
           let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key in 
           (
             match peek_res1 with 
-            
           | P_Unfinished_computation (new_to_be_treated) -> 
                (helper,new_to_be_treated@to_be_treated)
-          | P_Success (answer) -> 
+          | P_Success (_,answer) -> 
               let new_helper =(
                  match hook_opt with 
-                 Some(hook) -> (key,(Some hook,answer)) :: helper 
-                 None -> helper 
+                  Some(hook) -> (key,(hook,answer)) :: helper 
+                 |None -> helper 
               ) in 
               (new_helper,others)
           | P_Failure -> 
-            let hook_opt2 = 
-            let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key in 
+            let hook_opt2 = hook_finder key in 
             (
-              match peek_res1 with 
-              
-            | P_Unfinished_computation (new_to_be_treated) -> 
-                 (helper,new_to_be_treated@to_be_treated)
-            | P_Success (answer) -> 
-                let new_helper =(
-                   match hook_opt with 
-                   Some(hook) -> (key,answer) :: helper 
-                   None -> helper 
-                ) in 
-                (new_helper,others)
-            | P_Failure -> 
-               
-  
-            )  ;;      
+              match hook_opt2 with 
+                 None -> raise (Pusher_for_needed_subcomputations_exn_2)
+                |Some hook2 -> 
+                  let peek_res2 = Peek_and_seek.peek_for_hook hashtbl helper key hook2 in 
+                  match peek_res2 with 
+                  | P_Unfinished_computation (new_to_be_treated) -> 
+                       (helper,new_to_be_treated@to_be_treated)
+                  | P_Success (_,answer) -> 
+                      ((key,(hook2,answer)) :: helper ,others)
+                  | P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3)
+            )
+          );;      
 
-          )  ;;     
+        
   
      let rec iterator_for_needed_subcomputations hashtbl walker = 
         if snd walker = [] then List.rev(fst walker) else 
@@ -549,7 +545,7 @@ module Compute = struct
   
   end ;;  
 
-*)
+
 
 (*
 
