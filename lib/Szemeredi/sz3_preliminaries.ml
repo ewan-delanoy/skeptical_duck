@@ -86,6 +86,19 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
+module Hook = struct 
+
+  let translate d = function 
+      St_import -> St_import 
+    | St_cumulative (m) -> St_cumulative (m+d) 
+    | St_fork (i,j,k) -> St_fork (i+d,j+d,k+d) ;;
+    
+  let translate_opt d = function 
+     None -> None 
+     | Some hook -> Some (translate d hook) ;;   
+  
+end ;;
+
 module Mold = struct 
 
 let translate d (M(sols,ext)) =
@@ -354,26 +367,26 @@ let compute_opt key =
 
 end ;;  
 
-(*
+
 
 module Peek_and_seek = struct 
 
   let seek_non_translated_obvious_accesses hashtbl helper key = 
     match List.assoc_opt key helper with 
-      Some answer1 -> Some(snd answer1)
+      Some (hook1,mold1) -> Some(Some hook1,mold1)
     | None ->
        (
           match  Hashtbl.find_opt hashtbl key with 
-          Some answer2 -> Some(answer2)
+          Some (hook2,mold2) -> Some(Some hook2,mold2)
         | None -> 
           let (Key(fis,upper_bound)) = key in 
           let domain = Finite_int_set.to_usual_int_list fis in 
           if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-          then  Some(M([domain],domain))
+          then  Some(None,M([domain],domain))
            else 
             (
               match Extra_tools.compute_opt key with 
-              Some answer2 -> Some(answer2)
+              Some answer2 -> Some(None,answer2)
               |None -> None         
             ) 
          ) ;; 
@@ -382,13 +395,15 @@ module Peek_and_seek = struct
       let (d,translated_key) = Kay.decompose_wrt_translation key in 
       match seek_non_translated_obvious_accesses hashtbl helper translated_key with 
       None -> None 
-      |Some translated_mold -> Some(Mold.translate (-d) translated_mold);; 
+      |Some (hook_opt,translated_mold) -> 
+         Some(Hook.translate_opt (-d) hook_opt,
+           Mold.translate (-d) translated_mold);; 
 
     let peek_for_import_case hashtbl helper key = 
       let smaller_key = Kay.decrement key  in 
       match seek_obvious_access hashtbl helper smaller_key with 
           None -> P_Unfinished_computation([smaller_key])  
-         |Some(M(sols2,ext2)) ->
+         |Some(_,M(sols2,ext2)) ->
         let (Key(_,upper_bound)) = key in   
         let sols3 = List.filter_map (fun sol->
                     if Upper_bound_on_constraint.list_is_admissible upper_bound sol 
@@ -396,7 +411,7 @@ module Peek_and_seek = struct
                     else None    
         ) sols2 in 
         if sols3 <> [] 
-        then P_Success(M(sols3,ext2))  
+        then P_Success(St_import,M(sols3,ext2))  
         else P_Failure
     ;;
 
@@ -404,10 +419,10 @@ module Peek_and_seek = struct
       let smaller_key = Kay.remove_one_element key pivot in 
       match seek_obvious_access hashtbl helper smaller_key with 
           None -> P_Unfinished_computation([smaller_key])  
-         |Some(M(sols2,ext2)) ->
+         |Some(_,M(sols2,ext2)) ->
         let (Key(_,old_ub)) = key in 
         if not(Upper_bound_on_constraint.list_is_admissible old_ub (i_insert pivot ext2))
-        then P_Success(M(sols2,[]))
+        then P_Success(St_cumulative(pivot),M(sols2,[]))
         else
         let sols3 = List.filter_map (fun sol->
                     let increased_sol = i_insert pivot sol in 
@@ -416,13 +431,13 @@ module Peek_and_seek = struct
                     else None    
         ) sols2 in 
         if sols3 <> [] 
-        then P_Success(M(sols3,i_insert pivot ext2))  
+        then P_Success(St_cumulative(pivot),M(sols3,i_insert pivot ext2))  
         else P_Failure
     ;;
 
     let peek_for_easy_case hashtbl helper key =
        match seek_obvious_access hashtbl helper key with 
-       Some(answer1) -> (P_Success(answer1),None)
+       Some(_,answer1) -> (P_Success(St_import,answer1),None)
        |None ->
         let peek_res1=peek_for_import_case hashtbl helper key in 
         (match peek_res1 with 
@@ -446,7 +461,7 @@ module Peek_and_seek = struct
         ) leaves in 
         let (bad_leaves,good_leaves) = 
             List.partition (fun (_,opt) -> opt = None ) leaves2 in 
-        (Image.image (fun ( cand,opt) -> (cand,Option.get opt)) good_leaves,
+        (Image.image (fun ( cand,opt) -> (cand,snd(Option.get opt))) good_leaves,
          Image.image fst bad_leaves) ;; 
       
       let peek_for_fork_case hashtbl helper key (i,j,k)= 
@@ -463,11 +478,11 @@ module Peek_and_seek = struct
         and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
         if min1 = max1 
         then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-              P_Success(M(sols4,[]))
+              P_Success(St_fork(i,j,k),M(sols4,[]))
         else let (max_idx,_) = List.hd(List.rev max_indices) in 
               let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
               let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-              P_Success(M(sols5,ext5));;    
+              P_Success(St_fork(i,j,k),M(sols5,ext5));;    
        
         
       let peek_for_hook hashtbl helper key = function 
@@ -477,7 +492,7 @@ module Peek_and_seek = struct
 
 end ;;   
 
-
+(*
 module Compute = struct 
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
