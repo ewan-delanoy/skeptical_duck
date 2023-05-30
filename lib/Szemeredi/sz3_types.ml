@@ -29,11 +29,11 @@ type upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;;
 
 type key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
+type hook = St_import | St_cumulative of int | St_fork of int * int *int  ;; 
+
 type peek_result = 
-    P_Success of mold  
+    P_Success of hook * mold  
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 
-
-type triple_chooser = TC of (key -> (int * int * int) option) ;;
+type hook_finder = HF of (key -> hook option) ;;

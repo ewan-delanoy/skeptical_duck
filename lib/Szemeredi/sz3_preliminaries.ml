@@ -31,14 +31,15 @@ type upper_bound_on_constraint =
 type key = 
    Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
+type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int * int *int  ;; 
+
 type peek_result = Sz3_types.peek_result = 
-    P_Success of mold  
+    P_Success of hook * mold  
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
-type small_step = Sz3_types.small_step = St_cumulative of int | St_fork of int * int *int | St_import ;; 
 
-type triple_chooser = TC of (key -> (int * int * int) option) ;;
+type hook_finder = Sz3_types.hook_finder = HF of (key -> hook option) ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -69,13 +70,15 @@ let uk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
    if try4 <> Total_ordering_result_t.Equal then try4 else   
    Total_ordering.for_integers b1 b2
 ) : (int * int list * int * int) Total_ordering_t.t);;  
-     
-let small_step_order = ((fun st1 st2->Total_ordering.standard st1 st2): small_step Total_ordering_t.t);;
+  
 
-let uks_order = Total_ordering.product uk_order small_step_order ;; 
+let hook_order = ((fun st1 st2->Total_ordering.standard st1 st2): hook Total_ordering_t.t);;
+
+let uks_order = Total_ordering.product uk_order hook_order ;; 
 
 let uks_merge = Ordered.merge uks_order ;;
 let uks_sort = Ordered.sort uks_order ;;
+
 
 module Constraint = struct 
 
@@ -157,9 +160,9 @@ module Upper_bound_on_breadth = struct
       Unrestricted -> 0
       |Up_to(B b) -> b ;; 
 
-  let untranslate d = function  
+  let translate d = function  
     Unrestricted -> Unrestricted 
-   |Up_to(B b) -> Up_to(B(b-d)) ;; 
+   |Up_to(B b) -> Up_to(B(b+d)) ;; 
   
   
   end ;;  
@@ -243,7 +246,7 @@ let list_is_admissible upper_bound candidate =
 
  let predecessor_for_dissociated_data_opt = Private.predecessor_for_dissociated_data_opt ;; 
 
-  let untranslate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.untranslate d b) ;;  
+  let translate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.translate d b) ;;  
      
   
   
@@ -264,7 +267,7 @@ let list_is_admissible upper_bound candidate =
  
     let decompose_wrt_translation (Key(old_fis,ubc)) = 
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
-       (d,Key(new_fis,Upper_bound_on_constraint.untranslate d ubc)) ;;
+       (d,Key(new_fis,Upper_bound_on_constraint.translate (-d) ubc)) ;;
 
 
     let largest_constraint_with_predecessor_opt key =
@@ -351,209 +354,172 @@ let compute_opt key =
 
 end ;;  
 
-module Peek = struct 
-
-  exception For_fork_case_should_never_happen_1_exn of key ;;
-  exception Multiple_exn of key ;; 
-  exception Simplified_multiple_exn of key ;; 
-
-  module Private = struct 
-
-    let for_obvious_accesses hashtbl helper key = 
-      match List.assoc_opt key helper with 
-        Some answer1 -> P_Success(answer1)
-      | None ->
-         (
-            match  Hashtbl.find_opt hashtbl key with 
-            Some answer2 -> P_Success(answer2)
-          | None -> 
-            let (Key(fis,upper_bound)) = key in 
-            let domain = Finite_int_set.to_usual_int_list fis in 
-            if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-            then  P_Success(M([domain],domain))
-             else 
-              (
-                match Extra_tools.compute_opt key with 
-                Some answer2 -> P_Success(answer2)
-                |None ->P_Failure         
-              ) 
-           ) ;; 
-    
-    (*
-    
-    Note that the peek function below will not detect all
-    cumulative cases.
-    
-    *)
-    
-    let for_cumulative_case hashtbl helper old_key pivot= 
-        let new_key = Kay.remove_one_element old_key pivot in 
-        let peek_res = for_obvious_accesses hashtbl helper new_key in 
-          match peek_res with 
-         P_Unfinished_computation(subcomp)  -> P_Unfinished_computation(subcomp@[new_key])
-        |P_Failure -> P_Unfinished_computation([new_key]) 
-        |P_Success(M(sols2,ext2)) ->
-          let (Key(_,old_ub)) = old_key in 
-          if not(Upper_bound_on_constraint.list_is_admissible old_ub (i_insert pivot ext2))
-          then P_Success(M(sols2,[]))
-          else
-          let sols3 = List.filter_map (fun sol->
-                      let increased_sol = i_insert pivot sol in 
-                      if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
-                      then Some(increased_sol) 
-                      else None    
-          ) sols2 in 
-          if sols3 <> [] 
-          then P_Success(M(sols3,i_insert pivot ext2))  
-          else P_Failure
-      ;;
-  
-   let usual_cumulative_case hashtbl helper key =
-        let (Key(fis,_)) = key in 
-        let n =Finite_int_set.max fis in
-        for_cumulative_case  hashtbl helper key n;; 
-
-  (*
-     
-    We use translations as little as possible. Most of the functions
-    of this module are supposed to work on arguments where translation
-    does not apply. The function below is an exception.
-    
-    *)
-  
-    
-  
-    let seek_obvious_accesses_using_translation hashtbl helper original_key = 
-      let (d,translated_key) = Kay.decompose_wrt_translation original_key in 
-          match for_obvious_accesses hashtbl helper translated_key with 
-         P_Unfinished_computation(_)  -> (None,Some translated_key)
-        |P_Failure -> (None,Some translated_key)
-        |P_Success(translated_answer) ->
-           let answer_to_original = Mold.translate d translated_answer in 
-           (Some(answer_to_original),None);; 
-
-  let partition_leaves_in_fork_case hashtbl helper leaves =
-    let leaves2 = Image.image (
-        fun cand ->
-          (cand,seek_obvious_accesses_using_translation hashtbl helper cand)
-    ) leaves in 
-    let (good_leaves,bad_leaves) = 
-        List.partition (fun (_,(_,opt_bad)) -> opt_bad = None ) leaves2 in 
-    (Image.image (fun ( cand,( opt_good,_opt_bad)) -> (cand,Option.get opt_good)) good_leaves,
-     Image.image (fun (_cand,(_opt_good, opt_bad)) -> Option.get opt_bad        ) bad_leaves) ;; 
-  
-  let for_fork_case hashtbl helper old_key (i,j,k)= 
-    let cstr = [i;j;k] in 
-    let candidates = Image.image (
-           fun i-> Kay.remove_one_element old_key i
-    ) cstr in 
-    let (candidates2,bad_ones) = partition_leaves_in_fork_case hashtbl helper candidates in 
-    if bad_ones <> []
-    then P_Unfinished_computation(bad_ones)
-    else   
-    let lengths = Image.image (fun (_cand,M(sols,_ext))->
-            List.length(List.hd sols)) candidates2 in 
-    let indexed_lengths = Int_range.index_everything lengths in 
-    let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
-    and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
-    if min1 = max1 
-    then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-          P_Success(M(sols4,[]))
-    else let (max_idx,_) = List.hd(List.rev max_indices) in 
-          let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
-          let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-          P_Success(M(sols5,ext5));;    
-   
-    
-    
-    let fork_case_with_triple_chooser hashtbl helper key (TC f)=
-            (* let (Key(fis,upper_bound)) = key in 
-               let opt1 = Upper_bound_on_constraint.attained_upper_bound_opt fis upper_bound in 
-            if opt1=None  
-            then raise(For_fork_case_should_never_happen_1_exn(key))
-            else let UBC(W w,ub_on_breadth) = Option.get opt1 in   
-            let (B b)=Upper_bound_on_breadth.get ub_on_breadth in  
-            for_fork_case  hashtbl helper key (b,b+w,b+2*w)   
-              *)
-            match f key with 
-            None ->   raise(For_fork_case_should_never_happen_1_exn(key)) 
-            |Some(i,j,k) ->
-            for_fork_case  hashtbl helper key (i,j,k);;       
-  
-    exception Multiple_should_never_happen_1_exn of key ;;
-
-    let multiple hashtbl helper old_key (TC chooser)= 
-      let peek_res1 = for_obvious_accesses hashtbl helper old_key in 
-        match peek_res1 with 
-        P_Success (_) 
-      | P_Unfinished_computation (_) -> (peek_res1,false,None)  
-      | P_Failure ->
-      let peek_res2= usual_cumulative_case hashtbl helper old_key in 
-        match peek_res2 with 
-        P_Success (_) -> (peek_res2,true,Some (St_cumulative(Kay.max old_key)))
-      | P_Unfinished_computation (_) -> (peek_res2,false,None)  
-      | P_Failure -> 
-      match chooser old_key with 
-      None ->  raise(Multiple_should_never_happen_1_exn(old_key))  
-      |Some(i,j,k) ->
-      let peek_res3= for_fork_case hashtbl helper old_key (i,j,k) in 
-        match peek_res3 with 
-        P_Success (_) -> (peek_res3,true,Some(St_fork(i,j,k)))
-      | P_Unfinished_computation (_) -> (peek_res3,false,None)  
-      | P_Failure -> raise(Multiple_exn(old_key)) ;; 
-          
-    let simplified_multiple hashtbl helper key triple_chooser=   
-      let (peek_res,_,_)= multiple hashtbl helper key triple_chooser in 
-      match peek_res with 
-            P_Failure -> raise (Simplified_multiple_exn(key))
-          | P_Unfinished_computation (new_to_be_treated) -> 
-               (None,Some new_to_be_treated)
-          | P_Success (answer) -> 
-              (Some answer,None) ;; 
-
-    
-
-
-    end ;;           
-
 (*
 
-let cumulative_case = Private.for_cumulative_case ;;
+module Peek_and_seek = struct 
 
-let fork_case = Private.for_fork_case ;;
+  let seek_non_translated_obvious_accesses hashtbl helper key = 
+    match List.assoc_opt key helper with 
+      Some answer1 -> Some(snd answer1)
+    | None ->
+       (
+          match  Hashtbl.find_opt hashtbl key with 
+          Some answer2 -> Some(answer2)
+        | None -> 
+          let (Key(fis,upper_bound)) = key in 
+          let domain = Finite_int_set.to_usual_int_list fis in 
+          if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
+          then  Some(M([domain],domain))
+           else 
+            (
+              match Extra_tools.compute_opt key with 
+              Some answer2 -> Some(answer2)
+              |None -> None         
+            ) 
+         ) ;; 
 
-let simplified_multiple = Private.simplified_multiple ;; 
-let usual_cumulative_case = Private.usual_cumulative_case ;;
-let usual_fork_case = Private.usual_fork_case ;;
+   let seek_obvious_access hashtbl helper key =
+      let (d,translated_key) = Kay.decompose_wrt_translation key in 
+      match seek_non_translated_obvious_accesses hashtbl helper translated_key with 
+      None -> None 
+      |Some translated_mold -> Some(Mold.translate (-d) translated_mold);; 
 
-*)
+    let peek_for_import_case hashtbl helper key = 
+      let smaller_key = Kay.decrement key  in 
+      match seek_obvious_access hashtbl helper smaller_key with 
+          None -> P_Unfinished_computation([smaller_key])  
+         |Some(M(sols2,ext2)) ->
+        let (Key(_,upper_bound)) = key in   
+        let sols3 = List.filter_map (fun sol->
+                    if Upper_bound_on_constraint.list_is_admissible upper_bound sol 
+                    then Some(sol) 
+                    else None    
+        ) sols2 in 
+        if sols3 <> [] 
+        then P_Success(M(sols3,ext2))  
+        else P_Failure
+    ;;
 
-let multiple = Private.multiple ;; 
+    let peek_for_cumulative_case hashtbl helper key pivot= 
+      let smaller_key = Kay.remove_one_element key pivot in 
+      match seek_obvious_access hashtbl helper smaller_key with 
+          None -> P_Unfinished_computation([smaller_key])  
+         |Some(M(sols2,ext2)) ->
+        let (Key(_,old_ub)) = key in 
+        if not(Upper_bound_on_constraint.list_is_admissible old_ub (i_insert pivot ext2))
+        then P_Success(M(sols2,[]))
+        else
+        let sols3 = List.filter_map (fun sol->
+                    let increased_sol = i_insert pivot sol in 
+                    if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
+                    then Some(increased_sol) 
+                    else None    
+        ) sols2 in 
+        if sols3 <> [] 
+        then P_Success(M(sols3,i_insert pivot ext2))  
+        else P_Failure
+    ;;
 
-end ;;  
+    let peek_for_easy_case hashtbl helper key =
+       match seek_obvious_access hashtbl helper key with 
+       Some(answer1) -> (P_Success(answer1),None)
+       |None ->
+        let peek_res1=peek_for_import_case hashtbl helper key in 
+        (match peek_res1 with 
+      
+           P_Success(_) -> (peek_res1,Some St_import)
+          |P_Unfinished_computation(_) -> (peek_res1,None)
+          |P_Failure -> 
+             let n = Kay.max key in 
+             let peek_res2=peek_for_cumulative_case hashtbl helper key n in 
+             (match peek_res2 with 
+             P_Success(_) -> (peek_res2,Some (St_cumulative(n)))
+            |P_Unfinished_computation(_) 
+            |P_Failure -> (peek_res2,None)
+             )
+         ) ;;
+   
+       let partition_leaves_in_fork_case hashtbl helper leaves =
+        let leaves2 = Image.image (
+            fun cand ->
+              (cand,seek_obvious_access hashtbl helper cand)
+        ) leaves in 
+        let (bad_leaves,good_leaves) = 
+            List.partition (fun (_,opt) -> opt = None ) leaves2 in 
+        (Image.image (fun ( cand,opt) -> (cand,Option.get opt)) good_leaves,
+         Image.image fst bad_leaves) ;; 
+      
+      let peek_for_fork_case hashtbl helper key (i,j,k)= 
+        let cstr = [i;j;k] in 
+        let candidates = Image.image (Kay.remove_one_element key) cstr in 
+        let (candidates2,bad_ones) = partition_leaves_in_fork_case hashtbl helper candidates in 
+        if bad_ones <> []
+        then P_Unfinished_computation(bad_ones)
+        else   
+        let lengths = Image.image (fun (_cand,M(sols,_ext))->
+                List.length(List.hd sols)) candidates2 in 
+        let indexed_lengths = Int_range.index_everything lengths in 
+        let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
+        and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
+        if min1 = max1 
+        then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
+              P_Success(M(sols4,[]))
+        else let (max_idx,_) = List.hd(List.rev max_indices) in 
+              let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
+              let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
+              P_Success(M(sols5,ext5));;    
+       
+        
+      let peek_for_hook hashtbl helper key = function 
+         St_import -> peek_for_import_case hashtbl helper key 
+         |St_cumulative(pivot) ->  peek_for_cumulative_case hashtbl helper key pivot 
+         |St_fork(i,j,k) ->  peek_for_fork_case hashtbl helper key (i,j,k) ;; 
+
+end ;;   
+
 
 module Compute = struct 
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
 
-    let pusher_for_needed_subcomputations (hashtbl,triple_chooser) (helper,to_be_treated) =
+    let pusher_for_needed_subcomputations (hashtbl,hook_finder) (helper,to_be_treated) =
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1) 
         |key :: others ->
-          let (peek_res,to_be_remembered,_)= Peek.multiple hashtbl helper key triple_chooser in
+          let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key in 
           (
-            match peek_res with 
-            P_Failure -> raise (Pusher_for_needed_subcomputations_exn_2)
+            match peek_res1 with 
+            
           | P_Unfinished_computation (new_to_be_treated) -> 
                (helper,new_to_be_treated@to_be_treated)
           | P_Success (answer) -> 
               let new_helper =(
-                 if to_be_remembered 
-                 then (key,answer) :: helper 
-                 else helper 
+                 match hook_opt with 
+                 Some(hook) -> (key,(Some hook,answer)) :: helper 
+                 None -> helper 
               ) in 
               (new_helper,others)
+          | P_Failure -> 
+            let hook_opt2 = 
+            let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key in 
+            (
+              match peek_res1 with 
+              
+            | P_Unfinished_computation (new_to_be_treated) -> 
+                 (helper,new_to_be_treated@to_be_treated)
+            | P_Success (answer) -> 
+                let new_helper =(
+                   match hook_opt with 
+                   Some(hook) -> (key,answer) :: helper 
+                   None -> helper 
+                ) in 
+                (new_helper,others)
+            | P_Failure -> 
+               
+  
+            )  ;;      
+
           )  ;;     
   
      let rec iterator_for_needed_subcomputations hashtbl walker = 
@@ -567,6 +533,8 @@ module Compute = struct
      
   
   end ;;  
+
+*)
 
 (*
 
