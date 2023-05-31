@@ -499,7 +499,7 @@ module Compute = struct
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
     exception Pusher_for_needed_subcomputations_exn_3 ;; 
 
-    let pusher_for_needed_subcomputations (hashtbl,hook_finder) (helper,to_be_treated) =
+    let pusher_for_needed_subcomputations (hashtbl,HF hook_finder) (helper,to_be_treated) =
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1) 
         |key :: others ->
