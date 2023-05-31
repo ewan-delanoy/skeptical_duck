@@ -533,16 +533,24 @@ module Compute = struct
 
         
   
-     let rec iterator_for_needed_subcomputations hashtbl walker = 
+     let rec iterator_for_needed_subcomputations hhf walker = 
         if snd walker = [] then List.rev(fst walker) else 
-        let new_walker = pusher_for_needed_subcomputations hashtbl walker in      
-        iterator_for_needed_subcomputations hashtbl new_walker ;;
+        let new_walker = pusher_for_needed_subcomputations hhf walker in      
+        iterator_for_needed_subcomputations hhf new_walker ;;
   
-     let needed_subcomputations hashtbl items = 
-      iterator_for_needed_subcomputations hashtbl ([],items) ;;  
+     let needed_subcomputations hhf items = 
+      iterator_for_needed_subcomputations hhf ([],items) ;;  
       
-     
-  
+     let recursively hhf key = 
+        let (hashtbl,_) = hhf in 
+        match Peek_and_seek.seek_obvious_access hashtbl [] key with 
+        Some(hook_opt,mold) -> ((hook_opt,mold),[]) 
+        |None ->
+           let subcomps =  needed_subcomputations hhf [key] in 
+           let (hook,mold) = List.assoc key subcomps in
+           ((Some hook,mold),subcomps) ;;          
+                      
+      
   end ;;  
 
 
