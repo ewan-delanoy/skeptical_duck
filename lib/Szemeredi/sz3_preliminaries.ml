@@ -573,19 +573,20 @@ module Hashtbl_here = struct
 
 end ;;
 
-(*
+
 module Small_step = struct 
   
   exception Compute_easy_cumulative_exn of key ;;
   exception Compute_easy_fork_exn of key ;;
+  exception Compute_easy_import_exn of key ;;
   exception Import_exn1 of key ;;    
   exception Import_exn2 of key ;;  
 
   module Private = struct
 
   let compute_easy_cumulative pivot key =
-     match Peek.cumulative_case Hashtbl_here.cautious [] key pivot with 
-     P_Success(answer) -> answer 
+     match Peek_and_seek.peek_for_cumulative_case Hashtbl_here.cautious [] key pivot with 
+     P_Success(hook,answer) -> (hook,answer) 
    | P_Unfinished_computation(_)
    | P_Failure -> raise(Compute_easy_cumulative_exn(key)) ;; 
     
@@ -594,8 +595,8 @@ module Small_step = struct
       Hashtbl_here.add_to_all key answer ;; 
  
   let compute_easy_fork (i,j,k) key =
-      match Peek.fork_case Hashtbl_here.cautious [] key (i,j,k) with 
-      P_Success(answer) -> answer 
+      match Peek_and_seek.peek_for_fork_case Hashtbl_here.cautious [] key (i,j,k) with 
+      P_Success(hook,answer) -> (hook,answer) 
     | P_Unfinished_computation(_)
     | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
 
@@ -603,18 +604,15 @@ module Small_step = struct
       let answer = compute_easy_fork (i,j,k) key in 
       Hashtbl_here.add_to_all key answer ;;  
 
-  let import key = 
-     let lower_key = Kay.decrement key 
-     and (Key(_,ub_on_constraints))= key in 
-     match Compute.impatient_opt Hashtbl_here.cautious lower_key with 
-     None -> raise(Import_exn1(key))
-     |Some(M(sols,ext)) ->    
-     let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible ub_on_constraints) sols in 
-      if sols2 = []
-      then raise(Import_exn2(key))
-      else 
-      let answer = M(sols2,ext) in   
-      Hashtbl_here.add_to_all key answer;;
+  let compute_easy_import key =
+        match Peek_and_seek.peek_for_import_case Hashtbl_here.cautious [] key with 
+        P_Success(hook,answer) -> (hook,answer) 
+      | P_Unfinished_computation(_)
+      | P_Failure -> raise(Compute_easy_fork_exn(key)) ;; 
+
+  let add_easy_import  key =
+      let answer = compute_easy_import key in 
+      Hashtbl_here.add_to_all key answer ;;   
    
     end ;;
 
@@ -626,11 +624,11 @@ module Small_step = struct
    let apply = function 
        St_cumulative pivot -> Private.add_easy_cumulative pivot
       |St_fork(i,j,k) -> Private.add_easy_fork (i,j,k)
-      |St_import -> Private.import ;;      
+      |St_import -> Private.add_easy_import ;;      
 
 end ;;   
 
-
+(*
 module High_level = struct 
 
   module Private = struct 
