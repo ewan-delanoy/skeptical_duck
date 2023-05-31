@@ -555,12 +555,12 @@ module Compute = struct
 
 
 
-(*
+
 
 module Hashtbl_here = struct 
 
-  let greedy = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
-  let cautious = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;;   
+  let greedy = ((Hashtbl.create 50) : (key, hook * mold) Hashtbl.t) ;; 
+  let cautious = ((Hashtbl.create 50) : (key, hook * mold) Hashtbl.t) ;;   
   
   let add_to_all key answer =
       (
@@ -573,6 +573,7 @@ module Hashtbl_here = struct
 
 end ;;
 
+(*
 module Small_step = struct 
   
   exception Compute_easy_cumulative_exn of key ;;
