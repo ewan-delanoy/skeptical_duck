@@ -371,7 +371,7 @@ end ;;
 
 module Peek_and_seek = struct 
 
-  let seek_non_translated_obvious_accesses hashtbl helper key = 
+  let seek_non_translated_obvious_access hashtbl helper key = 
     match List.assoc_opt key helper with 
       Some (hook1,mold1) -> Some(Some hook1,mold1)
     | None ->
@@ -391,9 +391,9 @@ module Peek_and_seek = struct
             ) 
          ) ;; 
 
-   let seek_obvious_access hashtbl helper key =
+   let seek_translated_obvious_access hashtbl helper key =
       let (d,translated_key) = Kay.decompose_wrt_translation key in 
-      match seek_non_translated_obvious_accesses hashtbl helper translated_key with 
+      match seek_non_translated_obvious_access hashtbl helper translated_key with 
       None -> None 
       |Some (hook_opt,translated_mold) -> 
          Some(Hook.translate_opt (-d) hook_opt,
@@ -401,7 +401,7 @@ module Peek_and_seek = struct
 
     let peek_for_import_case hashtbl helper key = 
       let smaller_key = Kay.decrement key  in 
-      match seek_obvious_access hashtbl helper smaller_key with 
+      match seek_non_translated_obvious_access hashtbl helper smaller_key with 
           None -> P_Unfinished_computation([smaller_key])  
          |Some(_,M(sols2,ext2)) ->
         let (Key(_,upper_bound)) = key in   
@@ -417,7 +417,7 @@ module Peek_and_seek = struct
 
     let peek_for_cumulative_case hashtbl helper key pivot= 
       let smaller_key = Kay.remove_one_element key pivot in 
-      match seek_obvious_access hashtbl helper smaller_key with 
+      match seek_non_translated_obvious_access hashtbl helper smaller_key with 
           None -> P_Unfinished_computation([smaller_key])  
          |Some(_,M(sols2,ext2)) ->
         let (Key(_,old_ub)) = key in 
@@ -436,7 +436,7 @@ module Peek_and_seek = struct
     ;;
 
     let peek_for_easy_case hashtbl helper key =
-       match seek_obvious_access hashtbl helper key with 
+       match seek_non_translated_obvious_access hashtbl helper key with 
        Some(_,answer1) -> (P_Success(St_import,answer1),None)
        |None ->
         let peek_res1=peek_for_import_case hashtbl helper key in 
@@ -454,20 +454,31 @@ module Peek_and_seek = struct
              )
          ) ;;
    
-       let partition_leaves_in_fork_case hashtbl helper leaves =
-        let leaves2 = Image.image (
-            fun cand ->
-              (cand,seek_obvious_access hashtbl helper cand)
-        ) leaves in 
+       let partition_candidates_in_fork_case hashtbl helper candidates =
+        let candidates2 = Image.image (
+            fun triple -> 
+              let (_smaller_key,_d,translated_smaller_key) = triple in 
+              (triple,seek_non_translated_obvious_access hashtbl helper translated_smaller_key)
+        ) candidates in 
         let (bad_leaves,good_leaves) = 
-            List.partition (fun (_,opt) -> opt = None ) leaves2 in 
-        (Image.image (fun ( cand,opt) -> (cand,snd(Option.get opt))) good_leaves,
-         Image.image fst bad_leaves) ;; 
+            List.partition (fun (_,opt) -> opt = None ) candidates2 in 
+        (Image.image (fun ( 
+          (smaller_key,d,_translated_smaller_key),opt) -> 
+              let (_,translated_mold) = Option.get opt in 
+              (smaller_key,Mold.translate (-d) translated_mold)
+          ) good_leaves,
+         Image.image (fun ((_smaller_key,_d,translated_smaller_key),_)->
+          translated_smaller_key
+          ) bad_leaves) ;; 
       
       let peek_for_fork_case hashtbl helper key (i,j,k)= 
         let cstr = [i;j;k] in 
-        let candidates = Image.image (Kay.remove_one_element key) cstr in 
-        let (candidates2,bad_ones) = partition_leaves_in_fork_case hashtbl helper candidates in 
+        let candidates = Image.image (fun t->
+          let smaller_key=Kay.remove_one_element key t in 
+          let (d,translated_smaller_key) = Kay.decompose_wrt_translation smaller_key in 
+          (smaller_key,d,translated_smaller_key)
+        ) cstr in 
+        let (candidates2,bad_ones) = partition_candidates_in_fork_case hashtbl helper candidates in 
         if bad_ones <> []
         then P_Unfinished_computation(bad_ones)
         else   
@@ -543,7 +554,7 @@ module Compute = struct
       
      let recursively hhf key = 
         let (hashtbl,_) = hhf in 
-        match Peek_and_seek.seek_obvious_access hashtbl [] key with 
+        match Peek_and_seek.seek_translated_obvious_access hashtbl [] key with 
         Some(hook_opt,mold) -> ((hook_opt,mold),[]) 
         |None ->
            let subcomps =  needed_subcomputations hhf [key] in 
@@ -642,7 +653,7 @@ module Medium_level = struct
   ) ;;
   
   let compute_impatiently key =
-      Peek_and_seek.seek_obvious_access 
+      Peek_and_seek.seek_translated_obvious_access 
         Hashtbl_here.cautious [] key ;; 
 
   let compute_recursively_and_remember key = 
