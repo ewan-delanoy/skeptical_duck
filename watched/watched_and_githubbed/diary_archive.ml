@@ -1,14 +1,146 @@
 (************************************************************************************************************************
-Snippet 122 : 
+Snippet 123 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 121 : Code to add a prefix to each line in a file
+Snippet 122 : Some debugging related to the Sz3_preliminaries module
 ************************************************************************************************************************)
 
+module Snip122=struct
+
+(*
+open Sz3_preliminaries ;; 
+
+let key3 = Kay.constructor (7, [5], 3, 0) ;;
+(*
+let long1 = Medium_level.compute_recursively_and_remember key3 ;;
+*)
+
+let hashtbl = Hashtbl_here.greedy ;;
+let hf_hook_finder = Medium_level.default_hook_finder ;; 
+(*
+let long2 = Compute.recursively (hashtbl,hf_hook_finder) key3 ;; 
+*)
+
+(*
+let long3 = Compute.needed_subcomputations (hashtbl,hf_hook_finder) [key3] ;; 
+*)
+
+let v0 = ([],[key3]) ;;     
+let extender = Memoized.small 
+    (Compute.pusher_for_needed_subcomputations (hashtbl,hf_hook_finder)) 
+        v0 ;;  
+
+let gg n=
+  let (a,b) = extender n in
+        (Image.image (fun (key,_)->Kay.deconstructor key) a,"******",
+        Image.image Kay.deconstructor b) ;; 
+      
+let v1 = extender 6 ;; 
+let bad1 = Compute.pusher_for_needed_subcomputations (hashtbl,hf_hook_finder) v1 ;; 
+
+let (HF hook_finder) = hf_hook_finder ;;   
+let (helper,to_be_treated) = v1 ;; 
+let (key,others) = List_again.head_with_tail to_be_treated ;; 
+let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key ;;
+let hook_opt2 = hook_finder key ;;
+let hook2 = Option.get hook_opt2 ;; 
+let bad2 = Peek_and_seek.peek_for_hook hashtbl helper key hook2 ;; 
+let (i,j,k) = (function St_fork(i1,j1,k1)->(i1,j1,k1) | _ -> failwith("aaa") ) hook2;;
+let bad3 = Peek_and_seek.peek_for_fork_case hashtbl helper key (i,j,k) ;; 
+
+let cstr = [i;j;k] ;; 
+let candidates = Image.image (Kay.remove_one_element key) cstr ;; 
+let bad4 = 
+      Peek_and_seek.partition_leaves_in_fork_case hashtbl helper candidates ;; 
+let candy = List.hd candidates ;; 
+let bad5 = Peek_and_seek.seek_obvious_access hashtbl helper candy;;
+
+*)    
+
+
+(*
+
+let key2 = Kay.constructor (7, [], 3, 0) ;;
+let hf_hook_finder = Medium_level.improved_hook_finder ;; 
+let (HF hook_finder) = hf_hook_finder ;; 
+
+(*
+let long1 = hook_finder key2 ;; 
+*)
+
+(*
+let long2 = Medium_level.rigorous_quest_for_cumulative_case key2 ;; 
+*)
+
+let (Key(fis,_)) = key2 ;; 
+let domain = List.rev(Finite_int_set.to_usual_int_list fis) ;; 
+
+(*
+let long3 = Medium_level.rigorous_quest_for_individual_cumulative_case key2 5 ;; 
+*)
+
+let old_key = key2 ;; 
+let pivot = 5 ;;
+let simpler_key = Kay.remove_one_element old_key pivot ;; 
+
+(*
+let long4 = Medium_level.compute_recursively_and_remember simpler_key ;;
+*)
+
+*)
+
+
+(*
+
+let key1 = Kay.constructor (8, [], 3, 0) ;;
+
+(*
+let long1 = Medium_level.needed_subcomputations key1 ;; 
+*)
+
+let hashtbl = Hashtbl_here.cautious ;; 
+
+let hf_hook_finder = Medium_level.improved_hook_finder ;; 
+
+(*
+let long2 = Compute.recursively (hashtbl,hook_finder) key1 ;; 
+*)
+
+let tamp1= Peek_and_seek.seek_obvious_access hashtbl [] key1;;
+let long3 = Compute.needed_subcomputations (hashtbl,hf_hook_finder) [key1] ;; 
+
+let v0 = ([],[key1]) ;;     
+let extender = Memoized.small 
+    (Compute.pusher_for_needed_subcomputations (hashtbl,hf_hook_finder)) 
+        v0 ;;  
+let v1 = extender 7 ;; 
+(*
+let long4 = Compute.pusher_for_needed_subcomputations (hashtbl,hf_hook_finder) v1 ;; 
+*)
+
+let (HF hook_finder) = hf_hook_finder ;;   
+let (helper,to_be_treated) = v1 ;; 
+let (key,others) = List_again.head_with_tail to_be_treated ;; 
+let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case hashtbl helper key ;;
+let long5 = hook_finder key ;;
+
+let gg n=
+  let (a,b) = extender n in
+  (Image.image (fun (key,_)->Kay.deconstructor key) a,Image.image Kay.deconstructor b) ;; 
+
+*)  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 121 : Code to add a prefix to each line in a file
+************************************************************************************************************************)
 module Snip121=struct
 
   let ap1 = Absolute_path.of_string "~/Downloads/stack.txt";;

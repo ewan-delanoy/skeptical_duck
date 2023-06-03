@@ -508,7 +508,7 @@ module Compute = struct
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
-    exception Pusher_for_needed_subcomputations_exn_3 ;; 
+    exception Pusher_for_needed_subcomputations_exn_3 of hook * key ;; 
 
     let pusher_for_needed_subcomputations (hashtbl,HF hook_finder) (helper,to_be_treated) =
         match to_be_treated with 
@@ -538,7 +538,7 @@ module Compute = struct
                        (helper,new_to_be_treated@to_be_treated)
                   | P_Success (_,answer) -> 
                       ((key,(hook2,answer)) :: helper ,others)
-                  | P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3)
+                  | P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
             )
           );;      
 
