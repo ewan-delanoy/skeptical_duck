@@ -725,22 +725,17 @@ module High_level = struct
       then Some(cstr,candidates,translated_candidates)
       else None;;   
   
-  let selector = List.filter (fun cand->
-      (compute_impatiently cand)=None
-    ) ;;
-
-  exception Assess_exn of key ;; 
-
-  let assess key = 
+  
+  let improved_hook_finder key = 
     match rigorous_quest_for_cumulative_case key with 
-    Some(single,_,candidates)-> (St_cumulative(List.hd single), selector candidates)
+    Some(single,_,_)-> Some(St_cumulative(List.hd single))
     | None ->
       (
        match rigorous_quest_for_fork_case key with 
-       Some(cstr,_,candidates)-> 
+       Some(cstr,_,_)-> 
              let elt = (fun k->List.nth cstr (k-1)) in 
-             ((St_fork(elt 1,elt 2,elt 3)), selector candidates)
-       | None -> raise(Assess_exn(key))
+             Some((St_fork(elt 1,elt 2,elt 3)))
+       | None -> None
       );;
 
     let forced_elements key = 
@@ -761,7 +756,7 @@ module High_level = struct
        let compute_below = (fun t->
           old_f (Kay.remove_one_element key t)
        ) in 
-       match fst(assess key) with 
+       match Option.get(improved_hook_finder key) with 
        St_cumulative(m)->
           List.filter_map (
              fun sol->
@@ -772,6 +767,7 @@ module High_level = struct
          il_fold_merge(Image.image compute_below [i;j;k])
        |St_import ->  raise(All_solutions_exn(key))
     );;    
+
 
 end ;;   
   
