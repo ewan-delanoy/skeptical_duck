@@ -628,27 +628,34 @@ module Small_step = struct
 
 end ;;   
 
-(*
+
 module High_level = struct 
 
-  module Private = struct 
+  
+  let default_hook_finder = HF(
+    fun key -> 
+       match Kay.largest_constraint_with_predecessor_opt key with 
+       None -> None 
+       |Some(cstr,_) ->
+         let nth = (fun k->List.nth cstr (k-1)) in 
+         Some(St_fork(nth 1,nth 2,nth 3)) 
+  ) ;;
+  
+  let compute_impatiently key =
+      Peek_and_seek.seek_obvious_access 
+        Hashtbl_here.cautious [] key ;; 
 
   let compute_recursively_and_remember key = 
-      let hashtbl = Hashtbl_here.greedy in 
-      match Hashtbl.find_opt hashtbl key with 
-      Some(old_answer) -> old_answer
-      | None ->
-      let subcomps = Compute.needed_subcomputations hashtbl [key] in 
-      if subcomps = []
-      then Option.get(Compute.impatient_opt hashtbl key)
-      else    
+      let (answer,subcomps) = 
+      Compute.recursively 
+        (Hashtbl_here.greedy,default_hook_finder) key in 
       let _ = List.iter (fun (key,answer)->
         Hashtbl_here.add_to_greedy_only key answer
       ) subcomps in 
-      List.assoc key subcomps ;;      
+      answer ;;      
 
   let measure key =
-     let (M(sols,_)) = compute_recursively_and_remember key in 
+     let (_,M(sols,_)) = compute_recursively_and_remember key in 
      List.length(List.hd sols) ;;  
       
   let rec find_threshhold_triple triple =
@@ -681,39 +688,45 @@ module High_level = struct
             let mkey2 = measure key2 in 
           (
              match find_threshhold_triple ((key,mkey),(key2,mkey2),cstr) with 
-              None -> raise(Threshhold_decomposition_exn_1(key))
+              None -> raise(Threshhold_decomposition_exn_2(key))
               |Some(cstr3,opt3) -> (cstr3,opt3)
           )   
         ) ;;  
 
-  let rigorous_quest_for_cumulative_case old_key = 
-    let (n,simpler_key) = Kay.vertex_decomposition old_key in 
+  let rigorous_quest_for_individual_cumulative_case old_key pivot = 
+    let simpler_key = Kay.remove_one_element old_key pivot in 
     let res1 = compute_recursively_and_remember simpler_key 
     and res2 = compute_recursively_and_remember old_key in 
-    let M(sols1,_ext1) = res1 
-    and M(sols2,_ext2) = res2 in 
+    let (_,M(sols1,_ext1)) = res1 
+    and (_,M(sols2,_ext2)) = res2 in 
     if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
-    then Some([n],(res1,res2),[simpler_key])  
+    then Some([pivot],(res1,res2),[simpler_key])  
     else None ;;
+
+  let rigorous_quest_for_cumulative_case old_key =
+      let (Key(fis,_)) = old_key in 
+      let domain = List.rev(Finite_int_set.to_usual_int_list fis) in 
+      List.find_map (rigorous_quest_for_individual_cumulative_case old_key) domain ;; 
+
 
   let rigorous_quest_for_fork_case initial_key = 
       let (cstr,_) = threshhold_decomposition initial_key in 
       let bare_candidates = Image.image 
       (Kay.remove_one_element initial_key) cstr in 
       let candidates = Image.image (
-             fun cand-> (cand,compute_recursively_and_remember cand)
+             fun cand-> (cand,snd(compute_recursively_and_remember cand))
       ) bare_candidates 
       and translated_candidates = Image.image (
         fun cand-> snd(Kay.decompose_wrt_translation cand)
       ) bare_candidates in 
-      let sizes = Image.image (fun (_,M(sol,_ext))->List.length(List.hd sol)) candidates in 
+      let sizes = Image.image measure bare_candidates in 
       let first_size = List.hd sizes in 
       if List.for_all (fun size->size=first_size) sizes 
       then Some(cstr,candidates,translated_candidates)
       else None;;   
   
   let selector = List.filter (fun cand->
-      (Compute.impatient_opt Hashtbl_here.cautious cand)=None
+      (compute_impatiently cand)=None
     ) ;;
 
   exception Assess_exn of key ;; 
@@ -734,28 +747,7 @@ module High_level = struct
       let m = measure key 
       and (Key(fis,_))=key in 
       let domain = Finite_int_set.to_usual_int_list fis in 
-      List.filter (fun i->measure(Kay.remove_one_element key i)<m) domain ;; 
-
-    let needed_nodes key =
-        let temp1 = Stabilize.explore_enhanced_tree assess [key] in 
-        let temp2 = Image.image (
-          fun (key,(small_step,_)) -> 
-             (Kay.deconstructor key,small_step)
-        ) temp1 in 
-        let temp3 = uks_sort temp2 in 
-        let temp4 = Partition_list.according_to_map 
-        temp3 ~assume_connectedness:true (fun ((_,_,w,_),_) ->w)  in 
-        let forks = List.filter (
-          fun (_key,st)-> Small_step.is_a_fork st
-        ) temp3 in 
-        let bad_forks = List.filter_map (
-          fun (key,_)-> 
-              let forced_elts = forced_elements (Kay.constructor key) in 
-              if forced_elts<>[]
-              then Some(key,forced_elts)
-              else None   
-        ) forks in 
-        (temp4,bad_forks);; 
+      List.filter (fun i->measure(Kay.remove_one_element key i)<m) domain ;;     
 
     exception All_solutions_exn of key ;;     
 
@@ -780,21 +772,12 @@ module High_level = struct
          il_fold_merge(Image.image compute_below [i;j;k])
        |St_import ->  raise(All_solutions_exn(key))
     );;    
-       
-
-
-    end ;;
-    
-    let all_solutions = Private.all_solutions ;;
-    let assess = Private.assess ;; 
-    let compute = Private.compute_recursively_and_remember ;; 
-    let needed_nodes = Private.needed_nodes ;; 
 
 end ;;   
   
 
 
-
+(*
 
 module Fill = struct 
 
