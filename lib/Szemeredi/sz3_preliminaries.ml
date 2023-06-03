@@ -726,7 +726,7 @@ module High_level = struct
       else None;;   
   
   
-  let improved_hook_finder key = 
+  let improved_hook_finder = HF(fun key -> 
     match rigorous_quest_for_cumulative_case key with 
     Some(single,_,_)-> Some(St_cumulative(List.hd single))
     | None ->
@@ -736,7 +736,7 @@ module High_level = struct
              let elt = (fun k->List.nth cstr (k-1)) in 
              Some((St_fork(elt 1,elt 2,elt 3)))
        | None -> None
-      );;
+      ));;
 
     let forced_elements key = 
       let m = measure key 
@@ -756,7 +756,8 @@ module High_level = struct
        let compute_below = (fun t->
           old_f (Kay.remove_one_element key t)
        ) in 
-       match Option.get(improved_hook_finder key) with 
+       let (HF ihf) = improved_hook_finder in 
+       match Option.get(ihf key) with 
        St_cumulative(m)->
           List.filter_map (
              fun sol->
@@ -768,6 +769,9 @@ module High_level = struct
        |St_import ->  raise(All_solutions_exn(key))
     );;    
 
+    let needed_subcomputations key =
+        snd(Compute.recursively
+          (Hashtbl_here.cautious,improved_hook_finder) key);; 
 
 end ;;   
   
