@@ -510,7 +510,7 @@ module Suboptimal_hook = struct
           and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
           if min1 = max1 
           then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-                P_Success(St_fork(i,j,k),M(sols4,[]))
+                P_Success(St_fork(i,j,k),M(sols4,[[]]))
           else let (max_idx,_) = List.hd(List.rev max_indices) in 
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
