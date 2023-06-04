@@ -33,6 +33,7 @@ type key =
 
 type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int * int *int  ;; 
 
+type partially_polished = Sz3_types.partially_polished = PP of key * (hook * mold) list ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;

@@ -30,3 +30,5 @@ type upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;;
 type key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
 type hook = St_import | St_cumulative of int | St_fork of int * int *int  ;; 
+
+type partially_polished = PP of key * (hook * mold) list ;; 
