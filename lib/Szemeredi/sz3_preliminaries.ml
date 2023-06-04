@@ -33,13 +33,6 @@ type key =
 
 type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int * int *int  ;; 
 
-type peek_result = Sz3_types.peek_result = 
-    P_Success of hook * mold  
-   |P_Failure
-   |P_Unfinished_computation of key list ;;
-
-
-type hook_finder = Sz3_types.hook_finder = HF of (key -> hook option) ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -388,6 +381,11 @@ module Suboptimal_hook = struct
 
   module Peek_and_seek = struct 
 
+    type peek_result = 
+    P_Success of hook * mold  
+   |P_Failure
+   |P_Unfinished_computation of key list ;;
+
     let seek_non_translated_obvious_access helper key = 
       match List.assoc_opt key helper with 
         Some (hook1,mold1) -> Some(Some hook1,mold1)
@@ -540,16 +538,16 @@ module Suboptimal_hook = struct
           let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case helper key in 
           (
             match peek_res1 with 
-          | P_Unfinished_computation (new_to_be_treated) -> 
+          | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                (helper,new_to_be_treated@to_be_treated)
-          | P_Success (_,answer) -> 
+          | Peek_and_seek.P_Success (_,answer) -> 
               let new_helper =(
                  match hook_opt with 
                   Some(hook) -> (key,(hook,answer)) :: helper 
                  |None -> helper 
               ) in 
               (new_helper,others)
-          | P_Failure -> 
+          | Peek_and_seek.P_Failure -> 
             let hook_opt2 = suboptimal_hook_finder key in 
             (
               match hook_opt2 with 
@@ -557,11 +555,11 @@ module Suboptimal_hook = struct
                 |Some hook2 -> 
                   let peek_res2 = Peek_and_seek.peek_for_hook helper key hook2 in 
                   match peek_res2 with 
-                  | P_Unfinished_computation (new_to_be_treated) -> 
+                  | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                        (helper,new_to_be_treated@to_be_treated)
-                  | P_Success (_,answer) -> 
+                  | Peek_and_seek.P_Success (_,answer) -> 
                       ((key,(hook2,answer)) :: helper ,others)
-                  | P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
+                  | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
             )
           );;      
 
