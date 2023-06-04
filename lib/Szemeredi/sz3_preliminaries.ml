@@ -19,7 +19,7 @@ type extension_data = Sz3_types.extension_data  ;;
 
 type solution = Sz3_types.solution ;; 
 
-type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
+type mold = Sz3_types.mold = M of (solution list) * (extension_data list) ;;
 
 type upper_bound_on_breadth = 
     Sz3_types.upper_bound_on_breadth = 
@@ -38,6 +38,7 @@ let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_merge = Ordered.merge i_order ;;
+let i_intersect = Ordered.intersect i_order ;;
 let i_intersects = Ordered.intersects i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
@@ -96,7 +97,7 @@ module Mold = struct
 
 let translate d (M(sols,ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
-    M(Image.image tr sols,tr ext) ;; 
+    M(Image.image tr sols,Image.image tr ext) ;; 
 
 end ;;
 
@@ -333,7 +334,7 @@ module Width_one = struct
         |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
         |r -> raise(Bad_remainder_by_three(r)) 
     ) intervals in 
-    M([List.flatten sol_components],List.flatten forced_elements);;
+    M([List.flatten sol_components],[List.flatten forced_elements]);;
 
   let compute (Key(fis1,UBC(W w0,ub_on_breadth))) =
     if w0>1 then compute_without_upper_bound fis1 else  
@@ -345,7 +346,7 @@ module Width_one = struct
     )  in 
     let fis2 = Finite_int_set.of_usual_int_list domain2 in 
     let (M(sols2,ext2))  = compute_without_upper_bound fis2 in 
-    M(Image.image (fun sol->sol@extra) sols2,ext2@extra);; 
+    M(Image.image (fun sol->sol@extra) sols2,Image.image(fun ext->ext@extra) ext2);; 
 
    let compute_opt key = Some(compute key) ;; 
 
@@ -397,7 +398,7 @@ module Suboptimal_hook = struct
             let (Key(fis,upper_bound)) = key in 
             let domain = Finite_int_set.to_usual_int_list fis in 
             if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-            then  Some(None,M([domain],domain))
+            then  Some(None,M([domain],[domain]))
              else 
               (
                 match Extra_tools.compute_opt key with 
@@ -436,17 +437,19 @@ module Suboptimal_hook = struct
             None -> P_Unfinished_computation([smaller_key])  
            |Some(_,M(sols2,ext2)) ->
           let (Key(_,old_ub)) = key in 
-          if not(Upper_bound_on_constraint.list_is_admissible old_ub (i_insert pivot ext2))
-          then P_Success(St_cumulative(pivot),M(sols2,[]))
+          let extend_and_filter = List.filter_map (fun sol->
+            let increased_sol = i_insert pivot sol in 
+            if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
+            then Some(increased_sol) 
+            else None    
+          ) in  
+          let new_ext = extend_and_filter ext2 in 
+          if new_ext = []
+          then P_Failure
           else
-          let sols3 = List.filter_map (fun sol->
-                      let increased_sol = i_insert pivot sol in 
-                      if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
-                      then Some(increased_sol) 
-                      else None    
-          ) sols2 in 
+          let sols3 = extend_and_filter sols2 in 
           if sols3 <> [] 
-          then P_Success(St_cumulative(pivot),M(sols3,i_insert pivot ext2))  
+          then P_Success(St_cumulative(pivot),M(sols3,Image.image (i_insert pivot) ext2))  
           else P_Failure
       ;;
   
@@ -508,7 +511,7 @@ module Suboptimal_hook = struct
           else let (max_idx,_) = List.hd(List.rev max_indices) in 
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-                P_Success(St_fork(i,j,k),M(sols5,ext5));;    
+                P_Success(St_fork(i,j,k),M(sols5,[ext5]));;    
          
           
         let peek_for_hook helper key = function 

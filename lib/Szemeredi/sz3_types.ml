@@ -21,7 +21,7 @@ type extension_data = int list ;;
 
 type solution = int list ;; 
 
-type mold = M of (solution list) * extension_data ;;
+type mold = M of (solution list) * (extension_data list) ;;
 
 type upper_bound_on_breadth = Unrestricted |Up_to of breadth ;;
 
