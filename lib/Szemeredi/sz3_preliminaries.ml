@@ -33,7 +33,9 @@ type key =
 
 type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int * int *int  ;; 
 
-type partially_polished = Sz3_types.partially_polished = PP of key * (hook * mold) list ;; 
+type simplified_key = int * (int list) * int * int ;;
+
+type partially_polished = Sz3_types.partially_polished = PP of simplified_key * (hook * mold) list ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -54,7 +56,7 @@ let il_sort = Ordered.sort il_order ;;
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
 
-let uk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
+let sk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
    let try1 = Total_ordering.for_integers w1 w2 in 
    if try1 <> Total_ordering_result_t.Equal then try1 else 
    let try2 = Total_ordering.for_integers n1 n2 in 
@@ -64,15 +66,15 @@ let uk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
    let try4 = Total_ordering.silex_for_intlists scr1 scr2 in 
    if try4 <> Total_ordering_result_t.Equal then try4 else   
    Total_ordering.for_integers b1 b2
-) : (int * int list * int * int) Total_ordering_t.t);;  
+) : simplified_key Total_ordering_t.t);;  
   
 
-let hook_order = ((fun st1 st2->Total_ordering.standard st1 st2): hook Total_ordering_t.t);;
+let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (hook * mold) Total_ordering_t.t);;
 
-let uks_order = Total_ordering.product uk_order hook_order ;; 
+let pp_element_order = Total_ordering.product sk_order hm_order ;; 
 
-let uks_merge = Ordered.merge uks_order ;;
-let uks_sort = Ordered.sort uks_order ;;
+let pp_element_merge = Ordered.merge pp_element_order ;;
+let pp_element_sort = Ordered.sort pp_element_order ;;
 
 
 module Constraint = struct 
