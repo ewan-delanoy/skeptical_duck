@@ -34,6 +34,29 @@ module Private = struct
               List.mem ending ["mkv";"mp4";"webm"] 
        ) files_inside ;; 
 
+   exception  Unique_olavo_file_inside of string list ;;   
+
+   let unique_olavo_file_inside dir = 
+      let files_inside = Unix_again.beheaded_simple_ls dir in 
+      let temp = List.filter (
+        fun fn -> Supstring.contains fn "Olavo") files_inside in 
+      if List.length(temp)<>1 
+      then  raise(Unique_olavo_file_inside(temp))  
+      else List.hd temp;;    
+    
+   let dry_detox_result dir filename = 
+      let full_filename = (Directory_name.connectable_to_subpath dir)^filename in 
+      let temp_ap = Absolute_path.create_file_if_absent "frimframsauce.txt" in
+      let s_temp_ap = Absolute_path.to_string temp_ap in  
+      let cmd2 = Filename.quote_command "detox" ["-n"; full_filename] ~stdout:s_temp_ap in
+      let _ = Sys.command cmd2 in 
+      let output = Io.read_whole_file temp_ap in
+      let _ = Sys.command (Filename.quote_command "rm" [s_temp_ap]) in 
+      let opt1 = Cull_string.before_and_after " -> " output in  
+      let new_full_name =Cull_string.trim_spaces(snd(Option.get opt1)) in 
+      Cull_string.after_rightmost new_full_name '/' ;;
+
+
    let downloads_dir = Directory_name.of_string ("~/Downloads");;     
    let dir_for_short_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/";; 
    let dir_for_long_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/Longer_videos";; 
@@ -92,15 +115,7 @@ module Private = struct
       Strung.insert_repetitive_offset_on_the_left '0' 4   
       (string_of_int idx))^"_"^end_fn ;;   
 
-   let detox ap = 
-        let s_ap = Absolute_path.to_string ap in 
-        let _ = Sys.command ("detox "^s_ap) in 
-        let s_dir = Cull_string.after_rightmost s_ap '/'   in 
-        let dir = Directory_name.of_string s_dir in 
-        let files = admissible_files_inside dir in 
-        if List.length(files)<> 1 
-        then raise(Detox_exn files) 
-        else List.hd files ;;  
+   
 
    let commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l = 
       match index_analysis_before_insertion s_or_l with 
