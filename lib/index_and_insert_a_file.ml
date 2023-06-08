@@ -6,6 +6,8 @@
 
 type short_or_long = Short | Long ;;
 
+exception Detox_exn of string list ;; 
+
 module Private = struct 
 
    let is_a_harmless_ascii_character c = 
@@ -90,6 +92,16 @@ module Private = struct
       Strung.insert_repetitive_offset_on_the_left '0' 4   
       (string_of_int idx))^"_"^end_fn ;;   
 
+   let detox ap = 
+        let s_ap = Absolute_path.to_string ap in 
+        let _ = Sys.command ("detox "^s_ap) in 
+        let s_dir = Cull_string.after_rightmost s_ap '/'   in 
+        let dir = Directory_name.of_string s_dir in 
+        let files = admissible_files_inside dir in 
+        if List.length(files)<> 1 
+        then raise(Detox_exn files) 
+        else List.hd files ;;  
+
    let commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l = 
       match index_analysis_before_insertion s_or_l with 
        None -> None 
@@ -100,7 +112,7 @@ module Private = struct
            let tr= (fun j->conventional_name (s_or_l,j,end_fn)) in 
            "mv "^(tr idx)^" "^(tr (idx+1))  
          ) indexed_data in 
-         Some(fst_command :: other_commands) ;;    
+         Some(fst_command (* :: snd_command *) ::other_commands) ;;    
 
   
   let commands_for_upwards_insertion extraction_dir s_or_l = 
