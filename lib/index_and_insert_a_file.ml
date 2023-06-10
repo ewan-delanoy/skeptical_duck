@@ -56,6 +56,12 @@ module Private = struct
       let new_full_name =Cull_string.trim_spaces(snd(Option.get opt1)) in 
       Cull_string.after_rightmost new_full_name '/' ;;
 
+   let detox_related dir =
+        let wild_fn = unique_olavo_file_inside dir in 
+        let tamed_fn = dry_detox_result dir wild_fn in 
+        (tamed_fn,wild_fn) ;; 
+     
+
 
    let downloads_dir = Directory_name.of_string ("~/Downloads");;     
    let dir_for_short_files () = Directory_name.of_string "/Volumes/Matroska/Video/Olavo/";; 
