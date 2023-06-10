@@ -745,6 +745,15 @@ module Partially_polished = struct
     if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
     then  Some(M([domain],[domain]))
     else Extra_tools.compute_opt key ;; 
+ 
+  let compute_naively_opt pp key =
+      let (d,translated_key) = Kay.decompose_wrt_translation key in 
+      match compute_naively_without_translating_opt pp translated_key with 
+          None -> None 
+          |Some (translated_mold) -> 
+             Some(Mold.translate (-d) translated_mold);;
+      
+
 
 end ;; 
 
