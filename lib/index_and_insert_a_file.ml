@@ -8,40 +8,21 @@ type short_or_long = Short | Long ;;
 
 exception Detox_exn of string list ;; 
 
+exception  Unique_olavian_file_inside of string list ;; 
+
 module Private = struct 
 
-   let is_a_harmless_ascii_character c = 
-      let i = int_of_char c in 
-     if  (i<32)||(i>126) then false else 
-     not(List.mem c [' ';'"';'$';'%'; '&';'\'';'?';'^';'`';'|';]) ;; 
-  
-   let is_a_harmless_filename fn =
-       let n = String.length fn in 
-       List.for_all (fun k->
-         is_a_harmless_ascii_character(String.get fn (k-1))) 
-            (Int_range.range 1 n) ;;
+     
 
-   let admissible_files_inside dir =
-       let files_inside = Unix_again.beheaded_simple_ls dir in 
-       List.filter (
-         fun fn ->
-            if (not (is_a_harmless_filename fn))
-               ||
-               (not(String.contains fn '.'))
-            then false    
-            else
-              let ending = Cull_string.after_rightmost fn '.' in 
-              List.mem ending ["mkv";"mp4";"webm"] 
-       ) files_inside ;; 
-
-   exception  Unique_olavo_file_inside of string list ;;   
-
-   let unique_olavo_file_inside dir = 
+   let unique_olavian_file_inside dir = 
       let files_inside = Unix_again.beheaded_simple_ls dir in 
       let temp = List.filter (
-        fun fn -> Supstring.contains fn "Olavo") files_inside in 
+        fun fn -> (Supstring.contains fn "Olavo")
+              &&
+              (List.exists (fun edg->Supstring.ends_with fn edg) [".mkv";".mp4";".webm"])
+        ) files_inside in 
       if List.length(temp)<>1 
-      then  raise(Unique_olavo_file_inside(temp))  
+      then  raise(Unique_olavian_file_inside(temp))  
       else List.hd temp;;    
     
    let dry_detox_result dir filename = 
@@ -57,9 +38,9 @@ module Private = struct
       Cull_string.after_rightmost new_full_name '/' ;;
 
    let detox_related dir =
-        let wild_fn = unique_olavo_file_inside dir in 
+        let wild_fn = unique_olavian_file_inside dir in 
         let tamed_fn = dry_detox_result dir wild_fn in 
-        (tamed_fn,wild_fn) ;; 
+        (wild_fn,tamed_fn) ;; 
      
 
 
@@ -123,50 +104,36 @@ module Private = struct
 
    
 
-   let commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l = 
+   let commands_for_upwards_insertion extraction_dir s_or_l = 
+      let (wild_fn,tamed_fn) = detox_related extraction_dir in 
       match index_analysis_before_insertion s_or_l with 
        None -> None 
       |Some indexed_data ->  
-      let short_fn = Cull_string.after_rightmost inserted_one '/'   in 
-      let fst_command = "mv "^inserted_one^" "^(conventional_name (s_or_l,1,short_fn)) 
+      let s_dir = Directory_name.connectable_to_subpath extraction_dir  in 
+      let fst_command = 
+         Filename.quote_command "mv" [s_dir^wild_fn;s_dir^tamed_fn]
       and other_commands= Image.image(fun (idx,end_fn)->
            let tr= (fun j->conventional_name (s_or_l,j,end_fn)) in 
            "mv "^(tr idx)^" "^(tr (idx+1))  
          ) indexed_data in 
-         Some(fst_command (* :: snd_command *) ::other_commands) ;;    
-
-  
-  let commands_for_upwards_insertion extraction_dir s_or_l = 
-    let admissible_files = admissible_files_inside extraction_dir in 
-    let nbr_of_admissible_files = List.length  admissible_files in 
-    if nbr_of_admissible_files < 1 then warn "Failure : No admissible files" else 
-    if nbr_of_admissible_files > 1 then warn "Failure : Nonunique admissible file" else   
-   let inserted_one = (Directory_name.connectable_to_subpath extraction_dir)^(List.hd admissible_files) in 
-   commands_for_upwards_insertion_for_inserted_file inserted_one s_or_l ;; 
-     
-   let do_upwards_insertion extraction_dir s_or_l = 
-     match  commands_for_upwards_insertion extraction_dir s_or_l with 
-      None -> []
-     |Some l -> Image.image Unix_command.hardcore_uc l ;; 
+         Some(fst_command ::other_commands) ;;    
   
      
-     let commands_for_downwards_insertion_for_inserted_file inserted_one s_or_l = 
+     let commands_for_downwards_insertion extraction_dir s_or_l = 
+      let (wild_fn,tamed_fn) = detox_related extraction_dir in 
       match index_analysis_before_insertion s_or_l with 
        None -> None 
       |Some indexed_data ->  
-      let m = List.length(indexed_data)+1   
-      and short_fn = Cull_string.after_rightmost inserted_one '/'   in 
-      let fst_command = "mv "^inserted_one^" "^(conventional_name (s_or_l,m,short_fn)) in 
+      let m = List.length(indexed_data)+1  in 
+      let s_dir = Directory_name.connectable_to_subpath extraction_dir  in 
+      let fst_command = Filename.quote_command "mv" 
+         [s_dir^wild_fn;conventional_name (s_or_l,m,tamed_fn)]  in 
       Some([fst_command]) ;;    
     
-    
-    let commands_for_downwards_insertion extraction_dir s_or_l = 
-    let admissible_files = admissible_files_inside extraction_dir in 
-    let nbr_of_admissible_files = List.length  admissible_files in 
-    if nbr_of_admissible_files < 1 then warn "Failure : No admissible files" else 
-    if nbr_of_admissible_files > 1 then warn "Failure : Nonunique admissible file" else   
-    let inserted_one = (Directory_name.connectable_to_subpath extraction_dir)^(List.hd admissible_files) in 
-    commands_for_downwards_insertion_for_inserted_file inserted_one s_or_l ;; 
+      let do_upwards_insertion extraction_dir s_or_l = 
+         match  commands_for_upwards_insertion extraction_dir s_or_l with 
+          None -> []
+         |Some l -> Image.image Unix_command.hardcore_uc l ;;   
      
     let do_downwards_insertion extraction_dir s_or_l = 
      match  commands_for_downwards_insertion extraction_dir s_or_l with 
