@@ -35,7 +35,7 @@ type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int 
 
 type simplified_key = int * (int list) * int * int ;;
 
-type partially_polished = Sz3_types.partially_polished = PP of simplified_key * (hook * mold) list ;; 
+type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (hook * mold)) list ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;

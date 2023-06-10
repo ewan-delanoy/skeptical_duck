@@ -109,10 +109,10 @@ module Private = struct
       match index_analysis_before_insertion s_or_l with 
        None -> None 
       |Some indexed_data ->  
-      let s_source = Directory_name.connectable_to_subpath extraction_dir  
-      and s_dest = Directory_name.connectable_to_subpath (directory_for_size s_or_l) in 
+      let s_source = Directory_name.connectable_to_subpath extraction_dir  in 
       let fst_command = 
-         Filename.quote_command "mv" [s_source^wild_fn;s_dest^tamed_fn]
+         Filename.quote_command "mv" [s_source^wild_fn;
+         conventional_name (s_or_l,1,tamed_fn)]
       and other_commands= Image.image(fun (idx,end_fn)->
            let tr= (fun j->conventional_name (s_or_l,j,end_fn)) in 
            "mv "^(tr idx)^" "^(tr (idx+1))  

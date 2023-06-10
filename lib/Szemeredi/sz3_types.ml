@@ -33,4 +33,4 @@ type hook = St_import | St_cumulative of int | St_fork of int * int *int  ;;
 
 type simplified_key = int * (int list) * int * int ;;
 
-type partially_polished = PP of simplified_key * (hook * mold) list ;; 
+type partially_polished = PP of (simplified_key * (hook * mold)) list ;; 
