@@ -733,3 +733,20 @@ let all_solutions = Private.all_solutions ;;
 let compute = Private.compute ;;
 
 end ;;
+
+module Partially_polished = struct 
+
+  let compute_naively_without_translating_opt (PP l) key = 
+    match List.assoc_opt (Kay.deconstructor key) l with 
+    Some (_hook1,mold1) -> Some(mold1)
+  | None -> 
+    let (Key(fis,upper_bound)) = key in 
+    let domain = Finite_int_set.to_usual_int_list fis in 
+    if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
+    then  Some(M([domain],[domain]))
+    else Extra_tools.compute_opt key ;; 
+
+end ;; 
+
+
+
