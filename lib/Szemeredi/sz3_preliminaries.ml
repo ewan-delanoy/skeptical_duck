@@ -759,7 +759,8 @@ module Partially_polished = struct
   let compute_naively pp key = match compute_naively_opt pp key with 
       Some answer -> answer 
       | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
-      
+
+  (*    
   let recompute_import pp key =
       let smaller_key = Kay.decrement key in 
       let (M(sols,ext)) = compute_naively pp smaller_key in 
@@ -769,8 +770,21 @@ module Partially_polished = struct
       then raise(Recompute_import_exn(Kay.deconstructor key))  
       else M(sols2,ext) ;; 
 
-
-      
+  let recompute_cumulative pp pivot key = 
+    let smaller_key = Kay.remove_one_element key pivot in 
+    let (M(sols,ext)) = compute_naively pp smaller_key in 
+    let (Key(_,upper_bound)) = key in 
+    let is_ok = Upper_bound_on_constraint.list_is_admissible upper_bound in 
+    let sols2 = List.filter_map (
+              fun sol->
+                let new_sol = i_insert pivot sol in 
+                if is_ok new_sol then Some new_sol else None
+           ) sols in 
+    if sols2 = [] 
+    then raise(Recompute_import_exn(Kay.deconstructor key))  
+    else M(sols2,ext) ;;        
+  *) 
+    
 end ;; 
 
 
