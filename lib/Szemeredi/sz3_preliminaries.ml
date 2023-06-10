@@ -736,6 +736,9 @@ end ;;
 
 module Partially_polished = struct 
 
+  exception Compute_naively_exn of simplified_key ;; 
+  exception Recompute_import_exn of simplified_key ;; 
+
   let compute_naively_without_translating_opt (PP l) key = 
     match List.assoc_opt (Kay.deconstructor key) l with 
     Some (_hook1,mold1) -> Some(mold1)
@@ -752,9 +755,22 @@ module Partially_polished = struct
           None -> None 
           |Some (translated_mold) -> 
              Some(Mold.translate (-d) translated_mold);;
+
+  let compute_naively pp key = match compute_naively_opt pp key with 
+      Some answer -> answer 
+      | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
       
+  let recompute_import pp key =
+      let smaller_key = Kay.decrement key in 
+      let (M(sols,ext)) = compute_naively pp smaller_key in 
+      let (Key(_,upper_bound)) = key in 
+      let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible upper_bound) sols in 
+      if sols2 = [] 
+      then raise(Recompute_import_exn(Kay.deconstructor key))  
+      else M(sols2,ext) ;; 
 
 
+      
 end ;; 
 
 
