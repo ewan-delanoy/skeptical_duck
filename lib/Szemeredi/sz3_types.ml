@@ -29,8 +29,10 @@ type upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;;
 
 type key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
-type hook = St_import | St_cumulative of int | St_fork of int * int *int  ;; 
+type crude_hook = Ch_import | Ch_cumulative of int | Ch_fork of int * int *int  ;; 
+
+type medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork of int * int *int  ;; 
 
 type simplified_key = int * (int list) * int * int ;;
 
-type partially_polished = PP of (simplified_key * (hook * mold)) list ;; 
+type partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 

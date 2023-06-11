@@ -31,11 +31,13 @@ type upper_bound_on_constraint =
 type key = 
    Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
-type hook = Sz3_types.hook =  St_import | St_cumulative of int | St_fork of int * int *int  ;; 
+type crude_hook = Sz3_types.crude_hook =  Ch_import | Ch_cumulative of int | Ch_fork of int * int *int  ;; 
+
+type medium_hook = Sz3_types.medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork of int * int *int  ;; 
 
 type simplified_key = int * (int list) * int * int ;;
 
-type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (hook * mold)) list ;; 
+type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -69,7 +71,7 @@ let sk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
 ) : simplified_key Total_ordering_t.t);;  
   
 
-let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (hook * mold) Total_ordering_t.t);;
+let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (medium_hook * mold) Total_ordering_t.t);;
 
 let pp_element_order = Total_ordering.product sk_order hm_order ;; 
 
@@ -86,9 +88,9 @@ end ;;
 module Hook = struct 
 
   let translate d = function 
-      St_import -> St_import 
-    | St_cumulative (m) -> St_cumulative (m+d) 
-    | St_fork (i,j,k) -> St_fork (i+d,j+d,k+d) ;;
+      Ch_import -> Ch_import 
+    | Ch_cumulative (m) -> Ch_cumulative (m+d) 
+    | Ch_fork (i,j,k) -> Ch_fork (i+d,j+d,k+d) ;;
     
   let translate_opt d = function 
      None -> None 
@@ -366,8 +368,8 @@ end ;;
 
 module Hashtbl_here = struct 
 
-  let greedy = ((Hashtbl.create 50) : (key, hook * mold) Hashtbl.t) ;; 
-  let cautious = ((Hashtbl.create 50) : (key, hook * mold) Hashtbl.t) ;;   
+  let greedy = ((Hashtbl.create 50) : (key, crude_hook * mold) Hashtbl.t) ;; 
+  let cautious = ((Hashtbl.create 50) : (key, crude_hook * mold) Hashtbl.t) ;;   
   
   let add_to_all key answer =
       (
@@ -380,13 +382,13 @@ module Hashtbl_here = struct
 
 end ;;
 
-module Suboptimal_hook = struct 
+module Crude = struct 
 
 
   module Peek_and_seek = struct 
 
     type peek_result = 
-    P_Success of hook * mold  
+    P_Success of crude_hook * mold  
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
@@ -430,7 +432,7 @@ module Suboptimal_hook = struct
                       else None    
           ) sols2 in 
           if sols3 <> [] 
-          then P_Success(St_import,M(sols3,ext2))  
+          then P_Success(Ch_import,M(sols3,ext2))  
           else P_Failure
       ;;
   
@@ -452,24 +454,24 @@ module Suboptimal_hook = struct
           else
           let sols3 = extend_and_filter sols2 in 
           if sols3 <> [] 
-          then P_Success(St_cumulative(pivot),M(sols3,Image.image (i_insert pivot) ext2))  
+          then P_Success(Ch_cumulative(pivot),M(sols3,Image.image (i_insert pivot) ext2))  
           else P_Failure
       ;;
   
       let peek_for_easy_case helper key =
          match seek_non_translated_obvious_access helper key with 
-         Some(_,answer1) -> (P_Success(St_import,answer1),None)
+         Some(_,answer1) -> (P_Success(Ch_import,answer1),None)
          |None ->
           let peek_res1=peek_for_import_case helper key in 
           (match peek_res1 with 
         
-             P_Success(_) -> (peek_res1,Some St_import)
+             P_Success(_) -> (peek_res1,Some Ch_import)
             |P_Unfinished_computation(_) -> (peek_res1,None)
             |P_Failure -> 
                let n = Kay.max key in 
                let peek_res2=peek_for_cumulative_case helper key n in 
                (match peek_res2 with 
-               P_Success(_) -> (peek_res2,Some (St_cumulative(n)))
+               P_Success(_) -> (peek_res2,Some (Ch_cumulative(n)))
               |P_Unfinished_computation(_) 
               |P_Failure -> (peek_res2,None)
                )
@@ -510,17 +512,17 @@ module Suboptimal_hook = struct
           and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
           if min1 = max1 
           then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-                P_Success(St_fork(i,j,k),M(sols4,[[]]))
+                P_Success(Ch_fork(i,j,k),M(sols4,[[]]))
           else let (max_idx,_) = List.hd(List.rev max_indices) in 
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-                P_Success(St_fork(i,j,k),M(sols5,[ext5]));;    
+                P_Success(Ch_fork(i,j,k),M(sols5,[ext5]));;    
          
           
         let peek_for_hook helper key = function 
-           St_import -> peek_for_import_case helper key 
-           |St_cumulative(pivot) ->  peek_for_cumulative_case helper key pivot 
-           |St_fork(i,j,k) ->  peek_for_fork_case helper key (i,j,k) ;; 
+           Ch_import -> peek_for_import_case helper key 
+           |Ch_cumulative(pivot) ->  peek_for_cumulative_case helper key pivot 
+           |Ch_fork(i,j,k) ->  peek_for_fork_case helper key (i,j,k) ;; 
   
   end ;;   
     
@@ -528,14 +530,14 @@ module Suboptimal_hook = struct
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
-    exception Pusher_for_needed_subcomputations_exn_3 of hook * key ;; 
+    exception Pusher_for_needed_subcomputations_exn_3 of crude_hook * key ;; 
 
     let suboptimal_hook_finder key =
        match Kay.largest_constraint_with_predecessor_opt key with 
        None -> None 
        |Some(cstr,_) ->
          let nth = (fun k->List.nth cstr (k-1)) in 
-         Some(St_fork(nth 1,nth 2,nth 3)) ;; 
+         Some(Ch_fork(nth 1,nth 2,nth 3)) ;; 
 
     let pusher_for_needed_subcomputations (helper,to_be_treated) =
         match to_be_treated with 
@@ -597,14 +599,14 @@ module Suboptimal_hook = struct
 end ;;   
 
 
-module Improved_hook = struct 
+module Medium = struct 
 
    exception Key_is_too_easy of key ;; 
 
    module Private = struct   
 
   let measure key =
-    let (_,M(sols,_)) = Suboptimal_hook.compute key in 
+    let (_,M(sols,_)) = Crude.compute key in 
     List.length(List.hd sols) ;;  
      
  let rec find_threshhold_triple triple =
@@ -651,8 +653,8 @@ module Improved_hook = struct
 
  let rigorous_quest_for_individual_cumulative_case old_key pivot = 
    let simpler_key = Kay.remove_one_element old_key pivot in 
-   let res1 = Suboptimal_hook.compute simpler_key 
-   and res2 = Suboptimal_hook.compute old_key in 
+   let res1 = Crude.compute simpler_key 
+   and res2 = Crude.compute old_key in 
    let (_,M(sols1,_ext1)) = res1 
    and (_,M(sols2,_ext2)) = res2 in 
    if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
@@ -670,7 +672,7 @@ module Improved_hook = struct
      let bare_candidates = Image.image 
      (Kay.remove_one_element initial_key) cstr in 
      let candidates = Image.image (
-            fun cand-> (cand,snd(Suboptimal_hook.compute cand))
+            fun cand-> (cand,snd(Crude.compute cand))
      ) bare_candidates 
      and translated_candidates = Image.image (
        fun cand-> snd(Kay.decompose_wrt_translation cand)
@@ -684,21 +686,21 @@ module Improved_hook = struct
  
  let improved_hook_finder key = 
    if rigorous_test_for_import_case key 
-   then Some St_import
+   then Some Ch_import
    else   
    match rigorous_quest_for_cumulative_case key with 
-   Some(single,_,_)-> Some(St_cumulative(List.hd single))
+   Some(single,_,_)-> Some(Ch_cumulative(List.hd single))
    | None ->
      (
       match rigorous_quest_for_fork_case key with 
       Some(cstr,_,_)-> 
             let elt = (fun k->List.nth cstr (k-1)) in 
-            Some((St_fork(elt 1,elt 2,elt 3)))
+            Some((Ch_fork(elt 1,elt 2,elt 3)))
       | None -> None
      );;
 
   let compute key = 
-      let (opt,sol) = Suboptimal_hook.compute key in 
+      let (opt,sol) = Crude.compute key in 
       match opt with 
       None -> raise(Key_is_too_easy(key))
       | Some _ -> (Option.get(improved_hook_finder key),sol) ;;  
@@ -714,15 +716,15 @@ module Improved_hook = struct
            old_f (Kay.remove_one_element key t)
         ) in 
         match Option.get(improved_hook_finder key) with 
-        St_cumulative(m)->
+        Ch_cumulative(m)->
            List.filter_map (
               fun sol->
                 let new_sol = i_insert m sol in 
                 if is_ok new_sol then Some new_sol else None
            )(compute_below m) 
-        |St_fork(i,j,k)->
+        |Ch_fork(i,j,k)->
           il_fold_merge(Image.image compute_below [i;j;k])
-        |St_import ->  
+        |Ch_import ->  
           let smaller_key = Kay.decrement key in 
           List.filter is_ok (old_f smaller_key)
      );;        
