@@ -662,9 +662,6 @@ let rigorous_quest_for_fork_or_select key =
             
         ) ;; 
         
-        
-
-
       let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
          if rigorous_test_for_import_case key then Ch_import else
          let (hook,opt,_) = compute key in 
@@ -674,8 +671,6 @@ let rigorous_quest_for_fork_or_select key =
          |Mh_select (_,_,_) ->
               old_f(Option.get opt) 
       );;
-
- 
 
      let all_solutions =Memoized.recursive(fun old_f key -> 
        let (Key(fis,ub_on_constraint)) = key in 
@@ -712,7 +707,8 @@ end ;;
 module Partially_polished = struct 
 
   exception Compute_naively_exn of simplified_key ;; 
-  exception Recompute_import_exn of simplified_key ;; 
+  exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
+  exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
 
   let compute_naively_without_translating_opt (PP l) key = 
     match List.assoc_opt (Kay.deconstructor key) l with 
@@ -734,6 +730,37 @@ module Partially_polished = struct
   let compute_naively pp key = match compute_naively_opt pp key with 
       Some answer -> answer 
       | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
+
+  let check_fork pp (i,j,k) key (M(sols,l_ext)) = 
+      let parts = Image.image (
+        fun t->
+            let subkey = Kay.remove_one_element key t in 
+            (t,(subkey,compute_naively pp key)) 
+      ) [i;j;k] in 
+      let sols_with_pivots = Image.image (fun 
+        sol->(sol,List.find (fun t->not(List.mem t sol)) [k;j;i])) sols in
+      let unregistered_sols = List.filter_map (
+        fun (sol,t) -> 
+           let (key2,M(sols2,_l_ext2)) = List.assoc t parts in 
+           if not(List.mem sol sols2)
+           then Some(sol,key2)
+           else None 
+      ) sols_with_pivots in 
+      if unregistered_sols<>[]
+      then raise(Unregistered_solutions(unregistered_sols,key,Mh_fork(i,j,k)))  
+      else 
+      let untreated_cases = List.flatten(Image.image (fun (_t,(subkey,M(_sols3,l_ext3)))->
+        List.filter_map (fun ext3->
+          if List.for_all (fun ext->not(i_is_included_in ext ext3)) l_ext 
+          then Some(ext3,subkey)
+          else None   
+        ) l_ext3 
+      ) parts) in   
+      if untreated_cases<>[]
+      then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
+      else () ;; 
+      
+
 
   (*    
   let recompute_import pp key =
