@@ -760,32 +760,30 @@ module Partially_polished = struct
       then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
       else () ;; 
       
+    let check_select pp (i,j,k) key (M(sols,l_ext)) = 
+      let (_,opt) = Option.get(Kay.largest_constraint_with_predecessor_opt key) in 
+      let preceding_key = Option.get opt in 
+      let (M(sols2,l_ext2)) = compute_naively pp preceding_key in 
+      let unregistered_sols = List.filter_map (
+          fun sol -> 
+             if not(List.mem sol sols2)
+             then Some(sol,preceding_key)
+            else None 
+      ) sols in 
+      if unregistered_sols<>[]
+      then raise(Unregistered_solutions(unregistered_sols,key,Mh_fork(i,j,k)))  
+      else 
+      let untreated_cases = 
+          List.filter_map (fun ext2->
+            if List.for_all (fun ext->not(i_is_included_in ext ext2)) ([i;j;k]::l_ext) 
+            then Some(ext2,preceding_key)
+            else None   
+      ) l_ext2  in   
+      if untreated_cases<>[]
+      then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
+      else () ;; 
 
-
-  (*    
-  let recompute_import pp key =
-      let smaller_key = Kay.decrement key in 
-      let (M(sols,ext)) = compute_naively pp smaller_key in 
-      let (Key(_,upper_bound)) = key in 
-      let sols2 = List.filter (Upper_bound_on_constraint.list_is_admissible upper_bound) sols in 
-      if sols2 = [] 
-      then raise(Recompute_import_exn(Kay.deconstructor key))  
-      else M(sols2,ext) ;; 
-
-  let recompute_cumulative pp pivot key = 
-    let smaller_key = Kay.remove_one_element key pivot in 
-    let (M(sols,ext)) = compute_naively pp smaller_key in 
-    let (Key(_,upper_bound)) = key in 
-    let is_ok = Upper_bound_on_constraint.list_is_admissible upper_bound in 
-    let sols2 = List.filter_map (
-              fun sol->
-                let new_sol = i_insert pivot sol in 
-                if is_ok new_sol then Some new_sol else None
-           ) sols in 
-    if sols2 = [] 
-    then raise(Recompute_import_exn(Kay.deconstructor key))  
-    else M(sols2,ext) ;;        
-  *) 
+  
     
 end ;; 
 
