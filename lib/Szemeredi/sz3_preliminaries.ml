@@ -812,8 +812,16 @@ module Partially_polished = struct
         then raise(Untreated_cases(untreated_cases,key,Mh_cumulative(pivot)))  
         else () ;; 
   
+    let check_item pp (skey,(hook,mold)) = 
+        let key = Kay.constructor skey in 
+        match hook with 
+         Mh_cumulative(pivot) -> check_cumulative pp pivot key mold   
+        |Mh_select(i,j,k) -> check_select pp (i,j,k) key mold  
+        |Mh_fork(i,j,k) -> check_fork pp (i,j,k) key mold  ;;
 
-  
+    let check_all pp = 
+        let (PP l) = pp in 
+        List.iter (check_item pp) (List.rev l) ;;
     
 end ;; 
 
