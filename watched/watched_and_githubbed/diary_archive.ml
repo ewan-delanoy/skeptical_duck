@@ -1,14 +1,35 @@
 (************************************************************************************************************************
-Snippet 123 : 
+Snippet 124 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 122 : 
+Snippet 123 : Find/replace on two files
 ************************************************************************************************************************)
 
+module Snip123=struct
+
+  let ap1 = Absolute_path.of_string "lib/Szemeredi/sz3_types.ml";;
+  let ap2 = Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml";;
+  
+  let u1 = Image.image 
+  (Replace_inside.replace_several_inside_file 
+   ["St_import","Ch_import";
+    "St_cumulative","Ch_cumulative";
+    "St_fork","Ch_fork";
+    ]
+  ) [ap1;ap2];;
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 122 : Looking for a particular non-ASCII charcater
+************************************************************************************************************************)
 module Snip122=struct
 
 let building_site = home^"/Teuliou/html_files/Translations/Building_site/";;

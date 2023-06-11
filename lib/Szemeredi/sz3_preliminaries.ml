@@ -599,135 +599,107 @@ module Crude = struct
 end ;;   
 
 
+
 module Medium = struct 
 
-   exception Key_is_too_easy of key ;; 
+  exception Key_is_too_easy of key ;; 
+  exception Fork_or_select_exn of key ;; 
 
-   module Private = struct   
+  module Private = struct   
 
-  let measure key =
-    let (_,M(sols,_)) = Crude.compute key in 
-    List.length(List.hd sols) ;;  
-     
- let rec find_threshhold_triple triple =
-     let ((_,ms),(predecessor,mp),cstr) = triple in 
-      if ms<>mp 
-      then Some(cstr,Some predecessor)
-      else match Kay.largest_constraint_with_predecessor_opt predecessor with 
-            None -> None 
-           |Some(cstr2,opt2)->
-              (
-               match opt2 with 
-                None -> Some(cstr2,None)
-                |Some predecessor2 ->
-                  let mp2 = measure predecessor2 in 
-                 find_threshhold_triple ((predecessor,mp),(predecessor2,mp2),cstr2)
-              ) ;;  
-
- exception Threshhold_decomposition_exn_1 of key ;; 
- exception Threshhold_decomposition_exn_2 of key ;; 
-
- let threshhold_decomposition key =
-    let mkey = measure key in 
-    match Kay.largest_constraint_with_predecessor_opt key with 
-    None ->  raise(Threshhold_decomposition_exn_1(key))
-    |Some (cstr,opt) ->
-       (
-         match opt with 
-          None -> (cstr,None)
-          |Some key2 -> 
-           let mkey2 = measure key2 in 
-         (
-            match find_threshhold_triple ((key,mkey),(key2,mkey2),cstr) with 
-             None -> raise(Threshhold_decomposition_exn_2(key))
-             |Some(cstr3,opt3) -> (cstr3,opt3)
-         )   
-       ) ;;  
-
+ let measure key =
+   let (_,M(sols,_)) = Crude.compute key in 
+   List.length(List.hd sols) ;;  
+ 
   let rigorous_test_for_import_case old_key = 
     let (W w)=Kay.width(old_key) in 
     if w<2 then false else
     let simpler_key = Kay.decrement old_key in 
     (measure simpler_key)=(measure old_key) ;; 
-    
-
- let rigorous_quest_for_individual_cumulative_case old_key pivot = 
-   let simpler_key = Kay.remove_one_element old_key pivot in 
-   let res1 = Crude.compute simpler_key 
-   and res2 = Crude.compute old_key in 
-   let (_,M(sols1,_ext1)) = res1 
-   and (_,M(sols2,_ext2)) = res2 in 
-   if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
-   then Some([pivot],(res1,res2),[simpler_key])  
-   else None ;;
-
- let rigorous_quest_for_cumulative_case old_key =
-     let (Key(fis,_)) = old_key in 
-     let domain = List.rev(Finite_int_set.to_usual_int_list fis) in 
-     List.find_map (rigorous_quest_for_individual_cumulative_case old_key) domain ;; 
 
 
- let rigorous_quest_for_fork_case initial_key = 
-     let (cstr,_) = threshhold_decomposition initial_key in 
-     let bare_candidates = Image.image 
-     (Kay.remove_one_element initial_key) cstr in 
-     let candidates = Image.image (
-            fun cand-> (cand,snd(Crude.compute cand))
-     ) bare_candidates 
-     and translated_candidates = Image.image (
-       fun cand-> snd(Kay.decompose_wrt_translation cand)
-     ) bare_candidates in 
-     let sizes = Image.image measure bare_candidates in 
-     let first_size = List.hd sizes in 
-     if List.for_all (fun size->size=first_size) sizes 
-     then Some(cstr,candidates,translated_candidates)
-     else None;;   
- 
- 
- let improved_hook_finder key = 
-   if rigorous_test_for_import_case key 
-   then Some Ch_import
-   else   
-   match rigorous_quest_for_cumulative_case key with 
-   Some(single,_,_)-> Some(Ch_cumulative(List.hd single))
-   | None ->
+let rigorous_quest_for_individual_cumulative_case old_key pivot = 
+  let simpler_key = Kay.remove_one_element old_key pivot in 
+  let res1 = Crude.compute simpler_key 
+  and res2 = Crude.compute old_key in 
+  let (_,M(sols1,_ext1)) = res1 
+  and (_,M(sols2,_ext2)) = res2 in 
+  if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
+  then Some(Mh_cumulative(pivot),Some(simpler_key))  
+  else None ;;
+
+let rigorous_quest_for_cumulative_case old_key =
+    let (Key(fis,_)) = old_key in 
+    let domain = List.rev(Finite_int_set.to_usual_int_list fis) in 
+    List.find_map (rigorous_quest_for_individual_cumulative_case old_key) domain ;; 
+
+
+let rigorous_quest_for_fork_or_select key = 
+  match Kay.largest_constraint_with_predecessor_opt key with 
+  None ->  raise(Fork_or_select_exn(key))
+  |Some (cstr,opt) ->
+     let c = (fun k->List.nth cstr (k-1))  in 
      (
-      match rigorous_quest_for_fork_case key with 
-      Some(cstr,_,_)-> 
-            let elt = (fun k->List.nth cstr (k-1)) in 
-            Some((Ch_fork(elt 1,elt 2,elt 3)))
-      | None -> None
-     );;
+       match opt with 
+        None -> (Mh_fork(c 1,c 2,c 3),None)
+       |Some preceding_key ->    
+          if measure(preceding_key) = measure(key) 
+          then  (Mh_select(c 1,c 2,c 3),Some(preceding_key))
+          else  (Mh_fork(c 1,c 2,c 3),None)  
+     ) ;; 
 
-  let compute key = 
+    let compute key = 
       let (opt,sol) = Crude.compute key in 
       match opt with 
       None -> raise(Key_is_too_easy(key))
-      | Some _ -> (Option.get(improved_hook_finder key),sol) ;;  
+      | Some _ -> 
+        (
+          match rigorous_quest_for_cumulative_case key with 
+           Some(hook1,opt1) -> (hook1,opt1,sol)
+           | None ->
+              let (hook2,opt2)= rigorous_quest_for_fork_or_select key in
+               (hook2,opt2,sol)
+            
+        ) ;; 
+        
+        
 
-      let all_solutions =Memoized.recursive(fun old_f key -> 
-        let (Key(fis,ub_on_constraint)) = key in 
-        let domain = Finite_int_set.to_usual_int_list fis 
-        and is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in 
-        if is_ok domain 
-        then [domain]
-        else
-        let compute_below = (fun t->
-           old_f (Kay.remove_one_element key t)
-        ) in 
-        match Option.get(improved_hook_finder key) with 
-        Ch_cumulative(m)->
-           List.filter_map (
-              fun sol->
-                let new_sol = i_insert m sol in 
-                if is_ok new_sol then Some new_sol else None
-           )(compute_below m) 
-        |Ch_fork(i,j,k)->
-          il_fold_merge(Image.image compute_below [i;j;k])
-        |Ch_import ->  
-          let smaller_key = Kay.decrement key in 
-          List.filter is_ok (old_f smaller_key)
-     );;        
+
+      let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
+         if rigorous_test_for_import_case key then Ch_import else
+         let (hook,opt,_) = compute key in 
+         match hook with 
+          Mh_cumulative(pivot) -> Ch_cumulative(pivot) 
+         |Mh_fork(i,j,k) -> Ch_fork(i,j,k) 
+         |Mh_select (_,_,_) ->
+              old_f(Option.get opt) 
+      );;
+
+ 
+
+     let all_solutions =Memoized.recursive(fun old_f key -> 
+       let (Key(fis,ub_on_constraint)) = key in 
+       let domain = Finite_int_set.to_usual_int_list fis 
+       and is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in 
+       if is_ok domain 
+       then [domain]
+       else
+       let compute_below = (fun t->
+          old_f (Kay.remove_one_element key t)
+       ) in 
+       match improved_crude_hook_finder key with 
+       Ch_cumulative(m)->
+          List.filter_map (
+             fun sol->
+               let new_sol = i_insert m sol in 
+               if is_ok new_sol then Some new_sol else None
+          )(compute_below m) 
+       |Ch_fork(i,j,k)->
+         il_fold_merge(Image.image compute_below [i;j;k])
+       |Ch_import ->  
+         let smaller_key = Kay.decrement key in 
+         List.filter is_ok (old_f smaller_key)
+    );;        
 
 end ;;   
 
@@ -735,6 +707,7 @@ let all_solutions = Private.all_solutions ;;
 let compute = Private.compute ;;
 
 end ;;
+
 
 module Partially_polished = struct 
 
