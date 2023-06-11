@@ -771,7 +771,7 @@ module Partially_polished = struct
             else None 
       ) sols in 
       if unregistered_sols<>[]
-      then raise(Unregistered_solutions(unregistered_sols,key,Mh_fork(i,j,k)))  
+      then raise(Unregistered_solutions(unregistered_sols,key,Mh_select(i,j,k)))  
       else 
       let untreated_cases = 
           List.filter_map (fun ext2->
@@ -780,8 +780,38 @@ module Partially_polished = struct
             else None   
       ) l_ext2  in   
       if untreated_cases<>[]
-      then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
+      then raise(Untreated_cases(untreated_cases,key,Mh_select(i,j,k)))  
       else () ;; 
+
+     
+    let check_cumulative pp pivot key (M(sols,l_ext)) = 
+        let smaller_key = Kay.remove_one_element key pivot in 
+        let (M(sols2,l_ext2)) = compute_naively pp smaller_key in 
+        let unregistered_sols = List.filter_map (
+            fun sol -> 
+               let ssol = i_setminus sol [pivot] in  
+               if not(List.mem ssol sols2)
+               then Some(ssol,smaller_key)
+              else None 
+        ) sols in 
+        if unregistered_sols<>[]
+        then raise(Unregistered_solutions(unregistered_sols,key,Mh_cumulative(pivot)))  
+        else 
+        let (Key(_,ub_on_constraint)) = key in 
+        let is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in   
+        let untreated_cases = 
+            List.filter_map (fun ext2->
+              let eext2 = i_insert pivot ext2 in 
+              if (List.for_all (fun ext->not(i_is_included_in ext eext2)) l_ext)
+                 &&
+                 (is_ok eext2) 
+              then Some(ext2,smaller_key)
+              else None   
+        ) l_ext2  in   
+        if untreated_cases<>[]
+        then raise(Untreated_cases(untreated_cases,key,Mh_cumulative(pivot)))  
+        else () ;; 
+  
 
   
     
