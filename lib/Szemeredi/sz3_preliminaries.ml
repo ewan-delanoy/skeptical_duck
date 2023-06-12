@@ -604,6 +604,7 @@ module Medium = struct
 
   exception Key_is_too_easy of key ;; 
   exception Fork_or_select_exn of key ;; 
+  exception Improved_crude_hook_finder_exn of key ;; 
 
   module Private = struct   
 
@@ -651,25 +652,29 @@ let rigorous_quest_for_fork_or_select key =
     let compute key = 
       let (opt,sol) = Crude.compute key in 
       match opt with 
-      None -> raise(Key_is_too_easy(key))
+      None -> (None,None,sol)
       | Some _ -> 
         (
           match rigorous_quest_for_cumulative_case key with 
-           Some(hook1,opt1) -> (hook1,opt1,sol)
+           Some(hook1,opt1) -> (Some hook1,opt1,sol)
            | None ->
               let (hook2,opt2)= rigorous_quest_for_fork_or_select key in
-               (hook2,opt2,sol)
+               (Some hook2,opt2,sol)
             
         ) ;; 
         
       let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
          if rigorous_test_for_import_case key then Ch_import else
-         let (hook,opt,_) = compute key in 
-         match hook with 
+         let (hook_opt,predecessor_opt,_) = compute key in 
+         match hook_opt with 
+         None -> raise(Improved_crude_hook_finder_exn(key))
+         | Some hook -> 
+         (match hook with 
           Mh_cumulative(pivot) -> Ch_cumulative(pivot) 
          |Mh_fork(i,j,k) -> Ch_fork(i,j,k) 
          |Mh_select (_,_,_) ->
-              old_f(Option.get opt) 
+              old_f(Option.get predecessor_opt) 
+         )     
       );;
 
      let all_solutions =Memoized.recursive(fun old_f key -> 
