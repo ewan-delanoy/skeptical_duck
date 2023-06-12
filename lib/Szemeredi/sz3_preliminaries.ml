@@ -710,6 +710,8 @@ module Partially_polished = struct
   exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
 
+  module Check = struct
+
   let compute_naively_without_translating_opt (PP l) key = 
     match List.assoc_opt (Kay.deconstructor key) l with 
     Some (_hook1,mold1) -> Some(mold1)
@@ -822,6 +824,8 @@ module Partially_polished = struct
     let check_all pp = 
         let (PP l) = pp in 
         List.iter (check_item pp) (List.rev l) ;;
+
+    end ;;    
     
 end ;; 
 
