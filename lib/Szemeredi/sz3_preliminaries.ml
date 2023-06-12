@@ -604,7 +604,8 @@ module Medium = struct
 
   exception Key_is_too_easy of key ;; 
   exception Fork_or_select_exn of key ;; 
-  exception Improved_crude_hook_finder_exn of key ;; 
+  exception Improved_crude_hook_finder_exn_1 of key ;; 
+  exception Improved_crude_hook_finder_exn_2 of key ;; 
 
   module Private = struct   
 
@@ -649,6 +650,33 @@ let rigorous_quest_for_fork_or_select key =
           else  (Mh_fork(c 1,c 2,c 3),None)  
      ) ;; 
 
+  let medium_hook_finder key = 
+    match Kay.largest_constraint_with_predecessor_opt key with 
+  None ->  None
+  | Some (_,_) ->
+    (match rigorous_quest_for_cumulative_case key with 
+    Some(hook1,_opt1) -> Some hook1
+    | None ->
+       let (hook2,_opt2)= rigorous_quest_for_fork_or_select key in
+       Some hook2);;
+
+  let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
+    match Kay.largest_constraint_with_predecessor_opt key with 
+    None ->  raise(Improved_crude_hook_finder_exn_1(key))
+    | Some (_,predecessor_opt) ->
+        if rigorous_test_for_import_case key then Ch_import else
+        (match medium_hook_finder key with 
+        None -> raise(Improved_crude_hook_finder_exn_2(key))
+        | Some hook -> 
+        (match hook with 
+         Mh_cumulative(pivot) -> Ch_cumulative(pivot) 
+        |Mh_fork(i,j,k) -> Ch_fork(i,j,k) 
+        |Mh_select (_,_,_) ->
+             old_f(Option.get predecessor_opt) 
+        ))     
+    );;
+
+
     let compute key = 
       let (opt,sol) = Crude.compute key in 
       match opt with 
@@ -663,20 +691,7 @@ let rigorous_quest_for_fork_or_select key =
             
         ) ;; 
         
-      let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
-         if rigorous_test_for_import_case key then Ch_import else
-         let (hook_opt,predecessor_opt,_) = compute key in 
-         match hook_opt with 
-         None -> raise(Improved_crude_hook_finder_exn(key))
-         | Some hook -> 
-         (match hook with 
-          Mh_cumulative(pivot) -> Ch_cumulative(pivot) 
-         |Mh_fork(i,j,k) -> Ch_fork(i,j,k) 
-         |Mh_select (_,_,_) ->
-              old_f(Option.get predecessor_opt) 
-         )     
-      );;
-
+      
      let all_solutions =Memoized.recursive(fun old_f key -> 
        let (Key(fis,ub_on_constraint)) = key in 
        let domain = Finite_int_set.to_usual_int_list fis 
