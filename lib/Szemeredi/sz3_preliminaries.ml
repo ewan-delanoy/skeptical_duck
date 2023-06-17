@@ -517,12 +517,6 @@ module Crude = struct
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
                 P_Success(Ch_fork(i,j,k),M(sols5,[ext5]));;    
-         
-          
-        let peek_for_hook helper key = function 
-           Ch_import -> peek_for_import_case helper key 
-           |Ch_cumulative(pivot) ->  peek_for_cumulative_case helper key pivot 
-           |Ch_fork(i,j,k) ->  peek_for_fork_case helper key (i,j,k) ;; 
   
   end ;;   
     
@@ -531,13 +525,6 @@ module Crude = struct
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
     exception Pusher_for_needed_subcomputations_exn_3 of crude_hook * key ;; 
-
-    let suboptimal_hook_finder key =
-       match Kay.largest_constraint_with_predecessor_opt key with 
-       None -> None 
-       |Some(cstr,_) ->
-         let nth = (fun k->List.nth cstr (k-1)) in 
-         Some(Ch_fork(nth 1,nth 2,nth 3)) ;; 
 
     let pusher_for_needed_subcomputations (helper,to_be_treated) =
         match to_be_treated with 
