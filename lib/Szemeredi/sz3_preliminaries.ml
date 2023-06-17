@@ -556,12 +556,13 @@ module Crude = struct
               ) in 
               (new_helper,others)
           | Peek_and_seek.P_Failure -> 
-            let hook_opt2 = suboptimal_hook_finder key in 
             (
-              match hook_opt2 with 
-                 None -> raise (Pusher_for_needed_subcomputations_exn_2)
-                |Some hook2 -> 
-                  let peek_res2 = Peek_and_seek.peek_for_hook helper key hook2 in 
+              match Kay.largest_constraint_with_predecessor_opt key with 
+               None -> raise (Pusher_for_needed_subcomputations_exn_2)
+              |Some(cstr,_) ->
+                 let nth = (fun k->List.nth cstr (k-1)) in 
+                  let peek_res2 = Peek_and_seek.peek_for_fork_case helper key (nth 1,nth 2,nth 3) 
+                  and hook2 = Ch_fork(nth 1,nth 2,nth 3)  in 
                   match peek_res2 with 
                   | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                        (helper,new_to_be_treated@to_be_treated)
@@ -569,7 +570,7 @@ module Crude = struct
                       ((key,(hook2,answer)) :: helper ,others)
                   | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
             )
-          );;      
+            );;      
 
         
   
@@ -676,18 +677,15 @@ let rigorous_quest_for_fork_or_select key =
 
 
     let compute key = 
-      let (opt,sol) = Crude.compute key in 
-      match opt with 
-      None -> (None,None,sol)
-      | Some _ -> 
-        (
-          match rigorous_quest_for_cumulative_case key with 
+      let sol = Crude.compute key in 
+      if Kay.largest_constraint_with_predecessor_opt key = None 
+      then   (None,None,sol)
+      else  match rigorous_quest_for_cumulative_case key with 
            Some(hook1,opt1) -> (Some hook1,opt1,sol)
            | None ->
               let (hook2,opt2)= rigorous_quest_for_fork_or_select key in
                (Some hook2,opt2,sol)
-            
-        ) ;; 
+      ;; 
         
       
      let all_solutions =Memoized.recursive(fun old_f key -> 
