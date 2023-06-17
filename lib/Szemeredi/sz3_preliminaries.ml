@@ -594,7 +594,7 @@ module Crude = struct
       
   end ;;  
 
-  let compute = Compute.compute_recursively_and_remember ;; 
+  let compute key = snd(Compute.compute_recursively_and_remember key) ;; 
 
 end ;;   
 
@@ -610,7 +610,7 @@ module Medium = struct
   module Private = struct   
 
  let measure key =
-   let (_,M(sols,_)) = Crude.compute key in 
+   let (M(sols,_)) = Crude.compute key in 
    List.length(List.hd sols) ;;  
  
   let rigorous_test_for_import_case old_key = 
@@ -622,10 +622,8 @@ module Medium = struct
 
 let rigorous_quest_for_individual_cumulative_case old_key pivot = 
   let simpler_key = Kay.remove_one_element old_key pivot in 
-  let res1 = Crude.compute simpler_key 
-  and res2 = Crude.compute old_key in 
-  let (_,M(sols1,_ext1)) = res1 
-  and (_,M(sols2,_ext2)) = res2 in 
+  let (M(sols1,_ext1)) = Crude.compute simpler_key  
+  and (M(sols2,_ext2)) = Crude.compute old_key in 
   if List.length(List.hd sols2)=List.length(List.hd sols1)+1 
   then Some(Mh_cumulative(pivot),Some(simpler_key))  
   else None ;;
