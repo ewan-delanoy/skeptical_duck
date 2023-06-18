@@ -377,7 +377,7 @@ module Hashtbl_here = struct
         Hashtbl.replace greedy key answer;
       ) ;;
 
-  let add_to_greedy_only key answer =
+  let add key answer =
       Hashtbl.replace greedy key answer;;    
 
 end ;;
@@ -575,7 +575,7 @@ module Crude = struct
         |None ->
            let subcomps =  needed_subcomputations [key] in 
            let _ = List.iter (fun (key,answer)->
-            Hashtbl_here.add_to_greedy_only key answer
+            Hashtbl_here.add key answer
           ) subcomps in 
            let (hook,mold) = List.assoc key subcomps in
            (Some hook,mold) ;;                           
