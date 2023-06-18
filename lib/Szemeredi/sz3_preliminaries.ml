@@ -368,7 +368,7 @@ end ;;
 
 module Hashtbl_here = struct 
 
-  let greedy = ((Hashtbl.create 50) : (key, crude_hook * mold) Hashtbl.t) ;; 
+  let greedy = ((Hashtbl.create 50) : (key, mold) Hashtbl.t) ;; 
 
   let add key answer =
       Hashtbl.replace greedy key answer;;    
@@ -381,26 +381,26 @@ module Crude = struct
   module Peek_and_seek = struct 
 
     type peek_result = 
-    P_Success of crude_hook * mold  
+    P_Success of mold  
    |P_Failure
    |P_Unfinished_computation of key list ;;
 
     let seek_non_translated_obvious_access helper key = 
       match List.assoc_opt key helper with 
-        Some (hook1,mold1) -> Some(Some hook1,mold1)
+        Some (mold1) -> Some(mold1)
       | None ->
          (
             match  Hashtbl.find_opt Hashtbl_here.greedy key with 
-            Some (hook2,mold2) -> Some(Some hook2,mold2)
+            Some (mold2) -> Some(mold2)
           | None -> 
             let (Key(fis,upper_bound)) = key in 
             let domain = Finite_int_set.to_usual_int_list fis in 
             if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-            then  Some(None,M([domain],[domain]))
+            then  Some(M([domain],[domain]))
              else 
               (
                 match Extra_tools.compute_opt key with 
-                Some answer2 -> Some(None,answer2)
+                Some answer2 -> Some(answer2)
                 |None -> None         
               ) 
            ) ;; 
@@ -409,15 +409,14 @@ module Crude = struct
         let (d,translated_key) = Kay.decompose_wrt_translation key in 
         match seek_non_translated_obvious_access helper translated_key with 
         None -> None 
-        |Some (hook_opt,translated_mold) -> 
-           Some(Hook.translate_opt (-d) hook_opt,
-             Mold.translate (-d) translated_mold);; 
+        |Some (translated_mold) -> 
+           Some(Mold.translate (-d) translated_mold);; 
   
       let peek_for_import_case helper key = 
         let smaller_key = Kay.decrement key  in 
         match seek_non_translated_obvious_access helper smaller_key with 
             None -> P_Unfinished_computation([smaller_key])  
-           |Some(_,M(sols2,ext2)) ->
+           |Some(M(sols2,ext2)) ->
           let (Key(_,upper_bound)) = key in   
           let sols3 = List.filter_map (fun sol->
                       if Upper_bound_on_constraint.list_is_admissible upper_bound sol 
@@ -425,7 +424,7 @@ module Crude = struct
                       else None    
           ) sols2 in 
           if sols3 <> [] 
-          then P_Success(Ch_import,M(sols3,ext2))  
+          then P_Success(M(sols3,ext2))  
           else P_Failure
       ;;
   
@@ -433,7 +432,7 @@ module Crude = struct
         let smaller_key = Kay.remove_one_element key pivot in 
         match seek_non_translated_obvious_access helper smaller_key with 
             None -> P_Unfinished_computation([smaller_key])  
-           |Some(_,M(sols2,ext2)) ->
+           |Some(M(sols2,ext2)) ->
           let (Key(_,old_ub)) = key in 
           let extend_and_filter = List.filter_map (fun sol->
             let increased_sol = i_insert pivot sol in 
@@ -447,27 +446,23 @@ module Crude = struct
           else
           let sols3 = extend_and_filter sols2 in 
           if sols3 <> [] 
-          then P_Success(Ch_cumulative(pivot),M(sols3,Image.image (i_insert pivot) ext2))  
+          then P_Success(M(sols3,Image.image (i_insert pivot) ext2))  
           else P_Failure
       ;;
   
       let peek_for_easy_case helper key =
          match seek_non_translated_obvious_access helper key with 
-         Some(_,answer1) -> (P_Success(Ch_import,answer1),None)
+         Some(answer1) -> (P_Success(answer1),false)
          |None ->
           let peek_res1=peek_for_import_case helper key in 
           (match peek_res1 with 
         
-             P_Success(_) -> (peek_res1,Some Ch_import)
-            |P_Unfinished_computation(_) -> (peek_res1,None)
+             P_Success(_) -> (peek_res1,true)
+            |P_Unfinished_computation(_) -> (peek_res1,false)
             |P_Failure -> 
                let n = Kay.max key in 
-               let peek_res2=peek_for_cumulative_case helper key n in 
-               (match peek_res2 with 
-               P_Success(_) -> (peek_res2,Some (Ch_cumulative(n)))
-              |P_Unfinished_computation(_) 
-              |P_Failure -> (peek_res2,None)
-               )
+                (peek_for_cumulative_case helper key n,true)
+               
            ) ;;
      
          let partition_candidates_in_fork_case helper candidates =
@@ -478,9 +473,8 @@ module Crude = struct
           ) candidates in 
           let (bad_leaves,good_leaves) = 
               List.partition (fun (_,opt) -> opt = None ) candidates2 in 
-          (Image.image (fun ( 
-            (smaller_key,d,_translated_smaller_key),opt) -> 
-                let (_,translated_mold) = Option.get opt in 
+          (Image.image (fun ((smaller_key,d,_translated_smaller_key),opt) -> 
+                let translated_mold = Option.get opt in 
                 (smaller_key,Mold.translate (-d) translated_mold)
             ) good_leaves,
            Image.image (fun ((_smaller_key,_d,translated_smaller_key),_)->
@@ -505,11 +499,11 @@ module Crude = struct
           and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
           if min1 = max1 
           then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-                P_Success(Ch_fork(i,j,k),M(sols4,[[]]))
+                P_Success(M(sols4,[[]]))
           else let (max_idx,_) = List.hd(List.rev max_indices) in 
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-                P_Success(Ch_fork(i,j,k),M(sols5,[ext5]));;    
+                P_Success(M(sols5,[ext5]));;    
   
   end ;;   
     
@@ -523,16 +517,16 @@ module Crude = struct
         match to_be_treated with 
          [] -> raise (Pusher_for_needed_subcomputations_exn_1) 
         |key :: others ->
-          let (peek_res1,hook_opt) = Peek_and_seek.peek_for_easy_case helper key in 
+          let (peek_res1,is_new) = Peek_and_seek.peek_for_easy_case helper key in 
           (
             match peek_res1 with 
           | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                (helper,new_to_be_treated@to_be_treated)
-          | Peek_and_seek.P_Success (_,answer) -> 
+          | Peek_and_seek.P_Success (answer) -> 
               let new_helper =(
-                 match hook_opt with 
-                  Some(hook) -> (key,(hook,answer)) :: helper 
-                 |None -> helper 
+                 if is_new 
+                 then (key,answer) :: helper 
+                 else helper 
               ) in 
               (new_helper,others)
           | Peek_and_seek.P_Failure -> 
@@ -546,8 +540,8 @@ module Crude = struct
                   match peek_res2 with 
                   | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                        (helper,new_to_be_treated@to_be_treated)
-                  | Peek_and_seek.P_Success (_,answer) -> 
-                      ((key,(hook2,answer)) :: helper ,others)
+                  | Peek_and_seek.P_Success (answer) -> 
+                      ((key,answer) :: helper ,others)
                   | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
             )
             );;      
@@ -564,18 +558,17 @@ module Crude = struct
       
      let compute_recursively_and_remember key = 
         match Peek_and_seek.seek_translated_obvious_access [] key with 
-        Some(hook_opt,mold) -> (hook_opt,mold)
+        Some(mold) -> mold
         |None ->
            let subcomps =  needed_subcomputations [key] in 
            let _ = List.iter (fun (key,answer)->
             Hashtbl_here.add key answer
           ) subcomps in 
-           let (hook,mold) = List.assoc key subcomps in
-           (Some hook,mold) ;;                           
+           List.assoc key subcomps  ;;                           
       
   end ;;  
 
-  let compute key = snd(Compute.compute_recursively_and_remember key) ;; 
+  let compute key = Compute.compute_recursively_and_remember key ;; 
 
 end ;;   
 
