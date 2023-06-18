@@ -31,8 +31,6 @@ type upper_bound_on_constraint =
 type key = 
    Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
 
-type crude_hook = Sz3_types.crude_hook =  Ch_import | Ch_cumulative of int | Ch_fork of int * int *int  ;; 
-
 type medium_hook = Sz3_types.medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork of int * int *int  ;; 
 
 type simplified_key = int * (int list) * int * int ;;
