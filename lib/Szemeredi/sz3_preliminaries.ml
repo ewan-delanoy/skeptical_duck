@@ -19,6 +19,8 @@ type extension_data = Sz3_types.extension_data  ;;
 
 type solution = Sz3_types.solution ;; 
 
+type fan = Sz3_types.fan = F of extension_data list ;; 
+
 type mold = Sz3_types.mold = M of (solution list) * (extension_data list) ;;
 
 type upper_bound_on_breadth = 
@@ -803,6 +805,20 @@ module Partially_polished = struct
     let check_all pp = 
         let (PP l) = pp in 
         List.iter (check_item pp) (List.rev l) ;;
+
+    type polished_modification =
+        Add_pair of simplified_key * (medium_hook option * mold);; 
+
+    (*    
+    let next_needed_action_opt pp = 
+        try (fun _->None)(check_all pp) with 
+        Compute_naively_exn(n,scr,w,b) ->
+            let uple = (n,scr,w,b) in 
+            let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
+            Some(Add_pair(uple,(hook_opt,mold)))
+        |Unregistered_solutions(unregistered_sols,key,hook)->None;;
+     *)       
+
 
     end ;;    
     
