@@ -21,7 +21,7 @@ type solution = Sz3_types.solution ;;
 
 type fan = Sz3_types.fan = F of extension_data list ;; 
 
-type mold = Sz3_types.mold = M of (solution list) * (extension_data list) ;;
+type mold = Sz3_types.mold = M of (solution list) * fan ;;
 
 type upper_bound_on_breadth = 
     Sz3_types.upper_bound_on_breadth = 
@@ -85,13 +85,16 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
+module Fan = struct 
 
+
+end ;;   
 
 module Mold = struct 
 
-let translate d (M(sols,ext)) =
+let translate d (M(sols,F ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
-    M(Image.image tr sols,Image.image tr ext) ;; 
+    M(Image.image tr sols,F(Image.image tr ext)) ;; 
 
 end ;;
 
@@ -328,7 +331,7 @@ module Width_one = struct
         |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
         |r -> raise(Bad_remainder_by_three(r)) 
     ) intervals in 
-    M([List.flatten sol_components],[List.flatten forced_elements]);;
+    M([List.flatten sol_components],F[List.flatten forced_elements]);;
 
   let compute (Key(fis1,UBC(W w0,ub_on_breadth))) =
     if w0>1 then compute_without_upper_bound fis1 else  
@@ -339,8 +342,8 @@ module Width_one = struct
       |Up_to(B b)->List.partition (fun t->t<=(b+2)) domain1
     )  in 
     let fis2 = Finite_int_set.of_usual_int_list domain2 in 
-    let (M(sols2,ext2))  = compute_without_upper_bound fis2 in 
-    M(Image.image (fun sol->sol@extra) sols2,Image.image(fun ext->ext@extra) ext2);; 
+    let (M(sols2,F ext2))  = compute_without_upper_bound fis2 in 
+    M(Image.image (fun sol->sol@extra) sols2,F(Image.image(fun ext->ext@extra) ext2));; 
 
    let compute_opt key = Some(compute key) ;; 
 
@@ -385,7 +388,7 @@ module Crude = struct
             let (Key(fis,upper_bound)) = key in 
             let domain = Finite_int_set.to_usual_int_list fis in 
             if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-            then  Some(M([domain],[domain]))
+            then  Some(M([domain],F[domain]))
              else 
               (
                 match Extra_tools.compute_opt key with 
@@ -421,7 +424,7 @@ module Crude = struct
         let smaller_key = Kay.remove_one_element key pivot in 
         match seek_non_translated_obvious_access helper smaller_key with 
             None -> P_Unfinished_computation([smaller_key])  
-           |Some(M(sols2,ext2)) ->
+           |Some(M(sols2,F ext2)) ->
           let (Key(_,old_ub)) = key in 
           let extend_and_filter = List.filter_map (fun sol->
             let increased_sol = i_insert pivot sol in 
@@ -435,7 +438,7 @@ module Crude = struct
           else
           let sols3 = extend_and_filter sols2 in 
           if sols3 <> [] 
-          then P_Success(M(sols3,Image.image (i_insert pivot) ext2))  
+          then P_Success(M(sols3,F(Image.image (i_insert pivot) ext2)))  
           else P_Failure
       ;;
   
@@ -488,11 +491,11 @@ module Crude = struct
           and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
           if min1 = max1 
           then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-                P_Success(M(sols4,[[]]))
+                P_Success(M(sols4,F[[]]))
           else let (max_idx,_) = List.hd(List.rev max_indices) in 
                 let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
                 let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-                P_Success(M(sols5,[ext5]));;    
+                P_Success(M(sols5,F[ext5]));;    
   
   end ;;   
     
@@ -700,7 +703,7 @@ module Partially_polished = struct
     let (Key(fis,upper_bound)) = key in 
     let domain = Finite_int_set.to_usual_int_list fis in 
     if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
-    then  Some(M([domain],[domain]))
+    then  Some(M([domain],F[domain]))
     else Extra_tools.compute_opt key ;; 
  
   let compute_naively_opt pp key =
@@ -714,7 +717,7 @@ module Partially_polished = struct
       Some answer -> answer 
       | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
 
-  let check_fork pp (i,j,k) key (M(sols,l_ext)) = 
+  let check_fork pp (i,j,k) key (M(sols,F l_ext)) = 
       let parts = Image.image (
         fun t->
             let subkey = Kay.remove_one_element key t in 
@@ -732,7 +735,7 @@ module Partially_polished = struct
       if unregistered_sols<>[]
       then raise(Unregistered_solutions(unregistered_sols,key,Mh_fork(i,j,k)))  
       else 
-      let untreated_cases = List.flatten(Image.image (fun (_t,(subkey,M(_sols3,l_ext3)))->
+      let untreated_cases = List.flatten(Image.image (fun (_t,(subkey,M(_sols3,F l_ext3)))->
         List.filter_map (fun ext3->
           if List.for_all (fun ext->not(i_is_included_in ext ext3)) l_ext 
           then Some(ext3,subkey)
@@ -743,10 +746,10 @@ module Partially_polished = struct
       then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
       else () ;; 
       
-    let check_select pp (i,j,k) key (M(sols,l_ext)) = 
+    let check_select pp (i,j,k) key (M(sols,F l_ext)) = 
       let (_,opt) = Option.get(Kay.largest_constraint_with_predecessor_opt key) in 
       let preceding_key = Option.get opt in 
-      let (M(sols2,l_ext2)) = compute_naively pp preceding_key in 
+      let (M(sols2,F l_ext2)) = compute_naively pp preceding_key in 
       let unregistered_sols = List.filter_map (
           fun sol -> 
              if not(List.mem sol sols2)
@@ -767,9 +770,9 @@ module Partially_polished = struct
       else () ;; 
 
      
-    let check_cumulative pp pivot key (M(sols,l_ext)) = 
+    let check_cumulative pp pivot key (M(sols,F l_ext)) = 
         let smaller_key = Kay.remove_one_element key pivot in 
-        let (M(sols2,l_ext2)) = compute_naively pp smaller_key in 
+        let (M(sols2,F l_ext2)) = compute_naively pp smaller_key in 
         let unregistered_sols = List.filter_map (
             fun sol -> 
                let ssol = i_setminus sol [pivot] in  

@@ -23,7 +23,7 @@ type solution = int list ;;
 
 type fan = F of extension_data list ;; 
 
-type mold = M of (solution list) * (extension_data list) ;;
+type mold = M of (solution list) * fan ;;
 
 type upper_bound_on_breadth = Unrestricted |Up_to of breadth ;;
 
