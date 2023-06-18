@@ -85,18 +85,7 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
-module Hook = struct 
 
-  let translate d = function 
-      Ch_import -> Ch_import 
-    | Ch_cumulative (m) -> Ch_cumulative (m+d) 
-    | Ch_fork (i,j,k) -> Ch_fork (i+d,j+d,k+d) ;;
-    
-  let translate_opt d = function 
-     None -> None 
-     | Some hook -> Some (translate d hook) ;;   
-  
-end ;;
 
 module Mold = struct 
 
@@ -511,7 +500,7 @@ module Crude = struct
 
     exception Pusher_for_needed_subcomputations_exn_1 ;; 
     exception Pusher_for_needed_subcomputations_exn_2 ;; 
-    exception Pusher_for_needed_subcomputations_exn_3 of crude_hook * key ;; 
+    exception Pusher_for_needed_subcomputations_exn_3 of key ;;  
 
     let pusher_for_needed_subcomputations (helper,to_be_treated) =
         match to_be_treated with 
@@ -535,14 +524,12 @@ module Crude = struct
                None -> raise (Pusher_for_needed_subcomputations_exn_2)
               |Some(cstr,_) ->
                  let nth = (fun k->List.nth cstr (k-1)) in 
-                  let peek_res2 = Peek_and_seek.peek_for_fork_case helper key (nth 1,nth 2,nth 3) 
-                  and hook2 = Ch_fork(nth 1,nth 2,nth 3)  in 
-                  match peek_res2 with 
+                  match Peek_and_seek.peek_for_fork_case helper key (nth 1,nth 2,nth 3) with 
                   | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
                        (helper,new_to_be_treated@to_be_treated)
                   | Peek_and_seek.P_Success (answer) -> 
                       ((key,answer) :: helper ,others)
-                  | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(hook2,key))
+                  | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(key))
             )
             );;      
 
