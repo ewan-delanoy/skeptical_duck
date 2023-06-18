@@ -369,13 +369,6 @@ end ;;
 module Hashtbl_here = struct 
 
   let greedy = ((Hashtbl.create 50) : (key, crude_hook * mold) Hashtbl.t) ;; 
-  let cautious = ((Hashtbl.create 50) : (key, crude_hook * mold) Hashtbl.t) ;;   
-  
-  let add_to_all key answer =
-      (
-        Hashtbl.replace cautious key answer;
-        Hashtbl.replace greedy key answer;
-      ) ;;
 
   let add key answer =
       Hashtbl.replace greedy key answer;;    
