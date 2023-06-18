@@ -87,6 +87,23 @@ end ;;
 
 module Fan = struct 
 
+   let rec helper_for_constructor (treated,to_be_treated) = 
+      match to_be_treated with 
+       [] -> List.rev(treated)
+      | new_elt :: others ->
+         if List.exists (i_is_included_in new_elt) others 
+         then  helper_for_constructor (treated,others)
+         else helper_for_constructor (new_elt :: treated,others) ;;
+
+  let constructor ll =
+     let sorted_ll = il_sort ll in 
+     helper_for_constructor ([],sorted_ll) ;;
+
+  let intersect (F ll1) (F ll2) =
+     let temp1 = Cartesian.product ll1 ll2 in 
+     constructor( Image.image (fun (x,y)->i_intersect x y) temp1 );; 
+
+
 
 end ;;   
 
