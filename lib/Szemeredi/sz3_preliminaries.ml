@@ -646,17 +646,22 @@ let rigorous_quest_for_fork_or_select key =
        let (hook2,_opt2)= rigorous_quest_for_fork_or_select key in
        Some hook2);;
 
+       type hook = 
+          H_import  
+          | H_cumulative of int 
+          | H_fork of int * int *int  ;; 
+
   let improved_crude_hook_finder =Memoized.recursive( fun old_f key -> 
     match Kay.largest_constraint_with_predecessor_opt key with 
     None ->  raise(Improved_crude_hook_finder_exn_1(key))
     | Some (_,predecessor_opt) ->
-        if rigorous_test_for_import_case key then Ch_import else
+        if rigorous_test_for_import_case key then H_import else
         (match medium_hook_finder key with 
         None -> raise(Improved_crude_hook_finder_exn_2(key))
         | Some hook -> 
         (match hook with 
-         Mh_cumulative(pivot) -> Ch_cumulative(pivot) 
-        |Mh_fork(i,j,k) -> Ch_fork(i,j,k) 
+         Mh_cumulative(pivot) -> H_cumulative(pivot) 
+        |Mh_fork(i,j,k) -> H_fork(i,j,k) 
         |Mh_select (_,_,_) ->
              old_f(Option.get predecessor_opt) 
         ))     
@@ -686,15 +691,15 @@ let rigorous_quest_for_fork_or_select key =
           old_f (Kay.remove_one_element key t)
        ) in 
        match improved_crude_hook_finder key with 
-       Ch_cumulative(m)->
+        H_cumulative(m)->
           List.filter_map (
              fun sol->
                let new_sol = i_insert m sol in 
                if is_ok new_sol then Some new_sol else None
           )(compute_below m) 
-       |Ch_fork(i,j,k)->
+       |H_fork(i,j,k)->
          il_fold_merge(Image.image compute_below [i;j;k])
-       |Ch_import ->  
+       |H_import ->  
          let smaller_key = Kay.decrement key in 
          List.filter is_ok (old_f smaller_key)
     );;        
