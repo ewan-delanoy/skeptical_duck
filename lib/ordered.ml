@@ -44,6 +44,18 @@ module Private = struct
       ) in
       tempf(ox,oy,[]);;
   
+  let length_preserving_merge (cmpr:'a Total_ordering_t.t) ox oy=
+      let rec tempf=(function (u,v,accu)->
+        if u=[] then (List.rev_append(accu)(v)) else
+        if v=[] then (List.rev_append(accu)(u)) else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+        Total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+      |Total_ordering_result_t.Equal->tempf(yu,yv,xu::xv::accu)
+      |Total_ordering_result_t.Greater->tempf(u,yv,xv::accu)
+      ) in
+      tempf(ox,oy,[]);;    
   
   let setminus (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=
@@ -66,6 +78,14 @@ module Private = struct
          let y1=sort(cmpr)(fst temp1)
          and y2=sort(cmpr)(snd temp1) in
          merge cmpr y1 y2;;
+
+  let rec length_preserving_sort (cmpr:'a Total_ordering_t.t) x=
+         if List.length(x)<2
+         then x
+         else let temp1=Partition_list.split_in_half(x) in
+              let y1=length_preserving_sort(cmpr)(fst temp1)
+              and y2=length_preserving_sort(cmpr)(snd temp1) in
+              length_preserving_merge cmpr y1 y2;;       
   
   let is_included_in (cmpr:'a Total_ordering_t.t) ox oy=
          let rec tempf=(function (u,v)->
@@ -173,6 +193,8 @@ module Private = struct
   
   let is_included_in = Private.is_included_in ;;
   
+  let length_preserving_sort = Private.length_preserving_sort ;;
+
   let mem (cmpr:'a Total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false

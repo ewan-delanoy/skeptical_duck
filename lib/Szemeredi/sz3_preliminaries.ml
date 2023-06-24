@@ -93,11 +93,46 @@ module Fan = struct
      let sorted_ll = il_sort ll in 
      F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
 
-  let combine_conditions (F ll1) (F ll2) =
+  let combine_two_conditions (F ll1) (F ll2) =
      let temp1 = Cartesian.product ll1 ll2 in 
      constructor( Image.image (fun (x,y)->i_merge x y) temp1 );; 
 
+  let combine_conditions = function 
+      [] -> F[]
+     |first_fan :: other_fans ->
+        List.fold_left combine_two_conditions first_fan other_fans ;; 
 
+  (*
+  let canonical_container_in_hard_case competing_minimizers =
+    let measure = (fun mz->
+      Ordered_misc.length_preserving_sort i_order 
+        (Image.image List.length mz)
+    ) in 
+    let temp1 = Image.image measure competing_minimizers in 
+    let temp2 = il_min temp1 in 
+    let smallest_measure = List.hd temp2 in 
+    let (_,temp1) = Min.minimize_it_with_care measure temp2 in 
+    combine_conditions temp1 ;; 
+
+  let canonical_container sample (F rays) =
+     let indexed_rays = Int_range.index_everything rays in 
+     let covering_indices = (fun x->
+        List.filter_map (fun (idx,ray)->
+           if i_is_included_in ray x 
+           then Some idx 
+          else None   
+        ) indexed_rays
+      ) in
+      let temp1 = Image.image covering_indices sample in 
+      let temp2 = Ordered_misc.minimal_transversals temp1 in 
+      let (_,temp3) = Min.minimize_it_with_care List.length temp2 in 
+      let return_to_original = Image.image(fun idx->List.assoc idx indexed_rays) in 
+      if List.length temp3 = 1 
+      then return_to_original (List.hd temp3) 
+      else      
+      let temp4 = Image.image return_to_original temp3 in
+      canonical_container_in_hard_case temp4 ;;
+      *)
 
 end ;;   
 
