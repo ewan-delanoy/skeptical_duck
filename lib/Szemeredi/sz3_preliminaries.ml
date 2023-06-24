@@ -46,12 +46,14 @@ let i_merge = Ordered.merge i_order ;;
 let i_intersect = Ordered.intersect i_order ;;
 let i_intersects = Ordered.intersects i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_length_preserving_sort = Ordered.length_preserving_sort i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
 
 
 let il_order = Total_ordering.silex_for_intlists ;;
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_is_included_in = Ordered.is_included_in il_order ;;
+let il_min= Ordered.min il_order ;;
 let il_merge = Ordered.merge il_order ;;
 let il_sort = Ordered.sort il_order ;;
 
@@ -102,17 +104,17 @@ module Fan = struct
      |first_fan :: other_fans ->
         List.fold_left combine_two_conditions first_fan other_fans ;; 
 
-  (*
-  let canonical_container_in_hard_case competing_minimizers =
-    let measure = (fun mz->
-      Ordered_misc.length_preserving_sort i_order 
-        (Image.image List.length mz)
+  
+  let canonical_container_in_hard_case initial_competing_fans =
+    let measure = (fun (F rays)->
+      i_length_preserving_sort (Image.image List.length rays)
     ) in 
-    let temp1 = Image.image measure competing_minimizers in 
-    let temp2 = il_min temp1 in 
-    let smallest_measure = List.hd temp2 in 
-    let (_,temp1) = Min.minimize_it_with_care measure temp2 in 
-    combine_conditions temp1 ;; 
+    let temp1 = Image.image measure initial_competing_fans in 
+    let smallest_measure = il_min temp1 in 
+    let competing_fans = 
+        List.filter(fun mz->measure(mz)=smallest_measure)  
+            initial_competing_fans in 
+    combine_conditions competing_fans ;; 
 
   let canonical_container sample (F rays) =
      let indexed_rays = Int_range.index_everything rays in 
@@ -126,13 +128,13 @@ module Fan = struct
       let temp1 = Image.image covering_indices sample in 
       let temp2 = Ordered_misc.minimal_transversals temp1 in 
       let (_,temp3) = Min.minimize_it_with_care List.length temp2 in 
-      let return_to_original = Image.image(fun idx->List.assoc idx indexed_rays) in 
+      let return_to_original = (fun l->F(Image.image(fun idx->List.assoc idx indexed_rays) l)) in 
       if List.length temp3 = 1 
       then return_to_original (List.hd temp3) 
       else      
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
-      *)
+      
 
 end ;;   
 
