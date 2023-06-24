@@ -4,6 +4,8 @@
 
 *)
 
+exception The_empty_set_has_no_min ;; 
+
 module Private = struct 
 
   let intersect (cmpr:'a Total_ordering_t.t) ox oy=
@@ -77,7 +79,7 @@ module Private = struct
     else let temp1=Partition_list.split_in_half(x) in
          let y1=sort(cmpr)(fst temp1)
          and y2=sort(cmpr)(snd temp1) in
-         merge cmpr y1 y2;;
+         merge cmpr y1 y2;;      
 
   let rec length_preserving_sort (cmpr:'a Total_ordering_t.t) x=
          if List.length(x)<2
@@ -87,6 +89,20 @@ module Private = struct
               and y2=length_preserving_sort(cmpr)(snd temp1) in
               length_preserving_merge cmpr y1 y2;;       
   
+  let rec helper_for_min (cmpr:'a Total_ordering_t.t) (current_min,to_be_treated) =
+    match to_be_treated with 
+     [] -> current_min
+    | elt :: others ->
+    match cmpr current_min elt with
+    Total_ordering_result_t.Lower
+   |Total_ordering_result_t.Equal->helper_for_min cmpr (current_min,others)
+   |Total_ordering_result_t.Greater->helper_for_min cmpr (elt,others) ;; 
+
+
+  let min (cmpr:'a Total_ordering_t.t) = function 
+       [] -> raise(The_empty_set_has_no_min)
+      |elt :: others -> helper_for_min cmpr (elt,others) ;; 
+
   let is_included_in (cmpr:'a Total_ordering_t.t) ox oy=
          let rec tempf=(function (u,v)->
            if u=[] then true else
@@ -203,10 +219,12 @@ module Private = struct
          |Total_ordering_result_t.Equal->true
          |Total_ordering_result_t.Greater->tempf others
      )  in
-     tempf ol;;    
-  
+     tempf ol;;   
+
   let merge = Private.merge;;
   
+  let min = Private.min ;; 
+
   let outsert cmpr x oy=Private.setminus cmpr oy [x];;
   
   let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
