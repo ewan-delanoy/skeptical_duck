@@ -47,6 +47,7 @@ let i_intersect = Ordered.intersect i_order ;;
 let i_intersects = Ordered.intersects i_order ;;
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_length_preserving_sort = Ordered.length_preserving_sort i_order ;;
+let i_outsert = Ordered.outsert i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
 
 
@@ -692,7 +693,7 @@ let rigorous_quest_for_fork_or_select key =
     );;
 
 
-    let compute key = 
+    let pre_compute key = 
       let sol = Crude.compute key in 
       if Kay.largest_constraint_with_predecessor_opt key = None 
       then   (None,None,sol)
@@ -727,6 +728,28 @@ let rigorous_quest_for_fork_or_select key =
          let smaller_key = Kay.decrement key in 
          List.filter is_ok (old_f smaller_key)
     );;        
+
+  
+   let helper_for_canonical_solution (sols,n) =
+     let (with_n,without_n) = List.partition (List.mem n) sols in 
+     if without_n=[]
+     then (true,Image.image(i_outsert n) with_n) 
+    else (false,without_n) ;;      
+    
+    let rec iterator_for_canonical_solution (to_be_treated,n,treated) =
+      if n<1 then treated else  
+      let (n_needed,to_be_treated2) = helper_for_canonical_solution (to_be_treated,n) in 
+      let treated2 = (if n_needed then n::treated else treated) in
+      iterator_for_canonical_solution (to_be_treated2,n-1,treated2) ;; 
+
+    let canonical_solution key =
+       let all_sols = all_solutions key 
+       and n = Kay.max key in 
+       iterator_for_canonical_solution (all_sols,n,[]) ;; 
+    
+    let compute key = 
+       let (hook_opt,key_opt,M(_,fan)) = pre_compute key in 
+       (hook_opt,key_opt,M([canonical_solution key],fan)) ;;   
 
 end ;;   
 
@@ -769,7 +792,7 @@ module Partially_polished = struct
       let parts = Image.image (
         fun t->
             let subkey = Kay.remove_one_element key t in 
-            (t,(subkey,compute_naively pp key)) 
+            (t,(subkey,compute_naively pp subkey)) 
       ) [i;j;k] in 
       let sols_with_pivots = Image.image (fun 
         sol->(sol,List.find (fun t->not(List.mem t sol)) [k;j;i])) sols in
