@@ -217,6 +217,10 @@ module Upper_bound_on_breadth = struct
     Unrestricted -> Unrestricted 
    |Up_to(B b) -> Up_to(B(b+d)) ;; 
   
+  let allows upper_bound b = match upper_bound with 
+  Unrestricted -> true 
+  |Up_to(B bmax) -> (b<=bmax) ;; 
+
   
   end ;;  
   
@@ -275,11 +279,12 @@ module Upper_bound_on_constraint = struct
                     if new_b < 1 
                     then None  
                     else Some(W (w1-1), B (n-2*(w1-1))) ;;    
-
-  
       end ;;
   
-  
+let allows (UBC(W w,ub_on_breadth)) l=
+      let a1=List.nth l 0 
+      and a2=List.nth l 1 in 
+      (a2-a1<=w) && (Upper_bound_on_breadth.allows ub_on_breadth a1);;  
   
   
 let attained_upper_bound_opt fis ub_on_constraint = 
@@ -300,8 +305,7 @@ let list_is_admissible upper_bound candidate =
  let predecessor_for_dissociated_data_opt = Private.predecessor_for_dissociated_data_opt ;; 
 
   let translate d (UBC(w,b)) = UBC(w,Upper_bound_on_breadth.translate d b) ;;  
-     
-  
+    
   
   end ;;  
   
@@ -309,6 +313,35 @@ let list_is_admissible upper_bound candidate =
   
   module Kay = struct 
   
+    module Private = struct 
+
+    let partial_obstruction_set (domain,ub_on_breadth,pivot,wmax) w=
+         List.filter (fun l->
+          (i_is_included_in l domain)
+          &&
+          (if w=wmax 
+          then Upper_bound_on_breadth.allows ub_on_breadth (List.hd l)
+          else true)
+          )
+          [[pivot;pivot-2*w;pivot-w];
+          [pivot-w;pivot;pivot+w];
+          [pivot;pivot+w;pivot+2*w]] ;;
+    
+    let full_obstruction_set (domain,ub_on_breadth,pivot,wmax) =
+       List.flatten(Int_range.scale 
+       (partial_obstruction_set (domain,ub_on_breadth,pivot,wmax)) 1 wmax);;
+
+    
+
+     end ;;
+
+    let complements (Key(fis,UBC(W wmax,ub_on_breadth))) pivot =
+       let domain = Finite_int_set.to_usual_int_list fis in 
+       let obstructions = 
+        Private.full_obstruction_set (domain,ub_on_breadth,pivot,wmax)  in 
+       il_sort (Image.image (i_outsert pivot) obstructions)
+       ;;
+
     let constructor (n,scrappers,w,b) =
         Key(FIS(n,scrappers),UBC(W w,Upper_bound_on_breadth.constructor b)) ;; 
   
