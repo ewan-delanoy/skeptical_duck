@@ -323,7 +323,7 @@ let list_is_admissible upper_bound candidate =
           then Upper_bound_on_breadth.allows ub_on_breadth (List.hd l)
           else true)
           )
-          [[pivot;pivot-2*w;pivot-w];
+          [[pivot-2*w;pivot-w;pivot];
           [pivot-w;pivot;pivot+w];
           [pivot;pivot+w;pivot+2*w]] ;;
     
