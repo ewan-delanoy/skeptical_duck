@@ -437,9 +437,9 @@ module Crude = struct
             match  Hashtbl.find_opt Hashtbl_here.greedy key with 
             Some (mold2) -> Some(mold2)
           | None -> 
-            let (Key(fis,upper_bound)) = key in 
+            let (Key(fis,_upper_bound)) = key in 
             let domain = Finite_int_set.to_usual_int_list fis in 
-            if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
+            if Kay.is_admissible key domain 
             then  Some(M([domain],F[domain]))
              else 
               (
@@ -461,9 +461,8 @@ module Crude = struct
         match seek_non_translated_obvious_access helper smaller_key with 
             None -> P_Unfinished_computation([smaller_key])  
            |Some(M(sols2,ext2)) ->
-          let (Key(_,upper_bound)) = key in   
           let sols3 = List.filter_map (fun sol->
-                      if Upper_bound_on_constraint.list_is_admissible upper_bound sol 
+                      if Kay.is_admissible key sol 
                       then Some(sol) 
                       else None    
           ) sols2 in 
@@ -477,10 +476,9 @@ module Crude = struct
         match seek_non_translated_obvious_access helper smaller_key with 
             None -> P_Unfinished_computation([smaller_key])  
            |Some(M(sols2,F ext2)) ->
-          let (Key(_,old_ub)) = key in 
           let extend_and_filter = List.filter_map (fun sol->
             let increased_sol = i_insert pivot sol in 
-            if Upper_bound_on_constraint.list_is_admissible old_ub increased_sol 
+            if Kay.is_admissible key increased_sol 
             then Some(increased_sol) 
             else None    
           ) in  
@@ -709,9 +707,9 @@ let rigorous_quest_for_fork_or_select key =
         
       
      let all_solutions =Memoized.recursive(fun old_f key -> 
-       let (Key(fis,ub_on_constraint)) = key in 
+       let (Key(fis,_ub_on_constraint)) = key in 
        let domain = Finite_int_set.to_usual_int_list fis 
-       and is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in 
+       and is_ok = Kay.is_admissible key in 
        if is_ok domain 
        then [domain]
        else
@@ -775,9 +773,9 @@ module Partially_polished = struct
     match List.assoc_opt (Kay.deconstructor key) l with 
     Some (_hook1,mold1) -> Some(mold1)
   | None -> 
-    let (Key(fis,upper_bound)) = key in 
+    let (Key(fis,_upper_bound)) = key in 
     let domain = Finite_int_set.to_usual_int_list fis in 
-    if Upper_bound_on_constraint.list_is_admissible upper_bound domain 
+    if Kay.is_admissible key domain 
     then  Some(M([domain],F[domain]))
     else Extra_tools.compute_opt key ;; 
  
@@ -796,8 +794,7 @@ module Partially_polished = struct
      let n = Kay.max key in 
      let beheaded_key = Kay.remove_one_element key n in 
      let (M(_sols2,F l_ext2)) = compute_naively pp beheaded_key in 
-     let (Key(_,ub_on_constraint)) = key in 
-        let is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in   
+     let is_ok = Kay.is_admissible key in   
      let untreated_cases = List.filter (fun ext->is_ok(i_insert n ext)) l_ext2 in 
      if untreated_cases<>[]
       then raise(Insufficient_fan_exn(beheaded_key,l_ext2,n))  
@@ -871,8 +868,7 @@ module Partially_polished = struct
         if unregistered_sols<>[]
         then raise(Unregistered_solutions(unregistered_sols,key,Mh_cumulative(pivot)))  
         else 
-        let (Key(_,ub_on_constraint)) = key in 
-        let is_ok = Upper_bound_on_constraint.list_is_admissible ub_on_constraint in   
+        let is_ok = Kay.is_admissible key in   
         let untreated_cases = 
             List.filter_map (fun ext2->
               let eext2 = i_insert pivot ext2 in 
