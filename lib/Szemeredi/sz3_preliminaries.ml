@@ -322,6 +322,9 @@ let list_is_admissible upper_bound candidate =
        let (d,new_fis) = Finite_int_set.decompose_wrt_translation old_fis in 
        (d,Key(new_fis,Upper_bound_on_constraint.translate (-d) ubc)) ;;
 
+    let is_admissible key proposal =    
+       let (Key(_fis,upper_bound)) = key in 
+       Upper_bound_on_constraint.list_is_admissible upper_bound proposal ;;  
 
     let largest_constraint_with_predecessor_opt key =
        let (Key(fis,ub_on_constraint)) = key in 
