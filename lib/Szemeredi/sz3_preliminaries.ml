@@ -798,7 +798,7 @@ module Partially_polished = struct
   exception Compute_naively_exn of simplified_key ;; 
   exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
-  exception Insufficient_fan_exn of key * (extension_data list) * int;;
+  exception Insufficient_fan_exn of key * (extension_data list) * (extension_data list) * int;;
 
   module Check = struct
 
@@ -823,18 +823,20 @@ module Partially_polished = struct
       Some answer -> answer 
       | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
 
-  let check_that_misfit_was_predicted pp key = 
-     let n = Kay.max key in 
-     let beheaded_key = Kay.remove_one_element key n in 
-     let (M(_sols2,F l_ext2)) = compute_naively pp beheaded_key in 
-     let is_ok = Kay.is_admissible key in   
-     let untreated_cases = List.filter (fun ext->is_ok(i_insert n ext)) l_ext2 in 
+  let check_that_misfit_was_predicted pp key pivot = 
+     let beheaded_key = Kay.remove_one_element key pivot in 
+     let (M(_sols2,F l_ext2)) = compute_naively pp beheaded_key 
+     and complements = Kay.complements key pivot in 
+     let is_not_treated = ( 
+      fun case ->List.for_all (fun c->not(i_is_included_in c case)) complements  
+     ) in   
+     let untreated_cases = List.filter is_not_treated l_ext2 in 
      if untreated_cases<>[]
-      then raise(Insufficient_fan_exn(beheaded_key,l_ext2,n))  
+      then raise(Insufficient_fan_exn(beheaded_key,l_ext2,complements,pivot))  
       else ();;
 
   let check_fork pp (i,j,k) key (M(sols,F l_ext)) = 
-      let _ = check_that_misfit_was_predicted pp key in 
+      let _ = check_that_misfit_was_predicted pp key (Kay.max key) in 
       let parts = Image.image (
         fun t->
             let subkey = Kay.remove_one_element key t in 
@@ -864,7 +866,7 @@ module Partially_polished = struct
       else () ;; 
       
     let check_select pp (i,j,k) key (M(sols,F l_ext)) = 
-      let _ = check_that_misfit_was_predicted pp key in 
+      let _ = check_that_misfit_was_predicted pp key  (Kay.max key) in 
       let (_,opt) = Option.get(Kay.largest_constraint_with_predecessor_opt key) in 
       let preceding_key = Option.get opt in 
       let (M(sols2,F l_ext2)) = compute_naively pp preceding_key in 
