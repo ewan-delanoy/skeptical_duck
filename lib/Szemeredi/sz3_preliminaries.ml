@@ -37,6 +37,8 @@ type medium_hook = Sz3_types.medium_hook = Mh_cumulative of int | Mh_select of i
 
 type simplified_key = int * (int list) * int * int ;;
 
+type entry = Sz3_types.entry = E of simplified_key * (medium_hook * mold) ;;
+
 type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
 
 type small_polish = Sz3_types.small_polish =

@@ -35,10 +35,11 @@ type medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork 
 
 type simplified_key = int * (int list) * int * int ;;
 
+type entry = E of simplified_key * (medium_hook * mold) ;; 
+
 type partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
 
 type small_polish =
      Add_pair of simplified_key * (medium_hook * mold)
     |Replace_pair_by of simplified_key * (medium_hook * mold);; 
 
-    
