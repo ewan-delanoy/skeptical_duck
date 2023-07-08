@@ -78,6 +78,7 @@ let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (medium_hook * m
 
 let pp_element_order = Total_ordering.product sk_order hm_order ;; 
 
+let pp_element_insert = Ordered.insert pp_element_order ;;
 let pp_element_merge = Ordered.merge pp_element_order ;;
 let pp_element_sort = Ordered.sort pp_element_order ;;
 
@@ -931,14 +932,30 @@ module Partially_polished = struct
     end ;;    
     
     type small_polish =
-    Add_pair of simplified_key * (medium_hook option * mold);; 
+    Add_pair of simplified_key * (medium_hook * mold);; 
+
+   let apply_small_polish (PP l) = function
+     Add_pair(skey,(hook,mold)) ->
+          PP (pp_element_insert (skey,(hook,mold)) l);;
 
    let next_needed_small_polish_opt pp = 
     try (fun _->None)(Check.check_all pp) with 
     Compute_naively_exn(n,scr,w,b) ->
         let uple = (n,scr,w,b) in 
         let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
-        Some(Add_pair(uple,(hook_opt,mold))) ;;   
+        Some(Add_pair(uple,(Option.get hook_opt,mold))) ;;   
+
+   exception Small_pusher_exn ;;
+   
+   let ref_for_fully_polished_data = ref [] ;; 
+
+   let small_pusher pp= match next_needed_small_polish_opt pp with 
+       None ->  
+          let (PP l)=pp in 
+          let _ = (ref_for_fully_polished_data:=l) in 
+          raise Small_pusher_exn
+      |Some small_polish -> apply_small_polish pp small_polish ;; 
+    
 
 end ;; 
 
