@@ -927,20 +927,19 @@ module Partially_polished = struct
     let check_all pp = 
         let (PP l) = pp in 
         List.iter (check_item pp) (List.rev l) ;;
-
-    type small_polish =
-        Add_pair of simplified_key * (medium_hook option * mold);; 
-  
-    let next_needed_small_polish_opt pp = 
-        try (fun _->None)(check_all pp) with 
-        Compute_naively_exn(n,scr,w,b) ->
-            let uple = (n,scr,w,b) in 
-            let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
-            Some(Add_pair(uple,(hook_opt,mold))) ;;      
-
-
+   
     end ;;    
     
+    type small_polish =
+    Add_pair of simplified_key * (medium_hook option * mold);; 
+
+   let next_needed_small_polish_opt pp = 
+    try (fun _->None)(Check.check_all pp) with 
+    Compute_naively_exn(n,scr,w,b) ->
+        let uple = (n,scr,w,b) in 
+        let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
+        Some(Add_pair(uple,(hook_opt,mold))) ;;   
+
 end ;; 
 
 
