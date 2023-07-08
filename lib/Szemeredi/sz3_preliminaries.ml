@@ -820,8 +820,6 @@ end ;;
 module Partially_polished = struct 
 
   exception Missing_entry_exn of simplified_key ;; 
-  exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
-  exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
   exception Missing_solutions_exn of entry * (solution list) ;; 
   exception Insufficient_fan_exn of entry * fan ;;
 
