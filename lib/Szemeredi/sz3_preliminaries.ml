@@ -800,9 +800,6 @@ module Partially_polished = struct
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
   exception Insufficient_fan_exn of key * (extension_data list) * (extension_data list) * int;;
 
-  type small_polish =
-      Insert_pair of simplified_key ;;
-
   module Check = struct
 
   let compute_naively_without_translating_opt (PP l) key = 
@@ -931,18 +928,15 @@ module Partially_polished = struct
         let (PP l) = pp in 
         List.iter (check_item pp) (List.rev l) ;;
 
-    type polished_modification =
+    type small_polish =
         Add_pair of simplified_key * (medium_hook option * mold);; 
-
-    (*    
-    let next_needed_action_opt pp = 
+  
+    let next_needed_small_polish_opt pp = 
         try (fun _->None)(check_all pp) with 
         Compute_naively_exn(n,scr,w,b) ->
             let uple = (n,scr,w,b) in 
             let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
-            Some(Add_pair(uple,(hook_opt,mold)))
-        |Unregistered_solutions(unregistered_sols,key,hook)->None;;
-     *)       
+            Some(Add_pair(uple,(hook_opt,mold))) ;;      
 
 
     end ;;    
