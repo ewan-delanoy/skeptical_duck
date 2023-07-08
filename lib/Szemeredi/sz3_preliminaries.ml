@@ -39,6 +39,10 @@ type simplified_key = int * (int list) * int * int ;;
 
 type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
 
+type small_polish = Sz3_types.small_polish =
+     Add_pair of simplified_key * (medium_hook * mold)
+    |Replace_pair_by of simplified_key * (medium_hook * mold);; 
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -930,13 +934,17 @@ module Partially_polished = struct
         List.iter (check_item pp) (List.rev l) ;;
    
     end ;;    
-    
-    type small_polish =
-    Add_pair of simplified_key * (medium_hook * mold);; 
 
    let apply_small_polish (PP l) = function
      Add_pair(skey,(hook,mold)) ->
-          PP (pp_element_insert (skey,(hook,mold)) l);;
+          PP (pp_element_insert (skey,(hook,mold)) l)
+    |Replace_pair_by(skey, hook_and_mold) ->
+         PP(Image.image (fun pair->
+             let (skey2,_) = pair in 
+             if skey2=skey
+             then (skey,hook_and_mold)
+             else pair 
+          ) l)    ;;
 
    let next_needed_small_polish_opt pp = 
     try (fun _->None)(Check.check_all pp) with 
