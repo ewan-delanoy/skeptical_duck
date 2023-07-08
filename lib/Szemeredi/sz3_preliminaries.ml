@@ -800,6 +800,9 @@ module Partially_polished = struct
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
   exception Insufficient_fan_exn of key * (extension_data list) * (extension_data list) * int;;
 
+  type small_polish =
+      Insert_pair of simplified_key ;;
+
   module Check = struct
 
   let compute_naively_without_translating_opt (PP l) key = 
