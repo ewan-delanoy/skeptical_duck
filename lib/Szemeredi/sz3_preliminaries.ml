@@ -805,7 +805,7 @@ end ;;
 
 module Partially_polished = struct 
 
-  exception Compute_naively_exn of simplified_key ;; 
+  exception Missing_entry_exn of simplified_key ;; 
   exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
   exception Missing_solutions_exn of entry * (solution list) ;; 
@@ -840,7 +840,7 @@ module Partially_polished = struct
 
   let compute_naively pp key = match compute_naively_opt pp key with 
       Some answer -> answer 
-      | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;             
+      | None -> raise(Missing_entry_exn(Kay.deconstructor key)) ;;             
 
   exception Noncumulability_check of partially_polished * key * int ;;  
 
@@ -971,7 +971,7 @@ module Partially_polished = struct
 
    let next_needed_small_polish_opt pp = 
     try (fun _->None)(Check.check_all pp) with 
-    Compute_naively_exn(n,scr,w,b) ->
+    Missing_entry_exn(n,scr,w,b) ->
         let uple = (n,scr,w,b) in 
         let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
         Some(Add_entry(E(uple,(Option.get hook_opt,mold)))) ;;   
