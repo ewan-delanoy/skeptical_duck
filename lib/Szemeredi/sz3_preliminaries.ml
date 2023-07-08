@@ -808,20 +808,20 @@ module Partially_polished = struct
   exception Compute_naively_exn of simplified_key ;; 
   exception Unregistered_solutions of ( (solution * key) list) * key * medium_hook ;;
   exception Untreated_cases of ( (extension_data * key) list) * key * medium_hook ;;
-  exception Insufficient_fan_exn of key * (extension_data list) * (extension_data list) * int;;
+  exception Insufficient_fan_exn of entry * fan ;;
 
   module Check = struct
 
-  let rec assoc_opt skey = function 
+  let rec assoc_opt skey (PP l)= match l with
      [] -> None 
      |(E(skey2,hm2)) :: others ->
         match sk_order skey skey2 with
          Total_ordering_result_t.Lower -> None 
         |Total_ordering_result_t.Equal -> Some hm2
-        |Total_ordering_result_t.Greater -> assoc_opt skey others ;; 
+        |Total_ordering_result_t.Greater -> assoc_opt skey (PP others) ;; 
 
-  let compute_naively_without_translating_opt (PP l) key = 
-    match assoc_opt (Kay.deconstructor key) l with 
+  let compute_naively_without_translating_opt pp key = 
+    match assoc_opt (Kay.deconstructor key) pp with 
     Some (_hook1,mold1) -> Some(mold1)
   | None -> 
     let (Key(fis,_upper_bound)) = key in 
@@ -839,22 +839,31 @@ module Partially_polished = struct
 
   let compute_naively pp key = match compute_naively_opt pp key with 
       Some answer -> answer 
-      | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;            
+      | None -> raise(Compute_naively_exn(Kay.deconstructor key)) ;;             
 
-  let check_that_misfit_was_predicted pp key pivot = 
+  exception Noncumulability_check of partially_polished * key * int ;;  
+
+  let check_that_noncumulability_was_predictable pp key pivot = 
      let beheaded_key = Kay.remove_one_element key pivot in 
-     let (M(_sols2,F l_ext2)) = compute_naively pp beheaded_key 
+     let mold = compute_naively pp beheaded_key 
      and complements = Kay.complements key pivot in 
+     let (M(_sols2,F l_ext2)) = mold in 
      let is_not_treated = ( 
       fun case ->List.for_all (fun c->not(i_is_included_in c case)) complements  
      ) in   
      let untreated_cases = List.filter is_not_treated l_ext2 in 
-     if untreated_cases<>[]
-      then raise(Insufficient_fan_exn(beheaded_key,l_ext2,complements,pivot))  
-      else ();;
+     if untreated_cases=[]
+      then ()
+       else 
+               match assoc_opt (Kay.deconstructor beheaded_key) pp  with 
+               None -> raise(Noncumulability_check(pp,key,pivot))
+               |Some (hook,mold) -> 
+                let old_entry = E(Kay.deconstructor beheaded_key,(hook,mold)) in 
+                raise(Insufficient_fan_exn(old_entry,F(complements)))
+            ;;
 
   let check_fork pp (i,j,k) key (M(sols,F l_ext)) = 
-      let _ = check_that_misfit_was_predicted pp key (Kay.max key) in 
+      let _ = check_that_noncumulability_was_predictable pp key (Kay.max key) in 
       let parts = Image.image (
         fun t->
             let subkey = Kay.remove_one_element key t in 
@@ -884,7 +893,7 @@ module Partially_polished = struct
       else () ;; 
       
     let check_select pp (i,j,k) key (M(sols,F l_ext)) = 
-      let _ = check_that_misfit_was_predicted pp key  (Kay.max key) in 
+      let _ = check_that_noncumulability_was_predictable pp key  (Kay.max key) in 
       let (_,opt) = Option.get(Kay.largest_constraint_with_predecessor_opt key) in 
       let preceding_key = Option.get opt in 
       let (M(sols2,F l_ext2)) = compute_naively pp preceding_key in 
