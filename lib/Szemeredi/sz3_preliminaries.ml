@@ -39,11 +39,11 @@ type simplified_key = int * (int list) * int * int ;;
 
 type entry = Sz3_types.entry = E of simplified_key * (medium_hook * mold) ;;
 
-type partially_polished = Sz3_types.partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
+type partially_polished = Sz3_types.partially_polished = PP of entry list ;; 
 
 type small_polish = Sz3_types.small_polish =
-     Add_pair of simplified_key * (medium_hook * mold)
-    |Replace_pair_by of simplified_key * (medium_hook * mold);; 
+     Add_entry of entry
+    |Replace_entry_by of entry;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -82,11 +82,14 @@ let sk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
 
 let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (medium_hook * mold) Total_ordering_t.t);;
 
-let pp_element_order = Total_ordering.product sk_order hm_order ;; 
+let entry_order = 
+  ((fun (E(sk1,hm1))  (E(sk2,hm2))->
+    Total_ordering.product sk_order hm_order (sk1,hm1) (sk2,hm2)): 
+  entry Total_ordering_t.t);;
 
-let pp_element_insert = Ordered.insert pp_element_order ;;
-let pp_element_merge = Ordered.merge pp_element_order ;;
-let pp_element_sort = Ordered.sort pp_element_order ;;
+let entry_insert = Ordered.insert entry_order ;;
+let entry_merge = Ordered.merge entry_order ;;
+let entry_sort = Ordered.sort entry_order ;;
 
 
 module Constraint = struct 
@@ -809,8 +812,16 @@ module Partially_polished = struct
 
   module Check = struct
 
+  let rec assoc_opt skey = function 
+     [] -> None 
+     |(E(skey2,hm2)) :: others ->
+        match sk_order skey skey2 with
+         Total_ordering_result_t.Lower -> None 
+        |Total_ordering_result_t.Equal -> Some hm2
+        |Total_ordering_result_t.Greater -> assoc_opt skey others ;; 
+
   let compute_naively_without_translating_opt (PP l) key = 
-    match List.assoc_opt (Kay.deconstructor key) l with 
+    match assoc_opt (Kay.deconstructor key) l with 
     Some (_hook1,mold1) -> Some(mold1)
   | None -> 
     let (Key(fis,_upper_bound)) = key in 
@@ -924,7 +935,7 @@ module Partially_polished = struct
         then raise(Untreated_cases(untreated_cases,key,Mh_cumulative(pivot)))  
         else () ;; 
   
-    let check_item pp (skey,(hook,mold)) = 
+    let check_item pp (E(skey,(hook,mold))) = 
         let key = Kay.constructor skey in 
         match hook with 
          Mh_cumulative(pivot) -> check_cumulative pp pivot key mold   
@@ -938,13 +949,13 @@ module Partially_polished = struct
     end ;;    
 
    let apply_small_polish (PP l) = function
-     Add_pair(skey,(hook,mold)) ->
-          PP (pp_element_insert (skey,(hook,mold)) l)
-    |Replace_pair_by(skey, hook_and_mold) ->
+     Add_entry(E(skey,(hook,mold))) ->
+          PP (entry_insert (E(skey,(hook,mold))) l)
+    |Replace_entry_by(E(skey, hook_and_mold)) ->
          PP(Image.image (fun pair->
-             let (skey2,_) = pair in 
+             let (E(skey2,_)) = pair in 
              if skey2=skey
-             then (skey,hook_and_mold)
+             then E(skey,hook_and_mold)
              else pair 
           ) l)    ;;
 
@@ -953,7 +964,7 @@ module Partially_polished = struct
     Compute_naively_exn(n,scr,w,b) ->
         let uple = (n,scr,w,b) in 
         let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
-        Some(Add_pair(uple,(Option.get hook_opt,mold))) ;;   
+        Some(Add_entry(E(uple,(Option.get hook_opt,mold)))) ;;   
 
    exception Small_pusher_exn ;;
    

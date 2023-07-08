@@ -37,9 +37,9 @@ type simplified_key = int * (int list) * int * int ;;
 
 type entry = E of simplified_key * (medium_hook * mold) ;; 
 
-type partially_polished = PP of (simplified_key * (medium_hook * mold)) list ;; 
+type partially_polished = PP of entry list ;; 
 
 type small_polish =
-     Add_pair of simplified_key * (medium_hook * mold)
-    |Replace_pair_by of simplified_key * (medium_hook * mold);; 
+     Add_entry of entry
+    |Replace_entry_by of entry;; 
 
