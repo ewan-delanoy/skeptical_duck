@@ -101,15 +101,17 @@ end ;;
 
 module Fan = struct 
 
-   
+   module Private = struct
 
   let constructor ll =
      let sorted_ll = il_sort ll in 
      F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
 
+  end ;;  
+     
   let combine_two_conditions (F ll1) (F ll2) =
      let temp1 = Cartesian.product ll1 ll2 in 
-     constructor( Image.image (fun (x,y)->i_merge x y) temp1 );; 
+     Private.constructor( Image.image (fun (x,y)->i_merge x y) temp1 );; 
 
   let combine_conditions = function 
       [] -> F[]
@@ -147,10 +149,17 @@ module Fan = struct
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
       
-    let is_stronger_than (F rays1) (F rays2) =
-        List.for_all (fun ray1->List.exists (fun ray2->i_is_included_in ray2 ray1) rays2) rays1 ;;  
+    
 
     let insert ray (F rays) =  F(il_insert ray rays);;
+
+    let insert_several more_rays (F rays) =  F(il_merge (il_sort more_rays) rays);;
+
+    let is_stronger_than (F rays1) (F rays2) =
+      List.for_all (fun ray1->List.exists (fun ray2->i_is_included_in ray2 ray1) rays2) rays1 ;;  
+
+    let remove_vertex pivot (F rays) =
+        Private.constructor (Image.image (i_outsert pivot) rays) ;;  
 
 end ;;   
 
@@ -933,33 +942,30 @@ module Partially_polished = struct
       let old_entry = assoc_or_raise preceding_key pp Check_select_exn_2 in   
       raise(Insufficient_fan_exn(old_entry,weaker_fan)) ;;
 
-     
-    let check_cumulative pp pivot key (M(sols,F l_ext)) = 
+    exception Check_cumulative_exn_1 ;;  
+    exception Check_cumulative_exn_2 ;;  
+
+    let check_cumulative pp pivot key (M(sols,fan)) = 
         let smaller_key = Kay.remove_one_element key pivot in 
-        let (M(sols2,F l_ext2)) = compute_naively pp smaller_key in 
+        let (M(sols2,fan2)) = compute_naively pp smaller_key in 
         let unpredicted_sols = List.filter_map (
             fun sol -> 
                let ssol = i_setminus sol [pivot] in  
                if not(List.mem ssol sols2)
-               then Some(ssol,smaller_key)
+               then Some(ssol)
               else None 
         ) sols in 
         if unpredicted_sols<>[]
-        then raise(Unregistered_solutions(unregistered_sols,key,Mh_cumulative(pivot)))  
+        then let old_entry = assoc_or_raise smaller_key pp Check_cumulative_exn_1 in 
+              raise(Missing_solutions_exn(old_entry,unpredicted_sols)) 
         else 
-        let is_ok = Kay.is_admissible key in   
-        let untreated_cases = 
-            List.filter_map (fun ext2->
-              let eext2 = i_insert pivot ext2 in 
-              if (List.for_all (fun ext->not(i_is_included_in ext eext2)) l_ext)
-                 &&
-                 (is_ok eext2) 
-              then Some(ext2,smaller_key)
-              else None   
-        ) l_ext2  in   
-        if untreated_cases<>[]
-        then raise(Untreated_cases(untreated_cases,key,Mh_cumulative(pivot)))  
-        else () ;; 
+        let simplified_fan = Fan.remove_vertex pivot fan 
+        and complements = Kay.complements key pivot in 
+        let final_fan = Fan.insert_several complements simplified_fan in 
+        if Fan.is_stronger_than fan2 final_fan
+        then ()
+        else let old_entry = assoc_or_raise smaller_key pp Check_cumulative_exn_2 in   
+        raise(Insufficient_fan_exn(old_entry,final_fan)) ;; ;; 
   
     let check_item pp (E(skey,(hook,mold))) = 
         let key = Kay.constructor skey in 
