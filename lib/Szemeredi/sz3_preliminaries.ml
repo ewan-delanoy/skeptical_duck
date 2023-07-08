@@ -849,16 +849,15 @@ module Partially_polished = struct
     then  Some(M([domain],F[domain]))
     else Extra_tools.compute_opt key ;; 
  
-  let compute_naively_opt pp key =
-      let (d,translated_key) = Kay.decompose_wrt_translation key in 
-      match compute_naively_without_translating_opt pp translated_key with 
-          None -> None 
-          |Some (translated_mold) -> 
-             Some(Mold.translate (-d) translated_mold);;
+  let compute_naively_without_translating pp key = 
+   match compute_naively_without_translating_opt pp key with
+    None -> raise(Missing_entry_exn(Kay.deconstructor key))
+   |Some(answer) -> answer ;; 
 
-  let compute_naively pp key = match compute_naively_opt pp key with 
-      Some answer -> answer 
-      | None -> raise(Missing_entry_exn(Kay.deconstructor key)) ;;             
+  let compute_naively pp key =
+      let (d,translated_key) = Kay.decompose_wrt_translation key in 
+      let translated_mold = compute_naively_without_translating pp translated_key in 
+      Mold.translate (-d) translated_mold;;          
 
   exception Noncumulability_check of partially_polished * key * int ;;  
 
@@ -1003,17 +1002,6 @@ module Partially_polished = struct
       let smaller_fan = Fan.canonical_container all_sols large_fan in 
       Some(Replace_entry_by(E(skey,(hook,M(sols,smaller_fan)))))
     ;;   
-
-   exception Small_pusher_exn ;;
-   
-   let ref_for_fully_polished_data = ref [] ;; 
-
-   let small_pusher pp= match next_needed_small_polish_opt pp with 
-       None ->  
-          let (PP l)=pp in 
-          let _ = (ref_for_fully_polished_data:=l) in 
-          raise Small_pusher_exn
-      |Some small_polish -> apply_small_polish pp small_polish ;; 
     
 
 end ;; 
