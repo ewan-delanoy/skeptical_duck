@@ -994,7 +994,15 @@ module Partially_polished = struct
     Missing_entry_exn(n,scr,w,b) ->
         let uple = (n,scr,w,b) in 
         let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
-        Some(Add_entry(E(uple,(Option.get hook_opt,mold)))) ;;   
+        Some(Add_entry(E(uple,(Option.get hook_opt,mold)))) 
+    |Missing_solutions_exn(E(skey,(hook,M(sols,fan))),new_sols)->
+      Some(Replace_entry_by(E(skey,(hook,M(il_merge sols (il_sort new_sols),fan)))))    
+    |Insufficient_fan_exn(E(skey,(hook,M(sols,fan))),new_fan)->    
+      let large_fan = Fan.combine_two_conditions fan new_fan in 
+      let all_sols = Medium.all_solutions (Kay.constructor skey) in 
+      let smaller_fan = Fan.canonical_container all_sols large_fan in 
+      Some(Replace_entry_by(E(skey,(hook,M(sols,smaller_fan)))))
+    ;;   
 
    exception Small_pusher_exn ;;
    
