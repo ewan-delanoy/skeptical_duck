@@ -146,6 +146,8 @@ module Fan = struct
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
       
+    let is_stronger_than (F rays1) (F rays2) =
+        List.for_all (fun ray1->List.exists (fun ray2->i_is_included_in ray2 ray1) rays2) rays1 ;;  
 
 end ;;   
 
@@ -821,6 +823,11 @@ module Partially_polished = struct
         |Total_ordering_result_t.Equal -> Some hm2
         |Total_ordering_result_t.Greater -> assoc_opt skey (PP others) ;; 
 
+  let assoc_or_raise key pp exen =
+      match assoc_opt (Kay.deconstructor key) pp with 
+      None -> raise exen
+      |Some answer -> answer ;; 
+
   let compute_naively_without_translating_opt pp key = 
     match assoc_opt (Kay.deconstructor key) pp with 
     Some (_hook1,mold1) -> Some(mold1)
@@ -854,14 +861,14 @@ module Partially_polished = struct
      ) in   
      let untreated_cases = List.filter is_not_treated l_ext2 in 
      if untreated_cases=[]
-      then ()
-       else 
-               match assoc_opt (Kay.deconstructor beheaded_key) pp  with 
-               None -> raise(Noncumulability_check(pp,key,pivot))
-               |Some (hook,mold) -> 
-                let old_entry = E(Kay.deconstructor beheaded_key,(hook,mold)) in 
+     then ()
+     else let (hook,mold) =
+                assoc_or_raise beheaded_key pp (Noncumulability_check(pp,key,pivot)) in 
+            let old_entry = E(Kay.deconstructor beheaded_key,(hook,mold)) in 
                 raise(Insufficient_fan_exn(old_entry,F(complements)))
             ;;
+
+  exception Check_fork_exn ;; 
 
   let check_fork pp (i,j,k) key (M(sols,F l_ext)) = 
       let _ = check_that_noncumulability_was_predictable pp key (Kay.max key) in 
@@ -872,15 +879,21 @@ module Partially_polished = struct
       ) [i;j;k] in 
       let sols_with_pivots = Image.image (fun 
         sol->(sol,List.find (fun t->not(List.mem t sol)) [k;j;i])) sols in
-      let unregistered_sols = List.filter_map (
+      let unpredicted_sols = List.filter_map (
         fun (sol,t) -> 
            let (key2,M(sols2,_l_ext2)) = List.assoc t parts in 
            if not(List.mem sol sols2)
-           then Some(sol,key2)
+           then Some(sol,t,key2)
            else None 
       ) sols_with_pivots in 
-      if unregistered_sols<>[]
-      then raise(Unregistered_solutions(unregistered_sols,key,Mh_fork(i,j,k)))  
+      if unpredicted_sols<>[]
+      then let (_sol3,t3,key3) = List.hd unpredicted_sols in 
+           let slice_of_missing_sols = List.filter_map(
+              fun (sol4,t4,_) ->
+                   if t4=t3 then Some sol4 else None 
+           ) unpredicted_sols 
+          and hook_and_mold = assoc_or_raise key3 pp Check_fork_exn in 
+          raise(Missing_solutions_exn(E(Kay.deconstructor key3,hook_and_mold),slice_of_missing_sols)) 
       else 
       let untreated_cases = List.flatten(Image.image (fun (_t,(subkey,M(_sols3,F l_ext3)))->
         List.filter_map (fun ext3->
@@ -889,9 +902,9 @@ module Partially_polished = struct
           else None   
         ) l_ext3 
       ) parts) in   
-      if untreated_cases<>[]
-      then raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))  
-      else () ;; 
+      if untreated_cases=[]
+      then ()
+      else raise(Untreated_cases(untreated_cases,key,Mh_fork(i,j,k)))   ;; 
       
     let check_select pp (i,j,k) key (M(sols,F l_ext)) = 
       let _ = check_that_noncumulability_was_predictable pp key  (Kay.max key) in 
