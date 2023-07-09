@@ -981,7 +981,8 @@ module Partially_polished = struct
 
    let next_needed_small_polish_opt pp = 
     try (fun _->None)(Check.check_all pp) with 
-    Missing_entry_exn(n,scr,w,b) ->
+     Missing_entry_exn(n,scr,w,b)
+    |Missing_completed_entry_exn(n,scr,w,b) ->
         let uple = (n,scr,w,b) in 
         let (hook_opt,_subkey_opt,mold) = Medium.compute (Kay.constructor uple) in 
         Some(Add_entry(E(uple,(Option.get hook_opt,mold)))) 
