@@ -840,6 +840,12 @@ module Partially_polished = struct
       None -> raise exen
       |Some answer -> E(skey,answer) ;; 
 
+  let determine_the_correct_exception key pp exen_constructor =
+     let skey=Kay.deconstructor key in 
+      match assoc_opt (Kay.deconstructor key) pp with 
+      None -> Missing_completed_entry_exn skey
+    |Some answer -> exen_constructor(E(skey,answer)) ;; 
+
   let compute_naively_without_translating_opt pp key = 
     match assoc_opt (Kay.deconstructor key) pp with 
     Some (_hook1,mold1) -> Some(mold1)
