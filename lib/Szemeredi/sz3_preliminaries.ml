@@ -834,12 +834,6 @@ module Partially_polished = struct
         |Total_ordering_result_t.Equal -> Some hm2
         |Total_ordering_result_t.Greater -> assoc_opt skey (PP others) ;; 
 
-  let assoc_or_raise key pp exen =
-     let skey=Kay.deconstructor key in 
-      match assoc_opt (Kay.deconstructor key) pp with 
-      None -> raise exen
-      |Some answer -> E(skey,answer) ;; 
-
   let determine_the_correct_exception key pp exen_constructor =
      let skey=Kay.deconstructor key in 
       match assoc_opt (Kay.deconstructor key) pp with 
