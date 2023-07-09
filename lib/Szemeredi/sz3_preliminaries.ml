@@ -118,7 +118,7 @@ module Fan = struct
      |first_fan :: other_fans ->
         List.fold_left combine_two_conditions first_fan other_fans ;; 
 
-  
+  (*
   let canonical_container_in_hard_case initial_competing_fans =
     let measure = (fun (F rays)->
       i_length_preserving_sort (Image.image List.length rays)
@@ -148,12 +148,18 @@ module Fan = struct
       else      
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
+    *)  
       
-    
+    let canonical_container sample (F rays) = 
+        let appears_at_least_once = (fun 
+           ray -> List.exists (i_is_included_in ray) sample) in 
+        F(List.filter appears_at_least_once rays) ;;    
 
-    let insert ray (F rays) =  F(il_insert ray rays);;
+    let insert ray (F rays) =  
+        Private.constructor(il_insert ray rays);;
 
-    let insert_several more_rays (F rays) =  F(il_merge (il_sort more_rays) rays);;
+    let insert_several more_rays (F rays) =  
+        Private.constructor(il_merge (il_sort more_rays) rays);;
 
     let is_stronger_than (F rays1) (F rays2) =
       List.for_all (fun ray1->List.exists (fun ray2->i_is_included_in ray2 ray1) rays2) rays1 ;;  
