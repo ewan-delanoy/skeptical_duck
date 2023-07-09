@@ -864,7 +864,7 @@ module Partially_polished = struct
   let compute_naively pp key =
       let (d,translated_key) = Kay.decompose_wrt_translation key in 
       let translated_mold = compute_naively_without_translating pp translated_key in 
-      Mold.translate (-d) translated_mold;;          
+      Mold.translate d translated_mold;;          
 
   let check_that_noncumulability_was_predictable pp key pivot = 
      let beheaded_key = Kay.remove_one_element key pivot in 
