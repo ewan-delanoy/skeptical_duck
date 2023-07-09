@@ -866,8 +866,6 @@ module Partially_polished = struct
       let translated_mold = compute_naively_without_translating pp translated_key in 
       Mold.translate (-d) translated_mold;;          
 
-  exception Noncumulability_check of partially_polished * key * int ;;  
-
   let check_that_noncumulability_was_predictable pp key pivot = 
      let beheaded_key = Kay.remove_one_element key pivot in 
      let mold = compute_naively pp beheaded_key 
@@ -879,13 +877,9 @@ module Partially_polished = struct
      let untreated_cases = List.filter is_not_treated l_ext2 in 
      if untreated_cases=[]
      then ()
-     else let old_entry = assoc_or_raise beheaded_key pp 
-                (Noncumulability_check(pp,key,pivot)) in 
-                raise(Insufficient_fan_exn(old_entry,F(complements)))
+     else raise(determine_the_correct_exception beheaded_key pp  
+          (fun old_entry->Insufficient_fan_exn(old_entry,F(complements)) )) 
             ;;
-
-  exception Check_fork_exn_1 ;; 
-  exception Check_fork_exn_2 ;; 
 
   let check_fork pp (i,j,k) key (M(sols,fan)) = 
       let _ = check_that_noncumulability_was_predictable pp key (Kay.max key) in 
@@ -908,20 +902,18 @@ module Partially_polished = struct
            let slice_of_missing_sols = List.filter_map(
               fun (sol4,t4,_) ->
                    if t4=t3 then Some sol4 else None 
-           ) unpredicted_sols 
-          and old_entry = assoc_or_raise key3 pp Check_fork_exn_1 in 
-          raise(Missing_solutions_exn(old_entry,slice_of_missing_sols)) 
+           ) unpredicted_sols in 
+           raise(determine_the_correct_exception key3 pp  
+          (fun old_entry->Missing_solutions_exn(old_entry,slice_of_missing_sols))) 
       else 
       match List.find_opt(fun (_t,(_subkey3,M(_sols3,fan3)))->
           not(Fan.is_stronger_than fan3 fan)
       ) parts with 
       None -> ()
       |Some(_t,(subkey,_)) ->
-        let old_entry = assoc_or_raise subkey pp Check_fork_exn_2 in   
-        raise(Insufficient_fan_exn(old_entry,fan)) ;;
+        raise(determine_the_correct_exception subkey pp  
+          (fun old_entry->Insufficient_fan_exn(old_entry,fan)))  ;;
         
-    exception Check_select_exn_1 ;;  
-    exception Check_select_exn_2 ;;  
 
     let check_select pp (i,j,k) key (M(sols,fan)) = 
       let _ = check_that_noncumulability_was_predictable pp key  (Kay.max key) in 
@@ -935,19 +927,16 @@ module Partially_polished = struct
             else None 
       ) sols in 
       if unpredicted_sols<>[]
-      then let old_entry = assoc_or_raise preceding_key pp Check_select_exn_1 in 
-          raise(Missing_solutions_exn(old_entry,unpredicted_sols)) 
-         
+      then raise(determine_the_correct_exception preceding_key pp  
+           (fun old_entry->Missing_solutions_exn(old_entry,unpredicted_sols))) 
       else 
       let weaker_fan = Fan.insert [i;j;k] fan in   
       if Fan.is_stronger_than fan2 weaker_fan
       then ()
       else
-      let old_entry = assoc_or_raise preceding_key pp Check_select_exn_2 in   
-      raise(Insufficient_fan_exn(old_entry,weaker_fan)) ;;
+        raise(determine_the_correct_exception preceding_key pp  
+        (fun old_entry->Insufficient_fan_exn(old_entry,weaker_fan))) ;;
 
-    exception Check_cumulative_exn_1 ;;  
-    exception Check_cumulative_exn_2 ;;  
 
     let check_cumulative pp pivot key (M(sols,fan)) = 
         let smaller_key = Kay.remove_one_element key pivot in 
@@ -960,16 +949,17 @@ module Partially_polished = struct
               else None 
         ) sols in 
         if unpredicted_sols<>[]
-        then let old_entry = assoc_or_raise smaller_key pp Check_cumulative_exn_1 in 
-              raise(Missing_solutions_exn(old_entry,unpredicted_sols)) 
+        then raise(determine_the_correct_exception smaller_key pp  
+        (fun old_entry->Missing_solutions_exn(old_entry,unpredicted_sols)))
         else 
         let simplified_fan = Fan.remove_vertex pivot fan 
         and complements = Kay.complements key pivot in 
         let final_fan = Fan.insert_several complements simplified_fan in 
         if Fan.is_stronger_than fan2 final_fan
         then ()
-        else let old_entry = assoc_or_raise smaller_key pp Check_cumulative_exn_2 in   
-        raise(Insufficient_fan_exn(old_entry,final_fan)) ;; ;; 
+        else 
+        raise(determine_the_correct_exception smaller_key pp  
+        (fun old_entry->Insufficient_fan_exn(old_entry,final_fan)))  ;; 
   
     let check_item pp (E(skey,(hook,mold))) = 
         let key = Kay.constructor skey in 
