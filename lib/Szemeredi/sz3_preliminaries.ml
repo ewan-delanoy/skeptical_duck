@@ -152,6 +152,15 @@ module Extra_tools = struct
       | Some f -> f key ;;  
   
   end ;;  
+
+  module Hashtbl_here = struct 
+
+    let greedy = ((Hashtbl.create 50) : (point, mold) Hashtbl.t) ;; 
+  
+    let add key answer =
+        Hashtbl.replace greedy key answer;;    
+  
+  end ;;
   
 
 
