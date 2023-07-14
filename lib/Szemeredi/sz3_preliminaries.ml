@@ -137,6 +137,9 @@ module Point = struct
 
   let decrement (P(fis,W w)) = P(fis,W(w-1)) ;;    
 
+  let highest_obstruction_opt (P(fis,w)) =
+    Find_highest_obstruction.for_maximal_width (w,Finite_int_set.to_usual_int_list fis);;
+
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
   let remove_one_element (P(fis,w)) pivot = 
