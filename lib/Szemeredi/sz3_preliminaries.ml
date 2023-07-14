@@ -19,8 +19,6 @@ type extension_data = Sz3_types.extension_data  ;;
 
 type solution = Sz3_types.solution ;; 
 
-type fan = Sz3_types.fan = F of extension_data list ;; 
-
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
 
@@ -54,75 +52,7 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
-module Fan = struct 
 
-   module Private = struct
-
-  let constructor ll =
-     let sorted_ll = il_sort ll in 
-     F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
-
-  end ;;  
-     
-  let combine_two_conditions (F ll1) (F ll2) =
-     let temp1 = Cartesian.product ll1 ll2 in 
-     Private.constructor( Image.image (fun (x,y)->i_merge x y) temp1 );; 
-
-  let combine_conditions = function 
-      [] -> F[]
-     |first_fan :: other_fans ->
-        List.fold_left combine_two_conditions first_fan other_fans ;; 
-
-  (*
-  let canonical_container_in_hard_case initial_competing_fans =
-    let measure = (fun (F rays)->
-      i_length_preserving_sort (Image.image List.length rays)
-    ) in 
-    let temp1 = Image.image measure initial_competing_fans in 
-    let smallest_measure = il_min temp1 in 
-    let competing_fans = 
-        List.filter(fun mz->measure(mz)=smallest_measure)  
-            initial_competing_fans in 
-    combine_conditions competing_fans ;; 
-
-  let canonical_container sample (F rays) =
-     let indexed_rays = Int_range.index_everything rays in 
-     let covering_indices = (fun x->
-        List.filter_map (fun (idx,ray)->
-           if i_is_included_in ray x 
-           then Some idx 
-          else None   
-        ) indexed_rays
-      ) in
-      let temp1 = Image.image covering_indices sample in 
-      let temp2 = Ordered_misc.minimal_transversals temp1 in 
-      let (_,temp3) = Min.minimize_it_with_care List.length temp2 in 
-      let return_to_original = (fun l->F(Image.image(fun idx->List.assoc idx indexed_rays) l)) in 
-      if List.length temp3 = 1 
-      then return_to_original (List.hd temp3) 
-      else      
-      let temp4 = Image.image return_to_original temp3 in
-      canonical_container_in_hard_case temp4 ;;
-    *)  
-      
-    let canonical_container sample (F rays) = 
-        let appears_at_least_once = (fun 
-           ray -> List.exists (i_is_included_in ray) sample) in 
-        F(List.filter appears_at_least_once rays) ;;    
-
-    let insert ray (F rays) =  
-        Private.constructor(il_insert ray rays);;
-
-    let insert_several more_rays (F rays) =  
-        Private.constructor(il_merge (il_sort more_rays) rays);;
-
-    let is_stronger_than (F rays1) (F rays2) =
-      List.for_all (fun ray1->List.exists (fun ray2->i_is_included_in ray2 ray1) rays2) rays1 ;;  
-
-    let remove_vertex pivot (F rays) =
-        Private.constructor (Image.image (i_outsert pivot) rays) ;;  
-
-end ;;   
 
 module Mold = struct 
 

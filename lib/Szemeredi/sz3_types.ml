@@ -21,7 +21,5 @@ type extension_data = int list ;;
 
 type solution = int list ;; 
 
-type fan = F of extension_data list ;; 
-
 type mold = M of (solution list) * extension_data ;;
 
