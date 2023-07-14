@@ -21,7 +21,7 @@ type solution = Sz3_types.solution ;;
 
 type fan = Sz3_types.fan = F of extension_data list ;; 
 
-type mold = Sz3_types.mold = M of (solution list) * fan ;;
+type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -126,9 +126,9 @@ end ;;
 
 module Mold = struct 
 
-let translate d (M(sols,F ext)) =
+let translate d (M(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
-    M(Image.image tr sols,F(Image.image tr ext)) ;; 
+    M(Image.image tr sols,tr ext) ;; 
 
 end ;;
 

@@ -23,23 +23,5 @@ type solution = int list ;;
 
 type fan = F of extension_data list ;; 
 
-type mold = M of (solution list) * fan ;;
-
-type upper_bound_on_breadth = Unrestricted |Up_to of breadth ;;
-
-type upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
-
-type key = Key of finite_int_set * upper_bound_on_constraint ;; 
-
-type medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork of int * int *int  ;; 
-
-type simplified_key = int * (int list) * int * int ;;
-
-type entry = E of simplified_key * (medium_hook * mold) ;; 
-
-type partially_polished = PP of entry list ;; 
-
-type small_polish =
-     Add_entry of entry
-    |Replace_entry_by of entry;; 
+type mold = M of (solution list) * extension_data ;;
 
