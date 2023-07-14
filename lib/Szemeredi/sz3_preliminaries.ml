@@ -131,6 +131,9 @@ end ;;
 
 module Point = struct 
 
+  let subset_is_admissible (P(_,w)) subset =
+      ((Find_highest_obstruction.for_maximal_width (w,subset)) =None);;
+
   let width (P(_,w)) = w ;; 
 
 end ;;   
