@@ -23,27 +23,6 @@ type fan = Sz3_types.fan = F of extension_data list ;;
 
 type mold = Sz3_types.mold = M of (solution list) * fan ;;
 
-type upper_bound_on_breadth = 
-    Sz3_types.upper_bound_on_breadth = 
-   Unrestricted |Up_to of breadth ;; 
-
-type upper_bound_on_constraint = 
-   Sz3_types.upper_bound_on_constraint = UBC of width * upper_bound_on_breadth ;; 
-
-type key = 
-   Sz3_types.key = Key of finite_int_set * upper_bound_on_constraint ;; 
-
-type medium_hook = Sz3_types.medium_hook = Mh_cumulative of int | Mh_select of int * int *int | Mh_fork of int * int *int  ;; 
-
-type simplified_key = int * (int list) * int * int ;;
-
-type entry = Sz3_types.entry = E of simplified_key * (medium_hook * mold) ;;
-
-type partially_polished = Sz3_types.partially_polished = PP of entry list ;; 
-
-type small_polish = Sz3_types.small_polish =
-     Add_entry of entry
-    |Replace_entry_by of entry;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -67,30 +46,6 @@ let il_sort = Ordered.sort il_order ;;
 
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
-
-let sk_order =((fun (n1,scr1,w1,b1) (n2,scr2,w2,b2) ->
-   let try1 = Total_ordering.for_integers w1 w2 in 
-   if try1 <> Total_ordering_result_t.Equal then try1 else 
-   let try2 = Total_ordering.for_integers n1 n2 in 
-   if try2 <> Total_ordering_result_t.Equal then try2 else  
-   let try3 = Total_ordering.for_integers (List.length scr2) (List.length scr1) in 
-   if try3 <> Total_ordering_result_t.Equal then try3 else  
-   let try4 = Total_ordering.silex_for_intlists scr1 scr2 in 
-   if try4 <> Total_ordering_result_t.Equal then try4 else   
-   Total_ordering.for_integers b1 b2
-) : simplified_key Total_ordering_t.t);;  
-  
-
-let hm_order = ((fun st1 st2->Total_ordering.standard st1 st2): (medium_hook * mold) Total_ordering_t.t);;
-
-let entry_order = 
-  ((fun (E(sk1,hm1))  (E(sk2,hm2))->
-    Total_ordering.product sk_order hm_order (sk1,hm1) (sk2,hm2)): 
-  entry Total_ordering_t.t);;
-
-let entry_insert = Ordered.insert entry_order ;;
-let entry_merge = Ordered.merge entry_order ;;
-let entry_sort = Ordered.sort entry_order ;;
 
 
 module Constraint = struct 
