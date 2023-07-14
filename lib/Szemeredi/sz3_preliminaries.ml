@@ -62,6 +62,26 @@ let translate d (M(sols, ext)) =
 end ;;
 
 
+module Find_highest_obstruction = struct
+
+  let rec for_exact_width (W w,domain,to_be_treated) =
+    match to_be_treated with 
+    [] -> None 
+    |p::others ->
+       if p<=2*w then None else 
+       if i_is_included_in [p-2*w;p-w] domain 
+       then Some ([p-2*w;p-w;p])
+       else for_exact_width (W w,domain,others) ;;     
+  
+  let rec for_maximal_width (W w,domain) =
+   match for_exact_width (W w,domain,List.rev domain) with 
+   Some (breadth_max) -> Some(breadth_max)
+   |None ->
+      if w<2 then None else 
+      for_maximal_width (W (w-1),domain) ;;  
+  
+  end ;;
+
 module Finite_int_set = struct 
 
   module Private = struct
