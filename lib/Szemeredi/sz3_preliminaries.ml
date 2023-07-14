@@ -9,8 +9,6 @@ Sz3 is short for "third stab at Szemeredi problem".
 
 type width = Sz3_types.width = W of int ;; 
 
-type breadth = Sz3_types.breadth = B of int ;; 
-
 type finite_int_set = Sz3_types.finite_int_set = FIS of int * (int list) ;; 
 
 type constraint_t = Sz3_types.constraint_t = C of int list;; 
@@ -21,6 +19,7 @@ type solution = Sz3_types.solution ;;
 
 type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
+type point = Sz3_types.point = P of finite_int_set * width ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
