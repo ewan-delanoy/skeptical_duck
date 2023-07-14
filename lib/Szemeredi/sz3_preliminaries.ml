@@ -109,4 +109,12 @@ module Finite_int_set = struct
 
 end ;;    
 
+module Point = struct 
+
+  let width (P(_,w)) = w ;; 
+
+end ;;   
+
+
+
 
