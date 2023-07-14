@@ -135,6 +135,8 @@ module Point = struct
      let (d,translated_fis) = Finite_int_set.decompose_wrt_translation fis in 
      (d,P(translated_fis,w));;
 
+  let decrement (P(fis,W w)) = P(fis,W(w-1)) ;;    
+
   let subset_is_admissible (P(_,w)) subset =
       ((Find_highest_obstruction.for_maximal_width (w,subset)) =None);;
 
