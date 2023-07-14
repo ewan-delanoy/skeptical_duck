@@ -137,6 +137,8 @@ module Point = struct
 
   let decrement (P(fis,W w)) = P(fis,W(w-1)) ;;    
 
+  let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
+
   let remove_one_element (P(fis,w)) pivot = 
     P(Finite_int_set.remove_one_element fis pivot,w) ;;
 
