@@ -153,6 +153,8 @@ module Point = struct
     ) in 
     P(new_fis,W new_w) ;;
 
+  let supporting_set (P(fis,_)) = Finite_int_set.to_usual_int_list fis ;; 
+
   let subset_is_admissible (P(_,w)) subset =
       ((Find_highest_constraint.for_maximal_width (w,subset)) =None);;
 
