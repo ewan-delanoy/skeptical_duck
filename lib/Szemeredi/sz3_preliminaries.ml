@@ -137,8 +137,10 @@ module Point = struct
 
   let decrement (P(fis,W w)) = P(fis,W(w-1)) ;;    
 
-  let highest_constraint_opt (P(fis,w)) =
-    Find_highest_constraint.for_maximal_width (w,Finite_int_set.to_usual_int_list fis);;
+  let highest_constraint_opt (P(fis,W w)) = 
+    if w<1 then None else
+    Find_highest_constraint.for_maximal_width 
+      (W w,Finite_int_set.to_usual_int_list fis);;
 
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
