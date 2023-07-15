@@ -143,7 +143,13 @@ module Point = struct
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
   let remove_one_element (P(fis,w)) pivot = 
-    P(Finite_int_set.remove_one_element fis pivot,w) ;;
+    let new_fis = Finite_int_set.remove_one_element fis pivot in 
+    let new_w = (
+      match Find_highest_constraint.for_maximal_width (w,Finite_int_set.to_usual_int_list new_fis) with
+      None -> 1
+      |Some(C(l))->(List.nth l 1)-(List.nth l 0)
+    ) in 
+    P(new_fis,W new_w) ;;
 
   let subset_is_admissible (P(_,w)) subset =
       ((Find_highest_constraint.for_maximal_width (w,subset)) =None);;
