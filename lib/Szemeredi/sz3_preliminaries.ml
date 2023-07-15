@@ -399,7 +399,67 @@ module Extra_tools = struct
   
   end ;;   
   
-  
+module  Highest_separator = struct 
+
+  module Private = struct
+
+    type t = EP of point * (constraint_t list);;
+    
+    let usual_decomposition_for_bare_point_opt pt =
+       match Point.highest_constraint_opt pt with 
+        None -> None 
+       |Some (C l)-> 
+         let current_b = List.nth l 0 in 
+         let effective_w=(List.nth l 1)-current_b in 
+         let candidates=Int_range.descending_scale (
+             fun b->C[b;b+effective_w;b+2*effective_w]
+         ) 1 (current_b-1) in 
+         let (P(fis,_)) = pt in 
+         let domain = Finite_int_set.to_usual_int_list fis in 
+         let selected_candidates = List.filter (
+            fun (C l)->i_is_included_in l domain
+         ) candidates in 
+         Some(EP(P(fis,W(effective_w-1)),selected_candidates), C l)
+         ;;
+    
+    let usual_decomposition_opt (EP(pt,l_cstr)) = 
+       match l_cstr with 
+       [] -> usual_decomposition_for_bare_point_opt pt 
+      |highest :: others -> Some(EP(pt,others),highest) ;; 
+    
+    let remove_one_element (EP(pt,l_cstr)) t =
+       let smaller_pt = Point.remove_one_element pt t in 
+       EP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+    
+    exception Measure_exn of t ;; 
+    
+    let measure = Memoized.recursive (fun old_f constrained_pt ->
+       let (EP(pt,l_cstr)) = constrained_pt in 
+       if l_cstr = []
+       then let (M(sols,_)) = Crude.compute pt in
+            List.length(List.hd sols) 
+       else match usual_decomposition_opt constrained_pt with 
+       None -> raise(Measure_exn(constrained_pt))
+       |Some(preceding_pt,C l) ->
+          Max.list ( Image.image (
+             fun t->old_f(remove_one_element preceding_pt t)
+          ) l )
+    ) ;; 
+    
+    let highest_separator_opt = Memoized.recursive (fun old_f constrained_pt ->
+       match usual_decomposition_opt constrained_pt with 
+        None -> None 
+       |Some(preceding_constrained_pt,cstr)->
+          if (measure constrained_pt) <> (measure preceding_constrained_pt) 
+          then Some cstr
+          else old_f preceding_constrained_pt
+    ) ;;   
+    
+    end ;; 
+    
+    let opt pt = Private.highest_separator_opt (Private.EP(pt,[])) ;;   
+
+end ;;  
   
   
   
