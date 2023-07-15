@@ -21,6 +21,11 @@ type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
+type medium_handle = Sz3_types.medium_handle = 
+      Mh_import  
+    | Mh_cumulative of int 
+    | Mh_fork of int * int *int  ;; 
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -464,6 +469,96 @@ module  Highest_separator = struct
 end ;;  
   
   
+module Medium = struct 
+  module Private = struct   
+
+
+ let measure point =
+   let (M(sols,_)) = Crude.compute point in 
+   List.length(List.hd sols) ;;  
+ 
+  let rigorous_test_for_import_case old_point = 
+    let (W w)=Point.width(old_point) in 
+    if w<2 then false else
+    let simpler_point = Point.decrement old_point in 
+    (measure simpler_point)=(measure old_point) ;; 
+
+
+let rigorous_quest_for_individual_cumulative_case old_point pivot = 
+  let simpler_point = Point.remove_one_element old_point pivot in 
+  if (measure simpler_point)=(measure old_point)-1 
+  then Some(pivot)  
+  else None ;;
+
+let rigorous_quest_for_cumulative_case old_point =
+    let domain = Point.supporting_set old_point in 
+    List.find_map (rigorous_quest_for_individual_cumulative_case old_point) domain ;; 
+
+
+ let handle_opt point =
+  match Highest_separator.opt point with 
+  None -> None
+  |Some(C cstr)-> 
+  if rigorous_test_for_import_case point 
+  then Some(Mh_import) 
+  else
+  (match rigorous_quest_for_cumulative_case point with 
+    Some(pivot)->Some(Mh_cumulative(pivot))
+    |None ->
+        let c = (fun k->List.nth cstr (k-1))  in 
+        Some(Mh_fork(c 1,c 2,c 3))
+  );;
+
+let all_solutions =Memoized.recursive(fun old_f point -> 
+  let domain = Point.supporting_set point
+  and is_ok = Point.subset_is_admissible point in 
+  match handle_opt point with 
+   None -> [domain]
+  |Some(handle) -> 
+    let compute_below = (fun t->
+          old_f (Point.remove_one_element point t)
+    ) in 
+    match handle with 
+     Mh_cumulative(pivot)->
+          List.filter_map (
+             fun sol->
+               let new_sol = i_insert pivot sol in 
+               if is_ok new_sol then Some new_sol else None
+          )(compute_below pivot) 
+    |Mh_fork(i,j,k)->
+         il_fold_merge(Image.image compute_below [i;j;k])
+    |Mh_import ->  
+         let smaller_point = Point.decrement point in 
+         List.filter is_ok (old_f smaller_point)
+    );;        
+
+  
+   let helper_for_canonical_solution (sols,n) =
+     let (with_n,without_n) = List.partition (List.mem n) sols in 
+     if without_n=[]
+     then (true,Image.image(i_outsert n) with_n) 
+    else (false,without_n) ;;      
+    
+    let rec iterator_for_canonical_solution (to_be_treated,n,treated) =
+      if n<1 then treated else  
+      let (n_needed,to_be_treated2) = helper_for_canonical_solution (to_be_treated,n) in 
+      let treated2 = (if n_needed then n::treated else treated) in
+      iterator_for_canonical_solution (to_be_treated2,n-1,treated2) ;; 
+
+    let canonical_solution point =
+       let all_sols = all_solutions point 
+       and n = Point.max point in 
+       iterator_for_canonical_solution (all_sols,n,[]) ;; 
+    
+    
+
+end ;;   
+
+let all_solutions = Private.all_solutions ;; 
+let canonical_solution = Private.canonical_solution ;;
+let handle_opt = Private.handle_opt ;; 
+
+end ;;
   
 
 

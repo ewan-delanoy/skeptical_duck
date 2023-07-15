@@ -21,3 +21,8 @@ type solution = int list ;;
 type mold = M of (solution list) * extension_data ;;
 
 type point = P of finite_int_set * width ;; 
+
+type medium_handle = 
+      Mh_import  
+    | Mh_cumulative of int 
+    | Mh_fork of int * int *int  ;; 
