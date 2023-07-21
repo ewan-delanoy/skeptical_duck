@@ -26,6 +26,13 @@ type medium_handle = Sz3_types.medium_handle =
     | Mh_cumulative of int 
     | Mh_fork of int * int *int  ;; 
 
+type polished_result = Sz3_types.polished_result = 
+  PR of ((solution * (string list)) list) * extension_data ;;    
+
+type polished_pair = Sz3_types.polished_pair = 
+       PP of point * ( (medium_handle option) * polished_result ) ;;    
+
+
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
