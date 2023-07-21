@@ -64,3 +64,9 @@ end ;;
 let nth = Private.nth ;; 
 
 end ;;
+
+module Visible_Grid = struct 
+
+let eval (VG gr) (C k) = Array.get gr k ;; 
+
+end ;;  
