@@ -121,14 +121,15 @@ module Finite_int_set = struct
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
+  exception Remove_one_element_exn of finite_int_set * int ;; 
+
   let remove_one_element (FIS(n,scrappers)) k=
        let new_scrappers = i_insert k scrappers in 
        if k <> n then FIS(n,new_scrappers) else 
        let new_z =  Private.to_usual_int_list (FIS(n-1,new_scrappers)) in 
        let new_max = List.hd(List.rev new_z) in 
-       FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;     
-  
-  
+       FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
+
   (*
   
   remove_one_element (FIS(10,[3;7;8;9])) 10 ;;
@@ -138,6 +139,10 @@ module Finite_int_set = struct
 
   let to_usual_int_list = Private.to_usual_int_list ;; 
 
+  let translate d fis = 
+    let domain = Private.to_usual_int_list fis in
+    let translated_domain =  Image.image (fun t->t+d) domain in 
+    Private.of_usual_int_list translated_domain;; 
 
 end ;;    
 
@@ -169,6 +174,9 @@ module Point = struct
 
   let subset_is_admissible (P(_,w)) subset =
       ((Find_highest_constraint.for_maximal_width (w,subset)) =None);;
+
+  let translate d (P(fis,w)) = 
+      P(Finite_int_set.translate d fis,w);;
 
   let width (P(_,w)) = w ;; 
 
@@ -221,7 +229,7 @@ module Extra_tools = struct
   
   end ;;
   
-  module Crude = struct 
+module Crude = struct 
 
 
     module Peek_and_seek = struct 
@@ -570,3 +578,207 @@ end ;;
 
 
 
+module SecondCrude = struct 
+
+  type shadow =
+     Bare
+    |Early_stop of point * int 
+    |Early_increase of point * int  
+    |Lucky of point * (int list)
+    |Disjunction of (point * (int list)) list;;  
+
+  type partial_result =
+    P_Finished_computation of shadow * mold  
+   |P_Unfinished_computation of point list ;;
+
+  type inner_walker = IW of 
+    ( point * ((int list) list)) * 
+    (
+       ( (point * (int list) ) list)
+       *
+       ( (point * (int list) * int) list)
+    ) ;;
+
+
+
+  exception Compute_strictly_exn ;; 
+  exception Pusher_for_needed_subcomputations1_exn ;; 
+
+  let main_hashtbl =   ((Hashtbl.create 50) : (point, shadow * mold) Hashtbl.t) ;; 
+
+let translate_shadow d = 
+  let tr = Image.image (fun t->t+d) in 
+  function 
+ Bare -> Bare
+|Early_stop(pt,n) ->  Early_stop(Point.translate d pt,n+d)
+|Early_increase(pt,n) ->  Early_increase(Point.translate d pt,n+d)
+|Lucky(pt,complement) -> Lucky(Point.translate d pt,tr complement)
+|Disjunction(l) -> Disjunction(Image.image (
+  fun (pt,complement) -> (Point.translate d pt,tr complement)
+) l);;
+
+
+let seek_non_translated_obvious_access helper point = 
+    match List.assoc_opt point helper with 
+      Some (sh1,mold1) -> P_Finished_computation(sh1,mold1)
+    | None ->
+       (
+          match  Hashtbl.find_opt main_hashtbl point with 
+          Some (sh2,mold2) -> P_Finished_computation(sh2,mold2)
+        | None -> 
+          let (P(fis,_upper_bound)) = point in 
+          let domain = Finite_int_set.to_usual_int_list fis in 
+          if Point.subset_is_admissible point domain 
+          then  P_Finished_computation(Bare,M([domain],domain))
+           else 
+            (
+              match Extra_tools.compute_opt point with 
+              Some answer2 -> P_Finished_computation(Bare,answer2)
+              |None -> P_Unfinished_computation [point]        
+            ) 
+         ) ;; 
+
+
+let seek_translated_obvious_access helper point =
+    let (d,translated_point) = Point.decompose_wrt_translation point in 
+    let res = seek_non_translated_obvious_access helper translated_point in 
+    match res with 
+    P_Unfinished_computation _ -> res
+    |P_Finished_computation(translated_sh,translated_mold)
+    -> 
+      P_Finished_computation(translated_sh,
+      Mold.translate (-d) translated_mold);;
+
+
+
+let long_case_in_inner_pusher_for_needed_subcomputations
+      helper (IW((pt,sols_for_preceding_point),(failures,_hopes))) to_be_treated 
+          (pt2,ext2,goal) other_hopes sols3=
+          let whole = i_merge (Point.supporting_set pt2) ext2 in 
+          if List.length(whole)<goal 
+          then let bulky=IW( (pt,sols_for_preceding_point),
+                     ((pt2,ext2)::failures,other_hopes)) in 
+                 (helper,Some bulky,to_be_treated)
+          else 
+          if Point.subset_is_admissible pt whole 
+          then let pair = (pt,(Lucky(pt2,ext2),M([whole],[]))) in  
+               (pair::helper,None,to_be_treated) 
+          else     
+          let m3=List.length(List.hd sols3) in 
+          if m3+List.length(ext2)<goal 
+          then let bulky=IW( (pt,sols_for_preceding_point),
+                   ((pt2,ext2)::failures,other_hopes)) in 
+               (helper,Some bulky,to_be_treated)
+          else 
+          let sols4 = List.filter_map (fun sol->
+              let increased_sol = i_merge sol ext2 in 
+              if Point.subset_is_admissible pt increased_sol 
+              then Some(increased_sol) 
+              else None    
+            ) sols3 in  
+          if sols4 <> []
+          then let pair = (pt,(Lucky(pt2,ext2),M(sols4,[]))) in  
+               (pair::helper,None,to_be_treated) 
+          else 
+          let n2 = Point.max pt2 in 
+          let pt5 = Point.remove_one_element pt2 n2 in 
+          let ext5 = i_insert n2 ext2 in  
+          if Point.subset_is_admissible pt ext5 
+          then  let bulky2=IW( (pt,sols_for_preceding_point),
+                (failures,(pt5,ext2,goal)::(pt5,ext5,goal)::other_hopes)) in 
+                (helper,Some bulky2,to_be_treated)
+          else  let bulky3=IW( (pt,sols_for_preceding_point),
+                (failures,(pt5,ext2,goal)::other_hopes)) in 
+                (helper,Some bulky3,to_be_treated)                         
+       ;; 
+
+
+let inner_pusher_for_needed_subcomputations
+      helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated =
+      match hopes with 
+      [] -> let pair = (pt,(Disjunction(failures),M(sols_for_preceding_point,[]))) in  
+            (pair::helper,None,to_be_treated) 
+     |(pt2,ext2,goal)::other_hopes ->
+       (
+        match seek_translated_obvious_access helper pt2 with 
+        P_Unfinished_computation(l) ->
+           (helper,None,l@(pt::to_be_treated))
+        |P_Finished_computation(_,M(sols3,_ext3)) -> 
+          long_case_in_inner_pusher_for_needed_subcomputations
+          helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated 
+              (pt2,ext2,goal) other_hopes sols3
+       );; 
+
+
+let first_analysis_on_new_item helper pt other_items= 
+  match seek_translated_obvious_access helper pt with 
+  P_Finished_computation(_,_) ->
+     (helper,None,other_items)
+  |P_Unfinished_computation _ -> 
+    let n = Point.max pt in 
+    let pt2 = Point.remove_one_element pt n in 
+    (
+      match seek_translated_obvious_access helper pt2 with 
+      P_Unfinished_computation(l) ->
+         (helper,None,l@(pt::other_items))
+      |P_Finished_computation(_,M(sols,ext)) ->
+          let ext2 = i_insert n ext in 
+          if not(Point.subset_is_admissible pt ext2) 
+          then let pair = (pt,(Early_stop(pt2,n),M(sols,[]))) in 
+              (pair::helper,None,other_items)
+          else
+          let sols2 = List.filter_map (fun sol->
+            let increased_sol = i_insert n sol in 
+            if Point.subset_is_admissible pt increased_sol 
+            then Some(increased_sol) 
+            else None    
+          ) sols in  
+          if sols2 <> [] 
+          then let pair = (pt,(Early_increase(pt2,n),M(sols2,i_insert n ext))) in 
+               (pair::helper,None,other_items)
+          else let goal = List.length(List.hd sols)+1 in 
+               (helper,Some(IW((pt,sols),([],[(pt2,[n],goal)]))),other_items)
+    )
+;;
+
+let pusher_for_needed_subcomputations
+    (helper,in_progress_opt,to_be_treated)= 
+    match in_progress_opt with 
+    Some(inner_walker) ->
+      inner_pusher_for_needed_subcomputations
+      helper inner_walker to_be_treated
+    |None ->
+      (
+        match to_be_treated with 
+        []->raise(Pusher_for_needed_subcomputations1_exn)
+        |item2 :: other_items ->
+             first_analysis_on_new_item helper item2 other_items 
+      ) ;;
+
+
+let rec iterator_for_needed_subcomputations walker = 
+  let (treated,in_progress_opt,to_be_treated)= walker in 
+  if (in_progress_opt,to_be_treated) = (None,[]) 
+  then List.rev(treated) 
+   else 
+  let new_walker = pusher_for_needed_subcomputations walker in      
+  iterator_for_needed_subcomputations new_walker ;;
+  
+let needed_subcomputations items = 
+      iterator_for_needed_subcomputations ([],None,items) ;;  
+      
+let ref_for_strict_mode = ref false ;;
+let ref_for_needed_data = ref [] ;; 
+
+let compute point = 
+   match seek_translated_obvious_access [] point with 
+   P_Finished_computation(sh,mold) -> (sh,mold)
+  |P_Unfinished_computation _ ->
+    let subcomps =  needed_subcomputations [point] in 
+    if !ref_for_strict_mode
+    then let _=(ref_for_needed_data :=  needed_subcomputations [point]) in 
+          raise Compute_strictly_exn
+    else List.assoc point subcomps ;;   
+
+
+end ;;   
