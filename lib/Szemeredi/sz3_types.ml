@@ -25,9 +25,4 @@ type point = P of finite_int_set * width ;;
 type medium_handle = 
       Mh_import  
     | Mh_cumulative of int 
-    | Mh_fork of int * int *int  ;; 
-
-type polished_result = PR of ((solution * (string list)) list) * extension_data ;;    
-
-type polished_pair = 
-   PP of point * ( (medium_handle option) * polished_result ) ;;    
+    | Mh_fork of int * int *int  ;;   
