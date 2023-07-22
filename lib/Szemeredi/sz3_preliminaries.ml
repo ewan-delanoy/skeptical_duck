@@ -123,8 +123,6 @@ module Finite_int_set = struct
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
-  exception Remove_one_element_exn of finite_int_set * int ;; 
-
   let remove_one_element (FIS(n,scrappers)) k=
        let new_scrappers = i_insert k scrappers in 
        if k <> n then FIS(n,new_scrappers) else 
@@ -225,366 +223,11 @@ module Extra_tools = struct
       | Some f -> f key ;;  
   
   end ;;  
+  
 
-  module Hashtbl_here = struct 
-
-    let greedy = ((Hashtbl.create 50) : (point, mold) Hashtbl.t) ;; 
-  
-    let add key answer =
-        Hashtbl.replace greedy key answer;;    
-  
-  end ;;
-  
 module Crude = struct 
 
-
-    module Peek_and_seek = struct 
-  
-      type peek_result = 
-      P_Success of mold  
-     |P_Failure
-     |P_Unfinished_computation of point list ;;
-  
-      let seek_non_translated_obvious_access helper point = 
-        match List.assoc_opt point helper with 
-          Some (mold1) -> Some(mold1)
-        | None ->
-           (
-              match  Hashtbl.find_opt Hashtbl_here.greedy point with 
-              Some (mold2) -> Some(mold2)
-            | None -> 
-              let (P(fis,_upper_bound)) = point in 
-              let domain = Finite_int_set.to_usual_int_list fis in 
-              if Point.subset_is_admissible point domain 
-              then  Some(M([domain],domain))
-               else 
-                (
-                  match Extra_tools.compute_opt point with 
-                  Some answer2 -> Some(answer2)
-                  |None -> None         
-                ) 
-             ) ;; 
-    
-       let seek_translated_obvious_access helper point =
-          let (d,translated_point) = Point.decompose_wrt_translation point in 
-          match seek_non_translated_obvious_access helper translated_point with 
-          None -> None 
-          |Some (translated_mold) -> 
-             Some(Mold.translate (-d) translated_mold);; 
-    
-        let peek_for_import_case helper point = 
-          let smaller_point = Point.decrement point  in 
-          match seek_non_translated_obvious_access helper smaller_point with 
-              None -> P_Unfinished_computation([smaller_point])  
-             |Some(M(sols2,ext2)) ->
-            let sols3 = List.filter_map (fun sol->
-                        if Point.subset_is_admissible point sol 
-                        then Some(sol) 
-                        else None    
-            ) sols2 in 
-            if sols3 <> [] 
-            then P_Success(M(sols3,ext2))  
-            else P_Failure
-        ;;
-    
-        let peek_for_cumulative_case helper point pivot= 
-          let smaller_point = Point.remove_one_element point pivot in 
-          match seek_non_translated_obvious_access helper smaller_point with 
-              None -> P_Unfinished_computation([smaller_point])  
-             |Some(M(sols2,ext2)) ->
-            let ext3 = i_insert pivot ext2 in 
-            if not(Point.subset_is_admissible point ext3) 
-            then P_Failure
-            else
-            let sols3 = List.filter_map (fun sol->
-              let increased_sol = i_insert pivot sol in 
-              if Point.subset_is_admissible point increased_sol 
-              then Some(increased_sol) 
-              else None    
-            ) sols2 in  
-            if sols3 <> [] 
-            then P_Success(M(sols3,ext3))  
-            else P_Failure
-        ;;
-    
-        let peek_for_easy_case helper point =
-           match seek_non_translated_obvious_access helper point with 
-           Some(answer1) -> (P_Success(answer1),false)
-           |None ->
-            let peek_res1=peek_for_import_case helper point in 
-            (match peek_res1 with 
-          
-               P_Success(_) -> (peek_res1,true)
-              |P_Unfinished_computation(_) -> (peek_res1,false)
-              |P_Failure -> 
-                 let n = Point.max point in 
-                  (peek_for_cumulative_case helper point n,true)
-                 
-             ) ;;
-       
-           let partition_candidates_in_fork_case helper candidates =
-            let candidates2 = Image.image (
-                fun triple -> 
-                  let (_smaller_point,_d,translated_smaller_point) = triple in 
-                  (triple,seek_non_translated_obvious_access helper translated_smaller_point)
-            ) candidates in 
-            let (bad_leaves,good_leaves) = 
-                List.partition (fun (_,opt) -> opt = None ) candidates2 in 
-            (Image.image (fun ((smaller_point,d,_translated_smaller_point),opt) -> 
-                  let translated_mold = Option.get opt in 
-                  (smaller_point,Mold.translate (-d) translated_mold)
-              ) good_leaves,
-             Image.image (fun ((_smaller_point,_d,translated_smaller_point),_)->
-              translated_smaller_point
-              ) bad_leaves) ;; 
-          
-          let peek_for_fork_case helper point (i,j,k)= 
-            let cstr = [i;j;k] in 
-            let candidates = Image.image (fun t->
-              let smaller_point=Point.remove_one_element point t in 
-              let (d,translated_smaller_point) = Point.decompose_wrt_translation smaller_point in 
-              (smaller_point,d,translated_smaller_point)
-            ) cstr in 
-            let (candidates2,bad_ones) = partition_candidates_in_fork_case helper candidates in 
-            if bad_ones <> []
-            then P_Unfinished_computation(bad_ones)
-            else   
-            let lengths = Image.image (fun (_cand,M(sols,_ext))->
-                    List.length(List.hd sols)) candidates2 in 
-            let indexed_lengths = Int_range.index_everything lengths in 
-            let (min1,min_indices) = Min.minimize_it_with_care snd indexed_lengths 
-            and (max1,max_indices) = Max.maximize_it_with_care snd indexed_lengths in 
-            if min1 = max1 
-            then let (M(sols4,_)) = snd(List.hd(List.rev candidates2)) in 
-                  P_Success(M(sols4,[]))
-            else let (max_idx,_) = List.hd(List.rev max_indices) in 
-                  let (M(sols5,_)) = snd(List.nth candidates2 (max_idx-1) ) in  
-                  let ext5 = Image.image (fun (k,_)->List.nth cstr (k-1)) min_indices in 
-                  P_Success(M(sols5,ext5));;    
-    
-    end ;;   
-      
-    module Compute = struct 
-  
-      exception Pusher_for_needed_subcomputations_exn_1 ;; 
-      exception Pusher_for_needed_subcomputations_exn_2 ;; 
-      exception Pusher_for_needed_subcomputations_exn_3 of point ;;  
-  
-      let pusher_for_needed_subcomputations (helper,to_be_treated) =
-          match to_be_treated with 
-           [] -> raise (Pusher_for_needed_subcomputations_exn_1) 
-          |point :: others ->
-            let (peek_res1,is_new) = Peek_and_seek.peek_for_easy_case helper point in 
-            (
-              match peek_res1 with 
-            | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
-                 (helper,new_to_be_treated@to_be_treated)
-            | Peek_and_seek.P_Success (answer) -> 
-                let new_helper =(
-                   if is_new 
-                   then (point,answer) :: helper 
-                   else helper 
-                ) in 
-                (new_helper,others)
-            | Peek_and_seek.P_Failure -> 
-              (
-                match Point.highest_constraint_opt point with 
-                 None -> raise (Pusher_for_needed_subcomputations_exn_2)
-                |Some(C(cstr)) ->
-                   let nth = (fun k->List.nth cstr (k-1)) in 
-                    match Peek_and_seek.peek_for_fork_case helper point (nth 1,nth 2,nth 3) with 
-                    | Peek_and_seek.P_Unfinished_computation (new_to_be_treated) -> 
-                         (helper,new_to_be_treated@to_be_treated)
-                    | Peek_and_seek.P_Success (answer) -> 
-                        ((point,answer) :: helper ,others)
-                    | Peek_and_seek.P_Failure ->  raise (Pusher_for_needed_subcomputations_exn_3(point))
-              )
-              );;      
-  
-          
-    
-       let rec iterator_for_needed_subcomputations walker = 
-          if snd walker = [] then List.rev(fst walker) else 
-          let new_walker = pusher_for_needed_subcomputations walker in      
-          iterator_for_needed_subcomputations new_walker ;;
-    
-       let needed_subcomputations items = 
-        iterator_for_needed_subcomputations ([],items) ;;  
-        
-       let compute_recursively_and_remember point = 
-          match Peek_and_seek.seek_translated_obvious_access [] point with 
-          Some(mold) -> mold
-          |None ->
-             let subcomps =  needed_subcomputations [point] in 
-             let _ = List.iter (fun (point,answer)->
-              Hashtbl_here.add point answer
-            ) subcomps in 
-             List.assoc point subcomps  ;;                           
-        
-    end ;;  
-  
-    let compute point = Compute.compute_recursively_and_remember point ;; 
-  
-  end ;;   
-  
-module  Highest_separator = struct 
-
   module Private = struct
-
-    type t = EP of point * (constraint_t list);;
-    
-    let usual_decomposition_for_bare_point_opt pt =
-       match Point.highest_constraint_opt pt with 
-        None -> None 
-       |Some (C l)-> 
-         let current_b = List.nth l 0 in 
-         let effective_w=(List.nth l 1)-current_b in 
-         let candidates=Int_range.descending_scale (
-             fun b->C[b;b+effective_w;b+2*effective_w]
-         ) 1 (current_b-1) in 
-         let (P(fis,_)) = pt in 
-         let domain = Finite_int_set.to_usual_int_list fis in 
-         let selected_candidates = List.filter (
-            fun (C l)->i_is_included_in l domain
-         ) candidates in 
-         Some(EP(P(fis,W(effective_w-1)),selected_candidates), C l)
-         ;;
-    
-    let usual_decomposition_opt (EP(pt,l_cstr)) = 
-       match l_cstr with 
-       [] -> usual_decomposition_for_bare_point_opt pt 
-      |highest :: others -> Some(EP(pt,others),highest) ;; 
-    
-    let remove_one_element (EP(pt,l_cstr)) t =
-       let smaller_pt = Point.remove_one_element pt t in 
-       EP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
-    
-    exception Measure_exn of t ;; 
-    
-    let measure = Memoized.recursive (fun old_f constrained_pt ->
-       let (EP(pt,l_cstr)) = constrained_pt in 
-       if l_cstr = []
-       then let (M(sols,_)) = Crude.compute pt in
-            List.length(List.hd sols) 
-       else match usual_decomposition_opt constrained_pt with 
-       None -> raise(Measure_exn(constrained_pt))
-       |Some(preceding_pt,C l) ->
-          Max.list ( Image.image (
-             fun t->old_f(remove_one_element preceding_pt t)
-          ) l )
-    ) ;; 
-    
-    let highest_separator_opt = Memoized.recursive (fun old_f constrained_pt ->
-       match usual_decomposition_opt constrained_pt with 
-        None -> None 
-       |Some(preceding_constrained_pt,cstr)->
-          if (measure constrained_pt) <> (measure preceding_constrained_pt) 
-          then Some cstr
-          else old_f preceding_constrained_pt
-    ) ;;   
-    
-    end ;; 
-    
-    let opt pt = Private.highest_separator_opt (Private.EP(pt,[])) ;;   
-
-end ;;  
-  
-  
-module Medium = struct 
-  module Private = struct   
-
-
- let measure point =
-   let (M(sols,_)) = Crude.compute point in 
-   List.length(List.hd sols) ;;  
- 
-  let rigorous_test_for_import_case old_point = 
-    let (W w)=Point.width(old_point) in 
-    if w<2 then false else
-    let simpler_point = Point.decrement old_point in 
-    (measure simpler_point)=(measure old_point) ;; 
-
-
-let rigorous_quest_for_individual_cumulative_case old_point pivot = 
-  let simpler_point = Point.remove_one_element old_point pivot in 
-  if (measure simpler_point)=(measure old_point)-1 
-  then Some(pivot)  
-  else None ;;
-
-let rigorous_quest_for_cumulative_case old_point =
-    let domain = Point.supporting_set old_point in 
-    List.find_map (rigorous_quest_for_individual_cumulative_case old_point) domain ;; 
-
-
- let handle_opt point =
-  match Highest_separator.opt point with 
-  None -> None
-  |Some(C cstr)-> 
-  if rigorous_test_for_import_case point 
-  then Some(Mh_import) 
-  else
-  (match rigorous_quest_for_cumulative_case point with 
-    Some(pivot)->Some(Mh_cumulative(pivot))
-    |None ->
-        let c = (fun k->List.nth cstr (k-1))  in 
-        Some(Mh_fork(c 1,c 2,c 3))
-  );;
-
-let all_solutions =Memoized.recursive(fun old_f point -> 
-  let domain = Point.supporting_set point
-  and is_ok = Point.subset_is_admissible point in 
-  match handle_opt point with 
-   None -> [domain]
-  |Some(handle) -> 
-    let compute_below = (fun t->
-          old_f (Point.remove_one_element point t)
-    ) in 
-    match handle with 
-     Mh_cumulative(pivot)->
-          List.filter_map (
-             fun sol->
-               let new_sol = i_insert pivot sol in 
-               if is_ok new_sol then Some new_sol else None
-          )(compute_below pivot) 
-    |Mh_fork(i,j,k)->
-         il_fold_merge(Image.image compute_below [i;j;k])
-    |Mh_import ->  
-         let smaller_point = Point.decrement point in 
-         List.filter is_ok (old_f smaller_point)
-    );;        
-
-  
-   let helper_for_canonical_solution (sols,n) =
-     let (with_n,without_n) = List.partition (List.mem n) sols in 
-     if without_n=[]
-     then (true,Image.image(i_outsert n) with_n) 
-    else (false,without_n) ;;      
-    
-    let rec iterator_for_canonical_solution (to_be_treated,n,treated) =
-      if n<1 then treated else  
-      let (n_needed,to_be_treated2) = helper_for_canonical_solution (to_be_treated,n) in 
-      let treated2 = (if n_needed then n::treated else treated) in
-      iterator_for_canonical_solution (to_be_treated2,n-1,treated2) ;; 
-
-    let canonical_solution point =
-       let all_sols = all_solutions point 
-       and n = Point.max point in 
-       iterator_for_canonical_solution (all_sols,n,[]) ;; 
-    
-    
-
-end ;;   
-
-let all_solutions = Private.all_solutions ;; 
-let canonical_solution = Private.canonical_solution ;;
-let handle_opt = Private.handle_opt ;; 
-
-end ;;
-  
-
-
-
-module SecondCrude = struct 
 
   type shadow =
      Bare
@@ -798,5 +441,164 @@ let compute point =
           raise Compute_strictly_exn
     else List.assoc point subcomps ;;   
 
+  end ;; 
+
+let compute = Private.compute ;;  
 
 end ;;   
+
+
+module  Highest_separator = struct 
+
+  module Private = struct
+
+    type t = EP of point * (constraint_t list);;
+    
+    let usual_decomposition_for_bare_point_opt pt =
+       match Point.highest_constraint_opt pt with 
+        None -> None 
+       |Some (C l)-> 
+         let current_b = List.nth l 0 in 
+         let effective_w=(List.nth l 1)-current_b in 
+         let candidates=Int_range.descending_scale (
+             fun b->C[b;b+effective_w;b+2*effective_w]
+         ) 1 (current_b-1) in 
+         let (P(fis,_)) = pt in 
+         let domain = Finite_int_set.to_usual_int_list fis in 
+         let selected_candidates = List.filter (
+            fun (C l)->i_is_included_in l domain
+         ) candidates in 
+         Some(EP(P(fis,W(effective_w-1)),selected_candidates), C l)
+         ;;
+    
+    let usual_decomposition_opt (EP(pt,l_cstr)) = 
+       match l_cstr with 
+       [] -> usual_decomposition_for_bare_point_opt pt 
+      |highest :: others -> Some(EP(pt,others),highest) ;; 
+    
+    let remove_one_element (EP(pt,l_cstr)) t =
+       let smaller_pt = Point.remove_one_element pt t in 
+       EP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+    
+    exception Measure_exn of t ;; 
+    
+    let measure = Memoized.recursive (fun old_f constrained_pt ->
+       let (EP(pt,l_cstr)) = constrained_pt in 
+       if l_cstr = []
+       then let (_,M(sols,_)) = Crude.compute pt in
+            List.length(List.hd sols) 
+       else match usual_decomposition_opt constrained_pt with 
+       None -> raise(Measure_exn(constrained_pt))
+       |Some(preceding_pt,C l) ->
+          Max.list ( Image.image (
+             fun t->old_f(remove_one_element preceding_pt t)
+          ) l )
+    ) ;; 
+    
+    let highest_separator_opt = Memoized.recursive (fun old_f constrained_pt ->
+       match usual_decomposition_opt constrained_pt with 
+        None -> None 
+       |Some(preceding_constrained_pt,cstr)->
+          if (measure constrained_pt) <> (measure preceding_constrained_pt) 
+          then Some cstr
+          else old_f preceding_constrained_pt
+    ) ;;   
+    
+    end ;; 
+    
+    let opt pt = Private.highest_separator_opt (Private.EP(pt,[])) ;;   
+
+end ;;  
+  
+  
+module Medium = struct 
+  module Private = struct   
+
+
+ let measure point =
+   let (_,M(sols,_)) = Crude.compute point in 
+   List.length(List.hd sols) ;;  
+ 
+  let rigorous_test_for_import_case old_point = 
+    let (W w)=Point.width(old_point) in 
+    if w<2 then false else
+    let simpler_point = Point.decrement old_point in 
+    (measure simpler_point)=(measure old_point) ;; 
+
+
+let rigorous_quest_for_individual_cumulative_case old_point pivot = 
+  let simpler_point = Point.remove_one_element old_point pivot in 
+  if (measure simpler_point)=(measure old_point)-1 
+  then Some(pivot)  
+  else None ;;
+
+let rigorous_quest_for_cumulative_case old_point =
+    let domain = Point.supporting_set old_point in 
+    List.find_map (rigorous_quest_for_individual_cumulative_case old_point) domain ;; 
+
+
+ let handle_opt point =
+  match Highest_separator.opt point with 
+  None -> None
+  |Some(C cstr)-> 
+  if rigorous_test_for_import_case point 
+  then Some(Mh_import) 
+  else
+  (match rigorous_quest_for_cumulative_case point with 
+    Some(pivot)->Some(Mh_cumulative(pivot))
+    |None ->
+        let c = (fun k->List.nth cstr (k-1))  in 
+        Some(Mh_fork(c 1,c 2,c 3))
+  );;
+
+let all_solutions =Memoized.recursive(fun old_f point -> 
+  let domain = Point.supporting_set point
+  and is_ok = Point.subset_is_admissible point in 
+  match handle_opt point with 
+   None -> [domain]
+  |Some(handle) -> 
+    let compute_below = (fun t->
+          old_f (Point.remove_one_element point t)
+    ) in 
+    match handle with 
+     Mh_cumulative(pivot)->
+          List.filter_map (
+             fun sol->
+               let new_sol = i_insert pivot sol in 
+               if is_ok new_sol then Some new_sol else None
+          )(compute_below pivot) 
+    |Mh_fork(i,j,k)->
+         il_fold_merge(Image.image compute_below [i;j;k])
+    |Mh_import ->  
+         let smaller_point = Point.decrement point in 
+         List.filter is_ok (old_f smaller_point)
+    );;        
+
+  
+   let helper_for_canonical_solution (sols,n) =
+     let (with_n,without_n) = List.partition (List.mem n) sols in 
+     if without_n=[]
+     then (true,Image.image(i_outsert n) with_n) 
+    else (false,without_n) ;;      
+    
+    let rec iterator_for_canonical_solution (to_be_treated,n,treated) =
+      if n<1 then treated else  
+      let (n_needed,to_be_treated2) = helper_for_canonical_solution (to_be_treated,n) in 
+      let treated2 = (if n_needed then n::treated else treated) in
+      iterator_for_canonical_solution (to_be_treated2,n-1,treated2) ;; 
+
+    let canonical_solution point =
+       let all_sols = all_solutions point 
+       and n = Point.max point in 
+       iterator_for_canonical_solution (all_sols,n,[]) ;; 
+    
+    
+
+end ;;   
+
+let all_solutions = Private.all_solutions ;; 
+let canonical_solution = Private.canonical_solution ;;
+let handle_opt = Private.handle_opt ;; 
+
+end ;;
+  
