@@ -629,10 +629,15 @@ let all_solutions =Memoized.recursive(fun old_f point ->
             let l = set_of_descendants pt in 
             helper_for_all_descendants 
                (point_insert pt treated,l@others) ;;
+
+     let all_descendants point =
+        let temp1 = helper_for_all_descendants ([],[point]) in 
+        Image.image (fun pt->(pt,Option.get(handle_opt pt)) ) temp1;;          
               
 
 end ;;   
 
+let all_descendants = Private.all_descendants ;; 
 let all_solutions = Private.all_solutions ;; 
 let canonical_solution = Private.canonical_solution ;;
 let handle_opt = Private.handle_opt ;; 
