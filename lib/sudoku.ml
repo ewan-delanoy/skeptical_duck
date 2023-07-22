@@ -33,7 +33,7 @@ let all = Int_range.scale (fun k-> C k) 1 81 ;;
 
 end ;;  
 
-module BoxBasics = struct
+module Box = struct
 
 module Private = struct
 
@@ -58,9 +58,10 @@ let nth = Memoized.make(fun k->
    then nth_nondual(k) 
    else nth_dual k
   );;
-let all = Int_range.scale nth 1 54 ;;
+
 end ;;
 
+let all = Int_range.scale Private.nth 1 54 ;;
 let nth = Private.nth ;; 
 
 end ;;
@@ -68,5 +69,19 @@ end ;;
 module Visible_Grid = struct 
 
 let eval (VG gr) (C k) = Array.get gr k ;; 
+
+end ;;  
+
+module State = struct 
+
+module Private = struct 
+
+let eval_nondual_box_at_cell_index st cells cell_idx = 
+     Visible_Grid.eval st.visible (List.nth cells (cell_idx-1)) ;;
+
+let eval_dual_box_at_cell_index st cells cell_idx = 
+      Visible_Grid.eval st.visible (List.nth cells (cell_idx-1)) ;;     
+
+end ;;  
 
 end ;;  
