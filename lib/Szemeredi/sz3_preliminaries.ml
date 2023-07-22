@@ -117,6 +117,8 @@ module Finite_int_set = struct
     ) in 
     (d,Private.of_usual_int_list core_domain) ;; 
 
+  let empty_set = FIS(0,[]) ;;
+
   let max (FIS(n,_)) = n ;; 
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
@@ -126,6 +128,9 @@ module Finite_int_set = struct
   let remove_one_element (FIS(n,scrappers)) k=
        let new_scrappers = i_insert k scrappers in 
        if k <> n then FIS(n,new_scrappers) else 
+       if scrappers = Int_range.range 1 (n-1)
+       then empty_set
+       else   
        let new_z =  Private.to_usual_int_list (FIS(n-1,new_scrappers)) in 
        let new_max = List.hd(List.rev new_z) in 
        FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
@@ -134,7 +139,8 @@ module Finite_int_set = struct
   
   remove_one_element (FIS(10,[3;7;8;9])) 10 ;;
   remove_one_element (FIS(3,[])) 3 ;;
-  
+  remove_one_element (FIS(1,[])) 1 ;;
+
   *)
 
   let to_usual_int_list = Private.to_usual_int_list ;; 
@@ -649,7 +655,18 @@ let seek_translated_obvious_access helper point =
       P_Finished_computation(translated_sh,
       Mold.translate (-d) translated_mold);;
 
-
+let reduce_by_removing_forbidden_elements pt (pt5,ext5) =
+    let domain=List.rev(Point.supporting_set pt5) in 
+    let rec tempf=(
+      fun (remaining_elts,remaining_point) ->
+        match remaining_elts with
+        [] -> remaining_point
+       |elt :: other_elts ->
+         if Point.subset_is_admissible pt (i_insert elt ext5)
+         then remaining_point
+         else tempf(other_elts,Point.remove_one_element remaining_point elt)  
+    ) in 
+    tempf(domain,pt5);;
 
 let long_case_in_inner_pusher_for_needed_subcomputations
       helper (IW((pt,sols_for_preceding_point),(failures,_hopes))) to_be_treated 
@@ -684,8 +701,9 @@ let long_case_in_inner_pusher_for_needed_subcomputations
           let pt5 = Point.remove_one_element pt2 n2 in 
           let ext5 = i_insert n2 ext2 in  
           if Point.subset_is_admissible pt ext5 
-          then  let bulky2=IW( (pt,sols_for_preceding_point),
-                (failures,(pt5,ext2,goal)::(pt5,ext5,goal)::other_hopes)) in 
+          then  let pt6 = reduce_by_removing_forbidden_elements pt (pt5,ext5) in 
+                let bulky2=IW( (pt,sols_for_preceding_point),
+                (failures,(pt5,ext2,goal)::(pt6,ext5,goal)::other_hopes)) in 
                 (helper,Some bulky2,to_be_treated)
           else  let bulky3=IW( (pt,sols_for_preceding_point),
                 (failures,(pt5,ext2,goal)::other_hopes)) in 
