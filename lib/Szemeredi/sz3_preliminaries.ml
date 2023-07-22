@@ -62,7 +62,7 @@ let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
     if trial1<>Total_ordering_result_t.Equal then trial1 else 
     fis_order fis1 fis2
   ): point Total_ordering_t.t);;
-
+let point_insert = Ordered.insert point_order ;;
 
 module Constraint = struct 
 
@@ -615,6 +615,21 @@ let all_solutions =Memoized.recursive(fun old_f point ->
                Image.image (Point.remove_one_element point) [i;j;k]
         ) ;;
 
+     let set_of_descendants point =
+        List.filter (
+           fun pt -> 
+            let (W w)=Point.width(pt) in 
+            (w>1) && (Point.is_nontrivial pt)
+        ) (naive_set_of_descendants point) ;;
+
+     let rec helper_for_all_descendants (treated,to_be_treated) =
+         match to_be_treated with 
+          [] -> treated 
+         |pt::others ->
+            let l = set_of_descendants pt in 
+            helper_for_all_descendants 
+               (point_insert pt treated,l@others) ;;
+              
 
 end ;;   
 
