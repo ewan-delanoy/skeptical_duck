@@ -24,7 +24,7 @@ type point = Sz3_types.point = P of finite_int_set * width ;;
 type medium_handle = Sz3_types.medium_handle = 
       Mh_import  
     | Mh_cumulative of int 
-    | Mh_fork of int * int *int  ;; 
+    | Mh_fork of int * int * int  ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_insert = Ordered.insert i_order ;;
@@ -49,6 +49,19 @@ let il_sort = Ordered.sort il_order ;;
 let t_order = Total_ordering.triple_product 
    i_order i_order (Total_ordering.silex_for_intlists) ;;
 
+let fis_order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
+    let trial1 = i_order n1 n2 in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else 
+    let trial2 = i_order (List.length scr2) (List.length scr1) in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else
+      Total_ordering.silex_for_intlists scr1 scr2
+  ): finite_int_set Total_ordering_t.t);;
+
+let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
+    let trial1 = i_order w1 w2 in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else 
+    fis_order fis1 fis2
+  ): point Total_ordering_t.t);;
 
 module Constraint = struct 
 
