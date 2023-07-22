@@ -63,6 +63,7 @@ let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
     fis_order fis1 fis2
   ): point Total_ordering_t.t);;
 
+
 module Constraint = struct 
 
 let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
@@ -168,6 +169,10 @@ module Point = struct
     if w<1 then None else
     Find_highest_constraint.for_maximal_width 
       (W w,Finite_int_set.to_usual_int_list fis);;
+
+  let is_nontrivial (P(fis,w)) =
+    let domain = Finite_int_set.to_usual_int_list fis in
+    ((Find_highest_constraint.for_maximal_width (w,domain)) <> None);;
 
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
@@ -598,7 +603,18 @@ let all_solutions =Memoized.recursive(fun old_f point ->
        and n = Point.max point in 
        iterator_for_canonical_solution (all_sols,n,[]) ;; 
     
-    
+    let naive_set_of_descendants point = 
+       match handle_opt point with
+        None -> []
+       |Some(handle) -> 
+        (
+          match handle with 
+            Mh_import -> [Point.decrement point]
+           |Mh_cumulative(pivot) ->[Point.remove_one_element point pivot]
+           |Mh_fork(i,j,k)->
+               Image.image (Point.remove_one_element point) [i;j;k]
+        ) ;;
+
 
 end ;;   
 
