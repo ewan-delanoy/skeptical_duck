@@ -232,7 +232,7 @@ let cut_using_threshhold (AL assumptions) threshhold=
 
 let to_string (AL l) =
    let temp1 = Image.image (fun (c,k)->(Cell.to_short_string c)^" -> "^(string_of_int k)) l in 
-   let temp2 = (if l=[] then "None" else String.concat "," temp1) in
+   let temp2 = (if l=[] then "None." else String.concat "," temp1) in
    "Assumptions : "^temp2 ;; 
 
 
@@ -330,7 +330,15 @@ module Enhanced_Grid = struct
         visible = Visible_Grid.set (old_eg.visible) c only_possible_value_for_c;
         prerequisites =Prerequisites.add (old_eg.prerequisites) c final_prerequired;
       } ;; 
-   
+  
+  exception  Enforce_deduction_at_cell_exn of cell ;;    
+
+  let enforce_deduction_at_cell old_eg cell =
+     let (temp1,_) = immediate_deductions old_eg in 
+     match List.find_opt (fun ((cell2,_),_) -> cell2=cell) temp1 with 
+      None -> raise(Enforce_deduction_at_cell_exn(cell))
+      |Some(_,l_gcell) ->  enforce_deduction old_eg (List.hd l_gcell) ;;     
+
   let enforce_deductions eg gcells =
       List.fold_left enforce_deduction eg gcells ;;
 
@@ -350,10 +358,11 @@ module Enhanced_Grid = struct
     
 
   let to_string eg =
+
      String.concat "\n"
-      [Visible_Grid.to_string eg.visible;
+      ["\n";Visible_Grid.to_string eg.visible;
        Assumption_list.to_string eg.assumptions;
-       Prerequisites.to_string eg.prerequisites]
+       Prerequisites.to_string eg.prerequisites;"\n"]
 
   let display eg = (print_string(to_string eg);flush stdout) ;;    
 
@@ -370,6 +379,17 @@ module Enhanced_Grid = struct
 
       } ;;     
  
+  let rec helper_for_automatization (eg,deductions) =
+      let (temp1,_) = immediate_deductions eg in 
+      if temp1 = []
+      then (eg,List.rev deductions)
+      else 
+      let ((c,v),l) = List.hd temp1 in 
+      let gcell = List.hd l in
+      helper_for_automatization(enforce_deduction eg gcell,(c,v)::deductions)  ;;    
+      
+  let automatize eg = helper_for_automatization (eg,[]) ;;    
+
 end ;;  
 
 module Walker = struct 
@@ -403,13 +423,21 @@ let enforce_all_current_deductions () =
     set_and_show new_state ;;    
 
 let cut_using_threshhold k =
-      let new_state = Enhanced_Grid.cut_using_threshhold (!main_ref) k in 
-      set_and_show new_state ;;   
+  let new_state = Enhanced_Grid.cut_using_threshhold (!main_ref) k in 
+  set_and_show new_state ;;   
+  
+  
+let deduce_and_see i j = 
+  let new_state = Enhanced_Grid.enforce_deduction_at_cell (!main_ref) (C(i,j)) in 
+  let _ = (main_ref:=new_state;Enhanced_Grid.display new_state) in 
+  Enhanced_Grid.step new_state ;; 
+     
 
 end ;;  
 
+
 let c = Private.cut_using_threshhold ;; 
-let d = Private.enforce_all_current_deductions ;; 
+let d = Private.deduce_and_see ;; 
 let i = Private.initialize ;;
 let s = Private.step ;; 
 
