@@ -21,6 +21,9 @@ type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
 
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
+type point_with_extra_constraints = Sz3_types.point_with_extra_constraints = 
+  PEC of point * (constraint_t list);;
+
 type medium_handle = Sz3_types.medium_handle = 
       Mh_import  
     | Mh_cumulative of int 
@@ -197,7 +200,7 @@ module Point = struct
 
 end ;;   
 
-module Extra_tools = struct 
+module Precomputed = struct 
 
   module Width_one = struct 
   
@@ -292,7 +295,7 @@ let seek_non_translated_obvious_access helper point =
           then  P_Finished_computation(Bare,M([domain],domain))
            else 
             (
-              match Extra_tools.compute_opt point with 
+              match Precomputed.compute_opt point with 
               Some answer2 -> P_Finished_computation(Bare,answer2)
               |None -> P_Unfinished_computation [point]        
             ) 
@@ -463,7 +466,7 @@ module  Highest_separator = struct
 
   module Private = struct
 
-    type t = EP of point * (constraint_t list);;
+    type t = IEP of point * (constraint_t list);;
     
     let usual_decomposition_for_bare_point_opt pt =
        match Point.highest_constraint_opt pt with 
@@ -479,22 +482,22 @@ module  Highest_separator = struct
          let selected_candidates = List.filter (
             fun (C l)->i_is_included_in l domain
          ) candidates in 
-         Some(EP(P(fis,W(effective_w-1)),selected_candidates), C l)
+         Some(IEP(P(fis,W(effective_w-1)),selected_candidates), C l)
          ;;
     
-    let usual_decomposition_opt (EP(pt,l_cstr)) = 
+    let usual_decomposition_opt (IEP(pt,l_cstr)) = 
        match l_cstr with 
        [] -> usual_decomposition_for_bare_point_opt pt 
-      |highest :: others -> Some(EP(pt,others),highest) ;; 
+      |highest :: others -> Some(IEP(pt,others),highest) ;; 
     
-    let remove_one_element (EP(pt,l_cstr)) t =
+    let remove_one_element (IEP(pt,l_cstr)) t =
        let smaller_pt = Point.remove_one_element pt t in 
-       EP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+       IEP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
     
     exception Measure_exn of t ;; 
     
     let measure = Memoized.recursive (fun old_f constrained_pt ->
-       let (EP(pt,l_cstr)) = constrained_pt in 
+       let (IEP(pt,l_cstr)) = constrained_pt in 
        if l_cstr = []
        then let (_,M(sols,_)) = Crude.compute pt in
             List.length(List.hd sols) 
@@ -517,7 +520,7 @@ module  Highest_separator = struct
     
     end ;; 
     
-    let opt pt = Private.highest_separator_opt (Private.EP(pt,[])) ;;   
+    let opt pt = Private.highest_separator_opt (Private.IEP(pt,[])) ;;   
 
 end ;;  
   

@@ -153,6 +153,9 @@ end ;;
 
 module Generalized_Cell = struct 
 
+  let is_abstract gcell= match gcell with 
+  Gc_Cell(_) -> false
+  |Gc_From_DualBox(_,_) -> true ;;   
   
   let eval vg = function
    Gc_Cell(cell)->Visible_Grid.eval vg cell 
@@ -176,9 +179,7 @@ end ;;
 
 module Possible = struct 
 
-let is_concrete gcell= match gcell with 
-  Gc_Cell(_) -> true
-  |Gc_From_DualBox(_,_) -> false ;;   
+
   
 let reduce_to_standard (gcell,vaal)= match gcell with 
 Gc_Cell(cell) -> (cell,vaal) 
@@ -191,12 +192,22 @@ let possible_fillers vg gcell =
    let (possible_ones,impossible_ones) =
       List.partition (fun (_,competitors)->competitors=[]) temp1 in 
    (gcell,(Image.image fst possible_ones,impossible_ones)) ;;   
- 
+
 
 let compute_all_possible_fillers =Memoized.make(fun vg ->
    Image.image (possible_fillers vg) Generalized_Cell.all );;
   
-  
+let expanded_possibilities vg = 
+   let temp1 = compute_all_possible_fillers vg in 
+   let temp2 = List.filter_map (
+     fun (gcell,(vals,_))->
+      match gcell with 
+      Gc_From_DualBox(_,_) -> None
+      |Gc_Cell(cell) -> Some(cell,vals)
+   ) temp1 in 
+   List.flatten (Image.image (fun (cell,vals)->Image.image (fun vaal->(cell,vaal)) vals) temp2) ;; 
+   
+
 let incoming_contradictions vg = List.filter (
   fun (_g_cell,(possibilities,_))->(possibilities=[])
 ) (compute_all_possible_fillers vg) ;; 
@@ -217,6 +228,17 @@ let easiest_cells vg =
    Image.image (
     fun (g_cell,(possibilities,_))-> (g_cell,possibilities)
    ) temp2 ;;
+
+let hidden_impossibilities vg = 
+   let temp1 = expanded_possibilities vg in 
+   List.filter (
+     fun (cell,k)->
+       if (Visible_Grid.eval vg cell)<>0
+       then false
+       else 
+       let new_vg = Visible_Grid.set vg cell k in 
+       incoming_contradictions(new_vg)<>[]
+   ) temp1 ;;
 
 
 end ;;  
@@ -427,17 +449,16 @@ let cut_using_threshhold k =
   set_and_show new_state ;;   
   
   
-let deduce_and_see i j = 
-  let new_state = Enhanced_Grid.enforce_deduction_at_cell (!main_ref) (C(i,j)) in 
+let automate_and_see () = 
+  let (new_state,_) = Enhanced_Grid.automatize (!main_ref)  in 
   let _ = (main_ref:=new_state;Enhanced_Grid.display new_state) in 
   Enhanced_Grid.step new_state ;; 
      
 
 end ;;  
 
-
+let a = Private.automate_and_see ;; 
 let c = Private.cut_using_threshhold ;; 
-let d = Private.deduce_and_see ;; 
 let i = Private.initialize ;;
 let s = Private.step ;; 
 

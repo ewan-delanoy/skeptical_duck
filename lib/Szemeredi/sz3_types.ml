@@ -22,6 +22,8 @@ type mold = M of (solution list) * extension_data ;;
 
 type point = P of finite_int_set * width ;; 
 
+type point_with_extra_constraints = PEC of point * (constraint_t list);;
+
 type medium_handle = 
       Mh_import  
     | Mh_cumulative of int 
