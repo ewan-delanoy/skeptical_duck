@@ -242,8 +242,7 @@ module Precomputed = struct
 module Crude_analysis_on_bare_point = struct 
 
   type shadow =
-     Bare
-    |Early_stop of point * int 
+     Early_stop of point * int 
     |Early_increase of point * int  
     |Lucky of point * (int list)
     |Disjunction of (point * (int list)) list;; 
@@ -253,7 +252,7 @@ module Crude_analysis_on_bare_point = struct
    
 
   type partial_result =
-    P_Finished_computation of shadow * mold  
+    P_Finished_computation of (shadow option) * mold  
    |P_Unfinished_computation of point list ;;
 
   type inner_walker = IW of 
@@ -269,19 +268,21 @@ module Crude_analysis_on_bare_point = struct
   exception Compute_strictly_exn ;; 
   exception Pusher_for_needed_subcomputations1_exn ;; 
 
-  let main_hashtbl =   ((Hashtbl.create 50) : (point, shadow * mold) Hashtbl.t) ;; 
+  let main_hashtbl =   ((Hashtbl.create 50) : (point, (shadow option) * mold) Hashtbl.t) ;; 
 
 let translate_shadow d = 
   let tr = Image.image (fun t->t+d) in 
   function 
- Bare -> Bare
-|Early_stop(pt,n) ->  Early_stop(Point.translate d pt,n+d)
+ Early_stop(pt,n) ->  Early_stop(Point.translate d pt,n+d)
 |Early_increase(pt,n) ->  Early_increase(Point.translate d pt,n+d)
 |Lucky(pt,complement) -> Lucky(Point.translate d pt,tr complement)
 |Disjunction(l) -> Disjunction(Image.image (
   fun (pt,complement) -> (Point.translate d pt,tr complement)
 ) l);;
 
+let translate_shadow_option d = function  
+  None -> None 
+  |Some(shadow) -> Some(translate_shadow d shadow);;
 
 let seek_non_translated_obvious_access helper point = 
     match List.assoc_opt point helper with 
@@ -294,11 +295,11 @@ let seek_non_translated_obvious_access helper point =
           let (P(fis,_upper_bound)) = point in 
           let domain = Finite_int_set.to_usual_int_list fis in 
           if Point.subset_is_admissible point domain 
-          then  P_Finished_computation(Bare,M([domain],domain))
+          then  P_Finished_computation(None,M([domain],domain))
            else 
             (
               match Precomputed.compute_opt point with 
-              Some answer2 -> P_Finished_computation(Bare,answer2)
+              Some answer2 -> P_Finished_computation(None,answer2)
               |None -> P_Unfinished_computation [point]        
             ) 
          ) ;; 
@@ -337,7 +338,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
                  (helper,Some bulky,to_be_treated)
           else 
           if Point.subset_is_admissible pt whole 
-          then let pair = (pt,(Lucky(pt2,ext2),M([whole],[]))) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),M([whole],[]))) in  
                (pair::helper,None,to_be_treated) 
           else     
           let m3=List.length(List.hd sols3) in 
@@ -353,7 +354,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
               else None    
             ) sols3 in  
           if sols4 <> []
-          then let pair = (pt,(Lucky(pt2,ext2),M(sols4,[]))) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),M(sols4,[]))) in  
                (pair::helper,None,to_be_treated) 
           else 
           let n2 = Point.max pt2 in 
@@ -373,7 +374,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
 let inner_pusher_for_needed_subcomputations
       helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated =
       match hopes with 
-      [] -> let pair = (pt,(Disjunction(failures),M(sols_for_preceding_point,[]))) in  
+      [] -> let pair = (pt,(Some(Disjunction(failures)),M(sols_for_preceding_point,[]))) in  
             (pair::helper,None,to_be_treated) 
      |(pt2,ext2,goal)::other_hopes ->
        (
@@ -401,7 +402,7 @@ let first_analysis_on_new_item helper pt other_items=
       |P_Finished_computation(_,M(sols,ext)) ->
           let ext2 = i_insert n ext in 
           if not(Point.subset_is_admissible pt ext2) 
-          then let pair = (pt,(Early_stop(pt2,n),M(sols,[]))) in 
+          then let pair = (pt,(Some(Early_stop(pt2,n)),M(sols,[]))) in 
               (pair::helper,None,other_items)
           else
           let sols2 = List.filter_map (fun sol->
@@ -411,7 +412,7 @@ let first_analysis_on_new_item helper pt other_items=
             else None    
           ) sols in  
           if sols2 <> [] 
-          then let pair = (pt,(Early_increase(pt2,n),M(sols2,i_insert n ext))) in 
+          then let pair = (pt,(Some(Early_increase(pt2,n)),M(sols2,i_insert n ext))) in 
                (pair::helper,None,other_items)
           else let goal = List.length(List.hd sols)+1 in 
                (helper,Some(IW((pt,sols),([],[(pt2,[n],goal)]))),other_items)
