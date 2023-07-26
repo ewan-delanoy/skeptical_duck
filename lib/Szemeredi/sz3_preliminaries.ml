@@ -30,6 +30,7 @@ type medium_handle = Sz3_types.medium_handle =
     | Mh_fork of int * int * int  ;; 
 
 let i_order = Total_ordering.for_integers ;;
+let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_merge = Ordered.merge i_order ;;
@@ -133,7 +134,7 @@ module Finite_int_set = struct
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
-  let remove_one_element (FIS(n,scrappers)) k=
+  let remove_element (FIS(n,scrappers)) k=
        let new_scrappers = i_insert k scrappers in 
        if k <> n then FIS(n,new_scrappers) else 
        if scrappers = Int_range.range 1 (n-1)
@@ -145,9 +146,9 @@ module Finite_int_set = struct
 
   (*
   
-  remove_one_element (FIS(10,[3;7;8;9])) 10 ;;
-  remove_one_element (FIS(3,[])) 3 ;;
-  remove_one_element (FIS(1,[])) 1 ;;
+  remove_element (FIS(10,[3;7;8;9])) 10 ;;
+  remove_element (FIS(3,[])) 3 ;;
+  remove_element (FIS(1,[])) 1 ;;
 
   *)
 
@@ -179,14 +180,16 @@ module Point = struct
 
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
-  let remove_one_element (P(fis,w)) pivot = 
-    let new_fis = Finite_int_set.remove_one_element fis pivot in 
+  let remove_element (P(fis,w)) pivot = 
+    let new_fis = Finite_int_set.remove_element fis pivot in 
     let new_w = (
       match Find_highest_constraint.for_maximal_width (w,Finite_int_set.to_usual_int_list new_fis) with
       None -> 1
       |Some(C(l))->(List.nth l 1)-(List.nth l 0)
     ) in 
     P(new_fis,W new_w) ;;
+
+  let remove_elements pt pivots = List.fold_left remove_element pt pivots ;;   
 
   let supporting_set (P(fis,_)) = Finite_int_set.to_usual_int_list fis ;; 
 
@@ -197,6 +200,7 @@ module Point = struct
       P(Finite_int_set.translate d fis,w);;
 
   let width (P(_,w)) = w ;; 
+
 
 end ;;   
 
@@ -348,7 +352,7 @@ let reduce_by_removing_forbidden_elements pt (pt5,ext5) =
        |elt :: other_elts ->
          if Point.subset_is_admissible pt (i_insert elt ext5)
          then remaining_point
-         else tempf(other_elts,Point.remove_one_element remaining_point elt)  
+         else tempf(other_elts,Point.remove_element remaining_point elt)  
     ) in 
     tempf(domain,pt5);;
 
@@ -382,7 +386,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
                (pair::helper,None,to_be_treated) 
           else 
           let n2 = Point.max pt2 in 
-          let pt5 = Point.remove_one_element pt2 n2 in 
+          let pt5 = Point.remove_element pt2 n2 in 
           let ext5 = i_insert n2 ext2 in  
           if Point.subset_is_admissible pt ext5 
           then  let pt6 = reduce_by_removing_forbidden_elements pt (pt5,ext5) in 
@@ -418,7 +422,7 @@ let first_analysis_on_new_item helper pt other_items=
      (helper,None,other_items)
   |P_Unfinished_computation _ -> 
     let n = Point.max pt in 
-    let pt2 = Point.remove_one_element pt n in 
+    let pt2 = Point.remove_element pt n in 
     (
       match seek_translated_obvious_access helper pt2 with 
       P_Unfinished_computation(l) ->
@@ -494,6 +498,62 @@ let explain = Private.explain ;;
 
 end ;;   
 
+module Point_with_extra_constraints = struct 
+
+   module Private = struct
+
+  let usual_decomposition_for_bare_point_opt pt =
+    match Point.highest_constraint_opt pt with 
+     None -> None 
+    |Some (C l)-> 
+      let current_b = List.nth l 0 in 
+      let effective_w=(List.nth l 1)-current_b in 
+      let candidates=Int_range.descending_scale (
+          fun b->C[b;b+effective_w;b+2*effective_w]
+      ) 1 (current_b-1) in 
+      let (P(fis,_)) = pt in 
+      let domain = Finite_int_set.to_usual_int_list fis in 
+      let selected_candidates = List.filter (
+         fun (C l)->i_is_included_in l domain
+      ) candidates in 
+      Some(PEC(P(fis,W(effective_w-1)),selected_candidates), C l)
+      ;;  
+
+    let usual_decomposition_opt (PEC(pt,l_cstr)) = 
+        match l_cstr with 
+      [] -> usual_decomposition_for_bare_point_opt pt 
+    |highest :: others -> Some(PEC(pt,others),highest) ;;     
+
+    
+
+  end ;;    
+
+  let remove_element (PEC(pt,l_cstr)) t =
+    let smaller_pt = Point.remove_element pt t in 
+    PEC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+
+  let remove_rightmost_element_but_keep_constraints (PEC(pt,l_cstr)) =
+      let (W w) = Point.width pt and n=Point.max pt in 
+      let smaller_pt = Point.remove_element pt n in
+      let constraints1 = 
+         (Int_range.descending_scale (fun d->[n-(2*d);n-d]) w 1)@
+         (Image.image (fun (C l)->i_outsert n l) l_cstr) in
+      let constraints2 = Ordered_misc.minimal_elts_wrt_inclusion constraints1 in 
+      let (singletons,constraints3) = List.partition (fun cstr->List.length(cstr)=1) constraints2 in
+      let removable_subset = List.flatten singletons in 
+      let final_pt = Point.remove_elements smaller_pt removable_subset 
+      and final_constraints = List.filter_map 
+        (fun l->if i_does_not_intersect l removable_subset
+                then Some(C l)
+                else None   
+        ) constraints3 in 
+      PEC(final_pt,final_constraints) ;;   
+  
+
+end ;;   
+
+
+
 
 module  Highest_separator = struct 
 
@@ -523,8 +583,8 @@ module  Highest_separator = struct
        [] -> usual_decomposition_for_bare_point_opt pt 
       |highest :: others -> Some(IEP(pt,others),highest) ;; 
     
-    let remove_one_element (IEP(pt,l_cstr)) t =
-       let smaller_pt = Point.remove_one_element pt t in 
+    let remove_element (IEP(pt,l_cstr)) t =
+       let smaller_pt = Point.remove_element pt t in 
        IEP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
     
     exception Measure_exn of t ;; 
@@ -538,7 +598,7 @@ module  Highest_separator = struct
        None -> raise(Measure_exn(constrained_pt))
        |Some(preceding_pt,C l) ->
           Max.list ( Image.image (
-             fun t->old_f(remove_one_element preceding_pt t)
+             fun t->old_f(remove_element preceding_pt t)
           ) l )
     ) ;; 
     
@@ -574,7 +634,7 @@ module Medium = struct
 
 
 let rigorous_quest_for_individual_cumulative_case old_point pivot = 
-  let simpler_point = Point.remove_one_element old_point pivot in 
+  let simpler_point = Point.remove_element old_point pivot in 
   if (measure simpler_point)=(measure old_point)-1 
   then Some(pivot)  
   else None ;;
@@ -605,7 +665,7 @@ let all_solutions =Memoized.recursive(fun old_f point ->
    None -> [domain]
   |Some(handle) -> 
     let compute_below = (fun t->
-          old_f (Point.remove_one_element point t)
+          old_f (Point.remove_element point t)
     ) in 
     match handle with 
      Mh_cumulative(pivot)->
@@ -646,9 +706,9 @@ let all_solutions =Memoized.recursive(fun old_f point ->
         (
           match handle with 
             Mh_import -> [Point.decrement point]
-           |Mh_cumulative(pivot) ->[Point.remove_one_element point pivot]
+           |Mh_cumulative(pivot) ->[Point.remove_element point pivot]
            |Mh_fork(i,j,k)->
-               Image.image (Point.remove_one_element point) [i;j;k]
+               Image.image (Point.remove_element point) [i;j;k]
         ) ;;
 
      let set_of_descendants point =
