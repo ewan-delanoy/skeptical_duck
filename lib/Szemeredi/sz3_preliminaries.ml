@@ -202,11 +202,13 @@ end ;;
 
 module Precomputed = struct 
 
+  module Private = struct
+
   module Width_one = struct 
   
     exception Bad_remainder_by_three of int ;; 
     
-    let compute_on_set fis =
+    let compute fis =
       let domain = Finite_int_set.to_usual_int_list fis in 
       let intervals = Arithmetic_list.decompose_into_connected_components domain in 
       let sol_components = Image.image (
@@ -223,20 +225,41 @@ module Precomputed = struct
       ) intervals in 
       M([List.flatten sol_components],List.flatten forced_elements);;
   
-    let compute (P(fis1,_max_width)) = compute_on_set fis1;; 
-  
-     let compute_opt key = Some(compute key) ;; 
-  
   end ;;   
+
+  let treated_widths = [
+     W 1, Width_one.compute
+  ] ;; 
+
+  let treated_width_scrappers_pairs = ([
+
+  ]: ( (width * (int list)) * (int -> mold)) list ) ;;
+
+  let precomputations_for_width_opt w = List.assoc_opt w treated_widths ;;
+  let precomputations_for_width_scrappers_pairs_opt pair = List.assoc_opt pair treated_width_scrappers_pairs ;;
   
-  let compute_opt key =  
-      match List.assoc_opt (Point.width key) [
-          W 1, Width_one.compute_opt
-      ] with 
-      None -> None 
-      | Some f -> f key ;;  
+
+end ;;   
   
-  end ;;  
+
+  let compute_opt pt =  
+      let (P(fis,W w)) = pt in 
+      
+      match Private.precomputations_for_width_opt (W w) with 
+        Some f -> Some(f fis)
+      | None -> 
+        (
+          let (FIS(n,scr)) = fis in
+          match Private.precomputations_for_width_scrappers_pairs_opt (W w,scr) with 
+            Some g -> Some (g n)
+            | None -> None 
+        );;  
+
+  let precomputations_for_width_opt = Private.precomputations_for_width_opt ;;
+  let precomputations_for_width_scrappers_pairs_opt = Private.precomputations_for_width_scrappers_pairs_opt ;;
+                
+
+end ;;  
   
 
 module Crude_analysis_on_bare_point = struct 
@@ -448,7 +471,7 @@ let needed_subcomputations items =
 
 let compute point = 
    match seek_translated_obvious_access [] point with 
-   P_Finished_computation(sh,mold) -> (sh,mold)
+   P_Finished_computation(_sh,mold) -> mold
   |P_Unfinished_computation _ ->
     let subcomps =  needed_subcomputations [point] in 
     let _ = List.iter (
@@ -460,13 +483,14 @@ let compute point =
               |Some(explanation) -> Hashtbl.add explanation_hashtbl pt explanation
             )
     ) subcomps in 
-    List.assoc point subcomps ;;   
+    snd(List.assoc point subcomps) ;;   
 
   let explain pt = Hashtbl.find_opt explanation_hashtbl pt ;;
 
   end ;; 
 
 let compute = Private.compute ;;  
+let explain = Private.explain ;; 
 
 end ;;   
 
@@ -508,7 +532,7 @@ module  Highest_separator = struct
     let measure = Memoized.recursive (fun old_f constrained_pt ->
        let (IEP(pt,l_cstr)) = constrained_pt in 
        if l_cstr = []
-       then let (_,M(sols,_)) = Crude_analysis_on_bare_point.compute pt in
+       then let (M(sols,_)) = Crude_analysis_on_bare_point.compute pt in
             List.length(List.hd sols) 
        else match usual_decomposition_opt constrained_pt with 
        None -> raise(Measure_exn(constrained_pt))
@@ -539,7 +563,7 @@ module Medium = struct
 
 
  let measure point =
-   let (_,M(sols,_)) = Crude_analysis_on_bare_point.compute point in 
+   let (M(sols,_)) = Crude_analysis_on_bare_point.compute point in 
    List.length(List.hd sols) ;;  
  
   let rigorous_test_for_import_case old_point = 
