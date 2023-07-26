@@ -241,7 +241,7 @@ module Precomputed = struct
 
 module Crude_analysis_on_bare_point = struct 
 
-  type shadow =
+  type explanation =
      Early_stop of point * int 
     |Early_increase of point * int  
     |Lucky of point * (int list)
@@ -252,7 +252,7 @@ module Crude_analysis_on_bare_point = struct
    
 
   type partial_result =
-    P_Finished_computation of (shadow option) * mold  
+    P_Finished_computation of (explanation option) * mold  
    |P_Unfinished_computation of point list ;;
 
   type inner_walker = IW of 
@@ -268,7 +268,8 @@ module Crude_analysis_on_bare_point = struct
   exception Compute_strictly_exn ;; 
   exception Pusher_for_needed_subcomputations1_exn ;; 
 
-  let main_hashtbl =   ((Hashtbl.create 50) : (point, (shadow option) * mold) Hashtbl.t) ;; 
+  let main_hashtbl =   ((Hashtbl.create 50) : (point, mold) Hashtbl.t) ;; 
+  let explanation_hashtbl =   ((Hashtbl.create 50) : (point, explanation) Hashtbl.t) ;; 
 
 let translate_shadow d = 
   let tr = Image.image (fun t->t+d) in 
@@ -290,7 +291,7 @@ let seek_non_translated_obvious_access helper point =
     | None ->
        (
           match  Hashtbl.find_opt main_hashtbl point with 
-          Some (sh2,mold2) -> P_Finished_computation(sh2,mold2)
+          Some (mold2) -> P_Finished_computation(Hashtbl.find_opt explanation_hashtbl point,mold2)
         | None -> 
           let (P(fis,_upper_bound)) = point in 
           let domain = Finite_int_set.to_usual_int_list fis in 
@@ -444,19 +445,24 @@ let rec iterator_for_needed_subcomputations walker =
   
 let needed_subcomputations items = 
       iterator_for_needed_subcomputations ([],None,items) ;;  
-      
-let ref_for_strict_mode = ref false ;;
-let ref_for_needed_data = ref [] ;; 
 
 let compute point = 
    match seek_translated_obvious_access [] point with 
    P_Finished_computation(sh,mold) -> (sh,mold)
   |P_Unfinished_computation _ ->
     let subcomps =  needed_subcomputations [point] in 
-    if !ref_for_strict_mode
-    then let _=(ref_for_needed_data :=  needed_subcomputations [point]) in 
-          raise Compute_strictly_exn
-    else List.assoc point subcomps ;;   
+    let _ = List.iter (
+        fun (pt,(explanation_opt,mold))->
+            Hashtbl.add main_hashtbl pt mold;
+            (
+              match explanation_opt with 
+              None -> ()
+              |Some(explanation) -> Hashtbl.add explanation_hashtbl pt explanation
+            )
+    ) subcomps in 
+    List.assoc point subcomps ;;   
+
+  let explain pt = Hashtbl.find_opt explanation_hashtbl pt ;;
 
   end ;; 
 
