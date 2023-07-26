@@ -239,16 +239,18 @@ module Precomputed = struct
   end ;;  
   
 
-module Crude = struct 
-
-  module Private = struct
+module Crude_analysis_on_bare_point = struct 
 
   type shadow =
      Bare
     |Early_stop of point * int 
     |Early_increase of point * int  
     |Lucky of point * (int list)
-    |Disjunction of (point * (int list)) list;;  
+    |Disjunction of (point * (int list)) list;; 
+
+  module Private = struct
+
+   
 
   type partial_result =
     P_Finished_computation of shadow * mold  
@@ -499,7 +501,7 @@ module  Highest_separator = struct
     let measure = Memoized.recursive (fun old_f constrained_pt ->
        let (IEP(pt,l_cstr)) = constrained_pt in 
        if l_cstr = []
-       then let (_,M(sols,_)) = Crude.compute pt in
+       then let (_,M(sols,_)) = Crude_analysis_on_bare_point.compute pt in
             List.length(List.hd sols) 
        else match usual_decomposition_opt constrained_pt with 
        None -> raise(Measure_exn(constrained_pt))
@@ -530,7 +532,7 @@ module Medium = struct
 
 
  let measure point =
-   let (_,M(sols,_)) = Crude.compute point in 
+   let (_,M(sols,_)) = Crude_analysis_on_bare_point.compute point in 
    List.length(List.hd sols) ;;  
  
   let rigorous_test_for_import_case old_point = 
