@@ -177,6 +177,8 @@ module Point = struct
     Find_highest_constraint.for_maximal_width 
       (W w,Finite_int_set.to_usual_int_list fis);;
 
+  let is_discrete pt = (highest_constraint_opt(pt)=None) ;; 
+
   let is_nontrivial (P(fis,w)) =
     let domain = Finite_int_set.to_usual_int_list fis in
     ((Find_highest_constraint.for_maximal_width (w,domain)) <> None);;
@@ -532,6 +534,8 @@ module Point_with_extra_constraints = struct
 
   end ;;    
 
+  let is_discrete = Private.is_discrete ;; 
+
   let remove_element (PEC(pt,l_cstr)) t =
     let smaller_pt = Point.remove_element pt t in 
     PEC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
@@ -553,7 +557,7 @@ module Point_with_extra_constraints = struct
       and final_constraints = Image.image (fun l->C l) constraints3 in 
       PEC(final_pt,final_constraints) ;;   
   
-  let is_discrete = Private.is_discrete ;; 
+  let supporting_set (PEC(pt,_)) = Point.supporting_set pt ;; 
 
 end ;;   
 
@@ -598,11 +602,20 @@ let look_for_pivot  ptwc =
        fun p -> measure(Point_with_extra_constraints.remove_element ptwc p)=m
     )  domain;;
 
+    let is_discrete (PEC(pt,l_cstr)) = 
+       if not(Point.is_discrete pt)
+       then false 
+       else let domain = Point.supporting_set pt in 
+            List.for_all (fun (C cstr)->not(i_is_included_in cstr domain)) l_cstr;;
+
 end ;; 
 
+
+let is_discrete = Private.is_discrete ;;
 let look_for_pivot = Private.look_for_pivot ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;; 
+let supporting_set (PEC(pt,_l_cstr)) = Point.supporting_set pt ;; 
 
 end ;;  
 
@@ -645,8 +658,10 @@ let usual_decomposotion_opt pwb =
 
 end ;;  
 
+let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
+let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 
 end ;;  
 
@@ -690,3 +705,47 @@ let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;;
 
 end ;;   
+
+(*
+
+module Medium_analysis = struct 
+
+exception Missing_value of point_with_breadth ;; 
+
+module Private = struct
+
+let main_ref = ref [] ;;
+
+let seek_non_translated_obvious_access pt = 
+  match List.assoc_opt pt (!main_ref) with 
+    Some (mold1) -> (Some mold1,None)
+  | None ->
+     (  
+        let (P(fis,_upper_bound)) = pt in 
+        let domain = Finite_int_set.to_usual_int_list fis in 
+        if Point.subset_is_admissible pt domain 
+        then  (Some(M([domain],domain)),None)
+         else 
+          (
+            match Precomputed.compute_opt pt with 
+            Some answer2 -> (Some answer2,None)
+            |None -> (None,Some pt)        
+          ) 
+       ) ;; 
+
+
+let seek_translated_obvious_access helper point =
+  let (d,translated_point) = Point.decompose_wrt_translation point in 
+  let (opt_good,opt_bad) = seek_non_translated_obvious_access helper translated_point in 
+  match res with 
+  P_Unfinished_computation _ -> res
+  |P_Finished_computation(translated_sh,translated_mold)
+  -> 
+    P_Finished_computation(translated_sh,
+    Mold.translate d translated_mold);;
+
+  end ;;     
+
+end ;;  
+
+*)
