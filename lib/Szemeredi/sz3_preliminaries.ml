@@ -521,6 +521,7 @@ module Point_with_extra_constraints = struct
       [] -> usual_decomposition_for_bare_point_opt pt 
     |highest :: others -> Some(PEC(pt,others),highest) ;;     
 
+    let is_discrete pwc = ((usual_decomposition_opt pwc)=None);;
     
 
   end ;;    
@@ -550,7 +551,7 @@ module Point_with_extra_constraints = struct
         ) constraints3 in 
       PEC(final_pt,final_constraints) ;;   
   
-  let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
+  let is_discrete = Private.is_discrete ;; 
 
 end ;;   
 
@@ -577,7 +578,7 @@ let measure = Memoized.recursive (fun
 let standard_solution  = Memoized.recursive (fun 
   old_f ptwc-> 
   let (PEC(pt,_l_cstr)) = ptwc in 
-  if Point_with_extra_constraints.usual_decomposition_opt ptwc = None 
+  if Point_with_extra_constraints.is_discrete ptwc 
   then Point.supporting_set pt 
   else  
   let ptwc2 = Point_with_extra_constraints.remove_rightmost_element ptwc
@@ -647,3 +648,49 @@ let usual_decomposotion_opt = Private.usual_decomposotion_opt ;;
 
 end ;;  
 
+
+module Analysis_with_breadth = struct 
+
+exception Explain_exn of point_with_breadth ;;
+
+type explanation = 
+   Discrete
+  |Pivot of int 
+  |Select of int * int * int 
+  |Fork of int * int * int ;;
+
+module Private = struct
+
+let standard_solution = Memoized.make(fun pwb->
+    Analysis_with_extra_constraints.standard_solution (Point_with_breadth.to_extra_constraints pwb)
+)  ;;
+
+let measure = Memoized.make(fun pwb->
+  Analysis_with_extra_constraints.measure (Point_with_breadth.to_extra_constraints pwb)
+)  ;;
+
+let explain = Memoized.make(fun pwb->
+   let pwc = Point_with_breadth.to_extra_constraints pwb in 
+   if Point_with_extra_constraints.is_discrete pwc 
+   then Discrete
+   else 
+   match Analysis_with_extra_constraints.look_for_pivot pwc with
+   Some pivot -> Pivot(pivot)
+   | None ->(
+       match Point_with_breadth.usual_decomposotion_opt pwb with 
+       None -> raise(Explain_exn(pwb))
+       |Some(preceding_pwb,C cstr) ->
+        let nth = (fun k->List.nth cstr (k-1)) in 
+        if measure pwb = measure preceding_pwb 
+        then Select(nth 1,nth 2,nth 3)
+        else Fork(nth 1,nth 2,nth 3)  
+   )) ;; 
+   
+
+end ;; 
+
+let explain = Private.explain ;;
+let measure = Private.measure ;;
+let standard_solution = Private.standard_solution ;;
+
+end ;;   
