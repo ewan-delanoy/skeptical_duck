@@ -532,6 +532,10 @@ module Point_with_extra_constraints = struct
     let smaller_pt = Point.remove_element pt t in 
     PEC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
 
+  let remove_rightmost_element pt_with_constraints =
+     let (PEC(pt,_)) = pt_with_constraints in 
+     remove_element  pt_with_constraints (Point.max pt) ;; 
+
   let remove_rightmost_element_but_keep_constraints (PEC(pt,l_cstr)) =
       let (W w) = Point.width pt and n=Point.max pt in 
       let smaller_pt = Point.remove_element pt n in
@@ -549,194 +553,54 @@ module Point_with_extra_constraints = struct
         ) constraints3 in 
       PEC(final_pt,final_constraints) ;;   
   
+  let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 
 end ;;   
 
 
+module Analysis_with_extra_constraints = struct 
 
+module Private = struct
 
-module  Highest_separator = struct 
+let measure = Memoized.recursive (fun 
+   old_f ptwc-> 
+     let (PEC(pt,l_cstr)) = ptwc in 
+     let stays_admissible = (fun z->List.for_all (
+        fun (C cstr)->not(i_is_included_in cstr z)
+     ) l_cstr) in 
+     let (M(trial1,_)) = Crude_analysis_on_bare_point.compute pt in 
+     if List.exists stays_admissible  trial1 
+     then List.length(List.hd trial1)
+     else 
+     let ptwc2 = Point_with_extra_constraints.remove_rightmost_element ptwc
+     and ptwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints ptwc in 
+     max(old_f ptwc2)((old_f ptwc3)+1)
+);;
 
-  module Private = struct
+let standard_solution  = Memoized.recursive (fun 
+  old_f ptwc-> 
+  let (PEC(pt,_l_cstr)) = ptwc in 
+  if Point_with_extra_constraints.usual_decomposition_opt ptwc = None 
+  then Point.supporting_set pt 
+  else  
+  let ptwc2 = Point_with_extra_constraints.remove_rightmost_element ptwc
+  and ptwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints ptwc in 
+  if (measure ptwc2)>=((measure ptwc3)+1)
+  then old_f(ptwc2)
+  else (old_f(ptwc3))@[Point.max pt]  
+);;
 
-    type t = IEP of point * (constraint_t list);;
-    
-    let usual_decomposition_for_bare_point_opt pt =
-       match Point.highest_constraint_opt pt with 
-        None -> None 
-       |Some (C l)-> 
-         let current_b = List.nth l 0 in 
-         let effective_w=(List.nth l 1)-current_b in 
-         let candidates=Int_range.descending_scale (
-             fun b->C[b;b+effective_w;b+2*effective_w]
-         ) 1 (current_b-1) in 
-         let (P(fis,_)) = pt in 
-         let domain = Finite_int_set.to_usual_int_list fis in 
-         let selected_candidates = List.filter (
-            fun (C l)->i_is_included_in l domain
-         ) candidates in 
-         Some(IEP(P(fis,W(effective_w-1)),selected_candidates), C l)
-         ;;
-    
-    let usual_decomposition_opt (IEP(pt,l_cstr)) = 
-       match l_cstr with 
-       [] -> usual_decomposition_for_bare_point_opt pt 
-      |highest :: others -> Some(IEP(pt,others),highest) ;; 
-    
-    let remove_element (IEP(pt,l_cstr)) t =
-       let smaller_pt = Point.remove_element pt t in 
-       IEP(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
-    
-    exception Measure_exn of t ;; 
-    
-    let measure = Memoized.recursive (fun old_f constrained_pt ->
-       let (IEP(pt,l_cstr)) = constrained_pt in 
-       if l_cstr = []
-       then let (M(sols,_)) = Crude_analysis_on_bare_point.compute pt in
-            List.length(List.hd sols) 
-       else match usual_decomposition_opt constrained_pt with 
-       None -> raise(Measure_exn(constrained_pt))
-       |Some(preceding_pt,C l) ->
-          Max.list ( Image.image (
-             fun t->old_f(remove_element preceding_pt t)
-          ) l )
-    ) ;; 
-    
-    let highest_separator_opt = Memoized.recursive (fun old_f constrained_pt ->
-       match usual_decomposition_opt constrained_pt with 
-        None -> None 
-       |Some(preceding_constrained_pt,cstr)->
-          if (measure constrained_pt) <> (measure preceding_constrained_pt) 
-          then Some cstr
-          else old_f preceding_constrained_pt
-    ) ;;   
-    
-    end ;; 
-    
-    let opt pt = Private.highest_separator_opt (Private.IEP(pt,[])) ;;   
+let look_for_pivot  ptwc = 
+    let (PEC(pt,_l_cstr)) = ptwc in 
+    let domain = List.rev (Point.supporting_set pt) 
+    and m = measure(ptwc)-1 in  
+    List.find_opt (
+       fun p -> measure(Point_with_extra_constraints.remove_element ptwc p)=m
+    )  domain;;
+
+end ;; 
 
 end ;;  
-  
-  
-module Medium = struct 
-  module Private = struct   
 
 
- let measure point =
-   let (M(sols,_)) = Crude_analysis_on_bare_point.compute point in 
-   List.length(List.hd sols) ;;  
- 
-  let rigorous_test_for_import_case old_point = 
-    let (W w)=Point.width(old_point) in 
-    if w<2 then false else
-    let simpler_point = Point.decrement old_point in 
-    (measure simpler_point)=(measure old_point) ;; 
 
-
-let rigorous_quest_for_individual_cumulative_case old_point pivot = 
-  let simpler_point = Point.remove_element old_point pivot in 
-  if (measure simpler_point)=(measure old_point)-1 
-  then Some(pivot)  
-  else None ;;
-
-let rigorous_quest_for_cumulative_case old_point =
-    let domain = Point.supporting_set old_point in 
-    List.find_map (rigorous_quest_for_individual_cumulative_case old_point) domain ;; 
-
-
- let handle_opt point =
-  match Highest_separator.opt point with 
-  None -> None
-  |Some(C cstr)-> 
-  if rigorous_test_for_import_case point 
-  then Some(Mh_import) 
-  else
-  (match rigorous_quest_for_cumulative_case point with 
-    Some(pivot)->Some(Mh_cumulative(pivot))
-    |None ->
-        let c = (fun k->List.nth cstr (k-1))  in 
-        Some(Mh_fork(c 1,c 2,c 3))
-  );;
-
-let all_solutions =Memoized.recursive(fun old_f point -> 
-  let domain = Point.supporting_set point
-  and is_ok = Point.subset_is_admissible point in 
-  match handle_opt point with 
-   None -> [domain]
-  |Some(handle) -> 
-    let compute_below = (fun t->
-          old_f (Point.remove_element point t)
-    ) in 
-    match handle with 
-     Mh_cumulative(pivot)->
-          List.filter_map (
-             fun sol->
-               let new_sol = i_insert pivot sol in 
-               if is_ok new_sol then Some new_sol else None
-          )(compute_below pivot) 
-    |Mh_fork(i,j,k)->
-         il_fold_merge(Image.image compute_below [i;j;k])
-    |Mh_import ->  
-         let smaller_point = Point.decrement point in 
-         List.filter is_ok (old_f smaller_point)
-    );;        
-
-  
-   let helper_for_canonical_solution (sols,n) =
-     let (with_n,without_n) = List.partition (List.mem n) sols in 
-     if without_n=[]
-     then (true,Image.image(i_outsert n) with_n) 
-    else (false,without_n) ;;      
-    
-    let rec iterator_for_canonical_solution (to_be_treated,n,treated) =
-      if n<1 then treated else  
-      let (n_needed,to_be_treated2) = helper_for_canonical_solution (to_be_treated,n) in 
-      let treated2 = (if n_needed then n::treated else treated) in
-      iterator_for_canonical_solution (to_be_treated2,n-1,treated2) ;; 
-
-    let canonical_solution point =
-       let all_sols = all_solutions point 
-       and n = Point.max point in 
-       iterator_for_canonical_solution (all_sols,n,[]) ;; 
-    
-    let naive_set_of_descendants point = 
-       match handle_opt point with
-        None -> []
-       |Some(handle) -> 
-        (
-          match handle with 
-            Mh_import -> [Point.decrement point]
-           |Mh_cumulative(pivot) ->[Point.remove_element point pivot]
-           |Mh_fork(i,j,k)->
-               Image.image (Point.remove_element point) [i;j;k]
-        ) ;;
-
-     let set_of_descendants point =
-        List.filter (
-           fun pt -> 
-            let (W w)=Point.width(pt) in 
-            (w>1) && (Point.is_nontrivial pt)
-        ) (naive_set_of_descendants point) ;;
-
-     let rec helper_for_all_descendants (treated,to_be_treated) =
-         match to_be_treated with 
-          [] -> treated 
-         |pt::others ->
-            let l = set_of_descendants pt in 
-            helper_for_all_descendants 
-               (point_insert pt treated,l@others) ;;
-
-     let all_descendants point =
-        let temp1 = helper_for_all_descendants ([],[point]) in 
-        Image.image (fun pt->(pt,Option.get(handle_opt pt)) ) temp1;;          
-              
-
-end ;;   
-
-let all_descendants = Private.all_descendants ;; 
-let all_solutions = Private.all_solutions ;; 
-let canonical_solution = Private.canonical_solution ;;
-let handle_opt = Private.handle_opt ;; 
-
-end ;;
-  
