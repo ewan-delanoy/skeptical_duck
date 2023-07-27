@@ -597,7 +597,53 @@ let look_for_pivot  ptwc =
 
 end ;; 
 
+let look_for_pivot = Private.look_for_pivot ;;
+let measure = Private.measure ;;
+let standard_solution = Private.standard_solution ;; 
+
 end ;;  
 
+module Point_with_breadth = struct 
 
+module Private = struct
+
+let to_extra_constraints (PWB(pt,b)) =
+    if b = 0 then PEC(pt,[]) else 
+    let (W w)=Point.width pt 
+    and domain = Point.supporting_set pt in 
+    let all_constraints = Int_range.descending_scale 
+       (fun k->C[k;k+(w+1);k+2*(w+1)]) b 1 in 
+    let meaningful_constraints = List.filter(
+      fun (C cstr) -> i_is_included_in cstr domain
+    )  all_constraints in 
+    PEC(pt,meaningful_constraints) ;;    
+
+let small_standardization_opt pwb =
+    let (PWB(pt,b)) = pwb in 
+    if b<>0
+    then Some pwb 
+    else 
+      let (P(fis,_)) = pt in 
+    match Point.highest_constraint_opt pt with  
+     None -> None
+    |Some(C cstr) -> 
+      let nth = (fun k->List.nth cstr (k-1)) in 
+      let w = W((nth 2)-(nth 1)-1) in 
+      Some(PWB(P(fis,w),nth 1));;
+    ;; 
+
+let usual_decomposotion_opt pwb =
+   match small_standardization_opt pwb with 
+    None -> None 
+   |Some(PWB(pt,b)) -> 
+      let (W w) = Point.width pt in 
+      Some(PWB(pt,b-1),C[b;b+(w+1);b+2*(w+1)]);;
+
+
+end ;;  
+
+let to_extra_constraints = Private.to_extra_constraints ;; 
+let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
+
+end ;;  
 
