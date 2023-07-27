@@ -26,9 +26,8 @@ type point_with_extra_constraints = PEC of point * (constraint_t list);;
 
 type point_with_breadth = PWB of point * int ;; 
 
-(*
-type medium_handle = 
-      Mh_import  
-    | Mh_cumulative of int 
-    | Mh_fork of int * int *int  ;;   
-*)    
+type explanation = 
+   Discrete
+  |Pivot of int 
+  |Select of int * int * int 
+  |Fork of int * int * int ;;

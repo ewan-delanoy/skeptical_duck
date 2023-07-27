@@ -26,6 +26,12 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
+type explanation = Sz3_types.explanation = 
+   Discrete
+  |Pivot of int 
+  |Select of int * int * int 
+  |Fork of int * int * int ;;
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_insert = Ordered.insert i_order ;;
@@ -648,12 +654,6 @@ end ;;
 module Analysis_with_breadth = struct 
 
 exception Explain_exn of point_with_breadth ;;
-
-type explanation = 
-   Discrete
-  |Pivot of int 
-  |Select of int * int * int 
-  |Fork of int * int * int ;;
 
 module Private = struct
 
