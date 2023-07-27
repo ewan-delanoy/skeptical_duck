@@ -544,11 +544,7 @@ module Point_with_extra_constraints = struct
       let (singletons,constraints3) = List.partition (fun cstr->List.length(cstr)=1) constraints2 in
       let removable_subset = List.flatten singletons in 
       let final_pt = Point.remove_elements smaller_pt removable_subset 
-      and final_constraints = List.filter_map 
-        (fun l->if i_does_not_intersect l removable_subset
-                then Some(C l)
-                else None   
-        ) constraints3 in 
+      and final_constraints = Image.image (fun l->C l) constraints3 in 
       PEC(final_pt,final_constraints) ;;   
   
   let is_discrete = Private.is_discrete ;; 
