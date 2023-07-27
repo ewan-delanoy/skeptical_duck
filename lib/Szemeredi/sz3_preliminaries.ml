@@ -24,10 +24,7 @@ type point = Sz3_types.point = P of finite_int_set * width ;;
 type point_with_extra_constraints = Sz3_types.point_with_extra_constraints = 
   PEC of point * (constraint_t list);;
 
-type medium_handle = Sz3_types.medium_handle = 
-      Mh_import  
-    | Mh_cumulative of int 
-    | Mh_fork of int * int * int  ;; 
+type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
