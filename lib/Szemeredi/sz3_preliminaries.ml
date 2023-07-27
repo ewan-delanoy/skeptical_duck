@@ -338,7 +338,7 @@ let seek_translated_obvious_access helper point =
     |P_Finished_computation(translated_sh,translated_mold)
     -> 
       P_Finished_computation(translated_sh,
-      Mold.translate (-d) translated_mold);;
+      Mold.translate d translated_mold);;
 
 let reduce_by_removing_forbidden_elements pt (pt5,ext5) =
     let domain=List.rev(Point.supporting_set pt5) in 
