@@ -516,8 +516,17 @@ module Point_with_extra_constraints = struct
 
     let is_discrete pwc = ((usual_decomposition_opt pwc)=None);;
     
+    let translate d (PEC(pt,l_cstr)) =
+         PEC(Point.translate d pt,
+           Image.image (fun (C l)->C(Image.image (fun t->t+d) l)) l_cstr
+         ) ;;
 
   end ;;    
+
+  let decompose_wrt_translation pwc = 
+    let (PEC(pt,_l_cstr)) = pwc in 
+    let (d,_) = Point.decompose_wrt_translation pt in 
+    (d,Private.translate (-d) pwc);; 
 
   let is_discrete = Private.is_discrete ;; 
 
@@ -542,6 +551,8 @@ module Point_with_extra_constraints = struct
       and final_constraints = Image.image (fun l->C l) constraints3 in 
       PEC(final_pt,final_constraints) ;;   
   
+  let translate = Private.translate ;; 
+
   let supporting_set (PEC(pt,_)) = Point.supporting_set pt ;; 
 
 end ;;   
@@ -647,6 +658,7 @@ let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
+let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 
 end ;;  
@@ -700,24 +712,24 @@ exception Missing_value of point_with_breadth ;;
 
 module Private = struct
 
-let main_ref = ref [] ;;
+let high_level_ref = ref [] ;;
+let low_level_ref = ref [] ;;
+
 
 let seek_non_translated_obvious_access pwb = 
-  let (P(FIS(n,scr),W w)) = pt in 
-  match List.assoc_opt (W w,scr,b) (!main_ref) with 
+  if Point_with_breadth.is_discrete pwb 
+  then let domain = Point_with_breadth.supporting_set pwb in 
+       (Some(M([domain],domain)),None)  
+  else     
+  let triple = Point_with_breadth.everything_but_the_size  pwb 
+  and n =  Point_with_breadth.size  pwb  in 
+  match List.assoc_opt triple (!high_level_ref) with 
     Some (f) -> (Some (f n),None)
   | None ->
      (  
-        let (P(fis,_upper_bound)) = pt in 
-        let domain = Finite_int_set.to_usual_int_list fis in 
-        if Point.is_discrete pt domain 
-        then  (Some(M([domain],domain)),None)
-         else 
-          (
-            match Precomputed.compute_opt pt with 
-            Some answer2 -> (Some answer2,None)
-            |None -> (None,Some pt)        
-          ) 
+      match List.assoc_opt pwb (!low_level_ref) with 
+      Some (answer) -> (Some (answer),None)
+    | None -> (None,Some pwb)
        ) ;; 
 
 
