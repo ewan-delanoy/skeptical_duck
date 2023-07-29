@@ -53,8 +53,6 @@ let il_min= Ordered.min il_order ;;
 let il_merge = Ordered.merge il_order ;;
 let il_sort = Ordered.sort il_order ;;
 
-let t_order = Total_ordering.triple_product 
-   i_order i_order (Total_ordering.silex_for_intlists) ;;
 
 let fis_order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
     let trial1 = i_order n1 n2 in 
@@ -70,6 +68,16 @@ let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
     fis_order fis1 fis2
   ): point Total_ordering_t.t);;
 let point_insert = Ordered.insert point_order ;;
+
+let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
+  let trial1 = i_order w1 w2 in 
+  if trial1<>Total_ordering_result_t.Equal then trial1 else 
+  let trial2 = i_order (List.length scr2) (List.length scr1) in 
+  if trial2<>Total_ordering_result_t.Equal then trial2 else
+  let trial3 = Total_ordering.silex_for_intlists scr1 scr2 in 
+  if trial3<>Total_ordering_result_t.Equal then trial3 else
+    Total_ordering.for_integers b1 b2
+): (width * int list * int) Total_ordering_t.t);;
 
 module Constraint = struct 
 
@@ -715,7 +723,7 @@ let standard_solution = Private.standard_solution ;;
 end ;;   
 
 
-
+(*
 module Medium_analysis = struct 
 
 exception Missing_value of point_with_breadth ;; 
@@ -726,34 +734,69 @@ let high_level_ref = ref [] ;;
 let low_level_ref = ref [] ;;
 
 
-let seek_non_translated_obvious_access pwb = 
+let easy_compute_without_using_translations_opt pwb = 
   if Point_with_breadth.is_discrete pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
-       (Some(M([domain],domain)),None)  
+       Some(M([domain],domain)) 
   else     
   let triple = Point_with_breadth.everything_but_the_size  pwb 
   and n =  Point_with_breadth.size  pwb  in 
   match List.assoc_opt triple (!high_level_ref) with 
-    Some (f) -> (Some (f n),None)
+    Some (f) -> Some (f n)
   | None ->
      (  
       match List.assoc_opt pwb (!low_level_ref) with 
-      Some (answer) -> (Some (answer),None)
-    | None -> (None,Some pwb)
+      Some (answer) -> Some answer
+    | None -> None
        ) ;; 
 
+let easy_compute_opt pwb = 
+  let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+  match easy_compute_without_using_translations_opt translated_pwb with 
+   None -> None
+  |Some translated_mold -> Some(Mold.translate d translated_mold);;
 
-let seek_translated_obvious_access helper point =
-  let (d,translated_point) = Point.decompose_wrt_translation point in 
-  let (opt_good,opt_bad) = seek_non_translated_obvious_access helper translated_point in 
-  match res with 
-  P_Unfinished_computation _ -> res
-  |P_Finished_computation(translated_sh,translated_mold)
-  -> 
-    P_Finished_computation(translated_sh,
-    Mold.translate d translated_mold);;
+let try_to_compute_in_pivot_case p pwb = 
+  let simpler_pwb = Point_with_breadth.remove_element pwb p in 
+  match easy_compute_opt simpler_pwb with 
+    None -> (None,Some(Pivot(p),simpler_pwb),true)
+   |Some(M(sol,ext)) ->
+      
+
+
+exception Try_to_compute_exn of point_with_breadth;;
+
+let try_to_compute_without_using_translations pwb =
+  match  easy_compute_without_using_translations_opt pwb with 
+  Some mold -> (Some(mold),None,false)
+  |None -> 
+    (
+      match Analysis_with_breadth.explain pwb with 
+       Discrete -> (* this should never happen, the discrete case
+                      is already treated in *) 
+                  raise(Try_to_compute_exn(pwb))
+      |Pivot(p)->try_to_compute_in_pivot_case p pwb 
+      |Select(i,j,k)->try_to_compute_in_select_case (i,j,k) pwb 
+      |Fork(i,j,k)->try_to_compute_in_fork_case (i,j,k) pwb            
+    ) ;; 
+
+    
+  ;;
+
+
+  let try_to_compute pwb =
+    let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+    let (opt_sol,extra_info) = try_to_compute_without_using_translations translated_pwb in 
+    match opt_good with 
+     None -> (None,extra_info)
+    |Some(sol) -> (Some(Mold.translate d sol),None);;
+
 
   end ;;     
 
-end ;;  
 
+
+  
+
+end ;;  
+*)
