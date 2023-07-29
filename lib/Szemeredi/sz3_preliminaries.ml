@@ -644,8 +644,15 @@ let usual_decomposotion_opt pwb =
       let (W w) = Point.width pt in 
       Some(PWB(pt,b-1),C[b;b+(w+1);b+2*(w+1)]);;
 
-  let translate d (PWB(pwc,b)) =
-        PWB(Point.translate d pwc,b+d) ;;
+  (* when d<0, this opeartion makes sense 
+  only if the lowest element is >|d|. *)    
+  let translate d (PWB(pwc,b)) = 
+    (*
+      when b+d<0, there is no extra constraint, 
+      and this is equivalent to setting the new b to 0S    
+    *) 
+    let new_b = max(0)(b+d) in
+      PWB(Point.translate d pwc,new_b) ;;
 
 
 end ;;  
@@ -659,6 +666,7 @@ let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
+let remove_element (PWB(pt,b)) elt = PWB(Point.remove_element pt elt,b);;
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 let translate = Private.translate ;; 
@@ -707,7 +715,7 @@ let standard_solution = Private.standard_solution ;;
 end ;;   
 
 
-(*
+
 module Medium_analysis = struct 
 
 exception Missing_value of point_with_breadth ;; 
@@ -749,4 +757,3 @@ let seek_translated_obvious_access helper point =
 
 end ;;  
 
-*)
