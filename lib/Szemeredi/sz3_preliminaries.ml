@@ -857,11 +857,12 @@ let try_to_compute_without_using_translations pwb =
          low_level_ref:=(pwb,final_sol)::(!low_level_ref)) in 
         (Some(final_sol),None);;
 
-  let walk_scale (w,scr,b) =
-      let temp1 = Int_range.scale (fun n->
+  let walk_scale (w,scr,b) = 
+     let base = Int_range.range 1 current_bound in 
+      let temp1 = Image.image (fun n->
         let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
         (pwb,try_to_compute pwb)
-        ) 1 current_bound in 
+        ) base in 
       List.find_opt (fun (_pwb,(sol_opt,_extra_info))->sol_opt=None) temp1;;  
 
 
