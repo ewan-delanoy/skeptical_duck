@@ -34,6 +34,7 @@ type explanation = Sz3_types.explanation =
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
+let i_fold_merge = Ordered.fold_merge i_order ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_merge = Ordered.merge i_order ;;
@@ -128,6 +129,10 @@ module Finite_int_set = struct
        FIS(n,i_setminus (Int_range.range 1 n) domain) ;;   
 
   end ;;
+
+  let constructor n scrappers =
+      let domain = i_setminus (Int_range.range 1 n) scrappers in 
+      Private.of_usual_int_list domain ;; 
 
   let decompose_wrt_translation fis_domain = 
     let domain = Private.to_usual_int_list fis_domain in 
@@ -654,7 +659,7 @@ let small_standardization_opt pwb =
       Some(PWB(P(fis,w),nth 1));;
     ;; 
 
-let usual_decomposotion_opt pwb =
+let usual_decomposition_opt pwb =
    match small_standardization_opt pwb with 
     None -> None 
    |Some(PWB(pt,b)) -> 
@@ -674,6 +679,7 @@ let usual_decomposotion_opt pwb =
 
 end ;;  
 
+let breadth (PWB(_pt,b))= b ;;
 let decompose_wrt_translation pwb = 
   let (PWB(pt,_b)) = pwb in 
   let (d,_) = Point.decompose_wrt_translation pt in 
@@ -682,7 +688,7 @@ let decompose_wrt_translation pwb =
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
-let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
+let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 let remove_element (PWB(pt,b)) elt = PWB(Point.remove_element pt elt,b);;
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let subset_is_admissible pwb subset = 
@@ -690,6 +696,7 @@ let subset_is_admissible pwb subset =
 
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 let translate = Private.translate ;; 
+let width (PWB(pt,_b))= Point.width pt ;;
 
 end ;;  
 
@@ -716,7 +723,7 @@ let explain = Memoized.make(fun pwb->
    match Analysis_with_extra_constraints.look_for_pivot pwc with
    Some pivot -> Pivot(pivot)
    | None ->(
-       match Point_with_breadth.usual_decomposotion_opt pwb with 
+       match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> raise(Explain_exn(pwb))
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
@@ -735,14 +742,16 @@ let standard_solution = Private.standard_solution ;;
 end ;;   
 
 
-(*
+
 module Medium_analysis = struct 
 
-exception Missing_value of point_with_breadth ;; 
+let current_bound = 20 ;; 
 
 module Private = struct
 
-let high_level_ref = ref [] ;;
+let high_level_ref = ref [
+   (W 1,[],0),(fun n->Width_one.compute(FIS(n,[])))
+] ;;
 let low_level_ref = ref [] ;;
 
 
@@ -771,9 +780,49 @@ let easy_compute_opt pwb =
 let try_to_compute_in_pivot_case p pwb = 
   let simpler_pwb = Point_with_breadth.remove_element pwb p in 
   match easy_compute_opt simpler_pwb with 
-    None -> (None,Some(Pivot(p),simpler_pwb),true)
-   |Some(M(sol,ext)) ->
+    None -> (None,Some(Pivot(p),Some(simpler_pwb,None)),true)
+   |Some(M(old_sols,old_ext)) ->
+      let new_sols = List.filter_map (
+         fun sol -> 
+          let new_sol = i_insert p sol in 
+          if Point_with_breadth.subset_is_admissible pwb new_sol 
+          then Some new_sol
+          else None  
+      ) old_sols in 
+      if new_sols = []
+      then let missing_sol = i_outsert p (Analysis_with_breadth.standard_solution pwb) in
+           (None,Some(Pivot(p),Some(simpler_pwb,Some missing_sol)),true)
+      else (Some(M(new_sols,i_insert p old_ext)),None,true);;    
       
+exception Try_to_compute_in_select_case of (int * int * int) * point_with_breadth;;
+
+let try_to_compute_in_select_case (i,j,k) pwb = 
+  match Point_with_breadth.usual_decomposition_opt pwb with 
+   None -> raise(Try_to_compute_in_select_case((i,j,k),pwb))
+  |Some(simpler_pwb,_) ->
+    match easy_compute_opt simpler_pwb with 
+    None -> (None,Some(Select(i,j,k),Some(simpler_pwb,None)),true)
+  |Some(M(old_sols,old_ext)) ->
+    let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+    if new_sols = []
+    then let missing_sol = Analysis_with_breadth.standard_solution pwb in
+                 (None,Some(Select(i,j,k),Some(simpler_pwb,Some missing_sol)),true)
+    else (Some(M(new_sols,old_ext)),None,true);;      
+      
+let try_to_compute_in_fork_case (i,j,k) pwb = 
+  let offshoots = Image.image (fun t->
+    let pwb2=Point_with_breadth.remove_element pwb t in 
+    (pwb2,easy_compute_opt pwb2)
+    ) [i;j;k] in
+  match List.find_opt (fun (_,opt)->opt=None) offshoots with
+  Some(pwb3,_)-> (None,Some(Fork(i,j,k),Some(pwb3,None)),true)
+  |None ->
+     let offshoots2 = Image.image (
+       fun (_,opt)->Option.get opt
+     ) offshoots in 
+     let final_ext = i_fold_merge (Image.image (fun (M(_sol,ext))->ext) offshoots2)
+     and M(sols,_) = List.nth offshoots2 2 in 
+     (Some(M(sols,final_ext)),None,true);;   
 
 
 exception Try_to_compute_exn of point_with_breadth;;
@@ -798,17 +847,30 @@ let try_to_compute_without_using_translations pwb =
 
   let try_to_compute pwb =
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-    let (opt_sol,extra_info) = try_to_compute_without_using_translations translated_pwb in 
-    match opt_good with 
+    let (opt_sol,extra_info,noticeable) = try_to_compute_without_using_translations translated_pwb in 
+    match opt_sol with 
      None -> (None,extra_info)
-    |Some(sol) -> (Some(Mold.translate d sol),None);;
+    |Some(sol) -> 
+        let final_sol = Mold.translate d sol in 
+        let _ = (
+         if noticeable then   
+         low_level_ref:=(pwb,final_sol)::(!low_level_ref)) in 
+        (Some(final_sol),None);;
+
+  let walk_scale (w,scr,b) =
+      let temp1 = Int_range.scale (fun n->
+        let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
+        (pwb,try_to_compute pwb)
+        ) 1 current_bound in 
+      List.find_opt (fun (_pwb,(sol_opt,_extra_info))->sol_opt=None) temp1;;  
 
 
   end ;;     
 
-
+  let try_to_compute = Private.try_to_compute ;;
+  let walk_scale = Private.walk_scale ;; 
 
   
 
 end ;;  
-*)
+
