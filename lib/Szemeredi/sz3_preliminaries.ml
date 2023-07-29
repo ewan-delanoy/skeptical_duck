@@ -217,32 +217,34 @@ module Point = struct
 
 end ;;   
 
+module Width_one = struct 
+  
+  exception Bad_remainder_by_three of int ;; 
+  
+  let compute fis =
+    let domain = Finite_int_set.to_usual_int_list fis in 
+    let intervals = Arithmetic_list.decompose_into_connected_components domain in 
+    let sol_components = Image.image (
+      fun (a,b) ->
+        List.filter(fun k->((k-a+1) mod 3)<>0)(Int_range.range a b)
+    ) intervals 
+    and forced_elements = Image.image (
+      fun (a,b) ->
+        match ((b-a+1) mod 3) with 
+         0 -> []
+        |1 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1])(Int_range.range a b)
+        |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
+        |r -> raise(Bad_remainder_by_three(r)) 
+    ) intervals in 
+    M([List.flatten sol_components],List.flatten forced_elements);;
+
+end ;;   
+
 module Precomputed = struct 
 
   module Private = struct
 
-  module Width_one = struct 
   
-    exception Bad_remainder_by_three of int ;; 
-    
-    let compute fis =
-      let domain = Finite_int_set.to_usual_int_list fis in 
-      let intervals = Arithmetic_list.decompose_into_connected_components domain in 
-      let sol_components = Image.image (
-        fun (a,b) ->
-          List.filter(fun k->((k-a+1) mod 3)<>0)(Int_range.range a b)
-      ) intervals 
-      and forced_elements = Image.image (
-        fun (a,b) ->
-          match ((b-a+1) mod 3) with 
-           0 -> []
-          |1 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1])(Int_range.range a b)
-          |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
-          |r -> raise(Bad_remainder_by_three(r)) 
-      ) intervals in 
-      M([List.flatten sol_components],List.flatten forced_elements);;
-  
-  end ;;   
 
   let treated_widths = [
      W 1, Width_one.compute
