@@ -531,6 +531,11 @@ module Point_with_extra_constraints = struct
            Image.image (fun (C l)->C(Image.image (fun t->t+d) l)) l_cstr
          ) ;;
 
+    let subset_is_admissible (PEC(pt,l_cstr)) subset =
+        if not(Point.subset_is_admissible pt subset)
+        then false 
+        else List.for_all (fun (C cstr)->not(i_is_included_in cstr subset)) l_cstr;;       
+
   end ;;    
 
   let decompose_wrt_translation pwc = 
@@ -562,6 +567,8 @@ module Point_with_extra_constraints = struct
       PEC(final_pt,final_constraints) ;;   
   
   let translate = Private.translate ;; 
+
+  let subset_is_admissible = Private.subset_is_admissible ;;  
 
   let supporting_set (PEC(pt,_)) = Point.supporting_set pt ;; 
 
