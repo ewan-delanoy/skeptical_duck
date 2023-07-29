@@ -598,20 +598,13 @@ let look_for_pivot  ptwc =
        fun p -> measure(Point_with_extra_constraints.remove_element ptwc p)=m
     )  domain;;
 
-    let is_discrete (PEC(pt,l_cstr)) = 
-       if not(Point.is_discrete pt)
-       then false 
-       else let domain = Point.supporting_set pt in 
-            List.for_all (fun (C cstr)->not(i_is_included_in cstr domain)) l_cstr;;
-
 end ;; 
 
 
-let is_discrete = Private.is_discrete ;;
 let look_for_pivot = Private.look_for_pivot ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;; 
-let supporting_set (PEC(pt,_l_cstr)) = Point.supporting_set pt ;; 
+
 
 end ;;  
 
@@ -651,8 +644,16 @@ let usual_decomposotion_opt pwb =
       let (W w) = Point.width pt in 
       Some(PWB(pt,b-1),C[b;b+(w+1);b+2*(w+1)]);;
 
+  let translate d (PWB(pwc,b)) =
+        PWB(Point.translate d pwc,b+d) ;;
+
 
 end ;;  
+
+let decompose_wrt_translation pwb = 
+  let (PWB(pt,_b)) = pwb in 
+  let (d,_) = Point.decompose_wrt_translation pt in 
+  (d,Private.translate (-d) pwb);; 
 
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
@@ -660,6 +661,7 @@ let to_extra_constraints = Private.to_extra_constraints ;;
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
+let translate = Private.translate ;; 
 
 end ;;  
 
