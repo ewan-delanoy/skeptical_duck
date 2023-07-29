@@ -685,6 +685,9 @@ let to_extra_constraints = Private.to_extra_constraints ;;
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
 let remove_element (PWB(pt,b)) elt = PWB(Point.remove_element pt elt,b);;
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
+let subset_is_admissible pwb subset = 
+     Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
+
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 let translate = Private.translate ;; 
 
