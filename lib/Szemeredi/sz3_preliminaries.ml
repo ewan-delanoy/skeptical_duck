@@ -240,34 +240,19 @@ module Precomputed = struct
      W 1, Width_one.compute
   ] ;; 
 
-  let treated_width_scrappers_pairs = ([
-
-  ]: ( (width * (int list)) * (int -> mold)) list ) ;;
 
   let precomputations_for_width_opt w = List.assoc_opt w treated_widths ;;
-  let precomputations_for_width_scrappers_pairs_opt pair = List.assoc_opt pair treated_width_scrappers_pairs ;;
   
-
 end ;;   
   
 
   let compute_opt pt =  
-      let (P(fis,W w)) = pt in 
-      
+      let (P(fis,W w)) = pt in     
       match Private.precomputations_for_width_opt (W w) with 
         Some f -> Some(f fis)
-      | None -> 
-        (
-          let (FIS(n,scr)) = fis in
-          match Private.precomputations_for_width_scrappers_pairs_opt (W w,scr) with 
-            Some g -> Some (g n)
-            | None -> None 
-        );;  
+      | None -> None ;;  
 
-  let precomputations_for_width_opt = Private.precomputations_for_width_opt ;;
-  let precomputations_for_width_scrappers_pairs_opt = Private.precomputations_for_width_scrappers_pairs_opt ;;
-                
-
+  
 end ;;  
   
 
