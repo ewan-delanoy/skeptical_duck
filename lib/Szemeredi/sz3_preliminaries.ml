@@ -643,6 +643,7 @@ let usual_decomposotion_opt pwb =
 
 end ;;  
 
+let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let usual_decomposotion_opt = Private.usual_decomposotion_opt ;; 
@@ -691,8 +692,8 @@ let standard_solution = Private.standard_solution ;;
 
 end ;;   
 
-(*
 
+(*
 module Medium_analysis = struct 
 
 exception Missing_value of point_with_breadth ;; 
@@ -701,14 +702,15 @@ module Private = struct
 
 let main_ref = ref [] ;;
 
-let seek_non_translated_obvious_access pt = 
-  match List.assoc_opt pt (!main_ref) with 
-    Some (mold1) -> (Some mold1,None)
+let seek_non_translated_obvious_access pwb = 
+  let (P(FIS(n,scr),W w)) = pt in 
+  match List.assoc_opt (W w,scr,b) (!main_ref) with 
+    Some (f) -> (Some (f n),None)
   | None ->
      (  
         let (P(fis,_upper_bound)) = pt in 
         let domain = Finite_int_set.to_usual_int_list fis in 
-        if Point.subset_is_admissible pt domain 
+        if Point.is_discrete pt domain 
         then  (Some(M([domain],domain)),None)
          else 
           (
