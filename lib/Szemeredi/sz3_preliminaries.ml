@@ -720,17 +720,19 @@ let explain = Memoized.make(fun pwb->
    if Point_with_extra_constraints.is_discrete pwc 
    then Discrete
    else 
-   match Analysis_with_extra_constraints.look_for_pivot pwc with
-   Some pivot -> Pivot(pivot)
-   | None ->(
-       match Point_with_breadth.usual_decomposition_opt pwb with 
+    (
+      match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> raise(Explain_exn(pwb))
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
         if measure pwb = measure preceding_pwb 
         then Select(nth 1,nth 2,nth 3)
-        else Fork(nth 1,nth 2,nth 3)  
-   )) ;; 
+        else (
+          match Analysis_with_extra_constraints.look_for_pivot pwc with
+          Some pivot -> Pivot(pivot)
+          | None ->Fork(nth 1,nth 2,nth 3)
+        )    
+    ) ) ;; 
    
 
 end ;; 
@@ -868,6 +870,7 @@ let try_to_compute_without_using_translations pwb =
 
   end ;;     
 
+  let force_compute pwb = (Analysis_with_breadth.explain pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
   let try_to_compute = Private.try_to_compute ;;
   let walk_scale = Private.walk_scale ;; 
 
