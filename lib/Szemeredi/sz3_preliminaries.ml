@@ -764,9 +764,12 @@ module Store = struct
 
   module Private = struct
   
-  let current_bound = 20 ;; 
+  let bound_for_sizes = 20 ;; 
 
-  let high_level_ref = ref [
+  let pair_level_ref = ref [
+     
+  ] ;;
+  let triple_level_ref = ref [
      (W 1,[],0),(fun n->Width_one.compute(FIS(n,[])))
   ] ;;
   let low_level_ref = ref [] ;;
@@ -777,9 +780,14 @@ module Store = struct
     then let domain = Point_with_breadth.supporting_set pwb in 
          Some(M([domain],domain)) 
     else     
-    let triple = Point_with_breadth.everything_but_the_size  pwb 
+    let (PWB(P(FIS(n,scr),w),b)) = pwb in  
+    let wpair = (w,scr) in
+    match List.assoc_opt wpair (!pair_level_ref) with 
+    Some (f) -> Some (f b n)
+  | None ->
+    let wtriple = (w,scr,b) 
     and n =  Point_with_breadth.size  pwb  in 
-    match List.assoc_opt triple (!high_level_ref) with 
+    match List.assoc_opt wtriple (!triple_level_ref) with 
       Some (f) -> Some (f n)
     | None ->
        (  
@@ -877,10 +885,11 @@ module Store = struct
        None -> None
       |Some(sol,is_new) -> Some(Mold.translate d sol,is_new);;
   
-      let unsafe_low_level_add pwb mold = (low_level_ref:=(pwb,mold)::(!low_level_ref));;  
-   
+   let unsafe_low_level_add pwb mold = (low_level_ref:=(pwb,mold)::(!low_level_ref));;  
+   let unsafe_pair_level_add pair f = (pair_level_ref:=(pair,f)::(!pair_level_ref));;  
+   let unsafe_triple_level_add triple f = (triple_level_ref:=(triple,f)::(!triple_level_ref));;  
 
-    end ;;     
+  end ;;     
   
    
   let compute_opt = Private.compute_opt ;;
@@ -888,6 +897,8 @@ module Store = struct
   let rightmost_pivot_case_opt = Private.rightmost_pivot_case_opt ;;  
   let select_case_opt = Private.select_case_opt ;;
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
+  let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
+  let unsafe_triple_level_add = Private.unsafe_triple_level_add ;; 
 
   end ;;  
  
