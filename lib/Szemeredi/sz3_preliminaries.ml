@@ -730,9 +730,9 @@ let explain = Memoized.make(fun pwb->
         then Select(nth 1,nth 2,nth 3)
         else (
           let pwc = Point_with_breadth.to_extra_constraints pwb in 
-          match Analysis_with_extra_constraints.look_for_pivot pwc with
-          Some pivot -> Pivot(pivot)
-          | None ->Fork(nth 1,nth 2,nth 3)
+          if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
+          then Pivot(0)
+          else Fork(nth 1,nth 2,nth 3)
         )    
     )  ;; 
    
