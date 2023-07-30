@@ -585,8 +585,8 @@ module Analysis_with_extra_constraints = struct
 module Private = struct
 
 let measure = Memoized.recursive (fun 
-   old_f ptwc-> 
-     let (PEC(pt,l_cstr)) = ptwc in 
+   old_f pwc-> 
+     let (PEC(pt,l_cstr)) = pwc in 
      let stays_admissible = (fun z->List.for_all (
         fun (C cstr)->not(i_is_included_in cstr z)
      ) l_cstr) in 
@@ -594,31 +594,37 @@ let measure = Memoized.recursive (fun
      if List.exists stays_admissible  trial1 
      then List.length(List.hd trial1)
      else 
-     let ptwc2 = Point_with_extra_constraints.remove_rightmost_element ptwc
-     and ptwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints ptwc in 
-     max(old_f ptwc2)((old_f ptwc3)+1)
+     let pwc2 = Point_with_extra_constraints.remove_rightmost_element pwc
+     and pwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints pwc in 
+     max(old_f pwc2)((old_f pwc3)+1)
 );;
 
 let standard_solution  = Memoized.recursive (fun 
-  old_f ptwc-> 
-  let (PEC(pt,_l_cstr)) = ptwc in 
-  if Point_with_extra_constraints.is_discrete ptwc 
+  old_f pwc-> 
+  let (PEC(pt,_l_cstr)) = pwc in 
+  if Point_with_extra_constraints.is_discrete pwc 
   then Point.supporting_set pt 
   else  
-  let ptwc2 = Point_with_extra_constraints.remove_rightmost_element ptwc
-  and ptwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints ptwc in 
-  if (measure ptwc2)>=((measure ptwc3)+1)
-  then old_f(ptwc2)
-  else (old_f(ptwc3))@[Point.max pt]  
+  let pwc2 = Point_with_extra_constraints.remove_rightmost_element pwc
+  and pwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints pwc in 
+  if (measure pwc2)>=((measure pwc3)+1)
+  then old_f(pwc2)
+  else (old_f(pwc3))@[Point.max pt]  
 );;
 
-let look_for_pivot  ptwc = 
-    let (PEC(pt,_l_cstr)) = ptwc in 
+let look_for_pivot  pwc = 
+    let (PEC(pt,_l_cstr)) = pwc in 
     let domain = List.rev (Point.supporting_set pt) 
-    and m = measure(ptwc)-1 in  
+    and m = measure(pwc)-1 in  
     List.find_opt (
-       fun p -> measure(Point_with_extra_constraints.remove_element ptwc p)=m
+       fun p -> measure(Point_with_extra_constraints.remove_element pwc p)=m
     )  domain;;
+
+let test_for_rightmost_pivot pwc = 
+  let (PEC(pt,_l_cstr)) = pwc in 
+  let n = Point.max pt in 
+  measure(Point_with_extra_constraints.remove_element pwc n)=
+    measure(pwc)-1 ;; 
 
 end ;; 
 
@@ -626,7 +632,7 @@ end ;;
 let look_for_pivot = Private.look_for_pivot ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;; 
-
+let test_for_rightmost_pivot = Private.test_for_rightmost_pivot ;; 
 
 end ;;  
 
@@ -716,23 +722,19 @@ let measure = Memoized.make(fun pwb->
 )  ;;
 
 let explain = Memoized.make(fun pwb->
-   let pwc = Point_with_breadth.to_extra_constraints pwb in 
-   if Point_with_extra_constraints.is_discrete pwc 
-   then Discrete
-   else 
-    (
-      match Point_with_breadth.usual_decomposition_opt pwb with 
-       None -> raise(Explain_exn(pwb))
+   match Point_with_breadth.usual_decomposition_opt pwb with 
+       None -> Discrete
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
         if measure pwb = measure preceding_pwb 
         then Select(nth 1,nth 2,nth 3)
         else (
+          let pwc = Point_with_breadth.to_extra_constraints pwb in 
           match Analysis_with_extra_constraints.look_for_pivot pwc with
           Some pivot -> Pivot(pivot)
           | None ->Fork(nth 1,nth 2,nth 3)
         )    
-    ) ) ;; 
+    )  ;; 
    
 
 end ;; 
