@@ -40,6 +40,7 @@ type diagnosis = Sz3_types.diagnosis =
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
+let i_fold_intersect = Ordered.fold_intersect i_order ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
 let i_insert = Ordered.insert i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -856,7 +857,7 @@ module Store = struct
         let offshoots2 = Image.image (
            fun (_,opt)->Option.get opt
          ) offshoots in 
-         let final_ext = i_fold_merge (Image.image (fun (M(_sol,ext))->ext) offshoots2)
+         let final_ext = i_fold_intersect (Image.image (fun (M(_sol,ext))->ext) offshoots2)
          and M(sols,_) = List.nth offshoots2 2 in 
          Finished(M(sols,final_ext));;  
   
