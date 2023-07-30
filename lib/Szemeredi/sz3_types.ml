@@ -28,6 +28,6 @@ type point_with_breadth = PWB of point * int ;;
 
 type explanation = 
    Discrete
-  |Pivot of int 
   |Select of int * int * int 
+  |Rightmost_pivot 
   |Fork of int * int * int ;;

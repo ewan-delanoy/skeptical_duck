@@ -27,10 +27,10 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 type explanation = Sz3_types.explanation = 
-   Discrete
-  |Pivot of int 
-  |Select of int * int * int 
-  |Fork of int * int * int ;;
+    Discrete
+   |Select of int * int * int 
+   |Rightmost_pivot 
+   |Fork of int * int * int ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -693,8 +693,8 @@ let decompose_wrt_translation pwb =
 
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
+let max (PWB(pt,_b)) = Point.max pt ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
-let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 let remove_element (PWB(pt,b)) elt = PWB(Point.remove_element pt elt,b);;
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let subset_is_admissible pwb subset = 
@@ -702,6 +702,7 @@ let subset_is_admissible pwb subset =
 
 let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
 let translate = Private.translate ;; 
+let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 let width (PWB(pt,_b))= Point.width pt ;;
 
 end ;;  
@@ -731,7 +732,7 @@ let explain = Memoized.make(fun pwb->
         else (
           let pwc = Point_with_breadth.to_extra_constraints pwb in 
           if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
-          then Pivot(0)
+          then Rightmost_pivot
           else Fork(nth 1,nth 2,nth 3)
         )    
     )  ;; 
@@ -781,22 +782,23 @@ let easy_compute_opt pwb =
    None -> None
   |Some translated_mold -> Some(Mold.translate d translated_mold);;
 
-let try_to_compute_in_pivot_case p pwb = 
-  let simpler_pwb = Point_with_breadth.remove_element pwb p in 
+let try_to_compute_in_rightmost_pivot_case pwb = 
+  let n = Point_with_breadth.max pwb in 
+  let simpler_pwb = Point_with_breadth.remove_element pwb n in 
   match easy_compute_opt simpler_pwb with 
-    None -> (None,Some(Pivot(p),Some(simpler_pwb,None)),true)
+    None -> (None,Some(Rightmost_pivot,Some(simpler_pwb,None)),true)
    |Some(M(old_sols,old_ext)) ->
       let new_sols = List.filter_map (
          fun sol -> 
-          let new_sol = i_insert p sol in 
+          let new_sol = i_insert n sol in 
           if Point_with_breadth.subset_is_admissible pwb new_sol 
           then Some new_sol
           else None  
       ) old_sols in 
       if new_sols = []
-      then let missing_sol = i_outsert p (Analysis_with_breadth.standard_solution pwb) in
-           (None,Some(Pivot(p),Some(simpler_pwb,Some missing_sol)),true)
-      else (Some(M(new_sols,i_insert p old_ext)),None,true);;    
+      then let missing_sol = i_outsert n (Analysis_with_breadth.standard_solution pwb) in
+           (None,Some(Rightmost_pivot,Some(simpler_pwb,Some missing_sol)),true)
+      else (Some(M(new_sols,i_insert n old_ext)),None,true);;    
       
 exception Try_to_compute_in_select_case of (int * int * int) * point_with_breadth;;
 
@@ -840,7 +842,7 @@ let try_to_compute_without_using_translations pwb =
        Discrete -> (* this should never happen, the discrete case
                       is already treated in *) 
                   raise(Try_to_compute_exn(pwb))
-      |Pivot(p)->try_to_compute_in_pivot_case p pwb 
+      |Rightmost_pivot->try_to_compute_in_rightmost_pivot_case pwb 
       |Select(i,j,k)->try_to_compute_in_select_case (i,j,k) pwb 
       |Fork(i,j,k)->try_to_compute_in_fork_case (i,j,k) pwb            
     ) ;; 
