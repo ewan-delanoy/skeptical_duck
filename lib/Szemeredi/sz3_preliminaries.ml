@@ -763,8 +763,6 @@ module Store = struct
   
 
   module Private = struct
-  
-  let bound_for_sizes = 20 ;; 
 
   let pair_level_ref = ref [
      
@@ -889,12 +887,20 @@ module Store = struct
    let unsafe_pair_level_add pair f = (pair_level_ref:=(pair,f)::(!pair_level_ref));;  
    let unsafe_triple_level_add triple f = (triple_level_ref:=(triple,f)::(!triple_level_ref));;  
 
+   let reset_all () =
+       (
+         low_level_ref:=[];
+         pair_level_ref:=[];
+         triple_level_ref:=[];
+       );;
+
   end ;;     
   
    
   let compute_opt = Private.compute_opt ;;
   let fork_case_opt = Private.fork_case_opt ;;  
   let rightmost_pivot_case_opt = Private.rightmost_pivot_case_opt ;;  
+  let reset_all = Private.reset_all ;;
   let select_case_opt = Private.select_case_opt ;;
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
