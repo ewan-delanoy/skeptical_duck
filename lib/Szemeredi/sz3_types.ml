@@ -31,3 +31,9 @@ type explanation =
   |Select of int * int * int 
   |Rightmost_pivot 
   |Fork of int * int * int ;;
+
+type diagnosis =
+  Missing_treatment of point_with_breadth 
+ |Incomplete_treatment of point_with_breadth 
+ |Missing_links of point_with_breadth * (int list)
+ |Finished of mold;;   

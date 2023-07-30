@@ -32,6 +32,12 @@ type explanation = Sz3_types.explanation =
    |Rightmost_pivot 
    |Fork of int * int * int ;;
 
+type diagnosis = Sz3_types.diagnosis = 
+   Missing_treatment of point_with_breadth 
+  |Incomplete_treatment of point_with_breadth 
+  |Missing_links of point_with_breadth * (int list)
+  |Finished of mold;;      
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -751,11 +757,6 @@ end ;;
 
 module Medium_analysis = struct 
 
-type diagnosis =
-    Missing_treatment of point_with_breadth 
-   |Incomplete_treatment of point_with_breadth 
-   |Missing_links of point_with_breadth * (int list)
-   |Finished of mold;; 
 
 let current_bound = 20 ;; 
 
