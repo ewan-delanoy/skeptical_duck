@@ -626,10 +626,11 @@ let test_for_rightmost_pivot pwc =
   measure(Point_with_extra_constraints.remove_element pwc n)=
     measure(pwc)-1 ;; 
 
+
+
 end ;; 
 
 
-let look_for_pivot = Private.look_for_pivot ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;; 
 let test_for_rightmost_pivot = Private.test_for_rightmost_pivot ;; 
@@ -750,6 +751,12 @@ end ;;
 
 module Medium_analysis = struct 
 
+type diagnosis =
+    Missing_treatment of point_with_breadth 
+   |Incomplete_treatment of point_with_breadth 
+   |Missing_links of point_with_breadth * (int list)
+   |Finished of mold;; 
+
 let current_bound = 20 ;; 
 
 module Private = struct
@@ -782,69 +789,123 @@ let easy_compute_opt pwb =
    None -> None
   |Some translated_mold -> Some(Mold.translate d translated_mold);;
 
-let try_to_compute_in_rightmost_pivot_case pwb = 
-  let n = Point_with_breadth.max pwb in 
-  let simpler_pwb = Point_with_breadth.remove_element pwb n in 
-  match easy_compute_opt simpler_pwb with 
-    None -> (None,Some(Rightmost_pivot,Some(simpler_pwb,None)),true)
-   |Some(M(old_sols,old_ext)) ->
-      let new_sols = List.filter_map (
-         fun sol -> 
-          let new_sol = i_insert n sol in 
-          if Point_with_breadth.subset_is_admissible pwb new_sol 
-          then Some new_sol
-          else None  
-      ) old_sols in 
-      if new_sols = []
-      then let missing_sol = i_outsert n (Analysis_with_breadth.standard_solution pwb) in
-           (None,Some(Rightmost_pivot,Some(simpler_pwb,Some missing_sol)),true)
-      else (Some(M(new_sols,i_insert n old_ext)),None,true);;    
-      
-exception Try_to_compute_in_select_case of (int * int * int) * point_with_breadth;;
+exception Try_direct_select_case_exn of point_with_breadth ;;
 
-let try_to_compute_in_select_case (i,j,k) pwb = 
-  match Point_with_breadth.usual_decomposition_opt pwb with 
-   None -> raise(Try_to_compute_in_select_case((i,j,k),pwb))
-  |Some(simpler_pwb,_) ->
+let try_direct_select_case pwb = 
+   match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> raise(Try_direct_select_case_exn(pwb))
+   |Some(simpler_pwb,_) ->
+        match easy_compute_opt simpler_pwb with 
+        None -> Missing_treatment(simpler_pwb)
+      |Some(M(old_sols,old_ext)) ->
+        let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+        if new_sols = []
+        then Incomplete_treatment(simpler_pwb)
+        else Finished(M(new_sols,old_ext));;        
+
+let try_direct_rightmost_pivot_case pwb = 
+    let n = Point_with_breadth.max pwb in 
+    let simpler_pwb = Point_with_breadth.remove_element pwb n in 
     match easy_compute_opt simpler_pwb with 
-    None -> (None,Some(Select(i,j,k),Some(simpler_pwb,None)),true)
-  |Some(M(old_sols,old_ext)) ->
-    let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+     None -> Missing_treatment(simpler_pwb)
+    |Some(M(old_sols,old_ext)) ->
+    let new_sols = List.filter_map (
+      fun sol -> 
+        let new_sol = i_insert n sol in 
+        if Point_with_breadth.subset_is_admissible pwb new_sol 
+        then Some new_sol
+        else None  
+    ) old_sols in 
     if new_sols = []
-    then let missing_sol = Analysis_with_breadth.standard_solution pwb in
-                 (None,Some(Select(i,j,k),Some(simpler_pwb,Some missing_sol)),true)
-    else (Some(M(new_sols,old_ext)),None,true);;      
-      
-let try_to_compute_in_fork_case (i,j,k) pwb = 
-  let offshoots = Image.image (fun t->
-    let pwb2=Point_with_breadth.remove_element pwb t in 
-    (pwb2,easy_compute_opt pwb2)
-    ) [i;j;k] in
-  match List.find_opt (fun (_,opt)->opt=None) offshoots with
-  Some(pwb3,_)-> (None,Some(Fork(i,j,k),Some(pwb3,None)),true)
-  |None ->
-     let offshoots2 = Image.image (
-       fun (_,opt)->Option.get opt
-     ) offshoots in 
-     let final_ext = i_fold_merge (Image.image (fun (M(_sol,ext))->ext) offshoots2)
-     and M(sols,_) = List.nth offshoots2 2 in 
-     (Some(M(sols,final_ext)),None,true);;   
+    then Incomplete_treatment(simpler_pwb)
+    else Finished(M(new_sols,i_insert n old_ext));;   
+
+exception Try_direct_fork_case_exn of point_with_breadth ;;
+
+let try_direct_fork_case pwb = 
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+     None -> raise(Try_direct_fork_case_exn(pwb))
+    |Some(simpler_pwb,C cstr) ->
+      match easy_compute_opt simpler_pwb with 
+     None -> Missing_treatment(simpler_pwb)
+    |Some(M(_old_sols,old_ext)) -> 
+     let nth = (fun k->List.nth cstr (k-1)) in  
+     let i=nth 1 and j=nth 2 and k=nth 3 in 
+    let offshoots = Image.image (fun t->
+      let pwb2=Point_with_breadth.remove_element simpler_pwb t in 
+      (pwb2,easy_compute_opt pwb2)
+      ) [i;j;k] in
+    match List.find_opt (fun (_,opt)->opt=None) offshoots with
+    Some(pwb3,_)-> Missing_treatment pwb3
+    |None ->
+      let forgotten_links=i_setminus [i;j;k] old_ext in 
+      if forgotten_links<>[]
+      then Missing_links(simpler_pwb,forgotten_links) 
+      else     
+      let offshoots2 = Image.image (
+         fun (_,opt)->Option.get opt
+       ) offshoots in 
+       let final_ext = i_fold_merge (Image.image (fun (M(_sol,ext))->ext) offshoots2)
+       and M(sols,_) = List.nth offshoots2 2 in 
+       Finished(M(sols,final_ext));;  
+
+let store_compute_without_using_translations_opt pwb = 
+    match  easy_compute_without_using_translations_opt pwb with 
+    Some mold -> Some(mold,false)
+    |None -> 
+      (
+        match try_direct_select_case pwb with 
+        Finished(mold2) -> Some (mold2,true)
+        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
+          match try_direct_rightmost_pivot_case pwb with 
+          Finished(mold3) -> Some (mold3,true)
+          |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
+            match try_direct_fork_case pwb with 
+            Finished(mold4) -> Some (mold4,true)
+            |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
+                 None
+      ) ;;  
+
+let store_compute_opt pwb =
+    let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+    match store_compute_without_using_translations_opt translated_pwb with
+     None -> None
+    |Some(sol,is_new) -> Some(Mold.translate d sol,is_new);;
+
+let try_to_compute_in_select_case pwb = 
+    let direct =try_direct_rightmost_pivot_case pwb in 
+    match direct with 
+    Finished(mold3) -> (Some mold3,None)
+    |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
 
 
+let try_to_compute_in_rightmost_pivot_case pwb = 
+  let direct =try_direct_rightmost_pivot_case pwb in 
+  match direct with 
+  Finished(mold3) -> (Some mold3,None)
+  |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+
+let try_to_compute_in_fork_case pwb = 
+    let direct =try_direct_fork_case pwb in 
+    match direct with 
+    Finished(mold3) -> (Some mold3,None)
+    |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+  
+  
 exception Try_to_compute_exn of point_with_breadth;;
 
 let try_to_compute_without_using_translations pwb =
   match  easy_compute_without_using_translations_opt pwb with 
-  Some mold -> (Some(mold),None,false)
+  Some mold -> ((Some(mold),None),false)
   |None -> 
     (
       match Analysis_with_breadth.explain pwb with 
        Discrete -> (* this should never happen, the discrete case
                       is already treated in *) 
                   raise(Try_to_compute_exn(pwb))
-      |Rightmost_pivot->try_to_compute_in_rightmost_pivot_case pwb 
-      |Select(i,j,k)->try_to_compute_in_select_case (i,j,k) pwb 
-      |Fork(i,j,k)->try_to_compute_in_fork_case (i,j,k) pwb            
+      |Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
+      |Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
+      |Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
     ) ;; 
 
     
@@ -853,14 +914,14 @@ let try_to_compute_without_using_translations pwb =
 
   let try_to_compute pwb =
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-    let (opt_sol,extra_info,noticeable) = try_to_compute_without_using_translations translated_pwb in 
+    let ((opt_sol,extra_info),noticeable) = try_to_compute_without_using_translations translated_pwb in 
     match opt_sol with 
      None -> (None,extra_info)
     |Some(sol) -> 
         let final_sol = Mold.translate d sol in 
         let _ = (
          if noticeable then   
-         low_level_ref:=(pwb,final_sol)::(!low_level_ref)) in 
+         low_level_ref:=(translated_pwb,sol)::(!low_level_ref)) in 
         (Some(final_sol),None);;
 
   let walk_scale (w,scr,b) = 
