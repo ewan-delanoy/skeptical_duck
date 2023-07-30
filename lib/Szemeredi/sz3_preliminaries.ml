@@ -770,7 +770,7 @@ module Store = struct
      
   ] ;;
   let triple_level_ref = ref [
-     (W 1,[],0),(fun n->Width_one.compute(FIS(n,[])))
+     (* (W 1,[],0),(fun n->Width_one.compute(FIS(n,[]))) *)
   ] ;;
   let low_level_ref = ref [] ;;
   
@@ -904,6 +904,7 @@ module Store = struct
  
 module Medium_analysis = struct 
 
+  exception Walk_scale_exn of int * diagnosis ;; 
     
     module Private = struct
     
@@ -954,14 +955,16 @@ module Medium_analysis = struct
              if is_new 
              then   Store.unsafe_low_level_add translated_pwb translated_mold) in 
             (Some(final_sol),None);;
-    
+
       let walk_scale (w,scr,b) bound = 
          let base = Int_range.range 1 bound in 
           let temp1 = Image.image (fun n->
             let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
-            (pwb,try_to_compute pwb)
+            (n,try_to_compute pwb)
             ) base in 
-          List.find_opt (fun (_pwb,(sol_opt,_extra_info))->sol_opt=None) temp1;;  
+          match List.find_opt (fun (_n,(mold_opt,_extra_info))->mold_opt=None) temp1 with 
+         Some(n0,(_,extra_info0))->raise(Walk_scale_exn(n0,Option.get extra_info0))
+        |None -> Image.image (fun (n,(mold_opt,_extra_info))->(n,Option.get mold_opt)) temp1;;  
     
     
       end ;;     
@@ -975,7 +978,50 @@ module Medium_analysis = struct
     end ;;  
     
       
+module Safe_initialization = struct 
 
+exception Undefined_during_check_exn of point_with_breadth * diagnosis ;;   
+exception Unequal_during_check_exn of (point_with_breadth * mold * mold) list;;
+
+
+module Private = struct 
+
+   let max_size = 25 ;;
+   let max_breadth = 25 ;; 
+
+  let check_for_triple (w,scr,b) f = 
+    let counterexamples_ref = ref [] in 
+     let analize =(fun n->
+       let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
+       let (opt_mold,extra_info) = Medium_analysis.try_to_compute pwb in 
+       match opt_mold with 
+        None -> raise(Undefined_during_check_exn(pwb,Option.get extra_info))
+       |Some(mold) -> 
+          if mold <> (f n)
+          then counterexamples_ref:=(pwb,mold,f n)::(!counterexamples_ref)
+     ) in 
+     let _ = (for k= 1 to max_size do analize k done) in 
+     let counterexamples = (!counterexamples_ref) in 
+     if counterexamples <> []
+     then raise(Unequal_during_check_exn(counterexamples))
+     else () ;;
+      
+   let check_for_pair (w,scr) g = 
+    for b= 1 to max_breadth do check_for_triple (w,scr,b) (g b) done ;;
+       
+   
+
+end ;;   
+
+let pair_level_add (w,scr) g=
+  let _ = Private.check_for_pair (w,scr) g in 
+  Store.unsafe_pair_level_add (w,scr) g ;;
+
+let triple_level_add (w,scr,b) f=
+  let _ = Private.check_for_triple (w,scr,b) f in 
+  Store.unsafe_triple_level_add (w,scr,b) f ;;  
+
+end ;;  
   
 
 
