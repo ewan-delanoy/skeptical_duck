@@ -209,7 +209,7 @@ module Point = struct
     let new_fis = Finite_int_set.remove_element fis pivot in 
     let new_w = (
       match Find_highest_constraint.for_maximal_width (w,Finite_int_set.to_usual_int_list new_fis) with
-      None -> 1
+      None -> 0
       |Some(C(l))->(List.nth l 1)-(List.nth l 0)
     ) in 
     P(new_fis,W new_w) ;;
