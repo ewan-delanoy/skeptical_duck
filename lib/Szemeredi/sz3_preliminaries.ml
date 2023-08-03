@@ -822,8 +822,18 @@ module Store = struct
             ) old_sols in 
             if new_sols <> []
             then (Some(M(new_sols,new_ext)),true)
-            else 
-            (None,false)     
+          else (
+            match Point_with_breadth.usual_decomposition_opt pwb with 
+             None -> (None,false)
+             | Some(simpler_pwb,_) ->
+          match no_expansions_without_using_translations_opt simpler_pwb with 
+          None -> (None,false)
+          | Some(M(old_sols,old_ext)) ->  
+            let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+            if new_sols <> []
+            then (Some(M(new_sols,old_ext)),true)
+            else (None,false)
+          )      
        ) ;;
   
   let minimal_expansions_opt pwb = 
@@ -1052,7 +1062,7 @@ module Private = struct
 end ;;   
 
 let counterexamples_from_last_computation () =
-    (!(Private.counterexamples_ref)) ;; 
+    List.rev(!(Private.counterexamples_ref)) ;; 
 
 let pair_level_add (w,scr) g=
   let _ = Private.check_for_pair (w,scr) g in 
@@ -1063,6 +1073,37 @@ let triple_level_add (w,scr,b) f=
   Store.unsafe_triple_level_add (w,scr,b) f ;;  
 
 end ;;  
+
+module Initialization = struct 
+
+  let tf1 =(fun r n->
+    let m = min(n/3)(r) in
+    let end_part =Int_range.range (3*m+1) n 
+    and beginning = List.flatten (Int_range.scale (fun j->[3*j-2;3*j-1]) 1 m) in 
+    M([beginning@end_part],end_part)      
+  ) ;;
+  
+  let tf2 b n = tf1 (Basic.frac_ceiling b 3) n ;; 
+
+  Safe_initialization.pair_level_add (W 0,[]) tf2 ;;  
+
+  exception Bad_remainder_by_three of int;;
+
+  let tf3 =(fun n->
+    let r = n mod 3 in 
+    let core = List.filter (fun j->(j mod 3)<>0)(Int_range.range 1 n) in
+    let end_part =(
+      match r with 
+      0 -> [] | 1->[n] |2 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
+    )   in 
+    M([core],end_part)      
+  ) ;;
+
+  let tf4 _b n = tf3 n ;; 
+ 
+  Safe_initialization.pair_level_add (W 1,[]) tf4 ;;   
+
+end ;;   
   
 
 
