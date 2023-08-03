@@ -810,14 +810,20 @@ module Store = struct
           match no_expansions_opt simpler_pwb with 
            None -> (None,false) 
           |Some(M(old_sols,old_ext)) ->
-            let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
-            if new_sols <> []
-            then (Some(M(new_sols,old_ext)),true)
-            else 
             let new_ext = i_insert n old_ext in 
             if (not  (Point_with_breadth.subset_is_admissible pwb new_ext))
-            then (Some(M(new_sols,[])),true)
-            else (None,false)     
+              then (Some(M(old_sols,[])),true)
+              else
+            let new_sols = List.filter_map (fun old_sol->
+              let new_sol = i_insert n old_sol in 
+               if Point_with_breadth.subset_is_admissible pwb new_sol
+               then Some new_sol
+               else None 
+            ) old_sols in 
+            if new_sols <> []
+            then (Some(M(new_sols,new_ext)),true)
+            else 
+            (None,false)     
        ) ;;
   
   let minimal_expansions_opt pwb = 
@@ -1013,16 +1019,16 @@ module Medium_analysis = struct
 module Safe_initialization = struct 
 
 exception Undefined_during_check_exn of point_with_breadth * diagnosis ;;   
-exception Unequal_during_check_exn of (point_with_breadth * mold * mold) list;;
+exception Unequal_during_check_exn of (point_with_breadth * mold * mold) ;;
 
 
 module Private = struct 
 
    let max_size = 25 ;;
    let max_breadth = 25 ;; 
+   let counterexamples_ref = ref [];;
 
   let check_for_triple (w,scr,b) f = 
-    let counterexamples_ref = ref [] in 
      let analize =(fun n->
        let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
        let (opt_mold,extra_info) = Medium_analysis.try_to_compute pwb in 
@@ -1035,7 +1041,7 @@ module Private = struct
      let _ = (for k= 1 to max_size do analize k done) in 
      let counterexamples = (!counterexamples_ref) in 
      if counterexamples <> []
-     then raise(Unequal_during_check_exn(counterexamples))
+     then raise(Unequal_during_check_exn(List.hd counterexamples))
      else () ;;
       
    let check_for_pair (w,scr) g = 
@@ -1044,6 +1050,9 @@ module Private = struct
    
 
 end ;;   
+
+let counterexamples_from_last_computation () =
+    (!(Private.counterexamples_ref)) ;; 
 
 let pair_level_add (w,scr) g=
   let _ = Private.check_for_pair (w,scr) g in 
