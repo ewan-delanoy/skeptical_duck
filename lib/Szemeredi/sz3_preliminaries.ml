@@ -1062,7 +1062,7 @@ module Private = struct
    let check_for_pair (w,scr) g = 
     let old_state = (!(Store.Private.low_level_ref)) in 
     (
-    for b= 1 to max_breadth do check_for_triple (w,scr,b) (g b) false done;
+    for b= 0 to max_breadth do check_for_triple (w,scr,b) (g b) false done;
     Store.Private.low_level_ref:=old_state
     )
   ;;
