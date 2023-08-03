@@ -1038,7 +1038,8 @@ module Private = struct
    let max_breadth = 25 ;; 
    let counterexamples_ref = ref [];;
 
-  let check_for_triple (w,scr,b) f = 
+  let check_for_triple (w,scr,b) f must_return_to_old_state= 
+    let old_state = (!(Store.Private.low_level_ref)) in 
      let analize =(fun n->
        let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
        let (opt_mold,extra_info) = Medium_analysis.try_to_compute pwb in 
@@ -1048,14 +1049,23 @@ module Private = struct
           if mold <> (f n)
           then counterexamples_ref:=(pwb,mold,f n)::(!counterexamples_ref)
      ) in 
-     let _ = (for k= 1 to max_size do analize k done) in 
+     let _ = (
+       for k= 1 to max_size do analize k done;
+       if must_return_to_old_state 
+       then Store.Private.low_level_ref:=old_state
+     ) in 
      let counterexamples = (!counterexamples_ref) in 
      if counterexamples <> []
      then raise(Unequal_during_check_exn(List.hd counterexamples))
      else () ;;
       
    let check_for_pair (w,scr) g = 
-    for b= 1 to max_breadth do check_for_triple (w,scr,b) (g b) done ;;
+    let old_state = (!(Store.Private.low_level_ref)) in 
+    (
+    for b= 1 to max_breadth do check_for_triple (w,scr,b) (g b) false done;
+    Store.Private.low_level_ref:=old_state
+    )
+  ;;
        
    
 
@@ -1064,12 +1074,12 @@ end ;;
 let counterexamples_from_last_computation () =
     List.rev(!(Private.counterexamples_ref)) ;; 
 
-let pair_level_add (w,scr) g=
+let pair_level_add (w,scr) g =
   let _ = Private.check_for_pair (w,scr) g in 
   Store.unsafe_pair_level_add (w,scr) g ;;
 
 let triple_level_add (w,scr,b) f=
-  let _ = Private.check_for_triple (w,scr,b) f in 
+  let _ = Private.check_for_triple (w,scr,b) f true in 
   Store.unsafe_triple_level_add (w,scr,b) f ;;  
 
 end ;;  
