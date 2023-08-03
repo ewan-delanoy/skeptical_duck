@@ -774,7 +774,7 @@ module Store = struct
   let low_level_ref = ref [] ;;
   
   
-  let easy_compute_without_using_translations_opt pwb = 
+  let no_expansions_without_using_translations_opt pwb = 
     if Point_with_breadth.is_discrete pwb 
     then let domain = Point_with_breadth.supporting_set pwb in 
          Some(M([domain],domain)) 
@@ -795,19 +795,43 @@ module Store = struct
       | None -> None
          ) ;; 
   
-  let easy_compute_opt pwb = 
+  let no_expansions_opt pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-    match easy_compute_without_using_translations_opt translated_pwb with 
+    match no_expansions_without_using_translations_opt translated_pwb with 
      None -> None
     |Some translated_mold -> Some(Mold.translate d translated_mold);;
   
+  let minimal_expansions_without_using_translations_opt pwb = 
+      match no_expansions_without_using_translations_opt pwb with  
+       Some easy_answer -> (Some easy_answer,false)
+       |None ->(
+         let n = Point_with_breadth.max pwb in 
+         let simpler_pwb = Point_with_breadth.remove_element pwb n in 
+          match no_expansions_opt simpler_pwb with 
+           None -> (None,false) 
+          |Some(M(old_sols,old_ext)) ->
+            let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+            if new_sols <> []
+            then (Some(M(new_sols,old_ext)),true)
+            else 
+            let new_ext = i_insert n old_ext in 
+            if (not  (Point_with_breadth.subset_is_admissible pwb new_ext))
+            then (Some(M(new_sols,[])),true)
+            else (None,false)     
+       ) ;;
   
-  
+  let minimal_expansions_opt pwb = 
+      let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+      match fst(minimal_expansions_without_using_translations_opt translated_pwb)  with 
+       None -> None
+     |Some translated_mold -> Some(Mold.translate d translated_mold) ;;
+
+
   let select_case_opt pwb = 
      match Point_with_breadth.usual_decomposition_opt pwb with 
       None -> raise(Select_case_opt_exn(pwb))
      |Some(simpler_pwb,_) ->
-          match easy_compute_opt simpler_pwb with 
+          match no_expansions_opt simpler_pwb with 
           None -> Missing_treatment(simpler_pwb)
         |Some(M(old_sols,old_ext)) ->
           let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
@@ -818,7 +842,7 @@ module Store = struct
   let rightmost_pivot_case_opt pwb = 
       let n = Point_with_breadth.max pwb in 
       let simpler_pwb = Point_with_breadth.remove_element pwb n in 
-      match easy_compute_opt simpler_pwb with 
+      match no_expansions_opt simpler_pwb with 
        None -> Missing_treatment(simpler_pwb)
       |Some(M(old_sols,old_ext)) ->
       let new_sols = List.filter_map (
@@ -838,14 +862,14 @@ module Store = struct
       match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> raise(Fork_case_opt_exn(pwb))
       |Some(simpler_pwb,C cstr) ->
-        match easy_compute_opt simpler_pwb with 
+        match no_expansions_opt simpler_pwb with 
        None -> Missing_treatment(simpler_pwb)
       |Some(M(_old_sols,old_ext)) -> 
        let nth = (fun k->List.nth cstr (k-1)) in  
        let i=nth 1 and j=nth 2 and k=nth 3 in 
       let offshoots = Image.image (fun t->
         let pwb2=Point_with_breadth.remove_element simpler_pwb t in 
-        (pwb2,easy_compute_opt pwb2)
+        (pwb2,no_expansions_opt pwb2)
         ) [i;j;k] in
       match List.find_opt (fun (_,opt)->opt=None) offshoots with
       Some(pwb3,_)-> Missing_treatment pwb3
@@ -862,8 +886,9 @@ module Store = struct
          Finished(M(sols,final_ext));;  
   
   let compute_without_using_translations_opt pwb = 
-      match  easy_compute_without_using_translations_opt pwb with 
-      Some mold -> Some(mold,false)
+     let (opt,is_new) =  minimal_expansions_without_using_translations_opt pwb in 
+      match opt with 
+      Some mold -> Some(mold,is_new)
       |None -> 
         (
           match select_case_opt pwb with 
