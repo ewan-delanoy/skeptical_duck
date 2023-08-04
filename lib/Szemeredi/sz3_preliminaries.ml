@@ -38,6 +38,10 @@ type diagnosis = Sz3_types.diagnosis =
   |Missing_links of point_with_breadth * (int list)
   |Finished of mold;;      
 
+type helper = Sz3_types.helper = 
+  Help_with_solution of point_with_breadth * solution 
+ |Help_with_links of point_with_breadth * (int list) ;;   
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -100,6 +104,8 @@ module Mold = struct
 let translate d (M(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
     M(Image.image tr sols,tr ext) ;; 
+
+let measure (M(sols, _ext)) = List.length(List.hd sols) ;; 
 
 end ;;
 
@@ -754,16 +760,59 @@ let standard_solution = Private.standard_solution ;;
 
 end ;;   
 
+module Help = struct 
+
+  exception False_links_exn of point_with_breadth * (int list);;
+  exception False_solution_exn of point_with_breadth * solution ;;
+
+let argument = function 
+Help_with_solution (pwb,_) -> pwb
+| Help_with_links (pwb,_) -> pwb ;;
+
+let rec assoc_opt pwb helper_list = match helper_list with 
+  [] -> None 
+  | helper :: other_helpers ->
+      if argument helper = pwb
+      then Some helper
+      else assoc_opt pwb other_helpers ;;   
+
+let with_links  pwb old_mold data_for_links  =
+   let m = Mold.measure(old_mold) -1 in 
+   let counterexamples = List.filter (fun 
+     (_t,md)->Mold.measure(md)<>m
+   ) data_for_links in 
+   if counterexamples<>[]
+   then raise(False_links_exn(pwb,Image.image fst counterexamples)) 
+   else
+   let (M(old_sols,old_ext)) = old_mold in 
+   let links = Image.image fst data_for_links in 
+   M(old_sols,i_merge old_ext links);;
+  
+  let with_solution  pwb old_mold new_sol  =
+   let m = Mold.measure(old_mold) in 
+   if List.length(new_sol)<>m
+   then raise(False_solution_exn(pwb,new_sol)) 
+   else
+   let (M(old_sols,old_ext)) = old_mold in 
+   M(il_insert new_sol old_sols,old_ext);;
+
+
+
+end ;;   
 
 
 module Store = struct 
 
   exception Select_case_opt_exn of point_with_breadth ;;
   exception Fork_case_opt_exn of point_with_breadth ;;
-
+  exception Missing_links_in_store_exn of point_with_breadth * (int list);;
   
 
   module Private = struct
+
+  let helpers_ref = ref [
+
+  ] ;; 
 
   let pair_level_ref = ref [
      
@@ -901,7 +950,7 @@ module Store = struct
          and M(sols,_) = List.nth offshoots2 2 in 
          Finished(M(sols,final_ext));;  
   
-  let compute_without_using_translations_opt pwb = 
+  let cumpote_without_helpers_and_without_using_translations_opt pwb = 
      let (opt,is_new) =  minimal_expansions_without_using_translations_opt pwb in 
       match opt with 
       Some mold -> Some(mold,is_new)
@@ -919,12 +968,44 @@ module Store = struct
                    None
         ) ;;  
   
-  let compute_opt pwb =
+  let cumpote_without_helpers_opt pwb =
       let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-      match compute_without_using_translations_opt translated_pwb with
+      match cumpote_without_helpers_and_without_using_translations_opt translated_pwb with
        None -> None
       |Some(sol,is_new) -> Some(Mold.translate d sol,is_new);;
   
+  let apply_helper helper pwb pre_answer =
+      match helper with 
+       Help_with_solution(_,sol) -> Help.with_solution pwb pre_answer sol
+      |Help_with_links(_,links) ->  
+         let temp1 = Image.image (fun t->
+           (t,no_expansions_opt(Point_with_breadth.remove_element pwb t))
+          ) links in 
+          let (bad_links,good_links) = List.partition (fun (_t,opt)->opt=None) temp1 in
+          if bad_links<>[]
+          then raise(Missing_links_in_store_exn(pwb,Image.image fst bad_links))
+          else let links_with_data = Image.image (fun (t,opt)->(t,Option.get opt)) good_links in 
+               Help.with_links pwb pre_answer links_with_data
+     ;;
+
+  let compute_without_using_translations_opt pwb = 
+     match cumpote_without_helpers_and_without_using_translations_opt pwb with 
+     None -> None 
+     |Some (pre_answer,is_new) ->
+        (
+        match Help.assoc_opt pwb (!helpers_ref) with 
+         None -> Some(pre_answer,is_new)
+        |(Some helper) ->  
+          Some(apply_helper helper pwb pre_answer,is_new)
+          );;
+
+  let compute_opt pwb =
+    let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+    match compute_without_using_translations_opt translated_pwb with
+      None -> None
+    |Some(sol,is_new) -> Some(Mold.translate d sol,is_new);;    
+  
+
    let unsafe_low_level_add pwb mold = (low_level_ref:=(pwb,mold)::(!low_level_ref));;  
    let unsafe_pair_level_add pair f = (pair_level_ref:=(pair,f)::(!pair_level_ref));;  
    let unsafe_triple_level_add triple f = (triple_level_ref:=(triple,f)::(!triple_level_ref));;  

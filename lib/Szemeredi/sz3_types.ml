@@ -37,3 +37,7 @@ type diagnosis =
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
  |Finished of mold;;   
+
+type helper = 
+    Help_with_solution of point_with_breadth * solution 
+   |Help_with_links of point_with_breadth * (int list) ;; 
