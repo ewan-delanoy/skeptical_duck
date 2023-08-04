@@ -935,6 +935,7 @@ module Store = struct
          pair_level_ref:=[];
          triple_level_ref:=[];
        );;
+    let reset_low_level () = (low_level_ref:=[]) ;;
 
   end ;;     
   
@@ -943,6 +944,7 @@ module Store = struct
   let fork_case_opt = Private.fork_case_opt ;;  
   let rightmost_pivot_case_opt = Private.rightmost_pivot_case_opt ;;  
   let reset_all = Private.reset_all ;;
+  let reset_low_level = Private.reset_low_level ;;
   let select_case_opt = Private.select_case_opt ;;
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
