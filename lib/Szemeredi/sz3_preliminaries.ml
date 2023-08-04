@@ -1113,6 +1113,26 @@ module Initialization = struct
  
   Safe_initialization.pair_level_add (W 1,[]) tf4 ;;   
 
+  let tf5 =(fun n->
+    match List.assoc_opt n 
+    [
+       1, M ([[1]], [1]);
+       2, M ([[1;2]], [1;2]);
+       3, M ([[1;2]], []);     
+    ] with
+    Some answer -> answer
+    |None ->
+    let r = n mod 3 in 
+    let core = [1;2]@(List.filter (fun j->(j mod 3)<>1)(Int_range.range 5 n)) in
+    let end_part =(
+      match r with 
+      1 -> [] | 2->[n] |0 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
+    )   in 
+    M([core],end_part)      
+  ) ;;
+  
+  Safe_initialization.triple_level_add (W 2,[4],0) tf5 ;;
+
 end ;;   
   
 
