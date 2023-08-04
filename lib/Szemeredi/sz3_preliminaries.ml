@@ -1114,6 +1114,7 @@ module Initialization = struct
   let tf4 _b n = tf3 n ;; 
  
   Safe_initialization.pair_level_add (W 1,[]) tf4 ;;   
+  Safe_initialization.triple_level_add (W 2,[],0) tf3 ;;
 
   let tf5 =(fun n->
     match List.assoc_opt n 
