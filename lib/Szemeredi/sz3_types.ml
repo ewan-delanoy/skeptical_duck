@@ -18,8 +18,6 @@ type extension_data = int list ;;
 
 type solution = int list ;; 
 
-type mold = M of (solution list) * extension_data ;;
-
 type point = P of finite_int_set * width ;; 
 
 type point_with_extra_constraints = PEC of point * (constraint_t list);;
@@ -31,6 +29,8 @@ type explanation =
   |Select of int * int * int 
   |Rightmost_pivot 
   |Fork of int * int * int ;;
+
+type mold = M of (solution list) * extension_data ;;
 
 type diagnosis =
   Missing_treatment of point_with_breadth 

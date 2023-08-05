@@ -17,8 +17,6 @@ type extension_data = Sz3_types.extension_data  ;;
 
 type solution = Sz3_types.solution ;; 
 
-type mold = Sz3_types.mold = M of (solution list) * extension_data ;;
-
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
 type point_with_extra_constraints = Sz3_types.point_with_extra_constraints = 
@@ -32,6 +30,8 @@ type explanation = Sz3_types.explanation =
    |Rightmost_pivot 
    |Fork of int * int * int ;;
 
+type mold = Sz3_types.mold = M of (solution list) * extension_data ;;    
+
 type diagnosis = Sz3_types.diagnosis = 
    Missing_treatment of point_with_breadth 
   |Incomplete_treatment of point_with_breadth 
@@ -40,7 +40,8 @@ type diagnosis = Sz3_types.diagnosis =
 
 type helper = Sz3_types.helper = 
   Help_with_solution of point_with_breadth * solution 
- |Help_with_links of point_with_breadth * (int list) ;;   
+ |Help_with_links of point_with_breadth * (int list) ;;  
+ 
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -101,13 +102,21 @@ end ;;
 
 module Mold = struct 
 
-let of_solutions_and_forced_elements (M(sols, ext))= (sols,ext) ;;  
+let discrete domain = M([domain],domain) ;;   
+
+let forced_elements (M(_sols, ext))= ext ;; 
+
+let of_solutions sols = M(sols,[]) ;; 
+
+let of_solutions_and_forced_elements sols ext= M(sols,ext) ;;  
 
 let translate d (M(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
     M(Image.image tr sols,tr ext) ;; 
 
 let measure (M(sols, _ext)) = List.length(List.hd sols) ;; 
+
+let solutions (M(sols, _ext))= sols ;; 
 
 let solutions_and_forced_elements (M(sols, ext))= (sols,ext) ;;  
 
@@ -258,7 +267,8 @@ module Width_one = struct
         |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
         |r -> raise(Bad_remainder_by_three(r)) 
     ) intervals in 
-    M([List.flatten sol_components],List.flatten forced_elements);;
+    Mold.of_solutions_and_forced_elements 
+      [List.flatten sol_components] (List.flatten forced_elements);;
 
 end ;;   
 
@@ -345,7 +355,7 @@ let seek_non_translated_obvious_access helper point =
           let (P(fis,_upper_bound)) = point in 
           let domain = Finite_int_set.to_usual_int_list fis in 
           if Point.subset_is_admissible point domain 
-          then  P_Finished_computation(None,M([domain],domain))
+          then  P_Finished_computation(None,Mold.discrete domain)
            else 
             (
               match Precomputed.compute_opt point with 
@@ -388,7 +398,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
                  (helper,Some bulky,to_be_treated)
           else 
           if Point.subset_is_admissible pt whole 
-          then let pair = (pt,(Some(Lucky(pt2,ext2)),M([whole],[]))) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),Mold.of_solutions [whole])) in  
                (pair::helper,None,to_be_treated) 
           else     
           let m3=List.length(List.hd sols3) in 
@@ -404,7 +414,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
               else None    
             ) sols3 in  
           if sols4 <> []
-          then let pair = (pt,(Some(Lucky(pt2,ext2)),M(sols4,[]))) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),Mold.of_solutions sols4)) in  
                (pair::helper,None,to_be_treated) 
           else 
           let n2 = Point.max pt2 in 
@@ -424,14 +434,16 @@ let long_case_in_inner_pusher_for_needed_subcomputations
 let inner_pusher_for_needed_subcomputations
       helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated =
       match hopes with 
-      [] -> let pair = (pt,(Some(Disjunction(failures)),M(sols_for_preceding_point,[]))) in  
+      [] -> let pair = (pt,(Some(Disjunction(failures)),
+             Mold.of_solutions sols_for_preceding_point )) in  
             (pair::helper,None,to_be_treated) 
      |(pt2,ext2,goal)::other_hopes ->
        (
         match seek_translated_obvious_access helper pt2 with 
         P_Unfinished_computation(l) ->
            (helper,None,l@(pt::to_be_treated))
-        |P_Finished_computation(_,M(sols3,_ext3)) -> 
+        |(P_Finished_computation(_,mold3)) -> 
+          let sols3 = Mold.solutions mold3 in 
           long_case_in_inner_pusher_for_needed_subcomputations
           helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated 
               (pt2,ext2,goal) other_hopes sols3
@@ -449,10 +461,11 @@ let first_analysis_on_new_item helper pt other_items=
       match seek_translated_obvious_access helper pt2 with 
       P_Unfinished_computation(l) ->
          (helper,None,l@(pt::other_items))
-      |P_Finished_computation(_,M(sols,ext)) ->
+      |P_Finished_computation(_,mold) -> 
+          let (sols,ext) = Mold.solutions_and_forced_elements mold in 
           let ext2 = i_insert n ext in 
           if not(Point.subset_is_admissible pt ext2) 
-          then let pair = (pt,(Some(Early_stop(pt2,n)),M(sols,[]))) in 
+          then let pair = (pt,(Some(Early_stop(pt2,n)),Mold.of_solutions sols)) in 
               (pair::helper,None,other_items)
           else
           let sols2 = List.filter_map (fun sol->
@@ -462,7 +475,8 @@ let first_analysis_on_new_item helper pt other_items=
             else None    
           ) sols in  
           if sols2 <> [] 
-          then let pair = (pt,(Some(Early_increase(pt2,n)),M(sols2,i_insert n ext))) in 
+          then let pair = (pt,(Some(Early_increase(pt2,n)),
+               Mold.of_solutions_and_forced_elements sols2 (i_insert n ext))) in 
                (pair::helper,None,other_items)
           else let goal = List.length(List.hd sols)+1 in 
                (helper,Some(IW((pt,sols),([],[(pt2,[n],goal)]))),other_items)
@@ -607,7 +621,7 @@ let measure = Memoized.recursive (fun
      let stays_admissible = (fun z->List.for_all (
         fun (C cstr)->not(i_is_included_in cstr z)
      ) l_cstr) in 
-     let (M(trial1,_)) = Crude_analysis_on_bare_point.compute pt in 
+     let trial1 = Mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
      if List.exists stays_admissible  trial1 
      then List.length(List.hd trial1)
      else 
@@ -788,18 +802,17 @@ let with_links  pwb old_mold data_for_links  =
    if counterexamples<>[]
    then raise(False_links_exn(pwb,Image.image fst counterexamples)) 
    else
-   let (M(old_sols,old_ext)) = old_mold in 
+   let (old_sols,old_ext) = Mold.solutions_and_forced_elements old_mold in 
    let links = Image.image fst data_for_links in 
-   M(old_sols,i_merge old_ext links);;
+   Mold.of_solutions_and_forced_elements old_sols (i_merge old_ext links);;
   
   let with_solution  pwb old_mold new_sol  =
    let m = Mold.measure(old_mold) in 
    if List.length(new_sol)<>m
    then raise(False_solution_exn(pwb,new_sol)) 
    else
-   let (M(old_sols,old_ext)) = old_mold in 
-   M(il_insert new_sol old_sols,old_ext);;
-
+   let (old_sols,old_ext) = Mold.solutions_and_forced_elements   old_mold in 
+   Mold.of_solutions_and_forced_elements (il_insert new_sol old_sols) old_ext;;
 
 
 end ;;   
@@ -831,7 +844,7 @@ module Store = struct
     let no_expansions_opt pwb = 
       if Point_with_breadth.is_discrete pwb 
       then let domain = Point_with_breadth.supporting_set pwb in 
-           Some(M([domain],domain)) 
+           Some(Mold.discrete domain) 
       else     
       let (PWB(P(FIS(n,scr),w),b)) = pwb in  
       let wpair = (w,scr) in
@@ -857,10 +870,11 @@ module Store = struct
           let simpler_pwb = Point_with_breadth.remove_element pwb n in 
             match no_expansions_opt simpler_pwb with 
              None -> (None,false) 
-            |Some(M(old_sols,old_ext)) ->
+            |Some(old_mold) ->
+                  let (old_sols,old_ext) = Mold.solutions_and_forced_elements old_mold in 
                   let new_ext = i_insert n old_ext in 
                   if (not  (Point_with_breadth.subset_is_admissible pwb new_ext))
-                    then (Some(M(old_sols,[])),true)
+                    then (Some(Mold.of_solutions old_sols),true)
                     else
                   let new_sols = List.filter_map (fun old_sol->
                     let new_sol = i_insert n old_sol in 
@@ -869,17 +883,18 @@ module Store = struct
                      else None 
                   ) old_sols in 
                   if new_sols <> []
-                  then (Some(M(new_sols,new_ext)),true)
+                  then (Some(Mold.of_solutions_and_forced_elements new_sols new_ext),true)
                 else (
                   match Point_with_breadth.usual_decomposition_opt pwb with 
                    None -> (None,false)
                    | Some(simpler_pwb,_) ->
                 match no_expansions_opt simpler_pwb with 
                 None -> (None,false)
-                | Some(M(old_sols,old_ext)) ->  
+                | Some(old_mold) ->  
+                  let (old_sols,old_ext) = Mold.solutions_and_forced_elements old_mold in 
                   let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
                   if new_sols <> []
-                  then (Some(M(new_sols,old_ext)),true)
+                  then (Some(Mold.of_solutions_and_forced_elements new_sols old_ext),true)
                   else (None,false)
                 )      
              ) ;;
@@ -890,28 +905,30 @@ module Store = struct
       |Some(simpler_pwb,_) ->
           match no_expansions_opt simpler_pwb with 
             None -> Missing_treatment(simpler_pwb)
-          |Some(M(old_sols,old_ext)) ->
+          |Some(old_mold) ->
+            let (old_sols,old_ext) = Mold.solutions_and_forced_elements old_mold in 
              let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
               if new_sols = []
               then Incomplete_treatment(simpler_pwb)
-              else Finished(M(new_sols,old_ext));;              
+              else Finished(Mold.of_solutions_and_forced_elements new_sols old_ext);;              
 
     let rightmost_pivot_case_opt pwb = 
         let n = Point_with_breadth.max pwb in 
         let simpler_pwb = Point_with_breadth.remove_element pwb n in 
           match no_expansions_opt simpler_pwb with 
            None -> Missing_treatment(simpler_pwb)
-         |Some(M(old_sols,old_ext)) ->
-                let new_sols = List.filter_map (
+         |Some(old_mold) ->
+          let (old_sols,old_ext) = Mold.solutions_and_forced_elements old_mold in 
+          let new_sols = List.filter_map (
                   fun sol -> 
                     let new_sol = i_insert n sol in 
                     if Point_with_breadth.subset_is_admissible pwb new_sol 
                     then Some new_sol
                     else None  
-                ) old_sols in 
-                if new_sols = []
-                then Incomplete_treatment(simpler_pwb)
-                else Finished(M(new_sols,i_insert n old_ext));;  
+          ) old_sols in 
+          if new_sols = []
+          then Incomplete_treatment(simpler_pwb)
+          else Finished(Mold.of_solutions_and_forced_elements new_sols (i_insert n old_ext));;  
   
   let no_expansions_but_allow_translations_opt pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
@@ -927,7 +944,8 @@ module Store = struct
           |Some(simpler_pwb,C cstr) ->
             match no_expansions_opt simpler_pwb with 
            None -> Missing_treatment(simpler_pwb)
-          |Some(M(_old_sols,old_ext)) -> 
+          |Some(old_mold) -> 
+           let old_ext = Mold.forced_elements old_mold in  
            let nth = (fun k->List.nth cstr (k-1)) in  
            let i=nth 1 and j=nth 2 and k=nth 3 in 
           let offshoots = Image.image (fun t->
@@ -944,9 +962,9 @@ module Store = struct
             let offshoots2 = Image.image (
                fun (_,opt)->Option.get opt
              ) offshoots in 
-             let final_ext = i_fold_intersect (Image.image (fun (M(_sol,ext))->ext) offshoots2)
-             and M(sols,_) = List.nth offshoots2 2 in 
-             Finished(M(sols,final_ext));;  
+             let final_ext = i_fold_intersect (Image.image Mold.forced_elements offshoots2)
+             and sols = Mold.solutions(List.nth offshoots2 2) in 
+             Finished(Mold.of_solutions_and_forced_elements sols final_ext);;  
   
   let without_helpers_opt pwb = 
       let (opt,is_new) =  minimal_expansions_opt pwb in 
@@ -1203,7 +1221,7 @@ module Initialization = struct
     let m = min(n/3)(r) in
     let end_part =Int_range.range (3*m+1) n 
     and beginning = List.flatten (Int_range.scale (fun j->[3*j-2;3*j-1]) 1 m) in 
-    M([beginning@end_part],end_part)      
+    Mold.of_solutions_and_forced_elements [beginning@end_part] end_part     
   ) ;;
   
   let tf2 b n = tf1 (Basic.frac_ceiling b 3) n ;; 
@@ -1219,7 +1237,7 @@ module Initialization = struct
       match r with 
       0 -> [] | 1->[n] |2 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
     )   in 
-    M([core],end_part)      
+    Mold.of_solutions_and_forced_elements [core] end_part     
   ) ;;
 
   let tf4 _b n = tf3 n ;; 
@@ -1230,9 +1248,9 @@ module Initialization = struct
   let tf5 =(fun n->
     match List.assoc_opt n 
     [
-       1, M ([[1]], [1]);
-       2, M ([[1;2]], [1;2]);
-       3, M ([[1;2]], []);     
+       1, Mold.of_solutions_and_forced_elements  [[1]] [1];
+       2, Mold.of_solutions_and_forced_elements  [[1;2]] [1;2];
+       3, Mold.of_solutions_and_forced_elements  [[1;2]] [];     
     ] with
     Some answer -> answer
     |None ->
@@ -1242,7 +1260,7 @@ module Initialization = struct
       match r with 
       1 -> [] | 2->[n] |0 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
     )   in 
-    M([core],end_part)      
+    Mold.of_solutions_and_forced_elements [core] end_part   
   ) ;;
   
   Safe_initialization.triple_level_add (W 2,[4],0) tf5 ;;
