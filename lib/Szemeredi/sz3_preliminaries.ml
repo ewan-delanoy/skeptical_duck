@@ -703,10 +703,24 @@ let usual_decomposition_opt pwb =
     let new_b = max(0)(b+d) in
       PWB(Point.translate d pwc,new_b) ;;
 
+  let supporting_set pwb = Point_with_extra_constraints.supporting_set (to_extra_constraints pwb) ;;     
+
+   let complementary_pairs pwb =
+     let (PWB(P(FIS(n,_scr),W max_w),b)) = pwb 
+     and domain = supporting_set pwb in 
+     let candidates = Int_range.range 1 (max_w+1) in 
+     List.filter_map (
+         fun w->
+            let u = n-2*w and v=n-w in 
+           if not(i_is_included_in [u;v] domain) then None else
+           if w<=max_w then Some(u,v) else 
+           if v<=b then Some(u,v) else None  
+     ) candidates ;;
 
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
+let complementary_pairs = Private.complementary_pairs ;;
 let decompose_wrt_translation pwb = 
   let (PWB(pt,_b)) = pwb in 
   let (d,_) = Point.decompose_wrt_translation pt in 
@@ -721,7 +735,7 @@ let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let subset_is_admissible pwb subset = 
      Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
 
-let supporting_set pwb = Point_with_extra_constraints.supporting_set (Private.to_extra_constraints pwb) ;; 
+let supporting_set = Private.supporting_set ;; 
 let translate = Private.translate ;; 
 let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 let width (PWB(pt,_b))= Point.width pt ;;
@@ -953,7 +967,28 @@ module Store = struct
              let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
               if new_sols = []
               then Incomplete_treatment(prec_pwb)
-              else Finished(Medium_mold.select prec_mold new_sols);;              
+              else Finished(Medium_mold.select prec_mold new_sols);;    
+      
+    (*          
+    let easy_rightmost_overflow_case_opt pwb = 
+        let n = Point_with_breadth.max pwb in 
+        let left_pwb = Point_with_breadth.remove_element pwb n in 
+          match no_expansions_opt left_pwb with 
+          None -> None
+         |Some(left_mold) ->
+          let left_ext = Medium_mold.solutions left_mold in 
+                  let new_sols = List.filter_map (
+                          fun sol -> 
+                            let new_sol = i_insert n sol in 
+                            if Point_with_breadth.subset_is_admissible pwb new_sol 
+                            then Some new_sol
+                            else None  
+                  ) left_sols in 
+                  if new_sols = []
+                  then Incomplete_treatment(left_pwb)
+                  else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;            
+    *)
+
 
     let rightmost_pivot_case_opt pwb = 
         let n = Point_with_breadth.max pwb in 
@@ -972,6 +1007,8 @@ module Store = struct
           if new_sols = []
           then Incomplete_treatment(left_pwb)
           else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;  
+
+
   
   let no_expansions_but_allow_translations_opt pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
@@ -979,7 +1016,7 @@ module Store = struct
       None -> None              
       |Some translated_mold -> Some(Medium_mold.translate d translated_mold);;  
 
-      exception Try_direct_fork_case_exn of point_with_breadth ;;
+  exception Try_direct_fork_case_exn of point_with_breadth ;;
   
   let fork_case_opt pwb = 
     match Point_with_breadth.usual_decomposition_opt pwb with 
