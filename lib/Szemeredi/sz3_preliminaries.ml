@@ -101,11 +101,15 @@ end ;;
 
 module Mold = struct 
 
+let of_solutions_and_forced_elements (M(sols, ext))= (sols,ext) ;;  
+
 let translate d (M(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
     M(Image.image tr sols,tr ext) ;; 
 
 let measure (M(sols, _ext)) = List.length(List.hd sols) ;; 
+
+let solutions_and_forced_elements (M(sols, ext))= (sols,ext) ;;  
 
 end ;;
 
@@ -1025,17 +1029,6 @@ module Store = struct
 
 
 
-  let compute_without_using_translations_opt pwb = 
-     match Without_translations.without_helpers_opt pwb with 
-     None -> None 
-     |Some (pre_answer,is_new) ->
-        (
-        match Help.assoc_opt pwb (!helpers_ref) with 
-         None -> Some(pre_answer,is_new)
-        |(Some helper) ->  
-          Some(apply_helper helper pwb pre_answer,is_new)
-          );;
-
   let compute_opt pwb =
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
     match Without_translations.compute_opt translated_pwb with
@@ -1105,7 +1098,7 @@ module Medium_analysis = struct
         (
           match Analysis_with_breadth.explain pwb with 
            Discrete -> (* this should never happen, the discrete case
-                          is already treated in *) 
+                          is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
           |Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
           |Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
