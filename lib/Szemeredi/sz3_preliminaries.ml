@@ -798,6 +798,10 @@ type medium_diagnosis  =
 
     let discrete domain = MM([domain],domain) ;;   
     
+    let fork (MM(_sols1,ext1),MM(_sols2,ext2),MM(sols3,ext3)) =
+      let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
+      MM(sols3,final_ext);;   ;;
+
     let forced_elements (MM(_sols, ext))= ext ;; 
     
     let of_solutions sols = MM(sols,[]) ;; 
@@ -941,33 +945,33 @@ module Store = struct
   let select_case_opt pwb = 
       match Point_with_breadth.usual_decomposition_opt pwb with 
         None -> raise(Select_case_opt_exn(pwb))
-      |Some(simpler_pwb,_) ->
-          match no_expansions_opt simpler_pwb with 
-            None -> Missing_treatment(simpler_pwb)
-          |Some(old_mold) ->
-            let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements old_mold in 
-             let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+      |Some(prec_pwb,_) ->
+          match no_expansions_opt prec_pwb with 
+            None -> Missing_treatment(prec_pwb)
+          |Some(prec_mold) ->
+            let prec_sols = Medium_mold.solutions prec_mold in 
+             let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
               if new_sols = []
-              then Incomplete_treatment(simpler_pwb)
-              else Finished(Medium_mold.constructor new_sols old_ext);;              
+              then Incomplete_treatment(prec_pwb)
+              else Finished(Medium_mold.select prec_mold new_sols);;              
 
     let rightmost_pivot_case_opt pwb = 
         let n = Point_with_breadth.max pwb in 
-        let simpler_pwb = Point_with_breadth.remove_element pwb n in 
-          match no_expansions_opt simpler_pwb with 
-           None -> Missing_treatment(simpler_pwb)
-         |Some(old_mold) ->
-          let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements old_mold in 
+        let left_pwb = Point_with_breadth.remove_element pwb n in 
+          match no_expansions_opt left_pwb with 
+           None -> Missing_treatment(left_pwb)
+         |Some(left_mold) ->
+          let left_sols = Medium_mold.solutions left_mold in 
           let new_sols = List.filter_map (
                   fun sol -> 
                     let new_sol = i_insert n sol in 
                     if Point_with_breadth.subset_is_admissible pwb new_sol 
                     then Some new_sol
                     else None  
-          ) old_sols in 
+          ) left_sols in 
           if new_sols = []
-          then Incomplete_treatment(simpler_pwb)
-          else Finished(Medium_mold.constructor new_sols (i_insert n old_ext));;  
+          then Incomplete_treatment(left_pwb)
+          else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;  
   
   let no_expansions_but_allow_translations_opt pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
@@ -978,32 +982,34 @@ module Store = struct
       exception Try_direct_fork_case_exn of point_with_breadth ;;
   
   let fork_case_opt pwb = 
-          match Point_with_breadth.usual_decomposition_opt pwb with 
-           None -> raise(Fork_case_opt_exn(pwb))
-          |Some(simpler_pwb,C cstr) ->
-            match no_expansions_opt simpler_pwb with 
-           None -> Missing_treatment(simpler_pwb)
-          |Some(old_mold) -> 
-           let old_ext = Medium_mold.forced_elements old_mold in  
-           let nth = (fun k->List.nth cstr (k-1)) in  
-           let i=nth 1 and j=nth 2 and k=nth 3 in 
-          let offshoots = Image.image (fun t->
-            let pwb2=Point_with_breadth.remove_element simpler_pwb t in 
-            (pwb2,no_expansions_but_allow_translations_opt pwb2)
-            ) [i;j;k] in
-          match List.find_opt (fun (_,opt)->opt=None) offshoots with
-          Some(pwb3,_)-> Missing_treatment pwb3
-          |None ->
-            let forgotten_links=i_setminus [i;j;k] old_ext in 
-            if forgotten_links<>[]
-            then Missing_links(simpler_pwb,forgotten_links) 
-            else     
-            let offshoots2 = Image.image (
-               fun (_,opt)->Option.get opt
-             ) offshoots in 
-             let final_ext = i_fold_intersect (Image.image Medium_mold.forced_elements offshoots2)
-             and sols = Medium_mold.solutions(List.nth offshoots2 2) in 
-             Finished(Medium_mold.constructor sols final_ext);;  
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> raise(Fork_case_opt_exn(pwb))
+  |Some(prec_pwb,C cstr) ->
+    match no_expansions_opt prec_pwb with 
+    None -> Missing_treatment(prec_pwb)
+  |Some(prec_mold) -> 
+    let prec_ext = Medium_mold.forced_elements prec_mold in  
+    let nth = (fun k->List.nth cstr (k-1)) in  
+    let i=nth 1 and j=nth 2 and k=nth 3 in 
+    let offshoots = Image.image (fun t->
+            let pwb2=Point_with_breadth.remove_element prec_pwb t in 
+            let (d,core_pwb2) = Point_with_breadth.decompose_wrt_translation pwb2 in 
+            let core_opt = no_expansions_opt core_pwb2 in
+            let opt = Option.map (Medium_mold.translate d) core_opt in
+            (pwb2,core_pwb2,opt)
+    ) [i;j;k] in
+    match List.find_opt (fun (_,_,opt)->opt=None) offshoots with
+     Some(_,core_pwb3,_)-> Missing_treatment core_pwb3
+    |None ->
+      let forgotten_links=i_setminus [i;j;k] prec_ext in 
+      if forgotten_links<>[]
+      then Missing_links(prec_pwb,forgotten_links) 
+      else     
+      let offshoots2 = Image.image (
+               fun (_,_,opt)->Option.get opt
+      ) offshoots in 
+      let mth = (fun k->List.nth offshoots2 (k-1)) in  
+      Finished(Medium_mold.fork (mth 1,mth 2,mth 3));;  
   
   let without_helpers_opt pwb = 
       let (opt,is_new) =  minimal_expansions_opt pwb in 
