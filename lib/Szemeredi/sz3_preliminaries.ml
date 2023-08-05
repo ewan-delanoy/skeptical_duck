@@ -44,6 +44,15 @@ type medium_diagnosis = Sz3_types.medium_diagnosis =
      |Missing_links of point_with_breadth * (int list)
      |Finished of medium_mold;;   
 
+type medium_handle = Sz3_types.medium_handle = 
+     Discrete
+    |Overflow 
+    |Rightmost_pivot
+    |Select of int * int * int  
+    |Fork of int * int * int 
+    |Imported_from_crude of crude_handle ;; 
+
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -1173,8 +1182,6 @@ module Medium_analysis = struct
       let force_compute pwb = (Analysis_with_breadth.compute_crude_handle pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
       let try_to_compute = Private.try_to_compute ;;
       let walk_scale = Private.walk_scale ;; 
-    
-      
     
     end ;;  
     

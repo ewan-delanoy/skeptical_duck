@@ -44,3 +44,10 @@ type medium_diagnosis  =
  |Missing_links of point_with_breadth * (int list)
  |Finished of medium_mold;;   
 
+type medium_handle = 
+     Discrete
+    |Overflow 
+    |Rightmost_pivot
+    |Select of int * int * int  
+    |Fork of int * int * int 
+    |Imported_from_crude of crude_handle ;; 
